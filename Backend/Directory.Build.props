@@ -1,0 +1,25 @@
+<Project>
+    <PropertyGroup>
+        <!-- Override the bin and obj directories for building the solution -->
+        <OutputPath>..\.artifacts\bin\$(MSBuildProjectName)</OutputPath>
+        <IntermediateOutputPath>..\.artifacts\obj\$(MSBuildProjectName)</IntermediateOutputPath>
+        <BaseIntermediateOutputPath>..\.artifacts\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+
+        <!-- Override the publish directory for publishing the solution -->
+        <PublishDir>..\.artifacts\publish\$(MSBuildProjectName)</PublishDir>
+
+        <!-- Enable all code analyzers for this project -->
+        <AnalysisMode>All</AnalysisMode>
+        <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+
+        <!-- Set up code style analysis for this project -->
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+            <!-- Generate XML documentation for this project -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <!-- Force warnings to be treated as errors -->
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors> 
+    </PropertyGroup>
+</Project>
