@@ -17,8 +17,10 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore ./Backend/Backend.sln
+      run: dotnet restore ./backend/Backend.sln
+    - name: Verify formatting
+      run: dotnet format ./backend/Backend.sln --verify-no-changes --no-restore --severity info
     - name: Build
-      run: dotnet build ./Backend/Backend.sln --no-restore
+      run: dotnet build ./backend/Backend.sln --no-restore
     - name: Test
-      run: dotnet test ./Backend/Backend.sln --no-build --verbosity normal
+      run: dotnet test ./backend/Backend.sln --no-build --verbosity normal

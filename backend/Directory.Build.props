@@ -9,15 +9,12 @@
         <!-- Override the publish directory for publishing the solution -->
         <PublishDir>..\.artifacts\publish\$(MSBuildProjectName)</PublishDir>
 
-        <!-- Enable all code analyzers for this project -->
-        <AnalysisMode>All</AnalysisMode>
-        <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
-
-        <!-- Set up code style analysis for this project -->
-        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-
-            <!-- Generate XML documentation for this project -->
+        <!-- Generate XML documentation for this project -->
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <!-- Run all code and style analyzers while building this project -->
+        <AnalysisMode>All</AnalysisMode>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
         <!-- Force warnings to be treated as errors -->
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors> 
