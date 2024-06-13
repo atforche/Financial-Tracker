@@ -1,0 +1,59 @@
+name: CI Pipeline
+
+on: [push]
+
+jobs:
+
+  # Builds and tests the .NET solution
+  build_dotnet:
+
+    name: ".NET Build"
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore ./Backend.sln
+
+    - name: Verify formatting
+      run: dotnet format ./Backend.sln --verify-no-changes --no-restore --severity info
+
+    - name: Build
+      run: dotnet build ./Backend.sln --no-restore
+
+    - name: Test
+      run: dotnet test ./Backend.sln --no-build --verbosity normal
+
+  # Builds and tests the Vite project
+  build_vite:
+
+    name: "Vite Build"
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build
+      run: npm run build

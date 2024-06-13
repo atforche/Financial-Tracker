@@ -1,24 +1,107 @@
 {
   "compilerOptions": {
+    /* Visit https://aka.ms/tsconfig to read more about this file */
+
+    /* Projects */
+    "incremental": false,
+    "composite": false,
+    "disableSourceOfProjectReferenceRedirect": false,
+    "disableSolutionSearching": false,
+    "disableReferencedProjectLoad": false,
+
+    /* Language and Environment */
     "target": "ES2020",
-    "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
     "jsx": "react-jsx",
+    "experimentalDecorators": false,
+    "emitDecoratorMetadata": false,
+    "jsxFactory": "",
+    "jsxFragmentFactory": "",
+    "jsxImportSource": "",
+    "reactNamespace": "",
+    "noLib": false,
+    "useDefineForClassFields": true,
+    "moduleDetection": "auto",
 
-    /* Linting */
+    /* Modules */
+    "module": "ESNext",
+    "rootDir": "./",
+    "moduleResolution": "bundler",
+    "baseUrl": "./",
+    "paths": {},
+    "rootDirs": [],
+    "typeRoots": [],
+    "types": [],
+    "allowUmdGlobalAccess": false,
+    "moduleSuffixes": [],
+    "allowImportingTsExtensions": true,
+    "resolvePackageJsonExports": false,
+    "resolvePackageJsonImports": false,
+    "customConditions": [],
+    "resolveJsonModule": true,
+    "allowArbitraryExtensions": false,
+    "noResolve": false,
+
+    /* JavaScript Support */
+    "allowJs": false,
+    "checkJs": false,
+    "maxNodeModuleJsDepth": 0,
+
+    /* Emit */
+    "declaration": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
+    "sourceMap": false,
+    "inlineSourceMap": false,
+    "outDir": "./",
+    "removeComments": false,
+    "noEmit": true,
+    "importHelpers": false,
+    "importsNotUsedAsValues": "remove",
+    "downlevelIteration": false,
+    "sourceRoot": "",
+    "mapRoot": "",
+    "inlineSources": false,
+    "emitBOM": false,
+    "newLine": "lf",
+    "stripInternal": true,
+    "noEmitHelpers": false,
+    "noEmitOnError": true,
+    "preserveConstEnums": true,
+    "preserveValueImports": false,
+
+    /* Interop Constraints */
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "allowSyntheticDefaultImports": false,
+    "esModuleInterop": false,
+    "preserveSymlinks": false,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Type Checking */
     "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+
+    /* Completeness */
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true   
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
