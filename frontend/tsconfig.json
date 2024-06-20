@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    /* Visit https://aka.ms/tsconfig to read more about this file */
+  /* Visit https://aka.ms/tsconfig to read more about this file */
 
     /* Projects */
     "incremental": false,
@@ -53,7 +53,6 @@
     "emitDeclarationOnly": false,
     "sourceMap": false,
     "inlineSourceMap": false,
-    "outDir": "./",
     "removeComments": false,
     "noEmit": true,
     "importHelpers": false,
@@ -73,7 +72,7 @@
     /* Interop Constraints */
     "isolatedModules": true,
     "verbatimModuleSyntax": false,
-    "allowSyntheticDefaultImports": false,
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": false,
     "preserveSymlinks": false,
     "forceConsistentCasingInFileNames": true,
@@ -100,8 +99,8 @@
     "allowUnreachableCode": false,
 
     /* Completeness */
-    "skipDefaultLibCheck": true,
-    "skipLibCheck": true   
+    "skipDefaultLibCheck": false,
+    "skipLibCheck": false   
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
