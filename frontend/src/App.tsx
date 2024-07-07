@@ -1,13 +1,13 @@
-import './App.css'
-import reactLogo from './assets/react.svg'
-import { useState } from 'react'
-import viteLogo from '/vite.svg'
+import "./App.css";
+import reactLogo from "./assets/react.svg";
+import { useState } from "react";
+import viteLogo from "/vite.svg";
 
 const DEFAULT_COUNT = 0;
 const INCREMENT = 1;
 
-const App = function(): JSX.Element {
-  const [count, setCount] = useState(DEFAULT_COUNT)
+const App = function (): JSX.Element {
+  const [count, setCount] = useState(DEFAULT_COUNT);
   return (
     <>
       <div>
@@ -20,7 +20,11 @@ const App = function(): JSX.Element {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={() => { setCount((value) => value + INCREMENT) }}>
+        <button
+          onClick={() => {
+            setCount((value) => value + INCREMENT);
+          }}
+        >
           count is {count}
         </button>
         <p>
@@ -31,7 +35,7 @@ const App = function(): JSX.Element {
         Click on the Vite and React logos to learn more
       </p>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;

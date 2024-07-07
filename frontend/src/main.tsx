@@ -1,12 +1,16 @@
-import './index.css'
-import App from './App.tsx'
-import React from 'react'
-import ReactDom from 'react-dom/client'
-import { ensureNotNull } from './utils.ts'
+import "./index.css";
+import App from "./App.tsx";
+import React from "react";
+import ReactDom from "react-dom/client";
+import { ensureNotNull } from "./utils.ts";
 
-ReactDom.createRoot(ensureNotNull(document.getElementById('root'), "Unable to find 'root' element."))
-  .render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>,
-  )
+ReactDom.createRoot(
+  ensureNotNull(
+    document.getElementById("root"),
+    "Unable to find 'root' element.",
+  ),
+).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);
