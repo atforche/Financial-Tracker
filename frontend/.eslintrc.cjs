@@ -7,9 +7,15 @@ module.exports = {
     "plugin:@typescript-eslint/stylistic-type-checked",
     "plugin:react-hooks/recommended",
     "plugin:react/recommended",
-    "plugin:react/jsx-runtime"
+    "plugin:react/jsx-runtime",
+    "plugin:jsdoc/recommended-typescript-error"
   ],
-  ignorePatterns: ["dist", ".eslintrc.cjs"],
+  ignorePatterns: [
+    "dist",
+    ".eslintrc.cjs",
+    "vite-env.d.ts",
+    "vite.config.ts"
+  ],
 
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -26,7 +32,7 @@ module.exports = {
     },
   },
   
-  plugins: ["react-refresh"],
+  plugins: ["react-refresh", "jsdoc"],
   rules: {
     // react-refresh rules
     "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
@@ -173,6 +179,41 @@ module.exports = {
     "sort-keys": "error",
     "sort-vars": "error",
     "strict": "error",
-    "yoda": "error"
+    "yoda": "error",
+
+    // JSDoc rules
+    "jsdoc/require-jsdoc": ["error", 
+      {
+        "publicOnly": false,
+        "require":
+        {
+          "ArrowFunctionExpression": true,
+          "ClassDeclaration": true,
+          "ClassExpression": true,
+          "FunctionDeclaration": true,
+          "FunctionExpression": true,
+          "MethodDefinition": true
+        },
+        "checkGetters": true,
+        "checkSetters": true
+      }
+    ],
+    "jsdoc/check-indentation": "error",
+    "jsdoc/check-line-alignment": "error",
+    "jsdoc/informative-docs": "error",
+    "jsdoc/no-bad-blocks": "error",
+    "jsdoc/no-blank-block-descriptions": "error",
+    "jsdoc/no-blank-blocks": "error",
+    "jsdoc/no-types": "off",
+    "jsdoc/require-asterisk-prefix": "error",
+    "jsdoc/require-description": "error",
+    "jsdoc/require-description-complete-sentence": "error",
+    "jsdoc/require-file-overview": "error",
+    "jsdoc/require-hyphen-before-param-description": "error",
+    "jsdoc/require-param-type": "error",
+    "jsdoc/require-property-type": "error",
+    "jsdoc/require-returns-type": "error",
+    "jsdoc/require-throws": "error",
+    "jsdoc/sort-tags": "error"
   },
 }

@@ -1,11 +1,20 @@
+/**
+ * @file Definition of the App component.
+ */
+
 import "./App.css";
+import { type JSX, useState } from "react";
 import reactLogo from "./assets/react.svg";
-import { useState } from "react";
 import viteLogo from "/vite.svg";
 
 const DEFAULT_COUNT = 0;
 const INCREMENT = 1;
 
+/**
+ * Constructs a new instance of an App component.
+ * The App component is the top-level component for the application, which organizes all of the child components.
+ * @returns {JSX.Element} A JSX element representing an App component.
+ */
 const App = function (): JSX.Element {
   const [count, setCount] = useState(DEFAULT_COUNT);
   return (
