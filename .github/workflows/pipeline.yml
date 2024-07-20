@@ -51,7 +51,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 22.5.1
-        check-latest: true
 
     - name: Install dependencies
       run: npm ci
