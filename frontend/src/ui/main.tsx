@@ -10,10 +10,10 @@ import { ensureNotNull } from "../core/utils.ts";
 ReactDom.createRoot(
   ensureNotNull(
     document.getElementById("root"),
-    "Unable to find 'root' element."
-  )
+    "Unable to find 'root' element.",
+  ),
 ).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>
+  </React.StrictMode>,
 );
