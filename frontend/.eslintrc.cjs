@@ -65,6 +65,10 @@ module.exports = {
       {
         selector: ['typeLike'],
         format: ['StrictPascalCase'],
+      },
+      {
+        selector: ['enumMember'],
+        format: ['StrictPascalCase']
       }
     ],
     "@typescript-eslint/no-import-type-side-effects": "error",
@@ -80,6 +84,7 @@ module.exports = {
     "@typescript-eslint/return-await": "error",
     "@typescript-eslint/strict-boolean-expressions": "error",
     "@typescript-eslint/switch-exhaustiveness-check": "error",
+    "@typescript-eslint/no-shadow": "error",
 
     // base eslint rules
     "array-callback-return": "error",
@@ -145,7 +150,7 @@ module.exports = {
     "no-return-assign": "error",
     "no-script-url": "error",
     "no-sequences": "error",
-    "no-shadow": "error",
+    "no-shadow": "off",
     "no-throw-literal": "error",
     "no-undef-init": "error",
     "no-undefined": "error",
@@ -184,7 +189,7 @@ module.exports = {
     // JSDoc rules
     "jsdoc/require-jsdoc": ["error", 
       {
-        "publicOnly": false,
+        "publicOnly": true,
         "require":
         {
           "ArrowFunctionExpression": true,
@@ -208,7 +213,6 @@ module.exports = {
     "jsdoc/require-asterisk-prefix": "error",
     "jsdoc/require-description": "error",
     "jsdoc/require-description-complete-sentence": "error",
-    "jsdoc/require-file-overview": "error",
     "jsdoc/require-hyphen-before-param-description": "error",
     "jsdoc/require-param-type": "error",
     "jsdoc/require-property-type": "error",

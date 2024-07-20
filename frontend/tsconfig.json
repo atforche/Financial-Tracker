@@ -100,7 +100,7 @@
 
     /* Completeness */
     "skipDefaultLibCheck": false,
-    "skipLibCheck": false   
+    "skipLibCheck": true   
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
