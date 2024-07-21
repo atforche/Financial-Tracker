@@ -1,4 +1,4 @@
-import { AccountBalance, GridView } from "@mui/icons-material";
+import { AccountBalance, GridView, Timeline } from "@mui/icons-material";
 import {
   Box,
   Divider,
@@ -7,8 +7,13 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Typography,
 } from "@mui/material";
-import NavigationPage from "./NavigationPage";
+import {
+  DashboardPage,
+  DataEntryPage,
+  type NavigationPage,
+} from "./NavigationPages";
 import { useState } from "react";
 
 /**
@@ -17,8 +22,11 @@ import { useState } from "react";
  * @returns {JSX.Element} The icon component for the provided NavigationPage.
  */
 const getNavigationIcon = function (page: NavigationPage): JSX.Element {
-  if (page === NavigationPage.Overview) {
+  if (page === DashboardPage.Overview) {
     return <GridView key="Overview" />;
+  }
+  if (page === DashboardPage.Accounts) {
+    return <Timeline key="Accounts" />;
   }
   return <AccountBalance key="Accounts" />;
 };
@@ -44,25 +52,43 @@ export const NavigationSelector = function ({
 }: NavigationSelectorProps): JSX.Element {
   const [currentPage, setCurrentPage] = useState(initialPage);
 
+  const buildNavigationElements = function (
+    nameString: string,
+    pageName: NavigationPage,
+  ): JSX.Element {
+    return (
+      <ListItem key={nameString} disablePadding>
+        <ListItemButton
+          selected={pageName === currentPage}
+          onClick={() => {
+            setCurrentPage(pageName);
+            onNavigation(pageName);
+          }}
+        >
+          <ListItemIcon sx={{ paddingLeft: "15px" }}>
+            {getNavigationIcon(pageName)}
+          </ListItemIcon>
+          <ListItemText primary={nameString} />
+        </ListItemButton>
+      </ListItem>
+    );
+  };
+
   return (
     <Box sx={{ overflow: "auto" }}>
       <List>
-        {Object.entries(NavigationPage).map(([nameString, pageName]) => (
-          <ListItem key={nameString} disablePadding>
-            <ListItemButton
-              selected={pageName === currentPage}
-              onClick={() => {
-                setCurrentPage(pageName);
-                onNavigation(pageName);
-              }}
-            >
-              <ListItemIcon sx={{ paddingLeft: "15px" }}>
-                {getNavigationIcon(pageName)}
-              </ListItemIcon>
-              <ListItemText primary={nameString} />
-            </ListItemButton>
-          </ListItem>
-        ))}
+        <Divider>
+          <Typography variant="body2">Dashboards</Typography>
+        </Divider>
+        {Object.entries(DashboardPage).map(([nameString, pageName]) =>
+          buildNavigationElements(nameString, pageName),
+        )}
+        <Divider sx={{ paddingTop: "25px" }}>
+          <Typography variant="body2">Data Entry</Typography>
+        </Divider>
+        {Object.entries(DataEntryPage).map(([nameString, pageName]) =>
+          buildNavigationElements(nameString, pageName),
+        )}
       </List>
       <Divider />
     </Box>

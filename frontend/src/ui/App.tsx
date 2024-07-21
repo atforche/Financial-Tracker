@@ -1,5 +1,10 @@
-import { Box, useMediaQuery, useTheme } from "@mui/material";
-import NavigationPage from "./NavigationPage";
+import {
+  DashboardPage,
+  DataEntryPage,
+  type NavigationPage,
+} from "./NavigationPages";
+import { Stack, useMediaQuery, useTheme } from "@mui/material";
+import AccountEntryList from "./data_entry/AccountEntryList";
 import PermanentNavigation from "./PermanentNavigation";
 import TemporaryNavigation from "./TemporaryNavigation";
 import { useState } from "react";
@@ -10,28 +15,51 @@ import { useState } from "react";
  * @returns {JSX.Element} JSX element representing the entire application.
  */
 const App = function (): JSX.Element {
-  const [currentPage, setCurrentPage] = useState(NavigationPage.Overview);
+  const [currentPage, setCurrentPage] = useState<NavigationPage>(
+    DashboardPage.Overview,
+  );
 
   // Use the permanent navigation variant for any screen sizes "md" or larger.
   // Use the temporary navigation variant for any screen sizes smaller than "md".
   const theme = useTheme();
   const useTemporary = useMediaQuery(theme.breakpoints.down("md"));
 
-  return (
-    <Box>
-      {useTemporary ? (
+  const buildTemporaryLayout = function (content: JSX.Element): JSX.Element {
+    return (
+      <Stack>
         <TemporaryNavigation
           initialPage={currentPage}
           onNavigation={setCurrentPage}
         />
-      ) : (
+        {content}
+      </Stack>
+    );
+  };
+
+  const buildPermanentLayout = function (content: JSX.Element): JSX.Element {
+    return (
+      <Stack direction="row">
         <PermanentNavigation
           initialPage={currentPage}
           onNavigation={setCurrentPage}
         />
-      )}
-    </Box>
-  );
+        {content}
+      </Stack>
+    );
+  };
+
+  const buildContent = function (): JSX.Element {
+    if (currentPage === DataEntryPage.Accounts) {
+      return <AccountEntryList />;
+    }
+    return <></>;
+  };
+
+  const content = buildContent();
+  if (useTemporary) {
+    return buildTemporaryLayout(content);
+  }
+  return buildPermanentLayout(content);
 };
 
 export default App;

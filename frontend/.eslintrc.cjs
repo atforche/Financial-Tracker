@@ -43,7 +43,13 @@ module.exports = {
     "@typescript-eslint/explicit-function-return-type": "error",
     "@typescript-eslint/explicit-member-accessibility": "error",
     "@typescript-eslint/explicit-module-boundary-types": "error",
-    "@typescript-eslint/member-ordering": ["error", { "default": { "order": "alphabetically" } }],
+    "@typescript-eslint/member-ordering": ["error", {
+      "default": {
+        "memberTypes": ["field", "constructor", "public-method", "private-method"],
+        "optionalityOrder": "required-first",
+        "order": "alphabetically"
+      }
+    }],
     "@typescript-eslint/method-signature-style": "error",
     "@typescript-eslint/naming-convention": ["error",
       {

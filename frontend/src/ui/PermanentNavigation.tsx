@@ -1,5 +1,5 @@
 import { Drawer, Toolbar, Typography } from "@mui/material";
-import type NavigationPage from "./NavigationPage";
+import type { NavigationPage } from "./NavigationPages";
 import NavigationSelector from "./NavigationSelector";
 import appLogo from "/logo.svg";
 

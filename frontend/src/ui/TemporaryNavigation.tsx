@@ -8,7 +8,7 @@ import {
   useTheme,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import type NavigationPage from "./NavigationPage";
+import type { NavigationPage } from "./NavigationPages";
 import NavigationSelector from "./NavigationSelector";
 import appLogo from "/logo.svg";
 import { useState } from "react";
@@ -95,6 +95,7 @@ const TemporaryNavigation = function ({
           onNavigation={onNavigation}
         />
       </Drawer>
+      <Toolbar />
     </Box>
   );
 };
