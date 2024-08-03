@@ -2,10 +2,10 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import App from "./App.tsx";
+import App from "@ui/App.tsx";
 import React from "react";
 import ReactDom from "react-dom/client";
-import { ensureNotNull } from "../core/utils.ts";
+import { ensureNotNull } from "@core/utils.ts";
 
 ReactDom.createRoot(
   ensureNotNull(

@@ -7,5 +7,12 @@ export default defineConfig({
   server: {
     host: true,
     port: 5000
+  },
+  resolve: {
+    alias: {
+      "@core": "/src/core",
+      "@data": "/src/data",
+      "@ui": "/src/ui",
+    }
   }
 })

@@ -9,11 +9,7 @@ import {
   ListItemText,
   Typography,
 } from "@mui/material";
-import {
-  DashboardPage,
-  DataEntryPage,
-  type NavigationPage,
-} from "./NavigationPages";
+import NavigationPage from "@core/fieldValues/NavigationPage";
 import { useState } from "react";
 
 /**
@@ -22,10 +18,10 @@ import { useState } from "react";
  * @returns {JSX.Element} The icon component for the provided NavigationPage.
  */
 const getNavigationIcon = function (page: NavigationPage): JSX.Element {
-  if (page === DashboardPage.Overview) {
+  if (page === NavigationPage.Overview) {
     return <GridView key="Overview" />;
   }
-  if (page === DashboardPage.Accounts) {
+  if (page === NavigationPage.AccountDashboard) {
     return <Timeline key="Accounts" />;
   }
   return <AccountBalance key="Accounts" />;
@@ -53,22 +49,21 @@ export const NavigationSelector = function ({
   const [currentPage, setCurrentPage] = useState(initialPage);
 
   const buildNavigationElements = function (
-    nameString: string,
-    pageName: NavigationPage,
+    navigationPage: NavigationPage,
   ): JSX.Element {
     return (
-      <ListItem key={nameString} disablePadding>
+      <ListItem key={navigationPage.toString()} disablePadding>
         <ListItemButton
-          selected={pageName === currentPage}
+          selected={navigationPage === currentPage}
           onClick={() => {
-            setCurrentPage(pageName);
-            onNavigation(pageName);
+            setCurrentPage(navigationPage);
+            onNavigation(navigationPage);
           }}
         >
           <ListItemIcon sx={{ paddingLeft: "15px" }}>
-            {getNavigationIcon(pageName)}
+            {getNavigationIcon(navigationPage)}
           </ListItemIcon>
-          <ListItemText primary={nameString} />
+          <ListItemText primary={navigationPage.toString()} />
         </ListItemButton>
       </ListItem>
     );
@@ -80,14 +75,14 @@ export const NavigationSelector = function ({
         <Divider>
           <Typography variant="body2">Dashboards</Typography>
         </Divider>
-        {Object.entries(DashboardPage).map(([nameString, pageName]) =>
-          buildNavigationElements(nameString, pageName),
+        {NavigationPage.Collection.filter((page) => !page.isDataEntry).map(
+          (page) => buildNavigationElements(page),
         )}
         <Divider sx={{ paddingTop: "25px" }}>
           <Typography variant="body2">Data Entry</Typography>
         </Divider>
-        {Object.entries(DataEntryPage).map(([nameString, pageName]) =>
-          buildNavigationElements(nameString, pageName),
+        {NavigationPage.Collection.filter((page) => page.isDataEntry).map(
+          (page) => buildNavigationElements(page),
         )}
       </List>
       <Divider />

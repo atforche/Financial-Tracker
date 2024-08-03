@@ -1,12 +1,8 @@
-import {
-  DashboardPage,
-  DataEntryPage,
-  type NavigationPage,
-} from "./NavigationPages";
 import { Stack, useMediaQuery, useTheme } from "@mui/material";
-import AccountEntryList from "./data_entry/AccountEntryList";
-import PermanentNavigation from "./PermanentNavigation";
-import TemporaryNavigation from "./TemporaryNavigation";
+import AccountEntryList from "@ui/dataEntry/AccountEntryList";
+import NavigationPage from "@core/fieldValues/NavigationPage";
+import PermanentNavigation from "@ui/navigation/PermanentNavigation";
+import TemporaryNavigation from "@ui/navigation/TemporaryNavigation";
 import { useState } from "react";
 
 /**
@@ -16,7 +12,7 @@ import { useState } from "react";
  */
 const App = function (): JSX.Element {
   const [currentPage, setCurrentPage] = useState<NavigationPage>(
-    DashboardPage.Overview,
+    NavigationPage.Overview,
   );
 
   // Use the permanent navigation variant for any screen sizes "md" or larger.
@@ -49,7 +45,7 @@ const App = function (): JSX.Element {
   };
 
   const buildContent = function (): JSX.Element {
-    if (currentPage === DataEntryPage.Accounts) {
+    if (currentPage === NavigationPage.AccountEntry) {
       return <AccountEntryList />;
     }
     return <></>;

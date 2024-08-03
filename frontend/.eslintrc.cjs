@@ -30,9 +30,12 @@ module.exports = {
     "react": {
       "version": "detect"
     },
+    "import/resolver": {
+      "typescript": {}
+    }
   },
   
-  plugins: ["react-refresh", "jsdoc"],
+  plugins: ["react-refresh", "jsdoc", "import"],
   rules: {
     // react-refresh rules
     "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
@@ -47,7 +50,7 @@ module.exports = {
       "default": {
         "memberTypes": ["field", "constructor", "public-method", "private-method"],
         "optionalityOrder": "required-first",
-        "order": "alphabetically"
+        "order": "as-written"
       }
     }],
     "@typescript-eslint/method-signature-style": "error",
@@ -75,6 +78,11 @@ module.exports = {
       {
         selector: ['enumMember'],
         format: ['StrictPascalCase']
+      },
+      {
+        selector: 'classProperty',
+        modifiers: ['public'],
+        format: ['StrictPascalCase']
       }
     ],
     "@typescript-eslint/no-import-type-side-effects": "error",
@@ -91,6 +99,7 @@ module.exports = {
     "@typescript-eslint/strict-boolean-expressions": "error",
     "@typescript-eslint/switch-exhaustiveness-check": "error",
     "@typescript-eslint/no-shadow": "error",
+    "@typescript-eslint/no-use-before-define": "error",
 
     // base eslint rules
     "array-callback-return": "error",
@@ -102,7 +111,7 @@ module.exports = {
     "no-template-curly-in-string": "error",
     "no-unmodified-loop-condition": "error",
     "no-unreachable-loop": "error",
-    "no-use-before-define": "error",
+    "no-use-before-define": "off",
     "accessor-pairs": "error",
     "arrow-body-style": "error",
     "block-scoped-var": "error",
@@ -187,7 +196,7 @@ module.exports = {
     "prefer-template": "error",
     "require-await": "error",
     "sort-imports": "error",
-    "sort-keys": "error",
+    "sort-keys": "off",
     "sort-vars": "error",
     "strict": "error",
     "yoda": "error",

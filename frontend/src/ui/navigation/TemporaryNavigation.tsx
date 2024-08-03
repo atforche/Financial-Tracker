@@ -8,8 +8,8 @@ import {
   useTheme,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import type { NavigationPage } from "./NavigationPages";
-import NavigationSelector from "./NavigationSelector";
+import type NavigationPage from "@core/fieldValues/NavigationPage";
+import NavigationSelector from "@ui/navigation/NavigationSelector";
 import appLogo from "/logo.svg";
 import { useState } from "react";
 

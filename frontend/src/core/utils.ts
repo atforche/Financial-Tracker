@@ -12,4 +12,16 @@ const ensureNotNull = function <T>(item: T | null, message?: string): T {
   return item;
 };
 
-export { ensureNotNull };
+/**
+ * If the provided string is blank, returns null. Otherwise, returns the provided string.
+ * @param {string} value - String value to check if blank.
+ * @returns {string | null} Null if the provided string is blank, otherwise the provided string.
+ */
+const toNullIfBlank = function (value: string): string | null {
+  if (value === "") {
+    return null;
+  }
+  return value;
+};
+
+export { ensureNotNull, toNullIfBlank };
