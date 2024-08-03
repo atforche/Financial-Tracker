@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Edge with Debugger",
+      "request": "launch",
+      "type": "msedge",
+      "url": "http://localhost:5000",
+      "webRoot": "${workspaceFolder}",
+    },
+    {
+      "name": "Launch Vite DEV server",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--open"],
+      "type": "node",
+    },
+  ],
+}
