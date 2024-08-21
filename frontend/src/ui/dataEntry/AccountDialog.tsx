@@ -1,4 +1,4 @@
-import type { Account, AccountKey } from "@data/Account";
+import type { Account, AccountId } from "@data/AccountModels";
 import {
   Button,
   Dialog,
@@ -10,17 +10,18 @@ import {
 import {
   addAccount,
   deleteAccount,
-  getAccountByKey,
+  getAccountById,
   updateAccount,
 } from "@data/AccountRepository";
+import { useCallback, useState } from "react";
 import AccountType from "@core/fieldValues/AccountType";
 import BooleanEntryField from "@ui/framework/BooleanEntryField";
 import DialogMode from "@core/fieldValues/DialogMode";
 import FieldValueEntryField from "@ui/framework/FieldValueEntryField";
 import StringEntryField from "@ui/framework/StringEntryField";
-import { useState } from "react";
+import useData from "@data/useData";
 
-const defaultAccountName = null;
+const defaultAccountName = "";
 const defaultAccountType = AccountType.Standard;
 const defaultIsAccountActive = true;
 
@@ -29,13 +30,13 @@ const defaultIsAccountActive = true;
  * @param {boolean} isOpen - True if this modal should be open, false otherwise.
  * @param {DialogMode} mode - Mode this dialog should open in.
  * @param {Function} onClose - Callback to perform when this modal is closed.
- * @param {AccountKey} accountKey - Key of an Account to populate the dialog, or null if an Account is being created.
+ * @param {AccountId} accountId - ID of an Account to populate the dialog, or null if an Account is being created.
  */
 interface AccountDialogProps {
   isOpen: boolean;
   mode: DialogMode;
   onClose: () => void;
-  accountKey?: AccountKey | null;
+  accountId?: AccountId | null;
 }
 
 /**
@@ -50,10 +51,10 @@ const AccountDialog = function ({
   isOpen,
   mode,
   onClose,
-  accountKey = null,
+  accountId = null,
 }: AccountDialogProps): JSX.Element {
   // State for this component
-  const [account, setAccount] = useState<Account | null>(null);
+  const [isFound, setIsFound] = useState(false);
   const [accountName, setAccountName] = useState<string | null>(
     defaultAccountName,
   );
@@ -65,7 +66,7 @@ const AccountDialog = function ({
 
   // Event handlers for this component
   const handleClose = function (): void {
-    setAccount(null);
+    setIsFound(false);
     setAccountName(defaultAccountName);
     setAccountType(defaultAccountType);
     setIsAccountActive(defaultIsAccountActive);
@@ -79,39 +80,45 @@ const AccountDialog = function ({
       name: accountName,
       type: accountType,
       isActive: isAccountActive,
+    }).catch(() => {
+      setIsFound(false);
     });
     handleClose();
   };
   const handleUpdate = function (): void {
-    if (accountKey === null) {
+    if (accountId === null) {
       throw new Error("Key must be defined");
     }
-    updateAccount(accountKey, { name: accountName, isActive: isAccountActive });
+    updateAccount(accountId, {
+      name: accountName,
+      isActive: isAccountActive,
+    }).catch(() => {
+      setIsFound(false);
+    });
     handleClose();
   };
   const handleDelete = function (): void {
-    if (accountKey === null) {
+    if (accountId === null) {
       throw new Error("Key must be defined");
     }
-    deleteAccount(accountKey);
+    deleteAccount(accountId).catch(() => {
+      setIsFound(false);
+    });
     handleClose();
   };
 
   // For View and Update modes, we must have an already existing Account so throw an error if the key wasn't provided.
   // Otherwise, find the account using the key and update the state.
-  if (
-    isOpen &&
-    account === null &&
-    [DialogMode.View, DialogMode.Update].includes(mode)
-  ) {
-    if (accountKey === null) {
-      throw new Error("Key must be defined");
-    }
-    const existingAccount = getAccountByKey(accountKey);
-    if (existingAccount === null) {
-      throw new Error("Invalid key for account");
-    }
-    setAccount(existingAccount);
+  const fetchCallback = useCallback(
+    async (): Promise<Account | null> =>
+      accountId !== null ? getAccountById(accountId) : Promise.resolve(null),
+    [accountId],
+  );
+  // TODO - add updateStateCallback to handle updating the state once the fetch is complete
+  const existingAccount = useData(fetchCallback);
+
+  if (!isFound && existingAccount !== null) {
+    setIsFound(true);
     setAccountName(existingAccount.name);
     setAccountType(existingAccount.type);
     setIsAccountActive(existingAccount.isActive);

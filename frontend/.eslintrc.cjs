@@ -100,6 +100,7 @@ module.exports = {
     "@typescript-eslint/switch-exhaustiveness-check": "error",
     "@typescript-eslint/no-shadow": "error",
     "@typescript-eslint/no-use-before-define": "error",
+    "@typescript-eslint/require-await": "error",
 
     // base eslint rules
     "array-callback-return": "error",
@@ -194,7 +195,7 @@ module.exports = {
     "prefer-rest-params": "error",
     "prefer-spread": "error",
     "prefer-template": "error",
-    "require-await": "error",
+    "require-await": "off",
     "sort-imports": "error",
     "sort-keys": "off",
     "sort-vars": "error",

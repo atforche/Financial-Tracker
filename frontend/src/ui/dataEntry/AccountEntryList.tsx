@@ -1,4 +1,4 @@
-import type { Account, AccountKey } from "@data/Account";
+import type { Account, AccountId } from "@data/Account";
 import { AddCircleOutline, Delete, Info, ModeEdit } from "@mui/icons-material";
 import {
   Box,
@@ -39,15 +39,15 @@ interface Column {
  * Interface representing the state of the child dialog.
  * @param {boolean} isOpen - Boolean flag indicating whether the dialog is open.
  * @param {DialogMode} mode - Current mode for the dialog.
- * @param {AccountKey | null} key - Key of the current Account for the dialog, or null if no Account is selected.
+ * @param {AccountId | null} id - ID of the current Account for the dialog, or null if no Account is selected.
  */
 interface DialogState {
   isOpen: boolean;
   mode: DialogMode;
-  key: AccountKey | null;
+  id: AccountId | null;
 }
 
-const rows: Account[] = getAllAccounts();
+const rows: Account[] = await getAllAccounts();
 
 /**
  * Component that provides a list of accounts and makes the basic create, read, update, and delete
@@ -61,7 +61,7 @@ const AccountEntryList = function (): JSX.Element {
   const [dialogState, setDialogState] = useState<DialogState>({
     isOpen: false,
     mode: DialogMode.Create,
-    key: null,
+    id: null,
   });
 
   const columns: Column[] = [
@@ -88,7 +88,7 @@ const AccountEntryList = function (): JSX.Element {
               setDialogState({
                 isOpen: true,
                 mode: DialogMode.Create,
-                key: null,
+                id: null,
               });
             }}
           >
@@ -103,7 +103,7 @@ const AccountEntryList = function (): JSX.Element {
               setDialogState({
                 isOpen: true,
                 mode: DialogMode.View,
-                key: row.key,
+                id: row.id,
               });
             }}
           >
@@ -114,7 +114,7 @@ const AccountEntryList = function (): JSX.Element {
               setDialogState({
                 isOpen: true,
                 mode: DialogMode.Update,
-                key: row.key,
+                id: row.id,
               });
             }}
           >
@@ -126,7 +126,7 @@ const AccountEntryList = function (): JSX.Element {
                 setDialogState({
                   isOpen: true,
                   mode: DialogMode.Delete,
-                  key: row.key,
+                  id: row.id,
                 });
               }}
             />
@@ -176,7 +176,7 @@ const AccountEntryList = function (): JSX.Element {
             </TableHead>
             <TableBody>
               {rows
-                .sort((first, second) => Number(first.key - second.key))
+                .sort((first, second) => Number(first.id - second.id))
                 .map((row) => (
                   <TableRow hover role="checkbox" tabIndex={-1} key={row.name}>
                     {columns.map((column) => (
@@ -200,10 +200,10 @@ const AccountEntryList = function (): JSX.Element {
           setDialogState({
             isOpen: false,
             mode: dialogState.mode,
-            key: dialogState.key,
+            id: dialogState.id,
           });
         }}
-        accountKey={dialogState.key}
+        accountId={dialogState.id}
       />
     </Box>
   );
