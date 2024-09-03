@@ -17,6 +17,6 @@
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
         <!-- Force warnings to be treated as errors -->
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors> 
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 </Project>
