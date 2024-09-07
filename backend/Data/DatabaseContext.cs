@@ -1,4 +1,7 @@
 using Data.Models;
+using Domain.Entities;
+using Domain.Events;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data;
@@ -8,6 +11,7 @@ namespace Data;
 /// </summary>
 public class DatabaseContext : DbContext
 {
+    private readonly IMediator _mediator;
     private readonly string _dbPath;
 
     /// <summary>
@@ -18,9 +22,32 @@ public class DatabaseContext : DbContext
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public DatabaseContext()
+    /// <param name="mediator">Mediator instance used to publish events</param>
+    public DatabaseContext(IMediator mediator)
     {
+        _mediator = mediator;
         _dbPath = Path.Join("/workspaces/Financial-Tracker/backend", "backend.db");
+    }
+
+    /// <summary>
+    /// Saves the entities associated with this DbContext and fires any domain events associated with those entities
+    /// </summary>
+    public async Task SaveEntitiesAsync()
+    {
+        IEnumerable<IDomainEvent> domainEvents = ChangeTracker.Entries()
+            .Select(entry => entry.Entity)
+            .OfType<Entity>()
+            .SelectMany(entity =>
+            {
+                List<IDomainEvent> entityEvents = entity.GetDomainEvents().ToList();
+                entity.ClearDomainEvents();
+                return entityEvents;
+            });
+        foreach (IDomainEvent domainEvent in domainEvents)
+        {
+            await _mediator.Publish(domainEvent).ConfigureAwait(false);
+        }
+        await base.SaveChangesAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

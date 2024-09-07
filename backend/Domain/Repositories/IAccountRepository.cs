@@ -35,10 +35,10 @@ public interface IAccountRepository
     Account? FindByNameOrNull(string name);
 
     /// <summary>
-    /// Commits the provided Account to the repository.
+    /// Adds the provided Account to the repository.
     /// </summary>
-    /// <param name="account">Account object that should be committed</param>
-    void Commit(Account account);
+    /// <param name="account">Account object that should be added</param>
+    void Add(Account account);
 
     /// <summary>
     /// Updates the provided Account in the repository.
