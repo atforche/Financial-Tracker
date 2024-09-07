@@ -5,7 +5,7 @@ namespace Data.Models;
 /// <summary>
 /// Data model representing an Account
 /// </summary>
-public class AccountData
+public class AccountData : Entity, IDataModel<AccountData>
 {
     /// <summary>
     /// Database primary key for this Account
@@ -31,4 +31,13 @@ public class AccountData
     /// Is active flag for this Account
     /// </summary>
     public required bool IsActive { get; set; }
+
+    /// <inheritdoc/>
+    public void Replace(AccountData newModel)
+    {
+        Id = newModel.Id;
+        Name = newModel.Name;
+        Type = newModel.Type;
+        IsActive = newModel.IsActive;
+    }
 }

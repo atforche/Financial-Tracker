@@ -1,5 +1,6 @@
-using Application.Services;
+using Data;
 using Domain.Entities;
+using Domain.Factories;
 using Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using RestApi.Models.Account;
@@ -13,22 +14,25 @@ namespace RestApi.Controllers;
 [Route("/accounts")]
 public class AccountController : ControllerBase
 {
-    private readonly IAccountService _accountService;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAccountFactory _accountFactory;
     private readonly IAccountRepository _accountRepository;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="accountService">Service for manipulating accounts</param>
+    /// <param name="unitOfWork">Unit of work to commit changes to the database</param>
+    /// <param name="accountFactory">Factory that constructs accounts</param>
     /// <param name="accountRepository">Repository of accounts</param>
-    public AccountController(IAccountService accountService, IAccountRepository accountRepository)
+    public AccountController(IUnitOfWork unitOfWork, IAccountFactory accountFactory, IAccountRepository accountRepository)
     {
-        _accountService = accountService;
+        _unitOfWork = unitOfWork;
+        _accountFactory = accountFactory;
         _accountRepository = accountRepository;
     }
 
     /// <summary>
-    /// Test endpoint to ensure API is working
+    /// Retrieves a group of accounts from the database that match the provided filter criteria.
     /// </summary>
     /// <returns>A collection of Accounts that match the provided filter criteria.</returns>
     [HttpGet("")]
@@ -53,11 +57,13 @@ public class AccountController : ControllerBase
     /// <param name="createAccountModel">Request to create an Account</param>
     /// <returns>The created Account</returns>
     [HttpPost("")]
-    public IActionResult CreateAccount(CreateAccountModel createAccountModel)
+    public async Task<IActionResult> CreateAccountAsync(CreateAccountModel createAccountModel)
     {
-        Account newAccount = _accountService.CreateAccount(createAccountModel.Name,
+        Account newAccount = _accountFactory.CreateNewAccount(createAccountModel.Name,
             createAccountModel.Type,
             createAccountModel.IsActive);
+        _accountRepository.Add(newAccount);
+        await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
         return Ok(ConvertToModel(newAccount));
     }
 
@@ -68,7 +74,7 @@ public class AccountController : ControllerBase
     /// <param name="updateAccountModel">Request to update an Account</param>
     /// <returns>The newly updated Account</returns>
     [HttpPost("{accountId}")]
-    public IActionResult UpdateAccount(Guid accountId, UpdateAccountModel updateAccountModel)
+    public async Task<IActionResult> UpdateAccountAsync(Guid accountId, UpdateAccountModel updateAccountModel)
     {
         Account? account = _accountRepository.FindOrNull(accountId);
         if (account == null)
@@ -77,7 +83,7 @@ public class AccountController : ControllerBase
         }
         if (updateAccountModel.Name != null)
         {
-            account.Name = updateAccountModel.Name;
+            account.SetName(updateAccountModel.Name);
         }
         if (updateAccountModel.IsActive != null)
         {
@@ -85,6 +91,7 @@ public class AccountController : ControllerBase
         }
         _accountRepository.Update(account);
         account = _accountRepository.Find(account.Id);
+        await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
         return Ok(ConvertToModel(account));
     }
 
@@ -93,9 +100,10 @@ public class AccountController : ControllerBase
     /// </summary>
     /// <param name="accountId">ID of the Account to delete</param>
     [HttpDelete("{accountId}")]
-    public IActionResult DeleteAccount(Guid accountId)
+    public async Task<IActionResult> DeleteAccountAsync(Guid accountId)
     {
         _accountRepository.Delete(accountId);
+        await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
         return Ok();
     }
 
