@@ -60,7 +60,7 @@ public class Account : Entity
     public class AccountFactory : IAccountFactory
     {
         /// <inheritdoc/>
-        public Account CreateNewAccount(string name, AccountType type, bool isActive)
+        public Account Create(string name, AccountType type, bool isActive)
         {
             var account = new Account(Guid.NewGuid(), name, type, isActive);
             account.Validate();
@@ -69,14 +69,14 @@ public class Account : Entity
         }
 
         /// <inheritdoc/>
-        public Account RecreateExistingAccount(IRecreateAccountRequest request) =>
+        public Account Recreate(IRecreateAccountRequest request) =>
             new Account(request.Id, request.Name, request.Type, request.IsActive);
     }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="id">Id for this account</param>
+    /// <param name="id">Id for this Account</param>
     /// <param name="name">Name for this Account</param>
     /// <param name="type">Type for this Account</param>
     /// <param name="isActive">Is active flag for this Account</param>

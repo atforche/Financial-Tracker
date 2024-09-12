@@ -32,34 +32,34 @@ public class AccountController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a group of accounts from the database that match the provided filter criteria.
+    /// Retrieves all the accounts from the database
     /// </summary>
-    /// <returns>A collection of Accounts that match the provided filter criteria.</returns>
+    /// <returns>A collection of all Accounts</returns>
     [HttpGet("")]
-    public IReadOnlyCollection<AccountModel> RetrieveAccounts() =>
+    public IReadOnlyCollection<AccountModel> GetAllAccounts() =>
         _accountRepository.FindAll().Select(ConvertToModel).ToList();
 
     /// <summary>
-    /// Retrieves the Account that matches the provided ID.
+    /// Retrieves the Account that matches the provided ID
     /// </summary>
     /// <param name="accountId">ID of the Account to retrieve</param>
-    /// <returns>The Account that matches the provided ID.</returns>
+    /// <returns>The Account that matches the provided ID</returns>
     [HttpGet("{accountId}")]
-    public IActionResult RetrieveAccount(Guid accountId)
+    public IActionResult GetAccount(Guid accountId)
     {
         Account? account = _accountRepository.FindOrNull(accountId);
         return account != null ? Ok(ConvertToModel(account)) : NotFound();
     }
 
     /// <summary>
-    /// Creates a new Account with the provided properties.
+    /// Creates a new Account with the provided properties
     /// </summary>
     /// <param name="createAccountModel">Request to create an Account</param>
     /// <returns>The created Account</returns>
     [HttpPost("")]
     public async Task<IActionResult> CreateAccountAsync(CreateAccountModel createAccountModel)
     {
-        Account newAccount = _accountFactory.CreateNewAccount(createAccountModel.Name,
+        Account newAccount = _accountFactory.Create(createAccountModel.Name,
             createAccountModel.Type,
             createAccountModel.IsActive);
         _accountRepository.Add(newAccount);
@@ -68,7 +68,7 @@ public class AccountController : ControllerBase
     }
 
     /// <summary>
-    /// Updates an existing Account with the provided properties.
+    /// Updates an existing Account with the provided properties
     /// </summary>
     /// <param name="accountId">ID of the Account to update</param>
     /// <param name="updateAccountModel">Request to update an Account</param>
@@ -96,7 +96,7 @@ public class AccountController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes an existing Account with the provided ID.
+    /// Deletes an existing Account with the provided ID
     /// </summary>
     /// <param name="accountId">ID of the Account to delete</param>
     [HttpDelete("{accountId}")]
@@ -108,10 +108,10 @@ public class AccountController : ControllerBase
     }
 
     /// <summary>
-    /// Converst the Account domain entity into an Account model
+    /// Converts the Account domain entity into an Account REST model
     /// </summary>
     /// <param name="account">Account domain entity to be converted</param>
-    /// <returns>The converted Account model</returns>
+    /// <returns>The converted Account REST model</returns>
     private AccountModel ConvertToModel(Account account) => new()
     {
         Id = account.Id,
