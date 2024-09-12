@@ -69,7 +69,7 @@ public class AccountRepository : IAccountRepository
     /// <summary>
     /// Converts the provided <see cref="AccountData"/> object into an <see cref="Account"/> domain entity.
     /// </summary>
-    private Account ConvertToEntity(AccountData accountData) => _accountFactory.RecreateExistingAccount(
+    private Account ConvertToEntity(AccountData accountData) => _accountFactory.Recreate(
         new AccountRecreateRequest(accountData.Id, accountData.Name, accountData.Type, accountData.IsActive));
 
     /// <summary>
