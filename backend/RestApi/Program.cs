@@ -27,8 +27,11 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // Add domain DI services
 builder.Services.AddScoped<IAccountFactory, Account.AccountFactory>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-builder.Services.AddScoped<IAccountingPeriodFactory, AccountingPeriod.AccountingPeriodFacory>();
+builder.Services.AddScoped<IAccountingPeriodFactory, AccountingPeriod.AccountingPeriodFactory>();
 builder.Services.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
+builder.Services.AddScoped<ITransactionFactory, Transaction.TransactionFactory>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<IAccountingEntryFactory, AccountingEntry.AccountingEntryFactory>();
 
 // Configure CORS to allow requests from select origins
 string corsPolicyName = "CORS";

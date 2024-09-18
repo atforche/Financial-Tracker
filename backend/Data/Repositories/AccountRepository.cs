@@ -7,7 +7,7 @@ using Domain.Repositories;
 namespace Data.Repositories;
 
 /// <summary>
-/// Account repository that allows accounts to be persisted to the database
+/// Account repository that allows Accounts to be persisted to the database
 /// </summary>
 public class AccountRepository : IAccountRepository
 {

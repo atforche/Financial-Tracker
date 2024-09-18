@@ -27,6 +27,16 @@ public class DatabaseContext : DbContext
     public DbSet<AccountingPeriodData> AccountingPeriods { get; set; } = default!;
 
     /// <summary>
+    /// Collection of Transactions in the database
+    /// </summary>
+    public DbSet<TransactionData> Transactions { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of Accounting Entries in the database
+    /// </summary>
+    public DbSet<AccountingEntryData> AccountingEntries { get; set; } = default!;
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="mediator">Mediator instance used to publish events</param>
@@ -71,6 +81,12 @@ public class DatabaseContext : DbContext
         modelBuilder.Entity<AccountingPeriodData>().HasKey(accountingPeriod => accountingPeriod.PrimaryKey);
         modelBuilder.Entity<AccountingPeriodData>().HasIndex(accountingPeriod => accountingPeriod.Id).IsUnique();
         modelBuilder.Entity<AccountingPeriodData>().HasIndex(accountingPeriod => new { accountingPeriod.Year, accountingPeriod.Month }).IsUnique();
+
+        modelBuilder.Entity<TransactionData>().HasKey(transaction => transaction.PrimaryKey);
+        modelBuilder.Entity<TransactionData>().HasIndex(transaction => transaction.Id);
+
+        modelBuilder.Entity<AccountingEntryData>().HasKey(accountingEntry => accountingEntry.PrimaryKey);
+        modelBuilder.Entity<AccountingEntryData>().HasIndex(accountingEntry => accountingEntry.Id);
     }
 }
 

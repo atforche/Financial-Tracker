@@ -48,6 +48,33 @@ namespace Data.Migrations
                     b.ToTable("Accounts");
                 });
 
+            modelBuilder.Entity("Data.Models.AccountingEntryData", b =>
+                {
+                    b.Property<long>("PrimaryKey")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long?>("TransactionDataPrimaryKey")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("PrimaryKey");
+
+                    b.HasIndex("Id");
+
+                    b.HasIndex("TransactionDataPrimaryKey");
+
+                    b.ToTable("AccountingEntries");
+                });
+
             modelBuilder.Entity("Data.Models.AccountingPeriodData", b =>
                 {
                     b.Property<long>("PrimaryKey")
@@ -75,6 +102,49 @@ namespace Data.Migrations
                         .IsUnique();
 
                     b.ToTable("AccountingPeriods");
+                });
+
+            modelBuilder.Entity("Data.Models.TransactionData", b =>
+                {
+                    b.Property<long>("PrimaryKey")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("AccountingDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsPosted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateOnly?>("StatementDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("PrimaryKey");
+
+                    b.HasIndex("Id");
+
+                    b.ToTable("Transactions");
+                });
+
+            modelBuilder.Entity("Data.Models.AccountingEntryData", b =>
+                {
+                    b.HasOne("Data.Models.TransactionData", null)
+                        .WithMany("AccountingEntries")
+                        .HasForeignKey("TransactionDataPrimaryKey");
+                });
+
+            modelBuilder.Entity("Data.Models.TransactionData", b =>
+                {
+                    b.Navigation("AccountingEntries");
                 });
 #pragma warning restore 612, 618
         }
