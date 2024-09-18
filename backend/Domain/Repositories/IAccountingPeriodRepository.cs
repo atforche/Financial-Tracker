@@ -14,13 +14,6 @@ public interface IAccountingPeriodRepository
     IReadOnlyCollection<AccountingPeriod> FindAll();
 
     /// <summary>
-    /// Finds the Accounting Period with the specified id. An error is thrown if no Accounting Period is found.
-    /// </summary>
-    /// <param name="id">Id of the Accounting Period to find</param>
-    /// <returns>The Accounting Period that was found</returns>
-    AccountingPeriod Find(Guid id);
-
-    /// <summary>
     /// Finds the Accounting Period with the specified Id.
     /// </summary>
     /// <param name="id">Id of the Accounting Period to find</param>

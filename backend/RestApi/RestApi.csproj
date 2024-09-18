@@ -7,7 +7,6 @@
 
   <!-- Project References-->
   <ItemGroup>
-    <ProjectReference Include="../Application/Application.csproj" />
     <ProjectReference Include="../Domain/Domain.csproj" />
     <ProjectReference Include="../Data/Data.csproj" />
   </ItemGroup>

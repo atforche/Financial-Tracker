@@ -43,6 +43,55 @@ namespace Data.Migrations
                     table.PrimaryKey("PK_Accounts", x => x.PrimaryKey);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Transactions",
+                columns: table => new
+                {
+                    PrimaryKey = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AccountingDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    StatementDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+                    Type = table.Column<int>(type: "INTEGER", nullable: false),
+                    IsPosted = table.Column<bool>(type: "INTEGER", nullable: false),
+                    AccountId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Transactions", x => x.PrimaryKey);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AccountingEntries",
+                columns: table => new
+                {
+                    PrimaryKey = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Type = table.Column<int>(type: "INTEGER", nullable: false),
+                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    TransactionDataPrimaryKey = table.Column<long>(type: "INTEGER", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AccountingEntries", x => x.PrimaryKey);
+                    table.ForeignKey(
+                        name: "FK_AccountingEntries_Transactions_TransactionDataPrimaryKey",
+                        column: x => x.TransactionDataPrimaryKey,
+                        principalTable: "Transactions",
+                        principalColumn: "PrimaryKey");
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AccountingEntries_Id",
+                table: "AccountingEntries",
+                column: "Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AccountingEntries_TransactionDataPrimaryKey",
+                table: "AccountingEntries",
+                column: "TransactionDataPrimaryKey");
+
             migrationBuilder.CreateIndex(
                 name: "IX_AccountingPeriods_Id",
                 table: "AccountingPeriods",
@@ -66,16 +115,27 @@ namespace Data.Migrations
                 table: "Accounts",
                 column: "Name",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_Id",
+                table: "Transactions",
+                column: "Id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AccountingEntries");
+
+            migrationBuilder.DropTable(
                 name: "AccountingPeriods");
 
             migrationBuilder.DropTable(
                 name: "Accounts");
+
+            migrationBuilder.DropTable(
+                name: "Transactions");
         }
     }
 }

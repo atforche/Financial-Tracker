@@ -90,22 +90,22 @@ public class Account : Entity
 }
 
 /// <summary>
-/// Enum representing the different account types.
+/// Enum representing the different Account types
 /// </summary>
 public enum AccountType
 {
     /// <summary>
-    /// A Standard account represents a standard checking or savings account.
+    /// A Standard account represents a standard checking or savings account
     /// </summary>
     Standard,
 
     /// <summary>
-    /// A Debt account represents a credit card or loan account.
+    /// A Debt account represents a credit card or loan account
     /// </summary>
     Debt,
 
     /// <summary>
-    /// An Investment account represents a retirement or brokerage account.
+    /// An Investment account represents a retirement or brokerage account
     /// </summary>
     Investment,
 }

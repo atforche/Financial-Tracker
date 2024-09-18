@@ -62,7 +62,7 @@ public class AccountingPeriod : Entity
     /// <summary>
     /// Factory responsible for constructing instances of an Accounting Period
     /// </summary>
-    public class AccountingPeriodFacory : IAccountingPeriodFactory
+    public class AccountingPeriodFactory : IAccountingPeriodFactory
     {
         /// <inheritdoc/>
         public AccountingPeriod Create(int year, int month)
