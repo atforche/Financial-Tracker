@@ -1,5 +1,5 @@
-using Data.Models;
-using Domain.Entities;
+using Data.EntityModels;
+using Data.ValueObjectModels;
 using Domain.Events;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +37,11 @@ public class DatabaseContext : DbContext
     public DbSet<AccountingEntryData> AccountingEntries { get; set; } = default!;
 
     /// <summary>
+    /// Collection of Transaction Details in the database
+    /// </summary>
+    public DbSet<TransactionDetailData> TransactionDetails { get; set; } = default!;
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="mediator">Mediator instance used to publish events</param>
@@ -52,7 +57,7 @@ public class DatabaseContext : DbContext
     {
         IEnumerable<IDomainEvent> domainEvents = ChangeTracker.Entries()
             .Select(entry => entry.Entity)
-            .OfType<Entity>()
+            .OfType<DomainEventRaiser>()
             .SelectMany(entity =>
             {
                 List<IDomainEvent> entityEvents = entity.GetDomainEvents().ToList();
@@ -86,7 +91,8 @@ public class DatabaseContext : DbContext
         modelBuilder.Entity<TransactionData>().HasIndex(transaction => transaction.Id);
 
         modelBuilder.Entity<AccountingEntryData>().HasKey(accountingEntry => accountingEntry.PrimaryKey);
-        modelBuilder.Entity<AccountingEntryData>().HasIndex(accountingEntry => accountingEntry.Id);
+
+        modelBuilder.Entity<TransactionDetailData>().HasKey(transactionDetail => transactionDetail.PrimaryKey);
     }
 }
 

@@ -1,8 +1,9 @@
-using Data.Models;
+using Data.EntityModels;
+using Data.ValueObjectModels;
 using Domain.Entities;
-using Domain.Events;
 using Domain.Factories;
 using Domain.Repositories;
+using Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data.Repositories;
@@ -38,7 +39,10 @@ public class TransactionRepository : ITransactionRepository
     public IReadOnlyCollection<Transaction> FindAllByAccount(Guid accountId) =>
         _context.Transactions
             .Include(transaction => transaction.AccountingEntries)
-            .Where(transaction => transaction.AccountId == accountId)
+            .Include(transaction => transaction.DebitDetail)
+            .Include(transaction => transaction.CreditDetail)
+            .Where(transaction => (transaction.DebitDetail != null && transaction.DebitDetail.AccountId == accountId) ||
+                (transaction.CreditDetail != null && transaction.CreditDetail.AccountId == accountId))
             .Select(ConvertToEntity).ToList();
 
     /// <inheritdoc/>
@@ -82,63 +86,71 @@ public class TransactionRepository : ITransactionRepository
     /// <summary>
     /// Converts the provided <see cref="TransactionData"/> object into a <see cref="Transaction"/> domain entity.
     /// </summary>
-    /// <param name="transactionData">TransactionData to be converted</param>
+    /// <param name="transactionData">Transaction Data to be converted</param>
     /// <returns>The converted Transaction domain entity</returns>
     private Transaction ConvertToEntity(TransactionData transactionData) => _transactionFactory.Recreate(
         new TransactionRecreateRequest
         {
             Id = transactionData.Id,
             AccountingDate = transactionData.AccountingDate,
-            StatementDate = transactionData.StatementDate,
-            Type = transactionData.Type,
-            IsPosted = transactionData.IsPosted,
-            AccountId = transactionData.AccountId,
-            AccountingEntries = transactionData.AccountingEntries.Select(entry =>
-                new AccountingEntryRecreateRequest
-                {
-                    Id = entry.Id,
-                    Type = entry.Type,
-                    Amount = entry.Amount
-                })
+            DebitDetail = transactionData.DebitDetail != null ? GetRecreateRequest(transactionData.DebitDetail) : null,
+            CreditDetail = transactionData.CreditDetail != null ? GetRecreateRequest(transactionData.CreditDetail) : null,
+            AccountingEntries = transactionData.AccountingEntries.Select(entry => entry.Amount)
         });
+
+    /// <summary>
+    /// Converts the provided <see cref="TransactionDetailData"/> object into an <see cref="TransactionDetailRecreateRequest"/>.
+    /// </summary>
+    /// <param name="transactionDetailData">Transaction Detail Data to be converted</param>
+    /// <returns>The converted IRecreateTransactionRequest</returns>
+    private static TransactionDetailRecreateRequest GetRecreateRequest(TransactionDetailData transactionDetailData) =>
+        new TransactionDetailRecreateRequest
+        {
+            AccountId = transactionDetailData.AccountId,
+            StatementDate = transactionDetailData.StatementDate,
+            IsPosted = transactionDetailData.IsPosted,
+        };
 
     /// <summary>
     /// Converts the provided <see cref="Transaction"/> domain entity into a <see cref="TransactionData"/> data object
     /// </summary>
     /// <param name="transaction">Transaction entity to convert</param>
-    /// <param name="existingTransactionData">Existing TransactionData model to populate from the entity, or null if a new model should be created</param>
-    /// <returns>The converted TransactionData</returns>
+    /// <param name="existingTransactionData">Existing Transaction Data model to populate from the entity, or null if a new model should be created</param>
+    /// <returns>The converted Transaction Data</returns>
     private static TransactionData PopulateFromTransaction(Transaction transaction, TransactionData? existingTransactionData)
     {
         TransactionData newTransactionData = new TransactionData
         {
             Id = transaction.Id,
             AccountingDate = transaction.AccountingDate,
-            StatementDate = transaction.StatementDate,
-            Type = transaction.Type,
-            IsPosted = transaction.IsPosted,
-            AccountId = transaction.AccountId,
+            DebitDetail = transaction.DebitDetail != null ? PopulateFromTransactionDetail(transaction.DebitDetail) : null,
+            CreditDetail = transaction.CreditDetail != null ? PopulateFromTransactionDetail(transaction.CreditDetail) : null,
             AccountingEntries = transaction.AccountingEntries.Select(entry =>
                 new AccountingEntryData
                 {
-                    Id = entry.Id,
-                    Type = entry.Type,
                     Amount = entry.Amount,
                 }).ToList()
         };
         existingTransactionData?.Replace(newTransactionData);
 
         TransactionData transactionData = existingTransactionData ?? newTransactionData;
-        foreach (IDomainEvent domainEvent in transaction.GetDomainEvents())
-        {
-            transactionData.RaiseEvent(domainEvent);
-        }
         return transactionData;
     }
 
     /// <summary>
-    /// Record representing a request to recreate a Transaction
+    /// Converts the provided <see cref="TransactionDetail"/> domain value onject into a <see cref="TransactionDetailData"/> data model
     /// </summary>
+    /// <param name="transactionDetail">Transaction Detail value object to convert</param>
+    /// <returns>The converted Transaction Detail Data</returns>
+    private static TransactionDetailData PopulateFromTransactionDetail(TransactionDetail transactionDetail) =>
+        new TransactionDetailData
+        {
+            AccountId = transactionDetail.AccountId,
+            StatementDate = transactionDetail.StatementDate,
+            IsPosted = transactionDetail.IsPosted,
+        };
+
+    /// <inheritdoc/>
     private sealed record TransactionRecreateRequest : IRecreateTransactionRequest
     {
         /// <inheritdoc/>
@@ -148,33 +160,25 @@ public class TransactionRepository : ITransactionRepository
         public required DateOnly AccountingDate { get; init; }
 
         /// <inheritdoc/>
-        public DateOnly? StatementDate { get; init; }
+        public IRecreateTransactionDetailRequest? DebitDetail { get; init; }
 
         /// <inheritdoc/>
-        public required TransactionType Type { get; init; }
+        public IRecreateTransactionDetailRequest? CreditDetail { get; init; }
 
         /// <inheritdoc/>
-        public required bool IsPosted { get; init; }
+        public required IEnumerable<decimal> AccountingEntries { get; init; }
+    }
 
+    /// <inheritdoc/>
+    private sealed record TransactionDetailRecreateRequest : IRecreateTransactionDetailRequest
+    {
         /// <inheritdoc/>
         public required Guid AccountId { get; init; }
 
         /// <inheritdoc/>
-        public required IEnumerable<IRecreateAccountingEntryRequest> AccountingEntries { get; init; }
-    }
-
-    /// <summary>
-    /// Record representing a request to recreate an Accounting Entry
-    /// </summary>
-    private sealed record AccountingEntryRecreateRequest : IRecreateAccountingEntryRequest
-    {
-        /// <inheritdoc/>
-        public required Guid Id { get; init; }
+        public DateOnly? StatementDate { get; init; }
 
         /// <inheritdoc/>
-        public required AccountingEntryType Type { get; init; }
-
-        /// <inheritdoc/>
-        public required decimal Amount { get; init; }
+        public required bool IsPosted { get; init; }
     }
 }

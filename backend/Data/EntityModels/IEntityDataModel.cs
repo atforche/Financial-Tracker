@@ -1,9 +1,9 @@
-namespace Data.Models;
+namespace Data.EntityModels;
 
 /// <summary>
-/// Interface representing a data model used to store data in the database
+/// Interface representing a data model used to store an entity in the database
 /// </summary>
-public interface IDataModel<T>
+public interface IEntityDataModel<T>
 {
     /// <summary>
     /// Replaces the current model with the data for the provided model.
