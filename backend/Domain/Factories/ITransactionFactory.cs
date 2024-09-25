@@ -30,20 +30,14 @@ public record CreateTransactionRequest
     /// <see cref="Transaction.AccountingDate"/>
     public required DateOnly AccountingDate { get; init; }
 
-    /// <see cref="Transaction.StatementDate"/>
-    public DateOnly? StatementDate { get; init; }
+    /// <see cref="Transaction.DebitDetail"/>
+    public CreateTransactionDetailRequest? DebitDetail { get; init; }
 
-    /// <see cref="Transaction.Type"/>
-    public required TransactionType Type { get; init; }
-
-    /// <see cref="Transaction.IsPosted"/>
-    public required bool IsPosted { get; init; }
-
-    /// <see cref="Transaction.AccountId"/>
-    public required Guid AccountId { get; init; }
+    /// <see cref="Transaction.CreditDetail"/>
+    public CreateTransactionDetailRequest? CreditDetail { get; init; }
 
     /// <see cref="Transaction.AccountingEntries"/>
-    public required IEnumerable<CreateAccountingEntryRequest> AccountingEntries { get; init; }
+    public required IEnumerable<decimal> AccountingEntries { get; init; }
 }
 
 /// <summary>
@@ -57,18 +51,12 @@ public interface IRecreateTransactionRequest
     /// <see cref="Transaction.AccountingDate"/>
     DateOnly AccountingDate { get; }
 
-    /// <see cref="Transaction.StatementDate"/>
-    DateOnly? StatementDate { get; }
+    /// <see cref="Transaction.DebitDetail"/>
+    IRecreateTransactionDetailRequest? DebitDetail { get; }
 
-    /// <see cref="Transaction.Type"/>
-    TransactionType Type { get; }
-
-    /// <see cref="Transaction.IsPosted"/>
-    bool IsPosted { get; }
-
-    /// <see cref="Transaction.AccountId"/>
-    Guid AccountId { get; }
+    /// <see cref="Transaction.CreditDetail"/>
+    IRecreateTransactionDetailRequest? CreditDetail { get; }
 
     /// <see cref="Transaction.AccountingEntries"/>
-    IEnumerable<IRecreateAccountingEntryRequest> AccountingEntries { get; }
+    IEnumerable<decimal> AccountingEntries { get; }
 }

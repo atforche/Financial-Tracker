@@ -6,7 +6,7 @@ namespace Domain.Entities;
 /// <summary>
 /// Entity representing an Accounting Period
 /// </summary>
-public class AccountingPeriod : Entity
+public class AccountingPeriod : DomainEventRaiser
 {
     /// <summary>
     /// Id for this Accounting Period

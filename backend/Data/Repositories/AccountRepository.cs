@@ -1,4 +1,4 @@
-using Data.Models;
+using Data.EntityModels;
 using Domain.Entities;
 using Domain.Events;
 using Domain.Factories;

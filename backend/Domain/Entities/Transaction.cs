@@ -1,11 +1,12 @@
 using Domain.Factories;
+using Domain.ValueObjects;
 
 namespace Domain.Entities;
 
 /// <summary>
 /// Entity class representing a Transaction
 /// </summary>
-public class Transaction : Entity
+public class Transaction
 {
     /// <summary>
     /// Id for this Transaction
@@ -18,24 +19,14 @@ public class Transaction : Entity
     public DateOnly AccountingDate { get; }
 
     /// <summary>
-    /// Statement date for this Transaction
+    /// Debit detail for this Transaction
     /// </summary>
-    public DateOnly? StatementDate { get; }
+    public TransactionDetail? DebitDetail { get; }
 
     /// <summary>
-    /// Type for this Transaction
+    /// Credit detail for this Transaction
     /// </summary>
-    public TransactionType Type { get; }
-
-    /// <summary>
-    /// Is posted flag for this Transaction
-    /// </summary>
-    public bool IsPosted { get; }
-
-    /// <summary>
-    /// Id of the Account associated with this Transaction
-    /// </summary>
-    public Guid AccountId { get; }
+    public TransactionDetail? CreditDetail { get; }
 
     /// <summary>
     /// List of Accounting Entries that are associated with this Transaction
@@ -55,19 +46,11 @@ public class Transaction : Entity
         {
             throw new InvalidOperationException();
         }
-        if (IsPosted && StatementDate == null)
+        if (DebitDetail == null && CreditDetail == null)
         {
             throw new InvalidOperationException();
         }
-        if (AccountId == Guid.Empty)
-        {
-            throw new InvalidOperationException();
-        }
-        if (Type == TransactionType.Debit && AccountingEntries.Any(entry => entry.Type != AccountingEntryType.Debit))
-        {
-            throw new InvalidOperationException();
-        }
-        if (Type == TransactionType.Credit && AccountingEntries.Any(entry => entry.Type != AccountingEntryType.Credit))
+        if (AccountingEntries.Count == 0)
         {
             throw new InvalidOperationException();
         }
@@ -78,40 +61,50 @@ public class Transaction : Entity
     /// </summary>    
     public class TransactionFactory : ITransactionFactory
     {
-        private readonly IAccountingEntryFactory _accountingEntryFactory;
+        private readonly ITransactionDetailFactory _detailFactory;
 
         /// <summary>
         /// Constructs a new instance of this class
         /// </summary>
-        /// <param name="accountingEntryFactory">Factory responsible for constructing AccountingEntries</param>
-        public TransactionFactory(IAccountingEntryFactory accountingEntryFactory)
+        /// <param name="detailFactory">Factory responsible for creating instances of a Transaction Detail</param>
+        public TransactionFactory(ITransactionDetailFactory detailFactory)
         {
-            _accountingEntryFactory = accountingEntryFactory;
+            _detailFactory = detailFactory;
         }
 
         /// <inheritdoc/>
         public Transaction Create(CreateTransactionRequest request)
         {
+            TransactionDetail? debitDetail = request.DebitDetail != null
+                ? _detailFactory.Create(request.DebitDetail)
+                : null;
+            TransactionDetail? creditDetail = request.CreditDetail != null
+                ? _detailFactory.Create(request.CreditDetail)
+                : null;
             var transaction = new Transaction(Guid.NewGuid(),
                 request.AccountingDate,
-                request.StatementDate,
-                request.Type,
-                request.IsPosted,
-                request.AccountId,
-                request.AccountingEntries.Select(_accountingEntryFactory.Create));
+                debitDetail,
+                creditDetail,
+                request.AccountingEntries.Select(amount => new AccountingEntry(amount)));
             transaction.Validate();
             return transaction;
         }
 
         /// <inheritdoc/>
-        public Transaction Recreate(IRecreateTransactionRequest request) =>
-            new Transaction(request.Id,
+        public Transaction Recreate(IRecreateTransactionRequest request)
+        {
+            TransactionDetail? debitDetail = request.DebitDetail != null
+                ? _detailFactory.Recreate(request.DebitDetail)
+                : null;
+            TransactionDetail? creditDetail = request.CreditDetail != null
+                ? _detailFactory.Recreate(request.CreditDetail)
+                : null;
+            return new Transaction(request.Id,
                 request.AccountingDate,
-                request.StatementDate,
-                request.Type,
-                request.IsPosted,
-                request.AccountId,
-                request.AccountingEntries.Select(_accountingEntryFactory.Recreate));
+                debitDetail,
+                creditDetail,
+                request.AccountingEntries.Select(amount => new AccountingEntry(amount)));
+        }
     }
 
     /// <summary>
@@ -119,41 +112,19 @@ public class Transaction : Entity
     /// </summary>
     /// <param name="id">Id for this Transaction</param>
     /// <param name="accountingDate">Accounting date for this Transaction</param>
-    /// <param name="statementDate">Statement date for this Transaction</param>
-    /// <param name="type">Type for this Transaction</param>
-    /// <param name="isPosted">Is posted flag for this Transaction</param>
-    /// <param name="accountId">Account Id for this Transaction</param>
+    /// <param name="debitDetail">Debit detail for this transaction</param>
+    /// <param name="creditDetail">Credit detail for this transaction</param>
     /// <param name="accountingEntries">AccountingEntries for this Transaction</param>
     private Transaction(Guid id,
         DateOnly accountingDate,
-        DateOnly? statementDate,
-        TransactionType type,
-        bool isPosted,
-        Guid accountId,
+        TransactionDetail? debitDetail,
+        TransactionDetail? creditDetail,
         IEnumerable<AccountingEntry> accountingEntries)
     {
         Id = id;
         AccountingDate = accountingDate;
-        StatementDate = statementDate;
-        Type = type;
-        IsPosted = isPosted;
-        AccountId = accountId;
+        DebitDetail = debitDetail;
+        CreditDetail = creditDetail;
         AccountingEntries = accountingEntries.ToList();
     }
-}
-
-/// <summary>
-/// Enum representing the different Transaction types
-/// </summary>
-public enum TransactionType
-{
-    /// <summary>
-    /// Transaction that debits money from an Account
-    /// </summary>
-    Debit,
-
-    /// <summary>
-    /// Transaction that credits money to an Account
-    /// </summary>
-    Credit,
 }

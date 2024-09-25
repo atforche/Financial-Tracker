@@ -6,12 +6,17 @@ using Domain.Entities;
 using Domain.Events;
 using Domain.Factories;
 using Domain.Repositories;
+using Domain.ValueObjects;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
+using RestApi;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Configure the JSON serializer to serialize enums as their string values
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
+    options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
@@ -31,7 +36,7 @@ builder.Services.AddScoped<IAccountingPeriodFactory, AccountingPeriod.Accounting
 builder.Services.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
 builder.Services.AddScoped<ITransactionFactory, Transaction.TransactionFactory>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
-builder.Services.AddScoped<IAccountingEntryFactory, AccountingEntry.AccountingEntryFactory>();
+builder.Services.AddScoped<ITransactionDetailFactory, TransactionDetail.TransactionDetailFactory>();
 
 // Configure CORS to allow requests from select origins
 string corsPolicyName = "CORS";
@@ -46,10 +51,15 @@ builder.Services.AddCors(options =>
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddSwaggerGen(options =>
 {
-    c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
-      $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
+        $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
+    options.MapType(typeof(DateOnly), () => new OpenApiSchema
+    {
+        Type = "string",
+        Example = new OpenApiString("yyyy-MM-dd")
+    });
 });
 
 WebApplication app = builder.Build();

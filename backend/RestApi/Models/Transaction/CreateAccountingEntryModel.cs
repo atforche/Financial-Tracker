@@ -1,5 +1,3 @@
-using Domain.Entities;
-
 namespace RestApi.Models.Transaction;
 
 /// <summary>
@@ -7,9 +5,6 @@ namespace RestApi.Models.Transaction;
 /// </summary>
 public class CreateAccountingEntryModel
 {
-    /// <see cref="Domain.Entities.AccountingEntry.Type"/>
-    public required AccountingEntryType Type { get; init; }
-
-    /// <see cref="Domain.Entities.AccountingEntry.Amount"/>
+    /// <see cref="Domain.ValueObjects.AccountingEntry.Amount"/>
     public required decimal Amount { get; init; }
 }

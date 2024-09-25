@@ -44,6 +44,21 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TransactionDetails",
+                columns: table => new
+                {
+                    PrimaryKey = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    AccountId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    StatementDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+                    IsPosted = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TransactionDetails", x => x.PrimaryKey);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Transactions",
                 columns: table => new
                 {
@@ -51,14 +66,22 @@ namespace Data.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     AccountingDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    StatementDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
-                    Type = table.Column<int>(type: "INTEGER", nullable: false),
-                    IsPosted = table.Column<bool>(type: "INTEGER", nullable: false),
-                    AccountId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    DebitDetailPrimaryKey = table.Column<long>(type: "INTEGER", nullable: true),
+                    CreditDetailPrimaryKey = table.Column<long>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Transactions", x => x.PrimaryKey);
+                    table.ForeignKey(
+                        name: "FK_Transactions_TransactionDetails_CreditDetailPrimaryKey",
+                        column: x => x.CreditDetailPrimaryKey,
+                        principalTable: "TransactionDetails",
+                        principalColumn: "PrimaryKey");
+                    table.ForeignKey(
+                        name: "FK_Transactions_TransactionDetails_DebitDetailPrimaryKey",
+                        column: x => x.DebitDetailPrimaryKey,
+                        principalTable: "TransactionDetails",
+                        principalColumn: "PrimaryKey");
                 });
 
             migrationBuilder.CreateTable(
@@ -67,8 +90,6 @@ namespace Data.Migrations
                 {
                     PrimaryKey = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Type = table.Column<int>(type: "INTEGER", nullable: false),
                     Amount = table.Column<decimal>(type: "TEXT", nullable: false),
                     TransactionDataPrimaryKey = table.Column<long>(type: "INTEGER", nullable: true)
                 },
@@ -81,11 +102,6 @@ namespace Data.Migrations
                         principalTable: "Transactions",
                         principalColumn: "PrimaryKey");
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AccountingEntries_Id",
-                table: "AccountingEntries",
-                column: "Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AccountingEntries_TransactionDataPrimaryKey",
@@ -117,6 +133,16 @@ namespace Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Transactions_CreditDetailPrimaryKey",
+                table: "Transactions",
+                column: "CreditDetailPrimaryKey");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_DebitDetailPrimaryKey",
+                table: "Transactions",
+                column: "DebitDetailPrimaryKey");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Transactions_Id",
                 table: "Transactions",
                 column: "Id");
@@ -136,6 +162,9 @@ namespace Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Transactions");
+
+            migrationBuilder.DropTable(
+                name: "TransactionDetails");
         }
     }
 }

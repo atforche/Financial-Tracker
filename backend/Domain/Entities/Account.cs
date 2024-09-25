@@ -6,7 +6,7 @@ namespace Domain.Entities;
 /// <summary>
 /// Entity class representing an Account
 /// </summary>
-public class Account : Entity
+public class Account : DomainEventRaiser
 {
     /// <summary>
     /// Id for this Account

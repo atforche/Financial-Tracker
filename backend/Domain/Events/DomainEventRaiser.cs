@@ -1,18 +1,16 @@
-using Domain.Events;
-
-namespace Domain.Entities;
+namespace Domain.Events;
 
 /// <summary>
-/// Base class that all domain entities inherit from
+/// Base class that implements functionality for a class to raise domain events
 /// </summary>
-public abstract class Entity
+public abstract class DomainEventRaiser
 {
     private readonly List<IDomainEvent> _domainEvents;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    protected Entity()
+    protected DomainEventRaiser()
     {
         _domainEvents = [];
     }
