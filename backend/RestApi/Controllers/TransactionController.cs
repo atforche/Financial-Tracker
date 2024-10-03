@@ -107,7 +107,7 @@ public class TransactionController : ControllerBase
             AccountingEntries = createTransactionModel.AccountingEntries.Select(entry => entry.Amount)
         });
         _transactionRepository.Add(newTransaction);
-        await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
+        await _unitOfWork.SaveChangesAsync();
         return Ok(ConvertToModel(newTransaction));
     }
 
@@ -119,7 +119,7 @@ public class TransactionController : ControllerBase
     public async Task<IActionResult> DeleteAccountAsync(Guid transactionId)
     {
         _transactionRepository.Delete(transactionId);
-        await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
+        await _unitOfWork.SaveChangesAsync();
         return Ok();
     }
 

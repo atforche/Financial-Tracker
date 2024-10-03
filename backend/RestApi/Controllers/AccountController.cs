@@ -63,7 +63,7 @@ public class AccountController : ControllerBase
             createAccountModel.Type,
             createAccountModel.IsActive);
         _accountRepository.Add(newAccount);
-        await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
+        await _unitOfWork.SaveChangesAsync();
         return Ok(ConvertToModel(newAccount));
     }
 
@@ -91,7 +91,7 @@ public class AccountController : ControllerBase
         }
         _accountRepository.Update(account);
         account = _accountRepository.Find(account.Id);
-        await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
+        await _unitOfWork.SaveChangesAsync();
         return Ok(ConvertToModel(account));
     }
 
@@ -103,7 +103,7 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> DeleteAccountAsync(Guid accountId)
     {
         _accountRepository.Delete(accountId);
-        await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
+        await _unitOfWork.SaveChangesAsync();
         return Ok();
     }
 

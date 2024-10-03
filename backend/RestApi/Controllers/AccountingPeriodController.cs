@@ -61,7 +61,7 @@ public class AccountingPeriodController : ControllerBase
         AccountingPeriod newAccountingPeriod = _accountingPeriodFactory.Create(createAccountingPeriodModel.Year,
             createAccountingPeriodModel.Month);
         _accountingPeriodRepository.Add(newAccountingPeriod);
-        await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
+        await _unitOfWork.SaveChangesAsync();
         return Ok(ConvertToModel(newAccountingPeriod));
     }
 
@@ -70,7 +70,7 @@ public class AccountingPeriodController : ControllerBase
     /// </summary>
     /// <param name="accountingPeriodId">ID of the Accounting Period to close</param>
     /// <returns>The closed Accounting Period</returns>
-    [HttpPost("/close/{accountingPeriodId}")]
+    [HttpPost("close/{accountingPeriodId}")]
     public async Task<IActionResult> CloseAccountingPeriod(Guid accountingPeriodId)
     {
         AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindOrNull(accountingPeriodId);
@@ -80,7 +80,7 @@ public class AccountingPeriodController : ControllerBase
         }
         accountingPeriod.CloseAccountingPeriod();
         _accountingPeriodRepository.Update(accountingPeriod);
-        await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
+        await _unitOfWork.SaveChangesAsync();
         return Ok(ConvertToModel(accountingPeriod));
     }
 
@@ -92,7 +92,7 @@ public class AccountingPeriodController : ControllerBase
     public async Task<IActionResult> DeleteAccountingPeriodAsync(Guid accountingPeriodId)
     {
         _accountingPeriodRepository.Delete(accountingPeriodId);
-        await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
+        await _unitOfWork.SaveChangesAsync();
         return Ok();
     }
 

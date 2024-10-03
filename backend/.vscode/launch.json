@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (web)",
+            "name": "REST API",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
@@ -22,9 +22,12 @@
             }
         },
         {
-            "name": ".NET Core Attach",
+            "name": "Utilities",
             "type": "coreclr",
-            "request": "attach"
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/.artifacts/bin/Utilities/Utilities.dll",
+            "args": ["upload", "--file", "/workspaces/Financial-Tracker/backend/Utilities/BulkDataUpload/SampleUpload.txt"],
         }
     ]
 }

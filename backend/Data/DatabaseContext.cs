@@ -66,9 +66,9 @@ public class DatabaseContext : DbContext
             });
         foreach (IDomainEvent domainEvent in domainEvents)
         {
-            await _mediator.Publish(domainEvent).ConfigureAwait(false);
+            await _mediator.Publish(domainEvent);
         }
-        await base.SaveChangesAsync().ConfigureAwait(false);
+        await base.SaveChangesAsync();
     }
 
     /// <inheritdoc/>
