@@ -1,0 +1,47 @@
+// ----- Accounting Period -----
+{
+    "Year": 2024,
+    "Month": 10
+}
+// ----- Accounts -----
+[
+    {
+        "Name": "Test Checking",
+        "Type": "Standard",
+        "IsActive": true
+    },
+    {
+        "Name": "Test Debt",
+        "Type": "Debt",
+        "IsActive": true
+    },
+    {
+        "Name" : "Test Investment",
+        "Type": "Investment",
+        "IsActive": true
+    }
+]
+// ----- Transactions -----
+[
+    {
+        "AccountingDate": "2024-09-02",
+        "DebitDetail":
+        {
+            "AccountId": "Test Checking",
+            "StatementDate": "2024-09-02",
+            "IsPosted": true
+        },
+        "CreditDetail": 
+        {
+            "AccountId": "Test Investment",
+            "StatementDate": "2024-09-02",
+            "IsPosted": true
+        },
+        "AccountingEntries":
+        [
+            {
+                "Amount": 25.00
+            }
+        ]
+    }
+]

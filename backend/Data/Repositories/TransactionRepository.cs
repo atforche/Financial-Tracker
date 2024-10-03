@@ -31,6 +31,8 @@ public class TransactionRepository : ITransactionRepository
     public IReadOnlyCollection<Transaction> FindAllByAccountingPeriod(DateOnly accountingPeriod) =>
         _context.Transactions
             .Include(transaction => transaction.AccountingEntries)
+            .Include(transaction => transaction.DebitDetail)
+            .Include(transaction => transaction.CreditDetail)
             .Where(transaction => transaction.AccountingDate.Year == accountingPeriod.Year &&
             transaction.AccountingDate.Month == accountingPeriod.Month)
             .Select(ConvertToEntity).ToList();
@@ -57,6 +59,14 @@ public class TransactionRepository : ITransactionRepository
     {
         var transactionData = PopulateFromTransaction(transaction, null);
         _context.Add(transactionData);
+        if (transactionData.DebitDetail != null)
+        {
+            _context.Add(transactionData.DebitDetail);
+        }
+        if (transactionData.CreditDetail != null)
+        {
+            _context.Add(transactionData.CreditDetail);
+        }
         foreach (AccountingEntryData accountingEntry in transactionData.AccountingEntries)
         {
             _context.Add(accountingEntry);

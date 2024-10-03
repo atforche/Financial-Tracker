@@ -28,5 +28,5 @@ public class UnitOfWork : IUnitOfWork
     }
 
     /// <inheritdoc/>
-    public async Task SaveChangesAsync() => await _context.SaveEntitiesAsync().ConfigureAwait(false);
+    public async Task SaveChangesAsync() => await _context.SaveEntitiesAsync();
 }
