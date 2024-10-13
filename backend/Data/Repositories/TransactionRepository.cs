@@ -48,6 +48,23 @@ public class TransactionRepository : ITransactionRepository
             .Select(ConvertToEntity).ToList();
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<Transaction> FindAllByAccountOverDateRange(Guid accountId,
+        DateOnly startDate,
+        DateOnly endDate,
+        DateToCompare dateToCompare) =>
+        _context.Transactions
+            .Include(transaction => transaction.AccountingEntries)
+            .Include(transaction => transaction.DebitDetail)
+            .Include(transaction => transaction.CreditDetail)
+            .Where(transaction => (transaction.DebitDetail != null && transaction.DebitDetail.AccountId == accountId) ||
+                (transaction.CreditDetail != null && transaction.CreditDetail.AccountId == accountId))
+            .Where(transaction => !dateToCompare.HasFlag(DateToCompare.Accounting) || transaction.AccountingDate >= startDate && transaction.AccountingDate <= endDate)
+            .Where(transaction => !dateToCompare.HasFlag(DateToCompare.Statement) ||
+                (transaction.CreditDetail != null && transaction.CreditDetail.AccountId == accountId && transaction.CreditDetail.StatementDate >= startDate && transaction.CreditDetail.StatementDate <= endDate) ||
+                (transaction.DebitDetail != null && transaction.DebitDetail.AccountId == accountId && transaction.DebitDetail.StatementDate >= startDate && transaction.DebitDetail.StatementDate <= endDate))
+            .Select(ConvertToEntity).ToList();
+
+    /// <inheritdoc/>
     public Transaction? FindOrNull(Guid id)
     {
         TransactionData? transactionData = _context.Transactions.FirstOrDefault(transaction => transaction.Id == id);

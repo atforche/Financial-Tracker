@@ -49,6 +49,21 @@ public class AccountingPeriodRepository : IAccountingPeriodRepository
     }
 
     /// <inheritdoc/>
+    public AccountingPeriod FindEffectiveAccountingPeriodForBalances(DateOnly asOfDate)
+    {
+        AccountingPeriodData accountingPeriod = _context.AccountingPeriods.Single(
+            accountingPeriod => accountingPeriod.Year == asOfDate.Year && accountingPeriod.Month == asOfDate.Month);
+        if (!accountingPeriod.IsOpen)
+        {
+            return ConvertToEntity(accountingPeriod);
+        }
+        return ConvertToEntity(_context.AccountingPeriods.Where(accountingPeriod => accountingPeriod.IsOpen)
+            .OrderBy(accountingPeriod => accountingPeriod.Year)
+            .ThenBy(accountingPeriod => accountingPeriod.Month)
+            .First());
+    }
+
+    /// <inheritdoc/>
     public void Add(AccountingPeriod accountingPeriod)
     {
         var accountingPeriodData = PopulateFromAccountingPeriod(accountingPeriod, null);

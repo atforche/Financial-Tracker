@@ -8,15 +8,6 @@ namespace Domain.Factories;
 public interface IAccountFactory
 {
     /// <summary>
-    /// Creates a new Account with the provided properties
-    /// </summary>
-    /// <param name="name">Name for the Account</param>
-    /// <param name="type">Type for the Account</param>
-    /// <param name="isActive">Is active flag for the Account</param>
-    /// <returns>The newly created Account</returns>
-    Account Create(string name, AccountType type, bool isActive);
-
-    /// <summary>
     /// Recreates an existing Account with the provided properties
     /// </summary>
     /// <param name="request">Request to recreate an Account</param>

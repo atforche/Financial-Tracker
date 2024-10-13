@@ -6,6 +6,7 @@ using Domain.Entities;
 using Domain.Events;
 using Domain.Factories;
 using Domain.Repositories;
+using Domain.Services;
 using Domain.ValueObjects;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
@@ -31,12 +32,16 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Add domain DI services
 builder.Services.AddScoped<IAccountFactory, Account.AccountFactory>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IAccountingPeriodFactory, AccountingPeriod.AccountingPeriodFactory>();
 builder.Services.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
 builder.Services.AddScoped<ITransactionFactory, Transaction.TransactionFactory>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ITransactionDetailFactory, TransactionDetail.TransactionDetailFactory>();
+builder.Services.AddScoped<IAccountStartingBalanceFactory, AccountStartingBalance.AccountStartingBalanceFactory>();
+builder.Services.AddScoped<IAccountStartingBalanceRepository, AccountStartingBalanceRepository>();
+builder.Services.AddScoped<IAccountBalanceService, AccountBalanceService>();
 
 // Configure CORS to allow requests from select origins
 string corsPolicyName = "CORS";

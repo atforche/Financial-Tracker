@@ -8,17 +8,17 @@
     {
         "Name": "Test Checking",
         "Type": "Standard",
-        "IsActive": true
+        "StartingBalance": 7500
     },
     {
         "Name": "Test Debt",
         "Type": "Debt",
-        "IsActive": true
+        "StartingBalance": 10000 
     },
     {
         "Name" : "Test Investment",
         "Type": "Investment",
-        "IsActive": true
+        "StartingBalance": 1000
     }
 ]
 // ----- Transactions -----

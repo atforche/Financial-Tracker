@@ -42,6 +42,11 @@ public class DatabaseContext : DbContext
     public DbSet<TransactionDetailData> TransactionDetails { get; set; } = default!;
 
     /// <summary>
+    /// Collection of Account Starting Balances in the database
+    /// </summary>
+    public DbSet<AccountStartingBalanceData> AccountStartingBalances { get; set; } = default!;
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="mediator">Mediator instance used to publish events</param>
@@ -93,6 +98,10 @@ public class DatabaseContext : DbContext
         modelBuilder.Entity<AccountingEntryData>().HasKey(accountingEntry => accountingEntry.PrimaryKey);
 
         modelBuilder.Entity<TransactionDetailData>().HasKey(transactionDetail => transactionDetail.PrimaryKey);
+
+        modelBuilder.Entity<AccountStartingBalanceData>().HasKey(accountStartingBalance => accountStartingBalance.PrimaryKey);
+        modelBuilder.Entity<AccountStartingBalanceData>().HasIndex(accountStartingBalance => accountStartingBalance.AccountId);
+        modelBuilder.Entity<AccountStartingBalanceData>().HasIndex(accountStartingBalance => accountStartingBalance.AccountingPeriodId);
     }
 }
 

@@ -44,6 +44,22 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AccountStartingBalances",
+                columns: table => new
+                {
+                    PrimaryKey = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AccountId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    StartingBalance = table.Column<decimal>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AccountStartingBalances", x => x.PrimaryKey);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TransactionDetails",
                 columns: table => new
                 {
@@ -133,6 +149,16 @@ namespace Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_AccountStartingBalances_AccountId",
+                table: "AccountStartingBalances",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AccountStartingBalances_AccountingPeriodId",
+                table: "AccountStartingBalances",
+                column: "AccountingPeriodId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Transactions_CreditDetailPrimaryKey",
                 table: "Transactions",
                 column: "CreditDetailPrimaryKey");
@@ -159,6 +185,9 @@ namespace Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Accounts");
+
+            migrationBuilder.DropTable(
+                name: "AccountStartingBalances");
 
             migrationBuilder.DropTable(
                 name: "Transactions");

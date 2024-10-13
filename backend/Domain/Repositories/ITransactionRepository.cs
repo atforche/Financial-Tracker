@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.ValueObjects;
 
 namespace Domain.Repositories;
 
@@ -20,6 +21,19 @@ public interface ITransactionRepository
     /// <param name="accountId">ID of the Account</param>
     /// <returns>The collection of Transactions that were made against the provided Account</returns>
     IReadOnlyCollection<Transaction> FindAllByAccount(Guid accountId);
+
+    /// <summary>
+    /// Finds all the Transactions made against the provided Account over the provided date range
+    /// </summary>
+    /// <param name="accountId">ID of the Account</param>
+    /// <param name="startDate">Start date of the date range</param>
+    /// <param name="endDate">End date of the date range (inclusive)</param>
+    /// <param name="dateToCompare">The date on the transaction that should be used for the comparison</param>
+    /// <returns>The collection of Transactions that were made against the provided Account over the provided date range</returns>
+    IReadOnlyCollection<Transaction> FindAllByAccountOverDateRange(Guid accountId,
+        DateOnly startDate,
+        DateOnly endDate,
+        DateToCompare dateToCompare);
 
     /// <summary>
     /// Finds the Transaction with the specified ID
@@ -45,4 +59,17 @@ public interface ITransactionRepository
     /// </summary>
     /// <param name="id">ID of the Transaction to delete</param>
     void Delete(Guid id);
+}
+
+/// <summary>
+/// Enum representing which date on the Transaction to use for comparison
+/// </summary>
+[Flags]
+public enum DateToCompare
+{
+    /// <see cref="Transaction.AccountingDate"/>
+    Accounting = 1,
+
+    /// <see cref="TransactionDetail.StatementDate"/>
+    Statement = 2,
 }
