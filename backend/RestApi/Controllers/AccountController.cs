@@ -2,6 +2,7 @@ using Data;
 using Domain.Entities;
 using Domain.Factories;
 using Domain.Repositories;
+using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 using RestApi.Models.Account;
 
@@ -15,20 +16,30 @@ namespace RestApi.Controllers;
 public class AccountController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IAccountFactory _accountFactory;
+    private readonly IAccountService _accountService;
     private readonly IAccountRepository _accountRepository;
+    private readonly IAccountingPeriodRepository _accountingPeriodRepository;
+    private readonly IAccountStartingBalanceRepository _accountStartingBalanceRepository;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="unitOfWork">Unit of work to commit changes to the database</param>
-    /// <param name="accountFactory">Factory that constructs accounts</param>
+    /// <param name="accountService">Service that constructs accounts</param>
     /// <param name="accountRepository">Repository of accounts</param>
-    public AccountController(IUnitOfWork unitOfWork, IAccountFactory accountFactory, IAccountRepository accountRepository)
+    /// <param name="accountingPeriodRepository">Repository of accounting periods</param>
+    /// <param name="accountStartingBalanceRepository">Repository of account starting balances</param>
+    public AccountController(IUnitOfWork unitOfWork,
+        IAccountService accountService,
+        IAccountRepository accountRepository,
+        IAccountingPeriodRepository accountingPeriodRepository,
+        IAccountStartingBalanceRepository accountStartingBalanceRepository)
     {
         _unitOfWork = unitOfWork;
-        _accountFactory = accountFactory;
+        _accountService = accountService;
         _accountRepository = accountRepository;
+        _accountingPeriodRepository = accountingPeriodRepository;
+        _accountStartingBalanceRepository = accountStartingBalanceRepository;
     }
 
     /// <summary>
@@ -59,10 +70,22 @@ public class AccountController : ControllerBase
     [HttpPost("")]
     public async Task<IActionResult> CreateAccountAsync(CreateAccountModel createAccountModel)
     {
-        Account newAccount = _accountFactory.Create(createAccountModel.Name,
-            createAccountModel.Type,
-            createAccountModel.IsActive);
+        var createAccountRequest = new CreateAccountRequest
+        {
+            Name = createAccountModel.Name,
+            Type = createAccountModel.Type
+        };
+        var createAccountStartingBalanceRequest = new CreateAccountStartingBalanceRequest
+        {
+            AccountingPeriod = _accountingPeriodRepository.FindOpenPeriod() ?? throw new InvalidOperationException(),
+            StartingBalance = createAccountModel.StartingBalance
+        };
+        _accountService.CreateNewAccount(createAccountRequest,
+            createAccountStartingBalanceRequest,
+            out Account newAccount,
+            out AccountStartingBalance? newAccountStartingBalance);
         _accountRepository.Add(newAccount);
+        _accountStartingBalanceRepository.Add(newAccountStartingBalance);
         await _unitOfWork.SaveChangesAsync();
         return Ok(ConvertToModel(newAccount));
     }
@@ -83,7 +106,7 @@ public class AccountController : ControllerBase
         }
         if (updateAccountModel.Name != null)
         {
-            account.SetName(updateAccountModel.Name);
+            _accountService.RenameAccount(account, updateAccountModel.Name);
         }
         if (updateAccountModel.IsActive != null)
         {

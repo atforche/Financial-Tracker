@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20240925001749_InitialCreate")]
+    [Migration("20241011002735_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -49,6 +49,33 @@ namespace Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Accounts");
+                });
+
+            modelBuilder.Entity("Data.EntityModels.AccountStartingBalanceData", b =>
+                {
+                    b.Property<long>("PrimaryKey")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AccountingPeriodId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("StartingBalance")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("PrimaryKey");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("AccountingPeriodId");
+
+                    b.ToTable("AccountStartingBalances");
                 });
 
             modelBuilder.Entity("Data.EntityModels.AccountingPeriodData", b =>

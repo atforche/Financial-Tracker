@@ -27,6 +27,16 @@ public interface IAccountingPeriodRepository
     AccountingPeriod? FindOpenPeriod();
 
     /// <summary>
+    /// Finds the effective Accounting Period to use for balance calculations as of the provided date. If the provided
+    /// date falls within a closed Accounting Period, the effective period is the Accounting Period the date falls 
+    /// within. If the provided date falls within an open Accounting Period, the effective period is the earliest 
+    /// Accounting Period that is still open.
+    /// </summary>
+    /// <param name="asOfDate">Date to find the effective balance period as of</param>
+    /// <returns>The effective Accounting Period to use for balance calculations</returns>
+    AccountingPeriod FindEffectiveAccountingPeriodForBalances(DateOnly asOfDate);
+
+    /// <summary>
     /// Adds the provided Accounting Period to the repository
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period that should be added</param>

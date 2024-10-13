@@ -16,7 +16,7 @@ public class Account : DomainEventRaiser
     /// <summary>
     /// Name for this Account
     /// </summary>
-    public string Name { get; private set; }
+    public string Name { get; internal set; }
 
     /// <summary>
     /// Type for this Account
@@ -27,17 +27,6 @@ public class Account : DomainEventRaiser
     /// Is active flag for this Account
     /// </summary>
     public bool IsActive { get; set; }
-
-    /// <summary>
-    /// Updates the name on this Account
-    /// </summary>
-    /// <param name="newName">New name for this Account</param>
-    public void SetName(string newName)
-    {
-        Name = newName;
-        RaiseEvent(new AccountRenamedDomainEvent { NewName = newName });
-        Validate();
-    }
 
     /// <summary>
     /// Verifies that the current Account is valid
@@ -60,15 +49,6 @@ public class Account : DomainEventRaiser
     public class AccountFactory : IAccountFactory
     {
         /// <inheritdoc/>
-        public Account Create(string name, AccountType type, bool isActive)
-        {
-            var account = new Account(Guid.NewGuid(), name, type, isActive);
-            account.Validate();
-            account.RaiseEvent(new AccountRenamedDomainEvent { NewName = name });
-            return account;
-        }
-
-        /// <inheritdoc/>
         public Account Recreate(IRecreateAccountRequest request) =>
             new Account(request.Id, request.Name, request.Type, request.IsActive);
     }
@@ -80,7 +60,7 @@ public class Account : DomainEventRaiser
     /// <param name="name">Name for this Account</param>
     /// <param name="type">Type for this Account</param>
     /// <param name="isActive">Is active flag for this Account</param>
-    private Account(Guid id, string name, AccountType type, bool isActive)
+    internal Account(Guid id, string name, AccountType type, bool isActive)
     {
         Id = id;
         Name = name;

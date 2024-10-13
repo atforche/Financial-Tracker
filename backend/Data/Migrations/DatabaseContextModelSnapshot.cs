@@ -48,6 +48,33 @@ namespace Data.Migrations
                     b.ToTable("Accounts");
                 });
 
+            modelBuilder.Entity("Data.EntityModels.AccountStartingBalanceData", b =>
+                {
+                    b.Property<long>("PrimaryKey")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AccountingPeriodId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("StartingBalance")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("PrimaryKey");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("AccountingPeriodId");
+
+                    b.ToTable("AccountStartingBalances");
+                });
+
             modelBuilder.Entity("Data.EntityModels.AccountingPeriodData", b =>
                 {
                     b.Property<long>("PrimaryKey")

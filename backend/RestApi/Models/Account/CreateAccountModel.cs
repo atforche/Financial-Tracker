@@ -18,7 +18,7 @@ public class CreateAccountModel
     public required AccountType Type { get; set; }
 
     /// <summary>
-    /// Is Active flag for this Account
+    /// Starting Balance for this Account
     /// </summary>
-    public bool IsActive { get; set; } = true;
+    public decimal StartingBalance { get; set; }
 }
