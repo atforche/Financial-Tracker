@@ -2,7 +2,7 @@ using Domain.Entities;
 using Domain.Repositories;
 using Domain.ValueObjects;
 
-namespace Domain.Services;
+namespace Domain.Services.Implementations;
 
 /// <summary>
 /// Service used to calculate the balance of an Account as of a particular date or transaction

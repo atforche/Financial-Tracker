@@ -73,15 +73,14 @@ public class AccountController : ControllerBase
         var createAccountRequest = new CreateAccountRequest
         {
             Name = createAccountModel.Name,
-            Type = createAccountModel.Type
-        };
-        var createAccountStartingBalanceRequest = new CreateAccountStartingBalanceRequest
-        {
-            AccountingPeriod = _accountingPeriodRepository.FindOpenPeriod() ?? throw new InvalidOperationException(),
-            StartingBalance = createAccountModel.StartingBalance
+            Type = createAccountModel.Type,
+            StartingBalance = new CreateAccountStartingBalanceRequest
+            {
+                AccountingPeriod = _accountingPeriodRepository.FindOpenPeriods().Last(),
+                StartingBalance = createAccountModel.StartingBalance
+            }
         };
         _accountService.CreateNewAccount(createAccountRequest,
-            createAccountStartingBalanceRequest,
             out Account newAccount,
             out AccountStartingBalance? newAccountStartingBalance);
         _accountRepository.Add(newAccount);

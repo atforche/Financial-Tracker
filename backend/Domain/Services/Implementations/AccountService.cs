@@ -2,7 +2,7 @@ using Domain.Entities;
 using Domain.Factories;
 using Domain.Repositories;
 
-namespace Domain.Services;
+namespace Domain.Services.Implementations;
 
 /// <inheritdoc/>
 public class AccountService : IAccountService
@@ -25,7 +25,6 @@ public class AccountService : IAccountService
 
     /// <inheritdoc/>
     public void CreateNewAccount(CreateAccountRequest createAccountRequest,
-        CreateAccountStartingBalanceRequest createAccountStartingBalanceRequest,
         out Account newAccount,
         out AccountStartingBalance newAccountStartingBalance)
     {
@@ -33,7 +32,7 @@ public class AccountService : IAccountService
         newAccount = new Account(Guid.NewGuid(), createAccountRequest.Name, createAccountRequest.Type, true);
         newAccount.Validate();
 
-        newAccountStartingBalance = _accountStartingBalanceFactory.Create(newAccount, createAccountStartingBalanceRequest);
+        newAccountStartingBalance = _accountStartingBalanceFactory.Create(newAccount, createAccountRequest.StartingBalance);
         newAccountStartingBalance.Validate();
     }
 

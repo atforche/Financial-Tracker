@@ -12,11 +12,9 @@ public interface IAccountService
     /// Creates a new Account with the provided properties and starting balance
     /// </summary>
     /// <param name="createAccountRequest">Request to create an Account</param>
-    /// <param name="createAccountStartingBalanceRequest">Request to create an Account Starting Balance</param>
     /// <param name="newAccount">The newly created Account</param>
     /// <param name="newAccountStartingBalance">The starting balance for the newly created Account</param>
     void CreateNewAccount(CreateAccountRequest createAccountRequest,
-        CreateAccountStartingBalanceRequest createAccountStartingBalanceRequest,
         out Account newAccount,
         out AccountStartingBalance newAccountStartingBalance);
 
@@ -38,4 +36,9 @@ public record CreateAccountRequest
 
     /// <see cref="Account.Type"/>
     public required AccountType Type { get; init; }
+
+    /// <summary>
+    /// Starting balance for this Account
+    /// </summary>
+    public required CreateAccountStartingBalanceRequest StartingBalance { get; init; }
 }

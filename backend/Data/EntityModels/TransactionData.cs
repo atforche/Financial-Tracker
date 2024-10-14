@@ -1,13 +1,12 @@
 using Data.ValueObjectModels;
 using Domain.Entities;
-using Domain.Events;
 
 namespace Data.EntityModels;
 
 /// <summary>
 /// Data model representing a Transaction
 /// </summary>
-public class TransactionData : DomainEventRaiser, IEntityDataModel<TransactionData>
+public class TransactionData : IEntityDataModel<TransactionData>
 {
     /// <summary>
     /// Database primary key for this Transaction

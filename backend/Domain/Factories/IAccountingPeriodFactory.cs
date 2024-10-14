@@ -8,14 +8,6 @@ namespace Domain.Factories;
 public interface IAccountingPeriodFactory
 {
     /// <summary>
-    /// Creates a new Accounting Period with the provided properties
-    /// </summary>
-    /// <param name="year">Year for the Accounting Period</param>
-    /// <param name="month">Month for the Accounting Period</param>
-    /// <returns>The newly created Accounting Period</returns>
-    AccountingPeriod Create(int year, int month);
-
-    /// <summary>
     /// Recreates an existing Accounting Period with the provided properties
     /// </summary>
     /// <param name="request">Request to recreate an Accounting Period</param>

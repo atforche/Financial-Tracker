@@ -1,7 +1,7 @@
 using Data;
 using Domain.Entities;
-using Domain.Factories;
 using Domain.Repositories;
+using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 using RestApi.Models.AccountingPeriod;
 
@@ -15,19 +15,26 @@ namespace RestApi.Controllers;
 public class AccountingPeriodController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IAccountingPeriodFactory _accountingPeriodFactory;
+    private readonly IAccountingPeriodService _accountingPeriodService;
     private readonly IAccountingPeriodRepository _accountingPeriodRepository;
+    private readonly IAccountStartingBalanceRepository _accountStartingBalanceRepository;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
+    /// <param name="unitOfWork">Unit of work to commit changes to the database</param>
+    /// <param name="accountingPeriodService">Service used to create or modify Accounting Periods</param>
+    /// <param name="accountingPeriodRepository">Repository of Accounting Periods</param>
+    /// <param name="accountStartingBalanceRepository">Repository of Account Starting Balances</param>
     public AccountingPeriodController(IUnitOfWork unitOfWork,
-        IAccountingPeriodFactory accountingPeriodFactory,
-        IAccountingPeriodRepository accountingPeriodRepository)
+        IAccountingPeriodService accountingPeriodService,
+        IAccountingPeriodRepository accountingPeriodRepository,
+        IAccountStartingBalanceRepository accountStartingBalanceRepository)
     {
         _unitOfWork = unitOfWork;
-        _accountingPeriodFactory = accountingPeriodFactory;
+        _accountingPeriodService = accountingPeriodService;
         _accountingPeriodRepository = accountingPeriodRepository;
+        _accountStartingBalanceRepository = accountStartingBalanceRepository;
     }
 
     /// <summary>
@@ -58,9 +65,15 @@ public class AccountingPeriodController : ControllerBase
     [HttpPost("")]
     public async Task<IActionResult> CreateAccountingPeriodAsync(CreateAccountingPeriodModel createAccountingPeriodModel)
     {
-        AccountingPeriod newAccountingPeriod = _accountingPeriodFactory.Create(createAccountingPeriodModel.Year,
-            createAccountingPeriodModel.Month);
+        _accountingPeriodService.CreateNewAccountingPeriod(createAccountingPeriodModel.Year,
+            createAccountingPeriodModel.Month,
+            out AccountingPeriod newAccountingPeriod,
+            out ICollection<AccountStartingBalance> newAccountStartingBalances);
         _accountingPeriodRepository.Add(newAccountingPeriod);
+        foreach (AccountStartingBalance startingBalance in newAccountStartingBalances)
+        {
+            _accountStartingBalanceRepository.Add(startingBalance);
+        }
         await _unitOfWork.SaveChangesAsync();
         return Ok(ConvertToModel(newAccountingPeriod));
     }
@@ -78,8 +91,14 @@ public class AccountingPeriodController : ControllerBase
         {
             return NotFound();
         }
-        accountingPeriod.CloseAccountingPeriod();
+        _accountingPeriodService.ClosePeriod(
+            accountingPeriod,
+            out ICollection<AccountStartingBalance> newAccountStartingBalances);
         _accountingPeriodRepository.Update(accountingPeriod);
+        foreach (AccountStartingBalance startingBalance in newAccountStartingBalances)
+        {
+            _accountStartingBalanceRepository.Add(startingBalance);
+        }
         await _unitOfWork.SaveChangesAsync();
         return Ok(ConvertToModel(accountingPeriod));
     }
