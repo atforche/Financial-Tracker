@@ -1,12 +1,11 @@
 using Domain.Entities;
-using Domain.Events;
 
 namespace Data.EntityModels;
 
 /// <summary>
 /// Data model representing an Account
 /// </summary>
-public class AccountData : DomainEventRaiser, IEntityDataModel<AccountData>
+public class AccountData : IEntityDataModel<AccountData>
 {
     /// <summary>
     /// Database primary key for this Account

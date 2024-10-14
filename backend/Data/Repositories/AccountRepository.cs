@@ -1,6 +1,5 @@
 using Data.EntityModels;
 using Domain.Entities;
-using Domain.Events;
 using Domain.Factories;
 using Domain.Repositories;
 
@@ -85,13 +84,7 @@ public class AccountRepository : IAccountRepository
             IsActive = account.IsActive,
         };
         existingAccountData?.Replace(newAccountData);
-
-        AccountData accountData = existingAccountData ?? newAccountData;
-        foreach (IDomainEvent domainEvent in account.GetDomainEvents())
-        {
-            accountData.RaiseEvent(domainEvent);
-        }
-        return accountData;
+        return existingAccountData ?? newAccountData;
     }
 
     private sealed record AccountRecreateRequest(Guid Id, string Name, AccountType Type, bool IsActive) : IRecreateAccountRequest;

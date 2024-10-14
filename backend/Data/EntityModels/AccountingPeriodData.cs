@@ -1,11 +1,9 @@
-using Domain.Events;
-
 namespace Data.EntityModels;
 
 /// <summary>
 /// Data model representing an Accounting Period
 /// </summary>
-public class AccountingPeriodData : DomainEventRaiser, IEntityDataModel<AccountingPeriodData>
+public class AccountingPeriodData : IEntityDataModel<AccountingPeriodData>
 {
     /// <summary>
     /// Database primary key for this Accounting Period

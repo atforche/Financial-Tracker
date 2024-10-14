@@ -1,10 +1,6 @@
 using Data.EntityModels;
 using Data.ValueObjectModels;
-using Domain.Events;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Data;
 
@@ -13,7 +9,6 @@ namespace Data;
 /// </summary>
 public class DatabaseContext : DbContext
 {
-    private readonly IMediator _mediator;
     private readonly string _dbPath = Path.Join("/workspaces/Financial-Tracker/backend", "backend.db");
 
     /// <summary>
@@ -46,36 +41,6 @@ public class DatabaseContext : DbContext
     /// </summary>
     public DbSet<AccountStartingBalanceData> AccountStartingBalances { get; set; } = default!;
 
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="mediator">Mediator instance used to publish events</param>
-    public DatabaseContext(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
-    /// <summary>
-    /// Saves the entities associated with this DbContext and fires any domain events associated with those entities
-    /// </summary>
-    public async Task SaveEntitiesAsync()
-    {
-        IEnumerable<IDomainEvent> domainEvents = ChangeTracker.Entries()
-            .Select(entry => entry.Entity)
-            .OfType<DomainEventRaiser>()
-            .SelectMany(entity =>
-            {
-                List<IDomainEvent> entityEvents = entity.GetDomainEvents().ToList();
-                entity.ClearDomainEvents();
-                return entityEvents;
-            });
-        foreach (IDomainEvent domainEvent in domainEvents)
-        {
-            await _mediator.Publish(domainEvent);
-        }
-        await base.SaveChangesAsync();
-    }
-
     /// <inheritdoc/>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlite($"Data Source={_dbPath}");
@@ -103,14 +68,4 @@ public class DatabaseContext : DbContext
         modelBuilder.Entity<AccountStartingBalanceData>().HasIndex(accountStartingBalance => accountStartingBalance.AccountId);
         modelBuilder.Entity<AccountStartingBalanceData>().HasIndex(accountStartingBalance => accountStartingBalance.AccountingPeriodId);
     }
-}
-
-/// <summary>
-/// Design time factory for constructing DatabaseContexts
-/// </summary>
-public class DatabaseContextFactory : IDesignTimeDbContextFactory<DatabaseContext>
-{
-    /// <inheritdoc/>
-    public DatabaseContext CreateDbContext(string[] args) =>
-        new DatabaseContext(new Mediator(new ServiceCollection().BuildServiceProvider()));
 }

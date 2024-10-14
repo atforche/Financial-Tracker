@@ -1,4 +1,3 @@
-using Domain.Events;
 using Domain.Factories;
 
 namespace Domain.Entities;
@@ -6,7 +5,7 @@ namespace Domain.Entities;
 /// <summary>
 /// Entity representing an Accounting Period
 /// </summary>
-public class AccountingPeriod : DomainEventRaiser
+public class AccountingPeriod
 {
     /// <summary>
     /// Id for this Accounting Period
@@ -26,19 +25,7 @@ public class AccountingPeriod : DomainEventRaiser
     /// <summary>
     /// Is open flag for this Accounting Period
     /// </summary>
-    public bool IsOpen { get; private set; }
-
-    /// <summary>
-    /// Closes the current Accounting Period
-    /// </summary>
-    public void CloseAccountingPeriod()
-    {
-        if (!IsOpen)
-        {
-            throw new InvalidOperationException();
-        }
-        IsOpen = false;
-    }
+    public bool IsOpen { get; internal set; }
 
     /// <summary>
     /// Verifies that the current Accounting Period is valid
@@ -65,20 +52,6 @@ public class AccountingPeriod : DomainEventRaiser
     public class AccountingPeriodFactory : IAccountingPeriodFactory
     {
         /// <inheritdoc/>
-        public AccountingPeriod Create(int year, int month)
-        {
-            var accountingPeriod = new AccountingPeriod(Guid.NewGuid(), year, month, true);
-            accountingPeriod.Validate();
-            accountingPeriod.RaiseEvent(new AccountingPeriodChangedEvent
-            {
-                Year = accountingPeriod.Year,
-                Month = accountingPeriod.Month,
-                Action = AccountingPeriodChangedAction.Added
-            });
-            return accountingPeriod;
-        }
-
-        /// <inheritdoc/>
         public AccountingPeriod Recreate(IRecreateAccountingPeriodRequest request) =>
             new AccountingPeriod(request.Id, request.Year, request.Month, request.IsOpen);
     }
@@ -90,7 +63,7 @@ public class AccountingPeriod : DomainEventRaiser
     /// <param name="year">Year for this Accounting Period</param>
     /// <param name="month">Month for this Accounting Period</param>
     /// <param name="isOpen">Is open flag for this Accounting Period</param>
-    private AccountingPeriod(Guid id, int year, int month, bool isOpen)
+    internal AccountingPeriod(Guid id, int year, int month, bool isOpen)
     {
         Id = id;
         Year = year;

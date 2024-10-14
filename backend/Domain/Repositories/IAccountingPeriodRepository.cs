@@ -21,10 +21,17 @@ public interface IAccountingPeriodRepository
     AccountingPeriod? FindOrNull(Guid id);
 
     /// <summary>
-    /// Finds the Accounting Period that is currently open
+    /// Finds the Accounting Period that corresponds with the provided date
     /// </summary>
-    /// <returns>The open Accounting Period, or null if none are open</returns>
-    AccountingPeriod? FindOpenPeriod();
+    /// <param name="asOfDate">Date that corresponds to an Accounting Period</param>
+    /// <returns>The Accounting Period that corresponds with the provided date</returns>
+    AccountingPeriod? FindOrNullByDate(DateOnly asOfDate);
+
+    /// <summary>
+    /// Finds the Accounting Periods that are currently open
+    /// </summary>
+    /// <returns>The open Accounting Periods</returns>
+    ICollection<AccountingPeriod> FindOpenPeriods();
 
     /// <summary>
     /// Finds the effective Accounting Period to use for balance calculations as of the provided date. If the provided

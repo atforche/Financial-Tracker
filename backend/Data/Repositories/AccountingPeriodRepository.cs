@@ -1,6 +1,5 @@
 using Data.EntityModels;
 using Domain.Entities;
-using Domain.Events;
 using Domain.Factories;
 using Domain.Repositories;
 
@@ -42,11 +41,16 @@ public class AccountingPeriodRepository : IAccountingPeriodRepository
     }
 
     /// <inheritdoc/>
-    public AccountingPeriod? FindOpenPeriod()
+    public AccountingPeriod? FindOrNullByDate(DateOnly asOfDate)
     {
-        AccountingPeriodData? accountingPeriodData = _context.AccountingPeriods.SingleOrDefault(accountingPeriod => accountingPeriod.IsOpen);
+        AccountingPeriodData? accountingPeriodData = _context.AccountingPeriods
+            .FirstOrDefault(accountingPeriod => accountingPeriod.Year == asOfDate.Year && accountingPeriod.Month == asOfDate.Month);
         return accountingPeriodData != null ? ConvertToEntity(accountingPeriodData) : null;
     }
+
+    /// <inheritdoc/>
+    public ICollection<AccountingPeriod> FindOpenPeriods() =>
+        _context.AccountingPeriods.Where(accountingPeriod => accountingPeriod.IsOpen).Select(ConvertToEntity).ToList();
 
     /// <inheritdoc/>
     public AccountingPeriod FindEffectiveAccountingPeriodForBalances(DateOnly asOfDate)
@@ -81,12 +85,6 @@ public class AccountingPeriodRepository : IAccountingPeriodRepository
     public void Delete(Guid id)
     {
         AccountingPeriodData accountingPeriodData = _context.AccountingPeriods.Single(accountingPeriodData => accountingPeriodData.Id == id);
-        accountingPeriodData.RaiseEvent(new AccountingPeriodChangedEvent
-        {
-            Year = accountingPeriodData.Year,
-            Month = accountingPeriodData.Month,
-            Action = AccountingPeriodChangedAction.Deleted,
-        });
         _context.AccountingPeriods.Remove(accountingPeriodData);
     }
 
@@ -109,13 +107,7 @@ public class AccountingPeriodRepository : IAccountingPeriodRepository
             IsOpen = accountingPeriod.IsOpen,
         };
         existingAccountPeriodData?.Replace(newAccountingPeriodData);
-
-        AccountingPeriodData accountingPeriodData = existingAccountPeriodData ?? newAccountingPeriodData;
-        foreach (IDomainEvent domainEvent in accountingPeriod.GetDomainEvents())
-        {
-            accountingPeriodData.RaiseEvent(domainEvent);
-        }
-        return accountingPeriodData;
+        return existingAccountPeriodData ?? newAccountingPeriodData;
     }
 
     private sealed record AccountingPeriodRecreateRequest(Guid Id, int Year, int Month, bool IsOpen) : IRecreateAccountingPeriodRequest;

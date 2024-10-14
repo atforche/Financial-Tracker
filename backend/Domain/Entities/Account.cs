@@ -1,4 +1,3 @@
-using Domain.Events;
 using Domain.Factories;
 
 namespace Domain.Entities;
@@ -6,7 +5,7 @@ namespace Domain.Entities;
 /// <summary>
 /// Entity class representing an Account
 /// </summary>
-public class Account : DomainEventRaiser
+public class Account
 {
     /// <summary>
     /// Id for this Account

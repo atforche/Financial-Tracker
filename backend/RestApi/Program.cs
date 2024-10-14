@@ -3,10 +3,10 @@ using System.Text.Json.Serialization;
 using Data;
 using Data.Repositories;
 using Domain.Entities;
-using Domain.Events;
 using Domain.Factories;
 using Domain.Repositories;
 using Domain.Services;
+using Domain.Services.Implementations;
 using Domain.ValueObjects;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
@@ -23,9 +23,6 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 
 // Configure the DbContext to connect to the database
 builder.Services.AddDbContext<DatabaseContext>();
-
-// Configure MediatR to handler domain events
-builder.Services.AddMediatR(config => config.RegisterServicesFromAssemblyContaining<IDomainEvent>());
 
 // Add application DI services
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
