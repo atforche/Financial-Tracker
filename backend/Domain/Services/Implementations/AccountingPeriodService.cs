@@ -1,5 +1,4 @@
 using Domain.Entities;
-using Domain.Factories;
 using Domain.Repositories;
 
 namespace Domain.Services.Implementations;
@@ -10,7 +9,6 @@ public class AccountingPeriodService : IAccountingPeriodService
     private readonly IAccountingPeriodRepository _accountingPeriodRepository;
     private readonly IAccountRepository _accountRepository;
     private readonly IAccountBalanceService _accountBalanceService;
-    private readonly IAccountStartingBalanceFactory _accountStartingBalanceFactory;
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -18,16 +16,13 @@ public class AccountingPeriodService : IAccountingPeriodService
     /// <param name="accountingPeriodRepository">Repository of Accounting Periods</param>
     /// <param name="accountRepository">Repository of Accounts</param>
     /// <param name="accountBalanceService">Service that calculates account balances</param>
-    /// <param name="accountStartingBalanceFactory">Factory that creates instances of Account Starting Balance</param>
     public AccountingPeriodService(IAccountingPeriodRepository accountingPeriodRepository,
         IAccountRepository accountRepository,
-        IAccountBalanceService accountBalanceService,
-        IAccountStartingBalanceFactory accountStartingBalanceFactory)
+        IAccountBalanceService accountBalanceService)
     {
         _accountingPeriodRepository = accountingPeriodRepository;
         _accountRepository = accountRepository;
         _accountBalanceService = accountBalanceService;
-        _accountStartingBalanceFactory = accountStartingBalanceFactory;
     }
 
     /// <inheritdoc/>
@@ -38,8 +33,11 @@ public class AccountingPeriodService : IAccountingPeriodService
         newAccountStartingBalances = [];
 
         ValidateNewAccountingPeriod(year, month);
-        newAccountingPeriod = new AccountingPeriod(Guid.NewGuid(), year, month, true);
-        newAccountingPeriod.Validate();
+        newAccountingPeriod = new AccountingPeriod(new CreateAccountingPeriodRequest
+        {
+            Year = year,
+            Month = month,
+        });
 
         DateOnly previousAccountingPeriodMonth = new DateOnly(year, month, 1).AddMonths(-1);
         AccountingPeriod? previousAccountingPeriod = _accountingPeriodRepository.FindOrNullByDate(previousAccountingPeriodMonth);
@@ -53,12 +51,12 @@ public class AccountingPeriodService : IAccountingPeriodService
         foreach (Account account in _accountRepository.FindAll())
         {
             newAccountStartingBalances.Add(
-                _accountStartingBalanceFactory.Create(account,
-                    new CreateAccountStartingBalanceRequest
-                    {
-                        AccountingPeriod = newAccountingPeriod,
-                        StartingBalance = _accountBalanceService.GetAccountBalanceAsOfDate(account, endOfPreviousMonth).Balance
-                    }));
+                new AccountStartingBalance(new CreateAccountStartingBalanceRequest
+                {
+                    Account = account,
+                    AccountingPeriod = newAccountingPeriod,
+                    StartingBalance = _accountBalanceService.GetAccountBalanceAsOfDate(account, endOfPreviousMonth).Balance
+                }));
         }
     }
 
@@ -84,17 +82,17 @@ public class AccountingPeriodService : IAccountingPeriodService
         foreach (Account account in _accountRepository.FindAll())
         {
             newAccountStartingBalances.Add(
-                _accountStartingBalanceFactory.Create(account,
-                    new CreateAccountStartingBalanceRequest
-                    {
-                        AccountingPeriod = nextAccountingPeriod,
-                        StartingBalance = _accountBalanceService.GetAccountBalanceAsOfDate(account, endOfCurrentMonth).Balance
-                    }));
+                new AccountStartingBalance(new CreateAccountStartingBalanceRequest
+                {
+                    Account = account,
+                    AccountingPeriod = nextAccountingPeriod,
+                    StartingBalance = _accountBalanceService.GetAccountBalanceAsOfDate(account, endOfCurrentMonth).Balance
+                }));
         }
     }
 
     /// <summary>
-    /// Validates a new accounting period that will be added
+    /// Validates a new Accounting Period that will be added
     /// </summary>
     /// <param name="year">Year of the Accounting Period to add</param>
     /// <param name="month">Month of the Accounting Period to add</param>
@@ -122,6 +120,10 @@ public class AccountingPeriodService : IAccountingPeriodService
         }
     }
 
+    /// <summary>
+    /// Validates closing the provided Accounting Period
+    /// </summary>
+    /// <param name="accountingPeriod">Accounting Period to be closed</param>
     private void ValidateCloseAccountingPeriod(AccountingPeriod accountingPeriod)
     {
         if (!accountingPeriod.IsOpen)

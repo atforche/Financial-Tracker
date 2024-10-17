@@ -1,3 +1,5 @@
+using Domain.Entities;
+
 namespace Data.EntityModels;
 
 /// <summary>
@@ -10,24 +12,16 @@ public class AccountingPeriodData : IEntityDataModel<AccountingPeriodData>
     /// </summary>
     public long PrimaryKey { get; set; }
 
-    /// <summary>
-    /// Id for this Accounting Period
-    /// </summary>
+    /// <inheritdoc cref="AccountingPeriod.Id"/>
     public required Guid Id { get; set; }
 
-    /// <summary>
-    /// Year for this Accounting Period
-    /// </summary>
+    /// <inheritdoc cref="AccountingPeriod.Year"/>
     public required int Year { get; set; }
 
-    /// <summary>
-    /// Month for this Accounting Period
-    /// </summary>
+    /// <inheritdoc cref="AccountingPeriod.Month"/>
     public required int Month { get; set; }
 
-    /// <summary>
-    /// Is open flag for this Accounting Period
-    /// </summary>
+    /// <inheritdoc cref="AccountingPeriod.IsOpen"/>
     public required bool IsOpen { get; set; }
 
     /// <inheritdoc/>

@@ -21,24 +21,26 @@ public interface IAccountingPeriodRepository
     AccountingPeriod? FindOrNull(Guid id);
 
     /// <summary>
-    /// Finds the Accounting Period that corresponds with the provided date
+    /// Finds the Accounting Period that the provided date falls within
     /// </summary>
     /// <param name="asOfDate">Date that corresponds to an Accounting Period</param>
-    /// <returns>The Accounting Period that corresponds with the provided date</returns>
+    /// <returns>The Accounting Period that the provided date falls within, or null if one wasn't found</returns>
     AccountingPeriod? FindOrNullByDate(DateOnly asOfDate);
 
     /// <summary>
     /// Finds the Accounting Periods that are currently open
     /// </summary>
-    /// <returns>The open Accounting Periods</returns>
+    /// <returns>The list of open Accounting Periods</returns>
     ICollection<AccountingPeriod> FindOpenPeriods();
 
     /// <summary>
-    /// Finds the effective Accounting Period to use for balance calculations as of the provided date. If the provided
-    /// date falls within a closed Accounting Period, the effective period is the Accounting Period the date falls 
-    /// within. If the provided date falls within an open Accounting Period, the effective period is the earliest 
-    /// Accounting Period that is still open.
+    /// Finds the effective Accounting Period to use for balance calculations as of the provided date
     /// </summary>
+    /// <remarks>
+    /// If the provided date falls within a closed Accounting Period, the effective period is the Accounting 
+    /// Period the date falls within. If the provided date falls within an open Accounting Period, the effective 
+    /// period is the earliest Accounting Period that is still open.
+    /// </remarks>
     /// <param name="asOfDate">Date to find the effective balance period as of</param>
     /// <returns>The effective Accounting Period to use for balance calculations</returns>
     AccountingPeriod FindEffectiveAccountingPeriodForBalances(DateOnly asOfDate);
@@ -54,10 +56,4 @@ public interface IAccountingPeriodRepository
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period to update in the repository</param>
     void Update(AccountingPeriod accountingPeriod);
-
-    /// <summary>
-    /// Deletes the Accounting Period with the specified id
-    /// </summary>
-    /// <param name="id">Id of the Accounting Period to delete</param>
-    void Delete(Guid id);
 }

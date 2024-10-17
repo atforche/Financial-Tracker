@@ -1,19 +1,19 @@
 namespace Domain.ValueObjects;
 
 /// <summary>
-/// Class representing an Accounting Entry value object
+/// Value object class representing an Accounting Entry
 /// </summary>
 public class AccountingEntry
 {
     /// <summary>
-    /// Amount for this AccountingEntry
+    /// Amount for this Accounting Entry
     /// </summary>
     public decimal Amount { get; }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="amount">Amount for this AccountingEntry</param>
+    /// <param name="amount">Amount for this Accounting Entry</param>
     public AccountingEntry(decimal amount)
     {
         Amount = amount;
@@ -21,7 +21,7 @@ public class AccountingEntry
     }
 
     /// <summary>
-    /// Validates the current AccountingEntry
+    /// Validates the current Accounting Entry
     /// </summary>
     private void Validate()
     {

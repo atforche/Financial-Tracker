@@ -1,29 +1,23 @@
 using Data.EntityModels;
 using Domain.Entities;
-using Domain.Factories;
 using Domain.Repositories;
 
 namespace Data.Repositories;
 
 /// <summary>
-/// Account Starting Balance repository that allows Account Starting Balances to be persisted to the database
+/// Repository that allows Account Starting Balances to be persisted to the database
 /// </summary>
 public class AccountStartingBalanceRepository : IAccountStartingBalanceRepository
 {
     private readonly DatabaseContext _context;
-    private readonly IAccountStartingBalanceFactory _accountStartingBalanceFactory;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="context">Context to use to connect to the database</param>
-    /// <param name="accountStartingBalanceFactory">Factory used to construct Account Starting Balance instances</param>
-    public AccountStartingBalanceRepository(
-        DatabaseContext context,
-        IAccountStartingBalanceFactory accountStartingBalanceFactory)
+    public AccountStartingBalanceRepository(DatabaseContext context)
     {
         _context = context;
-        _accountStartingBalanceFactory = accountStartingBalanceFactory;
     }
 
     /// <inheritdoc/>
@@ -36,45 +30,34 @@ public class AccountStartingBalanceRepository : IAccountStartingBalanceRepositor
     }
 
     /// <inheritdoc/>
-    public ICollection<AccountStartingBalance> FindAllByAccount(Guid accountId) => _context.AccountStartingBalances
-        .Where(accountStartingBalance => accountStartingBalance.AccountId == accountId)
-        .Select(ConvertToEntity).ToList();
-
-    /// <inheritdoc/>
-    public ICollection<AccountStartingBalance> FindAllByAccountingPeriod(Guid accountingPeriodId) =>
-        _context.AccountStartingBalances
-        .Where(accountStartingBalance => accountStartingBalance.AccountingPeriodId == accountingPeriodId)
-        .Select(ConvertToEntity).ToList();
-
-    /// <inheritdoc/>
     public void Add(AccountStartingBalance accountStartingBalance)
     {
         var accountStartingBalanceData = PopulateFromAccountStartingBalance(accountStartingBalance, null);
         _context.Add(accountStartingBalanceData);
     }
 
-    /// <inheritdoc/>
-    public void Delete(Guid id)
-    {
-        AccountStartingBalanceData accountStartingBalanceData = _context.AccountStartingBalances
-            .Single(accountStartingBalance => accountStartingBalance.Id == id);
-        _context.AccountStartingBalances.Remove(accountStartingBalanceData);
-    }
-
     /// <summary>
     /// Converts the provided <see cref="AccountStartingBalanceData"/> object into 
     /// an <see cref="AccountStartingBalance"/> domain entity
     /// </summary>
-    private AccountStartingBalance ConvertToEntity(AccountStartingBalanceData accountStartingBalanceData) =>
-        _accountStartingBalanceFactory.Recreate(new AccountStartingDataRecreateRequest(accountStartingBalanceData.Id,
-            accountStartingBalanceData.AccountId,
-            accountStartingBalanceData.AccountingPeriodId,
-            accountStartingBalanceData.StartingBalance));
+    /// <param name="accountStartingBalanceData">Account Starting Balance Data to be converted</param>
+    /// <returns>The converted Account Starting Balance domain entity</returns>
+    private static AccountStartingBalance ConvertToEntity(AccountStartingBalanceData accountStartingBalanceData) =>
+        new AccountStartingBalance(new AccountStartingDataRecreateRequest
+        {
+            Id = accountStartingBalanceData.Id,
+            AccountId = accountStartingBalanceData.AccountId,
+            AccountingPeriodId = accountStartingBalanceData.AccountingPeriodId,
+            StartingBalance = accountStartingBalanceData.StartingBalance,
+        });
 
     /// <summary>
     /// Converts the provided <see cref="AccountStartingBalance"/> entity into an <see cref="AccountStartingBalanceData"/>
-    /// data model
+    /// data object
     /// </summary>
+    /// <param name="accountStartingBalance">Account Starting Balance entity to convert</param>
+    /// <param name="existingAccountStartingBalanceData">Existing Account Starting Balance Data model to populate from the entity, or null if a new model should be created</param>
+    /// <returns>The converted Account Starting Balance Data</returns>
     private static AccountStartingBalanceData PopulateFromAccountStartingBalance(
         AccountStartingBalance accountStartingBalance,
         AccountStartingBalanceData? existingAccountStartingBalanceData)
@@ -90,8 +73,19 @@ public class AccountStartingBalanceRepository : IAccountStartingBalanceRepositor
         return existingAccountStartingBalanceData ?? newAccountStartingBalanceData;
     }
 
-    private sealed record AccountStartingDataRecreateRequest(Guid Id,
-        Guid AccountId,
-        Guid AccountingPeriodId,
-        decimal StartingBalance) : IRecreateAccountStartingBalanceRequest;
+    /// <inheritdoc/>
+    private sealed record AccountStartingDataRecreateRequest : IRecreateAccountStartingBalanceRequest
+    {
+        /// <inheritdoc/>
+        public required Guid Id { get; init; }
+
+        /// <inheritdoc/>
+        public required Guid AccountId { get; init; }
+
+        /// <inheritdoc/>
+        public required Guid AccountingPeriodId { get; init; }
+
+        /// <inheritdoc/>
+        public required decimal StartingBalance { get; init; }
+    };
 }

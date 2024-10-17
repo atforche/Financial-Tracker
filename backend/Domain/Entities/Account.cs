@@ -1,21 +1,23 @@
-using Domain.Factories;
-
 namespace Domain.Entities;
 
 /// <summary>
 /// Entity class representing an Account
-/// </summary>
+/// </summary> 
+/// <remarks>
+/// An Account represents a financial account that money can be held 
+/// in and transfered from.
+/// </remarks>
 public class Account
 {
     /// <summary>
-    /// Id for this Account
+    /// ID for this Account
     /// </summary>
     public Guid Id { get; }
 
     /// <summary>
     /// Name for this Account
     /// </summary>
-    public string Name { get; internal set; }
+    public string Name { get; }
 
     /// <summary>
     /// Type for this Account
@@ -23,14 +25,32 @@ public class Account
     public AccountType Type { get; }
 
     /// <summary>
-    /// Is active flag for this Account
+    /// Reconstructs an existing Account
     /// </summary>
-    public bool IsActive { get; set; }
+    /// <param name="request">Request to recreate an Account</param>
+    public Account(IRecreateAccountRequest request)
+    {
+        Id = request.Id;
+        Name = request.Name;
+        Type = request.Type;
+    }
 
     /// <summary>
-    /// Verifies that the current Account is valid
+    /// Constructs a new instance of this class
     /// </summary>
-    public void Validate()
+    /// <param name="request">Request to create an Account</param>
+    internal Account(CreateAccountRequest request)
+    {
+        Id = Guid.NewGuid();
+        Name = request.Name;
+        Type = request.Type;
+        Validate();
+    }
+
+    /// <summary>
+    /// Validates the current Account
+    /// </summary>
+    private void Validate()
     {
         if (Id == Guid.Empty)
         {
@@ -41,31 +61,6 @@ public class Account
             throw new InvalidOperationException();
         }
     }
-
-    /// <summary>
-    /// Factory responsible for constructing instances of an Account
-    /// </summary>
-    public class AccountFactory : IAccountFactory
-    {
-        /// <inheritdoc/>
-        public Account Recreate(IRecreateAccountRequest request) =>
-            new Account(request.Id, request.Name, request.Type, request.IsActive);
-    }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="id">Id for this Account</param>
-    /// <param name="name">Name for this Account</param>
-    /// <param name="type">Type for this Account</param>
-    /// <param name="isActive">Is active flag for this Account</param>
-    internal Account(Guid id, string name, AccountType type, bool isActive)
-    {
-        Id = id;
-        Name = name;
-        Type = type;
-        IsActive = isActive;
-    }
 }
 
 /// <summary>
@@ -74,17 +69,60 @@ public class Account
 public enum AccountType
 {
     /// <summary>
-    /// A Standard account represents a standard checking or savings account
+    /// Standard Account
     /// </summary>
+    /// <remarks>
+    /// A Standard Account represents a standard checking or savings account.
+    /// Debiting a Standard Account will decrease its balance and crediting a
+    /// Standard Account will increase its balance.
+    /// </remarks>
     Standard,
 
     /// <summary>
-    /// A Debt account represents a credit card or loan account
+    /// Debt Account
     /// </summary>
+    /// <remarks>
+    /// A Debt Account represents a credit card or loan account.
+    /// Debiting a Debt Account will increase its balance and crediting a 
+    /// Debt Account will decrease its balance.
+    /// </remarks>
     Debt,
 
     /// <summary>
-    /// An Investment account represents a retirement or brokerage account
+    /// Investment Account
     /// </summary>
+    /// <remarks>
+    /// An Investment Account represents a retirement or brokerage account.
+    /// Investment Accounts are similar to Standard Accounts, however they
+    /// also experience periodic changes in value as the value of the assets
+    /// in the Account change.
+    /// </remarks>
     Investment,
+}
+
+/// <summary>
+/// Record representing a request to create an Account
+/// </summary>
+public record CreateAccountRequest
+{
+    /// <inheritdoc cref="Account.Name"/>
+    public required string Name { get; init; }
+
+    /// <inheritdoc cref="Account.Type"/>
+    public required AccountType Type { get; init; }
+}
+
+/// <summary>
+/// Interface representing a request to recreate an existing Account
+/// </summary>
+public interface IRecreateAccountRequest
+{
+    /// <inheritdoc cref="Account.Id"/>
+    Guid Id { get; }
+
+    /// <inheritdoc cref="Account.Name"/>
+    string Name { get; }
+
+    /// <inheritdoc cref="Account.Type"/>
+    AccountType Type { get; }
 }

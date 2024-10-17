@@ -1,6 +1,5 @@
 using Data;
 using Domain.Entities;
-using Domain.Factories;
 using Domain.Repositories;
 using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +8,7 @@ using RestApi.Models.Account;
 namespace RestApi.Controllers;
 
 /// <summary>
-/// Controller class that exposes endpoints related to Accounts.
+/// Controller class that exposes endpoints related to Accounts
 /// </summary>
 [ApiController]
 [Route("/accounts")]
@@ -18,27 +17,23 @@ public class AccountController : ControllerBase
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAccountService _accountService;
     private readonly IAccountRepository _accountRepository;
-    private readonly IAccountingPeriodRepository _accountingPeriodRepository;
     private readonly IAccountStartingBalanceRepository _accountStartingBalanceRepository;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="unitOfWork">Unit of work to commit changes to the database</param>
-    /// <param name="accountService">Service that constructs accounts</param>
-    /// <param name="accountRepository">Repository of accounts</param>
-    /// <param name="accountingPeriodRepository">Repository of accounting periods</param>
-    /// <param name="accountStartingBalanceRepository">Repository of account starting balances</param>
+    /// <param name="accountService">Service that constructs Accounts</param>
+    /// <param name="accountRepository">Repository of Accounts</param>
+    /// <param name="accountStartingBalanceRepository">Repository of Account Starting Balances</param>
     public AccountController(IUnitOfWork unitOfWork,
         IAccountService accountService,
         IAccountRepository accountRepository,
-        IAccountingPeriodRepository accountingPeriodRepository,
         IAccountStartingBalanceRepository accountStartingBalanceRepository)
     {
         _unitOfWork = unitOfWork;
         _accountService = accountService;
         _accountRepository = accountRepository;
-        _accountingPeriodRepository = accountingPeriodRepository;
         _accountStartingBalanceRepository = accountStartingBalanceRepository;
     }
 
@@ -74,59 +69,15 @@ public class AccountController : ControllerBase
         {
             Name = createAccountModel.Name,
             Type = createAccountModel.Type,
-            StartingBalance = new CreateAccountStartingBalanceRequest
-            {
-                AccountingPeriod = _accountingPeriodRepository.FindOpenPeriods().Last(),
-                StartingBalance = createAccountModel.StartingBalance
-            }
         };
         _accountService.CreateNewAccount(createAccountRequest,
+            createAccountModel.StartingBalance,
             out Account newAccount,
             out AccountStartingBalance? newAccountStartingBalance);
         _accountRepository.Add(newAccount);
         _accountStartingBalanceRepository.Add(newAccountStartingBalance);
         await _unitOfWork.SaveChangesAsync();
         return Ok(ConvertToModel(newAccount));
-    }
-
-    /// <summary>
-    /// Updates an existing Account with the provided properties
-    /// </summary>
-    /// <param name="accountId">ID of the Account to update</param>
-    /// <param name="updateAccountModel">Request to update an Account</param>
-    /// <returns>The newly updated Account</returns>
-    [HttpPost("{accountId}")]
-    public async Task<IActionResult> UpdateAccountAsync(Guid accountId, UpdateAccountModel updateAccountModel)
-    {
-        Account? account = _accountRepository.FindOrNull(accountId);
-        if (account == null)
-        {
-            return NotFound();
-        }
-        if (updateAccountModel.Name != null)
-        {
-            _accountService.RenameAccount(account, updateAccountModel.Name);
-        }
-        if (updateAccountModel.IsActive != null)
-        {
-            account.IsActive = updateAccountModel.IsActive.Value;
-        }
-        _accountRepository.Update(account);
-        account = _accountRepository.Find(account.Id);
-        await _unitOfWork.SaveChangesAsync();
-        return Ok(ConvertToModel(account));
-    }
-
-    /// <summary>
-    /// Deletes an existing Account with the provided ID
-    /// </summary>
-    /// <param name="accountId">ID of the Account to delete</param>
-    [HttpDelete("{accountId}")]
-    public async Task<IActionResult> DeleteAccountAsync(Guid accountId)
-    {
-        _accountRepository.Delete(accountId);
-        await _unitOfWork.SaveChangesAsync();
-        return Ok();
     }
 
     /// <summary>
@@ -139,6 +90,5 @@ public class AccountController : ControllerBase
         Id = account.Id,
         Name = account.Name,
         Type = account.Type,
-        IsActive = account.IsActive,
     };
 }

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20241011002735_InitialCreate")]
+    [Migration("20241016235324_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -28,9 +28,6 @@ namespace Data.Migrations
 
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -136,6 +133,29 @@ namespace Data.Migrations
                     b.ToTable("Transactions");
                 });
 
+            modelBuilder.Entity("Data.EntityModels.TransactionDetailData", b =>
+                {
+                    b.Property<long>("PrimaryKey")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsPosted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateOnly?>("StatementDate")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("PrimaryKey");
+
+                    b.ToTable("TransactionDetails");
+                });
+
             modelBuilder.Entity("Data.ValueObjectModels.AccountingEntryData", b =>
                 {
                     b.Property<long>("PrimaryKey")
@@ -155,33 +175,13 @@ namespace Data.Migrations
                     b.ToTable("AccountingEntries");
                 });
 
-            modelBuilder.Entity("Data.ValueObjectModels.TransactionDetailData", b =>
-                {
-                    b.Property<long>("PrimaryKey")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsPosted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateOnly?>("StatementDate")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("PrimaryKey");
-
-                    b.ToTable("TransactionDetails");
-                });
-
             modelBuilder.Entity("Data.EntityModels.TransactionData", b =>
                 {
-                    b.HasOne("Data.ValueObjectModels.TransactionDetailData", "CreditDetail")
+                    b.HasOne("Data.EntityModels.TransactionDetailData", "CreditDetail")
                         .WithMany()
                         .HasForeignKey("CreditDetailPrimaryKey");
 
-                    b.HasOne("Data.ValueObjectModels.TransactionDetailData", "DebitDetail")
+                    b.HasOne("Data.EntityModels.TransactionDetailData", "DebitDetail")
                         .WithMany()
                         .HasForeignKey("DebitDetailPrimaryKey");
 

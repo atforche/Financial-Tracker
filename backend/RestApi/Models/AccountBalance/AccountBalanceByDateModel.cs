@@ -1,7 +1,7 @@
 namespace RestApi.Models.AccountBalance;
 
 /// <summary>
-/// REST model representing an account balance for a particular date
+/// REST model representing an Accounts balance for a particular date
 /// </summary>
 public class AccountBalanceByDateModel
 {

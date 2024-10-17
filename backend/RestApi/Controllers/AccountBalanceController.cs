@@ -20,7 +20,7 @@ public class AccountBalanceController : ControllerBase
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="accountRepository">Repository of Accounts</param>
-    /// <param name="accountBalanceService">Service used to calculate account balances</param>
+    /// <param name="accountBalanceService">Service that calculates account balances</param>
     public AccountBalanceController(IAccountRepository accountRepository, IAccountBalanceService accountBalanceService)
     {
         _accountRepository = accountRepository;

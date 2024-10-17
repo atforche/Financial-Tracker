@@ -12,16 +12,16 @@ public class AccountStartingBalanceData : IEntityDataModel<AccountStartingBalanc
     /// </summary>
     public long PrimaryKey { get; set; }
 
-    /// <see cref="AccountStartingBalance.Id"/>
+    /// <inheritdoc cref="AccountStartingBalance.Id"/>
     public required Guid Id { get; set; }
 
-    /// <see cref="AccountStartingBalance.AccountId"/>
+    /// <inheritdoc cref="AccountStartingBalance.AccountId"/>
     public required Guid AccountId { get; set; }
 
-    /// <see cref="AccountStartingBalance.AccountingPeriodId"/>
+    /// <inheritdoc cref="AccountStartingBalance.AccountingPeriodId"/>
     public required Guid AccountingPeriodId { get; set; }
 
-    /// <see cref="AccountStartingBalance.StartingBalance"/>
+    /// <inheritdoc cref="AccountStartingBalance.StartingBalance"/>
     public required decimal StartingBalance { get; set; }
 
     /// <inheritdoc/>

@@ -1,6 +1,6 @@
-using Domain.ValueObjects;
+using Domain.Entities;
 
-namespace Data.ValueObjectModels;
+namespace Data.EntityModels;
 
 /// <summary>
 /// Data model representing a Transaction Detail
@@ -12,12 +12,15 @@ public class TransactionDetailData
     /// </summary>
     public long PrimaryKey { get; set; }
 
-    /// <see cref="TransactionDetail.AccountId"/>
+    /// <inheritdoc cref="TransactionDetail.Id"/>
+    public required Guid Id { get; set; }
+
+    /// <inheritdoc cref="TransactionDetail.AccountId"/>
     public required Guid AccountId { get; set; }
 
-    /// <see cref="TransactionDetail.StatementDate"/>
+    /// <inheritdoc cref="TransactionDetail.StatementDate"/>
     public DateOnly? StatementDate { get; set; }
 
-    /// <see cref="TransactionDetail.IsPosted"/>
+    /// <inheritdoc cref="TransactionDetail.IsPosted"/>
     public required bool IsPosted { get; set; }
 }

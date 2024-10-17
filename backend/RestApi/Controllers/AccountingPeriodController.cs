@@ -104,18 +104,6 @@ public class AccountingPeriodController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes an existing Accounting Period with the provided ID
-    /// </summary>
-    /// <param name="accountingPeriodId">ID of the Accounting Period to delete</param>
-    [HttpDelete("{accountingPeriodId}")]
-    public async Task<IActionResult> DeleteAccountingPeriodAsync(Guid accountingPeriodId)
-    {
-        _accountingPeriodRepository.Delete(accountingPeriodId);
-        await _unitOfWork.SaveChangesAsync();
-        return Ok();
-    }
-
-    /// <summary>
     /// Converts the Accounting Period domain entity into an Accounting Period REST model
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period domain entity to be converted</param>

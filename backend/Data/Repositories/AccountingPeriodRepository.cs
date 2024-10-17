@@ -1,27 +1,23 @@
 using Data.EntityModels;
 using Domain.Entities;
-using Domain.Factories;
 using Domain.Repositories;
 
 namespace Data.Repositories;
 
 /// <summary>
-/// Accounting period repository that allows accounting periods to be persisted to the database
+/// Repository that allows Accounting Periods to be persisted to the database
 /// </summary>
 public class AccountingPeriodRepository : IAccountingPeriodRepository
 {
     private readonly DatabaseContext _context;
-    private readonly IAccountingPeriodFactory _accountingPeriodFactory;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="context">Context to use to connect to the database</param>
-    /// <param name="accountingPeriodFactory">Factory used to construct Accounting Period instances</param>
-    public AccountingPeriodRepository(DatabaseContext context, IAccountingPeriodFactory accountingPeriodFactory)
+    public AccountingPeriodRepository(DatabaseContext context)
     {
         _context = context;
-        _accountingPeriodFactory = accountingPeriodFactory;
     }
 
     /// <inheritdoc/>
@@ -29,9 +25,6 @@ public class AccountingPeriodRepository : IAccountingPeriodRepository
         .AsEnumerable()
         .OrderBy(data => new DateTime(data.Year, data.Month, 1))
         .Select(ConvertToEntity).ToList();
-
-    /// <inheritdoc/>
-    public AccountingPeriod Find(Guid id) => FindOrNull(id) ?? throw new KeyNotFoundException();
 
     /// <inheritdoc/>
     public AccountingPeriod? FindOrNull(Guid id)
@@ -81,23 +74,27 @@ public class AccountingPeriodRepository : IAccountingPeriodRepository
         PopulateFromAccountingPeriod(accountingPeriod, accountingPeriodData);
     }
 
-    /// <inheritdoc/>
-    public void Delete(Guid id)
-    {
-        AccountingPeriodData accountingPeriodData = _context.AccountingPeriods.Single(accountingPeriodData => accountingPeriodData.Id == id);
-        _context.AccountingPeriods.Remove(accountingPeriodData);
-    }
-
     /// <summary>
     /// Converts the provided <see cref="AccountingPeriodData"/> object into an <see cref="AccountingPeriod"/> domain entity.
     /// </summary>
-    private AccountingPeriod ConvertToEntity(AccountingPeriodData accountingPeriodData) => _accountingPeriodFactory.Recreate(
-        new AccountingPeriodRecreateRequest(accountingPeriodData.Id, accountingPeriodData.Year, accountingPeriodData.Month, accountingPeriodData.IsOpen));
+    /// <param name="accountingPeriodData">Accounting Period Data to be converted</param>
+    /// <returns>The converted Accounting Period domain entity</returns>
+    private AccountingPeriod ConvertToEntity(AccountingPeriodData accountingPeriodData) => new AccountingPeriod(
+        new AccountingPeriodRecreateRequest
+        {
+            Id = accountingPeriodData.Id,
+            Year = accountingPeriodData.Year,
+            Month = accountingPeriodData.Month,
+            IsOpen = accountingPeriodData.IsOpen,
+        });
 
     /// <summary>
     /// Converts the provided <see cref="AccountingPeriod"/> entity into an <see cref="AccountingPeriodData"/> data object
     /// </summary>
-    private static AccountingPeriodData PopulateFromAccountingPeriod(AccountingPeriod accountingPeriod, AccountingPeriodData? existingAccountPeriodData)
+    /// <param name="accountingPeriod">Accounting Period entity to convert</param>
+    /// <param name="existingAccountingPeriodData">Existing Accounting Period Data model to populate from the entity, or null if a new model should be created</param>
+    /// <returns>The converted Accounting Period Data</returns>
+    private static AccountingPeriodData PopulateFromAccountingPeriod(AccountingPeriod accountingPeriod, AccountingPeriodData? existingAccountingPeriodData)
     {
         AccountingPeriodData newAccountingPeriodData = new AccountingPeriodData()
         {
@@ -106,9 +103,23 @@ public class AccountingPeriodRepository : IAccountingPeriodRepository
             Month = accountingPeriod.Month,
             IsOpen = accountingPeriod.IsOpen,
         };
-        existingAccountPeriodData?.Replace(newAccountingPeriodData);
-        return existingAccountPeriodData ?? newAccountingPeriodData;
+        existingAccountingPeriodData?.Replace(newAccountingPeriodData);
+        return existingAccountingPeriodData ?? newAccountingPeriodData;
     }
 
-    private sealed record AccountingPeriodRecreateRequest(Guid Id, int Year, int Month, bool IsOpen) : IRecreateAccountingPeriodRequest;
+    /// <inheritdoc/>
+    private sealed record AccountingPeriodRecreateRequest : IRecreateAccountingPeriodRequest
+    {
+        /// <inheritdoc/>
+        public required Guid Id { get; init; }
+
+        /// <inheritdoc/>
+        public required int Year { get; init; }
+
+        /// <inheritdoc/>
+        public required int Month { get; init; }
+
+        /// <inheritdoc/>
+        public required bool IsOpen { get; init; }
+    };
 }

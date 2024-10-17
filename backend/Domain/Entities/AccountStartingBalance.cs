@@ -1,37 +1,69 @@
-using Domain.Factories;
-
 namespace Domain.Entities;
 
 /// <summary>
-/// Class representing an Account Starting Balance entity
+/// Entity class representing an Account Starting Balance
 /// </summary>
+/// <remarks>
+/// An Account Starting Balance represents the balance of an Account at the 
+/// beginning of an Accounting Period. This saved balance serves as a checkpoint 
+/// to improve the efficiency of calculating the balance of an Account at any point in time.
+/// </remarks>
 public class AccountStartingBalance
 {
     /// <summary>
-    /// Id of this Account Starting Balance
+    /// ID for this Account Starting Balance
     /// </summary>
     public Guid Id { get; }
 
     /// <summary>
-    /// Id of the Account this starting balance if for
+    /// ID of the Account for this Account Starting Balance
     /// </summary>
     public Guid AccountId { get; }
 
     /// <summary>
-    /// Id of the Accounting Period this starting balance is for
+    /// ID of the Accounting Period for this Account Starting Balance
     /// </summary>
     public Guid AccountingPeriodId { get; }
 
     /// <summary>
-    /// Starting balance of this Account for this Accounting Period
+    /// Starting balance of the Account during the Accounting Period for this Account Starting Balance
     /// </summary>
     public decimal StartingBalance { get; }
 
     /// <summary>
-    /// Verifies that the current Account Starting Balance is valid
+    /// Reconstructs an existing Account Starting Balance
     /// </summary>
-    public void Validate()
+    /// <param name="request">Request to recreate an Account Starting Balance</param>
+    public AccountStartingBalance(IRecreateAccountStartingBalanceRequest request)
     {
+        Id = request.Id;
+        AccountId = request.AccountId;
+        AccountingPeriodId = request.AccountingPeriodId;
+        StartingBalance = request.StartingBalance;
+    }
+
+    /// <summary>
+    /// Constructs a new instance of this class
+    /// </summary>
+    /// <param name="request">Request to create an Account Starting Balance</param>
+    internal AccountStartingBalance(CreateAccountStartingBalanceRequest request)
+    {
+        Id = Guid.NewGuid();
+        AccountId = request.Account.Id;
+        AccountingPeriodId = request.AccountingPeriod.Id;
+        StartingBalance = request.StartingBalance;
+        Validate();
+    }
+
+    /// <summary>
+    /// Validates the current Account Starting Balance
+    /// </summary>
+    private void Validate()
+    {
+        if (Id == Guid.Empty)
+        {
+            throw new InvalidOperationException();
+        }
         if (AccountId == Guid.Empty)
         {
             throw new InvalidOperationException();
@@ -40,41 +72,42 @@ public class AccountStartingBalance
         {
             throw new InvalidOperationException();
         }
-    }
-
-    /// <summary>
-    /// Factory responsible for constructing instances of an Account Starting Balance
-    /// </summary>
-    public class AccountStartingBalanceFactory : IAccountStartingBalanceFactory
-    {
-        /// <inheritdoc/>
-        public AccountStartingBalance Create(Account account, CreateAccountStartingBalanceRequest request)
+        if (StartingBalance < 0)
         {
-            var accountStartingBalance = new AccountStartingBalance(Guid.NewGuid(),
-                account.Id,
-                request.AccountingPeriod.Id,
-                request.StartingBalance);
-            accountStartingBalance.Validate();
-            return accountStartingBalance;
+            throw new InvalidOperationException();
         }
-
-        /// <inheritdoc/>
-        public AccountStartingBalance Recreate(IRecreateAccountStartingBalanceRequest request) =>
-            new AccountStartingBalance(request.Id, request.AccountId, request.AccountingPeriodId, request.StartingBalance);
     }
+}
 
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="id">Id of this Account Starting Balance</param>
-    /// <param name="accountId">Account ID for thie Account Starting Balance</param>
-    /// <param name="accountingPeriodId">Accounting Period ID for this Account Starting Balance</param>
-    /// <param name="startingBalance">Starting Balance for this Account Starting Balance</param>
-    private AccountStartingBalance(Guid id, Guid accountId, Guid accountingPeriodId, decimal startingBalance)
-    {
-        Id = id;
-        AccountId = accountId;
-        AccountingPeriodId = accountingPeriodId;
-        StartingBalance = startingBalance;
-    }
+/// <summary>
+/// Record representing a request to create an Account Starting Balance
+/// </summary>
+public record CreateAccountStartingBalanceRequest
+{
+    /// <inheritdoc cref="AccountStartingBalance.AccountId"/>
+    public required Account Account { get; init; }
+
+    /// <inheritdoc cref="AccountStartingBalance.AccountingPeriodId"/>
+    public required AccountingPeriod AccountingPeriod { get; init; }
+
+    /// <inheritdoc cref="AccountStartingBalance.StartingBalance"/>
+    public required decimal StartingBalance { get; init; }
+}
+
+/// <summary>
+/// Interface representing a request to recreate an existing Account Starting Balance
+/// </summary>
+public interface IRecreateAccountStartingBalanceRequest
+{
+    /// <inheritdoc cref="AccountStartingBalance.Id"/>
+    Guid Id { get; }
+
+    /// <inheritdoc cref="AccountStartingBalance.AccountId"/>
+    Guid AccountId { get; }
+
+    /// <inheritdoc cref="AccountStartingBalance.AccountingPeriodId"/>
+    Guid AccountingPeriodId { get; }
+
+    /// <inheritdoc cref="AccountStartingBalance.StartingBalance"/>
+    decimal StartingBalance { get; }
 }
