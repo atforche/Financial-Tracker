@@ -5,6 +5,6 @@ namespace RestApi.Models.Transaction;
 /// </summary>
 public class AccountingEntryModel
 {
-    /// <see cref="Domain.ValueObjects.AccountingEntry.Amount"/>
+    /// <inheritdoc cref="Domain.ValueObjects.AccountingEntry.Amount"/>
     public required decimal Amount { get; init; }
 }

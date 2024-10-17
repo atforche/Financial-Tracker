@@ -12,6 +12,6 @@ public class AccountingEntryData
     /// </summary>
     public long PrimaryKey { get; set; }
 
-    /// <see cref="AccountingEntry.Amount"/>
+    /// <inheritdoc cref="AccountingEntry.Amount"/>
     public required decimal Amount { get; set; }
 }

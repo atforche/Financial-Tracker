@@ -5,12 +5,12 @@ namespace RestApi.Models.Transaction;
 /// </summary>
 public class CreateTransactionDetailModel
 {
-    /// <see cref="Domain.ValueObjects.TransactionDetail.AccountId"/>
+    /// <inheritdoc cref="Domain.Entities.TransactionDetail.AccountId"/>
     public required Guid AccountId { get; init; }
 
-    /// <see cref="Domain.ValueObjects.TransactionDetail.StatementDate"/>
+    /// <inheritdoc cref="Domain.Entities.TransactionDetail.StatementDate"/>
     public DateOnly? StatementDate { get; init; }
 
-    /// <see cref="Domain.ValueObjects.TransactionDetail.IsPosted"/>
+    /// <inheritdoc cref="Domain.Entities.TransactionDetail.IsPosted"/>
     public required bool IsPosted { get; init; }
 }

@@ -35,8 +35,7 @@ namespace Data.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Type = table.Column<string>(type: "TEXT", nullable: false),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false)
+                    Type = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -65,6 +64,7 @@ namespace Data.Migrations
                 {
                     PrimaryKey = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     AccountId = table.Column<Guid>(type: "TEXT", nullable: false),
                     StatementDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     IsPosted = table.Column<bool>(type: "INTEGER", nullable: false)

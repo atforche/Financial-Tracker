@@ -22,7 +22,7 @@ public interface IAccountingPeriodService
     /// Closes out the provided Accounting Period
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period to be closed</param>
-    /// <param name="newAccountStartingBalances">The newly created Account Starting Balances for the closed Accounting Period</param>
+    /// <param name="newAccountStartingBalances">The newly created Account Starting Balances for the future Accounting Period</param>
     void ClosePeriod(
         AccountingPeriod accountingPeriod,
         out ICollection<AccountStartingBalance> newAccountStartingBalances);

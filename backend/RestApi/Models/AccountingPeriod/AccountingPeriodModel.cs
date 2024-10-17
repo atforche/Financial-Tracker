@@ -1,27 +1,19 @@
 namespace RestApi.Models.AccountingPeriod;
 
 /// <summary>
-/// Rest model representing an Accounting Period
+/// REST model representing an Accounting Period
 /// </summary>
 public class AccountingPeriodModel
 {
-    /// <summary>
-    /// Id for this Accounting Period
-    /// </summary>
+    /// <inheritdoc cref="Domain.Entities.AccountingPeriod.Id"/>
     public required Guid Id { get; set; }
 
-    /// <summary>
-    /// Year for this Accounting Period
-    /// </summary>
+    /// <inheritdoc cref="Domain.Entities.AccountingPeriod.Year"/>
     public required int Year { get; set; }
 
-    /// <summary>
-    /// Month for this Accounting Period
-    /// </summary>
+    /// <inheritdoc cref="Domain.Entities.AccountingPeriod.Month"/>
     public required int Month { get; set; }
 
-    /// <summary>
-    /// Is open flag for this Accounting Period
-    /// </summary>
+    /// <inheritdoc cref="Domain.Entities.AccountingPeriod.IsOpen"/>
     public required bool IsOpen { get; set; }
 }

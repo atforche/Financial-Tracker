@@ -1,5 +1,4 @@
 using Domain.Entities;
-using Domain.Factories;
 using Domain.Repositories;
 
 namespace Domain.Services.Implementations;
@@ -8,43 +7,39 @@ namespace Domain.Services.Implementations;
 public class AccountService : IAccountService
 {
     private readonly IAccountRepository _accountRepository;
-    private readonly IAccountStartingBalanceFactory _accountStartingBalanceFactory;
+    private readonly IAccountingPeriodRepository _accountingPeriodRepository;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="accountRepository">Repository of Accounts</param>
-    /// <param name="accountStartingBalanceFactory">Factory that constructs instances of Account Starting Balance</param>
-    public AccountService(
-        IAccountRepository accountRepository,
-        IAccountStartingBalanceFactory accountStartingBalanceFactory)
+    /// <param name="accountingPeriodRepository">Repository of Accounting Periods</param>
+    public AccountService(IAccountRepository accountRepository, IAccountingPeriodRepository accountingPeriodRepository)
     {
         _accountRepository = accountRepository;
-        _accountStartingBalanceFactory = accountStartingBalanceFactory;
+        _accountingPeriodRepository = accountingPeriodRepository;
     }
 
     /// <inheritdoc/>
     public void CreateNewAccount(CreateAccountRequest createAccountRequest,
+        decimal startingBalance,
         out Account newAccount,
         out AccountStartingBalance newAccountStartingBalance)
     {
         ValidateNewAccountName(createAccountRequest.Name);
-        newAccount = new Account(Guid.NewGuid(), createAccountRequest.Name, createAccountRequest.Type, true);
-        newAccount.Validate();
+        newAccount = new Account(createAccountRequest);
 
-        newAccountStartingBalance = _accountStartingBalanceFactory.Create(newAccount, createAccountRequest.StartingBalance);
-        newAccountStartingBalance.Validate();
-    }
-
-    /// <inheritdoc/>
-    public void RenameAccount(Account account, string newName)
-    {
-        ValidateNewAccountName(newName);
-        account.Name = newName;
+        var createAccountStartingBalanceRequest = new CreateAccountStartingBalanceRequest
+        {
+            Account = newAccount,
+            AccountingPeriod = _accountingPeriodRepository.FindOpenPeriods().Last(),
+            StartingBalance = startingBalance,
+        };
+        newAccountStartingBalance = new AccountStartingBalance(createAccountStartingBalanceRequest);
     }
 
     /// <summary>
-    /// Validates that the new name for an account is unique among the existing accounts
+    /// Validates that the new name for an Account is unique among the existing accounts
     /// </summary>
     /// <param name="newName">New name to be given to an Account</param>
     private void ValidateNewAccountName(string newName)

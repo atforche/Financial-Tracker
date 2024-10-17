@@ -1,5 +1,4 @@
 using Domain.Entities;
-using Domain.ValueObjects;
 
 namespace Domain.Repositories;
 
@@ -9,10 +8,10 @@ namespace Domain.Repositories;
 public interface ITransactionRepository
 {
     /// <summary>
-    /// Finds all the Transactions that fall within the specified Accounting Period
+    /// Finds all the Transactions that fall in the Accounting Period that the provided date falls within 
     /// </summary>
-    /// <param name="accountingPeriod">Date representing the Accounting Period</param>
-    /// <returns>The collection of Transactions that fall within the specified Accounting Period</returns>
+    /// <param name="accountingPeriod">Date that falls in an Accounting Period</param>
+    /// <returns>The collection of Transactions that fall within the Accounting Period</returns>
     IReadOnlyCollection<Transaction> FindAllByAccountingPeriod(DateOnly accountingPeriod);
 
     /// <summary>
@@ -36,29 +35,10 @@ public interface ITransactionRepository
         DateToCompare dateToCompare);
 
     /// <summary>
-    /// Finds the Transaction with the specified ID
-    /// </summary>
-    /// <param name="id">ID of the Transaction to find</param>
-    /// <returns>The Transaction that was found, or null if one wasn't found</returns>
-    Transaction? FindOrNull(Guid id);
-
-    /// <summary>
     /// Adds the provided Transaction to the repository
     /// </summary>
     /// <param name="transaction">Transaction that should be added</param>
     void Add(Transaction transaction);
-
-    /// <summary>
-    /// Updates the provided Transaction in the repository
-    /// </summary>
-    /// <param name="transaction">Transaction to update in the repository</param>
-    void Update(Transaction transaction);
-
-    /// <summary>
-    /// Deletes the Transaction with the specified ID
-    /// </summary>
-    /// <param name="id">ID of the Transaction to delete</param>
-    void Delete(Guid id);
 }
 
 /// <summary>
@@ -67,9 +47,9 @@ public interface ITransactionRepository
 [Flags]
 public enum DateToCompare
 {
-    /// <see cref="Transaction.AccountingDate"/>
+    /// <inheritdoc cref="Transaction.AccountingDate"/>
     Accounting = 1,
 
-    /// <see cref="TransactionDetail.StatementDate"/>
+    /// <inheritdoc cref="TransactionDetail.StatementDate"/>
     Statement = 2,
 }

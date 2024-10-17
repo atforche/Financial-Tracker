@@ -14,13 +14,6 @@ public interface IAccountRepository
     IReadOnlyCollection<Account> FindAll();
 
     /// <summary>
-    /// Finds the Account with the specified id. An error is thrown if no Account is found.
-    /// </summary>
-    /// <param name="id">Id of the Account to find</param>
-    /// <returns>The Account that was found</returns>
-    Account Find(Guid id);
-
-    /// <summary>
     /// Finds the Account with the specified id
     /// </summary>
     /// <param name="id">Id of the Account to find</param>
@@ -39,16 +32,4 @@ public interface IAccountRepository
     /// </summary>
     /// <param name="account">Account that should be added</param>
     void Add(Account account);
-
-    /// <summary>
-    /// Updates the provided Account in the repository
-    /// </summary>
-    /// <param name="account">Account to update in the repository</param>
-    void Update(Account account);
-
-    /// <summary>
-    /// Deletes the Account with the specified id
-    /// </summary>
-    /// <param name="id">Id of the Account to delete</param>
-    void Delete(Guid id);
 }

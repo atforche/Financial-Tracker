@@ -1,34 +1,27 @@
 using Data.EntityModels;
 using Domain.Entities;
-using Domain.Factories;
 using Domain.Repositories;
 
 namespace Data.Repositories;
 
 /// <summary>
-/// Account repository that allows Accounts to be persisted to the database
+/// Repository that allows Accounts to be persisted to the database
 /// </summary>
 public class AccountRepository : IAccountRepository
 {
     private readonly DatabaseContext _context;
-    private readonly IAccountFactory _accountFactory;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="context">Context to use to connect to the database</param>
-    /// <param name="accountFactory">Factory used to construct Account instances</param>
-    public AccountRepository(DatabaseContext context, IAccountFactory accountFactory)
+    public AccountRepository(DatabaseContext context)
     {
         _context = context;
-        _accountFactory = accountFactory;
     }
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Account> FindAll() => _context.Accounts.Select(ConvertToEntity).ToList();
-
-    /// <inheritdoc/>
-    public Account Find(Guid id) => FindOrNull(id) ?? throw new KeyNotFoundException();
 
     /// <inheritdoc/>
     public Account? FindOrNull(Guid id)
@@ -51,29 +44,25 @@ public class AccountRepository : IAccountRepository
         _context.Add(accountData);
     }
 
-    /// <inheritdoc/>
-    public void Update(Account account)
-    {
-        AccountData accountData = _context.Accounts.Single(accountData => accountData.Id == account.Id);
-        PopulateFromAccount(account, accountData);
-    }
-
-    /// <inheritdoc/>
-    public void Delete(Guid id)
-    {
-        AccountData accountData = _context.Accounts.Single(accountData => accountData.Id == id);
-        _context.Accounts.Remove(accountData);
-    }
-
     /// <summary>
     /// Converts the provided <see cref="AccountData"/> object into an <see cref="Account"/> domain entity.
     /// </summary>
-    private Account ConvertToEntity(AccountData accountData) => _accountFactory.Recreate(
-        new AccountRecreateRequest(accountData.Id, accountData.Name, accountData.Type, accountData.IsActive));
+    /// <param name="accountData">Account Data to be converted</param>
+    /// <returns>The converted Account domain entity</returns>
+    private Account ConvertToEntity(AccountData accountData) => new Account(
+        new AccountRecreateRequest
+        {
+            Id = accountData.Id,
+            Name = accountData.Name,
+            Type = accountData.Type,
+        });
 
     /// <summary>
     /// Converts the provided <see cref="Account"/> entity into an <see cref="AccountData"/> data object
     /// </summary>
+    /// <param name="account">Account entity to convert</param>
+    /// <param name="existingAccountData">Existing Account Data model to populate from the entity, or null if a new model should be created</param>
+    /// <returns>The converted Account Data</returns>
     private static AccountData PopulateFromAccount(Account account, AccountData? existingAccountData)
     {
         AccountData newAccountData = new AccountData()
@@ -81,11 +70,21 @@ public class AccountRepository : IAccountRepository
             Id = account.Id,
             Name = account.Name,
             Type = account.Type,
-            IsActive = account.IsActive,
         };
         existingAccountData?.Replace(newAccountData);
         return existingAccountData ?? newAccountData;
     }
 
-    private sealed record AccountRecreateRequest(Guid Id, string Name, AccountType Type, bool IsActive) : IRecreateAccountRequest;
+    /// <inheritdoc/>
+    private sealed record AccountRecreateRequest : IRecreateAccountRequest
+    {
+        /// <inheritdoc/>
+        public required Guid Id { get; init; }
+
+        /// <inheritdoc/>
+        public required string Name { get; init; }
+
+        /// <inheritdoc/>
+        public required AccountType Type { get; init; }
+    };
 }

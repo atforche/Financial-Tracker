@@ -1,10 +1,10 @@
 namespace RestApi.Models.Transaction;
 
 /// <summary>
-/// REST model representing a request to create an AccountingEntry
+/// REST model representing a request to create an Accounting Entry
 /// </summary>
 public class CreateAccountingEntryModel
 {
-    /// <see cref="Domain.ValueObjects.AccountingEntry.Amount"/>
+    /// <inheritdoc cref="Domain.ValueObjects.AccountingEntry.Amount"/>
     public required decimal Amount { get; init; }
 }

@@ -13,19 +13,19 @@ public class TransactionData : IEntityDataModel<TransactionData>
     /// </summary>
     public long PrimaryKey { get; set; }
 
-    /// <see cref="Transaction.Id"/>
+    /// <inheritdoc cref="Transaction.Id"/>
     public required Guid Id { get; set; }
 
-    /// <see cref="Transaction.AccountingDate"/>
+    /// <inheritdoc cref="Transaction.AccountingDate"/>
     public required DateOnly AccountingDate { get; set; }
 
-    /// <see cref="Transaction.DebitDetail"/>
+    /// <inheritdoc cref="Transaction.DebitDetail"/>
     public TransactionDetailData? DebitDetail { get; set; }
 
-    /// <see cref="Transaction.CreditDetail"/>
+    /// <inheritdoc cref="Transaction.CreditDetail"/>
     public TransactionDetailData? CreditDetail { get; set; }
 
-    /// <see cref="Transaction.AccountingEntries"/>
+    /// <inheritdoc cref="Transaction.AccountingEntries"/>
     public required ICollection<AccountingEntryData> AccountingEntries { get; init; }
 
     /// <inheritdoc/>

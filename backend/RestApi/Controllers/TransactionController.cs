@@ -1,7 +1,6 @@
 using System.Globalization;
 using Data;
 using Domain.Entities;
-using Domain.Factories;
 using Domain.Repositories;
 using Domain.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +16,6 @@ namespace RestApi.Controllers;
 public class TransactionController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ITransactionFactory _transactionFactory;
     private readonly ITransactionRepository _transactionRepository;
     private readonly IAccountRepository _accountRepository;
 
@@ -25,29 +23,25 @@ public class TransactionController : ControllerBase
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="unitOfWork">Unit of work to commit changes to the database</param>
-    /// <param name="transactionFactory">Factory that constructs Transactions</param>
     /// <param name="transactionRepository">Repository of Transactions</param>
     /// <param name="accountRepository">Repository of Accounts</param>
     public TransactionController(IUnitOfWork unitOfWork,
-        ITransactionFactory transactionFactory,
         ITransactionRepository transactionRepository,
         IAccountRepository accountRepository)
     {
         _unitOfWork = unitOfWork;
-        _transactionFactory = transactionFactory;
         _transactionRepository = transactionRepository;
         _accountRepository = accountRepository;
     }
 
     /// <summary>
-    /// Retrieves all the Transactions that fall within the provided Accounting Period
+    /// Retrieves all the Transactions that fall within the Accounting Period that contains the provided date
     /// </summary>
     /// <param name="accountingPeriod">Date representing the Accounting Period</param>
     /// <returns>A collection of Transactions that fall within the provided Accounting Period</returns>
     [HttpGet("/ByAccountingPeriod/{accountingPeriod}")]
-    public IReadOnlyCollection<TransactionModel> GetTransactionsByAccountingPeriod(string accountingPeriod) =>
-        _transactionRepository.FindAllByAccountingPeriod(DateOnly.Parse(accountingPeriod, CultureInfo.InvariantCulture))
-            .Select(ConvertToModel).ToList();
+    public IReadOnlyCollection<TransactionModel> GetTransactionsByAccountingPeriod(DateOnly accountingPeriod) =>
+        _transactionRepository.FindAllByAccountingPeriod(accountingPeriod).Select(ConvertToModel).ToList();
 
     /// <summary>
     /// Retrieves all the Transactions made against the provided Account
@@ -85,7 +79,7 @@ public class TransactionController : ControllerBase
             }
         }
 
-        Transaction newTransaction = _transactionFactory.Create(new CreateTransactionRequest
+        Transaction newTransaction = new Transaction(new CreateTransactionRequest
         {
             AccountingDate = createTransactionModel.AccountingDate,
             DebitDetail = createTransactionModel.DebitDetail != null && debitAccount != null
@@ -112,18 +106,6 @@ public class TransactionController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes an existing transaction with the provided ID
-    /// </summary>
-    /// <param name="transactionId">ID of the Transaction to delete</param>
-    [HttpDelete("{transactionId}")]
-    public async Task<IActionResult> DeleteAccountAsync(Guid transactionId)
-    {
-        _transactionRepository.Delete(transactionId);
-        await _unitOfWork.SaveChangesAsync();
-        return Ok();
-    }
-
-    /// <summary>
     /// Converts a Transaction domain entity into a Transaction REST model
     /// </summary>
     /// <param name="transaction">Transaction domain entity to be converted</param>
@@ -138,9 +120,9 @@ public class TransactionController : ControllerBase
     };
 
     /// <summary>
-    /// Converts a Transaction Detail value object into a Transaction Detail REST model
+    /// Converts a Transaction Detail domain entity into a Transaction Detail REST model
     /// </summary>
-    /// <param name="transactionDetail">Transaction Detail value object to be converted</param>
+    /// <param name="transactionDetail">Transaction Detail domain entity to be converted</param>
     /// <returns>The converted Transaction Detail REST model</returns>
     private static TransactionDetailModel ConvertToModel(TransactionDetail transactionDetail) => new TransactionDetailModel
     {

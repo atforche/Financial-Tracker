@@ -2,12 +2,9 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 using Data;
 using Data.Repositories;
-using Domain.Entities;
-using Domain.Factories;
 using Domain.Repositories;
 using Domain.Services;
 using Domain.Services.Implementations;
-using Domain.ValueObjects;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using RestApi;
@@ -28,15 +25,11 @@ builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Add domain DI services
-builder.Services.AddScoped<IAccountFactory, Account.AccountFactory>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-builder.Services.AddScoped<IAccountingPeriodFactory, AccountingPeriod.AccountingPeriodFactory>();
+builder.Services.AddScoped<IAccountingPeriodService, AccountingPeriodService>();
 builder.Services.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
-builder.Services.AddScoped<ITransactionFactory, Transaction.TransactionFactory>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
-builder.Services.AddScoped<ITransactionDetailFactory, TransactionDetail.TransactionDetailFactory>();
-builder.Services.AddScoped<IAccountStartingBalanceFactory, AccountStartingBalance.AccountStartingBalanceFactory>();
 builder.Services.AddScoped<IAccountStartingBalanceRepository, AccountStartingBalanceRepository>();
 builder.Services.AddScoped<IAccountBalanceService, AccountBalanceService>();
 
