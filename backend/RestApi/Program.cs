@@ -32,6 +32,8 @@ builder.Services.AddScoped<IAccountingPeriodRepository, AccountingPeriodReposito
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<IAccountStartingBalanceRepository, AccountStartingBalanceRepository>();
 builder.Services.AddScoped<IAccountBalanceService, AccountBalanceService>();
+builder.Services.AddScoped<IFundService, FundService>();
+builder.Services.AddScoped<IFundRepository, FundRepository>();
 
 // Configure CORS to allow requests from select origins
 string corsPolicyName = "CORS";

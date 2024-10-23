@@ -1,3 +1,5 @@
+using RestApi.Models.FundAmount;
+
 namespace RestApi.Models.Transaction;
 
 /// <summary>
@@ -15,5 +17,5 @@ public class CreateTransactionModel
     public CreateTransactionDetailModel? CreditDetail { get; init; }
 
     /// <inheritdoc cref="Domain.Entities.Transaction.AccountingEntries"/>
-    public required ICollection<CreateAccountingEntryModel> AccountingEntries { get; init; }
+    public required ICollection<CreateFundAmountModel> AccountingEntries { get; init; }
 }

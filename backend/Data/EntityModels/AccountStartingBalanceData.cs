@@ -1,3 +1,4 @@
+using Data.ValueObjectModels;
 using Domain.Entities;
 
 namespace Data.EntityModels;
@@ -21,8 +22,8 @@ public class AccountStartingBalanceData : IEntityDataModel<AccountStartingBalanc
     /// <inheritdoc cref="AccountStartingBalance.AccountingPeriodId"/>
     public required Guid AccountingPeriodId { get; set; }
 
-    /// <inheritdoc cref="AccountStartingBalance.StartingBalance"/>
-    public required decimal StartingBalance { get; set; }
+    /// <inheritdoc cref="AccountStartingBalance.StartingFundBalances"/>
+    public required ICollection<FundAmountData> StartingFundBalances { get; init; }
 
     /// <inheritdoc/>
     public void Replace(AccountStartingBalanceData newModel)
@@ -30,6 +31,10 @@ public class AccountStartingBalanceData : IEntityDataModel<AccountStartingBalanc
         Id = newModel.Id;
         AccountId = newModel.AccountId;
         AccountingPeriodId = newModel.AccountingPeriodId;
-        StartingBalance = newModel.StartingBalance;
+        StartingFundBalances.Clear();
+        foreach (FundAmountData startingFundBalance in newModel.StartingFundBalances)
+        {
+            StartingFundBalances.Add(startingFundBalance);
+        }
     }
 }

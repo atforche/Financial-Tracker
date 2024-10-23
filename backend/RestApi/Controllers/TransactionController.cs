@@ -1,4 +1,3 @@
-using System.Globalization;
 using Data;
 using Domain.Entities;
 using Domain.Repositories;
@@ -18,6 +17,7 @@ public class TransactionController : ControllerBase
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITransactionRepository _transactionRepository;
     private readonly IAccountRepository _accountRepository;
+    private readonly IFundRepository _fundRepository;
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -25,13 +25,16 @@ public class TransactionController : ControllerBase
     /// <param name="unitOfWork">Unit of work to commit changes to the database</param>
     /// <param name="transactionRepository">Repository of Transactions</param>
     /// <param name="accountRepository">Repository of Accounts</param>
+    /// <param name="fundRepository">Repository of Funds</param>
     public TransactionController(IUnitOfWork unitOfWork,
         ITransactionRepository transactionRepository,
-        IAccountRepository accountRepository)
+        IAccountRepository accountRepository,
+        IFundRepository fundRepository)
     {
         _unitOfWork = unitOfWork;
         _transactionRepository = transactionRepository;
         _accountRepository = accountRepository;
+        _fundRepository = fundRepository;
     }
 
     /// <summary>
@@ -41,7 +44,7 @@ public class TransactionController : ControllerBase
     /// <returns>A collection of Transactions that fall within the provided Accounting Period</returns>
     [HttpGet("/ByAccountingPeriod/{accountingPeriod}")]
     public IReadOnlyCollection<TransactionModel> GetTransactionsByAccountingPeriod(DateOnly accountingPeriod) =>
-        _transactionRepository.FindAllByAccountingPeriod(accountingPeriod).Select(ConvertToModel).ToList();
+        _transactionRepository.FindAllByAccountingPeriod(accountingPeriod).Select(TransactionModel.ConvertEntityToModel).ToList();
 
     /// <summary>
     /// Retrieves all the Transactions made against the provided Account
@@ -50,7 +53,7 @@ public class TransactionController : ControllerBase
     /// <returns>A collection of Transactions that were made against the provided Account</returns>
     [HttpGet("/ByAccount/{accountId}")]
     public IReadOnlyCollection<TransactionModel> GetTransactionsByAccount(Guid accountId) =>
-        _transactionRepository.FindAllByAccount(accountId).Select(ConvertToModel).ToList();
+        _transactionRepository.FindAllByAccount(accountId).Select(TransactionModel.ConvertEntityToModel).ToList();
 
     /// <summary>
     /// Creates a new Transaction with the provided properties
@@ -98,46 +101,14 @@ public class TransactionController : ControllerBase
                     IsPosted = createTransactionModel.CreditDetail.IsPosted,
                 }
                 : null,
-            AccountingEntries = createTransactionModel.AccountingEntries.Select(entry => entry.Amount)
+            AccountingEntries = createTransactionModel.AccountingEntries.Select(entry => new CreateFundAmountRequest
+            {
+                Fund = _fundRepository.FindOrNull(entry.FundId) ?? throw new InvalidOperationException(),
+                Amount = entry.Amount,
+            })
         });
         _transactionRepository.Add(newTransaction);
         await _unitOfWork.SaveChangesAsync();
-        return Ok(ConvertToModel(newTransaction));
+        return Ok(TransactionModel.ConvertEntityToModel(newTransaction));
     }
-
-    /// <summary>
-    /// Converts a Transaction domain entity into a Transaction REST model
-    /// </summary>
-    /// <param name="transaction">Transaction domain entity to be converted</param>
-    /// <returns>The converted Transaction REST model</returns>
-    private TransactionModel ConvertToModel(Transaction transaction) => new()
-    {
-        Id = transaction.Id,
-        AccountingDate = transaction.AccountingDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-        DebitDetail = transaction.DebitDetail != null ? ConvertToModel(transaction.DebitDetail) : null,
-        CreditDetail = transaction.CreditDetail != null ? ConvertToModel(transaction.CreditDetail) : null,
-        AccountingEntries = transaction.AccountingEntries.Select(ConvertToModel).ToList(),
-    };
-
-    /// <summary>
-    /// Converts a Transaction Detail domain entity into a Transaction Detail REST model
-    /// </summary>
-    /// <param name="transactionDetail">Transaction Detail domain entity to be converted</param>
-    /// <returns>The converted Transaction Detail REST model</returns>
-    private static TransactionDetailModel ConvertToModel(TransactionDetail transactionDetail) => new TransactionDetailModel
-    {
-        AccountId = transactionDetail.AccountId,
-        StatementDate = transactionDetail.StatementDate,
-        IsPosted = transactionDetail.IsPosted,
-    };
-
-    /// <summary>
-    /// Converts an Accounting Entry value object into an AccountingEntry REST model
-    /// </summary>
-    /// <param name="accountingEntry">Accounting Entry value object to be converted</param>
-    /// <returns>The converted Accounting Entry REST model</returns>
-    private AccountingEntryModel ConvertToModel(AccountingEntry accountingEntry) => new AccountingEntryModel
-    {
-        Amount = accountingEntry.Amount,
-    };
 }

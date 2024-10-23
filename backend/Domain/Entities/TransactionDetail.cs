@@ -51,13 +51,15 @@ public class TransactionDetail
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="request">Request to create a Transaction Detail</param>
-    internal TransactionDetail(CreateTransactionDetailRequest request)
+    /// <param name="account">Account for this Transaction Detail</param>
+    /// <param name="statementDate">Statement Date for this Transaction Detail</param>
+    /// <param name="isPosted">Is Posted flag for this Transaction Detail</param>
+    internal TransactionDetail(Account account, DateOnly? statementDate, bool isPosted)
     {
         Id = Guid.NewGuid();
-        AccountId = request.Account.Id;
-        StatementDate = request.StatementDate;
-        IsPosted = request.IsPosted;
+        AccountId = account.Id;
+        StatementDate = statementDate;
+        IsPosted = isPosted;
         Validate();
     }
 

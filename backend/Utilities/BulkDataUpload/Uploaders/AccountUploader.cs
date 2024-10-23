@@ -16,7 +16,7 @@ public class AccountUploader : DataUploader
     /// <summary>
     /// List of Account Models that were uploaded
     /// </summary>
-    public ICollection<AccountModel> Results { get; init; }
+    public ICollection<AccountModel> Results { get; } = [];
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -28,7 +28,6 @@ public class AccountUploader : DataUploader
         _serializerOptions = new JsonSerializerOptions();
         _serializerOptions.PropertyNameCaseInsensitive = true;
         _serializerOptions.Converters.Add(new JsonStringEnumConverter());
-        Results = [];
     }
 
     /// <inheritdoc/>

@@ -6,17 +6,12 @@ namespace RestApi.Models.AccountBalance;
 public class AccountBalanceByDateModel
 {
     /// <summary>
-    /// Date for this account balance
+    /// Date for this Account Balance By Date Model
     /// </summary>
-    public required DateOnly Date { get; set; }
+    public required DateOnly Date { get; init; }
 
     /// <summary>
-    /// Balance for this account balance
+    /// Account Balance for this Account Balance By Date Model
     /// </summary>
-    public required decimal Balance { get; set; }
-
-    /// <summary>
-    /// Balance including pending transactions for this account balance
-    /// </summary>
-    public required decimal BalanceIncludingPendingTransactions { get; set; }
+    public required AccountBalanceModel AccountBalance { get; init; }
 }

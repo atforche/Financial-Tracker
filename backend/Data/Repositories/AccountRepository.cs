@@ -1,4 +1,5 @@
 using Data.EntityModels;
+using Data.Requests;
 using Domain.Entities;
 using Domain.Repositories;
 
@@ -74,17 +75,4 @@ public class AccountRepository : IAccountRepository
         existingAccountData?.Replace(newAccountData);
         return existingAccountData ?? newAccountData;
     }
-
-    /// <inheritdoc/>
-    private sealed record AccountRecreateRequest : IRecreateAccountRequest
-    {
-        /// <inheritdoc/>
-        public required Guid Id { get; init; }
-
-        /// <inheritdoc/>
-        public required string Name { get; init; }
-
-        /// <inheritdoc/>
-        public required AccountType Type { get; init; }
-    };
 }

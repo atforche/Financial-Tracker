@@ -50,12 +50,25 @@ namespace Data.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     AccountId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    StartingBalance = table.Column<decimal>(type: "TEXT", nullable: false)
+                    AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AccountStartingBalances", x => x.PrimaryKey);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Funds",
+                columns: table => new
+                {
+                    PrimaryKey = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Funds", x => x.PrimaryKey);
                 });
 
             migrationBuilder.CreateTable(
@@ -101,28 +114,30 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AccountingEntries",
+                name: "FundAmounts",
                 columns: table => new
                 {
                     PrimaryKey = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    FundId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Amount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    AccountStartingBalanceDataPrimaryKey = table.Column<long>(type: "INTEGER", nullable: true),
                     TransactionDataPrimaryKey = table.Column<long>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AccountingEntries", x => x.PrimaryKey);
+                    table.PrimaryKey("PK_FundAmounts", x => x.PrimaryKey);
                     table.ForeignKey(
-                        name: "FK_AccountingEntries_Transactions_TransactionDataPrimaryKey",
+                        name: "FK_FundAmounts_AccountStartingBalances_AccountStartingBalanceDataPrimaryKey",
+                        column: x => x.AccountStartingBalanceDataPrimaryKey,
+                        principalTable: "AccountStartingBalances",
+                        principalColumn: "PrimaryKey");
+                    table.ForeignKey(
+                        name: "FK_FundAmounts_Transactions_TransactionDataPrimaryKey",
                         column: x => x.TransactionDataPrimaryKey,
                         principalTable: "Transactions",
                         principalColumn: "PrimaryKey");
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AccountingEntries_TransactionDataPrimaryKey",
-                table: "AccountingEntries",
-                column: "TransactionDataPrimaryKey");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AccountingPeriods_Id",
@@ -159,6 +174,28 @@ namespace Data.Migrations
                 column: "AccountingPeriodId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_FundAmounts_AccountStartingBalanceDataPrimaryKey",
+                table: "FundAmounts",
+                column: "AccountStartingBalanceDataPrimaryKey");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FundAmounts_TransactionDataPrimaryKey",
+                table: "FundAmounts",
+                column: "TransactionDataPrimaryKey");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Funds_Id",
+                table: "Funds",
+                column: "Id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Funds_Name",
+                table: "Funds",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Transactions_CreditDetailPrimaryKey",
                 table: "Transactions",
                 column: "CreditDetailPrimaryKey");
@@ -178,13 +215,16 @@ namespace Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AccountingEntries");
-
-            migrationBuilder.DropTable(
                 name: "AccountingPeriods");
 
             migrationBuilder.DropTable(
                 name: "Accounts");
+
+            migrationBuilder.DropTable(
+                name: "FundAmounts");
+
+            migrationBuilder.DropTable(
+                name: "Funds");
 
             migrationBuilder.DropTable(
                 name: "AccountStartingBalances");

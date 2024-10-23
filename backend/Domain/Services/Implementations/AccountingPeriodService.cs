@@ -26,20 +26,16 @@ public class AccountingPeriodService : IAccountingPeriodService
     }
 
     /// <inheritdoc/>
-    public void CreateNewAccountingPeriod(int year, int month,
+    public void CreateNewAccountingPeriod(CreateAccountingPeriodRequest request,
         out AccountingPeriod newAccountingPeriod,
         out ICollection<AccountStartingBalance> newAccountStartingBalances)
     {
         newAccountStartingBalances = [];
 
-        ValidateNewAccountingPeriod(year, month);
-        newAccountingPeriod = new AccountingPeriod(new CreateAccountingPeriodRequest
-        {
-            Year = year,
-            Month = month,
-        });
+        ValidateNewAccountingPeriod(request.Year, request.Month);
+        newAccountingPeriod = new AccountingPeriod(request.Year, request.Month);
 
-        DateOnly previousAccountingPeriodMonth = new DateOnly(year, month, 1).AddMonths(-1);
+        DateOnly previousAccountingPeriodMonth = new DateOnly(newAccountingPeriod.Year, newAccountingPeriod.Month, 1).AddMonths(-1);
         AccountingPeriod? previousAccountingPeriod = _accountingPeriodRepository.FindOrNullByDate(previousAccountingPeriodMonth);
         if (previousAccountingPeriod == null || previousAccountingPeriod.IsOpen)
         {
@@ -47,16 +43,12 @@ public class AccountingPeriodService : IAccountingPeriodService
         }
         // If the previous accounting period that has already closed, we'll need to add
         // the Account Starting Balances for this new accounting period
-        DateOnly endOfPreviousMonth = new DateOnly(year, month, 1).AddDays(-1);
+        DateOnly endOfPreviousMonth = new DateOnly(newAccountingPeriod.Year, newAccountingPeriod.Month, 1).AddDays(-1);
         foreach (Account account in _accountRepository.FindAll())
         {
-            newAccountStartingBalances.Add(
-                new AccountStartingBalance(new CreateAccountStartingBalanceRequest
-                {
-                    Account = account,
-                    AccountingPeriod = newAccountingPeriod,
-                    StartingBalance = _accountBalanceService.GetAccountBalanceAsOfDate(account, endOfPreviousMonth).Balance
-                }));
+            newAccountStartingBalances.Add(new AccountStartingBalance(account,
+                newAccountingPeriod,
+                _accountBalanceService.GetAccountBalanceAsOfDate(account, endOfPreviousMonth).FundBalances));
         }
     }
 
@@ -81,13 +73,9 @@ public class AccountingPeriodService : IAccountingPeriodService
         DateOnly endOfCurrentMonth = nextAccountingPeriodMonth.AddDays(-1);
         foreach (Account account in _accountRepository.FindAll())
         {
-            newAccountStartingBalances.Add(
-                new AccountStartingBalance(new CreateAccountStartingBalanceRequest
-                {
-                    Account = account,
-                    AccountingPeriod = nextAccountingPeriod,
-                    StartingBalance = _accountBalanceService.GetAccountBalanceAsOfDate(account, endOfCurrentMonth).Balance
-                }));
+            newAccountStartingBalances.Add(new AccountStartingBalance(account,
+                nextAccountingPeriod,
+                _accountBalanceService.GetAccountBalanceAsOfDate(account, endOfCurrentMonth).FundBalances));
         }
     }
 

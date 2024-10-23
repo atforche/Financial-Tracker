@@ -1,3 +1,5 @@
+using Domain.ValueObjects;
+
 namespace Domain.Entities;
 
 /// <summary>
@@ -26,9 +28,9 @@ public class AccountStartingBalance
     public Guid AccountingPeriodId { get; }
 
     /// <summary>
-    /// Starting balance of the Account during the Accounting Period for this Account Starting Balance
+    /// List of Starting Fund Balances for this Account Starting Balance
     /// </summary>
-    public decimal StartingBalance { get; }
+    public ICollection<FundAmount> StartingFundBalances { get; }
 
     /// <summary>
     /// Reconstructs an existing Account Starting Balance
@@ -39,19 +41,24 @@ public class AccountStartingBalance
         Id = request.Id;
         AccountId = request.AccountId;
         AccountingPeriodId = request.AccountingPeriodId;
-        StartingBalance = request.StartingBalance;
+        StartingFundBalances = request.StartingFundBalances
+            .Select(request => new FundAmount(request.FundId, request.Amount)).ToList();
     }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="request">Request to create an Account Starting Balance</param>
-    internal AccountStartingBalance(CreateAccountStartingBalanceRequest request)
+    /// <param name="account">Account for this Account Starting Balance</param>
+    /// <param name="accountingPeriod">Accounting Period for this Account Starting Balance</param>
+    /// <param name="startingFundBalances">Starting Fund Balances for this Account Starting Balance</param>
+    internal AccountStartingBalance(Account account,
+        AccountingPeriod accountingPeriod,
+        IEnumerable<FundAmount> startingFundBalances)
     {
         Id = Guid.NewGuid();
-        AccountId = request.Account.Id;
-        AccountingPeriodId = request.AccountingPeriod.Id;
-        StartingBalance = request.StartingBalance;
+        AccountId = account.Id;
+        AccountingPeriodId = accountingPeriod.Id;
+        StartingFundBalances = startingFundBalances.ToList();
         Validate();
     }
 
@@ -72,26 +79,11 @@ public class AccountStartingBalance
         {
             throw new InvalidOperationException();
         }
-        if (StartingBalance < 0)
+        if (StartingFundBalances.Sum(balance => balance.Amount) < 0)
         {
             throw new InvalidOperationException();
         }
     }
-}
-
-/// <summary>
-/// Record representing a request to create an Account Starting Balance
-/// </summary>
-public record CreateAccountStartingBalanceRequest
-{
-    /// <inheritdoc cref="AccountStartingBalance.AccountId"/>
-    public required Account Account { get; init; }
-
-    /// <inheritdoc cref="AccountStartingBalance.AccountingPeriodId"/>
-    public required AccountingPeriod AccountingPeriod { get; init; }
-
-    /// <inheritdoc cref="AccountStartingBalance.StartingBalance"/>
-    public required decimal StartingBalance { get; init; }
 }
 
 /// <summary>
@@ -108,6 +100,6 @@ public interface IRecreateAccountStartingBalanceRequest
     /// <inheritdoc cref="AccountStartingBalance.AccountingPeriodId"/>
     Guid AccountingPeriodId { get; }
 
-    /// <inheritdoc cref="AccountStartingBalance.StartingBalance"/>
-    decimal StartingBalance { get; }
+    /// <inheritdoc cref="AccountStartingBalance.StartingFundBalances"/>
+    IEnumerable<IRecreateFundAmountRequest> StartingFundBalances { get; }
 }

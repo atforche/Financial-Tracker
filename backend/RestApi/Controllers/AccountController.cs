@@ -2,6 +2,7 @@ using Data;
 using Domain.Entities;
 using Domain.Repositories;
 using Domain.Services;
+using Domain.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 using RestApi.Models.Account;
 
@@ -18,6 +19,7 @@ public class AccountController : ControllerBase
     private readonly IAccountService _accountService;
     private readonly IAccountRepository _accountRepository;
     private readonly IAccountStartingBalanceRepository _accountStartingBalanceRepository;
+    private readonly IFundRepository _fundRepository;
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -26,24 +28,27 @@ public class AccountController : ControllerBase
     /// <param name="accountService">Service that constructs Accounts</param>
     /// <param name="accountRepository">Repository of Accounts</param>
     /// <param name="accountStartingBalanceRepository">Repository of Account Starting Balances</param>
+    /// <param name="fundRepository">Repository of Funds</param>
     public AccountController(IUnitOfWork unitOfWork,
         IAccountService accountService,
         IAccountRepository accountRepository,
-        IAccountStartingBalanceRepository accountStartingBalanceRepository)
+        IAccountStartingBalanceRepository accountStartingBalanceRepository,
+        IFundRepository fundRepository)
     {
         _unitOfWork = unitOfWork;
         _accountService = accountService;
         _accountRepository = accountRepository;
         _accountStartingBalanceRepository = accountStartingBalanceRepository;
+        _fundRepository = fundRepository;
     }
 
     /// <summary>
-    /// Retrieves all the accounts from the database
+    /// Retrieves all the Accounts from the database
     /// </summary>
     /// <returns>A collection of all Accounts</returns>
     [HttpGet("")]
     public IReadOnlyCollection<AccountModel> GetAllAccounts() =>
-        _accountRepository.FindAll().Select(ConvertToModel).ToList();
+        _accountRepository.FindAll().Select(AccountModel.ConvertEntityToModel).ToList();
 
     /// <summary>
     /// Retrieves the Account that matches the provided ID
@@ -54,7 +59,7 @@ public class AccountController : ControllerBase
     public IActionResult GetAccount(Guid accountId)
     {
         Account? account = _accountRepository.FindOrNull(accountId);
-        return account != null ? Ok(ConvertToModel(account)) : NotFound();
+        return account != null ? Ok(AccountModel.ConvertEntityToModel(account)) : NotFound();
     }
 
     /// <summary>
@@ -69,26 +74,19 @@ public class AccountController : ControllerBase
         {
             Name = createAccountModel.Name,
             Type = createAccountModel.Type,
+            StartingFundBalances = createAccountModel.StartingFundBalances
+                .Select(startingBalance => new CreateFundAmountRequest
+                {
+                    Fund = _fundRepository.FindOrNull(startingBalance.FundId) ?? throw new InvalidOperationException(),
+                    Amount = startingBalance.Amount,
+                })
         };
         _accountService.CreateNewAccount(createAccountRequest,
-            createAccountModel.StartingBalance,
             out Account newAccount,
             out AccountStartingBalance? newAccountStartingBalance);
         _accountRepository.Add(newAccount);
         _accountStartingBalanceRepository.Add(newAccountStartingBalance);
         await _unitOfWork.SaveChangesAsync();
-        return Ok(ConvertToModel(newAccount));
+        return Ok(AccountModel.ConvertEntityToModel(newAccount));
     }
-
-    /// <summary>
-    /// Converts the Account domain entity into an Account REST model
-    /// </summary>
-    /// <param name="account">Account domain entity to be converted</param>
-    /// <returns>The converted Account REST model</returns>
-    private AccountModel ConvertToModel(Account account) => new()
-    {
-        Id = account.Id,
-        Name = account.Name,
-        Type = account.Type,
-    };
 }

@@ -1,6 +1,9 @@
 using Data.EntityModels;
+using Data.Requests;
+using Data.ValueObjectModels;
 using Domain.Entities;
 using Domain.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data.Repositories;
 
@@ -24,6 +27,7 @@ public class AccountStartingBalanceRepository : IAccountStartingBalanceRepositor
     public AccountStartingBalance? FindOrNull(Guid accountId, Guid accountingPeriodId)
     {
         AccountStartingBalanceData? accountStartingBalanceData = _context.AccountStartingBalances
+            .Include(accountStartingBalance => accountStartingBalance.StartingFundBalances)
             .SingleOrDefault(accountStartingBalance => accountStartingBalance.AccountId == accountId &&
                 accountStartingBalance.AccountingPeriodId == accountingPeriodId);
         return accountStartingBalanceData != null ? ConvertToEntity(accountStartingBalanceData) : null;
@@ -43,12 +47,17 @@ public class AccountStartingBalanceRepository : IAccountStartingBalanceRepositor
     /// <param name="accountStartingBalanceData">Account Starting Balance Data to be converted</param>
     /// <returns>The converted Account Starting Balance domain entity</returns>
     private static AccountStartingBalance ConvertToEntity(AccountStartingBalanceData accountStartingBalanceData) =>
-        new AccountStartingBalance(new AccountStartingDataRecreateRequest
+        new AccountStartingBalance(new AccountStartingBalanceRecreateRequest
         {
             Id = accountStartingBalanceData.Id,
             AccountId = accountStartingBalanceData.AccountId,
             AccountingPeriodId = accountStartingBalanceData.AccountingPeriodId,
-            StartingBalance = accountStartingBalanceData.StartingBalance,
+            StartingFundBalances = accountStartingBalanceData.StartingFundBalances
+                .Select(startingBalance => new FundAmountRecreateRequest
+                {
+                    FundId = startingBalance.FundId,
+                    Amount = startingBalance.Amount,
+                }),
         });
 
     /// <summary>
@@ -67,25 +76,14 @@ public class AccountStartingBalanceRepository : IAccountStartingBalanceRepositor
             Id = accountStartingBalance.Id,
             AccountId = accountStartingBalance.AccountId,
             AccountingPeriodId = accountStartingBalance.AccountingPeriodId,
-            StartingBalance = accountStartingBalance.StartingBalance
+            StartingFundBalances = accountStartingBalance.StartingFundBalances
+                .Select(startingBalance => new FundAmountData
+                {
+                    FundId = startingBalance.FundId,
+                    Amount = startingBalance.Amount,
+                }).ToList(),
         };
         existingAccountStartingBalanceData?.Replace(newAccountStartingBalanceData);
         return existingAccountStartingBalanceData ?? newAccountStartingBalanceData;
     }
-
-    /// <inheritdoc/>
-    private sealed record AccountStartingDataRecreateRequest : IRecreateAccountStartingBalanceRequest
-    {
-        /// <inheritdoc/>
-        public required Guid Id { get; init; }
-
-        /// <inheritdoc/>
-        public required Guid AccountId { get; init; }
-
-        /// <inheritdoc/>
-        public required Guid AccountingPeriodId { get; init; }
-
-        /// <inheritdoc/>
-        public required decimal StartingBalance { get; init; }
-    };
 }

@@ -51,12 +51,13 @@ public class AccountingPeriod
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="request">Request to create an Accounting Period</param>
-    internal AccountingPeriod(CreateAccountingPeriodRequest request)
+    /// <param name="year">Year for this Accounting Period</param>
+    /// <param name="month">Month for this Accounting Period</param>
+    internal AccountingPeriod(int year, int month)
     {
         Id = Guid.NewGuid();
-        Year = request.Year;
-        Month = request.Month;
+        Year = year;
+        Month = month;
         IsOpen = true;
         Validate();
     }
@@ -79,18 +80,6 @@ public class AccountingPeriod
             throw new InvalidOperationException();
         }
     }
-}
-
-/// <summary>
-/// Record representing a request to create an Accounting Period
-/// </summary>
-internal sealed record CreateAccountingPeriodRequest
-{
-    /// <inheritdoc cref="AccountingPeriod.Year"/>
-    public required int Year { get; init; }
-
-    /// <inheritdoc cref="AccountingPeriod.Month"/>
-    public required int Month { get; init; }
 }
 
 /// <summary>

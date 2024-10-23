@@ -27,9 +27,9 @@ public class DatabaseContext : DbContext
     public DbSet<TransactionData> Transactions { get; set; } = default!;
 
     /// <summary>
-    /// Collection of Accounting Entries in the database
+    /// Collection of Fund Amounts in the database
     /// </summary>
-    public DbSet<AccountingEntryData> AccountingEntries { get; set; } = default!;
+    public DbSet<FundAmountData> FundAmounts { get; set; } = default!;
 
     /// <summary>
     /// Collection of Transaction Details in the database
@@ -40,6 +40,11 @@ public class DatabaseContext : DbContext
     /// Collection of Account Starting Balances in the database
     /// </summary>
     public DbSet<AccountStartingBalanceData> AccountStartingBalances { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of Funds in the database
+    /// </summary>
+    public DbSet<FundData> Funds { get; set; } = default!;
 
     /// <inheritdoc/>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -60,12 +65,16 @@ public class DatabaseContext : DbContext
         modelBuilder.Entity<TransactionData>().HasKey(transaction => transaction.PrimaryKey);
         modelBuilder.Entity<TransactionData>().HasIndex(transaction => transaction.Id);
 
-        modelBuilder.Entity<AccountingEntryData>().HasKey(accountingEntry => accountingEntry.PrimaryKey);
+        modelBuilder.Entity<FundAmountData>().HasKey(accountingEntry => accountingEntry.PrimaryKey);
 
         modelBuilder.Entity<TransactionDetailData>().HasKey(transactionDetail => transactionDetail.PrimaryKey);
 
         modelBuilder.Entity<AccountStartingBalanceData>().HasKey(accountStartingBalance => accountStartingBalance.PrimaryKey);
         modelBuilder.Entity<AccountStartingBalanceData>().HasIndex(accountStartingBalance => accountStartingBalance.AccountId);
         modelBuilder.Entity<AccountStartingBalanceData>().HasIndex(accountStartingBalance => accountStartingBalance.AccountingPeriodId);
+
+        modelBuilder.Entity<FundData>().HasKey(fund => fund.PrimaryKey);
+        modelBuilder.Entity<FundData>().HasIndex(fund => fund.Id).IsUnique();
+        modelBuilder.Entity<FundData>().HasIndex(fund => fund.Name).IsUnique();
     }
 }

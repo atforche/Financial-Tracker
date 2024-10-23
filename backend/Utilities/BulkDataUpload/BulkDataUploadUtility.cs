@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using RestApi;
 using RestApi.Models.Account;
 using RestApi.Models.AccountingPeriod;
+using RestApi.Models.Fund;
 using RestApi.Models.Transaction;
 using Utilities.BulkDataUpload.Uploaders;
 
@@ -50,14 +51,26 @@ public partial class BulkDataUploadUtility
         using var accountingPeriodUploader = new AccountingPeriodUploader(accountingPeriod);
         await accountingPeriodUploader.UploadAsync();
 
+        IEnumerable<CreateFundModel> funds = JsonSerializer.Deserialize<IEnumerable<CreateFundModel>>(
+            sections[1], _defaultSerializerOptions) ?? throw new InvalidOperationException();
+        using var fundUploader = new FundUploader(funds);
+        await fundUploader.UploadAsync();
+
+        Dictionary<string, Guid> accountConversions = fundUploader.Results
+            .ToDictionary(fund => fund.Name, fund => fund.Id);
+        _accountSerializerOptions.Converters.Add(new NameToGuidConverter(accountConversions));
         IEnumerable<CreateAccountModel> accounts = JsonSerializer.Deserialize<IEnumerable<CreateAccountModel>>(
-            sections[1], _accountSerializerOptions) ?? throw new InvalidOperationException();
+            sections[2], _accountSerializerOptions) ?? throw new InvalidOperationException();
         using var accountUploader = new AccountUploader(accounts);
         await accountUploader.UploadAsync();
 
-        _transactionSerializerOptions.Converters.Add(new AccountNameIdConverter(accountUploader.Results));
+        Dictionary<string, Guid> transactionConversions = accountUploader.Results
+            .Select(account => (account.Name, account.Id))
+            .Concat(fundUploader.Results.Select(fund => (fund.Name, fund.Id)))
+            .ToDictionary(pair => pair.Name, pair => pair.Id);
+        _transactionSerializerOptions.Converters.Add(new NameToGuidConverter(transactionConversions));
         IEnumerable<CreateTransactionModel> transactions = JsonSerializer.Deserialize<IEnumerable<CreateTransactionModel>>(
-            sections[2], _transactionSerializerOptions) ?? throw new InvalidOperationException();
+            sections[3], _transactionSerializerOptions) ?? throw new InvalidOperationException();
         using var transactionUploader = new TransactionUploader(transactions);
         await transactionUploader.UploadAsync();
 

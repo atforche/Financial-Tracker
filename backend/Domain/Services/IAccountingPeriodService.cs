@@ -10,11 +10,10 @@ public interface IAccountingPeriodService
     /// <summary>
     /// Creates a new Accounting Period with the provided properties
     /// </summary>
-    /// <param name="year">Year for this Accounting Period</param>
-    /// <param name="month">Month for this Accounting Period</param>
+    /// <param name="request">Request to create an Accounting Period</param>
     /// <param name="newAccountingPeriod">The newly created Accounting Period</param>
     /// <param name="newAccountStartingBalances">The newly created Account Starting Balances for this Accounting Period</param>
-    void CreateNewAccountingPeriod(int year, int month,
+    void CreateNewAccountingPeriod(CreateAccountingPeriodRequest request,
         out AccountingPeriod newAccountingPeriod,
         out ICollection<AccountStartingBalance> newAccountStartingBalances);
 
@@ -26,4 +25,16 @@ public interface IAccountingPeriodService
     void ClosePeriod(
         AccountingPeriod accountingPeriod,
         out ICollection<AccountStartingBalance> newAccountStartingBalances);
+}
+
+/// <summary>
+/// Record representing a request to create an Accounting Period
+/// </summary>
+public record CreateAccountingPeriodRequest
+{
+    /// <inheritdoc cref="AccountingPeriod.Year"/>
+    public required int Year { get; init; }
+
+    /// <inheritdoc cref="AccountingPeriod.Month"/>
+    public required int Month { get; init; }
 }

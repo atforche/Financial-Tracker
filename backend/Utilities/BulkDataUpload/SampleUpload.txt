@@ -3,43 +3,71 @@
     "Year": 2024,
     "Month": 10
 }
+// ----- Funds -----
+[
+    {
+        "Name": "Spend"
+    },
+    {
+        "Name": "Debt"
+    },
+    {
+        "Name": "Investment"
+    }
+]
 // ----- Accounts -----
 [
     {
         "Name": "Test Checking",
         "Type": "Standard",
-        "StartingBalance": 7500
+        "StartingFundBalances": [
+            {
+                "FundId": "Spend",
+                "Amount": 7500
+            }
+        ]
     },
     {
         "Name": "Test Debt",
         "Type": "Debt",
-        "StartingBalance": 10000 
+        "StartingFundBalances": [
+            {
+                "FundId": "Debt",
+                "Amount": 10000
+            }
+        ] 
     },
     {
         "Name" : "Test Investment",
         "Type": "Investment",
-        "StartingBalance": 1000
+        "StartingFundBalances": [
+            {
+                "FundId": "Investment",
+                "Amount": 5000
+            }
+        ]
     }
 ]
 // ----- Transactions -----
 [
     {
-        "AccountingDate": "2024-09-02",
+        "AccountingDate": "2024-10-02",
         "DebitDetail":
         {
             "AccountId": "Test Checking",
-            "StatementDate": "2024-09-02",
+            "StatementDate": "2024-10-02",
             "IsPosted": true
         },
         "CreditDetail": 
         {
             "AccountId": "Test Investment",
-            "StatementDate": "2024-09-02",
+            "StatementDate": "2024-10-02",
             "IsPosted": true
         },
         "AccountingEntries":
         [
             {
+                "FundId": "Spend",
                 "Amount": 25.00
             }
         ]

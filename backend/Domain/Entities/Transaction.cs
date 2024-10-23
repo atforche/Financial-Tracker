@@ -43,7 +43,7 @@ public class Transaction
     /// <summary>
     /// List of Accounting Entries for this Transaction
     /// </summary>
-    public ICollection<AccountingEntry> AccountingEntries { get; }
+    public ICollection<FundAmount> AccountingEntries { get; }
 
     /// <summary>
     /// Reconstructs an existing Transaction
@@ -55,7 +55,8 @@ public class Transaction
         AccountingDate = request.AccountingDate;
         DebitDetail = request.DebitDetail != null ? new TransactionDetail(request.DebitDetail) : null;
         CreditDetail = request.CreditDetail != null ? new TransactionDetail(request.CreditDetail) : null;
-        AccountingEntries = request.AccountingEntries.Select(amount => new AccountingEntry(amount)).ToList();
+        AccountingEntries = request.AccountingEntries
+            .Select(request => new FundAmount(request.FundId, request.Amount)).ToList();
     }
 
     /// <summary>
@@ -66,9 +67,14 @@ public class Transaction
     {
         Id = Guid.NewGuid();
         AccountingDate = request.AccountingDate;
-        DebitDetail = request.DebitDetail != null ? new TransactionDetail(request.DebitDetail) : null;
-        CreditDetail = request.CreditDetail != null ? new TransactionDetail(request.CreditDetail) : null;
-        AccountingEntries = request.AccountingEntries.Select(amount => new AccountingEntry(amount)).ToList();
+        DebitDetail = request.DebitDetail != null
+            ? new TransactionDetail(request.DebitDetail.Account, request.DebitDetail.StatementDate, request.DebitDetail.IsPosted)
+            : null;
+        CreditDetail = request.CreditDetail != null
+            ? new TransactionDetail(request.CreditDetail.Account, request.CreditDetail.StatementDate, request.CreditDetail.IsPosted)
+            : null;
+        AccountingEntries = request.AccountingEntries
+            .Select(request => new FundAmount(request.Fund.Id, request.Amount)).ToList();
         Validate();
     }
 
@@ -89,7 +95,9 @@ public class Transaction
         {
             throw new InvalidOperationException();
         }
-        if (AccountingEntries.Count == 0 || AccountingEntries.Sum(entry => entry.Amount) == 0)
+        if (AccountingEntries.Count == 0 ||
+            AccountingEntries.Sum(entry => entry.Amount) == 0 ||
+            AccountingEntries.GroupBy(entry => entry.FundId).Any(group => group.Count() > 1))
         {
             throw new InvalidOperationException();
         }
@@ -111,7 +119,7 @@ public record CreateTransactionRequest
     public CreateTransactionDetailRequest? CreditDetail { get; init; }
 
     /// <inheritdoc cref="Transaction.AccountingEntries"/>
-    public required IEnumerable<decimal> AccountingEntries { get; init; }
+    public required IEnumerable<CreateFundAmountRequest> AccountingEntries { get; init; }
 }
 
 /// <summary>
@@ -132,5 +140,5 @@ public interface IRecreateTransactionRequest
     IRecreateTransactionDetailRequest? CreditDetail { get; }
 
     /// <inheritdoc cref="Transaction.AccountingEntries"/>
-    IEnumerable<decimal> AccountingEntries { get; }
+    IEnumerable<IRecreateFundAmountRequest> AccountingEntries { get; }
 }
