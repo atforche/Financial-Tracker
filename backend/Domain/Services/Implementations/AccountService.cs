@@ -1,5 +1,6 @@
 using Domain.Entities;
 using Domain.Repositories;
+using Domain.ValueObjects;
 
 namespace Domain.Services.Implementations;
 
@@ -22,24 +23,18 @@ public class AccountService : IAccountService
 
     /// <inheritdoc/>
     public void CreateNewAccount(CreateAccountRequest createAccountRequest,
-        decimal startingBalance,
         out Account newAccount,
         out AccountStartingBalance newAccountStartingBalance)
     {
         ValidateNewAccountName(createAccountRequest.Name);
-        newAccount = new Account(createAccountRequest);
-
-        var createAccountStartingBalanceRequest = new CreateAccountStartingBalanceRequest
-        {
-            Account = newAccount,
-            AccountingPeriod = _accountingPeriodRepository.FindOpenPeriods().Last(),
-            StartingBalance = startingBalance,
-        };
-        newAccountStartingBalance = new AccountStartingBalance(createAccountStartingBalanceRequest);
+        newAccount = new Account(createAccountRequest.Name, createAccountRequest.Type);
+        newAccountStartingBalance = new AccountStartingBalance(newAccount,
+            _accountingPeriodRepository.FindOpenPeriods().Last(),
+            createAccountRequest.StartingFundBalances.Select(request => new FundAmount(request.Fund.Id, request.Amount)).ToList());
     }
 
     /// <summary>
-    /// Validates that the new name for an Account is unique among the existing accounts
+    /// Validates that the new name for an Account is unique among the existing Accounts
     /// </summary>
     /// <param name="newName">New name to be given to an Account</param>
     private void ValidateNewAccountName(string newName)

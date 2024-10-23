@@ -38,12 +38,13 @@ public class Account
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="request">Request to create an Account</param>
-    internal Account(CreateAccountRequest request)
+    /// <param name="name">Name for this Account</param>
+    /// <param name="type">Type for this Account</param>
+    internal Account(string name, AccountType type)
     {
         Id = Guid.NewGuid();
-        Name = request.Name;
-        Type = request.Type;
+        Name = name;
+        Type = type;
         Validate();
     }
 
@@ -98,18 +99,6 @@ public enum AccountType
     /// in the Account change.
     /// </remarks>
     Investment,
-}
-
-/// <summary>
-/// Record representing a request to create an Account
-/// </summary>
-public record CreateAccountRequest
-{
-    /// <inheritdoc cref="Account.Name"/>
-    public required string Name { get; init; }
-
-    /// <inheritdoc cref="Account.Type"/>
-    public required AccountType Type { get; init; }
 }
 
 /// <summary>

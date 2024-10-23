@@ -26,7 +26,7 @@ public class TransactionData : IEntityDataModel<TransactionData>
     public TransactionDetailData? CreditDetail { get; set; }
 
     /// <inheritdoc cref="Transaction.AccountingEntries"/>
-    public required ICollection<AccountingEntryData> AccountingEntries { get; init; }
+    public required ICollection<FundAmountData> AccountingEntries { get; init; }
 
     /// <inheritdoc/>
     public void Replace(TransactionData newModel)
@@ -35,9 +35,8 @@ public class TransactionData : IEntityDataModel<TransactionData>
         AccountingDate = newModel.AccountingDate;
         DebitDetail = newModel.DebitDetail;
         CreditDetail = newModel.CreditDetail;
-
         AccountingEntries.Clear();
-        foreach (AccountingEntryData accountingEntryData in newModel.AccountingEntries)
+        foreach (FundAmountData accountingEntryData in newModel.AccountingEntries)
         {
             AccountingEntries.Add(accountingEntryData);
         }

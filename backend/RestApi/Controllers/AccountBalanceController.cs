@@ -1,6 +1,7 @@
 using Domain.Entities;
 using Domain.Repositories;
 using Domain.Services;
+using Domain.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 using RestApi.Models.AccountBalance;
 
@@ -45,8 +46,7 @@ public class AccountBalanceController : ControllerBase
         return Ok(new AccountBalanceByDateModel
         {
             Date = asOfDate,
-            Balance = accountBalance.Balance,
-            BalanceIncludingPendingTransactions = accountBalance.BalanceIncludingPendingTransactions
+            AccountBalance = AccountBalanceModel.ConvertValueObjectToModel(accountBalance),
         });
     }
 }

@@ -1,4 +1,5 @@
 using Data.EntityModels;
+using Data.Requests;
 using Domain.Entities;
 using Domain.Repositories;
 
@@ -106,20 +107,4 @@ public class AccountingPeriodRepository : IAccountingPeriodRepository
         existingAccountingPeriodData?.Replace(newAccountingPeriodData);
         return existingAccountingPeriodData ?? newAccountingPeriodData;
     }
-
-    /// <inheritdoc/>
-    private sealed record AccountingPeriodRecreateRequest : IRecreateAccountingPeriodRequest
-    {
-        /// <inheritdoc/>
-        public required Guid Id { get; init; }
-
-        /// <inheritdoc/>
-        public required int Year { get; init; }
-
-        /// <inheritdoc/>
-        public required int Month { get; init; }
-
-        /// <inheritdoc/>
-        public required bool IsOpen { get; init; }
-    };
 }

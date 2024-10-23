@@ -1,7 +1,4 @@
 using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using RestApi.Models.Account;
 using RestApi.Models.Transaction;
 
 namespace Utilities.BulkDataUpload.Uploaders;
@@ -39,29 +36,4 @@ public class TransactionUploader : DataUploader
             ++i;
         }
     }
-}
-
-/// <summary>
-/// JSON converter class to convert an Account's name into its associated GUID
-/// </summary>
-public class AccountNameIdConverter : JsonConverter<Guid>
-{
-    private readonly Dictionary<string, Guid> _accounts;
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="accounts">List of accounts that have been created</param>
-    public AccountNameIdConverter(IEnumerable<AccountModel> accounts)
-    {
-        _accounts = accounts.ToDictionary(model => model.Name, model => model.Id);
-    }
-
-    /// <inheritdoc/>
-    public override Guid Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-        _accounts[reader.GetString() ?? ""];
-
-    /// <inheritdoc/>
-    public override void Write(Utf8JsonWriter writer, Guid value, JsonSerializerOptions options) =>
-        writer.WriteStringValue(_accounts.First(pair => pair.Value == value).Key);
 }

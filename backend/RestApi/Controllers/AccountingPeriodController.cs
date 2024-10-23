@@ -43,7 +43,7 @@ public class AccountingPeriodController : ControllerBase
     /// <returns>A collection of all Accounting Periods</returns>
     [HttpGet("")]
     public IReadOnlyCollection<AccountingPeriodModel> GetAccountingPeriods() =>
-        _accountingPeriodRepository.FindAll().Select(ConvertToModel).ToList();
+        _accountingPeriodRepository.FindAll().Select(AccountingPeriodModel.ConvertEntityToModel).ToList();
 
     /// <summary>
     /// Retrieves the Accounting Period that matches the provided ID
@@ -54,7 +54,7 @@ public class AccountingPeriodController : ControllerBase
     public IActionResult GetAccountingPeriod(Guid accountingPeriodId)
     {
         AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindOrNull(accountingPeriodId);
-        return accountingPeriod != null ? Ok(ConvertToModel(accountingPeriod)) : NotFound();
+        return accountingPeriod != null ? Ok(AccountingPeriodModel.ConvertEntityToModel(accountingPeriod)) : NotFound();
     }
 
     /// <summary>
@@ -65,8 +65,12 @@ public class AccountingPeriodController : ControllerBase
     [HttpPost("")]
     public async Task<IActionResult> CreateAccountingPeriodAsync(CreateAccountingPeriodModel createAccountingPeriodModel)
     {
-        _accountingPeriodService.CreateNewAccountingPeriod(createAccountingPeriodModel.Year,
-            createAccountingPeriodModel.Month,
+        _accountingPeriodService.CreateNewAccountingPeriod(
+            new CreateAccountingPeriodRequest
+            {
+                Year = createAccountingPeriodModel.Year,
+                Month = createAccountingPeriodModel.Month,
+            },
             out AccountingPeriod newAccountingPeriod,
             out ICollection<AccountStartingBalance> newAccountStartingBalances);
         _accountingPeriodRepository.Add(newAccountingPeriod);
@@ -75,7 +79,7 @@ public class AccountingPeriodController : ControllerBase
             _accountStartingBalanceRepository.Add(startingBalance);
         }
         await _unitOfWork.SaveChangesAsync();
-        return Ok(ConvertToModel(newAccountingPeriod));
+        return Ok(AccountingPeriodModel.ConvertEntityToModel(newAccountingPeriod));
     }
 
     /// <summary>
@@ -100,19 +104,6 @@ public class AccountingPeriodController : ControllerBase
             _accountStartingBalanceRepository.Add(startingBalance);
         }
         await _unitOfWork.SaveChangesAsync();
-        return Ok(ConvertToModel(accountingPeriod));
+        return Ok(AccountingPeriodModel.ConvertEntityToModel(accountingPeriod));
     }
-
-    /// <summary>
-    /// Converts the Accounting Period domain entity into an Accounting Period REST model
-    /// </summary>
-    /// <param name="accountingPeriod">Accounting Period domain entity to be converted</param>
-    /// <returns>The converted Accounting Period REST model</returns>
-    private AccountingPeriodModel ConvertToModel(AccountingPeriod accountingPeriod) => new AccountingPeriodModel()
-    {
-        Id = accountingPeriod.Id,
-        Year = accountingPeriod.Year,
-        Month = accountingPeriod.Month,
-        IsOpen = accountingPeriod.IsOpen,
-    };
 }

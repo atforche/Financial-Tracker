@@ -1,4 +1,5 @@
 using Data.EntityModels;
+using Data.Requests;
 using Data.ValueObjectModels;
 using Domain.Entities;
 using Domain.Repositories;
@@ -72,7 +73,7 @@ public class TransactionRepository : ITransactionRepository
         {
             _context.Add(transactionData.CreditDetail);
         }
-        foreach (AccountingEntryData accountingEntry in transactionData.AccountingEntries)
+        foreach (FundAmountData accountingEntry in transactionData.AccountingEntries)
         {
             _context.Add(accountingEntry);
         }
@@ -90,7 +91,11 @@ public class TransactionRepository : ITransactionRepository
             AccountingDate = transactionData.AccountingDate,
             DebitDetail = transactionData.DebitDetail != null ? GetRecreateRequest(transactionData.DebitDetail) : null,
             CreditDetail = transactionData.CreditDetail != null ? GetRecreateRequest(transactionData.CreditDetail) : null,
-            AccountingEntries = transactionData.AccountingEntries.Select(entry => entry.Amount)
+            AccountingEntries = transactionData.AccountingEntries.Select(entry => new FundAmountRecreateRequest
+            {
+                FundId = entry.FundId,
+                Amount = entry.Amount,
+            })
         });
 
     /// <summary>
@@ -121,11 +126,11 @@ public class TransactionRepository : ITransactionRepository
             AccountingDate = transaction.AccountingDate,
             DebitDetail = transaction.DebitDetail != null ? PopulateFromTransactionDetail(transaction.DebitDetail) : null,
             CreditDetail = transaction.CreditDetail != null ? PopulateFromTransactionDetail(transaction.CreditDetail) : null,
-            AccountingEntries = transaction.AccountingEntries.Select(entry =>
-                new AccountingEntryData
-                {
-                    Amount = entry.Amount,
-                }).ToList()
+            AccountingEntries = transaction.AccountingEntries.Select(entry => new FundAmountData
+            {
+                FundId = entry.FundId,
+                Amount = entry.Amount,
+            }).ToList()
         };
         existingTransactionData?.Replace(newTransactionData);
 
@@ -146,39 +151,4 @@ public class TransactionRepository : ITransactionRepository
             StatementDate = transactionDetail.StatementDate,
             IsPosted = transactionDetail.IsPosted,
         };
-
-    /// <inheritdoc/>
-    private sealed record TransactionRecreateRequest : IRecreateTransactionRequest
-    {
-        /// <inheritdoc/>
-        public required Guid Id { get; init; }
-
-        /// <inheritdoc/>
-        public required DateOnly AccountingDate { get; init; }
-
-        /// <inheritdoc/>
-        public IRecreateTransactionDetailRequest? DebitDetail { get; init; }
-
-        /// <inheritdoc/>
-        public IRecreateTransactionDetailRequest? CreditDetail { get; init; }
-
-        /// <inheritdoc/>
-        public required IEnumerable<decimal> AccountingEntries { get; init; }
-    }
-
-    /// <inheritdoc/>
-    private sealed record TransactionDetailRecreateRequest : IRecreateTransactionDetailRequest
-    {
-        /// <inheritdoc/>
-        public required Guid Id { get; init; }
-
-        /// <inheritdoc/>
-        public required Guid AccountId { get; init; }
-
-        /// <inheritdoc/>
-        public DateOnly? StatementDate { get; init; }
-
-        /// <inheritdoc/>
-        public required bool IsPosted { get; init; }
-    }
 }

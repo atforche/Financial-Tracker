@@ -1,5 +1,6 @@
 using Domain.Entities;
 using Domain.Repositories;
+using Domain.ValueObjects;
 
 namespace Domain.Services.Implementations;
 
@@ -36,17 +37,24 @@ public class AccountBalanceService : IAccountBalanceService
             asOfDate,
             DateToCompare.Accounting | DateToCompare.Statement);
 
-        decimal balance = accountStartingBalance?.StartingBalance ?? 0.0m;
-        decimal balanceIncludingPendingTransactions = balance;
+        Dictionary<Guid, decimal> balances = accountStartingBalance?.StartingFundBalances.ToDictionary(
+            startingFundBalance => startingFundBalance.FundId,
+            startingFundBalance => startingFundBalance.Amount) ?? [];
+        Dictionary<Guid, decimal> balancesIncludingPendingTransactions = accountStartingBalance?.StartingFundBalances.ToDictionary(
+            startingFundBalance => startingFundBalance.FundId,
+            startingFundBalance => startingFundBalance.Amount) ?? [];
         foreach (Transaction transaction in transactions)
         {
-            balanceIncludingPendingTransactions = ApplyTransactionToAccountBalance(balance, transaction, account);
+            ApplyTransactionToAccountBalance(balances, transaction, account);
             if (!IsTransactionPending(transaction, account, asOfDate))
             {
-                balance = ApplyTransactionToAccountBalance(balance, transaction, account);
+                ApplyTransactionToAccountBalance(balancesIncludingPendingTransactions, transaction, account);
             }
         }
-        return new AccountBalance(balance, balanceIncludingPendingTransactions);
+        IEnumerable<FundAmount> result = balances.Select(pair => new FundAmount(pair.Key, pair.Value));
+        IEnumerable<FundAmount> resultIncludingPendingTransactions = balancesIncludingPendingTransactions
+            .Select(pair => new FundAmount(pair.Key, pair.Value));
+        return new AccountBalance(result, resultIncludingPendingTransactions);
     }
 
     /// <summary>
@@ -69,24 +77,58 @@ public class AccountBalanceService : IAccountBalanceService
     }
 
     /// <summary>
-    /// Calculates the new balance for an Account given a Transaction.
+    /// Updates the balances for an Account after applying a Transaction.
     /// </summary>
-    /// <param name="currentBalance">The current balance of the Account</param>
+    /// <param name="currentBalance">The current balances of the Account</param>
     /// <param name="transaction">Transaction to apply to the Account</param>
     /// <param name="account">Account the Transaction should be applied against</param>
-    /// <returns>The new balance for an Account after this Transaction is applied</returns>
-    private static decimal ApplyTransactionToAccountBalance(decimal currentBalance, Transaction transaction, Account account)
+    private static void ApplyTransactionToAccountBalance(Dictionary<Guid, decimal> currentBalance,
+        Transaction transaction,
+        Account account)
     {
-        decimal transactionTotal = transaction.AccountingEntries.Sum(entry => entry.Amount);
+        BalanceChangeFromTransaction balanceChange = DetermineBalanceChangeFromTransaction(transaction, account);
+        int adjustmentFactor = balanceChange switch
+        {
+            BalanceChangeFromTransaction.Increase => 1,
+            BalanceChangeFromTransaction.Decrease => -1,
+            _ => 1
+        };
+        foreach (FundAmount accountingEntry in transaction.AccountingEntries)
+        {
+            if (!currentBalance.TryAdd(accountingEntry.FundId, accountingEntry.Amount))
+            {
+                currentBalance[accountingEntry.FundId] = currentBalance[accountingEntry.FundId] +
+                    (adjustmentFactor * accountingEntry.Amount);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Determines how the balance of an Account will change when a Transaction is applied
+    /// </summary>
+    /// <param name="transaction">Transaction to be applied to an Account</param>
+    /// <param name="account">Account to have a Transaction applied</param>
+    /// <returns>An enum representing how the Transaction will change the Account's balance</returns>
+    private static BalanceChangeFromTransaction DetermineBalanceChangeFromTransaction(Transaction transaction, Account account)
+    {
         bool isDebit = transaction.DebitDetail?.AccountId == account.Id;
         if (isDebit && account.Type == AccountType.Debt)
         {
-            return currentBalance + transactionTotal;
+            return BalanceChangeFromTransaction.Increase;
         }
         if (!isDebit && account.Type != AccountType.Debt)
         {
-            return currentBalance + transactionTotal;
+            return BalanceChangeFromTransaction.Increase;
         }
-        return currentBalance - transactionTotal;
+        return BalanceChangeFromTransaction.Decrease;
+    }
+
+    /// <summary>
+    /// Enum that represents the ways that a Transaction can affect the balance of an Account
+    /// </summary>
+    private enum BalanceChangeFromTransaction
+    {
+        Increase,
+        Decrease,
     }
 }

@@ -60,9 +60,6 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("StartingBalance")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("PrimaryKey");
 
                     b.HasIndex("AccountId");
@@ -99,6 +96,30 @@ namespace Data.Migrations
                         .IsUnique();
 
                     b.ToTable("AccountingPeriods");
+                });
+
+            modelBuilder.Entity("Data.EntityModels.FundData", b =>
+                {
+                    b.Property<long>("PrimaryKey")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("PrimaryKey");
+
+                    b.HasIndex("Id")
+                        .IsUnique();
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Funds");
                 });
 
             modelBuilder.Entity("Data.EntityModels.TransactionData", b =>
@@ -153,13 +174,19 @@ namespace Data.Migrations
                     b.ToTable("TransactionDetails");
                 });
 
-            modelBuilder.Entity("Data.ValueObjectModels.AccountingEntryData", b =>
+            modelBuilder.Entity("Data.ValueObjectModels.FundAmountData", b =>
                 {
                     b.Property<long>("PrimaryKey")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<long?>("AccountStartingBalanceDataPrimaryKey")
+                        .HasColumnType("INTEGER");
+
                     b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("FundId")
                         .HasColumnType("TEXT");
 
                     b.Property<long?>("TransactionDataPrimaryKey")
@@ -167,9 +194,11 @@ namespace Data.Migrations
 
                     b.HasKey("PrimaryKey");
 
+                    b.HasIndex("AccountStartingBalanceDataPrimaryKey");
+
                     b.HasIndex("TransactionDataPrimaryKey");
 
-                    b.ToTable("AccountingEntries");
+                    b.ToTable("FundAmounts");
                 });
 
             modelBuilder.Entity("Data.EntityModels.TransactionData", b =>
@@ -187,11 +216,20 @@ namespace Data.Migrations
                     b.Navigation("DebitDetail");
                 });
 
-            modelBuilder.Entity("Data.ValueObjectModels.AccountingEntryData", b =>
+            modelBuilder.Entity("Data.ValueObjectModels.FundAmountData", b =>
                 {
+                    b.HasOne("Data.EntityModels.AccountStartingBalanceData", null)
+                        .WithMany("StartingFundBalances")
+                        .HasForeignKey("AccountStartingBalanceDataPrimaryKey");
+
                     b.HasOne("Data.EntityModels.TransactionData", null)
                         .WithMany("AccountingEntries")
                         .HasForeignKey("TransactionDataPrimaryKey");
+                });
+
+            modelBuilder.Entity("Data.EntityModels.AccountStartingBalanceData", b =>
+                {
+                    b.Navigation("StartingFundBalances");
                 });
 
             modelBuilder.Entity("Data.EntityModels.TransactionData", b =>

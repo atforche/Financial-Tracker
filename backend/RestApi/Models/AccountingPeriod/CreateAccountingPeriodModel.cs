@@ -6,8 +6,8 @@ namespace RestApi.Models.AccountingPeriod;
 public class CreateAccountingPeriodModel
 {
     /// <inheritdoc cref="Domain.Entities.AccountingPeriod.Year"/>
-    public required int Year { get; set; }
+    public required int Year { get; init; }
 
     /// <inheritdoc cref="Domain.Entities.AccountingPeriod.Month"/>
-    public required int Month { get; set; }
+    public required int Month { get; init; }
 }
