@@ -1,5 +1,4 @@
-using Domain.Entities;
-using Domain.Repositories;
+using Domain.Aggregates.Funds;
 
 namespace Domain.Services.Implementations;
 
@@ -18,10 +17,10 @@ public class FundService : IFundService
     }
 
     /// <inheritdoc/>
-    public Fund CreateNewFund(CreateFundRequest createFundRequest)
+    public Fund CreateNewFund(string name)
     {
-        ValidateNewFundName(createFundRequest.Name);
-        return new Fund(createFundRequest.Name);
+        ValidateNewFundName(name);
+        return new Fund(name);
     }
 
     /// <summary>

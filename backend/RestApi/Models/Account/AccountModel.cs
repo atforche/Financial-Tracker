@@ -1,4 +1,5 @@
-using Domain.Entities;
+using System.Text.Json.Serialization;
+using Domain.Aggregates.Accounts;
 
 namespace RestApi.Models.Account;
 
@@ -7,25 +8,34 @@ namespace RestApi.Models.Account;
 /// </summary>
 public class AccountModel
 {
-    /// <inheritdoc cref="Domain.Entities.Account.Id"/>
-    public required Guid Id { get; init; }
+    /// <inheritdoc cref="Domain.Aggregates.EntityBase.Id"/>
+    public Guid Id { get; }
 
-    /// <inheritdoc cref="Domain.Entities.Account.Name"/>
-    public required string Name { get; init; }
+    /// <inheritdoc cref="Domain.Aggregates.Accounts.Account.Name"/>
+    public string Name { get; }
 
-    /// <inheritdoc cref="Domain.Entities.Account.Type"/>
-    public required AccountType Type { get; init; }
+    /// <inheritdoc cref="Domain.Aggregates.Accounts.Account.Type"/>
+    public AccountType Type { get; }
 
     /// <summary>
-    /// Converts the Account domain entity into an Account REST model
+    /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="account">Account domain entity to be converted</param>
-    /// <returns>The converted Account REST model</returns>
-    internal static AccountModel ConvertEntityToModel(Domain.Entities.Account account) =>
-        new AccountModel
-        {
-            Id = account.Id,
-            Name = account.Name,
-            Type = account.Type,
-        };
+    [JsonConstructor]
+    public AccountModel(Guid id, string name, AccountType type)
+    {
+        Id = id;
+        Name = name;
+        Type = type;
+    }
+
+    /// <summary>
+    /// Constructs a new instance of this class
+    /// </summary>
+    /// <param name="account">Account entity to build this Account REST model from</param>
+    internal AccountModel(Domain.Aggregates.Accounts.Account account)
+    {
+        Id = account.Id.ExternalId;
+        Name = account.Name;
+        Type = account.Type;
+    }
 }

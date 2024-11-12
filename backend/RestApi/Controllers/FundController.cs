@@ -1,6 +1,5 @@
 using Data;
-using Domain.Entities;
-using Domain.Repositories;
+using Domain.Aggregates.Funds;
 using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 using RestApi.Models.Fund;
@@ -37,7 +36,7 @@ public class FundController : ControllerBase
     /// <returns>A collection of all Funds</returns>
     [HttpGet("")]
     public IReadOnlyCollection<FundModel> GetAllFunds() =>
-        _fundRepository.FindAll().Select(FundModel.ConvertEntityToModel).ToList();
+        _fundRepository.FindAll().Select(fund => new FundModel(fund)).ToList();
 
     /// <summary>
     /// Retrieves the Fund that mactches the provided ID
@@ -47,8 +46,8 @@ public class FundController : ControllerBase
     [HttpGet("{fundId}")]
     public IActionResult GetFund(Guid fundId)
     {
-        Fund? fund = _fundRepository.FindOrNull(fundId);
-        return fund != null ? Ok(FundModel.ConvertEntityToModel(fund)) : NotFound();
+        Fund? fund = _fundRepository.FindByExternalIdOrNull(fundId);
+        return fund != null ? Ok(new FundModel(fund)) : NotFound();
     }
 
     /// <summary>
@@ -59,13 +58,9 @@ public class FundController : ControllerBase
     [HttpPost("")]
     public async Task<IActionResult> CreateFundAsync(CreateFundModel createFundModel)
     {
-        var createFundRequest = new CreateFundRequest
-        {
-            Name = createFundModel.Name,
-        };
-        Fund newFund = _fundService.CreateNewFund(createFundRequest);
+        Fund newFund = _fundService.CreateNewFund(createFundModel.Name);
         _fundRepository.Add(newFund);
         await _unitOfWork.SaveChangesAsync();
-        return Ok(FundModel.ConvertEntityToModel(newFund));
+        return Ok(new FundModel(newFund));
     }
 }

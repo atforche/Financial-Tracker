@@ -1,6 +1,7 @@
 using Data;
-using Domain.Entities;
-using Domain.Repositories;
+using Domain.Aggregates.AccountingPeriods;
+using Domain.Aggregates.Accounts;
+using Domain.Aggregates.Funds;
 using Domain.Services;
 using Domain.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,7 @@ public class AccountController : ControllerBase
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAccountService _accountService;
     private readonly IAccountRepository _accountRepository;
-    private readonly IAccountStartingBalanceRepository _accountStartingBalanceRepository;
+    private readonly IAccountingPeriodRepository _accountingPeriodRepository;
     private readonly IFundRepository _fundRepository;
 
     /// <summary>
@@ -27,18 +28,18 @@ public class AccountController : ControllerBase
     /// <param name="unitOfWork">Unit of work to commit changes to the database</param>
     /// <param name="accountService">Service that constructs Accounts</param>
     /// <param name="accountRepository">Repository of Accounts</param>
-    /// <param name="accountStartingBalanceRepository">Repository of Account Starting Balances</param>
+    /// <param name="accountingPeriodRepository">Repository of Accounting Periods</param>
     /// <param name="fundRepository">Repository of Funds</param>
     public AccountController(IUnitOfWork unitOfWork,
         IAccountService accountService,
         IAccountRepository accountRepository,
-        IAccountStartingBalanceRepository accountStartingBalanceRepository,
+        IAccountingPeriodRepository accountingPeriodRepository,
         IFundRepository fundRepository)
     {
         _unitOfWork = unitOfWork;
         _accountService = accountService;
         _accountRepository = accountRepository;
-        _accountStartingBalanceRepository = accountStartingBalanceRepository;
+        _accountingPeriodRepository = accountingPeriodRepository;
         _fundRepository = fundRepository;
     }
 
@@ -48,7 +49,7 @@ public class AccountController : ControllerBase
     /// <returns>A collection of all Accounts</returns>
     [HttpGet("")]
     public IReadOnlyCollection<AccountModel> GetAllAccounts() =>
-        _accountRepository.FindAll().Select(AccountModel.ConvertEntityToModel).ToList();
+        _accountRepository.FindAll().Select(account => new AccountModel(account)).ToList();
 
     /// <summary>
     /// Retrieves the Account that matches the provided ID
@@ -58,8 +59,8 @@ public class AccountController : ControllerBase
     [HttpGet("{accountId}")]
     public IActionResult GetAccount(Guid accountId)
     {
-        Account? account = _accountRepository.FindOrNull(accountId);
-        return account != null ? Ok(AccountModel.ConvertEntityToModel(account)) : NotFound();
+        Account? account = _accountRepository.FindByExternalIdOrNull(accountId);
+        return account != null ? Ok(new AccountModel(account)) : NotFound();
     }
 
     /// <summary>
@@ -70,23 +71,18 @@ public class AccountController : ControllerBase
     [HttpPost("")]
     public async Task<IActionResult> CreateAccountAsync(CreateAccountModel createAccountModel)
     {
-        var createAccountRequest = new CreateAccountRequest
-        {
-            Name = createAccountModel.Name,
-            Type = createAccountModel.Type,
-            StartingFundBalances = createAccountModel.StartingFundBalances
-                .Select(startingBalance => new CreateFundAmountRequest
-                {
-                    Fund = _fundRepository.FindOrNull(startingBalance.FundId) ?? throw new InvalidOperationException(),
-                    Amount = startingBalance.Amount,
-                })
-        };
-        _accountService.CreateNewAccount(createAccountRequest,
-            out Account newAccount,
-            out AccountStartingBalance? newAccountStartingBalance);
+        Dictionary<Guid, Fund> funds = _fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
+        Account newAccount = _accountService.CreateNewAccount(
+            _accountingPeriodRepository.FindOpenPeriods().First(),
+            createAccountModel.Name,
+            createAccountModel.Type,
+            createAccountModel.StartingFundBalances.Select(fundBalance => new FundAmount
+            {
+                Fund = funds[fundBalance.FundId],
+                Amount = fundBalance.Amount,
+            }));
         _accountRepository.Add(newAccount);
-        _accountStartingBalanceRepository.Add(newAccountStartingBalance);
         await _unitOfWork.SaveChangesAsync();
-        return Ok(AccountModel.ConvertEntityToModel(newAccount));
+        return Ok(new AccountModel(newAccount));
     }
 }

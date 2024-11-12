@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace RestApi.Models.Fund;
 
 /// <summary>
@@ -5,21 +7,29 @@ namespace RestApi.Models.Fund;
 /// </summary>
 public class FundModel
 {
-    /// <inheritdoc cref="Domain.Entities.Fund.Id"/>
-    public required Guid Id { get; init; }
+    /// <inheritdoc cref="Domain.Aggregates.EntityBase.Id"/>
+    public Guid Id { get; init; }
 
-    /// <inheritdoc cref="Domain.Entities.Fund.Name"/>
-    public required string Name { get; init; }
+    /// <inheritdoc cref="Domain.Aggregates.Funds.Fund.Name"/>
+    public string Name { get; init; }
 
     /// <summary>
-    /// Converts the Fund domain entity into a Fund REST model
+    /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="fund">Fund domain entity to be converted</param>
-    /// <returns>The converted Fund REST model</returns>
-    internal static FundModel ConvertEntityToModel(Domain.Entities.Fund fund) =>
-        new FundModel
-        {
-            Id = fund.Id,
-            Name = fund.Name,
-        };
+    [JsonConstructor]
+    public FundModel(Guid id, string name)
+    {
+        Id = id;
+        Name = name;
+    }
+
+    /// <summary>
+    /// Constructs a new instance of this class
+    /// </summary>
+    /// <param name="fund">Fund entity to build this Fund REST model from</param>
+    public FundModel(Domain.Aggregates.Funds.Fund fund)
+    {
+        Id = fund.Id.ExternalId;
+        Name = fund.Name;
+    }
 }

@@ -51,18 +51,16 @@
 // ----- Transactions -----
 [
     {
-        "AccountingDate": "2024-10-02",
+        "TransactionDate": "2024-10-02",
         "DebitDetail":
         {
             "AccountId": "Test Checking",
-            "StatementDate": "2024-10-02",
-            "IsPosted": true
+            "PostedStatementDate": "2024-10-05"
         },
         "CreditDetail": 
         {
             "AccountId": "Test Investment",
-            "StatementDate": "2024-10-02",
-            "IsPosted": true
+            "PostedStatementDate": "2024-10-06"
         },
         "AccountingEntries":
         [

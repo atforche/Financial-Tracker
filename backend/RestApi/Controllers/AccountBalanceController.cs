@@ -1,5 +1,4 @@
-using Domain.Entities;
-using Domain.Repositories;
+using Domain.Aggregates.Accounts;
 using Domain.Services;
 using Domain.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
@@ -32,21 +31,18 @@ public class AccountBalanceController : ControllerBase
     /// Retrieves the balance for the provided Account as of the provided date
     /// </summary>
     /// <param name="accountId">ID of the Account to retrieve the balance for</param>
-    /// <param name="asOfDate">Date to retrieve the account balance as of</param>
+    /// <param name="dateRange">Date Range to get the daily Account balances for</param>
     /// <returns>The balance of the provided Account as of the provided date</returns>
-    [HttpGet("{accountId}/{asOfDate}")]
-    public IActionResult GetAccountBalanceForDate(Guid accountId, DateOnly asOfDate)
+    [HttpGet("{accountId}/ByDate")]
+    public IActionResult GetAccountBalanceForDate(Guid accountId, DateRange dateRange)
     {
-        Account? account = _accountRepository.FindOrNull(accountId);
+        Account? account = _accountRepository.FindByExternalIdOrNull(accountId);
         if (account == null)
         {
             return NotFound();
         }
-        AccountBalance accountBalance = _accountBalanceService.GetAccountBalanceAsOfDate(account, asOfDate);
-        return Ok(new AccountBalanceByDateModel
-        {
-            Date = asOfDate,
-            AccountBalance = AccountBalanceModel.ConvertValueObjectToModel(accountBalance),
-        });
+        IEnumerable<AccountBalanceByDate> accountBalances =
+            _accountBalanceService.GetAccountBalancesForDateRange(account, dateRange);
+        return Ok(accountBalances.Select(accountBalance => new AccountBalanceByDateModel(accountBalance)));
     }
 }

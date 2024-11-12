@@ -1,5 +1,5 @@
-using Domain.Entities;
-using Domain.Repositories;
+using Domain.Aggregates.AccountingPeriods;
+using Domain.Aggregates.Accounts;
 using Domain.ValueObjects;
 
 namespace Domain.Services.Implementations;
@@ -8,127 +8,135 @@ namespace Domain.Services.Implementations;
 public class AccountBalanceService : IAccountBalanceService
 {
     private readonly IAccountingPeriodRepository _accountingPeriodRepository;
-    private readonly IAccountStartingBalanceRepository _accountStartingBalanceRepository;
-    private readonly ITransactionRepository _transactionRepository;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="accountingPeriodRepository">Accounting Period repository</param>
-    /// <param name="accountStartingBalanceRepository">Account Starting Balance repository</param>
-    /// <param name="transactionRepository">Transaction repository</param>
-    public AccountBalanceService(IAccountingPeriodRepository accountingPeriodRepository,
-        IAccountStartingBalanceRepository accountStartingBalanceRepository,
-        ITransactionRepository transactionRepository)
+    /// <param name="accountingPeriodRepository">Repository of Accounting Periods</param>
+    public AccountBalanceService(IAccountingPeriodRepository accountingPeriodRepository)
     {
         _accountingPeriodRepository = accountingPeriodRepository;
-        _accountStartingBalanceRepository = accountStartingBalanceRepository;
-        _transactionRepository = transactionRepository;
     }
 
     /// <inheritdoc/>
-    public AccountBalance GetAccountBalanceAsOfDate(Account account, DateOnly asOfDate)
+    public IReadOnlyCollection<AccountBalanceByDate> GetAccountBalancesForDateRange(
+        Account account,
+        DateRange dateRange)
     {
-        AccountingPeriod effectiveAccountingPeriod = _accountingPeriodRepository.FindEffectiveAccountingPeriodForBalances(asOfDate);
-        AccountStartingBalance? accountStartingBalance = _accountStartingBalanceRepository.FindOrNull(account.Id,
-            effectiveAccountingPeriod.Id);
-        IReadOnlyCollection<Transaction> transactions = _transactionRepository.FindAllByAccountOverDateRange(account.Id,
-            new DateOnly(effectiveAccountingPeriod.Year, effectiveAccountingPeriod.Month, 1),
-            asOfDate,
-            DateToCompare.Accounting | DateToCompare.Statement);
+        List<AccountBalanceByDate> results = [];
 
-        Dictionary<Guid, decimal> balances = accountStartingBalance?.StartingFundBalances.ToDictionary(
-            startingFundBalance => startingFundBalance.FundId,
-            startingFundBalance => startingFundBalance.Amount) ?? [];
-        Dictionary<Guid, decimal> balancesIncludingPendingTransactions = accountStartingBalance?.StartingFundBalances.ToDictionary(
-            startingFundBalance => startingFundBalance.FundId,
-            startingFundBalance => startingFundBalance.Amount) ?? [];
-        foreach (Transaction transaction in transactions)
-        {
-            ApplyTransactionToAccountBalance(balances, transaction, account);
-            if (!IsTransactionPending(transaction, account, asOfDate))
+        // Find all the Accounting Periods that have Balance Events in the provided Date Range
+        List<AccountingPeriod> accountingPeriods = _accountingPeriodRepository
+            .FindAccountingPeriodsWithBalanceEventsInDateRange(dateRange)
+            .OrderBy(accountingPeriod => new DateOnly(accountingPeriod.Year, accountingPeriod.Month, 1)).ToList();
+        // Determine the Account Balance Checkpoint that we'll use as the starting point for calculating the balances
+        AccountingPeriod firstAccountingPeriod = accountingPeriods.First();
+        AccountBalance currentBalance = firstAccountingPeriod.StartOfPeriodBalanceCheckpoints
+            .SingleOrDefault(balanceCheckpoint => balanceCheckpoint.Account == account)?.GetAccountBalance()
+            ?? new AccountBalance
             {
-                ApplyTransactionToAccountBalance(balancesIncludingPendingTransactions, transaction, account);
+                FundBalances = [],
+                PendingFundBalanceChanges = []
+            };
+        // Get the list of all Balance Events that occur from the start of the earliest Accounting Period through
+        // the end of the provided Date Range
+        List<DateOnly> dates = dateRange.GetDates().ToList();
+        Dictionary<DateOnly, List<IBalanceEvent>> balanceEvents = accountingPeriods
+            .SelectMany(accountingPeriod => accountingPeriod.GetAllBalanceEvents())
+            .Where(balanceEvent => balanceEvent.EventDate <= dates.Max() && balanceEvent.Account == account)
+            .GroupBy(balanceEvent => balanceEvent.EventDate)
+            .ToDictionary(group => group.Key,
+                group => group.OrderBy(balanceEvent => balanceEvent.EventSequence).ToList());
+        // Apply all the events that fall prior to the Date Range to the starting balance
+        foreach (IBalanceEvent balanceEvent in balanceEvents.Keys.Where(eventDate => eventDate <= dates.Min())
+            .SelectMany(key => balanceEvents[key]))
+        {
+            currentBalance = balanceEvent.ApplyEventToBalance(account, currentBalance);
+        }
+        // Now calculate the balance for each date in the date range
+        foreach (DateOnly date in dates)
+        {
+            foreach (IBalanceEvent balanceEvent in balanceEvents.GetValueOrDefault(date) ?? [])
+            {
+                currentBalance = balanceEvent.ApplyEventToBalance(account, currentBalance);
+            }
+            results.Add(new AccountBalanceByDate(date, currentBalance));
+        }
+        return results;
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<AccountBalanceByEvent> GetAccountBalancesForEvents(
+        Account account,
+        DateRange dateRange)
+    {
+        List<AccountBalanceByEvent> results = [];
+
+        // Find all the Accounting Periods that have Balance Events in the provided Date Range
+        List<AccountingPeriod> accountingPeriods = _accountingPeriodRepository
+            .FindAccountingPeriodsWithBalanceEventsInDateRange(dateRange)
+            .OrderBy(accountingPeriod => new DateOnly(accountingPeriod.Year, accountingPeriod.Month, 1)).ToList();
+        // Determine the Account Balance Checkpoint that we'll use as the starting point for calculating the balances
+        AccountingPeriod firstAccountingPeriod = accountingPeriods.First();
+        AccountBalance currentBalance = firstAccountingPeriod.StartOfPeriodBalanceCheckpoints
+            .SingleOrDefault(balanceCheckpoint => balanceCheckpoint.Account == account)?.GetAccountBalance()
+            ?? new AccountBalance
+            {
+                FundBalances = [],
+                PendingFundBalanceChanges = []
+            };
+        // Get the list of all Balance Events that occur from the start of the earliest Accounting Period through
+        // the end of the provided Date Range
+        List<DateOnly> dates = dateRange.GetDates().ToList();
+        List<IBalanceEvent> balanceEvents = accountingPeriods
+            .SelectMany(accountingPeriod => accountingPeriod.GetAllBalanceEvents())
+            .Where(balanceEvent => balanceEvent.EventDate <= dates.Max() && balanceEvent.Account == account)
+            .OrderBy(balanceEvent => balanceEvent.EventDate)
+            .ThenBy(balanceEvent => balanceEvent.EventSequence).ToList();
+        // Apply each of the Balance Events to the starting balance
+        foreach (IBalanceEvent balanceEvent in balanceEvents)
+        {
+            currentBalance = balanceEvent.ApplyEventToBalance(account, currentBalance);
+            if (balanceEvent.EventDate >= dates.Min())
+            {
+                results.Add(new AccountBalanceByEvent(balanceEvent, currentBalance));
             }
         }
-        IEnumerable<FundAmount> result = balances.Select(pair => new FundAmount(pair.Key, pair.Value));
-        IEnumerable<FundAmount> resultIncludingPendingTransactions = balancesIncludingPendingTransactions
-            .Select(pair => new FundAmount(pair.Key, pair.Value));
-        return new AccountBalance(result, resultIncludingPendingTransactions);
+        return results;
     }
 
-    /// <summary>
-    /// Determines if the Transaction is pending for an Account as of the provided date
-    /// </summary>
-    /// <param name="transaction">Transaction to be determined if it's pending</param>
-    /// <param name="account">Account the Transaction may be pending for</param>
-    /// <param name="asOfDate">Date to determine if the Transaction is pending as of</param>
-    /// <returns>True if the Transaction is pending for the provided Account as of the provided date, false otherwise</returns>
-    private static bool IsTransactionPending(Transaction transaction, Account account, DateOnly asOfDate)
+    /// <inheritdoc/>
+    public AccountBalanceByAccountingPeriod GetAccountBalancesForAccountingPeriod(
+        Account account,
+        AccountingPeriod accountingPeriod)
     {
-        TransactionDetail transactionDetail = transaction.DebitDetail?.AccountId == account.Id
-            ? transaction.DebitDetail
-            : transaction.CreditDetail ?? throw new InvalidOperationException();
-        if (!transactionDetail.IsPosted || transactionDetail.StatementDate == null)
-        {
-            return true;
-        }
-        return transaction.AccountingDate <= asOfDate && asOfDate < transactionDetail.StatementDate;
-    }
-
-    /// <summary>
-    /// Updates the balances for an Account after applying a Transaction.
-    /// </summary>
-    /// <param name="currentBalance">The current balances of the Account</param>
-    /// <param name="transaction">Transaction to apply to the Account</param>
-    /// <param name="account">Account the Transaction should be applied against</param>
-    private static void ApplyTransactionToAccountBalance(Dictionary<Guid, decimal> currentBalance,
-        Transaction transaction,
-        Account account)
-    {
-        BalanceChangeFromTransaction balanceChange = DetermineBalanceChangeFromTransaction(transaction, account);
-        int adjustmentFactor = balanceChange switch
-        {
-            BalanceChangeFromTransaction.Increase => 1,
-            BalanceChangeFromTransaction.Decrease => -1,
-            _ => 1
-        };
-        foreach (FundAmount accountingEntry in transaction.AccountingEntries)
-        {
-            if (!currentBalance.TryAdd(accountingEntry.FundId, accountingEntry.Amount))
+        AccountBalance startingBalance = accountingPeriod.StartOfPeriodBalanceCheckpoints
+            .SingleOrDefault(balanceCheckpoint => balanceCheckpoint.Account == account)?.GetAccountBalance()
+            ?? new AccountBalance
             {
-                currentBalance[accountingEntry.FundId] = currentBalance[accountingEntry.FundId] +
-                    (adjustmentFactor * accountingEntry.Amount);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Determines how the balance of an Account will change when a Transaction is applied
-    /// </summary>
-    /// <param name="transaction">Transaction to be applied to an Account</param>
-    /// <param name="account">Account to have a Transaction applied</param>
-    /// <returns>An enum representing how the Transaction will change the Account's balance</returns>
-    private static BalanceChangeFromTransaction DetermineBalanceChangeFromTransaction(Transaction transaction, Account account)
-    {
-        bool isDebit = transaction.DebitDetail?.AccountId == account.Id;
-        if (isDebit && account.Type == AccountType.Debt)
+                FundBalances = [],
+                PendingFundBalanceChanges = [],
+            };
+        AccountBalance endingBalance = startingBalance;
+        // Attempt to find the next Accounting Period to get the ending balance
+        AccountingPeriod? nextAccountingPeriod = _accountingPeriodRepository
+            .FindByDateOrNull(new DateOnly(accountingPeriod.Year, accountingPeriod.Month, 1));
+        if (nextAccountingPeriod != null)
         {
-            return BalanceChangeFromTransaction.Increase;
+            endingBalance = nextAccountingPeriod.StartOfPeriodBalanceCheckpoints
+                .SingleOrDefault(balanceCheckpoint => balanceCheckpoint.Account == account)?.GetAccountBalance()
+                ?? new AccountBalance
+                {
+                    FundBalances = [],
+                    PendingFundBalanceChanges = [],
+                };
+            return new AccountBalanceByAccountingPeriod(startingBalance, endingBalance);
         }
-        if (!isDebit && account.Type != AccountType.Debt)
+        // Otherwise, calculate the ending balance by applying all the Balance Events currently in the Accounting Period
+        foreach (IBalanceEvent balanceEvent in accountingPeriod.GetAllBalanceEvents())
         {
-            return BalanceChangeFromTransaction.Increase;
+            endingBalance = balanceEvent.ApplyEventToBalance(account, endingBalance);
         }
-        return BalanceChangeFromTransaction.Decrease;
-    }
-
-    /// <summary>
-    /// Enum that represents the ways that a Transaction can affect the balance of an Account
-    /// </summary>
-    private enum BalanceChangeFromTransaction
-    {
-        Increase,
-        Decrease,
+        return new AccountBalanceByAccountingPeriod(startingBalance, endingBalance);
     }
 }

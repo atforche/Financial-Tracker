@@ -5,7 +5,6 @@ using RestApi;
 using RestApi.Models.Account;
 using RestApi.Models.AccountingPeriod;
 using RestApi.Models.Fund;
-using RestApi.Models.Transaction;
 using Utilities.BulkDataUpload.Uploaders;
 
 namespace Utilities.BulkDataUpload;
@@ -71,7 +70,9 @@ public partial class BulkDataUploadUtility
         _transactionSerializerOptions.Converters.Add(new NameToGuidConverter(transactionConversions));
         IEnumerable<CreateTransactionModel> transactions = JsonSerializer.Deserialize<IEnumerable<CreateTransactionModel>>(
             sections[3], _transactionSerializerOptions) ?? throw new InvalidOperationException();
-        using var transactionUploader = new TransactionUploader(transactions);
+        using var transactionUploader = new TransactionUploader(
+            accountingPeriodUploader.Result ?? throw new InvalidOperationException(),
+            transactions);
         await transactionUploader.UploadAsync();
 
         await accountingPeriodUploader.CloseUploadedPeriodAsync();
