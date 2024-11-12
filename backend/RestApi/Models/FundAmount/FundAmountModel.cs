@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using RestApi.Models.Fund;
+
 namespace RestApi.Models.FundAmount;
 
 /// <summary>
@@ -5,21 +8,29 @@ namespace RestApi.Models.FundAmount;
 /// </summary>
 public class FundAmountModel
 {
-    /// <inheritdoc cref="Domain.ValueObjects.FundAmount.FundId"/>
-    public required Guid FundId { get; init; }
+    /// <inheritdoc cref="Domain.ValueObjects.FundAmount.Fund"/>
+    public FundModel Fund { get; init; }
 
     /// <inheritdoc cref="Domain.ValueObjects.FundAmount.Amount"/>
-    public required decimal Amount { get; init; }
+    public decimal Amount { get; init; }
 
     /// <summary>
-    /// Converts the Fund Amount domain value object into a Fund Amount REST model
+    /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="fundAmount">Fund Amount domain value object to be converted</param>
-    /// <returns>The converted Fund Amount model</returns>
-    internal static FundAmountModel ConvertValueObjectToModel(Domain.ValueObjects.FundAmount fundAmount) =>
-        new FundAmountModel
-        {
-            FundId = fundAmount.FundId,
-            Amount = fundAmount.Amount,
-        };
+    [JsonConstructor]
+    public FundAmountModel(FundModel fund, decimal amount)
+    {
+        Fund = fund;
+        Amount = amount;
+    }
+
+    /// <summary>
+    /// Constructs a new instance of this class
+    /// </summary>
+    /// <param name="fundAmount">Fund Amount value object to build this Fund Amount REST model from</param>
+    public FundAmountModel(Domain.ValueObjects.FundAmount fundAmount)
+    {
+        Fund = new FundModel(fundAmount.Fund);
+        Amount = fundAmount.Amount;
+    }
 }

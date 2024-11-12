@@ -1,4 +1,4 @@
-using Domain.Entities;
+using Domain.Aggregates.Accounts;
 using RestApi.Models.FundAmount;
 
 namespace RestApi.Models.Account;
@@ -8,12 +8,14 @@ namespace RestApi.Models.Account;
 /// </summary>
 public class CreateAccountModel
 {
-    /// <inheritdoc cref="Domain.Entities.Account.Name"/>
+    /// <inheritdoc cref="Domain.Aggregates.Accounts.Account.Name"/>
     public required string Name { get; init; }
 
-    /// <inheritdoc cref="Domain.Entities.Account.Type"/>
+    /// <inheritdoc cref="Domain.Aggregates.Accounts.Account.Type"/>
     public required AccountType Type { get; init; }
 
-    /// <inheritdoc cref="Domain.Entities.AccountStartingBalance.StartingFundBalances"/>
-    public required ICollection<CreateFundAmountModel> StartingFundBalances { get; init; }
+    /// <summary>
+    /// Starting Fund Balances for this Account 
+    /// </summary>
+    public required IReadOnlyCollection<CreateFundAmountModel> StartingFundBalances { get; init; }
 }

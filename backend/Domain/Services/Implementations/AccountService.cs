@@ -1,5 +1,5 @@
-using Domain.Entities;
-using Domain.Repositories;
+using Domain.Aggregates.AccountingPeriods;
+using Domain.Aggregates.Accounts;
 using Domain.ValueObjects;
 
 namespace Domain.Services.Implementations;
@@ -22,15 +22,21 @@ public class AccountService : IAccountService
     }
 
     /// <inheritdoc/>
-    public void CreateNewAccount(CreateAccountRequest createAccountRequest,
-        out Account newAccount,
-        out AccountStartingBalance newAccountStartingBalance)
+    public Account CreateNewAccount(AccountingPeriod initialAccountingPeriod,
+        string name,
+        AccountType type,
+        IEnumerable<FundAmount> startingFundBalances)
     {
-        ValidateNewAccountName(createAccountRequest.Name);
-        newAccount = new Account(createAccountRequest.Name, createAccountRequest.Type);
-        newAccountStartingBalance = new AccountStartingBalance(newAccount,
-            _accountingPeriodRepository.FindOpenPeriods().Last(),
-            createAccountRequest.StartingFundBalances.Select(request => new FundAmount(request.Fund.Id, request.Amount)).ToList());
+        ValidateNewAccountName(name);
+        ValidateInitialAccountingPeriodForAccount(initialAccountingPeriod);
+        Account newAccount = new Account(name, type);
+        initialAccountingPeriod.AddAccountBalanceCheckpoint(newAccount,
+            AccountBalanceCheckpointType.StartOfPeriod,
+            startingFundBalances);
+        initialAccountingPeriod.AddAccountBalanceCheckpoint(newAccount,
+            AccountBalanceCheckpointType.StartOfMonth,
+            startingFundBalances);
+        return newAccount;
     }
 
     /// <summary>
@@ -40,6 +46,22 @@ public class AccountService : IAccountService
     private void ValidateNewAccountName(string newName)
     {
         if (_accountRepository.FindByNameOrNull(newName) != null)
+        {
+            throw new InvalidOperationException();
+        }
+    }
+
+    /// <summary>
+    /// Validates that the provided Accounting Period is valid as an initial Accounting Period for an Account 
+    /// </summary>
+    /// <param name="initialAccountingPeriod">Initial Accounting Period for an Account</param>
+    private void ValidateInitialAccountingPeriodForAccount(AccountingPeriod initialAccountingPeriod)
+    {
+        if (!initialAccountingPeriod.IsOpen)
+        {
+            throw new InvalidOperationException();
+        }
+        if (_accountingPeriodRepository.FindOpenPeriods().First() != initialAccountingPeriod)
         {
             throw new InvalidOperationException();
         }

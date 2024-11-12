@@ -1,4 +1,6 @@
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using RestApi.Models.AccountingPeriod;
 
 namespace Utilities.BulkDataUpload.Uploaders;
@@ -9,7 +11,12 @@ namespace Utilities.BulkDataUpload.Uploaders;
 public class AccountingPeriodUploader : DataUploader
 {
     private readonly CreateAccountingPeriodModel _model;
-    private AccountingPeriodModel? _accountingPeriod;
+    private readonly JsonSerializerOptions _serializerOptions;
+
+    /// <summary>
+    /// Accounting Period Model that was uploaded 
+    /// </summary>
+    public AccountingPeriodModel? Result { get; private set; }
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -18,6 +25,9 @@ public class AccountingPeriodUploader : DataUploader
     public AccountingPeriodUploader(CreateAccountingPeriodModel model)
     {
         _model = model;
+        _serializerOptions = new JsonSerializerOptions();
+        _serializerOptions.PropertyNameCaseInsensitive = true;
+        _serializerOptions.Converters.Add(new JsonStringEnumConverter());
     }
 
     /// <inheritdoc/>
@@ -28,7 +38,7 @@ public class AccountingPeriodUploader : DataUploader
             UriBuilder.Path = "/accountingPeriod";
             HttpResponseMessage response = await Client.PostAsJsonAsync(UriBuilder.Uri, _model);
             response.EnsureSuccessStatusCode();
-            _accountingPeriod = await response.Content.ReadFromJsonAsync<AccountingPeriodModel>();
+            Result = await response.Content.ReadFromJsonAsync<AccountingPeriodModel>();
         },
         $"Unable to upload accounting period {_model.Year}-{_model.Month}");
 
@@ -37,17 +47,17 @@ public class AccountingPeriodUploader : DataUploader
     /// </summary>
     public async Task CloseUploadedPeriodAsync()
     {
-        if (_accountingPeriod == null)
+        if (Result == null)
         {
             throw new InvalidOperationException();
         }
         await ApiErrorHandlingWrapper(async () =>
         {
             Console.WriteLine($"Closing accounting period: {_model.Year}-{_model.Month}");
-            UriBuilder.Path = $"/accountingPeriod/close/{_accountingPeriod.Id.ToString()}";
+            UriBuilder.Path = $"/accountingPeriod/close/{Result.Id.ToString()}";
             HttpResponseMessage response = await Client.PostAsync(UriBuilder.Uri, null);
             response.EnsureSuccessStatusCode();
-            _accountingPeriod = await response.Content.ReadFromJsonAsync<AccountingPeriodModel>();
+            Result = await response.Content.ReadFromJsonAsync<AccountingPeriodModel>();
         },
         $"Unable to close accounting period {_model.Year}-{_model.Month}");
     }

@@ -1,7 +1,9 @@
 using Data;
-using Domain.Entities;
-using Domain.Repositories;
+using Domain.Aggregates.AccountingPeriods;
+using Domain.Aggregates.Accounts;
+using Domain.Aggregates.Funds;
 using Domain.Services;
+using Domain.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 using RestApi.Models.AccountingPeriod;
 
@@ -17,7 +19,8 @@ public class AccountingPeriodController : ControllerBase
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAccountingPeriodService _accountingPeriodService;
     private readonly IAccountingPeriodRepository _accountingPeriodRepository;
-    private readonly IAccountStartingBalanceRepository _accountStartingBalanceRepository;
+    private readonly IAccountRepository _accountRepository;
+    private readonly IFundRepository _fundRepository;
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -25,16 +28,19 @@ public class AccountingPeriodController : ControllerBase
     /// <param name="unitOfWork">Unit of work to commit changes to the database</param>
     /// <param name="accountingPeriodService">Service used to create or modify Accounting Periods</param>
     /// <param name="accountingPeriodRepository">Repository of Accounting Periods</param>
-    /// <param name="accountStartingBalanceRepository">Repository of Account Starting Balances</param>
+    /// <param name="accountRepository">Repository of Accounts</param>
+    /// <param name="fundRepository">Repository of Funds</param>
     public AccountingPeriodController(IUnitOfWork unitOfWork,
         IAccountingPeriodService accountingPeriodService,
         IAccountingPeriodRepository accountingPeriodRepository,
-        IAccountStartingBalanceRepository accountStartingBalanceRepository)
+        IAccountRepository accountRepository,
+        IFundRepository fundRepository)
     {
         _unitOfWork = unitOfWork;
         _accountingPeriodService = accountingPeriodService;
         _accountingPeriodRepository = accountingPeriodRepository;
-        _accountStartingBalanceRepository = accountStartingBalanceRepository;
+        _accountRepository = accountRepository;
+        _fundRepository = fundRepository;
     }
 
     /// <summary>
@@ -43,7 +49,7 @@ public class AccountingPeriodController : ControllerBase
     /// <returns>A collection of all Accounting Periods</returns>
     [HttpGet("")]
     public IReadOnlyCollection<AccountingPeriodModel> GetAccountingPeriods() =>
-        _accountingPeriodRepository.FindAll().Select(AccountingPeriodModel.ConvertEntityToModel).ToList();
+        _accountingPeriodRepository.FindAll().Select(accountingPeriod => new AccountingPeriodModel(accountingPeriod)).ToList();
 
     /// <summary>
     /// Retrieves the Accounting Period that matches the provided ID
@@ -53,8 +59,24 @@ public class AccountingPeriodController : ControllerBase
     [HttpGet("{accountingPeriodId}")]
     public IActionResult GetAccountingPeriod(Guid accountingPeriodId)
     {
-        AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindOrNull(accountingPeriodId);
-        return accountingPeriod != null ? Ok(AccountingPeriodModel.ConvertEntityToModel(accountingPeriod)) : NotFound();
+        AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindByExternalIdOrNull(accountingPeriodId);
+        return accountingPeriod != null ? Ok(new AccountingPeriodModel(accountingPeriod)) : NotFound();
+    }
+
+    /// <summary>
+    /// Retrieves all the Transactions for the provided Accounting Period
+    /// </summary>
+    /// <param name="accountingPeriodId">ID of the Accounting Period</param>
+    /// <returns>A collection of Transactions that fall within the provided Accounting Period</returns>
+    [HttpGet("{accountingPeriodId}/Transactions")]
+    public IActionResult GetTransactions(Guid accountingPeriodId)
+    {
+        AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindByExternalIdOrNull(accountingPeriodId);
+        if (accountingPeriod == null)
+        {
+            return NotFound();
+        }
+        return Ok(accountingPeriod.Transactions.Select(transaction => new TransactionModel(transaction)));
     }
 
     /// <summary>
@@ -65,21 +87,73 @@ public class AccountingPeriodController : ControllerBase
     [HttpPost("")]
     public async Task<IActionResult> CreateAccountingPeriodAsync(CreateAccountingPeriodModel createAccountingPeriodModel)
     {
-        _accountingPeriodService.CreateNewAccountingPeriod(
-            new CreateAccountingPeriodRequest
-            {
-                Year = createAccountingPeriodModel.Year,
-                Month = createAccountingPeriodModel.Month,
-            },
-            out AccountingPeriod newAccountingPeriod,
-            out ICollection<AccountStartingBalance> newAccountStartingBalances);
+        AccountingPeriod newAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(
+            createAccountingPeriodModel.Year,
+            createAccountingPeriodModel.Month);
         _accountingPeriodRepository.Add(newAccountingPeriod);
-        foreach (AccountStartingBalance startingBalance in newAccountStartingBalances)
-        {
-            _accountStartingBalanceRepository.Add(startingBalance);
-        }
         await _unitOfWork.SaveChangesAsync();
-        return Ok(AccountingPeriodModel.ConvertEntityToModel(newAccountingPeriod));
+        return Ok(new AccountingPeriodModel(newAccountingPeriod));
+    }
+
+    /// <summary>
+    /// Creates a new Transaction with the provided properties
+    /// </summary>
+    /// <param name="accountingPeriodId">ID of the Accounting Period</param>
+    /// <param name="createTransactionModel">Request to create a Transaction</param>
+    /// <returns>The created Transaction</returns>
+    [HttpPost("{accountingPeriodId}/Transactions")]
+    public async Task<IActionResult> CreateTransactionAsync(
+        Guid accountingPeriodId,
+        CreateTransactionModel createTransactionModel)
+    {
+        AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindByExternalIdOrNull(accountingPeriodId);
+        if (accountingPeriod == null)
+        {
+            return NotFound();
+        }
+
+        Account? debitAccount = null;
+        if (createTransactionModel.DebitDetail != null)
+        {
+            debitAccount = _accountRepository.FindByExternalIdOrNull(createTransactionModel.DebitDetail.AccountId);
+            if (debitAccount == null)
+            {
+                return NotFound();
+            }
+        }
+        Account? creditAccount = null;
+        if (createTransactionModel.CreditDetail != null)
+        {
+            creditAccount = _accountRepository.FindByExternalIdOrNull(createTransactionModel.CreditDetail.AccountId);
+            if (creditAccount == null)
+            {
+                return NotFound();
+            }
+        }
+        Dictionary<Guid, Fund> funds = _fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
+        Transaction newTransaction = _accountingPeriodService.CreateNewTransaction(accountingPeriod,
+            createTransactionModel.TransactionDate,
+            createTransactionModel.AccountingEntries.Select(entry => new FundAmount
+            {
+                Fund = funds[entry.FundId],
+                Amount = entry.Amount,
+            }),
+            createTransactionModel.DebitDetail != null && debitAccount != null
+                ? new TransactionAccountDetail
+                {
+                    Account = debitAccount,
+                    PostedStatementDate = createTransactionModel.DebitDetail.PostedStatementDate,
+                }
+                : null,
+            createTransactionModel.CreditDetail != null && creditAccount != null
+                ? new TransactionAccountDetail
+                {
+                    Account = creditAccount,
+                    PostedStatementDate = createTransactionModel.CreditDetail.PostedStatementDate,
+                }
+                : null);
+        await _unitOfWork.SaveChangesAsync();
+        return Ok(new TransactionModel(newTransaction));
     }
 
     /// <summary>
@@ -90,20 +164,14 @@ public class AccountingPeriodController : ControllerBase
     [HttpPost("close/{accountingPeriodId}")]
     public async Task<IActionResult> CloseAccountingPeriod(Guid accountingPeriodId)
     {
-        AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindOrNull(accountingPeriodId);
+        AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindByExternalIdOrNull(accountingPeriodId);
         if (accountingPeriod == null)
         {
             return NotFound();
         }
-        _accountingPeriodService.ClosePeriod(
-            accountingPeriod,
-            out ICollection<AccountStartingBalance> newAccountStartingBalances);
-        _accountingPeriodRepository.Update(accountingPeriod);
-        foreach (AccountStartingBalance startingBalance in newAccountStartingBalances)
-        {
-            _accountStartingBalanceRepository.Add(startingBalance);
-        }
+        _accountingPeriodService.ClosePeriod(accountingPeriod,
+            _accountingPeriodRepository.FindByDateOrNull(new DateOnly(accountingPeriod.Year, accountingPeriod.Month, 1).AddMonths(1)));
         await _unitOfWork.SaveChangesAsync();
-        return Ok(AccountingPeriodModel.ConvertEntityToModel(accountingPeriod));
+        return Ok(new AccountingPeriodModel(accountingPeriod));
     }
 }

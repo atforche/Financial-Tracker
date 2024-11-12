@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace RestApi.Models.AccountingPeriod;
 
 /// <summary>
@@ -5,29 +7,44 @@ namespace RestApi.Models.AccountingPeriod;
 /// </summary>
 public class AccountingPeriodModel
 {
-    /// <inheritdoc cref="Domain.Entities.AccountingPeriod.Id"/>
-    public required Guid Id { get; init; }
+    /// <inheritdoc cref="Domain.Aggregates.EntityBase.Id"/>
+    public Guid Id { get; init; }
 
-    /// <inheritdoc cref="Domain.Entities.AccountingPeriod.Year"/>
-    public required int Year { get; init; }
+    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.AccountingPeriod.Year"/>
+    public int Year { get; init; }
 
-    /// <inheritdoc cref="Domain.Entities.AccountingPeriod.Month"/>
-    public required int Month { get; init; }
+    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.AccountingPeriod.Month"/>
+    public int Month { get; init; }
 
-    /// <inheritdoc cref="Domain.Entities.AccountingPeriod.IsOpen"/>
-    public required bool IsOpen { get; init; }
+    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.AccountingPeriod.IsOpen"/>
+    public bool IsOpen { get; init; }
+
+    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.AccountingPeriod.Transactions"/>
+    public IReadOnlyCollection<TransactionModel> Transactions { get; init; }
 
     /// <summary>
-    /// Converts the Accounting Period domain entity into an Accounting Period REST model
+    /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="accountingPeriod">Accounting Period domain entity to be converted</param>
-    /// <returns>The converted Accounting Period REST model</returns>
-    internal static AccountingPeriodModel ConvertEntityToModel(Domain.Entities.AccountingPeriod accountingPeriod) =>
-        new AccountingPeriodModel
-        {
-            Id = accountingPeriod.Id,
-            Year = accountingPeriod.Year,
-            Month = accountingPeriod.Month,
-            IsOpen = accountingPeriod.IsOpen,
-        };
+    [JsonConstructor]
+    public AccountingPeriodModel(Guid id, int year, int month, bool isOpen, IReadOnlyCollection<TransactionModel> transactions)
+    {
+        Id = id;
+        Year = year;
+        Month = month;
+        IsOpen = isOpen;
+        Transactions = transactions.ToList();
+    }
+
+    /// <summary>
+    /// Constructs a new instance of this class
+    /// </summary>
+    /// <param name="accountingPeriod">Accounting Period entity to build this Accounting Period REST model from</param>
+    public AccountingPeriodModel(Domain.Aggregates.AccountingPeriods.AccountingPeriod accountingPeriod)
+    {
+        Id = accountingPeriod.Id.ExternalId;
+        Year = accountingPeriod.Year;
+        Month = accountingPeriod.Month;
+        IsOpen = accountingPeriod.IsOpen;
+        Transactions = accountingPeriod.Transactions.Select(transaction => new TransactionModel(transaction)).ToList();
+    }
 }

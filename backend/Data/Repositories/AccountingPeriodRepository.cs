@@ -1,110 +1,75 @@
-using Data.EntityModels;
-using Data.Requests;
-using Domain.Entities;
-using Domain.Repositories;
+using Domain.Aggregates.AccountingPeriods;
+using Domain.ValueObjects;
 
 namespace Data.Repositories;
 
 /// <summary>
 /// Repository that allows Accounting Periods to be persisted to the database
 /// </summary>
-public class AccountingPeriodRepository : IAccountingPeriodRepository
+public class AccountingPeriodRepository : AggregateRepositoryBase<AccountingPeriod>, IAccountingPeriodRepository
 {
-    private readonly DatabaseContext _context;
-
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="context">Context to use to connect to the database</param>
     public AccountingPeriodRepository(DatabaseContext context)
+        : base(context)
     {
-        _context = context;
     }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> FindAll() => _context.AccountingPeriods
+    public IReadOnlyCollection<AccountingPeriod> FindAll() => DatabaseContext.AccountingPeriods
         .AsEnumerable()
-        .OrderBy(data => new DateTime(data.Year, data.Month, 1))
-        .Select(ConvertToEntity).ToList();
+        .OrderBy(data => new DateTime(data.Year, data.Month, 1)).ToList();
 
     /// <inheritdoc/>
-    public AccountingPeriod? FindOrNull(Guid id)
-    {
-        AccountingPeriodData? accountingPeriodData = _context.AccountingPeriods.FirstOrDefault(accountingPeriod => accountingPeriod.Id == id);
-        return accountingPeriodData != null ? ConvertToEntity(accountingPeriodData) : null;
-    }
-
-    /// <inheritdoc/>
-    public AccountingPeriod? FindOrNullByDate(DateOnly asOfDate)
-    {
-        AccountingPeriodData? accountingPeriodData = _context.AccountingPeriods
+    public AccountingPeriod? FindByDateOrNull(DateOnly asOfDate) => DatabaseContext.AccountingPeriods
             .FirstOrDefault(accountingPeriod => accountingPeriod.Year == asOfDate.Year && accountingPeriod.Month == asOfDate.Month);
-        return accountingPeriodData != null ? ConvertToEntity(accountingPeriodData) : null;
-    }
 
     /// <inheritdoc/>
-    public ICollection<AccountingPeriod> FindOpenPeriods() =>
-        _context.AccountingPeriods.Where(accountingPeriod => accountingPeriod.IsOpen).Select(ConvertToEntity).ToList();
+    public IReadOnlyCollection<AccountingPeriod> FindOpenPeriods() => DatabaseContext.AccountingPeriods
+        .Where(accountingPeriod => accountingPeriod.IsOpen).ToList();
 
     /// <inheritdoc/>
-    public AccountingPeriod FindEffectiveAccountingPeriodForBalances(DateOnly asOfDate)
+    public AccountingPeriod FindLatestAccountingPeriodWithBalanceCheckpoints(DateOnly asOfDate)
     {
-        AccountingPeriodData accountingPeriod = _context.AccountingPeriods.Single(
-            accountingPeriod => accountingPeriod.Year == asOfDate.Year && accountingPeriod.Month == asOfDate.Month);
-        if (!accountingPeriod.IsOpen)
+        AccountingPeriod? accountingPeriod = FindByDateOrNull(asOfDate);
+        if (accountingPeriod != null && !accountingPeriod.IsOpen)
         {
-            return ConvertToEntity(accountingPeriod);
+            return accountingPeriod;
         }
-        return ConvertToEntity(_context.AccountingPeriods.Where(accountingPeriod => accountingPeriod.IsOpen)
+        return DatabaseContext.AccountingPeriods
+            .Where(accountingPeriod => accountingPeriod.IsOpen)
             .OrderBy(accountingPeriod => accountingPeriod.Year)
             .ThenBy(accountingPeriod => accountingPeriod.Month)
-            .First());
+            .First();
     }
 
     /// <inheritdoc/>
-    public void Add(AccountingPeriod accountingPeriod)
+    public IReadOnlyCollection<AccountingPeriod> FindAccountingPeriodsWithBalanceEventsInDateRange(DateRange dateRange)
     {
-        var accountingPeriodData = PopulateFromAccountingPeriod(accountingPeriod, null);
-        _context.Add(accountingPeriodData);
+        List<DateOnly> dates = dateRange.GetDates().ToList();
+        return DatabaseContext.AccountingPeriods
+            .Where(accountingPeriod => accountingPeriod.Transactions
+                .SelectMany(transaction => transaction.TransactionBalanceEvents)
+                .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()))
+            .ToList();
     }
 
     /// <inheritdoc/>
-    public void Update(AccountingPeriod accountingPeriod)
+    public int FindMaximumBalanceEventSequenceForDate(DateOnly eventDate)
     {
-        AccountingPeriodData accountingPeriodData = _context.AccountingPeriods.Single(accountingPeriodData => accountingPeriodData.Id == accountingPeriod.Id);
-        PopulateFromAccountingPeriod(accountingPeriod, accountingPeriodData);
+        List<TransactionBalanceEvent> existingBalanceEventsOnDate = DatabaseContext.AccountingPeriods
+            .SelectMany(accountingPeriod => accountingPeriod.Transactions)
+            .SelectMany(transaction => transaction.TransactionBalanceEvents)
+            .Where(balanceEvent => balanceEvent.EventDate == eventDate).ToList();
+        if (existingBalanceEventsOnDate.Count > 0)
+        {
+            return existingBalanceEventsOnDate.Max(balanceEvent => balanceEvent.EventSequence + 1);
+        }
+        return 1;
     }
 
-    /// <summary>
-    /// Converts the provided <see cref="AccountingPeriodData"/> object into an <see cref="AccountingPeriod"/> domain entity.
-    /// </summary>
-    /// <param name="accountingPeriodData">Accounting Period Data to be converted</param>
-    /// <returns>The converted Accounting Period domain entity</returns>
-    private AccountingPeriod ConvertToEntity(AccountingPeriodData accountingPeriodData) => new AccountingPeriod(
-        new AccountingPeriodRecreateRequest
-        {
-            Id = accountingPeriodData.Id,
-            Year = accountingPeriodData.Year,
-            Month = accountingPeriodData.Month,
-            IsOpen = accountingPeriodData.IsOpen,
-        });
-
-    /// <summary>
-    /// Converts the provided <see cref="AccountingPeriod"/> entity into an <see cref="AccountingPeriodData"/> data object
-    /// </summary>
-    /// <param name="accountingPeriod">Accounting Period entity to convert</param>
-    /// <param name="existingAccountingPeriodData">Existing Accounting Period Data model to populate from the entity, or null if a new model should be created</param>
-    /// <returns>The converted Accounting Period Data</returns>
-    private static AccountingPeriodData PopulateFromAccountingPeriod(AccountingPeriod accountingPeriod, AccountingPeriodData? existingAccountingPeriodData)
-    {
-        AccountingPeriodData newAccountingPeriodData = new AccountingPeriodData()
-        {
-            Id = accountingPeriod.Id,
-            Year = accountingPeriod.Year,
-            Month = accountingPeriod.Month,
-            IsOpen = accountingPeriod.IsOpen,
-        };
-        existingAccountingPeriodData?.Replace(newAccountingPeriodData);
-        return existingAccountingPeriodData ?? newAccountingPeriodData;
-    }
+    /// <inheritdoc/>
+    public void Add(AccountingPeriod accountingPeriod) => DatabaseContext.Add(accountingPeriod);
 }

@@ -1,25 +1,19 @@
 namespace Domain.ValueObjects;
 
 /// <summary>
-/// Balance of an Account
+/// Value object class representing the balance of an Account
 /// </summary>
-/// <remarks>
-/// A Transaction is considered pending against an Account in the following situations:
-/// 1. The Transaction has not been posted yet
-/// 2. The Transaction has been posted, however the period in time of this balance falls between the 
-///     Transaction's accounting date and statement date
-/// </remarks>
 public class AccountBalance
 {
     /// <summary>
     /// Current balance for each Fund within the Account
     /// </summary>
-    public IReadOnlyCollection<FundAmount> FundBalances { get; }
+    public required IReadOnlyCollection<FundAmount> FundBalances { get; init; }
 
     /// <summary>
-    /// Current balance for each Fund within the Account, including pending Transactions
+    /// Change in each Fund balance that is currently pending within the Account
     /// </summary>
-    public IReadOnlyCollection<FundAmount> FundBalancesIncludingPendingTransactions { get; }
+    public required IReadOnlyCollection<FundAmount> PendingFundBalanceChanges { get; init; }
 
     /// <summary>
     /// Balance of the Account
@@ -27,18 +21,7 @@ public class AccountBalance
     public decimal Balance => FundBalances.Sum(balance => balance.Amount);
 
     /// <summary>
-    /// Balance of the Account including pending Transactions
+    /// Total pending balance change for this Account
     /// </summary>
-    public decimal BalanceIncludingPendingTransactions => FundBalancesIncludingPendingTransactions.Sum(balance => balance.Amount);
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="fundBalances">List of balances for each Fund within the Account</param>
-    /// <param name="fundBalancesIncludingPendingTransactions">List of balances for each Fund within the Account, including pending Transactions</param>
-    internal AccountBalance(IEnumerable<FundAmount> fundBalances, IEnumerable<FundAmount> fundBalancesIncludingPendingTransactions)
-    {
-        FundBalances = fundBalances.ToList();
-        FundBalancesIncludingPendingTransactions = fundBalancesIncludingPendingTransactions.ToList();
-    }
+    public decimal TotalPendingBalanceChange => PendingFundBalanceChanges.Sum(balance => balance.Amount);
 }

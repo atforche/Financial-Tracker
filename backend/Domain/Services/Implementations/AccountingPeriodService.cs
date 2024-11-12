@@ -1,5 +1,6 @@
-using Domain.Entities;
-using Domain.Repositories;
+using Domain.Aggregates.AccountingPeriods;
+using Domain.Aggregates.Accounts;
+using Domain.ValueObjects;
 
 namespace Domain.Services.Implementations;
 
@@ -9,6 +10,7 @@ public class AccountingPeriodService : IAccountingPeriodService
     private readonly IAccountingPeriodRepository _accountingPeriodRepository;
     private readonly IAccountRepository _accountRepository;
     private readonly IAccountBalanceService _accountBalanceService;
+    private readonly Dictionary<DateOnly, int> _sequenceCache = [];
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -26,57 +28,65 @@ public class AccountingPeriodService : IAccountingPeriodService
     }
 
     /// <inheritdoc/>
-    public void CreateNewAccountingPeriod(CreateAccountingPeriodRequest request,
-        out AccountingPeriod newAccountingPeriod,
-        out ICollection<AccountStartingBalance> newAccountStartingBalances)
+    public AccountingPeriod CreateNewAccountingPeriod(int year, int month)
     {
-        newAccountStartingBalances = [];
-
-        ValidateNewAccountingPeriod(request.Year, request.Month);
-        newAccountingPeriod = new AccountingPeriod(request.Year, request.Month);
+        ValidateNewAccountingPeriod(year, month);
+        AccountingPeriod newAccountingPeriod = new AccountingPeriod(year, month);
 
         DateOnly previousAccountingPeriodMonth = new DateOnly(newAccountingPeriod.Year, newAccountingPeriod.Month, 1).AddMonths(-1);
-        AccountingPeriod? previousAccountingPeriod = _accountingPeriodRepository.FindOrNullByDate(previousAccountingPeriodMonth);
+        AccountingPeriod? previousAccountingPeriod = _accountingPeriodRepository.FindByDateOrNull(previousAccountingPeriodMonth);
         if (previousAccountingPeriod == null || previousAccountingPeriod.IsOpen)
         {
-            return;
+            return newAccountingPeriod;
         }
-        // If the previous accounting period that has already closed, we'll need to add
-        // the Account Starting Balances for this new accounting period
-        DateOnly endOfPreviousMonth = new DateOnly(newAccountingPeriod.Year, newAccountingPeriod.Month, 1).AddDays(-1);
-        foreach (Account account in _accountRepository.FindAll())
-        {
-            newAccountStartingBalances.Add(new AccountStartingBalance(account,
-                newAccountingPeriod,
-                _accountBalanceService.GetAccountBalanceAsOfDate(account, endOfPreviousMonth).FundBalances));
-        }
+        // If the previous accounting period that has already closed, we'll need to add the 
+        // Account Starting Balances for this new accounting period
+        AddAccountBalanceCheckpointsToNextPeriod(newAccountingPeriod, previousAccountingPeriod);
+        return newAccountingPeriod;
     }
 
     /// <inheritdoc/>
-    public void ClosePeriod(
-        AccountingPeriod accountingPeriod,
-        out ICollection<AccountStartingBalance> newAccountStartingBalances)
+    public void ClosePeriod(AccountingPeriod accountingPeriod, AccountingPeriod? nextAccountingPeriod)
     {
-        newAccountStartingBalances = [];
-
         ValidateCloseAccountingPeriod(accountingPeriod);
         accountingPeriod.IsOpen = false;
 
         DateOnly nextAccountingPeriodMonth = new DateOnly(accountingPeriod.Year, accountingPeriod.Month, 1).AddMonths(1);
-        AccountingPeriod? nextAccountingPeriod = _accountingPeriodRepository.FindOrNullByDate(nextAccountingPeriodMonth);
+        nextAccountingPeriod = _accountingPeriodRepository.FindByDateOrNull(nextAccountingPeriodMonth);
         if (nextAccountingPeriod == null)
         {
             return;
         }
         // If there's a future accounting period that exists (and is open), we'll need to add the
         // Account Starting Balances for the future Accounting Period
-        DateOnly endOfCurrentMonth = nextAccountingPeriodMonth.AddDays(-1);
-        foreach (Account account in _accountRepository.FindAll())
+        AddAccountBalanceCheckpointsToNextPeriod(nextAccountingPeriod, accountingPeriod);
+    }
+
+    /// <inheritdoc/>
+    public Transaction CreateNewTransaction(AccountingPeriod accountingPeriod,
+        DateOnly transactionDate,
+        IEnumerable<FundAmount> accountingEntries,
+        TransactionAccountDetail? debitAccountDetail,
+        TransactionAccountDetail? creditAccountDetail)
+    {
+        if (debitAccountDetail == null && creditAccountDetail == null)
         {
-            newAccountStartingBalances.Add(new AccountStartingBalance(account,
-                nextAccountingPeriod,
-                _accountBalanceService.GetAccountBalanceAsOfDate(account, endOfCurrentMonth).FundBalances));
+            throw new InvalidOperationException();
         }
+        List<CreateTransactionBalanceEventRequest> balanceEventRequests = [];
+        if (debitAccountDetail != null)
+        {
+            balanceEventRequests.AddRange(CreateBalanceEventRequestsFromTransactionDetail(debitAccountDetail,
+                TransactionAccountType.Debit,
+                transactionDate));
+        }
+        if (creditAccountDetail != null)
+        {
+            balanceEventRequests.AddRange(CreateBalanceEventRequestsFromTransactionDetail(creditAccountDetail,
+                TransactionAccountType.Credit,
+                transactionDate));
+        }
+        return accountingPeriod.AddTransaction(transactionDate, accountingEntries, balanceEventRequests);
     }
 
     /// <summary>
@@ -126,5 +136,82 @@ public class AccountingPeriodService : IAccountingPeriodService
             // Only close the earliest open accounting period
             throw new InvalidOperationException();
         }
+    }
+
+    /// <summary>
+    /// Adds the necessary Account Balance Checkpoints to the next Accounting Period
+    /// </summary>
+    /// <param name="nextAccountingPeriod">Next Accounting Period</param>
+    /// <param name="previousAccountingPeriod">Previous Accounting Period</param>
+    private void AddAccountBalanceCheckpointsToNextPeriod(
+        AccountingPeriod nextAccountingPeriod,
+        AccountingPeriod previousAccountingPeriod)
+    {
+        DateOnly endOfPreviousPeriod = new DateOnly(nextAccountingPeriod.Year, nextAccountingPeriod.Month, 1).AddDays(-1);
+        foreach (Account account in _accountRepository.FindAll())
+        {
+            nextAccountingPeriod.AddAccountBalanceCheckpoint(account,
+                AccountBalanceCheckpointType.StartOfPeriod,
+                _accountBalanceService.GetAccountBalancesForAccountingPeriod(account, previousAccountingPeriod)
+                    .EndingBalance.FundBalances);
+            nextAccountingPeriod.AddAccountBalanceCheckpoint(account,
+                AccountBalanceCheckpointType.StartOfMonth,
+                _accountBalanceService
+                    .GetAccountBalancesForDateRange(account, new DateRange(endOfPreviousPeriod, endOfPreviousPeriod))
+                    .Single().AccountBalance.FundBalances);
+        }
+    }
+
+    /// <summary>
+    /// Builds a list of Create Transaction Balance Event Requests from the provided Transaction Account Details
+    /// </summary>
+    /// <param name="detail">Create Transaction Account Detail to build the requests from</param>
+    /// <param name="accountType">Account Type of the provided detail</param>
+    /// <param name="transactionDate">Transaction Date for the Transaction</param>
+    /// <returns>A list of Create Transaction Balance Event Requests</returns>
+    private List<CreateTransactionBalanceEventRequest> CreateBalanceEventRequestsFromTransactionDetail(
+        TransactionAccountDetail detail,
+        TransactionAccountType accountType,
+        DateOnly transactionDate)
+    {
+        List<CreateTransactionBalanceEventRequest> results = [];
+
+        results.Add(new CreateTransactionBalanceEventRequest
+        {
+            Account = detail.Account,
+            EventDate = transactionDate,
+            EventSequence = GetNextBalanceEventSequenceForDate(transactionDate),
+            TransactionEventType = TransactionBalanceEventType.Added,
+            TransactionAccountType = accountType
+        });
+        if (detail.PostedStatementDate != null)
+        {
+            results.Add(new CreateTransactionBalanceEventRequest
+            {
+                Account = detail.Account,
+                EventDate = detail.PostedStatementDate.Value,
+                EventSequence = GetNextBalanceEventSequenceForDate(detail.PostedStatementDate.Value),
+                TransactionEventType = TransactionBalanceEventType.Posted,
+                TransactionAccountType = accountType
+            });
+        }
+        return results;
+    }
+
+    /// <summary>
+    /// Gets the next valid Balance Event Sequence for the provided date
+    /// </summary>
+    /// <param name="eventDate">Event Date of the Balance Event</param>
+    /// <returns>The next valid Balance Event Sequence for the provided date</returns>
+    private int GetNextBalanceEventSequenceForDate(DateOnly eventDate)
+    {
+        if (_sequenceCache.TryGetValue(eventDate, out int currentValue))
+        {
+            _sequenceCache[eventDate] = currentValue + 1;
+            return currentValue + 1;
+        }
+        int maxSequenceForDate = _accountingPeriodRepository.FindMaximumBalanceEventSequenceForDate(eventDate);
+        _sequenceCache.Add(eventDate, maxSequenceForDate + 1);
+        return maxSequenceForDate + 1;
     }
 }
