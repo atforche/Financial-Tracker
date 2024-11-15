@@ -3,20 +3,13 @@ namespace Domain.Aggregates.Funds;
 /// <summary>
 /// Interface representing methods to interact with a collection of <see cref="Fund"/>
 /// </summary>
-public interface IFundRepository
+public interface IFundRepository : IAggregateRepository<Fund>
 {
     /// <summary>
     /// Finds all the Funds currently in the repository
     /// </summary>
     /// <returns>All the Funds in the repository</returns>
     IReadOnlyCollection<Fund> FindAll();
-
-    /// <summary>
-    /// Finds the Fund with the specified external ID
-    /// </summary>
-    /// <param name="id">External ID of the Fund to find</param>
-    /// <returns>The Fund that was found, or null if one wasn't found</returns>
-    Fund? FindByExternalIdOrNull(Guid id);
 
     /// <summary>
     /// Finds the Fund with the specified name

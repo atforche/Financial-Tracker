@@ -30,7 +30,9 @@ public class AccountBalanceService : IAccountBalanceService
             .FindAccountingPeriodsWithBalanceEventsInDateRange(dateRange)
             .OrderBy(accountingPeriod => new DateOnly(accountingPeriod.Year, accountingPeriod.Month, 1)).ToList();
         // Determine the Account Balance Checkpoint that we'll use as the starting point for calculating the balances
-        AccountingPeriod firstAccountingPeriod = accountingPeriods.First();
+        AccountingPeriod firstAccountingPeriod = accountingPeriods.FirstOrDefault()
+            ?? _accountingPeriodRepository.FindByDateOrNull(dateRange.GetInclusiveDates().First())
+            ?? throw new InvalidOperationException();
         AccountBalance currentBalance = firstAccountingPeriod.StartOfPeriodBalanceCheckpoints
             .SingleOrDefault(balanceCheckpoint => balanceCheckpoint.Account == account)?.GetAccountBalance()
             ?? new AccountBalance
@@ -40,21 +42,20 @@ public class AccountBalanceService : IAccountBalanceService
             };
         // Get the list of all Balance Events that occur from the start of the earliest Accounting Period through
         // the end of the provided Date Range
-        List<DateOnly> dates = dateRange.GetDates().ToList();
         Dictionary<DateOnly, List<IBalanceEvent>> balanceEvents = accountingPeriods
             .SelectMany(accountingPeriod => accountingPeriod.GetAllBalanceEvents())
-            .Where(balanceEvent => balanceEvent.EventDate <= dates.Max() && balanceEvent.Account == account)
+            .Where(balanceEvent => dateRange.IsWithinEndDate(balanceEvent.EventDate) && balanceEvent.Account == account)
             .GroupBy(balanceEvent => balanceEvent.EventDate)
             .ToDictionary(group => group.Key,
                 group => group.OrderBy(balanceEvent => balanceEvent.EventSequence).ToList());
         // Apply all the events that fall prior to the Date Range to the starting balance
-        foreach (IBalanceEvent balanceEvent in balanceEvents.Keys.Where(eventDate => eventDate <= dates.Min())
+        foreach (IBalanceEvent balanceEvent in balanceEvents.Keys.Where(eventDate => !dateRange.IsInRange(eventDate))
             .SelectMany(key => balanceEvents[key]))
         {
             currentBalance = balanceEvent.ApplyEventToBalance(account, currentBalance);
         }
         // Now calculate the balance for each date in the date range
-        foreach (DateOnly date in dates)
+        foreach (DateOnly date in dateRange.GetInclusiveDates())
         {
             foreach (IBalanceEvent balanceEvent in balanceEvents.GetValueOrDefault(date) ?? [])
             {
@@ -87,10 +88,10 @@ public class AccountBalanceService : IAccountBalanceService
             };
         // Get the list of all Balance Events that occur from the start of the earliest Accounting Period through
         // the end of the provided Date Range
-        List<DateOnly> dates = dateRange.GetDates().ToList();
+        List<DateOnly> dates = dateRange.GetInclusiveDates().ToList();
         List<IBalanceEvent> balanceEvents = accountingPeriods
             .SelectMany(accountingPeriod => accountingPeriod.GetAllBalanceEvents())
-            .Where(balanceEvent => balanceEvent.EventDate <= dates.Max() && balanceEvent.Account == account)
+            .Where(balanceEvent => dateRange.IsWithinEndDate(balanceEvent.EventDate) && balanceEvent.Account == account)
             .OrderBy(balanceEvent => balanceEvent.EventDate)
             .ThenBy(balanceEvent => balanceEvent.EventSequence).ToList();
         // Apply each of the Balance Events to the starting balance

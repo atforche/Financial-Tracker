@@ -1,33 +1,36 @@
 using Domain.Aggregates.AccountingPeriods;
 using Domain.ValueObjects;
 
-namespace Data.Repositories;
+namespace Tests.Mocks;
 
 /// <summary>
-/// Repository that allows Accounting Periods to be persisted to the database
+/// Mock repository of Accounting Periods for testing
 /// </summary>
-public class AccountingPeriodRepository : AggregateRepositoryBase<AccountingPeriod>, IAccountingPeriodRepository
+public class MockAccountingPeriodRepository : IAccountingPeriodRepository
 {
+    private readonly List<AccountingPeriod> _accountingPeriods;
+
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="context">Context to use to connect to the database</param>
-    public AccountingPeriodRepository(DatabaseContext context)
-        : base(context)
+    public MockAccountingPeriodRepository()
     {
+        _accountingPeriods = [];
     }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> FindAll() => DatabaseContext.AccountingPeriods
-        .AsEnumerable()
-        .OrderBy(data => new DateTime(data.Year, data.Month, 1)).ToList();
+    public AccountingPeriod? FindByExternalIdOrNull(Guid id) => _accountingPeriods
+        .SingleOrDefault(accountingPeriod => accountingPeriod.Id.ExternalId == id);
 
     /// <inheritdoc/>
-    public AccountingPeriod? FindByDateOrNull(DateOnly asOfDate) => DatabaseContext.AccountingPeriods
+    public IReadOnlyCollection<AccountingPeriod> FindAll() => _accountingPeriods;
+
+    /// <inheritdoc/>
+    public AccountingPeriod? FindByDateOrNull(DateOnly asOfDate) => _accountingPeriods
         .SingleOrDefault(accountingPeriod => accountingPeriod.Year == asOfDate.Year && accountingPeriod.Month == asOfDate.Month);
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> FindOpenPeriods() => DatabaseContext.AccountingPeriods
+    public IReadOnlyCollection<AccountingPeriod> FindOpenPeriods() => _accountingPeriods
         .Where(accountingPeriod => accountingPeriod.IsOpen).ToList();
 
     /// <inheritdoc/>
@@ -38,7 +41,7 @@ public class AccountingPeriodRepository : AggregateRepositoryBase<AccountingPeri
         {
             return accountingPeriod;
         }
-        return DatabaseContext.AccountingPeriods
+        return _accountingPeriods
             .Where(accountingPeriod => accountingPeriod.IsOpen)
             .OrderBy(accountingPeriod => accountingPeriod.Year)
             .ThenBy(accountingPeriod => accountingPeriod.Month)
@@ -46,20 +49,17 @@ public class AccountingPeriodRepository : AggregateRepositoryBase<AccountingPeri
     }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> FindAccountingPeriodsWithBalanceEventsInDateRange(DateRange dateRange)
-    {
-        List<DateOnly> dates = dateRange.GetInclusiveDates().ToList();
-        return DatabaseContext.AccountingPeriods
-            .Where(accountingPeriod => accountingPeriod.Transactions
-                .SelectMany(transaction => transaction.TransactionBalanceEvents)
-                .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()))
-            .ToList();
-    }
+    public IReadOnlyCollection<AccountingPeriod> FindAccountingPeriodsWithBalanceEventsInDateRange(DateRange dateRange) =>
+        _accountingPeriods
+        .Where(accountingPeriod => accountingPeriod.Transactions
+            .SelectMany(transaction => transaction.TransactionBalanceEvents)
+            .Any(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate)))
+        .ToList();
 
     /// <inheritdoc/>
     public int FindMaximumBalanceEventSequenceForDate(DateOnly eventDate)
     {
-        List<TransactionBalanceEvent> existingBalanceEventsOnDate = DatabaseContext.AccountingPeriods
+        List<TransactionBalanceEvent> existingBalanceEventsOnDate = _accountingPeriods
             .SelectMany(accountingPeriod => accountingPeriod.Transactions)
             .SelectMany(transaction => transaction.TransactionBalanceEvents)
             .Where(balanceEvent => balanceEvent.EventDate == eventDate).ToList();
@@ -71,5 +71,5 @@ public class AccountingPeriodRepository : AggregateRepositoryBase<AccountingPeri
     }
 
     /// <inheritdoc/>
-    public void Add(AccountingPeriod accountingPeriod) => DatabaseContext.Add(accountingPeriod);
+    public void Add(AccountingPeriod accountingPeriod) => _accountingPeriods.Add(accountingPeriod);
 }

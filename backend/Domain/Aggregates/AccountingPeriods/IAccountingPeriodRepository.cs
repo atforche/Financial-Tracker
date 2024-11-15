@@ -5,20 +5,13 @@ namespace Domain.Aggregates.AccountingPeriods;
 /// <summary>
 /// Interface representing methods to interact with a collection of <see cref="AccountingPeriod"/>
 /// </summary>
-public interface IAccountingPeriodRepository
+public interface IAccountingPeriodRepository : IAggregateRepository<AccountingPeriod>
 {
     /// <summary>
     /// Finds all the Accounting Periods currently in the repository
     /// </summary>
     /// <returns>All the Accounting Periods in the Repository</returns>
     IReadOnlyCollection<AccountingPeriod> FindAll();
-
-    /// <summary>
-    /// Finds the Accounting Period with the specified external ID.
-    /// </summary>
-    /// <param name="id">ID of the Accounting Period to find</param>
-    /// <returns>The Accounting Period that was found, or null if one wasn't found</returns>
-    AccountingPeriod? FindByExternalIdOrNull(Guid id);
 
     /// <summary>
     /// Finds the Accounting Period that the provided date falls within
