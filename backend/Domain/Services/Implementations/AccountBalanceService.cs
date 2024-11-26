@@ -19,27 +19,25 @@ public class AccountBalanceService : IAccountBalanceService
     }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountBalanceByDate> GetAccountBalancesForDateRange(
-        Account account,
-        DateRange dateRange)
+    public IReadOnlyCollection<AccountBalanceByDate> GetAccountBalancesForDateRange(Account account, DateRange dateRange)
     {
         List<AccountBalanceByDate> results = [];
 
-        // Find all the Accounting Periods that have Balance Events in the provided Date Range
+        // Find all the Accounting Periods needed to calculate the balances for the provided date range
         List<AccountingPeriod> accountingPeriods = _accountingPeriodRepository
             .FindAccountingPeriodsWithBalanceEventsInDateRange(dateRange)
             .OrderBy(accountingPeriod => new DateOnly(accountingPeriod.Year, accountingPeriod.Month, 1)).ToList();
-        // Determine the Account Balance Checkpoint that we'll use as the starting point for calculating the balances
-        AccountingPeriod firstAccountingPeriod = accountingPeriods.FirstOrDefault()
-            ?? _accountingPeriodRepository.FindByDateOrNull(dateRange.GetInclusiveDates().First())
-            ?? throw new InvalidOperationException();
-        AccountBalance currentBalance = firstAccountingPeriod.StartOfPeriodBalanceCheckpoints
-            .SingleOrDefault(balanceCheckpoint => balanceCheckpoint.Account == account)?.GetAccountBalance()
-            ?? new AccountBalance
-            {
-                FundBalances = [],
-                PendingFundBalanceChanges = []
-            };
+        while (accountingPeriods.Count == 0 || accountingPeriods.First().StartOfPeriodBalanceCheckpoints.Count == 0)
+        {
+            DateOnly nextAccountingPeriodToAdd = accountingPeriods.Count != 0
+                ? new DateOnly(accountingPeriods.First().Year, accountingPeriods.First().Month, 1).AddDays(-1)
+                : dateRange.GetInclusiveDates().First();
+            accountingPeriods.Insert(0, _accountingPeriodRepository.FindByDateOrNull(nextAccountingPeriodToAdd)
+                ?? throw new InvalidOperationException());
+        }
+        // Initialize the current balance to be equal to the balance checkpoint at the beginning of the first accounting period
+        AccountBalance currentBalance = accountingPeriods.First().StartOfPeriodBalanceCheckpoints
+            .Single(balanceCheckpoint => balanceCheckpoint.Account == account).GetAccountBalance();
         // Get the list of all Balance Events that occur from the start of the earliest Accounting Period through
         // the end of the provided Date Range
         Dictionary<DateOnly, List<IBalanceEvent>> balanceEvents = accountingPeriods
@@ -47,7 +45,9 @@ public class AccountBalanceService : IAccountBalanceService
             .Where(balanceEvent => dateRange.IsWithinEndDate(balanceEvent.EventDate) && balanceEvent.Account == account)
             .GroupBy(balanceEvent => balanceEvent.EventDate)
             .ToDictionary(group => group.Key,
-                group => group.OrderBy(balanceEvent => balanceEvent.EventSequence).ToList());
+                group => group
+                    .OrderBy(balanceEvent => new DateOnly(balanceEvent.AccountingPeriod.Year, balanceEvent.AccountingPeriod.Month, 1))
+                    .ThenBy(balanceEvent => balanceEvent.EventSequence).ToList());
         // Apply all the events that fall prior to the Date Range to the starting balance
         foreach (IBalanceEvent balanceEvent in balanceEvents.Keys.Where(eventDate => !dateRange.IsInRange(eventDate))
             .SelectMany(key => balanceEvents[key]))
@@ -93,6 +93,7 @@ public class AccountBalanceService : IAccountBalanceService
             .SelectMany(accountingPeriod => accountingPeriod.GetAllBalanceEvents())
             .Where(balanceEvent => dateRange.IsWithinEndDate(balanceEvent.EventDate) && balanceEvent.Account == account)
             .OrderBy(balanceEvent => balanceEvent.EventDate)
+            .ThenBy(balanceEvent => new DateOnly(balanceEvent.AccountingPeriod.Year, balanceEvent.AccountingPeriod.Month, 1))
             .ThenBy(balanceEvent => balanceEvent.EventSequence).ToList();
         // Apply each of the Balance Events to the starting balance
         foreach (IBalanceEvent balanceEvent in balanceEvents)
@@ -119,18 +120,17 @@ public class AccountBalanceService : IAccountBalanceService
                 PendingFundBalanceChanges = [],
             };
         AccountBalance endingBalance = startingBalance;
-        // Attempt to find the next Accounting Period to get the ending balance
+
+        // If this accounting period is closed and there's a future period, just use the start of period
+        // checkpoint from the future period as the ending balance
         AccountingPeriod? nextAccountingPeriod = _accountingPeriodRepository
-            .FindByDateOrNull(new DateOnly(accountingPeriod.Year, accountingPeriod.Month, 1));
-        if (nextAccountingPeriod != null)
+            .FindByDateOrNull(new DateOnly(accountingPeriod.Year, accountingPeriod.Month, 1).AddMonths(1));
+        if (!accountingPeriod.IsOpen &&
+            nextAccountingPeriod != null &&
+            nextAccountingPeriod.StartOfPeriodBalanceCheckpoints.Count > 0)
         {
             endingBalance = nextAccountingPeriod.StartOfPeriodBalanceCheckpoints
-                .SingleOrDefault(balanceCheckpoint => balanceCheckpoint.Account == account)?.GetAccountBalance()
-                ?? new AccountBalance
-                {
-                    FundBalances = [],
-                    PendingFundBalanceChanges = [],
-                };
+                .Single(balanceCheckpoint => balanceCheckpoint.Account == account).GetAccountBalance();
             return new AccountBalanceByAccountingPeriod(startingBalance, endingBalance);
         }
         // Otherwise, calculate the ending balance by applying all the Balance Events currently in the Accounting Period

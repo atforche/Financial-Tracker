@@ -57,19 +57,5 @@ public class AccountingPeriodRepository : AggregateRepositoryBase<AccountingPeri
     }
 
     /// <inheritdoc/>
-    public int FindMaximumBalanceEventSequenceForDate(DateOnly eventDate)
-    {
-        List<TransactionBalanceEvent> existingBalanceEventsOnDate = DatabaseContext.AccountingPeriods
-            .SelectMany(accountingPeriod => accountingPeriod.Transactions)
-            .SelectMany(transaction => transaction.TransactionBalanceEvents)
-            .Where(balanceEvent => balanceEvent.EventDate == eventDate).ToList();
-        if (existingBalanceEventsOnDate.Count > 0)
-        {
-            return existingBalanceEventsOnDate.Max(balanceEvent => balanceEvent.EventSequence + 1);
-        }
-        return 1;
-    }
-
-    /// <inheritdoc/>
     public void Add(AccountingPeriod accountingPeriod) => DatabaseContext.Add(accountingPeriod);
 }

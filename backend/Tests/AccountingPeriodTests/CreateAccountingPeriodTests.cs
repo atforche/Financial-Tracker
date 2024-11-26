@@ -2,36 +2,36 @@ using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
 using Domain.Services;
-using Domain.Services.Implementations;
 using Domain.ValueObjects;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Tests.Mocks;
+using Tests.Validators;
 
 namespace Tests.AccountingPeriodTests;
 
 /// <summary>
 /// Test class that tests creating an AccountingPeriod
 /// </summary>
-public class CreateAccountingPeriodTests
+public class CreateAccountingPeriodTests : UnitTestBase
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IAccountingPeriodRepository _accountingPeriodRepository;
+    private readonly IAccountingPeriodService _accountingPeriodService;
+    private readonly IAccountRepository _accountRepository;
+    private readonly IAccountService _accountService;
+    private readonly IFundRepository _fundRepository;
+    private readonly IFundService _fundService;
 
     /// <summary>
-    /// Constructs a new instance of this class
+    /// Constructs a new instance of this class.
+    /// This constructor is run again before each individual test in this test class.
     /// </summary>
     public CreateAccountingPeriodTests()
+        : base()
     {
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddScoped<IAccountRepository, MockAccountRepository>();
-        serviceCollection.AddScoped<IAccountingPeriodRepository, MockAccountingPeriodRepository>();
-        serviceCollection.AddScoped<IFundRepository, MockFundRepository>();
-        serviceCollection.AddScoped<IAccountingPeriodService, AccountingPeriodService>();
-        serviceCollection.AddScoped<IAccountBalanceService, AccountBalanceService>();
-        serviceCollection.AddScoped<IAccountService, AccountService>();
-        serviceCollection.AddScoped<IFundService, FundService>();
-
-        _serviceProvider = serviceCollection.BuildServiceProvider();
+        _accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
+        _accountingPeriodService = GetService<IAccountingPeriodService>();
+        _accountRepository = GetService<IAccountRepository>();
+        _accountService = GetService<IAccountService>();
+        _fundRepository = GetService<IFundRepository>();
+        _fundService = GetService<IFundService>();
     }
 
     /// <summary>
@@ -40,17 +40,15 @@ public class CreateAccountingPeriodTests
     [Fact]
     public void CreateNewAccountingPeriod()
     {
-        const int year = 2024;
-        const int month = 11;
-
-        IAccountingPeriodService accountingPeriodService = GetService<IAccountingPeriodService>();
-
-        AccountingPeriod newAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(year, month);
-        Assert.NotEqual(newAccountingPeriod.Id.ExternalId, Guid.NewGuid());
-        Assert.Equal(year, newAccountingPeriod.Year);
-        Assert.Equal(month, newAccountingPeriod.Month);
-        Assert.Empty(newAccountingPeriod.AccountBalanceCheckpoints);
-        Assert.Empty(newAccountingPeriod.Transactions);
+        AccountingPeriod newAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
+        new AccountingPeriodValidator(newAccountingPeriod).Validate(new AccountingPeriodState
+        {
+            Year = 2024,
+            Month = 11,
+            IsOpen = true,
+            AccountBalanceCheckpoints = [],
+            Transactions = [],
+        });
     }
 
     /// <summary>
@@ -64,8 +62,7 @@ public class CreateAccountingPeriodTests
     {
         const int month = 11;
 
-        IAccountingPeriodService accountingPeriodService = GetService<IAccountingPeriodService>();
-        Assert.Throws<InvalidOperationException>(() => accountingPeriodService.CreateNewAccountingPeriod(value, month));
+        Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.CreateNewAccountingPeriod(value, month));
     }
 
     /// <summary>
@@ -79,8 +76,7 @@ public class CreateAccountingPeriodTests
     {
         const int year = 2023;
 
-        IAccountingPeriodService accountingPeriodService = GetService<IAccountingPeriodService>();
-        Assert.Throws<InvalidOperationException>(() => accountingPeriodService.CreateNewAccountingPeriod(year, value));
+        Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.CreateNewAccountingPeriod(year, value));
     }
 
     /// <summary>
@@ -89,21 +85,21 @@ public class CreateAccountingPeriodTests
     [Fact]
     public void CreateMultipleAccountingPeriods()
     {
-        IAccountingPeriodService accountingPeriodService = GetService<IAccountingPeriodService>();
-        IAccountingPeriodRepository accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
-
         // Add a first Accounting Period and mark it closed
-        AccountingPeriod firstAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
-        accountingPeriodRepository.Add(firstAccountingPeriod);
-        accountingPeriodService.ClosePeriod(firstAccountingPeriod, null);
+        AccountingPeriod firstAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
+        _accountingPeriodRepository.Add(firstAccountingPeriod);
+        _accountingPeriodService.ClosePeriod(firstAccountingPeriod);
 
         // Add a second accounting period
-        AccountingPeriod secondAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
-        Assert.NotEqual(secondAccountingPeriod.Id.ExternalId, Guid.NewGuid());
-        Assert.Equal(2024, secondAccountingPeriod.Year);
-        Assert.Equal(12, secondAccountingPeriod.Month);
-        Assert.Empty(secondAccountingPeriod.AccountBalanceCheckpoints);
-        Assert.Empty(secondAccountingPeriod.Transactions);
+        AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
+        new AccountingPeriodValidator(secondAccountingPeriod).Validate(new AccountingPeriodState
+        {
+            Year = 2024,
+            Month = 12,
+            IsOpen = true,
+            AccountBalanceCheckpoints = [],
+            Transactions = [],
+        });
     }
 
     /// <summary>
@@ -112,20 +108,20 @@ public class CreateAccountingPeriodTests
     [Fact]
     public void CreateMultipleOpenAccountingPeriods()
     {
-        IAccountingPeriodService accountingPeriodService = GetService<IAccountingPeriodService>();
-        IAccountingPeriodRepository accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
-
         // Add a first Accounting Period and leave it open
-        AccountingPeriod firstAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
-        accountingPeriodRepository.Add(firstAccountingPeriod);
+        AccountingPeriod firstAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
+        _accountingPeriodRepository.Add(firstAccountingPeriod);
 
         // Add a second accounting period
-        AccountingPeriod secondAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
-        Assert.NotEqual(secondAccountingPeriod.Id.ExternalId, Guid.NewGuid());
-        Assert.Equal(2024, secondAccountingPeriod.Year);
-        Assert.Equal(12, secondAccountingPeriod.Month);
-        Assert.Empty(secondAccountingPeriod.AccountBalanceCheckpoints);
-        Assert.Empty(secondAccountingPeriod.Transactions);
+        AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
+        new AccountingPeriodValidator(secondAccountingPeriod).Validate(new AccountingPeriodState
+        {
+            Year = 2024,
+            Month = 12,
+            IsOpen = true,
+            AccountBalanceCheckpoints = [],
+            Transactions = [],
+        });
     }
 
     /// <summary>
@@ -134,15 +130,12 @@ public class CreateAccountingPeriodTests
     [Fact]
     public void CreateNonContiguousAccountingPeriods()
     {
-        IAccountingPeriodService accountingPeriodService = GetService<IAccountingPeriodService>();
-        IAccountingPeriodRepository accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
-
         // Add a first Accounting Period
-        AccountingPeriod firstAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
-        accountingPeriodRepository.Add(firstAccountingPeriod);
+        AccountingPeriod firstAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
+        _accountingPeriodRepository.Add(firstAccountingPeriod);
 
         // Attempt to add a second Accounting Period with a gap 
-        Assert.Throws<InvalidOperationException>(() => accountingPeriodService.CreateNewAccountingPeriod(2025, 1));
+        Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.CreateNewAccountingPeriod(2025, 1));
     }
 
     /// <summary>
@@ -151,15 +144,26 @@ public class CreateAccountingPeriodTests
     [Fact]
     public void CreateAccountingPeriodInPast()
     {
-        IAccountingPeriodService accountingPeriodService = GetService<IAccountingPeriodService>();
-        IAccountingPeriodRepository accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
-
         // Add a first Accounting Period
-        AccountingPeriod firstAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
-        accountingPeriodRepository.Add(firstAccountingPeriod);
+        AccountingPeriod firstAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
+        _accountingPeriodRepository.Add(firstAccountingPeriod);
 
         // Attempt to add a second Accounting Period in the past
-        Assert.Throws<InvalidOperationException>(() => accountingPeriodService.CreateNewAccountingPeriod(2024, 10));
+        Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.CreateNewAccountingPeriod(2024, 10));
+    }
+
+    /// <summary>
+    /// Tests that creating an Accounting Period that already exists fails
+    /// </summary>
+    [Fact]
+    public void CreateDuplicateAccountingPeriod()
+    {
+        // Add a first Accounting Period
+        AccountingPeriod firstAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
+        _accountingPeriodRepository.Add(firstAccountingPeriod);
+
+        // Attempt to add a duplicate Accounting Period
+        Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.CreateNewAccountingPeriod(2024, 11));
     }
 
     /// <summary>
@@ -169,76 +173,53 @@ public class CreateAccountingPeriodTests
     [Fact]
     public void CreateAccountingPeriodNoBalanceCheckpoints()
     {
-        IAccountingPeriodService accountingPeriodService = GetService<IAccountingPeriodService>();
-        IAccountingPeriodRepository accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
-        IAccountService accountService = GetService<IAccountService>();
-        IAccountRepository accountRepository = GetService<IAccountRepository>();
-        IFundService fundService = GetService<IFundService>();
-        IFundRepository fundRepository = GetService<IFundRepository>();
-
         // Add a test fund
-        Fund fund = fundService.CreateNewFund("Test");
-        fundRepository.Add(fund);
+        Fund fund = _fundService.CreateNewFund("Test");
+        _fundRepository.Add(fund);
 
         // Add a first Accounting Period
-        AccountingPeriod firstAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
-        accountingPeriodRepository.Add(firstAccountingPeriod);
+        AccountingPeriod firstAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
+        _accountingPeriodRepository.Add(firstAccountingPeriod);
 
         // Add an Account with an initial period of the first Accounting Period
-        var fundAmount = new FundAmount
-        {
-            Fund = fund,
-            Amount = 2500.00m,
-        };
-        Account account = accountService.CreateNewAccount(firstAccountingPeriod, "Test", AccountType.Standard, [fundAmount]);
-        accountRepository.Add(account);
-
-        // Verify that Account Balances Checkpoints were created for the first Accounting Period
-        Assert.Equal(2, firstAccountingPeriod.AccountBalanceCheckpoints.Count);
-        var periodCheckpoint = firstAccountingPeriod.AccountBalanceCheckpoints
-            .Single(checkpoint => checkpoint.Type == AccountBalanceCheckpointType.StartOfPeriod);
-        Assert.Equal(account, periodCheckpoint.Account);
-        Assert.Single(periodCheckpoint.FundBalances);
-        Assert.Equal(fundAmount, periodCheckpoint.FundBalances.First());
-        var monthCheckpoint = firstAccountingPeriod.AccountBalanceCheckpoints
-            .Single(checkpoint => checkpoint.Type == AccountBalanceCheckpointType.StartOfMonth);
-        Assert.Equal(account, monthCheckpoint.Account);
-        Assert.Single(monthCheckpoint.FundBalances);
-        Assert.Equal(fundAmount, monthCheckpoint.FundBalances.First());
+        Account account = _accountService.CreateNewAccount(firstAccountingPeriod,
+            "Test",
+            AccountType.Standard,
+            [
+                new FundAmount
+                {
+                    Fund = fund,
+                    Amount = 2500.0m,
+                }
+            ]);
+        _accountRepository.Add(account);
 
         // Add a new accounting period, leaving the first accounting period open
-        AccountingPeriod secondAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
-        accountingPeriodRepository.Add(secondAccountingPeriod);
-
-        // Verify that no Account Balance Checkpoints were added
-        Assert.Empty(secondAccountingPeriod.AccountBalanceCheckpoints);
+        AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
+        new AccountingPeriodValidator(secondAccountingPeriod).Validate(new AccountingPeriodState
+        {
+            Year = 2024,
+            Month = 12,
+            IsOpen = true,
+            AccountBalanceCheckpoints = [],
+            Transactions = [],
+        });
     }
 
     /// <summary>
     /// Tests that creating an Accounting Period when there's a previous closed Accounting Period with an Account
     /// will create Account Balance Checkpoints
     /// </summary>
-    /// <summary>
-    /// Tests that creating an Accounting Period when there's a previous open Accounting Period with an Account
-    /// won't create any Account Balance Checkpoints
-    /// </summary>
     [Fact]
     public void CreateAccountingPeriodBalanceCheckpoints()
     {
-        IAccountingPeriodService accountingPeriodService = GetService<IAccountingPeriodService>();
-        IAccountingPeriodRepository accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
-        IAccountService accountService = GetService<IAccountService>();
-        IAccountRepository accountRepository = GetService<IAccountRepository>();
-        IFundService fundService = GetService<IFundService>();
-        IFundRepository fundRepository = GetService<IFundRepository>();
-
         // Add a test fund
-        Fund fund = fundService.CreateNewFund("Test");
-        fundRepository.Add(fund);
+        Fund fund = _fundService.CreateNewFund("Test");
+        _fundRepository.Add(fund);
 
         // Add a first Accounting Period
-        AccountingPeriod firstAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
-        accountingPeriodRepository.Add(firstAccountingPeriod);
+        AccountingPeriod firstAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
+        _accountingPeriodRepository.Add(firstAccountingPeriod);
 
         // Add an Account with an initial period of the first Accounting Period
         var fundAmount = new FundAmount
@@ -246,46 +227,131 @@ public class CreateAccountingPeriodTests
             Fund = fund,
             Amount = 2500.00m,
         };
-        Account account = accountService.CreateNewAccount(firstAccountingPeriod, "Test", AccountType.Standard, [fundAmount]);
-        accountRepository.Add(account);
-
-        // Verify that Account Balances Checkpoints were created for the first Accounting Period
-        Assert.Equal(2, firstAccountingPeriod.AccountBalanceCheckpoints.Count);
-        var periodCheckpoint = firstAccountingPeriod.AccountBalanceCheckpoints
-            .Single(checkpoint => checkpoint.Type == AccountBalanceCheckpointType.StartOfPeriod);
-        Assert.Equal(account, periodCheckpoint.Account);
-        Assert.Single(periodCheckpoint.FundBalances);
-        Assert.Equal(fundAmount, periodCheckpoint.FundBalances.First());
-        var monthCheckpoint = firstAccountingPeriod.AccountBalanceCheckpoints
-            .Single(checkpoint => checkpoint.Type == AccountBalanceCheckpointType.StartOfMonth);
-        Assert.Equal(account, monthCheckpoint.Account);
-        Assert.Single(monthCheckpoint.FundBalances);
-        Assert.Equal(fundAmount, monthCheckpoint.FundBalances.First());
+        Account account = _accountService.CreateNewAccount(firstAccountingPeriod, "Test", AccountType.Standard, [fundAmount]);
+        _accountRepository.Add(account);
 
         // Close the first accounting period
-        accountingPeriodService.ClosePeriod(firstAccountingPeriod, null);
+        _accountingPeriodService.ClosePeriod(firstAccountingPeriod);
 
         // Add a new accounting period
-        AccountingPeriod secondAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
-        accountingPeriodRepository.Add(secondAccountingPeriod);
-
-        // Verify that Account Balances Checkpoints were created for the second Accounting Period
-        Assert.Equal(2, secondAccountingPeriod.AccountBalanceCheckpoints.Count);
-        periodCheckpoint = secondAccountingPeriod.AccountBalanceCheckpoints
-            .Single(checkpoint => checkpoint.Type == AccountBalanceCheckpointType.StartOfPeriod);
-        Assert.Equal(account, periodCheckpoint.Account);
-        Assert.Single(periodCheckpoint.FundBalances);
-        Assert.Equal(fundAmount, periodCheckpoint.FundBalances.First());
-        monthCheckpoint = secondAccountingPeriod.AccountBalanceCheckpoints
-            .Single(checkpoint => checkpoint.Type == AccountBalanceCheckpointType.StartOfMonth);
-        Assert.Equal(account, monthCheckpoint.Account);
-        Assert.Single(monthCheckpoint.FundBalances);
-        Assert.Equal(fundAmount, monthCheckpoint.FundBalances.First());
+        AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
+        new AccountingPeriodValidator(secondAccountingPeriod).Validate(new AccountingPeriodState
+        {
+            Year = 2024,
+            Month = 12,
+            IsOpen = true,
+            AccountBalanceCheckpoints =
+            [
+                new AccountBalanceCheckpointState
+                {
+                    AccountName = "Test",
+                    Type = AccountBalanceCheckpointType.StartOfPeriod,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = "Test",
+                            Amount = 2500.00m,
+                        }
+                    ]
+                },
+                new AccountBalanceCheckpointState
+                {
+                    AccountName = "Test",
+                    Type = AccountBalanceCheckpointType.StartOfMonth,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = "Test",
+                            Amount = 2500.00m,
+                        }
+                    ]
+                }
+            ],
+            Transactions = [],
+        });
     }
 
     /// <summary>
-    /// Gets the service of the provided type from the service provider
+    /// Tests that creating an Accounting Period when there's a Transaction that falls within the calendar 
+    /// month for the Accounting Period being created works as expected
     /// </summary>
-    private TService GetService<TService>() =>
-        _serviceProvider.GetService<TService>() ?? throw new InvalidOperationException();
+    [Fact]
+    public void CreateAccountingPeriodWithExistingTransactionInCurrentPeriod()
+    {
+        // Add a test fund
+        Fund fund = _fundService.CreateNewFund("Test");
+        _fundRepository.Add(fund);
+
+        // Add a first Accounting Period
+        AccountingPeriod firstAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
+        _accountingPeriodRepository.Add(firstAccountingPeriod);
+
+        // Add an Account with an initial period of the first Accounting Period
+        Account account = _accountService.CreateNewAccount(firstAccountingPeriod, "Test", AccountType.Standard,
+            [
+                new FundAmount
+                {
+                    Fund = fund,
+                    Amount = 2500.0m,
+                }
+            ]);
+        _accountRepository.Add(account);
+
+        // Add a Transaction with a Balance Event that falls in the future month
+        Transaction transaction = firstAccountingPeriod.AddTransaction(new DateOnly(2024, 11, 25),
+            [
+                new FundAmount
+                {
+                    Fund = fund,
+                    Amount = 25.00m
+                }
+            ],
+            account,
+            null);
+        transaction.Post(account, new DateOnly(2024, 12, 5));
+
+        // Close the first accounting period
+        _accountingPeriodService.ClosePeriod(firstAccountingPeriod);
+
+        // Add a new accounting period
+        AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
+        new AccountingPeriodValidator(secondAccountingPeriod).Validate(new AccountingPeriodState
+        {
+            Year = 2024,
+            Month = 12,
+            IsOpen = true,
+            AccountBalanceCheckpoints =
+            [
+                new AccountBalanceCheckpointState
+                {
+                    AccountName = "Test",
+                    Type = AccountBalanceCheckpointType.StartOfPeriod,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = "Test",
+                            Amount = 2475.00m,
+                        }
+                    ]
+                },
+                new AccountBalanceCheckpointState
+                {
+                    AccountName = "Test",
+                    Type = AccountBalanceCheckpointType.StartOfMonth,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = "Test",
+                            Amount = 2500.00m,
+                        }
+                    ]
+                }
+            ],
+            Transactions = [],
+        });
+    }
 }

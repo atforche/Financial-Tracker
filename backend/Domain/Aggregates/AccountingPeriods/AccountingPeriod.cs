@@ -67,6 +67,28 @@ public class AccountingPeriod : EntityBase
         _accountBalanceCheckpoints.Where(checkpoint => checkpoint.Type == AccountBalanceCheckpointType.StartOfMonth).ToList();
 
     /// <summary>
+    /// Adds a new Transaction to this Accounting Period
+    /// </summary>
+    /// <param name="transactionDate">Transaction Date for this Transaction</param>
+    /// <param name="accountingEntries">Accounting Entries for this Transaction</param>
+    /// <param name="debitAccount">Debit Account for this Transaction</param>
+    /// <param name="creditAccount">Credit Account for this Transaction</param>
+    /// <returns>The newly created Transaction</returns>
+    public Transaction AddTransaction(DateOnly transactionDate,
+        IEnumerable<FundAmount> accountingEntries,
+        Account? debitAccount,
+        Account? creditAccount)
+    {
+        var newTransaction = new Transaction(this,
+            transactionDate,
+            accountingEntries,
+            debitAccount,
+            creditAccount);
+        _transactions.Add(newTransaction);
+        return newTransaction;
+    }
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="year">Year for this Accounting Period</param>
@@ -90,21 +112,6 @@ public class AccountingPeriod : EntityBase
             .ThenBy(balanceEvent => balanceEvent.EventSequence);
 
     /// <summary>
-    /// Adds a new Transaction to this Accounting Period
-    /// </summary>
-    /// <param name="transactionDate">Date for this Transaction</param>
-    /// <param name="accountingEntries">Accounting Entries for this Transaction</param>
-    /// <param name="transactionBalanceEvents">Transaction Balance Events for this Transaction</param>
-    internal Transaction AddTransaction(DateOnly transactionDate,
-        IEnumerable<FundAmount> accountingEntries,
-        IEnumerable<CreateTransactionBalanceEventRequest> transactionBalanceEvents)
-    {
-        var newTransaction = new Transaction(this, transactionDate, accountingEntries, transactionBalanceEvents);
-        _transactions.Add(newTransaction);
-        return newTransaction;
-    }
-
-    /// <summary>
     /// Adds a new Account Balance Checkpoint to this Accounting Period
     /// </summary>
     /// <param name="account">Account for this Account Balance Checkpoint</param>
@@ -117,6 +124,22 @@ public class AccountingPeriod : EntityBase
             throw new InvalidOperationException();
         }
         _accountBalanceCheckpoints.Add(new AccountBalanceCheckpoint(this, account, type, fundBalances));
+    }
+
+    /// <summary>
+    /// Gets the next Balance Event sequence for the provided date
+    /// </summary>
+    /// <param name="eventDate">Event date to get the next Balance Event sequence for</param>
+    /// <returns>The next Balance Event sequence for the provided date</returns>
+    internal int GetNextEventSequenceForDate(DateOnly eventDate)
+    {
+        List<IBalanceEvent> balanceEventsOnDate = GetAllBalanceEvents()
+            .Where(balanceEvent => balanceEvent.EventDate == eventDate).ToList();
+        if (balanceEventsOnDate.Count == 0)
+        {
+            return 1;
+        }
+        return balanceEventsOnDate.Count + 1;
     }
 
     /// <summary>

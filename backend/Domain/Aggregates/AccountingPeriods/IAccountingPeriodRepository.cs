@@ -46,13 +46,6 @@ public interface IAccountingPeriodRepository : IAggregateRepository<AccountingPe
     IReadOnlyCollection<AccountingPeriod> FindAccountingPeriodsWithBalanceEventsInDateRange(DateRange dateRange);
 
     /// <summary>
-    /// Finds the current maximum Balance Event Sequence number for the provided date
-    /// </summary>
-    /// <param name="eventDate">Event Date to find the maximum sequence number for</param>
-    /// <returns>The maximum Balance Event Sequence number for the provided date</returns>
-    int FindMaximumBalanceEventSequenceForDate(DateOnly eventDate);
-
-    /// <summary>
     /// Adds the provided Accounting Period to the repository
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period that should be added</param>
