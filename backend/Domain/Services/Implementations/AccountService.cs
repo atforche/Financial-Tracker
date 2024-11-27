@@ -22,18 +22,19 @@ public class AccountService : IAccountService
     }
 
     /// <inheritdoc/>
-    public Account CreateNewAccount(AccountingPeriod initialAccountingPeriod,
-        string name,
-        AccountType type,
-        IEnumerable<FundAmount> startingFundBalances)
+    public Account CreateNewAccount(string name, AccountType type, IEnumerable<FundAmount> startingFundBalances)
     {
         ValidateNewAccountName(name);
-        ValidateInitialAccountingPeriodForAccount(initialAccountingPeriod);
+        AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindOpenPeriods().FirstOrDefault();
+        if (accountingPeriod == null)
+        {
+            throw new InvalidOperationException();
+        }
         Account newAccount = new Account(name, type);
-        initialAccountingPeriod.AddAccountBalanceCheckpoint(newAccount,
+        accountingPeriod.AddAccountBalanceCheckpoint(newAccount,
             AccountBalanceCheckpointType.StartOfPeriod,
             startingFundBalances);
-        initialAccountingPeriod.AddAccountBalanceCheckpoint(newAccount,
+        accountingPeriod.AddAccountBalanceCheckpoint(newAccount,
             AccountBalanceCheckpointType.StartOfMonth,
             startingFundBalances);
         return newAccount;
@@ -46,22 +47,6 @@ public class AccountService : IAccountService
     private void ValidateNewAccountName(string newName)
     {
         if (_accountRepository.FindByNameOrNull(newName) != null)
-        {
-            throw new InvalidOperationException();
-        }
-    }
-
-    /// <summary>
-    /// Validates that the provided Accounting Period is valid as an initial Accounting Period for an Account 
-    /// </summary>
-    /// <param name="initialAccountingPeriod">Initial Accounting Period for an Account</param>
-    private void ValidateInitialAccountingPeriodForAccount(AccountingPeriod initialAccountingPeriod)
-    {
-        if (!initialAccountingPeriod.IsOpen)
-        {
-            throw new InvalidOperationException();
-        }
-        if (_accountingPeriodRepository.FindOpenPeriods().First() != initialAccountingPeriod)
         {
             throw new InvalidOperationException();
         }

@@ -126,20 +126,18 @@ public class CloseAccountingPeriodTests : UnitTestBase
         _accountingPeriodRepository.Add(accountingPeriod);
 
         // Add two test Accounts
-        Account firstAccount = _accountService.CreateNewAccount(accountingPeriod, "Test", AccountType.Standard, []);
-        Account secondAccount = _accountService.CreateNewAccount(accountingPeriod, "Test2", AccountType.Standard, []);
+        Account firstAccount = _accountService.CreateNewAccount("Test", AccountType.Standard, []);
+        Account secondAccount = _accountService.CreateNewAccount("Test2", AccountType.Standard, []);
 
         // Add a Transaction and fully post it
-        Transaction transaction = accountingPeriod.AddTransaction(new DateOnly(2024, 11, 24),
+        Transaction transaction = accountingPeriod.AddTransaction(new DateOnly(2024, 11, 24), firstAccount, secondAccount,
             [
                 new FundAmount
                 {
                     Fund = fund,
                     Amount = 25.00m,
                 }
-            ],
-            firstAccount,
-            secondAccount);
+            ]);
         transaction.Post(firstAccount, new DateOnly(2024, 11, 24));
         transaction.Post(secondAccount, new DateOnly(2024, 11, 24));
 
@@ -244,20 +242,18 @@ public class CloseAccountingPeriodTests : UnitTestBase
         _accountingPeriodRepository.Add(accountingPeriod);
 
         // Add two test Accounts
-        Account firstAccount = _accountService.CreateNewAccount(accountingPeriod, "Test", AccountType.Standard, []);
-        Account secondAccount = _accountService.CreateNewAccount(accountingPeriod, "Test2", AccountType.Standard, []);
+        Account firstAccount = _accountService.CreateNewAccount("Test", AccountType.Standard, []);
+        Account secondAccount = _accountService.CreateNewAccount("Test2", AccountType.Standard, []);
 
         // Add a Transaction and partially post it
-        Transaction transaction = accountingPeriod.AddTransaction(new DateOnly(2024, 11, 24),
+        Transaction transaction = accountingPeriod.AddTransaction(new DateOnly(2024, 11, 24), firstAccount, secondAccount,
             [
                 new FundAmount
                 {
                     Fund = fund,
                     Amount = 25.00m,
                 }
-            ],
-            firstAccount,
-            secondAccount);
+            ]);
         transaction.Post(firstAccount, new DateOnly(2024, 11, 24));
 
         // Close the Accounting Period
@@ -280,9 +276,7 @@ public class CloseAccountingPeriodTests : UnitTestBase
         _accountingPeriodRepository.Add(secondAccountingPeriod);
 
         // Add an Account
-        Account account = _accountService.CreateNewAccount(firstAccountingPeriod,
-            "Test",
-            AccountType.Standard,
+        Account account = _accountService.CreateNewAccount("Test", AccountType.Standard,
             [
                 new FundAmount
                 {
@@ -293,16 +287,14 @@ public class CloseAccountingPeriodTests : UnitTestBase
         _accountRepository.Add(account);
 
         // Add a Transaction and fully post it
-        Transaction transaction = firstAccountingPeriod.AddTransaction(new DateOnly(2024, 11, 24),
+        Transaction transaction = firstAccountingPeriod.AddTransaction(new DateOnly(2024, 11, 24), account, null,
             [
                 new FundAmount
                 {
                     Fund = fund,
                     Amount = 25.00m,
                 }
-            ],
-            account,
-            null);
+            ]);
         transaction.Post(account, new DateOnly(2024, 11, 24));
 
         // Close the first Accounting Period and expect that Balance Checkpoints are added to the second Accounting Period
@@ -431,9 +423,7 @@ public class CloseAccountingPeriodTests : UnitTestBase
         _accountingPeriodRepository.Add(secondAccountingPeriod);
 
         // Add an Account
-        Account account = _accountService.CreateNewAccount(firstAccountingPeriod,
-            "Test",
-            AccountType.Standard,
+        Account account = _accountService.CreateNewAccount("Test", AccountType.Standard,
             [
                 new FundAmount
                 {
@@ -444,16 +434,14 @@ public class CloseAccountingPeriodTests : UnitTestBase
         _accountRepository.Add(account);
 
         // Add a Transaction and fully post it
-        Transaction transaction = firstAccountingPeriod.AddTransaction(new DateOnly(2024, 11, 24),
+        Transaction transaction = firstAccountingPeriod.AddTransaction(new DateOnly(2024, 11, 24), account, null,
             [
                 new FundAmount
                 {
                     Fund = fund,
                     Amount = 25.00m,
                 }
-            ],
-            account,
-            null);
+            ]);
         transaction.Post(account, new DateOnly(2024, 12, 5));
 
         // Close the first Accounting Period and expect that Balance Checkpoints are added to the second Accounting Period

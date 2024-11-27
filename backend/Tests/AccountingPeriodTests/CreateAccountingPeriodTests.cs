@@ -182,9 +182,7 @@ public class CreateAccountingPeriodTests : UnitTestBase
         _accountingPeriodRepository.Add(firstAccountingPeriod);
 
         // Add an Account with an initial period of the first Accounting Period
-        Account account = _accountService.CreateNewAccount(firstAccountingPeriod,
-            "Test",
-            AccountType.Standard,
+        Account account = _accountService.CreateNewAccount("Test", AccountType.Standard,
             [
                 new FundAmount
                 {
@@ -222,12 +220,14 @@ public class CreateAccountingPeriodTests : UnitTestBase
         _accountingPeriodRepository.Add(firstAccountingPeriod);
 
         // Add an Account with an initial period of the first Accounting Period
-        var fundAmount = new FundAmount
-        {
-            Fund = fund,
-            Amount = 2500.00m,
-        };
-        Account account = _accountService.CreateNewAccount(firstAccountingPeriod, "Test", AccountType.Standard, [fundAmount]);
+        Account account = _accountService.CreateNewAccount("Test", AccountType.Standard,
+            [
+                new FundAmount
+                {
+                    Fund = fund,
+                    Amount = 2500.00m,
+                }
+            ]);
         _accountRepository.Add(account);
 
         // Close the first accounting period
@@ -289,7 +289,7 @@ public class CreateAccountingPeriodTests : UnitTestBase
         _accountingPeriodRepository.Add(firstAccountingPeriod);
 
         // Add an Account with an initial period of the first Accounting Period
-        Account account = _accountService.CreateNewAccount(firstAccountingPeriod, "Test", AccountType.Standard,
+        Account account = _accountService.CreateNewAccount("Test", AccountType.Standard,
             [
                 new FundAmount
                 {
@@ -300,16 +300,14 @@ public class CreateAccountingPeriodTests : UnitTestBase
         _accountRepository.Add(account);
 
         // Add a Transaction with a Balance Event that falls in the future month
-        Transaction transaction = firstAccountingPeriod.AddTransaction(new DateOnly(2024, 11, 25),
+        Transaction transaction = firstAccountingPeriod.AddTransaction(new DateOnly(2024, 11, 25), account, null,
             [
                 new FundAmount
                 {
                     Fund = fund,
                     Amount = 25.00m
                 }
-            ],
-            account,
-            null);
+            ]);
         transaction.Post(account, new DateOnly(2024, 12, 5));
 
         // Close the first accounting period

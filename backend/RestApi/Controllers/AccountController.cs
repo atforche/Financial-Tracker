@@ -19,7 +19,6 @@ public class AccountController : ControllerBase
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAccountService _accountService;
     private readonly IAccountRepository _accountRepository;
-    private readonly IAccountingPeriodRepository _accountingPeriodRepository;
     private readonly IFundRepository _fundRepository;
 
     /// <summary>
@@ -39,7 +38,6 @@ public class AccountController : ControllerBase
         _unitOfWork = unitOfWork;
         _accountService = accountService;
         _accountRepository = accountRepository;
-        _accountingPeriodRepository = accountingPeriodRepository;
         _fundRepository = fundRepository;
     }
 
@@ -72,10 +70,7 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> CreateAccountAsync(CreateAccountModel createAccountModel)
     {
         Dictionary<Guid, Fund> funds = _fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
-        Account newAccount = _accountService.CreateNewAccount(
-            _accountingPeriodRepository.FindOpenPeriods().First(),
-            createAccountModel.Name,
-            createAccountModel.Type,
+        Account newAccount = _accountService.CreateNewAccount(createAccountModel.Name, createAccountModel.Type,
             createAccountModel.StartingFundBalances.Select(fundBalance => new FundAmount
             {
                 Fund = funds[fundBalance.FundId],

@@ -70,15 +70,19 @@ public class AccountingPeriod : EntityBase
     /// Adds a new Transaction to this Accounting Period
     /// </summary>
     /// <param name="transactionDate">Transaction Date for this Transaction</param>
-    /// <param name="accountingEntries">Accounting Entries for this Transaction</param>
     /// <param name="debitAccount">Debit Account for this Transaction</param>
     /// <param name="creditAccount">Credit Account for this Transaction</param>
+    /// <param name="accountingEntries">Accounting Entries for this Transaction</param>
     /// <returns>The newly created Transaction</returns>
     public Transaction AddTransaction(DateOnly transactionDate,
-        IEnumerable<FundAmount> accountingEntries,
         Account? debitAccount,
-        Account? creditAccount)
+        Account? creditAccount,
+        IEnumerable<FundAmount> accountingEntries)
     {
+        if (!IsOpen)
+        {
+            throw new InvalidOperationException();
+        }
         var newTransaction = new Transaction(this,
             transactionDate,
             accountingEntries,
