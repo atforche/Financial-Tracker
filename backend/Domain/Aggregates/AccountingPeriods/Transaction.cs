@@ -39,28 +39,93 @@ public class Transaction : EntityBase
     public IReadOnlyCollection<TransactionBalanceEvent> TransactionBalanceEvents => _transactionBalanceEvents;
 
     /// <summary>
+    /// Posts the Transaction in the provided Account
+    /// </summary>
+    /// <param name="account">Account that this Transaction should be posted in</param>
+    /// <param name="postedStatementDate">Posted statement date for this Transaction in the provided Account</param>
+    public void Post(Account account, DateOnly postedStatementDate)
+    {
+        // Validate that the provided account is either the credit or debit Account for this Transaction
+        Account? debitAccount = TransactionBalanceEvents
+            .SingleOrDefault(balanceEvent => balanceEvent.TransactionAccountType == TransactionAccountType.Debit &&
+                balanceEvent.TransactionEventType == TransactionBalanceEventType.Added)?.Account;
+        Account? creditAccount = TransactionBalanceEvents
+            .SingleOrDefault(balanceEvent => balanceEvent.TransactionAccountType == TransactionAccountType.Credit &&
+                balanceEvent.TransactionEventType == TransactionBalanceEventType.Added)?.Account;
+        if (account != debitAccount && account != creditAccount)
+        {
+            throw new InvalidOperationException();
+        }
+        // Validate that this Transaction hasn't already been posted for the provided Account
+        if (TransactionBalanceEvents.Any(balanceEvent => balanceEvent.Account == account &&
+                balanceEvent.TransactionEventType == TransactionBalanceEventType.Posted))
+        {
+            throw new InvalidOperationException();
+        }
+        // Validate that this posting date falls after the Transaction was added
+        if (TransactionBalanceEvents.Any(balanceEvent =>
+                balanceEvent.TransactionEventType == TransactionBalanceEventType.Added &&
+                balanceEvent.EventDate > postedStatementDate))
+        {
+            throw new InvalidOperationException();
+        }
+        // Validate that a transaction can only be posted with a date in a month adjacent to the Accounting Period month
+        int monthDifference = (AccountingPeriod.Year - postedStatementDate.Year) * 12 + AccountingPeriod.Month - postedStatementDate.Month;
+        if (Math.Abs(monthDifference) > 1)
+        {
+            throw new InvalidOperationException();
+        }
+        _transactionBalanceEvents.Add(new TransactionBalanceEvent(this,
+            account,
+            postedStatementDate,
+            AccountingPeriod.GetNextEventSequenceForDate(postedStatementDate),
+            TransactionBalanceEventType.Posted,
+            account == debitAccount ? TransactionAccountType.Debit : TransactionAccountType.Credit));
+    }
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="accountingPeriod">Parent Accounting Period for this Transaction</param>
-    /// <param name="transactionDate">Date for this Transaction</param>
+    /// <param name="transactionDate">Transaction Date for this Transaction</param>
     /// <param name="accountingEntries">Accounting Entries for this Transaction</param>
-    /// <param name="transactionBalanceEvents">Requests to create the Transaction Balance Events for this Transaction</param>
+    /// <param name="debitAccount">Debit Account for this Transaction</param>
+    /// <param name="creditAccount">Credit Account for this Transaction</param>
+    /// <param name="currentAccountBalances">Current Account Balances for the Accounts this Transaction affects</param>
+    /// <param name="futureBalanceEventsForAccounts">All existing future balance events for the Accounts this Transaction affects</param>
     internal Transaction(AccountingPeriod accountingPeriod,
         DateOnly transactionDate,
         IEnumerable<FundAmount> accountingEntries,
-        IEnumerable<CreateTransactionBalanceEventRequest> transactionBalanceEvents)
+        Account? debitAccount,
+        Account? creditAccount,
+        List<AccountBalanceByDate> currentAccountBalances,
+        List<AccountBalanceByEvent> futureBalanceEventsForAccounts)
         : base(new EntityId(default, Guid.NewGuid()))
     {
         AccountingPeriod = accountingPeriod;
         TransactionDate = transactionDate;
         _accountingEntries = accountingEntries.ToList();
-        _transactionBalanceEvents = transactionBalanceEvents.Select(request => new TransactionBalanceEvent(this,
-            request.Account,
-            request.EventDate,
-            request.EventSequence,
-            request.TransactionEventType,
-            request.TransactionAccountType)).ToList();
-        Validate();
+        _transactionBalanceEvents = [];
+        int nextEventSequence = accountingPeriod.GetNextEventSequenceForDate(transactionDate);
+        if (debitAccount != null)
+        {
+            _transactionBalanceEvents.Add(new TransactionBalanceEvent(this,
+                debitAccount,
+                TransactionDate,
+                nextEventSequence++,
+                TransactionBalanceEventType.Added,
+                TransactionAccountType.Debit));
+        }
+        if (creditAccount != null)
+        {
+            _transactionBalanceEvents.Add(new TransactionBalanceEvent(this,
+                creditAccount,
+                TransactionDate,
+                nextEventSequence++,
+                TransactionBalanceEventType.Added,
+                TransactionAccountType.Credit));
+        }
+        Validate(currentAccountBalances, futureBalanceEventsForAccounts);
     }
 
     /// <summary>
@@ -77,38 +142,83 @@ public class Transaction : EntityBase
     /// <summary>
     /// Validates the current Transaction
     /// </summary>
-    private void Validate()
+    /// <param name="currentAccountBalances">Current Account Balances for the Accounts this Transaction affects</param>
+    /// <param name="futureBalanceEventsForAccounts">All existing future balance events for the Accounts this Transaction affects</param>
+    private void Validate(
+        List<AccountBalanceByDate> currentAccountBalances,
+        List<AccountBalanceByEvent> futureBalanceEventsForAccounts)
     {
         if (TransactionDate == DateOnly.MinValue)
         {
             throw new InvalidOperationException();
         }
-        if (AccountingEntries.Count == 0 ||
-            AccountingEntries.Sum(entry => entry.Amount) == 0 ||
-            AccountingEntries.GroupBy(entry => entry.Fund.Id).Any(group => group.Count() > 1))
+        // Validate that a transaction can only be added with a date in a month adjacent to the Accounting Period month
+        int monthDifference = (AccountingPeriod.Year - TransactionDate.Year) * 12 + AccountingPeriod.Month - TransactionDate.Month;
+        if (Math.Abs(monthDifference) > 1)
+        {
+            throw new InvalidOperationException();
+        }
+        if (!AccountingPeriod.IsOpen)
+        {
+            throw new InvalidOperationException();
+        }
+        // Validate that an Accounting Entry was provided
+        if (AccountingEntries.Count == 0)
+        {
+            throw new InvalidOperationException();
+        }
+        // Validate that no blank Accounting Entries were provided
+        if (AccountingEntries.Any(entry => entry.Amount <= 0))
+        {
+            throw new InvalidOperationException();
+        }
+        // Validate that we don't have multiple Accounting Entries for the same Fund
+        if (AccountingEntries.GroupBy(entry => entry.Fund.Id).Any(group => group.Count() > 1))
+        {
+            throw new InvalidOperationException();
+        }
+        // Validate that adding this Transaction doesn't cause the current balances of any Accounts to
+        // go into the negative
+        foreach (AccountBalanceByDate accountBalanceByDate in currentAccountBalances)
+        {
+            if (TransactionBalanceEvents.Any(balanceEvent =>
+                    balanceEvent.ApplyEventToBalance(accountBalanceByDate.AccountBalance).BalanceIncludingPending < 0))
+            {
+                throw new InvalidOperationException();
+            }
+        }
+        // Validate that adding this Transaction doesn't cause any of the existing balance events in the future to 
+        // push an Account into the negative
+        foreach (AccountBalanceByEvent accountBalanceByEvent in futureBalanceEventsForAccounts)
+        {
+            if (TransactionBalanceEvents.Any(balanceEvent =>
+                    balanceEvent.ApplyEventToBalance(accountBalanceByEvent.AccountBalance).BalanceIncludingPending < 0))
+            {
+                throw new InvalidOperationException();
+            }
+        }
+        // Validate that adding this Transaction doesn't cause any of the existing balance events in this Accounting Period
+        // in the future to push an Account into the negative
+        foreach (AccountBalanceByEvent accountBalanceByEvent in futureBalanceEventsForAccounts
+                    .Where(balanceEvent => balanceEvent.BalanceEvent.AccountingPeriod == AccountingPeriod))
+        {
+            if (TransactionBalanceEvents.Any(balanceEvent =>
+                    balanceEvent.ApplyEventToBalance(accountBalanceByEvent.AccountBalance).BalanceIncludingPending < 0))
+            {
+                throw new InvalidOperationException();
+            }
+        }
+        // Validate that either a debit or credit Account was provided
+        if (TransactionBalanceEvents.Count == 0)
+        {
+            throw new InvalidOperationException();
+        }
+        // Validate that different Accounts must be provided for the debit and credit Accounts
+        if (TransactionBalanceEvents
+            .GroupBy(balanceEvent => balanceEvent.Account)
+            .Any(balanceEvents => balanceEvents.DistinctBy(balanceEvents => balanceEvents.TransactionAccountType).Count() > 1))
         {
             throw new InvalidOperationException();
         }
     }
-}
-
-/// <summary>
-/// Record representing a request to create a Transaction Balance Event
-/// </summary>
-internal sealed record CreateTransactionBalanceEventRequest
-{
-    /// <inheritdoc cref="TransactionBalanceEvent.Account"/>
-    public required Account Account { get; init; }
-
-    /// <inheritdoc cref="TransactionBalanceEvent.EventDate"/>
-    public required DateOnly EventDate { get; init; }
-
-    /// <inheritdoc cref="TransactionBalanceEvent.EventSequence"/>
-    public required int EventSequence { get; init; }
-
-    /// <inheritdoc cref="TransactionBalanceEvent.TransactionEventType"/>
-    public required TransactionBalanceEventType TransactionEventType { get; init; }
-
-    /// <inheritdoc cref="TransactionBalanceEvent.TransactionAccountType"/>
-    public required TransactionAccountType TransactionAccountType { get; init; }
 }

@@ -102,9 +102,7 @@ public class AccountingPeriodController : ControllerBase
     /// <param name="createTransactionModel">Request to create a Transaction</param>
     /// <returns>The created Transaction</returns>
     [HttpPost("{accountingPeriodId}/Transactions")]
-    public async Task<IActionResult> CreateTransactionAsync(
-        Guid accountingPeriodId,
-        CreateTransactionModel createTransactionModel)
+    public async Task<IActionResult> CreateTransactionAsync(Guid accountingPeriodId, CreateTransactionModel createTransactionModel)
     {
         AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindByExternalIdOrNull(accountingPeriodId);
         if (accountingPeriod == null)
@@ -131,27 +129,23 @@ public class AccountingPeriodController : ControllerBase
             }
         }
         Dictionary<Guid, Fund> funds = _fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
-        Transaction newTransaction = _accountingPeriodService.CreateNewTransaction(accountingPeriod,
+        Transaction newTransaction = _accountingPeriodService.AddTransaction(accountingPeriod,
             createTransactionModel.TransactionDate,
+            debitAccount,
+            creditAccount,
             createTransactionModel.AccountingEntries.Select(entry => new FundAmount
             {
                 Fund = funds[entry.FundId],
                 Amount = entry.Amount,
-            }),
-            createTransactionModel.DebitDetail != null && debitAccount != null
-                ? new TransactionAccountDetail
-                {
-                    Account = debitAccount,
-                    PostedStatementDate = createTransactionModel.DebitDetail.PostedStatementDate,
-                }
-                : null,
-            createTransactionModel.CreditDetail != null && creditAccount != null
-                ? new TransactionAccountDetail
-                {
-                    Account = creditAccount,
-                    PostedStatementDate = createTransactionModel.CreditDetail.PostedStatementDate,
-                }
-                : null);
+            }));
+        if (debitAccount != null && createTransactionModel.DebitDetail?.PostedStatementDate != null)
+        {
+            newTransaction.Post(debitAccount, createTransactionModel.DebitDetail.PostedStatementDate.Value);
+        }
+        if (creditAccount != null && createTransactionModel.CreditDetail?.PostedStatementDate != null)
+        {
+            newTransaction.Post(creditAccount, createTransactionModel.CreditDetail.PostedStatementDate.Value);
+        }
         await _unitOfWork.SaveChangesAsync();
         return Ok(new TransactionModel(newTransaction));
     }
@@ -169,8 +163,7 @@ public class AccountingPeriodController : ControllerBase
         {
             return NotFound();
         }
-        _accountingPeriodService.ClosePeriod(accountingPeriod,
-            _accountingPeriodRepository.FindByDateOrNull(new DateOnly(accountingPeriod.Year, accountingPeriod.Month, 1).AddMonths(1)));
+        _accountingPeriodService.ClosePeriod(accountingPeriod);
         await _unitOfWork.SaveChangesAsync();
         return Ok(new AccountingPeriodModel(accountingPeriod));
     }

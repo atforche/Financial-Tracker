@@ -15,18 +15,6 @@ public class EntityId : IEquatable<EntityId>
     /// </summary>
     public Guid ExternalId { get; }
 
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="internalId">Internal ID for this Entity</param>
-    /// <param name="externalId">External ID for this Entity</param>
-    public EntityId(long internalId, Guid externalId)
-    {
-        InternalId = internalId;
-        ExternalId = externalId;
-        Validate();
-    }
-
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is EntityId other && Equals(other);
 
@@ -45,7 +33,32 @@ public class EntityId : IEquatable<EntityId>
     }
 
     /// <inheritdoc/>
+    public static bool operator ==(EntityId? first, EntityId? second)
+    {
+        if (first is null)
+        {
+            return second is null;
+        }
+        return first.Equals(second);
+    }
+
+    /// <inheritdoc/>
+    public static bool operator !=(EntityId? first, EntityId? second) => !(first == second);
+
+    /// <inheritdoc/>
     public override int GetHashCode() => InternalId.GetHashCode();
+
+    /// <summary>
+    /// Constructs a new instance of this class
+    /// </summary>
+    /// <param name="internalId">Internal ID for this Entity</param>
+    /// <param name="externalId">External ID for this Entity</param>
+    internal EntityId(long internalId, Guid externalId)
+    {
+        InternalId = internalId;
+        ExternalId = externalId;
+        Validate();
+    }
 
     /// <summary>
     /// Validates this Entity ID

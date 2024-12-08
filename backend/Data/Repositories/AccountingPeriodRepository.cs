@@ -20,11 +20,14 @@ public class AccountingPeriodRepository : AggregateRepositoryBase<AccountingPeri
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> FindAll() => DatabaseContext.AccountingPeriods
         .AsEnumerable()
-        .OrderBy(data => new DateTime(data.Year, data.Month, 1)).ToList();
+        .OrderBy(entity => entity.PeriodStartDate).ToList();
+
+    /// <inheritdoc/>
+    public AccountingPeriod FindByDate(DateOnly asOfDate) => FindByDateOrNull(asOfDate) ?? throw new InvalidOperationException();
 
     /// <inheritdoc/>
     public AccountingPeriod? FindByDateOrNull(DateOnly asOfDate) => DatabaseContext.AccountingPeriods
-            .FirstOrDefault(accountingPeriod => accountingPeriod.Year == asOfDate.Year && accountingPeriod.Month == asOfDate.Month);
+        .SingleOrDefault(accountingPeriod => accountingPeriod.Year == asOfDate.Year && accountingPeriod.Month == asOfDate.Month);
 
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> FindOpenPeriods() => DatabaseContext.AccountingPeriods
@@ -48,26 +51,12 @@ public class AccountingPeriodRepository : AggregateRepositoryBase<AccountingPeri
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> FindAccountingPeriodsWithBalanceEventsInDateRange(DateRange dateRange)
     {
-        List<DateOnly> dates = dateRange.GetDates().ToList();
+        List<DateOnly> dates = dateRange.GetInclusiveDates().ToList();
         return DatabaseContext.AccountingPeriods
             .Where(accountingPeriod => accountingPeriod.Transactions
                 .SelectMany(transaction => transaction.TransactionBalanceEvents)
                 .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()))
             .ToList();
-    }
-
-    /// <inheritdoc/>
-    public int FindMaximumBalanceEventSequenceForDate(DateOnly eventDate)
-    {
-        List<TransactionBalanceEvent> existingBalanceEventsOnDate = DatabaseContext.AccountingPeriods
-            .SelectMany(accountingPeriod => accountingPeriod.Transactions)
-            .SelectMany(transaction => transaction.TransactionBalanceEvents)
-            .Where(balanceEvent => balanceEvent.EventDate == eventDate).ToList();
-        if (existingBalanceEventsOnDate.Count > 0)
-        {
-            return existingBalanceEventsOnDate.Max(balanceEvent => balanceEvent.EventSequence + 1);
-        }
-        return 1;
     }
 
     /// <inheritdoc/>

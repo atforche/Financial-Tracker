@@ -12,13 +12,9 @@ public interface IAccountService
     /// <summary>
     /// Creates a new Account with the provided properties
     /// </summary>
-    /// <param name="initialAccountingPeriod">Initial Accounting Period for this Account</param>
     /// <param name="name">Name for this Account</param>
     /// <param name="type">Type for this Account</param>
     /// <param name="startingFundBalances">Starting Fund Balances for this Account</param>
     /// <returns>The newly created Account</returns>
-    Account CreateNewAccount(AccountingPeriod initialAccountingPeriod,
-        string name,
-        AccountType type,
-        IEnumerable<FundAmount> startingFundBalances);
+    Account CreateNewAccount(string name, AccountType type, IEnumerable<FundAmount> startingFundBalances);
 }

@@ -22,6 +22,19 @@ public abstract class EntityBase : IEquatable<EntityBase>
     public bool Equals(EntityBase? other) => other != null && other.Id == Id;
 
     /// <inheritdoc/>
+    public static bool operator ==(EntityBase? first, EntityBase? second)
+    {
+        if (first is null)
+        {
+            return second is null;
+        }
+        return first.Equals(second);
+    }
+
+    /// <inheritdoc/>
+    public static bool operator !=(EntityBase? first, EntityBase? second) => !(first == second);
+
+    /// <inheritdoc/>
     public override int GetHashCode() => Id.GetHashCode();
 
     /// <summary>

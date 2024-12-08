@@ -25,6 +25,11 @@ public class AccountingPeriod : EntityBase
     public int Month { get; private set; }
 
     /// <summary>
+    /// Gets the Period Start Date for this Accounting Period
+    /// </summary>
+    public DateOnly PeriodStartDate => new DateOnly(Year, Month, 1);
+
+    /// <summary>
     /// Is Open flag for this Accounting Period
     /// </summary>
     /// <remarks>
@@ -45,28 +50,6 @@ public class AccountingPeriod : EntityBase
     public IReadOnlyCollection<AccountBalanceCheckpoint> AccountBalanceCheckpoints => _accountBalanceCheckpoints;
 
     /// <summary>
-    /// Account Balance Checkpoints for the start of this Accounting Period
-    /// </summary>
-    /// <remarks>
-    /// These Account Balance Checkpoints represent the balances of each Account after every Balance Event in 
-    /// every past Accounting Period has been applied. No Balance Events from this Accounting Period or any future
-    /// Accounting Periods will be applied.
-    /// </remarks>
-    public IReadOnlyCollection<AccountBalanceCheckpoint> StartOfPeriodBalanceCheckpoints =>
-        _accountBalanceCheckpoints.Where(checkpoint => checkpoint.Type == AccountBalanceCheckpointType.StartOfPeriod).ToList();
-
-    /// <summary>
-    /// Account Balance Checkpoints for the start of the month this Accounting Period represents
-    /// </summary>
-    /// <remarks>
-    /// These Account Balance Checkpoints represent the balances of each Account after every Balance Event with an 
-    /// Event Date that falls before the beginning of this Accounting Period's month has been applied. No Balance 
-    /// Events with Event Dates that fall in this Accounting Period month or any future months will be applied.
-    /// </remarks>
-    public IReadOnlyCollection<AccountBalanceCheckpoint> StartOfMonthBalanceCheckpoints =>
-        _accountBalanceCheckpoints.Where(checkpoint => checkpoint.Type == AccountBalanceCheckpointType.StartOfMonth).ToList();
-
-    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="year">Year for this Accounting Period</param>
@@ -81,6 +64,34 @@ public class AccountingPeriod : EntityBase
     }
 
     /// <summary>
+    /// Adds a new Transaction to this Accounting Period
+    /// </summary>
+    /// <param name="transactionDate">Transaction Date for this Transaction</param>
+    /// <param name="debitAccount">Debit Account for this Transaction</param>
+    /// <param name="creditAccount">Credit Account for this Transaction</param>
+    /// <param name="accountingEntries">Accounting Entries for this Transaction</param>
+    /// <param name="currentAccountBalances">Current Account Balances for the Accounts this Transaction affects</param>
+    /// <param name="futureBalanceEventsForAccounts">All existing future balance events for the Accounts this Transaction affects</param>
+    /// <returns>The newly created Transaction</returns>
+    internal Transaction AddTransaction(DateOnly transactionDate,
+        Account? debitAccount,
+        Account? creditAccount,
+        IEnumerable<FundAmount> accountingEntries,
+        List<AccountBalanceByDate> currentAccountBalances,
+        List<AccountBalanceByEvent> futureBalanceEventsForAccounts)
+    {
+        var newTransaction = new Transaction(this,
+            transactionDate,
+            accountingEntries,
+            debitAccount,
+            creditAccount,
+            currentAccountBalances,
+            futureBalanceEventsForAccounts);
+        _transactions.Add(newTransaction);
+        return newTransaction;
+    }
+
+    /// <summary>
     /// Gets the list of all Balance Events for this Accounting Period
     /// </summary>
     /// <returns>The list of all Balance Events for this Accounting Period</returns>
@@ -90,33 +101,33 @@ public class AccountingPeriod : EntityBase
             .ThenBy(balanceEvent => balanceEvent.EventSequence);
 
     /// <summary>
-    /// Adds a new Transaction to this Accounting Period
-    /// </summary>
-    /// <param name="transactionDate">Date for this Transaction</param>
-    /// <param name="accountingEntries">Accounting Entries for this Transaction</param>
-    /// <param name="transactionBalanceEvents">Transaction Balance Events for this Transaction</param>
-    internal Transaction AddTransaction(DateOnly transactionDate,
-        IEnumerable<FundAmount> accountingEntries,
-        IEnumerable<CreateTransactionBalanceEventRequest> transactionBalanceEvents)
-    {
-        var newTransaction = new Transaction(this, transactionDate, accountingEntries, transactionBalanceEvents);
-        _transactions.Add(newTransaction);
-        return newTransaction;
-    }
-
-    /// <summary>
     /// Adds a new Account Balance Checkpoint to this Accounting Period
     /// </summary>
     /// <param name="account">Account for this Account Balance Checkpoint</param>
-    /// <param name="type">Type for this Account Balance Checkpoint</param>
     /// <param name="fundBalances">Fund Balances for this Account Balance Checkpoint</param>
-    internal void AddAccountBalanceCheckpoint(Account account, AccountBalanceCheckpointType type, IEnumerable<FundAmount> fundBalances)
+    internal void AddAccountBalanceCheckpoint(Account account, IEnumerable<FundAmount> fundBalances)
     {
-        if (_accountBalanceCheckpoints.Any(checkpoint => checkpoint.Account == account && checkpoint.Type == type))
+        if (_accountBalanceCheckpoints.Any(checkpoint => checkpoint.Account == account))
         {
             throw new InvalidOperationException();
         }
-        _accountBalanceCheckpoints.Add(new AccountBalanceCheckpoint(this, account, type, fundBalances));
+        _accountBalanceCheckpoints.Add(new AccountBalanceCheckpoint(this, account, fundBalances));
+    }
+
+    /// <summary>
+    /// Gets the next Balance Event sequence for the provided date
+    /// </summary>
+    /// <param name="eventDate">Event date to get the next Balance Event sequence for</param>
+    /// <returns>The next Balance Event sequence for the provided date</returns>
+    internal int GetNextEventSequenceForDate(DateOnly eventDate)
+    {
+        List<IBalanceEvent> balanceEventsOnDate = GetAllBalanceEvents()
+            .Where(balanceEvent => balanceEvent.EventDate == eventDate).ToList();
+        if (balanceEventsOnDate.Count == 0)
+        {
+            return 1;
+        }
+        return balanceEventsOnDate.Count + 1;
     }
 
     /// <summary>

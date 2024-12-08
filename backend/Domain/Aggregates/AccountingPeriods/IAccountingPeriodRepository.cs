@@ -5,7 +5,7 @@ namespace Domain.Aggregates.AccountingPeriods;
 /// <summary>
 /// Interface representing methods to interact with a collection of <see cref="AccountingPeriod"/>
 /// </summary>
-public interface IAccountingPeriodRepository
+public interface IAccountingPeriodRepository : IAggregateRepository<AccountingPeriod>
 {
     /// <summary>
     /// Finds all the Accounting Periods currently in the repository
@@ -14,11 +14,11 @@ public interface IAccountingPeriodRepository
     IReadOnlyCollection<AccountingPeriod> FindAll();
 
     /// <summary>
-    /// Finds the Accounting Period with the specified external ID.
+    /// Finds the Accounting Period that the provided date falls within
     /// </summary>
-    /// <param name="id">ID of the Accounting Period to find</param>
-    /// <returns>The Accounting Period that was found, or null if one wasn't found</returns>
-    AccountingPeriod? FindByExternalIdOrNull(Guid id);
+    /// <param name="asOfDate">Date that corresponds to an Accounting Period</param>
+    /// <returns>The Accounting Period that the provided date falls within</returns>
+    AccountingPeriod FindByDate(DateOnly asOfDate);
 
     /// <summary>
     /// Finds the Accounting Period that the provided date falls within
@@ -51,13 +51,6 @@ public interface IAccountingPeriodRepository
     /// <param name="dateRange">Date Range to find Accounting Periods with Balance Events within</param>
     /// <returns>The list of Accounting Periods that have Balance Events that fall in the provided Date Range</returns>
     IReadOnlyCollection<AccountingPeriod> FindAccountingPeriodsWithBalanceEventsInDateRange(DateRange dateRange);
-
-    /// <summary>
-    /// Finds the current maximum Balance Event Sequence number for the provided date
-    /// </summary>
-    /// <param name="eventDate">Event Date to find the maximum sequence number for</param>
-    /// <returns>The maximum Balance Event Sequence number for the provided date</returns>
-    int FindMaximumBalanceEventSequenceForDate(DateOnly eventDate);
 
     /// <summary>
     /// Adds the provided Accounting Period to the repository

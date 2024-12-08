@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using Domain.Services;
+using Domain.ValueObjects;
 
 namespace RestApi.Models.AccountBalance;
 

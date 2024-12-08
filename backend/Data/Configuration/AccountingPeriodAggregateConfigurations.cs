@@ -24,9 +24,6 @@ internal sealed class AccountingPeriodEntityConfiguration : EntityConfigurationB
             .WithOne(accountingBalanceCheckpoint => accountingBalanceCheckpoint.AccountingPeriod)
             .HasForeignKey("AccountingPeriodId");
         builder.Navigation(accountingPeriod => accountingPeriod.AccountBalanceCheckpoints).AutoInclude();
-
-        builder.Ignore(accountingPeriod => accountingPeriod.StartOfPeriodBalanceCheckpoints);
-        builder.Ignore(accountingPeriod => accountingPeriod.StartOfMonthBalanceCheckpoints);
     }
 }
 
