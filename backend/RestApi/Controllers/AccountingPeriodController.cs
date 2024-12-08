@@ -129,7 +129,10 @@ public class AccountingPeriodController : ControllerBase
             }
         }
         Dictionary<Guid, Fund> funds = _fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
-        Transaction newTransaction = accountingPeriod.AddTransaction(createTransactionModel.TransactionDate, debitAccount, creditAccount,
+        Transaction newTransaction = _accountingPeriodService.AddTransaction(accountingPeriod,
+            createTransactionModel.TransactionDate,
+            debitAccount,
+            creditAccount,
             createTransactionModel.AccountingEntries.Select(entry => new FundAmount
             {
                 Fund = funds[entry.FundId],

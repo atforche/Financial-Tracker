@@ -20,7 +20,10 @@ public class AccountingPeriodRepository : AggregateRepositoryBase<AccountingPeri
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> FindAll() => DatabaseContext.AccountingPeriods
         .AsEnumerable()
-        .OrderBy(data => new DateTime(data.Year, data.Month, 1)).ToList();
+        .OrderBy(entity => entity.PeriodStartDate).ToList();
+
+    /// <inheritdoc/>
+    public AccountingPeriod FindByDate(DateOnly asOfDate) => FindByDateOrNull(asOfDate) ?? throw new InvalidOperationException();
 
     /// <inheritdoc/>
     public AccountingPeriod? FindByDateOrNull(DateOnly asOfDate) => DatabaseContext.AccountingPeriods

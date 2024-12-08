@@ -17,6 +17,13 @@ public interface IAccountingPeriodRepository : IAggregateRepository<AccountingPe
     /// Finds the Accounting Period that the provided date falls within
     /// </summary>
     /// <param name="asOfDate">Date that corresponds to an Accounting Period</param>
+    /// <returns>The Accounting Period that the provided date falls within</returns>
+    AccountingPeriod FindByDate(DateOnly asOfDate);
+
+    /// <summary>
+    /// Finds the Accounting Period that the provided date falls within
+    /// </summary>
+    /// <param name="asOfDate">Date that corresponds to an Accounting Period</param>
     /// <returns>The Accounting Period that the provided date falls within, or null if one wasn't found</returns>
     AccountingPeriod? FindByDateOrNull(DateOnly asOfDate);
 

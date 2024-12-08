@@ -35,8 +35,14 @@ public interface IBalanceEvent
     /// <summary>
     /// Applies this Balance Event to the current balance of an Account
     /// </summary>
-    /// <param name="account">Account this Balance Event is being applied to</param>
-    /// <param name="currentBalance">Current balance of the provided Account</param>
+    /// <param name="currentBalance">Current Account Balance for an Account</param>
     /// <returns>The new balance of the Account after the Balance Event has been applied</returns>
-    public AccountBalance ApplyEventToBalance(Account account, AccountBalance currentBalance);
+    public AccountBalance ApplyEventToBalance(AccountBalance currentBalance);
+
+    /// <summary>
+    /// Reverses the effects of this Balance Event from the current balance of an Account
+    /// </summary>
+    /// <param name="currentBalance">Current Account Balance for an Account</param>
+    /// <returns>The new balance of the Account after the Balane Event has been reversed</returns>
+    public AccountBalance ReverseEventFromBalance(AccountBalance currentBalance);
 }

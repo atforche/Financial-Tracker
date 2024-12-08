@@ -33,7 +33,7 @@ public class AccountingPeriodService : IAccountingPeriodService
         ValidateNewAccountingPeriod(year, month);
         AccountingPeriod newAccountingPeriod = new AccountingPeriod(year, month);
 
-        DateOnly previousAccountingPeriodMonth = new DateOnly(newAccountingPeriod.Year, newAccountingPeriod.Month, 1).AddMonths(-1);
+        DateOnly previousAccountingPeriodMonth = newAccountingPeriod.PeriodStartDate.AddMonths(-1);
         AccountingPeriod? previousAccountingPeriod = _accountingPeriodRepository.FindByDateOrNull(previousAccountingPeriodMonth);
         if (previousAccountingPeriod == null || previousAccountingPeriod.IsOpen)
         {
@@ -46,12 +46,45 @@ public class AccountingPeriodService : IAccountingPeriodService
     }
 
     /// <inheritdoc/>
+    public Transaction AddTransaction(
+        AccountingPeriod accountingPeriod,
+        DateOnly transactionDate,
+        Account? debitAccount,
+        Account? creditAccount,
+        IEnumerable<FundAmount> accountingEntries)
+    {
+        List<AccountBalanceByDate> currentAccountBalances = [];
+        List<AccountBalanceByEvent> futureBalanceEventsForAccounts = [];
+        if (debitAccount != null)
+        {
+            currentAccountBalances.Add(_accountBalanceService.GetAccountBalancesByDate(debitAccount,
+                new DateRange(transactionDate, transactionDate)).First());
+            futureBalanceEventsForAccounts.AddRange(_accountBalanceService.GetAccountBalancesByEvent(debitAccount,
+                new DateRange(transactionDate, DateOnly.MaxValue, EndpointType.Exclusive)));
+        }
+        if (creditAccount != null)
+        {
+            currentAccountBalances.Add(_accountBalanceService.GetAccountBalancesByDate(creditAccount,
+                new DateRange(transactionDate, transactionDate)).First());
+            futureBalanceEventsForAccounts.AddRange(_accountBalanceService.GetAccountBalancesByEvent(creditAccount,
+                new DateRange(transactionDate, DateOnly.MaxValue, EndpointType.Exclusive)));
+        }
+        return accountingPeriod.AddTransaction(transactionDate,
+            debitAccount,
+            creditAccount,
+            accountingEntries,
+            currentAccountBalances,
+            futureBalanceEventsForAccounts);
+    }
+
+
+    /// <inheritdoc/>
     public void ClosePeriod(AccountingPeriod accountingPeriod)
     {
         ValidateCloseAccountingPeriod(accountingPeriod);
         accountingPeriod.IsOpen = false;
 
-        DateOnly nextAccountingPeriodMonth = new DateOnly(accountingPeriod.Year, accountingPeriod.Month, 1).AddMonths(1);
+        DateOnly nextAccountingPeriodMonth = accountingPeriod.PeriodStartDate.AddMonths(1);
         AccountingPeriod? nextAccountingPeriod = _accountingPeriodRepository.FindByDateOrNull(nextAccountingPeriodMonth);
         if (nextAccountingPeriod == null)
         {
@@ -102,18 +135,19 @@ public class AccountingPeriodService : IAccountingPeriodService
             throw new InvalidOperationException();
         }
         List<AccountingPeriod> openPeriods = _accountingPeriodRepository.FindOpenPeriods().ToList();
-        if (openPeriods.Any(openPeriod => new DateOnly(openPeriod.Year, openPeriod.Month, 1) <
-            new DateOnly(accountingPeriod.Year, accountingPeriod.Month, 1)))
+        if (openPeriods.Any(openPeriod => openPeriod.PeriodStartDate < accountingPeriod.PeriodStartDate))
         {
             // We should always have a contiguous group of open accounting periods.
             // Only close the earliest open accounting period
             throw new InvalidOperationException();
         }
-        if (accountingPeriod.Transactions.Any(transaction =>
-            transaction.TransactionBalanceEvents.Count(balanceEvent => balanceEvent.TransactionEventType == TransactionBalanceEventType.Added) !=
-            transaction.TransactionBalanceEvents.Count(balanceEvent => balanceEvent.TransactionEventType == TransactionBalanceEventType.Posted)))
+        // Validate that there are no pending balance changes in this Accounting Period
+        foreach (Account account in _accountRepository.FindAll())
         {
-            throw new InvalidOperationException();
+            if (_accountBalanceService.GetAccountBalancesByAccountingPeriod(account, accountingPeriod).EndingBalance.PendingFundBalanceChanges.Count != 0)
+            {
+                throw new InvalidOperationException();
+            }
         }
     }
 
@@ -126,18 +160,11 @@ public class AccountingPeriodService : IAccountingPeriodService
         AccountingPeriod nextAccountingPeriod,
         AccountingPeriod previousAccountingPeriod)
     {
-        DateOnly endOfPreviousPeriod = new DateOnly(nextAccountingPeriod.Year, nextAccountingPeriod.Month, 1).AddDays(-1);
+        DateOnly endOfPreviousPeriod = nextAccountingPeriod.PeriodStartDate.AddDays(-1);
         foreach (Account account in _accountRepository.FindAll())
         {
             nextAccountingPeriod.AddAccountBalanceCheckpoint(account,
-                AccountBalanceCheckpointType.StartOfPeriod,
-                _accountBalanceService.GetAccountBalancesForAccountingPeriod(account, previousAccountingPeriod)
-                    .EndingBalance.FundBalances);
-            nextAccountingPeriod.AddAccountBalanceCheckpoint(account,
-                AccountBalanceCheckpointType.StartOfMonth,
-                _accountBalanceService
-                    .GetAccountBalancesForDateRange(account, new DateRange(endOfPreviousPeriod, endOfPreviousPeriod))
-                    .Single().AccountBalance.FundBalances);
+                _accountBalanceService.GetAccountBalancesByAccountingPeriod(account, previousAccountingPeriod).EndingBalance.FundBalances);
         }
     }
 }

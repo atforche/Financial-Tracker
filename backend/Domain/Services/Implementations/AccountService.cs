@@ -31,12 +31,7 @@ public class AccountService : IAccountService
             throw new InvalidOperationException();
         }
         Account newAccount = new Account(name, type);
-        accountingPeriod.AddAccountBalanceCheckpoint(newAccount,
-            AccountBalanceCheckpointType.StartOfPeriod,
-            startingFundBalances);
-        accountingPeriod.AddAccountBalanceCheckpoint(newAccount,
-            AccountBalanceCheckpointType.StartOfMonth,
-            startingFundBalances);
+        accountingPeriod.AddAccountBalanceCheckpoint(newAccount, startingFundBalances);
         return newAccount;
     }
 

@@ -46,10 +46,18 @@ public class DateRange
     }
 
     /// <summary>
-    /// Determines if the provided date falls within the end date of the current Date Range
+    /// Determines if the provided date falls on or after the start date of the current Date Range
     /// </summary>
     /// <param name="date">Date to check</param>
-    /// <returns>True if the provided date falls within the end date of this date range, false otherwise</returns>
+    /// <returns>True if the provided date falls on or after the start date of the current Date Range</returns>
+    public bool IsWithinStartDate(DateOnly date) =>
+        StartDateType == EndpointType.Inclusive ? date >= StartDate : date > StartDate;
+
+    /// <summary>
+    /// Determines if the provided date falls before or on the end date of the current Date Range
+    /// </summary>
+    /// <param name="date">Date to check</param>
+    /// <returns>True if the provided date falls before or on the end date of this date range, false otherwise</returns>
     public bool IsWithinEndDate(DateOnly date) =>
         EndDateType == EndpointType.Inclusive ? date <= EndDate : date < EndDate;
 
@@ -58,8 +66,7 @@ public class DateRange
     /// </summary>
     /// <param name="date">Date to check</param>
     /// <returns>True if the provided date falls in the date range, false otherwise</returns>
-    public bool IsInRange(DateOnly date) => IsWithinEndDate(date) &&
-            StartDateType == EndpointType.Inclusive ? date >= StartDate : date > StartDate;
+    public bool IsInRange(DateOnly date) => IsWithinStartDate(date) && IsWithinEndDate(date);
 
     /// <summary>
     /// Validates the current Date Range

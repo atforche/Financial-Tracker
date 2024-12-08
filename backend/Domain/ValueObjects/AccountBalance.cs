@@ -1,3 +1,5 @@
+using Domain.Aggregates.Accounts;
+
 namespace Domain.ValueObjects;
 
 /// <summary>
@@ -6,22 +8,57 @@ namespace Domain.ValueObjects;
 public class AccountBalance
 {
     /// <summary>
-    /// Current balance for each Fund within the Account
+    /// Account for this Account Balance
     /// </summary>
-    public required IReadOnlyCollection<FundAmount> FundBalances { get; init; }
+    public Account Account { get; }
 
     /// <summary>
-    /// Change in each Fund balance that is currently pending within the Account
+    /// Fund Balances for this Account Balance
     /// </summary>
-    public required IReadOnlyCollection<FundAmount> PendingFundBalanceChanges { get; init; }
+    public IReadOnlyCollection<FundAmount> FundBalances { get; }
 
     /// <summary>
-    /// Balance of the Account
+    /// Pending Fund Balance Changes for this Account Balance
+    /// </summary>
+    public IReadOnlyCollection<FundAmount> PendingFundBalanceChanges { get; }
+
+    /// <summary>
+    /// Balance for this Account Balance
     /// </summary>
     public decimal Balance => FundBalances.Sum(balance => balance.Amount);
 
     /// <summary>
-    /// Total pending balance change for this Account
+    /// Total Pending Balance Change for this Account Balance
     /// </summary>
     public decimal TotalPendingBalanceChange => PendingFundBalanceChanges.Sum(balance => balance.Amount);
+
+    /// <summary>
+    /// Balance including any pending changes for this Account Balance
+    /// </summary>
+    public decimal BalanceIncludingPending => Balance + TotalPendingBalanceChange;
+
+    /// <summary>
+    /// Constructs a new instance of this class
+    /// </summary>
+    /// <param name="account">Account for this Account Balance</param>
+    /// <param name="fundBalances">Fund Balances for this Account Balance</param>
+    /// <param name="pendingFundBalanceChanges">Pending Fund Balance Changes for this Account Balance</param>
+    public AccountBalance(Account account, IEnumerable<FundAmount> fundBalances, IEnumerable<FundAmount> pendingFundBalanceChanges)
+    {
+        Account = account;
+        FundBalances = fundBalances.ToList();
+        PendingFundBalanceChanges = pendingFundBalanceChanges.ToList();
+        Validate();
+    }
+
+    /// <summary>
+    /// Validates this Account Balance
+    /// </summary>
+    private void Validate()
+    {
+        if (Balance < 0 || BalanceIncludingPending < 0)
+        {
+            throw new InvalidOperationException();
+        }
+    }
 }

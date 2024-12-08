@@ -35,7 +35,7 @@ public class CloseAccountingPeriodTests : UnitTestBase
     /// Tests that an Account Period can be closed successfully
     /// </summary>
     [Fact]
-    public void CloseAccountingPeriod()
+    public void TestCloseAccountingPeriod()
     {
         AccountingPeriod accountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
         _accountingPeriodService.ClosePeriod(accountingPeriod);
@@ -50,10 +50,10 @@ public class CloseAccountingPeriodTests : UnitTestBase
     }
 
     /// <summary>
-    /// Tests that closing an already closed Accounting Period fails
+    /// Tests that closing an already closed Accounting Period will fail
     /// </summary>
     [Fact]
-    public void CloseAlreadyClosedAccountingPeriod()
+    public void TestWithAlreadyClosedAccountingPeriod()
     {
         AccountingPeriod accountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
         _accountingPeriodService.ClosePeriod(accountingPeriod);
@@ -64,7 +64,7 @@ public class CloseAccountingPeriodTests : UnitTestBase
     /// Test that the earliest open Accounting Period can be closed
     /// </summary>
     [Fact]
-    public void CloseEarliestOpenPeriod()
+    public void TestWithEarliestOpenPeriod()
     {
         // Add the first Accounting Period
         AccountingPeriod firstAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
@@ -98,7 +98,7 @@ public class CloseAccountingPeriodTests : UnitTestBase
     /// Tests that closing an Accounting Period while there's still an earlier open Accounting Period will fail
     /// </summary>
     [Fact]
-    public void CloseLatestOpenPeriod()
+    public void TestWithLatestOpenPeriod()
     {
         // Add the first Accounting Period
         AccountingPeriod firstAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
@@ -116,7 +116,7 @@ public class CloseAccountingPeriodTests : UnitTestBase
     /// Tests that an Accounting Period with fully posted Transactions can be closed successfully 
     /// </summary>
     [Fact]
-    public void CloseAccountingPeriodWithTransactions()
+    public void TestWithTransactions()
     {
         // Add a Fund
         Fund fund = _fundService.CreateNewFund("Test");
@@ -126,11 +126,25 @@ public class CloseAccountingPeriodTests : UnitTestBase
         _accountingPeriodRepository.Add(accountingPeriod);
 
         // Add two test Accounts
-        Account firstAccount = _accountService.CreateNewAccount("Test", AccountType.Standard, []);
-        Account secondAccount = _accountService.CreateNewAccount("Test2", AccountType.Standard, []);
+        Account firstAccount = _accountService.CreateNewAccount("Test", AccountType.Standard,
+        [
+            new FundAmount
+            {
+                Fund = fund,
+                Amount = 50.00m,
+            }
+        ]);
+        Account secondAccount = _accountService.CreateNewAccount("Test2", AccountType.Standard,
+        [
+            new FundAmount
+            {
+                Fund = fund,
+                Amount = 50.00m,
+            }
+        ]);
 
         // Add a Transaction and fully post it
-        Transaction transaction = accountingPeriod.AddTransaction(new DateOnly(2024, 11, 24), firstAccount, secondAccount,
+        Transaction transaction = _accountingPeriodService.AddTransaction(accountingPeriod, new DateOnly(2024, 11, 24), firstAccount, secondAccount,
             [
                 new FundAmount
                 {
@@ -153,27 +167,27 @@ public class CloseAccountingPeriodTests : UnitTestBase
                 new AccountBalanceCheckpointState
                 {
                     AccountName = firstAccount.Name,
-                    Type = AccountBalanceCheckpointType.StartOfPeriod,
-                    FundBalances = []
-                },
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = firstAccount.Name,
-                    Type = AccountBalanceCheckpointType.StartOfMonth,
-                    FundBalances = []
-                },
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = secondAccount.Name,
-                    Type = AccountBalanceCheckpointType.StartOfPeriod,
-                    FundBalances = []
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = fund.Name,
+                            Amount = 50.00m,
+                        }
+                    ]
                 },
                 new AccountBalanceCheckpointState
                 {
                     AccountName = secondAccount.Name,
-                    Type = AccountBalanceCheckpointType.StartOfMonth,
-                    FundBalances = []
-                }
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = fund.Name,
+                            Amount = 50.00m,
+                        }
+                    ]
+                },
             ],
             Transactions =
             [
@@ -229,10 +243,10 @@ public class CloseAccountingPeriodTests : UnitTestBase
     }
 
     /// <summary>
-    /// Tests that closing an Accounting Period with an unposted Transaction will fail
+    /// Tests that closing an Accounting Period with pending balance changes will fail
     /// </summary>
     [Fact]
-    public void CloseAccountingPeriodWithUnpostedTransactions()
+    public void TestWithPendingBalanceChanges()
     {
         // Add a Fund
         Fund fund = _fundService.CreateNewFund("Test");
@@ -242,11 +256,27 @@ public class CloseAccountingPeriodTests : UnitTestBase
         _accountingPeriodRepository.Add(accountingPeriod);
 
         // Add two test Accounts
-        Account firstAccount = _accountService.CreateNewAccount("Test", AccountType.Standard, []);
-        Account secondAccount = _accountService.CreateNewAccount("Test2", AccountType.Standard, []);
+        Account firstAccount = _accountService.CreateNewAccount("Test", AccountType.Standard,
+        [
+            new FundAmount
+            {
+                Fund = fund,
+                Amount = 50.00m,
+            }
+        ]);
+        _accountRepository.Add(firstAccount);
+        Account secondAccount = _accountService.CreateNewAccount("Test2", AccountType.Standard,
+        [
+            new FundAmount
+            {
+                Fund = fund,
+                Amount = 50.00m,
+            }
+        ]);
+        _accountRepository.Add(secondAccount);
 
         // Add a Transaction and partially post it
-        Transaction transaction = accountingPeriod.AddTransaction(new DateOnly(2024, 11, 24), firstAccount, secondAccount,
+        Transaction transaction = _accountingPeriodService.AddTransaction(accountingPeriod, new DateOnly(2024, 11, 24), firstAccount, secondAccount,
             [
                 new FundAmount
                 {
@@ -264,7 +294,7 @@ public class CloseAccountingPeriodTests : UnitTestBase
     /// Tests that closing an Accounting Period will add Balance Checkpoints to a future open Accounting Period
     /// </summary>
     [Fact]
-    public void CloseAccountingPeriodCreateBalanceCheckpoints()
+    public void TestWithBalanceCheckpoints()
     {
         // Add a Fund
         Fund fund = _fundService.CreateNewFund("Test");
@@ -287,7 +317,7 @@ public class CloseAccountingPeriodTests : UnitTestBase
         _accountRepository.Add(account);
 
         // Add a Transaction and fully post it
-        Transaction transaction = firstAccountingPeriod.AddTransaction(new DateOnly(2024, 11, 24), account, null,
+        Transaction transaction = _accountingPeriodService.AddTransaction(firstAccountingPeriod, new DateOnly(2024, 11, 24), account, null,
             [
                 new FundAmount
                 {
@@ -309,7 +339,6 @@ public class CloseAccountingPeriodTests : UnitTestBase
                 new AccountBalanceCheckpointState
                 {
                     AccountName = account.Name,
-                    Type = AccountBalanceCheckpointType.StartOfPeriod,
                     FundBalances =
                     [
                         new FundAmountState
@@ -319,19 +348,6 @@ public class CloseAccountingPeriodTests : UnitTestBase
                         }
                     ]
                 },
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = account.Name,
-                    Type = AccountBalanceCheckpointType.StartOfMonth,
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = fund.Name,
-                            Amount = 50.00m,
-                        }
-                    ]
-                }
             ],
             Transactions =
             [
@@ -378,7 +394,6 @@ public class CloseAccountingPeriodTests : UnitTestBase
                 new AccountBalanceCheckpointState
                 {
                     AccountName = account.Name,
-                    Type = AccountBalanceCheckpointType.StartOfPeriod,
                     FundBalances =
                     [
                         new FundAmountState
@@ -388,19 +403,6 @@ public class CloseAccountingPeriodTests : UnitTestBase
                         }
                     ]
                 },
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = account.Name,
-                    Type = AccountBalanceCheckpointType.StartOfMonth,
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = fund.Name,
-                            Amount = 25.00m,
-                        }
-                    ]
-                }
             ],
             Transactions = []
         });
@@ -411,7 +413,7 @@ public class CloseAccountingPeriodTests : UnitTestBase
     /// as expected
     /// </summary>
     [Fact]
-    public void CloseAccountingPeriodWithTransactionsInFutureMonth()
+    public void TestWithTransactionsInFutureMonth()
     {
         // Add a Fund
         Fund fund = _fundService.CreateNewFund("Test");
@@ -434,7 +436,7 @@ public class CloseAccountingPeriodTests : UnitTestBase
         _accountRepository.Add(account);
 
         // Add a Transaction and fully post it
-        Transaction transaction = firstAccountingPeriod.AddTransaction(new DateOnly(2024, 11, 24), account, null,
+        Transaction transaction = _accountingPeriodService.AddTransaction(firstAccountingPeriod, new DateOnly(2024, 11, 24), account, null,
             [
                 new FundAmount
                 {
@@ -456,7 +458,6 @@ public class CloseAccountingPeriodTests : UnitTestBase
                 new AccountBalanceCheckpointState
                 {
                     AccountName = account.Name,
-                    Type = AccountBalanceCheckpointType.StartOfPeriod,
                     FundBalances =
                     [
                         new FundAmountState
@@ -466,19 +467,6 @@ public class CloseAccountingPeriodTests : UnitTestBase
                         }
                     ]
                 },
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = account.Name,
-                    Type = AccountBalanceCheckpointType.StartOfMonth,
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = fund.Name,
-                            Amount = 50.00m,
-                        }
-                    ]
-                }
             ],
             Transactions =
             [
@@ -525,7 +513,6 @@ public class CloseAccountingPeriodTests : UnitTestBase
                 new AccountBalanceCheckpointState
                 {
                     AccountName = account.Name,
-                    Type = AccountBalanceCheckpointType.StartOfPeriod,
                     FundBalances =
                     [
                         new FundAmountState
@@ -535,19 +522,6 @@ public class CloseAccountingPeriodTests : UnitTestBase
                         }
                     ]
                 },
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = account.Name,
-                    Type = AccountBalanceCheckpointType.StartOfMonth,
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = fund.Name,
-                            Amount = 50.00m,
-                        }
-                    ]
-                }
             ],
             Transactions = []
         });

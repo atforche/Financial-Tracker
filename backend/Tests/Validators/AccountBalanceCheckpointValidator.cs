@@ -32,7 +32,6 @@ internal sealed class AccountBalanceCheckpointValidator : EntityValidatorBase<Ac
     {
         Assert.NotEqual(Guid.Empty, entity.Id.ExternalId);
         Assert.Equal(expectedState.AccountName, entity.Account.Name);
-        Assert.Equal(expectedState.Type, entity.Type);
         new FundAmountValidator(entity.FundBalances).Validate(expectedState.FundBalances.ToList());
     }
 }
@@ -46,11 +45,6 @@ internal sealed record AccountBalanceCheckpointState
     /// Account Name for this Account Balance Checkpoint
     /// </summary>
     public required string AccountName { get; init; }
-
-    /// <summary>
-    /// Type for this Account Balance Checkpoint
-    /// </summary>
-    public required AccountBalanceCheckpointType Type { get; init; }
 
     /// <summary>
     /// Fund Balances for this Account Balance Checkpoint
@@ -73,7 +67,7 @@ internal sealed class AccountBalanceCheckpointComparer : EntityComparerBase,
         {
             return result.Value;
         }
-        return ComparePrivate(new Key(first.Account.Name, first.Type), new Key(second.Account.Name, second.Type));
+        return ComparePrivate(new Key(first.Account.Name), new Key(second.Account.Name));
     }
 
     /// <inheritdoc/>
@@ -83,7 +77,7 @@ internal sealed class AccountBalanceCheckpointComparer : EntityComparerBase,
         {
             return result.Value;
         }
-        return ComparePrivate(new Key(first.AccountName, first.Type), new Key(second.AccountName, second.Type));
+        return ComparePrivate(new Key(first.AccountName), new Key(second.AccountName));
     }
 
     /// <summary>
@@ -92,19 +86,12 @@ internal sealed class AccountBalanceCheckpointComparer : EntityComparerBase,
     /// <param name="first">First Key to compare</param>
     /// <param name="second">Second Key to compare</param>
     /// <returns>The ordering of the provided keys</returns>
-    private static int ComparePrivate(Key first, Key second)
-    {
-        if (!string.Equals(first.AccountName, second.AccountName, StringComparison.OrdinalIgnoreCase))
-        {
-            return string.Compare(first.AccountName, second.AccountName, StringComparison.OrdinalIgnoreCase);
-        }
-        return first.Type.CompareTo(second.Type);
-    }
+    private static int ComparePrivate(Key first, Key second) =>
+        string.Compare(first.AccountName, second.AccountName, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Record class representing the key used to compare an Account Balance Checkpoint or Account Balance Checkpoint State
     /// </summary>
     /// <param name="AccountName">Account Name of the Account Balance Checkpoint</param>
-    /// <param name="Type">Type of the Account Balance Checkpoint</param>
-    private sealed record Key(string AccountName, AccountBalanceCheckpointType Type);
+    private sealed record Key(string AccountName);
 }

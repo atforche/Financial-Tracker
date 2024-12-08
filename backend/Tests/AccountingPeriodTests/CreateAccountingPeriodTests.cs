@@ -38,7 +38,7 @@ public class CreateAccountingPeriodTests : UnitTestBase
     /// Tests a new Accounting Period can be added successfully
     /// </summary>
     [Fact]
-    public void CreateNewAccountingPeriod()
+    public void TestCreateAccountingPeriod()
     {
         AccountingPeriod newAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
         new AccountingPeriodValidator(newAccountingPeriod).Validate(new AccountingPeriodState
@@ -52,13 +52,12 @@ public class CreateAccountingPeriodTests : UnitTestBase
     }
 
     /// <summary>
-    /// Tests that creating an Accounting Period with an invalid year fails
+    /// Tests that creating an Accounting Period with an invalid year will fail
     /// </summary>
-    /// <param name="value">Value to test</param>
     [Theory]
     [InlineData(0)]
     [InlineData(3000)]
-    public void InvalidAccountingPeriodYear(int value)
+    public void TestWithInvalidYear(int value)
     {
         const int month = 11;
 
@@ -66,13 +65,13 @@ public class CreateAccountingPeriodTests : UnitTestBase
     }
 
     /// <summary>
-    /// Tests that creating an Accounting Period with an invalid month fails
+    /// Tests that creating an Accounting Period with an invalid month will fail
     /// </summary>
     /// <param name="value">Value to test</param>
     [Theory]
     [InlineData(0)]
     [InlineData(13)]
-    public void InvalidAccountingPeriodMonth(int value)
+    public void TestWithInvalidMonth(int value)
     {
         const int year = 2023;
 
@@ -83,7 +82,7 @@ public class CreateAccountingPeriodTests : UnitTestBase
     /// Tests that multiple Accounting Periods can be created
     /// </summary>
     [Fact]
-    public void CreateMultipleAccountingPeriods()
+    public void TestWithMultipleAccountingPeriods()
     {
         // Add a first Accounting Period and mark it closed
         AccountingPeriod firstAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
@@ -106,7 +105,7 @@ public class CreateAccountingPeriodTests : UnitTestBase
     /// Tests that a new Accounting Period can be created if the previous Accounting Period is still open
     /// </summary>
     [Fact]
-    public void CreateMultipleOpenAccountingPeriods()
+    public void TestWithMultipleOpenAccountingPeriods()
     {
         // Add a first Accounting Period and leave it open
         AccountingPeriod firstAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
@@ -125,10 +124,10 @@ public class CreateAccountingPeriodTests : UnitTestBase
     }
 
     /// <summary>
-    /// Tests that creating non-contiguous Accounting Periods fails
+    /// Tests that creating an invalid Accounting Period will fail
     /// </summary>
     [Fact]
-    public void CreateNonContiguousAccountingPeriods()
+    public void TestWithInvalidAccountingPeriod()
     {
         // Add a first Accounting Period
         AccountingPeriod firstAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
@@ -136,31 +135,9 @@ public class CreateAccountingPeriodTests : UnitTestBase
 
         // Attempt to add a second Accounting Period with a gap 
         Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.CreateNewAccountingPeriod(2025, 1));
-    }
-
-    /// <summary>
-    /// Tests that creating an Accounting Period that falls before an existing Accounting Period fails
-    /// </summary>
-    [Fact]
-    public void CreateAccountingPeriodInPast()
-    {
-        // Add a first Accounting Period
-        AccountingPeriod firstAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
-        _accountingPeriodRepository.Add(firstAccountingPeriod);
 
         // Attempt to add a second Accounting Period in the past
         Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.CreateNewAccountingPeriod(2024, 10));
-    }
-
-    /// <summary>
-    /// Tests that creating an Accounting Period that already exists fails
-    /// </summary>
-    [Fact]
-    public void CreateDuplicateAccountingPeriod()
-    {
-        // Add a first Accounting Period
-        AccountingPeriod firstAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
-        _accountingPeriodRepository.Add(firstAccountingPeriod);
 
         // Attempt to add a duplicate Accounting Period
         Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.CreateNewAccountingPeriod(2024, 11));
@@ -171,7 +148,7 @@ public class CreateAccountingPeriodTests : UnitTestBase
     /// won't create any Account Balance Checkpoints
     /// </summary>
     [Fact]
-    public void CreateAccountingPeriodNoBalanceCheckpoints()
+    public void TestWithNoBalanceCheckpoints()
     {
         // Add a test fund
         Fund fund = _fundService.CreateNewFund("Test");
@@ -209,7 +186,7 @@ public class CreateAccountingPeriodTests : UnitTestBase
     /// will create Account Balance Checkpoints
     /// </summary>
     [Fact]
-    public void CreateAccountingPeriodBalanceCheckpoints()
+    public void TestWithBalanceCheckpoints()
     {
         // Add a test fund
         Fund fund = _fundService.CreateNewFund("Test");
@@ -245,7 +222,6 @@ public class CreateAccountingPeriodTests : UnitTestBase
                 new AccountBalanceCheckpointState
                 {
                     AccountName = "Test",
-                    Type = AccountBalanceCheckpointType.StartOfPeriod,
                     FundBalances =
                     [
                         new FundAmountState
@@ -255,19 +231,6 @@ public class CreateAccountingPeriodTests : UnitTestBase
                         }
                     ]
                 },
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = "Test",
-                    Type = AccountBalanceCheckpointType.StartOfMonth,
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = "Test",
-                            Amount = 2500.00m,
-                        }
-                    ]
-                }
             ],
             Transactions = [],
         });
@@ -278,7 +241,7 @@ public class CreateAccountingPeriodTests : UnitTestBase
     /// month for the Accounting Period being created works as expected
     /// </summary>
     [Fact]
-    public void CreateAccountingPeriodWithExistingTransactionInCurrentPeriod()
+    public void TestWithExistingTransactionInCurrentPeriod()
     {
         // Add a test fund
         Fund fund = _fundService.CreateNewFund("Test");
@@ -300,7 +263,7 @@ public class CreateAccountingPeriodTests : UnitTestBase
         _accountRepository.Add(account);
 
         // Add a Transaction with a Balance Event that falls in the future month
-        Transaction transaction = firstAccountingPeriod.AddTransaction(new DateOnly(2024, 11, 25), account, null,
+        Transaction transaction = _accountingPeriodService.AddTransaction(firstAccountingPeriod, new DateOnly(2024, 11, 25), account, null,
             [
                 new FundAmount
                 {
@@ -325,7 +288,6 @@ public class CreateAccountingPeriodTests : UnitTestBase
                 new AccountBalanceCheckpointState
                 {
                     AccountName = "Test",
-                    Type = AccountBalanceCheckpointType.StartOfPeriod,
                     FundBalances =
                     [
                         new FundAmountState
@@ -335,19 +297,6 @@ public class CreateAccountingPeriodTests : UnitTestBase
                         }
                     ]
                 },
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = "Test",
-                    Type = AccountBalanceCheckpointType.StartOfMonth,
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = "Test",
-                            Amount = 2500.00m,
-                        }
-                    ]
-                }
             ],
             Transactions = [],
         });

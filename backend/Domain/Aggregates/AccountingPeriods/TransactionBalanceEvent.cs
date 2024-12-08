@@ -42,68 +42,27 @@ public sealed class TransactionBalanceEvent : EntityBase, IBalanceEvent
     public TransactionAccountType TransactionAccountType { get; private set; }
 
     /// <inheritdoc/>
-    public AccountBalance ApplyEventToBalance(Account account, AccountBalance currentBalance)
+    public AccountBalance ApplyEventToBalance(AccountBalance currentBalance)
     {
-        if (Account.Id != account.Id)
+        if (Account.Id != currentBalance.Account.Id)
         {
-            // Account wasn't affected by this event, just return the current balance
             return currentBalance;
         }
-        // Adding a transaction only affects the pending balance of the Account
-        Dictionary<Fund, decimal> pendingFundBalanceChanges;
-        if (TransactionEventType == TransactionBalanceEventType.Added)
+        return TransactionEventType == TransactionBalanceEventType.Added
+            ? ApplyTransactionAddedBalanceEvent(currentBalance, false)
+            : ApplyTransactionPostedBalanceEvent(currentBalance, false);
+    }
+
+    /// <inheritdoc/>
+    public AccountBalance ReverseEventFromBalance(AccountBalance currentBalance)
+    {
+        if (Account.Id != currentBalance.Account.Id)
         {
-            pendingFundBalanceChanges = currentBalance.PendingFundBalanceChanges
-                .ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
-            foreach (FundAmount fundAmount in Transaction.AccountingEntries)
-            {
-                decimal balanceChange = fundAmount.Amount * DetermineBalanceChangeFactor(account);
-                if (!pendingFundBalanceChanges.TryAdd(fundAmount.Fund, balanceChange))
-                {
-                    pendingFundBalanceChanges[fundAmount.Fund] =
-                        pendingFundBalanceChanges[fundAmount.Fund] + balanceChange;
-                }
-            }
-            return new AccountBalance
-            {
-                FundBalances = currentBalance.FundBalances,
-                PendingFundBalanceChanges = pendingFundBalanceChanges
-                    .Select(pair => new FundAmount
-                    {
-                        Fund = pair.Key,
-                        Amount = pair.Value,
-                    }).ToList()
-            };
+            return currentBalance;
         }
-        // Posting a transaction removes the pending balance change and adds it to the actual balance
-        Dictionary<Fund, decimal> fundBalances = currentBalance.FundBalances
-            .ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
-        pendingFundBalanceChanges = currentBalance.PendingFundBalanceChanges
-            .ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
-        foreach (FundAmount fundAmount in Transaction.AccountingEntries)
-        {
-            decimal balanceChange = fundAmount.Amount * DetermineBalanceChangeFactor(account);
-            pendingFundBalanceChanges[fundAmount.Fund] =
-                pendingFundBalanceChanges[fundAmount.Fund] - balanceChange;
-            if (!fundBalances.TryAdd(fundAmount.Fund, balanceChange))
-            {
-                fundBalances[fundAmount.Fund] = fundBalances[fundAmount.Fund] + balanceChange;
-            }
-        }
-        return new AccountBalance
-        {
-            FundBalances = fundBalances.Select(pair => new FundAmount
-            {
-                Fund = pair.Key,
-                Amount = pair.Value,
-            }).ToList(),
-            PendingFundBalanceChanges = pendingFundBalanceChanges
-                .Select(pair => new FundAmount
-                {
-                    Fund = pair.Key,
-                    Amount = pair.Value,
-                }).ToList()
-        };
+        return TransactionEventType == TransactionBalanceEventType.Added
+            ? ApplyTransactionAddedBalanceEvent(currentBalance, true)
+            : ApplyTransactionPostedBalanceEvent(currentBalance, true);
     }
 
     /// <summary>
@@ -158,21 +117,100 @@ public sealed class TransactionBalanceEvent : EntityBase, IBalanceEvent
     }
 
     /// <summary>
+    /// Applies an Added Transaction Balance Event to the provided balance
+    /// </summary>
+    /// <param name="currentBalance">Account Balance to apply this event to</param>
+    /// <param name="isReverse">True if this Transaction Balance Event is being reversed, false otherwise</param>
+    /// <returns>The new Account Balance after this event has been applied</returns>
+    private AccountBalance ApplyTransactionAddedBalanceEvent(AccountBalance currentBalance, bool isReverse)
+    {
+        Dictionary<Fund, decimal> pendingFundBalanceChanges = currentBalance.PendingFundBalanceChanges
+            .ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
+        foreach (FundAmount fundAmount in Transaction.AccountingEntries)
+        {
+            decimal balanceChange = fundAmount.Amount * DetermineBalanceChangeFactor(currentBalance.Account, isReverse);
+            if (!pendingFundBalanceChanges.TryAdd(fundAmount.Fund, balanceChange))
+            {
+                pendingFundBalanceChanges[fundAmount.Fund] =
+                    pendingFundBalanceChanges[fundAmount.Fund] + balanceChange;
+            }
+        }
+        return new AccountBalance(currentBalance.Account,
+            currentBalance.FundBalances,
+            pendingFundBalanceChanges
+                .Select(pair => new FundAmount
+                {
+                    Fund = pair.Key,
+                    Amount = pair.Value,
+                }));
+    }
+
+    /// <summary>
+    /// Applies a Posted Transaction Balance Event to the provided balance
+    /// </summary>
+    /// <param name="currentBalance">Account Balance to apply this event to</param>
+    /// <param name="isReverse">True if this Transaction Balance Event is being reversed, false otherwise</param>
+    /// <returns>The new Account Balance after this event has been applied</returns>
+    private AccountBalance ApplyTransactionPostedBalanceEvent(AccountBalance currentBalance, bool isReverse)
+    {
+        // Posting a transaction removes the pending balance change and adds it to the actual balance
+        Dictionary<Fund, decimal> fundBalances = currentBalance.FundBalances
+            .ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
+        Dictionary<Fund, decimal> pendingFundBalanceChanges = currentBalance.PendingFundBalanceChanges
+            .ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
+        foreach (FundAmount fundAmount in Transaction.AccountingEntries)
+        {
+            decimal balanceChange = fundAmount.Amount * DetermineBalanceChangeFactor(currentBalance.Account, isReverse);
+            if (!pendingFundBalanceChanges.TryAdd(fundAmount.Fund, -balanceChange))
+            {
+                pendingFundBalanceChanges[fundAmount.Fund] =
+                    pendingFundBalanceChanges[fundAmount.Fund] - balanceChange;
+            }
+            if (pendingFundBalanceChanges[fundAmount.Fund] == 0)
+            {
+                pendingFundBalanceChanges.Remove(fundAmount.Fund);
+            }
+            if (!fundBalances.TryAdd(fundAmount.Fund, balanceChange))
+            {
+                fundBalances[fundAmount.Fund] = fundBalances[fundAmount.Fund] + balanceChange;
+            }
+        }
+        return new AccountBalance(currentBalance.Account,
+            fundBalances
+                .Select(pair => new FundAmount
+                {
+                    Fund = pair.Key,
+                    Amount = pair.Value,
+                }),
+            pendingFundBalanceChanges
+                .Select(pair => new FundAmount
+                {
+                    Fund = pair.Key,
+                    Amount = pair.Value,
+                }));
+    }
+
+    /// <summary>
     /// Determines how the balance of an Account will change when a Transaction is applied
     /// </summary>
     /// <param name="account">Account to have a Transaction applied</param>
+    /// <param name="isReverse">True if this Transaction Balance Event is being reversed, false otherwise</param>
     /// <returns>An enum representing how the Transaction will change the Account's balance</returns>
-    private int DetermineBalanceChangeFactor(Account account)
+    private int DetermineBalanceChangeFactor(Account account, bool isReverse)
     {
-        if (TransactionAccountType == TransactionAccountType.Debit && account.Type == AccountType.Debt)
+        int DetermineBalanceChangeFactor(Account account)
         {
-            return 1;
+            if (TransactionAccountType == TransactionAccountType.Debit && account.Type == AccountType.Debt)
+            {
+                return 1;
+            }
+            if (TransactionAccountType != TransactionAccountType.Debit && account.Type != AccountType.Debt)
+            {
+                return 1;
+            }
+            return -1;
         }
-        if (TransactionAccountType != TransactionAccountType.Debit && account.Type != AccountType.Debt)
-        {
-            return 1;
-        }
-        return -1;
+        return !isReverse ? DetermineBalanceChangeFactor(account) : DetermineBalanceChangeFactor(account) * -1;
     }
 }
 

@@ -28,13 +28,13 @@ public class AccountBalanceController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves the balance for the provided Account as of the provided date
+    /// Retrieves the balance for the provided Account by date across the provided date range
     /// </summary>
     /// <param name="accountId">ID of the Account to retrieve the balance for</param>
     /// <param name="dateRange">Date Range to get the daily Account balances for</param>
     /// <returns>The balance of the provided Account as of the provided date</returns>
     [HttpGet("{accountId}/ByDate")]
-    public IActionResult GetAccountBalanceForDate(Guid accountId, DateRange dateRange)
+    public IActionResult GetAccountBalanceByDate(Guid accountId, DateRange dateRange)
     {
         Account? account = _accountRepository.FindByExternalIdOrNull(accountId);
         if (account == null)
@@ -42,7 +42,7 @@ public class AccountBalanceController : ControllerBase
             return NotFound();
         }
         IEnumerable<AccountBalanceByDate> accountBalances =
-            _accountBalanceService.GetAccountBalancesForDateRange(account, dateRange);
+            _accountBalanceService.GetAccountBalancesByDate(account, dateRange);
         return Ok(accountBalances.Select(accountBalance => new AccountBalanceByDateModel(accountBalance)));
     }
 }

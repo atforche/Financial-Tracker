@@ -26,6 +26,9 @@ public class MockAccountingPeriodRepository : IAccountingPeriodRepository
     public IReadOnlyCollection<AccountingPeriod> FindAll() => _accountingPeriods;
 
     /// <inheritdoc/>
+    public AccountingPeriod FindByDate(DateOnly asOfDate) => FindByDateOrNull(asOfDate) ?? throw new InvalidOperationException();
+
+    /// <inheritdoc/>
     public AccountingPeriod? FindByDateOrNull(DateOnly asOfDate) => _accountingPeriods
         .SingleOrDefault(accountingPeriod => accountingPeriod.Year == asOfDate.Year && accountingPeriod.Month == asOfDate.Month);
 
