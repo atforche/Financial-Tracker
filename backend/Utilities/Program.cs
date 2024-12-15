@@ -18,7 +18,7 @@ public static class Program
         var rootCommand = new RootCommand("Financial Tracker Utilities");
 
         // Configure the Bulk Data Upload command
-        var jsonFileOption = new Option<string>("--file", "Path to the JSON file to upload")
+        var jsonFileOption = new Option<string>("--folder", "Path to the folder with JSON files to upload")
         {
             IsRequired = true
         };

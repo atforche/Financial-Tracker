@@ -55,8 +55,10 @@ public class MockAccountingPeriodRepository : IAccountingPeriodRepository
     public IReadOnlyCollection<AccountingPeriod> FindAccountingPeriodsWithBalanceEventsInDateRange(DateRange dateRange) =>
         _accountingPeriods
         .Where(accountingPeriod => accountingPeriod.Transactions
-            .SelectMany(transaction => transaction.TransactionBalanceEvents)
-            .Any(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate)))
+                .SelectMany(transaction => transaction.TransactionBalanceEvents)
+                .Any(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate)) ||
+            accountingPeriod.FundConversions
+                    .Any(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate)))
         .ToList();
 
     /// <inheritdoc/>

@@ -271,7 +271,7 @@ public class CreateAccountingPeriodTests : UnitTestBase
                     Amount = 25.00m
                 }
             ]);
-        transaction.Post(account, new DateOnly(2024, 12, 5));
+        _accountingPeriodService.PostTransaction(transaction, account, new DateOnly(2024, 12, 5));
 
         // Close the first accounting period
         _accountingPeriodService.ClosePeriod(firstAccountingPeriod);

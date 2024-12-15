@@ -152,8 +152,8 @@ public class CloseAccountingPeriodTests : UnitTestBase
                     Amount = 25.00m,
                 }
             ]);
-        transaction.Post(firstAccount, new DateOnly(2024, 11, 24));
-        transaction.Post(secondAccount, new DateOnly(2024, 11, 24));
+        _accountingPeriodService.PostTransaction(transaction, firstAccount, new DateOnly(2024, 11, 24));
+        _accountingPeriodService.PostTransaction(transaction, secondAccount, new DateOnly(2024, 11, 24));
 
         // Close the Accounting Period
         _accountingPeriodService.ClosePeriod(accountingPeriod);
@@ -284,7 +284,7 @@ public class CloseAccountingPeriodTests : UnitTestBase
                     Amount = 25.00m,
                 }
             ]);
-        transaction.Post(firstAccount, new DateOnly(2024, 11, 24));
+        _accountingPeriodService.PostTransaction(transaction, firstAccount, new DateOnly(2024, 11, 24));
 
         // Close the Accounting Period
         Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.ClosePeriod(accountingPeriod));
@@ -325,7 +325,7 @@ public class CloseAccountingPeriodTests : UnitTestBase
                     Amount = 25.00m,
                 }
             ]);
-        transaction.Post(account, new DateOnly(2024, 11, 24));
+        _accountingPeriodService.PostTransaction(transaction, account, new DateOnly(2024, 11, 24));
 
         // Close the first Accounting Period and expect that Balance Checkpoints are added to the second Accounting Period
         _accountingPeriodService.ClosePeriod(firstAccountingPeriod);
@@ -444,7 +444,7 @@ public class CloseAccountingPeriodTests : UnitTestBase
                     Amount = 25.00m,
                 }
             ]);
-        transaction.Post(account, new DateOnly(2024, 12, 5));
+        _accountingPeriodService.PostTransaction(transaction, account, new DateOnly(2024, 12, 5));
 
         // Close the first Accounting Period and expect that Balance Checkpoints are added to the second Accounting Period
         _accountingPeriodService.ClosePeriod(firstAccountingPeriod);

@@ -1,0 +1,14 @@
+{
+    "Funds": 
+    [
+        {
+            "Name": "Spend"
+        },
+        {
+            "Name": "Debt"
+        },
+        {
+            "Name": "Investment"
+        }
+    ]
+}

@@ -13,7 +13,7 @@ namespace RestApi.Controllers;
 /// Controller class that exposes endpoints related to Accounting Periods
 /// </summary>
 [ApiController]
-[Route("/accountingPeriod")]
+[Route("/accountingPeriods")]
 public class AccountingPeriodController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -80,6 +80,22 @@ public class AccountingPeriodController : ControllerBase
     }
 
     /// <summary>
+    /// Retrieves all the Fund Conversions for the provided Accounting Period
+    /// </summary>
+    /// <param name="accountingPeriodId">ID of the Accounting Period</param>
+    /// <returns>A collection of Fund Conversions that fall within the provided Accounting Period</returns>
+    [HttpGet("{accountingPeriodId}/FundConversions")]
+    public IActionResult GetFundConversions(Guid accountingPeriodId)
+    {
+        AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindByExternalIdOrNull(accountingPeriodId);
+        if (accountingPeriod == null)
+        {
+            return NotFound();
+        }
+        return Ok(accountingPeriod.FundConversions.Select(fundConversion => new FundConversionModel(fundConversion)));
+    }
+
+    /// <summary>
     /// Creates a new Accounting Period with the provided properties
     /// </summary>
     /// <param name="createAccountingPeriodModel">Request to create an Accounting Period</param>
@@ -111,18 +127,18 @@ public class AccountingPeriodController : ControllerBase
         }
 
         Account? debitAccount = null;
-        if (createTransactionModel.DebitDetail != null)
+        if (createTransactionModel.DebitAccountId != null)
         {
-            debitAccount = _accountRepository.FindByExternalIdOrNull(createTransactionModel.DebitDetail.AccountId);
+            debitAccount = _accountRepository.FindByExternalIdOrNull(createTransactionModel.DebitAccountId.Value);
             if (debitAccount == null)
             {
                 return NotFound();
             }
         }
         Account? creditAccount = null;
-        if (createTransactionModel.CreditDetail != null)
+        if (createTransactionModel.CreditAccountId != null)
         {
-            creditAccount = _accountRepository.FindByExternalIdOrNull(createTransactionModel.CreditDetail.AccountId);
+            creditAccount = _accountRepository.FindByExternalIdOrNull(createTransactionModel.CreditAccountId.Value);
             if (creditAccount == null)
             {
                 return NotFound();
@@ -138,16 +154,78 @@ public class AccountingPeriodController : ControllerBase
                 Fund = funds[entry.FundId],
                 Amount = entry.Amount,
             }));
-        if (debitAccount != null && createTransactionModel.DebitDetail?.PostedStatementDate != null)
-        {
-            newTransaction.Post(debitAccount, createTransactionModel.DebitDetail.PostedStatementDate.Value);
-        }
-        if (creditAccount != null && createTransactionModel.CreditDetail?.PostedStatementDate != null)
-        {
-            newTransaction.Post(creditAccount, createTransactionModel.CreditDetail.PostedStatementDate.Value);
-        }
         await _unitOfWork.SaveChangesAsync();
         return Ok(new TransactionModel(newTransaction));
+    }
+
+    /// <summary>
+    /// Posts the provided Transaction in the provided Account
+    /// </summary>
+    /// <param name="accountingPeriodId">ID of the Accounting Period</param>
+    /// <param name="transactionId">ID of the Transaction</param>
+    /// <param name="postTransactionModel">Request to post a Transaction</param>
+    /// <returns>The posted Transaction</returns>
+    [HttpPost("{accountingPeriodId}/Transactions/{transactionId}")]
+    public async Task<IActionResult> PostTransactionAsync(Guid accountingPeriodId, Guid transactionId, PostTransactionModel postTransactionModel)
+    {
+        AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindByExternalIdOrNull(accountingPeriodId);
+        if (accountingPeriod == null)
+        {
+            return NotFound();
+        }
+        Transaction? transaction = accountingPeriod.Transactions
+            .SingleOrDefault(transaction => transaction.Id.ExternalId == transactionId);
+        if (transaction == null)
+        {
+            return NotFound();
+        }
+        Account? accountToPostIn = _accountRepository.FindByExternalIdOrNull(postTransactionModel.AccountId);
+        if (accountToPostIn == null)
+        {
+            return NotFound();
+        }
+        _accountingPeriodService.PostTransaction(transaction, accountToPostIn, postTransactionModel.PostedStatementDate);
+        await _unitOfWork.SaveChangesAsync();
+        return Ok(new TransactionModel(transaction));
+    }
+
+    /// <summary>
+    /// Creates a new Fund Conversion with the provided properties
+    /// </summary>
+    /// <param name="accountingPeriodId">ID of the Accounting Period</param>
+    /// <param name="createFundConversionModel">Request to create a Fund Conversion</param>
+    /// <returns>The created Fund Conversion</returns>
+    [HttpPost("{accountingPeriodId}/FundConversion")]
+    public async Task<IActionResult> CreateFundConversionAsync(Guid accountingPeriodId, CreateFundConversionModel createFundConversionModel)
+    {
+        AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindByExternalIdOrNull(accountingPeriodId);
+        if (accountingPeriod == null)
+        {
+            return NotFound();
+        }
+        Account? account = _accountRepository.FindByExternalIdOrNull(createFundConversionModel.AccountId);
+        if (account == null)
+        {
+            return NotFound();
+        }
+        Fund? fromFund = _fundRepository.FindByExternalIdOrNull(createFundConversionModel.FromFundId);
+        if (fromFund == null)
+        {
+            return NotFound();
+        }
+        Fund? toFund = _fundRepository.FindByExternalIdOrNull(createFundConversionModel.ToFundId);
+        if (toFund == null)
+        {
+            return NotFound();
+        }
+        FundConversion newFundConversion = _accountingPeriodService.AddFundConversion(accountingPeriod,
+            createFundConversionModel.EventDate,
+            account,
+            fromFund,
+            toFund,
+            createFundConversionModel.Amount);
+        await _unitOfWork.SaveChangesAsync();
+        return Ok(new FundConversionModel(newFundConversion));
     }
 
     /// <summary>

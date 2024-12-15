@@ -85,7 +85,6 @@ namespace Data.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     AccountingPeriodId = table.Column<long>(type: "INTEGER", nullable: false),
                     AccountId = table.Column<long>(type: "INTEGER", nullable: false),
-                    Type = table.Column<int>(type: "INTEGER", nullable: false),
                     ExternalId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
@@ -106,18 +105,62 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "FundConversion",
+                columns: table => new
+                {
+                    InternalId = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    FromFundId = table.Column<long>(type: "INTEGER", nullable: false),
+                    ToFundId = table.Column<long>(type: "INTEGER", nullable: false),
+                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    ExternalId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AccountingPeriodId = table.Column<long>(type: "INTEGER", nullable: false),
+                    AccountId = table.Column<long>(type: "INTEGER", nullable: false),
+                    EventDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    EventSequence = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FundConversion", x => x.InternalId);
+                    table.ForeignKey(
+                        name: "FK_FundConversion_AccountingPeriods_AccountingPeriodId",
+                        column: x => x.AccountingPeriodId,
+                        principalTable: "AccountingPeriods",
+                        principalColumn: "InternalId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FundConversion_Accounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "InternalId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FundConversion_Funds_FromFundId",
+                        column: x => x.FromFundId,
+                        principalTable: "Funds",
+                        principalColumn: "InternalId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FundConversion_Funds_ToFundId",
+                        column: x => x.ToFundId,
+                        principalTable: "Funds",
+                        principalColumn: "InternalId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TransactionBalanceEvent",
                 columns: table => new
                 {
                     InternalId = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     TransactionId = table.Column<long>(type: "INTEGER", nullable: false),
-                    AccountId = table.Column<long>(type: "INTEGER", nullable: false),
-                    EventDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    EventSequence = table.Column<int>(type: "INTEGER", nullable: false),
                     TransactionEventType = table.Column<int>(type: "INTEGER", nullable: false),
                     TransactionAccountType = table.Column<int>(type: "INTEGER", nullable: false),
-                    ExternalId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    ExternalId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AccountId = table.Column<long>(type: "INTEGER", nullable: false),
+                    EventDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    EventSequence = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -171,8 +214,7 @@ namespace Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_AccountBalanceCheckpoint_AccountId",
                 table: "AccountBalanceCheckpoint",
-                column: "AccountId",
-                unique: true);
+                column: "AccountId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AccountBalanceCheckpoint_AccountingPeriodId",
@@ -217,13 +259,38 @@ namespace Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_FundAmount_FundId",
                 table: "FundAmount",
-                column: "FundId",
-                unique: true);
+                column: "FundId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FundAmount_TransactionId",
                 table: "FundAmount",
                 column: "TransactionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FundConversion_AccountId",
+                table: "FundConversion",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FundConversion_AccountingPeriodId",
+                table: "FundConversion",
+                column: "AccountingPeriodId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FundConversion_ExternalId",
+                table: "FundConversion",
+                column: "ExternalId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FundConversion_FromFundId",
+                table: "FundConversion",
+                column: "FromFundId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FundConversion_ToFundId",
+                table: "FundConversion",
+                column: "ToFundId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Funds_ExternalId",
@@ -251,8 +318,7 @@ namespace Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_TransactionBalanceEvent_AccountId",
                 table: "TransactionBalanceEvent",
-                column: "AccountId",
-                unique: true);
+                column: "AccountId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TransactionBalanceEvent_EventDate_EventSequence",
@@ -277,6 +343,9 @@ namespace Data.Migrations
         {
             migrationBuilder.DropTable(
                 name: "FundAmount");
+
+            migrationBuilder.DropTable(
+                name: "FundConversion");
 
             migrationBuilder.DropTable(
                 name: "TransactionBalanceEvent");

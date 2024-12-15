@@ -1,10 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using RestApi;
-using RestApi.Models.Account;
-using RestApi.Models.AccountingPeriod;
-using RestApi.Models.Fund;
+using Utilities.BulkDataUpload.Models;
 using Utilities.BulkDataUpload.Uploaders;
 
 namespace Utilities.BulkDataUpload;
@@ -14,23 +11,22 @@ namespace Utilities.BulkDataUpload;
 /// </summary>
 public partial class BulkDataUploadUtility
 {
-    private readonly string _jsonFilePath;
-    private readonly JsonSerializerOptions _defaultSerializerOptions;
-    private readonly JsonSerializerOptions _accountSerializerOptions;
-    private readonly JsonSerializerOptions _transactionSerializerOptions;
+    private const string SetupFileName = "Setup.json";
+    private string SetupFilePath => Path.Combine(_jsonFolderPath, SetupFileName);
+
+    private readonly string _jsonFolderPath;
+    private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="jsonFilePath">File path of the JSON file to upload</param>
-    public BulkDataUploadUtility(string jsonFilePath)
+    /// <param name="jsonFolderPath">File path of the folder with JSON files to upload</param>
+    public BulkDataUploadUtility(string jsonFolderPath)
     {
-        _jsonFilePath = jsonFilePath;
-        _defaultSerializerOptions = new JsonSerializerOptions();
-        _accountSerializerOptions = new JsonSerializerOptions();
-        _accountSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        _transactionSerializerOptions = new JsonSerializerOptions();
-        _transactionSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+        _jsonFolderPath = jsonFolderPath;
+        _jsonSerializerOptions = new JsonSerializerOptions();
+        _jsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+        _jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     }
 
     /// <summary>
@@ -38,46 +34,25 @@ public partial class BulkDataUploadUtility
     /// </summary>
     public async Task Run()
     {
-        if (!File.Exists(_jsonFilePath))
+        if (!Directory.Exists(_jsonFolderPath))
         {
             throw new InvalidOperationException();
         }
-        string fileContents = await File.ReadAllTextAsync(_jsonFilePath);
-        List<string> sections = GetUploadSectionRegex().Split(fileContents).Skip(1).ToList();
-
-        CreateAccountingPeriodModel accountingPeriod = JsonSerializer.Deserialize<CreateAccountingPeriodModel>(
-            sections[0], _defaultSerializerOptions) ?? throw new InvalidOperationException();
-        using var accountingPeriodUploader = new AccountingPeriodUploader(accountingPeriod);
-        await accountingPeriodUploader.UploadAsync();
-
-        IEnumerable<CreateFundModel> funds = JsonSerializer.Deserialize<IEnumerable<CreateFundModel>>(
-            sections[1], _defaultSerializerOptions) ?? throw new InvalidOperationException();
-        using var fundUploader = new FundUploader(funds);
-        await fundUploader.UploadAsync();
-
-        Dictionary<string, Guid> accountConversions = fundUploader.Results
-            .ToDictionary(fund => fund.Name, fund => fund.Id);
-        _accountSerializerOptions.Converters.Add(new NameToGuidConverter(accountConversions));
-        IEnumerable<CreateAccountModel> accounts = JsonSerializer.Deserialize<IEnumerable<CreateAccountModel>>(
-            sections[2], _accountSerializerOptions) ?? throw new InvalidOperationException();
-        using var accountUploader = new AccountUploader(accounts);
-        await accountUploader.UploadAsync();
-
-        Dictionary<string, Guid> transactionConversions = accountUploader.Results
-            .Select(account => (account.Name, account.Id))
-            .Concat(fundUploader.Results.Select(fund => (fund.Name, fund.Id)))
-            .ToDictionary(pair => pair.Name, pair => pair.Id);
-        _transactionSerializerOptions.Converters.Add(new NameToGuidConverter(transactionConversions));
-        IEnumerable<CreateTransactionModel> transactions = JsonSerializer.Deserialize<IEnumerable<CreateTransactionModel>>(
-            sections[3], _transactionSerializerOptions) ?? throw new InvalidOperationException();
-        using var transactionUploader = new TransactionUploader(
-            accountingPeriodUploader.Result ?? throw new InvalidOperationException(),
-            transactions);
-        await transactionUploader.UploadAsync();
-
-        await accountingPeriodUploader.CloseUploadedPeriodAsync();
+        if (File.Exists(SetupFilePath))
+        {
+            using var setupUploader = new SetupUploader();
+            SetupUploadModel setupModel =
+                JsonSerializer.Deserialize<SetupUploadModel>(await File.ReadAllTextAsync(SetupFilePath), _jsonSerializerOptions)
+                    ?? throw new InvalidOperationException();
+            await setupUploader.UploadAsync(setupModel);
+        }
+        using var accountingPeriodUploader = new AccountingPeriodUploader();
+        foreach (string file in Directory.GetFiles(_jsonFolderPath).Where(path => path != SetupFilePath))
+        {
+            AccountingPeriodUploadModel accountingPeriodUploadModel =
+                JsonSerializer.Deserialize<AccountingPeriodUploadModel>(await File.ReadAllTextAsync(file), _jsonSerializerOptions)
+                    ?? throw new InvalidOperationException();
+            await accountingPeriodUploader.UploadAsync(accountingPeriodUploadModel);
+        }
     }
-
-    [GeneratedRegex("// ----- .* -----")]
-    private static partial Regex GetUploadSectionRegex();
 }

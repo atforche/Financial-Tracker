@@ -20,6 +20,11 @@ internal sealed class AccountingPeriodEntityConfiguration : EntityConfigurationB
             .HasForeignKey("AccountingPeriodId");
         builder.Navigation(accountingPeriod => accountingPeriod.Transactions).AutoInclude();
 
+        builder.HasMany(accountingPeriod => accountingPeriod.FundConversions)
+            .WithOne(fundConversion => fundConversion.AccountingPeriod)
+            .HasForeignKey("AccountingPeriodId");
+        builder.Navigation(accountingPeriod => accountingPeriod.FundConversions).AutoInclude();
+
         builder.HasMany(accountingPeriod => accountingPeriod.AccountBalanceCheckpoints)
             .WithOne(accountingBalanceCheckpoint => accountingBalanceCheckpoint.AccountingPeriod)
             .HasForeignKey("AccountingPeriodId");
@@ -46,6 +51,25 @@ internal sealed class TransactionEntityConfiguration : EntityConfigurationBase<T
 }
 
 /// <summary>
+/// EF Core configuration for the Fund Conversion entity
+/// </summary>
+internal sealed class FundConversionEntityConfiguration : EntityConfigurationBase<FundConversion>
+{
+    /// <inheritdoc/>
+    protected override void ConfigurePrivate(EntityTypeBuilder<FundConversion> builder)
+    {
+        builder.HasOne(fundConversion => fundConversion.Account).WithMany().HasForeignKey("AccountId");
+        builder.Navigation(fundConversion => fundConversion.Account).IsRequired().AutoInclude();
+
+        builder.HasOne(fundConversion => fundConversion.FromFund).WithMany().HasForeignKey("FromFundId");
+        builder.Navigation(fundConversion => fundConversion.FromFund).IsRequired().AutoInclude();
+
+        builder.HasOne(fundConversion => fundConversion.ToFund).WithMany().HasForeignKey("ToFundId");
+        builder.Navigation(fundConversion => fundConversion.ToFund).IsRequired().AutoInclude();
+    }
+}
+
+/// <summary>
 /// EF Core configuration for the Account Balance Checkpoint entity
 /// </summary>
 internal sealed class AccountBalanceCheckpointEntityConfiguration : EntityConfigurationBase<AccountBalanceCheckpoint>
@@ -53,8 +77,7 @@ internal sealed class AccountBalanceCheckpointEntityConfiguration : EntityConfig
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<AccountBalanceCheckpoint> builder)
     {
-        builder.HasOne(accountBalanceCheckpoint => accountBalanceCheckpoint.Account).WithOne()
-            .HasForeignKey<AccountBalanceCheckpoint>("AccountId");
+        builder.HasOne(accountBalanceCheckpoint => accountBalanceCheckpoint.Account).WithMany().HasForeignKey("AccountId");
         builder.Navigation(accountBalanceCheckpoint => accountBalanceCheckpoint.Account).IsRequired().AutoInclude();
 
         builder.HasMany(accountBalanceCheckpoint => accountBalanceCheckpoint.FundBalances).WithOne()
@@ -73,8 +96,7 @@ internal sealed class TransactionBalanceEventEntityConfiguration : EntityConfigu
     {
         builder.HasIndex(transactionDetail => new { transactionDetail.EventDate, transactionDetail.EventSequence }).IsUnique();
 
-        builder.HasOne(transactionBalanceEvent => transactionBalanceEvent.Account).WithOne()
-            .HasForeignKey<TransactionBalanceEvent>("AccountId");
+        builder.HasOne(transactionBalanceEvent => transactionBalanceEvent.Account).WithMany().HasForeignKey("AccountId");
         builder.Navigation(transactionBalanceEvent => transactionBalanceEvent.Account).IsRequired().AutoInclude();
     }
 }
@@ -90,7 +112,7 @@ internal sealed class FundAmountEntityConfiguration : IEntityTypeConfiguration<F
         builder.Property<int>("Id");
         builder.HasKey("Id");
 
-        builder.HasOne(fundAmount => fundAmount.Fund).WithOne().HasForeignKey<FundAmount>("FundId");
+        builder.HasOne(fundAmount => fundAmount.Fund).WithMany().HasForeignKey("FundId");
         builder.Navigation(fundAmount => fundAmount.Fund).IsRequired().AutoInclude();
     }
 }

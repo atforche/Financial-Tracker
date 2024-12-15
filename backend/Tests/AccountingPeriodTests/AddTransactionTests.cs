@@ -191,11 +191,10 @@ public class AddTransactionTests : UnitTestBase
     }
 
     /// <summary>
-    /// Tests that adding a Transaction to an Accounting Period will fail when its date doesn't fall in an adjacent
-    /// month
+    /// Tests that adding a Transaction with an invalid date will fail
     /// </summary>
     [Fact]
-    public void TestWithDateNotInAdjacentMonth()
+    public void TestWithInvalidDate()
     {
         // Test that adding a Transaction too far in the past fails
         Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.AddTransaction(_testAccountingPeriod, new DateOnly(2024, 9, 15),
@@ -771,7 +770,7 @@ public class AddTransactionTests : UnitTestBase
     /// negative will fail
     /// </summary>
     [Fact]
-    public void TestTransactionThatInvalidateFutureBalanceEvents()
+    public void TestTransactionThatInvalidatesFutureTransaction()
     {
         // Test for standard Accounts
         _accountingPeriodService.AddTransaction(_testAccountingPeriod,
@@ -835,7 +834,7 @@ public class AddTransactionTests : UnitTestBase
     /// Period will fail
     /// </summary>
     [Fact]
-    public void TestTransactionThatMakesAccountNegativeWithinAccountingPeriod()
+    public void TestTransactionThatInvalidatesFutureTransactionWithinAccountingPeriod()
     {
         // Set up a second accounting period
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
@@ -915,6 +914,34 @@ public class AddTransactionTests : UnitTestBase
                 {
                     Fund = _testFund,
                     Amount = 75.00m,
+                }
+            ]));
+    }
+
+    /// <summary>
+    /// Tests that adding a Transaction that would invalidate a future Fund Conversion will fail
+    /// </summary>
+    [Fact]
+    public void TestTransactionThatInvalidatesFutureFundConversion()
+    {
+        Fund toFund = _fundService.CreateNewFund("To");
+        _fundRepository.Add(toFund);
+
+        FundConversion fundConversion = _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
+            new DateOnly(2024, 11, 15),
+            _testAccount,
+            _testFund,
+            toFund,
+            100.00m);
+        Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.AddTransaction(_testAccountingPeriod,
+            new DateOnly(2024, 11, 10),
+            _testAccount,
+            null,
+            [
+                new FundAmount
+                {
+                    Fund = _testFund,
+                    Amount = 2450.00m
                 }
             ]));
     }

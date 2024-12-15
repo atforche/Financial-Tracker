@@ -123,7 +123,7 @@ public class GetAccountBalanceByAccountingPeriodTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        transaction.Post(_testAccount, new DateOnly(2024, 11, 5));
+        _accountingPeriodService.PostTransaction(transaction, _testAccount, new DateOnly(2024, 11, 5));
         new AccountBalanceByAccountingPeriodValidator(
             _accountBalanceService.GetAccountBalancesByAccountingPeriod(_testAccount, _testAccountingPeriod))
             .Validate(new AccountBalanceByAccountingPeriodState
@@ -223,7 +223,7 @@ public class GetAccountBalanceByAccountingPeriodTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        transaction.Post(_testAccount, new DateOnly(2024, 11, 25));
+        _accountingPeriodService.PostTransaction(transaction, _testAccount, new DateOnly(2024, 11, 25));
 
         ValidateBalances(secondAccountingPeriod);
         _accountingPeriodService.ClosePeriod(_testAccountingPeriod);
@@ -276,7 +276,7 @@ public class GetAccountBalanceByAccountingPeriodTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        transaction.Post(_testAccount, new DateOnly(2024, 12, 25));
+        _accountingPeriodService.PostTransaction(transaction, _testAccount, new DateOnly(2024, 12, 25));
 
         ValidateBalances();
         _accountingPeriodService.ClosePeriod(_testAccountingPeriod);
@@ -329,7 +329,7 @@ public class GetAccountBalanceByAccountingPeriodTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        transaction.Post(_testAccount, new DateOnly(2024, 12, 25));
+        _accountingPeriodService.PostTransaction(transaction, _testAccount, new DateOnly(2024, 12, 25));
 
         ValidateBalances(secondAccountingPeriod);
         _accountingPeriodService.ClosePeriod(_testAccountingPeriod);
@@ -382,7 +382,7 @@ public class GetAccountBalanceByAccountingPeriodTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        transaction.Post(_testAccount, new DateOnly(2024, 11, 25));
+        _accountingPeriodService.PostTransaction(transaction, _testAccount, new DateOnly(2024, 11, 25));
 
         ValidateBalances();
         _accountingPeriodService.ClosePeriod(_testAccountingPeriod);

@@ -71,7 +71,7 @@ public class PostTransactionTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        transaction.Post(_testAccount, new DateOnly(2024, 11, 15));
+        _accountingPeriodService.PostTransaction(transaction, _testAccount, new DateOnly(2024, 11, 15));
         new TransactionValidator(transaction).Validate(new TransactionState
         {
             TransactionDate = new DateOnly(2024, 11, 15),
@@ -122,8 +122,10 @@ public class PostTransactionTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        transaction.Post(_testAccount, new DateOnly(2024, 11, 15));
-        Assert.Throws<InvalidOperationException>(() => transaction.Post(_testAccount, new DateOnly(2024, 11, 15)));
+        _accountingPeriodService.PostTransaction(transaction, _testAccount, new DateOnly(2024, 11, 15));
+        Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.PostTransaction(transaction,
+             _testAccount,
+             new DateOnly(2024, 11, 15)));
     }
 
     /// <summary>
@@ -162,7 +164,9 @@ public class PostTransactionTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        Assert.Throws<InvalidOperationException>(() => transaction.Post(extraAccount, new DateOnly(2024, 11, 15)));
+        Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.PostTransaction(transaction,
+            extraAccount,
+            new DateOnly(2024, 11, 15)));
     }
 
     /// <summary>
@@ -188,7 +192,9 @@ public class PostTransactionTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        pastTransaction.Post(_testAccount, new DateOnly(2024, 11, 15));
+        _accountingPeriodService.PostTransaction(pastTransaction,
+            _testAccount,
+            new DateOnly(2024, 11, 15));
         new TransactionValidator(pastTransaction).Validate(new TransactionState
         {
             TransactionDate = new DateOnly(2024, 11, 15),
@@ -233,7 +239,9 @@ public class PostTransactionTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        futureTransaction.Post(_testAccount, new DateOnly(2025, 1, 15));
+        _accountingPeriodService.PostTransaction(futureTransaction,
+            _testAccount,
+            new DateOnly(2025, 1, 15));
         new TransactionValidator(futureTransaction).Validate(new TransactionState
         {
             TransactionDate = new DateOnly(2025, 1, 15),
@@ -285,10 +293,14 @@ public class PostTransactionTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        Assert.Throws<InvalidOperationException>(() => transaction.Post(_testAccount, new DateOnly(2024, 11, 14)));
+        Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.PostTransaction(transaction,
+            _testAccount,
+            new DateOnly(2024, 11, 14)));
 
         // Tests that the posting date cannot fall in a non-adjacent accounting period
-        Assert.Throws<InvalidOperationException>(() => transaction.Post(_testAccount, new DateOnly(2025, 1, 15)));
+        Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.PostTransaction(transaction,
+            _testAccount,
+            new DateOnly(2025, 1, 15)));
     }
 
     /// <summary>
@@ -315,8 +327,8 @@ public class PostTransactionTests : UnitTestBase
                     Amount = 50.00m,
                 }
             ]);
-        transaction.Post(_testAccount, new DateOnly(2024, 11, 16));
-        transaction.Post(creditAccount, new DateOnly(2024, 11, 17));
+        _accountingPeriodService.PostTransaction(transaction, _testAccount, new DateOnly(2024, 11, 16));
+        _accountingPeriodService.PostTransaction(transaction, creditAccount, new DateOnly(2024, 11, 17));
         new AccountBalanceByEventValidator(_accountBalanceService.GetAccountBalancesByEvent(
                 _testAccount,
                 new DateRange(new DateOnly(2024, 11, 1), new DateOnly(2024, 11, 30))))
@@ -445,8 +457,8 @@ public class PostTransactionTests : UnitTestBase
                     Amount = 50.00m,
                 }
             ]);
-        transaction.Post(firstDebtAccount, new DateOnly(2024, 11, 16));
-        transaction.Post(secondDebtAccount, new DateOnly(2024, 11, 17));
+        _accountingPeriodService.PostTransaction(transaction, firstDebtAccount, new DateOnly(2024, 11, 16));
+        _accountingPeriodService.PostTransaction(transaction, secondDebtAccount, new DateOnly(2024, 11, 17));
         new AccountBalanceByEventValidator(_accountBalanceService.GetAccountBalancesByEvent(
                 firstDebtAccount,
                 new DateRange(new DateOnly(2024, 11, 1), new DateOnly(2024, 11, 30))))
