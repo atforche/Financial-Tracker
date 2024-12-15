@@ -54,8 +54,10 @@ public class AccountingPeriodRepository : AggregateRepositoryBase<AccountingPeri
         List<DateOnly> dates = dateRange.GetInclusiveDates().ToList();
         return DatabaseContext.AccountingPeriods
             .Where(accountingPeriod => accountingPeriod.Transactions
-                .SelectMany(transaction => transaction.TransactionBalanceEvents)
-                .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()))
+                    .SelectMany(transaction => transaction.TransactionBalanceEvents)
+                    .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()) ||
+                accountingPeriod.FundConversions
+                    .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()))
             .ToList();
     }
 

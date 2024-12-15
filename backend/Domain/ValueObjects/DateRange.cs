@@ -5,10 +5,10 @@ namespace Domain.ValueObjects;
 /// </summary>
 public class DateRange
 {
-    private DateOnly StartDate { get; }
-    private EndpointType StartDateType { get; }
-    private DateOnly EndDate { get; }
-    private EndpointType EndDateType { get; }
+    private DateOnly _startDate { get; }
+    private EndpointType _startDateType { get; }
+    private DateOnly _endDate { get; }
+    private EndpointType _endDateType { get; }
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -22,10 +22,10 @@ public class DateRange
         EndpointType startDateType = EndpointType.Inclusive,
         EndpointType endDateType = EndpointType.Inclusive)
     {
-        StartDate = startDate;
-        EndDate = endDate;
-        StartDateType = startDateType;
-        EndDateType = endDateType;
+        _startDate = startDate;
+        _endDate = endDate;
+        _startDateType = startDateType;
+        _endDateType = endDateType;
         Validate();
     }
 
@@ -35,10 +35,10 @@ public class DateRange
     /// <returns>The list of dates for this Date Range</returns>
     public IEnumerable<DateOnly> GetInclusiveDates()
     {
-        DateOnly startDate = StartDateType == EndpointType.Inclusive ? StartDate : StartDate.AddDays(1);
-        DateOnly endDate = EndDateType == EndpointType.Inclusive ? EndDate : EndDate.AddDays(-1);
+        DateOnly startDate = _startDateType == EndpointType.Inclusive ? _startDate : _startDate.AddDays(1);
+        DateOnly endDate = _endDateType == EndpointType.Inclusive ? _endDate : _endDate.AddDays(-1);
         DateOnly currentDate = startDate;
-        while (currentDate <= endDate)
+        while (currentDate <= endDate && currentDate < DateOnly.MaxValue)
         {
             yield return currentDate;
             currentDate = currentDate.AddDays(1);
@@ -51,7 +51,7 @@ public class DateRange
     /// <param name="date">Date to check</param>
     /// <returns>True if the provided date falls on or after the start date of the current Date Range</returns>
     public bool IsWithinStartDate(DateOnly date) =>
-        StartDateType == EndpointType.Inclusive ? date >= StartDate : date > StartDate;
+        _startDateType == EndpointType.Inclusive ? date >= _startDate : date > _startDate;
 
     /// <summary>
     /// Determines if the provided date falls before or on the end date of the current Date Range
@@ -59,7 +59,7 @@ public class DateRange
     /// <param name="date">Date to check</param>
     /// <returns>True if the provided date falls before or on the end date of this date range, false otherwise</returns>
     public bool IsWithinEndDate(DateOnly date) =>
-        EndDateType == EndpointType.Inclusive ? date <= EndDate : date < EndDate;
+        _endDateType == EndpointType.Inclusive ? date <= _endDate : date < _endDate;
 
     /// <summary>
     /// Determines if the provided date falls within the current Date Range

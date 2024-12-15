@@ -27,7 +27,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/.artifacts/bin/Utilities/Utilities.dll",
-            "args": ["upload", "--file", "/workspaces/Financial-Tracker/backend/Utilities/BulkDataUpload/SampleUpload.txt"],
+            "args": ["upload", "--folder", "/workspaces/Financial-Tracker/backend/Utilities/BulkDataUpload/SampleUpload"],
         }
     ]
 }

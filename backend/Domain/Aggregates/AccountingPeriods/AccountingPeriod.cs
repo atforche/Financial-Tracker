@@ -1,4 +1,5 @@
 using Domain.Aggregates.Accounts;
+using Domain.Aggregates.Funds;
 using Domain.ValueObjects;
 
 namespace Domain.Aggregates.AccountingPeriods;
@@ -12,6 +13,7 @@ namespace Domain.Aggregates.AccountingPeriods;
 public class AccountingPeriod : EntityBase
 {
     private readonly List<Transaction> _transactions = [];
+    private readonly List<FundConversion> _fundConversions = [];
     private readonly List<AccountBalanceCheckpoint> _accountBalanceCheckpoints = [];
 
     /// <summary>
@@ -45,6 +47,11 @@ public class AccountingPeriod : EntityBase
     public IReadOnlyCollection<Transaction> Transactions => _transactions;
 
     /// <summary>
+    /// Fund Conversions for this Accounting Period
+    /// </summary>
+    public IReadOnlyCollection<FundConversion> FundConversions => _fundConversions;
+
+    /// <summary>
     /// Account Balance Checkpoints for this Accounting Period
     /// </summary>
     public IReadOnlyCollection<AccountBalanceCheckpoint> AccountBalanceCheckpoints => _accountBalanceCheckpoints;
@@ -54,49 +61,83 @@ public class AccountingPeriod : EntityBase
     /// </summary>
     /// <param name="year">Year for this Accounting Period</param>
     /// <param name="month">Month for this Accounting Period</param>
-    internal AccountingPeriod(int year, int month)
+    /// <param name="existingAccountingPeriodStartDates">Period Start Dates for any existing Accounting Periods</param>
+    internal AccountingPeriod(int year, int month, IEnumerable<DateOnly> existingAccountingPeriodStartDates)
         : base(new EntityId(default, Guid.NewGuid()))
     {
         Year = year;
         Month = month;
         IsOpen = true;
-        Validate();
+        ValidateNewAccountingPeriod(existingAccountingPeriodStartDates.ToList());
     }
 
     /// <summary>
     /// Adds a new Transaction to this Accounting Period
     /// </summary>
     /// <param name="transactionDate">Transaction Date for this Transaction</param>
-    /// <param name="debitAccount">Debit Account for this Transaction</param>
-    /// <param name="creditAccount">Credit Account for this Transaction</param>
+    /// <param name="debitAccountInfo">Debit Account for this Transaction</param>
+    /// <param name="creditAccountInfo">Credit Account for this Transaction</param>
     /// <param name="accountingEntries">Accounting Entries for this Transaction</param>
-    /// <param name="currentAccountBalances">Current Account Balances for the Accounts this Transaction affects</param>
-    /// <param name="futureBalanceEventsForAccounts">All existing future balance events for the Accounts this Transaction affects</param>
     /// <returns>The newly created Transaction</returns>
     internal Transaction AddTransaction(DateOnly transactionDate,
-        Account? debitAccount,
-        Account? creditAccount,
-        IEnumerable<FundAmount> accountingEntries,
-        List<AccountBalanceByDate> currentAccountBalances,
-        List<AccountBalanceByEvent> futureBalanceEventsForAccounts)
+        CreateBalanceEventAccountInfo? debitAccountInfo,
+        CreateBalanceEventAccountInfo? creditAccountInfo,
+        IEnumerable<FundAmount> accountingEntries)
     {
         var newTransaction = new Transaction(this,
             transactionDate,
-            accountingEntries,
-            debitAccount,
-            creditAccount,
-            currentAccountBalances,
-            futureBalanceEventsForAccounts);
+            debitAccountInfo,
+            creditAccountInfo,
+            accountingEntries);
         _transactions.Add(newTransaction);
         return newTransaction;
+    }
+
+    /// <summary>
+    /// Adds a new Fund Conversion to this Accounting Period
+    /// </summary>
+    /// <param name="date">Date for this Fund Conversion</param>
+    /// <param name="accountInfo">Account for this Fund Conversion</param>
+    /// <param name="fromFund">From Fund for this Fund Conversion</param>
+    /// <param name="toFund">To Fund for this Fund Conversion</param>
+    /// <param name="amount">Amount for this Fund Conversion</param>
+    /// <returns>The newly created Fund Conversion</returns>
+    internal FundConversion AddFundConversion(DateOnly date,
+        CreateBalanceEventAccountInfo accountInfo,
+        Fund fromFund,
+        Fund toFund,
+        decimal amount)
+    {
+        var newFundConversion = new FundConversion(this,
+            accountInfo,
+            date,
+            fromFund,
+            toFund,
+            amount);
+        _fundConversions.Add(newFundConversion);
+        return newFundConversion;
+    }
+
+    /// <summary>
+    /// Closes this Accounting Period
+    /// </summary>
+    /// <param name="otherOpenAccountingPeriods">List of the Period Start Dates for any other open Accounting Periods</param>
+    /// <param name="allAccountBalances">Ending Account Balances for every Account at the end of this Accounting Period</param>
+    internal void ClosePeriod(
+        IEnumerable<DateOnly> otherOpenAccountingPeriods,
+        IEnumerable<AccountBalanceByAccountingPeriod> allAccountBalances)
+    {
+        ValidateCloseAccountingPeriod(otherOpenAccountingPeriods, allAccountBalances);
+        IsOpen = false;
     }
 
     /// <summary>
     /// Gets the list of all Balance Events for this Accounting Period
     /// </summary>
     /// <returns>The list of all Balance Events for this Accounting Period</returns>
-    internal IEnumerable<IBalanceEvent> GetAllBalanceEvents() =>
-        Transactions.SelectMany(transaction => transaction.TransactionBalanceEvents)
+    internal IEnumerable<BalanceEventBase> GetAllBalanceEvents() =>
+        Transactions.SelectMany(transaction => (IEnumerable<BalanceEventBase>)transaction.TransactionBalanceEvents)
+            .Concat((IEnumerable<BalanceEventBase>)FundConversions)
             .OrderBy(balanceEvent => balanceEvent.EventDate)
             .ThenBy(balanceEvent => balanceEvent.EventSequence);
 
@@ -121,7 +162,7 @@ public class AccountingPeriod : EntityBase
     /// <returns>The next Balance Event sequence for the provided date</returns>
     internal int GetNextEventSequenceForDate(DateOnly eventDate)
     {
-        List<IBalanceEvent> balanceEventsOnDate = GetAllBalanceEvents()
+        List<BalanceEventBase> balanceEventsOnDate = GetAllBalanceEvents()
             .Where(balanceEvent => balanceEvent.EventDate == eventDate).ToList();
         if (balanceEventsOnDate.Count == 0)
         {
@@ -139,15 +180,57 @@ public class AccountingPeriod : EntityBase
     }
 
     /// <summary>
-    /// Validates the current Accounting Period
+    /// Validates a new Accounting Period
     /// </summary>
-    private void Validate()
+    /// <param name="existingAccountingPeriodStartDates">Period Start Dates for any existing Accounting Periods</param>
+    private void ValidateNewAccountingPeriod(List<DateOnly> existingAccountingPeriodStartDates)
     {
         if (Year < 2020 || Year > 2050)
         {
             throw new InvalidOperationException();
         }
         if (Month <= 0 || Month > 12)
+        {
+            throw new InvalidOperationException();
+        }
+        if (existingAccountingPeriodStartDates.Count == 0)
+        {
+            return;
+        }
+        // Validate that there are no duplicate accounting periods
+        if (existingAccountingPeriodStartDates.Any(period => period == PeriodStartDate))
+        {
+            throw new InvalidOperationException();
+        }
+        // Validate that accounting periods can only be added after existing accounting periods
+        DateOnly previousMonth = PeriodStartDate.AddMonths(-1);
+        if (!existingAccountingPeriodStartDates.Any(period => period == previousMonth))
+        {
+            throw new InvalidOperationException();
+        }
+    }
+
+    /// <summary>
+    /// Validates closing this Accounting Period
+    /// </summary>
+    /// <param name="otherOpenAccountingPeriods">List of the Period Start Dates for any other open Accounting Periods</param>
+    /// <param name="allAccountBalances">Ending Account Balances for every Account at the end of this Accounting Period</param>
+    private void ValidateCloseAccountingPeriod(
+        IEnumerable<DateOnly> otherOpenAccountingPeriods,
+        IEnumerable<AccountBalanceByAccountingPeriod> allAccountBalances)
+    {
+        if (!IsOpen)
+        {
+            throw new InvalidOperationException();
+        }
+        if (otherOpenAccountingPeriods.Any(openPeriodStartDate => openPeriodStartDate < PeriodStartDate))
+        {
+            // We should always have a contiguous group of open accounting periods.
+            // Only close the earliest open accounting period
+            throw new InvalidOperationException();
+        }
+        // Validate that there are no pending balance changes in this Accounting Period
+        if (allAccountBalances.Any(balance => balance.EndingBalance.PendingFundBalanceChanges.Count != 0))
         {
             throw new InvalidOperationException();
         }

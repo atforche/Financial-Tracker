@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20241112000132_InitialCreate")]
+    [Migration("20241215010351_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -33,17 +33,13 @@ namespace Data.Migrations
                     b.Property<long>("AccountingPeriodId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("INTEGER");
-
                     b.Property<Guid>("_externalId")
                         .HasColumnType("TEXT")
                         .HasColumnName("ExternalId");
 
                     b.HasKey("_internalId");
 
-                    b.HasIndex("AccountId")
-                        .IsUnique();
+                    b.HasIndex("AccountId");
 
                     b.HasIndex("AccountingPeriodId");
 
@@ -82,6 +78,54 @@ namespace Data.Migrations
                         .IsUnique();
 
                     b.ToTable("AccountingPeriods");
+                });
+
+            modelBuilder.Entity("Domain.Aggregates.AccountingPeriods.FundConversion", b =>
+                {
+                    b.Property<long>("_internalId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("InternalId");
+
+                    b.Property<long>("AccountId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("AccountingPeriodId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("EventDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("EventSequence")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("FromFundId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("ToFundId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("_externalId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("ExternalId");
+
+                    b.HasKey("_internalId");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("AccountingPeriodId");
+
+                    b.HasIndex("FromFundId");
+
+                    b.HasIndex("ToFundId");
+
+                    b.HasIndex("_externalId")
+                        .IsUnique();
+
+                    b.ToTable("FundConversion");
                 });
 
             modelBuilder.Entity("Domain.Aggregates.AccountingPeriods.Transaction", b =>
@@ -142,8 +186,7 @@ namespace Data.Migrations
 
                     b.HasKey("_internalId");
 
-                    b.HasIndex("AccountId")
-                        .IsUnique();
+                    b.HasIndex("AccountId");
 
                     b.HasIndex("TransactionId");
 
@@ -234,8 +277,7 @@ namespace Data.Migrations
 
                     b.HasIndex("AccountBalanceCheckpointId");
 
-                    b.HasIndex("FundId")
-                        .IsUnique();
+                    b.HasIndex("FundId");
 
                     b.HasIndex("TransactionId");
 
@@ -245,8 +287,8 @@ namespace Data.Migrations
             modelBuilder.Entity("Domain.Aggregates.AccountingPeriods.AccountBalanceCheckpoint", b =>
                 {
                     b.HasOne("Domain.Aggregates.Accounts.Account", "Account")
-                        .WithOne()
-                        .HasForeignKey("Domain.Aggregates.AccountingPeriods.AccountBalanceCheckpoint", "AccountId")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -259,6 +301,41 @@ namespace Data.Migrations
                     b.Navigation("Account");
 
                     b.Navigation("AccountingPeriod");
+                });
+
+            modelBuilder.Entity("Domain.Aggregates.AccountingPeriods.FundConversion", b =>
+                {
+                    b.HasOne("Domain.Aggregates.Accounts.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Aggregates.AccountingPeriods.AccountingPeriod", "AccountingPeriod")
+                        .WithMany("FundConversions")
+                        .HasForeignKey("AccountingPeriodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Aggregates.Funds.Fund", "FromFund")
+                        .WithMany()
+                        .HasForeignKey("FromFundId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Aggregates.Funds.Fund", "ToFund")
+                        .WithMany()
+                        .HasForeignKey("ToFundId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("AccountingPeriod");
+
+                    b.Navigation("FromFund");
+
+                    b.Navigation("ToFund");
                 });
 
             modelBuilder.Entity("Domain.Aggregates.AccountingPeriods.Transaction", b =>
@@ -275,8 +352,8 @@ namespace Data.Migrations
             modelBuilder.Entity("Domain.Aggregates.AccountingPeriods.TransactionBalanceEvent", b =>
                 {
                     b.HasOne("Domain.Aggregates.Accounts.Account", "Account")
-                        .WithOne()
-                        .HasForeignKey("Domain.Aggregates.AccountingPeriods.TransactionBalanceEvent", "AccountId")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -298,8 +375,8 @@ namespace Data.Migrations
                         .HasForeignKey("AccountBalanceCheckpointId");
 
                     b.HasOne("Domain.Aggregates.Funds.Fund", "Fund")
-                        .WithOne()
-                        .HasForeignKey("Domain.ValueObjects.FundAmount", "FundId")
+                        .WithMany()
+                        .HasForeignKey("FundId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -318,6 +395,8 @@ namespace Data.Migrations
             modelBuilder.Entity("Domain.Aggregates.AccountingPeriods.AccountingPeriod", b =>
                 {
                     b.Navigation("AccountBalanceCheckpoints");
+
+                    b.Navigation("FundConversions");
 
                     b.Navigation("Transactions");
                 });

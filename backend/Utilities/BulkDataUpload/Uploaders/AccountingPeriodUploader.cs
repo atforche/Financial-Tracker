@@ -1,64 +1,75 @@
-using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using RestApi.Models.Account;
 using RestApi.Models.AccountingPeriod;
+using RestApi.Models.Fund;
+using Utilities.BulkDataUpload.Models;
 
 namespace Utilities.BulkDataUpload.Uploaders;
 
 /// <summary>
-/// Uploader class responsible for uploading an Accounting Period to the REST API
+/// Bulk data uploader that uploads an Accounting Period to the REST API
 /// </summary>
-public class AccountingPeriodUploader : DataUploader
+public class AccountingPeriodUploader : DataUploader<AccountingPeriodUploadModel>
 {
-    private readonly CreateAccountingPeriodModel _model;
-    private readonly JsonSerializerOptions _serializerOptions;
-
-    /// <summary>
-    /// Accounting Period Model that was uploaded 
-    /// </summary>
-    public AccountingPeriodModel? Result { get; private set; }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="model">Create Accounting Period Model to upload to the REST API</param>
-    public AccountingPeriodUploader(CreateAccountingPeriodModel model)
-    {
-        _model = model;
-        _serializerOptions = new JsonSerializerOptions();
-        _serializerOptions.PropertyNameCaseInsensitive = true;
-        _serializerOptions.Converters.Add(new JsonStringEnumConverter());
-    }
+    private List<FundModel>? _funds;
+    private List<AccountModel>? _accounts;
+    private Dictionary<Guid, TransactionModel> _transactions = [];
 
     /// <inheritdoc/>
-    public override async Task UploadAsync() =>
-        await ApiErrorHandlingWrapper(async () =>
-        {
-            Console.WriteLine($"Uploading accounting period: {_model.Year}-{_model.Month}");
-            UriBuilder.Path = "/accountingPeriod";
-            HttpResponseMessage response = await Client.PostAsJsonAsync(UriBuilder.Uri, _model);
-            response.EnsureSuccessStatusCode();
-            Result = await response.Content.ReadFromJsonAsync<AccountingPeriodModel>();
-        },
-        $"Unable to upload accounting period {_model.Year}-{_model.Month}");
-
-    /// <summary>
-    /// Closes the Accounting Period that was uploaded
-    /// </summary>
-    public async Task CloseUploadedPeriodAsync()
+    public override async Task UploadAsync(AccountingPeriodUploadModel model)
     {
-        if (Result == null)
+        // Ensure the existing entities that are needed are populated
+        _funds ??= await GetAsync<List<FundModel>>("/funds");
+        _accounts ??= await GetAsync<List<AccountModel>>("/accounts");
+
+        // Create the accounting period
+        Console.WriteLine($"Creating Accounting Period: {model.Year}-{model.Month}");
+        AccountingPeriodModel accountingPeriod = await PostAsync<CreateAccountingPeriodModel, AccountingPeriodModel>(
+            "/accountingPeriods",
+            model.GetAsCreateAccountingPeriodModel());
+
+        // Create any new accounts for this accounting period
+        foreach (AccountUploadModel accountUploadModel in model.NewAccounts)
         {
-            throw new InvalidOperationException();
+            Console.WriteLine($"Creating Account: {accountUploadModel.Name}");
+            _accounts.Add(await PostAsync<CreateAccountModel, AccountModel>(
+                "/accounts",
+                accountUploadModel.GetAsCreateAccountModel(_funds)));
         }
-        await ApiErrorHandlingWrapper(async () =>
+        // Create the balance events
+        foreach (BalanceEventUploadModel balanceEventUploadModel in model.BalanceEvents)
         {
-            Console.WriteLine($"Closing accounting period: {_model.Year}-{_model.Month}");
-            UriBuilder.Path = $"/accountingPeriod/close/{Result.Id.ToString()}";
-            HttpResponseMessage response = await Client.PostAsync(UriBuilder.Uri, null);
-            response.EnsureSuccessStatusCode();
-            Result = await response.Content.ReadFromJsonAsync<AccountingPeriodModel>();
-        },
-        $"Unable to close accounting period {_model.Year}-{_model.Month}");
+            if (balanceEventUploadModel is TransactionAddedUploadModel transactionAddedUploadModel)
+            {
+                Console.WriteLine($"Creating Transaction: {transactionAddedUploadModel.Id}");
+                _transactions.Add(transactionAddedUploadModel.Id,
+                    await PostAsync<CreateTransactionModel, TransactionModel>(
+                        $"/accountingPeriods/{accountingPeriod.Id}/Transactions",
+                        transactionAddedUploadModel.GetAsCreateTransactionModel(_funds, _accounts)));
+            }
+            else if (balanceEventUploadModel is TransactionPostedUploadModel transactionPostedUploadModel)
+            {
+                Console.WriteLine($"Posting Transaction '{transactionPostedUploadModel.TransactionId}' in Account '{transactionPostedUploadModel.AccountName}'");
+                await PostAsync<PostTransactionModel, TransactionModel>(
+                    $"/accountingPeriods/{accountingPeriod.Id}/Transactions/{transactionPostedUploadModel.GetTransactionIdToPost(_transactions)}",
+                    transactionPostedUploadModel.GetAsPostTransactionModel(_accounts));
+            }
+            else if (balanceEventUploadModel is FundConversionUploadModel fundConversionUploadModel)
+            {
+                Console.WriteLine($"Creating Fund Conversion: {fundConversionUploadModel.Id}");
+                await PostAsync<CreateFundConversionModel, FundConversionModel>(
+                    $"/accountingPeriods/{accountingPeriod.Id}/FundConversion",
+                    fundConversionUploadModel.GetAsCreateFundConversionModel(_funds, _accounts));
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
+        }
+        // Close the accounting period if necessary
+        if (model.IsClosed)
+        {
+            Console.WriteLine($"Closing Accounting Period: {model.Year}-{model.Month}");
+            await PostAsync<object?, AccountingPeriodModel>($"/accountingPeriods/close/{accountingPeriod.Id}", null);
+        }
     }
 }

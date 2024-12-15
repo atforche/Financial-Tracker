@@ -3,6 +3,7 @@ using Domain.Services;
 using Domain.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 using RestApi.Models.AccountBalance;
+using RestApi.Models.DateRange;
 
 namespace RestApi.Controllers;
 
@@ -31,10 +32,10 @@ public class AccountBalanceController : ControllerBase
     /// Retrieves the balance for the provided Account by date across the provided date range
     /// </summary>
     /// <param name="accountId">ID of the Account to retrieve the balance for</param>
-    /// <param name="dateRange">Date Range to get the daily Account balances for</param>
+    /// <param name="dateRangeModel">Date Range to get the daily Account balances for</param>
     /// <returns>The balance of the provided Account as of the provided date</returns>
-    [HttpGet("{accountId}/ByDate")]
-    public IActionResult GetAccountBalanceByDate(Guid accountId, DateRange dateRange)
+    [HttpPost("{accountId}/ByDate")]
+    public IActionResult GetAccountBalanceByDate(Guid accountId, DateRangeModel dateRangeModel)
     {
         Account? account = _accountRepository.FindByExternalIdOrNull(accountId);
         if (account == null)
@@ -42,7 +43,7 @@ public class AccountBalanceController : ControllerBase
             return NotFound();
         }
         IEnumerable<AccountBalanceByDate> accountBalances =
-            _accountBalanceService.GetAccountBalancesByDate(account, dateRange);
+            _accountBalanceService.GetAccountBalancesByDate(account, dateRangeModel.GetAsDateRange());
         return Ok(accountBalances.Select(accountBalance => new AccountBalanceByDateModel(accountBalance)));
     }
 }

@@ -71,7 +71,7 @@ public class TransactionModel
 /// </summary>
 public class TransactionAccountDetailModel
 {
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.TransactionBalanceEvent.Account"/>
+    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.BalanceEventBase.Account"/>
     public AccountModel Account { get; init; }
 
     /// <summary>
