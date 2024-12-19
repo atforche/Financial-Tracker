@@ -57,6 +57,8 @@ public class AccountingPeriodRepository : AggregateRepositoryBase<AccountingPeri
                     .SelectMany(transaction => transaction.TransactionBalanceEvents)
                     .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()) ||
                 accountingPeriod.FundConversions
+                    .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()) ||
+                accountingPeriod.ChangeInValues
                     .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()))
             .ToList();
     }

@@ -64,6 +64,20 @@ public interface IAccountingPeriodService
         decimal amount);
 
     /// <summary>
+    /// Adds a Change In Value to the provided Accounting Period
+    /// </summary>
+    /// <param name="accountingPeriod">Accounting Period to add a Change In Value to</param>
+    /// <param name="eventDate">Event Date for this Change In Value</param>
+    /// <param name="account">Account for this Change In Value</param>
+    /// <param name="accountingEntry">Accounting Entry for this Change In Value</param>
+    /// <returns>The newly created Change In Value</returns>
+    ChangeInValue AddChangeInValue(
+        AccountingPeriod accountingPeriod,
+        DateOnly eventDate,
+        Account account,
+        FundAmount accountingEntry);
+
+    /// <summary>
     /// Closes out the provided Accounting Period
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period to be closed</param>

@@ -35,7 +35,7 @@ public class FundConversionUploadModel : BalanceEventUploadModel
     public required decimal Amount { get; init; }
 
     /// <summary>
-    /// Gets a Create Fund Conversion MOdel corresponding to this Fund Conversion Upload Model
+    /// Gets a Create Fund Conversion Model corresponding to this Fund Conversion Upload Model
     /// </summary>
     /// <param name="existingFunds">List of existing Funds</param>
     /// <param name="existingAccounts">List of existing Accounts</param>

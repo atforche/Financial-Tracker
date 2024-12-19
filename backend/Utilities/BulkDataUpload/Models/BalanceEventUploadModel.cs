@@ -8,6 +8,7 @@ namespace Utilities.BulkDataUpload.Models;
 [JsonDerivedType(typeof(TransactionAddedUploadModel), typeDiscriminator: "TransactionAdded")]
 [JsonDerivedType(typeof(TransactionPostedUploadModel), typeDiscriminator: "TransactionPosted")]
 [JsonDerivedType(typeof(FundConversionUploadModel), typeDiscriminator: "FundConversion")]
+[JsonDerivedType(typeof(ChangeInValueUploadModel), typeDiscriminator: "ChangeInValue")]
 public abstract class BalanceEventUploadModel
 {
     /// <summary>

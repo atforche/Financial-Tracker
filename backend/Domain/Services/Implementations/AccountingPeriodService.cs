@@ -76,6 +76,15 @@ public class AccountingPeriodService : IAccountingPeriodService
             toFund,
             amount);
 
+    /// <inheritdoc/>
+    public ChangeInValue AddChangeInValue(AccountingPeriod accountingPeriod,
+        DateOnly eventDate,
+        Account account,
+        FundAmount accountingEntry) =>
+        accountingPeriod.AddChangeInValue(eventDate,
+            GetCreateBalanceEventAccountInfo(account, eventDate),
+            accountingEntry);
+
 
     /// <inheritdoc/>
     public void ClosePeriod(AccountingPeriod accountingPeriod)
