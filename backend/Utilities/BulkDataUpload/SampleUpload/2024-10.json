@@ -73,6 +73,17 @@
             "FromFundName": "Spend",
             "ToFundName": "Investment",
             "Amount": 500.00
+        },
+        {
+            "$type": "ChangeInValue",
+            "Id": "CA81C796-597F-4C06-A5CB-2E80A6C1ABD9",
+            "AccountName": "Test Checking",
+            "EventDate": "2024-10-15",
+            "AccountingEntry":
+            {
+                "FundName": "Spend",
+                "Amount": -25.00
+            }
         }
     ]
 }

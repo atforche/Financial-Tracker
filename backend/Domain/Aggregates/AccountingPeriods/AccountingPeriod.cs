@@ -14,6 +14,7 @@ public class AccountingPeriod : EntityBase
 {
     private readonly List<Transaction> _transactions = [];
     private readonly List<FundConversion> _fundConversions = [];
+    private readonly List<ChangeInValue> _changeInValues = [];
     private readonly List<AccountBalanceCheckpoint> _accountBalanceCheckpoints = [];
 
     /// <summary>
@@ -50,6 +51,11 @@ public class AccountingPeriod : EntityBase
     /// Fund Conversions for this Accounting Period
     /// </summary>
     public IReadOnlyCollection<FundConversion> FundConversions => _fundConversions;
+
+    /// <summary>
+    /// Change In Values for this Accounting Period
+    /// </summary>
+    public IReadOnlyCollection<ChangeInValue> ChangeInValues => _changeInValues;
 
     /// <summary>
     /// Account Balance Checkpoints for this Accounting Period
@@ -119,6 +125,25 @@ public class AccountingPeriod : EntityBase
     }
 
     /// <summary>
+    /// Adds a new Change In Value to this Accounting Period
+    /// </summary>
+    /// <param name="date">Date for this Change In Value</param>
+    /// <param name="accountInfo">Account for this Change In Value</param>
+    /// <param name="accountingEntry">Accounting Entry for this Change In Value</param>
+    /// <returns>The newly created Change In Value</returns>
+    internal ChangeInValue AddChangeInValue(DateOnly date,
+        CreateBalanceEventAccountInfo accountInfo,
+        FundAmount accountingEntry)
+    {
+        var newChangeInValue = new ChangeInValue(this,
+            accountInfo,
+            date,
+            accountingEntry);
+        _changeInValues.Add(newChangeInValue);
+        return newChangeInValue;
+    }
+
+    /// <summary>
     /// Closes this Accounting Period
     /// </summary>
     /// <param name="otherOpenAccountingPeriods">List of the Period Start Dates for any other open Accounting Periods</param>
@@ -138,6 +163,7 @@ public class AccountingPeriod : EntityBase
     internal IEnumerable<BalanceEventBase> GetAllBalanceEvents() =>
         Transactions.SelectMany(transaction => (IEnumerable<BalanceEventBase>)transaction.TransactionBalanceEvents)
             .Concat((IEnumerable<BalanceEventBase>)FundConversions)
+            .Concat((IEnumerable<BalanceEventBase>)ChangeInValues)
             .OrderBy(balanceEvent => balanceEvent.EventDate)
             .ThenBy(balanceEvent => balanceEvent.EventSequence);
 

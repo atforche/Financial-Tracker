@@ -58,7 +58,9 @@ public class MockAccountingPeriodRepository : IAccountingPeriodRepository
                 .SelectMany(transaction => transaction.TransactionBalanceEvents)
                 .Any(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate)) ||
             accountingPeriod.FundConversions
-                    .Any(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate)))
+                .Any(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate)) ||
+            accountingPeriod.ChangeInValues
+                .Any(changeInValue => dateRange.IsInRange(changeInValue.EventDate)))
         .ToList();
 
     /// <inheritdoc/>

@@ -25,6 +25,11 @@ internal sealed class AccountingPeriodEntityConfiguration : EntityConfigurationB
             .HasForeignKey("AccountingPeriodId");
         builder.Navigation(accountingPeriod => accountingPeriod.FundConversions).AutoInclude();
 
+        builder.HasMany(accountingPeriod => accountingPeriod.ChangeInValues)
+            .WithOne(changeInValue => changeInValue.AccountingPeriod)
+            .HasForeignKey("AccountingPeriodId");
+        builder.Navigation(accountingPeriod => accountingPeriod.ChangeInValues).AutoInclude();
+
         builder.HasMany(accountingPeriod => accountingPeriod.AccountBalanceCheckpoints)
             .WithOne(accountingBalanceCheckpoint => accountingBalanceCheckpoint.AccountingPeriod)
             .HasForeignKey("AccountingPeriodId");
@@ -66,6 +71,22 @@ internal sealed class FundConversionEntityConfiguration : EntityConfigurationBas
 
         builder.HasOne(fundConversion => fundConversion.ToFund).WithMany().HasForeignKey("ToFundId");
         builder.Navigation(fundConversion => fundConversion.ToFund).IsRequired().AutoInclude();
+    }
+}
+
+/// <summary>
+/// EF Core configuration for the Change In Value entity
+/// </summary>
+internal sealed class ChangeInValueEntityConfiguration : EntityConfigurationBase<ChangeInValue>
+{
+    /// <inheritdoc/>
+    protected override void ConfigurePrivate(EntityTypeBuilder<ChangeInValue> builder)
+    {
+        builder.HasOne(changeInValue => changeInValue.Account).WithMany().HasForeignKey("AccountId");
+        builder.Navigation(changeInValue => changeInValue.Account).IsRequired().AutoInclude();
+
+        builder.HasOne(changeInValue => changeInValue.AccountingEntry).WithOne().HasForeignKey<ChangeInValue>("FundAmountId");
+        builder.Navigation(changeInValue => changeInValue.AccountingEntry).IsRequired().AutoInclude();
     }
 }
 

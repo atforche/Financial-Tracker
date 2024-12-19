@@ -96,6 +96,22 @@ public class AccountingPeriodController : ControllerBase
     }
 
     /// <summary>
+    /// Retrieves all the Change In Values for the provided Accounting Period
+    /// </summary>
+    /// <param name="accountingPeriodId">ID of the Accounting Period</param>
+    /// <returns>A collection of Change In Values that fall within the provided Accounting Period</returns>
+    [HttpGet("{accountingPeriodId}/ChangeInValues")]
+    public IActionResult GetChangeInValues(Guid accountingPeriodId)
+    {
+        AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindByExternalIdOrNull(accountingPeriodId);
+        if (accountingPeriod == null)
+        {
+            return NotFound();
+        }
+        return Ok(accountingPeriod.ChangeInValues.Select(changeInValue => new ChangeInValueModel(changeInValue)));
+    }
+
+    /// <summary>
     /// Creates a new Accounting Period with the provided properties
     /// </summary>
     /// <param name="createAccountingPeriodModel">Request to create an Accounting Period</param>
@@ -195,7 +211,7 @@ public class AccountingPeriodController : ControllerBase
     /// <param name="accountingPeriodId">ID of the Accounting Period</param>
     /// <param name="createFundConversionModel">Request to create a Fund Conversion</param>
     /// <returns>The created Fund Conversion</returns>
-    [HttpPost("{accountingPeriodId}/FundConversion")]
+    [HttpPost("{accountingPeriodId}/FundConversions")]
     public async Task<IActionResult> CreateFundConversionAsync(Guid accountingPeriodId, CreateFundConversionModel createFundConversionModel)
     {
         AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindByExternalIdOrNull(accountingPeriodId);
@@ -226,6 +242,43 @@ public class AccountingPeriodController : ControllerBase
             createFundConversionModel.Amount);
         await _unitOfWork.SaveChangesAsync();
         return Ok(new FundConversionModel(newFundConversion));
+    }
+
+    /// <summary>
+    /// Creates a new Change In Value with the provided properties
+    /// </summary>
+    /// <param name="accountingPeriodId">ID of the Accounting Period</param>
+    /// <param name="createChangeInValueModel">Request to create a Change In Value</param>
+    /// <returns>The created Change In Value</returns>
+    [HttpPost("{accountingPeriodId}/ChangeInValues")]
+    public async Task<IActionResult> CreateChangeInValueAsync(Guid accountingPeriodId, CreateChangeInValueModel createChangeInValueModel)
+    {
+        AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindByExternalIdOrNull(accountingPeriodId);
+        if (accountingPeriod == null)
+        {
+            return NotFound();
+        }
+        Account? account = _accountRepository.FindByExternalIdOrNull(createChangeInValueModel.AccountId);
+        if (account == null)
+        {
+            return NotFound();
+        }
+        Fund? fund = _fundRepository.FindByExternalIdOrNull(createChangeInValueModel.AccountingEntry.FundId);
+        if (fund == null)
+        {
+            return NotFound();
+        }
+        Dictionary<Guid, Fund> funds = _fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
+        ChangeInValue newChangeInValue = _accountingPeriodService.AddChangeInValue(accountingPeriod,
+            createChangeInValueModel.EventDate,
+            account,
+            new FundAmount
+            {
+                Fund = fund,
+                Amount = createChangeInValueModel.AccountingEntry.Amount
+            });
+        await _unitOfWork.SaveChangesAsync();
+        return Ok(new ChangeInValueModel(newChangeInValue));
     }
 
     /// <summary>

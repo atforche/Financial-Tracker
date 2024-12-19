@@ -57,8 +57,15 @@ public class AccountingPeriodUploader : DataUploader<AccountingPeriodUploadModel
             {
                 Console.WriteLine($"Creating Fund Conversion: {fundConversionUploadModel.Id}");
                 await PostAsync<CreateFundConversionModel, FundConversionModel>(
-                    $"/accountingPeriods/{accountingPeriod.Id}/FundConversion",
+                    $"/accountingPeriods/{accountingPeriod.Id}/FundConversions",
                     fundConversionUploadModel.GetAsCreateFundConversionModel(_funds, _accounts));
+            }
+            else if (balanceEventUploadModel is ChangeInValueUploadModel changeInValueUploadModel)
+            {
+                Console.WriteLine($"Creating Change In Value: {changeInValueUploadModel.Id}");
+                await PostAsync<CreateChangeInValueModel, ChangeInValueModel>(
+                    $"/accountingPeriods/{accountingPeriod.Id}/ChangeInValues",
+                    changeInValueUploadModel.GetAsCreateChangeInValueModel(_funds, _accounts));
             }
             else
             {

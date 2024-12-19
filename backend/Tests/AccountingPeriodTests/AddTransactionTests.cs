@@ -766,8 +766,7 @@ public class AddTransactionTests : UnitTestBase
     }
 
     /// <summary>
-    /// Tests that adding a Transaction that would cause an existing Balance Event to make an Accounts overall balance
-    /// negative will fail
+    /// Tests that adding a Transaction that would invalidate a future Transaction will fail
     /// </summary>
     [Fact]
     public void TestTransactionThatInvalidatesFutureTransaction()
@@ -830,8 +829,8 @@ public class AddTransactionTests : UnitTestBase
     }
 
     /// <summary>
-    /// Tests that adding a Transaction that would cause an Account's balance to go negative within an Accounting
-    /// Period will fail
+    /// Tests that adding a Transaction that causes a future Transaction to invalidate an Account's balance
+    /// within the Accounting Period will fail
     /// </summary>
     [Fact]
     public void TestTransactionThatInvalidatesFutureTransactionWithinAccountingPeriod()
@@ -933,6 +932,33 @@ public class AddTransactionTests : UnitTestBase
             _testFund,
             toFund,
             100.00m);
+        Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.AddTransaction(_testAccountingPeriod,
+            new DateOnly(2024, 11, 10),
+            _testAccount,
+            null,
+            [
+                new FundAmount
+                {
+                    Fund = _testFund,
+                    Amount = 2450.00m
+                }
+            ]));
+    }
+
+    /// <summary>
+    /// Tests that adding a Transaction that would invalidate a future Change In Value will fail
+    /// </summary>
+    [Fact]
+    public void TestTransactionThatInvalidatesFutureChangeInValue()
+    {
+        ChangeInValue changeInValue = _accountingPeriodService.AddChangeInValue(_testAccountingPeriod,
+            new DateOnly(2024, 11, 15),
+            _testAccount,
+            new FundAmount
+            {
+                Fund = _testFund,
+                Amount = -100.00m,
+            });
         Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.AddTransaction(_testAccountingPeriod,
             new DateOnly(2024, 11, 10),
             _testAccount,

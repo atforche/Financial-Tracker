@@ -211,6 +211,42 @@ namespace Data.Migrations
                         principalColumn: "InternalId");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ChangeInValue",
+                columns: table => new
+                {
+                    InternalId = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    FundAmountId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ExternalId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AccountingPeriodId = table.Column<long>(type: "INTEGER", nullable: false),
+                    AccountId = table.Column<long>(type: "INTEGER", nullable: false),
+                    EventDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    EventSequence = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChangeInValue", x => x.InternalId);
+                    table.ForeignKey(
+                        name: "FK_ChangeInValue_AccountingPeriods_AccountingPeriodId",
+                        column: x => x.AccountingPeriodId,
+                        principalTable: "AccountingPeriods",
+                        principalColumn: "InternalId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChangeInValue_Accounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "InternalId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChangeInValue_FundAmount_FundAmountId",
+                        column: x => x.FundAmountId,
+                        principalTable: "FundAmount",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AccountBalanceCheckpoint_AccountId",
                 table: "AccountBalanceCheckpoint",
@@ -249,6 +285,28 @@ namespace Data.Migrations
                 name: "IX_Accounts_Name",
                 table: "Accounts",
                 column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChangeInValue_AccountId",
+                table: "ChangeInValue",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChangeInValue_AccountingPeriodId",
+                table: "ChangeInValue",
+                column: "AccountingPeriodId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChangeInValue_ExternalId",
+                table: "ChangeInValue",
+                column: "ExternalId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChangeInValue_FundAmountId",
+                table: "ChangeInValue",
+                column: "FundAmountId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -342,13 +400,16 @@ namespace Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "FundAmount");
+                name: "ChangeInValue");
 
             migrationBuilder.DropTable(
                 name: "FundConversion");
 
             migrationBuilder.DropTable(
                 name: "TransactionBalanceEvent");
+
+            migrationBuilder.DropTable(
+                name: "FundAmount");
 
             migrationBuilder.DropTable(
                 name: "AccountBalanceCheckpoint");
