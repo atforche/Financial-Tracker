@@ -1,12 +1,12 @@
-using RestApi.Models.Account;
-using RestApi.Models.AccountingPeriod;
+using Rest.Models.Account;
+using Rest.Models.AccountingPeriod;
 
 namespace Utilities.BulkDataUpload.Models;
 
 /// <summary>
 /// Bulk data upload model representing a Transaction Posted Balance Event
 /// </summary>
-public class TransactionPostedUploadModel : BalanceEventUploadModel
+internal sealed class TransactionPostedUploadModel : BalanceEventUploadModel
 {
     /// <summary>
     /// Transaction Upload ID for this Transaction Posted Balance Event

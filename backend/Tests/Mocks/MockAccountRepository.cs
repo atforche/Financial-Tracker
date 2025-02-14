@@ -5,7 +5,7 @@ namespace Tests.Mocks;
 /// <summary>
 /// Mock repository of Accounts for testing
 /// </summary>
-public class MockAccountRepository : IAccountRepository
+internal sealed class MockAccountRepository : IAccountRepository
 {
     private readonly List<Account> _accounts;
 

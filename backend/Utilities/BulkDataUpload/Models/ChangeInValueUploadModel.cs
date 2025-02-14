@@ -1,13 +1,13 @@
-using RestApi.Models.Account;
-using RestApi.Models.AccountingPeriod;
-using RestApi.Models.Fund;
+using Rest.Models.Account;
+using Rest.Models.AccountingPeriod;
+using Rest.Models.Fund;
 
 namespace Utilities.BulkDataUpload.Models;
 
 /// <summary>
 /// Bulk data upload model representing a Change In Value Balance Event
 /// </summary>
-public class ChangeInValueUploadModel : BalanceEventUploadModel
+internal sealed class ChangeInValueUploadModel : BalanceEventUploadModel
 {
     /// <summary>
     /// Account Name for this Change In Value Balance Event

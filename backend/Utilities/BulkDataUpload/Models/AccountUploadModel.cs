@@ -1,13 +1,13 @@
 using Domain.Aggregates.Accounts;
-using RestApi.Models.Account;
-using RestApi.Models.Fund;
+using Rest.Models.Account;
+using Rest.Models.Fund;
 
 namespace Utilities.BulkDataUpload.Models;
 
 /// <summary>
 /// Bulk data upload model representing an Account
 /// </summary>
-public class AccountUploadModel
+internal sealed class AccountUploadModel
 {
     /// <summary>
     /// Name for this Account

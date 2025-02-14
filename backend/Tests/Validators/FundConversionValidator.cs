@@ -77,7 +77,6 @@ internal sealed record FundConversionState
 /// <summary>
 /// Comparer class that compares Fund Conversions and Fund Conversion States
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
 internal sealed class FundConversionComparer : EntityComparerBase,
     IComparer<FundConversion>,
     IComparer<FundConversionState>

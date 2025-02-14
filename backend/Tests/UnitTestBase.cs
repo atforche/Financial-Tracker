@@ -17,7 +17,7 @@ public abstract class UnitTestBase
 
     /// <summary>
     /// Constructs a new instance of this class.
-    /// This contructor is run again before each individual test in this test class.
+    /// This constructor is run again before each individual test in this test class.
     /// </summary>
     protected UnitTestBase()
     {

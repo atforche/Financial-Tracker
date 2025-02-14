@@ -59,7 +59,6 @@ internal sealed record AccountBalanceByDateState
 /// <summary>
 /// Comparer class that compares Account Balance by Dates
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
 internal sealed class AccountBalanceByDateComparer : EntityComparerBase,
     IComparer<AccountBalanceByDate>,
     IComparer<AccountBalanceByDateState>

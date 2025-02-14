@@ -55,7 +55,6 @@ internal sealed record AccountBalanceCheckpointState
 /// <summary>
 /// Comparer class that compares Account Balance Checkpoints and Account Balance Checkpoint States
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
 internal sealed class AccountBalanceCheckpointComparer : EntityComparerBase,
     IComparer<AccountBalanceCheckpoint>,
     IComparer<AccountBalanceCheckpointState>

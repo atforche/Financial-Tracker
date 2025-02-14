@@ -71,7 +71,6 @@ internal sealed record AccountingPeriodState
 /// <summary>
 /// Comparer class that compares Accounting Periods and Accounting Period States
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
 internal sealed class AccountingPeriodComparer : EntityComparerBase, IComparer<AccountingPeriod>, IComparer<AccountingPeriodState>
 {
     /// <inheritdoc/>

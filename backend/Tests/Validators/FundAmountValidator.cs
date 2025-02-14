@@ -52,7 +52,6 @@ internal sealed record FundAmountState
 /// <summary>
 /// Comparer class that compares Fund Amounts and Fund Amount States
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
 internal sealed class FundAmountComparer : EntityComparerBase, IComparer<FundAmount>, IComparer<FundAmountState>
 {
     /// <inheritdoc/>

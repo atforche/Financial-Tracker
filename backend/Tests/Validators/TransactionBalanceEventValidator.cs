@@ -73,7 +73,6 @@ internal sealed record TransactionBalanceEventState
 /// <summary>
 /// Comparer class that compares Transaction Balance Events and Transaction Balance Event States
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
 internal sealed class TransactionBalanceEventComparer : EntityComparerBase,
     IComparer<TransactionBalanceEvent>,
     IComparer<TransactionBalanceEventState>

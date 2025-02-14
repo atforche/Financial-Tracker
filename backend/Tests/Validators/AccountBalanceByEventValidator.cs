@@ -83,7 +83,6 @@ internal sealed record AccountBalanceByEventState
 /// <summary>
 /// Comparer class that compares Account Balance by Events
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
 internal sealed class AccountBalanceByEventComparer : EntityComparerBase,
     IComparer<AccountBalanceByEvent>,
     IComparer<AccountBalanceByEventState>

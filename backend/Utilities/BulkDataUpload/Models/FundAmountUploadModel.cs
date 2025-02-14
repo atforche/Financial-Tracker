@@ -1,12 +1,12 @@
-using RestApi.Models.Fund;
-using RestApi.Models.FundAmount;
+using Rest.Models.Fund;
+using Rest.Models.FundAmount;
 
 namespace Utilities.BulkDataUpload.Models;
 
 /// <summary>
-/// Buld data upload model representing a Fund Amount
+/// Bulk data upload model representing a Fund Amount
 /// </summary>
-public class FundAmountUploadModel
+internal sealed class FundAmountUploadModel
 {
     /// <summary>
     /// Fund Name for this Fund Amount

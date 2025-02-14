@@ -6,7 +6,7 @@ namespace Tests.Mocks;
 /// <summary>
 /// Mock repository of Accounting Periods for testing
 /// </summary>
-public class MockAccountingPeriodRepository : IAccountingPeriodRepository
+internal sealed class MockAccountingPeriodRepository : IAccountingPeriodRepository
 {
     private readonly List<AccountingPeriod> _accountingPeriods;
 

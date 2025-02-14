@@ -59,7 +59,6 @@ internal sealed record TransactionState
 /// <summary>
 /// Comparer class that compares Transactions and Transaction States
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
 internal sealed class TransactionComparer : EntityComparerBase, IComparer<Transaction>, IComparer<TransactionState>
 {
     /// <inheritdoc/>

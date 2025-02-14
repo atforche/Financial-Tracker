@@ -67,7 +67,6 @@ internal sealed record ChangeInValueState
 /// <summary>
 /// Comparer class that compares Fund Conversions and Fund Conversion States
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
 internal sealed class ChangeInValueComparer : EntityComparerBase,
     IComparer<ChangeInValue>,
     IComparer<ChangeInValueState>

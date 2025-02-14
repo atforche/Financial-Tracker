@@ -6,10 +6,10 @@ namespace Utilities;
 /// <summary>
 /// Main entry point for the Utilities project
 /// </summary>
-public static class Program
+internal static class Program
 {
     /// <summary>
-    /// Parses the command line arguments and runs the appriopriate utility.
+    /// Parses the command line arguments and runs the appropriate utility.
     /// </summary>
     /// <param name="args">List of command line arguments</param>
     /// <returns>The return status code of the application</returns>

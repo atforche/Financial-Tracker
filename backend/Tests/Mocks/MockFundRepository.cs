@@ -5,7 +5,7 @@ namespace Tests.Mocks;
 /// <summary>
 /// Mock repository of Funds for testing
 /// </summary>
-public class MockFundRepository : IFundRepository
+internal sealed class MockFundRepository : IFundRepository
 {
     private readonly List<Fund> _funds;
 

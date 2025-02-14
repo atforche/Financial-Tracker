@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using RestApi;
+using Rest.Models;
 using Utilities.BulkDataUpload.Models;
 using Utilities.BulkDataUpload.Uploaders;
 
@@ -9,7 +9,7 @@ namespace Utilities.BulkDataUpload;
 /// <summary>
 /// Utility class that can bulk upload an entire accounting period's worth of data at once
 /// </summary>
-public partial class BulkDataUploadUtility
+internal sealed class BulkDataUploadUtility
 {
     private const string SetupFileName = "Setup.json";
     private string SetupFilePath => Path.Combine(_jsonFolderPath, SetupFileName);

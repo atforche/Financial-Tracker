@@ -2,14 +2,14 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using RestApi;
+using Rest.Models;
 
 namespace Utilities.BulkDataUpload.Uploaders;
 
 /// <summary>
 /// Base class responsible for uploading data to the REST API
 /// </summary>
-public abstract class DataUploader<T> : IDisposable
+internal abstract class DataUploader<T> : IDisposable
 {
     private readonly HttpClient _client;
     private readonly UriBuilder _uriBuilder;

@@ -1,6 +1,6 @@
-using RestApi.Models.Account;
-using RestApi.Models.AccountingPeriod;
-using RestApi.Models.Fund;
+using Rest.Models.Account;
+using Rest.Models.AccountingPeriod;
+using Rest.Models.Fund;
 using Utilities.BulkDataUpload.Models;
 
 namespace Utilities.BulkDataUpload.Uploaders;
@@ -8,7 +8,7 @@ namespace Utilities.BulkDataUpload.Uploaders;
 /// <summary>
 /// Bulk data uploader that uploads an Accounting Period to the REST API
 /// </summary>
-public class AccountingPeriodUploader : DataUploader<AccountingPeriodUploadModel>
+internal sealed class AccountingPeriodUploader : DataUploader<AccountingPeriodUploadModel>
 {
     private List<FundModel>? _funds;
     private List<AccountModel>? _accounts;
