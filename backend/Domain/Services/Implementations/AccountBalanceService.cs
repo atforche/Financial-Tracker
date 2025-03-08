@@ -70,7 +70,7 @@ public class AccountBalanceService : IAccountBalanceService
         if (accountingPeriod.AccountBalanceCheckpoints.Count != 0)
         {
             startingBalance = accountingPeriod.AccountBalanceCheckpoints
-                .SingleOrDefault(balanceCheckpoint => balanceCheckpoint.Account == account)?.GetAsAccountBalance();
+                .SingleOrDefault(balanceCheckpoint => balanceCheckpoint.Account == account)?.ConvertToAccountBalance();
         }
         else if (pastAccountingPeriod != null)
         {
@@ -89,7 +89,7 @@ public class AccountBalanceService : IAccountBalanceService
             futureAccountingPeriod.AccountBalanceCheckpoints.Count > 0)
         {
             endingBalance = futureAccountingPeriod.AccountBalanceCheckpoints
-                .Single(balanceCheckpoint => balanceCheckpoint.Account == account).GetAsAccountBalance();
+                .Single(balanceCheckpoint => balanceCheckpoint.Account == account).ConvertToAccountBalance();
             return new AccountBalanceByAccountingPeriod(accountingPeriod, startingBalance, endingBalance);
         }
         // Otherwise, calculate the ending balance by applying all the Balance Events currently in the Accounting Period
@@ -118,7 +118,7 @@ public class AccountBalanceService : IAccountBalanceService
         }
         AccountBalance accountBalance = checkpointPeriod.AccountBalanceCheckpoints
             .Single(checkpoint => checkpoint.Account == account)
-            .GetAsAccountBalance();
+            .ConvertToAccountBalance();
 
         // Determine all of the Balance Events from the past Accounting Period that fall in the checkpoint Accounting Period
         AccountingPeriod? pastAccountingPeriod = _accountingPeriodRepository.FindByDateOrNull(checkpointPeriod.PeriodStartDate.AddMonths(-1));

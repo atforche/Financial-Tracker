@@ -43,7 +43,7 @@ internal sealed class AccountBalanceController : ControllerBase
             return NotFound();
         }
         IEnumerable<AccountBalanceByDate> accountBalances =
-            _accountBalanceService.GetAccountBalancesByDate(account, dateRangeModel.GetAsDateRange());
+            _accountBalanceService.GetAccountBalancesByDate(account, dateRangeModel.ConvertToDateRange());
         return Ok(accountBalances.Select(accountBalance => new AccountBalanceByDateModel(accountBalance)));
     }
 }

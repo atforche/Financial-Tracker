@@ -33,7 +33,7 @@ public sealed class AccountBalanceCheckpoint : EntityBase
     /// Gets this Account Balance Checkpoint as an Account Balance
     /// </summary>
     /// <returns>This Account Balance Checkpoint as an Account Balance</returns>
-    public AccountBalance GetAsAccountBalance() => new AccountBalance(Account, FundBalances, []);
+    public AccountBalance ConvertToAccountBalance() => new AccountBalance(Account, FundBalances, []);
 
     /// <summary>
     /// Constructs a new instance of this class
