@@ -9,8 +9,6 @@ namespace Data.Configuration;
 internal sealed class FundEntityConfiguration : EntityConfigurationBase<Fund>
 {
     /// <inheritdoc/>
-    protected override void ConfigurePrivate(EntityTypeBuilder<Fund> builder)
-    {
+    protected override void ConfigurePrivate(EntityTypeBuilder<Fund> builder) =>
         builder.HasIndex(fund => fund.Name).IsUnique();
-    }
 }

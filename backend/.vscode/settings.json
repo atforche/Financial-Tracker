@@ -6,5 +6,8 @@
         "Swashbuckle",
         "Uploaders",
         "xunit"
+    ],
+    "editor.rulers": [
+        120
     ]
 }

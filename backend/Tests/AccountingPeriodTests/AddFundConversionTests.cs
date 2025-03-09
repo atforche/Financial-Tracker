@@ -170,8 +170,7 @@ public class AddFundConversionTests : UnitTestBase
     /// Tests that adding a Fund Conversion with an invalid Fund will fail
     /// </summary>
     [Fact]
-    public void TestWithInvalidFunds()
-    {
+    public void TestWithInvalidFunds() =>
         // Test that having the same from Fund and to Fund will fail
         Assert.Throws<InvalidOperationException>(() =>
             _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
@@ -180,7 +179,6 @@ public class AddFundConversionTests : UnitTestBase
                 _testFromFund,
                 _testFromFund,
                 100.00m));
-    }
 
     /// <summary>
     /// Tests that adding a Fund Conversion with an invalid amount will fail

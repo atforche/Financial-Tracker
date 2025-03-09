@@ -182,8 +182,7 @@ public class AddChangeInValueTests : UnitTestBase
     /// Test that adding a Change In Value with an invalid amount will fail
     /// </summary>
     [Fact]
-    public void TestWithInvalidAmount()
-    {
+    public void TestWithInvalidAmount() =>
         // Tests that having an amount of zero will fail
         Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.AddChangeInValue(_testAccountingPeriod,
             new DateOnly(2024, 11, 15),
@@ -193,7 +192,6 @@ public class AddChangeInValueTests : UnitTestBase
                 Fund = _testFund,
                 Amount = 0.00m,
             }));
-    }
 
     /// <summary>
     /// Tests that adding a Change In Value affects the Account's balances as expected
