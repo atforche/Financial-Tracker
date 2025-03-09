@@ -338,7 +338,6 @@ public class AddChangeInValueTests : UnitTestBase
                 ]);
     }
 
-
     /// <summary>
     /// Tests that adding a Change In Value that invalidates a future Change In Value will fail
     /// </summary>

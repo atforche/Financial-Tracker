@@ -24,7 +24,6 @@ public class AddTransactionTests : UnitTestBase
     private readonly AccountingPeriod _testAccountingPeriod;
     private readonly Account _testAccount;
 
-
     /// <summary>
     /// Constructs a new instance of this class.
     /// This constructor is run again before each individual test in this test class.

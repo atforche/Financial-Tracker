@@ -84,7 +84,6 @@ public class AccountingPeriodService : IAccountingPeriodService
             GetCreateBalanceEventAccountInfo(account, eventDate),
             accountingEntry);
 
-
     /// <inheritdoc/>
     public void ClosePeriod(AccountingPeriod accountingPeriod)
     {
