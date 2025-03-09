@@ -162,8 +162,8 @@ public class AccountingPeriod : EntityBase
     /// <returns>The list of all Balance Events for this Accounting Period</returns>
     internal IEnumerable<BalanceEventBase> GetAllBalanceEvents() =>
         Transactions.SelectMany(transaction => (IEnumerable<BalanceEventBase>)transaction.TransactionBalanceEvents)
-            .Concat((IEnumerable<BalanceEventBase>)FundConversions)
-            .Concat((IEnumerable<BalanceEventBase>)ChangeInValues)
+            .Concat(FundConversions)
+            .Concat(ChangeInValues)
             .OrderBy(balanceEvent => balanceEvent.EventDate)
             .ThenBy(balanceEvent => balanceEvent.EventSequence);
 
