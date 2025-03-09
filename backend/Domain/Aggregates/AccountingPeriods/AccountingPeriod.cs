@@ -210,11 +210,11 @@ public class AccountingPeriod : EntityBase
     /// <param name="existingAccountingPeriodStartDates">Period Start Dates for any existing Accounting Periods</param>
     private void ValidateNewAccountingPeriod(List<DateOnly> existingAccountingPeriodStartDates)
     {
-        if (Year < 2020 || Year > 2050)
+        if (Year is < 2020 or > 2050)
         {
             throw new InvalidOperationException();
         }
-        if (Month <= 0 || Month > 12)
+        if (Month is <= 0 or > 12)
         {
             throw new InvalidOperationException();
         }
