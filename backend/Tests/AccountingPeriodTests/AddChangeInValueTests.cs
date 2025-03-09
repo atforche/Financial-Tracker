@@ -450,5 +450,4 @@ public class AddChangeInValueTests : UnitTestBase
                 Amount = -2450.00m,
             }));
     }
-
 }
