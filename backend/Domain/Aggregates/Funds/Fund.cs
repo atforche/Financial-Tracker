@@ -18,7 +18,7 @@ public class Fund : EntityBase
     public string Name { get; private set; }
 
     private Fund()
-        : base(new EntityId(default(long), Guid.NewGuid()))
+        : base(new EntityId(default, Guid.NewGuid()))
     {
         Name = "";
     }

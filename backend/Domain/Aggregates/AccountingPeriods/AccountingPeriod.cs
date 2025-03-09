@@ -200,7 +200,7 @@ public class AccountingPeriod : EntityBase
     /// Constructs a new default instance of this class
     /// </summary>
     private AccountingPeriod()
-        : base(new EntityId(default(long), Guid.NewGuid()))
+        : base(new EntityId(default, Guid.NewGuid()))
     {
     }
 

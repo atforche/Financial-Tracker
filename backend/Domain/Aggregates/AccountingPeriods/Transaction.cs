@@ -101,7 +101,7 @@ public class Transaction : EntityBase
     /// Constructs a new default instance of this class
     /// </summary>
     private Transaction()
-        : base(new EntityId(default(long), Guid.NewGuid()))
+        : base(new EntityId(default, Guid.NewGuid()))
     {
         AccountingPeriod = null!;
         _accountingEntries = [];

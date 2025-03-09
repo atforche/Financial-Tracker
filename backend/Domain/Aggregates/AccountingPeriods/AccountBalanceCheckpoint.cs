@@ -42,7 +42,7 @@ public sealed class AccountBalanceCheckpoint : EntityBase
     /// <param name="account">Account for this Account Balance Checkpoint</param>
     /// <param name="fundBalances">Collection of Fund Balances for this Account Balance Checkpoint</param>
     internal AccountBalanceCheckpoint(AccountingPeriod accountingPeriod, Account account, IEnumerable<FundAmount> fundBalances)
-        : base(new EntityId(default(long), Guid.NewGuid()))
+        : base(new EntityId(default, Guid.NewGuid()))
     {
         AccountingPeriod = accountingPeriod;
         Account = account;
@@ -54,7 +54,7 @@ public sealed class AccountBalanceCheckpoint : EntityBase
     /// Constructs a new default instance of this class
     /// </summary>
     private AccountBalanceCheckpoint()
-        : base(new EntityId(default(long), Guid.NewGuid()))
+        : base(new EntityId(default, Guid.NewGuid()))
     {
         AccountingPeriod = null!;
         Account = null!;

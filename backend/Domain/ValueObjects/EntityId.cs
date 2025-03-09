@@ -25,7 +25,7 @@ public class EntityId : IEquatable<EntityId>
         {
             return false;
         }
-        if (InternalId == default(long) || other.InternalId == default(long))
+        if (InternalId == default || other.InternalId == default)
         {
             return ExternalId == other.ExternalId;
         }

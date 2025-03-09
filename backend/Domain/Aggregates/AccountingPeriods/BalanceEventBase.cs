@@ -78,7 +78,7 @@ public abstract class BalanceEventBase : EntityBase
     /// Constructs a new default instance of this class
     /// </summary>
     protected BalanceEventBase()
-        : base(new EntityId(default(long), Guid.NewGuid()))
+        : base(new EntityId(default, Guid.NewGuid()))
     {
         Account = null!;
     }

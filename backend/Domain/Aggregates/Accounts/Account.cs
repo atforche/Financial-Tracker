@@ -26,7 +26,7 @@ public class Account : EntityBase
     /// <param name="name">Name for this Account</param>
     /// <param name="type">Type for this Account</param>
     internal Account(string name, AccountType type)
-        : base(new EntityId(default(long), Guid.NewGuid()))
+        : base(new EntityId(default, Guid.NewGuid()))
     {
         Name = name;
         Type = type;
@@ -37,7 +37,7 @@ public class Account : EntityBase
     /// Constructs a new default instance of this class
     /// </summary>
     private Account()
-        : base(new EntityId(default(long), Guid.NewGuid()))
+        : base(new EntityId(default, Guid.NewGuid()))
     {
         Name = "";
     }
