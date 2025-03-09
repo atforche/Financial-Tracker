@@ -128,11 +128,11 @@ public class FundConversion : BalanceEventBase
         var fundBalances = currentBalance.FundBalances.ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
         if (!fundBalances.TryAdd(FromFund, fromFundFactor * Amount))
         {
-            fundBalances[FromFund] = fundBalances[FromFund] + fromFundFactor * Amount;
+            fundBalances[FromFund] = fundBalances[FromFund] + (fromFundFactor * Amount);
         }
         if (!fundBalances.TryAdd(ToFund, toFundFactor * Amount))
         {
-            fundBalances[ToFund] = fundBalances[ToFund] + toFundFactor * Amount;
+            fundBalances[ToFund] = fundBalances[ToFund] + (toFundFactor * Amount);
         }
         return new AccountBalance(currentBalance.Account,
             fundBalances.Select(pair => new FundAmount

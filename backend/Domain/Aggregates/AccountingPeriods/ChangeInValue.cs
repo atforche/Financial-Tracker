@@ -103,7 +103,7 @@ public class ChangeInValue : BalanceEventBase
         var fundBalances = currentBalance.FundBalances.ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
         if (!fundBalances.TryAdd(AccountingEntry.Fund, balanceChangeFactor * AccountingEntry.Amount))
         {
-            fundBalances[AccountingEntry.Fund] = fundBalances[AccountingEntry.Fund] + balanceChangeFactor * AccountingEntry.Amount;
+            fundBalances[AccountingEntry.Fund] = fundBalances[AccountingEntry.Fund] + (balanceChangeFactor * AccountingEntry.Amount);
         }
         return new AccountBalance(currentBalance.Account,
             fundBalances.Select(pair => new FundAmount
