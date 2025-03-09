@@ -1,5 +1,4 @@
 using Domain.Aggregates.Accounts;
-using Domain.Aggregates.Funds;
 using Domain.ValueObjects;
 
 namespace Domain.Aggregates.AccountingPeriods;
@@ -110,7 +109,7 @@ public sealed class TransactionBalanceEvent : BalanceEventBase
         {
             return currentBalance;
         }
-        Dictionary<Fund, decimal> pendingFundBalanceChanges = currentBalance.PendingFundBalanceChanges
+        var pendingFundBalanceChanges = currentBalance.PendingFundBalanceChanges
             .ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
         foreach (FundAmount fundAmount in Transaction.AccountingEntries)
         {
@@ -144,9 +143,9 @@ public sealed class TransactionBalanceEvent : BalanceEventBase
             return currentBalance;
         }
         // Posting a transaction removes the pending balance change and adds it to the actual balance
-        Dictionary<Fund, decimal> fundBalances = currentBalance.FundBalances
+        var fundBalances = currentBalance.FundBalances
             .ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
-        Dictionary<Fund, decimal> pendingFundBalanceChanges = currentBalance.PendingFundBalanceChanges
+        var pendingFundBalanceChanges = currentBalance.PendingFundBalanceChanges
             .ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
         foreach (FundAmount fundAmount in Transaction.AccountingEntries)
         {

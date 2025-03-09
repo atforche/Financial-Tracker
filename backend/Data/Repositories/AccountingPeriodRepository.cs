@@ -51,7 +51,7 @@ public class AccountingPeriodRepository : AggregateRepositoryBase<AccountingPeri
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> FindAccountingPeriodsWithBalanceEventsInDateRange(DateRange dateRange)
     {
-        List<DateOnly> dates = dateRange.GetInclusiveDates().ToList();
+        var dates = dateRange.GetInclusiveDates().ToList();
         return DatabaseContext.AccountingPeriods
             .Where(accountingPeriod => accountingPeriod.Transactions
                     .SelectMany(transaction => transaction.TransactionBalanceEvents)

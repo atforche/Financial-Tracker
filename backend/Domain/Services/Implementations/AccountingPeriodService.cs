@@ -30,7 +30,7 @@ public class AccountingPeriodService : IAccountingPeriodService
     /// <inheritdoc/>
     public AccountingPeriod CreateNewAccountingPeriod(int year, int month)
     {
-        AccountingPeriod newAccountingPeriod = new AccountingPeriod(year,
+        var newAccountingPeriod = new AccountingPeriod(year,
             month,
             _accountingPeriodRepository.FindAll().Select(accountingPeriod => accountingPeriod.PeriodStartDate));
 

@@ -188,8 +188,7 @@ public class AccountingPeriod : EntityBase
     /// <returns>The next Balance Event sequence for the provided date</returns>
     internal int GetNextEventSequenceForDate(DateOnly eventDate)
     {
-        List<BalanceEventBase> balanceEventsOnDate = GetAllBalanceEvents()
-            .Where(balanceEvent => balanceEvent.EventDate == eventDate).ToList();
+        var balanceEventsOnDate = GetAllBalanceEvents().Where(balanceEvent => balanceEvent.EventDate == eventDate).ToList();
         if (balanceEventsOnDate.Count == 0)
         {
             return 1;

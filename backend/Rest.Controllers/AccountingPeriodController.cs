@@ -160,7 +160,7 @@ internal sealed class AccountingPeriodController : ControllerBase
                 return NotFound();
             }
         }
-        Dictionary<Guid, Fund> funds = _fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
+        var funds = _fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
         Transaction newTransaction = _accountingPeriodService.AddTransaction(accountingPeriod,
             createTransactionModel.TransactionDate,
             debitAccount,
@@ -268,7 +268,7 @@ internal sealed class AccountingPeriodController : ControllerBase
         {
             return NotFound();
         }
-        Dictionary<Guid, Fund> funds = _fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
+        var funds = _fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
         ChangeInValue newChangeInValue = _accountingPeriodService.AddChangeInValue(accountingPeriod,
             createChangeInValueModel.EventDate,
             account,

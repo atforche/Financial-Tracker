@@ -125,8 +125,7 @@ public class FundConversion : BalanceEventBase
         }
         int fromFundFactor = isReverse ? 1 : -1;
         int toFundFactor = isReverse ? -1 : 1;
-        Dictionary<Fund, decimal> fundBalances = currentBalance.FundBalances
-            .ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
+        var fundBalances = currentBalance.FundBalances.ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
         if (!fundBalances.TryAdd(FromFund, fromFundFactor * Amount))
         {
             fundBalances[FromFund] = fundBalances[FromFund] + fromFundFactor * Amount;

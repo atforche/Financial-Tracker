@@ -96,7 +96,7 @@ public class TransactionAccountDetailModel
     /// <param name="type">Transaction Account Type for this Transaction Account Detail model</param>
     public TransactionAccountDetailModel(Transaction transaction, TransactionAccountType type)
     {
-        List<TransactionBalanceEvent> balanceEvents = transaction.TransactionBalanceEvents
+        var balanceEvents = transaction.TransactionBalanceEvents
             .Where(balanceEvent => balanceEvent.TransactionAccountType == type).ToList();
         if (balanceEvents.Count == 0)
         {

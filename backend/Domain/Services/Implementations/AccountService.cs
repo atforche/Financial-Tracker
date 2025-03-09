@@ -30,7 +30,7 @@ public class AccountService : IAccountService
         {
             throw new InvalidOperationException();
         }
-        Account newAccount = new Account(name, type);
+        var newAccount = new Account(name, type);
         accountingPeriod.AddAccountBalanceCheckpoint(newAccount, startingFundBalances);
         return newAccount;
     }

@@ -23,7 +23,7 @@ public class AccountBalanceService : IAccountBalanceService
     {
         List<AccountBalanceByDate> results = [];
         AccountBalance accountBalance = DetermineAccountBalanceAtStartOfDate(account, dateRange.GetInclusiveDates().First());
-        Dictionary<DateOnly, List<BalanceEventBase>> balanceEvents = GetAllBalanceEventsInDateRange(account, dateRange)
+        var balanceEvents = GetAllBalanceEventsInDateRange(account, dateRange)
             .GroupBy(balanceEvent => balanceEvent.EventDate)
             .ToDictionary(group => group.Key, group => group.ToList());
         foreach (DateOnly date in dateRange.GetInclusiveDates())
@@ -136,7 +136,7 @@ public class AccountBalanceService : IAccountBalanceService
         // date and apply them all to our Account Balance
         if (date != checkpointPeriod.PeriodStartDate)
         {
-            DateRange beforeDateRange = new DateRange(checkpointPeriod.PeriodStartDate, date, endDateType: EndpointType.Exclusive);
+            var beforeDateRange = new DateRange(checkpointPeriod.PeriodStartDate, date, endDateType: EndpointType.Exclusive);
             IEnumerable<BalanceEventBase> balanceEventsBeforeDate = checkpointPeriod.GetAllBalanceEvents()
                 .Where(balanceEvent => !beforeDateRange.IsWithinStartDate(balanceEvent.EventDate))
                 .Concat(GetAllBalanceEventsInDateRange(account, beforeDateRange));

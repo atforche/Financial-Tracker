@@ -69,7 +69,7 @@ internal sealed class AccountController : ControllerBase
     [HttpPost("")]
     public async Task<IActionResult> CreateAccountAsync(CreateAccountModel createAccountModel)
     {
-        Dictionary<Guid, Fund> funds = _fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
+        var funds = _fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
         Account newAccount = _accountService.CreateNewAccount(createAccountModel.Name, createAccountModel.Type,
             createAccountModel.StartingFundBalances.Select(fundBalance => new FundAmount
             {

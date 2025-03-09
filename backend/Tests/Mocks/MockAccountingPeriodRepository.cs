@@ -66,7 +66,7 @@ internal sealed class MockAccountingPeriodRepository : IAccountingPeriodReposito
     /// <inheritdoc/>
     public int FindMaximumBalanceEventSequenceForDate(DateOnly eventDate)
     {
-        List<TransactionBalanceEvent> existingBalanceEventsOnDate = _accountingPeriods
+        var existingBalanceEventsOnDate = _accountingPeriods
             .SelectMany(accountingPeriod => accountingPeriod.Transactions)
             .SelectMany(transaction => transaction.TransactionBalanceEvents)
             .Where(balanceEvent => balanceEvent.EventDate == eventDate).ToList();

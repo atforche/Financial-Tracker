@@ -1,4 +1,3 @@
-using Domain.Aggregates.Funds;
 using Domain.ValueObjects;
 
 namespace Domain.Aggregates.AccountingPeriods;
@@ -101,8 +100,7 @@ public class ChangeInValue : BalanceEventBase
             return currentBalance;
         }
         int balanceChangeFactor = isReverse ? -1 : 1;
-        Dictionary<Fund, decimal> fundBalances = currentBalance.FundBalances
-            .ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
+        var fundBalances = currentBalance.FundBalances.ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
         if (!fundBalances.TryAdd(AccountingEntry.Fund, balanceChangeFactor * AccountingEntry.Amount))
         {
             fundBalances[AccountingEntry.Fund] = fundBalances[AccountingEntry.Fund] + balanceChangeFactor * AccountingEntry.Amount;
