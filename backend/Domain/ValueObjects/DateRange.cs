@@ -5,10 +5,10 @@ namespace Domain.ValueObjects;
 /// </summary>
 public class DateRange
 {
-    private DateOnly _startDate { get; }
-    private EndpointType _startDateType { get; }
-    private DateOnly _endDate { get; }
-    private EndpointType _endDateType { get; }
+    private readonly DateOnly _startDate;
+    private readonly EndpointType _startDateType;
+    private readonly DateOnly _endDate;
+    private readonly EndpointType _endDateType;
 
     /// <summary>
     /// Constructs a new instance of this class
