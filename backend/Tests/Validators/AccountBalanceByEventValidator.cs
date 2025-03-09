@@ -5,8 +5,8 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates the provided Account Balance by Event matches the expected state
 /// </summary>
-internal sealed class AccountBalanceByEventValidator : EntityValidatorBase<AccountBalanceByEvent,
-    AccountBalanceByEventState, AccountBalanceByEventComparer>
+internal sealed class AccountBalanceByEventValidator(IEnumerable<AccountBalanceByEvent> accountBalanceByEvents) :
+    EntityValidatorBase<AccountBalanceByEvent, AccountBalanceByEventState, AccountBalanceByEventComparer>(accountBalanceByEvents)
 {
     /// <summary>
     /// Constructs a new instance of this class
@@ -14,15 +14,6 @@ internal sealed class AccountBalanceByEventValidator : EntityValidatorBase<Accou
     /// <param name="accountBalanceByEvent">Account Balance by Event to validate</param>
     public AccountBalanceByEventValidator(AccountBalanceByEvent accountBalanceByEvent)
         : this([accountBalanceByEvent])
-    {
-    }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="accountBalanceByEvents">Account Balance by Events to validate</param>
-    public AccountBalanceByEventValidator(IEnumerable<AccountBalanceByEvent> accountBalanceByEvents)
-        : base(accountBalanceByEvents)
     {
     }
 

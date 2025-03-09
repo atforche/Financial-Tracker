@@ -5,15 +5,12 @@ namespace Domain.Aggregates;
 /// <summary>
 /// Base class shared by all Entities
 /// </summary>
-public abstract class EntityBase : IEquatable<EntityBase>
+public abstract class EntityBase(EntityId id) : IEquatable<EntityBase>
 {
-    private readonly long _internalId;
-    private readonly Guid _externalId;
-
     /// <summary>
     /// ID for this Entity
     /// </summary>
-    public EntityId Id => new(_internalId, _externalId);
+    public EntityId Id { get; } = id;
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is EntityBase other && Equals(other);
@@ -36,14 +33,4 @@ public abstract class EntityBase : IEquatable<EntityBase>
 
     /// <inheritdoc/>
     public override int GetHashCode() => Id.GetHashCode();
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="id">ID for this Entity</param>
-    protected EntityBase(EntityId id)
-    {
-        _internalId = id.InternalId;
-        _externalId = id.ExternalId;
-    }
 }

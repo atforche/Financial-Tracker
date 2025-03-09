@@ -13,30 +13,16 @@ namespace Rest.Controllers;
 /// </summary>
 [ApiController]
 [Route("/accounts")]
-internal sealed class AccountController : ControllerBase
+internal sealed class AccountController(
+    IUnitOfWork unitOfWork,
+    IAccountService accountService,
+    IAccountRepository accountRepository,
+    IFundRepository fundRepository) : ControllerBase
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IAccountService _accountService;
-    private readonly IAccountRepository _accountRepository;
-    private readonly IFundRepository _fundRepository;
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="unitOfWork">Unit of work to commit changes to the database</param>
-    /// <param name="accountService">Service that constructs Accounts</param>
-    /// <param name="accountRepository">Repository of Accounts</param>
-    /// <param name="fundRepository">Repository of Funds</param>
-    public AccountController(IUnitOfWork unitOfWork,
-        IAccountService accountService,
-        IAccountRepository accountRepository,
-        IFundRepository fundRepository)
-    {
-        _unitOfWork = unitOfWork;
-        _accountService = accountService;
-        _accountRepository = accountRepository;
-        _fundRepository = fundRepository;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IAccountService _accountService = accountService;
+    private readonly IAccountRepository _accountRepository = accountRepository;
+    private readonly IFundRepository _fundRepository = fundRepository;
 
     /// <summary>
     /// Retrieves all the Accounts from the database

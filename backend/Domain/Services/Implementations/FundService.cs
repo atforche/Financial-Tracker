@@ -3,15 +3,9 @@ using Domain.Aggregates.Funds;
 namespace Domain.Services.Implementations;
 
 /// <inheritdoc/>
-public class FundService : IFundService
+public class FundService(IFundRepository fundRepository) : IFundService
 {
-    private readonly IFundRepository _fundRepository;
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="fundRepository">Repository of Funds</param>
-    public FundService(IFundRepository fundRepository) => _fundRepository = fundRepository;
+    private readonly IFundRepository _fundRepository = fundRepository;
 
     /// <inheritdoc/>
     public Fund CreateNewFund(string name)

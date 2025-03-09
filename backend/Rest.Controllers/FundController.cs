@@ -11,24 +11,11 @@ namespace Rest.Controllers;
 /// </summary>
 [ApiController]
 [Route("/funds")]
-internal sealed class FundController : ControllerBase
+internal sealed class FundController(IUnitOfWork unitOfWork, IFundService fundService, IFundRepository fundRepository) : ControllerBase
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IFundService _fundService;
-    private readonly IFundRepository _fundRepository;
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="unitOfWork">Unit of work to commit changes to the database</param>
-    /// <param name="fundService">Service that constructs Funds</param>
-    /// <param name="fundRepository">Repository of Funds</param>
-    public FundController(IUnitOfWork unitOfWork, IFundService fundService, IFundRepository fundRepository)
-    {
-        _unitOfWork = unitOfWork;
-        _fundService = fundService;
-        _fundRepository = fundRepository;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IFundService _fundService = fundService;
+    private readonly IFundRepository _fundRepository = fundRepository;
 
     /// <summary>
     /// Retrieves all the Funds from the database

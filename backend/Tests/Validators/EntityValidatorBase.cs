@@ -3,13 +3,13 @@ namespace Tests.Validators;
 /// <summary>
 /// Base class of all validators that validate a collection of Entities
 /// </summary>
-internal abstract class EntityValidatorBase<TEntity, TState, TComparer>
+internal abstract class EntityValidatorBase<TEntity, TState, TComparer>(IEnumerable<TEntity> entitiesToValidate)
     where TComparer : IComparer<TEntity>, IComparer<TState>, new()
 {
     /// <summary>
     /// Entities to be validated by this Entity Validator
     /// </summary>
-    protected List<TEntity> EntitiesToValidate { get; }
+    protected List<TEntity> EntitiesToValidate { get; } = entitiesToValidate.ToList();
 
     /// <summary>
     /// Validates the Entity against the provided expected state
@@ -31,13 +31,6 @@ internal abstract class EntityValidatorBase<TEntity, TState, TComparer>
             ValidatePrivate(expectedState, entity);
         }
     }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="entitiesToValidate">Entities to validate</param>
-    protected EntityValidatorBase(IEnumerable<TEntity> entitiesToValidate) =>
-        EntitiesToValidate = entitiesToValidate.ToList();
 
     /// <summary>
     /// Validates that the provided expected state matches the provided actual state

@@ -12,21 +12,10 @@ namespace Rest.Controllers;
 /// </summary>
 [ApiController]
 [Route("/accountBalance")]
-internal sealed class AccountBalanceController : ControllerBase
+internal sealed class AccountBalanceController(IAccountRepository accountRepository, IAccountBalanceService accountBalanceService) : ControllerBase
 {
-    private readonly IAccountRepository _accountRepository;
-    private readonly IAccountBalanceService _accountBalanceService;
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="accountRepository">Repository of Accounts</param>
-    /// <param name="accountBalanceService">Service that calculates account balances</param>
-    public AccountBalanceController(IAccountRepository accountRepository, IAccountBalanceService accountBalanceService)
-    {
-        _accountRepository = accountRepository;
-        _accountBalanceService = accountBalanceService;
-    }
+    private readonly IAccountRepository _accountRepository = accountRepository;
+    private readonly IAccountBalanceService _accountBalanceService = accountBalanceService;
 
     /// <summary>
     /// Retrieves the balance for the provided Account by date across the provided date range

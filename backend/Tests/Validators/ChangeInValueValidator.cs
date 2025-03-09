@@ -5,9 +5,8 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided Change In Value matches the expected state
 /// </summary>
-internal sealed class ChangeInValueValidator : EntityValidatorBase<ChangeInValue,
-    ChangeInValueState,
-    ChangeInValueComparer>
+internal sealed class ChangeInValueValidator(IEnumerable<ChangeInValue> changeInValues) :
+    EntityValidatorBase<ChangeInValue, ChangeInValueState, ChangeInValueComparer>(changeInValues)
 {
     /// <summary>
     /// Constructs a new instance of this class
@@ -15,15 +14,6 @@ internal sealed class ChangeInValueValidator : EntityValidatorBase<ChangeInValue
     /// <param name="changeInValue">Change In Value to validate</param>
     public ChangeInValueValidator(ChangeInValue changeInValue)
         : this([changeInValue])
-    {
-    }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="changeInValues">Change In Values to validate</param>
-    public ChangeInValueValidator(IEnumerable<ChangeInValue> changeInValues)
-        : base(changeInValues)
     {
     }
 

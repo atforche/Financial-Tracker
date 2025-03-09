@@ -14,15 +14,9 @@ public interface IUnitOfWork
 /// <summary>
 /// Class representing an atomic unit of work to be committed to the database
 /// </summary>
-public class UnitOfWork : IUnitOfWork
+public class UnitOfWork(DatabaseContext context) : IUnitOfWork
 {
-    private readonly DatabaseContext _context;
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="context">Context to use to connect to the database</param>
-    public UnitOfWork(DatabaseContext context) => _context = context;
+    private readonly DatabaseContext _context = context;
 
     /// <inheritdoc/>
     public async Task SaveChangesAsync() => await _context.SaveChangesAsync();

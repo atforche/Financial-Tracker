@@ -5,21 +5,10 @@ using Domain.ValueObjects;
 namespace Domain.Services.Implementations;
 
 /// <inheritdoc/>
-public class AccountService : IAccountService
+public class AccountService(IAccountRepository accountRepository, IAccountingPeriodRepository accountingPeriodRepository) : IAccountService
 {
-    private readonly IAccountRepository _accountRepository;
-    private readonly IAccountingPeriodRepository _accountingPeriodRepository;
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="accountRepository">Repository of Accounts</param>
-    /// <param name="accountingPeriodRepository">Repository of Accounting Periods</param>
-    public AccountService(IAccountRepository accountRepository, IAccountingPeriodRepository accountingPeriodRepository)
-    {
-        _accountRepository = accountRepository;
-        _accountingPeriodRepository = accountingPeriodRepository;
-    }
+    private readonly IAccountRepository _accountRepository = accountRepository;
+    private readonly IAccountingPeriodRepository _accountingPeriodRepository = accountingPeriodRepository;
 
     /// <inheritdoc/>
     public Account CreateNewAccount(string name, AccountType type, IEnumerable<FundAmount> startingFundBalances)

@@ -5,9 +5,8 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided Transaction Balance Event matches the expected state
 /// </summary>
-internal sealed class TransactionBalanceEventValidator : EntityValidatorBase<TransactionBalanceEvent,
-    TransactionBalanceEventState,
-    TransactionBalanceEventComparer>
+internal sealed class TransactionBalanceEventValidator(IEnumerable<TransactionBalanceEvent> transactionBalanceEvents) :
+    EntityValidatorBase<TransactionBalanceEvent, TransactionBalanceEventState, TransactionBalanceEventComparer>(transactionBalanceEvents)
 {
     /// <summary>
     /// Constructs a new instance of this class
@@ -15,15 +14,6 @@ internal sealed class TransactionBalanceEventValidator : EntityValidatorBase<Tra
     /// <param name="transactionBalanceEvent">Transaction Balance Event to validate</param>
     public TransactionBalanceEventValidator(TransactionBalanceEvent transactionBalanceEvent)
         : this([transactionBalanceEvent])
-    {
-    }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="transactionBalanceEvents">Transaction Balance Events to validate</param>
-    public TransactionBalanceEventValidator(IEnumerable<TransactionBalanceEvent> transactionBalanceEvents)
-        : base(transactionBalanceEvents)
     {
     }
 

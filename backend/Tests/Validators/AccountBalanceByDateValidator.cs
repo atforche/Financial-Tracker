@@ -5,8 +5,8 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided Account Balance by Date matches the expected state
 /// </summary>
-internal sealed class AccountBalanceByDateValidator : EntityValidatorBase<AccountBalanceByDate,
-    AccountBalanceByDateState, AccountBalanceByDateComparer>
+internal sealed class AccountBalanceByDateValidator(IEnumerable<AccountBalanceByDate> accountBalanceByDates) :
+    EntityValidatorBase<AccountBalanceByDate, AccountBalanceByDateState, AccountBalanceByDateComparer>(accountBalanceByDates)
 {
     /// <summary>
     /// Constructs a new instance of this class
@@ -14,15 +14,6 @@ internal sealed class AccountBalanceByDateValidator : EntityValidatorBase<Accoun
     /// <param name="accountBalanceByDate">Account Balance by Date to validate</param>
     public AccountBalanceByDateValidator(AccountBalanceByDate accountBalanceByDate)
         : this([accountBalanceByDate])
-    {
-    }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="accountBalanceByDates">Account Balance by Dates to validate</param>
-    public AccountBalanceByDateValidator(IEnumerable<AccountBalanceByDate> accountBalanceByDates)
-        : base(accountBalanceByDates)
     {
     }
 

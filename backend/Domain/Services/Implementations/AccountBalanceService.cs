@@ -5,16 +5,9 @@ using Domain.ValueObjects;
 namespace Domain.Services.Implementations;
 
 /// <inheritdoc/>
-public class AccountBalanceService : IAccountBalanceService
+public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodRepository) : IAccountBalanceService
 {
-    private readonly IAccountingPeriodRepository _accountingPeriodRepository;
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="accountingPeriodRepository">Repository of Accounting Periods</param>
-    public AccountBalanceService(IAccountingPeriodRepository accountingPeriodRepository) =>
-        _accountingPeriodRepository = accountingPeriodRepository;
+    private readonly IAccountingPeriodRepository _accountingPeriodRepository = accountingPeriodRepository;
 
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountBalanceByDate> GetAccountBalancesByDate(Account account, DateRange dateRange)

@@ -5,9 +5,8 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided Account Balance Checkpoints match the expected states
 /// </summary>
-internal sealed class AccountBalanceCheckpointValidator : EntityValidatorBase<AccountBalanceCheckpoint,
-    AccountBalanceCheckpointState,
-    AccountBalanceCheckpointComparer>
+internal sealed class AccountBalanceCheckpointValidator(IEnumerable<AccountBalanceCheckpoint> accountBalanceCheckpoints) :
+    EntityValidatorBase<AccountBalanceCheckpoint, AccountBalanceCheckpointState, AccountBalanceCheckpointComparer>(accountBalanceCheckpoints)
 {
     /// <summary>
     /// Constructs a new instance of this class
@@ -15,15 +14,6 @@ internal sealed class AccountBalanceCheckpointValidator : EntityValidatorBase<Ac
     /// <param name="accountBalanceCheckpoint">Accounting Balance Checkpoint to validate</param>
     public AccountBalanceCheckpointValidator(AccountBalanceCheckpoint accountBalanceCheckpoint)
         : this([accountBalanceCheckpoint])
-    {
-    }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="accountBalanceCheckpoints">Account Balance Checkpoints to validate</param>
-    public AccountBalanceCheckpointValidator(IEnumerable<AccountBalanceCheckpoint> accountBalanceCheckpoints)
-        : base(accountBalanceCheckpoints)
     {
     }
 

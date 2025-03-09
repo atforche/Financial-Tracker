@@ -6,19 +6,12 @@ namespace Data.Repositories;
 /// <summary>
 /// Base class shared by all Aggregate Repositories
 /// </summary>
-public abstract class AggregateRepositoryBase<TAggregate>
-    where TAggregate : EntityBase
+public abstract class AggregateRepositoryBase<TAggregate>(DatabaseContext databaseContext) where TAggregate : EntityBase
 {
     /// <summary>
     /// Database Context for this Aggregate Repository
     /// </summary>
-    protected DatabaseContext DatabaseContext { get; }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="databaseContext">Database Context for this Aggregate Repository</param>
-    protected AggregateRepositoryBase(DatabaseContext databaseContext) => DatabaseContext = databaseContext;
+    protected DatabaseContext DatabaseContext { get; } = databaseContext;
 
     /// <summary>
     /// Finds the Aggregate with the provided external ID

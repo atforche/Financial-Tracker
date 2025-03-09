@@ -5,7 +5,8 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided Fund Amounts match the expected states
 /// </summary>
-internal sealed class FundAmountValidator : EntityValidatorBase<FundAmount, FundAmountState, FundAmountComparer>
+internal sealed class FundAmountValidator(IEnumerable<FundAmount> fundAmounts) :
+    EntityValidatorBase<FundAmount, FundAmountState, FundAmountComparer>(fundAmounts)
 {
     /// <summary>
     /// Constructs a new instance of this class
@@ -13,15 +14,6 @@ internal sealed class FundAmountValidator : EntityValidatorBase<FundAmount, Fund
     /// <param name="fundAmount">Fund Amount to validate</param>
     public FundAmountValidator(FundAmount fundAmount)
         : this([fundAmount])
-    {
-    }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="fundAmounts">Fund Amounts to validate</param>
-    public FundAmountValidator(IEnumerable<FundAmount> fundAmounts)
-        : base(fundAmounts)
     {
     }
 

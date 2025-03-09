@@ -5,7 +5,8 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided Accounting Period matches the expected state
 /// </summary>
-internal sealed class AccountingPeriodValidator : EntityValidatorBase<AccountingPeriod, AccountingPeriodState, AccountingPeriodComparer>
+internal sealed class AccountingPeriodValidator(IEnumerable<AccountingPeriod> accountingPeriods) :
+    EntityValidatorBase<AccountingPeriod, AccountingPeriodState, AccountingPeriodComparer>(accountingPeriods)
 {
     /// <summary>
     /// Constructs a new instance of this class
@@ -13,15 +14,6 @@ internal sealed class AccountingPeriodValidator : EntityValidatorBase<Accounting
     /// <param name="accountingPeriod">Accounting Period to validate</param>
     public AccountingPeriodValidator(AccountingPeriod accountingPeriod)
         : this([accountingPeriod])
-    {
-    }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="accountingPeriods">Accounting Periods to validate</param>
-    public AccountingPeriodValidator(IEnumerable<AccountingPeriod> accountingPeriods)
-        : base(accountingPeriods)
     {
     }
 

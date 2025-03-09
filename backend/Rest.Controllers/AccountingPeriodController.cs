@@ -14,34 +14,18 @@ namespace Rest.Controllers;
 /// </summary>
 [ApiController]
 [Route("/accountingPeriods")]
-internal sealed class AccountingPeriodController : ControllerBase
+internal sealed class AccountingPeriodController(
+    IUnitOfWork unitOfWork,
+    IAccountingPeriodService accountingPeriodService,
+    IAccountingPeriodRepository accountingPeriodRepository,
+    IAccountRepository accountRepository,
+    IFundRepository fundRepository) : ControllerBase
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IAccountingPeriodService _accountingPeriodService;
-    private readonly IAccountingPeriodRepository _accountingPeriodRepository;
-    private readonly IAccountRepository _accountRepository;
-    private readonly IFundRepository _fundRepository;
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="unitOfWork">Unit of work to commit changes to the database</param>
-    /// <param name="accountingPeriodService">Service used to create or modify Accounting Periods</param>
-    /// <param name="accountingPeriodRepository">Repository of Accounting Periods</param>
-    /// <param name="accountRepository">Repository of Accounts</param>
-    /// <param name="fundRepository">Repository of Funds</param>
-    public AccountingPeriodController(IUnitOfWork unitOfWork,
-        IAccountingPeriodService accountingPeriodService,
-        IAccountingPeriodRepository accountingPeriodRepository,
-        IAccountRepository accountRepository,
-        IFundRepository fundRepository)
-    {
-        _unitOfWork = unitOfWork;
-        _accountingPeriodService = accountingPeriodService;
-        _accountingPeriodRepository = accountingPeriodRepository;
-        _accountRepository = accountRepository;
-        _fundRepository = fundRepository;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IAccountingPeriodService _accountingPeriodService = accountingPeriodService;
+    private readonly IAccountingPeriodRepository _accountingPeriodRepository = accountingPeriodRepository;
+    private readonly IAccountRepository _accountRepository = accountRepository;
+    private readonly IFundRepository _fundRepository = fundRepository;
 
     /// <summary>
     /// Retrieves all the Accounting Periods from the database

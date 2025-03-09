@@ -5,7 +5,8 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided Fund Conversion matches the expected state
 /// </summary>
-internal sealed class FundConversionValidator : EntityValidatorBase<FundConversion, FundConversionState, FundConversionComparer>
+internal sealed class FundConversionValidator(IEnumerable<FundConversion> fundConversions) :
+    EntityValidatorBase<FundConversion, FundConversionState, FundConversionComparer>(fundConversions)
 {
     /// <summary>
     /// Constructs a new instance of this class
@@ -13,15 +14,6 @@ internal sealed class FundConversionValidator : EntityValidatorBase<FundConversi
     /// <param name="fundConversion">Fund Conversion to validate</param>
     public FundConversionValidator(FundConversion fundConversion)
         : this([fundConversion])
-    {
-    }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="fundConversions">Fund Conversions to validate</param>
-    public FundConversionValidator(IEnumerable<FundConversion> fundConversions)
-        : base(fundConversions)
     {
     }
 

@@ -6,26 +6,14 @@ using Domain.ValueObjects;
 namespace Domain.Services.Implementations;
 
 /// <inheritdoc/>
-public class AccountingPeriodService : IAccountingPeriodService
+public class AccountingPeriodService(
+    IAccountingPeriodRepository accountingPeriodRepository,
+    IAccountRepository accountRepository,
+    IAccountBalanceService accountBalanceService) : IAccountingPeriodService
 {
-    private readonly IAccountingPeriodRepository _accountingPeriodRepository;
-    private readonly IAccountRepository _accountRepository;
-    private readonly IAccountBalanceService _accountBalanceService;
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="accountingPeriodRepository">Repository of Accounting Periods</param>
-    /// <param name="accountRepository">Repository of Accounts</param>
-    /// <param name="accountBalanceService">Service that calculates account balances</param>
-    public AccountingPeriodService(IAccountingPeriodRepository accountingPeriodRepository,
-        IAccountRepository accountRepository,
-        IAccountBalanceService accountBalanceService)
-    {
-        _accountingPeriodRepository = accountingPeriodRepository;
-        _accountRepository = accountRepository;
-        _accountBalanceService = accountBalanceService;
-    }
+    private readonly IAccountingPeriodRepository _accountingPeriodRepository = accountingPeriodRepository;
+    private readonly IAccountRepository _accountRepository = accountRepository;
+    private readonly IAccountBalanceService _accountBalanceService = accountBalanceService;
 
     /// <inheritdoc/>
     public AccountingPeriod CreateNewAccountingPeriod(int year, int month)

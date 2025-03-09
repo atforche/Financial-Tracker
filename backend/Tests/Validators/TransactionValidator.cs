@@ -5,7 +5,8 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided Transaction matches the expected state
 /// </summary>
-internal sealed class TransactionValidator : EntityValidatorBase<Transaction, TransactionState, TransactionComparer>
+internal sealed class TransactionValidator(IEnumerable<Transaction> transactions) :
+    EntityValidatorBase<Transaction, TransactionState, TransactionComparer>(transactions)
 {
     /// <summary>
     /// Constructs a new instance of this class
@@ -13,15 +14,6 @@ internal sealed class TransactionValidator : EntityValidatorBase<Transaction, Tr
     /// <param name="transaction">Transaction to validate</param>
     public TransactionValidator(Transaction transaction)
         : this([transaction])
-    {
-    }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="transactions">Transactions to validate</param>
-    public TransactionValidator(IEnumerable<Transaction> transactions)
-        : base(transactions)
     {
     }
 
