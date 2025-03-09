@@ -43,7 +43,7 @@ public class TransactionModel
         TransactionDate = transactionDate;
         DebitDetail = debitDetail;
         CreditDetail = creditDetail;
-        AccountingEntries = accountingEntries.ToList();
+        AccountingEntries = accountingEntries;
     }
 
     /// <summary>

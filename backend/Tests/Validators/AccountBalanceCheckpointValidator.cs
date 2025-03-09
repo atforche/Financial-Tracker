@@ -32,7 +32,7 @@ internal sealed class AccountBalanceCheckpointValidator : EntityValidatorBase<Ac
     {
         Assert.NotEqual(Guid.Empty, entity.Id.ExternalId);
         Assert.Equal(expectedState.AccountName, entity.Account.Name);
-        new FundAmountValidator(entity.FundBalances).Validate(expectedState.FundBalances.ToList());
+        new FundAmountValidator(entity.FundBalances).Validate(expectedState.FundBalances);
     }
 }
 
