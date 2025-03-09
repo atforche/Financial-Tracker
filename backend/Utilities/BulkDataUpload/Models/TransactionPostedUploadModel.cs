@@ -36,10 +36,9 @@ internal sealed class TransactionPostedUploadModel : BalanceEventUploadModel
     /// </summary>
     /// <param name="existingAccounts">List of existing Accounts</param>
     /// <returns>A Post Transaction Model corresponding to this Post Transaction Upload Model</returns>
-    public PostTransactionModel GetAsPostTransactionModel(ICollection<AccountModel> existingAccounts) =>
-        new PostTransactionModel
-        {
-            AccountId = existingAccounts.Single(account => account.Name == AccountName).Id,
-            PostedStatementDate = EventDate,
-        };
+    public PostTransactionModel GetAsPostTransactionModel(ICollection<AccountModel> existingAccounts) => new()
+    {
+        AccountId = existingAccounts.Single(account => account.Name == AccountName).Id,
+        PostedStatementDate = EventDate,
+    };
 }

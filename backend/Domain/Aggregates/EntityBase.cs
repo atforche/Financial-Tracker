@@ -13,7 +13,7 @@ public abstract class EntityBase : IEquatable<EntityBase>
     /// <summary>
     /// ID for this Entity
     /// </summary>
-    public EntityId Id => new EntityId(_internalId, _externalId);
+    public EntityId Id => new(_internalId, _externalId);
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is EntityBase other && Equals(other);

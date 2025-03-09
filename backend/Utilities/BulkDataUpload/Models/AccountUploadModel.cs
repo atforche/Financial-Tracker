@@ -29,12 +29,11 @@ internal sealed class AccountUploadModel
     /// </summary>
     /// <param name="existingFunds">List of existing funds</param>
     /// <returns>A Create Account Model corresponding to this Account Upload Model</returns>
-    public CreateAccountModel GetAsCreateAccountModel(ICollection<FundModel> existingFunds) =>
-        new CreateAccountModel
-        {
-            Name = Name,
-            Type = Type,
-            StartingFundBalances = StartingFundBalances
-                .Select(fundAmount => fundAmount.GetAsCreateFundAmountModel(existingFunds)).ToList(),
-        };
+    public CreateAccountModel GetAsCreateAccountModel(ICollection<FundModel> existingFunds) => new()
+    {
+        Name = Name,
+        Type = Type,
+        StartingFundBalances = StartingFundBalances
+            .Select(fundAmount => fundAmount.GetAsCreateFundAmountModel(existingFunds)).ToList(),
+    };
 }

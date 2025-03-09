@@ -126,7 +126,7 @@ public class AccountingPeriodService : IAccountingPeriodService
     /// <param name="eventDate">Event Date for this Create Balance Event Account Info</param>
     /// <returns>The newly created Create Balance Event Account Info</returns>
     private CreateBalanceEventAccountInfo GetCreateBalanceEventAccountInfo(Account account, DateOnly eventDate) =>
-        new CreateBalanceEventAccountInfo(account,
+        new(account,
             _accountBalanceService.GetAccountBalancesByDate(
                 account,
                 new DateRange(eventDate, eventDate)).First().AccountBalance,

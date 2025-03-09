@@ -36,7 +36,7 @@ internal sealed class AccountingPeriodUploadModel
     /// Gets a Create Accounting Period Model corresponding to this Accounting Period Upload Model
     /// </summary>
     /// <returns>A Create Accounting Period Model corresponding to this Accounting Period Upload Model</returns>
-    public CreateAccountingPeriodModel GetAsCreateAccountingPeriodModel() => new CreateAccountingPeriodModel
+    public CreateAccountingPeriodModel GetAsCreateAccountingPeriodModel() => new()
     {
         Year = Year,
         Month = Month,

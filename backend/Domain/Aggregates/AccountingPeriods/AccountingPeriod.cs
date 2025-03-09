@@ -30,7 +30,7 @@ public class AccountingPeriod : EntityBase
     /// <summary>
     /// Gets the Period Start Date for this Accounting Period
     /// </summary>
-    public DateOnly PeriodStartDate => new DateOnly(Year, Month, 1);
+    public DateOnly PeriodStartDate => new(Year, Month, 1);
 
     /// <summary>
     /// Is Open flag for this Accounting Period

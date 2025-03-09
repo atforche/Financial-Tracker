@@ -42,8 +42,7 @@ internal sealed class FundConversionUploadModel : BalanceEventUploadModel
     /// <returns>A Create Fund Conversion Model corresponding to this Fund Conversion Upload Model</returns>
     public CreateFundConversionModel GetAsCreateFundConversionModel(
         ICollection<FundModel> existingFunds,
-        ICollection<AccountModel> existingAccounts) =>
-        new CreateFundConversionModel
+        ICollection<AccountModel> existingAccounts) => new()
         {
             AccountId = existingAccounts.Single(account => account.Name == AccountName).Id,
             EventDate = EventDate,

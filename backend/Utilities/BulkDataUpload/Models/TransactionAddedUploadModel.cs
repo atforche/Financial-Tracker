@@ -37,8 +37,7 @@ internal sealed class TransactionAddedUploadModel : BalanceEventUploadModel
     /// <returns>A Create Transaction Model corresponding to this Transaction Added Upload Model</returns>
     public CreateTransactionModel GetAsCreateTransactionModel(
         ICollection<FundModel> existingFunds,
-        ICollection<AccountModel> existingAccounts) =>
-        new CreateTransactionModel
+        ICollection<AccountModel> existingAccounts) => new()
         {
             TransactionDate = TransactionDate,
             DebitAccountId = DebitAccountName != null

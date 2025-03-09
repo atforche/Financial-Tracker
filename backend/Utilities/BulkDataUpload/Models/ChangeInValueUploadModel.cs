@@ -32,8 +32,7 @@ internal sealed class ChangeInValueUploadModel : BalanceEventUploadModel
     /// <returns>A Create Change In Value Model corresponding to the Change In Value Upload Model</returns>
     public CreateChangeInValueModel GetAsCreateChangeInValueModel(
         ICollection<FundModel> existingFunds,
-        ICollection<AccountModel> existingAccounts) =>
-        new CreateChangeInValueModel
+        ICollection<AccountModel> existingAccounts) => new()
         {
             AccountId = existingAccounts.Single(account => account.Name == AccountName).Id,
             EventDate = EventDate,

@@ -31,5 +31,5 @@ public class DateRangeModel
     /// Gets a Date Range corresponding to this Date Range Model
     /// </summary>
     /// <returns>A Date Range corresponding to this Date Range Model</returns>
-    public Domain.ValueObjects.DateRange ConvertToDateRange() => new Domain.ValueObjects.DateRange(StartDate, EndDate, StartDateType, EndDateType);
+    public Domain.ValueObjects.DateRange ConvertToDateRange() => new(StartDate, EndDate, StartDateType, EndDateType);
 }
