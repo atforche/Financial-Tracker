@@ -25,11 +25,8 @@ public class AccountService : IAccountService
     public Account CreateNewAccount(string name, AccountType type, IEnumerable<FundAmount> startingFundBalances)
     {
         ValidateNewAccountName(name);
-        AccountingPeriod? accountingPeriod = _accountingPeriodRepository.FindOpenPeriods().FirstOrDefault();
-        if (accountingPeriod == null)
-        {
+        AccountingPeriod accountingPeriod = _accountingPeriodRepository.FindOpenPeriods().FirstOrDefault() ??
             throw new InvalidOperationException();
-        }
         var newAccount = new Account(name, type);
         accountingPeriod.AddAccountBalanceCheckpoint(newAccount, startingFundBalances);
         return newAccount;
