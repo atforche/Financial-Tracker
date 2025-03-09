@@ -14,7 +14,7 @@ internal sealed class SetupUploader : DataUploader<SetupUploadModel>
         foreach (CreateFundModel createFundModel in model.Funds)
         {
             Console.WriteLine($"Uploading Fund: {createFundModel.Name}");
-            await PostAsync<CreateFundModel, FundModel>("/funds", createFundModel);
+            _ = await PostAsync<CreateFundModel, FundModel>("/funds", createFundModel);
         }
     }
 }

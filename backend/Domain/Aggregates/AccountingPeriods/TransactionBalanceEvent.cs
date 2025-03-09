@@ -153,7 +153,7 @@ public sealed class TransactionBalanceEvent : BalanceEventBase
             }
             if (pendingFundBalanceChanges[fundAmount.Fund] == 0)
             {
-                pendingFundBalanceChanges.Remove(fundAmount.Fund);
+                _ = pendingFundBalanceChanges.Remove(fundAmount.Fund);
             }
             if (!fundBalances.TryAdd(fundAmount.Fund, balanceChange))
             {

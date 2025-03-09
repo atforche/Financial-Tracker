@@ -45,8 +45,7 @@ internal abstract class DataUploader<T> : IDisposable
     protected async Task<TResult> GetAsync<TResult>(string endpointPath)
     {
         _uriBuilder.Path = endpointPath;
-        HttpResponseMessage response = await _client.GetAsync(_uriBuilder.Uri);
-        response.EnsureSuccessStatusCode();
+        HttpResponseMessage response = (await _client.GetAsync(_uriBuilder.Uri)).EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<TResult>(_jsonSerializerOptions) ?? throw new InvalidOperationException();
     }
 
@@ -59,8 +58,7 @@ internal abstract class DataUploader<T> : IDisposable
     protected async Task<TResult> PostAsync<TBody, TResult>(string endpointPath, TBody bodyModel)
     {
         _uriBuilder.Path = endpointPath;
-        HttpResponseMessage response = await _client.PostAsJsonAsync(_uriBuilder.Uri, bodyModel);
-        response.EnsureSuccessStatusCode();
+        HttpResponseMessage response = (await _client.PostAsJsonAsync(_uriBuilder.Uri, bodyModel)).EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<TResult>(_jsonSerializerOptions) ?? throw new InvalidOperationException();
     }
 

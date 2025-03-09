@@ -49,21 +49,21 @@ internal sealed class AccountingPeriodUploader : DataUploader<AccountingPeriodUp
             else if (balanceEventUploadModel is TransactionPostedUploadModel transactionPostedUploadModel)
             {
                 Console.WriteLine($"Posting Transaction '{transactionPostedUploadModel.TransactionId}' in Account '{transactionPostedUploadModel.AccountName}'");
-                await PostAsync<PostTransactionModel, TransactionModel>(
+                _ = await PostAsync<PostTransactionModel, TransactionModel>(
                     $"/accountingPeriods/{accountingPeriod.Id}/Transactions/{transactionPostedUploadModel.GetTransactionIdToPost(_transactions)}",
                     transactionPostedUploadModel.GetAsPostTransactionModel(_accounts));
             }
             else if (balanceEventUploadModel is FundConversionUploadModel fundConversionUploadModel)
             {
                 Console.WriteLine($"Creating Fund Conversion: {fundConversionUploadModel.Id}");
-                await PostAsync<CreateFundConversionModel, FundConversionModel>(
+                _ = await PostAsync<CreateFundConversionModel, FundConversionModel>(
                     $"/accountingPeriods/{accountingPeriod.Id}/FundConversions",
                     fundConversionUploadModel.GetAsCreateFundConversionModel(_funds, _accounts));
             }
             else if (balanceEventUploadModel is ChangeInValueUploadModel changeInValueUploadModel)
             {
                 Console.WriteLine($"Creating Change In Value: {changeInValueUploadModel.Id}");
-                await PostAsync<CreateChangeInValueModel, ChangeInValueModel>(
+                _ = await PostAsync<CreateChangeInValueModel, ChangeInValueModel>(
                     $"/accountingPeriods/{accountingPeriod.Id}/ChangeInValues",
                     changeInValueUploadModel.GetAsCreateChangeInValueModel(_funds, _accounts));
             }
@@ -76,7 +76,7 @@ internal sealed class AccountingPeriodUploader : DataUploader<AccountingPeriodUp
         if (model.IsClosed)
         {
             Console.WriteLine($"Closing Accounting Period: {model.Year}-{model.Month}");
-            await PostAsync<object?, AccountingPeriodModel>($"/accountingPeriods/close/{accountingPeriod.Id}", null);
+            _ = await PostAsync<object?, AccountingPeriodModel>($"/accountingPeriods/close/{accountingPeriod.Id}", null);
         }
     }
 }
