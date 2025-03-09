@@ -71,9 +71,9 @@ public class GetAccountBalanceByAccountingPeriodTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        new AccountBalanceByAccountingPeriodValidator(
-            _accountBalanceService.GetAccountBalancesByAccountingPeriod(_testAccount, _testAccountingPeriod))
-            .Validate(new AccountBalanceByAccountingPeriodState
+        new AccountBalanceByAccountingPeriodValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByAccountingPeriod(_testAccount, _testAccountingPeriod),
+            new AccountBalanceByAccountingPeriodState
             {
                 AccountingPeriodYear = 2024,
                 AccountingPeriodMonth = 11,
@@ -124,9 +124,9 @@ public class GetAccountBalanceByAccountingPeriodTests : UnitTestBase
                 }
             ]);
         _accountingPeriodService.PostTransaction(transaction, _testAccount, new DateOnly(2024, 11, 5));
-        new AccountBalanceByAccountingPeriodValidator(
-            _accountBalanceService.GetAccountBalancesByAccountingPeriod(_testAccount, _testAccountingPeriod))
-            .Validate(new AccountBalanceByAccountingPeriodState
+        new AccountBalanceByAccountingPeriodValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByAccountingPeriod(_testAccount, _testAccountingPeriod),
+            new AccountBalanceByAccountingPeriodState
             {
                 AccountingPeriodYear = 2024,
                 AccountingPeriodMonth = 11,
@@ -186,9 +186,9 @@ public class GetAccountBalanceByAccountingPeriodTests : UnitTestBase
     [Fact]
     public void TestWithBalanceEventsInPastPeriod()
     {
-        void ValidateBalances(AccountingPeriod secondAccountingPeriod) => new AccountBalanceByAccountingPeriodValidator(
-            _accountBalanceService.GetAccountBalancesByAccountingPeriod(_testAccount, secondAccountingPeriod))
-            .Validate(new AccountBalanceByAccountingPeriodState
+        void ValidateBalances(AccountingPeriod secondAccountingPeriod) => new AccountBalanceByAccountingPeriodValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByAccountingPeriod(_testAccount, secondAccountingPeriod),
+            new AccountBalanceByAccountingPeriodState
             {
                 AccountingPeriodYear = 2024,
                 AccountingPeriodMonth = 12,
@@ -239,9 +239,9 @@ public class GetAccountBalanceByAccountingPeriodTests : UnitTestBase
     [Fact]
     public void TestWithBalanceEventsInFuturePeriod()
     {
-        void ValidateBalances() => new AccountBalanceByAccountingPeriodValidator(
-            _accountBalanceService.GetAccountBalancesByAccountingPeriod(_testAccount, _testAccountingPeriod))
-            .Validate(new AccountBalanceByAccountingPeriodState
+        void ValidateBalances() => new AccountBalanceByAccountingPeriodValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByAccountingPeriod(_testAccount, _testAccountingPeriod),
+            new AccountBalanceByAccountingPeriodState
             {
                 AccountingPeriodYear = 2024,
                 AccountingPeriodMonth = 11,
@@ -292,9 +292,9 @@ public class GetAccountBalanceByAccountingPeriodTests : UnitTestBase
     [Fact]
     public void TestWithBalanceEventsFromPreviousPeriodInMonth()
     {
-        void ValidateBalances(AccountingPeriod secondAccountingPeriod) => new AccountBalanceByAccountingPeriodValidator(
-            _accountBalanceService.GetAccountBalancesByAccountingPeriod(_testAccount, secondAccountingPeriod))
-            .Validate(new AccountBalanceByAccountingPeriodState
+        void ValidateBalances(AccountingPeriod secondAccountingPeriod) => new AccountBalanceByAccountingPeriodValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByAccountingPeriod(_testAccount, secondAccountingPeriod),
+            new AccountBalanceByAccountingPeriodState
             {
                 AccountingPeriodYear = 2024,
                 AccountingPeriodMonth = 12,
@@ -345,9 +345,9 @@ public class GetAccountBalanceByAccountingPeriodTests : UnitTestBase
     [Fact]
     public void TestWithBalanceEventsFromFuturePeriodInMonth()
     {
-        void ValidateBalances() => new AccountBalanceByAccountingPeriodValidator(
-            _accountBalanceService.GetAccountBalancesByAccountingPeriod(_testAccount, _testAccountingPeriod))
-            .Validate(new AccountBalanceByAccountingPeriodState
+        void ValidateBalances() => new AccountBalanceByAccountingPeriodValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByAccountingPeriod(_testAccount, _testAccountingPeriod),
+            new AccountBalanceByAccountingPeriodState
             {
                 AccountingPeriodYear = 2024,
                 AccountingPeriodMonth = 11,

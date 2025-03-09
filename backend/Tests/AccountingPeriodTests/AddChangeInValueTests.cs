@@ -68,17 +68,18 @@ public class AddChangeInValueTests : UnitTestBase
                 Fund = _testFund,
                 Amount = -100.00m,
             });
-        new ChangeInValueValidator(changeInValue).Validate(new ChangeInValueState
-        {
-            AccountName = _testAccount.Name,
-            EventDate = new DateOnly(2024, 11, 15),
-            EventSequence = 1,
-            AccountingEntry = new FundAmountState
+        new ChangeInValueValidator().Validate(changeInValue,
+            new ChangeInValueState
             {
-                FundName = _testFund.Name,
-                Amount = -100.00m,
-            }
-        });
+                AccountName = _testAccount.Name,
+                EventDate = new DateOnly(2024, 11, 15),
+                EventSequence = 1,
+                AccountingEntry = new FundAmountState
+                {
+                    FundName = _testFund.Name,
+                    Amount = -100.00m,
+                }
+            });
     }
 
     /// <summary>
@@ -117,17 +118,18 @@ public class AddChangeInValueTests : UnitTestBase
                 Fund = _testFund,
                 Amount = -100.00m,
             });
-        new ChangeInValueValidator(changeInValue).Validate(new ChangeInValueState
-        {
-            AccountName = _testAccount.Name,
-            EventDate = new DateOnly(2024, 12, 15),
-            EventSequence = 1,
-            AccountingEntry = new FundAmountState
+        new ChangeInValueValidator().Validate(changeInValue,
+            new ChangeInValueState
             {
-                FundName = _testFund.Name,
-                Amount = -100.00m,
-            }
-        });
+                AccountName = _testAccount.Name,
+                EventDate = new DateOnly(2024, 12, 15),
+                EventSequence = 1,
+                AccountingEntry = new FundAmountState
+                {
+                    FundName = _testFund.Name,
+                    Amount = -100.00m,
+                }
+            });
 
         // Add a Change In Value to the second Accounting Period that falls in the first period
         changeInValue = _accountingPeriodService.AddChangeInValue(secondAccountingPeriod,
@@ -138,17 +140,18 @@ public class AddChangeInValueTests : UnitTestBase
                 Fund = _testFund,
                 Amount = -100.00m,
             });
-        new ChangeInValueValidator(changeInValue).Validate(new ChangeInValueState
-        {
-            AccountName = _testAccount.Name,
-            EventDate = new DateOnly(2024, 11, 15),
-            EventSequence = 1,
-            AccountingEntry = new FundAmountState
+        new ChangeInValueValidator().Validate(changeInValue,
+            new ChangeInValueState
             {
-                FundName = _testFund.Name,
-                Amount = -100.00m,
-            }
-        });
+                AccountName = _testAccount.Name,
+                EventDate = new DateOnly(2024, 11, 15),
+                EventSequence = 1,
+                AccountingEntry = new FundAmountState
+                {
+                    FundName = _testFund.Name,
+                    Amount = -100.00m,
+                }
+            });
     }
 
     /// <summary>
@@ -219,46 +222,44 @@ public class AddChangeInValueTests : UnitTestBase
                 Amount = -100.00m,
             });
 
-        new AccountBalanceByEventValidator(_accountBalanceService.GetAccountBalancesByEvent(
-            _testAccount,
-            new DateRange(new DateOnly(2024, 11, 1), new DateOnly(2024, 11, 30))))
-            .Validate(
-                [
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = _testAccountingPeriod.Year,
-                        AccountingPeriodMonth = _testAccountingPeriod.Month,
-                        EventDate = new DateOnly(2024, 11, 10),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2600.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = [],
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = _testAccountingPeriod.Year,
-                        AccountingPeriodMonth = _testAccountingPeriod.Month,
-                        EventDate = new DateOnly(2024, 11, 15),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2500.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = [],
-                    },
-                ]);
+        new AccountBalanceByEventValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByEvent(_testAccount, new DateRange(new DateOnly(2024, 11, 1), new DateOnly(2024, 11, 30))),
+            [
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = _testAccountingPeriod.Year,
+                    AccountingPeriodMonth = _testAccountingPeriod.Month,
+                    EventDate = new DateOnly(2024, 11, 10),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2600.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = [],
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = _testAccountingPeriod.Year,
+                    AccountingPeriodMonth = _testAccountingPeriod.Month,
+                    EventDate = new DateOnly(2024, 11, 15),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2500.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = [],
+                },
+            ]);
     }
 
     /// <summary>
@@ -296,46 +297,44 @@ public class AddChangeInValueTests : UnitTestBase
                 Amount = -100.00m,
             });
 
-        new AccountBalanceByEventValidator(_accountBalanceService.GetAccountBalancesByEvent(
-            debtAccount,
-            new DateRange(new DateOnly(2024, 11, 1), new DateOnly(2024, 11, 30))))
-            .Validate(
-                [
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = debtAccount.Name,
-                        AccountingPeriodYear = _testAccountingPeriod.Year,
-                        AccountingPeriodMonth = _testAccountingPeriod.Month,
-                        EventDate = new DateOnly(2024, 11, 10),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2600.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = [],
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = debtAccount.Name,
-                        AccountingPeriodYear = _testAccountingPeriod.Year,
-                        AccountingPeriodMonth = _testAccountingPeriod.Month,
-                        EventDate = new DateOnly(2024, 11, 15),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2500.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = [],
-                    },
-                ]);
+        new AccountBalanceByEventValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByEvent(debtAccount, new DateRange(new DateOnly(2024, 11, 1), new DateOnly(2024, 11, 30))),
+            [
+                new AccountBalanceByEventState
+                {
+                    AccountName = debtAccount.Name,
+                    AccountingPeriodYear = _testAccountingPeriod.Year,
+                    AccountingPeriodMonth = _testAccountingPeriod.Month,
+                    EventDate = new DateOnly(2024, 11, 10),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2600.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = [],
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = debtAccount.Name,
+                    AccountingPeriodYear = _testAccountingPeriod.Year,
+                    AccountingPeriodMonth = _testAccountingPeriod.Month,
+                    EventDate = new DateOnly(2024, 11, 15),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2500.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = [],
+                },
+            ]);
     }
 
     /// <summary>

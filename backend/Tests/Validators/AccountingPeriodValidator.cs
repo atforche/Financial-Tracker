@@ -5,27 +5,17 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided Accounting Period matches the expected state
 /// </summary>
-internal sealed class AccountingPeriodValidator(IEnumerable<AccountingPeriod> accountingPeriods) :
-    EntityValidatorBase<AccountingPeriod, AccountingPeriodState, AccountingPeriodComparer>(accountingPeriods)
+internal sealed class AccountingPeriodValidator : EntityValidatorBase<AccountingPeriod, AccountingPeriodState>
 {
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="accountingPeriod">Accounting Period to validate</param>
-    public AccountingPeriodValidator(AccountingPeriod accountingPeriod)
-        : this([accountingPeriod])
-    {
-    }
-
     /// <inheritdoc/>
-    protected override void ValidatePrivate(AccountingPeriodState expectedState, AccountingPeriod entity)
+    public override void Validate(AccountingPeriod entity, AccountingPeriodState expectedState)
     {
         Assert.NotEqual(Guid.Empty, entity.Id.ExternalId);
         Assert.Equal(expectedState.Year, entity.Year);
         Assert.Equal(expectedState.Month, entity.Month);
         Assert.Equal(expectedState.IsOpen, entity.IsOpen);
-        new AccountBalanceCheckpointValidator(entity.AccountBalanceCheckpoints).Validate(expectedState.AccountBalanceCheckpoints);
-        new TransactionValidator(entity.Transactions).Validate(expectedState.Transactions);
+        new AccountBalanceCheckpointValidator().Validate(entity.AccountBalanceCheckpoints, expectedState.AccountBalanceCheckpoints);
+        new TransactionValidator().Validate(entity.Transactions, expectedState.Transactions);
     }
 }
 
@@ -58,52 +48,4 @@ internal sealed record AccountingPeriodState
     /// Transactions for this Accounting Period
     /// </summary>
     public required List<TransactionState> Transactions { get; init; }
-}
-
-/// <summary>
-/// Comparer class that compares Accounting Periods and Accounting Period States
-/// </summary>
-internal sealed class AccountingPeriodComparer : EntityComparerBase, IComparer<AccountingPeriod>, IComparer<AccountingPeriodState>
-{
-    /// <inheritdoc/>
-    public int Compare(AccountingPeriod? first, AccountingPeriod? second)
-    {
-        if (TryCompareNull(first, second, out int? result))
-        {
-            return result.Value;
-        }
-        return ComparePrivate(new Key(first.Year, first.Month), new Key(second.Year, second.Month));
-    }
-
-    /// <inheritdoc/>
-    public int Compare(AccountingPeriodState? first, AccountingPeriodState? second)
-    {
-        if (TryCompareNull(first, second, out int? result))
-        {
-            return result.Value;
-        }
-        return ComparePrivate(new Key(first.Year, first.Month), new Key(second.Year, second.Month));
-    }
-
-    /// <summary>
-    /// Compares the provided keys to determine their ordering
-    /// </summary>
-    /// <param name="first">First Key to compare</param>
-    /// <param name="second">Second Key to compare</param>
-    /// <returns>The ordering of the provided keys</returns>
-    private static int ComparePrivate(Key first, Key second)
-    {
-        if (first.Year.CompareTo(second.Year) != 0)
-        {
-            return first.Year.CompareTo(second.Year);
-        }
-        return first.Month.CompareTo(second.Month);
-    }
-
-    /// <summary>
-    /// Record class representing the key used to compare an Accounting Period or Accounting Period State
-    /// </summary>
-    /// <param name="Year">Year for this Accounting Period</param>
-    /// <param name="Month">Month for this Accounting Period</param>
-    private sealed record Key(int Year, int Month);
 }

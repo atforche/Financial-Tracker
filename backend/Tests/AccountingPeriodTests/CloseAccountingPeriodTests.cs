@@ -39,14 +39,15 @@ public class CloseAccountingPeriodTests : UnitTestBase
     {
         AccountingPeriod accountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
         _accountingPeriodService.ClosePeriod(accountingPeriod);
-        new AccountingPeriodValidator(accountingPeriod).Validate(new AccountingPeriodState
-        {
-            Year = 2024,
-            Month = 11,
-            IsOpen = false,
-            AccountBalanceCheckpoints = [],
-            Transactions = [],
-        });
+        new AccountingPeriodValidator().Validate(accountingPeriod,
+            new AccountingPeriodState
+            {
+                Year = 2024,
+                Month = 11,
+                IsOpen = false,
+                AccountBalanceCheckpoints = [],
+                Transactions = [],
+            });
     }
 
     /// <summary>
@@ -76,22 +77,24 @@ public class CloseAccountingPeriodTests : UnitTestBase
 
         // Close the first Accounting Period
         _accountingPeriodService.ClosePeriod(firstAccountingPeriod);
-        new AccountingPeriodValidator(firstAccountingPeriod).Validate(new AccountingPeriodState
-        {
-            Year = 2024,
-            Month = 11,
-            IsOpen = false,
-            AccountBalanceCheckpoints = [],
-            Transactions = [],
-        });
-        new AccountingPeriodValidator(secondAccountingPeriod).Validate(new AccountingPeriodState
-        {
-            Year = 2024,
-            Month = 12,
-            IsOpen = true,
-            AccountBalanceCheckpoints = [],
-            Transactions = [],
-        });
+        new AccountingPeriodValidator().Validate(firstAccountingPeriod,
+            new AccountingPeriodState
+            {
+                Year = 2024,
+                Month = 11,
+                IsOpen = false,
+                AccountBalanceCheckpoints = [],
+                Transactions = [],
+            });
+        new AccountingPeriodValidator().Validate(secondAccountingPeriod,
+            new AccountingPeriodState
+            {
+                Year = 2024,
+                Month = 12,
+                IsOpen = true,
+                AccountBalanceCheckpoints = [],
+                Transactions = [],
+            });
     }
 
     /// <summary>
@@ -157,89 +160,90 @@ public class CloseAccountingPeriodTests : UnitTestBase
 
         // Close the Accounting Period
         _accountingPeriodService.ClosePeriod(accountingPeriod);
-        new AccountingPeriodValidator(accountingPeriod).Validate(new AccountingPeriodState
-        {
-            Year = 2024,
-            Month = 11,
-            IsOpen = false,
-            AccountBalanceCheckpoints =
-            [
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = firstAccount.Name,
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = fund.Name,
-                            Amount = 50.00m,
-                        }
-                    ]
-                },
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = secondAccount.Name,
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = fund.Name,
-                            Amount = 50.00m,
-                        }
-                    ]
-                },
-            ],
-            Transactions =
-            [
-                new TransactionState
-                {
-                    TransactionDate = new DateOnly(2024, 11, 24),
-                    AccountingEntries =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = fund.Name,
-                            Amount = 25.00m,
-                        }
-                    ],
-                    TransactionBalanceEvents =
-                    [
-                        new TransactionBalanceEventState
-                        {
-                            AccountName = firstAccount.Name,
-                            EventDate = new DateOnly(2024, 11, 24),
-                            EventSequence = 1,
-                            TransactionEventType = TransactionBalanceEventType.Added,
-                            TransactionAccountType = TransactionAccountType.Debit,
-                        },
-                        new TransactionBalanceEventState
-                        {
-                            AccountName = secondAccount.Name,
-                            EventDate = new DateOnly(2024, 11, 24),
-                            EventSequence = 2,
-                            TransactionEventType = TransactionBalanceEventType.Added,
-                            TransactionAccountType = TransactionAccountType.Credit,
-                        },
-                        new TransactionBalanceEventState
-                        {
-                            AccountName = firstAccount.Name,
-                            EventDate = new DateOnly(2024, 11, 24),
-                            EventSequence = 3,
-                            TransactionEventType = TransactionBalanceEventType.Posted,
-                            TransactionAccountType = TransactionAccountType.Debit,
-                        },
-                        new TransactionBalanceEventState
-                        {
-                            AccountName = secondAccount.Name,
-                            EventDate = new DateOnly(2024, 11, 24),
-                            EventSequence = 4,
-                            TransactionEventType = TransactionBalanceEventType.Posted,
-                            TransactionAccountType = TransactionAccountType.Credit,
-                        },
-                    ]
-                }
-            ]
-        });
+        new AccountingPeriodValidator().Validate(accountingPeriod,
+            new AccountingPeriodState
+            {
+                Year = 2024,
+                Month = 11,
+                IsOpen = false,
+                AccountBalanceCheckpoints =
+                [
+                    new AccountBalanceCheckpointState
+                    {
+                        AccountName = firstAccount.Name,
+                        FundBalances =
+                        [
+                            new FundAmountState
+                            {
+                                FundName = fund.Name,
+                                Amount = 50.00m,
+                            }
+                        ]
+                    },
+                    new AccountBalanceCheckpointState
+                    {
+                        AccountName = secondAccount.Name,
+                        FundBalances =
+                        [
+                            new FundAmountState
+                            {
+                                FundName = fund.Name,
+                                Amount = 50.00m,
+                            }
+                        ]
+                    },
+                ],
+                Transactions =
+                [
+                    new TransactionState
+                    {
+                        TransactionDate = new DateOnly(2024, 11, 24),
+                        AccountingEntries =
+                        [
+                            new FundAmountState
+                            {
+                                FundName = fund.Name,
+                                Amount = 25.00m,
+                            }
+                        ],
+                        TransactionBalanceEvents =
+                        [
+                            new TransactionBalanceEventState
+                            {
+                                AccountName = firstAccount.Name,
+                                EventDate = new DateOnly(2024, 11, 24),
+                                EventSequence = 1,
+                                TransactionEventType = TransactionBalanceEventType.Added,
+                                TransactionAccountType = TransactionAccountType.Debit,
+                            },
+                            new TransactionBalanceEventState
+                            {
+                                AccountName = secondAccount.Name,
+                                EventDate = new DateOnly(2024, 11, 24),
+                                EventSequence = 2,
+                                TransactionEventType = TransactionBalanceEventType.Added,
+                                TransactionAccountType = TransactionAccountType.Credit,
+                            },
+                            new TransactionBalanceEventState
+                            {
+                                AccountName = firstAccount.Name,
+                                EventDate = new DateOnly(2024, 11, 24),
+                                EventSequence = 3,
+                                TransactionEventType = TransactionBalanceEventType.Posted,
+                                TransactionAccountType = TransactionAccountType.Debit,
+                            },
+                            new TransactionBalanceEventState
+                            {
+                                AccountName = secondAccount.Name,
+                                EventDate = new DateOnly(2024, 11, 24),
+                                EventSequence = 4,
+                                TransactionEventType = TransactionBalanceEventType.Posted,
+                                TransactionAccountType = TransactionAccountType.Credit,
+                            },
+                        ]
+                    }
+                ]
+            });
     }
 
     /// <summary>
@@ -329,83 +333,85 @@ public class CloseAccountingPeriodTests : UnitTestBase
 
         // Close the first Accounting Period and expect that Balance Checkpoints are added to the second Accounting Period
         _accountingPeriodService.ClosePeriod(firstAccountingPeriod);
-        new AccountingPeriodValidator(firstAccountingPeriod).Validate(new AccountingPeriodState
-        {
-            Year = 2024,
-            Month = 11,
-            IsOpen = false,
-            AccountBalanceCheckpoints =
-            [
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = account.Name,
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = fund.Name,
-                            Amount = 50.00m,
-                        }
-                    ]
-                },
-            ],
-            Transactions =
-            [
-                new TransactionState
-                {
-                    TransactionDate = new DateOnly(2024, 11, 24),
-                    AccountingEntries =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = fund.Name,
-                            Amount = 25.00m,
-                        }
-                    ],
-                    TransactionBalanceEvents =
-                    [
-                        new TransactionBalanceEventState
-                        {
-                            AccountName = account.Name,
-                            EventDate = new DateOnly(2024, 11, 24),
-                            EventSequence = 1,
-                            TransactionEventType = TransactionBalanceEventType.Added,
-                            TransactionAccountType = TransactionAccountType.Debit,
-                        },
-                        new TransactionBalanceEventState
-                        {
-                            AccountName = account.Name,
-                            EventDate = new DateOnly(2024, 11, 24),
-                            EventSequence = 2,
-                            TransactionEventType = TransactionBalanceEventType.Posted,
-                            TransactionAccountType = TransactionAccountType.Debit,
-                        },
-                    ]
-                }
-            ]
-        });
-        new AccountingPeriodValidator(secondAccountingPeriod).Validate(new AccountingPeriodState
-        {
-            Year = 2024,
-            Month = 12,
-            IsOpen = true,
-            AccountBalanceCheckpoints =
-            [
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = account.Name,
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = fund.Name,
-                            Amount = 25.00m,
-                        }
-                    ]
-                },
-            ],
-            Transactions = []
-        });
+        new AccountingPeriodValidator().Validate(firstAccountingPeriod,
+            new AccountingPeriodState
+            {
+                Year = 2024,
+                Month = 11,
+                IsOpen = false,
+                AccountBalanceCheckpoints =
+                [
+                    new AccountBalanceCheckpointState
+                    {
+                        AccountName = account.Name,
+                        FundBalances =
+                        [
+                            new FundAmountState
+                            {
+                                FundName = fund.Name,
+                                Amount = 50.00m,
+                            }
+                        ]
+                    },
+                ],
+                Transactions =
+                [
+                    new TransactionState
+                    {
+                        TransactionDate = new DateOnly(2024, 11, 24),
+                        AccountingEntries =
+                        [
+                            new FundAmountState
+                            {
+                                FundName = fund.Name,
+                                Amount = 25.00m,
+                            }
+                        ],
+                        TransactionBalanceEvents =
+                        [
+                            new TransactionBalanceEventState
+                            {
+                                AccountName = account.Name,
+                                EventDate = new DateOnly(2024, 11, 24),
+                                EventSequence = 1,
+                                TransactionEventType = TransactionBalanceEventType.Added,
+                                TransactionAccountType = TransactionAccountType.Debit,
+                            },
+                            new TransactionBalanceEventState
+                            {
+                                AccountName = account.Name,
+                                EventDate = new DateOnly(2024, 11, 24),
+                                EventSequence = 2,
+                                TransactionEventType = TransactionBalanceEventType.Posted,
+                                TransactionAccountType = TransactionAccountType.Debit,
+                            },
+                        ]
+                    }
+                ]
+            });
+        new AccountingPeriodValidator().Validate(secondAccountingPeriod,
+            new AccountingPeriodState
+            {
+                Year = 2024,
+                Month = 12,
+                IsOpen = true,
+                AccountBalanceCheckpoints =
+                [
+                    new AccountBalanceCheckpointState
+                    {
+                        AccountName = account.Name,
+                        FundBalances =
+                        [
+                            new FundAmountState
+                            {
+                                FundName = fund.Name,
+                                Amount = 25.00m,
+                            }
+                        ]
+                    },
+                ],
+                Transactions = []
+            });
     }
 
     /// <summary>
@@ -448,82 +454,84 @@ public class CloseAccountingPeriodTests : UnitTestBase
 
         // Close the first Accounting Period and expect that Balance Checkpoints are added to the second Accounting Period
         _accountingPeriodService.ClosePeriod(firstAccountingPeriod);
-        new AccountingPeriodValidator(firstAccountingPeriod).Validate(new AccountingPeriodState
-        {
-            Year = 2024,
-            Month = 11,
-            IsOpen = false,
-            AccountBalanceCheckpoints =
-            [
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = account.Name,
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = fund.Name,
-                            Amount = 50.00m,
-                        }
-                    ]
-                },
-            ],
-            Transactions =
-            [
-                new TransactionState
-                {
-                    TransactionDate = new DateOnly(2024, 11, 24),
-                    AccountingEntries =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = fund.Name,
-                            Amount = 25.00m,
-                        }
-                    ],
-                    TransactionBalanceEvents =
-                    [
-                        new TransactionBalanceEventState
-                        {
-                            AccountName = account.Name,
-                            EventDate = new DateOnly(2024, 11, 24),
-                            EventSequence = 1,
-                            TransactionEventType = TransactionBalanceEventType.Added,
-                            TransactionAccountType = TransactionAccountType.Debit,
-                        },
-                        new TransactionBalanceEventState
-                        {
-                            AccountName = account.Name,
-                            EventDate = new DateOnly(2024, 12, 5),
-                            EventSequence = 1,
-                            TransactionEventType = TransactionBalanceEventType.Posted,
-                            TransactionAccountType = TransactionAccountType.Debit,
-                        },
-                    ]
-                }
-            ]
-        });
-        new AccountingPeriodValidator(secondAccountingPeriod).Validate(new AccountingPeriodState
-        {
-            Year = 2024,
-            Month = 12,
-            IsOpen = true,
-            AccountBalanceCheckpoints =
-            [
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = account.Name,
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = fund.Name,
-                            Amount = 25.00m,
-                        }
-                    ]
-                },
-            ],
-            Transactions = []
-        });
+        new AccountingPeriodValidator().Validate(firstAccountingPeriod,
+            new AccountingPeriodState
+            {
+                Year = 2024,
+                Month = 11,
+                IsOpen = false,
+                AccountBalanceCheckpoints =
+                [
+                    new AccountBalanceCheckpointState
+                    {
+                        AccountName = account.Name,
+                        FundBalances =
+                        [
+                            new FundAmountState
+                            {
+                                FundName = fund.Name,
+                                Amount = 50.00m,
+                            }
+                        ]
+                    },
+                ],
+                Transactions =
+                [
+                    new TransactionState
+                    {
+                        TransactionDate = new DateOnly(2024, 11, 24),
+                        AccountingEntries =
+                        [
+                            new FundAmountState
+                            {
+                                FundName = fund.Name,
+                                Amount = 25.00m,
+                            }
+                        ],
+                        TransactionBalanceEvents =
+                        [
+                            new TransactionBalanceEventState
+                            {
+                                AccountName = account.Name,
+                                EventDate = new DateOnly(2024, 11, 24),
+                                EventSequence = 1,
+                                TransactionEventType = TransactionBalanceEventType.Added,
+                                TransactionAccountType = TransactionAccountType.Debit,
+                            },
+                            new TransactionBalanceEventState
+                            {
+                                AccountName = account.Name,
+                                EventDate = new DateOnly(2024, 12, 5),
+                                EventSequence = 1,
+                                TransactionEventType = TransactionBalanceEventType.Posted,
+                                TransactionAccountType = TransactionAccountType.Debit,
+                            },
+                        ]
+                    }
+                ]
+            });
+        new AccountingPeriodValidator().Validate(secondAccountingPeriod,
+            new AccountingPeriodState
+            {
+                Year = 2024,
+                Month = 12,
+                IsOpen = true,
+                AccountBalanceCheckpoints =
+                [
+                    new AccountBalanceCheckpointState
+                    {
+                        AccountName = account.Name,
+                        FundBalances =
+                        [
+                            new FundAmountState
+                            {
+                                FundName = fund.Name,
+                                Amount = 25.00m,
+                            }
+                        ]
+                    },
+                ],
+                Transactions = []
+            });
     }
 }

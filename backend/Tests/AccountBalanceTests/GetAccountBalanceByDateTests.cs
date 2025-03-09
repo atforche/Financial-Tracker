@@ -63,7 +63,7 @@ public class GetAccountBalanceByDateTests : UnitTestBase
         IEnumerable<AccountBalanceByDate> accountBalanceByDates = _accountBalanceService.GetAccountBalancesByDate(
             _testAccount,
             new DateRange(new DateOnly(2024, 11, 25), new DateOnly(2024, 11, 27)));
-        new AccountBalanceByDateValidator(accountBalanceByDates).Validate(
+        new AccountBalanceByDateValidator().Validate(accountBalanceByDates,
             [
                 new AccountBalanceByDateState
                 {
@@ -134,7 +134,7 @@ public class GetAccountBalanceByDateTests : UnitTestBase
         IEnumerable<AccountBalanceByDate> accountBalanceByDates = _accountBalanceService.GetAccountBalancesByDate(
             _testAccount,
             new DateRange(new DateOnly(2024, 11, 25), new DateOnly(2024, 11, 27)));
-        new AccountBalanceByDateValidator(accountBalanceByDates).Validate(
+        new AccountBalanceByDateValidator().Validate(accountBalanceByDates,
             [
                 new AccountBalanceByDateState
                 {
@@ -229,39 +229,36 @@ public class GetAccountBalanceByDateTests : UnitTestBase
     [Fact]
     public void TestAcrossAccountingPeriodBoundary()
     {
-        void ValidateBalances() => new AccountBalanceByDateValidator(
-            _accountBalanceService.GetAccountBalancesByDate(
-                _testAccount,
-                new DateRange(new DateOnly(2024, 11, 30), new DateOnly(2024, 12, 1))))
-            .Validate(
-                [
-                    new AccountBalanceByDateState
-                    {
-                        Date = new DateOnly(2024, 11, 30),
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2450.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    },
-                    new AccountBalanceByDateState
-                    {
-                        Date = new DateOnly(2024, 12, 1),
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2350.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    }
-                ]);
+        void ValidateBalances() => new AccountBalanceByDateValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByDate(_testAccount, new DateRange(new DateOnly(2024, 11, 30), new DateOnly(2024, 12, 1))),
+            [
+                new AccountBalanceByDateState
+                {
+                    Date = new DateOnly(2024, 11, 30),
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2450.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                },
+                new AccountBalanceByDateState
+                {
+                    Date = new DateOnly(2024, 12, 1),
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2350.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                }
+            ]);
 
         // Add a second accounting period
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
@@ -306,39 +303,36 @@ public class GetAccountBalanceByDateTests : UnitTestBase
     [Fact]
     public void TestWithMixedAccountingPeriodBoundary()
     {
-        void ValidateBalances() => new AccountBalanceByDateValidator(
-            _accountBalanceService.GetAccountBalancesByDate(
-                _testAccount,
-                new DateRange(new DateOnly(2024, 11, 30), new DateOnly(2024, 12, 1))))
-            .Validate(
-                [
-                    new AccountBalanceByDateState
-                    {
-                        Date = new DateOnly(2024, 11, 30),
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2450.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    },
-                    new AccountBalanceByDateState
-                    {
-                        Date = new DateOnly(2024, 12, 1),
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2350.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    }
-                ]);
+        void ValidateBalances() => new AccountBalanceByDateValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByDate(_testAccount, new DateRange(new DateOnly(2024, 11, 30), new DateOnly(2024, 12, 1))),
+            [
+                new AccountBalanceByDateState
+                {
+                    Date = new DateOnly(2024, 11, 30),
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2450.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                },
+                new AccountBalanceByDateState
+                {
+                    Date = new DateOnly(2024, 12, 1),
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2350.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                }
+            ]);
 
         // Add a second accounting period
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
@@ -384,46 +378,43 @@ public class GetAccountBalanceByDateTests : UnitTestBase
     [Fact]
     public void TestWithPastPeriodBalanceEventFallingBeforeDateRange()
     {
-        void ValidateBalances() => new AccountBalanceByDateValidator(
-            _accountBalanceService.GetAccountBalancesByDate(
-                _testAccount,
-                new DateRange(new DateOnly(2024, 12, 20), new DateOnly(2024, 12, 21))))
-            .Validate(
-                [
-                    new AccountBalanceByDateState
-                    {
-                        Date = new DateOnly(2024, 12, 20),
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2250.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -300.00m,
-                            }
-                        ]
-                    },
-                    new AccountBalanceByDateState
-                    {
-                        Date = new DateOnly(2024, 12, 21),
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 1950.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    }
-                ]);
+        void ValidateBalances() => new AccountBalanceByDateValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByDate(_testAccount, new DateRange(new DateOnly(2024, 12, 20), new DateOnly(2024, 12, 21))),
+            [
+                new AccountBalanceByDateState
+                {
+                    Date = new DateOnly(2024, 12, 20),
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2250.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -300.00m,
+                        }
+                    ]
+                },
+                new AccountBalanceByDateState
+                {
+                    Date = new DateOnly(2024, 12, 21),
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 1950.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                }
+            ]);
 
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
@@ -467,46 +458,43 @@ public class GetAccountBalanceByDateTests : UnitTestBase
     [Fact]
     public void TestWithPastPeriodBalanceEventFallingInDateRange()
     {
-        void ValidateBalances() => new AccountBalanceByDateValidator(
-            _accountBalanceService.GetAccountBalancesByDate(
-                _testAccount,
-                new DateRange(new DateOnly(2024, 12, 10), new DateOnly(2024, 12, 11))))
-            .Validate(
-                [
-                    new AccountBalanceByDateState
-                    {
-                        Date = new DateOnly(2024, 12, 10),
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2500.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -550.00m,
-                            }
-                        ]
-                    },
-                    new AccountBalanceByDateState
-                    {
-                        Date = new DateOnly(2024, 12, 11),
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 1950.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    }
-                ]);
+        void ValidateBalances() => new AccountBalanceByDateValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByDate(_testAccount, new DateRange(new DateOnly(2024, 12, 10), new DateOnly(2024, 12, 11))),
+            [
+                new AccountBalanceByDateState
+                {
+                    Date = new DateOnly(2024, 12, 10),
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2500.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -550.00m,
+                        }
+                    ]
+                },
+                new AccountBalanceByDateState
+                {
+                    Date = new DateOnly(2024, 12, 11),
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 1950.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                }
+            ]);
 
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
@@ -550,46 +538,43 @@ public class GetAccountBalanceByDateTests : UnitTestBase
     [Fact]
     public void TestWithPastPeriodBalanceEventFallingAfterDateRange()
     {
-        void ValidateBalances() => new AccountBalanceByDateValidator(
-            _accountBalanceService.GetAccountBalancesByDate(
-                _testAccount,
-                new DateRange(new DateOnly(2024, 12, 10), new DateOnly(2024, 12, 11))))
-            .Validate(
-                [
-                    new AccountBalanceByDateState
-                    {
-                        Date = new DateOnly(2024, 12, 10),
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2500.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -250.00m,
-                            }
-                        ]
-                    },
-                    new AccountBalanceByDateState
-                    {
-                        Date = new DateOnly(2024, 12, 11),
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2250.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    }
-                ]);
+        void ValidateBalances() => new AccountBalanceByDateValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByDate(_testAccount, new DateRange(new DateOnly(2024, 12, 10), new DateOnly(2024, 12, 11))),
+            [
+                new AccountBalanceByDateState
+                {
+                    Date = new DateOnly(2024, 12, 10),
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2500.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -250.00m,
+                        }
+                    ]
+                },
+                new AccountBalanceByDateState
+                {
+                    Date = new DateOnly(2024, 12, 11),
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2250.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                }
+            ]);
 
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
@@ -633,46 +618,43 @@ public class GetAccountBalanceByDateTests : UnitTestBase
     [Fact]
     public void TestWithFuturePeriodBalanceEventFallingBeforeDateRange()
     {
-        void ValidateBalances() => new AccountBalanceByDateValidator(
-            _accountBalanceService.GetAccountBalancesByDate(
-                _testAccount,
-                new DateRange(new DateOnly(2024, 12, 20), new DateOnly(2024, 12, 21))))
-            .Validate(
-                [
-                    new AccountBalanceByDateState
-                    {
-                        Date = new DateOnly(2024, 12, 20),
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2250.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -300.00m,
-                            }
-                        ]
-                    },
-                    new AccountBalanceByDateState
-                    {
-                        Date = new DateOnly(2024, 12, 21),
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 1950.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    }
-                ]);
+        void ValidateBalances() => new AccountBalanceByDateValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByDate(_testAccount, new DateRange(new DateOnly(2024, 12, 20), new DateOnly(2024, 12, 21))),
+            [
+                new AccountBalanceByDateState
+                {
+                    Date = new DateOnly(2024, 12, 20),
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2250.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -300.00m,
+                        }
+                    ]
+                },
+                new AccountBalanceByDateState
+                {
+                    Date = new DateOnly(2024, 12, 21),
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 1950.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                }
+            ]);
 
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
@@ -716,46 +698,43 @@ public class GetAccountBalanceByDateTests : UnitTestBase
     [Fact]
     public void TestWithFuturePeriodBalanceEventFallingAfterDateRange()
     {
-        void ValidateBalances() => new AccountBalanceByDateValidator(
-            _accountBalanceService.GetAccountBalancesByDate(
-                _testAccount,
-                new DateRange(new DateOnly(2024, 12, 10), new DateOnly(2024, 12, 11))))
-            .Validate(
-                [
-                    new AccountBalanceByDateState
-                    {
-                        Date = new DateOnly(2024, 12, 10),
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2500.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -250.00m,
-                            }
-                        ]
-                    },
-                    new AccountBalanceByDateState
-                    {
-                        Date = new DateOnly(2024, 12, 11),
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2250.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    }
-                ]);
+        void ValidateBalances() => new AccountBalanceByDateValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByDate(_testAccount, new DateRange(new DateOnly(2024, 12, 10), new DateOnly(2024, 12, 11))),
+            [
+                new AccountBalanceByDateState
+                {
+                    Date = new DateOnly(2024, 12, 10),
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2500.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -250.00m,
+                        }
+                    ]
+                },
+                new AccountBalanceByDateState
+                {
+                    Date = new DateOnly(2024, 12, 11),
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2250.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                }
+            ]);
 
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);

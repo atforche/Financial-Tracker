@@ -41,14 +41,15 @@ public class CreateAccountingPeriodTests : UnitTestBase
     public void TestCreateAccountingPeriod()
     {
         AccountingPeriod newAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
-        new AccountingPeriodValidator(newAccountingPeriod).Validate(new AccountingPeriodState
-        {
-            Year = 2024,
-            Month = 11,
-            IsOpen = true,
-            AccountBalanceCheckpoints = [],
-            Transactions = [],
-        });
+        new AccountingPeriodValidator().Validate(newAccountingPeriod,
+            new AccountingPeriodState
+            {
+                Year = 2024,
+                Month = 11,
+                IsOpen = true,
+                AccountBalanceCheckpoints = [],
+                Transactions = [],
+            });
     }
 
     /// <summary>
@@ -91,14 +92,15 @@ public class CreateAccountingPeriodTests : UnitTestBase
 
         // Add a second accounting period
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
-        new AccountingPeriodValidator(secondAccountingPeriod).Validate(new AccountingPeriodState
-        {
-            Year = 2024,
-            Month = 12,
-            IsOpen = true,
-            AccountBalanceCheckpoints = [],
-            Transactions = [],
-        });
+        new AccountingPeriodValidator().Validate(secondAccountingPeriod,
+            new AccountingPeriodState
+            {
+                Year = 2024,
+                Month = 12,
+                IsOpen = true,
+                AccountBalanceCheckpoints = [],
+                Transactions = [],
+            });
     }
 
     /// <summary>
@@ -113,14 +115,15 @@ public class CreateAccountingPeriodTests : UnitTestBase
 
         // Add a second accounting period
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
-        new AccountingPeriodValidator(secondAccountingPeriod).Validate(new AccountingPeriodState
-        {
-            Year = 2024,
-            Month = 12,
-            IsOpen = true,
-            AccountBalanceCheckpoints = [],
-            Transactions = [],
-        });
+        new AccountingPeriodValidator().Validate(secondAccountingPeriod,
+            new AccountingPeriodState
+            {
+                Year = 2024,
+                Month = 12,
+                IsOpen = true,
+                AccountBalanceCheckpoints = [],
+                Transactions = [],
+            });
     }
 
     /// <summary>
@@ -171,14 +174,15 @@ public class CreateAccountingPeriodTests : UnitTestBase
 
         // Add a new accounting period, leaving the first accounting period open
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
-        new AccountingPeriodValidator(secondAccountingPeriod).Validate(new AccountingPeriodState
-        {
-            Year = 2024,
-            Month = 12,
-            IsOpen = true,
-            AccountBalanceCheckpoints = [],
-            Transactions = [],
-        });
+        new AccountingPeriodValidator().Validate(secondAccountingPeriod,
+            new AccountingPeriodState
+            {
+                Year = 2024,
+                Month = 12,
+                IsOpen = true,
+                AccountBalanceCheckpoints = [],
+                Transactions = [],
+            });
     }
 
     /// <summary>
@@ -212,28 +216,29 @@ public class CreateAccountingPeriodTests : UnitTestBase
 
         // Add a new accounting period
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
-        new AccountingPeriodValidator(secondAccountingPeriod).Validate(new AccountingPeriodState
-        {
-            Year = 2024,
-            Month = 12,
-            IsOpen = true,
-            AccountBalanceCheckpoints =
-            [
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = "Test",
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = "Test",
-                            Amount = 2500.00m,
-                        }
-                    ]
-                },
-            ],
-            Transactions = [],
-        });
+        new AccountingPeriodValidator().Validate(secondAccountingPeriod,
+            new AccountingPeriodState
+            {
+                Year = 2024,
+                Month = 12,
+                IsOpen = true,
+                AccountBalanceCheckpoints =
+                [
+                    new AccountBalanceCheckpointState
+                    {
+                        AccountName = "Test",
+                        FundBalances =
+                        [
+                            new FundAmountState
+                            {
+                                FundName = "Test",
+                                Amount = 2500.00m,
+                            }
+                        ]
+                    },
+                ],
+                Transactions = [],
+            });
     }
 
     /// <summary>
@@ -278,27 +283,28 @@ public class CreateAccountingPeriodTests : UnitTestBase
 
         // Add a new accounting period
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
-        new AccountingPeriodValidator(secondAccountingPeriod).Validate(new AccountingPeriodState
-        {
-            Year = 2024,
-            Month = 12,
-            IsOpen = true,
-            AccountBalanceCheckpoints =
-            [
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = "Test",
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = "Test",
-                            Amount = 2475.00m,
-                        }
-                    ]
-                },
-            ],
-            Transactions = [],
-        });
+        new AccountingPeriodValidator().Validate(secondAccountingPeriod,
+            new AccountingPeriodState
+            {
+                Year = 2024,
+                Month = 12,
+                IsOpen = true,
+                AccountBalanceCheckpoints =
+                [
+                    new AccountBalanceCheckpointState
+                    {
+                        AccountName = "Test",
+                        FundBalances =
+                        [
+                            new FundAmountState
+                            {
+                                FundName = "Test",
+                                Amount = 2475.00m,
+                            }
+                        ]
+                    },
+                ],
+                Transactions = [],
+            });
     }
 }

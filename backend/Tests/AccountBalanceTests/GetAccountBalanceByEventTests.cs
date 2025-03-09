@@ -84,9 +84,9 @@ public class GetAccountBalanceByEventTests : UnitTestBase
             ]);
         _accountingPeriodService.PostTransaction(creditTransaction, _testAccount, new DateOnly(2024, 11, 20));
         _accountingPeriodService.PostTransaction(debitTransaction, _testAccount, new DateOnly(2024, 11, 25));
-        new AccountBalanceByEventValidator(_accountBalanceService.GetAccountBalancesByEvent(_testAccount,
-                new DateRange(new DateOnly(2024, 11, 1), new DateOnly(2024, 11, 30))))
-            .Validate([
+        new AccountBalanceByEventValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByEvent(_testAccount, new DateRange(new DateOnly(2024, 11, 1), new DateOnly(2024, 11, 30))),
+            [
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
@@ -211,9 +211,9 @@ public class GetAccountBalanceByEventTests : UnitTestBase
             ]);
         _accountingPeriodService.PostTransaction(creditTransaction, _testAccount, new DateOnly(2024, 11, 20));
         _accountingPeriodService.PostTransaction(debitTransaction, _testAccount, new DateOnly(2024, 11, 25));
-        new AccountBalanceByEventValidator(_accountBalanceService.GetAccountBalancesByEvent(_testAccount,
-                new DateRange(new DateOnly(2024, 11, 1), new DateOnly(2024, 11, 30))))
-            .Validate([
+        new AccountBalanceByEventValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByEvent(_testAccount, new DateRange(new DateOnly(2024, 11, 1), new DateOnly(2024, 11, 30))),
+            [
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
@@ -356,150 +356,147 @@ public class GetAccountBalanceByEventTests : UnitTestBase
     [Fact]
     public void TestWithEventsFromMultiplePeriodsOnSameDate()
     {
-        void ValidateBalances() => new AccountBalanceByEventValidator(
-            _accountBalanceService.GetAccountBalancesByEvent(
-                _testAccount,
-                new DateRange(new DateOnly(2024, 12, 1), new DateOnly(2024, 12, 31))))
-            .Validate(
-                [
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 11,
-                        EventDate = new DateOnly(2024, 12, 15),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2500.00m
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -250.00m
-                            }
-                        ]
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 12,
-                        EventDate = new DateOnly(2024, 12, 15),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2500.00m
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -550.00m
-                            }
-                        ]
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2025,
-                        AccountingPeriodMonth = 1,
-                        EventDate = new DateOnly(2024, 12, 15),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2500.00m
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -900.00m
-                            }
-                        ]
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 11,
-                        EventDate = new DateOnly(2024, 12, 20),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2250.00m
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -650.00m
-                            }
-                        ]
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 12,
-                        EventDate = new DateOnly(2024, 12, 20),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 1950.00m
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -350.00m
-                            }
-                        ]
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2025,
-                        AccountingPeriodMonth = 1,
-                        EventDate = new DateOnly(2024, 12, 20),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 1600.00m
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    }
-                ]);
+        void ValidateBalances() => new AccountBalanceByEventValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByEvent(_testAccount, new DateRange(new DateOnly(2024, 12, 1), new DateOnly(2024, 12, 31))),
+            [
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 11,
+                    EventDate = new DateOnly(2024, 12, 15),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2500.00m
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -250.00m
+                        }
+                    ]
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 12,
+                    EventDate = new DateOnly(2024, 12, 15),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2500.00m
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -550.00m
+                        }
+                    ]
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2025,
+                    AccountingPeriodMonth = 1,
+                    EventDate = new DateOnly(2024, 12, 15),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2500.00m
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -900.00m
+                        }
+                    ]
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 11,
+                    EventDate = new DateOnly(2024, 12, 20),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2250.00m
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -650.00m
+                        }
+                    ]
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 12,
+                    EventDate = new DateOnly(2024, 12, 20),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 1950.00m
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -350.00m
+                        }
+                    ]
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2025,
+                    AccountingPeriodMonth = 1,
+                    EventDate = new DateOnly(2024, 12, 20),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 1600.00m
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                }
+            ]);
 
         // Set up two additional accounting periods
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
@@ -560,95 +557,92 @@ public class GetAccountBalanceByEventTests : UnitTestBase
     [Fact]
     public void TestAcrossAccountingPeriodBoundary()
     {
-        void ValidateBalances() => new AccountBalanceByEventValidator(
-            _accountBalanceService.GetAccountBalancesByEvent(
-                _testAccount,
-                new DateRange(new DateOnly(2024, 11, 15), new DateOnly(2024, 12, 15))))
-            .Validate(
-                [
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 11,
-                        EventDate = new DateOnly(2024, 11, 30),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2500.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -50.00m,
-                            }
-                        ]
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 11,
-                        EventDate = new DateOnly(2024, 11, 30),
-                        EventSequence = 2,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2450.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 12,
-                        EventDate = new DateOnly(2024, 12, 1),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2450.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -100.00m,
-                            }
-                        ]
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 12,
-                        EventDate = new DateOnly(2024, 12, 1),
-                        EventSequence = 2,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2350.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    }
-                ]);
+        void ValidateBalances() => new AccountBalanceByEventValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByEvent(_testAccount, new DateRange(new DateOnly(2024, 11, 15), new DateOnly(2024, 12, 15))),
+            [
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 11,
+                    EventDate = new DateOnly(2024, 11, 30),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2500.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -50.00m,
+                        }
+                    ]
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 11,
+                    EventDate = new DateOnly(2024, 11, 30),
+                    EventSequence = 2,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2450.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 12,
+                    EventDate = new DateOnly(2024, 12, 1),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2450.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -100.00m,
+                        }
+                    ]
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 12,
+                    EventDate = new DateOnly(2024, 12, 1),
+                    EventSequence = 2,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2350.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                }
+            ]);
 
         // Add a second accounting period
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
@@ -693,95 +687,92 @@ public class GetAccountBalanceByEventTests : UnitTestBase
     [Fact]
     public void TestWithMixedAccountingPeriodBoundary()
     {
-        void ValidateBalances() => new AccountBalanceByEventValidator(
-            _accountBalanceService.GetAccountBalancesByEvent(
-                _testAccount,
-                new DateRange(new DateOnly(2024, 11, 15), new DateOnly(2024, 12, 15))))
-            .Validate(
-                [
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 12,
-                        EventDate = new DateOnly(2024, 11, 30),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2500.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -50.00m,
-                            }
-                        ]
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 12,
-                        EventDate = new DateOnly(2024, 11, 30),
-                        EventSequence = 2,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2450.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 11,
-                        EventDate = new DateOnly(2024, 12, 1),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2450.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -100.00m,
-                            }
-                        ]
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 11,
-                        EventDate = new DateOnly(2024, 12, 1),
-                        EventSequence = 2,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2350.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    }
-                ]);
+        void ValidateBalances() => new AccountBalanceByEventValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByEvent(_testAccount, new DateRange(new DateOnly(2024, 11, 15), new DateOnly(2024, 12, 15))),
+            [
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 12,
+                    EventDate = new DateOnly(2024, 11, 30),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2500.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -50.00m,
+                        }
+                    ]
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 12,
+                    EventDate = new DateOnly(2024, 11, 30),
+                    EventSequence = 2,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2450.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 11,
+                    EventDate = new DateOnly(2024, 12, 1),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2450.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -100.00m,
+                        }
+                    ]
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 11,
+                    EventDate = new DateOnly(2024, 12, 1),
+                    EventSequence = 2,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2350.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                }
+            ]);
 
         // Add a second accounting period
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
@@ -827,54 +818,51 @@ public class GetAccountBalanceByEventTests : UnitTestBase
     [Fact]
     public void TestWithPastPeriodBalanceEventFallingBeforeDateRange()
     {
-        void ValidateBalances() => new AccountBalanceByEventValidator(
-            _accountBalanceService.GetAccountBalancesByEvent(
-                _testAccount,
-                new DateRange(new DateOnly(2024, 12, 20), new DateOnly(2024, 12, 31))))
-            .Validate(
-                [
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 12,
-                        EventDate = new DateOnly(2024, 12, 20),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2250.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -300.00m,
-                            }
-                        ]
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 12,
-                        EventDate = new DateOnly(2024, 12, 25),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 1950.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    }
-                ]);
+        void ValidateBalances() => new AccountBalanceByEventValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByEvent(_testAccount, new DateRange(new DateOnly(2024, 12, 20), new DateOnly(2024, 12, 31))),
+            [
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 12,
+                    EventDate = new DateOnly(2024, 12, 20),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2250.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -300.00m,
+                        }
+                    ]
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 12,
+                    EventDate = new DateOnly(2024, 12, 25),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 1950.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                }
+            ]);
 
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
@@ -918,54 +906,51 @@ public class GetAccountBalanceByEventTests : UnitTestBase
     [Fact]
     public void TestWithPastPeriodBalanceEventFallingAfterDateRange()
     {
-        void ValidateBalances() => new AccountBalanceByEventValidator(
-            _accountBalanceService.GetAccountBalancesByEvent(
-                _testAccount,
-                new DateRange(new DateOnly(2024, 12, 10), new DateOnly(2024, 12, 19))))
-            .Validate(
-                [
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 12,
-                        EventDate = new DateOnly(2024, 12, 10),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2500.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -250.00m,
-                            }
-                        ]
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 12,
-                        EventDate = new DateOnly(2024, 12, 15),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2250.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    }
-                ]);
+        void ValidateBalances() => new AccountBalanceByEventValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByEvent(_testAccount, new DateRange(new DateOnly(2024, 12, 10), new DateOnly(2024, 12, 19))),
+            [
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 12,
+                    EventDate = new DateOnly(2024, 12, 10),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2500.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -250.00m,
+                        }
+                    ]
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 12,
+                    EventDate = new DateOnly(2024, 12, 15),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2250.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                }
+            ]);
 
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
@@ -1009,54 +994,51 @@ public class GetAccountBalanceByEventTests : UnitTestBase
     [Fact]
     public void TestWithFuturePeriodBalanceEventFallingBeforeDateRange()
     {
-        void ValidateBalances() => new AccountBalanceByEventValidator(
-            _accountBalanceService.GetAccountBalancesByEvent(
-                _testAccount,
-                new DateRange(new DateOnly(2024, 12, 20), new DateOnly(2024, 12, 31))))
-            .Validate(
-                [
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 11,
-                        EventDate = new DateOnly(2024, 12, 20),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2250.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -300.00m,
-                            }
-                        ]
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 11,
-                        EventDate = new DateOnly(2024, 12, 25),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 1950.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    }
-                ]);
+        void ValidateBalances() => new AccountBalanceByEventValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByEvent(_testAccount, new DateRange(new DateOnly(2024, 12, 20), new DateOnly(2024, 12, 31))),
+            [
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 11,
+                    EventDate = new DateOnly(2024, 12, 20),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2250.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -300.00m,
+                        }
+                    ]
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 11,
+                    EventDate = new DateOnly(2024, 12, 25),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 1950.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                }
+            ]);
 
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
@@ -1100,54 +1082,51 @@ public class GetAccountBalanceByEventTests : UnitTestBase
     [Fact]
     public void TestWithFuturePeriodBalanceEventFallingAfterDateRange()
     {
-        void ValidateBalances() => new AccountBalanceByEventValidator(
-            _accountBalanceService.GetAccountBalancesByEvent(
-                _testAccount,
-                new DateRange(new DateOnly(2024, 12, 10), new DateOnly(2024, 12, 19))))
-            .Validate(
-                [
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 11,
-                        EventDate = new DateOnly(2024, 12, 10),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2500.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = -250.00m,
-                            }
-                        ]
-                    },
-                    new AccountBalanceByEventState
-                    {
-                        AccountName = _testAccount.Name,
-                        AccountingPeriodYear = 2024,
-                        AccountingPeriodMonth = 11,
-                        EventDate = new DateOnly(2024, 12, 15),
-                        EventSequence = 1,
-                        FundBalances =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = _testFund.Name,
-                                Amount = 2250.00m,
-                            }
-                        ],
-                        PendingFundBalanceChanges = []
-                    }
-                ]);
+        void ValidateBalances() => new AccountBalanceByEventValidator().Validate(
+            _accountBalanceService.GetAccountBalancesByEvent(_testAccount, new DateRange(new DateOnly(2024, 12, 10), new DateOnly(2024, 12, 19))),
+            [
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 11,
+                    EventDate = new DateOnly(2024, 12, 10),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2500.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = -250.00m,
+                        }
+                    ]
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = _testAccount.Name,
+                    AccountingPeriodYear = 2024,
+                    AccountingPeriodMonth = 11,
+                    EventDate = new DateOnly(2024, 12, 15),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = _testFund.Name,
+                            Amount = 2250.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = []
+                }
+            ]);
 
         AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
