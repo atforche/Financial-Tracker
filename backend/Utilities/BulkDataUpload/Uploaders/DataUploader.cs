@@ -23,8 +23,10 @@ internal abstract class DataUploader<T> : IDisposable
         _client = new HttpClient();
         _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         _uriBuilder = new UriBuilder("http", "localhost", 8080);
-        _jsonSerializerOptions = new JsonSerializerOptions();
-        _jsonSerializerOptions.PropertyNameCaseInsensitive = true;
+        _jsonSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
         _jsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
         _jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     }
