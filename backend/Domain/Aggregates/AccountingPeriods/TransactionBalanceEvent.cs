@@ -62,7 +62,7 @@ public sealed class TransactionBalanceEvent : BalanceEventBase
             return true;
         }
         // Cannot apply this Balance Event if it will take the Accounts overall balance negative
-        // For simplicity, count pending balance decreases but don't cound pending balance increases.
+        // For simplicity, count pending balance decreases but don't count pending balance increases.
         return Math.Min(currentBalance.Balance, currentBalance.BalanceIncludingPending) - Transaction.AccountingEntries.Sum(entry => entry.Amount) >= 0;
     }
 

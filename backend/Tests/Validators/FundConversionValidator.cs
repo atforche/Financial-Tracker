@@ -117,7 +117,7 @@ internal sealed class FundConversionComparer : EntityComparerBase,
     }
 
     /// <summary>
-    /// Record class representing the key used to compare a Fund Conversion or Fund Conversino State
+    /// Record class representing the key used to compare a Fund Conversion or Fund Conversion State
     /// </summary>
     /// <param name="EventDate">Event Date for this Fund Conversion</param>
     /// <param name="EventSequence">Event Sequence for this Fund Conversion</param>

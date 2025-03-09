@@ -43,7 +43,7 @@ public abstract class BalanceEventBase : EntityBase
     /// Reverses the effects of this Balance Event from the current balance of an Account
     /// </summary>
     /// <param name="currentBalance">Current Account Balance for an Account</param>
-    /// <returns>The new balance of the Account after the Balane Event has been reversed</returns>
+    /// <returns>The new balance of the Account after the Balance Event has been reversed</returns>
     public abstract AccountBalance ReverseEventFromBalance(AccountBalance currentBalance);
 
     /// <summary>

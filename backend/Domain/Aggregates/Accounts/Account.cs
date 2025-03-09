@@ -6,7 +6,7 @@ namespace Domain.Aggregates.Accounts;
 /// Entity class representing an Account
 /// </summary> 
 /// <remarks>
-/// An Account represents a financial account that money can be held in and transfered from.
+/// An Account represents a financial account that money can be held in and transferred from.
 /// </remarks>
 public class Account : EntityBase
 {

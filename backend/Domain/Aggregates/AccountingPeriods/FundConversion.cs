@@ -9,7 +9,7 @@ namespace Domain.Aggregates.AccountingPeriods;
 /// </summary>
 /// <remarks>
 /// A Fund Conversion represents an event where some amount from one Fund within an Account
-/// gets converted into an amount from a different Fund. A Fund Conversion is instantenous and
+/// gets converted into an amount from a different Fund. A Fund Conversion is instantaneous and
 /// this represents the only way to transfer money directly between Funds.
 /// </remarks>
 public class FundConversion : BalanceEventBase
@@ -17,7 +17,7 @@ public class FundConversion : BalanceEventBase
     private AccountingPeriod _accountingPeriod;
 
     /// <summary>
-    /// Parent Accounting Period for this Fund Converseion
+    /// Parent Accounting Period for this Fund Conversion
     /// </summary>
     public override AccountingPeriod AccountingPeriod => _accountingPeriod;
 
@@ -52,7 +52,7 @@ public class FundConversion : BalanceEventBase
             return false;
         }
         // Cannot apply this Balance Event if there is an insufficient amount for this Fund in this Account.
-        // For simplicity, count pending balance decreases but don't cound pending balance increases.
+        // For simplicity, count pending balance decreases but don't count pending balance increases.
         FundAmount? fundAmount = currentBalance.FundBalances.SingleOrDefault(fundAmount => fundAmount.Fund == FromFund);
         FundAmount? pendingFundAmount = currentBalance.PendingFundBalanceChanges.SingleOrDefault(fundAmount => fundAmount.Fund == FromFund);
         if (fundAmount == null || Math.Min(fundAmount.Amount, fundAmount.Amount + (pendingFundAmount?.Amount ?? 0)) < Amount)

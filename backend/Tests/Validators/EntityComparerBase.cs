@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Tests.Validators;
 
 /// <summary>
-/// Base class of all comparers used to compare Entites and their states
+/// Base class of all comparers used to compare Entities and their states
 /// </summary>
 internal abstract class EntityComparerBase
 {

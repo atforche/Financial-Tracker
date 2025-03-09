@@ -3,7 +3,7 @@ using Domain.ValueObjects;
 namespace Tests.Validators;
 
 /// <summary>
-/// Validator class that valdates the provided Account Balance by Event matches the expected state
+/// Validator class that validates the provided Account Balance by Event matches the expected state
 /// </summary>
 internal sealed class AccountBalanceByEventValidator : EntityValidatorBase<AccountBalanceByEvent,
     AccountBalanceByEventState, AccountBalanceByEventComparer>

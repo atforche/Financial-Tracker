@@ -39,7 +39,7 @@ internal sealed class FundController : ControllerBase
         _fundRepository.FindAll().Select(fund => new FundModel(fund)).ToList();
 
     /// <summary>
-    /// Retrieves the Fund that mactches the provided ID
+    /// Retrieves the Fund that matches the provided ID
     /// </summary>
     /// <param name="fundId">Id of the Fund to retrieve</param>
     /// <returns>The Fund that matches the provided ID</returns>

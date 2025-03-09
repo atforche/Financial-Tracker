@@ -107,7 +107,7 @@ internal sealed class ChangeInValueComparer : EntityComparerBase,
     }
 
     /// <summary>
-    /// Record class representing the key used to compare a Fund Conversion or Fund Conversino State
+    /// Record class representing the key used to compare a Change In Value or Change In Value State
     /// </summary>
     /// <param name="EventDate">Event Date for this Fund Conversion</param>
     /// <param name="EventSequence">Event Sequence for this Fund Conversion</param>

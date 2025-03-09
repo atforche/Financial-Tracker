@@ -38,7 +38,7 @@ public interface IAccountingPeriodService
     /// Posts the provided Transaction
     /// </summary>
     /// <param name="transaction">Transaction to be posted</param>
-    /// <param name="account">Account that this Tranaction should be posted in</param>
+    /// <param name="account">Account that this Transaction should be posted in</param>
     /// <param name="postedStatementDate">Posted statement date for this Transaction in the provided Account</param>
     void PostTransaction(
         Transaction transaction,

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Data.Configuration;
 
 /// <summary>
-/// Base Entity Type Configuation for an Entity type
+/// Base Entity Type Configuration for an Entity type
 /// </summary>
 internal abstract class EntityConfigurationBase<TEntity> : IEntityTypeConfiguration<TEntity>
     where TEntity : EntityBase
