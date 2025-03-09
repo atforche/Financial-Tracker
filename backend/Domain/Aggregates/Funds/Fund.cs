@@ -17,11 +17,7 @@ public class Fund : EntityBase
     /// </summary>
     public string Name { get; private set; }
 
-    private Fund()
-        : base(new EntityId(default, Guid.NewGuid()))
-    {
-        Name = "";
-    }
+    private Fund() : base(new EntityId(default, Guid.NewGuid())) => Name = "";
 
     /// <summary>
     /// Constructs a new instance of this class

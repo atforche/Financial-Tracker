@@ -13,10 +13,8 @@ public class AccountBalanceService : IAccountBalanceService
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="accountingPeriodRepository">Repository of Accounting Periods</param>
-    public AccountBalanceService(IAccountingPeriodRepository accountingPeriodRepository)
-    {
+    public AccountBalanceService(IAccountingPeriodRepository accountingPeriodRepository) =>
         _accountingPeriodRepository = accountingPeriodRepository;
-    }
 
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountBalanceByDate> GetAccountBalancesByDate(Account account, DateRange dateRange)

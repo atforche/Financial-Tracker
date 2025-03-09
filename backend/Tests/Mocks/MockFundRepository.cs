@@ -12,10 +12,7 @@ internal sealed class MockFundRepository : IFundRepository
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public MockFundRepository()
-    {
-        _funds = [];
-    }
+    public MockFundRepository() => _funds = [];
 
     /// <inheritdoc/>
     public Fund? FindByExternalIdOrNull(Guid id) => _funds.SingleOrDefault(fund => fund.Id.ExternalId == id);

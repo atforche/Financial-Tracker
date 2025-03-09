@@ -12,10 +12,7 @@ internal sealed class MockAccountRepository : IAccountRepository
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public MockAccountRepository()
-    {
-        _accounts = [];
-    }
+    public MockAccountRepository() => _accounts = [];
 
     /// <inheritdoc/>
     public Account? FindByExternalIdOrNull(Guid id) => _accounts.SingleOrDefault(account => account.Id.ExternalId == id);

@@ -36,10 +36,8 @@ internal abstract class EntityValidatorBase<TEntity, TState, TComparer>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="entitiesToValidate">Entities to validate</param>
-    protected EntityValidatorBase(IEnumerable<TEntity> entitiesToValidate)
-    {
+    protected EntityValidatorBase(IEnumerable<TEntity> entitiesToValidate) =>
         EntitiesToValidate = entitiesToValidate.ToList();
-    }
 
     /// <summary>
     /// Validates that the provided expected state matches the provided actual state

@@ -36,11 +36,7 @@ public class Account : EntityBase
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private Account()
-        : base(new EntityId(default, Guid.NewGuid()))
-    {
-        Name = "";
-    }
+    private Account() : base(new EntityId(default, Guid.NewGuid())) => Name = "";
 
     /// <summary>
     /// Validates the current Account

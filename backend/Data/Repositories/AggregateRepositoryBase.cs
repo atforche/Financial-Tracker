@@ -18,10 +18,7 @@ public abstract class AggregateRepositoryBase<TAggregate>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="databaseContext">Database Context for this Aggregate Repository</param>
-    protected AggregateRepositoryBase(DatabaseContext databaseContext)
-    {
-        DatabaseContext = databaseContext;
-    }
+    protected AggregateRepositoryBase(DatabaseContext databaseContext) => DatabaseContext = databaseContext;
 
     /// <summary>
     /// Finds the Aggregate with the provided external ID

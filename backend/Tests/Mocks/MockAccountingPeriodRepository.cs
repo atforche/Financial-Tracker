@@ -13,10 +13,7 @@ internal sealed class MockAccountingPeriodRepository : IAccountingPeriodReposito
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public MockAccountingPeriodRepository()
-    {
-        _accountingPeriods = [];
-    }
+    public MockAccountingPeriodRepository() => _accountingPeriods = [];
 
     /// <inheritdoc/>
     public AccountingPeriod? FindByExternalIdOrNull(Guid id) => _accountingPeriods

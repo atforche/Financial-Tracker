@@ -11,10 +11,7 @@ public class FundService : IFundService
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="fundRepository">Repository of Funds</param>
-    public FundService(IFundRepository fundRepository)
-    {
-        _fundRepository = fundRepository;
-    }
+    public FundService(IFundRepository fundRepository) => _fundRepository = fundRepository;
 
     /// <inheritdoc/>
     public Fund CreateNewFund(string name)

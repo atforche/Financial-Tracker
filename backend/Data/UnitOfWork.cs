@@ -22,10 +22,7 @@ public class UnitOfWork : IUnitOfWork
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="context">Context to use to connect to the database</param>
-    public UnitOfWork(DatabaseContext context)
-    {
-        _context = context;
-    }
+    public UnitOfWork(DatabaseContext context) => _context = context;
 
     /// <inheritdoc/>
     public async Task SaveChangesAsync() => await _context.SaveChangesAsync();

@@ -91,11 +91,7 @@ public sealed class TransactionBalanceEvent : BalanceEventBase
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private TransactionBalanceEvent()
-        : base()
-    {
-        Transaction = null!;
-    }
+    private TransactionBalanceEvent() : base() => Transaction = null!;
 
     /// <summary>
     /// Applies an Added Transaction Balance Event to the provided balance
