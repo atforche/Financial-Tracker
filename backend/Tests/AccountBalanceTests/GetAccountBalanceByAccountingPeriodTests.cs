@@ -60,7 +60,7 @@ public class GetAccountBalanceByAccountingPeriodTests : UnitTestBase
     [Fact]
     public void TestAccountBalanceByAccountingPeriod()
     {
-        Transaction transaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,
+        _accountingPeriodService.AddTransaction(_testAccountingPeriod,
             new DateOnly(2024, 11, 5),
             _testAccount,
             null,

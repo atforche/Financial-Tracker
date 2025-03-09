@@ -524,7 +524,7 @@ public class AddTransactionTests : UnitTestBase
                 Amount = 1500.00m,
             }
         ]);
-        Transaction transaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod, new DateOnly(2024, 12, 2),
+        _accountingPeriodService.AddTransaction(_testAccountingPeriod, new DateOnly(2024, 12, 2),
             _testAccount,
             creditAccount,
             [
@@ -612,7 +612,7 @@ public class AddTransactionTests : UnitTestBase
                     Amount = 1500.00m,
                 }
             ]);
-        Transaction transaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod, new DateOnly(2024, 12, 2),
+        _accountingPeriodService.AddTransaction(_testAccountingPeriod, new DateOnly(2024, 12, 2),
             firstDebtAccount,
             secondDebtAccount,
             [
@@ -686,7 +686,7 @@ public class AddTransactionTests : UnitTestBase
     public void TestTransactionThatMakesAccountFundBalanceNegative()
     {
         Fund secondFund = _fundService.CreateNewFund("Test2");
-        Transaction transaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod, new DateOnly(2024, 12, 2),
+        _accountingPeriodService.AddTransaction(_testAccountingPeriod, new DateOnly(2024, 12, 2),
             _testAccount,
             null,
             [

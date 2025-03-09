@@ -220,7 +220,7 @@ public class AddFundConversionTests : UnitTestBase
     [Fact]
     public void TestEffectOnAccountBalance()
     {
-        FundConversion fundConversion = _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
+        _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
             new DateOnly(2024, 11, 15),
             _testAccount,
             _testFromFund,
@@ -268,7 +268,7 @@ public class AddFundConversionTests : UnitTestBase
             }
         ]);
 
-        FundConversion fundConversion = _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
+        _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
             new DateOnly(2024, 11, 15),
             debtAccount,
             _testFromFund,

@@ -112,7 +112,6 @@ public class AccountingPeriodService : IAccountingPeriodService
         AccountingPeriod nextAccountingPeriod,
         AccountingPeriod previousAccountingPeriod)
     {
-        DateOnly endOfPreviousPeriod = nextAccountingPeriod.PeriodStartDate.AddDays(-1);
         foreach (Account account in _accountRepository.FindAll())
         {
             nextAccountingPeriod.AddAccountBalanceCheckpoint(account,
