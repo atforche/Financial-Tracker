@@ -1,5 +1,4 @@
 using Data;
-using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
 using Domain.Services;
@@ -27,12 +26,10 @@ internal sealed class AccountController : ControllerBase
     /// <param name="unitOfWork">Unit of work to commit changes to the database</param>
     /// <param name="accountService">Service that constructs Accounts</param>
     /// <param name="accountRepository">Repository of Accounts</param>
-    /// <param name="accountingPeriodRepository">Repository of Accounting Periods</param>
     /// <param name="fundRepository">Repository of Funds</param>
     public AccountController(IUnitOfWork unitOfWork,
         IAccountService accountService,
         IAccountRepository accountRepository,
-        IAccountingPeriodRepository accountingPeriodRepository,
         IFundRepository fundRepository)
     {
         _unitOfWork = unitOfWork;
