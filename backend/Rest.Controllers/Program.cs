@@ -9,7 +9,6 @@ using Domain.Services;
 using Domain.Services.Implementations;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
-using Rest.Controllers;
 using Rest.Models;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
