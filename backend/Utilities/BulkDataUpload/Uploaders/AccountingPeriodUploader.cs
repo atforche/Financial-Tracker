@@ -12,7 +12,7 @@ internal sealed class AccountingPeriodUploader : DataUploader<AccountingPeriodUp
 {
     private List<FundModel>? _funds;
     private List<AccountModel>? _accounts;
-    private Dictionary<Guid, TransactionModel> _transactions = [];
+    private readonly Dictionary<Guid, TransactionModel> _transactions = [];
 
     /// <inheritdoc/>
     public override async Task UploadAsync(AccountingPeriodUploadModel model)

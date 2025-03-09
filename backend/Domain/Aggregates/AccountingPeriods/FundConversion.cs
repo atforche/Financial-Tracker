@@ -14,7 +14,7 @@ namespace Domain.Aggregates.AccountingPeriods;
 /// </remarks>
 public class FundConversion : BalanceEventBase
 {
-    private AccountingPeriod _accountingPeriod;
+    private readonly AccountingPeriod _accountingPeriod;
 
     /// <summary>
     /// Parent Accounting Period for this Fund Conversion

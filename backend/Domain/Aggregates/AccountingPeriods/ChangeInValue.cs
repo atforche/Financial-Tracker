@@ -12,7 +12,7 @@ namespace Domain.Aggregates.AccountingPeriods;
 /// </remarks>
 public class ChangeInValue : BalanceEventBase
 {
-    private AccountingPeriod _accountingPeriod;
+    private readonly AccountingPeriod _accountingPeriod;
 
     /// <summary>
     /// Parent Accounting Period for this Change In Value
