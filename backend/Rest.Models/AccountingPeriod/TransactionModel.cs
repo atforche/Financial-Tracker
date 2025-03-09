@@ -13,7 +13,7 @@ public class TransactionModel
     /// <inheritdoc cref="Domain.Aggregates.EntityBase.Id"/>
     public Guid Id { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.Transaction.TransactionDate"/>
+    /// <inheritdoc cref="Transaction.TransactionDate"/>
     public DateOnly TransactionDate { get; init; }
 
     /// <summary>
@@ -26,7 +26,7 @@ public class TransactionModel
     /// </summary>
     public TransactionAccountDetailModel? CreditDetail { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.Transaction.AccountingEntries"/>
+    /// <inheritdoc cref="Transaction.AccountingEntries"/>
     public ICollection<FundAmountModel> AccountingEntries { get; init; }
 
     /// <summary>
@@ -50,7 +50,7 @@ public class TransactionModel
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="transaction">Transaction entity to build this Transaction REST model from</param>
-    public TransactionModel(Domain.Aggregates.AccountingPeriods.Transaction transaction)
+    public TransactionModel(Transaction transaction)
     {
         Id = transaction.Id.ExternalId;
         TransactionDate = transaction.TransactionDate;
@@ -71,7 +71,7 @@ public class TransactionModel
 /// </summary>
 public class TransactionAccountDetailModel
 {
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.BalanceEventBase.Account"/>
+    /// <inheritdoc cref="BalanceEventBase.Account"/>
     public AccountModel Account { get; init; }
 
     /// <summary>
@@ -94,9 +94,7 @@ public class TransactionAccountDetailModel
     /// </summary>
     /// <param name="transaction">Transaction entity to build this Transaction Account Detail REST model from</param>
     /// <param name="type">Transaction Account Type for this Transaction Account Detail model</param>
-    public TransactionAccountDetailModel(
-        Domain.Aggregates.AccountingPeriods.Transaction transaction,
-        TransactionAccountType type)
+    public TransactionAccountDetailModel(Transaction transaction, TransactionAccountType type)
     {
         List<TransactionBalanceEvent> balanceEvents = transaction.TransactionBalanceEvents
             .Where(balanceEvent => balanceEvent.TransactionAccountType == type).ToList();
