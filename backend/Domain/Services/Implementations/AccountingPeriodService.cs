@@ -42,13 +42,13 @@ public class AccountingPeriodService(
         Account? creditAccount,
         IEnumerable<FundAmount> accountingEntries) =>
         accountingPeriod.AddTransaction(transactionDate,
-            debitAccount != null ? GetCreateBalanceEventAccountInfo(debitAccount, transactionDate) : null,
-            creditAccount != null ? GetCreateBalanceEventAccountInfo(creditAccount, transactionDate) : null,
+            debitAccount != null ? GetCreateBalanceEventAccountInfo(accountingPeriod, debitAccount, transactionDate) : null,
+            creditAccount != null ? GetCreateBalanceEventAccountInfo(accountingPeriod, creditAccount, transactionDate) : null,
             accountingEntries);
 
     /// <inheritdoc/>
     public void PostTransaction(Transaction transaction, Account account, DateOnly postedStatementDate) =>
-        transaction.Post(GetCreateBalanceEventAccountInfo(account, postedStatementDate), postedStatementDate);
+        transaction.Post(GetCreateBalanceEventAccountInfo(transaction.AccountingPeriod, account, postedStatementDate), postedStatementDate);
 
     /// <inheritdoc/>
     public FundConversion AddFundConversion(AccountingPeriod accountingPeriod,
@@ -58,7 +58,7 @@ public class AccountingPeriodService(
         Fund toFund,
         decimal amount) =>
         accountingPeriod.AddFundConversion(eventDate,
-            GetCreateBalanceEventAccountInfo(account, eventDate),
+            GetCreateBalanceEventAccountInfo(accountingPeriod, account, eventDate),
             fromFund,
             toFund,
             amount);
@@ -69,7 +69,7 @@ public class AccountingPeriodService(
         Account account,
         FundAmount accountingEntry) =>
         accountingPeriod.AddChangeInValue(eventDate,
-            GetCreateBalanceEventAccountInfo(account, eventDate),
+            GetCreateBalanceEventAccountInfo(accountingPeriod, account, eventDate),
             accountingEntry);
 
     /// <inheritdoc/>
@@ -109,14 +109,19 @@ public class AccountingPeriodService(
     /// <summary>
     /// Builds a Create Balance Event Account Info for the provided Account and Event Date
     /// </summary>
+    /// <param name="accountingPeriod">Accounting Period for this Create Balance Event Account Info</param>
     /// <param name="account">Account for this Create Balance Event Account Info</param>
     /// <param name="eventDate">Event Date for this Create Balance Event Account Info</param>
     /// <returns>The newly created Create Balance Event Account Info</returns>
-    private CreateBalanceEventAccountInfo GetCreateBalanceEventAccountInfo(Account account, DateOnly eventDate) =>
+    private CreateBalanceEventAccountInfo GetCreateBalanceEventAccountInfo(
+        AccountingPeriod accountingPeriod,
+        Account account,
+        DateOnly eventDate) =>
         new(account,
             _accountBalanceService.GetAccountBalancesByDate(
                 account,
                 new DateRange(eventDate, eventDate)).First().AccountBalance,
+            _accountBalanceService.GetAccountBalancesByAccountingPeriod(account, accountingPeriod).EndingBalance,
             _accountBalanceService.GetAccountBalancesByEvent(
                 account,
                 new DateRange(eventDate, DateOnly.MaxValue))

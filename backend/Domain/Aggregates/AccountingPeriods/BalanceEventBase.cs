@@ -104,7 +104,7 @@ public abstract class BalanceEventBase : EntityBase
             throw new InvalidOperationException();
         }
         // Validate that a balance event can only be added with a date in a month adjacent to the Accounting Period month
-        int monthDifference = ((AccountingPeriod.Year - EventDate.Year) * 12) + AccountingPeriod.Month - EventDate.Month;
+        int monthDifference = (Math.Abs(AccountingPeriod.Year - EventDate.Year) * 12) + Math.Abs(AccountingPeriod.Month - EventDate.Month);
         if (Math.Abs(monthDifference) > 1)
         {
             throw new InvalidOperationException();
@@ -124,11 +124,32 @@ public abstract class BalanceEventBase : EntityBase
             }
             runningBalance = balanceEvent.ApplyEventToBalance(runningBalance);
         }
-        // Validate that adding this Balance Event doesn't cause the balance of this account within the
-        // Accounting Period to become invalid
-        runningBalance = ApplyEventToBalance(accountInfo.CurrentBalance);
-        foreach (BalanceEventBase balanceEvent in accountInfo.FutureBalanceEventsForAccount
-            .Where(balanceEvent => balanceEvent.AccountingPeriod == AccountingPeriod))
+        ValidateBalanceAtEndOfAccountingPeriod(accountInfo);
+    }
+
+    /// <summary>
+    /// Validates that this Balance Event doesn't cause the Account's balance at the end of the Accounting Period
+    /// to become invalid
+    /// </summary>
+    /// <param name="accountInfo">Create Balance Event Account Info for this Balance Event</param>
+    private void ValidateBalanceAtEndOfAccountingPeriod(CreateBalanceEventAccountInfo accountInfo)
+    {
+        var futureBalanceEventsInPeriod = accountInfo.FutureBalanceEventsForAccount
+            .Where(balanceEvent => balanceEvent.AccountingPeriod == AccountingPeriod).ToList();
+
+        // Back out all of the future balance events in the current period
+        AccountBalance runningBalance = accountInfo.EndingAccountingPeriodBalance;
+        foreach (BalanceEventBase balanceEvent in futureBalanceEventsInPeriod)
+        {
+            runningBalance = balanceEvent.ReverseEventFromBalance(runningBalance);
+        }
+        // Now, apply the newly added Balance Event and attempt to re-apply all the existing balance events
+        if (!CanBeAppliedToBalance(runningBalance))
+        {
+            throw new InvalidOperationException();
+        }
+        runningBalance = ApplyEventToBalance(runningBalance);
+        foreach (BalanceEventBase balanceEvent in futureBalanceEventsInPeriod)
         {
             if (!balanceEvent.CanBeAppliedToBalance(runningBalance))
             {
@@ -155,6 +176,11 @@ public class CreateBalanceEventAccountInfo
     public AccountBalance CurrentBalance { get; init; }
 
     /// <summary>
+    /// Balance for the Account at the end of the Accounting Period the Balance Event is being added to
+    /// </summary>
+    public AccountBalance EndingAccountingPeriodBalance { get; init; }
+
+    /// <summary>
     /// Future Balance Events for the Account for this Balance Event
     /// </summary>
     public ICollection<BalanceEventBase> FutureBalanceEventsForAccount { get; init; }
@@ -164,13 +190,17 @@ public class CreateBalanceEventAccountInfo
     /// </summary>
     /// <param name="account">Account for this Balance Event</param>
     /// <param name="currentBalance">Current Balance for the Account for this Balance Event</param>
+    /// <param name="endingAccountingPeriodBalance">Ending Accounting Period Balance for this Balance Event</param>
     /// <param name="futureBalanceEventsForAccount">Future Balance Events for the Account for this Balance Even</param>
-    public CreateBalanceEventAccountInfo(Account account,
+    public CreateBalanceEventAccountInfo(
+        Account account,
         AccountBalance currentBalance,
+        AccountBalance endingAccountingPeriodBalance,
         IEnumerable<BalanceEventBase> futureBalanceEventsForAccount)
     {
         Account = account;
         CurrentBalance = currentBalance;
+        EndingAccountingPeriodBalance = endingAccountingPeriodBalance;
         FutureBalanceEventsForAccount = futureBalanceEventsForAccount.ToList();
         Validate();
     }
