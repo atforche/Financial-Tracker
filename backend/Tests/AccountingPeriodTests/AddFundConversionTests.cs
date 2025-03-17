@@ -1,8 +1,8 @@
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
-using Domain.Aggregates.Funds;
 using Domain.Services;
 using Domain.ValueObjects;
+using Tests.Setups;
 using Tests.Validators;
 
 namespace Tests.AccountingPeriodTests;
@@ -10,319 +10,271 @@ namespace Tests.AccountingPeriodTests;
 /// <summary>
 /// Test class that tests adding a Fund Conversion to an Accounting Period
 /// </summary>
-public class AddFundConversionTests : UnitTestBase
+public class AddFundConversionTests
 {
-    private readonly IAccountingPeriodRepository _accountingPeriodRepository;
-    private readonly IAccountingPeriodService _accountingPeriodService;
-    private readonly IAccountRepository _accountRepository;
-    private readonly IAccountService _accountService;
-    private readonly IFundRepository _fundRepository;
-    private readonly IFundService _fundService;
-    private readonly IAccountBalanceService _accountBalanceService;
-
-    private readonly Fund _testFromFund;
-    private readonly Fund _testToFund;
-    private readonly AccountingPeriod _testAccountingPeriod;
-    private readonly Account _testAccount;
-
-    /// <summary>
-    /// Constructs a new instance of this class.
-    /// This constructor is run again before each individual test in this test class.
-    /// </summary>
-    public AddFundConversionTests()
-    {
-        _accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
-        _accountingPeriodService = GetService<IAccountingPeriodService>();
-        _accountRepository = GetService<IAccountRepository>();
-        _accountService = GetService<IAccountService>();
-        _fundRepository = GetService<IFundRepository>();
-        _fundService = GetService<IFundService>();
-        _accountBalanceService = GetService<IAccountBalanceService>();
-
-        // Setup shared by all tests
-        _testFromFund = _fundService.CreateNewFund("From");
-        _fundRepository.Add(_testFromFund);
-        _testToFund = _fundService.CreateNewFund("To");
-        _fundRepository.Add(_testToFund);
-        _testAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
-        _accountingPeriodRepository.Add(_testAccountingPeriod);
-        _testAccount = _accountService.CreateNewAccount("Test", AccountType.Standard,
-            [
-                new FundAmount()
-                {
-                    Fund = _testFromFund,
-                    Amount = 2500.00m
-                },
-            ]);
-        _accountRepository.Add(_testAccount);
-    }
-
     /// <summary>
     /// Tests that a Fund Conversion can be added successfully
     /// </summary>
     [Fact]
-    public void TestAddFundConversion()
+    public void SimpleTest()
     {
-        FundConversion fundConversion = _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
-            new DateOnly(2024, 11, 15),
-            _testAccount,
-            _testFromFund,
-            _testToFund,
+        var setup = new DefaultSetup();
+        FundConversion fundConversion = setup.GetService<IAccountingPeriodService>().AddFundConversion(setup.AccountingPeriod,
+            new DateOnly(2025, 1, 15),
+            setup.Account,
+            setup.Fund,
+            setup.OtherFund,
             100.00m);
         new FundConversionValidator().Validate(fundConversion,
             new FundConversionState
             {
-                AccountName = _testAccount.Name,
-                EventDate = new DateOnly(2024, 11, 15),
+                AccountName = setup.Account.Name,
+                EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
-                FromFundName = _testFromFund.Name,
-                ToFundName = _testToFund.Name,
+                FromFundName = setup.Fund.Name,
+                ToFundName = setup.OtherFund.Name,
                 Amount = 100.00m,
             });
     }
 
     /// <summary>
-    /// Tests that adding a Fund Conversion to a closed Accounting Period fails
+    /// Tests adding a Fund Conversion with different Accounting Period scenarios
     /// </summary>
-    [Fact]
-    public void TestWithClosedAccountingPeriod()
+    [Theory]
+    [MemberData(nameof(AccountingPeriodSetup.GetCollection), MemberType = typeof(AccountingPeriodSetup))]
+    public void AccountingPeriodTests(
+        AccountingPeriodStatus? pastPeriodStatus,
+        AccountingPeriodStatus currentPeriodStatus,
+        AccountingPeriodStatus? futurePeriodStatus)
     {
-        _accountingPeriodService.ClosePeriod(_testAccountingPeriod);
-        Assert.Throws<InvalidOperationException>(() =>
-            _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
-                new DateOnly(2024, 11, 15),
-                _testAccount,
-                _testFromFund,
-                _testToFund,
-                100.00m));
-    }
-
-    /// <summary>
-    /// Tets that a Fund Conversion can be added to an Accounting Period when its date falls in a different Accounting Period
-    /// </summary>
-    [Fact]
-    public void TestWithDateThatFallsInDifferentAccountingPeriod()
-    {
-        // Add an additional Accounting Period
-        AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
-        _accountingPeriodRepository.Add(secondAccountingPeriod);
-
-        // Add a Fund Conversion to the first Accounting Period that falls in the second period
-        FundConversion fundConversion = _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
-            new DateOnly(2024, 12, 15),
-            _testAccount,
-            _testFromFund,
-            _testToFund,
+        var setup = new AccountingPeriodSetup(pastPeriodStatus, currentPeriodStatus, futurePeriodStatus);
+        if (!setup.CurrentAccountingPeriod.IsOpen)
+        {
+            // Ensure that an error is thrown for a closed Accounting Period
+            Assert.Throws<InvalidOperationException>(() => setup.GetService<IAccountingPeriodService>()
+                .AddFundConversion(setup.CurrentAccountingPeriod,
+                    new DateOnly(2025, 1, 15),
+                    setup.Account,
+                    setup.Fund,
+                    setup.OtherFund,
+                    100.00m));
+            return;
+        }
+        // Otherwise, ensure the Fund Conversion can be added normally
+        FundConversion fundConversion = setup.GetService<IAccountingPeriodService>().AddFundConversion(setup.CurrentAccountingPeriod,
+            new DateOnly(2025, 1, 15),
+            setup.Account,
+            setup.Fund,
+            setup.OtherFund,
             100.00m);
         new FundConversionValidator().Validate(fundConversion,
             new FundConversionState
             {
-                AccountName = _testAccount.Name,
-                EventDate = new DateOnly(2024, 12, 15),
+                AccountName = setup.Account.Name,
+                EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
-                FromFundName = _testFromFund.Name,
-                ToFundName = _testToFund.Name,
-                Amount = 100.00m,
-            });
-
-        // Add a Fund Conversion to the second Accounting Period that falls in the first period
-        fundConversion = _accountingPeriodService.AddFundConversion(secondAccountingPeriod,
-            new DateOnly(2024, 11, 15),
-            _testAccount,
-            _testFromFund,
-            _testToFund,
-            100.00m);
-        new FundConversionValidator().Validate(fundConversion,
-            new FundConversionState
-            {
-                AccountName = _testAccount.Name,
-                EventDate = new DateOnly(2024, 11, 15),
-                EventSequence = 1,
-                FromFundName = _testFromFund.Name,
-                ToFundName = _testToFund.Name,
+                FromFundName = setup.Fund.Name,
+                ToFundName = setup.OtherFund.Name,
                 Amount = 100.00m,
             });
     }
 
     /// <summary>
-    /// Tests that adding a Fund Conversion with an invalid date will fail
+    /// Test adding a Fund Conversion with different event dates
     /// </summary>
-    [Fact]
-    public void TestWithInvalidDate()
+    [Theory]
+    [MemberData(nameof(EventDateSetup.GetCollection), MemberType = typeof(EventDateSetup))]
+    public void EventDateTests(DateOnly eventDate)
     {
-        // Test that adding a Fund Conversion too far in the past will fail
-        Assert.Throws<InvalidOperationException>(() =>
-            _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
-                new DateOnly(2024, 9, 15),
-                _testAccount,
-                _testFromFund,
-                _testToFund,
-                100.00m));
-
-        // Test that adding a Fund Conversion too far in the future will fail
-        Assert.Throws<InvalidOperationException>(() =>
-            _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
-                new DateOnly(2025, 1, 15),
-                _testAccount,
-                _testFromFund,
-                _testToFund,
-                100.00m));
+        var setup = new EventDateSetup();
+        int monthDifference = (Math.Abs(setup.CurrentAccountingPeriod.Year - eventDate.Year) * 12) +
+            Math.Abs(setup.CurrentAccountingPeriod.Month - eventDate.Month);
+        if (monthDifference > 1)
+        {
+            // Ensure that an error is thrown if the Fund Conversion is added more than one month outside of the Accounting Period
+            Assert.Throws<InvalidOperationException>(() => setup.GetService<IAccountingPeriodService>()
+                .AddFundConversion(setup.CurrentAccountingPeriod,
+                    eventDate,
+                    setup.Account,
+                    setup.Fund,
+                    setup.OtherFund,
+                    100.00m));
+            return;
+        }
+        // Otherwise, ensure the Fund Conversion can be added normally
+        FundConversion fundConversion = setup.GetService<IAccountingPeriodService>().AddFundConversion(setup.CurrentAccountingPeriod,
+            eventDate,
+            setup.Account,
+            setup.Fund,
+            setup.OtherFund,
+            100.00m);
+        new FundConversionValidator().Validate(fundConversion,
+            new FundConversionState
+            {
+                AccountName = setup.Account.Name,
+                EventDate = eventDate,
+                EventSequence = 1,
+                FromFundName = setup.Fund.Name,
+                ToFundName = setup.OtherFund.Name,
+                Amount = 100.00m,
+            });
     }
 
     /// <summary>
-    /// Tests that adding a Fund Conversion with an invalid Fund will fail
+    /// Test adding a Fund Conversion to different types of Accounts
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(AccountSetup.GetCollection), MemberType = typeof(AccountSetup))]
+    public void AccountTypeTests(AccountType accountType)
+    {
+        var setup = new AccountSetup(accountType);
+
+        // Add a Fund Conversion debiting and crediting the fund
+        FundConversion debitFundConversion = setup.GetService<IAccountingPeriodService>().AddFundConversion(setup.AccountingPeriod,
+            new DateOnly(2025, 1, 10),
+            setup.Account,
+            setup.Fund,
+            setup.OtherFund,
+            100.00m);
+        FundConversion creditFundConversion = setup.GetService<IAccountingPeriodService>().AddFundConversion(setup.AccountingPeriod,
+            new DateOnly(2025, 1, 20),
+            setup.Account,
+            setup.OtherFund,
+            setup.Fund,
+            200.00m);
+
+        // Verify that the Fund Conversion was added as expected
+        new FundConversionValidator().Validate(debitFundConversion,
+            new FundConversionState
+            {
+                AccountName = setup.Account.Name,
+                EventDate = new DateOnly(2025, 1, 10),
+                EventSequence = 1,
+                FromFundName = setup.Fund.Name,
+                ToFundName = setup.OtherFund.Name,
+                Amount = 100.00m,
+            });
+        new FundConversionValidator().Validate(creditFundConversion,
+            new FundConversionState
+            {
+                AccountName = setup.Account.Name,
+                EventDate = new DateOnly(2025, 1, 20),
+                EventSequence = 1,
+                FromFundName = setup.OtherFund.Name,
+                ToFundName = setup.Fund.Name,
+                Amount = 200.00m,
+            });
+
+        // Verify that the Account balance was affected as expected
+        new AccountBalanceByEventValidator().Validate(
+            setup.GetService<IAccountBalanceService>().GetAccountBalancesByEvent(setup.Account, new DateRange(new DateOnly(2025, 1, 1), new DateOnly(2025, 1, 31))),
+            [
+                new AccountBalanceByEventState
+                {
+                    AccountName = setup.Account.Name,
+                    AccountingPeriodYear = setup.AccountingPeriod.Year,
+                    AccountingPeriodMonth = setup.AccountingPeriod.Month,
+                    EventDate = new DateOnly(2025, 1, 10),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = setup.Fund.Name,
+                            Amount = 1400.00m,
+                        },
+                        new FundAmountState
+                        {
+                            FundName = setup.OtherFund.Name,
+                            Amount = 1600.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = [],
+                },
+                new AccountBalanceByEventState
+                {
+                    AccountName = setup.Account.Name,
+                    AccountingPeriodYear = setup.AccountingPeriod.Year,
+                    AccountingPeriodMonth = setup.AccountingPeriod.Month,
+                    EventDate = new DateOnly(2025, 1, 20),
+                    EventSequence = 1,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = setup.Fund.Name,
+                            Amount = 1600.00m,
+                        },
+                        new FundAmountState
+                        {
+                            FundName = setup.OtherFund.Name,
+                            Amount = 1400.00m,
+                        }
+                    ],
+                    PendingFundBalanceChanges = [],
+                }
+            ]);
+    }
+
+    /// <summary>
+    /// Test adding a Fund Conversion with different combinations of Funds
     /// </summary>
     [Fact]
-    public void TestWithInvalidFunds() =>
+    public void FundTests()
+    {
+        var setup = new DefaultSetup();
         // Test that having the same from Fund and to Fund will fail
         Assert.Throws<InvalidOperationException>(() =>
-            _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
+            setup.GetService<IAccountingPeriodService>().AddFundConversion(setup.AccountingPeriod,
                 new DateOnly(2024, 11, 15),
-                _testAccount,
-                _testFromFund,
-                _testFromFund,
+                setup.Account,
+                setup.Fund,
+                setup.OtherFund,
                 100.00m));
-
-    /// <summary>
-    /// Tests that adding a Fund Conversion with an invalid amount will fail
-    /// </summary>
-    [Fact]
-    public void TestWithInvalidAmount()
-    {
-        // Tests that having an amount of zero will fail
-        Assert.Throws<InvalidOperationException>(() =>
-            _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
-                new DateOnly(2024, 11, 15),
-                _testAccount,
-                _testFromFund,
-                _testToFund,
-                0.00m));
-
-        // Tests that having a negative amount will fail
-        Assert.Throws<InvalidOperationException>(() =>
-            _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
-                new DateOnly(2024, 11, 15),
-                _testAccount,
-                _testFromFund,
-                _testToFund,
-                -100.00m));
-
-        // Tests that having an amount greater than the current balance of the from Fund in the account will fail
-        Assert.Throws<InvalidOperationException>(() =>
-            _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
-                new DateOnly(2024, 11, 15),
-                _testAccount,
-                _testFromFund,
-                _testToFund,
-                10000.00m));
     }
 
     /// <summary>
-    /// Tests that adding a Fund Conversion affects the Account's balances as expected
+    /// Tests adding a Fund Conversion with different amounts
     /// </summary>
-    [Fact]
-    public void TestEffectOnAccountBalance()
+    [Theory]
+    [MemberData(nameof(EventAmountSetup.GetCollection), MemberType = typeof(EventAmountSetup))]
+    public void AmountTests(EventAmountScenario scenario)
     {
-        _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
-            new DateOnly(2024, 11, 15),
-            _testAccount,
-            _testFromFund,
-            _testToFund,
-            100.00m);
-        new AccountBalanceByEventValidator().Validate(
-            _accountBalanceService.GetAccountBalancesByEvent(_testAccount, new DateRange(new DateOnly(2024, 11, 1), new DateOnly(2024, 11, 30))),
-            [
-                new AccountBalanceByEventState
-                {
-                    AccountName = _testAccount.Name,
-                    AccountingPeriodYear = _testAccountingPeriod.Year,
-                    AccountingPeriodMonth = _testAccountingPeriod.Month,
-                    EventDate = new DateOnly(2024, 11, 15),
-                    EventSequence = 1,
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = _testFromFund.Name,
-                            Amount = 2400.00m,
-                        },
-                        new FundAmountState
-                        {
-                            FundName = _testToFund.Name,
-                            Amount = 100.00m,
-                        }
-                    ],
-                    PendingFundBalanceChanges = [],
-                }
-            ]);
-    }
-
-    /// <summary>
-    /// Tests that adding a Fund Conversion affects a debt Account's balances as expected (no difference)
-    /// </summary>
-    [Fact]
-    public void TestEffectOnDebtAccountBalance()
-    {
-        Account debtAccount = _accountService.CreateNewAccount("Debt", AccountType.Debt,
+        List<EventAmountScenario> expectedErrors =
         [
-            new FundAmount
+            EventAmountScenario.Zero,
+            EventAmountScenario.ForcesFundBalanceNegative,
+            EventAmountScenario.ForcesAccountBalanceToZero,
+            EventAmountScenario.ForcesAccountBalanceNegative,
+            EventAmountScenario.ForcesFutureEventToMakeAccountBalanceNegative,
+            EventAmountScenario.ForcesAccountBalancesAtEndOfPeriodToBeNegative
+        ];
+        var setup = new EventAmountSetup(scenario);
+        if (expectedErrors.Contains(scenario))
+        {
+            Assert.Throws<InvalidOperationException>(() => setup.GetService<IAccountingPeriodService>().AddFundConversion(setup.AccountingPeriod,
+                new DateOnly(2025, 1, 10),
+                setup.Account,
+                setup.Fund,
+                setup.OtherFund,
+                setup.Amount));
+            return;
+        }
+        FundConversion fundConversion = setup.GetService<IAccountingPeriodService>().AddFundConversion(setup.AccountingPeriod,
+            new DateOnly(2025, 1, 10),
+            setup.Account,
+            setup.Fund,
+            setup.OtherFund,
+            setup.Amount);
+        new FundConversionValidator().Validate(fundConversion,
+            new FundConversionState
             {
-                Fund = _testFromFund,
-                Amount = 2500.00m,
-            }
-        ]);
-
-        _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
-            new DateOnly(2024, 11, 15),
-            debtAccount,
-            _testFromFund,
-            _testToFund,
-            100.00m);
-        new AccountBalanceByEventValidator().Validate(
-            _accountBalanceService.GetAccountBalancesByEvent(debtAccount, new DateRange(new DateOnly(2024, 11, 1), new DateOnly(2024, 11, 30))),
-            [
-                new AccountBalanceByEventState
-                {
-                    AccountName = debtAccount.Name,
-                    AccountingPeriodYear = _testAccountingPeriod.Year,
-                    AccountingPeriodMonth = _testAccountingPeriod.Month,
-                    EventDate = new DateOnly(2024, 11, 15),
-                    EventSequence = 1,
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = _testFromFund.Name,
-                            Amount = 2400.00m,
-                        },
-                        new FundAmountState
-                        {
-                            FundName = _testToFund.Name,
-                            Amount = 100.00m,
-                        }
-                    ],
-                    PendingFundBalanceChanges = [],
-                }
-            ]);
-    }
-
-    /// <summary>
-    /// Test that adding a Fund Conversion that would invalidate a future Fund Conversion will fail
-    /// </summary>
-    [Fact]
-    public void TestInvalidateFutureFundConversion()
-    {
-        FundConversion fundConversion = _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
-            new DateOnly(2024, 11, 15),
-            _testAccount,
-            _testFromFund,
-            _testToFund,
-            100.00m);
-        Assert.Throws<InvalidOperationException>(() => _accountingPeriodService.AddFundConversion(_testAccountingPeriod,
-            new DateOnly(2024, 11, 10),
-            _testAccount,
-            _testFromFund,
-            _testToFund,
-            2450.00m));
+                AccountName = setup.Account.Name,
+                EventDate = new DateOnly(2025, 1, 10),
+                EventSequence = 1,
+                FromFundName = setup.Fund.Name,
+                ToFundName = setup.OtherFund.Name,
+                Amount = setup.Amount,
+            });
     }
 }

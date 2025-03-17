@@ -18,6 +18,11 @@ internal sealed class EventDateSetup : TestCaseSetup
     public Fund Fund { get; }
 
     /// <summary>
+    /// Other Fund for the Event Date Setup
+    /// </summary>
+    public Fund OtherFund { get; }
+
+    /// <summary>
     /// Account for the Event Date Setup
     /// </summary>
     public Account Account { get; }
@@ -37,6 +42,8 @@ internal sealed class EventDateSetup : TestCaseSetup
             AccountingPeriodStatus.Open);
         Fund = accountingPeriodSetup.Fund;
         GetService<IFundRepository>().Add(Fund);
+        OtherFund = accountingPeriodSetup.OtherFund;
+        GetService<IFundRepository>().Add(OtherFund);
         Account = accountingPeriodSetup.Account;
         GetService<IAccountRepository>().Add(Account);
 

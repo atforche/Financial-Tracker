@@ -10,7 +10,7 @@ namespace Tests.AccountingPeriodTests;
 /// <summary>
 /// Test class that tests adding a Change In Value to an Accounting Period
 /// </summary>
-public class AddChangeInValueTests : UnitTestBase
+public class AddChangeInValueTests
 {
     /// <summary>
     /// Tests that a Change In Value can be added successfully
@@ -96,7 +96,8 @@ public class AddChangeInValueTests : UnitTestBase
     public void EventDateTests(DateOnly eventDate)
     {
         var setup = new EventDateSetup();
-        int monthDifference = (Math.Abs(setup.CurrentAccountingPeriod.Year - eventDate.Year) * 12) + Math.Abs(setup.CurrentAccountingPeriod.Month - eventDate.Month);
+        int monthDifference = (Math.Abs(setup.CurrentAccountingPeriod.Year - eventDate.Year) * 12) +
+            Math.Abs(setup.CurrentAccountingPeriod.Month - eventDate.Month);
         if (monthDifference > 1)
         {
             // Ensure that an error is thrown if the Change In Value is added more than one month outside of the Accounting Period
@@ -160,6 +161,31 @@ public class AddChangeInValueTests : UnitTestBase
                 Amount = -100.00m,
             });
 
+        // Verify that the Change In Values were added as expected
+        new ChangeInValueValidator().Validate(positiveChangeInValue,
+            new ChangeInValueState
+            {
+                AccountName = setup.Account.Name,
+                EventDate = new DateOnly(2025, 1, 10),
+                EventSequence = 1,
+                AccountingEntry = new FundAmountState
+                {
+                    FundName = setup.Fund.Name,
+                    Amount = 100.00m,
+                }
+            });
+        new ChangeInValueValidator().Validate(negativeChangeInValue,
+            new ChangeInValueState
+            {
+                AccountName = setup.Account.Name,
+                EventDate = new DateOnly(2025, 1, 20),
+                EventSequence = 1,
+                AccountingEntry = new FundAmountState
+                {
+                    FundName = setup.Fund.Name,
+                    Amount = -100.00m,
+                }
+            });
         // Verify that the Account balance was affected as expected
         new AccountBalanceByEventValidator().Validate(
             setup.GetService<IAccountBalanceService>()
@@ -170,14 +196,19 @@ public class AddChangeInValueTests : UnitTestBase
                     AccountName = setup.Account.Name,
                     AccountingPeriodYear = setup.AccountingPeriod.Year,
                     AccountingPeriodMonth = setup.AccountingPeriod.Month,
-                    EventDate = positiveChangeInValue.EventDate,
+                    EventDate = new DateOnly(2025, 1, 10),
                     EventSequence = 1,
                     FundBalances =
                     [
                         new FundAmountState
                         {
                             FundName = setup.Fund.Name,
-                            Amount = 2600.00m,
+                            Amount = 1600.00m,
+                        },
+                        new FundAmountState
+                        {
+                            FundName = setup.OtherFund.Name,
+                            Amount = 1500.00m,
                         }
                     ],
                     PendingFundBalanceChanges = [],
@@ -187,14 +218,19 @@ public class AddChangeInValueTests : UnitTestBase
                     AccountName = setup.Account.Name,
                     AccountingPeriodYear = setup.AccountingPeriod.Year,
                     AccountingPeriodMonth = setup.AccountingPeriod.Month,
-                    EventDate = negativeChangeInValue.EventDate,
+                    EventDate = new DateOnly(2025, 1, 20),
                     EventSequence = 1,
                     FundBalances =
                     [
                         new FundAmountState
                         {
                             FundName = setup.Fund.Name,
-                            Amount = 2500.00m,
+                            Amount = 1500.00m,
+                        },
+                        new FundAmountState
+                        {
+                            FundName = setup.OtherFund.Name,
+                            Amount = 1500.00m,
                         }
                     ],
                     PendingFundBalanceChanges = [],
@@ -241,7 +277,7 @@ public class AddChangeInValueTests : UnitTestBase
             new ChangeInValueState
             {
                 AccountName = setup.Account.Name,
-                EventDate = changeInValue.EventDate,
+                EventDate = new DateOnly(2025, 1, 10),
                 EventSequence = 1,
                 AccountingEntry = new FundAmountState
                 {

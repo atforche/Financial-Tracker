@@ -11,13 +11,17 @@ namespace Tests.Setups;
 /// </summary>
 internal sealed class EventAmountSetup : TestCaseSetup
 {
-    private readonly Fund _secondFund;
     private readonly AccountingPeriod _futureAccountingPeriod;
 
     /// <summary>
     /// Fund for this Event Amount Setup
     /// </summary>
     public Fund Fund { get; }
+
+    /// <summary>
+    /// Other Fund for this Event Amount Setup
+    /// </summary>
+    public Fund OtherFund { get; }
 
     /// <summary>
     /// Account for this Event Amount Setup
@@ -44,8 +48,8 @@ internal sealed class EventAmountSetup : TestCaseSetup
         IFundRepository fundRepository = GetService<IFundRepository>();
         Fund = fundService.CreateNewFund("Test");
         fundRepository.Add(Fund);
-        _secondFund = fundService.CreateNewFund("Test2");
-        fundRepository.Add(_secondFund);
+        OtherFund = fundService.CreateNewFund("Test2");
+        fundRepository.Add(OtherFund);
 
         IAccountingPeriodService accountingPeriodService = GetService<IAccountingPeriodService>();
         IAccountingPeriodRepository accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
@@ -63,7 +67,7 @@ internal sealed class EventAmountSetup : TestCaseSetup
                 },
                 new FundAmount
                 {
-                    Fund = _secondFund,
+                    Fund = OtherFund,
                     Amount = 1500.00m,
                 }
             ]);
@@ -100,7 +104,7 @@ internal sealed class EventAmountSetup : TestCaseSetup
                 Account,
                 new FundAmount
                 {
-                    Fund = Fund,
+                    Fund = OtherFund,
                     Amount = -2999.99m,
                 });
             Amount = -100.00m;

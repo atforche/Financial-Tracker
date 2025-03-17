@@ -17,6 +17,11 @@ internal sealed class DefaultSetup : TestCaseSetup
     public Fund Fund { get; }
 
     /// <summary>
+    /// Other Fund for the Default Setup
+    /// </summary>
+    public Fund OtherFund { get; }
+
+    /// <summary>
     /// Accounting Period for the Default Setup
     /// </summary>
     public AccountingPeriod AccountingPeriod { get; }
@@ -31,8 +36,13 @@ internal sealed class DefaultSetup : TestCaseSetup
     /// </summary>
     public DefaultSetup()
     {
-        Fund = GetService<IFundService>().CreateNewFund("Test");
-        GetService<IFundRepository>().Add(Fund);
+        IFundService fundService = GetService<IFundService>();
+        IFundRepository fundRepository = GetService<IFundRepository>();
+        Fund = fundService.CreateNewFund("Test");
+        fundRepository.Add(Fund);
+        OtherFund = fundService.CreateNewFund("OtherTest");
+        fundRepository.Add(OtherFund);
+
         AccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
         Account = GetService<IAccountService>().CreateNewAccount("Test", AccountType.Standard,
@@ -40,7 +50,12 @@ internal sealed class DefaultSetup : TestCaseSetup
                 new FundAmount
                 {
                     Fund = Fund,
-                    Amount = 2500.00m,
+                    Amount = 1500.00m,
+                },
+                new FundAmount
+                {
+                    Fund = OtherFund,
+                    Amount = 1500.00m
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
