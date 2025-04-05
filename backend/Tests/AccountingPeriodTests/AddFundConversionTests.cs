@@ -3,7 +3,6 @@ using Domain.Aggregates.Accounts;
 using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Scenarios;
-using Tests.Setups;
 using Tests.Validators;
 
 namespace Tests.AccountingPeriodTests;
@@ -14,12 +13,12 @@ namespace Tests.AccountingPeriodTests;
 public class AddFundConversionTests
 {
     /// <summary>
-    /// Tests that a Fund Conversion can be added successfully
+    /// Tests adding a Fund Conversion with a default scenario
     /// </summary>
     [Fact]
     public void SimpleTest()
     {
-        var setup = new DefaultSetup();
+        var setup = new DefaultScenarioSetup();
         FundConversion fundConversion = setup.GetService<IAccountingPeriodService>().AddFundConversion(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
             setup.Account,
@@ -221,7 +220,7 @@ public class AddFundConversionTests
     [Fact]
     public void FundTests()
     {
-        var setup = new DefaultSetup();
+        var setup = new DefaultScenarioSetup();
         // Test that having the same from Fund and to Fund will fail
         Assert.Throws<InvalidOperationException>(() =>
             setup.GetService<IAccountingPeriodService>().AddFundConversion(setup.AccountingPeriod,

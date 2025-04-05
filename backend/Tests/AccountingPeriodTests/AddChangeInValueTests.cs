@@ -3,7 +3,6 @@ using Domain.Aggregates.Accounts;
 using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Scenarios;
-using Tests.Setups;
 using Tests.Validators;
 
 namespace Tests.AccountingPeriodTests;
@@ -14,12 +13,12 @@ namespace Tests.AccountingPeriodTests;
 public class AddChangeInValueTests
 {
     /// <summary>
-    /// Tests that a Change In Value can be added successfully
+    /// Tests adding a Change In Value with a default scenario
     /// </summary>
     [Fact]
     public void SimpleTest()
     {
-        var setup = new DefaultSetup();
+        var setup = new DefaultScenarioSetup();
         ChangeInValue changeInValue = setup.GetService<IAccountingPeriodService>().AddChangeInValue(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
             setup.Account,

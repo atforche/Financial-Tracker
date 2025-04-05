@@ -4,37 +4,37 @@ using Domain.Aggregates.Funds;
 using Domain.Services;
 using Domain.ValueObjects;
 
-namespace Tests.Setups;
+namespace Tests.Scenarios;
 
 /// <summary>
-/// Default Setup for a test case
+/// Setup for a default scenario
 /// </summary>
-internal sealed class DefaultSetup : TestCaseSetup
+internal sealed class DefaultScenarioSetup : ScenarioSetup
 {
     /// <summary>
-    /// Fund for the Default Setup
+    /// Fund for the Setup
     /// </summary>
     public Fund Fund { get; }
 
     /// <summary>
-    /// Other Fund for the Default Setup
+    /// Other Fund for the Setup
     /// </summary>
     public Fund OtherFund { get; }
 
     /// <summary>
-    /// Accounting Period for the Default Setup
+    /// Accounting Period for the Setup
     /// </summary>
     public AccountingPeriod AccountingPeriod { get; }
 
     /// <summary>
-    /// Account for the Default Setup
+    /// Account for the Setup
     /// </summary>
     public Account Account { get; }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public DefaultSetup()
+    public DefaultScenarioSetup()
     {
         IFundService fundService = GetService<IFundService>();
         IFundRepository fundRepository = GetService<IFundRepository>();

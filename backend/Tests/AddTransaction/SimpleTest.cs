@@ -1,13 +1,13 @@
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Services;
 using Domain.ValueObjects;
-using Tests.Setups;
+using Tests.Scenarios;
 using Tests.Validators;
 
 namespace Tests.AddTransaction;
 
 /// <summary>
-/// Test class that tests that a simple Transaction can be added successfully
+/// Test class that tests adding a Transaction with a default scenario
 /// </summary>
 public class SimpleTest
 {
@@ -17,7 +17,7 @@ public class SimpleTest
     [Fact]
     public void RunTest()
     {
-        var setup = new DefaultSetup();
+        var setup = new DefaultScenarioSetup();
         Transaction transaction = setup.GetService<IAccountingPeriodService>().AddTransaction(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
             setup.Account,
