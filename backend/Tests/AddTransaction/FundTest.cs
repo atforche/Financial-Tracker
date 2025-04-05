@@ -1,13 +1,13 @@
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Services;
 using Domain.ValueObjects;
-using Tests.Setups.Transaction;
+using Tests.Scenarios.Transaction;
 using Tests.Validators;
 
 namespace Tests.AddTransaction;
 
 /// <summary>
-/// Tests adding a Transaction with different Fund setups
+/// Tests adding a Transaction with different Transaction Fund scenarios
 /// </summary>
 public class FundTest
 {
@@ -15,10 +15,10 @@ public class FundTest
     /// Runs the test for this test class
     /// </summary>
     [Theory]
-    [MemberData(nameof(FundSetup.GetCollection), MemberType = typeof(FundSetup))]
-    public void RunTest(FundScenario scenario)
+    [ClassData(typeof(TransactionFundScenarios))]
+    public void RunTest(TransactionFundScenario scenario)
     {
-        var setup = new FundSetup(scenario);
+        var setup = new TransactionFundScenarioSetup(scenario);
         if (ShouldThrowException(setup))
         {
             Assert.Throws<InvalidOperationException>(() => AddTransaction(setup));
@@ -30,9 +30,9 @@ public class FundTest
     /// <summary>
     /// Determines if this test case should throw an exception
     /// </summary>
-    /// <param name="setup">Fund Setup for this test case</param>
+    /// <param name="setup">Setup for this test case</param>
     /// <returns>True if this test case should throw an exception, false otherwise</returns>
-    private static bool ShouldThrowException(FundSetup setup)
+    private static bool ShouldThrowException(TransactionFundScenarioSetup setup)
     {
         if (setup.Funds.Count == 0)
         {
@@ -48,9 +48,9 @@ public class FundTest
     /// <summary>
     /// Adds the Transaction for this test case
     /// </summary>
-    /// <param name="setup">Fund Setup for this test case</param>
+    /// <param name="setup">Setup for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
-    private static Transaction AddTransaction(FundSetup setup) =>
+    private static Transaction AddTransaction(TransactionFundScenarioSetup setup) =>
         setup.GetService<IAccountingPeriodService>().AddTransaction(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
             setup.Account,
@@ -64,9 +64,9 @@ public class FundTest
     /// <summary>
     /// Gets the expected state for this test case
     /// </summary>
-    /// <param name="setup">Fund Setup for this test case</param>
+    /// <param name="setup">Setup for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static TransactionState GetExpectedState(FundSetup setup) =>
+    private static TransactionState GetExpectedState(TransactionFundScenarioSetup setup) =>
         new()
         {
             TransactionDate = new DateOnly(2025, 1, 15),
