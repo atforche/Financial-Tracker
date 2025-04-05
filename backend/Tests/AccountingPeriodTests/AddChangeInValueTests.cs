@@ -90,13 +90,13 @@ public class AddChangeInValueTests
     }
 
     /// <summary>
-    /// Test adding a Change In Value with different event dates
+    /// Test adding a Change In Value with different Balance Event Date scenarios
     /// </summary>
     [Theory]
-    [MemberData(nameof(EventDateSetup.GetCollection), MemberType = typeof(EventDateSetup))]
-    public void EventDateTests(DateOnly eventDate)
+    [ClassData(typeof(BalanceEventDateScenarios))]
+    public void BalanceEventDateTests(DateOnly eventDate)
     {
-        var setup = new EventDateSetup();
+        var setup = new BalanceEventDateScenarioSetup();
         if (setup.CalculateMonthDifference(eventDate) > 1)
         {
             // Ensure that an error is thrown if the Change In Value is added more than one month outside of the Accounting Period
