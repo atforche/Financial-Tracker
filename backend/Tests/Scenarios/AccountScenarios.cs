@@ -1,41 +1,55 @@
+using System.Collections;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
 using Domain.Services;
 using Domain.ValueObjects;
 
-namespace Tests.Setups;
+namespace Tests.Scenarios;
 
 /// <summary>
-/// Setup class for an Account test case
+/// Collection class that contains all the unique Account scenarios that should be tested
 /// </summary>
-internal sealed class AccountSetup : TestCaseSetup
+public sealed class AccountScenarios : IEnumerable<TheoryDataRow<AccountType>>
+{
+    /// <inheritdoc/>
+    public IEnumerator<TheoryDataRow<AccountType>> GetEnumerator() => Enum.GetValues<AccountType>()
+        .Select(accountType => new TheoryDataRow<AccountType>(accountType)).GetEnumerator();
+
+    /// <inheritdoc/>
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+/// <summary>
+/// Setup class for an Account scenario
+/// </summary>
+internal sealed class AccountScenarioSetup : ScenarioSetup
 {
     /// <summary>
-    /// Fund for this Account Setup
+    /// Fund for this Setup
     /// </summary>
     public Fund Fund { get; }
 
     /// <summary>
-    /// Other Fund for this Account Setup
+    /// Other Fund for this Setup
     /// </summary>
     public Fund OtherFund { get; }
 
     /// <summary>
-    /// Accounting Period for this Account Setup
+    /// Accounting Period for this Setup
     /// </summary>
     public AccountingPeriod AccountingPeriod { get; }
 
     /// <summary>
-    /// Account for this Account Setup
+    /// Account for this Setup
     /// </summary>
     public Account Account { get; }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="accountType">Account Type for this Account Setup</param>
-    public AccountSetup(AccountType accountType)
+    /// <param name="accountType">Account Type for this Setup</param>
+    public AccountScenarioSetup(AccountType accountType)
     {
         IFundService fundService = GetService<IFundService>();
         IFundRepository fundRepository = GetService<IFundRepository>();
@@ -61,10 +75,4 @@ internal sealed class AccountSetup : TestCaseSetup
             ]);
         GetService<IAccountRepository>().Add(Account);
     }
-
-    /// <summary>
-    /// Gets the collection of Account scenarios
-    /// </summary>
-    public static IEnumerable<TheoryDataRow<AccountType>> GetCollection() => Enum.GetValues<AccountType>()
-        .Select(accountType => new TheoryDataRow<AccountType>(accountType));
 }

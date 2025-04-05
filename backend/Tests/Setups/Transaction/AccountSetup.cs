@@ -3,6 +3,7 @@ using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
 using Domain.Services;
 using Domain.ValueObjects;
+using Tests.Scenarios;
 
 namespace Tests.Setups.Transaction;
 
@@ -105,7 +106,7 @@ internal sealed class AccountSetup : TestCaseSetup
     /// <returns></returns>
     public static IEnumerable<TheoryDataRow<AccountType?, AccountType?, SameAccountTypeBehavior>> GetCollection()
     {
-        var accountTypes = Setups.AccountSetup.GetCollection().Select(row => (AccountType?)row.Data).ToList();
+        var accountTypes = new AccountScenarios().Select(row => (AccountType?)row.Data).ToList();
         accountTypes.Add(null);
         foreach (AccountType? debitAccountType in accountTypes)
         {

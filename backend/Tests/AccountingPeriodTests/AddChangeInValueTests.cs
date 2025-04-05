@@ -134,13 +134,13 @@ public class AddChangeInValueTests
     }
 
     /// <summary>
-    /// Test adding a Change In Value to different types of Accounts
+    /// Test adding a Change In Value with the different Account scenarios
     /// </summary>
     [Theory]
-    [MemberData(nameof(AccountSetup.GetCollection), MemberType = typeof(AccountSetup))]
-    public void AccountTypeTests(AccountType accountType)
+    [ClassData(typeof(AccountScenarios))]
+    public void AccountTests(AccountType accountType)
     {
-        var setup = new AccountSetup(accountType);
+        var setup = new AccountScenarioSetup(accountType);
 
         // Add a positive and negative change in balance
         ChangeInValue positiveChangeInValue = setup.GetService<IAccountingPeriodService>().AddChangeInValue(setup.AccountingPeriod,

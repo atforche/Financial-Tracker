@@ -120,13 +120,13 @@ public class AddFundConversionTests
     }
 
     /// <summary>
-    /// Test adding a Fund Conversion to different types of Accounts
+    /// Test adding a Fund Conversion with the different Account scenarios
     /// </summary>
     [Theory]
-    [MemberData(nameof(AccountSetup.GetCollection), MemberType = typeof(AccountSetup))]
-    public void AccountTypeTests(AccountType accountType)
+    [ClassData(typeof(AccountScenarios))]
+    public void AccountTests(AccountType accountType)
     {
-        var setup = new AccountSetup(accountType);
+        var setup = new AccountScenarioSetup(accountType);
 
         // Add a Fund Conversion debiting and crediting the fund
         FundConversion debitFundConversion = setup.GetService<IAccountingPeriodService>().AddFundConversion(setup.AccountingPeriod,
