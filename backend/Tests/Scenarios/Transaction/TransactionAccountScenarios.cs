@@ -1,39 +1,89 @@
+using System.Collections;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
 using Domain.Services;
 using Domain.ValueObjects;
-using Tests.Scenarios;
 
-namespace Tests.Setups.Transaction;
+namespace Tests.Scenarios.Transaction;
 
 /// <summary>
-/// Setup class for an Account test case
+/// Collection class that contains all the unique Transaction Account scenarios that should be tested
 /// </summary>
-internal sealed class AccountSetup : TestCaseSetup
+public sealed class TransactionAccountScenarios :
+    IEnumerable<TheoryDataRow<AccountType?, AccountType?, SameAccountTypeBehavior>>
+{
+    /// <inheritdoc/>
+    public IEnumerator<TheoryDataRow<AccountType?, AccountType?, SameAccountTypeBehavior>> GetEnumerator()
+    {
+        var accountTypes = new AccountScenarios().Select(row => (AccountType?)row.Data).ToList();
+        accountTypes.Add(null);
+        foreach (AccountType? debitAccountType in accountTypes)
+        {
+            foreach (AccountType? creditAccountType in accountTypes)
+            {
+                yield return new TheoryDataRow<AccountType?, AccountType?, SameAccountTypeBehavior>(
+                    debitAccountType,
+                    creditAccountType,
+                    SameAccountTypeBehavior.UseDifferentAccounts);
+                if (debitAccountType != null && creditAccountType != null && debitAccountType == creditAccountType)
+                {
+                    yield return new TheoryDataRow<AccountType?, AccountType?, SameAccountTypeBehavior>(
+                        debitAccountType,
+                        creditAccountType,
+                        SameAccountTypeBehavior.UseSameAccount);
+                }
+            }
+        }
+    }
+
+    /// <inheritdoc/>
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+/// <summary>
+/// Enum representing the different behaviors when the same Account type is used for the debit and credit Accounts
+/// </summary>
+public enum SameAccountTypeBehavior
 {
     /// <summary>
-    /// Fund for this Account Setup
+    /// Use the same Account as the debit and credit Accounts
+    /// </summary>
+    UseSameAccount,
+
+    /// <summary>
+    /// Use two different Accounts of the same type for the debit and credit Accounts
+    /// </summary>
+    UseDifferentAccounts,
+}
+
+/// <summary>
+/// Setup class for a Transaction Account scenario
+/// </summary>
+internal sealed class TransactionAccountScenarioSetup : ScenarioSetup
+{
+    /// <summary>
+    /// Fund for this Setup
     /// </summary>
     public Fund Fund { get; }
 
     /// <summary>
-    /// Other Fund for this Account Setup
+    /// Other Fund for this Setup
     /// </summary>
     public Fund OtherFund { get; }
 
     /// <summary>
-    /// Accounting Period for this Account Setup
+    /// Accounting Period for this Setup
     /// </summary>
     public AccountingPeriod AccountingPeriod { get; }
 
     /// <summary>
-    /// Debit Account for this Account Setup
+    /// Debit Account for this Setup
     /// </summary>
     public Account? DebitAccount { get; }
 
     /// <summary>
-    /// Credit Account for this Account Setup
+    /// Credit Account for this Setup
     /// </summary>
     public Account? CreditAccount { get; }
 
@@ -43,10 +93,10 @@ internal sealed class AccountSetup : TestCaseSetup
     /// <param name="debitAccountType">Account Type for the Debit Account</param>
     /// <param name="creditAccountType">Account Type for the Credit Account</param>
     /// <param name="sameAccountTypeBehavior">Behavior to use if the same Account type is provided for both the debit and credit Accounts</param>
-    public AccountSetup(
+    public TransactionAccountScenarioSetup(
         AccountType? debitAccountType,
         AccountType? creditAccountType,
-        SameAccountTypeBehavior sameAccountTypeBehavior = SameAccountTypeBehavior.UseDifferentAccounts)
+        SameAccountTypeBehavior sameAccountTypeBehavior)
     {
         IFundService fundService = GetService<IFundService>();
         IFundRepository fundRepository = GetService<IFundRepository>();
@@ -99,47 +149,4 @@ internal sealed class AccountSetup : TestCaseSetup
             accountRepository.Add(CreditAccount);
         }
     }
-
-    /// <summary>
-    /// Gets the collection of Transaction Account scenarios
-    /// </summary>
-    /// <returns></returns>
-    public static IEnumerable<TheoryDataRow<AccountType?, AccountType?, SameAccountTypeBehavior>> GetCollection()
-    {
-        var accountTypes = new AccountScenarios().Select(row => (AccountType?)row.Data).ToList();
-        accountTypes.Add(null);
-        foreach (AccountType? debitAccountType in accountTypes)
-        {
-            foreach (AccountType? creditAccountType in accountTypes)
-            {
-                yield return new TheoryDataRow<AccountType?, AccountType?, SameAccountTypeBehavior>(
-                    debitAccountType,
-                    creditAccountType,
-                    SameAccountTypeBehavior.UseDifferentAccounts);
-                if (debitAccountType != null && creditAccountType != null && debitAccountType == creditAccountType)
-                {
-                    yield return new TheoryDataRow<AccountType?, AccountType?, SameAccountTypeBehavior>(
-                        debitAccountType,
-                        creditAccountType,
-                        SameAccountTypeBehavior.UseSameAccount);
-                }
-            }
-        }
-    }
-}
-
-/// <summary>
-/// Enum representing the different behaviors when the same Account type is used for the debit and credit Accounts
-/// </summary>
-public enum SameAccountTypeBehavior
-{
-    /// <summary>
-    /// Use the same Account as the debit and credit Accounts
-    /// </summary>
-    UseSameAccount,
-
-    /// <summary>
-    /// Use two different Accounts of the same type for the debit and credit Accounts
-    /// </summary>
-    UseDifferentAccounts,
 }
