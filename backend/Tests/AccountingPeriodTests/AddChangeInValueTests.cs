@@ -238,20 +238,20 @@ public class AddChangeInValueTests
     }
 
     /// <summary>
-    /// Test adding a Change In Value with different amounts
+    /// Test adding a Change In Value with different Balance Event Amount scenarios
     /// </summary>
     [Theory]
-    [MemberData(nameof(EventAmountSetup.GetCollection), MemberType = typeof(EventAmountSetup))]
-    public void FundAmountTests(EventAmountScenario scenario)
+    [ClassData(typeof(BalanceEventAmountScenarios))]
+    public void AmountTests(BalanceEventAmountScenario scenario)
     {
-        List<EventAmountScenario> expectedErrors =
+        List<BalanceEventAmountScenario> expectedErrors =
         [
-            EventAmountScenario.Zero,
-            EventAmountScenario.ForcesAccountBalanceNegative,
-            EventAmountScenario.ForcesFutureEventToMakeAccountBalanceNegative,
-            EventAmountScenario.ForcesAccountBalancesAtEndOfPeriodToBeNegative
+            BalanceEventAmountScenario.Zero,
+            BalanceEventAmountScenario.ForcesAccountBalanceNegative,
+            BalanceEventAmountScenario.ForcesFutureEventToMakeAccountBalanceNegative,
+            BalanceEventAmountScenario.ForcesAccountBalancesAtEndOfPeriodToBeNegative
         ];
-        var setup = new EventAmountSetup(scenario);
+        var setup = new BalanceEventAmountScenarioSetup(scenario);
         if (expectedErrors.Contains(scenario))
         {
             Assert.Throws<InvalidOperationException>(() => setup.GetService<IAccountingPeriodService>().AddChangeInValue(setup.AccountingPeriod,

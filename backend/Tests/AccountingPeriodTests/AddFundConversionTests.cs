@@ -233,22 +233,23 @@ public class AddFundConversionTests
     }
 
     /// <summary>
-    /// Tests adding a Fund Conversion with different amounts
+    /// Tests adding a Fund Conversion with different Balance Event Amount scenarios
     /// </summary>
     [Theory]
-    [MemberData(nameof(EventAmountSetup.GetCollection), MemberType = typeof(EventAmountSetup))]
-    public void AmountTests(EventAmountScenario scenario)
+    [ClassData(typeof(BalanceEventAmountScenarios))]
+    public void AmountTests(BalanceEventAmountScenario scenario)
     {
-        List<EventAmountScenario> expectedErrors =
+        List<BalanceEventAmountScenario> expectedErrors =
         [
-            EventAmountScenario.Zero,
-            EventAmountScenario.ForcesFundBalanceNegative,
-            EventAmountScenario.ForcesAccountBalanceToZero,
-            EventAmountScenario.ForcesAccountBalanceNegative,
-            EventAmountScenario.ForcesFutureEventToMakeAccountBalanceNegative,
-            EventAmountScenario.ForcesAccountBalancesAtEndOfPeriodToBeNegative
+            BalanceEventAmountScenario.Zero,
+            BalanceEventAmountScenario.Negative,
+            BalanceEventAmountScenario.ForcesFundBalanceNegative,
+            BalanceEventAmountScenario.ForcesAccountBalanceToZero,
+            BalanceEventAmountScenario.ForcesAccountBalanceNegative,
+            BalanceEventAmountScenario.ForcesFutureEventToMakeAccountBalanceNegative,
+            BalanceEventAmountScenario.ForcesAccountBalancesAtEndOfPeriodToBeNegative
         ];
-        var setup = new EventAmountSetup(scenario);
+        var setup = new BalanceEventAmountScenarioSetup(scenario);
         if (expectedErrors.Contains(scenario))
         {
             Assert.Throws<InvalidOperationException>(() => setup.GetService<IAccountingPeriodService>().AddFundConversion(setup.AccountingPeriod,
