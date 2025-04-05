@@ -1,13 +1,13 @@
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Services;
 using Domain.ValueObjects;
-using Tests.Setups;
+using Tests.Scenarios;
 using Tests.Validators;
 
 namespace Tests.AddTransaction;
 
 /// <summary>
-/// Tests adding a Transaction with different Accounting Period setups
+/// Tests adding a Transaction with different the Accounting Period scenarios
 /// </summary>
 public class AccountingPeriodTest
 {
@@ -15,13 +15,13 @@ public class AccountingPeriodTest
     /// Runs the test for this test class
     /// </summary>
     [Theory]
-    [MemberData(nameof(AccountingPeriodSetup.GetCollection), MemberType = typeof(AccountingPeriodSetup))]
+    [ClassData(typeof(AccountingPeriodScenarios))]
     public void RunTest(
         AccountingPeriodStatus? pastPeriodStatus,
         AccountingPeriodStatus currentPeriodStatus,
         AccountingPeriodStatus? futurePeriodStatus)
     {
-        var setup = new AccountingPeriodSetup(pastPeriodStatus, currentPeriodStatus, futurePeriodStatus);
+        var setup = new AccountingPeriodScenarioSetup(pastPeriodStatus, currentPeriodStatus, futurePeriodStatus);
         if (ShouldThrowException(setup))
         {
             Assert.Throws<InvalidOperationException>(() => AddTransaction(setup));
@@ -33,16 +33,16 @@ public class AccountingPeriodTest
     /// <summary>
     /// Determines if this test case should throw an exception
     /// </summary>
-    /// <param name="setup">Accounting Period Setup for this test case</param>
+    /// <param name="setup">Setup for this test case</param>
     /// <returns>True if this test case should throw an exception, false otherwise</returns>
-    private static bool ShouldThrowException(AccountingPeriodSetup setup) => !setup.CurrentAccountingPeriod.IsOpen;
+    private static bool ShouldThrowException(AccountingPeriodScenarioSetup setup) => !setup.CurrentAccountingPeriod.IsOpen;
 
     /// <summary>
     /// Adds the Transaction for this test case
     /// </summary>
-    /// <param name="setup">Accounting Period Setup for this test case</param>
+    /// <param name="setup">Setup for this test case</param>
     /// <returns>The transaction that was added for this test case</returns>
-    private static Transaction AddTransaction(AccountingPeriodSetup setup) =>
+    private static Transaction AddTransaction(AccountingPeriodScenarioSetup setup) =>
         setup.GetService<IAccountingPeriodService>().AddTransaction(setup.CurrentAccountingPeriod,
             new DateOnly(2025, 1, 15),
             setup.Account,
@@ -58,9 +58,9 @@ public class AccountingPeriodTest
     /// <summary>
     /// Gets the expected state for this test case
     /// </summary>
-    /// <param name="setup">Accounting Period Setup for this test case</param>
+    /// <param name="setup">Setup for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static TransactionState GetExpectedState(AccountingPeriodSetup setup) =>
+    private static TransactionState GetExpectedState(AccountingPeriodScenarioSetup setup) =>
         new()
         {
             TransactionDate = new DateOnly(2025, 1, 15),

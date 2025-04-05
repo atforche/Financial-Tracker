@@ -1,43 +1,90 @@
+using System.Collections;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
 using Domain.Services;
 using Domain.ValueObjects;
 
-namespace Tests.Setups;
+namespace Tests.Scenarios;
 
 /// <summary>
-/// Setup class for an Accounting Period test case
+/// Collection class that contains all the unique Accounting Period scenarios that should be tested
 /// </summary>
-internal sealed class AccountingPeriodSetup : TestCaseSetup
+public sealed class AccountingPeriodScenarios :
+    IEnumerable<TheoryDataRow<AccountingPeriodStatus?, AccountingPeriodStatus, AccountingPeriodStatus?>>
+{
+    /// <inheritdoc/>
+    public IEnumerator<TheoryDataRow<AccountingPeriodStatus?, AccountingPeriodStatus, AccountingPeriodStatus?>> GetEnumerator()
+    {
+        List<AccountingPeriodStatus?> validOtherTermValues = [null, AccountingPeriodStatus.Open, AccountingPeriodStatus.Closed];
+        foreach (AccountingPeriodStatus? pastPeriodValue in validOtherTermValues)
+        {
+            foreach (AccountingPeriodStatus currentPeriodValue in Enum.GetValues<AccountingPeriodStatus>())
+            {
+                foreach (AccountingPeriodStatus? futurePeriodValue in validOtherTermValues)
+                {
+                    if (futurePeriodValue > currentPeriodValue || futurePeriodValue > pastPeriodValue || currentPeriodValue > pastPeriodValue)
+                    {
+                        continue;
+                    }
+                    yield return new TheoryDataRow<AccountingPeriodStatus?, AccountingPeriodStatus, AccountingPeriodStatus?>(pastPeriodValue, currentPeriodValue, futurePeriodValue);
+                }
+            }
+        }
+    }
+
+    /// <inheritdoc/>
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+/// <summary>
+/// Enum representing the status of an Accounting Period
+/// </summary>
+public enum AccountingPeriodStatus
 {
     /// <summary>
-    /// Fund for the Accounting Period Setup
+    /// Accounting Period is open
+    /// </summary>
+    Open,
+
+    /// <summary>
+    /// Accounting Period is closed
+    /// </summary>
+    Closed,
+}
+
+/// <summary>
+/// Setup class for an Accounting Period scenario
+/// </summary>
+internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
+{
+    /// <summary>
+    /// Fund for the Setup
     /// </summary>
     public Fund Fund { get; }
 
     /// <summary>
-    /// Other Fund for the Accounting Period Setup
+    /// Other Fund for the Setup
     /// </summary>
     public Fund OtherFund { get; }
 
     /// <summary>
-    /// Account for the Accounting Period Setup
+    /// Account for the Setup
     /// </summary>
     public Account Account { get; }
 
     /// <summary>
-    /// Past Accounting Period for the Accounting Period Setup
+    /// Past Accounting Period for the Setup
     /// </summary>
     public AccountingPeriod? PastAccountingPeriod { get; }
 
     /// <summary>
-    /// Current Accounting Period for the Accounting Period Setup
+    /// Current Accounting Period for the Setup
     /// </summary>
     public AccountingPeriod CurrentAccountingPeriod { get; }
 
     /// <summary>
-    /// Future Accounting Period for the Accounting Period Setup
+    /// Future Accounting Period for the Setup
     /// </summary>
     public AccountingPeriod? FutureAccountingPeriod { get; }
 
@@ -47,7 +94,7 @@ internal sealed class AccountingPeriodSetup : TestCaseSetup
     /// <param name="pastPeriodStatus">Status of the past Accounting Period</param>
     /// <param name="currentPeriodStatus">Status of the current Accounting Period</param>
     /// <param name="futurePeriodStatus">Status of the future Accounting Period</param>
-    public AccountingPeriodSetup(
+    public AccountingPeriodScenarioSetup(
         AccountingPeriodStatus? pastPeriodStatus,
         AccountingPeriodStatus currentPeriodStatus,
         AccountingPeriodStatus? futurePeriodStatus)
@@ -103,42 +150,4 @@ internal sealed class AccountingPeriodSetup : TestCaseSetup
             }
         }
     }
-
-    /// <summary>
-    /// Gets the collection of Accounting Period scenarios 
-    /// </summary>
-    public static IEnumerable<TheoryDataRow<AccountingPeriodStatus?, AccountingPeriodStatus, AccountingPeriodStatus?>> GetCollection()
-    {
-        List<AccountingPeriodStatus?> validOtherTermValues = [null, AccountingPeriodStatus.Open, AccountingPeriodStatus.Closed];
-        foreach (AccountingPeriodStatus? pastPeriodValue in validOtherTermValues)
-        {
-            foreach (AccountingPeriodStatus currentPeriodValue in Enum.GetValues<AccountingPeriodStatus>())
-            {
-                foreach (AccountingPeriodStatus? futurePeriodValue in validOtherTermValues)
-                {
-                    if (futurePeriodValue > currentPeriodValue || futurePeriodValue > pastPeriodValue || currentPeriodValue > pastPeriodValue)
-                    {
-                        continue;
-                    }
-                    yield return new TheoryDataRow<AccountingPeriodStatus?, AccountingPeriodStatus, AccountingPeriodStatus?>(pastPeriodValue, currentPeriodValue, futurePeriodValue);
-                }
-            }
-        }
-    }
-}
-
-/// <summary>
-/// Enum representing the status of an Accounting Period
-/// </summary>
-public enum AccountingPeriodStatus
-{
-    /// <summary>
-    /// Accounting Period is open
-    /// </summary>
-    Open,
-
-    /// <summary>
-    /// Accounting Period is closed
-    /// </summary>
-    Closed,
 }

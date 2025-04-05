@@ -2,6 +2,7 @@ using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Services;
 using Domain.ValueObjects;
+using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -41,13 +42,13 @@ public class AddFundConversionTests
     /// Tests adding a Fund Conversion with different Accounting Period scenarios
     /// </summary>
     [Theory]
-    [MemberData(nameof(AccountingPeriodSetup.GetCollection), MemberType = typeof(AccountingPeriodSetup))]
+    [ClassData(typeof(AccountingPeriodScenarios))]
     public void AccountingPeriodTests(
         AccountingPeriodStatus? pastPeriodStatus,
         AccountingPeriodStatus currentPeriodStatus,
         AccountingPeriodStatus? futurePeriodStatus)
     {
-        var setup = new AccountingPeriodSetup(pastPeriodStatus, currentPeriodStatus, futurePeriodStatus);
+        var setup = new AccountingPeriodScenarioSetup(pastPeriodStatus, currentPeriodStatus, futurePeriodStatus);
         if (!setup.CurrentAccountingPeriod.IsOpen)
         {
             // Ensure that an error is thrown for a closed Accounting Period

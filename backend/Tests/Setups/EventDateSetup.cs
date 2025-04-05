@@ -1,6 +1,7 @@
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
+using Tests.Scenarios;
 
 namespace Tests.Setups;
 
@@ -37,7 +38,7 @@ internal sealed class EventDateSetup : TestCaseSetup
     /// </summary>
     public EventDateSetup()
     {
-        var accountingPeriodSetup = new AccountingPeriodSetup(AccountingPeriodStatus.Closed,
+        var accountingPeriodSetup = new AccountingPeriodScenarioSetup(AccountingPeriodStatus.Closed,
             AccountingPeriodStatus.Open,
             AccountingPeriodStatus.Open);
         Fund = accountingPeriodSetup.Fund;
