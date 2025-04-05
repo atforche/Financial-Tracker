@@ -87,9 +87,7 @@ public class AddFundConversionTests
     public void EventDateTests(DateOnly eventDate)
     {
         var setup = new EventDateSetup();
-        int monthDifference = (Math.Abs(setup.CurrentAccountingPeriod.Year - eventDate.Year) * 12) +
-            Math.Abs(setup.CurrentAccountingPeriod.Month - eventDate.Month);
-        if (monthDifference > 1)
+        if (setup.CalculateMonthDifference(eventDate) > 1)
         {
             // Ensure that an error is thrown if the Fund Conversion is added more than one month outside of the Accounting Period
             Assert.Throws<InvalidOperationException>(() => setup.GetService<IAccountingPeriodService>()

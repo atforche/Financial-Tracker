@@ -63,6 +63,14 @@ internal sealed class EventDateSetup : TestCaseSetup
     }
 
     /// <summary>
+    /// Calculates the number of months between the current Accounting Period and the provided event date
+    /// </summary>
+    /// <param name="eventDate">Event Date</param>
+    /// <returns>The number of months between the current Accounting Period and the provided event date</returns>
+    public int CalculateMonthDifference(DateOnly eventDate) =>
+        (Math.Abs(CurrentAccountingPeriod.Year - eventDate.Year) * 12) + Math.Abs(CurrentAccountingPeriod.Month - eventDate.Month);
+
+    /// <summary>
     /// Gets the collection of Event Date scenarios
     /// </summary>
     public static IEnumerable<TheoryDataRow<DateOnly>> GetCollection() =>
