@@ -69,7 +69,7 @@ public enum BalanceEventAmountScenario
 /// <summary>
 /// Setup class for a Balance Event Amount scenario
 /// </summary>
-internal sealed class BalanceEventAmountScenarioSetup : ScenarioSetup
+internal class BalanceEventAmountScenarioSetup : ScenarioSetup
 {
     private readonly AccountingPeriod _futureAccountingPeriod;
 
@@ -96,13 +96,14 @@ internal sealed class BalanceEventAmountScenarioSetup : ScenarioSetup
     /// <summary>
     /// Amount for this Setup
     /// </summary>
-    public decimal Amount { get; }
+    public decimal Amount { get; protected init; }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="scenario">Scenario for this Setup</param>
-    public BalanceEventAmountScenarioSetup(BalanceEventAmountScenario scenario)
+    /// <param name="accountType">Account Type for this Setup</param>
+    public BalanceEventAmountScenarioSetup(BalanceEventAmountScenario scenario, AccountType accountType = AccountType.Standard)
     {
         IFundService fundService = GetService<IFundService>();
         IFundRepository fundRepository = GetService<IFundRepository>();
@@ -118,7 +119,7 @@ internal sealed class BalanceEventAmountScenarioSetup : ScenarioSetup
         _futureAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2025, 2);
         accountingPeriodRepository.Add(_futureAccountingPeriod);
 
-        Account = GetService<IAccountService>().CreateNewAccount("Test", AccountType.Standard,
+        Account = GetService<IAccountService>().CreateNewAccount("Test", accountType,
             [
                 new FundAmount
                 {

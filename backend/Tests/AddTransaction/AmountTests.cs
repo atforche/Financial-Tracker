@@ -1,5 +1,4 @@
 using Domain.Aggregates.AccountingPeriods;
-using Domain.Aggregates.Accounts;
 using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Scenarios;
@@ -20,7 +19,7 @@ public class AmountTests
     [ClassData(typeof(TransactionAmountScenarios))]
     public void RunTest(BalanceEventAmountScenario scenario, TransactionAccountType? accountType)
     {
-        var setup = new TransactionAmountScenarioSetup(scenario);
+        var setup = new TransactionAmountScenarioSetup(scenario, accountType);
         if (ShouldThrowException(scenario))
         {
             Assert.Throws<InvalidOperationException>(() => AddTransaction(setup, accountType));
@@ -53,13 +52,11 @@ public class AmountTests
     /// <param name="setup">Setup for this test case</param>
     /// <param name="accountType">Account Type for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
-    private static Transaction AddTransaction(TransactionAmountScenarioSetup setup, TransactionAccountType? accountType)
-    {
-        GetAccountsForTestCase(setup, accountType, out Account? debitAccount, out Account? creditAccount);
-        return setup.GetService<IAccountingPeriodService>().AddTransaction(setup.AccountingPeriod,
+    private static Transaction AddTransaction(TransactionAmountScenarioSetup setup, TransactionAccountType? accountType) =>
+        setup.GetService<IAccountingPeriodService>().AddTransaction(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
-            debitAccount,
-            creditAccount,
+            accountType != TransactionAccountType.Credit ? setup.Account : null,
+            accountType == TransactionAccountType.Credit ? setup.Account : null,
             [
                 new FundAmount()
                 {
@@ -67,30 +64,6 @@ public class AmountTests
                     Amount = setup.Amount,
                 }
             ]);
-    }
-
-    /// <summary>
-    /// Gets the Accounts that should be used for this test case
-    /// </summary>
-    /// <param name="setup">Setup for this test case</param>
-    /// <param name="accountType">Account Type for this test case</param>
-    /// <param name="debitAccount">Debit Account to use for this test case</param>
-    /// <param name="creditAccount">Credit Account to use for this test case</param>
-    private static void GetAccountsForTestCase(
-        TransactionAmountScenarioSetup setup,
-        TransactionAccountType? accountType,
-        out Account? debitAccount,
-        out Account? creditAccount)
-    {
-        if (accountType == TransactionAccountType.Credit)
-        {
-            debitAccount = null;
-            creditAccount = setup.DebtAccount;
-            return;
-        }
-        debitAccount = setup.StandardAccount;
-        creditAccount = null;
-    }
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -100,24 +73,23 @@ public class AmountTests
     /// <returns>The expected state for this test case</returns>
     private static TransactionState GetExpectedState(TransactionAmountScenarioSetup setup, TransactionAccountType? accountType)
     {
-        GetAccountsForTestCase(setup, accountType, out Account? debitAccount, out Account? creditAccount);
         List<TransactionBalanceEventState> balanceEvents = [];
-        if (debitAccount != null)
+        if (accountType != TransactionAccountType.Credit)
         {
             balanceEvents.Add(new TransactionBalanceEventState
             {
-                AccountName = debitAccount.Name,
+                AccountName = setup.Account.Name,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
                 TransactionEventType = TransactionBalanceEventType.Added,
                 TransactionAccountType = TransactionAccountType.Debit,
             });
         }
-        if (creditAccount != null)
+        else
         {
             balanceEvents.Add(new TransactionBalanceEventState
             {
-                AccountName = creditAccount.Name,
+                AccountName = setup.Account.Name,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
                 TransactionEventType = TransactionBalanceEventType.Added,
