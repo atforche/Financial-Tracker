@@ -10,7 +10,7 @@ namespace Tests.AddTransaction;
 /// <summary>
 /// Test class that tests adding a Transaction with different Transaction Account scenarios
 /// </summary>
-public class AccountTypeTests
+public class AccountTests
 {
     /// <summary>
     /// Runs the test for this test class
@@ -131,11 +131,11 @@ public class AccountTypeTests
     }
 
     /// <summary>
-    /// Gets the expected Account Balances for this test case and Account
+    /// Gets the expected Account Balance for this test case and Account
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <param name="account">Account to get the expected balance for</param>
-    /// <returns>The expected Account Balances for this test case and Account</returns>
+    /// <returns>The expected Account Balance for this test case and Account</returns>
     private static AccountBalanceByEventState GetExpectedAccountBalance(TransactionAccountScenarioSetup setup, Account account) =>
         new()
         {
