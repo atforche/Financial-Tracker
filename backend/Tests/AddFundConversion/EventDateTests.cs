@@ -1,13 +1,12 @@
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Services;
-using Domain.ValueObjects;
 using Tests.Scenarios;
 using Tests.Validators;
 
-namespace Tests.AddChangeInValue;
+namespace Tests.AddFundConversion;
 
 /// <summary>
-/// Test class that tests adding a Change In Value with different Balance Event Date scenarios
+/// Test class that tests adding a Fund Conversion with different Balance Event Date scenarios
 /// </summary>
 public class EventDateTests
 {
@@ -21,10 +20,10 @@ public class EventDateTests
         var setup = new BalanceEventDateScenarioSetup(eventDate);
         if (ShouldThrowException(setup))
         {
-            Assert.Throws<InvalidOperationException>(() => AddChangeInValue(setup));
+            Assert.Throws<InvalidOperationException>(() => AddFundConversion(setup));
             return;
         }
-        new ChangeInValueValidator().Validate(AddChangeInValue(setup), GetExpectedState(setup));
+        new FundConversionValidator().Validate(AddFundConversion(setup), GetExpectedState(setup));
     }
 
     /// <summary>
@@ -35,35 +34,32 @@ public class EventDateTests
     private static bool ShouldThrowException(BalanceEventDateScenarioSetup setup) => setup.CalculateMonthDifference() > 1;
 
     /// <summary>
-    /// Adds the Change In Value for this test case
+    /// Adds the Fund Conversion for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
-    /// <returns>The Change In Value that was added for this test case</returns>
-    private static ChangeInValue AddChangeInValue(BalanceEventDateScenarioSetup setup) =>
-        setup.GetService<IAccountingPeriodService>().AddChangeInValue(setup.CurrentAccountingPeriod,
-            setup.EventDate,
-            setup.Account,
-            new FundAmount
-            {
-                Fund = setup.Fund,
-                Amount = -100.00m,
-            });
+    /// <returns>The Fund Conversion that was added for this test case</returns>
+    private static FundConversion AddFundConversion(BalanceEventDateScenarioSetup setup) =>
+        setup.GetService<IAccountingPeriodService>()
+            .AddFundConversion(setup.CurrentAccountingPeriod,
+                setup.EventDate,
+                setup.Account,
+                setup.Fund,
+                setup.OtherFund,
+                100.00m);
 
     /// <summary>
     /// Gets the expected state for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static ChangeInValueState GetExpectedState(BalanceEventDateScenarioSetup setup) =>
+    private static FundConversionState GetExpectedState(BalanceEventDateScenarioSetup setup) =>
         new()
         {
             AccountName = setup.Account.Name,
             EventDate = setup.EventDate,
             EventSequence = 1,
-            AccountingEntry = new FundAmountState
-            {
-                FundName = setup.Fund.Name,
-                Amount = -100.00m,
-            }
+            FromFundName = setup.Fund.Name,
+            ToFundName = setup.OtherFund.Name,
+            Amount = 100.00m,
         };
 }

@@ -18,33 +18,30 @@ public class EventDateTests
     [ClassData(typeof(BalanceEventDateScenarios))]
     public void RunTest(DateOnly eventDate)
     {
-        var setup = new BalanceEventDateScenarioSetup();
-        if (ShouldThrowException(setup, eventDate))
+        var setup = new BalanceEventDateScenarioSetup(eventDate);
+        if (ShouldThrowException(setup))
         {
-            Assert.Throws<InvalidOperationException>(() => AddTransaction(setup, eventDate));
+            Assert.Throws<InvalidOperationException>(() => AddTransaction(setup));
             return;
         }
-        new TransactionValidator().Validate(AddTransaction(setup, eventDate), GetExpectedState(setup, eventDate));
+        new TransactionValidator().Validate(AddTransaction(setup), GetExpectedState(setup));
     }
 
     /// <summary>
     /// Determines if this test case should throw an exception
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
-    /// <param name="eventDate">Event Date for this test case</param>
     /// <returns>True if this test case should throw an exception, false otherwise</returns>
-    private static bool ShouldThrowException(BalanceEventDateScenarioSetup setup, DateOnly eventDate) =>
-        setup.CalculateMonthDifference(eventDate) > 1;
+    private static bool ShouldThrowException(BalanceEventDateScenarioSetup setup) => setup.CalculateMonthDifference() > 1;
 
     /// <summary>
     /// Adds the Transaction for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
-    /// <param name="eventDate">Event Date for this test case</param>
     /// <returns>The Transaction that was added fo this test case</returns>
-    private static Transaction AddTransaction(BalanceEventDateScenarioSetup setup, DateOnly eventDate) =>
+    private static Transaction AddTransaction(BalanceEventDateScenarioSetup setup) =>
         setup.GetService<IAccountingPeriodService>().AddTransaction(setup.CurrentAccountingPeriod,
-            eventDate,
+            setup.EventDate,
             setup.Account,
             null,
             [
@@ -59,12 +56,11 @@ public class EventDateTests
     /// Gets the expected state for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
-    /// <param name="eventDate">Event Date for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static TransactionState GetExpectedState(BalanceEventDateScenarioSetup setup, DateOnly eventDate) =>
+    private static TransactionState GetExpectedState(BalanceEventDateScenarioSetup setup) =>
         new()
         {
-            TransactionDate = eventDate,
+            TransactionDate = setup.EventDate,
             AccountingEntries =
             [
                 new FundAmountState
@@ -78,7 +74,7 @@ public class EventDateTests
                 new TransactionBalanceEventState
                 {
                     AccountName = setup.Account.Name,
-                    EventDate = eventDate,
+                    EventDate = setup.EventDate,
                     EventSequence = 1,
                     TransactionEventType = TransactionBalanceEventType.Added,
                     TransactionAccountType = TransactionAccountType.Debit,

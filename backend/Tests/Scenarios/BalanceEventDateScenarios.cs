@@ -33,6 +33,11 @@ internal sealed class BalanceEventDateScenarioSetup : ScenarioSetup
     private readonly AccountingPeriod? _futureAccountingPeriod;
 
     /// <summary>
+    /// Event Date for the Setup
+    /// </summary>
+    public DateOnly EventDate { get; }
+
+    /// <summary>
     /// Fund for the Setup
     /// </summary>
     public Fund Fund { get; }
@@ -55,8 +60,11 @@ internal sealed class BalanceEventDateScenarioSetup : ScenarioSetup
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public BalanceEventDateScenarioSetup()
+    /// <param name="eventDate">Event Date for the Setup</param>
+    public BalanceEventDateScenarioSetup(DateOnly eventDate)
     {
+        EventDate = eventDate;
+
         var accountingPeriodSetup = new AccountingPeriodScenarioSetup(AccountingPeriodStatus.Closed,
             AccountingPeriodStatus.Open,
             AccountingPeriodStatus.Open);
@@ -83,10 +91,9 @@ internal sealed class BalanceEventDateScenarioSetup : ScenarioSetup
     }
 
     /// <summary>
-    /// Calculates the number of months between the current Accounting Period and the provided event date
+    /// Calculates the number of months between the current Accounting Period and the event date
     /// </summary>
-    /// <param name="eventDate">Event Date</param>
-    /// <returns>The number of months between the current Accounting Period and the provided event date</returns>
-    public int CalculateMonthDifference(DateOnly eventDate) =>
-        (Math.Abs(CurrentAccountingPeriod.Year - eventDate.Year) * 12) + Math.Abs(CurrentAccountingPeriod.Month - eventDate.Month);
+    /// <returns>The number of months between the current Accounting Period and the event date</returns>
+    public int CalculateMonthDifference() =>
+        (Math.Abs(CurrentAccountingPeriod.Year - EventDate.Year) * 12) + Math.Abs(CurrentAccountingPeriod.Month - EventDate.Month);
 }
