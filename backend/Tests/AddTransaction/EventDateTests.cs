@@ -9,7 +9,7 @@ namespace Tests.AddTransaction;
 /// <summary>
 /// Test class that tests adding a Transaction with different Balance Event Date scenarios
 /// </summary>
-public class EventDateTest
+public class EventDateTests
 {
     /// <summary>
     /// Runs the test for this test class
@@ -41,7 +41,7 @@ public class EventDateTest
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <param name="eventDate">Event Date for this test case</param>
-    /// <returns>The transaction that was added fo this test case</returns>
+    /// <returns>The Transaction that was added fo this test case</returns>
     private static Transaction AddTransaction(BalanceEventDateScenarioSetup setup, DateOnly eventDate) =>
         setup.GetService<IAccountingPeriodService>().AddTransaction(setup.CurrentAccountingPeriod,
             eventDate,

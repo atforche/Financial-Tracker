@@ -9,7 +9,7 @@ namespace Tests.AddTransaction;
 /// <summary>
 /// Test class that tests adding a Transaction with a default scenario
 /// </summary>
-public class SimpleTest
+public class DefaultTests
 {
     /// <summary>
     /// Runs the test for this test class

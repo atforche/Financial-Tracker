@@ -9,9 +9,9 @@ using Tests.Validators;
 namespace Tests.AddTransaction;
 
 /// <summary>
-/// Tests adding a Transaction with different Transaction Amount scenarios
+/// Test class that tests adding a Transaction with different Transaction Amount scenarios
 /// </summary>
-public class AmountTest
+public class AmountTests
 {
     /// <summary>
     /// Runs the test for this test class

@@ -10,7 +10,7 @@ namespace Tests.AddTransaction;
 /// <summary>
 /// Test class that tests adding a Transaction with different Transaction Account scenarios
 /// </summary>
-public class AccountTypeTest
+public class AccountTypeTests
 {
     /// <summary>
     /// Runs the test for this test class
@@ -53,7 +53,7 @@ public class AccountTypeTest
     /// Adds the Transaction for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
-    /// <returns>The transaction that was added for this test case</returns>
+    /// <returns>The Transaction that was added for this test case</returns>
     private static Transaction AddTransaction(TransactionAccountScenarioSetup setup) =>
         setup.GetService<IAccountingPeriodService>().AddTransaction(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),

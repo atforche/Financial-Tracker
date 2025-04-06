@@ -6,10 +6,11 @@ using Tests.Validators;
 
 namespace Tests.AddTransaction;
 
+#pragma warning disable CA1724
 /// <summary>
-/// Tests adding a Transaction with different the Accounting Period scenarios
+/// Test class that tests adding a Transaction with different Accounting Period scenarios
 /// </summary>
-public class AccountingPeriodTest
+public class AccountingPeriodTests
 {
     /// <summary>
     /// Runs the test for this test class
@@ -41,7 +42,7 @@ public class AccountingPeriodTest
     /// Adds the Transaction for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
-    /// <returns>The transaction that was added for this test case</returns>
+    /// <returns>The Transaction that was added for this test case</returns>
     private static Transaction AddTransaction(AccountingPeriodScenarioSetup setup) =>
         setup.GetService<IAccountingPeriodService>().AddTransaction(setup.CurrentAccountingPeriod,
             new DateOnly(2025, 1, 15),
@@ -85,3 +86,4 @@ public class AccountingPeriodTest
             ]
         };
 }
+#pragma warning restore CA1724
