@@ -16,7 +16,7 @@ public class AccountTests
     /// Runs the test for this test class
     /// </summary>
     [Theory]
-    [ClassData(typeof(TransactionAccountScenarios))]
+    [ClassData(typeof(AddTransactionAccountScenarios))]
     public void RunTest(AccountType? debitAccountType, AccountType? creditAccountType, SameAccountTypeBehavior sameAccountTypeBehavior)
     {
         var setup = new TransactionAccountScenarioSetup(debitAccountType, creditAccountType, sameAccountTypeBehavior);

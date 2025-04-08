@@ -20,11 +20,6 @@ public class AccountTests
     public void RunTest(AccountType? debitAccountType, AccountType? creditAccountType, SameAccountTypeBehavior sameAccountTypeBehavior)
     {
         var setup = new TransactionAccountScenarioSetup(debitAccountType, creditAccountType, sameAccountTypeBehavior);
-        if (ShouldThrowException(setup))
-        {
-            Assert.Throws<InvalidOperationException>(() => AddTransaction(setup));
-            return;
-        }
         Transaction transaction = AddTransaction(setup);
 
         // Verify that posting a Transaction with a random account results in an error
@@ -49,13 +44,6 @@ public class AccountTests
                 GetExpectedAccountBalance(setup, setup.CreditAccount));
         }
     }
-
-    /// <summary>
-    /// Determines if this test case should throw an exception
-    /// </summary>
-    /// <param name="setup">Setup for this test case</param>
-    /// <returns>True if this test case should throw an exception, false otherwise</returns>
-    private static bool ShouldThrowException(TransactionAccountScenarioSetup setup) => setup.DebitAccount == setup.CreditAccount;
 
     /// <summary>
     /// Adds the Transaction for this test case

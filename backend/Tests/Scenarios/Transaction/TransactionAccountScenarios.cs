@@ -10,7 +10,7 @@ namespace Tests.Scenarios.Transaction;
 /// <summary>
 /// Collection class that contains all the unique Transaction Account scenarios that should be tested
 /// </summary>
-public sealed class TransactionAccountScenarios :
+public sealed class AddTransactionAccountScenarios :
     IEnumerable<TheoryDataRow<AccountType?, AccountType?, SameAccountTypeBehavior>>
 {
     /// <inheritdoc/>
@@ -36,6 +36,20 @@ public sealed class TransactionAccountScenarios :
             }
         }
     }
+
+    /// <inheritdoc/>
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+/// <summary>
+/// Collection class that contains all the valid Transaction Account scenarios that should be tested
+/// </summary>
+public sealed class TransactionAccountScenarios :
+    IEnumerable<TheoryDataRow<AccountType?, AccountType?, SameAccountTypeBehavior>>
+{
+    /// <inheritdoc/>
+    public IEnumerator<TheoryDataRow<AccountType?, AccountType?, SameAccountTypeBehavior>> GetEnumerator() =>
+        new AddTransactionAccountScenarios().Where(row => row.Data.Item1 != row.Data.Item2).GetEnumerator();
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

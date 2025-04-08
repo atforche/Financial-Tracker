@@ -10,7 +10,7 @@ namespace Tests.Scenarios;
 /// <summary>
 /// Collection class that contains all the unique Accounting Period scenarios that should be tested
 /// </summary>
-public sealed class AccountingPeriodScenarios :
+public sealed class AddAccountingPeriodScenarios :
     IEnumerable<TheoryDataRow<AccountingPeriodStatus?, AccountingPeriodStatus, AccountingPeriodStatus?>>
 {
     /// <inheritdoc/>
@@ -23,15 +23,30 @@ public sealed class AccountingPeriodScenarios :
             {
                 foreach (AccountingPeriodStatus? futurePeriodValue in validOtherTermValues)
                 {
-                    if (futurePeriodValue > currentPeriodValue || futurePeriodValue > pastPeriodValue || currentPeriodValue > pastPeriodValue)
-                    {
-                        continue;
-                    }
-                    yield return new TheoryDataRow<AccountingPeriodStatus?, AccountingPeriodStatus, AccountingPeriodStatus?>(pastPeriodValue, currentPeriodValue, futurePeriodValue);
+                    yield return new TheoryDataRow<AccountingPeriodStatus?, AccountingPeriodStatus, AccountingPeriodStatus?>(
+                        pastPeriodValue,
+                        currentPeriodValue,
+                        futurePeriodValue);
                 }
             }
         }
     }
+
+    /// <inheritdoc/>
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+/// <summary>
+/// Collection class that contains all the valid Accounting Period scenarios that should be tested
+/// </summary>
+public sealed class AccountingPeriodScenarios :
+    IEnumerable<TheoryDataRow<AccountingPeriodStatus?, AccountingPeriodStatus, AccountingPeriodStatus?>>
+{
+    /// <inheritdoc/>
+    public IEnumerator<TheoryDataRow<AccountingPeriodStatus?, AccountingPeriodStatus, AccountingPeriodStatus?>> GetEnumerator() =>
+        new AddAccountingPeriodScenarios()
+            .Where(row => row.Data.Item3 <= row.Data.Item2 && row.Data.Item3 <= row.Data.Item1 && row.Data.Item2 <= row.Data.Item1)
+            .GetEnumerator();
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -113,6 +128,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
         {
             PastAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
             accountingPeriodRepository.Add(PastAccountingPeriod);
+            Account = CreateAccount();
             if (pastPeriodStatus == AccountingPeriodStatus.Closed)
             {
                 accountingPeriodService.ClosePeriod(PastAccountingPeriod);
@@ -121,20 +137,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
         // Create the current Accounting Period
         CurrentAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2025, 1);
         accountingPeriodRepository.Add(CurrentAccountingPeriod);
-        Account = GetService<IAccountService>().CreateNewAccount("Test", AccountType.Standard,
-            [
-                new FundAmount
-                {
-                    Fund = Fund,
-                    Amount = 1500.00m,
-                },
-                new FundAmount
-                {
-                    Fund = OtherFund,
-                    Amount = 1500.00m,
-                }
-            ]);
-        GetService<IAccountRepository>().Add(Account);
+        Account ??= CreateAccount();
         if (currentPeriodStatus == AccountingPeriodStatus.Closed)
         {
             accountingPeriodService.ClosePeriod(CurrentAccountingPeriod);
@@ -149,5 +152,28 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
                 accountingPeriodService.ClosePeriod(FutureAccountingPeriod);
             }
         }
+    }
+
+    /// <summary>
+    /// Creates the Account for this test case
+    /// </summary>
+    /// <returns>The Account for this test case</returns>
+    private Account CreateAccount()
+    {
+        Account account = GetService<IAccountService>().CreateNewAccount("Test", AccountType.Standard,
+            [
+                new FundAmount
+                {
+                    Fund = Fund,
+                    Amount = 1500.00m,
+                },
+                new FundAmount
+                {
+                    Fund = OtherFund,
+                    Amount = 1500.00m,
+                }
+            ]);
+        GetService<IAccountRepository>().Add(account);
+        return account;
     }
 }
