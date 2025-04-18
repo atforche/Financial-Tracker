@@ -1,5 +1,5 @@
 using Domain.Aggregates.AccountingPeriods;
-using Tests.Scenarios;
+using Tests.AddAccountingPeriod.Scenarios;
 using Tests.Validators;
 
 namespace Tests.AddAccountingPeriod;
@@ -16,7 +16,7 @@ public class YearAndMonthTests
     [ClassData(typeof(YearAndMonthScenarios))]
     public void RunTest(int year, int month)
     {
-        if (ShouldThrowException(year, month))
+        if (!YearAndMonthScenarios.IsValid(year, month))
         {
             Assert.Throws<InvalidOperationException>(() => new YearAndMonthScenarioSetup(year, month));
             return;
@@ -30,20 +30,5 @@ public class YearAndMonthTests
             AccountBalanceCheckpoints = [],
             Transactions = []
         });
-    }
-
-    /// <summary>
-    /// Determines if this test case should throw an exception
-    /// </summary>
-    /// <param name="year">Year for this test case</param>
-    /// <param name="month">Month for this test case</param>
-    /// <returns>True if this test case should throw an exception, false otherwise</returns>
-    private static bool ShouldThrowException(int year, int month)
-    {
-        if (month is < 1 or > 12)
-        {
-            return true;
-        }
-        return year is < 2000 or > 2100;
     }
 }
