@@ -1,11 +1,12 @@
 using Domain.Aggregates.AccountingPeriods;
 using Tests.AddAccountingPeriod.Scenarios;
+using Tests.AddAccountingPeriod.Setups;
 using Tests.Validators;
 
 namespace Tests.AddAccountingPeriod;
 
 /// <summary>
-/// Test class that tests adding an Accounting Period with different year and month scenarios
+/// Test class that tests adding an Accounting Period with different Year and Month scenarios
 /// </summary>
 public class YearAndMonthTests
 {

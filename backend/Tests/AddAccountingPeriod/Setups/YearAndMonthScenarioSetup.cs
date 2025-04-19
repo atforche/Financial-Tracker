@@ -2,8 +2,10 @@ using Domain.Aggregates.AccountingPeriods;
 using Domain.Services;
 using Tests.Scenarios;
 
+namespace Tests.AddAccountingPeriod.Setups;
+
 /// <summary>
-/// Setup class for a year and month scenario for adding an Accounting Period
+/// Setup class for a Year and Month scenario for adding an Accounting Period
 /// </summary>
 internal sealed class YearAndMonthScenarioSetup : ScenarioSetup
 {

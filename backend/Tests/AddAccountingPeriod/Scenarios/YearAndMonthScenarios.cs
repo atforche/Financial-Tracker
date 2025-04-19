@@ -3,7 +3,7 @@ using System.Collections;
 namespace Tests.AddAccountingPeriod.Scenarios;
 
 /// <summary>
-/// Collection class that contains the year and month scenarios for adding an Accounting Period
+/// Collection class that contains all the unique Year and Month scenarios for adding an Accounting Period
 /// </summary>
 public sealed class YearAndMonthScenarios : IEnumerable<TheoryDataRow<int, int>>
 {
