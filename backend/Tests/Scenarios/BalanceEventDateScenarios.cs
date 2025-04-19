@@ -2,6 +2,7 @@ using System.Collections;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
+using Tests.Setups;
 
 namespace Tests.Scenarios;
 

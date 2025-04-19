@@ -6,7 +6,7 @@ using Domain.Services.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using Tests.Mocks;
 
-namespace Tests.Scenarios;
+namespace Tests.Setups;
 
 /// <summary>
 /// Abstract base class representing a Scenario Setup

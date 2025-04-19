@@ -4,6 +4,7 @@ using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
 using Domain.Services;
 using Domain.ValueObjects;
+using Tests.Setups;
 
 namespace Tests.Scenarios;
 

@@ -4,7 +4,7 @@ using Domain.Aggregates.Funds;
 using Domain.Services;
 using Domain.ValueObjects;
 
-namespace Tests.Scenarios;
+namespace Tests.Setups;
 
 /// <summary>
 /// Setup for a default scenario

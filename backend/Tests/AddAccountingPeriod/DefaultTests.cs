@@ -1,4 +1,4 @@
-using Tests.Scenarios;
+using Tests.Setups;
 using Tests.Validators;
 
 namespace Tests.AddAccountingPeriod;

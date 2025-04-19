@@ -1,6 +1,6 @@
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Services;
-using Tests.Scenarios;
+using Tests.Setups;
 
 namespace Tests.AddAccountingPeriod.Setups;
 
