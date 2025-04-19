@@ -1,0 +1,105 @@
+using Domain.Aggregates.AccountingPeriods;
+using Domain.Aggregates.Accounts;
+using Domain.Aggregates.Funds;
+using Domain.Services;
+using Domain.ValueObjects;
+using Tests.CloseAccountingPeriod.Scenarios;
+using Tests.Setups;
+
+namespace Tests.CloseAccountingPeriod.Setups;
+
+/// <summary>
+/// Setup class for a <see cref="BalanceEventScenarios"/> for closing an Accounting Period
+/// </summary>
+internal sealed class BalanceEventScenarioSetup : ScenarioSetup
+{
+    /// <summary>
+    /// Fund for the Setup
+    /// </summary>
+    public Fund Fund { get; }
+
+    /// <summary>
+    /// Other Fund for the Setup
+    /// </summary>
+    public Fund OtherFund { get; }
+
+    /// <summary>
+    /// Account for the Setup
+    /// </summary>
+    public Account Account { get; }
+
+    /// <summary>
+    /// First Accounting Period for the Setup
+    /// </summary>
+    public AccountingPeriod AccountingPeriod { get; }
+
+    /// <summary>
+    /// Constructs a new instance of this class
+    /// </summary>
+    /// <param name="scenario">Scenario for this test case</param>
+    public BalanceEventScenarioSetup(BalanceEventScenario scenario)
+    {
+        Fund = GetService<IFundService>().CreateNewFund("Test");
+        GetService<IFundRepository>().Add(Fund);
+        OtherFund = GetService<IFundService>().CreateNewFund("Test2");
+        GetService<IFundRepository>().Add(OtherFund);
+
+        AccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(2025, 1);
+        GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
+        Account = GetService<IAccountService>().CreateNewAccount("Test", AccountType.Standard,
+            [
+                new FundAmount
+                {
+                    Fund = Fund,
+                    Amount = 1500.00m,
+                },
+                new FundAmount
+                {
+                    Fund = OtherFund,
+                    Amount = 1500.00m,
+                }
+            ]);
+        GetService<IAccountRepository>().Add(Account);
+
+        if (scenario is BalanceEventScenario.UnpostedTransaction or BalanceEventScenario.PostedTransaction)
+        {
+            GetService<IAccountingPeriodService>().AddTransaction(AccountingPeriod,
+                new DateOnly(2025, 1, 15),
+                Account,
+                null,
+                [
+                    new FundAmount
+                    {
+                        Fund = Fund,
+                        Amount = 250.00m
+                    }
+                ]);
+        }
+        if (scenario is BalanceEventScenario.PostedTransaction)
+        {
+            GetService<IAccountingPeriodService>().PostTransaction(AccountingPeriod.Transactions.First(),
+                Account,
+                new DateOnly(2025, 1, 15));
+        }
+        if (scenario is BalanceEventScenario.ChangeInValue)
+        {
+            GetService<IAccountingPeriodService>().AddChangeInValue(AccountingPeriod,
+                new DateOnly(2025, 1, 15),
+                Account,
+                new FundAmount
+                {
+                    Fund = Fund,
+                    Amount = 250.00m
+                });
+        }
+        if (scenario is BalanceEventScenario.FundConversion)
+        {
+            GetService<IAccountingPeriodService>().AddFundConversion(AccountingPeriod,
+                new DateOnly(2025, 1, 15),
+                Account,
+                Fund,
+                OtherFund,
+                250.00m);
+        }
+    }
+}

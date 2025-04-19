@@ -6,7 +6,6 @@ using Tests.Validators;
 
 namespace Tests.AddChangeInValue;
 
-#pragma warning disable CA1724
 /// <summary>
 /// Test class that tests adding a Change In Value with different Accounting Period scenarios
 /// </summary>
@@ -71,4 +70,3 @@ public class AccountingPeriodTests
             }
         };
 }
-#pragma warning restore CA1724

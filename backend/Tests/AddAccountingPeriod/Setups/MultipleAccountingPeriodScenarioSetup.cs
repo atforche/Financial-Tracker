@@ -3,12 +3,13 @@ using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
 using Domain.Services;
 using Domain.ValueObjects;
+using Tests.AddAccountingPeriod.Scenarios;
 using Tests.Setups;
 
 namespace Tests.AddAccountingPeriod.Setups;
 
 /// <summary>
-/// Setup class for a Multiple Accounting Period scenario for adding an Accounting Period
+/// Setup class for a <see cref="MultipleAccountingPeriodScenarios"/> for adding an Accounting Period
 /// </summary>
 internal sealed class MultipleAccountingPeriodScenarioSetup : ScenarioSetup
 {
@@ -28,13 +29,11 @@ internal sealed class MultipleAccountingPeriodScenarioSetup : ScenarioSetup
     public AccountingPeriod FirstAccountingPeriod { get; }
 
     /// <summary>
-    /// True if Accounting Periods should be closed before adding a new one, false otherwise
+    /// Constructs a new instance of this class
     /// </summary>
-    public bool ShouldClosePeriods { get; }
-
-    public MultipleAccountingPeriodScenarioSetup(DateOnly firstPeriod, bool shouldClosePeriod)
+    /// <param name="firstPeriod">First Period for this test case</param>
+    public MultipleAccountingPeriodScenarioSetup(DateOnly firstPeriod)
     {
-        ShouldClosePeriods = shouldClosePeriod;
         Fund = GetService<IFundService>().CreateNewFund("Test");
         GetService<IFundRepository>().Add(Fund);
         FirstAccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(firstPeriod.Year, firstPeriod.Month);

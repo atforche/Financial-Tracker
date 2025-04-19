@@ -6,7 +6,6 @@ using Tests.Validators;
 
 namespace Tests.AddTransaction;
 
-#pragma warning disable CA1724
 /// <summary>
 /// Test class that tests adding a Transaction with different Accounting Period scenarios
 /// </summary>
@@ -86,4 +85,3 @@ public class AccountingPeriodTests
             ]
         };
 }
-#pragma warning restore CA1724

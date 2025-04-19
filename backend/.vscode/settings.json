@@ -4,6 +4,7 @@
         "buildtransitive",
         "contentfiles",
         "Swashbuckle",
+        "unposted",
         "Uploaders",
         "xunit"
     ],

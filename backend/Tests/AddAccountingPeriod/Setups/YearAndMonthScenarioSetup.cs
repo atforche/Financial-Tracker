@@ -1,11 +1,12 @@
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Services;
+using Tests.AddAccountingPeriod.Scenarios;
 using Tests.Setups;
 
 namespace Tests.AddAccountingPeriod.Setups;
 
 /// <summary>
-/// Setup class for a Year and Month scenario for adding an Accounting Period
+/// Setup class for a <see cref="YearAndMonthScenarios"/> for adding an Accounting Period
 /// </summary>
 internal sealed class YearAndMonthScenarioSetup : ScenarioSetup
 {
@@ -17,8 +18,8 @@ internal sealed class YearAndMonthScenarioSetup : ScenarioSetup
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="year">Year for this Setup</param>
-    /// <param name="month">Month for this Setup</param>
+    /// <param name="year">Year for this test case</param>
+    /// <param name="month">Month for this test case</param>
     public YearAndMonthScenarioSetup(int year, int month) =>
         AccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(year, month);
 }

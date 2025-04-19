@@ -7,7 +7,7 @@ using Tests.Validators;
 namespace Tests.AddAccountingPeriod;
 
 /// <summary>
-/// Test class that tests adding an Accounting Period with different Multiple Accounting Period scenarios
+/// Test class that tests adding an Accounting Period with different <see cref="MultipleAccountingPeriodScenarios"/>
 /// </summary>
 public class MultipleAccountingPeriodTests
 {
@@ -39,33 +39,43 @@ public class MultipleAccountingPeriodTests
     /// <param name="shouldClosePeriods">True if Accounting Periods should be closed before adding a new one, false otherwise</param>
     private static void RunTestPrivate(DateOnly firstPeriod, DateOnly secondPeriod, DateOnly thirdPeriod, bool shouldClosePeriods)
     {
-        var setup = new MultipleAccountingPeriodScenarioSetup(firstPeriod, shouldClosePeriods);
-        new AccountingPeriodValidator().Validate(setup.FirstAccountingPeriod, GetExpectedState(setup, setup.FirstAccountingPeriod));
+        var setup = new MultipleAccountingPeriodScenarioSetup(firstPeriod);
+        new AccountingPeriodValidator().Validate(
+            setup.FirstAccountingPeriod,
+            GetExpectedState(setup, shouldClosePeriods, setup.FirstAccountingPeriod));
         if (shouldClosePeriods)
         {
             setup.GetService<IAccountingPeriodService>().ClosePeriod(setup.FirstAccountingPeriod);
         }
         AccountingPeriod secondAccountingPeriod = setup.GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(secondPeriod.Year, secondPeriod.Month);
         setup.GetService<IAccountingPeriodRepository>().Add(secondAccountingPeriod);
-        new AccountingPeriodValidator().Validate(secondAccountingPeriod, GetExpectedState(setup, secondAccountingPeriod));
+        new AccountingPeriodValidator().Validate(
+            secondAccountingPeriod,
+            GetExpectedState(setup, shouldClosePeriods, secondAccountingPeriod));
         if (shouldClosePeriods)
         {
             setup.GetService<IAccountingPeriodService>().ClosePeriod(secondAccountingPeriod);
         }
         AccountingPeriod thirdAccountingPeriod = setup.GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(thirdPeriod.Year, thirdPeriod.Month);
-        new AccountingPeriodValidator().Validate(thirdAccountingPeriod, GetExpectedState(setup, thirdAccountingPeriod));
+        new AccountingPeriodValidator().Validate(
+            thirdAccountingPeriod,
+            GetExpectedState(setup, shouldClosePeriods, thirdAccountingPeriod));
     }
 
     /// <summary>
     /// Gets the expected state for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
+    /// <param name="shouldClosePeriods">Should Close Periods flag for this test case</param>
     /// <param name="accountingPeriod">Accounting Period to get the expected state for</param>
     /// <returns>The expected state for this test case</returns>
-    private static AccountingPeriodState GetExpectedState(MultipleAccountingPeriodScenarioSetup setup, AccountingPeriod accountingPeriod)
+    private static AccountingPeriodState GetExpectedState(
+        MultipleAccountingPeriodScenarioSetup setup,
+        bool shouldClosePeriods,
+        AccountingPeriod accountingPeriod)
     {
         List<AccountBalanceCheckpointState> expectedAccountBalanceCheckpoints = [];
-        if (accountingPeriod == setup.FirstAccountingPeriod || setup.ShouldClosePeriods)
+        if (accountingPeriod == setup.FirstAccountingPeriod || shouldClosePeriods)
         {
             expectedAccountBalanceCheckpoints.Add(new AccountBalanceCheckpointState
             {

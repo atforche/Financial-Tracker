@@ -5,7 +5,6 @@ using Tests.Validators;
 
 namespace Tests.AddFundConversion;
 
-#pragma warning disable CA1724
 /// <summary>
 /// Test class that tests adding a Fund Conversion with different Accounting Period scenarios
 /// </summary>
@@ -67,4 +66,3 @@ public class AccountingPeriodTests
             Amount = 100.00m,
         };
 }
-#pragma warning restore CA1724

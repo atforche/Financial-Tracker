@@ -1,27 +1,23 @@
 using System.Collections;
 
-namespace Tests.AddAccountingPeriod.Scenarios;
+namespace Tests.CloseAccountingPeriod.Scenarios;
 
 /// <summary>
-/// Collection class that contains all the unique Multiple Accounting Period scenarios for adding an Accounting Period
+/// Collection class that contains all the unique Multiple Accounting Period scenarios for closing an Accounting Period
 /// </summary>
-public sealed class MultipleAccountingPeriodScenarios : IEnumerable<TheoryDataRow<DateOnly, DateOnly, DateOnly, bool>>
+public sealed class MultipleAccountingPeriodScenarios : IEnumerable<TheoryDataRow<DateOnly, DateOnly, DateOnly>>
 {
     /// <inheritdoc/>
-    public IEnumerator<TheoryDataRow<DateOnly, DateOnly, DateOnly, bool>> GetEnumerator()
+    public IEnumerator<TheoryDataRow<DateOnly, DateOnly, DateOnly>> GetEnumerator()
     {
-        List<(DateOnly, DateOnly, DateOnly)> scenarios =
-        [
-            (new DateOnly(2025, 1, 1), new DateOnly(2025, 2, 1), new DateOnly(2025, 3, 1)),
-            (new DateOnly(2025, 1, 1), new DateOnly(2025, 3, 1), new DateOnly(2025, 4, 1)),
-            (new DateOnly(2025, 1, 1), new DateOnly(2025, 2, 1), new DateOnly(2025, 2, 1)),
-            (new DateOnly(2025, 1, 1), new DateOnly(2024, 11, 1), new DateOnly(2025, 2, 1))
-        ];
-        foreach ((DateOnly firstPeriod, DateOnly secondPeriod, DateOnly thirdPeriod) in scenarios)
-        {
-            yield return new TheoryDataRow<DateOnly, DateOnly, DateOnly, bool>(firstPeriod, secondPeriod, thirdPeriod, false);
-            yield return new TheoryDataRow<DateOnly, DateOnly, DateOnly, bool>(firstPeriod, secondPeriod, thirdPeriod, true);
-        }
+        (DateOnly firstPeriod, DateOnly secondPeriod, DateOnly thirdPeriod, bool shouldClosePeriods) =
+            new AddAccountingPeriod.Scenarios.MultipleAccountingPeriodScenarios()
+                .DistinctBy(row => (row.Data.Item1, row.Data.Item2, row.Data.Item3))
+                .Single(row => AddAccountingPeriod.Scenarios.MultipleAccountingPeriodScenarios.IsValid(row.Data.Item1, row.Data.Item2, row.Data.Item3))
+                .Data;
+        yield return new TheoryDataRow<DateOnly, DateOnly, DateOnly>(firstPeriod, secondPeriod, thirdPeriod);
+        yield return new TheoryDataRow<DateOnly, DateOnly, DateOnly>(firstPeriod, thirdPeriod, secondPeriod);
+        yield return new TheoryDataRow<DateOnly, DateOnly, DateOnly>(firstPeriod, firstPeriod, secondPeriod);
     }
 
     /// <inheritdoc/>

@@ -6,7 +6,7 @@ using Tests.Validators;
 namespace Tests.AddAccountingPeriod;
 
 /// <summary>
-/// Test class that tests adding an Accounting Period with different Year and Month scenarios
+/// Test class that tests adding an Accounting Period with different <see cref="YearAndMonthScenarios"/>
 /// </summary>
 public class YearAndMonthTests
 {
