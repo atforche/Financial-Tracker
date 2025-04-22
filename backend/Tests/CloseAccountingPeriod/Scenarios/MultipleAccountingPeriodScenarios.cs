@@ -54,5 +54,5 @@ public sealed class MultipleAccountingPeriodScenarios : IEnumerable<TheoryDataRo
     /// <param name="secondPeriod">Second Period</param>
     /// <returns>The number of months between the two provided Accounting Periods</returns>
     public static int CalculateMonthDifference(DateOnly firstPeriod, DateOnly secondPeriod) =>
-        (Math.Abs(firstPeriod.Year - secondPeriod.Year) * 12) + Math.Abs(firstPeriod.Month - secondPeriod.Month);
+        Math.Abs(((firstPeriod.Year - secondPeriod.Year) * 12) + firstPeriod.Month - secondPeriod.Month);
 }

@@ -104,8 +104,8 @@ public abstract class BalanceEventBase : EntityBase
             throw new InvalidOperationException();
         }
         // Validate that a balance event can only be added with a date in a month adjacent to the Accounting Period month
-        int monthDifference = (Math.Abs(AccountingPeriod.Year - EventDate.Year) * 12) + Math.Abs(AccountingPeriod.Month - EventDate.Month);
-        if (Math.Abs(monthDifference) > 1)
+        int monthDifference = Math.Abs(((AccountingPeriod.Year - EventDate.Year) * 12) + AccountingPeriod.Month - EventDate.Month);
+        if (monthDifference > 1)
         {
             throw new InvalidOperationException();
         }

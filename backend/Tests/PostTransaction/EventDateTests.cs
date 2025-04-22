@@ -2,6 +2,7 @@ using Domain.Aggregates.AccountingPeriods;
 using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Scenarios;
+using Tests.Setups;
 using Tests.Validators;
 
 namespace Tests.PostTransaction;
@@ -15,32 +16,18 @@ public class EventDateTests
     /// Runs the test for this test class
     /// </summary>
     [Theory]
-    [ClassData(typeof(BalanceEventDateScenarios))]
+    [ClassData(typeof(AddBalanceEventDateScenarios))]
     public void RunTest(DateOnly eventDate)
     {
         var setup = new BalanceEventDateScenarioSetup(eventDate);
         Transaction transaction = AddTransaction(setup);
-        if (ShouldThrowException(setup))
+        if (!AddBalanceEventDateScenarios.IsValid(eventDate) || eventDate < new DateOnly(2025, 1, 1))
         {
             Assert.Throws<InvalidOperationException>(() => PostTransaction(setup, transaction));
             return;
         }
         PostTransaction(setup, transaction);
         new TransactionValidator().Validate(transaction, GetExpectedState(setup));
-    }
-
-    /// <summary>
-    /// Determines if this test case should throw an exception
-    /// </summary>
-    /// <param name="setup">Setup for this test case</param>
-    /// <returns>True if this test case should throw an exception, false otherwise</returns>
-    private static bool ShouldThrowException(BalanceEventDateScenarioSetup setup)
-    {
-        if (setup.EventDate < new DateOnly(2025, 1, 1))
-        {
-            return true;
-        }
-        return setup.CalculateMonthDifference() > 1;
     }
 
     /// <summary>

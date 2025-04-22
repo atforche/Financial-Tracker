@@ -1,32 +1,12 @@
-using System.Collections;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
-using Tests.Setups;
+using Tests.Scenarios;
 
-namespace Tests.Scenarios;
-
-/// <summary>
-/// Collection class that contains all the unique Balance Event Date scenarios that should be tested
-/// </summary>
-public sealed class BalanceEventDateScenarios : IEnumerable<TheoryDataRow<DateOnly>>
-{
-    /// <inheritdoc/>
-    public IEnumerator<TheoryDataRow<DateOnly>> GetEnumerator() => new List<TheoryDataRow<DateOnly>>
-        {
-            new(new DateOnly(2024, 11, 1)),
-            new(new DateOnly(2024, 12, 1)),
-            new(new DateOnly(2025, 1, 1)),
-            new(new DateOnly(2025, 2, 1)),
-            new(new DateOnly(2025, 3, 1)),
-        }.GetEnumerator();
-
-    /// <inheritdoc/>
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-}
+namespace Tests.Setups;
 
 /// <summary>
-/// Setup class for a Balance Event Date scenario
+/// Setup class for a <see cref="AddBalanceEventDateScenarios"/>
 /// </summary>
 internal sealed class BalanceEventDateScenarioSetup : ScenarioSetup
 {
@@ -90,11 +70,4 @@ internal sealed class BalanceEventDateScenarioSetup : ScenarioSetup
             accountingPeriodRepository.Add(_futureAccountingPeriod);
         }
     }
-
-    /// <summary>
-    /// Calculates the number of months between the current Accounting Period and the event date
-    /// </summary>
-    /// <returns>The number of months between the current Accounting Period and the event date</returns>
-    public int CalculateMonthDifference() =>
-        (Math.Abs(CurrentAccountingPeriod.Year - EventDate.Year) * 12) + Math.Abs(CurrentAccountingPeriod.Month - EventDate.Month);
 }

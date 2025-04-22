@@ -2,6 +2,7 @@ using Domain.Aggregates.AccountingPeriods;
 using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Scenarios;
+using Tests.Setups;
 using Tests.Validators;
 
 namespace Tests.AddChangeInValue;
@@ -15,24 +16,17 @@ public class EventDateTests
     /// Runs the test for this test class
     /// </summary>
     [Theory]
-    [ClassData(typeof(BalanceEventDateScenarios))]
+    [ClassData(typeof(AddBalanceEventDateScenarios))]
     public void RunTest(DateOnly eventDate)
     {
         var setup = new BalanceEventDateScenarioSetup(eventDate);
-        if (ShouldThrowException(setup))
+        if (!AddBalanceEventDateScenarios.IsValid(eventDate))
         {
             Assert.Throws<InvalidOperationException>(() => AddChangeInValue(setup));
             return;
         }
         new ChangeInValueValidator().Validate(AddChangeInValue(setup), GetExpectedState(setup));
     }
-
-    /// <summary>
-    /// Determines if this test case should throw an exception
-    /// </summary>
-    /// <param name="setup">Setup for this test case</param>
-    /// <returns>True if this test case should throw an exception, false otherwise</returns>
-    private static bool ShouldThrowException(BalanceEventDateScenarioSetup setup) => setup.CalculateMonthDifference() > 1;
 
     /// <summary>
     /// Adds the Change In Value for this test case
