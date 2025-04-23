@@ -69,7 +69,9 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
         }
         if (startingBalance == null)
         {
-            throw new InvalidOperationException();
+            // If the current period doesn't have a balance checkpoint for this Account and there's no past periods
+            // to check, return a balance of zero
+            return new AccountBalanceByAccountingPeriod(accountingPeriod, new AccountBalance(account, [], []), new AccountBalance(account, [], []));
         }
         AccountBalance endingBalance = startingBalance;
 

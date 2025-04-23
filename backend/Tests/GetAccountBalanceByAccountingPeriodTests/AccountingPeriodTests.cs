@@ -19,11 +19,6 @@ public class AccountingPeriodTests
     public void RunTest(AccountingPeriodScenario scenario)
     {
         var setup = new AccountingPeriodScenarioSetup(scenario);
-        if (!AccountingPeriodScenarios.IsValid(scenario))
-        {
-            Assert.Throws<InvalidOperationException>(() => GetAccountBalance(setup));
-            return;
-        }
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup), GetExpectedState(setup));
     }
 
@@ -40,27 +35,24 @@ public class AccountingPeriodTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static AccountBalanceByAccountingPeriodState GetExpectedState(AccountingPeriodScenarioSetup setup) =>
-        new()
+    private static AccountBalanceByAccountingPeriodState GetExpectedState(AccountingPeriodScenarioSetup setup)
+    {
+        List<FundAmountState> expectedFundAmounts = setup.AccountingPeriod.Month == 12
+            ? []
+            : [
+                new FundAmountState
+                {
+                    FundName = setup.Fund.Name,
+                    Amount = 1500.00m
+                }
+            ];
+        return new AccountBalanceByAccountingPeriodState
         {
             AccountingPeriodYear = setup.AccountingPeriod.Year,
             AccountingPeriodMonth = setup.AccountingPeriod.Month,
-            StartingFundBalances =
-            [
-                new FundAmountState
-                {
-                    FundName = setup.Fund.Name,
-                    Amount = 1500.00m
-                }
-            ],
-            EndingFundBalances =
-            [
-                new FundAmountState
-                {
-                    FundName = setup.Fund.Name,
-                    Amount = 1500.00m
-                }
-            ],
+            StartingFundBalances = expectedFundAmounts,
+            EndingFundBalances = expectedFundAmounts,
             EndingPendingFundBalanceChanges = []
         };
+    }
 }

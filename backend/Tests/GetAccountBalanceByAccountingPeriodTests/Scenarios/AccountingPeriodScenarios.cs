@@ -14,17 +14,6 @@ public sealed class AccountingPeriodScenarios : IEnumerable<TheoryDataRow<Accoun
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    /// <summary>
-    /// Determines if the provided scenario is valid
-    /// </summary>
-    /// <param name="scenario">Scenario to validate</param>
-    /// <returns>True if the provided scenario is valid, false otherwise</returns>
-    public static bool IsValid(AccountingPeriodScenario scenario)
-    {
-        List<AccountingPeriodScenario> invalidScenarios = [AccountingPeriodScenario.PeriodBeforeAccountWasAdded];
-        return !invalidScenarios.Contains(scenario);
-    }
 }
 
 /// <summary>
