@@ -46,8 +46,8 @@ public class AccountBalance
     public AccountBalance(Account account, IEnumerable<FundAmount> fundBalances, IEnumerable<FundAmount> pendingFundBalanceChanges)
     {
         Account = account;
-        FundBalances = fundBalances.ToList();
-        PendingFundBalanceChanges = pendingFundBalanceChanges.ToList();
+        FundBalances = fundBalances.Where(amount => amount.Amount != 0.00m).ToList();
+        PendingFundBalanceChanges = pendingFundBalanceChanges.Where(amount => amount.Amount != 0.00m).ToList();
         Validate();
     }
 
