@@ -101,7 +101,7 @@ public class AccountingPeriodService(
     {
         foreach (Account account in _accountRepository.FindAll())
         {
-            nextAccountingPeriod.AddAccountBalanceCheckpoint(account,
+            account.AddAccountBalanceCheckpoint(nextAccountingPeriod,
                 _accountBalanceService.GetAccountBalancesByAccountingPeriod(account, previousAccountingPeriod).EndingBalance.FundBalances);
         }
     }

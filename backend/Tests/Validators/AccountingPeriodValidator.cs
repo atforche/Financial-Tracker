@@ -14,7 +14,6 @@ internal sealed class AccountingPeriodValidator : EntityValidatorBase<Accounting
         Assert.Equal(expectedState.Year, entity.Year);
         Assert.Equal(expectedState.Month, entity.Month);
         Assert.Equal(expectedState.IsOpen, entity.IsOpen);
-        new AccountBalanceCheckpointValidator().Validate(entity.AccountBalanceCheckpoints, expectedState.AccountBalanceCheckpoints);
         new TransactionValidator().Validate(entity.Transactions, expectedState.Transactions);
     }
 }
@@ -38,11 +37,6 @@ internal sealed record AccountingPeriodState
     /// Is Open Flag for this Accounting Period
     /// </summary>
     public required bool IsOpen { get; init; }
-
-    /// <summary>
-    /// Account Balance Checkpoints for this Accounting Period
-    /// </summary>
-    public required List<AccountBalanceCheckpointState> AccountBalanceCheckpoints { get; init; }
 
     /// <summary>
     /// Transactions for this Accounting Period

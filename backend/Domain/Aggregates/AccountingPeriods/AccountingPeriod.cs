@@ -1,4 +1,3 @@
-using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
 using Domain.ValueObjects;
 
@@ -15,7 +14,6 @@ public class AccountingPeriod : EntityBase
     private readonly List<Transaction> _transactions = [];
     private readonly List<FundConversion> _fundConversions = [];
     private readonly List<ChangeInValue> _changeInValues = [];
-    private readonly List<AccountBalanceCheckpoint> _accountBalanceCheckpoints = [];
 
     /// <summary>
     /// Year for this Accounting Period
@@ -56,11 +54,6 @@ public class AccountingPeriod : EntityBase
     /// Change In Values for this Accounting Period
     /// </summary>
     public IReadOnlyCollection<ChangeInValue> ChangeInValues => _changeInValues;
-
-    /// <summary>
-    /// Account Balance Checkpoints for this Accounting Period
-    /// </summary>
-    public IReadOnlyCollection<AccountBalanceCheckpoint> AccountBalanceCheckpoints => _accountBalanceCheckpoints;
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -166,20 +159,6 @@ public class AccountingPeriod : EntityBase
             .Concat(ChangeInValues)
             .OrderBy(balanceEvent => balanceEvent.EventDate)
             .ThenBy(balanceEvent => balanceEvent.EventSequence);
-
-    /// <summary>
-    /// Adds a new Account Balance Checkpoint to this Accounting Period
-    /// </summary>
-    /// <param name="account">Account for this Account Balance Checkpoint</param>
-    /// <param name="fundBalances">Fund Balances for this Account Balance Checkpoint</param>
-    internal void AddAccountBalanceCheckpoint(Account account, IEnumerable<FundAmount> fundBalances)
-    {
-        if (_accountBalanceCheckpoints.Any(checkpoint => checkpoint.Account == account))
-        {
-            throw new InvalidOperationException();
-        }
-        _accountBalanceCheckpoints.Add(new AccountBalanceCheckpoint(this, account, fundBalances));
-    }
 
     /// <summary>
     /// Gets the next Balance Event sequence for the provided date

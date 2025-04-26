@@ -1,4 +1,4 @@
-using Domain.Aggregates.AccountingPeriods;
+using Domain.Aggregates.Accounts;
 
 namespace Tests.Validators;
 
@@ -25,6 +25,16 @@ internal sealed record AccountBalanceCheckpointState
     /// Account Name for this Account Balance Checkpoint
     /// </summary>
     public required string AccountName { get; init; }
+
+    /// <summary>
+    /// Accounting Period Year for this Account Balance Checkpoint
+    /// </summary>
+    public required int AccountingPeriodYear { get; init; }
+
+    /// <summary>
+    /// Accounting Period Month for this Account Balance Checkpoint
+    /// </summary>
+    public required int AccountingPeriodMonth { get; init; }
 
     /// <summary>
     /// Fund Balances for this Account Balance Checkpoint

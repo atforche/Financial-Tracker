@@ -29,11 +29,6 @@ internal sealed class AccountingPeriodEntityConfiguration : EntityConfigurationB
             .WithOne(changeInValue => changeInValue.AccountingPeriod)
             .HasForeignKey("AccountingPeriodId");
         builder.Navigation(accountingPeriod => accountingPeriod.ChangeInValues).AutoInclude();
-
-        builder.HasMany(accountingPeriod => accountingPeriod.AccountBalanceCheckpoints)
-            .WithOne(accountingBalanceCheckpoint => accountingBalanceCheckpoint.AccountingPeriod)
-            .HasForeignKey("AccountingPeriodId");
-        builder.Navigation(accountingPeriod => accountingPeriod.AccountBalanceCheckpoints).AutoInclude();
     }
 }
 
@@ -87,23 +82,6 @@ internal sealed class ChangeInValueEntityConfiguration : EntityConfigurationBase
 
         builder.HasOne(changeInValue => changeInValue.AccountingEntry).WithOne().HasForeignKey<ChangeInValue>("FundAmountId");
         builder.Navigation(changeInValue => changeInValue.AccountingEntry).IsRequired().AutoInclude();
-    }
-}
-
-/// <summary>
-/// EF Core configuration for the Account Balance Checkpoint entity
-/// </summary>
-internal sealed class AccountBalanceCheckpointEntityConfiguration : EntityConfigurationBase<AccountBalanceCheckpoint>
-{
-    /// <inheritdoc/>
-    protected override void ConfigurePrivate(EntityTypeBuilder<AccountBalanceCheckpoint> builder)
-    {
-        builder.HasOne(accountBalanceCheckpoint => accountBalanceCheckpoint.Account).WithMany().HasForeignKey("AccountId");
-        builder.Navigation(accountBalanceCheckpoint => accountBalanceCheckpoint.Account).IsRequired().AutoInclude();
-
-        builder.HasMany(accountBalanceCheckpoint => accountBalanceCheckpoint.FundBalances).WithOne()
-            .HasForeignKey("AccountBalanceCheckpointId");
-        builder.Navigation(accountBalanceCheckpoint => accountBalanceCheckpoint.FundBalances).AutoInclude();
     }
 }
 

@@ -26,6 +26,28 @@ public class BalanceEventTests
         }
         CloseAccountingPeriod(setup);
         new AccountingPeriodValidator().Validate(setup.AccountingPeriod, GetExpectedState(scenario, setup));
+        new AccountBalanceCheckpointValidator().Validate(setup.Account.AccountBalanceCheckpoints,
+            [
+                new AccountBalanceCheckpointState
+                {
+                    AccountName = setup.Account.Name,
+                    AccountingPeriodYear = setup.AccountingPeriod.Year,
+                    AccountingPeriodMonth = setup.AccountingPeriod.Month,
+                    FundBalances =
+                    [
+                        new FundAmountState
+                        {
+                            FundName = setup.Fund.Name,
+                            Amount = 1500.00m
+                        },
+                        new FundAmountState
+                        {
+                            FundName = setup.OtherFund.Name,
+                            Amount = 1500.00m
+                        },
+                    ]
+                }
+            ]);
     }
 
     /// <summary>
@@ -47,26 +69,6 @@ public class BalanceEventTests
             Year = setup.AccountingPeriod.Year,
             Month = setup.AccountingPeriod.Month,
             IsOpen = false,
-            AccountBalanceCheckpoints =
-            [
-                new AccountBalanceCheckpointState
-                {
-                    AccountName = setup.Account.Name,
-                    FundBalances =
-                    [
-                        new FundAmountState
-                        {
-                            FundName = setup.Fund.Name,
-                            Amount = 1500.00m
-                        },
-                        new FundAmountState
-                        {
-                            FundName = setup.OtherFund.Name,
-                            Amount = 1500.00m
-                        }
-                    ]
-                }
-            ],
             Transactions = GetExpectedTransactionStates(scenario, setup)
         };
 

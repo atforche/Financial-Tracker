@@ -40,46 +40,77 @@ public class MultipleAccountingPeriodTests
     private static void RunTestPrivate(DateOnly firstPeriod, DateOnly secondPeriod, DateOnly thirdPeriod, bool shouldClosePeriods)
     {
         var setup = new MultipleAccountingPeriodScenarioSetup(firstPeriod);
-        new AccountingPeriodValidator().Validate(
-            setup.FirstAccountingPeriod,
-            GetExpectedState(setup, shouldClosePeriods, setup.FirstAccountingPeriod));
+        new AccountingPeriodValidator().Validate(setup.FirstAccountingPeriod, GetExpectedState(setup.FirstAccountingPeriod));
+        new AccountBalanceCheckpointValidator().Validate(setup.Account.AccountBalanceCheckpoints, GetExpectedAccountBalanceCheckpointStates(setup, null, null));
         if (shouldClosePeriods)
         {
             setup.GetService<IAccountingPeriodService>().ClosePeriod(setup.FirstAccountingPeriod);
         }
+
         AccountingPeriod secondAccountingPeriod = setup.GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(secondPeriod.Year, secondPeriod.Month);
         setup.GetService<IAccountingPeriodRepository>().Add(secondAccountingPeriod);
-        new AccountingPeriodValidator().Validate(
-            secondAccountingPeriod,
-            GetExpectedState(setup, shouldClosePeriods, secondAccountingPeriod));
+        new AccountingPeriodValidator().Validate(secondAccountingPeriod, GetExpectedState(secondAccountingPeriod));
+        new AccountBalanceCheckpointValidator().Validate(setup.Account.AccountBalanceCheckpoints, GetExpectedAccountBalanceCheckpointStates(setup, secondAccountingPeriod, null));
         if (shouldClosePeriods)
         {
             setup.GetService<IAccountingPeriodService>().ClosePeriod(secondAccountingPeriod);
         }
+
         AccountingPeriod thirdAccountingPeriod = setup.GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(thirdPeriod.Year, thirdPeriod.Month);
-        new AccountingPeriodValidator().Validate(
-            thirdAccountingPeriod,
-            GetExpectedState(setup, shouldClosePeriods, thirdAccountingPeriod));
+        new AccountingPeriodValidator().Validate(thirdAccountingPeriod, GetExpectedState(thirdAccountingPeriod));
+        new AccountBalanceCheckpointValidator().Validate(setup.Account.AccountBalanceCheckpoints, GetExpectedAccountBalanceCheckpointStates(setup, secondAccountingPeriod, thirdAccountingPeriod));
     }
 
     /// <summary>
     /// Gets the expected state for this test case
     /// </summary>
-    /// <param name="setup">Setup for this test case</param>
-    /// <param name="shouldClosePeriods">Should Close Periods flag for this test case</param>
     /// <param name="accountingPeriod">Accounting Period to get the expected state for</param>
     /// <returns>The expected state for this test case</returns>
-    private static AccountingPeriodState GetExpectedState(
-        MultipleAccountingPeriodScenarioSetup setup,
-        bool shouldClosePeriods,
-        AccountingPeriod accountingPeriod)
-    {
-        List<AccountBalanceCheckpointState> expectedAccountBalanceCheckpoints = [];
-        if (accountingPeriod == setup.FirstAccountingPeriod || shouldClosePeriods)
+    private static AccountingPeriodState GetExpectedState(AccountingPeriod accountingPeriod) =>
+        new()
         {
-            expectedAccountBalanceCheckpoints.Add(new AccountBalanceCheckpointState
+            Year = accountingPeriod.Year,
+            Month = accountingPeriod.Month,
+            IsOpen = accountingPeriod.IsOpen,
+            Transactions = []
+        };
+
+    /// <summary>
+    /// Gets the expected Account Balance Checkpoint States for this test case
+    /// </summary>
+    /// <param name="setup">Setup for this test case</param>
+    /// <param name="secondAccountingPeriod">Second Accounting Period for this test case</param>
+    /// <param name="thirdAccountingPeriod">Third Accounting Period for this test case</param>
+    /// <returns>The expected Account Balance Checkpoint States for this test case</returns>
+    private static List<AccountBalanceCheckpointState> GetExpectedAccountBalanceCheckpointStates(
+        MultipleAccountingPeriodScenarioSetup setup,
+        AccountingPeriod? secondAccountingPeriod,
+        AccountingPeriod? thirdAccountingPeriod)
+    {
+        List<AccountBalanceCheckpointState> results =
+        [
+            new AccountBalanceCheckpointState
             {
                 AccountName = setup.Account.Name,
+                AccountingPeriodYear = setup.FirstAccountingPeriod.Year,
+                AccountingPeriodMonth = setup.FirstAccountingPeriod.Month,
+                FundBalances =
+                [
+                    new FundAmountState
+                    {
+                        FundName = setup.Fund.Name,
+                        Amount = 1500.00m
+                    },
+                ]
+            }
+        ];
+        if (!setup.FirstAccountingPeriod.IsOpen && secondAccountingPeriod != null)
+        {
+            results.Add(new AccountBalanceCheckpointState
+            {
+                AccountName = setup.Account.Name,
+                AccountingPeriodYear = secondAccountingPeriod.Year,
+                AccountingPeriodMonth = secondAccountingPeriod.Month,
                 FundBalances =
                 [
                     new FundAmountState
@@ -90,13 +121,23 @@ public class MultipleAccountingPeriodTests
                 ]
             });
         }
-        return new()
+        if (secondAccountingPeriod?.IsOpen == false && thirdAccountingPeriod != null)
         {
-            Year = accountingPeriod.Year,
-            Month = accountingPeriod.Month,
-            IsOpen = accountingPeriod.IsOpen,
-            AccountBalanceCheckpoints = expectedAccountBalanceCheckpoints,
-            Transactions = []
-        };
+            results.Add(new AccountBalanceCheckpointState
+            {
+                AccountName = setup.Account.Name,
+                AccountingPeriodYear = thirdAccountingPeriod.Year,
+                AccountingPeriodMonth = thirdAccountingPeriod.Month,
+                FundBalances =
+                [
+                    new FundAmountState
+                    {
+                        FundName = setup.Fund.Name,
+                        Amount = 1500.00m
+                    },
+                ]
+            });
+        }
+        return results;
     }
 }

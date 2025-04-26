@@ -1,3 +1,4 @@
+using Domain.Aggregates.AccountingPeriods;
 using Domain.ValueObjects;
 
 namespace Domain.Aggregates.Accounts;
@@ -10,6 +11,8 @@ namespace Domain.Aggregates.Accounts;
 /// </remarks>
 public class Account : EntityBase
 {
+    private readonly List<AccountBalanceCheckpoint> _accountBalanceCheckpoints = [];
+
     /// <summary>
     /// Name for this Account
     /// </summary>
@@ -19,6 +22,11 @@ public class Account : EntityBase
     /// Type for this Account
     /// </summary>
     public AccountType Type { get; private set; }
+
+    /// <summary>
+    /// Account Balance Checkpoints for this Account
+    /// </summary>
+    public IReadOnlyCollection<AccountBalanceCheckpoint> AccountBalanceCheckpoints => _accountBalanceCheckpoints;
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -32,6 +40,14 @@ public class Account : EntityBase
         Type = type;
         Validate();
     }
+
+    /// <summary>
+    /// Adds a new Account Balance Checkpoint to this Account
+    /// </summary>
+    /// <param name="accountingPeriod">Accounting Period for this Account Balance Checkpoint</param>
+    /// <param name="fundBalances">Fund Balances for this Account Balance Checkpoint</param>
+    internal void AddAccountBalanceCheckpoint(AccountingPeriod accountingPeriod, IEnumerable<FundAmount> fundBalances) =>
+        _accountBalanceCheckpoints.Add(new AccountBalanceCheckpoint(this, accountingPeriod, fundBalances));
 
     /// <summary>
     /// Constructs a new default instance of this class

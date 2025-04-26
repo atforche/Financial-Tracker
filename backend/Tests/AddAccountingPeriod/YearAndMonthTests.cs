@@ -28,7 +28,6 @@ public class YearAndMonthTests
             Year = year,
             Month = month,
             IsOpen = true,
-            AccountBalanceCheckpoints = [],
             Transactions = []
         });
     }

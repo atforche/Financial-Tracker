@@ -14,10 +14,10 @@ public class AccountService(IAccountRepository accountRepository, IAccountingPer
     public Account CreateNewAccount(string name, AccountType type, IEnumerable<FundAmount> startingFundBalances)
     {
         ValidateNewAccountName(name);
+        var newAccount = new Account(name, type);
         AccountingPeriod accountingPeriod = _accountingPeriodRepository.FindOpenPeriods().FirstOrDefault() ??
             throw new InvalidOperationException();
-        var newAccount = new Account(name, type);
-        accountingPeriod.AddAccountBalanceCheckpoint(newAccount, startingFundBalances);
+        newAccount.AddAccountBalanceCheckpoint(accountingPeriod, startingFundBalances);
         return newAccount;
     }
 
