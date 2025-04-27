@@ -1,5 +1,5 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
-using Domain.Services;
 using Tests.CloseAccountingPeriod.Scenarios;
 using Tests.CloseAccountingPeriod.Setups;
 using Tests.Validators;
@@ -55,7 +55,7 @@ public class BalanceEventTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     private static void CloseAccountingPeriod(BalanceEventScenarioSetup setup) =>
-        setup.GetService<IAccountingPeriodService>().ClosePeriod(setup.AccountingPeriod);
+        setup.GetService<CloseAccountingPeriodAction>().Run(setup.AccountingPeriod);
 
     /// <summary>
     /// Gets the expected state for this test case

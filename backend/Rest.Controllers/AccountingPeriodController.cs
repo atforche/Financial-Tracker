@@ -18,6 +18,7 @@ namespace Rest.Controllers;
 internal sealed class AccountingPeriodController(
     IUnitOfWork unitOfWork,
     AddAccountingPeriodAction addAccountingPeriodAction,
+    CloseAccountingPeriodAction closeAccountingPeriodAction,
     IAccountingPeriodService accountingPeriodService,
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
@@ -25,6 +26,7 @@ internal sealed class AccountingPeriodController(
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly AddAccountingPeriodAction _addAccountingPeriodAction = addAccountingPeriodAction;
+    private readonly CloseAccountingPeriodAction _closeAccountingPeriodAction = closeAccountingPeriodAction;
     private readonly IAccountingPeriodService _accountingPeriodService = accountingPeriodService;
     private readonly IAccountingPeriodRepository _accountingPeriodRepository = accountingPeriodRepository;
     private readonly IAccountRepository _accountRepository = accountRepository;
@@ -281,7 +283,7 @@ internal sealed class AccountingPeriodController(
         {
             return NotFound();
         }
-        _accountingPeriodService.ClosePeriod(accountingPeriod);
+        _closeAccountingPeriodAction.Run(accountingPeriod);
         await _unitOfWork.SaveChangesAsync();
         return Ok(new AccountingPeriodModel(accountingPeriod));
     }

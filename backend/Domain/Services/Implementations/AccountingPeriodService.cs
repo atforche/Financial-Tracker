@@ -6,13 +6,8 @@ using Domain.ValueObjects;
 namespace Domain.Services.Implementations;
 
 /// <inheritdoc/>
-public class AccountingPeriodService(
-    IAccountingPeriodRepository accountingPeriodRepository,
-    IAccountRepository accountRepository,
-    IAccountBalanceService accountBalanceService) : IAccountingPeriodService
+public class AccountingPeriodService(IAccountBalanceService accountBalanceService) : IAccountingPeriodService
 {
-    private readonly IAccountingPeriodRepository _accountingPeriodRepository = accountingPeriodRepository;
-    private readonly IAccountRepository _accountRepository = accountRepository;
     private readonly IAccountBalanceService _accountBalanceService = accountBalanceService;
 
     /// <inheritdoc/>
@@ -52,40 +47,6 @@ public class AccountingPeriodService(
         accountingPeriod.AddChangeInValue(eventDate,
             GetCreateBalanceEventAccountInfo(accountingPeriod, account, eventDate),
             accountingEntry);
-
-    /// <inheritdoc/>
-    public void ClosePeriod(AccountingPeriod accountingPeriod)
-    {
-        accountingPeriod.ClosePeriod(
-            _accountingPeriodRepository.FindOpenPeriods().Select(period => period.PeriodStartDate).Where(startDate => startDate != accountingPeriod.PeriodStartDate),
-            _accountRepository.FindAll().Select(account => _accountBalanceService.GetAccountBalancesByAccountingPeriod(account, accountingPeriod)));
-
-        DateOnly nextAccountingPeriodMonth = accountingPeriod.PeriodStartDate.AddMonths(1);
-        AccountingPeriod? nextAccountingPeriod = _accountingPeriodRepository.FindByDateOrNull(nextAccountingPeriodMonth);
-        if (nextAccountingPeriod == null)
-        {
-            return;
-        }
-        // If there's a future accounting period that exists (and is open), we'll need to add the
-        // Account Starting Balances for the future Accounting Period
-        AddAccountBalanceCheckpointsToNextPeriod(nextAccountingPeriod, accountingPeriod);
-    }
-
-    /// <summary>
-    /// Adds the necessary Account Balance Checkpoints to the next Accounting Period
-    /// </summary>
-    /// <param name="nextAccountingPeriod">Next Accounting Period</param>
-    /// <param name="previousAccountingPeriod">Previous Accounting Period</param>
-    private void AddAccountBalanceCheckpointsToNextPeriod(
-        AccountingPeriod nextAccountingPeriod,
-        AccountingPeriod previousAccountingPeriod)
-    {
-        foreach (Account account in _accountRepository.FindAll())
-        {
-            account.AddAccountBalanceCheckpoint(nextAccountingPeriod,
-                _accountBalanceService.GetAccountBalancesByAccountingPeriod(account, previousAccountingPeriod).EndingBalance.FundBalances);
-        }
-    }
 
     /// <summary>
     /// Builds a Create Balance Event Account Info for the provided Account and Event Date

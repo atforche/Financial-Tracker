@@ -31,6 +31,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<AddAccountingPeriodAction>();
+builder.Services.AddScoped<CloseAccountingPeriodAction>();
 builder.Services.AddScoped<IAccountingPeriodService, AccountingPeriodService>();
 builder.Services.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
 builder.Services.AddScoped<IAccountBalanceService, AccountBalanceService>();

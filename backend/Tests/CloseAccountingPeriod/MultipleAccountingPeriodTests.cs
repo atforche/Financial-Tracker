@@ -1,5 +1,5 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
-using Domain.Services;
 using Tests.CloseAccountingPeriod.Scenarios;
 using Tests.CloseAccountingPeriod.Setups;
 using Tests.Validators;
@@ -43,7 +43,7 @@ public class MultipleAccountingPeriodTests
         List<DateOnly> periodsToClose = [firstPeriod, secondPeriod, thirdPeriod];
         foreach (DateOnly periodToClose in periodsToClose)
         {
-            setup.GetService<IAccountingPeriodService>().ClosePeriod(
+            setup.GetService<CloseAccountingPeriodAction>().Run(
                 setup.AccountingPeriods.First(period => period.Year == periodToClose.Year && period.Month == periodToClose.Month));
             new AccountingPeriodValidator().Validate(
                 setup.AccountingPeriods.ElementAt(0),

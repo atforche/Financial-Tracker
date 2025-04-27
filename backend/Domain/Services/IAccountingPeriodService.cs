@@ -68,10 +68,4 @@ public interface IAccountingPeriodService
         DateOnly eventDate,
         Account account,
         FundAmount accountingEntry);
-
-    /// <summary>
-    /// Closes out the provided Accounting Period
-    /// </summary>
-    /// <param name="accountingPeriod">Accounting Period to be closed</param>
-    void ClosePeriod(AccountingPeriod accountingPeriod);
 }

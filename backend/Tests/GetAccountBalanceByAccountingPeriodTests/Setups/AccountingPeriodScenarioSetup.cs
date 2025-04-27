@@ -40,7 +40,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
 
         AccountingPeriod firstAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2024, 12);
         GetService<IAccountingPeriodRepository>().Add(firstAccountingPeriod);
-        GetService<IAccountingPeriodService>().ClosePeriod(firstAccountingPeriod);
+        GetService<CloseAccountingPeriodAction>().Run(firstAccountingPeriod);
 
         AccountingPeriod secondAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(secondAccountingPeriod);

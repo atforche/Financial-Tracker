@@ -26,6 +26,7 @@ internal abstract class ScenarioSetup
         serviceCollection.AddScoped<IAccountingPeriodRepository, MockAccountingPeriodRepository>();
         serviceCollection.AddScoped<IFundRepository, MockFundRepository>();
         serviceCollection.AddScoped<AddAccountingPeriodAction>();
+        serviceCollection.AddScoped<CloseAccountingPeriodAction>();
         serviceCollection.AddScoped<IAccountingPeriodService, AccountingPeriodService>();
         serviceCollection.AddScoped<IAccountBalanceService, AccountBalanceService>();
         serviceCollection.AddScoped<IAccountService, AccountService>();

@@ -123,8 +123,8 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
         OtherFund = fundService.CreateNewFund("OtherTest");
         fundRepository.Add(OtherFund);
 
-        IAccountingPeriodService accountingPeriodService = GetService<IAccountingPeriodService>();
         AddAccountingPeriodAction addAccountingPeriodAction = GetService<AddAccountingPeriodAction>();
+        CloseAccountingPeriodAction closeAccountingPeriodAction = GetService<CloseAccountingPeriodAction>();
         IAccountingPeriodRepository accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
         // Create the past Accounting Period if needed
         if (pastPeriodStatus != null)
@@ -134,7 +134,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
             Account = CreateAccount();
             if (pastPeriodStatus == AccountingPeriodStatus.Closed)
             {
-                accountingPeriodService.ClosePeriod(PastAccountingPeriod);
+                closeAccountingPeriodAction.Run(PastAccountingPeriod);
             }
         }
         // Create the current Accounting Period
@@ -143,7 +143,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
         Account ??= CreateAccount();
         if (currentPeriodStatus == AccountingPeriodStatus.Closed)
         {
-            accountingPeriodService.ClosePeriod(CurrentAccountingPeriod);
+            closeAccountingPeriodAction.Run(CurrentAccountingPeriod);
         }
         // Create the future Accounting Period if needed
         if (futurePeriodStatus != null)
@@ -152,7 +152,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
             accountingPeriodRepository.Add(FutureAccountingPeriod);
             if (futurePeriodStatus == AccountingPeriodStatus.Closed)
             {
-                accountingPeriodService.ClosePeriod(FutureAccountingPeriod);
+                closeAccountingPeriodAction.Run(FutureAccountingPeriod);
             }
         }
     }

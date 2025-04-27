@@ -1,4 +1,4 @@
-using Domain.Services;
+using Domain.Actions;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -16,7 +16,7 @@ public class DefaultTests
     public void RunTest()
     {
         var setup = new DefaultScenarioSetup();
-        setup.GetService<IAccountingPeriodService>().ClosePeriod(setup.AccountingPeriod);
+        setup.GetService<CloseAccountingPeriodAction>().Run(setup.AccountingPeriod);
         new AccountingPeriodValidator().Validate(setup.AccountingPeriod,
             new AccountingPeriodState
             {

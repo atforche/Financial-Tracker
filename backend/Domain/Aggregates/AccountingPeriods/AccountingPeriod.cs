@@ -135,19 +135,6 @@ public class AccountingPeriod : EntityBase
     }
 
     /// <summary>
-    /// Closes this Accounting Period
-    /// </summary>
-    /// <param name="otherOpenAccountingPeriods">List of the Period Start Dates for any other open Accounting Periods</param>
-    /// <param name="allAccountBalances">Ending Account Balances for every Account at the end of this Accounting Period</param>
-    internal void ClosePeriod(
-        IEnumerable<DateOnly> otherOpenAccountingPeriods,
-        IEnumerable<AccountBalanceByAccountingPeriod> allAccountBalances)
-    {
-        ValidateCloseAccountingPeriod(otherOpenAccountingPeriods, allAccountBalances);
-        IsOpen = false;
-    }
-
-    /// <summary>
     /// Gets the list of all Balance Events for this Accounting Period
     /// </summary>
     /// <returns>The list of all Balance Events for this Accounting Period</returns>
@@ -179,31 +166,5 @@ public class AccountingPeriod : EntityBase
     private AccountingPeriod()
         : base(new EntityId(default, Guid.NewGuid()))
     {
-    }
-
-    /// <summary>
-    /// Validates closing this Accounting Period
-    /// </summary>
-    /// <param name="otherOpenAccountingPeriods">List of the Period Start Dates for any other open Accounting Periods</param>
-    /// <param name="allAccountBalances">Ending Account Balances for every Account at the end of this Accounting Period</param>
-    private void ValidateCloseAccountingPeriod(
-        IEnumerable<DateOnly> otherOpenAccountingPeriods,
-        IEnumerable<AccountBalanceByAccountingPeriod> allAccountBalances)
-    {
-        if (!IsOpen)
-        {
-            throw new InvalidOperationException();
-        }
-        if (otherOpenAccountingPeriods.Any(openPeriodStartDate => openPeriodStartDate < PeriodStartDate))
-        {
-            // We should always have a contiguous group of open accounting periods.
-            // Only close the earliest open accounting period
-            throw new InvalidOperationException();
-        }
-        // Validate that there are no pending balance changes in this Accounting Period
-        if (allAccountBalances.Any(balance => balance.EndingBalance.PendingFundBalanceChanges.Count != 0))
-        {
-            throw new InvalidOperationException();
-        }
     }
 }

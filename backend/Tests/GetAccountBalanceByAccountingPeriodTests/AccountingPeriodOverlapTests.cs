@@ -1,3 +1,4 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Services;
 using Domain.ValueObjects;
@@ -23,19 +24,19 @@ public class AccountingPeriodOverlapTests
 
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.PastAccountingPeriod),
             GetExpectedState(setup, setup.PastAccountingPeriod));
-        setup.GetService<IAccountingPeriodService>().ClosePeriod(setup.PastAccountingPeriod);
+        setup.GetService<CloseAccountingPeriodAction>().Run(setup.PastAccountingPeriod);
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.PastAccountingPeriod),
             GetExpectedState(setup, setup.PastAccountingPeriod));
 
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.CurrentAccountingPeriod),
             GetExpectedState(setup, setup.CurrentAccountingPeriod));
-        setup.GetService<IAccountingPeriodService>().ClosePeriod(setup.CurrentAccountingPeriod);
+        setup.GetService<CloseAccountingPeriodAction>().Run(setup.CurrentAccountingPeriod);
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.CurrentAccountingPeriod),
             GetExpectedState(setup, setup.CurrentAccountingPeriod));
 
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.FutureAccountingPeriod),
             GetExpectedState(setup, setup.FutureAccountingPeriod));
-        setup.GetService<IAccountingPeriodService>().ClosePeriod(setup.FutureAccountingPeriod);
+        setup.GetService<CloseAccountingPeriodAction>().Run(setup.FutureAccountingPeriod);
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.FutureAccountingPeriod),
             GetExpectedState(setup, setup.FutureAccountingPeriod));
     }
