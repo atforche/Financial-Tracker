@@ -1,4 +1,5 @@
 using System.Collections;
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
@@ -123,11 +124,12 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
         fundRepository.Add(OtherFund);
 
         IAccountingPeriodService accountingPeriodService = GetService<IAccountingPeriodService>();
+        AddAccountingPeriodAction addAccountingPeriodAction = GetService<AddAccountingPeriodAction>();
         IAccountingPeriodRepository accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
         // Create the past Accounting Period if needed
         if (pastPeriodStatus != null)
         {
-            PastAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
+            PastAccountingPeriod = addAccountingPeriodAction.Run(2024, 12);
             accountingPeriodRepository.Add(PastAccountingPeriod);
             Account = CreateAccount();
             if (pastPeriodStatus == AccountingPeriodStatus.Closed)
@@ -136,7 +138,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
             }
         }
         // Create the current Accounting Period
-        CurrentAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2025, 1);
+        CurrentAccountingPeriod = addAccountingPeriodAction.Run(2025, 1);
         accountingPeriodRepository.Add(CurrentAccountingPeriod);
         Account ??= CreateAccount();
         if (currentPeriodStatus == AccountingPeriodStatus.Closed)
@@ -146,7 +148,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
         // Create the future Accounting Period if needed
         if (futurePeriodStatus != null)
         {
-            FutureAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2025, 2);
+            FutureAccountingPeriod = addAccountingPeriodAction.Run(2025, 2);
             accountingPeriodRepository.Add(FutureAccountingPeriod);
             if (futurePeriodStatus == AccountingPeriodStatus.Closed)
             {

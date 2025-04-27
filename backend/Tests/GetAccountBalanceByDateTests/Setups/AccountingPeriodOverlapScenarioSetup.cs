@@ -1,3 +1,4 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
@@ -48,7 +49,7 @@ internal sealed class AccountingPeriodOverlapScenarioSetup : ScenarioSetup
         Fund = GetService<IFundService>().CreateNewFund("Test");
         GetService<IFundRepository>().Add(Fund);
 
-        PastAccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(2024, 12);
+        PastAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2024, 12);
         GetService<IAccountingPeriodRepository>().Add(PastAccountingPeriod);
 
         Account = GetService<IAccountService>().CreateNewAccount("Test", AccountType.Standard,
@@ -61,10 +62,10 @@ internal sealed class AccountingPeriodOverlapScenarioSetup : ScenarioSetup
             ]);
         GetService<IAccountRepository>().Add(Account);
 
-        CurrentAccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(2025, 1);
+        CurrentAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(CurrentAccountingPeriod);
 
-        FutureAccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(2025, 2);
+        FutureAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(FutureAccountingPeriod);
 
         Transaction transaction = GetService<IAccountingPeriodService>().AddTransaction(CurrentAccountingPeriod,

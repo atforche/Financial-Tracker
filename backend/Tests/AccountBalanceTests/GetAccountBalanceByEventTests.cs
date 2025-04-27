@@ -1,3 +1,4 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
@@ -13,6 +14,7 @@ namespace Tests.AccountBalanceTests;
 public class GetAccountBalanceByEventTests : UnitTestBase
 {
     private readonly IAccountingPeriodRepository _accountingPeriodRepository;
+    private readonly AddAccountingPeriodAction _addAccountingPeriodAction;
     private readonly IAccountingPeriodService _accountingPeriodService;
     private readonly IAccountRepository _accountRepository;
     private readonly IAccountService _accountService;
@@ -31,6 +33,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
     public GetAccountBalanceByEventTests()
     {
         _accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
+        _addAccountingPeriodAction = GetService<AddAccountingPeriodAction>();
         _accountingPeriodService = GetService<IAccountingPeriodService>();
         _accountRepository = GetService<IAccountRepository>();
         _accountService = GetService<IAccountService>();
@@ -41,7 +44,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         // Setup shared by all tests
         _testFund = _fundService.CreateNewFund("Test");
         _fundRepository.Add(_testFund);
-        _testAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 11);
+        _testAccountingPeriod = _addAccountingPeriodAction.Run(2024, 11);
         _accountingPeriodRepository.Add(_testAccountingPeriod);
         _testAccount = _accountService.CreateNewAccount("Test", AccountType.Standard,
             [
@@ -329,7 +332,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
 
         // Test with a date range that falls prior to this account being added
         _accountingPeriodService.ClosePeriod(_testAccountingPeriod);
-        AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
+        AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
         Account secondAccount = _accountService.CreateNewAccount("Test2", AccountType.Standard,
             [
@@ -499,9 +502,9 @@ public class GetAccountBalanceByEventTests : UnitTestBase
             ]);
 
         // Set up two additional accounting periods
-        AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
+        AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
-        AccountingPeriod thirdAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2025, 1);
+        AccountingPeriod thirdAccountingPeriod = _addAccountingPeriodAction.Run(2025, 1);
         _accountingPeriodRepository.Add(thirdAccountingPeriod);
 
         // Set up similar transactions in each accounting period
@@ -645,7 +648,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
             ]);
 
         // Add a second accounting period
-        AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
+        AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
 
         Transaction firstTransaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,
@@ -775,7 +778,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
             ]);
 
         // Add a second accounting period
-        AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
+        AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
 
         Transaction firstTransaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,
@@ -864,7 +867,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 }
             ]);
 
-        AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
+        AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
 
         Transaction firstTransaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,
@@ -952,7 +955,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 }
             ]);
 
-        AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
+        AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
 
         Transaction firstTransaction = _accountingPeriodService.AddTransaction(secondAccountingPeriod,
@@ -1040,7 +1043,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 }
             ]);
 
-        AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
+        AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
 
         Transaction firstTransaction = _accountingPeriodService.AddTransaction(secondAccountingPeriod,
@@ -1128,7 +1131,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 }
             ]);
 
-        AccountingPeriod secondAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
+        AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
 
         Transaction firstTransaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,

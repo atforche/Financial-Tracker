@@ -1,3 +1,4 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
@@ -47,8 +48,8 @@ internal sealed class MultipleAccountingPeriodScenarioSetup : ScenarioSetup
         List<AccountingPeriod> accountingPeriods = [];
         foreach (DateOnly accountingPeriodDate in accountingPeriodDates)
         {
-            AccountingPeriod accountingPeriod = GetService<IAccountingPeriodService>()
-                .CreateNewAccountingPeriod(accountingPeriodDate.Year, accountingPeriodDate.Month);
+            AccountingPeriod accountingPeriod = GetService<AddAccountingPeriodAction>()
+                .Run(accountingPeriodDate.Year, accountingPeriodDate.Month);
             GetService<IAccountingPeriodRepository>().Add(accountingPeriod);
             accountingPeriods.Add(accountingPeriod);
 

@@ -16,25 +16,6 @@ public class AccountingPeriodService(
     private readonly IAccountBalanceService _accountBalanceService = accountBalanceService;
 
     /// <inheritdoc/>
-    public AccountingPeriod CreateNewAccountingPeriod(int year, int month)
-    {
-        var newAccountingPeriod = new AccountingPeriod(year,
-            month,
-            _accountingPeriodRepository.FindAll().Select(accountingPeriod => accountingPeriod.PeriodStartDate));
-
-        DateOnly previousAccountingPeriodMonth = newAccountingPeriod.PeriodStartDate.AddMonths(-1);
-        AccountingPeriod? previousAccountingPeriod = _accountingPeriodRepository.FindByDateOrNull(previousAccountingPeriodMonth);
-        if (previousAccountingPeriod == null || previousAccountingPeriod.IsOpen)
-        {
-            return newAccountingPeriod;
-        }
-        // If the previous accounting period that has already closed, we'll need to add the 
-        // Account Starting Balances for this new accounting period
-        AddAccountBalanceCheckpointsToNextPeriod(newAccountingPeriod, previousAccountingPeriod);
-        return newAccountingPeriod;
-    }
-
-    /// <inheritdoc/>
     public Transaction AddTransaction(
         AccountingPeriod accountingPeriod,
         DateOnly transactionDate,

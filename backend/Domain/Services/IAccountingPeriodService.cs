@@ -11,14 +11,6 @@ namespace Domain.Services;
 public interface IAccountingPeriodService
 {
     /// <summary>
-    /// Creates a new Accounting Period with the provided properties
-    /// </summary>
-    /// <param name="year">Year for this Accounting Period</param>
-    /// <param name="month">Month for this Accounting Period</param>
-    /// <returns>The newly created Accounting Period</returns>
-    AccountingPeriod CreateNewAccountingPeriod(int year, int month);
-
-    /// <summary>
     /// Adds a Transaction to the provided Accounting Period
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period to add a Transaction to</param>

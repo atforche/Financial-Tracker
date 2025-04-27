@@ -1,4 +1,5 @@
 using System.Collections;
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
@@ -59,7 +60,7 @@ internal sealed class AccountScenarioSetup : ScenarioSetup
         OtherFund = fundService.CreateNewFund("OtherTest");
         fundRepository.Add(OtherFund);
 
-        AccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(2025, 1);
+        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
         Account = GetService<IAccountService>().CreateNewAccount("Test", accountType,
             [

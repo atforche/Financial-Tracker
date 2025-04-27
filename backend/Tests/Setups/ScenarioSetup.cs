@@ -1,3 +1,4 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
@@ -24,6 +25,7 @@ internal abstract class ScenarioSetup
         serviceCollection.AddScoped<IAccountRepository, MockAccountRepository>();
         serviceCollection.AddScoped<IAccountingPeriodRepository, MockAccountingPeriodRepository>();
         serviceCollection.AddScoped<IFundRepository, MockFundRepository>();
+        serviceCollection.AddScoped<AddAccountingPeriodAction>();
         serviceCollection.AddScoped<IAccountingPeriodService, AccountingPeriodService>();
         serviceCollection.AddScoped<IAccountBalanceService, AccountBalanceService>();
         serviceCollection.AddScoped<IAccountService, AccountService>();

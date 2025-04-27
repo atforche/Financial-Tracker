@@ -1,4 +1,5 @@
 using Data;
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
@@ -16,12 +17,14 @@ namespace Rest.Controllers;
 [Route("/accountingPeriods")]
 internal sealed class AccountingPeriodController(
     IUnitOfWork unitOfWork,
+    AddAccountingPeriodAction addAccountingPeriodAction,
     IAccountingPeriodService accountingPeriodService,
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
     IFundRepository fundRepository) : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly AddAccountingPeriodAction _addAccountingPeriodAction = addAccountingPeriodAction;
     private readonly IAccountingPeriodService _accountingPeriodService = accountingPeriodService;
     private readonly IAccountingPeriodRepository _accountingPeriodRepository = accountingPeriodRepository;
     private readonly IAccountRepository _accountRepository = accountRepository;
@@ -103,7 +106,7 @@ internal sealed class AccountingPeriodController(
     [HttpPost("")]
     public async Task<IActionResult> CreateAccountingPeriodAsync(CreateAccountingPeriodModel createAccountingPeriodModel)
     {
-        AccountingPeriod newAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(
+        AccountingPeriod newAccountingPeriod = _addAccountingPeriodAction.Run(
             createAccountingPeriodModel.Year,
             createAccountingPeriodModel.Month);
         _accountingPeriodRepository.Add(newAccountingPeriod);

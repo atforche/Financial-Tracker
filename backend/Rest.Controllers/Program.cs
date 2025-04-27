@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 using Data;
 using Data.Repositories;
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
@@ -29,6 +30,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // Add domain DI services
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<AddAccountingPeriodAction>();
 builder.Services.AddScoped<IAccountingPeriodService, AccountingPeriodService>();
 builder.Services.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
 builder.Services.AddScoped<IAccountBalanceService, AccountBalanceService>();

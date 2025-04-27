@@ -60,14 +60,12 @@ public class AccountingPeriod : EntityBase
     /// </summary>
     /// <param name="year">Year for this Accounting Period</param>
     /// <param name="month">Month for this Accounting Period</param>
-    /// <param name="existingAccountingPeriodStartDates">Period Start Dates for any existing Accounting Periods</param>
-    internal AccountingPeriod(int year, int month, IEnumerable<DateOnly> existingAccountingPeriodStartDates)
+    internal AccountingPeriod(int year, int month)
         : base(new EntityId(default, Guid.NewGuid()))
     {
         Year = year;
         Month = month;
         IsOpen = true;
-        ValidateNewAccountingPeriod(existingAccountingPeriodStartDates.ToList());
     }
 
     /// <summary>
@@ -181,37 +179,6 @@ public class AccountingPeriod : EntityBase
     private AccountingPeriod()
         : base(new EntityId(default, Guid.NewGuid()))
     {
-    }
-
-    /// <summary>
-    /// Validates a new Accounting Period
-    /// </summary>
-    /// <param name="existingAccountingPeriodStartDates">Period Start Dates for any existing Accounting Periods</param>
-    private void ValidateNewAccountingPeriod(List<DateOnly> existingAccountingPeriodStartDates)
-    {
-        if (Year is < 2020 or > 2050)
-        {
-            throw new InvalidOperationException();
-        }
-        if (Month is <= 0 or > 12)
-        {
-            throw new InvalidOperationException();
-        }
-        if (existingAccountingPeriodStartDates.Count == 0)
-        {
-            return;
-        }
-        // Validate that there are no duplicate accounting periods
-        if (existingAccountingPeriodStartDates.Any(period => period == PeriodStartDate))
-        {
-            throw new InvalidOperationException();
-        }
-        // Validate that accounting periods can only be added after existing accounting periods
-        DateOnly previousMonth = PeriodStartDate.AddMonths(-1);
-        if (!existingAccountingPeriodStartDates.Any(period => period == previousMonth))
-        {
-            throw new InvalidOperationException();
-        }
     }
 
     /// <summary>

@@ -1,3 +1,4 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
@@ -37,11 +38,11 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
         Fund = GetService<IFundService>().CreateNewFund("Test");
         GetService<IFundRepository>().Add(Fund);
 
-        AccountingPeriod firstAccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(2024, 12);
+        AccountingPeriod firstAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2024, 12);
         GetService<IAccountingPeriodRepository>().Add(firstAccountingPeriod);
         GetService<IAccountingPeriodService>().ClosePeriod(firstAccountingPeriod);
 
-        AccountingPeriod secondAccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(2025, 1);
+        AccountingPeriod secondAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(secondAccountingPeriod);
 
         Account = GetService<IAccountService>().CreateNewAccount("Test", AccountType.Standard,
@@ -54,7 +55,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
             ]);
         GetService<IAccountRepository>().Add(Account);
 
-        AccountingPeriod thirdAccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(2025, 2);
+        AccountingPeriod thirdAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(thirdAccountingPeriod);
 
         AccountingPeriod = scenario switch

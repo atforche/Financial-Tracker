@@ -1,4 +1,5 @@
 using System.Collections;
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
@@ -113,11 +114,11 @@ internal class BalanceEventAmountScenarioSetup : ScenarioSetup
         OtherFund = fundService.CreateNewFund("Test2");
         fundRepository.Add(OtherFund);
 
-        IAccountingPeriodService accountingPeriodService = GetService<IAccountingPeriodService>();
+        AddAccountingPeriodAction addAccountingPeriodAction = GetService<AddAccountingPeriodAction>();
         IAccountingPeriodRepository accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
-        AccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2025, 1);
+        AccountingPeriod = addAccountingPeriodAction.Run(2025, 1);
         accountingPeriodRepository.Add(AccountingPeriod);
-        _futureAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2025, 2);
+        _futureAccountingPeriod = addAccountingPeriodAction.Run(2025, 2);
         accountingPeriodRepository.Add(_futureAccountingPeriod);
 
         Account = GetService<IAccountService>().CreateNewAccount("Test", accountType,
