@@ -27,7 +27,7 @@ public abstract class UnitTestBase
         serviceCollection.AddScoped<IAccountingPeriodRepository, MockAccountingPeriodRepository>();
         serviceCollection.AddScoped<IFundRepository, MockFundRepository>();
         serviceCollection.AddScoped<AddAccountingPeriodAction>();
-        serviceCollection.AddScoped<IAccountingPeriodService, AccountingPeriodService>();
+        serviceCollection.AddScoped<AddTransactionAction>();
         serviceCollection.AddScoped<IAccountBalanceService, AccountBalanceService>();
         serviceCollection.AddScoped<IAccountService, AccountService>();
         serviceCollection.AddScoped<IFundService, FundService>();

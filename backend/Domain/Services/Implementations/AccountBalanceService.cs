@@ -1,3 +1,4 @@
+using Domain.Aggregates;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.ValueObjects;
@@ -162,7 +163,5 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
             .FindAccountingPeriodsWithBalanceEventsInDateRange(dateRange)
             .SelectMany(period => period.GetAllBalanceEvents())
             .Where(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate) && balanceEvent.Account == account)
-            .OrderBy(balanceEvent => balanceEvent.EventDate)
-            .ThenBy(balanceEvent => balanceEvent.AccountingPeriod.PeriodStartDate)
-            .ThenBy(balanceEvent => balanceEvent.EventSequence);
+            .Order();
 }

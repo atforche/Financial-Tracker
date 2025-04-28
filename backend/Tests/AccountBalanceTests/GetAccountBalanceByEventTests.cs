@@ -16,7 +16,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
     private readonly IAccountingPeriodRepository _accountingPeriodRepository;
     private readonly AddAccountingPeriodAction _addAccountingPeriodAction;
     private readonly CloseAccountingPeriodAction _closeAccountingPeriodAction;
-    private readonly IAccountingPeriodService _accountingPeriodService;
+    private readonly AddTransactionAction _addTransactionAction;
     private readonly IAccountRepository _accountRepository;
     private readonly IAccountService _accountService;
     private readonly IFundRepository _fundRepository;
@@ -36,7 +36,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         _accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
         _addAccountingPeriodAction = GetService<AddAccountingPeriodAction>();
         _closeAccountingPeriodAction = GetService<CloseAccountingPeriodAction>();
-        _accountingPeriodService = GetService<IAccountingPeriodService>();
+        _addTransactionAction = GetService<AddTransactionAction>();
         _accountRepository = GetService<IAccountRepository>();
         _accountService = GetService<IAccountService>();
         _fundRepository = GetService<IFundRepository>();
@@ -65,7 +65,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
     [Fact]
     public void TestAccountBalanceByEvent()
     {
-        Transaction debitTransaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,
+        Transaction debitTransaction = _addTransactionAction.Run(_testAccountingPeriod,
             new DateOnly(2024, 11, 10),
             _testAccount,
             null,
@@ -76,7 +76,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 50.00m
                 }
             ]);
-        Transaction creditTransaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,
+        Transaction creditTransaction = _addTransactionAction.Run(_testAccountingPeriod,
             new DateOnly(2024, 11, 15),
             null,
             _testAccount,
@@ -87,8 +87,8 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 100.00m
                 }
             ]);
-        _accountingPeriodService.PostTransaction(creditTransaction, _testAccount, new DateOnly(2024, 11, 20));
-        _accountingPeriodService.PostTransaction(debitTransaction, _testAccount, new DateOnly(2024, 11, 25));
+        creditTransaction.Post(TransactionAccountType.Credit, new DateOnly(2024, 11, 20));
+        debitTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 11, 25));
         new AccountBalanceByEventValidator().Validate(
             _accountBalanceService.GetAccountBalancesByEvent(_testAccount, new DateRange(new DateOnly(2024, 11, 1), new DateOnly(2024, 11, 30))),
             [
@@ -192,7 +192,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
     {
         Fund secondFund = _fundService.CreateNewFund("Test2");
 
-        Transaction debitTransaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,
+        Transaction debitTransaction = _addTransactionAction.Run(_testAccountingPeriod,
             new DateOnly(2024, 11, 10),
             _testAccount,
             null,
@@ -203,7 +203,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 50.00m
                 }
             ]);
-        Transaction creditTransaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,
+        Transaction creditTransaction = _addTransactionAction.Run(_testAccountingPeriod,
             new DateOnly(2024, 11, 15),
             null,
             _testAccount,
@@ -214,8 +214,8 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 100.00m
                 }
             ]);
-        _accountingPeriodService.PostTransaction(creditTransaction, _testAccount, new DateOnly(2024, 11, 20));
-        _accountingPeriodService.PostTransaction(debitTransaction, _testAccount, new DateOnly(2024, 11, 25));
+        creditTransaction.Post(TransactionAccountType.Credit, new DateOnly(2024, 11, 20));
+        debitTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 11, 25));
         new AccountBalanceByEventValidator().Validate(
             _accountBalanceService.GetAccountBalancesByEvent(_testAccount, new DateRange(new DateOnly(2024, 11, 1), new DateOnly(2024, 11, 30))),
             [
@@ -510,7 +510,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         _accountingPeriodRepository.Add(thirdAccountingPeriod);
 
         // Set up similar transactions in each accounting period
-        Transaction firstTransaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,
+        Transaction firstTransaction = _addTransactionAction.Run(_testAccountingPeriod,
             new DateOnly(2024, 12, 15),
             _testAccount,
             null,
@@ -521,7 +521,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        Transaction secondTransaction = _accountingPeriodService.AddTransaction(secondAccountingPeriod,
+        Transaction secondTransaction = _addTransactionAction.Run(secondAccountingPeriod,
             new DateOnly(2024, 12, 15),
             _testAccount,
             null,
@@ -532,7 +532,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 300.00m,
                 }
             ]);
-        Transaction thirdTransaction = _accountingPeriodService.AddTransaction(thirdAccountingPeriod,
+        Transaction thirdTransaction = _addTransactionAction.Run(thirdAccountingPeriod,
             new DateOnly(2024, 12, 15),
             _testAccount,
             null,
@@ -543,9 +543,9 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 350.00m,
                 }
             ]);
-        _accountingPeriodService.PostTransaction(firstTransaction, _testAccount, new DateOnly(2024, 12, 20));
-        _accountingPeriodService.PostTransaction(secondTransaction, _testAccount, new DateOnly(2024, 12, 20));
-        _accountingPeriodService.PostTransaction(thirdTransaction, _testAccount, new DateOnly(2024, 12, 20));
+        firstTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 12, 20));
+        secondTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 12, 20));
+        thirdTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 12, 20));
 
         ValidateBalances();
         _closeAccountingPeriodAction.Run(_testAccountingPeriod);
@@ -653,7 +653,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
 
-        Transaction firstTransaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,
+        Transaction firstTransaction = _addTransactionAction.Run(_testAccountingPeriod,
             new DateOnly(2024, 11, 30),
             _testAccount,
             null,
@@ -664,7 +664,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 50.00m,
                 }
             ]);
-        Transaction secondTransaction = _accountingPeriodService.AddTransaction(secondAccountingPeriod,
+        Transaction secondTransaction = _addTransactionAction.Run(secondAccountingPeriod,
             new DateOnly(2024, 12, 1),
             _testAccount,
             null,
@@ -675,8 +675,8 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 100.00m,
                 }
             ]);
-        _accountingPeriodService.PostTransaction(firstTransaction, _testAccount, new DateOnly(2024, 11, 30));
-        _accountingPeriodService.PostTransaction(secondTransaction, _testAccount, new DateOnly(2024, 12, 1));
+        firstTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 11, 30));
+        secondTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 12, 1));
 
         ValidateBalances();
         _closeAccountingPeriodAction.Run(_testAccountingPeriod);
@@ -783,7 +783,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
 
-        Transaction firstTransaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,
+        Transaction firstTransaction = _addTransactionAction.Run(_testAccountingPeriod,
             new DateOnly(2024, 12, 1),
             _testAccount,
             null,
@@ -794,7 +794,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 100.00m,
                 }
             ]);
-        Transaction secondTransaction = _accountingPeriodService.AddTransaction(secondAccountingPeriod,
+        Transaction secondTransaction = _addTransactionAction.Run(secondAccountingPeriod,
             new DateOnly(2024, 11, 30),
             _testAccount,
             null,
@@ -806,8 +806,8 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 }
             ]);
 
-        _accountingPeriodService.PostTransaction(firstTransaction, _testAccount, new DateOnly(2024, 12, 1));
-        _accountingPeriodService.PostTransaction(secondTransaction, _testAccount, new DateOnly(2024, 11, 30));
+        firstTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 12, 1));
+        secondTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 11, 30));
 
         ValidateBalances();
         _closeAccountingPeriodAction.Run(_testAccountingPeriod);
@@ -872,7 +872,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
 
-        Transaction firstTransaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,
+        Transaction firstTransaction = _addTransactionAction.Run(_testAccountingPeriod,
             new DateOnly(2024, 12, 10),
             _testAccount,
             null,
@@ -883,7 +883,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        Transaction secondTransaction = _accountingPeriodService.AddTransaction(secondAccountingPeriod,
+        Transaction secondTransaction = _addTransactionAction.Run(secondAccountingPeriod,
             new DateOnly(2024, 12, 20),
             _testAccount,
             null,
@@ -894,8 +894,8 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 300.00m,
                 }
             ]);
-        _accountingPeriodService.PostTransaction(firstTransaction, _testAccount, new DateOnly(2024, 12, 15));
-        _accountingPeriodService.PostTransaction(secondTransaction, _testAccount, new DateOnly(2024, 12, 25));
+        firstTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 12, 15));
+        secondTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 12, 25));
 
         ValidateBalances();
         _closeAccountingPeriodAction.Run(_testAccountingPeriod);
@@ -960,7 +960,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
 
-        Transaction firstTransaction = _accountingPeriodService.AddTransaction(secondAccountingPeriod,
+        Transaction firstTransaction = _addTransactionAction.Run(secondAccountingPeriod,
             new DateOnly(2024, 12, 10),
             _testAccount,
             null,
@@ -971,7 +971,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        Transaction secondTransaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,
+        Transaction secondTransaction = _addTransactionAction.Run(_testAccountingPeriod,
             new DateOnly(2024, 12, 20),
             _testAccount,
             null,
@@ -982,8 +982,8 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 300.00m,
                 }
             ]);
-        _accountingPeriodService.PostTransaction(firstTransaction, _testAccount, new DateOnly(2024, 12, 15));
-        _accountingPeriodService.PostTransaction(secondTransaction, _testAccount, new DateOnly(2024, 12, 25));
+        firstTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 12, 15));
+        secondTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 12, 25));
 
         ValidateBalances();
         _closeAccountingPeriodAction.Run(_testAccountingPeriod);
@@ -1048,7 +1048,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
 
-        Transaction firstTransaction = _accountingPeriodService.AddTransaction(secondAccountingPeriod,
+        Transaction firstTransaction = _addTransactionAction.Run(secondAccountingPeriod,
             new DateOnly(2024, 12, 10),
             _testAccount,
             null,
@@ -1059,7 +1059,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        Transaction secondTransaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,
+        Transaction secondTransaction = _addTransactionAction.Run(_testAccountingPeriod,
             new DateOnly(2024, 12, 20),
             _testAccount,
             null,
@@ -1070,8 +1070,8 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 300.00m,
                 }
             ]);
-        _accountingPeriodService.PostTransaction(firstTransaction, _testAccount, new DateOnly(2024, 12, 15));
-        _accountingPeriodService.PostTransaction(secondTransaction, _testAccount, new DateOnly(2024, 12, 25));
+        firstTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 12, 15));
+        secondTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 12, 25));
 
         ValidateBalances();
         _closeAccountingPeriodAction.Run(_testAccountingPeriod);
@@ -1136,7 +1136,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
 
-        Transaction firstTransaction = _accountingPeriodService.AddTransaction(_testAccountingPeriod,
+        Transaction firstTransaction = _addTransactionAction.Run(_testAccountingPeriod,
             new DateOnly(2024, 12, 10),
             _testAccount,
             null,
@@ -1147,7 +1147,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 250.00m,
                 }
             ]);
-        Transaction secondTransaction = _accountingPeriodService.AddTransaction(secondAccountingPeriod,
+        Transaction secondTransaction = _addTransactionAction.Run(secondAccountingPeriod,
             new DateOnly(2024, 12, 20),
             _testAccount,
             null,
@@ -1158,8 +1158,8 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                     Amount = 300.00m,
                 }
             ]);
-        _accountingPeriodService.PostTransaction(firstTransaction, _testAccount, new DateOnly(2024, 12, 15));
-        _accountingPeriodService.PostTransaction(secondTransaction, _testAccount, new DateOnly(2024, 12, 25));
+        firstTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 12, 15));
+        secondTransaction.Post(TransactionAccountType.Debit, new DateOnly(2024, 12, 25));
 
         ValidateBalances();
         _closeAccountingPeriodAction.Run(_testAccountingPeriod);

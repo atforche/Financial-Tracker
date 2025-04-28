@@ -11,8 +11,8 @@ internal sealed class AccountBalanceByEventValidator : EntityValidatorBase<Accou
     public override void Validate(AccountBalanceByEvent entity, AccountBalanceByEventState expectedState)
     {
         Assert.Equal(expectedState.AccountName, entity.BalanceEvent.Account.Name);
-        Assert.Equal(expectedState.AccountingPeriodYear, entity.BalanceEvent.AccountingPeriod.Year);
-        Assert.Equal(expectedState.AccountingPeriodMonth, entity.BalanceEvent.AccountingPeriod.Month);
+        Assert.Equal(expectedState.AccountingPeriodYear, entity.BalanceEvent.AccountingPeriodYear);
+        Assert.Equal(expectedState.AccountingPeriodMonth, entity.BalanceEvent.AccountingPeriodMonth);
         Assert.Equal(expectedState.EventDate, entity.BalanceEvent.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.BalanceEvent.EventSequence);
         new FundAmountValidator().Validate(entity.AccountBalance.FundBalances, expectedState.FundBalances);

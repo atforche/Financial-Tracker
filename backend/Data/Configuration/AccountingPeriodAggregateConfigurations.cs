@@ -21,12 +21,12 @@ internal sealed class AccountingPeriodEntityConfiguration : EntityConfigurationB
         builder.Navigation(accountingPeriod => accountingPeriod.Transactions).AutoInclude();
 
         builder.HasMany(accountingPeriod => accountingPeriod.FundConversions)
-            .WithOne(fundConversion => fundConversion.AccountingPeriod)
+            .WithOne()
             .HasForeignKey("AccountingPeriodId");
         builder.Navigation(accountingPeriod => accountingPeriod.FundConversions).AutoInclude();
 
         builder.HasMany(accountingPeriod => accountingPeriod.ChangeInValues)
-            .WithOne(changeInValue => changeInValue.AccountingPeriod)
+            .WithOne()
             .HasForeignKey("AccountingPeriodId");
         builder.Navigation(accountingPeriod => accountingPeriod.ChangeInValues).AutoInclude();
     }

@@ -1,5 +1,5 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Setups;
 using Tests.Validators;
@@ -18,7 +18,7 @@ public class DefaultTests
     public void RunTest()
     {
         var setup = new DefaultScenarioSetup();
-        ChangeInValue changeInValue = setup.GetService<IAccountingPeriodService>().AddChangeInValue(setup.AccountingPeriod,
+        ChangeInValue changeInValue = setup.GetService<AddChangeInValueAction>().Run(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
             setup.Account,
             new FundAmount

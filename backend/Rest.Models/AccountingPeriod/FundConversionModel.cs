@@ -12,10 +12,10 @@ public class FundConversionModel
     /// <inheritdoc cref="Domain.Aggregates.EntityBase.Id"/>
     public Guid Id { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.BalanceEventBase.Account"/>
+    /// <inheritdoc cref="Domain.Aggregates.BalanceEventBase.Account"/>
     public AccountModel Account { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.BalanceEventBase.EventDate"/>
+    /// <inheritdoc cref="Domain.Aggregates.BalanceEventBase.EventDate"/>
     public DateOnly EventDate { get; init; }
 
     /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.FundConversion.FromFund"/>

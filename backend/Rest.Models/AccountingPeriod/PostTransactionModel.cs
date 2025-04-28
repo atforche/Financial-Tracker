@@ -1,3 +1,5 @@
+using Domain.Aggregates.AccountingPeriods;
+
 namespace Rest.Models.AccountingPeriod;
 
 /// <summary>
@@ -6,9 +8,9 @@ namespace Rest.Models.AccountingPeriod;
 public class PostTransactionModel
 {
     /// <summary>
-    /// ID of the Account to post this Transaction in
+    /// Type of the Account to post this Transaction in
     /// </summary>
-    public required Guid AccountId { get; init; }
+    public required TransactionAccountType AccountToPost { get; init; }
 
     /// <summary>
     /// Date to post this Transaction on

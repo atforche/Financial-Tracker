@@ -1,3 +1,4 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Services;
@@ -23,8 +24,14 @@ public class AccountTests
         Transaction transaction = AddTransaction(setup);
 
         // Verify that posting a Transaction with a random account results in an error
-        Account miscAccount = setup.GetService<IAccountService>().CreateNewAccount("Misc", AccountType.Standard, []);
-        Assert.Throws<InvalidOperationException>(() => setup.GetService<IAccountingPeriodService>().PostTransaction(transaction, miscAccount, new DateOnly(2025, 1, 25)));
+        if (debitAccountType == null)
+        {
+            Assert.Throws<InvalidOperationException>(() => transaction.Post(TransactionAccountType.Debit, new DateOnly(2025, 1, 25)));
+        }
+        if (creditAccountType == null)
+        {
+            Assert.Throws<InvalidOperationException>(() => transaction.Post(TransactionAccountType.Credit, new DateOnly(2025, 1, 25)));
+        }
 
         // Verify posting the transaction normally
         PostTransaction(setup, transaction);
@@ -51,7 +58,7 @@ public class AccountTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
     private static Transaction AddTransaction(TransactionAccountScenarioSetup setup) =>
-        setup.GetService<IAccountingPeriodService>().AddTransaction(setup.AccountingPeriod,
+        setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
             setup.DebitAccount,
             setup.CreditAccount,
@@ -72,11 +79,11 @@ public class AccountTests
     {
         if (setup.DebitAccount != null)
         {
-            setup.GetService<IAccountingPeriodService>().PostTransaction(transaction, setup.DebitAccount, new DateOnly(2025, 1, 15));
+            transaction.Post(TransactionAccountType.Debit, new DateOnly(2025, 1, 15));
         }
         if (setup.CreditAccount != null)
         {
-            setup.GetService<IAccountingPeriodService>().PostTransaction(transaction, setup.CreditAccount, new DateOnly(2025, 1, 15));
+            transaction.Post(TransactionAccountType.Credit, new DateOnly(2025, 1, 15));
         }
     }
 

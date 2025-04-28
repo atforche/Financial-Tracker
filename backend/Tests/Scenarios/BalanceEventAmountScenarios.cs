@@ -168,7 +168,7 @@ internal class BalanceEventAmountScenarioSetup : ScenarioSetup
         }
         if (scenario == BalanceEventAmountScenario.ForcesFutureEventToMakeAccountBalanceNegative)
         {
-            GetService<IAccountingPeriodService>().AddChangeInValue(_futureAccountingPeriod,
+            GetService<AddChangeInValueAction>().Run(_futureAccountingPeriod,
                 new DateOnly(2025, 2, 28),
                 Account,
                 new FundAmount
@@ -180,7 +180,7 @@ internal class BalanceEventAmountScenarioSetup : ScenarioSetup
         }
         if (scenario == BalanceEventAmountScenario.ForcesAccountBalancesAtEndOfPeriodToBeNegative)
         {
-            GetService<IAccountingPeriodService>().AddChangeInValue(_futureAccountingPeriod,
+            GetService<AddChangeInValueAction>().Run(_futureAccountingPeriod,
                 new DateOnly(2025, 1, 1),
                 Account,
                 new FundAmount

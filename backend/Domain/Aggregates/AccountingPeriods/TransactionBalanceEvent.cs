@@ -18,9 +18,6 @@ public sealed class TransactionBalanceEvent : BalanceEventBase
     /// </summary>
     public Transaction Transaction { get; private set; }
 
-    /// <inheritdoc/>
-    public override AccountingPeriod AccountingPeriod => Transaction.AccountingPeriod;
-
     /// <summary>
     /// Event Type for this Transaction Balance Event
     /// </summary>
@@ -69,23 +66,23 @@ public sealed class TransactionBalanceEvent : BalanceEventBase
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="transaction">Parent Transaction for this Transaction Balance Event</param>
-    /// <param name="accountInfo">Account for this Transaction Balance Event</param>
+    /// <param name="account">Account for this Transaction Balance Event</param>
     /// <param name="eventDate">Event Date for this Transaction Balance Event</param>
-    /// <param name="eventSequence">Event Sequence for this Transaction Balance Event</param>
     /// <param name="transactionEventType">Transaction Balance Event Type for this Transaction Balance Event</param>
     /// <param name="transactionAccountType">Transaction Account Type for this Transaction Balance Event</param>
-    internal TransactionBalanceEvent(Transaction transaction,
-        CreateBalanceEventAccountInfo accountInfo,
+    /// <param name="sequenceOffset">Sequence offset for this Transaction Balance Event</param>
+    internal TransactionBalanceEvent(
+        Transaction transaction,
+        Account account,
         DateOnly eventDate,
-        int eventSequence,
         TransactionBalanceEventType transactionEventType,
-        TransactionAccountType transactionAccountType)
-        : base(accountInfo, eventDate, eventSequence)
+        TransactionAccountType transactionAccountType,
+        int sequenceOffset = 0)
+        : base(transaction.AccountingPeriod, account, eventDate, sequenceOffset)
     {
+        Transaction = transaction;
         TransactionEventType = transactionEventType;
         TransactionAccountType = transactionAccountType;
-        Transaction = transaction;
-        Validate(accountInfo);
     }
 
     /// <summary>

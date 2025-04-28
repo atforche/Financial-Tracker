@@ -1,4 +1,3 @@
-using Domain.Aggregates.Funds;
 using Domain.ValueObjects;
 
 namespace Domain.Aggregates.AccountingPeriods;
@@ -71,68 +70,20 @@ public class AccountingPeriod : EntityBase
     /// <summary>
     /// Adds a new Transaction to this Accounting Period
     /// </summary>
-    /// <param name="transactionDate">Transaction Date for this Transaction</param>
-    /// <param name="debitAccountInfo">Debit Account for this Transaction</param>
-    /// <param name="creditAccountInfo">Credit Account for this Transaction</param>
-    /// <param name="accountingEntries">Accounting Entries for this Transaction</param>
-    /// <returns>The newly created Transaction</returns>
-    internal Transaction AddTransaction(DateOnly transactionDate,
-        CreateBalanceEventAccountInfo? debitAccountInfo,
-        CreateBalanceEventAccountInfo? creditAccountInfo,
-        IEnumerable<FundAmount> accountingEntries)
-    {
-        var newTransaction = new Transaction(this,
-            transactionDate,
-            debitAccountInfo,
-            creditAccountInfo,
-            accountingEntries);
-        _transactions.Add(newTransaction);
-        return newTransaction;
-    }
+    /// <param name="transaction">Transaction to add</param>
+    internal void AddTransaction(Transaction transaction) => _transactions.Add(transaction);
 
     /// <summary>
     /// Adds a new Fund Conversion to this Accounting Period
     /// </summary>
-    /// <param name="date">Date for this Fund Conversion</param>
-    /// <param name="accountInfo">Account for this Fund Conversion</param>
-    /// <param name="fromFund">From Fund for this Fund Conversion</param>
-    /// <param name="toFund">To Fund for this Fund Conversion</param>
-    /// <param name="amount">Amount for this Fund Conversion</param>
-    /// <returns>The newly created Fund Conversion</returns>
-    internal FundConversion AddFundConversion(DateOnly date,
-        CreateBalanceEventAccountInfo accountInfo,
-        Fund fromFund,
-        Fund toFund,
-        decimal amount)
-    {
-        var newFundConversion = new FundConversion(this,
-            accountInfo,
-            date,
-            fromFund,
-            toFund,
-            amount);
-        _fundConversions.Add(newFundConversion);
-        return newFundConversion;
-    }
+    /// <param name="fundConversion">Fund Conversion to add</param>
+    internal void AddFundConversion(FundConversion fundConversion) => _fundConversions.Add(fundConversion);
 
     /// <summary>
     /// Adds a new Change In Value to this Accounting Period
     /// </summary>
-    /// <param name="date">Date for this Change In Value</param>
-    /// <param name="accountInfo">Account for this Change In Value</param>
-    /// <param name="accountingEntry">Accounting Entry for this Change In Value</param>
-    /// <returns>The newly created Change In Value</returns>
-    internal ChangeInValue AddChangeInValue(DateOnly date,
-        CreateBalanceEventAccountInfo accountInfo,
-        FundAmount accountingEntry)
-    {
-        var newChangeInValue = new ChangeInValue(this,
-            accountInfo,
-            date,
-            accountingEntry);
-        _changeInValues.Add(newChangeInValue);
-        return newChangeInValue;
-    }
+    /// <param name="changeInValue">Change in Value to add</param>
+    internal void AddChangeInValue(ChangeInValue changeInValue) => _changeInValues.Add(changeInValue);
 
     /// <summary>
     /// Gets the list of all Balance Events for this Accounting Period
@@ -144,21 +95,6 @@ public class AccountingPeriod : EntityBase
             .Concat(ChangeInValues)
             .OrderBy(balanceEvent => balanceEvent.EventDate)
             .ThenBy(balanceEvent => balanceEvent.EventSequence);
-
-    /// <summary>
-    /// Gets the next Balance Event sequence for the provided date
-    /// </summary>
-    /// <param name="eventDate">Event date to get the next Balance Event sequence for</param>
-    /// <returns>The next Balance Event sequence for the provided date</returns>
-    internal int GetNextEventSequenceForDate(DateOnly eventDate)
-    {
-        var balanceEventsOnDate = GetAllBalanceEvents().Where(balanceEvent => balanceEvent.EventDate == eventDate).ToList();
-        if (balanceEventsOnDate.Count == 0)
-        {
-            return 1;
-        }
-        return balanceEventsOnDate.Count + 1;
-    }
 
     /// <summary>
     /// Constructs a new default instance of this class

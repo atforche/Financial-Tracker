@@ -1,5 +1,5 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Scenarios;
 using Tests.Scenarios.Transaction;
@@ -53,7 +53,7 @@ public class AmountTests
     /// <param name="accountType">Account Type for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
     private static Transaction AddTransaction(TransactionAmountScenarioSetup setup, TransactionAccountType? accountType) =>
-        setup.GetService<IAccountingPeriodService>().AddTransaction(setup.AccountingPeriod,
+        setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
             accountType != TransactionAccountType.Credit ? setup.Account : null,
             accountType == TransactionAccountType.Credit ? setup.Account : null,

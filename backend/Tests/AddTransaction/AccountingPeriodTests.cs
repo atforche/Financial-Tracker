@@ -1,5 +1,5 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Scenarios;
 using Tests.Validators;
@@ -43,7 +43,7 @@ public class AccountingPeriodTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
     private static Transaction AddTransaction(AccountingPeriodScenarioSetup setup) =>
-        setup.GetService<IAccountingPeriodService>().AddTransaction(setup.CurrentAccountingPeriod,
+        setup.GetService<AddTransactionAction>().Run(setup.CurrentAccountingPeriod,
             new DateOnly(2025, 1, 15),
             setup.Account,
             null,

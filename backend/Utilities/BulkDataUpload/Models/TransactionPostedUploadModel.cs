@@ -1,4 +1,4 @@
-using Rest.Models.Account;
+using Domain.Aggregates.AccountingPeriods;
 using Rest.Models.AccountingPeriod;
 
 namespace Utilities.BulkDataUpload.Models;
@@ -19,9 +19,9 @@ internal sealed class TransactionPostedUploadModel : BalanceEventUploadModel
     public required DateOnly EventDate { get; init; }
 
     /// <summary>
-    /// Account Name for this Transaction Posted Balance Event
+    /// Account Type for this Transaction Posted Balance Event
     /// </summary>
-    public required string AccountName { get; init; }
+    public required TransactionAccountType AccountType { get; init; }
 
     /// <summary>
     /// Gets the ID of the Transaction to post
@@ -34,11 +34,10 @@ internal sealed class TransactionPostedUploadModel : BalanceEventUploadModel
     /// <summary>
     /// Gets a Post Transaction Model corresponding to this Transaction Posted Upload Model
     /// </summary>
-    /// <param name="existingAccounts">List of existing Accounts</param>
     /// <returns>A Post Transaction Model corresponding to this Post Transaction Upload Model</returns>
-    public PostTransactionModel GetAsPostTransactionModel(ICollection<AccountModel> existingAccounts) => new()
+    public PostTransactionModel GetAsPostTransactionModel() => new()
     {
-        AccountId = existingAccounts.Single(account => account.Name == AccountName).Id,
+        AccountToPost = AccountType,
         PostedStatementDate = EventDate,
     };
 }

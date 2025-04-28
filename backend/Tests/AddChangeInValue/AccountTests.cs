@@ -1,3 +1,4 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Services;
@@ -35,7 +36,7 @@ public class AccountTests
     /// <param name="amount">Amount for this Change In Value</param>
     /// <returns>The Change In Value that was added for this test case</returns>
     private static ChangeInValue AddChangeInValue(AccountScenarioSetup setup, decimal amount) =>
-        setup.GetService<IAccountingPeriodService>().AddChangeInValue(setup.AccountingPeriod,
+        setup.GetService<AddChangeInValueAction>().Run(setup.AccountingPeriod,
             new DateOnly(2025, 1, 10),
             setup.Account,
             new FundAmount

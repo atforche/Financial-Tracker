@@ -1,5 +1,5 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Scenarios;
 using Tests.Setups;
@@ -36,7 +36,7 @@ public class EventDateTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
     private static Transaction AddTransaction(BalanceEventDateScenarioSetup setup) =>
-        setup.GetService<IAccountingPeriodService>().AddTransaction(setup.CurrentAccountingPeriod,
+        setup.GetService<AddTransactionAction>().Run(setup.CurrentAccountingPeriod,
             new DateOnly(2025, 1, 1),
             setup.Account,
             null,
@@ -54,7 +54,7 @@ public class EventDateTests
     /// <param name="setup">Setup for this test case</param>
     /// <param name="transaction">Transaction to be posted</param>
     private static void PostTransaction(BalanceEventDateScenarioSetup setup, Transaction transaction) =>
-        setup.GetService<IAccountingPeriodService>().PostTransaction(transaction, setup.Account, setup.EventDate);
+        transaction.Post(TransactionAccountType.Debit, setup.EventDate);
 
     /// <summary>
     /// Gets the expected state for this test case

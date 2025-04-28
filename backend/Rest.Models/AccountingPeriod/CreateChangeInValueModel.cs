@@ -7,10 +7,10 @@ namespace Rest.Models.AccountingPeriod;
 /// </summary>
 public class CreateChangeInValueModel
 {
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.BalanceEventBase.Account"/>
+    /// <inheritdoc cref="Domain.Aggregates.BalanceEventBase.Account"/>
     public required Guid AccountId { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.BalanceEventBase.EventDate"/>
+    /// <inheritdoc cref="Domain.Aggregates.BalanceEventBase.EventDate"/>
     public required DateOnly EventDate { get; init; }
 
     /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.ChangeInValue.AccountingEntry"/>

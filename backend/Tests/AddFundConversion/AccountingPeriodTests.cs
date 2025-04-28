@@ -1,5 +1,5 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
-using Domain.Services;
 using Tests.Scenarios;
 using Tests.Validators;
 
@@ -42,13 +42,12 @@ public class AccountingPeriodTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Fund Conversion that was added for this test case</returns>
     private static FundConversion AddFundConversion(AccountingPeriodScenarioSetup setup) =>
-        setup.GetService<IAccountingPeriodService>()
-            .AddFundConversion(setup.CurrentAccountingPeriod,
-                new DateOnly(2025, 1, 15),
-                setup.Account,
-                setup.Fund,
-                setup.OtherFund,
-                100.00m);
+        setup.GetService<AddFundConversionAction>().Run(setup.CurrentAccountingPeriod,
+            setup.Account,
+            new DateOnly(2025, 1, 15),
+            setup.Fund,
+            setup.OtherFund,
+            100.00m);
 
     /// <summary>
     /// Gets the expected state for this test case

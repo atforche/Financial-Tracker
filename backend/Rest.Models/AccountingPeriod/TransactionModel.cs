@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Domain.Aggregates;
 using Domain.Aggregates.AccountingPeriods;
 using Rest.Models.Account;
 using Rest.Models.FundAmount;
@@ -10,7 +11,7 @@ namespace Rest.Models.AccountingPeriod;
 /// </summary>
 public class TransactionModel
 {
-    /// <inheritdoc cref="Domain.Aggregates.EntityBase.Id"/>
+    /// <inheritdoc cref="EntityBase.Id"/>
     public Guid Id { get; init; }
 
     /// <inheritdoc cref="Transaction.TransactionDate"/>

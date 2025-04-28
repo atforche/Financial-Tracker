@@ -1,5 +1,5 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
-using Domain.Services;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -17,9 +17,9 @@ public class DefaultTests
     public void RunTest()
     {
         var setup = new DefaultScenarioSetup();
-        FundConversion fundConversion = setup.GetService<IAccountingPeriodService>().AddFundConversion(setup.AccountingPeriod,
-            new DateOnly(2025, 1, 15),
+        FundConversion fundConversion = setup.GetService<AddFundConversionAction>().Run(setup.AccountingPeriod,
             setup.Account,
+            new DateOnly(2025, 1, 15),
             setup.Fund,
             setup.OtherFund,
             100.00m);

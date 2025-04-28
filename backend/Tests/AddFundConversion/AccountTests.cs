@@ -1,3 +1,4 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Services;
@@ -35,13 +36,12 @@ public class AccountTests
     /// <param name="reverse">True to convert funds from Other Fund to Fund, false to convert funds from Fund to Other Fund</param>
     /// <returns>The Fund Conversion that was added for this test case</returns>
     private static FundConversion AddFundConversion(AccountScenarioSetup setup, bool reverse) =>
-        setup.GetService<IAccountingPeriodService>()
-            .AddFundConversion(setup.AccountingPeriod,
-                new DateOnly(2025, 1, 10),
-                setup.Account,
-                reverse ? setup.OtherFund : setup.Fund,
-                reverse ? setup.Fund : setup.OtherFund,
-                100.00m);
+        setup.GetService<AddFundConversionAction>().Run(setup.AccountingPeriod,
+            setup.Account,
+            new DateOnly(2025, 1, 10),
+            reverse ? setup.OtherFund : setup.Fund,
+            reverse ? setup.Fund : setup.OtherFund,
+            100.00m);
 
     /// <summary>
     /// Gets the expected state for this test case
