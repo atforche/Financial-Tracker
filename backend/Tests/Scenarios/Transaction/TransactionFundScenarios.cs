@@ -81,7 +81,7 @@ internal sealed class TransactionFundScenarioSetup : ScenarioSetup
         AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
 
-        Account = GetService<IAccountService>().CreateNewAccount("Test", AccountType.Standard,
+        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard,
             Funds.Count == 0
                 ? []
                 : [

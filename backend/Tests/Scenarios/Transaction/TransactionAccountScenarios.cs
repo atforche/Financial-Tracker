@@ -124,11 +124,11 @@ internal sealed class TransactionAccountScenarioSetup : ScenarioSetup
         AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
 
-        IAccountService accountService = GetService<IAccountService>();
+        AddAccountAction addAccountAction = GetService<AddAccountAction>();
         IAccountRepository accountRepository = GetService<IAccountRepository>();
         if (debitAccountType != null)
         {
-            DebitAccount = accountService.CreateNewAccount("TestOne", debitAccountType.Value,
+            DebitAccount = addAccountAction.Run("TestOne", debitAccountType.Value,
                 [
                     new FundAmount
                     {
@@ -149,7 +149,7 @@ internal sealed class TransactionAccountScenarioSetup : ScenarioSetup
         }
         else if (creditAccountType != null)
         {
-            CreditAccount = accountService.CreateNewAccount("TestTwo", creditAccountType.Value,
+            CreditAccount = addAccountAction.Run("TestTwo", creditAccountType.Value,
                 [
                     new FundAmount
                     {

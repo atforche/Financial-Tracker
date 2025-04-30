@@ -16,10 +16,6 @@ public class CloseAccountingPeriodAction(
     IAccountRepository accountRepository,
     IAccountBalanceService accountBalanceService)
 {
-    private readonly IAccountingPeriodRepository _accountingPeriodRepository = accountingPeriodRepository;
-    private readonly IAccountRepository _accountRepository = accountRepository;
-    private readonly IAccountBalanceService _accountBalanceService = accountBalanceService;
-
     /// <summary>
     /// Runs this action
     /// </summary>
@@ -49,13 +45,13 @@ public class CloseAccountingPeriodAction(
             exception = new InvalidOperationException();
         }
         // Validate that there are no other earlier open Accounting Periods
-        if (_accountingPeriodRepository.FindOpenPeriods().Any(openPeriod => openPeriod.PeriodStartDate < accountingPeriod.PeriodStartDate))
+        if (accountingPeriodRepository.FindOpenPeriods().Any(openPeriod => openPeriod.PeriodStartDate < accountingPeriod.PeriodStartDate))
         {
             exception ??= new InvalidOperationException();
         }
         // Validate that there are no pending balance changes in this Accounting Period
-        if (_accountRepository.FindAll()
-                .Select(account => _accountBalanceService.GetAccountBalancesByAccountingPeriod(account, accountingPeriod))
+        if (accountRepository.FindAll()
+                .Select(account => accountBalanceService.GetAccountBalancesByAccountingPeriod(account, accountingPeriod))
                 .Any(balance => balance.EndingBalance.PendingFundBalanceChanges.Count != 0))
         {
             exception ??= new InvalidOperationException();
@@ -70,15 +66,15 @@ public class CloseAccountingPeriodAction(
     private void AddAccountBalanceCheckpoints(AccountingPeriod accountingPeriod)
     {
         AccountingPeriod? futureAccountingPeriod =
-            _accountingPeriodRepository.FindByDateOrNull(accountingPeriod.PeriodStartDate.AddMonths(1));
+            accountingPeriodRepository.FindByDateOrNull(accountingPeriod.PeriodStartDate.AddMonths(1));
         if (futureAccountingPeriod == null)
         {
             return;
         }
-        foreach (Account account in _accountRepository.FindAll())
+        foreach (Account account in accountRepository.FindAll())
         {
             account.AddAccountBalanceCheckpoint(futureAccountingPeriod,
-                _accountBalanceService.GetAccountBalancesByAccountingPeriod(account, accountingPeriod).EndingBalance.FundBalances);
+                accountBalanceService.GetAccountBalancesByAccountingPeriod(account, accountingPeriod).EndingBalance.FundBalances);
         }
     }
 }

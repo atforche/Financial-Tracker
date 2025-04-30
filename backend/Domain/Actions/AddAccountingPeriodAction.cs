@@ -16,10 +16,6 @@ public class AddAccountingPeriodAction(
     IAccountRepository accountRepository,
     IAccountBalanceService accountBalanceService)
 {
-    private readonly IAccountingPeriodRepository _accountingPeriodRepository = accountingPeriodRepository;
-    private readonly IAccountRepository _accountRepository = accountRepository;
-    private readonly IAccountBalanceService _accountBalanceService = accountBalanceService;
-
     /// <summary>
     /// Runs this action
     /// </summary>
@@ -57,7 +53,7 @@ public class AddAccountingPeriodAction(
             exception ??= new InvalidOperationException();
         }
         // Validate that there are no duplicate accounting periods
-        var existingAccountingPeriods = _accountingPeriodRepository.FindAll().ToList();
+        var existingAccountingPeriods = accountingPeriodRepository.FindAll().ToList();
         if (existingAccountingPeriods.Any(period => period.PeriodStartDate == new DateOnly(year, month, 1)))
         {
             exception ??= new InvalidOperationException();
@@ -78,15 +74,15 @@ public class AddAccountingPeriodAction(
     private void AddAccountBalanceCheckpoints(AccountingPeriod newAccountingPeriod)
     {
         AccountingPeriod? previousAccountingPeriod =
-            _accountingPeriodRepository.FindByDateOrNull(newAccountingPeriod.PeriodStartDate.AddMonths(-1));
+            accountingPeriodRepository.FindByDateOrNull(newAccountingPeriod.PeriodStartDate.AddMonths(-1));
         if (previousAccountingPeriod == null || previousAccountingPeriod.IsOpen)
         {
             return;
         }
-        foreach (Account account in _accountRepository.FindAll())
+        foreach (Account account in accountRepository.FindAll())
         {
             account.AddAccountBalanceCheckpoint(newAccountingPeriod,
-                _accountBalanceService.GetAccountBalancesByAccountingPeriod(account, previousAccountingPeriod).EndingBalance.FundBalances);
+                accountBalanceService.GetAccountBalancesByAccountingPeriod(account, previousAccountingPeriod).EndingBalance.FundBalances);
         }
     }
 }

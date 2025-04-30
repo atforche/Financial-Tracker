@@ -18,7 +18,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
     private readonly CloseAccountingPeriodAction _closeAccountingPeriodAction;
     private readonly AddTransactionAction _addTransactionAction;
     private readonly IAccountRepository _accountRepository;
-    private readonly IAccountService _accountService;
+    private readonly AddAccountAction _addAccountAction;
     private readonly IFundRepository _fundRepository;
     private readonly IFundService _fundService;
     private readonly IAccountBalanceService _accountBalanceService;
@@ -38,7 +38,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         _closeAccountingPeriodAction = GetService<CloseAccountingPeriodAction>();
         _addTransactionAction = GetService<AddTransactionAction>();
         _accountRepository = GetService<IAccountRepository>();
-        _accountService = GetService<IAccountService>();
+        _addAccountAction = GetService<AddAccountAction>();
         _fundRepository = GetService<IFundRepository>();
         _fundService = GetService<IFundService>();
         _accountBalanceService = GetService<IAccountBalanceService>();
@@ -48,7 +48,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         _fundRepository.Add(_testFund);
         _testAccountingPeriod = _addAccountingPeriodAction.Run(2024, 11);
         _accountingPeriodRepository.Add(_testAccountingPeriod);
-        _testAccount = _accountService.CreateNewAccount("Test", AccountType.Standard,
+        _testAccount = _addAccountAction.Run("Test", AccountType.Standard,
             [
                 new FundAmount()
                 {
@@ -336,7 +336,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         _closeAccountingPeriodAction.Run(_testAccountingPeriod);
         AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
-        Account secondAccount = _accountService.CreateNewAccount("Test2", AccountType.Standard,
+        Account secondAccount = _addAccountAction.Run("Test2", AccountType.Standard,
             [
                 new FundAmount
                 {

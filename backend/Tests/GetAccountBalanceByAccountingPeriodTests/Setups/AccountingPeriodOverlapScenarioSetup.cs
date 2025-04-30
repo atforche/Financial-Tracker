@@ -57,7 +57,7 @@ internal sealed class AccountingPeriodOverlapScenarioSetup : ScenarioSetup
         FutureAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(FutureAccountingPeriod);
 
-        Account = GetService<IAccountService>().CreateNewAccount("Test", AccountType.Standard,
+        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard,
             [
                 new FundAmount
                 {

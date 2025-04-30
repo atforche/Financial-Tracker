@@ -28,7 +28,7 @@ builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Add domain DI services
-builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<AddAccountAction>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<AddAccountingPeriodAction>();
 builder.Services.AddScoped<CloseAccountingPeriodAction>();

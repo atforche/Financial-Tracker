@@ -163,7 +163,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
     /// <returns>The Account for this test case</returns>
     private Account CreateAccount()
     {
-        Account account = GetService<IAccountService>().CreateNewAccount("Test", AccountType.Standard,
+        Account account = GetService<AddAccountAction>().Run("Test", AccountType.Standard,
             [
                 new FundAmount
                 {
