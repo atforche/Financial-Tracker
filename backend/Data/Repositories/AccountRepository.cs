@@ -5,7 +5,7 @@ namespace Data.Repositories;
 /// <summary>
 /// Repository that allows Accounts to be persisted to the database
 /// </summary>
-public class AccountRepository(DatabaseContext context) : AggregateRepositoryBase<Account>(context), IAccountRepository
+public class AccountRepository(DatabaseContext context) : AggregateRepository<Account>(context), IAccountRepository
 {
     /// <inheritdoc/>
     public IReadOnlyCollection<Account> FindAll() => DatabaseContext.Accounts.ToList();

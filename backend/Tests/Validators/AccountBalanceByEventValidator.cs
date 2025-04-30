@@ -5,7 +5,7 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates the provided Account Balance by Event matches the expected state
 /// </summary>
-internal sealed class AccountBalanceByEventValidator : EntityValidatorBase<AccountBalanceByEvent, AccountBalanceByEventState>
+internal sealed class AccountBalanceByEventValidator : EntityValidator<AccountBalanceByEvent, AccountBalanceByEventState>
 {
     /// <inheritdoc/>
     public override void Validate(AccountBalanceByEvent entity, AccountBalanceByEventState expectedState)

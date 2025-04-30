@@ -7,7 +7,7 @@ namespace Rest.Models.AccountingPeriod;
 /// </summary>
 public class AccountingPeriodModel
 {
-    /// <inheritdoc cref="Domain.Aggregates.EntityBase.Id"/>
+    /// <inheritdoc cref="Domain.Aggregates.Entity.Id"/>
     public Guid Id { get; init; }
 
     /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.AccountingPeriod.Year"/>

@@ -11,7 +11,7 @@ namespace Domain.Aggregates.AccountingPeriods;
 /// represented as a single distinct Transaction on an account statement. Examples of this include interest
 /// that is constantly accruing on a loan or changes in stock market value for an investment Account.
 /// </remarks>
-public class ChangeInValue : BalanceEventBase
+public class ChangeInValue : BalanceEvent
 {
     /// <summary>
     /// Accounting Entry for this Change In Value

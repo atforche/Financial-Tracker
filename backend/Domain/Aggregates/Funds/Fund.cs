@@ -10,7 +10,7 @@ namespace Domain.Aggregates.Funds;
 /// The balance of each Account may be made up of money from multiple Funds. The balance of a Fund
 /// over time can be used to track financial changes in an Account-agnostic way.
 /// </remarks>
-public class Fund : EntityBase
+public class Fund : Entity
 {
     /// <summary>
     /// Name for this Fund

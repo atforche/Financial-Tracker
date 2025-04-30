@@ -8,7 +8,7 @@ namespace Domain.Aggregates.AccountingPeriods;
 /// <remarks>
 /// An Accounting Period represents a month-long period used to organize transactions and track balances and budgets.
 /// </remarks>
-public class AccountingPeriod : EntityBase
+public class AccountingPeriod : Entity
 {
     private readonly List<Transaction> _transactions = [];
     private readonly List<FundConversion> _fundConversions = [];
@@ -89,8 +89,8 @@ public class AccountingPeriod : EntityBase
     /// Gets the list of all Balance Events for this Accounting Period
     /// </summary>
     /// <returns>The list of all Balance Events for this Accounting Period</returns>
-    internal IEnumerable<BalanceEventBase> GetAllBalanceEvents() =>
-        Transactions.SelectMany(transaction => (IEnumerable<BalanceEventBase>)transaction.TransactionBalanceEvents)
+    internal IEnumerable<BalanceEvent> GetAllBalanceEvents() =>
+        Transactions.SelectMany(transaction => (IEnumerable<BalanceEvent>)transaction.TransactionBalanceEvents)
             .Concat(FundConversions)
             .Concat(ChangeInValues)
             .OrderBy(balanceEvent => balanceEvent.EventDate)

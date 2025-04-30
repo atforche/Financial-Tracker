@@ -7,7 +7,7 @@ namespace Rest.Models.Fund;
 /// </summary>
 public class FundModel
 {
-    /// <inheritdoc cref="Domain.Aggregates.EntityBase.Id"/>
+    /// <inheritdoc cref="Domain.Aggregates.Entity.Id"/>
     public Guid Id { get; init; }
 
     /// <inheritdoc cref="Domain.Aggregates.Funds.Fund.Name"/>

@@ -5,7 +5,7 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided Account Balance Checkpoints match the expected states
 /// </summary>
-internal sealed class AccountBalanceCheckpointValidator : EntityValidatorBase<AccountBalanceCheckpoint, AccountBalanceCheckpointState>
+internal sealed class AccountBalanceCheckpointValidator : EntityValidator<AccountBalanceCheckpoint, AccountBalanceCheckpointState>
 {
     /// <inheritdoc/>
     public override void Validate(AccountBalanceCheckpoint entity, AccountBalanceCheckpointState expectedState)

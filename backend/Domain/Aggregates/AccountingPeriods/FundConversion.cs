@@ -12,7 +12,7 @@ namespace Domain.Aggregates.AccountingPeriods;
 /// gets converted into an amount from a different Fund. A Fund Conversion is instantaneous and
 /// this represents the only way to transfer money directly between Funds.
 /// </remarks>
-public class FundConversion : BalanceEventBase
+public class FundConversion : BalanceEvent
 {
     /// <summary>
     /// Fund that the amount is being converted out of for this Fund Conversion

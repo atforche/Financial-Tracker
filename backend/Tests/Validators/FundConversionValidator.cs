@@ -5,7 +5,7 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided Fund Conversion matches the expected state
 /// </summary>
-internal sealed class FundConversionValidator : EntityValidatorBase<FundConversion, FundConversionState>
+internal sealed class FundConversionValidator : EntityValidator<FundConversion, FundConversionState>
 {
     /// <inheritdoc/>
     public override void Validate(FundConversion entity, FundConversionState expectedState)

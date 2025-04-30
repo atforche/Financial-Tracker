@@ -8,7 +8,7 @@ namespace Rest.Models.Account;
 /// </summary>
 public class AccountModel
 {
-    /// <inheritdoc cref="Domain.Aggregates.EntityBase.Id"/>
+    /// <inheritdoc cref="Domain.Aggregates.Entity.Id"/>
     public Guid Id { get; }
 
     /// <inheritdoc cref="Domain.Aggregates.Accounts.Account.Name"/>

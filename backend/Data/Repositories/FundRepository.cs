@@ -5,7 +5,7 @@ namespace Data.Repositories;
 /// <summary>
 /// Repository that allows Funds to be persisted to the database
 /// </summary>
-public class FundRepository(DatabaseContext context) : AggregateRepositoryBase<Fund>(context), IFundRepository
+public class FundRepository(DatabaseContext context) : AggregateRepository<Fund>(context), IFundRepository
 {
     /// <inheritdoc/>
     public IReadOnlyCollection<Fund> FindAll() => DatabaseContext.Funds.ToList();

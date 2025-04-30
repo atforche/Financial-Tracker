@@ -7,7 +7,7 @@ namespace Domain.Aggregates;
 /// <summary>
 /// Base class shared by all entities that impact the balance of an Account
 /// </summary>
-public abstract class BalanceEventBase : EntityBase, IComparable<BalanceEventBase>
+public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
 {
     /// <summary>
     /// Accounting Period Year for this Balance Event
@@ -73,7 +73,7 @@ public abstract class BalanceEventBase : EntityBase, IComparable<BalanceEventBas
     /// <param name="account">Account for this Balance Event</param>
     /// <param name="eventDate">Event Date for this Balance Event</param>
     /// <param name="sequenceOffset">Sequence offset for this Balance Event</param>
-    protected BalanceEventBase(AccountingPeriod accountingPeriod, Account account, DateOnly eventDate, int sequenceOffset = 0)
+    protected BalanceEvent(AccountingPeriod accountingPeriod, Account account, DateOnly eventDate, int sequenceOffset = 0)
         : base(new EntityId(default, Guid.NewGuid()))
     {
         AccountingPeriodYear = accountingPeriod.Year;
@@ -86,7 +86,7 @@ public abstract class BalanceEventBase : EntityBase, IComparable<BalanceEventBas
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    protected BalanceEventBase() : base(new EntityId(default, Guid.NewGuid())) => Account = null!;
+    protected BalanceEvent() : base(new EntityId(default, Guid.NewGuid())) => Account = null!;
 
     /// <summary>
     /// Gets the next Balance Event sequence for the provided date
@@ -108,7 +108,7 @@ public abstract class BalanceEventBase : EntityBase, IComparable<BalanceEventBas
     #region IComparable
 
     /// <inheritdoc/>
-    public int CompareTo(BalanceEventBase? other)
+    public int CompareTo(BalanceEvent? other)
     {
         if (other is null)
         {
@@ -130,25 +130,25 @@ public abstract class BalanceEventBase : EntityBase, IComparable<BalanceEventBas
     }
 
     /// <inheritdoc/>
-    public static bool operator ==(BalanceEventBase operand1, BalanceEventBase operand2) => operand1.CompareTo(operand2) == 0;
+    public static bool operator ==(BalanceEvent operand1, BalanceEvent operand2) => operand1.CompareTo(operand2) == 0;
 
     /// <inheritdoc/>
-    public static bool operator !=(BalanceEventBase operand1, BalanceEventBase operand2) => operand1.CompareTo(operand2) != 0;
+    public static bool operator !=(BalanceEvent operand1, BalanceEvent operand2) => operand1.CompareTo(operand2) != 0;
 
     /// <inheritdoc/>
-    public static bool operator >(BalanceEventBase operand1, BalanceEventBase operand2) => operand1.CompareTo(operand2) > 0;
+    public static bool operator >(BalanceEvent operand1, BalanceEvent operand2) => operand1.CompareTo(operand2) > 0;
 
     /// <inheritdoc/>
-    public static bool operator <(BalanceEventBase operand1, BalanceEventBase operand2) => operand1.CompareTo(operand2) < 0;
+    public static bool operator <(BalanceEvent operand1, BalanceEvent operand2) => operand1.CompareTo(operand2) < 0;
 
     /// <inheritdoc/>
-    public static bool operator >=(BalanceEventBase operand1, BalanceEventBase operand2) => operand1.CompareTo(operand2) >= 0;
+    public static bool operator >=(BalanceEvent operand1, BalanceEvent operand2) => operand1.CompareTo(operand2) >= 0;
 
     /// <inheritdoc/>
-    public static bool operator <=(BalanceEventBase operand1, BalanceEventBase operand2) => operand1.CompareTo(operand2) <= 0;
+    public static bool operator <=(BalanceEvent operand1, BalanceEvent operand2) => operand1.CompareTo(operand2) <= 0;
 
     /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is BalanceEventBase otherBalanceEvent && CompareTo(otherBalanceEvent) == 0;
+    public override bool Equals(object? obj) => obj is BalanceEvent otherBalanceEvent && CompareTo(otherBalanceEvent) == 0;
 
     /// <inheritdoc/>
     public override int GetHashCode() => HashCode.Combine(AccountingPeriodYear, AccountingPeriodMonth, EventDate, EventSequence);

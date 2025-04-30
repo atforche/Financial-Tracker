@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.Aggregates;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Services;
@@ -14,7 +15,6 @@ namespace Domain.Actions;
 public class AddChangeInValueAction(
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountBalanceService accountBalanceService)
-    : AddBalanceEventAction(accountingPeriodRepository, accountBalanceService)
 {
     /// <summary>
     /// Runs this action
@@ -35,7 +35,7 @@ public class AddChangeInValueAction(
             throw exception;
         }
         var changeInValue = new ChangeInValue(accountingPeriod, account, eventDate, accountingEntry);
-        if (!ValidateFutureBalanceEvents(changeInValue, accountingPeriod, out exception))
+        if (!new BalanceEventFutureEventValidator(accountingPeriodRepository, accountBalanceService).Validate(changeInValue, out exception))
         {
             throw exception;
         }
@@ -57,7 +57,7 @@ public class AddChangeInValueAction(
         FundAmount accountingEntry,
         [NotNullWhen(false)] out Exception? exception)
     {
-        if (!IsValid(accountingPeriod, eventDate, out exception))
+        if (!new BalanceEventAccountingPeriodValidator(accountingPeriod, eventDate).Validate(out exception))
         {
             return false;
         }

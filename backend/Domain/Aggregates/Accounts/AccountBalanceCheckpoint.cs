@@ -10,7 +10,7 @@ namespace Domain.Aggregates.Accounts;
 /// An Account Balance Checkpoint represents the balance of an Account at the beginning of an Accounting Period.
 /// This saved balance serves as a checkpoint to improve the efficiency of calculating arbitrary Account balances.
 /// </remarks>
-public sealed class AccountBalanceCheckpoint : EntityBase
+public sealed class AccountBalanceCheckpoint : Entity
 {
     private readonly List<FundAmount> _fundBalances;
 

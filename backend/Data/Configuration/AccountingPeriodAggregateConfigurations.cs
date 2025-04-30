@@ -8,7 +8,7 @@ namespace Data.Configuration;
 /// <summary>
 /// EF Core configuration for the Accounting Period entity
 /// </summary>
-internal sealed class AccountingPeriodEntityConfiguration : EntityConfigurationBase<AccountingPeriod>
+internal sealed class AccountingPeriodEntityConfiguration : EntityConfiguration<AccountingPeriod>
 {
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<AccountingPeriod> builder)
@@ -35,7 +35,7 @@ internal sealed class AccountingPeriodEntityConfiguration : EntityConfigurationB
 /// <summary>
 /// EF Core configuration for the Transaction entity
 /// </summary>
-internal sealed class TransactionEntityConfiguration : EntityConfigurationBase<Transaction>
+internal sealed class TransactionEntityConfiguration : EntityConfiguration<Transaction>
 {
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<Transaction> builder)
@@ -53,7 +53,7 @@ internal sealed class TransactionEntityConfiguration : EntityConfigurationBase<T
 /// <summary>
 /// EF Core configuration for the Fund Conversion entity
 /// </summary>
-internal sealed class FundConversionEntityConfiguration : EntityConfigurationBase<FundConversion>
+internal sealed class FundConversionEntityConfiguration : EntityConfiguration<FundConversion>
 {
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<FundConversion> builder)
@@ -72,7 +72,7 @@ internal sealed class FundConversionEntityConfiguration : EntityConfigurationBas
 /// <summary>
 /// EF Core configuration for the Change In Value entity
 /// </summary>
-internal sealed class ChangeInValueEntityConfiguration : EntityConfigurationBase<ChangeInValue>
+internal sealed class ChangeInValueEntityConfiguration : EntityConfiguration<ChangeInValue>
 {
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<ChangeInValue> builder)
@@ -88,7 +88,7 @@ internal sealed class ChangeInValueEntityConfiguration : EntityConfigurationBase
 /// <summary>
 /// EF Core configuration for the Transaction Balance Event entity
 /// </summary>
-internal sealed class TransactionBalanceEventEntityConfiguration : EntityConfigurationBase<TransactionBalanceEvent>
+internal sealed class TransactionBalanceEventEntityConfiguration : EntityConfiguration<TransactionBalanceEvent>
 {
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<TransactionBalanceEvent> builder)

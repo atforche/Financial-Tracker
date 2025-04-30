@@ -5,7 +5,7 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided Change In Value matches the expected state
 /// </summary>
-internal sealed class ChangeInValueValidator : EntityValidatorBase<ChangeInValue, ChangeInValueState>
+internal sealed class ChangeInValueValidator : EntityValidator<ChangeInValue, ChangeInValueState>
 {
     /// <inheritdoc/>
     public override void Validate(ChangeInValue entity, ChangeInValueState expectedState)

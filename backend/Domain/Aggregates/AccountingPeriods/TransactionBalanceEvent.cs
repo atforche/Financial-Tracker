@@ -11,7 +11,7 @@ namespace Domain.Aggregates.AccountingPeriods;
 /// accounts. For each account, a balance event will be generated when the 
 /// Transaction is added and when the Transaction is posted.
 /// </remarks>
-public sealed class TransactionBalanceEvent : BalanceEventBase
+public sealed class TransactionBalanceEvent : BalanceEvent
 {
     /// <summary>
     /// Parent Transaction for this Transaction Balance Event

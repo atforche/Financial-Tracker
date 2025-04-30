@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.Aggregates;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
@@ -14,7 +15,6 @@ namespace Domain.Actions;
 public class AddFundConversionAction(
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountBalanceService accountBalanceService)
-    : AddBalanceEventAction(accountingPeriodRepository, accountBalanceService)
 {
     /// <summary>
     /// Runs this action
@@ -39,7 +39,7 @@ public class AddFundConversionAction(
             throw exception;
         }
         var fundConversion = new FundConversion(accountingPeriod, account, eventDate, fromFund, toFund, amount);
-        if (!ValidateFutureBalanceEvents(fundConversion, accountingPeriod, out exception))
+        if (!new BalanceEventFutureEventValidator(accountingPeriodRepository, accountBalanceService).Validate(fundConversion, out exception))
         {
             throw exception;
         }
@@ -65,7 +65,7 @@ public class AddFundConversionAction(
         decimal amount,
         [NotNullWhen(false)] out Exception? exception)
     {
-        if (!IsValid(accountingPeriod, eventDate, out exception))
+        if (!new BalanceEventAccountingPeriodValidator(accountingPeriod, eventDate).Validate(out exception))
         {
             return false;
         }

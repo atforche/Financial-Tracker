@@ -9,7 +9,7 @@ namespace Domain.Aggregates.Accounts;
 /// <remarks>
 /// An Account represents a financial account that money can be held in and transferred from.
 /// </remarks>
-public class Account : EntityBase
+public class Account : Entity
 {
     private readonly List<AccountBalanceCheckpoint> _accountBalanceCheckpoints = [];
 

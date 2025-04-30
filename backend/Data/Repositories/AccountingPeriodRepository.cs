@@ -6,7 +6,7 @@ namespace Data.Repositories;
 /// <summary>
 /// Repository that allows Accounting Periods to be persisted to the database
 /// </summary>
-public class AccountingPeriodRepository(DatabaseContext context) : AggregateRepositoryBase<AccountingPeriod>(context), IAccountingPeriodRepository
+public class AccountingPeriodRepository(DatabaseContext context) : AggregateRepository<AccountingPeriod>(context), IAccountingPeriodRepository
 {
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> FindAll() => DatabaseContext.AccountingPeriods

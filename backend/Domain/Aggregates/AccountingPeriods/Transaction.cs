@@ -1,4 +1,3 @@
-using Domain.Actions;
 using Domain.Aggregates.Accounts;
 using Domain.ValueObjects;
 
@@ -14,7 +13,7 @@ namespace Domain.Aggregates.AccountingPeriods;
 /// 3. Money is debited from one Account and credited to another Account
 /// If money moves from one Account to another, the amount debited is equal to the amount credited. 
 /// </remarks>
-public class Transaction : EntityBase
+public class Transaction : Entity
 {
     private readonly List<FundAmount> _accountingEntries;
     private readonly List<TransactionBalanceEvent> _transactionBalanceEvents;
@@ -124,7 +123,7 @@ public class Transaction : EntityBase
         {
             throw new InvalidOperationException();
         }
-        if (!AddBalanceEventAction.IsValid(AccountingPeriod, postedStatementDate, out Exception? exception))
+        if (!new BalanceEventAccountingPeriodValidator(AccountingPeriod, postedStatementDate).Validate(out Exception? exception))
         {
             throw exception;
         }

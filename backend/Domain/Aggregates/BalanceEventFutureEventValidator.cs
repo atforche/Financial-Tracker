@@ -1,62 +1,26 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.Aggregates;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Services;
 using Domain.ValueObjects;
 
-namespace Domain.Actions;
+namespace Domain.Aggregates;
 
 /// <summary>
-/// Action class that adds a Balance Event
+/// Validator class that validates that a newly created Balance Event doesn't invalidate any future Balance Events
 /// </summary>
 /// <param name="accountingPeriodRepository">Accounting Period Repository</param>
 /// <param name="accountBalanceService">Account Balance Service</param>
-public abstract class AddBalanceEventAction(
+internal sealed class BalanceEventFutureEventValidator(
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountBalanceService accountBalanceService)
 {
-    private readonly IAccountingPeriodRepository _accountingPeriodRepository = accountingPeriodRepository;
-    private readonly IAccountBalanceService _accountBalanceService = accountBalanceService;
-
     /// <summary>
-    /// Determines if this action is valid to run
-    /// </summary>
-    /// <param name="accountingPeriod">Accounting Period for the Balance Event</param>
-    /// <param name="eventDate">Event Date for the Balance Event</param>
-    /// <param name="exception">Exception encountered during validation</param>
-    /// <returns>True if this action is valid to run, false otherwise</returns>
-    public static bool IsValid(AccountingPeriod accountingPeriod, DateOnly eventDate, [NotNullWhen(false)] out Exception? exception)
-    {
-        exception = null;
-
-        if (!accountingPeriod.IsOpen)
-        {
-            exception = new InvalidOperationException();
-        }
-        if (eventDate == DateOnly.MinValue)
-        {
-            exception ??= new InvalidOperationException();
-        }
-        // Validate that a balance event can only be added with a date in a month adjacent to the Accounting Period month
-        int monthDifference = Math.Abs(((accountingPeriod.Year - eventDate.Year) * 12) + accountingPeriod.Month - eventDate.Month);
-        if (monthDifference > 1)
-        {
-            exception ??= new InvalidOperationException();
-        }
-        return exception == null;
-    }
-
-    /// <summary>
-    /// Validates that the newly created Balance Event doesn't invalidate any future balance events
+    /// Validates that the newly created Balance Event doesn't invalidate any future Balance Events
     /// </summary>
     /// <param name="newBalanceEvent">The newly created Balance Event</param>
-    /// <param name="accountingPeriod">Accounting Period for the newly created Balance Event</param>
     /// <param name="exception">Exception encountered during validation</param>
-    /// <returns>True if the future Balance Events are all still valid, false otherwise</returns>
-    protected bool ValidateFutureBalanceEvents(
-        BalanceEventBase newBalanceEvent,
-        AccountingPeriod accountingPeriod,
-        [NotNullWhen(false)] out Exception? exception)
+    /// <returns>True if the future Balance Events are still valid, false otherwise</returns>
+    public bool Validate(BalanceEvent newBalanceEvent, [NotNullWhen(false)] out Exception? exception)
     {
         exception = null;
 
@@ -69,13 +33,13 @@ public abstract class AddBalanceEventAction(
 
         // Validate that adding this Balance Event doesn't cause any of the future Balance Events to become invalid
         AccountBalance runningBalance = newBalanceEvent.ApplyEventToBalance(currentBalance);
-        var futureBalanceEventsForAccount = _accountBalanceService
+        var futureBalanceEventsForAccount = accountBalanceService
             .GetAccountBalancesByEvent(newBalanceEvent.Account, new DateRange(newBalanceEvent.EventDate, DateOnly.MaxValue))
             .Select(accountBalanceByEvent => accountBalanceByEvent.BalanceEvent)
             .Where(balanceEvent => balanceEvent > newBalanceEvent)
             .Order()
             .ToList();
-        foreach (BalanceEventBase balanceEvent in futureBalanceEventsForAccount)
+        foreach (BalanceEvent balanceEvent in futureBalanceEventsForAccount)
         {
             if (!balanceEvent.CanBeAppliedToBalance(runningBalance))
             {
@@ -86,8 +50,9 @@ public abstract class AddBalanceEventAction(
 
         // Validate that adding this Balance Event doesn't cause the balance of this Account within the
         // Accounting Period to become invalid
-        runningBalance = _accountBalanceService.GetAccountBalancesByAccountingPeriod(newBalanceEvent.Account, accountingPeriod).StartingBalance;
-        foreach (BalanceEventBase balanceEvent in accountingPeriod.GetAllBalanceEvents().Concat([newBalanceEvent]).Order())
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindByDate(new DateOnly(newBalanceEvent.AccountingPeriodYear, newBalanceEvent.AccountingPeriodMonth, 1));
+        runningBalance = accountBalanceService.GetAccountBalancesByAccountingPeriod(newBalanceEvent.Account, accountingPeriod).StartingBalance;
+        foreach (BalanceEvent balanceEvent in accountingPeriod.GetAllBalanceEvents().Concat([newBalanceEvent]).Order())
         {
             if (!balanceEvent.CanBeAppliedToBalance(runningBalance))
             {
@@ -103,20 +68,20 @@ public abstract class AddBalanceEventAction(
     /// </summary>
     /// <param name="newBalanceEvent">The newly created Balance Event</param>
     /// <returns>The Account Balance immediately before the Balance Event was added</returns>
-    private AccountBalance GetAccountBalanceBeforeEventWasAdded(BalanceEventBase newBalanceEvent)
+    private AccountBalance GetAccountBalanceBeforeEventWasAdded(BalanceEvent newBalanceEvent)
     {
         // Get the Account Balance as of the date the event was added
-        AccountBalance accountBalance = _accountBalanceService.GetAccountBalancesByDate(
+        AccountBalance accountBalance = accountBalanceService.GetAccountBalancesByDate(
             newBalanceEvent.Account,
             new DateRange(newBalanceEvent.EventDate, newBalanceEvent.EventDate)).First().AccountBalance;
 
         // Grab all the Balance Events that occurred later on the same date as the new event and reverse them
-        var balanceEvents = _accountingPeriodRepository
+        var balanceEvents = accountingPeriodRepository
             .FindAccountingPeriodsWithBalanceEventsInDateRange(new DateRange(newBalanceEvent.EventDate, newBalanceEvent.EventDate))
             .SelectMany(accountingPeriod => accountingPeriod.GetAllBalanceEvents())
             .Where(balanceEvent => balanceEvent.EventDate == newBalanceEvent.EventDate && balanceEvent > newBalanceEvent)
             .ToList();
-        foreach (BalanceEventBase balanceEvent in balanceEvents)
+        foreach (BalanceEvent balanceEvent in balanceEvents)
         {
             accountBalance = balanceEvent.ReverseEventFromBalance(accountBalance);
         }

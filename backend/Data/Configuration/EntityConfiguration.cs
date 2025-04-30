@@ -7,8 +7,8 @@ namespace Data.Configuration;
 /// <summary>
 /// Base Entity Type Configuration for an Entity type
 /// </summary>
-internal abstract class EntityConfigurationBase<TEntity> : IEntityTypeConfiguration<TEntity>
-    where TEntity : EntityBase
+internal abstract class EntityConfiguration<TEntity> : IEntityTypeConfiguration<TEntity>
+    where TEntity : Entity
 {
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<TEntity> builder)
