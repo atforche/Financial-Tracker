@@ -60,21 +60,23 @@ public class AccountingPeriodOverlapTests
     /// <returns>The expected state for this test case and Accounting Period</returns>
     private static AccountBalanceByAccountingPeriodState GetExpectedState(
         AccountingPeriodOverlapScenarioSetup setup,
-        AccountingPeriod accountingPeriod) =>
-        new()
+        AccountingPeriod accountingPeriod)
+    {
+        List<FundAmountState> expectedStartingFundBalances = [];
+        if (accountingPeriod != setup.PastAccountingPeriod)
         {
-            AccountingPeriodYear = accountingPeriod.Year,
-            AccountingPeriodMonth = accountingPeriod.Month,
-            StartingFundBalances =
-            [
-                new FundAmountState
-                {
-                    FundName = setup.Fund.Name,
-                    Amount = accountingPeriod == setup.FutureAccountingPeriod
-                        ? 1250.00m
-                        : 1500.00m
-                }
-            ],
+            expectedStartingFundBalances.Add(new FundAmountState
+            {
+                FundName = setup.Fund.Name,
+                Amount = accountingPeriod == setup.FutureAccountingPeriod
+                    ? 1250.00m
+                    : 1500.00m
+            });
+        }
+        return new AccountBalanceByAccountingPeriodState()
+        {
+            AccountingPeriodKey = accountingPeriod.Key,
+            StartingFundBalances = expectedStartingFundBalances,
             EndingFundBalances =
             [
                 new FundAmountState
@@ -87,4 +89,5 @@ public class AccountingPeriodOverlapTests
             ],
             EndingPendingFundBalanceChanges = []
         };
+    }
 }

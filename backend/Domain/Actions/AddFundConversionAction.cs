@@ -20,21 +20,21 @@ public class AddFundConversionAction(
     /// Runs this action
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period for the Fund Conversion</param>
-    /// <param name="account">Account for the Fund Conversion</param>
     /// <param name="eventDate">Event Date for the Fund Conversion</param>
+    /// <param name="account">Account for the Fund Conversion</param>
     /// <param name="fromFund">From Fund for the Fund Conversion</param>
     /// <param name="toFund">To Fund for the Fund Conversion</param>
     /// <param name="amount">Amount for the Fund Conversion</param>
     /// <returns>The newly created Fund Conversion</returns>
     public FundConversion Run(
         AccountingPeriod accountingPeriod,
-        Account account,
         DateOnly eventDate,
+        Account account,
         Fund fromFund,
         Fund toFund,
         decimal amount)
     {
-        if (!IsValid(accountingPeriod, eventDate, fromFund, toFund, amount, out Exception? exception))
+        if (!IsValid(accountingPeriod, eventDate, account, fromFund, toFund, amount, out Exception? exception))
         {
             throw exception;
         }
@@ -52,6 +52,7 @@ public class AddFundConversionAction(
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period for the Fund Conversion</param>
     /// <param name="eventDate">Event Date for the Fund Conversion</param>
+    /// <param name="account">Account for the Fund Conversion</param>
     /// <param name="fromFund">From Fund for the Fund Conversion</param>
     /// <param name="toFund">To Fund for the Fund Conversion</param>
     /// <param name="amount">Amount for the Fund Conversion</param>
@@ -60,12 +61,13 @@ public class AddFundConversionAction(
     private static bool IsValid(
         AccountingPeriod accountingPeriod,
         DateOnly eventDate,
+        Account account,
         Fund fromFund,
         Fund toFund,
         decimal amount,
         [NotNullWhen(false)] out Exception? exception)
     {
-        if (!new BalanceEventAccountingPeriodValidator(accountingPeriod, eventDate).Validate(out exception))
+        if (!new BalanceEventDateValidator(accountingPeriod, [account], eventDate).Validate(out exception))
         {
             return false;
         }

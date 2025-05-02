@@ -40,7 +40,7 @@ public class MultipleAccountingPeriodTests
     private static void RunTestPrivate(DateOnly firstPeriod, DateOnly secondPeriod, DateOnly thirdPeriod, bool shouldClosePeriods)
     {
         var setup = new MultipleAccountingPeriodScenarioSetup(firstPeriod);
-        new AccountingPeriodValidator().Validate(setup.FirstAccountingPeriod, GetExpectedState(setup.FirstAccountingPeriod));
+        new AccountingPeriodValidator().Validate(setup.FirstAccountingPeriod, GetExpectedState(setup, setup.FirstAccountingPeriod));
         new AccountBalanceCheckpointValidator().Validate(setup.Account.AccountBalanceCheckpoints, GetExpectedAccountBalanceCheckpointStates(setup, null, null));
         if (shouldClosePeriods)
         {
@@ -49,7 +49,7 @@ public class MultipleAccountingPeriodTests
 
         AccountingPeriod secondAccountingPeriod = setup.GetService<AddAccountingPeriodAction>().Run(secondPeriod.Year, secondPeriod.Month);
         setup.GetService<IAccountingPeriodRepository>().Add(secondAccountingPeriod);
-        new AccountingPeriodValidator().Validate(secondAccountingPeriod, GetExpectedState(secondAccountingPeriod));
+        new AccountingPeriodValidator().Validate(secondAccountingPeriod, GetExpectedState(setup, secondAccountingPeriod));
         new AccountBalanceCheckpointValidator().Validate(setup.Account.AccountBalanceCheckpoints, GetExpectedAccountBalanceCheckpointStates(setup, secondAccountingPeriod, null));
         if (shouldClosePeriods)
         {
@@ -57,23 +57,47 @@ public class MultipleAccountingPeriodTests
         }
 
         AccountingPeriod thirdAccountingPeriod = setup.GetService<AddAccountingPeriodAction>().Run(thirdPeriod.Year, thirdPeriod.Month);
-        new AccountingPeriodValidator().Validate(thirdAccountingPeriod, GetExpectedState(thirdAccountingPeriod));
+        new AccountingPeriodValidator().Validate(thirdAccountingPeriod, GetExpectedState(setup, thirdAccountingPeriod));
         new AccountBalanceCheckpointValidator().Validate(setup.Account.AccountBalanceCheckpoints, GetExpectedAccountBalanceCheckpointStates(setup, secondAccountingPeriod, thirdAccountingPeriod));
     }
 
     /// <summary>
     /// Gets the expected state for this test case
     /// </summary>
+    /// <param name="setup">Setup for this test case</param>
     /// <param name="accountingPeriod">Accounting Period to get the expected state for</param>
     /// <returns>The expected state for this test case</returns>
-    private static AccountingPeriodState GetExpectedState(AccountingPeriod accountingPeriod) =>
-        new()
+    private static AccountingPeriodState GetExpectedState(MultipleAccountingPeriodScenarioSetup setup, AccountingPeriod accountingPeriod)
+    {
+        List<AccountAddedBalanceEventState> expectedAccountAddedBalanceEvents = [];
+        if (accountingPeriod == setup.FirstAccountingPeriod)
         {
-            Year = accountingPeriod.Year,
-            Month = accountingPeriod.Month,
+            expectedAccountAddedBalanceEvents.Add(new AccountAddedBalanceEventState
+            {
+                AccountingPeriodKey = accountingPeriod.Key,
+                AccountName = setup.Account.Name,
+                EventDate = accountingPeriod.PeriodStartDate,
+                EventSequence = 1,
+                FundAmounts =
+                [
+                    new FundAmountState
+                    {
+                        FundName = setup.Fund.Name,
+                        Amount = 1500.00m
+                    }
+                ]
+            });
+        }
+        return new AccountingPeriodState()
+        {
+            Key = accountingPeriod.Key,
             IsOpen = accountingPeriod.IsOpen,
-            Transactions = []
+            Transactions = [],
+            FundConversions = [],
+            ChangeInValues = [],
+            AccountAddedBalanceEvents = expectedAccountAddedBalanceEvents
         };
+    }
 
     /// <summary>
     /// Gets the expected Account Balance Checkpoint States for this test case
@@ -87,30 +111,13 @@ public class MultipleAccountingPeriodTests
         AccountingPeriod? secondAccountingPeriod,
         AccountingPeriod? thirdAccountingPeriod)
     {
-        List<AccountBalanceCheckpointState> results =
-        [
-            new AccountBalanceCheckpointState
-            {
-                AccountName = setup.Account.Name,
-                AccountingPeriodYear = setup.FirstAccountingPeriod.Year,
-                AccountingPeriodMonth = setup.FirstAccountingPeriod.Month,
-                FundBalances =
-                [
-                    new FundAmountState
-                    {
-                        FundName = setup.Fund.Name,
-                        Amount = 1500.00m
-                    },
-                ]
-            }
-        ];
+        List<AccountBalanceCheckpointState> results = [];
         if (!setup.FirstAccountingPeriod.IsOpen && secondAccountingPeriod != null)
         {
             results.Add(new AccountBalanceCheckpointState
             {
                 AccountName = setup.Account.Name,
-                AccountingPeriodYear = secondAccountingPeriod.Year,
-                AccountingPeriodMonth = secondAccountingPeriod.Month,
+                AccountingPeriodKey = secondAccountingPeriod.Key,
                 FundBalances =
                 [
                     new FundAmountState
@@ -126,8 +133,7 @@ public class MultipleAccountingPeriodTests
             results.Add(new AccountBalanceCheckpointState
             {
                 AccountName = setup.Account.Name,
-                AccountingPeriodYear = thirdAccountingPeriod.Year,
-                AccountingPeriodMonth = thirdAccountingPeriod.Month,
+                AccountingPeriodKey = thirdAccountingPeriod.Key,
                 FundBalances =
                 [
                     new FundAmountState

@@ -1,5 +1,6 @@
 using Data;
 using Domain.Actions;
+using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
 using Domain.ValueObjects;
@@ -16,6 +17,7 @@ namespace Rest.Controllers;
 internal sealed class AccountController(
     IUnitOfWork unitOfWork,
     AddAccountAction addAccountAction,
+    IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
     IFundRepository fundRepository) : ControllerBase
 {
@@ -48,7 +50,12 @@ internal sealed class AccountController(
     public async Task<IActionResult> CreateAccountAsync(CreateAccountModel createAccountModel)
     {
         var funds = fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
-        Account newAccount = addAccountAction.Run(createAccountModel.Name, createAccountModel.Type,
+        AccountingPeriod? accountingPeriod = accountingPeriodRepository.FindByExternalIdOrNull(createAccountModel.AccountingPeriodId);
+        if (accountingPeriod == null)
+        {
+            return NotFound();
+        }
+        Account newAccount = addAccountAction.Run(createAccountModel.Name, createAccountModel.Type, accountingPeriod, createAccountModel.Date,
             createAccountModel.StartingFundBalances.Select(fundBalance => new FundAmount
             {
                 Fund = funds[fundBalance.FundId],

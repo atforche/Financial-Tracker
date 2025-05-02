@@ -77,6 +77,7 @@ public class EventDateTests
             [
                 new TransactionBalanceEventState
                 {
+                    AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
                     AccountName = setup.Account.Name,
                     EventDate = new DateOnly(2025, 1, 1),
                     EventSequence = 1,
@@ -85,6 +86,7 @@ public class EventDateTests
                 },
                 new TransactionBalanceEventState
                 {
+                    AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
                     AccountName = setup.Account.Name,
                     EventDate = setup.EventDate,
                     EventSequence = setup.EventDate == new DateOnly(2025, 1, 1) ? 2 : 1,

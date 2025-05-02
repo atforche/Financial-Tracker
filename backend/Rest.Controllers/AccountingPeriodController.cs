@@ -222,8 +222,8 @@ internal sealed class AccountingPeriodController(
             return NotFound();
         }
         FundConversion newFundConversion = _addFundConversionAction.Run(accountingPeriod,
-            account,
             createFundConversionModel.EventDate,
+            account,
             fromFund,
             toFund,
             createFundConversionModel.Amount);

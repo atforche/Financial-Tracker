@@ -131,7 +131,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
         {
             PastAccountingPeriod = addAccountingPeriodAction.Run(2024, 12);
             accountingPeriodRepository.Add(PastAccountingPeriod);
-            Account = CreateAccount();
+            Account = CreateAccount(PastAccountingPeriod);
             if (pastPeriodStatus == AccountingPeriodStatus.Closed)
             {
                 closeAccountingPeriodAction.Run(PastAccountingPeriod);
@@ -140,7 +140,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
         // Create the current Accounting Period
         CurrentAccountingPeriod = addAccountingPeriodAction.Run(2025, 1);
         accountingPeriodRepository.Add(CurrentAccountingPeriod);
-        Account ??= CreateAccount();
+        Account ??= CreateAccount(CurrentAccountingPeriod);
         if (currentPeriodStatus == AccountingPeriodStatus.Closed)
         {
             closeAccountingPeriodAction.Run(CurrentAccountingPeriod);
@@ -160,10 +160,11 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
     /// <summary>
     /// Creates the Account for this test case
     /// </summary>
+    /// <param name="accountingPeriod">Accounting Period to add the Account to</param>
     /// <returns>The Account for this test case</returns>
-    private Account CreateAccount()
+    private Account CreateAccount(AccountingPeriod accountingPeriod)
     {
-        Account account = GetService<AddAccountAction>().Run("Test", AccountType.Standard,
+        Account account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, accountingPeriod, accountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {

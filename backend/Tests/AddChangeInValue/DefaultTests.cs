@@ -29,6 +29,7 @@ public class DefaultTests
         new ChangeInValueValidator().Validate(changeInValue,
             new ChangeInValueState
             {
+                AccountingPeriodKey = setup.AccountingPeriod.Key,
                 AccountName = setup.Account.Name,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,

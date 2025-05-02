@@ -72,7 +72,16 @@ public class AddTransactionAction(
         List<FundAmount> accountingEntries,
         [NotNullWhen(false)] out Exception? exception)
     {
-        if (!new BalanceEventAccountingPeriodValidator(accountingPeriod, transactionDate).Validate(out exception))
+        List<Account> accountsToValidate = [];
+        if (debitAccount != null)
+        {
+            accountsToValidate.Add(debitAccount);
+        }
+        if (creditAccount != null)
+        {
+            accountsToValidate.Add(creditAccount);
+        }
+        if (!new BalanceEventDateValidator(accountingPeriod, accountsToValidate, transactionDate).Validate(out exception))
         {
             return false;
         }

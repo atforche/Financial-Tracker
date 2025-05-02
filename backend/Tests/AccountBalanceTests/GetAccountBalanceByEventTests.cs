@@ -48,7 +48,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         _fundRepository.Add(_testFund);
         _testAccountingPeriod = _addAccountingPeriodAction.Run(2024, 11);
         _accountingPeriodRepository.Add(_testAccountingPeriod);
-        _testAccount = _addAccountAction.Run("Test", AccountType.Standard,
+        _testAccount = _addAccountAction.Run("Test", AccountType.Standard, _testAccountingPeriod, _testAccountingPeriod.PeriodStartDate,
             [
                 new FundAmount()
                 {
@@ -95,8 +95,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = _testAccountingPeriod.Year,
-                    AccountingPeriodMonth = _testAccountingPeriod.Month,
+                    AccountingPeriodKey = _testAccountingPeriod.Key,
                     EventDate = new DateOnly(2024, 11, 10),
                     EventSequence = 1,
                     FundBalances =
@@ -119,8 +118,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = _testAccountingPeriod.Year,
-                    AccountingPeriodMonth = _testAccountingPeriod.Month,
+                    AccountingPeriodKey = _testAccountingPeriod.Key,
                     EventDate = new DateOnly(2024, 11, 15),
                     EventSequence = 1,
                     FundBalances =
@@ -143,8 +141,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = _testAccountingPeriod.Year,
-                    AccountingPeriodMonth = _testAccountingPeriod.Month,
+                    AccountingPeriodKey = _testAccountingPeriod.Key,
                     EventDate = new DateOnly(2024, 11, 20),
                     EventSequence = 1,
                     FundBalances =
@@ -167,8 +164,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = _testAccountingPeriod.Year,
-                    AccountingPeriodMonth = _testAccountingPeriod.Month,
+                    AccountingPeriodKey = _testAccountingPeriod.Key,
                     EventDate = new DateOnly(2024, 11, 25),
                     EventSequence = 1,
                     FundBalances =
@@ -222,8 +218,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = _testAccountingPeriod.Year,
-                    AccountingPeriodMonth = _testAccountingPeriod.Month,
+                    AccountingPeriodKey = _testAccountingPeriod.Key,
                     EventDate = new DateOnly(2024, 11, 10),
                     EventSequence = 1,
                     FundBalances =
@@ -246,8 +241,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = _testAccountingPeriod.Year,
-                    AccountingPeriodMonth = _testAccountingPeriod.Month,
+                    AccountingPeriodKey = _testAccountingPeriod.Key,
                     EventDate = new DateOnly(2024, 11, 15),
                     EventSequence = 1,
                     FundBalances =
@@ -270,8 +264,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = _testAccountingPeriod.Year,
-                    AccountingPeriodMonth = _testAccountingPeriod.Month,
+                    AccountingPeriodKey = _testAccountingPeriod.Key,
                     EventDate = new DateOnly(2024, 11, 20),
                     EventSequence = 1,
                     FundBalances =
@@ -299,8 +292,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = _testAccountingPeriod.Year,
-                    AccountingPeriodMonth = _testAccountingPeriod.Month,
+                    AccountingPeriodKey = _testAccountingPeriod.Key,
                     EventDate = new DateOnly(2024, 11, 25),
                     EventSequence = 1,
                     FundBalances =
@@ -336,7 +328,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         _closeAccountingPeriodAction.Run(_testAccountingPeriod);
         AccountingPeriod secondAccountingPeriod = _addAccountingPeriodAction.Run(2024, 12);
         _accountingPeriodRepository.Add(secondAccountingPeriod);
-        Account secondAccount = _addAccountAction.Run("Test2", AccountType.Standard,
+        Account secondAccount = _addAccountAction.Run("Test2", AccountType.Standard, secondAccountingPeriod, secondAccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
@@ -367,8 +359,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 11,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 11),
                     EventDate = new DateOnly(2024, 12, 15),
                     EventSequence = 1,
                     FundBalances =
@@ -391,8 +382,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 12,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 12),
                     EventDate = new DateOnly(2024, 12, 15),
                     EventSequence = 1,
                     FundBalances =
@@ -415,8 +405,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2025,
-                    AccountingPeriodMonth = 1,
+                    AccountingPeriodKey = new AccountingPeriodKey(2025, 1),
                     EventDate = new DateOnly(2024, 12, 15),
                     EventSequence = 1,
                     FundBalances =
@@ -439,8 +428,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 11,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 11),
                     EventDate = new DateOnly(2024, 12, 20),
                     EventSequence = 1,
                     FundBalances =
@@ -463,8 +451,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 12,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 12),
                     EventDate = new DateOnly(2024, 12, 20),
                     EventSequence = 1,
                     FundBalances =
@@ -487,8 +474,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2025,
-                    AccountingPeriodMonth = 1,
+                    AccountingPeriodKey = new AccountingPeriodKey(2025, 1),
                     EventDate = new DateOnly(2024, 12, 20),
                     EventSequence = 1,
                     FundBalances =
@@ -568,8 +554,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 11,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 11),
                     EventDate = new DateOnly(2024, 11, 30),
                     EventSequence = 1,
                     FundBalances =
@@ -592,8 +577,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 11,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 11),
                     EventDate = new DateOnly(2024, 11, 30),
                     EventSequence = 2,
                     FundBalances =
@@ -609,8 +593,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 12,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 12),
                     EventDate = new DateOnly(2024, 12, 1),
                     EventSequence = 1,
                     FundBalances =
@@ -633,8 +616,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 12,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 11),
                     EventDate = new DateOnly(2024, 12, 1),
                     EventSequence = 2,
                     FundBalances =
@@ -698,8 +680,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 12,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 11),
                     EventDate = new DateOnly(2024, 11, 30),
                     EventSequence = 1,
                     FundBalances =
@@ -722,8 +703,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 12,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 11),
                     EventDate = new DateOnly(2024, 11, 30),
                     EventSequence = 2,
                     FundBalances =
@@ -739,8 +719,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 11,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 11),
                     EventDate = new DateOnly(2024, 12, 1),
                     EventSequence = 1,
                     FundBalances =
@@ -763,8 +742,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 11,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 11),
                     EventDate = new DateOnly(2024, 12, 1),
                     EventSequence = 2,
                     FundBalances =
@@ -829,8 +807,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 12,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 12),
                     EventDate = new DateOnly(2024, 12, 20),
                     EventSequence = 1,
                     FundBalances =
@@ -853,8 +830,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 12,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 12),
                     EventDate = new DateOnly(2024, 12, 25),
                     EventSequence = 1,
                     FundBalances =
@@ -917,8 +893,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 12,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 12),
                     EventDate = new DateOnly(2024, 12, 10),
                     EventSequence = 1,
                     FundBalances =
@@ -941,8 +916,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 12,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 12),
                     EventDate = new DateOnly(2024, 12, 15),
                     EventSequence = 1,
                     FundBalances =
@@ -1005,8 +979,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 11,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 11),
                     EventDate = new DateOnly(2024, 12, 20),
                     EventSequence = 1,
                     FundBalances =
@@ -1029,8 +1002,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 11,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 11),
                     EventDate = new DateOnly(2024, 12, 25),
                     EventSequence = 1,
                     FundBalances =
@@ -1093,8 +1065,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 11,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 11),
                     EventDate = new DateOnly(2024, 12, 10),
                     EventSequence = 1,
                     FundBalances =
@@ -1117,8 +1088,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
                 new AccountBalanceByEventState
                 {
                     AccountName = _testAccount.Name,
-                    AccountingPeriodYear = 2024,
-                    AccountingPeriodMonth = 11,
+                    AccountingPeriodKey = new AccountingPeriodKey(2024, 11),
                     EventDate = new DateOnly(2024, 12, 15),
                     EventSequence = 1,
                     FundBalances =

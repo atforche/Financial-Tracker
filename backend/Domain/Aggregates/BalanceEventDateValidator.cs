@@ -1,14 +1,16 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.Aggregates.AccountingPeriods;
+using Domain.Aggregates.Accounts;
 
 namespace Domain.Aggregates;
 
 /// <summary>
-/// Validator class that validates the Accounting Period and Event Date for a <see cref="BalanceEvent"/>
+/// Validator class that validates the Event Date for a <see cref="BalanceEvent"/>
 /// </summary>
 /// <param name="accountingPeriod">Accounting Period for the Balance Event</param>
+/// <param name="accounts">Accounts for the Balance Event</param>
 /// <param name="eventDate">Event Date for the Balance Event</param>
-internal sealed class BalanceEventAccountingPeriodValidator(AccountingPeriod accountingPeriod, DateOnly eventDate)
+internal sealed class BalanceEventDateValidator(AccountingPeriod accountingPeriod, IEnumerable<Account> accounts, DateOnly eventDate)
 {
     /// <summary>
     /// Validates that the provided Accounting Period and Event Date are valid for a <see cref="BalanceEvent"/>
@@ -32,6 +34,18 @@ internal sealed class BalanceEventAccountingPeriodValidator(AccountingPeriod acc
         if (monthDifference > 1)
         {
             exception ??= new InvalidOperationException();
+        }
+        foreach (Account account in accounts)
+        {
+            // Validate that a balance event can only be added after an Account's Added Balance Event
+            if (eventDate < account.AccountAddedBalanceEvent.EventDate)
+            {
+                exception ??= new InvalidOperationException();
+            }
+            if (accountingPeriod.Key < account.AccountAddedBalanceEvent.AccountingPeriodKey)
+            {
+                exception ??= new InvalidOperationException();
+            }
         }
         return exception == null;
     }

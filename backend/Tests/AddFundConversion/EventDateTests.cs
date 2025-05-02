@@ -34,8 +34,8 @@ public class EventDateTests
     /// <returns>The Fund Conversion that was added for this test case</returns>
     private static FundConversion AddFundConversion(BalanceEventDateScenarioSetup setup) =>
         setup.GetService<AddFundConversionAction>().Run(setup.CurrentAccountingPeriod,
-            setup.Account,
             setup.EventDate,
+            setup.Account,
             setup.Fund,
             setup.OtherFund,
             100.00m);
@@ -48,6 +48,7 @@ public class EventDateTests
     private static FundConversionState GetExpectedState(BalanceEventDateScenarioSetup setup) =>
         new()
         {
+            AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
             AccountName = setup.Account.Name,
             EventDate = setup.EventDate,
             EventSequence = 1,

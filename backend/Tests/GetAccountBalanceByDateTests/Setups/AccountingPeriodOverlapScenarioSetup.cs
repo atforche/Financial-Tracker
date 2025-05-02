@@ -52,7 +52,7 @@ internal sealed class AccountingPeriodOverlapScenarioSetup : ScenarioSetup
         PastAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2024, 12);
         GetService<IAccountingPeriodRepository>().Add(PastAccountingPeriod);
 
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard,
+        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, PastAccountingPeriod, PastAccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {

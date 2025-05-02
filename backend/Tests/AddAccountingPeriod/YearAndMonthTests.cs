@@ -25,10 +25,12 @@ public class YearAndMonthTests
         AccountingPeriod accountingPeriod = new YearAndMonthScenarioSetup(year, month).AccountingPeriod;
         new AccountingPeriodValidator().Validate(accountingPeriod, new AccountingPeriodState
         {
-            Year = year,
-            Month = month,
+            Key = accountingPeriod.Key,
             IsOpen = true,
-            Transactions = []
+            Transactions = [],
+            FundConversions = [],
+            ChangeInValues = [],
+            AccountAddedBalanceEvents = []
         });
     }
 }

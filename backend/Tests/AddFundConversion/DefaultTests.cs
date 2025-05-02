@@ -18,14 +18,15 @@ public class DefaultTests
     {
         var setup = new DefaultScenarioSetup();
         FundConversion fundConversion = setup.GetService<AddFundConversionAction>().Run(setup.AccountingPeriod,
-            setup.Account,
             new DateOnly(2025, 1, 15),
+            setup.Account,
             setup.Fund,
             setup.OtherFund,
             100.00m);
         new FundConversionValidator().Validate(fundConversion,
             new FundConversionState
             {
+                AccountingPeriodKey = setup.AccountingPeriod.Key,
                 AccountName = setup.Account.Name,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,

@@ -60,6 +60,7 @@ public class AccountingPeriodTests
     private static ChangeInValueState GetExpectedState(AccountingPeriodScenarioSetup setup) =>
         new()
         {
+            AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
             AccountName = setup.Account.Name,
             EventDate = new DateOnly(2025, 1, 15),
             EventSequence = 1,

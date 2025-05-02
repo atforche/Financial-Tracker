@@ -1,3 +1,4 @@
+using Domain.Aggregates.Accounts;
 using Domain.ValueObjects;
 
 namespace Domain.Aggregates.AccountingPeriods;
@@ -13,21 +14,27 @@ public class AccountingPeriod : Entity
     private readonly List<Transaction> _transactions = [];
     private readonly List<FundConversion> _fundConversions = [];
     private readonly List<ChangeInValue> _changeInValues = [];
+    private readonly List<AccountAddedBalanceEvent> _accountAddedBalanceEvents = [];
+
+    /// <summary>
+    /// Key for this Accounting Period
+    /// </summary>
+    public AccountingPeriodKey Key { get; private set; }
 
     /// <summary>
     /// Year for this Accounting Period
     /// </summary>
-    public int Year { get; private set; }
+    public int Year => Key.Year;
 
     /// <summary>
     /// Month for this Accounting Period
     /// </summary>
-    public int Month { get; private set; }
+    public int Month => Key.Month;
 
     /// <summary>
     /// Gets the Period Start Date for this Accounting Period
     /// </summary>
-    public DateOnly PeriodStartDate => new(Year, Month, 1);
+    public DateOnly PeriodStartDate => Key.ConvertToDate();
 
     /// <summary>
     /// Is Open flag for this Accounting Period
@@ -55,6 +62,11 @@ public class AccountingPeriod : Entity
     public IReadOnlyCollection<ChangeInValue> ChangeInValues => _changeInValues;
 
     /// <summary>
+    /// Account Added Balance Events for this Accounting Period
+    /// </summary>
+    public IReadOnlyCollection<AccountAddedBalanceEvent> AccountAddedBalanceEvents => _accountAddedBalanceEvents;
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="year">Year for this Accounting Period</param>
@@ -62,8 +74,7 @@ public class AccountingPeriod : Entity
     internal AccountingPeriod(int year, int month)
         : base(new EntityId(default, Guid.NewGuid()))
     {
-        Year = year;
-        Month = month;
+        Key = new AccountingPeriodKey(year, month);
         IsOpen = true;
     }
 
@@ -86,6 +97,13 @@ public class AccountingPeriod : Entity
     internal void AddChangeInValue(ChangeInValue changeInValue) => _changeInValues.Add(changeInValue);
 
     /// <summary>
+    /// Adds a new Account Added Balance Event to this Accounting Period
+    /// </summary>
+    /// <param name="accountAddedBalanceEvent">Account Added Balance Event to add</param>
+    internal void AddAccountAddedBalanceEvent(AccountAddedBalanceEvent accountAddedBalanceEvent) =>
+        _accountAddedBalanceEvents.Add(accountAddedBalanceEvent);
+
+    /// <summary>
     /// Gets the list of all Balance Events for this Accounting Period
     /// </summary>
     /// <returns>The list of all Balance Events for this Accounting Period</returns>
@@ -93,6 +111,7 @@ public class AccountingPeriod : Entity
         Transactions.SelectMany(transaction => (IEnumerable<BalanceEvent>)transaction.TransactionBalanceEvents)
             .Concat(FundConversions)
             .Concat(ChangeInValues)
+            .Concat(AccountAddedBalanceEvents)
             .OrderBy(balanceEvent => balanceEvent.EventDate)
             .ThenBy(balanceEvent => balanceEvent.EventSequence);
 
@@ -100,7 +119,6 @@ public class AccountingPeriod : Entity
     /// Constructs a new default instance of this class
     /// </summary>
     private AccountingPeriod()
-        : base(new EntityId(default, Guid.NewGuid()))
-    {
-    }
+        : base(new EntityId(default, Guid.NewGuid())) =>
+        Key = null!;
 }

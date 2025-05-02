@@ -19,7 +19,7 @@ public class AccountingPeriodTests
     public void RunTest(AccountingPeriodScenario scenario)
     {
         var setup = new AccountingPeriodScenarioSetup(scenario);
-        new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup), GetExpectedState(setup));
+        new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup), GetExpectedState(scenario, setup));
     }
 
     /// <summary>
@@ -33,9 +33,10 @@ public class AccountingPeriodTests
     /// <summary>
     /// Gets the expected state for this test case
     /// </summary>
+    /// <param name="scenario">Scenario for this test case</param>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static AccountBalanceByAccountingPeriodState GetExpectedState(AccountingPeriodScenarioSetup setup)
+    private static AccountBalanceByAccountingPeriodState GetExpectedState(AccountingPeriodScenario scenario, AccountingPeriodScenarioSetup setup)
     {
         List<FundAmountState> expectedFundAmounts = setup.AccountingPeriod.Month == 12
             ? []
@@ -48,9 +49,8 @@ public class AccountingPeriodTests
             ];
         return new AccountBalanceByAccountingPeriodState
         {
-            AccountingPeriodYear = setup.AccountingPeriod.Year,
-            AccountingPeriodMonth = setup.AccountingPeriod.Month,
-            StartingFundBalances = expectedFundAmounts,
+            AccountingPeriodKey = setup.AccountingPeriod.Key,
+            StartingFundBalances = scenario == AccountingPeriodScenario.PeriodAfterAccountWasAdded ? expectedFundAmounts : [],
             EndingFundBalances = expectedFundAmounts,
             EndingPendingFundBalanceChanges = []
         };

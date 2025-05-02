@@ -10,9 +10,8 @@ internal sealed class AccountBalanceByEventValidator : EntityValidator<AccountBa
     /// <inheritdoc/>
     public override void Validate(AccountBalanceByEvent entity, AccountBalanceByEventState expectedState)
     {
+        Assert.Equal(expectedState.AccountingPeriodKey, entity.BalanceEvent.AccountingPeriodKey);
         Assert.Equal(expectedState.AccountName, entity.BalanceEvent.Account.Name);
-        Assert.Equal(expectedState.AccountingPeriodYear, entity.BalanceEvent.AccountingPeriodYear);
-        Assert.Equal(expectedState.AccountingPeriodMonth, entity.BalanceEvent.AccountingPeriodMonth);
         Assert.Equal(expectedState.EventDate, entity.BalanceEvent.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.BalanceEvent.EventSequence);
         new FundAmountValidator().Validate(entity.AccountBalance.FundBalances, expectedState.FundBalances);
@@ -26,19 +25,14 @@ internal sealed class AccountBalanceByEventValidator : EntityValidator<AccountBa
 internal sealed record AccountBalanceByEventState
 {
     /// <summary>
+    /// Accounting Period Key for this Account Balance by Event
+    /// </summary>
+    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
+
+    /// <summary>
     /// Account Name for this Account Balance by Event
     /// </summary>
     public required string AccountName { get; init; }
-
-    /// <summary>
-    /// Accounting Period Year for this Account Balance by Event
-    /// </summary>
-    public required int AccountingPeriodYear { get; init; }
-
-    /// <summary>
-    /// Accounting Period Month for this Account Balance by Event
-    /// </summary>
-    public required int AccountingPeriodMonth { get; init; }
 
     /// <summary>
     /// Event Date for this Account Balance by Event

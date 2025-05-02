@@ -119,11 +119,8 @@ public class Transaction : Entity
     /// <param name="postedStatementDate">Posted statement date for this Transaction in the provided Account</param>
     private void ValidatePosting(TransactionAccountType accountType, DateOnly postedStatementDate)
     {
-        if (GetAccount(accountType) == null)
-        {
-            throw new InvalidOperationException();
-        }
-        if (!new BalanceEventAccountingPeriodValidator(AccountingPeriod, postedStatementDate).Validate(out Exception? exception))
+        Account? account = GetAccount(accountType) ?? throw new InvalidOperationException();
+        if (!new BalanceEventDateValidator(AccountingPeriod, [account], postedStatementDate).Validate(out Exception? exception))
         {
             throw exception;
         }

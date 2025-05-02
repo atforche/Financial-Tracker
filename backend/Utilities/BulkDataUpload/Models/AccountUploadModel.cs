@@ -33,6 +33,8 @@ internal sealed class AccountUploadModel
     {
         Name = Name,
         Type = Type,
+        AccountingPeriodId = Guid.Empty,
+        Date = DateOnly.MinValue,
         StartingFundBalances = StartingFundBalances
             .Select(fundAmount => fundAmount.GetAsCreateFundAmountModel(existingFunds)).ToList(),
     };

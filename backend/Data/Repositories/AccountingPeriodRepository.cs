@@ -50,6 +50,8 @@ public class AccountingPeriodRepository(DatabaseContext context) : AggregateRepo
                 accountingPeriod.FundConversions
                     .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()) ||
                 accountingPeriod.ChangeInValues
+                    .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()) ||
+                accountingPeriod.AccountAddedBalanceEvents
                     .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()))
             .ToList();
     }

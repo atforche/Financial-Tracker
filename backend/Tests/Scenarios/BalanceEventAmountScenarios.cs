@@ -121,7 +121,7 @@ internal class BalanceEventAmountScenarioSetup : ScenarioSetup
         _futureAccountingPeriod = addAccountingPeriodAction.Run(2025, 2);
         accountingPeriodRepository.Add(_futureAccountingPeriod);
 
-        Account = GetService<AddAccountAction>().Run("Test", accountType,
+        Account = GetService<AddAccountAction>().Run("Test", accountType, AccountingPeriod, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {

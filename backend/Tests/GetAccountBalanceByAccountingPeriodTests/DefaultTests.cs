@@ -33,21 +33,8 @@ public class DefaultTests
             setup.GetService<IAccountBalanceService>().GetAccountBalancesByAccountingPeriod(setup.Account, setup.AccountingPeriod),
             new AccountBalanceByAccountingPeriodState
             {
-                AccountingPeriodYear = 2025,
-                AccountingPeriodMonth = 1,
-                StartingFundBalances =
-                [
-                    new FundAmountState
-                    {
-                        FundName = setup.Fund.Name,
-                        Amount = 1500.00m,
-                    },
-                    new FundAmountState
-                    {
-                        FundName = setup.OtherFund.Name,
-                        Amount = 1500.00m,
-                    }
-                ],
+                AccountingPeriodKey = new AccountingPeriodKey(2025, 1),
+                StartingFundBalances = [],
                 EndingFundBalances =
                 [
                     new FundAmountState

@@ -47,7 +47,7 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
 
         AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard,
+        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
@@ -94,8 +94,8 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
         if (scenario is BalanceEventScenario.FundConversion)
         {
             GetService<AddFundConversionAction>().Run(AccountingPeriod,
-                Account,
                 new DateOnly(2025, 1, 15),
+                Account,
                 Fund,
                 OtherFund,
                 250.00m);

@@ -30,7 +30,7 @@ public class AddChangeInValueAction(
         Account account,
         FundAmount accountingEntry)
     {
-        if (!IsValid(accountingPeriod, eventDate, accountingEntry, out Exception? exception))
+        if (!IsValid(accountingPeriod, eventDate, account, accountingEntry, out Exception? exception))
         {
             throw exception;
         }
@@ -49,15 +49,17 @@ public class AddChangeInValueAction(
     /// <param name="accountingPeriod">Accounting Period for the Change in Value</param>
     /// <param name="eventDate">Event Date for the Change in Value</param>
     /// <param name="accountingEntry">Accounting Entry for the Change in Value</param>
+    /// <param name="account">Account for the Change in Value</param>
     /// <param name="exception">Exception encountered during validation</param>
     /// <returns>True if this action is valid to run, false otherwise</returns>
     private static bool IsValid(
         AccountingPeriod accountingPeriod,
         DateOnly eventDate,
+        Account account,
         FundAmount accountingEntry,
         [NotNullWhen(false)] out Exception? exception)
     {
-        if (!new BalanceEventAccountingPeriodValidator(accountingPeriod, eventDate).Validate(out exception))
+        if (!new BalanceEventDateValidator(accountingPeriod, [account], eventDate).Validate(out exception))
         {
             return false;
         }

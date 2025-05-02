@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.Aggregates;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.ValueObjects;
@@ -17,17 +18,23 @@ public class AddAccountAction(IAccountRepository accountRepository, IAccountingP
     /// </summary>
     /// <param name="name">Name for the Account</param>
     /// <param name="type">Type for the Account</param>
-    /// <param name="startingFundBalances">Starting Fund Balances for the Account</param>
+    /// <param name="accountingPeriod">First Accounting Period for this Account</param>
+    /// <param name="date">First Date for this Account</param>
+    /// <param name="startingFundBalances">Starting Fund Balances for this Account</param>
     /// <returns>The Account that was added</returns>
-    public Account Run(string name, AccountType type, IEnumerable<FundAmount> startingFundBalances)
+    public Account Run(
+        string name,
+        AccountType type,
+        AccountingPeriod accountingPeriod,
+        DateOnly date,
+        IEnumerable<FundAmount> startingFundBalances)
     {
-        if (!IsValid(name, out Exception? exception))
+        if (!IsValid(name, accountingPeriod, date, out Exception? exception))
         {
             throw exception;
         }
-        var newAccount = new Account(name, type);
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindOpenPeriods().First();
-        newAccount.AddAccountBalanceCheckpoint(accountingPeriod, startingFundBalances);
+        var newAccount = new Account(name, type, accountingPeriod, date, startingFundBalances);
+        accountingPeriod.AddAccountAddedBalanceEvent(newAccount.AccountAddedBalanceEvent);
         return newAccount;
     }
 
@@ -35,12 +42,20 @@ public class AddAccountAction(IAccountRepository accountRepository, IAccountingP
     /// Determines if this action is valid to run
     /// </summary>
     /// <param name="name">Name for the Account</param>
+    /// <param name="accountingPeriod">First Accounting Period for this Account</param>
+    /// <param name="date">First Date for this Account</param>
     /// <param name="exception">Exception encountered during validation</param>
     /// <returns>True if this action is valid to run, false otherwise</returns>
-    private bool IsValid(string name, [NotNullWhen(false)] out Exception? exception)
+    private bool IsValid(string name, AccountingPeriod accountingPeriod, DateOnly date, [NotNullWhen(false)] out Exception? exception)
     {
-        exception = null;
-
+        if (!new BalanceEventDateValidator(accountingPeriod, [], date).Validate(out exception))
+        {
+            return false;
+        }
+        if (string.IsNullOrEmpty(name))
+        {
+            throw new InvalidOperationException();
+        }
         if (accountRepository.FindByNameOrNull(name) != null)
         {
             exception = new InvalidOperationException();

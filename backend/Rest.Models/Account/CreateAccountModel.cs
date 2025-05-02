@@ -14,6 +14,12 @@ public class CreateAccountModel
     /// <inheritdoc cref="Domain.Aggregates.Accounts.Account.Type"/>
     public required AccountType Type { get; init; }
 
+    /// <inheritdoc cref="Domain.Aggregates.BalanceEvent.AccountingPeriodKey"/>
+    public required Guid AccountingPeriodId { get; init; }
+
+    /// <inheritdoc cref="Domain.Aggregates.BalanceEvent.EventDate"/>
+    public required DateOnly Date { get; init; }
+
     /// <summary>
     /// Starting Fund Balances for this Account 
     /// </summary>

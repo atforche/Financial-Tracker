@@ -1,4 +1,5 @@
 using Domain.Aggregates.AccountingPeriods;
+using Domain.ValueObjects;
 
 namespace Tests.Validators;
 
@@ -11,6 +12,7 @@ internal sealed class ChangeInValueValidator : EntityValidator<ChangeInValue, Ch
     public override void Validate(ChangeInValue entity, ChangeInValueState expectedState)
     {
         Assert.NotEqual(Guid.Empty, entity.Id.ExternalId);
+        Assert.Equal(expectedState.AccountingPeriodKey, entity.AccountingPeriodKey);
         Assert.Equal(expectedState.AccountName, entity.Account.Name);
         Assert.Equal(expectedState.EventDate, entity.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.EventSequence);
@@ -23,6 +25,11 @@ internal sealed class ChangeInValueValidator : EntityValidator<ChangeInValue, Ch
 /// </summary>
 internal sealed record ChangeInValueState
 {
+    /// <summary>
+    /// Accounting Period Key for this Change In Value
+    /// </summary>
+    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
+
     /// <summary>
     /// Account Name for this Change In Value
     /// </summary>

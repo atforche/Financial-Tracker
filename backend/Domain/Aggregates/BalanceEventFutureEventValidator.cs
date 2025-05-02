@@ -50,9 +50,11 @@ internal sealed class BalanceEventFutureEventValidator(
 
         // Validate that adding this Balance Event doesn't cause the balance of this Account within the
         // Accounting Period to become invalid
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindByDate(new DateOnly(newBalanceEvent.AccountingPeriodYear, newBalanceEvent.AccountingPeriodMonth, 1));
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindByDate(newBalanceEvent.AccountingPeriodKey.ConvertToDate());
         runningBalance = accountBalanceService.GetAccountBalancesByAccountingPeriod(newBalanceEvent.Account, accountingPeriod).StartingBalance;
-        foreach (BalanceEvent balanceEvent in accountingPeriod.GetAllBalanceEvents().Concat([newBalanceEvent]).Order())
+        foreach (BalanceEvent balanceEvent in accountingPeriod.GetAllBalanceEvents()
+                    .Where(balanceEvent => balanceEvent.Account == newBalanceEvent.Account)
+                    .Concat([newBalanceEvent]).Order())
         {
             if (!balanceEvent.CanBeAppliedToBalance(runningBalance))
             {

@@ -39,7 +39,7 @@ internal sealed class MultipleAccountingPeriodScenarioSetup : ScenarioSetup
         GetService<IFundRepository>().Add(Fund);
         FirstAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(firstPeriod.Year, firstPeriod.Month);
         GetService<IAccountingPeriodRepository>().Add(FirstAccountingPeriod);
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard,
+        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, FirstAccountingPeriod, FirstAccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {

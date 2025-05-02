@@ -1,6 +1,9 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
+using Domain.Services;
+using Domain.ValueObjects;
 using Tests.Scenarios;
 
 namespace Tests.Setups;
@@ -46,28 +49,31 @@ internal sealed class BalanceEventDateScenarioSetup : ScenarioSetup
     {
         EventDate = eventDate;
 
-        var accountingPeriodSetup = new AccountingPeriodScenarioSetup(AccountingPeriodStatus.Closed,
-            AccountingPeriodStatus.Open,
-            AccountingPeriodStatus.Open);
-        Fund = accountingPeriodSetup.Fund;
+        Fund = GetService<IFundService>().CreateNewFund("Test");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = accountingPeriodSetup.OtherFund;
+        OtherFund = GetService<IFundService>().CreateNewFund("OtherTest");
         GetService<IFundRepository>().Add(OtherFund);
-        Account = accountingPeriodSetup.Account;
-        GetService<IAccountRepository>().Add(Account);
 
-        IAccountingPeriodRepository accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
-        _pastAccountingPeriod = accountingPeriodSetup.PastAccountingPeriod;
-        if (_pastAccountingPeriod != null)
-        {
-            accountingPeriodRepository.Add(_pastAccountingPeriod);
-        }
-        CurrentAccountingPeriod = accountingPeriodSetup.CurrentAccountingPeriod;
-        accountingPeriodRepository.Add(CurrentAccountingPeriod);
-        _futureAccountingPeriod = accountingPeriodSetup.FutureAccountingPeriod;
-        if (_futureAccountingPeriod != null)
-        {
-            accountingPeriodRepository.Add(_futureAccountingPeriod);
-        }
+        _pastAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2024, 12);
+        GetService<IAccountingPeriodRepository>().Add(_pastAccountingPeriod);
+        CurrentAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
+        GetService<IAccountingPeriodRepository>().Add(CurrentAccountingPeriod);
+        _futureAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
+        GetService<IAccountingPeriodRepository>().Add(_futureAccountingPeriod);
+
+        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, CurrentAccountingPeriod, _pastAccountingPeriod.PeriodStartDate.AddDays(14),
+            [
+                new FundAmount
+                {
+                    Fund = Fund,
+                    Amount = 1500.00m,
+                },
+                new FundAmount
+                {
+                    Fund = OtherFund,
+                    Amount = 1500.00m,
+                }
+            ]);
+        GetService<IAccountRepository>().Add(Account);
     }
 }

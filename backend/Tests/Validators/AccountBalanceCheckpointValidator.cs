@@ -1,4 +1,5 @@
 using Domain.Aggregates.Accounts;
+using Domain.ValueObjects;
 
 namespace Tests.Validators;
 
@@ -12,6 +13,7 @@ internal sealed class AccountBalanceCheckpointValidator : EntityValidator<Accoun
     {
         Assert.NotEqual(Guid.Empty, entity.Id.ExternalId);
         Assert.Equal(expectedState.AccountName, entity.Account.Name);
+        Assert.Equal(expectedState.AccountingPeriodKey, entity.AccountingPeriodKey);
         new FundAmountValidator().Validate(entity.FundBalances, expectedState.FundBalances);
     }
 }
@@ -27,14 +29,9 @@ internal sealed record AccountBalanceCheckpointState
     public required string AccountName { get; init; }
 
     /// <summary>
-    /// Accounting Period Year for this Account Balance Checkpoint
+    /// Accounting Period Key for this Account Balance Checkpoint
     /// </summary>
-    public required int AccountingPeriodYear { get; init; }
-
-    /// <summary>
-    /// Accounting Period Month for this Account Balance Checkpoint
-    /// </summary>
-    public required int AccountingPeriodMonth { get; init; }
+    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
 
     /// <summary>
     /// Fund Balances for this Account Balance Checkpoint

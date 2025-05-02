@@ -67,6 +67,7 @@ public class EventDateTests
             [
                 new TransactionBalanceEventState
                 {
+                    AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
                     AccountName = setup.Account.Name,
                     EventDate = setup.EventDate,
                     EventSequence = 1,

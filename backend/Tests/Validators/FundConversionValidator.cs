@@ -1,4 +1,5 @@
 using Domain.Aggregates.AccountingPeriods;
+using Domain.ValueObjects;
 
 namespace Tests.Validators;
 
@@ -11,6 +12,7 @@ internal sealed class FundConversionValidator : EntityValidator<FundConversion, 
     public override void Validate(FundConversion entity, FundConversionState expectedState)
     {
         Assert.NotEqual(Guid.Empty, entity.Id.ExternalId);
+        Assert.Equal(expectedState.AccountingPeriodKey, entity.AccountingPeriodKey);
         Assert.Equal(expectedState.AccountName, entity.Account.Name);
         Assert.Equal(expectedState.EventDate, entity.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.EventSequence);
@@ -25,6 +27,11 @@ internal sealed class FundConversionValidator : EntityValidator<FundConversion, 
 /// </summary>
 internal sealed record FundConversionState
 {
+    /// <summary>
+    /// Accounting Period Key for this Fund Conversion
+    /// </summary>
+    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
+
     /// <summary>
     /// Account Name for this Fund Conversion
     /// </summary>

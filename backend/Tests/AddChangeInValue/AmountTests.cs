@@ -67,6 +67,7 @@ public class AmountTests
     private static ChangeInValueState GetExpectedState(BalanceEventAmountScenarioSetup setup) =>
         new()
         {
+            AccountingPeriodKey = setup.AccountingPeriod.Key,
             AccountName = setup.Account.Name,
             EventDate = new DateOnly(2025, 1, 10),
             EventSequence = 1,

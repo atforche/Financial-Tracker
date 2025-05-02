@@ -10,14 +10,9 @@ namespace Domain.Aggregates;
 public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
 {
     /// <summary>
-    /// Accounting Period Year for this Balance Event
+    /// Accounting Period Key for this Balance Event
     /// </summary>
-    public int AccountingPeriodYear { get; private set; }
-
-    /// <summary>
-    /// Accounting Period Month for this Balance Event
-    /// </summary>
-    public int AccountingPeriodMonth { get; private set; }
+    public AccountingPeriodKey AccountingPeriodKey { get; private set; }
 
     /// <summary>
     /// Account for this Balance Event
@@ -76,8 +71,7 @@ public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
     protected BalanceEvent(AccountingPeriod accountingPeriod, Account account, DateOnly eventDate, int sequenceOffset = 0)
         : base(new EntityId(default, Guid.NewGuid()))
     {
-        AccountingPeriodYear = accountingPeriod.Year;
-        AccountingPeriodMonth = accountingPeriod.Month;
+        AccountingPeriodKey = accountingPeriod.Key;
         Account = account;
         EventDate = eventDate;
         EventSequence = GetNextEventSequenceForDate(accountingPeriod, eventDate) + sequenceOffset;
@@ -86,7 +80,12 @@ public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    protected BalanceEvent() : base(new EntityId(default, Guid.NewGuid())) => Account = null!;
+    protected BalanceEvent()
+        : base(new EntityId(default, Guid.NewGuid()))
+    {
+        AccountingPeriodKey = null!;
+        Account = null!;
+    }
 
     /// <summary>
     /// Gets the next Balance Event sequence for the provided date
@@ -118,13 +117,9 @@ public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
         {
             return EventDate.CompareTo(other.EventDate);
         }
-        if (AccountingPeriodYear != other.AccountingPeriodYear)
+        if (AccountingPeriodKey != other.AccountingPeriodKey)
         {
-            return AccountingPeriodYear.CompareTo(other.AccountingPeriodYear);
-        }
-        if (AccountingPeriodMonth != other.AccountingPeriodMonth)
-        {
-            return AccountingPeriodMonth.CompareTo(other.AccountingPeriodMonth);
+            return AccountingPeriodKey.CompareTo(other.AccountingPeriodKey);
         }
         return EventSequence.CompareTo(other.EventSequence);
     }
@@ -151,7 +146,7 @@ public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
     public override bool Equals(object? obj) => obj is BalanceEvent otherBalanceEvent && CompareTo(otherBalanceEvent) == 0;
 
     /// <inheritdoc/>
-    public override int GetHashCode() => HashCode.Combine(AccountingPeriodYear, AccountingPeriodMonth, EventDate, EventSequence);
+    public override int GetHashCode() => HashCode.Combine(AccountingPeriodKey, EventDate, EventSequence);
 
     #endregion
 }
