@@ -24,20 +24,6 @@ public class Fund : Entity
     /// </summary>
     /// <param name="name">Name for this Fund</param>
     internal Fund(string name)
-        : base(new EntityId(default, Guid.NewGuid()))
-    {
+        : base(new EntityId(default, Guid.NewGuid())) =>
         Name = name;
-        Validate();
-    }
-
-    /// <summary>
-    /// Validates the current Fund
-    /// </summary>
-    private void Validate()
-    {
-        if (string.IsNullOrEmpty(Name))
-        {
-            throw new InvalidOperationException();
-        }
-    }
 }

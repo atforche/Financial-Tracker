@@ -3,7 +3,6 @@ using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Setups;
 
@@ -107,12 +106,10 @@ internal class BalanceEventAmountScenarioSetup : ScenarioSetup
     /// <param name="accountType">Account Type for this Setup</param>
     public BalanceEventAmountScenarioSetup(BalanceEventAmountScenario scenario, AccountType accountType = AccountType.Standard)
     {
-        IFundService fundService = GetService<IFundService>();
-        IFundRepository fundRepository = GetService<IFundRepository>();
-        Fund = fundService.CreateNewFund("Test");
-        fundRepository.Add(Fund);
-        OtherFund = fundService.CreateNewFund("Test2");
-        fundRepository.Add(OtherFund);
+        Fund = GetService<AddFundAction>().Run("Test");
+        GetService<IFundRepository>().Add(Fund);
+        OtherFund = GetService<AddFundAction>().Run("Test2");
+        GetService<IFundRepository>().Add(OtherFund);
 
         AddAccountingPeriodAction addAccountingPeriodAction = GetService<AddAccountingPeriodAction>();
         IAccountingPeriodRepository accountingPeriodRepository = GetService<IAccountingPeriodRepository>();

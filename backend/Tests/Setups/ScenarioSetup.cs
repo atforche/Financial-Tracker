@@ -32,7 +32,7 @@ internal abstract class ScenarioSetup
         serviceCollection.AddScoped<AddFundConversionAction>();
         serviceCollection.AddScoped<IAccountBalanceService, AccountBalanceService>();
         serviceCollection.AddScoped<AddAccountAction>();
-        serviceCollection.AddScoped<IFundService, FundService>();
+        serviceCollection.AddScoped<AddFundAction>();
         _serviceProvider = serviceCollection.BuildServiceProvider();
     }
 

@@ -20,7 +20,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
     private readonly IAccountRepository _accountRepository;
     private readonly AddAccountAction _addAccountAction;
     private readonly IFundRepository _fundRepository;
-    private readonly IFundService _fundService;
+    private readonly AddFundAction _addFundAction;
     private readonly IAccountBalanceService _accountBalanceService;
 
     private readonly Fund _testFund;
@@ -40,11 +40,11 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         _accountRepository = GetService<IAccountRepository>();
         _addAccountAction = GetService<AddAccountAction>();
         _fundRepository = GetService<IFundRepository>();
-        _fundService = GetService<IFundService>();
+        _addFundAction = GetService<AddFundAction>();
         _accountBalanceService = GetService<IAccountBalanceService>();
 
         // Setup shared by all tests
-        _testFund = _fundService.CreateNewFund("Test");
+        _testFund = _addFundAction.Run("Test");
         _fundRepository.Add(_testFund);
         _testAccountingPeriod = _addAccountingPeriodAction.Run(2024, 11);
         _accountingPeriodRepository.Add(_testAccountingPeriod);
@@ -186,7 +186,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
     [Fact]
     public void TestWithMultipleFunds()
     {
-        Fund secondFund = _fundService.CreateNewFund("Test2");
+        Fund secondFund = _addFundAction.Run("Test2");
 
         Transaction debitTransaction = _addTransactionAction.Run(_testAccountingPeriod,
             new DateOnly(2024, 11, 10),

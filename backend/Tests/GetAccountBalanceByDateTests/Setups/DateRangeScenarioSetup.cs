@@ -2,7 +2,6 @@ using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.GetAccountBalanceByDateTests.Scenarios;
 using Tests.Setups;
@@ -35,7 +34,7 @@ internal sealed class DateRangeScenarioSetup : ScenarioSetup
     /// <param name="scenario">Scenario for this test case</param>
     public DateRangeScenarioSetup(DateRangeScenario scenario)
     {
-        Fund = GetService<IFundService>().CreateNewFund("Test");
+        Fund = GetService<AddFundAction>().Run("Test");
         GetService<IFundRepository>().Add(Fund);
 
         AccountingPeriod firstAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2024, 12);

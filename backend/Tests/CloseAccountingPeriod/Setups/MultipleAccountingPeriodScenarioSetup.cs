@@ -2,7 +2,6 @@ using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.CloseAccountingPeriod.Scenarios;
 using Tests.Setups;
@@ -34,7 +33,7 @@ internal sealed class MultipleAccountingPeriodScenarioSetup : ScenarioSetup
     /// </summary>
     public MultipleAccountingPeriodScenarioSetup()
     {
-        Fund = GetService<IFundService>().CreateNewFund("Test");
+        Fund = GetService<AddFundAction>().Run("Test");
         GetService<IFundRepository>().Add(Fund);
 
         // Grab the valid setup for adding multiple Accounting Periods

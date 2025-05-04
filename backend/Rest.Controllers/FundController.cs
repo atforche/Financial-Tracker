@@ -1,6 +1,6 @@
 using Data;
+using Domain.Actions;
 using Domain.Aggregates.Funds;
-using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 using Rest.Models.Fund;
 
@@ -11,19 +11,15 @@ namespace Rest.Controllers;
 /// </summary>
 [ApiController]
 [Route("/funds")]
-internal sealed class FundController(IUnitOfWork unitOfWork, IFundService fundService, IFundRepository fundRepository) : ControllerBase
+internal sealed class FundController(IUnitOfWork unitOfWork, AddFundAction addFundAction, IFundRepository fundRepository) : ControllerBase
 {
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
-    private readonly IFundService _fundService = fundService;
-    private readonly IFundRepository _fundRepository = fundRepository;
-
     /// <summary>
     /// Retrieves all the Funds from the database
     /// </summary>
     /// <returns>A collection of all Funds</returns>
     [HttpGet("")]
     public IReadOnlyCollection<FundModel> GetAllFunds() =>
-        _fundRepository.FindAll().Select(fund => new FundModel(fund)).ToList();
+        fundRepository.FindAll().Select(fund => new FundModel(fund)).ToList();
 
     /// <summary>
     /// Retrieves the Fund that matches the provided ID
@@ -33,7 +29,7 @@ internal sealed class FundController(IUnitOfWork unitOfWork, IFundService fundSe
     [HttpGet("{fundId}")]
     public IActionResult GetFund(Guid fundId)
     {
-        Fund? fund = _fundRepository.FindByExternalIdOrNull(fundId);
+        Fund? fund = fundRepository.FindByExternalIdOrNull(fundId);
         return fund != null ? Ok(new FundModel(fund)) : NotFound();
     }
 
@@ -45,9 +41,9 @@ internal sealed class FundController(IUnitOfWork unitOfWork, IFundService fundSe
     [HttpPost("")]
     public async Task<IActionResult> CreateFundAsync(CreateFundModel createFundModel)
     {
-        Fund newFund = _fundService.CreateNewFund(createFundModel.Name);
-        _fundRepository.Add(newFund);
-        await _unitOfWork.SaveChangesAsync();
+        Fund newFund = addFundAction.Run(createFundModel.Name);
+        fundRepository.Add(newFund);
+        await unitOfWork.SaveChangesAsync();
         return Ok(new FundModel(newFund));
     }
 }

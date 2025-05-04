@@ -2,7 +2,6 @@ using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.CloseAccountingPeriod.Scenarios;
 using Tests.Setups;
@@ -40,9 +39,9 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
     /// <param name="scenario">Scenario for this test case</param>
     public BalanceEventScenarioSetup(BalanceEventScenario scenario)
     {
-        Fund = GetService<IFundService>().CreateNewFund("Test");
+        Fund = GetService<AddFundAction>().Run("Test");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<IFundService>().CreateNewFund("Test2");
+        OtherFund = GetService<AddFundAction>().Run("Test2");
         GetService<IFundRepository>().Add(OtherFund);
 
         AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);

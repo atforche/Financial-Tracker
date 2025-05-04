@@ -30,7 +30,7 @@ public abstract class UnitTestBase
         serviceCollection.AddScoped<AddTransactionAction>();
         serviceCollection.AddScoped<IAccountBalanceService, AccountBalanceService>();
         serviceCollection.AddScoped<AddAccountAction>();
-        serviceCollection.AddScoped<IFundService, FundService>();
+        serviceCollection.AddScoped<AddFundAction>();
         _serviceProvider = serviceCollection.BuildServiceProvider();
     }
 

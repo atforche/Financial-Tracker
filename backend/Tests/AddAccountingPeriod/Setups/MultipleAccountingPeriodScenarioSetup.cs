@@ -2,7 +2,6 @@ using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.AddAccountingPeriod.Scenarios;
 using Tests.Setups;
@@ -35,7 +34,7 @@ internal sealed class MultipleAccountingPeriodScenarioSetup : ScenarioSetup
     /// <param name="firstPeriod">First Period for this test case</param>
     public MultipleAccountingPeriodScenarioSetup(DateOnly firstPeriod)
     {
-        Fund = GetService<IFundService>().CreateNewFund("Test");
+        Fund = GetService<AddFundAction>().Run("Test");
         GetService<IFundRepository>().Add(Fund);
         FirstAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(firstPeriod.Year, firstPeriod.Month);
         GetService<IAccountingPeriodRepository>().Add(FirstAccountingPeriod);

@@ -2,7 +2,6 @@ using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.GetAccountBalanceByAccountingPeriodTests.Scenarios;
 using Tests.Setups;
@@ -45,7 +44,7 @@ internal sealed class AccountingPeriodOverlapScenarioSetup : ScenarioSetup
     /// <param name="eventDate">Event Date for this test case</param>
     public AccountingPeriodOverlapScenarioSetup(DateOnly eventDate)
     {
-        Fund = GetService<IFundService>().CreateNewFund("Test");
+        Fund = GetService<AddFundAction>().Run("Test");
         GetService<IFundRepository>().Add(Fund);
 
         PastAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2024, 12);
