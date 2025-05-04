@@ -6,7 +6,7 @@ namespace Data.Configuration;
 /// <summary>
 /// EF Core configuration for the Fund entity
 /// </summary>
-internal sealed class FundEntityConfiguration : EntityConfigurationBase<Fund>
+internal sealed class FundEntityConfiguration : EntityConfiguration<Fund>
 {
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<Fund> builder) =>

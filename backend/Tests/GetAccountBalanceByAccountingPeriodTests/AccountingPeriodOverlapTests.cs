@@ -1,3 +1,4 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Services;
 using Domain.ValueObjects;
@@ -23,19 +24,19 @@ public class AccountingPeriodOverlapTests
 
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.PastAccountingPeriod),
             GetExpectedState(setup, setup.PastAccountingPeriod));
-        setup.GetService<IAccountingPeriodService>().ClosePeriod(setup.PastAccountingPeriod);
+        setup.GetService<CloseAccountingPeriodAction>().Run(setup.PastAccountingPeriod);
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.PastAccountingPeriod),
             GetExpectedState(setup, setup.PastAccountingPeriod));
 
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.CurrentAccountingPeriod),
             GetExpectedState(setup, setup.CurrentAccountingPeriod));
-        setup.GetService<IAccountingPeriodService>().ClosePeriod(setup.CurrentAccountingPeriod);
+        setup.GetService<CloseAccountingPeriodAction>().Run(setup.CurrentAccountingPeriod);
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.CurrentAccountingPeriod),
             GetExpectedState(setup, setup.CurrentAccountingPeriod));
 
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.FutureAccountingPeriod),
             GetExpectedState(setup, setup.FutureAccountingPeriod));
-        setup.GetService<IAccountingPeriodService>().ClosePeriod(setup.FutureAccountingPeriod);
+        setup.GetService<CloseAccountingPeriodAction>().Run(setup.FutureAccountingPeriod);
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.FutureAccountingPeriod),
             GetExpectedState(setup, setup.FutureAccountingPeriod));
     }
@@ -49,7 +50,7 @@ public class AccountingPeriodOverlapTests
     private static AccountBalanceByAccountingPeriod GetAccountBalance(
         AccountingPeriodOverlapScenarioSetup setup,
         AccountingPeriod accountingPeriod) =>
-        setup.GetService<IAccountBalanceService>().GetAccountBalancesByAccountingPeriod(setup.Account, accountingPeriod);
+        setup.GetService<AccountBalanceService>().GetAccountBalancesByAccountingPeriod(setup.Account, accountingPeriod);
 
     /// <summary>
     /// Gets the expected state for this test case and Accounting Period
@@ -59,21 +60,23 @@ public class AccountingPeriodOverlapTests
     /// <returns>The expected state for this test case and Accounting Period</returns>
     private static AccountBalanceByAccountingPeriodState GetExpectedState(
         AccountingPeriodOverlapScenarioSetup setup,
-        AccountingPeriod accountingPeriod) =>
-        new()
+        AccountingPeriod accountingPeriod)
+    {
+        List<FundAmountState> expectedStartingFundBalances = [];
+        if (accountingPeriod != setup.PastAccountingPeriod)
         {
-            AccountingPeriodYear = accountingPeriod.Year,
-            AccountingPeriodMonth = accountingPeriod.Month,
-            StartingFundBalances =
-            [
-                new FundAmountState
-                {
-                    FundName = setup.Fund.Name,
-                    Amount = accountingPeriod == setup.FutureAccountingPeriod
-                        ? 1250.00m
-                        : 1500.00m
-                }
-            ],
+            expectedStartingFundBalances.Add(new FundAmountState
+            {
+                FundName = setup.Fund.Name,
+                Amount = accountingPeriod == setup.FutureAccountingPeriod
+                    ? 1250.00m
+                    : 1500.00m
+            });
+        }
+        return new AccountBalanceByAccountingPeriodState()
+        {
+            AccountingPeriodKey = accountingPeriod.Key,
+            StartingFundBalances = expectedStartingFundBalances,
             EndingFundBalances =
             [
                 new FundAmountState
@@ -86,4 +89,5 @@ public class AccountingPeriodOverlapTests
             ],
             EndingPendingFundBalanceChanges = []
         };
+    }
 }

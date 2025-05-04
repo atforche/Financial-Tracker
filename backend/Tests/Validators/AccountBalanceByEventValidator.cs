@@ -5,14 +5,13 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates the provided Account Balance by Event matches the expected state
 /// </summary>
-internal sealed class AccountBalanceByEventValidator : EntityValidatorBase<AccountBalanceByEvent, AccountBalanceByEventState>
+internal sealed class AccountBalanceByEventValidator : EntityValidator<AccountBalanceByEvent, AccountBalanceByEventState>
 {
     /// <inheritdoc/>
     public override void Validate(AccountBalanceByEvent entity, AccountBalanceByEventState expectedState)
     {
+        Assert.Equal(expectedState.AccountingPeriodKey, entity.BalanceEvent.AccountingPeriodKey);
         Assert.Equal(expectedState.AccountName, entity.BalanceEvent.Account.Name);
-        Assert.Equal(expectedState.AccountingPeriodYear, entity.BalanceEvent.AccountingPeriod.Year);
-        Assert.Equal(expectedState.AccountingPeriodMonth, entity.BalanceEvent.AccountingPeriod.Month);
         Assert.Equal(expectedState.EventDate, entity.BalanceEvent.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.BalanceEvent.EventSequence);
         new FundAmountValidator().Validate(entity.AccountBalance.FundBalances, expectedState.FundBalances);
@@ -26,19 +25,14 @@ internal sealed class AccountBalanceByEventValidator : EntityValidatorBase<Accou
 internal sealed record AccountBalanceByEventState
 {
     /// <summary>
+    /// Accounting Period Key for this Account Balance by Event
+    /// </summary>
+    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
+
+    /// <summary>
     /// Account Name for this Account Balance by Event
     /// </summary>
     public required string AccountName { get; init; }
-
-    /// <summary>
-    /// Accounting Period Year for this Account Balance by Event
-    /// </summary>
-    public required int AccountingPeriodYear { get; init; }
-
-    /// <summary>
-    /// Accounting Period Month for this Account Balance by Event
-    /// </summary>
-    public required int AccountingPeriodMonth { get; init; }
 
     /// <summary>
     /// Event Date for this Account Balance by Event

@@ -5,7 +5,7 @@ namespace Domain.Aggregates;
 /// <summary>
 /// Base class shared by all Entities
 /// </summary>
-public abstract class EntityBase(EntityId id) : IEquatable<EntityBase>
+public abstract class Entity(EntityId id) : IEquatable<Entity>
 {
     /// <summary>
     /// ID for this Entity
@@ -13,13 +13,13 @@ public abstract class EntityBase(EntityId id) : IEquatable<EntityBase>
     public EntityId Id { get; } = id;
 
     /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is EntityBase other && Equals(other);
+    public override bool Equals(object? obj) => obj is Entity other && Equals(other);
 
     /// <inheritdoc/>
-    public bool Equals(EntityBase? other) => other != null && other.Id == Id;
+    public bool Equals(Entity? other) => other != null && other.Id == Id;
 
     /// <inheritdoc/>
-    public static bool operator ==(EntityBase? first, EntityBase? second)
+    public static bool operator ==(Entity? first, Entity? second)
     {
         if (first is null)
         {
@@ -29,7 +29,7 @@ public abstract class EntityBase(EntityId id) : IEquatable<EntityBase>
     }
 
     /// <inheritdoc/>
-    public static bool operator !=(EntityBase? first, EntityBase? second) => !(first == second);
+    public static bool operator !=(Entity? first, Entity? second) => !(first == second);
 
     /// <inheritdoc/>
     public override int GetHashCode() => Id.GetHashCode();

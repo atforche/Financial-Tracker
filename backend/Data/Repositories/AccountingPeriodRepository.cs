@@ -6,7 +6,7 @@ namespace Data.Repositories;
 /// <summary>
 /// Repository that allows Accounting Periods to be persisted to the database
 /// </summary>
-public class AccountingPeriodRepository(DatabaseContext context) : AggregateRepositoryBase<AccountingPeriod>(context), IAccountingPeriodRepository
+public class AccountingPeriodRepository(DatabaseContext context) : AggregateRepository<AccountingPeriod>(context), IAccountingPeriodRepository
 {
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> FindAll() => DatabaseContext.AccountingPeriods
@@ -50,6 +50,8 @@ public class AccountingPeriodRepository(DatabaseContext context) : AggregateRepo
                 accountingPeriod.FundConversions
                     .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()) ||
                 accountingPeriod.ChangeInValues
+                    .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()) ||
+                accountingPeriod.AccountAddedBalanceEvents
                     .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()))
             .ToList();
     }

@@ -1,8 +1,8 @@
 using Data;
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
-using Domain.Services;
 using Domain.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 using Rest.Models.AccountingPeriod;
@@ -16,13 +16,21 @@ namespace Rest.Controllers;
 [Route("/accountingPeriods")]
 internal sealed class AccountingPeriodController(
     IUnitOfWork unitOfWork,
-    IAccountingPeriodService accountingPeriodService,
+    AddAccountingPeriodAction addAccountingPeriodAction,
+    CloseAccountingPeriodAction closeAccountingPeriodAction,
+    AddTransactionAction addTransactionAction,
+    AddFundConversionAction addFundConversionAction,
+    AddChangeInValueAction addChangeInValueAction,
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
     IFundRepository fundRepository) : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
-    private readonly IAccountingPeriodService _accountingPeriodService = accountingPeriodService;
+    private readonly AddAccountingPeriodAction _addAccountingPeriodAction = addAccountingPeriodAction;
+    private readonly CloseAccountingPeriodAction _closeAccountingPeriodAction = closeAccountingPeriodAction;
+    private readonly AddTransactionAction _addTransactionAction = addTransactionAction;
+    private readonly AddFundConversionAction _addFundConversionAction = addFundConversionAction;
+    private readonly AddChangeInValueAction _addChangeInValueAction = addChangeInValueAction;
     private readonly IAccountingPeriodRepository _accountingPeriodRepository = accountingPeriodRepository;
     private readonly IAccountRepository _accountRepository = accountRepository;
     private readonly IFundRepository _fundRepository = fundRepository;
@@ -103,7 +111,7 @@ internal sealed class AccountingPeriodController(
     [HttpPost("")]
     public async Task<IActionResult> CreateAccountingPeriodAsync(CreateAccountingPeriodModel createAccountingPeriodModel)
     {
-        AccountingPeriod newAccountingPeriod = _accountingPeriodService.CreateNewAccountingPeriod(
+        AccountingPeriod newAccountingPeriod = _addAccountingPeriodAction.Run(
             createAccountingPeriodModel.Year,
             createAccountingPeriodModel.Month);
         _accountingPeriodRepository.Add(newAccountingPeriod);
@@ -145,7 +153,7 @@ internal sealed class AccountingPeriodController(
             }
         }
         var funds = _fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
-        Transaction newTransaction = _accountingPeriodService.AddTransaction(accountingPeriod,
+        Transaction newTransaction = _addTransactionAction.Run(accountingPeriod,
             createTransactionModel.TransactionDate,
             debitAccount,
             creditAccount,
@@ -179,12 +187,7 @@ internal sealed class AccountingPeriodController(
         {
             return NotFound();
         }
-        Account? accountToPostIn = _accountRepository.FindByExternalIdOrNull(postTransactionModel.AccountId);
-        if (accountToPostIn == null)
-        {
-            return NotFound();
-        }
-        _accountingPeriodService.PostTransaction(transaction, accountToPostIn, postTransactionModel.PostedStatementDate);
+        transaction.Post(postTransactionModel.AccountToPost, postTransactionModel.PostedStatementDate);
         await _unitOfWork.SaveChangesAsync();
         return Ok(new TransactionModel(transaction));
     }
@@ -218,7 +221,7 @@ internal sealed class AccountingPeriodController(
         {
             return NotFound();
         }
-        FundConversion newFundConversion = _accountingPeriodService.AddFundConversion(accountingPeriod,
+        FundConversion newFundConversion = _addFundConversionAction.Run(accountingPeriod,
             createFundConversionModel.EventDate,
             account,
             fromFund,
@@ -253,7 +256,7 @@ internal sealed class AccountingPeriodController(
             return NotFound();
         }
         var funds = _fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
-        ChangeInValue newChangeInValue = _accountingPeriodService.AddChangeInValue(accountingPeriod,
+        ChangeInValue newChangeInValue = _addChangeInValueAction.Run(accountingPeriod,
             createChangeInValueModel.EventDate,
             account,
             new FundAmount
@@ -278,7 +281,7 @@ internal sealed class AccountingPeriodController(
         {
             return NotFound();
         }
-        _accountingPeriodService.ClosePeriod(accountingPeriod);
+        _closeAccountingPeriodAction.Run(accountingPeriod);
         await _unitOfWork.SaveChangesAsync();
         return Ok(new AccountingPeriodModel(accountingPeriod));
     }

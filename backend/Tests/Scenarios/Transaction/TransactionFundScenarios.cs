@@ -1,8 +1,8 @@
 using System.Collections;
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Setups;
 
@@ -77,10 +77,10 @@ internal sealed class TransactionFundScenarioSetup : ScenarioSetup
     {
         Funds = GetFundsForScenario(scenario);
 
-        AccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(2025, 1);
+        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
 
-        Account = GetService<IAccountService>().CreateNewAccount("Test", AccountType.Standard,
+        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
             Funds.Count == 0
                 ? []
                 : [
@@ -99,26 +99,24 @@ internal sealed class TransactionFundScenarioSetup : ScenarioSetup
     /// <param name="scenario">Scenario for this Setup</param>
     private List<Fund> GetFundsForScenario(TransactionFundScenario scenario)
     {
-        IFundService fundService = GetService<IFundService>();
-        IFundRepository fundRepository = GetService<IFundRepository>();
         if (scenario == TransactionFundScenario.One)
         {
-            Fund fund = fundService.CreateNewFund("Test");
-            fundRepository.Add(fund);
+            Fund fund = GetService<AddFundAction>().Run("Test");
+            GetService<IFundRepository>().Add(fund);
             return [fund];
         }
         if (scenario == TransactionFundScenario.Multiple)
         {
-            Fund fund = fundService.CreateNewFund("Test");
-            fundRepository.Add(fund);
-            Fund otherFund = fundService.CreateNewFund("OtherTest");
-            fundRepository.Add(otherFund);
+            Fund fund = GetService<AddFundAction>().Run("Test");
+            GetService<IFundRepository>().Add(fund);
+            Fund otherFund = GetService<AddFundAction>().Run("OtherTest");
+            GetService<IFundRepository>().Add(otherFund);
             return [fund, otherFund];
         }
         if (scenario == TransactionFundScenario.Duplicate)
         {
-            Fund fund = fundService.CreateNewFund("Test");
-            fundRepository.Add(fund);
+            Fund fund = GetService<AddFundAction>().Run("Test");
+            GetService<IFundRepository>().Add(fund);
             return [fund, fund];
         }
         return [];

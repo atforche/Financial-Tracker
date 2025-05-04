@@ -1,16 +1,18 @@
 using Domain.Aggregates.AccountingPeriods;
+using Domain.ValueObjects;
 
 namespace Tests.Validators;
 
 /// <summary>
 /// Validator class that validates that the provided Transaction Balance Event matches the expected state
 /// </summary>
-internal sealed class TransactionBalanceEventValidator : EntityValidatorBase<TransactionBalanceEvent, TransactionBalanceEventState>
+internal sealed class TransactionBalanceEventValidator : EntityValidator<TransactionBalanceEvent, TransactionBalanceEventState>
 {
     /// <inheritdoc/>
     public override void Validate(TransactionBalanceEvent entity, TransactionBalanceEventState expectedState)
     {
         Assert.NotEqual(Guid.Empty, entity.Id.ExternalId);
+        Assert.Equal(expectedState.AccountingPeriodKey, entity.AccountingPeriodKey);
         Assert.Equal(expectedState.AccountName, entity.Account.Name);
         Assert.Equal(expectedState.EventDate, entity.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.EventSequence);
@@ -24,6 +26,11 @@ internal sealed class TransactionBalanceEventValidator : EntityValidatorBase<Tra
 /// </summary>
 internal sealed record TransactionBalanceEventState
 {
+    /// <summary>
+    /// Accounting Period Key for this Transaction Balance Event
+    /// </summary>
+    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
+
     /// <summary>
     /// Account Name for this Transaction Balance Event
     /// </summary>

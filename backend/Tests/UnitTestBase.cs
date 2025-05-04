@@ -1,8 +1,8 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
 using Domain.Services;
-using Domain.Services.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using Tests.Mocks;
 
@@ -25,10 +25,11 @@ public abstract class UnitTestBase
         serviceCollection.AddScoped<IAccountRepository, MockAccountRepository>();
         serviceCollection.AddScoped<IAccountingPeriodRepository, MockAccountingPeriodRepository>();
         serviceCollection.AddScoped<IFundRepository, MockFundRepository>();
-        serviceCollection.AddScoped<IAccountingPeriodService, AccountingPeriodService>();
-        serviceCollection.AddScoped<IAccountBalanceService, AccountBalanceService>();
-        serviceCollection.AddScoped<IAccountService, AccountService>();
-        serviceCollection.AddScoped<IFundService, FundService>();
+        serviceCollection.AddScoped<AddAccountingPeriodAction>();
+        serviceCollection.AddScoped<AddTransactionAction>();
+        serviceCollection.AddScoped<AccountBalanceService>();
+        serviceCollection.AddScoped<AddAccountAction>();
+        serviceCollection.AddScoped<AddFundAction>();
         _serviceProvider = serviceCollection.BuildServiceProvider();
     }
 

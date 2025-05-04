@@ -1,4 +1,4 @@
-using Domain.Aggregates.AccountingPeriods;
+using Domain.Aggregates;
 
 namespace Domain.ValueObjects;
 
@@ -10,7 +10,7 @@ public record AccountBalanceByEvent
     /// <summary>
     /// Balance Event for this Account Balance by Event
     /// </summary>
-    public required BalanceEventBase BalanceEvent { get; init; }
+    public required BalanceEvent BalanceEvent { get; init; }
 
     /// <summary>
     /// Account Balance for this Account Balance by Event

@@ -57,6 +57,8 @@ internal sealed class MockAccountingPeriodRepository : IAccountingPeriodReposito
             accountingPeriod.FundConversions
                 .Any(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate)) ||
             accountingPeriod.ChangeInValues
+                .Any(changeInValue => dateRange.IsInRange(changeInValue.EventDate)) ||
+            accountingPeriod.AccountAddedBalanceEvents
                 .Any(changeInValue => dateRange.IsInRange(changeInValue.EventDate)))
         .ToList();
 

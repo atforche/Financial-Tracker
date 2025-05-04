@@ -9,7 +9,7 @@ namespace Domain.Aggregates.Accounts;
 /// <remarks>
 /// An Account represents a financial account that money can be held in and transferred from.
 /// </remarks>
-public class Account : EntityBase
+public class Account : Entity
 {
     private readonly List<AccountBalanceCheckpoint> _accountBalanceCheckpoints = [];
 
@@ -29,16 +29,29 @@ public class Account : EntityBase
     public IReadOnlyCollection<AccountBalanceCheckpoint> AccountBalanceCheckpoints => _accountBalanceCheckpoints;
 
     /// <summary>
+    /// Account Added Balance Event for this Account
+    /// </summary>
+    public AccountAddedBalanceEvent AccountAddedBalanceEvent { get; private set; }
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="name">Name for this Account</param>
     /// <param name="type">Type for this Account</param>
-    internal Account(string name, AccountType type)
+    /// <param name="accountingPeriod">First Accounting Period for this Account</param>
+    /// <param name="date">First Date for this Account</param>
+    /// <param name="startingFundBalances">Starting Fund Balances for this Account</param>
+    internal Account(
+        string name,
+        AccountType type,
+        AccountingPeriod accountingPeriod,
+        DateOnly date,
+        IEnumerable<FundAmount> startingFundBalances)
         : base(new EntityId(default, Guid.NewGuid()))
     {
         Name = name;
         Type = type;
-        Validate();
+        AccountAddedBalanceEvent = new AccountAddedBalanceEvent(accountingPeriod, this, date, startingFundBalances);
     }
 
     /// <summary>
@@ -52,17 +65,10 @@ public class Account : EntityBase
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private Account() : base(new EntityId(default, Guid.NewGuid())) => Name = "";
-
-    /// <summary>
-    /// Validates the current Account
-    /// </summary>
-    private void Validate()
+    private Account() : base(new EntityId(default, Guid.NewGuid()))
     {
-        if (string.IsNullOrEmpty(Name))
-        {
-            throw new InvalidOperationException();
-        }
+        Name = "";
+        AccountAddedBalanceEvent = null!;
     }
 }
 

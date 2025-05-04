@@ -10,7 +10,7 @@ namespace Domain.Aggregates.Funds;
 /// The balance of each Account may be made up of money from multiple Funds. The balance of a Fund
 /// over time can be used to track financial changes in an Account-agnostic way.
 /// </remarks>
-public class Fund : EntityBase
+public class Fund : Entity
 {
     /// <summary>
     /// Name for this Fund
@@ -24,20 +24,6 @@ public class Fund : EntityBase
     /// </summary>
     /// <param name="name">Name for this Fund</param>
     internal Fund(string name)
-        : base(new EntityId(default, Guid.NewGuid()))
-    {
+        : base(new EntityId(default, Guid.NewGuid())) =>
         Name = name;
-        Validate();
-    }
-
-    /// <summary>
-    /// Validates the current Fund
-    /// </summary>
-    private void Validate()
-    {
-        if (string.IsNullOrEmpty(Name))
-        {
-            throw new InvalidOperationException();
-        }
-    }
 }

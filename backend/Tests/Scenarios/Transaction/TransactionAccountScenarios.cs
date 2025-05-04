@@ -1,8 +1,8 @@
 using System.Collections;
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Setups;
 
@@ -113,21 +113,19 @@ internal sealed class TransactionAccountScenarioSetup : ScenarioSetup
         AccountType? creditAccountType,
         SameAccountTypeBehavior sameAccountTypeBehavior)
     {
-        IFundService fundService = GetService<IFundService>();
-        IFundRepository fundRepository = GetService<IFundRepository>();
-        Fund = fundService.CreateNewFund("Test");
-        fundRepository.Add(Fund);
-        OtherFund = fundService.CreateNewFund("OtherTest");
-        fundRepository.Add(OtherFund);
+        Fund = GetService<AddFundAction>().Run("Test");
+        GetService<IFundRepository>().Add(Fund);
+        OtherFund = GetService<AddFundAction>().Run("OtherTest");
+        GetService<IFundRepository>().Add(OtherFund);
 
-        AccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(2025, 1);
+        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
 
-        IAccountService accountService = GetService<IAccountService>();
+        AddAccountAction addAccountAction = GetService<AddAccountAction>();
         IAccountRepository accountRepository = GetService<IAccountRepository>();
         if (debitAccountType != null)
         {
-            DebitAccount = accountService.CreateNewAccount("TestOne", debitAccountType.Value,
+            DebitAccount = addAccountAction.Run("TestOne", debitAccountType.Value, AccountingPeriod, AccountingPeriod.PeriodStartDate,
                 [
                     new FundAmount
                     {
@@ -148,7 +146,7 @@ internal sealed class TransactionAccountScenarioSetup : ScenarioSetup
         }
         else if (creditAccountType != null)
         {
-            CreditAccount = accountService.CreateNewAccount("TestTwo", creditAccountType.Value,
+            CreditAccount = addAccountAction.Run("TestTwo", creditAccountType.Value, AccountingPeriod, AccountingPeriod.PeriodStartDate,
                 [
                     new FundAmount
                     {

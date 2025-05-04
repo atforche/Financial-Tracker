@@ -1,8 +1,8 @@
 using System.Collections;
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Setups;
 
@@ -115,42 +115,41 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
         AccountingPeriodStatus currentPeriodStatus,
         AccountingPeriodStatus? futurePeriodStatus)
     {
-        IFundService fundService = GetService<IFundService>();
-        IFundRepository fundRepository = GetService<IFundRepository>();
-        Fund = fundService.CreateNewFund("Test");
-        fundRepository.Add(Fund);
-        OtherFund = fundService.CreateNewFund("OtherTest");
-        fundRepository.Add(OtherFund);
+        Fund = GetService<AddFundAction>().Run("Test");
+        GetService<IFundRepository>().Add(Fund);
+        OtherFund = GetService<AddFundAction>().Run("OtherTest");
+        GetService<IFundRepository>().Add(OtherFund);
 
-        IAccountingPeriodService accountingPeriodService = GetService<IAccountingPeriodService>();
+        AddAccountingPeriodAction addAccountingPeriodAction = GetService<AddAccountingPeriodAction>();
+        CloseAccountingPeriodAction closeAccountingPeriodAction = GetService<CloseAccountingPeriodAction>();
         IAccountingPeriodRepository accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
         // Create the past Accounting Period if needed
         if (pastPeriodStatus != null)
         {
-            PastAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2024, 12);
+            PastAccountingPeriod = addAccountingPeriodAction.Run(2024, 12);
             accountingPeriodRepository.Add(PastAccountingPeriod);
-            Account = CreateAccount();
+            Account = CreateAccount(PastAccountingPeriod);
             if (pastPeriodStatus == AccountingPeriodStatus.Closed)
             {
-                accountingPeriodService.ClosePeriod(PastAccountingPeriod);
+                closeAccountingPeriodAction.Run(PastAccountingPeriod);
             }
         }
         // Create the current Accounting Period
-        CurrentAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2025, 1);
+        CurrentAccountingPeriod = addAccountingPeriodAction.Run(2025, 1);
         accountingPeriodRepository.Add(CurrentAccountingPeriod);
-        Account ??= CreateAccount();
+        Account ??= CreateAccount(CurrentAccountingPeriod);
         if (currentPeriodStatus == AccountingPeriodStatus.Closed)
         {
-            accountingPeriodService.ClosePeriod(CurrentAccountingPeriod);
+            closeAccountingPeriodAction.Run(CurrentAccountingPeriod);
         }
         // Create the future Accounting Period if needed
         if (futurePeriodStatus != null)
         {
-            FutureAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2025, 2);
+            FutureAccountingPeriod = addAccountingPeriodAction.Run(2025, 2);
             accountingPeriodRepository.Add(FutureAccountingPeriod);
             if (futurePeriodStatus == AccountingPeriodStatus.Closed)
             {
-                accountingPeriodService.ClosePeriod(FutureAccountingPeriod);
+                closeAccountingPeriodAction.Run(FutureAccountingPeriod);
             }
         }
     }
@@ -158,10 +157,11 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
     /// <summary>
     /// Creates the Account for this test case
     /// </summary>
+    /// <param name="accountingPeriod">Accounting Period to add the Account to</param>
     /// <returns>The Account for this test case</returns>
-    private Account CreateAccount()
+    private Account CreateAccount(AccountingPeriod accountingPeriod)
     {
-        Account account = GetService<IAccountService>().CreateNewAccount("Test", AccountType.Standard,
+        Account account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, accountingPeriod, accountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {

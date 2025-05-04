@@ -1,5 +1,5 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
-using Domain.Services;
 using Tests.AddAccountingPeriod.Scenarios;
 using Tests.Setups;
 
@@ -21,5 +21,5 @@ internal sealed class YearAndMonthScenarioSetup : ScenarioSetup
     /// <param name="year">Year for this test case</param>
     /// <param name="month">Month for this test case</param>
     public YearAndMonthScenarioSetup(int year, int month) =>
-        AccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(year, month);
+        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(year, month);
 }

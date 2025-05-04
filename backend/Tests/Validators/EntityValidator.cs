@@ -3,7 +3,7 @@ namespace Tests.Validators;
 /// <summary>
 /// Base class of all validators that validate an Entity
 /// </summary>
-internal abstract class EntityValidatorBase<TEntity, TState>
+internal abstract class EntityValidator<TEntity, TState>
 {
     /// <summary>
     /// Validates the Entity against the provided expected state

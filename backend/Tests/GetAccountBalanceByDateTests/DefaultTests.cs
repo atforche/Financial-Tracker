@@ -1,3 +1,4 @@
+using Domain.Actions;
 using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Setups;
@@ -17,7 +18,7 @@ public class DefaultTests
     public void RunTest()
     {
         var setup = new DefaultScenarioSetup();
-        setup.GetService<IAccountingPeriodService>().AddTransaction(setup.AccountingPeriod,
+        setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
             setup.Account,
             null,
@@ -29,7 +30,7 @@ public class DefaultTests
                 }
             ]);
         new AccountBalanceByDateValidator().Validate(
-            setup.GetService<IAccountBalanceService>().GetAccountBalancesByDate(setup.Account,
+            setup.GetService<AccountBalanceService>().GetAccountBalancesByDate(setup.Account,
                 new DateRange(new DateOnly(2025, 1, 14), new DateOnly(2025, 1, 16))),
             [
                 new AccountBalanceByDateState

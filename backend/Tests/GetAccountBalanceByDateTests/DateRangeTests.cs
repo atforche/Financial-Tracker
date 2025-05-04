@@ -28,7 +28,7 @@ public class DateRangeTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Account Balance by Dates for this test case</returns>
     private static IEnumerable<AccountBalanceByDate> GetAccountBalance(DateRangeScenarioSetup setup) =>
-        setup.GetService<IAccountBalanceService>().GetAccountBalancesByDate(setup.Account, setup.DateRange);
+        setup.GetService<AccountBalanceService>().GetAccountBalancesByDate(setup.Account, setup.DateRange);
 
     /// <summary>
     /// Gets the expected state for this test case

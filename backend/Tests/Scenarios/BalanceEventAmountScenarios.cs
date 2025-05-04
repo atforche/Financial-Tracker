@@ -1,8 +1,8 @@
 using System.Collections;
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Setups;
 
@@ -106,21 +106,19 @@ internal class BalanceEventAmountScenarioSetup : ScenarioSetup
     /// <param name="accountType">Account Type for this Setup</param>
     public BalanceEventAmountScenarioSetup(BalanceEventAmountScenario scenario, AccountType accountType = AccountType.Standard)
     {
-        IFundService fundService = GetService<IFundService>();
-        IFundRepository fundRepository = GetService<IFundRepository>();
-        Fund = fundService.CreateNewFund("Test");
-        fundRepository.Add(Fund);
-        OtherFund = fundService.CreateNewFund("Test2");
-        fundRepository.Add(OtherFund);
+        Fund = GetService<AddFundAction>().Run("Test");
+        GetService<IFundRepository>().Add(Fund);
+        OtherFund = GetService<AddFundAction>().Run("Test2");
+        GetService<IFundRepository>().Add(OtherFund);
 
-        IAccountingPeriodService accountingPeriodService = GetService<IAccountingPeriodService>();
+        AddAccountingPeriodAction addAccountingPeriodAction = GetService<AddAccountingPeriodAction>();
         IAccountingPeriodRepository accountingPeriodRepository = GetService<IAccountingPeriodRepository>();
-        AccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2025, 1);
+        AccountingPeriod = addAccountingPeriodAction.Run(2025, 1);
         accountingPeriodRepository.Add(AccountingPeriod);
-        _futureAccountingPeriod = accountingPeriodService.CreateNewAccountingPeriod(2025, 2);
+        _futureAccountingPeriod = addAccountingPeriodAction.Run(2025, 2);
         accountingPeriodRepository.Add(_futureAccountingPeriod);
 
-        Account = GetService<IAccountService>().CreateNewAccount("Test", accountType,
+        Account = GetService<AddAccountAction>().Run("Test", accountType, AccountingPeriod, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
@@ -167,7 +165,7 @@ internal class BalanceEventAmountScenarioSetup : ScenarioSetup
         }
         if (scenario == BalanceEventAmountScenario.ForcesFutureEventToMakeAccountBalanceNegative)
         {
-            GetService<IAccountingPeriodService>().AddChangeInValue(_futureAccountingPeriod,
+            GetService<AddChangeInValueAction>().Run(_futureAccountingPeriod,
                 new DateOnly(2025, 2, 28),
                 Account,
                 new FundAmount
@@ -179,7 +177,7 @@ internal class BalanceEventAmountScenarioSetup : ScenarioSetup
         }
         if (scenario == BalanceEventAmountScenario.ForcesAccountBalancesAtEndOfPeriodToBeNegative)
         {
-            GetService<IAccountingPeriodService>().AddChangeInValue(_futureAccountingPeriod,
+            GetService<AddChangeInValueAction>().Run(_futureAccountingPeriod,
                 new DateOnly(2025, 1, 1),
                 Account,
                 new FundAmount

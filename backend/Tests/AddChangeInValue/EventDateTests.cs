@@ -1,5 +1,5 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Scenarios;
 using Tests.Setups;
@@ -34,7 +34,7 @@ public class EventDateTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Change In Value that was added for this test case</returns>
     private static ChangeInValue AddChangeInValue(BalanceEventDateScenarioSetup setup) =>
-        setup.GetService<IAccountingPeriodService>().AddChangeInValue(setup.CurrentAccountingPeriod,
+        setup.GetService<AddChangeInValueAction>().Run(setup.CurrentAccountingPeriod,
             setup.EventDate,
             setup.Account,
             new FundAmount
@@ -51,6 +51,7 @@ public class EventDateTests
     private static ChangeInValueState GetExpectedState(BalanceEventDateScenarioSetup setup) =>
         new()
         {
+            AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
             AccountName = setup.Account.Name,
             EventDate = setup.EventDate,
             EventSequence = 1,

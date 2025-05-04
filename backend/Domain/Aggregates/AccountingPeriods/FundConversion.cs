@@ -12,15 +12,8 @@ namespace Domain.Aggregates.AccountingPeriods;
 /// gets converted into an amount from a different Fund. A Fund Conversion is instantaneous and
 /// this represents the only way to transfer money directly between Funds.
 /// </remarks>
-public class FundConversion : BalanceEventBase
+public class FundConversion : BalanceEvent
 {
-    private readonly AccountingPeriod _accountingPeriod;
-
-    /// <summary>
-    /// Parent Accounting Period for this Fund Conversion
-    /// </summary>
-    public override AccountingPeriod AccountingPeriod => _accountingPeriod;
-
     /// <summary>
     /// Fund that the amount is being converted out of for this Fund Conversion
     /// </summary>
@@ -66,38 +59,22 @@ public class FundConversion : BalanceEventBase
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="accountingPeriod">Parent Accounting Period for this Fund Conversion</param>
-    /// <param name="accountInfo">Account for this Fund Conversion</param>
+    /// <param name="account">Account for this Fund Conversion</param>
     /// <param name="eventDate">Event Date for this Fund Conversion</param>
     /// <param name="fromFund">From Fund for this Fund Conversion</param>
     /// <param name="toFund">To Fund for this Fund Conversion</param>
     /// <param name="amount">Amount for this Fund Conversion</param>
     internal FundConversion(AccountingPeriod accountingPeriod,
-        CreateBalanceEventAccountInfo accountInfo,
+        Account account,
         DateOnly eventDate,
         Fund fromFund,
         Fund toFund,
         decimal amount)
-        : base(accountInfo, eventDate, accountingPeriod.GetNextEventSequenceForDate(eventDate))
+        : base(accountingPeriod, account, eventDate)
     {
-        _accountingPeriod = accountingPeriod;
         FromFund = fromFund;
         ToFund = toFund;
         Amount = amount;
-        Validate(accountInfo);
-    }
-
-    /// <inheritdoc/>
-    protected override void Validate(CreateBalanceEventAccountInfo accountInfo)
-    {
-        base.Validate(accountInfo);
-        if (FromFund == ToFund)
-        {
-            throw new InvalidOperationException();
-        }
-        if (Amount <= 0)
-        {
-            throw new InvalidOperationException();
-        }
     }
 
     /// <summary>
@@ -106,7 +83,6 @@ public class FundConversion : BalanceEventBase
     private FundConversion()
         : base()
     {
-        _accountingPeriod = null!;
         FromFund = null!;
         ToFund = null!;
     }

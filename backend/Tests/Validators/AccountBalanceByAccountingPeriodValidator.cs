@@ -5,13 +5,12 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided Account Balance by Accounting Period matches the expected state
 /// </summary>
-internal sealed class AccountBalanceByAccountingPeriodValidator : EntityValidatorBase<AccountBalanceByAccountingPeriod, AccountBalanceByAccountingPeriodState>
+internal sealed class AccountBalanceByAccountingPeriodValidator : EntityValidator<AccountBalanceByAccountingPeriod, AccountBalanceByAccountingPeriodState>
 {
     /// <inheritdoc/>
     public override void Validate(AccountBalanceByAccountingPeriod entityToValidate, AccountBalanceByAccountingPeriodState expectedState)
     {
-        Assert.Equal(expectedState.AccountingPeriodYear, entityToValidate.AccountingPeriod.Year);
-        Assert.Equal(expectedState.AccountingPeriodMonth, entityToValidate.AccountingPeriod.Month);
+        Assert.Equal(expectedState.AccountingPeriodKey, entityToValidate.AccountingPeriod.Key);
         new FundAmountValidator().Validate(entityToValidate.StartingBalance.FundBalances, expectedState.StartingFundBalances);
         Assert.Empty(entityToValidate.StartingBalance.PendingFundBalanceChanges);
         new FundAmountValidator().Validate(entityToValidate.EndingBalance.FundBalances, expectedState.EndingFundBalances);
@@ -25,14 +24,9 @@ internal sealed class AccountBalanceByAccountingPeriodValidator : EntityValidato
 internal sealed record AccountBalanceByAccountingPeriodState
 {
     /// <summary>
-    /// Year for this Accounting Period
+    /// Key for this Accounting Period
     /// </summary>
-    public required int AccountingPeriodYear { get; init; }
-
-    /// <summary>
-    /// Month for this Accounting Period
-    /// </summary>
-    public required int AccountingPeriodMonth { get; init; }
+    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
 
     /// <summary>
     /// Starting Fund Balances for this Account Balance by Accounting Period

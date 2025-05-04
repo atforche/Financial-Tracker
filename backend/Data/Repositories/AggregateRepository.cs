@@ -6,7 +6,7 @@ namespace Data.Repositories;
 /// <summary>
 /// Base class shared by all Aggregate Repositories
 /// </summary>
-public abstract class AggregateRepositoryBase<TAggregate>(DatabaseContext databaseContext) where TAggregate : EntityBase
+public abstract class AggregateRepository<TAggregate>(DatabaseContext databaseContext) where TAggregate : Entity
 {
     /// <summary>
     /// Database Context for this Aggregate Repository

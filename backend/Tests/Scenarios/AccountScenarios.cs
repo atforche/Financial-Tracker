@@ -1,8 +1,8 @@
 using System.Collections;
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Setups;
 
@@ -52,16 +52,14 @@ internal sealed class AccountScenarioSetup : ScenarioSetup
     /// <param name="accountType">Account Type for this Setup</param>
     public AccountScenarioSetup(AccountType accountType)
     {
-        IFundService fundService = GetService<IFundService>();
-        IFundRepository fundRepository = GetService<IFundRepository>();
-        Fund = fundService.CreateNewFund("Test");
-        fundRepository.Add(Fund);
-        OtherFund = fundService.CreateNewFund("OtherTest");
-        fundRepository.Add(OtherFund);
+        Fund = GetService<AddFundAction>().Run("Test");
+        GetService<IFundRepository>().Add(Fund);
+        OtherFund = GetService<AddFundAction>().Run("OtherTest");
+        GetService<IFundRepository>().Add(OtherFund);
 
-        AccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(2025, 1);
+        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
-        Account = GetService<IAccountService>().CreateNewAccount("Test", accountType,
+        Account = GetService<AddAccountAction>().Run("Test", accountType, AccountingPeriod, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {

@@ -1,15 +1,21 @@
+using Domain.Aggregates;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.ValueObjects;
 
-namespace Domain.Services.Implementations;
+namespace Domain.Services;
 
-/// <inheritdoc/>
-public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodRepository) : IAccountBalanceService
+/// <summary>
+/// Service used to calculate the balance of an Account as of a particular point in time
+/// </summary>
+public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodRepository)
 {
-    private readonly IAccountingPeriodRepository _accountingPeriodRepository = accountingPeriodRepository;
-
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the list of Account Balances for each date over the provided Date Range
+    /// </summary>
+    /// <param name="account">Account to get the balances for</param>
+    /// <param name="dateRange">Date Range to get the daily balances for</param>
+    /// <returns>The list of Account Balances for each date over the Date Range</returns>
     public IReadOnlyCollection<AccountBalanceByDate> GetAccountBalancesByDate(Account account, DateRange dateRange)
     {
         List<AccountBalanceByDate> results = [];
@@ -19,7 +25,7 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
             .ToDictionary(group => group.Key, group => group.ToList());
         foreach (DateOnly date in dateRange.GetInclusiveDates())
         {
-            foreach (BalanceEventBase balanceEvent in balanceEvents.GetValueOrDefault(date) ?? [])
+            foreach (BalanceEvent balanceEvent in balanceEvents.GetValueOrDefault(date) ?? [])
             {
                 accountBalance = balanceEvent.ApplyEventToBalance(accountBalance);
             }
@@ -32,12 +38,17 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
         return results;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the list of Account Balances for each Balance Event over the provided Date Range
+    /// </summary>
+    /// <param name="account">Account to get the balances for</param>
+    /// <param name="dateRange">Date Range to get the event balances for</param>
+    /// <returns>The list of Account Balances for each Balance Event over the Date Range</returns>
     public IReadOnlyCollection<AccountBalanceByEvent> GetAccountBalancesByEvent(Account account, DateRange dateRange)
     {
         List<AccountBalanceByEvent> results = [];
         AccountBalance accountBalance = DetermineAccountBalanceAtStartOfDate(account, dateRange.GetInclusiveDates().First());
-        foreach (BalanceEventBase balanceEvent in GetAllBalanceEventsInDateRange(account, dateRange))
+        foreach (BalanceEvent balanceEvent in GetAllBalanceEventsInDateRange(account, dateRange))
         {
             accountBalance = balanceEvent.ApplyEventToBalance(accountBalance);
             results.Add(new AccountBalanceByEvent
@@ -49,23 +60,22 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
         return results;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the Account Balances at the beginning and end of the provided Accounting Period.
+    /// </summary>
+    /// <param name="account">Account to get the balances for</param>
+    /// <param name="accountingPeriod">Accounting Period to get the </param>
+    /// <returns>The beginning and ending Account Balances for the Accounting Period</returns>
     public AccountBalanceByAccountingPeriod GetAccountBalancesByAccountingPeriod(
         Account account,
         AccountingPeriod accountingPeriod)
     {
-        AccountBalance? startingBalance = DetermineAccountBalanceAtStartOfAccountingPeriod(account, accountingPeriod);
-        if (startingBalance == null)
-        {
-            // If we can't find a balance checkpoint for the provided Accounting Period or any earlier periods, 
-            // return a balance of zero
-            return new AccountBalanceByAccountingPeriod(accountingPeriod, new AccountBalance(account, [], []), new AccountBalance(account, [], []));
-        }
+        AccountBalance startingBalance = DetermineAccountBalanceAtStartOfAccountingPeriod(account, accountingPeriod);
         AccountBalance endingBalance = startingBalance;
 
         DateOnly futureAccountingPeriodDate = accountingPeriod.PeriodStartDate.AddMonths(1);
-        AccountBalanceCheckpoint? futurePeriodCheckpoint = account.AccountBalanceCheckpoints.FirstOrDefault(checkpoint =>
-            checkpoint.AccountingPeriodYear == futureAccountingPeriodDate.Year && checkpoint.AccountingPeriodMonth == futureAccountingPeriodDate.Month);
+        AccountBalanceCheckpoint? futurePeriodCheckpoint = account.AccountBalanceCheckpoints
+            .FirstOrDefault(checkpoint => checkpoint.AccountingPeriodKey.ConvertToDate() == futureAccountingPeriodDate);
         if (futurePeriodCheckpoint != null)
         {
             // If there's a balance checkpoint for the future period, just use that checkpoint as the ending balance
@@ -74,7 +84,7 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
         else
         {
             // Otherwise, calculate the ending balance by applying all the Balance Events currently in the Accounting Period
-            foreach (BalanceEventBase balanceEvent in accountingPeriod.GetAllBalanceEvents())
+            foreach (BalanceEvent balanceEvent in accountingPeriod.GetAllBalanceEvents())
             {
                 endingBalance = balanceEvent.ApplyEventToBalance(endingBalance);
             }
@@ -90,24 +100,37 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
     /// <returns>The Account Balance of the provided Account at the beginning of the provided date</returns>
     private AccountBalance DetermineAccountBalanceAtStartOfDate(Account account, DateOnly date)
     {
-        AccountBalanceCheckpoint? balanceCheckpoint = account.AccountBalanceCheckpoints.FirstOrDefault(checkpoint =>
-            new DateOnly(checkpoint.AccountingPeriodYear, checkpoint.AccountingPeriodMonth, 1) <= date);
-        if (balanceCheckpoint == null)
+        AccountBalanceCheckpoint? balanceCheckpoint = account.AccountBalanceCheckpoints
+            .FirstOrDefault(checkpoint => checkpoint.AccountingPeriodKey.ConvertToDate() <= date);
+        if (balanceCheckpoint != null)
         {
-            // If there was no Account Balance Checkpoint to fall back to, the Account Balance is zero
-            return new AccountBalance(account, [], []);
+            return DetermineAccountBalanceAtStartOfDateWithCheckpoint(account, date, balanceCheckpoint);
         }
+        return DetermineAccountBalanceAtStartOfDateWithoutCheckpoint(account, date);
+    }
+
+    /// <summary>
+    /// Determines the balance of an Account at the beginning of the provided date using a balance checkpoint
+    /// </summary>
+    /// <param name="account">Account whose balance to calculate</param>
+    /// <param name="date">Date to find the account balance at the beginning of</param>
+    /// <param name="balanceCheckpoint">Account Balance Checkpoint to use</param>
+    /// <returns>The Account Balance of the provided Account at the beginning of the provided date</returns>
+    private AccountBalance DetermineAccountBalanceAtStartOfDateWithCheckpoint(
+        Account account,
+        DateOnly date,
+        AccountBalanceCheckpoint balanceCheckpoint)
+    {
         AccountBalance accountBalance = balanceCheckpoint.ConvertToAccountBalance();
 
         // Determine all of the Balance Events from the past Accounting Period that fall in the checkpoint Accounting Period.
         // All of these events have already been applied to our balance checkpoint. But we really want to individually 
         // apply them as they occur on each date. So reverse all of them so they can be reapplied on their respective dates.
-        AccountingPeriod checkpointPeriod = _accountingPeriodRepository.FindByDate(
-            new DateOnly(balanceCheckpoint.AccountingPeriodYear, balanceCheckpoint.AccountingPeriodMonth, 1));
-        AccountingPeriod? pastAccountingPeriod = _accountingPeriodRepository.FindByDateOrNull(checkpointPeriod.PeriodStartDate.AddMonths(-1));
-        List<BalanceEventBase> pastPeriodBalanceEventsDuringOrAfterDateRange = pastAccountingPeriod?.GetAllBalanceEvents()
+        AccountingPeriod? checkpointPeriod = accountingPeriodRepository.FindByDate(balanceCheckpoint.AccountingPeriodKey.ConvertToDate());
+        AccountingPeriod? pastAccountingPeriod = accountingPeriodRepository.FindByDateOrNull(checkpointPeriod.PeriodStartDate.AddMonths(-1));
+        List<BalanceEvent> pastPeriodBalanceEventsDuringOrAfterDateRange = pastAccountingPeriod?.GetAllBalanceEvents()
             .Where(balanceEvent => balanceEvent.EventDate >= checkpointPeriod.PeriodStartDate).ToList() ?? [];
-        foreach (BalanceEventBase balanceEvent in Enumerable.Reverse(pastPeriodBalanceEventsDuringOrAfterDateRange))
+        foreach (BalanceEvent balanceEvent in Enumerable.Reverse(pastPeriodBalanceEventsDuringOrAfterDateRange))
         {
             accountBalance = balanceEvent.ReverseEventFromBalance(accountBalance);
         }
@@ -117,13 +140,34 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
         if (date != checkpointPeriod.PeriodStartDate)
         {
             var beforeDateRange = new DateRange(checkpointPeriod.PeriodStartDate, date, endDateType: EndpointType.Exclusive);
-            IEnumerable<BalanceEventBase> balanceEventsBeforeDate = checkpointPeriod.GetAllBalanceEvents()
+            IEnumerable<BalanceEvent> balanceEventsBeforeDate = checkpointPeriod.GetAllBalanceEvents()
                 .Where(balanceEvent => !beforeDateRange.IsWithinStartDate(balanceEvent.EventDate))
                 .Concat(GetAllBalanceEventsInDateRange(account, beforeDateRange));
-            foreach (BalanceEventBase balanceEvent in balanceEventsBeforeDate)
+            foreach (BalanceEvent balanceEvent in balanceEventsBeforeDate)
             {
                 accountBalance = balanceEvent.ApplyEventToBalance(accountBalance);
             }
+        }
+        return accountBalance;
+    }
+
+    /// <summary>
+    /// Determines the balance of an Account at the beginning of the provided date without a balance checkpoint
+    /// </summary>
+    /// <param name="account">Account whose balance to calculate</param>
+    /// <param name="date">Date to find the account balance at the beginning of</param>
+    /// <returns>The Account Balance of the provided Account at the beginning of the provided date</returns>
+    private AccountBalance DetermineAccountBalanceAtStartOfDateWithoutCheckpoint(Account account, DateOnly date)
+    {
+        var accountBalance = new AccountBalance(account, [], []);
+        if (account.AccountAddedBalanceEvent.EventDate >= date)
+        {
+            return accountBalance;
+        }
+        var balanceEventDateRange = new DateRange(account.AccountAddedBalanceEvent.EventDate, date, endDateType: EndpointType.Exclusive);
+        foreach (BalanceEvent balanceEvent in GetAllBalanceEventsInDateRange(account, balanceEventDateRange))
+        {
+            accountBalance = balanceEvent.ApplyEventToBalance(accountBalance);
         }
         return accountBalance;
     }
@@ -134,21 +178,21 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
     /// <param name="account">Account whose balance to calculate</param>
     /// <param name="accountingPeriod">Accounting Period to find the Account Balance at the beginning of</param>
     /// <returns>The Account Balance at the beginning of the provided Accounting Period</returns>
-    private AccountBalance? DetermineAccountBalanceAtStartOfAccountingPeriod(Account account, AccountingPeriod accountingPeriod)
+    private AccountBalance DetermineAccountBalanceAtStartOfAccountingPeriod(Account account, AccountingPeriod accountingPeriod)
     {
         AccountBalanceCheckpoint? checkpoint = account.AccountBalanceCheckpoints
-            .FirstOrDefault(checkpoint => checkpoint.AccountingPeriodYear == accountingPeriod.Year && checkpoint.AccountingPeriodMonth == accountingPeriod.Month);
+            .FirstOrDefault(checkpoint => checkpoint.AccountingPeriodKey == accountingPeriod.Key);
         if (checkpoint != null)
         {
             return checkpoint.ConvertToAccountBalance();
         }
-        AccountingPeriod? pastAccountingPeriod = _accountingPeriodRepository.FindByDateOrNull(
+        AccountingPeriod? pastAccountingPeriod = accountingPeriodRepository.FindByDateOrNull(
             accountingPeriod.PeriodStartDate.AddMonths(-1));
         if (pastAccountingPeriod != null)
         {
             return GetAccountBalancesByAccountingPeriod(account, pastAccountingPeriod).EndingBalance;
         }
-        return null;
+        return new AccountBalance(account, [], []);
     }
 
     /// <summary>
@@ -157,12 +201,10 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
     /// <param name="account">Account for the Balance Events to find</param>
     /// <param name="dateRange">Date range to get all the Balance Events from</param>
     /// <returns>The list of Balance Events that fall in the provided date range</returns>
-    private IEnumerable<BalanceEventBase> GetAllBalanceEventsInDateRange(Account account, DateRange dateRange) =>
-        _accountingPeriodRepository
+    private IEnumerable<BalanceEvent> GetAllBalanceEventsInDateRange(Account account, DateRange dateRange) =>
+        accountingPeriodRepository
             .FindAccountingPeriodsWithBalanceEventsInDateRange(dateRange)
             .SelectMany(period => period.GetAllBalanceEvents())
             .Where(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate) && balanceEvent.Account == account)
-            .OrderBy(balanceEvent => balanceEvent.EventDate)
-            .ThenBy(balanceEvent => balanceEvent.AccountingPeriod.PeriodStartDate)
-            .ThenBy(balanceEvent => balanceEvent.EventSequence);
+            .Order();
 }

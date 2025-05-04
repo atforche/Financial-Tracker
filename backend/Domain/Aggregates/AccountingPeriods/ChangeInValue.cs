@@ -1,3 +1,4 @@
+using Domain.Aggregates.Accounts;
 using Domain.ValueObjects;
 
 namespace Domain.Aggregates.AccountingPeriods;
@@ -10,19 +11,12 @@ namespace Domain.Aggregates.AccountingPeriods;
 /// represented as a single distinct Transaction on an account statement. Examples of this include interest
 /// that is constantly accruing on a loan or changes in stock market value for an investment Account.
 /// </remarks>
-public class ChangeInValue : BalanceEventBase
+public class ChangeInValue : BalanceEvent
 {
-    private readonly AccountingPeriod _accountingPeriod;
-
-    /// <summary>
-    /// Parent Accounting Period for this Change In Value
-    /// </summary>
-    public override AccountingPeriod AccountingPeriod => _accountingPeriod;
-
     /// <summary>
     /// Accounting Entry for this Change In Value
     /// </summary>
-    public FundAmount AccountingEntry { get; init; }
+    public FundAmount AccountingEntry { get; private set; }
 
     /// <inheritdoc/>
     public override AccountBalance ApplyEventToBalance(AccountBalance currentBalance) =>
@@ -53,39 +47,22 @@ public class ChangeInValue : BalanceEventBase
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period for this Change In Value</param>
-    /// <param name="accountInfo">Account for this Change In Value</param>
+    /// <param name="account">Account for this Change In Value</param>
     /// <param name="eventDate">Event Date for this Change In Value</param>
     /// <param name="accountingEntry">Accounting Entry for this Change In Value</param>
     internal ChangeInValue(AccountingPeriod accountingPeriod,
-        CreateBalanceEventAccountInfo accountInfo,
+        Account account,
         DateOnly eventDate,
         FundAmount accountingEntry)
-        : base(accountInfo, eventDate, accountingPeriod.GetNextEventSequenceForDate(eventDate))
-    {
-        _accountingPeriod = accountingPeriod;
+        : base(accountingPeriod, account, eventDate) =>
         AccountingEntry = accountingEntry;
-        Validate(accountInfo);
-    }
-
-    /// <inheritdoc/>
-    protected override void Validate(CreateBalanceEventAccountInfo accountInfo)
-    {
-        base.Validate(accountInfo);
-        if (AccountingEntry.Amount == 0)
-        {
-            throw new InvalidOperationException();
-        }
-    }
 
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
     private ChangeInValue()
-        : base()
-    {
-        _accountingPeriod = null!;
+        : base() =>
         AccountingEntry = null!;
-    }
 
     /// <summary>
     /// Applies the Fund Conversion to the provided balance

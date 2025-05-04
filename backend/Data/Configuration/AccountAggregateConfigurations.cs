@@ -6,7 +6,7 @@ namespace Data.Configuration;
 /// <summary>
 /// EF Core configuration for the Account entity
 /// </summary>
-internal sealed class AccountEntityConfiguration : EntityConfigurationBase<Account>
+internal sealed class AccountEntityConfiguration : EntityConfiguration<Account>
 {
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<Account> builder)
@@ -24,7 +24,7 @@ internal sealed class AccountEntityConfiguration : EntityConfigurationBase<Accou
 /// <summary>
 /// EF Core configuration for the Account Balance Checkpoint entity
 /// </summary>
-internal sealed class AccountBalanceCheckpointEntityConfiguration : EntityConfigurationBase<AccountBalanceCheckpoint>
+internal sealed class AccountBalanceCheckpointEntityConfiguration : EntityConfiguration<AccountBalanceCheckpoint>
 {
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<AccountBalanceCheckpoint> builder)

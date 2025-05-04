@@ -1,7 +1,7 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.CloseAccountingPeriod.Scenarios;
 using Tests.Setups;
@@ -33,7 +33,7 @@ internal sealed class MultipleAccountingPeriodScenarioSetup : ScenarioSetup
     /// </summary>
     public MultipleAccountingPeriodScenarioSetup()
     {
-        Fund = GetService<IFundService>().CreateNewFund("Test");
+        Fund = GetService<AddFundAction>().Run("Test");
         GetService<IFundRepository>().Add(Fund);
 
         // Grab the valid setup for adding multiple Accounting Periods
@@ -47,14 +47,14 @@ internal sealed class MultipleAccountingPeriodScenarioSetup : ScenarioSetup
         List<AccountingPeriod> accountingPeriods = [];
         foreach (DateOnly accountingPeriodDate in accountingPeriodDates)
         {
-            AccountingPeriod accountingPeriod = GetService<IAccountingPeriodService>()
-                .CreateNewAccountingPeriod(accountingPeriodDate.Year, accountingPeriodDate.Month);
+            AccountingPeriod accountingPeriod = GetService<AddAccountingPeriodAction>()
+                .Run(accountingPeriodDate.Year, accountingPeriodDate.Month);
             GetService<IAccountingPeriodRepository>().Add(accountingPeriod);
             accountingPeriods.Add(accountingPeriod);
 
             if (Account == null)
             {
-                Account = GetService<IAccountService>().CreateNewAccount("Test", AccountType.Standard,
+                Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, accountingPeriod, accountingPeriod.PeriodStartDate,
                 [
                     new FundAmount
                     {

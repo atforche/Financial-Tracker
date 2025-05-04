@@ -5,10 +5,10 @@ namespace Rest.Models.AccountingPeriod;
 /// </summary>
 public class CreateFundConversionModel
 {
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.BalanceEventBase.Account"/>
+    /// <inheritdoc cref="Domain.Aggregates.BalanceEvent.Account"/>
     public required Guid AccountId { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.BalanceEventBase.EventDate"/>
+    /// <inheritdoc cref="Domain.Aggregates.BalanceEvent.EventDate"/>
     public required DateOnly EventDate { get; init; }
 
     /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.FundConversion.FromFund"/>

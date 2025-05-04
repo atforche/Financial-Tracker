@@ -5,7 +5,7 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided Account Balance by Date matches the expected state
 /// </summary>
-internal sealed class AccountBalanceByDateValidator : EntityValidatorBase<AccountBalanceByDate, AccountBalanceByDateState>
+internal sealed class AccountBalanceByDateValidator : EntityValidator<AccountBalanceByDate, AccountBalanceByDateState>
 {
     /// <inheritdoc/>
     public override void Validate(AccountBalanceByDate entity, AccountBalanceByDateState expectedState)

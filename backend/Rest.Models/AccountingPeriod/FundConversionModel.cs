@@ -9,13 +9,13 @@ namespace Rest.Models.AccountingPeriod;
 /// </summary>
 public class FundConversionModel
 {
-    /// <inheritdoc cref="Domain.Aggregates.EntityBase.Id"/>
+    /// <inheritdoc cref="Domain.Aggregates.Entity.Id"/>
     public Guid Id { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.BalanceEventBase.Account"/>
+    /// <inheritdoc cref="Domain.Aggregates.BalanceEvent.Account"/>
     public AccountModel Account { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.BalanceEventBase.EventDate"/>
+    /// <inheritdoc cref="Domain.Aggregates.BalanceEvent.EventDate"/>
     public DateOnly EventDate { get; init; }
 
     /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.FundConversion.FromFund"/>

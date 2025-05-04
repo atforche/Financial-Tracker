@@ -1,7 +1,7 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.CloseAccountingPeriod.Scenarios;
 using Tests.Setups;
@@ -39,14 +39,14 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
     /// <param name="scenario">Scenario for this test case</param>
     public BalanceEventScenarioSetup(BalanceEventScenario scenario)
     {
-        Fund = GetService<IFundService>().CreateNewFund("Test");
+        Fund = GetService<AddFundAction>().Run("Test");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<IFundService>().CreateNewFund("Test2");
+        OtherFund = GetService<AddFundAction>().Run("Test2");
         GetService<IFundRepository>().Add(OtherFund);
 
-        AccountingPeriod = GetService<IAccountingPeriodService>().CreateNewAccountingPeriod(2025, 1);
+        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
-        Account = GetService<IAccountService>().CreateNewAccount("Test", AccountType.Standard,
+        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
@@ -63,7 +63,7 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
 
         if (scenario is BalanceEventScenario.UnpostedTransaction or BalanceEventScenario.PostedTransaction)
         {
-            GetService<IAccountingPeriodService>().AddTransaction(AccountingPeriod,
+            GetService<AddTransactionAction>().Run(AccountingPeriod,
                 new DateOnly(2025, 1, 15),
                 Account,
                 null,
@@ -77,13 +77,11 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
         }
         if (scenario is BalanceEventScenario.PostedTransaction)
         {
-            GetService<IAccountingPeriodService>().PostTransaction(AccountingPeriod.Transactions.First(),
-                Account,
-                new DateOnly(2025, 1, 15));
+            AccountingPeriod.Transactions.First().Post(TransactionAccountType.Debit, new DateOnly(2025, 1, 15));
         }
         if (scenario is BalanceEventScenario.ChangeInValue)
         {
-            GetService<IAccountingPeriodService>().AddChangeInValue(AccountingPeriod,
+            GetService<AddChangeInValueAction>().Run(AccountingPeriod,
                 new DateOnly(2025, 1, 15),
                 Account,
                 new FundAmount
@@ -94,7 +92,7 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
         }
         if (scenario is BalanceEventScenario.FundConversion)
         {
-            GetService<IAccountingPeriodService>().AddFundConversion(AccountingPeriod,
+            GetService<AddFundConversionAction>().Run(AccountingPeriod,
                 new DateOnly(2025, 1, 15),
                 Account,
                 Fund,

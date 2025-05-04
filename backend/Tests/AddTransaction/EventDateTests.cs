@@ -1,5 +1,5 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
-using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Scenarios;
 using Tests.Setups;
@@ -34,7 +34,7 @@ public class EventDateTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
     private static Transaction AddTransaction(BalanceEventDateScenarioSetup setup) =>
-        setup.GetService<IAccountingPeriodService>().AddTransaction(setup.CurrentAccountingPeriod,
+        setup.GetService<AddTransactionAction>().Run(setup.CurrentAccountingPeriod,
             setup.EventDate,
             setup.Account,
             null,
@@ -67,6 +67,7 @@ public class EventDateTests
             [
                 new TransactionBalanceEventState
                 {
+                    AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
                     AccountName = setup.Account.Name,
                     EventDate = setup.EventDate,
                     EventSequence = 1,

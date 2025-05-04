@@ -1,5 +1,5 @@
+using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
-using Domain.Services;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
@@ -33,13 +33,12 @@ public class EventDateTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Fund Conversion that was added for this test case</returns>
     private static FundConversion AddFundConversion(BalanceEventDateScenarioSetup setup) =>
-        setup.GetService<IAccountingPeriodService>()
-            .AddFundConversion(setup.CurrentAccountingPeriod,
-                setup.EventDate,
-                setup.Account,
-                setup.Fund,
-                setup.OtherFund,
-                100.00m);
+        setup.GetService<AddFundConversionAction>().Run(setup.CurrentAccountingPeriod,
+            setup.EventDate,
+            setup.Account,
+            setup.Fund,
+            setup.OtherFund,
+            100.00m);
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -49,6 +48,7 @@ public class EventDateTests
     private static FundConversionState GetExpectedState(BalanceEventDateScenarioSetup setup) =>
         new()
         {
+            AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
             AccountName = setup.Account.Name,
             EventDate = setup.EventDate,
             EventSequence = 1,
