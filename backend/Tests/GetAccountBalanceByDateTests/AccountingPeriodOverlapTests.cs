@@ -38,7 +38,7 @@ public class AccountingPeriodOverlapTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Account Balance by Date for the provided Accounting Period</returns>
     private static IEnumerable<AccountBalanceByDate> GetAccountBalance(AccountingPeriodOverlapScenarioSetup setup) =>
-        setup.GetService<IAccountBalanceService>().GetAccountBalancesByDate(setup.Account,
+        setup.GetService<AccountBalanceService>().GetAccountBalancesByDate(setup.Account,
             new DateRange(new DateOnly(2025, 1, 10), new DateOnly(2025, 1, 20)));
 
     /// <summary>

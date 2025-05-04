@@ -24,7 +24,7 @@ public class AccountTests
         new FundConversionValidator().Validate(AddFundConversion(setup, false), GetExpectedState(setup, false));
         new FundConversionValidator().Validate(AddFundConversion(setup, true), GetExpectedState(setup, true));
         new AccountBalanceByEventValidator().Validate(
-            setup.GetService<IAccountBalanceService>()
+            setup.GetService<AccountBalanceService>()
                 .GetAccountBalancesByEvent(setup.Account, new DateRange(new DateOnly(2025, 1, 10), new DateOnly(2025, 1, 10))),
             [GetExpectedAccountBalance(setup, false), GetExpectedAccountBalance(setup, true)]);
     }

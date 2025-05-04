@@ -12,7 +12,7 @@ namespace Domain.Aggregates;
 /// <param name="accountBalanceService">Account Balance Service</param>
 internal sealed class BalanceEventFutureEventValidator(
     IAccountingPeriodRepository accountingPeriodRepository,
-    IAccountBalanceService accountBalanceService)
+    AccountBalanceService accountBalanceService)
 {
     /// <summary>
     /// Validates that the newly created Balance Event doesn't invalidate any future Balance Events

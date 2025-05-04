@@ -14,7 +14,7 @@ namespace Domain.Actions;
 /// <param name="accountBalanceService">Account Balance Service</param>
 public class AddFundConversionAction(
     IAccountingPeriodRepository accountingPeriodRepository,
-    IAccountBalanceService accountBalanceService)
+    AccountBalanceService accountBalanceService)
 {
     /// <summary>
     /// Runs this action

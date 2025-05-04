@@ -30,7 +30,7 @@ public class DefaultTests
                 }
             ]);
         new AccountBalanceByAccountingPeriodValidator().Validate(
-            setup.GetService<IAccountBalanceService>().GetAccountBalancesByAccountingPeriod(setup.Account, setup.AccountingPeriod),
+            setup.GetService<AccountBalanceService>().GetAccountBalancesByAccountingPeriod(setup.Account, setup.AccountingPeriod),
             new AccountBalanceByAccountingPeriodState
             {
                 AccountingPeriodKey = new AccountingPeriodKey(2025, 1),

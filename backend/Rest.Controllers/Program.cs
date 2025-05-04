@@ -7,7 +7,6 @@ using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
 using Domain.Services;
-using Domain.Services.Implementations;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Rest.Models;
@@ -28,17 +27,17 @@ builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Add domain DI services
-builder.Services.AddScoped<AddAccountAction>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
+builder.Services.AddScoped<IFundRepository, FundRepository>();
+builder.Services.AddScoped<AddAccountAction>();
 builder.Services.AddScoped<AddAccountingPeriodAction>();
 builder.Services.AddScoped<CloseAccountingPeriodAction>();
 builder.Services.AddScoped<AddTransactionAction>();
 builder.Services.AddScoped<AddFundConversionAction>();
 builder.Services.AddScoped<AddChangeInValueAction>();
-builder.Services.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
-builder.Services.AddScoped<IAccountBalanceService, AccountBalanceService>();
+builder.Services.AddScoped<AccountBalanceService>();
 builder.Services.AddScoped<AddFundAction>();
-builder.Services.AddScoped<IFundRepository, FundRepository>();
 
 // Configure CORS to allow requests from select origins
 string corsPolicyName = "CORS";

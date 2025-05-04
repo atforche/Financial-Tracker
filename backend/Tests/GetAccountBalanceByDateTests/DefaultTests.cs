@@ -30,7 +30,7 @@ public class DefaultTests
                 }
             ]);
         new AccountBalanceByDateValidator().Validate(
-            setup.GetService<IAccountBalanceService>().GetAccountBalancesByDate(setup.Account,
+            setup.GetService<AccountBalanceService>().GetAccountBalancesByDate(setup.Account,
                 new DateRange(new DateOnly(2025, 1, 14), new DateOnly(2025, 1, 16))),
             [
                 new AccountBalanceByDateState

@@ -24,7 +24,7 @@ public class AccountTests
         new ChangeInValueValidator().Validate(AddChangeInValue(setup, 100.00m), GetExpectedState(setup, 100.00m));
         new ChangeInValueValidator().Validate(AddChangeInValue(setup, -100.00m), GetExpectedState(setup, -100.00m));
         new AccountBalanceByEventValidator().Validate(
-            setup.GetService<IAccountBalanceService>()
+            setup.GetService<AccountBalanceService>()
                 .GetAccountBalancesByEvent(setup.Account, new DateRange(new DateOnly(2025, 1, 10), new DateOnly(2025, 1, 10))),
             [GetExpectedAccountBalance(setup, 100.00m), GetExpectedAccountBalance(setup, -100.00m)]);
     }

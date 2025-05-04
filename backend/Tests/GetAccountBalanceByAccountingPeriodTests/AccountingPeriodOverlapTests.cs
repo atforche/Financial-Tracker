@@ -50,7 +50,7 @@ public class AccountingPeriodOverlapTests
     private static AccountBalanceByAccountingPeriod GetAccountBalance(
         AccountingPeriodOverlapScenarioSetup setup,
         AccountingPeriod accountingPeriod) =>
-        setup.GetService<IAccountBalanceService>().GetAccountBalancesByAccountingPeriod(setup.Account, accountingPeriod);
+        setup.GetService<AccountBalanceService>().GetAccountBalancesByAccountingPeriod(setup.Account, accountingPeriod);
 
     /// <summary>
     /// Gets the expected state for this test case and Accounting Period

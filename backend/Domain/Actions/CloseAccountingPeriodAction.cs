@@ -14,7 +14,7 @@ namespace Domain.Actions;
 public class CloseAccountingPeriodAction(
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
-    IAccountBalanceService accountBalanceService)
+    AccountBalanceService accountBalanceService)
 {
     /// <summary>
     /// Runs this action

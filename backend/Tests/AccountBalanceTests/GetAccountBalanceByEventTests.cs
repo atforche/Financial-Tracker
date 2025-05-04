@@ -21,7 +21,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
     private readonly AddAccountAction _addAccountAction;
     private readonly IFundRepository _fundRepository;
     private readonly AddFundAction _addFundAction;
-    private readonly IAccountBalanceService _accountBalanceService;
+    private readonly AccountBalanceService _accountBalanceService;
 
     private readonly Fund _testFund;
     private readonly AccountingPeriod _testAccountingPeriod;
@@ -41,7 +41,7 @@ public class GetAccountBalanceByEventTests : UnitTestBase
         _addAccountAction = GetService<AddAccountAction>();
         _fundRepository = GetService<IFundRepository>();
         _addFundAction = GetService<AddFundAction>();
-        _accountBalanceService = GetService<IAccountBalanceService>();
+        _accountBalanceService = GetService<AccountBalanceService>();
 
         // Setup shared by all tests
         _testFund = _addFundAction.Run("Test");

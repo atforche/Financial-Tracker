@@ -30,14 +30,14 @@ public class AccountTests
         if (setup.DebitAccount != null)
         {
             new AccountBalanceByEventValidator().Validate(
-                setup.GetService<IAccountBalanceService>()
+                setup.GetService<AccountBalanceService>()
                     .GetAccountBalancesByEvent(setup.DebitAccount, new DateRange(new DateOnly(2025, 1, 15), new DateOnly(2025, 1, 15))),
                 [GetExpectedAccountBalance(setup, setup.DebitAccount)]);
         }
         if (setup.CreditAccount != null)
         {
             new AccountBalanceByEventValidator().Validate(
-                setup.GetService<IAccountBalanceService>()
+                setup.GetService<AccountBalanceService>()
                     .GetAccountBalancesByEvent(setup.CreditAccount, new DateRange(new DateOnly(2025, 1, 15), new DateOnly(2025, 1, 15))),
                 [GetExpectedAccountBalance(setup, setup.CreditAccount)]);
         }

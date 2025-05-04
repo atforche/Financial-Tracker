@@ -3,7 +3,6 @@ using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
 using Domain.Services;
-using Domain.Services.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using Tests.Mocks;
 
@@ -30,7 +29,7 @@ internal abstract class ScenarioSetup
         serviceCollection.AddScoped<AddTransactionAction>();
         serviceCollection.AddScoped<AddChangeInValueAction>();
         serviceCollection.AddScoped<AddFundConversionAction>();
-        serviceCollection.AddScoped<IAccountBalanceService, AccountBalanceService>();
+        serviceCollection.AddScoped<AccountBalanceService>();
         serviceCollection.AddScoped<AddAccountAction>();
         serviceCollection.AddScoped<AddFundAction>();
         _serviceProvider = serviceCollection.BuildServiceProvider();

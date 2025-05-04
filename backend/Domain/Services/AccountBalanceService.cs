@@ -3,14 +3,19 @@ using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.ValueObjects;
 
-namespace Domain.Services.Implementations;
+namespace Domain.Services;
 
-/// <inheritdoc/>
-public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodRepository) : IAccountBalanceService
+/// <summary>
+/// Service used to calculate the balance of an Account as of a particular point in time
+/// </summary>
+public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodRepository)
 {
-    private readonly IAccountingPeriodRepository _accountingPeriodRepository = accountingPeriodRepository;
-
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the list of Account Balances for each date over the provided Date Range
+    /// </summary>
+    /// <param name="account">Account to get the balances for</param>
+    /// <param name="dateRange">Date Range to get the daily balances for</param>
+    /// <returns>The list of Account Balances for each date over the Date Range</returns>
     public IReadOnlyCollection<AccountBalanceByDate> GetAccountBalancesByDate(Account account, DateRange dateRange)
     {
         List<AccountBalanceByDate> results = [];
@@ -33,7 +38,12 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
         return results;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the list of Account Balances for each Balance Event over the provided Date Range
+    /// </summary>
+    /// <param name="account">Account to get the balances for</param>
+    /// <param name="dateRange">Date Range to get the event balances for</param>
+    /// <returns>The list of Account Balances for each Balance Event over the Date Range</returns>
     public IReadOnlyCollection<AccountBalanceByEvent> GetAccountBalancesByEvent(Account account, DateRange dateRange)
     {
         List<AccountBalanceByEvent> results = [];
@@ -50,7 +60,12 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
         return results;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the Account Balances at the beginning and end of the provided Accounting Period.
+    /// </summary>
+    /// <param name="account">Account to get the balances for</param>
+    /// <param name="accountingPeriod">Accounting Period to get the </param>
+    /// <returns>The beginning and ending Account Balances for the Accounting Period</returns>
     public AccountBalanceByAccountingPeriod GetAccountBalancesByAccountingPeriod(
         Account account,
         AccountingPeriod accountingPeriod)
@@ -111,8 +126,8 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
         // Determine all of the Balance Events from the past Accounting Period that fall in the checkpoint Accounting Period.
         // All of these events have already been applied to our balance checkpoint. But we really want to individually 
         // apply them as they occur on each date. So reverse all of them so they can be reapplied on their respective dates.
-        AccountingPeriod? checkpointPeriod = _accountingPeriodRepository.FindByDate(balanceCheckpoint.AccountingPeriodKey.ConvertToDate());
-        AccountingPeriod? pastAccountingPeriod = _accountingPeriodRepository.FindByDateOrNull(checkpointPeriod.PeriodStartDate.AddMonths(-1));
+        AccountingPeriod? checkpointPeriod = accountingPeriodRepository.FindByDate(balanceCheckpoint.AccountingPeriodKey.ConvertToDate());
+        AccountingPeriod? pastAccountingPeriod = accountingPeriodRepository.FindByDateOrNull(checkpointPeriod.PeriodStartDate.AddMonths(-1));
         List<BalanceEvent> pastPeriodBalanceEventsDuringOrAfterDateRange = pastAccountingPeriod?.GetAllBalanceEvents()
             .Where(balanceEvent => balanceEvent.EventDate >= checkpointPeriod.PeriodStartDate).ToList() ?? [];
         foreach (BalanceEvent balanceEvent in Enumerable.Reverse(pastPeriodBalanceEventsDuringOrAfterDateRange))
@@ -171,7 +186,7 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
         {
             return checkpoint.ConvertToAccountBalance();
         }
-        AccountingPeriod? pastAccountingPeriod = _accountingPeriodRepository.FindByDateOrNull(
+        AccountingPeriod? pastAccountingPeriod = accountingPeriodRepository.FindByDateOrNull(
             accountingPeriod.PeriodStartDate.AddMonths(-1));
         if (pastAccountingPeriod != null)
         {
@@ -187,7 +202,7 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
     /// <param name="dateRange">Date range to get all the Balance Events from</param>
     /// <returns>The list of Balance Events that fall in the provided date range</returns>
     private IEnumerable<BalanceEvent> GetAllBalanceEventsInDateRange(Account account, DateRange dateRange) =>
-        _accountingPeriodRepository
+        accountingPeriodRepository
             .FindAccountingPeriodsWithBalanceEventsInDateRange(dateRange)
             .SelectMany(period => period.GetAllBalanceEvents())
             .Where(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate) && balanceEvent.Account == account)
