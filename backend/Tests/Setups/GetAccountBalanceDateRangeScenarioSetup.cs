@@ -3,15 +3,14 @@ using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
 using Domain.ValueObjects;
-using Tests.GetAccountBalanceByDateTests.Scenarios;
-using Tests.Setups;
+using Tests.Scenarios;
 
-namespace Tests.GetAccountBalanceByDateTests.Setups;
+namespace Tests.Setups;
 
 /// <summary>
-/// Setup class for a <see cref="DateRangeScenarios"/> for getting an Account Balance by Date
+/// Setup class for a <see cref="GetAccountBalanceDateRangeScenario"/> for getting an Account Balance
 /// </summary>
-internal sealed class DateRangeScenarioSetup : ScenarioSetup
+internal sealed class GetAccountBalanceDateRangeScenarioSetup : ScenarioSetup
 {
     /// <summary>
     /// Fund for the Setup
@@ -32,7 +31,7 @@ internal sealed class DateRangeScenarioSetup : ScenarioSetup
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="scenario">Scenario for this test case</param>
-    public DateRangeScenarioSetup(DateRangeScenario scenario)
+    public GetAccountBalanceDateRangeScenarioSetup(GetAccountBalanceDateRangeScenario scenario)
     {
         Fund = GetService<AddFundAction>().Run("Test");
         GetService<IFundRepository>().Add(Fund);
@@ -59,11 +58,11 @@ internal sealed class DateRangeScenarioSetup : ScenarioSetup
 
         DateRange = scenario switch
         {
-            DateRangeScenario.RangeExtendsIntoFirstAccountingPeriod => new DateRange(new DateOnly(2024, 11, 30), new DateOnly(2024, 12, 1)),
-            DateRangeScenario.RangeExtendsAfterAccountWasAdded => new DateRange(new DateOnly(2024, 12, 31), new DateOnly(2025, 1, 1)),
-            DateRangeScenario.RangeFallsAfterAccountWasAdded => new DateRange(new DateOnly(2025, 1, 15), new DateOnly(2025, 1, 15)),
-            DateRangeScenario.RangeExtendsOutOfLastAccountingPeriod => new DateRange(new DateOnly(2025, 1, 31), new DateOnly(2025, 2, 1)),
-            DateRangeScenario.RangeFallsAfterAllAccountingPeriods => new DateRange(new DateOnly(2025, 12, 1), new DateOnly(2025, 12, 1)),
+            GetAccountBalanceDateRangeScenario.RangeExtendsIntoFirstAccountingPeriod => new DateRange(new DateOnly(2024, 11, 30), new DateOnly(2024, 12, 1)),
+            GetAccountBalanceDateRangeScenario.RangeExtendsAfterAccountWasAdded => new DateRange(new DateOnly(2024, 12, 31), new DateOnly(2025, 1, 1)),
+            GetAccountBalanceDateRangeScenario.RangeFallsAfterAccountWasAdded => new DateRange(new DateOnly(2025, 1, 15), new DateOnly(2025, 1, 15)),
+            GetAccountBalanceDateRangeScenario.RangeExtendsOutOfLastAccountingPeriod => new DateRange(new DateOnly(2025, 1, 31), new DateOnly(2025, 2, 1)),
+            GetAccountBalanceDateRangeScenario.RangeFallsAfterAllAccountingPeriods => new DateRange(new DateOnly(2025, 12, 1), new DateOnly(2025, 12, 1)),
             _ => throw new InvalidOperationException()
         };
     }

@@ -1,11 +1,11 @@
 using System.Collections;
 
-namespace Tests.GetAccountBalanceByDateTests.Scenarios;
+namespace Tests.Scenarios;
 
 /// <summary>
-/// Collection class that contains all the unique Accounting Period Overlap scenarios for getting an Account Balance by Date
+/// Collection class that contains all the unique Accounting Period Overlap scenarios for getting an Account Balance
 /// </summary>
-public sealed class AccountingPeriodOverlapScenarios : IEnumerable<TheoryDataRow<AccountingPeriodType, DateOnly>>
+public sealed class GetAccountBalanceAccountingPeriodOverlapScenarios : IEnumerable<TheoryDataRow<AccountingPeriodType, DateOnly>>
 {
     /// <inheritdoc/>
     public IEnumerator<TheoryDataRow<AccountingPeriodType, DateOnly>> GetEnumerator()
@@ -23,7 +23,7 @@ public sealed class AccountingPeriodOverlapScenarios : IEnumerable<TheoryDataRow
 }
 
 /// <summary>
-/// Enum representing the different Accounting Period types for getting an Account Balance by Date
+/// Enum representing the different Accounting Period types for getting an Account Balance
 /// </summary>
 public enum AccountingPeriodType
 {

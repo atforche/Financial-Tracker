@@ -1,13 +1,13 @@
 using Domain.Services;
 using Domain.ValueObjects;
-using Tests.GetAccountBalanceByDateTests.Scenarios;
-using Tests.GetAccountBalanceByDateTests.Setups;
+using Tests.Scenarios;
+using Tests.Setups;
 using Tests.Validators;
 
 namespace Tests.GetAccountBalanceByDateTests;
 
 /// <summary>
-/// Test class that tests getting an Account Balance by Date with different <see cref="DateRangeScenarios"/>
+/// Test class that tests getting an Account Balance by Date with different <see cref="GetAccountBalanceDateRangeScenarios"/>
 /// </summary>
 public class DateRangeTests
 {
@@ -15,10 +15,10 @@ public class DateRangeTests
     /// Runs the test for this test class
     /// </summary>
     [Theory]
-    [ClassData(typeof(DateRangeScenarios))]
-    public void RunTest(DateRangeScenario scenario)
+    [ClassData(typeof(GetAccountBalanceDateRangeScenarios))]
+    public void RunTest(GetAccountBalanceDateRangeScenario scenario)
     {
-        var setup = new DateRangeScenarioSetup(scenario);
+        var setup = new GetAccountBalanceDateRangeScenarioSetup(scenario);
         new AccountBalanceByDateValidator().Validate(GetAccountBalance(setup), GetExpectedState(setup));
     }
 
@@ -27,7 +27,7 @@ public class DateRangeTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Account Balance by Dates for this test case</returns>
-    private static IEnumerable<AccountBalanceByDate> GetAccountBalance(DateRangeScenarioSetup setup) =>
+    private static IEnumerable<AccountBalanceByDate> GetAccountBalance(GetAccountBalanceDateRangeScenarioSetup setup) =>
         setup.GetService<AccountBalanceService>().GetAccountBalancesByDate(setup.Account, setup.DateRange);
 
     /// <summary>
@@ -35,7 +35,7 @@ public class DateRangeTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static IEnumerable<AccountBalanceByDateState> GetExpectedState(DateRangeScenarioSetup setup) =>
+    private static IEnumerable<AccountBalanceByDateState> GetExpectedState(GetAccountBalanceDateRangeScenarioSetup setup) =>
         setup.DateRange.GetInclusiveDates().Select(date => new AccountBalanceByDateState
         {
             Date = date,

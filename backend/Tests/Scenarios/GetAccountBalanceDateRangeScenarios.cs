@@ -1,15 +1,15 @@
 using System.Collections;
 
-namespace Tests.GetAccountBalanceByDateTests.Scenarios;
+namespace Tests.Scenarios;
 
 /// <summary>
-/// Collection class that contains all the unique Date Range scenarios for getting an Account Balance by Date
+/// Collection class that contains all the unique Date Range scenarios for getting an Account Balance
 /// </summary>
-public sealed class DateRangeScenarios : IEnumerable<TheoryDataRow<DateRangeScenario>>
+public sealed class GetAccountBalanceDateRangeScenarios : IEnumerable<TheoryDataRow<GetAccountBalanceDateRangeScenario>>
 {
     /// <inheritdoc/>
-    public IEnumerator<TheoryDataRow<DateRangeScenario>> GetEnumerator() => Enum.GetValues<DateRangeScenario>()
-        .Select(value => new TheoryDataRow<DateRangeScenario>(value))
+    public IEnumerator<TheoryDataRow<GetAccountBalanceDateRangeScenario>> GetEnumerator() => Enum.GetValues<GetAccountBalanceDateRangeScenario>()
+        .Select(value => new TheoryDataRow<GetAccountBalanceDateRangeScenario>(value))
         .GetEnumerator();
 
     /// <inheritdoc/>
@@ -19,7 +19,7 @@ public sealed class DateRangeScenarios : IEnumerable<TheoryDataRow<DateRangeScen
 /// <summary>
 /// Enum representing the different Date Range scenarios for getting an Account Balance by Date
 /// </summary>
-public enum DateRangeScenario
+public enum GetAccountBalanceDateRangeScenario
 {
     /// <summary>
     /// Scenario where the date range starts before all of the Accounting Periods but ends within the first Accounting Period

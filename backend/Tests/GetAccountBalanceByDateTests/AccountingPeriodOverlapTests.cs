@@ -1,14 +1,14 @@
 using Domain.Actions;
 using Domain.Services;
 using Domain.ValueObjects;
-using Tests.GetAccountBalanceByDateTests.Scenarios;
-using Tests.GetAccountBalanceByDateTests.Setups;
+using Tests.Scenarios;
+using Tests.Setups;
 using Tests.Validators;
 
 namespace Tests.GetAccountBalanceByDateTests;
 
 /// <summary>
-/// Test class that tests getting an Account Balance by Date with different <see cref="AccountingPeriodOverlapScenarios"/>
+/// Test class that tests getting an Account Balance by Date with different <see cref="GetAccountBalanceAccountingPeriodOverlapScenarios"/>
 /// </summary>
 public class AccountingPeriodOverlapTests
 {
@@ -16,10 +16,10 @@ public class AccountingPeriodOverlapTests
     /// Runs the test for this test class
     /// </summary>
     [Theory]
-    [ClassData(typeof(AccountingPeriodOverlapScenarios))]
+    [ClassData(typeof(GetAccountBalanceAccountingPeriodOverlapScenarios))]
     public void RunTest(AccountingPeriodType accountingPeriodType, DateOnly eventDate)
     {
-        var setup = new AccountingPeriodOverlapScenarioSetup(accountingPeriodType, eventDate);
+        var setup = new GetAccountBalanceAccountingPeriodOverlapScenarioSetup(accountingPeriodType, eventDate);
         new AccountBalanceByDateValidator().Validate(GetAccountBalance(setup), GetExpectedState(setup, eventDate));
 
         setup.GetService<CloseAccountingPeriodAction>().Run(setup.PastAccountingPeriod);
@@ -37,7 +37,7 @@ public class AccountingPeriodOverlapTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Account Balance by Date for the provided Accounting Period</returns>
-    private static IEnumerable<AccountBalanceByDate> GetAccountBalance(AccountingPeriodOverlapScenarioSetup setup) =>
+    private static IEnumerable<AccountBalanceByDate> GetAccountBalance(GetAccountBalanceAccountingPeriodOverlapScenarioSetup setup) =>
         setup.GetService<AccountBalanceService>().GetAccountBalancesByDate(setup.Account,
             new DateRange(new DateOnly(2025, 1, 10), new DateOnly(2025, 1, 20)));
 
@@ -47,7 +47,7 @@ public class AccountingPeriodOverlapTests
     /// <param name="setup">Setup for this test case</param>
     /// <param name="eventDate">Event Date for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static IEnumerable<AccountBalanceByDateState> GetExpectedState(AccountingPeriodOverlapScenarioSetup setup, DateOnly eventDate) =>
+    private static IEnumerable<AccountBalanceByDateState> GetExpectedState(GetAccountBalanceAccountingPeriodOverlapScenarioSetup setup, DateOnly eventDate) =>
         new DateRange(new DateOnly(2025, 1, 10), new DateOnly(2025, 1, 20)).GetInclusiveDates()
             .Select(date =>
             {
