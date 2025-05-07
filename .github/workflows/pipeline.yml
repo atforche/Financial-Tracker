@@ -28,13 +28,19 @@ jobs:
         restore-solution
 
     - name: Verify formatting
-      run: format-solution
+      run: |
+        . ./scripts.sh 
+        format-solution
 
     - name: Build
-      run: build-solution
+      run: |
+        . ./scripts.sh 
+        build-solution
 
     - name: Test
-      run: test-solution
+      run: |
+        . ./scripts.sh 
+        test-solution
 
   # Builds and tests the Vite project
   build_vite:
