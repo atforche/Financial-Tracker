@@ -190,7 +190,8 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
             accountingPeriod.PeriodStartDate.AddMonths(-1));
         if (pastAccountingPeriod != null)
         {
-            return GetAccountBalancesByAccountingPeriod(account, pastAccountingPeriod).EndingBalance;
+            AccountBalance pastPeriodEndingBalance = GetAccountBalancesByAccountingPeriod(account, pastAccountingPeriod).EndingBalance;
+            return new AccountBalance(account, pastPeriodEndingBalance.FundBalances.Concat(pastPeriodEndingBalance.PendingFundBalanceChanges), []);
         }
         return new AccountBalance(account, [], []);
     }

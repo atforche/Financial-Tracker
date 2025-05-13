@@ -35,4 +35,9 @@ public enum AccountingPeriodScenario
     /// Scenario where the Account was added in a past Accounting Period
     /// </summary>
     PeriodAfterAccountWasAdded,
+
+    /// <summary>
+    /// Scenario where the prior Accounting Period has pending balance changes
+    /// </summary>
+    PriorPeriodHasPendingBalanceChanges,
 }

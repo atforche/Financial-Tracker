@@ -10,7 +10,7 @@ namespace Tests.Setups;
 /// <summary>
 /// Setup class for a <see cref="AddBalanceEventDateScenarios"/>
 /// </summary>
-internal sealed class BalanceEventDateScenarioSetup : ScenarioSetup
+internal sealed class AddBalanceEventDateScenarioSetup : ScenarioSetup
 {
     private readonly AccountingPeriod? _pastAccountingPeriod;
     private readonly AccountingPeriod? _futureAccountingPeriod;
@@ -44,7 +44,7 @@ internal sealed class BalanceEventDateScenarioSetup : ScenarioSetup
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="eventDate">Event Date for the Setup</param>
-    public BalanceEventDateScenarioSetup(DateOnly eventDate)
+    public AddBalanceEventDateScenarioSetup(DateOnly eventDate)
     {
         EventDate = eventDate;
 

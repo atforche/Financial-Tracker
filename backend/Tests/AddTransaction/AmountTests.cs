@@ -2,13 +2,13 @@ using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.ValueObjects;
 using Tests.Scenarios;
-using Tests.Scenarios.Transaction;
+using Tests.Setups;
 using Tests.Validators;
 
 namespace Tests.AddTransaction;
 
 /// <summary>
-/// Test class that tests adding a Transaction with different Transaction Amount scenarios
+/// Test class that tests adding a Transaction with different <see cref="AddBalanceEventAmountScenarios"/>
 /// </summary>
 public class AmountTests
 {
@@ -16,52 +16,46 @@ public class AmountTests
     /// Runs the test for this test class
     /// </summary>
     [Theory]
-    [ClassData(typeof(TransactionAmountScenarios))]
-    public void RunTest(BalanceEventAmountScenario scenario, TransactionAccountType? accountType)
+    [ClassData(typeof(AddBalanceEventAmountScenarios))]
+    public void RunTest(decimal amount)
     {
-        var setup = new TransactionAmountScenarioSetup(scenario, accountType);
-        if (ShouldThrowException(scenario))
+        var setup = new AddBalanceEventAmountScenarioSetup();
+        if (!IsValid(amount))
         {
-            Assert.Throws<InvalidOperationException>(() => AddTransaction(setup, accountType));
+            Assert.Throws<InvalidOperationException>(() => AddTransaction(setup, amount));
             return;
         }
-        new TransactionValidator().Validate(AddTransaction(setup, accountType), GetExpectedState(setup, accountType));
+        new TransactionValidator().Validate(AddTransaction(setup, amount), GetExpectedState(setup, amount));
     }
 
     /// <summary>
-    /// Determines if this test case should throw an exception
+    /// Determines if the provided scenario is valid
     /// </summary>
-    /// <param name="scenario">Scenario for this test case</param>
-    /// <returns>True if this test case should throw an exception, false otherwise</returns>
-    private static bool ShouldThrowException(BalanceEventAmountScenario scenario)
-    {
-        List<BalanceEventAmountScenario> invalidScenarios =
-        [
-            BalanceEventAmountScenario.Zero,
-            BalanceEventAmountScenario.Negative,
-            BalanceEventAmountScenario.ForcesAccountBalanceNegative,
-            BalanceEventAmountScenario.ForcesFutureEventToMakeAccountBalanceNegative,
-            BalanceEventAmountScenario.ForcesAccountBalancesAtEndOfPeriodToBeNegative
-        ];
-        return invalidScenarios.Contains(scenario);
-    }
+    /// <param name="amount">Amount for this test case</param>
+    /// <returns>True if this scenario is valid, false otherwise</returns>
+    private static bool IsValid(decimal amount) => amount > 0;
 
     /// <summary>
     /// Adds the Transaction for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
-    /// <param name="accountType">Account Type for this test case</param>
+    /// <param name="amount">Amount for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
-    private static Transaction AddTransaction(TransactionAmountScenarioSetup setup, TransactionAccountType? accountType) =>
+    private static Transaction AddTransaction(AddBalanceEventAmountScenarioSetup setup, decimal amount) =>
         setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
-            accountType != TransactionAccountType.Credit ? setup.Account : null,
-            accountType == TransactionAccountType.Credit ? setup.Account : null,
+            setup.Account,
+            null,
             [
-                new FundAmount()
+                new FundAmount
                 {
                     Fund = setup.Fund,
-                    Amount = setup.Amount,
+                    Amount = 100.00m,
+                },
+                new FundAmount
+                {
+                    Fund = setup.OtherFund,
+                    Amount = amount,
                 }
             ]);
 
@@ -69,36 +63,10 @@ public class AmountTests
     /// Gets the expected state for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
-    /// <param name="accountType">Account Type for this test case</param>
+    /// <param name="amount">Amount for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static TransactionState GetExpectedState(TransactionAmountScenarioSetup setup, TransactionAccountType? accountType)
-    {
-        List<TransactionBalanceEventState> balanceEvents = [];
-        if (accountType != TransactionAccountType.Credit)
-        {
-            balanceEvents.Add(new TransactionBalanceEventState
-            {
-                AccountingPeriodKey = setup.AccountingPeriod.Key,
-                AccountName = setup.Account.Name,
-                EventDate = new DateOnly(2025, 1, 15),
-                EventSequence = 1,
-                TransactionEventType = TransactionBalanceEventType.Added,
-                TransactionAccountType = TransactionAccountType.Debit,
-            });
-        }
-        else
-        {
-            balanceEvents.Add(new TransactionBalanceEventState
-            {
-                AccountingPeriodKey = setup.AccountingPeriod.Key,
-                AccountName = setup.Account.Name,
-                EventDate = new DateOnly(2025, 1, 15),
-                EventSequence = 1,
-                TransactionEventType = TransactionBalanceEventType.Added,
-                TransactionAccountType = TransactionAccountType.Credit,
-            });
-        }
-        return new()
+    private static TransactionState GetExpectedState(AddBalanceEventAmountScenarioSetup setup, decimal amount) =>
+        new()
         {
             TransactionDate = new DateOnly(2025, 1, 15),
             AccountingEntries =
@@ -106,10 +74,25 @@ public class AmountTests
                 new FundAmountState
                 {
                     FundName = setup.Fund.Name,
-                    Amount = setup.Amount,
-                }
+                    Amount = 100.00m,
+                },
+                new FundAmountState
+                {
+                    FundName = setup.OtherFund.Name,
+                    Amount = amount,
+                },
             ],
-            TransactionBalanceEvents = balanceEvents
+            TransactionBalanceEvents =
+            [
+                new TransactionBalanceEventState
+                {
+                    AccountingPeriodKey = setup.AccountingPeriod.Key,
+                    AccountName = setup.Account.Name,
+                    EventDate = new DateOnly(2025, 1, 15),
+                    EventSequence = 1,
+                    TransactionEventType = TransactionBalanceEventType.Added,
+                    TransactionAccountType = TransactionAccountType.Debit,
+                }
+            ]
         };
-    }
 }

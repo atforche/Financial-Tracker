@@ -46,8 +46,24 @@ public class AccountBalance
     public AccountBalance(Account account, IEnumerable<FundAmount> fundBalances, IEnumerable<FundAmount> pendingFundBalanceChanges)
     {
         Account = account;
-        FundBalances = fundBalances.Where(amount => amount.Amount != 0.00m).ToList();
-        PendingFundBalanceChanges = pendingFundBalanceChanges.Where(amount => amount.Amount != 0.00m).ToList();
+        FundBalances = fundBalances
+            .Where(amount => amount.Amount != 0.00m)
+            .GroupBy(fundAmount => fundAmount.Fund)
+            .Select(group => new FundAmount
+            {
+                Fund = group.Key,
+                Amount = group.Sum(fundAmount => fundAmount.Amount)
+            })
+            .ToList();
+        PendingFundBalanceChanges = pendingFundBalanceChanges
+            .Where(amount => amount.Amount != 0.00m)
+            .GroupBy(fundAmount => fundAmount.Fund)
+            .Select(group => new FundAmount
+            {
+                Fund = group.Key,
+                Amount = group.Sum(fundAmount => fundAmount.Amount)
+            })
+            .ToList();
         Validate();
     }
 
@@ -57,6 +73,14 @@ public class AccountBalance
     private void Validate()
     {
         if (Balance < 0 || BalanceIncludingPending < 0)
+        {
+            throw new InvalidOperationException();
+        }
+        if (FundBalances.GroupBy(fundBalance => fundBalance.Fund).Any(group => group.Count() > 1))
+        {
+            throw new InvalidOperationException();
+        }
+        if (PendingFundBalanceChanges.GroupBy(fundBalance => fundBalance.Fund).Any(group => group.Count() > 1))
         {
             throw new InvalidOperationException();
         }

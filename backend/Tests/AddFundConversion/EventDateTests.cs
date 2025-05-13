@@ -18,7 +18,7 @@ public class EventDateTests
     [ClassData(typeof(AddBalanceEventDateScenarios))]
     public void RunTest(DateOnly eventDate)
     {
-        var setup = new BalanceEventDateScenarioSetup(eventDate);
+        var setup = new AddBalanceEventDateScenarioSetup(eventDate);
         if (!AddBalanceEventDateScenarios.IsValid(eventDate))
         {
             Assert.Throws<InvalidOperationException>(() => AddFundConversion(setup));
@@ -32,7 +32,7 @@ public class EventDateTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Fund Conversion that was added for this test case</returns>
-    private static FundConversion AddFundConversion(BalanceEventDateScenarioSetup setup) =>
+    private static FundConversion AddFundConversion(AddBalanceEventDateScenarioSetup setup) =>
         setup.GetService<AddFundConversionAction>().Run(setup.CurrentAccountingPeriod,
             setup.EventDate,
             setup.Account,
@@ -45,7 +45,7 @@ public class EventDateTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static FundConversionState GetExpectedState(BalanceEventDateScenarioSetup setup) =>
+    private static FundConversionState GetExpectedState(AddBalanceEventDateScenarioSetup setup) =>
         new()
         {
             AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,

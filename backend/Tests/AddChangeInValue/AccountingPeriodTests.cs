@@ -2,12 +2,13 @@ using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.ValueObjects;
 using Tests.Scenarios;
+using Tests.Setups;
 using Tests.Validators;
 
 namespace Tests.AddChangeInValue;
 
 /// <summary>
-/// Test class that tests adding a Change In Value with different Accounting Period scenarios
+/// Test class that tests adding a Change In Value with different <see cref="AddBalanceEventAccountingPeriodScenarios"/>
 /// </summary>
 public class AccountingPeriodTests
 {
@@ -15,14 +16,11 @@ public class AccountingPeriodTests
     /// Runs the test for this test class
     /// </summary>
     [Theory]
-    [ClassData(typeof(AccountingPeriodScenarios))]
-    public void RunTest(
-        AccountingPeriodStatus? pastPeriodStatus,
-        AccountingPeriodStatus currentPeriodStatus,
-        AccountingPeriodStatus? futurePeriodStatus)
+    [ClassData(typeof(AddBalanceEventAccountingPeriodScenarios))]
+    public void RunTest(bool isOpen)
     {
-        var setup = new AccountingPeriodScenarioSetup(pastPeriodStatus, currentPeriodStatus, futurePeriodStatus);
-        if (ShouldThrowException(setup))
+        var setup = new AddBalanceEventAccountingPeriodScenarioSetup(isOpen);
+        if (!AddBalanceEventAccountingPeriodScenarios.IsValid(isOpen))
         {
             Assert.Throws<InvalidOperationException>(() => AddChangeInValue(setup));
             return;
@@ -31,19 +29,12 @@ public class AccountingPeriodTests
     }
 
     /// <summary>
-    /// Determines if this test case should throw an exception
-    /// </summary>
-    /// <param name="setup">Setup for this test case</param>
-    /// <returns>True if this test case should throw an exception, false otherwise</returns>
-    private static bool ShouldThrowException(AccountingPeriodScenarioSetup setup) => !setup.CurrentAccountingPeriod.IsOpen;
-
-    /// <summary>
     /// Adds the Change In Value for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Change In Value that was added for this test case</returns>
-    private static ChangeInValue AddChangeInValue(AccountingPeriodScenarioSetup setup) =>
-        setup.GetService<AddChangeInValueAction>().Run(setup.CurrentAccountingPeriod,
+    private static ChangeInValue AddChangeInValue(AddBalanceEventAccountingPeriodScenarioSetup setup) =>
+        setup.GetService<AddChangeInValueAction>().Run(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
             setup.Account,
             new FundAmount
@@ -57,10 +48,10 @@ public class AccountingPeriodTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static ChangeInValueState GetExpectedState(AccountingPeriodScenarioSetup setup) =>
+    private static ChangeInValueState GetExpectedState(AddBalanceEventAccountingPeriodScenarioSetup setup) =>
         new()
         {
-            AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
+            AccountingPeriodKey = setup.AccountingPeriod.Key,
             AccountName = setup.Account.Name,
             EventDate = new DateOnly(2025, 1, 15),
             EventSequence = 1,

@@ -3,7 +3,8 @@ using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Services;
 using Domain.ValueObjects;
-using Tests.Scenarios.Transaction;
+using Tests.AddTransaction.Scenarios;
+using Tests.AddTransaction.Setups;
 using Tests.Validators;
 
 namespace Tests.AddTransaction;
@@ -17,11 +18,11 @@ public class AccountTests
     /// Runs the test for this test class
     /// </summary>
     [Theory]
-    [ClassData(typeof(AddTransactionAccountScenarios))]
+    [ClassData(typeof(AccountScenarios))]
     public void RunTest(AccountType? debitAccountType, AccountType? creditAccountType, SameAccountTypeBehavior sameAccountTypeBehavior)
     {
-        var setup = new TransactionAccountScenarioSetup(debitAccountType, creditAccountType, sameAccountTypeBehavior);
-        if (ShouldThrowException(setup))
+        var setup = new AccountScenarioSetup(debitAccountType, creditAccountType, sameAccountTypeBehavior);
+        if (!AccountScenarios.IsValid(debitAccountType, creditAccountType, sameAccountTypeBehavior))
         {
             Assert.Throws<InvalidOperationException>(() => AddTransaction(setup));
             return;
@@ -44,18 +45,11 @@ public class AccountTests
     }
 
     /// <summary>
-    /// Determines if this test case should throw an exception
-    /// </summary>
-    /// <param name="setup">Setup for this test case</param>
-    /// <returns>True if this test case should throw an exception, false otherwise</returns>
-    private static bool ShouldThrowException(TransactionAccountScenarioSetup setup) => setup.DebitAccount == setup.CreditAccount;
-
-    /// <summary>
     /// Adds the Transaction for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
-    private static Transaction AddTransaction(TransactionAccountScenarioSetup setup) =>
+    private static Transaction AddTransaction(AccountScenarioSetup setup) =>
         setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
             setup.DebitAccount,
@@ -78,7 +72,7 @@ public class AccountTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static TransactionState GetExpectedState(TransactionAccountScenarioSetup setup) =>
+    private static TransactionState GetExpectedState(AccountScenarioSetup setup) =>
         new()
         {
             TransactionDate = new DateOnly(2025, 1, 15),
@@ -103,7 +97,7 @@ public class AccountTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The expected Transaction Balance Events for this test case</returns>
-    private static List<TransactionBalanceEventState> GetExpectedBalanceEvents(TransactionAccountScenarioSetup setup)
+    private static List<TransactionBalanceEventState> GetExpectedBalanceEvents(AccountScenarioSetup setup)
     {
         List<TransactionBalanceEventState> expectedBalanceEvents = [];
         if (setup.DebitAccount != null)
@@ -139,7 +133,7 @@ public class AccountTests
     /// <param name="setup">Setup for this test case</param>
     /// <param name="account">Account to get the expected balance for</param>
     /// <returns>The expected Account Balance for this test case and Account</returns>
-    private static AccountBalanceByEventState GetExpectedAccountBalance(TransactionAccountScenarioSetup setup, Account account) =>
+    private static AccountBalanceByEventState GetExpectedAccountBalance(AccountScenarioSetup setup, Account account) =>
         new()
         {
             AccountName = account.Name,
@@ -180,7 +174,7 @@ public class AccountTests
     /// <param name="setup">Setup for this test case</param>
     /// <param name="account">Account to get the balance change factor for</param>
     /// <returns>The expected balance change factor for the provided test case and Account</returns>
-    private static int DetermineBalanceChangeFactor(TransactionAccountScenarioSetup setup, Account account)
+    private static int DetermineBalanceChangeFactor(AccountScenarioSetup setup, Account account)
     {
         if (account == setup.DebitAccount)
         {

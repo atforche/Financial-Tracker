@@ -1,15 +1,10 @@
 using System.Collections;
-using Domain.Actions;
-using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
-using Domain.Aggregates.Funds;
-using Domain.ValueObjects;
-using Tests.Setups;
 
 namespace Tests.Scenarios;
 
 /// <summary>
-/// Collection class that contains all the unique Account scenarios that should be tested
+/// Collection class that contains all the unique Account scenarios
 /// </summary>
 public sealed class AccountScenarios : IEnumerable<TheoryDataRow<AccountType>>
 {
@@ -19,59 +14,4 @@ public sealed class AccountScenarios : IEnumerable<TheoryDataRow<AccountType>>
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-}
-
-/// <summary>
-/// Setup class for an Account scenario
-/// </summary>
-internal sealed class AccountScenarioSetup : ScenarioSetup
-{
-    /// <summary>
-    /// Fund for this Setup
-    /// </summary>
-    public Fund Fund { get; }
-
-    /// <summary>
-    /// Other Fund for this Setup
-    /// </summary>
-    public Fund OtherFund { get; }
-
-    /// <summary>
-    /// Accounting Period for this Setup
-    /// </summary>
-    public AccountingPeriod AccountingPeriod { get; }
-
-    /// <summary>
-    /// Account for this Setup
-    /// </summary>
-    public Account Account { get; }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="accountType">Account Type for this Setup</param>
-    public AccountScenarioSetup(AccountType accountType)
-    {
-        Fund = GetService<AddFundAction>().Run("Test");
-        GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<AddFundAction>().Run("OtherTest");
-        GetService<IFundRepository>().Add(OtherFund);
-
-        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
-        GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
-        Account = GetService<AddAccountAction>().Run("Test", accountType, AccountingPeriod, AccountingPeriod.PeriodStartDate,
-            [
-                new FundAmount
-                {
-                    Fund = Fund,
-                    Amount = 1500.00m,
-                },
-                new FundAmount
-                {
-                    Fund = OtherFund,
-                    Amount = 1500.00m
-                }
-            ]);
-        GetService<IAccountRepository>().Add(Account);
-    }
 }

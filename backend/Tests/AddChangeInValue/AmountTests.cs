@@ -2,12 +2,13 @@ using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.ValueObjects;
 using Tests.Scenarios;
+using Tests.Setups;
 using Tests.Validators;
 
 namespace Tests.AddChangeInValue;
 
 /// <summary>
-/// Test class that tests adding a Change In Value with different Balance Event Amount scenarios
+/// Test class that tests adding a Change In Value with different <see cref="AddBalanceEventAmountScenarios"/>
 /// </summary>
 public class AmountTests
 {
@@ -15,56 +16,48 @@ public class AmountTests
     /// Runs the test for this test class
     /// </summary>
     [Theory]
-    [ClassData(typeof(BalanceEventAmountScenarios))]
-    public void RunTest(BalanceEventAmountScenario scenario)
+    [ClassData(typeof(AddBalanceEventAmountScenarios))]
+    public void RunTest(decimal amount)
     {
-        var setup = new BalanceEventAmountScenarioSetup(scenario);
-        if (ShouldThrowException(scenario))
+        var setup = new AddBalanceEventAmountScenarioSetup();
+        if (!IsValid(amount))
         {
-            Assert.Throws<InvalidOperationException>(() => AddChangeInValue(setup));
+            Assert.Throws<InvalidOperationException>(() => AddChangeInValue(setup, amount));
             return;
         }
-        new ChangeInValueValidator().Validate(AddChangeInValue(setup), GetExpectedState(setup));
+        new ChangeInValueValidator().Validate(AddChangeInValue(setup, amount), GetExpectedState(setup, amount));
     }
 
     /// <summary>
-    /// Determines if this test case should throw an exception
+    /// Determines if the provided scenario is valid
     /// </summary>
-    /// <param name="scenario">Scenario for this test case</param>
-    /// <returns>True if this test case should throw an exception, false otherwise</returns>
-    private static bool ShouldThrowException(BalanceEventAmountScenario scenario)
-    {
-        List<BalanceEventAmountScenario> invalidScenarios =
-        [
-            BalanceEventAmountScenario.Zero,
-            BalanceEventAmountScenario.ForcesAccountBalanceNegative,
-            BalanceEventAmountScenario.ForcesFutureEventToMakeAccountBalanceNegative,
-            BalanceEventAmountScenario.ForcesAccountBalancesAtEndOfPeriodToBeNegative
-        ];
-        return invalidScenarios.Contains(scenario);
-    }
+    /// <param name="amount">Amount for this test case</param>
+    /// <returns>True if this scenario is valid, false otherwise</returns>
+    private static bool IsValid(decimal amount) => amount != 0.00m;
 
     /// <summary>
     /// Adds the Change In Value for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
+    /// <param name="amount">Amount for this test case</param>
     /// <returns>The Change In Value that was added for this test case</returns>
-    private static ChangeInValue AddChangeInValue(BalanceEventAmountScenarioSetup setup) =>
+    private static ChangeInValue AddChangeInValue(AddBalanceEventAmountScenarioSetup setup, decimal amount) =>
         setup.GetService<AddChangeInValueAction>().Run(setup.AccountingPeriod,
             new DateOnly(2025, 1, 10),
             setup.Account,
             new FundAmount
             {
                 Fund = setup.Fund,
-                Amount = setup.Amount,
+                Amount = amount,
             });
 
     /// <summary>
     /// Gets the expected state for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
+    /// <param name="amount">Amount for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static ChangeInValueState GetExpectedState(BalanceEventAmountScenarioSetup setup) =>
+    private static ChangeInValueState GetExpectedState(AddBalanceEventAmountScenarioSetup setup, decimal amount) =>
         new()
         {
             AccountingPeriodKey = setup.AccountingPeriod.Key,
@@ -74,7 +67,7 @@ public class AmountTests
             AccountingEntry = new FundAmountState
             {
                 FundName = setup.Fund.Name,
-                Amount = setup.Amount,
+                Amount = amount,
             }
         };
 }

@@ -19,7 +19,7 @@ public class EventDateTests
     [ClassData(typeof(AddBalanceEventDateScenarios))]
     public void RunTest(DateOnly eventDate)
     {
-        var setup = new BalanceEventDateScenarioSetup(eventDate);
+        var setup = new AddBalanceEventDateScenarioSetup(eventDate);
         if (!AddBalanceEventDateScenarios.IsValid(eventDate))
         {
             Assert.Throws<InvalidOperationException>(() => AddChangeInValue(setup));
@@ -33,7 +33,7 @@ public class EventDateTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Change In Value that was added for this test case</returns>
-    private static ChangeInValue AddChangeInValue(BalanceEventDateScenarioSetup setup) =>
+    private static ChangeInValue AddChangeInValue(AddBalanceEventDateScenarioSetup setup) =>
         setup.GetService<AddChangeInValueAction>().Run(setup.CurrentAccountingPeriod,
             setup.EventDate,
             setup.Account,
@@ -48,7 +48,7 @@ public class EventDateTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static ChangeInValueState GetExpectedState(BalanceEventDateScenarioSetup setup) =>
+    private static ChangeInValueState GetExpectedState(AddBalanceEventDateScenarioSetup setup) =>
         new()
         {
             AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,

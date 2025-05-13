@@ -62,7 +62,23 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
             AccountingPeriodScenario.PeriodBeforeAccountWasAdded => firstAccountingPeriod,
             AccountingPeriodScenario.PeriodAccountWasAdded => secondAccountingPeriod,
             AccountingPeriodScenario.PeriodAfterAccountWasAdded => thirdAccountingPeriod,
+            AccountingPeriodScenario.PriorPeriodHasPendingBalanceChanges => thirdAccountingPeriod,
             _ => throw new InvalidOperationException()
         };
+
+        if (scenario == AccountingPeriodScenario.PriorPeriodHasPendingBalanceChanges)
+        {
+            GetService<AddTransactionAction>().Run(secondAccountingPeriod,
+                new DateOnly(2025, 1, 15),
+                Account,
+                null,
+                [
+                    new FundAmount
+                    {
+                        Fund = Fund,
+                        Amount = 500.00m
+                    }
+                ]);
+        }
     }
 }

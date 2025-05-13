@@ -4,12 +4,13 @@ using Domain.Aggregates.Accounts;
 using Domain.Services;
 using Domain.ValueObjects;
 using Tests.Scenarios;
+using Tests.Setups;
 using Tests.Validators;
 
 namespace Tests.AddChangeInValue;
 
 /// <summary>
-/// Test class that tests adding a Change In Value with different Account scenarios
+/// Test class that tests adding a Change In Value with different <see cref="AccountScenarios"/>
 /// </summary>
 public class AccountTests
 {

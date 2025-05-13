@@ -3,7 +3,7 @@ using System.Collections;
 namespace Tests.Scenarios;
 
 /// <summary>
-/// Collection class that contains all the unique Balance Event Date scenarios that should be tested
+/// Collection class that contains all the unique Event Date scenarios for adding a Balance Event
 /// </summary>
 public sealed class AddBalanceEventDateScenarios : IEnumerable<TheoryDataRow<DateOnly>>
 {
@@ -28,7 +28,7 @@ public sealed class AddBalanceEventDateScenarios : IEnumerable<TheoryDataRow<Dat
     /// <returns>True if the provided scenario is valid, false otherwise</returns>
     public static bool IsValid(DateOnly eventDate)
     {
-        if (eventDate < new DateOnly(2024, 12, 2))
+        if (eventDate < new DateOnly(2024, 12, 15))
         {
             // Event date is earlier than the Account was added
             return false;

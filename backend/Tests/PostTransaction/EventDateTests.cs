@@ -19,7 +19,7 @@ public class EventDateTests
     [ClassData(typeof(AddBalanceEventDateScenarios))]
     public void RunTest(DateOnly eventDate)
     {
-        var setup = new BalanceEventDateScenarioSetup(eventDate);
+        var setup = new AddBalanceEventDateScenarioSetup(eventDate);
         Transaction transaction = AddTransaction(setup);
         if (!AddBalanceEventDateScenarios.IsValid(eventDate) || eventDate < new DateOnly(2025, 1, 1))
         {
@@ -35,7 +35,7 @@ public class EventDateTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
-    private static Transaction AddTransaction(BalanceEventDateScenarioSetup setup) =>
+    private static Transaction AddTransaction(AddBalanceEventDateScenarioSetup setup) =>
         setup.GetService<AddTransactionAction>().Run(setup.CurrentAccountingPeriod,
             new DateOnly(2025, 1, 1),
             setup.Account,
@@ -53,7 +53,7 @@ public class EventDateTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <param name="transaction">Transaction to be posted</param>
-    private static void PostTransaction(BalanceEventDateScenarioSetup setup, Transaction transaction) =>
+    private static void PostTransaction(AddBalanceEventDateScenarioSetup setup, Transaction transaction) =>
         transaction.Post(TransactionAccountType.Debit, setup.EventDate);
 
     /// <summary>
@@ -61,7 +61,7 @@ public class EventDateTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static TransactionState GetExpectedState(BalanceEventDateScenarioSetup setup) =>
+    private static TransactionState GetExpectedState(AddBalanceEventDateScenarioSetup setup) =>
         new()
         {
             TransactionDate = new DateOnly(2025, 1, 1),

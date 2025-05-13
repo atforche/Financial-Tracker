@@ -44,13 +44,13 @@ public class AccountingPeriodTests
                 new FundAmountState
                 {
                     FundName = setup.Fund.Name,
-                    Amount = 1500.00m
+                    Amount = scenario == AccountingPeriodScenario.PriorPeriodHasPendingBalanceChanges ? 1000.00m : 1500.00m
                 }
             ];
         return new AccountBalanceByAccountingPeriodState
         {
             AccountingPeriodKey = setup.AccountingPeriod.Key,
-            StartingFundBalances = scenario == AccountingPeriodScenario.PeriodAfterAccountWasAdded ? expectedFundAmounts : [],
+            StartingFundBalances = setup.AccountingPeriod.Month == 2 ? expectedFundAmounts : [],
             EndingFundBalances = expectedFundAmounts,
             EndingPendingFundBalanceChanges = []
         };

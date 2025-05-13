@@ -1,12 +1,13 @@
 using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Tests.Scenarios;
+using Tests.Setups;
 using Tests.Validators;
 
 namespace Tests.AddFundConversion;
 
 /// <summary>
-/// Test class that tests adding a Fund Conversion with different Balance Event Amount scenarios
+/// Test class that tests adding a Fund Conversion with different <see cref="AddBalanceEventAmountScenarios"/>
 /// </summary>
 public class AmountTests
 {
@@ -14,57 +15,46 @@ public class AmountTests
     /// Runs the test for this test class
     /// </summary>
     [Theory]
-    [ClassData(typeof(BalanceEventAmountScenarios))]
-    public void RunTest(BalanceEventAmountScenario scenario)
+    [ClassData(typeof(AddBalanceEventAmountScenarios))]
+    public void RunTest(decimal amount)
     {
-        var setup = new BalanceEventAmountScenarioSetup(scenario);
-        if (ShouldThrowException(scenario))
+        var setup = new AddBalanceEventAmountScenarioSetup();
+        if (!IsValid(amount))
         {
-            Assert.Throws<InvalidOperationException>(() => AddFundConversion(setup));
+            Assert.Throws<InvalidOperationException>(() => AddFundConversion(setup, amount));
             return;
         }
-        new FundConversionValidator().Validate(AddFundConversion(setup), GetExpectedState(setup));
+        new FundConversionValidator().Validate(AddFundConversion(setup, amount), GetExpectedState(setup, amount));
     }
 
     /// <summary>
-    /// Determines if this test case should throw an exception
+    /// Determines if the provided scenario is valid
     /// </summary>
-    /// <param name="scenario">Scenario for this test case</param>
-    /// <returns>True if this test case should throw an exception, false otherwise</returns>
-    private static bool ShouldThrowException(BalanceEventAmountScenario scenario)
-    {
-        List<BalanceEventAmountScenario> invalidScenarios =
-        [
-            BalanceEventAmountScenario.Zero,
-            BalanceEventAmountScenario.Negative,
-            BalanceEventAmountScenario.ForcesFundBalanceNegative,
-            BalanceEventAmountScenario.ForcesAccountBalanceToZero,
-            BalanceEventAmountScenario.ForcesAccountBalanceNegative,
-            BalanceEventAmountScenario.ForcesFutureEventToMakeAccountBalanceNegative,
-            BalanceEventAmountScenario.ForcesAccountBalancesAtEndOfPeriodToBeNegative
-        ];
-        return invalidScenarios.Contains(scenario);
-    }
+    /// <param name="amount">Amount for this test case</param>
+    /// <returns>True if this scenario is valid, false otherwise</returns>
+    private static bool IsValid(decimal amount) => amount > 0;
 
     /// <summary>
     /// Adds the Fund Conversion for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
+    /// <param name="amount">Amount for this test case</param>
     /// <returns>The Fund Conversion that was added for this test case</returns>
-    private static FundConversion AddFundConversion(BalanceEventAmountScenarioSetup setup) =>
+    private static FundConversion AddFundConversion(AddBalanceEventAmountScenarioSetup setup, decimal amount) =>
         setup.GetService<AddFundConversionAction>().Run(setup.AccountingPeriod,
             new DateOnly(2025, 1, 10),
             setup.Account,
             setup.Fund,
             setup.OtherFund,
-            setup.Amount);
+            amount);
 
     /// <summary>
     /// Gets the expected state for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
+    /// <param name="amount">Amount for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static FundConversionState GetExpectedState(BalanceEventAmountScenarioSetup setup) =>
+    private static FundConversionState GetExpectedState(AddBalanceEventAmountScenarioSetup setup, decimal amount) =>
         new()
         {
             AccountingPeriodKey = setup.AccountingPeriod.Key,
@@ -73,6 +63,6 @@ public class AmountTests
             EventSequence = 1,
             FromFundName = setup.Fund.Name,
             ToFundName = setup.OtherFund.Name,
-            Amount = setup.Amount,
+            Amount = amount,
         };
 }

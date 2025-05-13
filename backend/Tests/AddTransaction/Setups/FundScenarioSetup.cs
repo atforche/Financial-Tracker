@@ -1,58 +1,17 @@
-using System.Collections;
 using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.Aggregates.Accounts;
 using Domain.Aggregates.Funds;
 using Domain.ValueObjects;
+using Tests.AddTransaction.Scenarios;
 using Tests.Setups;
 
-namespace Tests.Scenarios.Transaction;
+namespace Tests.AddTransaction.Setups;
 
 /// <summary>
-/// Collection class that contains all the unique Transaction Fund scenarios that should be tested
+/// Setup class for a <see cref="FundScenarios"/> for adding a Transaction
 /// </summary>
-public sealed class TransactionFundScenarios : IEnumerable<TheoryDataRow<TransactionFundScenario>>
-{
-    /// <inheritdoc/>
-    public IEnumerator<TheoryDataRow<TransactionFundScenario>> GetEnumerator() =>
-        Enum.GetValues<TransactionFundScenario>()
-            .Select(scenario => new TheoryDataRow<TransactionFundScenario>(scenario))
-            .GetEnumerator();
-
-    /// <inheritdoc/>
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-}
-
-/// <summary>
-/// Enum representing the different Transaction Fund Scenarios
-/// </summary>
-public enum TransactionFundScenario
-{
-    /// <summary>
-    /// No Fund amounts under the Transaction
-    /// </summary>
-    None,
-
-    /// <summary>
-    /// A single Fund amount under the Transaction
-    /// </summary>
-    One,
-
-    /// <summary>
-    /// Multiple Fund amounts under the Transaction
-    /// </summary>
-    Multiple,
-
-    /// <summary>
-    /// Duplicate Fund amounts under the Transaction
-    /// </summary>
-    Duplicate
-}
-
-/// <summary>
-/// Setup class for a Transaction Fund scenario
-/// </summary>
-internal sealed class TransactionFundScenarioSetup : ScenarioSetup
+internal sealed class FundScenarioSetup : ScenarioSetup
 {
     /// <summary>
     /// Accounting Period for this Setup
@@ -73,7 +32,7 @@ internal sealed class TransactionFundScenarioSetup : ScenarioSetup
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="scenario">Scenario for this Setup</param>
-    public TransactionFundScenarioSetup(TransactionFundScenario scenario)
+    public FundScenarioSetup(FundScenario scenario)
     {
         Funds = GetFundsForScenario(scenario);
 
@@ -97,15 +56,15 @@ internal sealed class TransactionFundScenarioSetup : ScenarioSetup
     /// Creates the needed Funds for the provided scenario
     /// </summary>
     /// <param name="scenario">Scenario for this Setup</param>
-    private List<Fund> GetFundsForScenario(TransactionFundScenario scenario)
+    private List<Fund> GetFundsForScenario(FundScenario scenario)
     {
-        if (scenario == TransactionFundScenario.One)
+        if (scenario == FundScenario.One)
         {
             Fund fund = GetService<AddFundAction>().Run("Test");
             GetService<IFundRepository>().Add(fund);
             return [fund];
         }
-        if (scenario == TransactionFundScenario.Multiple)
+        if (scenario == FundScenario.Multiple)
         {
             Fund fund = GetService<AddFundAction>().Run("Test");
             GetService<IFundRepository>().Add(fund);
@@ -113,7 +72,7 @@ internal sealed class TransactionFundScenarioSetup : ScenarioSetup
             GetService<IFundRepository>().Add(otherFund);
             return [fund, otherFund];
         }
-        if (scenario == TransactionFundScenario.Duplicate)
+        if (scenario == FundScenario.Duplicate)
         {
             Fund fund = GetService<AddFundAction>().Run("Test");
             GetService<IFundRepository>().Add(fund);

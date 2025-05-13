@@ -1,7 +1,8 @@
 using Domain.Actions;
 using Domain.Aggregates.AccountingPeriods;
 using Domain.ValueObjects;
-using Tests.Scenarios.Transaction;
+using Tests.AddTransaction.Scenarios;
+using Tests.AddTransaction.Setups;
 using Tests.Validators;
 
 namespace Tests.AddTransaction;
@@ -15,10 +16,10 @@ public class FundTest
     /// Runs the test for this test class
     /// </summary>
     [Theory]
-    [ClassData(typeof(TransactionFundScenarios))]
-    public void RunTest(TransactionFundScenario scenario)
+    [ClassData(typeof(FundScenarios))]
+    public void RunTest(FundScenario scenario)
     {
-        var setup = new TransactionFundScenarioSetup(scenario);
+        var setup = new FundScenarioSetup(scenario);
         if (ShouldThrowException(setup))
         {
             Assert.Throws<InvalidOperationException>(() => AddTransaction(setup));
@@ -32,7 +33,7 @@ public class FundTest
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>True if this test case should throw an exception, false otherwise</returns>
-    private static bool ShouldThrowException(TransactionFundScenarioSetup setup)
+    private static bool ShouldThrowException(FundScenarioSetup setup)
     {
         if (setup.Funds.Count == 0)
         {
@@ -50,7 +51,7 @@ public class FundTest
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
-    private static Transaction AddTransaction(TransactionFundScenarioSetup setup) =>
+    private static Transaction AddTransaction(FundScenarioSetup setup) =>
         setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
             setup.Account,
@@ -66,7 +67,7 @@ public class FundTest
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static TransactionState GetExpectedState(TransactionFundScenarioSetup setup) =>
+    private static TransactionState GetExpectedState(FundScenarioSetup setup) =>
         new()
         {
             TransactionDate = new DateOnly(2025, 1, 15),
