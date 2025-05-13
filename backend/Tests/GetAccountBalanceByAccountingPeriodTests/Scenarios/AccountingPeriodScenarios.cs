@@ -17,7 +17,7 @@ public sealed class AccountingPeriodScenarios : IEnumerable<TheoryDataRow<Accoun
 }
 
 /// <summary>
-/// Enum representing the different Accounting Period scenarios for getting an Account Balance by Accounting Period
+/// Enum representing the different <see cref="AccountingPeriodScenarios"/>
 /// </summary>
 public enum AccountingPeriodScenario
 {

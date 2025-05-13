@@ -27,8 +27,8 @@ public sealed class YearAndMonthScenarios : IEnumerable<TheoryDataRow<int, int>>
     /// <summary>
     /// Determines if the provided scenario is valid
     /// </summary>
-    /// <param name="year">Year for this scenario</param>
-    /// <param name="month">Month for this scenario</param>
+    /// <param name="year">Year for this test case</param>
+    /// <param name="month">Month for this test case</param>
     /// <returns>True if this scenario is valid, false otherwise</returns>
     public static bool IsValid(int year, int month) => month is > 0 and < 13 && year is > 2000 and < 2100;
 }

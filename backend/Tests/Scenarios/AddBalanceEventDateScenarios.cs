@@ -24,7 +24,7 @@ public sealed class AddBalanceEventDateScenarios : IEnumerable<TheoryDataRow<Dat
     /// <summary>
     /// Determines if the provided scenario is valid
     /// </summary>
-    /// <param name="eventDate">Event Date for the scenario</param>
+    /// <param name="eventDate">Event Date for this test case</param>
     /// <returns>True if the provided scenario is valid, false otherwise</returns>
     public static bool IsValid(DateOnly eventDate)
     {

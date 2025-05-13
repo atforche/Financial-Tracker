@@ -18,7 +18,7 @@ public sealed class BalanceEventScenarios : IEnumerable<TheoryDataRow<BalanceEve
     /// <summary>
     /// Determines if the provided scenario is valid
     /// </summary>
-    /// <param name="scenario">Scenario to validate</param>
+    /// <param name="scenario">Scenario for this test case</param>
     /// <returns>True if the provided scenario is valid, false otherwise</returns>
     public static bool IsValid(BalanceEventScenario scenario)
     {
@@ -28,7 +28,7 @@ public sealed class BalanceEventScenarios : IEnumerable<TheoryDataRow<BalanceEve
 }
 
 /// <summary>
-/// Enum representing the different Balance Event scenarios for closing an Accounting Period
+/// Enum representing the different <see cref="BalanceEventScenarios"/>
 /// </summary>
 public enum BalanceEventScenario
 {

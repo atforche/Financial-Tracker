@@ -18,7 +18,7 @@ public sealed class FundScenarios : IEnumerable<TheoryDataRow<FundScenario>>
 }
 
 /// <summary>
-/// Enum representing the different Fund Scenarios
+/// Enum representing the different <see cref="FundScenarios"/>
 /// </summary>
 public enum FundScenario
 {

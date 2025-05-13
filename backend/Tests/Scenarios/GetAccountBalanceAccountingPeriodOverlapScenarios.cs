@@ -23,7 +23,7 @@ public sealed class GetAccountBalanceAccountingPeriodOverlapScenarios : IEnumera
 }
 
 /// <summary>
-/// Enum representing the different Accounting Period types for getting an Account Balance
+/// Enum representing the different Accounting Period types for a <see cref="GetAccountBalanceAccountingPeriodOverlapScenarios"/>
 /// </summary>
 public enum AccountingPeriodType
 {

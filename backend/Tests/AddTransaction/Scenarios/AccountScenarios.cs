@@ -39,9 +39,9 @@ public sealed class AccountScenarios :
     /// <summary>
     /// Determines if the provided scenario is valid
     /// </summary>
-    /// <param name="debitAccountType">Debit Account Type for this scenario</param>
-    /// <param name="creditAccountType">Credit Account Type for this scenario</param>
-    /// <param name="sameAccountTypeBehavior">Same Account Type Behavior for this scenario</param>
+    /// <param name="debitAccountType">Debit Account Type for this test case</param>
+    /// <param name="creditAccountType">Credit Account Type for this test case</param>
+    /// <param name="sameAccountTypeBehavior">Same Account Type Behavior for this test case</param>
     /// <returns>True if this scenario is valid, false otherwise</returns>
     public static bool IsValid(AccountType? debitAccountType, AccountType? creditAccountType, SameAccountTypeBehavior sameAccountTypeBehavior)
     {
@@ -58,7 +58,7 @@ public sealed class AccountScenarios :
 }
 
 /// <summary>
-/// Enum representing the different behaviors when the same Account type is used for the debit and credit Accounts
+/// Enum representing the Same Account Type Behavior for a <see cref="AccountScenarios"/>
 /// </summary>
 public enum SameAccountTypeBehavior
 {

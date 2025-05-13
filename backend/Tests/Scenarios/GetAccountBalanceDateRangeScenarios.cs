@@ -17,7 +17,7 @@ public sealed class GetAccountBalanceDateRangeScenarios : IEnumerable<TheoryData
 }
 
 /// <summary>
-/// Enum representing the different Date Range scenarios for getting an Account Balance by Date
+/// Enum representing the different <see cref="GetAccountBalanceDateRangeScenarios"/>
 /// </summary>
 public enum GetAccountBalanceDateRangeScenario
 {

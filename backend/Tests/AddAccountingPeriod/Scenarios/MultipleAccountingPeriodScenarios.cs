@@ -30,9 +30,9 @@ public sealed class MultipleAccountingPeriodScenarios : IEnumerable<TheoryDataRo
     /// <summary>
     /// Determines if the provided scenario is valid
     /// </summary>
-    /// <param name="firstPeriod">First Period for this scenario</param>
-    /// <param name="secondPeriod">Second Period for this scenario</param>
-    /// <param name="thirdPeriod">Third Period for this scenario</param>
+    /// <param name="firstPeriod">First Period for this test case</param>
+    /// <param name="secondPeriod">Second Period for this test case</param>
+    /// <param name="thirdPeriod">Third Period for this test case</param>
     /// <returns>True if this scenario is valid, false otherwise</returns>
     public static bool IsValid(DateOnly firstPeriod, DateOnly secondPeriod, DateOnly thirdPeriod)
     {
