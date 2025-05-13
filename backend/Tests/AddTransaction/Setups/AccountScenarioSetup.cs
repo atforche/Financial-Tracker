@@ -9,7 +9,7 @@ using Tests.Setups;
 namespace Tests.AddTransaction.Setups;
 
 /// <summary>
-/// Setup class for <see cref="AccountScenarios"/> for adding a Transaction
+/// Setup class for a <see cref="AccountScenarios"/> for adding a Transaction
 /// </summary>
 internal sealed class AccountScenarioSetup : ScenarioSetup
 {

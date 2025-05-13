@@ -8,7 +8,7 @@ using Tests.Scenarios;
 namespace Tests.Setups;
 
 /// <summary>
-/// Setup class for a <see cref="AddBalanceEventDateScenarios"/>
+/// Setup class for a <see cref="AddBalanceEventDateScenarios"/> for adding a Balance Event
 /// </summary>
 internal sealed class AddBalanceEventDateScenarioSetup : ScenarioSetup
 {
