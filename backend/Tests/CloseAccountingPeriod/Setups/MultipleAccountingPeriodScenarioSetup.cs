@@ -36,15 +36,8 @@ internal sealed class MultipleAccountingPeriodScenarioSetup : ScenarioSetup
         Fund = GetService<AddFundAction>().Run("Test");
         GetService<IFundRepository>().Add(Fund);
 
-        // Grab the valid setup for adding multiple Accounting Periods
-        (DateOnly firstPeriod, DateOnly secondPeriod, DateOnly thirdPeriod, bool shouldClosePeriods) =
-            new AddAccountingPeriod.Scenarios.MultipleAccountingPeriodScenarios()
-                .DistinctBy(row => (row.Data.Item1, row.Data.Item2, row.Data.Item3))
-                .Single(row => AddAccountingPeriod.Scenarios.MultipleAccountingPeriodScenarios.IsValid(row.Data.Item1, row.Data.Item2, row.Data.Item3))
-                .Data;
-        List<DateOnly> accountingPeriodDates = [firstPeriod, secondPeriod, thirdPeriod];
-
         List<AccountingPeriod> accountingPeriods = [];
+        List<DateOnly> accountingPeriodDates = [new DateOnly(2024, 12, 1), new DateOnly(2025, 1, 1), new DateOnly(2025, 2, 1)];
         foreach (DateOnly accountingPeriodDate in accountingPeriodDates)
         {
             AccountingPeriod accountingPeriod = GetService<AddAccountingPeriodAction>()

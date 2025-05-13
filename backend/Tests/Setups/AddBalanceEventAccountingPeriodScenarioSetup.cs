@@ -35,8 +35,8 @@ internal sealed class AddBalanceEventAccountingPeriodScenarioSetup : ScenarioSet
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="isOpen">True if the Accounting Period should be left open, false otherwise</param>
-    public AddBalanceEventAccountingPeriodScenarioSetup(bool isOpen)
+    /// <param name="scenario">Scenario for this test case</param>
+    public AddBalanceEventAccountingPeriodScenarioSetup(AddBalanceEventAccountingPeriodScenario scenario)
     {
         Fund = GetService<AddFundAction>().Run("Test");
         GetService<IFundRepository>().Add(Fund);
@@ -46,7 +46,13 @@ internal sealed class AddBalanceEventAccountingPeriodScenarioSetup : ScenarioSet
         AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
 
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+        AccountingPeriod nextAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
+        GetService<IAccountingPeriodRepository>().Add(nextAccountingPeriod);
+
+        Account = GetService<AddAccountAction>().Run("Test",
+            AccountType.Standard,
+            scenario == AddBalanceEventAccountingPeriodScenario.PriorToAccountBeingAdded ? nextAccountingPeriod : AccountingPeriod,
+            AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
@@ -56,7 +62,7 @@ internal sealed class AddBalanceEventAccountingPeriodScenarioSetup : ScenarioSet
             ]);
         GetService<IAccountRepository>().Add(Account);
 
-        if (!isOpen)
+        if (scenario == AddBalanceEventAccountingPeriodScenario.Closed)
         {
             GetService<CloseAccountingPeriodAction>().Run(AccountingPeriod);
         }

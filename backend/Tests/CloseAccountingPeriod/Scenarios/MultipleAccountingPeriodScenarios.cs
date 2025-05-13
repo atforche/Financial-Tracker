@@ -10,14 +10,9 @@ public sealed class MultipleAccountingPeriodScenarios : IEnumerable<TheoryDataRo
     /// <inheritdoc/>
     public IEnumerator<TheoryDataRow<DateOnly, DateOnly, DateOnly>> GetEnumerator()
     {
-        (DateOnly firstPeriod, DateOnly secondPeriod, DateOnly thirdPeriod, bool shouldClosePeriods) =
-            new AddAccountingPeriod.Scenarios.MultipleAccountingPeriodScenarios()
-                .DistinctBy(row => (row.Data.Item1, row.Data.Item2, row.Data.Item3))
-                .Single(row => AddAccountingPeriod.Scenarios.MultipleAccountingPeriodScenarios.IsValid(row.Data.Item1, row.Data.Item2, row.Data.Item3))
-                .Data;
-        yield return new TheoryDataRow<DateOnly, DateOnly, DateOnly>(firstPeriod, secondPeriod, thirdPeriod);
-        yield return new TheoryDataRow<DateOnly, DateOnly, DateOnly>(firstPeriod, thirdPeriod, secondPeriod);
-        yield return new TheoryDataRow<DateOnly, DateOnly, DateOnly>(firstPeriod, firstPeriod, secondPeriod);
+        yield return new TheoryDataRow<DateOnly, DateOnly, DateOnly>(new DateOnly(2024, 12, 1), new DateOnly(2025, 1, 1), new DateOnly(2025, 2, 1));
+        yield return new TheoryDataRow<DateOnly, DateOnly, DateOnly>(new DateOnly(2024, 12, 1), new DateOnly(2025, 2, 1), new DateOnly(2025, 1, 1));
+        yield return new TheoryDataRow<DateOnly, DateOnly, DateOnly>(new DateOnly(2024, 12, 1), new DateOnly(2024, 12, 1), new DateOnly(2025, 1, 1));
     }
 
     /// <inheritdoc/>

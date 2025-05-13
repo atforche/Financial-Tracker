@@ -17,10 +17,10 @@ public class AccountingPeriodTests
     /// </summary>
     [Theory]
     [ClassData(typeof(AddBalanceEventAccountingPeriodScenarios))]
-    public void RunTest(bool isOpen)
+    public void RunTest(AddBalanceEventAccountingPeriodScenario scenario)
     {
-        var setup = new AddBalanceEventAccountingPeriodScenarioSetup(isOpen);
-        if (!AddBalanceEventAccountingPeriodScenarios.IsValid(isOpen))
+        var setup = new AddBalanceEventAccountingPeriodScenarioSetup(scenario);
+        if (!AddBalanceEventAccountingPeriodScenarios.IsValid(scenario))
         {
             Assert.Throws<InvalidOperationException>(() => AddTransaction(setup));
             return;
