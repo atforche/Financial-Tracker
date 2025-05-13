@@ -4,7 +4,7 @@ using Domain.ValueObjects;
 namespace Tests.Validators;
 
 /// <summary>
-/// Validator class that validates that the provided Change In Value matches the expected state
+/// Validator class that validates that the provided <see cref="ChangeInValue"/> matches the expected state
 /// </summary>
 internal sealed class ChangeInValueValidator : EntityValidator<ChangeInValue, ChangeInValueState>
 {
@@ -21,7 +21,7 @@ internal sealed class ChangeInValueValidator : EntityValidator<ChangeInValue, Ch
 }
 
 /// <summary>
-/// Record class representing the state of a Change In Value
+/// Record class representing the state of a <see cref="ChangeInValue"/>
 /// </summary>
 internal sealed record ChangeInValueState
 {

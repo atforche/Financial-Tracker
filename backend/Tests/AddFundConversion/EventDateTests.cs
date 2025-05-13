@@ -7,7 +7,7 @@ using Tests.Validators;
 namespace Tests.AddFundConversion;
 
 /// <summary>
-/// Test class that tests adding a Fund Conversion with different Balance Event Date scenarios
+/// Test class that tests adding a Fund Conversion with different <see cref="AddBalanceEventDateScenarios"/>
 /// </summary>
 public class EventDateTests
 {

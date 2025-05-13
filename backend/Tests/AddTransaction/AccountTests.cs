@@ -10,7 +10,7 @@ using Tests.Validators;
 namespace Tests.AddTransaction;
 
 /// <summary>
-/// Test class that tests adding a Transaction with different Transaction Account scenarios
+/// Test class that tests adding a Transaction with different <see cref="AccountScenarios"/>
 /// </summary>
 public class AccountTests
 {

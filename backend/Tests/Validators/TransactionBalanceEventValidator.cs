@@ -4,7 +4,7 @@ using Domain.ValueObjects;
 namespace Tests.Validators;
 
 /// <summary>
-/// Validator class that validates that the provided Transaction Balance Event matches the expected state
+/// Validator class that validates that the provided <see cref="TransactionBalanceEvent"/> matches the expected state
 /// </summary>
 internal sealed class TransactionBalanceEventValidator : EntityValidator<TransactionBalanceEvent, TransactionBalanceEventState>
 {
@@ -22,7 +22,7 @@ internal sealed class TransactionBalanceEventValidator : EntityValidator<Transac
 }
 
 /// <summary>
-/// Record class representing the state of a Transaction Balance Event
+/// Record class representing the state of a <see cref="TransactionBalanceEvent"/>
 /// </summary>
 internal sealed record TransactionBalanceEventState
 {

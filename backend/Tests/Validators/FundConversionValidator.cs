@@ -4,7 +4,7 @@ using Domain.ValueObjects;
 namespace Tests.Validators;
 
 /// <summary>
-/// Validator class that validates that the provided Fund Conversion matches the expected state
+/// Validator class that validates that the provided <see cref="FundConversion"/> matches the expected state
 /// </summary>
 internal sealed class FundConversionValidator : EntityValidator<FundConversion, FundConversionState>
 {
@@ -23,7 +23,7 @@ internal sealed class FundConversionValidator : EntityValidator<FundConversion, 
 }
 
 /// <summary>
-/// Record class representing the state of a Fund Conversion
+/// Record class representing the state of a <see cref="FundConversion"/>
 /// </summary>
 internal sealed record FundConversionState
 {

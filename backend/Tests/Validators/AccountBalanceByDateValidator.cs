@@ -3,7 +3,7 @@ using Domain.ValueObjects;
 namespace Tests.Validators;
 
 /// <summary>
-/// Validator class that validates that the provided Account Balance by Date matches the expected state
+/// Validator class that validates that the provided <see cref="AccountBalanceByDate"/> matches the expected state
 /// </summary>
 internal sealed class AccountBalanceByDateValidator : EntityValidator<AccountBalanceByDate, AccountBalanceByDateState>
 {
@@ -17,7 +17,7 @@ internal sealed class AccountBalanceByDateValidator : EntityValidator<AccountBal
 }
 
 /// <summary>
-/// Record class representing the state of an Account Balance by Date
+/// Record class representing the state of an <see cref="AccountBalanceByDate"/>
 /// </summary>
 internal sealed record AccountBalanceByDateState
 {

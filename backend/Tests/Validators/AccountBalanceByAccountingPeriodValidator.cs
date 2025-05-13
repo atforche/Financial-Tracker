@@ -3,7 +3,7 @@ using Domain.ValueObjects;
 namespace Tests.Validators;
 
 /// <summary>
-/// Validator class that validates that the provided Account Balance by Accounting Period matches the expected state
+/// Validator class that validates that the provided <see cref="AccountBalanceByAccountingPeriod"/> matches the expected state
 /// </summary>
 internal sealed class AccountBalanceByAccountingPeriodValidator : EntityValidator<AccountBalanceByAccountingPeriod, AccountBalanceByAccountingPeriodState>
 {
@@ -19,7 +19,7 @@ internal sealed class AccountBalanceByAccountingPeriodValidator : EntityValidato
 }
 
 /// <summary>
-/// Record class representing the state of an Account Balance by Accounting Period
+/// Record class representing the state of an <see cref="AccountBalanceByAccountingPeriod"/>
 /// </summary>
 internal sealed record AccountBalanceByAccountingPeriodState
 {

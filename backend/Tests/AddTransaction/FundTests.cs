@@ -8,7 +8,7 @@ using Tests.Validators;
 namespace Tests.AddTransaction;
 
 /// <summary>
-/// Test class that tests adding a Transaction with different Transaction Fund scenarios
+/// Test class that tests adding a Transaction with different <see cref="FundScenarios"/>
 /// </summary>
 public class FundTest
 {

@@ -8,7 +8,7 @@ using Tests.Validators;
 namespace Tests.PostTransaction;
 
 /// <summary>
-/// Test class that tests posting a Transaction with different Balance Event Date scenarios
+/// Test class that tests posting a Transaction with different <see cref="AddBalanceEventDateScenarios"/>
 /// </summary>
 public class EventDateTests
 {

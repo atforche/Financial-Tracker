@@ -4,7 +4,7 @@ using Domain.ValueObjects;
 namespace Tests.Validators;
 
 /// <summary>
-/// Validator class that validates that the provided Account Balance Checkpoints match the expected states
+/// Validator class that validates that the provided <see cref="AccountBalanceCheckpoint"/> match the expected states
 /// </summary>
 internal sealed class AccountBalanceCheckpointValidator : EntityValidator<AccountBalanceCheckpoint, AccountBalanceCheckpointState>
 {
@@ -19,7 +19,7 @@ internal sealed class AccountBalanceCheckpointValidator : EntityValidator<Accoun
 }
 
 /// <summary>
-/// Record class representing the state of an Account Balance Checkpoint
+/// Record class representing the state of an <see cref="AccountBalanceCheckpoint"/>
 /// </summary>
 internal sealed record AccountBalanceCheckpointState
 {

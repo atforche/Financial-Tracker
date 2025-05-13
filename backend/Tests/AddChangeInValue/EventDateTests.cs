@@ -8,7 +8,7 @@ using Tests.Validators;
 namespace Tests.AddChangeInValue;
 
 /// <summary>
-/// Test class that tests adding a Change In Value with different Balance Event Date scenarios
+/// Test class that tests adding a Change In Value with different <see cref="AddBalanceEventDateScenarios"/>
 /// </summary>
 public class EventDateTests
 {

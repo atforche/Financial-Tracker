@@ -3,7 +3,7 @@ using Domain.Aggregates.AccountingPeriods;
 namespace Tests.Validators;
 
 /// <summary>
-/// Validator class that validates that the provided Transaction matches the expected state
+/// Validator class that validates that the provided <see cref="Transaction"/> matches the expected state
 /// </summary>
 internal sealed class TransactionValidator : EntityValidator<Transaction, TransactionState>
 {
@@ -18,7 +18,7 @@ internal sealed class TransactionValidator : EntityValidator<Transaction, Transa
 }
 
 /// <summary>
-/// Record class representing the state of a Transaction
+/// Record class representing the state of a <see cref="Transaction"/>
 /// </summary>
 internal sealed record TransactionState
 {

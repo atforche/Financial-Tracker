@@ -3,7 +3,7 @@ using Domain.ValueObjects;
 namespace Tests.Validators;
 
 /// <summary>
-/// Validator class that validates that the provided Fund Amounts match the expected states
+/// Validator class that validates that the provided <see cref="FundAmount"/> match the expected states
 /// </summary>
 internal sealed class FundAmountValidator : EntityValidator<FundAmount, FundAmountState>
 {
@@ -16,7 +16,7 @@ internal sealed class FundAmountValidator : EntityValidator<FundAmount, FundAmou
 }
 
 /// <summary>
-/// Record class representing the state of a Fund Amount
+/// Record class representing the state of a <see cref="FundAmount"/>
 /// </summary>
 internal sealed record FundAmountState
 {

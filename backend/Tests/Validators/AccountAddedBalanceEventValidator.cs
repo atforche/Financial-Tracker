@@ -4,7 +4,7 @@ using Domain.ValueObjects;
 namespace Tests.Validators;
 
 /// <summary>
-/// Validator class that validates that the provided Account Added Balance Event matches the expected state
+/// Validator class that validates that the provided <see cref="AccountAddedBalanceEvent"/> matches the expected state
 /// </summary>
 internal sealed class AccountAddedBalanceEventValidator : EntityValidator<AccountAddedBalanceEvent, AccountAddedBalanceEventState>
 {
@@ -21,7 +21,7 @@ internal sealed class AccountAddedBalanceEventValidator : EntityValidator<Accoun
 }
 
 /// <summary>
-/// Record class representing the state of an Account Added Balance Event
+/// Record class representing the state of an <see cref="AccountAddedBalanceEvent"/>
 /// </summary>
 internal sealed record AccountAddedBalanceEventState
 {
