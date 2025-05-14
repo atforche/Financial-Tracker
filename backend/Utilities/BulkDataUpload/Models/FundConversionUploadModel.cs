@@ -1,13 +1,13 @@
-using RestApi.Models.Account;
-using RestApi.Models.AccountingPeriod;
-using RestApi.Models.Fund;
+using Rest.Models.Account;
+using Rest.Models.AccountingPeriod;
+using Rest.Models.Fund;
 
 namespace Utilities.BulkDataUpload.Models;
 
 /// <summary>
 /// Bulk data upload model representing a Fund Conversion Balance Event
 /// </summary>
-public class FundConversionUploadModel : BalanceEventUploadModel
+internal sealed class FundConversionUploadModel : BalanceEventUploadModel
 {
     /// <summary>
     /// Account Name for this Fund Conversion Balance Event
@@ -42,8 +42,7 @@ public class FundConversionUploadModel : BalanceEventUploadModel
     /// <returns>A Create Fund Conversion Model corresponding to this Fund Conversion Upload Model</returns>
     public CreateFundConversionModel GetAsCreateFundConversionModel(
         ICollection<FundModel> existingFunds,
-        ICollection<AccountModel> existingAccounts) =>
-        new CreateFundConversionModel
+        ICollection<AccountModel> existingAccounts) => new()
         {
             AccountId = existingAccounts.Single(account => account.Name == AccountName).Id,
             EventDate = EventDate,

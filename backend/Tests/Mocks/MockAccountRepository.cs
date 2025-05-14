@@ -1,21 +1,18 @@
-using Domain.Aggregates.Accounts;
+using Domain.Accounts;
 
 namespace Tests.Mocks;
 
 /// <summary>
 /// Mock repository of Accounts for testing
 /// </summary>
-public class MockAccountRepository : IAccountRepository
+internal sealed class MockAccountRepository : IAccountRepository
 {
     private readonly List<Account> _accounts;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public MockAccountRepository()
-    {
-        _accounts = [];
-    }
+    public MockAccountRepository() => _accounts = [];
 
     /// <inheritdoc/>
     public Account? FindByExternalIdOrNull(Guid id) => _accounts.SingleOrDefault(account => account.Id.ExternalId == id);

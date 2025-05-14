@@ -1,12 +1,12 @@
-using RestApi.Models.Fund;
-using RestApi.Models.FundAmount;
+using Rest.Models.Fund;
+using Rest.Models.FundAmount;
 
 namespace Utilities.BulkDataUpload.Models;
 
 /// <summary>
-/// Buld data upload model representing a Fund Amount
+/// Bulk data upload model representing a Fund Amount
 /// </summary>
-public class FundAmountUploadModel
+internal sealed class FundAmountUploadModel
 {
     /// <summary>
     /// Fund Name for this Fund Amount
@@ -23,10 +23,9 @@ public class FundAmountUploadModel
     /// </summary>
     /// <param name="existingFunds">List of existing funds</param>
     /// <returns>A Create Fund Amount Model corresponding to this Fund Amount Upload Model</returns>
-    public CreateFundAmountModel GetAsCreateFundAmountModel(ICollection<FundModel> existingFunds) =>
-        new CreateFundAmountModel
-        {
-            FundId = existingFunds.Single(fund => fund.Name == FundName).Id,
-            Amount = Amount
-        };
+    public CreateFundAmountModel GetAsCreateFundAmountModel(ICollection<FundModel> existingFunds) => new()
+    {
+        FundId = existingFunds.Single(fund => fund.Name == FundName).Id,
+        Amount = Amount
+    };
 }

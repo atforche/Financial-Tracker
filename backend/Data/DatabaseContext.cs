@@ -1,7 +1,7 @@
 using Data.Configuration;
-using Domain.Aggregates.AccountingPeriods;
-using Domain.Aggregates.Accounts;
-using Domain.Aggregates.Funds;
+using Domain.AccountingPeriods;
+using Domain.Accounts;
+using Domain.Funds;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data;
@@ -29,12 +29,10 @@ public class DatabaseContext : DbContext
     internal DbSet<Fund> Funds { get; set; } = default!;
 
     /// <inheritdoc/>
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlite($"Data Source={_dbPath}");
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
+        optionsBuilder.UseSqlite($"Data Source={_dbPath}");
 
     /// <inheritdoc/>
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
+    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AccountEntityConfiguration).Assembly);
-    }
 }

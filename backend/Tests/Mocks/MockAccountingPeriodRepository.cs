@@ -1,22 +1,19 @@
-using Domain.Aggregates.AccountingPeriods;
-using Domain.ValueObjects;
+using Domain;
+using Domain.AccountingPeriods;
 
 namespace Tests.Mocks;
 
 /// <summary>
 /// Mock repository of Accounting Periods for testing
 /// </summary>
-public class MockAccountingPeriodRepository : IAccountingPeriodRepository
+internal sealed class MockAccountingPeriodRepository : IAccountingPeriodRepository
 {
     private readonly List<AccountingPeriod> _accountingPeriods;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public MockAccountingPeriodRepository()
-    {
-        _accountingPeriods = [];
-    }
+    public MockAccountingPeriodRepository() => _accountingPeriods = [];
 
     /// <inheritdoc/>
     public AccountingPeriod? FindByExternalIdOrNull(Guid id) => _accountingPeriods
@@ -60,13 +57,15 @@ public class MockAccountingPeriodRepository : IAccountingPeriodRepository
             accountingPeriod.FundConversions
                 .Any(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate)) ||
             accountingPeriod.ChangeInValues
+                .Any(changeInValue => dateRange.IsInRange(changeInValue.EventDate)) ||
+            accountingPeriod.AccountAddedBalanceEvents
                 .Any(changeInValue => dateRange.IsInRange(changeInValue.EventDate)))
         .ToList();
 
     /// <inheritdoc/>
     public int FindMaximumBalanceEventSequenceForDate(DateOnly eventDate)
     {
-        List<TransactionBalanceEvent> existingBalanceEventsOnDate = _accountingPeriods
+        var existingBalanceEventsOnDate = _accountingPeriods
             .SelectMany(accountingPeriod => accountingPeriod.Transactions)
             .SelectMany(transaction => transaction.TransactionBalanceEvents)
             .Where(balanceEvent => balanceEvent.EventDate == eventDate).ToList();

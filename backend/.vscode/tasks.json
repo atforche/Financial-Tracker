@@ -27,7 +27,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/RestApi/RestApi.csproj"
+                "${workspaceFolder}/Rest.Controllers/Rest.Controllers.csproj"
             ],
             "problemMatcher": "$msCompile"
         }

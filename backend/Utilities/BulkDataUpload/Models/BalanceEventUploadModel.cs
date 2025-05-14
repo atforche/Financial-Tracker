@@ -9,7 +9,7 @@ namespace Utilities.BulkDataUpload.Models;
 [JsonDerivedType(typeof(TransactionPostedUploadModel), typeDiscriminator: "TransactionPosted")]
 [JsonDerivedType(typeof(FundConversionUploadModel), typeDiscriminator: "FundConversion")]
 [JsonDerivedType(typeof(ChangeInValueUploadModel), typeDiscriminator: "ChangeInValue")]
-public abstract class BalanceEventUploadModel
+internal abstract class BalanceEventUploadModel
 {
     /// <summary>
     /// Upload ID for this Balance Event

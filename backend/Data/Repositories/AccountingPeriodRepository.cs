@@ -1,22 +1,13 @@
-using Domain.Aggregates.AccountingPeriods;
-using Domain.ValueObjects;
+using Domain;
+using Domain.AccountingPeriods;
 
 namespace Data.Repositories;
 
 /// <summary>
 /// Repository that allows Accounting Periods to be persisted to the database
 /// </summary>
-public class AccountingPeriodRepository : AggregateRepositoryBase<AccountingPeriod>, IAccountingPeriodRepository
+public class AccountingPeriodRepository(DatabaseContext context) : AggregateRepository<AccountingPeriod>(context), IAccountingPeriodRepository
 {
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="context">Context to use to connect to the database</param>
-    public AccountingPeriodRepository(DatabaseContext context)
-        : base(context)
-    {
-    }
-
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> FindAll() => DatabaseContext.AccountingPeriods
         .AsEnumerable()
@@ -51,7 +42,7 @@ public class AccountingPeriodRepository : AggregateRepositoryBase<AccountingPeri
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> FindAccountingPeriodsWithBalanceEventsInDateRange(DateRange dateRange)
     {
-        List<DateOnly> dates = dateRange.GetInclusiveDates().ToList();
+        var dates = dateRange.GetInclusiveDates().ToList();
         return DatabaseContext.AccountingPeriods
             .Where(accountingPeriod => accountingPeriod.Transactions
                     .SelectMany(transaction => transaction.TransactionBalanceEvents)
@@ -59,6 +50,8 @@ public class AccountingPeriodRepository : AggregateRepositoryBase<AccountingPeri
                 accountingPeriod.FundConversions
                     .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()) ||
                 accountingPeriod.ChangeInValues
+                    .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()) ||
+                accountingPeriod.AccountAddedBalanceEvents
                     .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()))
             .ToList();
     }

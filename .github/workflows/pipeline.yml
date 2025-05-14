@@ -20,19 +20,27 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 9.x.x
 
     - name: Restore dependencies
-      run: dotnet restore ./Backend.sln
+      run: |
+        . ./scripts.sh 
+        restore-solution
 
     - name: Verify formatting
-      run: dotnet format ./Backend.sln --verify-no-changes --no-restore --severity info
+      run: |
+        . ./scripts.sh 
+        format-solution
 
     - name: Build
-      run: dotnet build ./Backend.sln --no-restore
+      run: |
+        . ./scripts.sh 
+        build-solution
 
     - name: Test
-      run: dotnet test ./Backend.sln --no-build --verbosity normal
+      run: |
+        . ./scripts.sh 
+        test-solution
 
   # Builds and tests the Vite project
   build_vite:

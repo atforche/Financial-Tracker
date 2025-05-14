@@ -1,21 +1,18 @@
-using Domain.Aggregates.Funds;
+using Domain.Funds;
 
 namespace Tests.Mocks;
 
 /// <summary>
 /// Mock repository of Funds for testing
 /// </summary>
-public class MockFundRepository : IFundRepository
+internal sealed class MockFundRepository : IFundRepository
 {
     private readonly List<Fund> _funds;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public MockFundRepository()
-    {
-        _funds = [];
-    }
+    public MockFundRepository() => _funds = [];
 
     /// <inheritdoc/>
     public Fund? FindByExternalIdOrNull(Guid id) => _funds.SingleOrDefault(fund => fund.Id.ExternalId == id);

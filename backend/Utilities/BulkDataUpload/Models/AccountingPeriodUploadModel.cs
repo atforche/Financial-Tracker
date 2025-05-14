@@ -1,11 +1,11 @@
-using RestApi.Models.AccountingPeriod;
+using Rest.Models.AccountingPeriod;
 
 namespace Utilities.BulkDataUpload.Models;
 
 /// <summary>
 /// Bulk data upload model representing an Accounting Period
 /// </summary>
-public class AccountingPeriodUploadModel
+internal sealed class AccountingPeriodUploadModel
 {
     /// <summary>
     /// Year for this Accounting Period
@@ -36,7 +36,7 @@ public class AccountingPeriodUploadModel
     /// Gets a Create Accounting Period Model corresponding to this Accounting Period Upload Model
     /// </summary>
     /// <returns>A Create Accounting Period Model corresponding to this Accounting Period Upload Model</returns>
-    public CreateAccountingPeriodModel GetAsCreateAccountingPeriodModel() => new CreateAccountingPeriodModel
+    public CreateAccountingPeriodModel GetAsCreateAccountingPeriodModel() => new()
     {
         Year = Year,
         Month = Month,

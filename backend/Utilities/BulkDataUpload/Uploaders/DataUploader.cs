@@ -2,14 +2,14 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using RestApi;
+using Rest.Models;
 
 namespace Utilities.BulkDataUpload.Uploaders;
 
 /// <summary>
 /// Base class responsible for uploading data to the REST API
 /// </summary>
-public abstract class DataUploader<T> : IDisposable
+internal abstract class DataUploader<T> : IDisposable
 {
     private readonly HttpClient _client;
     private readonly UriBuilder _uriBuilder;
@@ -23,8 +23,10 @@ public abstract class DataUploader<T> : IDisposable
         _client = new HttpClient();
         _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         _uriBuilder = new UriBuilder("http", "localhost", 8080);
-        _jsonSerializerOptions = new JsonSerializerOptions();
-        _jsonSerializerOptions.PropertyNameCaseInsensitive = true;
+        _jsonSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
         _jsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
         _jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     }
@@ -43,8 +45,7 @@ public abstract class DataUploader<T> : IDisposable
     protected async Task<TResult> GetAsync<TResult>(string endpointPath)
     {
         _uriBuilder.Path = endpointPath;
-        HttpResponseMessage response = await _client.GetAsync(_uriBuilder.Uri);
-        response.EnsureSuccessStatusCode();
+        HttpResponseMessage response = (await _client.GetAsync(_uriBuilder.Uri)).EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<TResult>(_jsonSerializerOptions) ?? throw new InvalidOperationException();
     }
 
@@ -57,8 +58,7 @@ public abstract class DataUploader<T> : IDisposable
     protected async Task<TResult> PostAsync<TBody, TResult>(string endpointPath, TBody bodyModel)
     {
         _uriBuilder.Path = endpointPath;
-        HttpResponseMessage response = await _client.PostAsJsonAsync(_uriBuilder.Uri, bodyModel);
-        response.EnsureSuccessStatusCode();
+        HttpResponseMessage response = (await _client.PostAsJsonAsync(_uriBuilder.Uri, bodyModel)).EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<TResult>(_jsonSerializerOptions) ?? throw new InvalidOperationException();
     }
 

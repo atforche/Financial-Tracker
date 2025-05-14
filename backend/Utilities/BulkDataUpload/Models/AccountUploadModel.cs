@@ -1,13 +1,13 @@
-using Domain.Aggregates.Accounts;
-using RestApi.Models.Account;
-using RestApi.Models.Fund;
+using Domain.Accounts;
+using Rest.Models.Account;
+using Rest.Models.Fund;
 
 namespace Utilities.BulkDataUpload.Models;
 
 /// <summary>
 /// Bulk data upload model representing an Account
 /// </summary>
-public class AccountUploadModel
+internal sealed class AccountUploadModel
 {
     /// <summary>
     /// Name for this Account
@@ -29,12 +29,13 @@ public class AccountUploadModel
     /// </summary>
     /// <param name="existingFunds">List of existing funds</param>
     /// <returns>A Create Account Model corresponding to this Account Upload Model</returns>
-    public CreateAccountModel GetAsCreateAccountModel(ICollection<FundModel> existingFunds) =>
-        new CreateAccountModel
-        {
-            Name = Name,
-            Type = Type,
-            StartingFundBalances = StartingFundBalances
-                .Select(fundAmount => fundAmount.GetAsCreateFundAmountModel(existingFunds)).ToList(),
-        };
+    public CreateAccountModel GetAsCreateAccountModel(ICollection<FundModel> existingFunds) => new()
+    {
+        Name = Name,
+        Type = Type,
+        AccountingPeriodId = Guid.Empty,
+        Date = DateOnly.MinValue,
+        StartingFundBalances = StartingFundBalances
+            .Select(fundAmount => fundAmount.GetAsCreateFundAmountModel(existingFunds)).ToList(),
+    };
 }

@@ -1,13 +1,13 @@
-using RestApi.Models.Account;
-using RestApi.Models.AccountingPeriod;
-using RestApi.Models.Fund;
+using Rest.Models.Account;
+using Rest.Models.AccountingPeriod;
+using Rest.Models.Fund;
 
 namespace Utilities.BulkDataUpload.Models;
 
 /// <summary>
 /// Bulk data upload model representing a Change In Value Balance Event
 /// </summary>
-public class ChangeInValueUploadModel : BalanceEventUploadModel
+internal sealed class ChangeInValueUploadModel : BalanceEventUploadModel
 {
     /// <summary>
     /// Account Name for this Change In Value Balance Event
@@ -32,8 +32,7 @@ public class ChangeInValueUploadModel : BalanceEventUploadModel
     /// <returns>A Create Change In Value Model corresponding to the Change In Value Upload Model</returns>
     public CreateChangeInValueModel GetAsCreateChangeInValueModel(
         ICollection<FundModel> existingFunds,
-        ICollection<AccountModel> existingAccounts) =>
-        new CreateChangeInValueModel
+        ICollection<AccountModel> existingAccounts) => new()
         {
             AccountId = existingAccounts.Single(account => account.Name == AccountName).Id,
             EventDate = EventDate,
