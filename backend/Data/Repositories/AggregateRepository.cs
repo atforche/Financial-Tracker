@@ -1,4 +1,4 @@
-using Domain.Aggregates;
+using Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data.Repositories;

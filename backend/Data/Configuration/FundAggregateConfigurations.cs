@@ -1,4 +1,4 @@
-using Domain.Aggregates.Funds;
+using Domain.Funds;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Data.Configuration;

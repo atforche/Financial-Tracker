@@ -1,4 +1,4 @@
-namespace Domain.ValueObjects;
+namespace Domain;
 
 /// <summary>
 /// Value object class representing the ID of an Entity

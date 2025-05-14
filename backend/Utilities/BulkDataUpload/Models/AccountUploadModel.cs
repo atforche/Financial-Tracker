@@ -1,4 +1,4 @@
-using Domain.Aggregates.Accounts;
+using Domain.Accounts;
 using Rest.Models.Account;
 using Rest.Models.Fund;
 

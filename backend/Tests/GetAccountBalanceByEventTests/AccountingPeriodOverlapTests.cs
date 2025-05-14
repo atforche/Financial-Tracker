@@ -1,6 +1,7 @@
+using Domain;
+using Domain.Accounts;
 using Domain.Actions;
 using Domain.Services;
-using Domain.ValueObjects;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;

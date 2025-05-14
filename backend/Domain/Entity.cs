@@ -1,6 +1,4 @@
-using Domain.ValueObjects;
-
-namespace Domain.Aggregates;
+namespace Domain;
 
 /// <summary>
 /// Base class shared by all Entities

@@ -1,6 +1,5 @@
-using Domain.Aggregates.Accounts;
+using Domain.Accounts;
 using Domain.Services;
-using Domain.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 using Rest.Models.AccountBalance;
 using Rest.Models.DateRange;

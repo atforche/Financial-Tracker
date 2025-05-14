@@ -1,5 +1,5 @@
+using Domain.AccountingPeriods;
 using Domain.Actions;
-using Domain.Aggregates.AccountingPeriods;
 using Tests.AddFundConversion.Scenarios;
 using Tests.AddFundConversion.Setups;
 using Tests.Scenarios;

@@ -1,5 +1,5 @@
 using System.Collections;
-using Domain.Aggregates.Accounts;
+using Domain.Accounts;
 
 namespace Tests.AddTransaction.Scenarios;
 

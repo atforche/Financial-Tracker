@@ -1,4 +1,4 @@
-using Domain.ValueObjects;
+using Domain;
 
 namespace Rest.Models.DateRange;
 
@@ -31,5 +31,5 @@ public class DateRangeModel
     /// Gets a Date Range corresponding to this Date Range Model
     /// </summary>
     /// <returns>A Date Range corresponding to this Date Range Model</returns>
-    public Domain.ValueObjects.DateRange ConvertToDateRange() => new(StartDate, EndDate, StartDateType, EndDateType);
+    public Domain.DateRange ConvertToDateRange() => new(StartDate, EndDate, StartDateType, EndDateType);
 }

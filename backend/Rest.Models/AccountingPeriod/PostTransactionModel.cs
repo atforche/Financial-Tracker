@@ -1,4 +1,4 @@
-using Domain.Aggregates.AccountingPeriods;
+using Domain.AccountingPeriods;
 
 namespace Rest.Models.AccountingPeriod;
 

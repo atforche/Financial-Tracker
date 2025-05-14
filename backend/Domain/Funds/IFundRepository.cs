@@ -1,4 +1,4 @@
-namespace Domain.Aggregates.Funds;
+namespace Domain.Funds;
 
 /// <summary>
 /// Interface representing methods to interact with a collection of <see cref="Fund"/>

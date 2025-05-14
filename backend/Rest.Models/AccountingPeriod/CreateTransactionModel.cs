@@ -7,7 +7,7 @@ namespace Rest.Models.AccountingPeriod;
 /// </summary>
 public class CreateTransactionModel
 {
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.Transaction.TransactionDate"/>
+    /// <inheritdoc cref="Domain.AccountingPeriods.Transaction.TransactionDate"/>
     public required DateOnly TransactionDate { get; init; }
 
     /// <summary>
@@ -20,6 +20,6 @@ public class CreateTransactionModel
     /// </summary>
     public Guid? CreditAccountId { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.Transaction.AccountingEntries"/>
+    /// <inheritdoc cref="Domain.AccountingPeriods.Transaction.AccountingEntries"/>
     public required IReadOnlyCollection<CreateFundAmountModel> AccountingEntries { get; init; }
 }

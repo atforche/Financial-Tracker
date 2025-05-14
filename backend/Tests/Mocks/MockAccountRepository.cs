@@ -1,4 +1,4 @@
-using Domain.Aggregates.Accounts;
+using Domain.Accounts;
 
 namespace Tests.Mocks;
 

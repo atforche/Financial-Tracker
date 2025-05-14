@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.Aggregates.Funds;
+using Domain.Funds;
 
 namespace Domain.Actions;
 

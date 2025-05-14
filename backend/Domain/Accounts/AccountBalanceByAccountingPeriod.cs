@@ -1,6 +1,6 @@
-using Domain.Aggregates.AccountingPeriods;
+using Domain.AccountingPeriods;
 
-namespace Domain.ValueObjects;
+namespace Domain.Accounts;
 
 /// <summary>
 /// Value object class representing the starting and ending balances across an Accounting Period

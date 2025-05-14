@@ -1,7 +1,6 @@
-using Domain.Aggregates;
-using Domain.Aggregates.AccountingPeriods;
-using Domain.Aggregates.Accounts;
-using Domain.ValueObjects;
+using Domain.AccountingPeriods;
+using Domain.Accounts;
+using Domain.BalanceEvents;
 
 namespace Domain.Services;
 

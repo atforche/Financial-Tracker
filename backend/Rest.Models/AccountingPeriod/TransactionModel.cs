@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
-using Domain.Aggregates;
-using Domain.Aggregates.AccountingPeriods;
+using Domain;
+using Domain.AccountingPeriods;
+using Domain.BalanceEvents;
 using Rest.Models.Account;
 using Rest.Models.FundAmount;
 

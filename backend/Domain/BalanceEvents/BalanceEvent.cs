@@ -1,8 +1,7 @@
-using Domain.Aggregates.AccountingPeriods;
-using Domain.Aggregates.Accounts;
-using Domain.ValueObjects;
+using Domain.AccountingPeriods;
+using Domain.Accounts;
 
-namespace Domain.Aggregates;
+namespace Domain.BalanceEvents;
 
 /// <summary>
 /// Base class shared by all entities that impact the balance of an Account

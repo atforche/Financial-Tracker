@@ -1,4 +1,4 @@
-using Domain.Aggregates.Funds;
+using Domain.Funds;
 
 namespace Data.Repositories;
 

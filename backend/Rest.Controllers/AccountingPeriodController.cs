@@ -1,9 +1,8 @@
 using Data;
+using Domain.AccountingPeriods;
+using Domain.Accounts;
 using Domain.Actions;
-using Domain.Aggregates.AccountingPeriods;
-using Domain.Aggregates.Accounts;
-using Domain.Aggregates.Funds;
-using Domain.ValueObjects;
+using Domain.Funds;
 using Microsoft.AspNetCore.Mvc;
 using Rest.Models.AccountingPeriod;
 

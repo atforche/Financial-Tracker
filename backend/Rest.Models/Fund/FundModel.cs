@@ -7,10 +7,10 @@ namespace Rest.Models.Fund;
 /// </summary>
 public class FundModel
 {
-    /// <inheritdoc cref="Domain.Aggregates.Entity.Id"/>
+    /// <inheritdoc cref="Domain.Entity.Id"/>
     public Guid Id { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.Funds.Fund.Name"/>
+    /// <inheritdoc cref="Domain.Funds.Fund.Name"/>
     public string Name { get; init; }
 
     /// <summary>
@@ -27,7 +27,7 @@ public class FundModel
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="fund">Fund entity to build this Fund REST model from</param>
-    public FundModel(Domain.Aggregates.Funds.Fund fund)
+    public FundModel(Domain.Funds.Fund fund)
     {
         Id = fund.Id.ExternalId;
         Name = fund.Name;

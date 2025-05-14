@@ -1,6 +1,6 @@
-using Domain.Aggregates.Accounts;
+using Domain.Funds;
 
-namespace Domain.ValueObjects;
+namespace Domain.Accounts;
 
 /// <summary>
 /// Value object class representing the balance of an Account

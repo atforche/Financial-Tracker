@@ -1,7 +1,7 @@
+using Domain.AccountingPeriods;
+using Domain.Accounts;
 using Domain.Actions;
-using Domain.Aggregates.AccountingPeriods;
-using Domain.Aggregates.Accounts;
-using Domain.Aggregates.Funds;
+using Domain.Funds;
 using Domain.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Tests.Mocks;

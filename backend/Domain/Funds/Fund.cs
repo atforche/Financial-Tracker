@@ -1,6 +1,4 @@
-using Domain.ValueObjects;
-
-namespace Domain.Aggregates.Funds;
+namespace Domain.Funds;
 
 /// <summary>
 /// Entity class representing a Fund

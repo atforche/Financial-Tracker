@@ -1,7 +1,7 @@
-using Domain.Aggregates.AccountingPeriods;
-using Domain.ValueObjects;
+using Domain.AccountingPeriods;
+using Domain.Funds;
 
-namespace Domain.Aggregates.Accounts;
+namespace Domain.Accounts;
 
 /// <summary>
 /// Entity class representing an Account

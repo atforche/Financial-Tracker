@@ -7,19 +7,19 @@ namespace Rest.Models.AccountingPeriod;
 /// </summary>
 public class AccountingPeriodModel
 {
-    /// <inheritdoc cref="Domain.Aggregates.Entity.Id"/>
+    /// <inheritdoc cref="Domain.Entity.Id"/>
     public Guid Id { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.AccountingPeriod.Year"/>
+    /// <inheritdoc cref="Domain.AccountingPeriods.AccountingPeriod.Year"/>
     public int Year { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.AccountingPeriod.Month"/>
+    /// <inheritdoc cref="Domain.AccountingPeriods.AccountingPeriod.Month"/>
     public int Month { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.AccountingPeriod.IsOpen"/>
+    /// <inheritdoc cref="Domain.AccountingPeriods.AccountingPeriod.IsOpen"/>
     public bool IsOpen { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.AccountingPeriod.Transactions"/>
+    /// <inheritdoc cref="Domain.AccountingPeriods.AccountingPeriod.Transactions"/>
     public IReadOnlyCollection<TransactionModel> Transactions { get; init; }
 
     /// <summary>
@@ -39,7 +39,7 @@ public class AccountingPeriodModel
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period entity to build this Accounting Period REST model from</param>
-    public AccountingPeriodModel(Domain.Aggregates.AccountingPeriods.AccountingPeriod accountingPeriod)
+    public AccountingPeriodModel(Domain.AccountingPeriods.AccountingPeriod accountingPeriod)
     {
         Id = accountingPeriod.Id.ExternalId;
         Year = accountingPeriod.Year;

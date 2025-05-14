@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.Aggregates.AccountingPeriods;
+using Domain.AccountingPeriods;
+using Domain.Accounts;
 using Domain.Services;
-using Domain.ValueObjects;
 
-namespace Domain.Aggregates;
+namespace Domain.BalanceEvents;
 
 /// <summary>
 /// Validator class that validates that a newly created Balance Event doesn't invalidate any future Balance Events

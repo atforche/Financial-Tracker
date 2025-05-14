@@ -5,6 +5,6 @@ namespace Rest.Models.Fund;
 /// </summary>
 public class CreateFundModel
 {
-    /// <inheritdoc cref="Domain.Aggregates.Funds.Fund.Name"/>
+    /// <inheritdoc cref="Domain.Funds.Fund.Name"/>
     public required string Name { get; init; }
 }

@@ -1,4 +1,4 @@
-using Domain.ValueObjects;
+using Domain.Funds;
 
 namespace Tests.Validators;
 

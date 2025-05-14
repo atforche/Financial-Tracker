@@ -1,7 +1,8 @@
-using Domain.Aggregates.Accounts;
-using Domain.ValueObjects;
+using Domain.Accounts;
+using Domain.BalanceEvents;
+using Domain.Funds;
 
-namespace Domain.Aggregates.AccountingPeriods;
+namespace Domain.AccountingPeriods;
 
 /// <summary>
 /// Entity class representing a Transaction Balance Event

@@ -8,16 +8,16 @@ namespace Rest.Models.AccountBalance;
 /// </summary>
 public class AccountBalanceModel
 {
-    /// <inheritdoc cref="Domain.ValueObjects.AccountBalance.FundBalances"/>
+    /// <inheritdoc cref="Domain.Accounts.AccountBalance.FundBalances"/>
     public IReadOnlyCollection<FundAmountModel> FundBalances { get; init; }
 
-    /// <inheritdoc cref="Domain.ValueObjects.AccountBalance.PendingFundBalanceChanges"/>
+    /// <inheritdoc cref="Domain.Accounts.AccountBalance.PendingFundBalanceChanges"/>
     public IReadOnlyCollection<FundAmountModel> PendingFundBalanceChanges { get; init; }
 
-    /// <inheritdoc cref="Domain.ValueObjects.AccountBalance.Balance"/>
+    /// <inheritdoc cref="Domain.Accounts.AccountBalance.Balance"/>
     public decimal Balance { get; init; }
 
-    /// <inheritdoc cref="Domain.ValueObjects.AccountBalance.TotalPendingBalanceChange"/>
+    /// <inheritdoc cref="Domain.Accounts.AccountBalance.TotalPendingBalanceChange"/>
     public decimal TotalPendingBalanceChange { get; init; }
 
     /// <summary>
@@ -39,7 +39,7 @@ public class AccountBalanceModel
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="accountBalance">Account Balance value object to build this Account Balance REST model from</param>
-    public AccountBalanceModel(Domain.ValueObjects.AccountBalance accountBalance)
+    public AccountBalanceModel(Domain.Accounts.AccountBalance accountBalance)
     {
         FundBalances = accountBalance.FundBalances.Select(fundAmount => new FundAmountModel(fundAmount)).ToList();
         PendingFundBalanceChanges = accountBalance.PendingFundBalanceChanges

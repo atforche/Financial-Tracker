@@ -9,16 +9,16 @@ namespace Rest.Models.AccountingPeriod;
 /// </summary>
 public class ChangeInValueModel
 {
-    /// <inheritdoc cref="Domain.Aggregates.Entity.Id"/>
+    /// <inheritdoc cref="Domain.Entity.Id"/>
     public Guid Id { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.BalanceEvent.Account"/>
+    /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.Account"/>
     public AccountModel Account { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.BalanceEvent.EventDate"/>
+    /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.EventDate"/>
     public DateOnly EventDate { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.AccountingPeriods.ChangeInValue.AccountingEntry"/>
+    /// <inheritdoc cref="Domain.AccountingPeriods.ChangeInValue.AccountingEntry"/>
     public FundAmountModel AccountingEntry { get; init; }
 
     /// <summary>
@@ -40,7 +40,7 @@ public class ChangeInValueModel
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="changeInValue">Change In Value entity to builder this Change In Value REST model from</param>
-    public ChangeInValueModel(Domain.Aggregates.AccountingPeriods.ChangeInValue changeInValue)
+    public ChangeInValueModel(Domain.AccountingPeriods.ChangeInValue changeInValue)
     {
         Id = changeInValue.Id.ExternalId;
         Account = new AccountModel(changeInValue.Account);

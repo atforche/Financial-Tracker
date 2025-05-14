@@ -1,4 +1,4 @@
-namespace Domain.Aggregates;
+namespace Domain;
 
 /// <summary>
 /// Interface shared by all Aggregate Repositories

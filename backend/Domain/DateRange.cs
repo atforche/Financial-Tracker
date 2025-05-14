@@ -1,4 +1,4 @@
-namespace Domain.ValueObjects;
+namespace Domain;
 
 /// <summary>
 /// Value object class representing a range of dates

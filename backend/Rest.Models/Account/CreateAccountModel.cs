@@ -1,4 +1,4 @@
-using Domain.Aggregates.Accounts;
+using Domain.Accounts;
 using Rest.Models.FundAmount;
 
 namespace Rest.Models.Account;
@@ -8,16 +8,16 @@ namespace Rest.Models.Account;
 /// </summary>
 public class CreateAccountModel
 {
-    /// <inheritdoc cref="Domain.Aggregates.Accounts.Account.Name"/>
+    /// <inheritdoc cref="Domain.Accounts.Account.Name"/>
     public required string Name { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.Accounts.Account.Type"/>
+    /// <inheritdoc cref="Domain.Accounts.Account.Type"/>
     public required AccountType Type { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.BalanceEvent.AccountingPeriodKey"/>
+    /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.AccountingPeriodKey"/>
     public required Guid AccountingPeriodId { get; init; }
 
-    /// <inheritdoc cref="Domain.Aggregates.BalanceEvent.EventDate"/>
+    /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.EventDate"/>
     public required DateOnly Date { get; init; }
 
     /// <summary>

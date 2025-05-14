@@ -1,4 +1,4 @@
-namespace Domain.Aggregates.Accounts;
+namespace Domain.Accounts;
 
 /// <summary>
 /// Interface representing methods to interact with a collection of <see cref="Account"/>

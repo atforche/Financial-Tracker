@@ -1,6 +1,6 @@
 using Data;
 using Domain.Actions;
-using Domain.Aggregates.Funds;
+using Domain.Funds;
 using Microsoft.AspNetCore.Mvc;
 using Rest.Models.Fund;
 

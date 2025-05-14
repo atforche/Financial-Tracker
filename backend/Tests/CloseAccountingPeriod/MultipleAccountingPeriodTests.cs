@@ -1,6 +1,5 @@
+using Domain.AccountingPeriods;
 using Domain.Actions;
-using Domain.Aggregates.AccountingPeriods;
-using Domain.ValueObjects;
 using Tests.CloseAccountingPeriod.Scenarios;
 using Tests.CloseAccountingPeriod.Setups;
 using Tests.Validators;

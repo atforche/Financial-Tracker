@@ -1,6 +1,4 @@
-using Domain.ValueObjects;
-
-namespace Domain.Aggregates.AccountingPeriods;
+namespace Domain.AccountingPeriods;
 
 /// <summary>
 /// Interface representing methods to interact with a collection of <see cref="AccountingPeriod"/>

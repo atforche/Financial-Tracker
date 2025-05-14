@@ -1,6 +1,4 @@
-using Domain.Aggregates.Funds;
-
-namespace Domain.ValueObjects;
+namespace Domain.Funds;
 
 /// <summary>
 /// Value object class representing a Fund Amount.

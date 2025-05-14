@@ -1,4 +1,4 @@
-namespace Domain.ValueObjects;
+namespace Domain.Accounts;
 
 /// <summary>
 /// Value object class representing an Account Balance associated with a Date

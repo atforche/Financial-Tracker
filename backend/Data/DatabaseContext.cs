@@ -1,7 +1,7 @@
 using Data.Configuration;
-using Domain.Aggregates.AccountingPeriods;
-using Domain.Aggregates.Accounts;
-using Domain.Aggregates.Funds;
+using Domain.AccountingPeriods;
+using Domain.Accounts;
+using Domain.Funds;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data;

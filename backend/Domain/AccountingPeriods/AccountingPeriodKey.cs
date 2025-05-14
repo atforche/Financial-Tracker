@@ -1,4 +1,4 @@
-namespace Domain.ValueObjects;
+namespace Domain.AccountingPeriods;
 
 /// <summary>
 /// Value object class representing the Year and Month of an Accounting Period

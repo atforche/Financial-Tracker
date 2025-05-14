@@ -1,5 +1,5 @@
-using Domain.Aggregates.AccountingPeriods;
-using Domain.ValueObjects;
+using Domain.AccountingPeriods;
+using Domain.Funds;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

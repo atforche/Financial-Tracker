@@ -1,5 +1,5 @@
-using Domain.Aggregates.AccountingPeriods;
-using Domain.ValueObjects;
+using Domain;
+using Domain.AccountingPeriods;
 
 namespace Data.Repositories;
 

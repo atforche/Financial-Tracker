@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.Aggregates.AccountingPeriods;
-using Domain.Aggregates.Accounts;
+using Domain.AccountingPeriods;
+using Domain.Accounts;
 
-namespace Domain.Aggregates;
+namespace Domain.BalanceEvents;
 
 /// <summary>
 /// Validator class that validates the Event Date for a <see cref="BalanceEvent"/>
