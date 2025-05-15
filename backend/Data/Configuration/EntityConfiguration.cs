@@ -13,10 +13,10 @@ internal abstract class EntityConfiguration<TEntity> : IEntityTypeConfiguration<
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<TEntity> builder)
     {
-        builder.Property("_internalId").HasColumnName("InternalId");
+        builder.Property<long>("_internalId").HasColumnName("InternalId");
         builder.HasKey("_internalId");
 
-        builder.Property("_externalId").HasColumnName("ExternalId");
+        builder.Property<Guid>("_externalId").HasColumnName("ExternalId");
         builder.HasIndex("_externalId").IsUnique();
 
         ConfigurePrivate(builder);

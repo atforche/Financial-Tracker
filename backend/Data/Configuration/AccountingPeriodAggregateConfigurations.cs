@@ -13,7 +13,7 @@ internal sealed class AccountingPeriodEntityConfiguration : EntityConfiguration<
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<AccountingPeriod> builder)
     {
-        builder.HasIndex(accountingPeriod => new { accountingPeriod.Year, accountingPeriod.Month }).IsUnique();
+        builder.OwnsOne(accountingPeriod => accountingPeriod.Key);
 
         builder.HasMany(accountingPeriod => accountingPeriod.Transactions)
             .WithOne(transaction => transaction.AccountingPeriod)
@@ -29,6 +29,11 @@ internal sealed class AccountingPeriodEntityConfiguration : EntityConfiguration<
             .WithOne()
             .HasForeignKey("AccountingPeriodId");
         builder.Navigation(accountingPeriod => accountingPeriod.ChangeInValues).AutoInclude();
+
+        builder.HasMany(accountingPeriod => accountingPeriod.AccountAddedBalanceEvents)
+            .WithOne()
+            .HasForeignKey("AccountingPeriodId");
+        builder.Navigation(accountingPeriod => accountingPeriod.AccountAddedBalanceEvents).AutoInclude();
     }
 }
 
@@ -40,7 +45,9 @@ internal sealed class TransactionEntityConfiguration : EntityConfiguration<Trans
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<Transaction> builder)
     {
-        builder.HasMany(transaction => transaction.AccountingEntries).WithOne().HasForeignKey("TransactionId");
+        builder.HasMany(transaction => transaction.AccountingEntries)
+            .WithOne()
+            .HasForeignKey("TransactionId");
         builder.Navigation(transaction => transaction.AccountingEntries).AutoInclude();
 
         builder.HasMany(transaction => transaction.TransactionBalanceEvents)
@@ -58,6 +65,9 @@ internal sealed class FundConversionEntityConfiguration : EntityConfiguration<Fu
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<FundConversion> builder)
     {
+        builder.OwnsOne(fundConversion => fundConversion.AccountingPeriodKey);
+        builder.Navigation(fundConversion => fundConversion.AccountingPeriodKey).AutoInclude();
+
         builder.HasOne(fundConversion => fundConversion.Account).WithMany().HasForeignKey("AccountId");
         builder.Navigation(fundConversion => fundConversion.Account).IsRequired().AutoInclude();
 
@@ -77,6 +87,9 @@ internal sealed class ChangeInValueEntityConfiguration : EntityConfiguration<Cha
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<ChangeInValue> builder)
     {
+        builder.OwnsOne(changeInValue => changeInValue.AccountingPeriodKey);
+        builder.Navigation(changeInValue => changeInValue.AccountingPeriodKey).AutoInclude();
+
         builder.HasOne(changeInValue => changeInValue.Account).WithMany().HasForeignKey("AccountId");
         builder.Navigation(changeInValue => changeInValue.Account).IsRequired().AutoInclude();
 
@@ -93,7 +106,10 @@ internal sealed class TransactionBalanceEventEntityConfiguration : EntityConfigu
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<TransactionBalanceEvent> builder)
     {
-        builder.HasIndex(transactionDetail => new { transactionDetail.EventDate, transactionDetail.EventSequence }).IsUnique();
+        builder.OwnsOne(transactionBalanceEvent => transactionBalanceEvent.AccountingPeriodKey);
+        builder.Navigation(transactionBalanceEvent => transactionBalanceEvent.AccountingPeriodKey).AutoInclude();
+
+        builder.HasIndex(transactionBalanceEvent => new { transactionBalanceEvent.EventDate, transactionBalanceEvent.EventSequence }).IsUnique();
 
         builder.HasOne(transactionBalanceEvent => transactionBalanceEvent.Account).WithMany().HasForeignKey("AccountId");
         builder.Navigation(transactionBalanceEvent => transactionBalanceEvent.Account).IsRequired().AutoInclude();

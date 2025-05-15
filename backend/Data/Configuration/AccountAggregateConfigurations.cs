@@ -18,6 +18,11 @@ internal sealed class AccountEntityConfiguration : EntityConfiguration<Account>
             .WithOne(accountingBalanceCheckpoint => accountingBalanceCheckpoint.Account)
             .HasForeignKey("AccountId");
         builder.Navigation(account => account.AccountBalanceCheckpoints).AutoInclude();
+
+        builder.HasOne(account => account.AccountAddedBalanceEvent)
+            .WithOne()
+            .HasForeignKey<Account>("AccountAddedBalanceEventId");
+        builder.Navigation(account => account.AccountAddedBalanceEvent).AutoInclude();
     }
 }
 
@@ -29,8 +34,30 @@ internal sealed class AccountBalanceCheckpointEntityConfiguration : EntityConfig
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<AccountBalanceCheckpoint> builder)
     {
-        builder.HasMany(accountBalanceCheckpoint => accountBalanceCheckpoint.FundBalances).WithOne()
+        builder.OwnsOne(accountBalanceCheckpoint => accountBalanceCheckpoint.AccountingPeriodKey);
+        builder.Navigation(accountBalanceCheckpoint => accountBalanceCheckpoint.AccountingPeriodKey).AutoInclude();
+
+        builder.HasMany(accountBalanceCheckpoint => accountBalanceCheckpoint.FundBalances)
+            .WithOne()
             .HasForeignKey("AccountBalanceCheckpointId");
         builder.Navigation(accountBalanceCheckpoint => accountBalanceCheckpoint.FundBalances).AutoInclude();
+    }
+}
+
+/// <summary>
+/// EF Core configuration for the Account Added Balance Event entity
+/// </summary>
+internal sealed class AccountAddedBalanceEventEntityConfiguration : EntityConfiguration<AccountAddedBalanceEvent>
+{
+    /// <inheritdoc/>
+    protected override void ConfigurePrivate(EntityTypeBuilder<AccountAddedBalanceEvent> builder)
+    {
+        builder.OwnsOne(accountAddedBalanceEvent => accountAddedBalanceEvent.AccountingPeriodKey);
+        builder.Navigation(accountAddedBalanceEvent => accountAddedBalanceEvent.AccountingPeriodKey).AutoInclude();
+
+        builder.HasMany(accountAddedBalanceEvent => accountAddedBalanceEvent.FundAmounts)
+            .WithOne()
+            .HasForeignKey("AccountAddedBalanceEventId");
+        builder.Navigation(accountAddedBalanceEvent => accountAddedBalanceEvent.FundAmounts).AutoInclude();
     }
 }

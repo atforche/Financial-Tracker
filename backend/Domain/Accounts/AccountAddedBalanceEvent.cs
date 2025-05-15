@@ -18,6 +18,12 @@ public class AccountAddedBalanceEvent : BalanceEvent
     /// </summary>
     public IReadOnlyCollection<FundAmount> FundAmounts { get; private set; }
 
+    /// <inheritdoc/>
+    public override AccountBalance ApplyEventToBalance(AccountBalance currentBalance) => new(Account, FundAmounts, []);
+
+    /// <inheritdoc/>
+    public override AccountBalance ReverseEventFromBalance(AccountBalance currentBalance) => new(Account, [], []);
+
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
@@ -33,9 +39,8 @@ public class AccountAddedBalanceEvent : BalanceEvent
         : base(accountingPeriod, account, eventDate) =>
         FundAmounts = startingFundBalances.ToList();
 
-    /// <inheritdoc/>
-    public override AccountBalance ApplyEventToBalance(AccountBalance currentBalance) => new(Account, FundAmounts, []);
-
-    /// <inheritdoc/>
-    public override AccountBalance ReverseEventFromBalance(AccountBalance currentBalance) => new(Account, [], []);
+    /// <summary>
+    /// Constructs a new default instance of this class
+    /// </summary>
+    private AccountAddedBalanceEvent() => FundAmounts = null!;
 }
