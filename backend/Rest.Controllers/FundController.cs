@@ -11,7 +11,7 @@ namespace Rest.Controllers;
 /// </summary>
 [ApiController]
 [Route("/funds")]
-internal sealed class FundController(IUnitOfWork unitOfWork, AddFundAction addFundAction, IFundRepository fundRepository) : ControllerBase
+internal sealed class FundController(UnitOfWork unitOfWork, AddFundAction addFundAction, IFundRepository fundRepository) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Funds from the database

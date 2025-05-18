@@ -15,7 +15,7 @@ public class DefaultTests
     [Fact]
     public void RunTest()
     {
-        var setup = new DefaultScenarioSetup();
+        using var setup = new DefaultScenarioSetup();
         setup.GetService<CloseAccountingPeriodAction>().Run(setup.AccountingPeriod);
         new AccountingPeriodValidator().Validate(setup.AccountingPeriod,
             new AccountingPeriodState

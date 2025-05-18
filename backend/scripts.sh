@@ -3,7 +3,7 @@ run-full-pipeline()
     restore-solution
     format-solution
     build-solution
-    test-solution
+    run-unit-tests
 }
 
 restore-solution()
@@ -27,9 +27,16 @@ build-solution()
     echo -e "Build completed\n"
 }
 
-test-solution()
+run-unit-tests()
 {
-    echo "Testing solution"
+    echo "Running unit tests"
     dotnet test ./Backend.sln --no-build --verbosity normal
-    echo -e "Testing completed\n"
+    echo -e "Unit tests completed\n"
+}
+
+run-database-integration-tests()
+{
+    echo "Running database integration tests"
+    dotnet test ./Backend.sln --no-build --verbosity normal --environment USE_DATABASE=TRUE
+    echo -e "Database integration tests completed\n" 
 }

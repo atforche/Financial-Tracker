@@ -19,7 +19,7 @@ public class AccountingPeriodTests
     [ClassData(typeof(AddBalanceEventAccountingPeriodScenarios))]
     public void RunTest(AddBalanceEventAccountingPeriodScenario scenario)
     {
-        var setup = new AddBalanceEventAccountingPeriodScenarioSetup(scenario);
+        using var setup = new AddBalanceEventAccountingPeriodScenarioSetup(scenario);
         if (!AddBalanceEventAccountingPeriodScenarios.IsValid(scenario))
         {
             Assert.Throws<InvalidOperationException>(() => AddTransaction(setup));

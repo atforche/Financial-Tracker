@@ -5,10 +5,13 @@ namespace Domain;
 /// </summary>
 public abstract class Entity(EntityId id) : IEquatable<Entity>
 {
+    private readonly long _internalId = id.InternalId;
+    private readonly Guid _externalId = id.ExternalId;
+
     /// <summary>
     /// ID for this Entity
     /// </summary>
-    public EntityId Id { get; } = id;
+    public EntityId Id => new(_internalId, _externalId);
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is Entity other && Equals(other);

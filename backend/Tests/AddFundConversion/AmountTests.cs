@@ -18,7 +18,7 @@ public class AmountTests
     [ClassData(typeof(AddBalanceEventAmountScenarios))]
     public void RunTest(decimal amount)
     {
-        var setup = new AddBalanceEventAmountScenarioSetup();
+        using var setup = new AddBalanceEventAmountScenarioSetup();
         if (!IsValid(amount))
         {
             Assert.Throws<InvalidOperationException>(() => AddFundConversion(setup, amount));

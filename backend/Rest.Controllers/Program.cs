@@ -24,7 +24,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddDbContext<DatabaseContext>();
 
 // Add application DI services
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<UnitOfWork>();
 
 // Add domain DI services
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();

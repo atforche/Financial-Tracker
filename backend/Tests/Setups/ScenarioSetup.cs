@@ -1,3 +1,5 @@
+using Data;
+using Data.Repositories;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
@@ -11,9 +13,10 @@ namespace Tests.Setups;
 /// <summary>
 /// Abstract base class representing a Scenario Setup
 /// </summary>
-internal abstract class ScenarioSetup
+internal abstract class ScenarioSetup : IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly bool shouldUseDatabase = Environment.GetEnvironmentVariable("USE_DATABASE") == "TRUE";
 
     /// <summary>
     /// Constructs a new instance of this class.
@@ -21,9 +24,25 @@ internal abstract class ScenarioSetup
     protected ScenarioSetup()
     {
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddScoped<IAccountRepository, MockAccountRepository>();
-        serviceCollection.AddScoped<IAccountingPeriodRepository, MockAccountingPeriodRepository>();
-        serviceCollection.AddScoped<IFundRepository, MockFundRepository>();
+
+        if (shouldUseDatabase)
+        {
+            if (!Directory.Exists(TestDatabaseContext.DatabaseDirectory))
+            {
+                Directory.CreateDirectory(TestDatabaseContext.DatabaseDirectory);
+            }
+            serviceCollection.AddDbContext<DatabaseContext, TestDatabaseContext>();
+            serviceCollection.AddScoped<IAccountRepository, AccountRepository>();
+            serviceCollection.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
+            serviceCollection.AddScoped<IFundRepository, FundRepository>();
+        }
+        else
+        {
+            serviceCollection.AddScoped<IAccountRepository, MockAccountRepository>();
+            serviceCollection.AddScoped<IAccountingPeriodRepository, MockAccountingPeriodRepository>();
+            serviceCollection.AddScoped<IFundRepository, MockFundRepository>();
+        }
+        serviceCollection.AddScoped<TestUnitOfWork>();
         serviceCollection.AddScoped<AddAccountingPeriodAction>();
         serviceCollection.AddScoped<CloseAccountingPeriodAction>();
         serviceCollection.AddScoped<AddTransactionAction>();
@@ -33,10 +52,24 @@ internal abstract class ScenarioSetup
         serviceCollection.AddScoped<AddAccountAction>();
         serviceCollection.AddScoped<AddFundAction>();
         _serviceProvider = serviceCollection.BuildServiceProvider();
+
+        if (shouldUseDatabase)
+        {
+            GetService<DatabaseContext>().Database.EnsureCreated();
+        }
     }
 
     /// <summary>
     /// Gets the service of the provided type from the service provider
     /// </summary>
     public TService GetService<TService>() => _serviceProvider.GetService<TService>() ?? throw new InvalidOperationException();
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        if (shouldUseDatabase)
+        {
+            GetService<DatabaseContext>().Database.EnsureDeleted();
+        }
+    }
 }

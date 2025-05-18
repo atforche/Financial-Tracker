@@ -19,7 +19,7 @@ public class FundTest
     [ClassData(typeof(FundScenarios))]
     public void RunTest(FundScenario scenario)
     {
-        var setup = new FundScenarioSetup(scenario);
+        using var setup = new FundScenarioSetup(scenario);
         if (ShouldThrowException(setup))
         {
             Assert.Throws<InvalidOperationException>(() => AddTransaction(setup));

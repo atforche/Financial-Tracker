@@ -14,7 +14,7 @@ namespace Rest.Controllers;
 [ApiController]
 [Route("/accounts")]
 internal sealed class AccountController(
-    IUnitOfWork unitOfWork,
+    UnitOfWork unitOfWork,
     AddAccountAction addAccountAction,
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,

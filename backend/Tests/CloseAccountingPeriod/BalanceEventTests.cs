@@ -18,7 +18,7 @@ public class BalanceEventTests
     [ClassData(typeof(BalanceEventScenarios))]
     public void RunTest(BalanceEventScenario scenario)
     {
-        var setup = new BalanceEventScenarioSetup(scenario);
+        using var setup = new BalanceEventScenarioSetup(scenario);
         if (!BalanceEventScenarios.IsValid(scenario))
         {
             Assert.Throws<InvalidOperationException>(() => CloseAccountingPeriod(setup));

@@ -11,8 +11,6 @@ namespace Data;
 /// </summary>
 public class DatabaseContext : DbContext
 {
-    private readonly string _dbPath = Path.Join("/workspaces/Financial-Tracker/backend", "backend.db");
-
     /// <summary>
     /// Collection of Accounts in the database
     /// </summary>
@@ -28,9 +26,14 @@ public class DatabaseContext : DbContext
     /// </summary>
     internal DbSet<Fund> Funds { get; set; } = default!;
 
+    /// <summary>
+    /// Gets the database path for this Database Context
+    /// </summary>
+    protected virtual string GetDatabasePath() => Path.Join("/workspaces/Financial-Tracker/backend", "backend.db");
+
     /// <inheritdoc/>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.UseSqlite($"Data Source={_dbPath}");
+        optionsBuilder.UseSqlite($"Data Source={GetDatabasePath()}");
 
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>

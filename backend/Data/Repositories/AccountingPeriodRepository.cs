@@ -18,7 +18,7 @@ public class AccountingPeriodRepository(DatabaseContext context) : AggregateRepo
 
     /// <inheritdoc/>
     public AccountingPeriod? FindByDateOrNull(DateOnly asOfDate) => DatabaseContext.AccountingPeriods
-        .SingleOrDefault(accountingPeriod => accountingPeriod.Year == asOfDate.Year && accountingPeriod.Month == asOfDate.Month);
+        .SingleOrDefault(accountingPeriod => accountingPeriod.Key.Year == asOfDate.Year && accountingPeriod.Key.Month == asOfDate.Month);
 
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> FindOpenPeriods() => DatabaseContext.AccountingPeriods

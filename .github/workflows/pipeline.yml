@@ -40,7 +40,7 @@ jobs:
     - name: Test
       run: |
         . ./scripts.sh 
-        test-solution
+        run-unit-tests
 
   # Builds and tests the Vite project
   build_vite:

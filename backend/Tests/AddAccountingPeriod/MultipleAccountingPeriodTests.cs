@@ -39,7 +39,7 @@ public class MultipleAccountingPeriodTests
     /// <param name="shouldClosePeriods">True if Accounting Periods should be closed before adding a new one, false otherwise</param>
     private static void RunTestPrivate(DateOnly firstPeriod, DateOnly secondPeriod, DateOnly thirdPeriod, bool shouldClosePeriods)
     {
-        var setup = new MultipleAccountingPeriodScenarioSetup(firstPeriod);
+        using var setup = new MultipleAccountingPeriodScenarioSetup(firstPeriod);
         new AccountingPeriodValidator().Validate(setup.FirstAccountingPeriod, GetExpectedState(setup, setup.FirstAccountingPeriod));
         new AccountBalanceCheckpointValidator().Validate(setup.Account.AccountBalanceCheckpoints, GetExpectedAccountBalanceCheckpointStates(setup, null, null));
         if (shouldClosePeriods)

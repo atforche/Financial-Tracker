@@ -1,4 +1,3 @@
-using Domain.AccountingPeriods;
 using Tests.AddAccountingPeriod.Scenarios;
 using Tests.AddAccountingPeriod.Setups;
 using Tests.Validators;
@@ -22,10 +21,10 @@ public class YearAndMonthTests
             Assert.Throws<InvalidOperationException>(() => new YearAndMonthScenarioSetup(year, month));
             return;
         }
-        AccountingPeriod accountingPeriod = new YearAndMonthScenarioSetup(year, month).AccountingPeriod;
-        new AccountingPeriodValidator().Validate(accountingPeriod, new AccountingPeriodState
+        using var setup = new YearAndMonthScenarioSetup(year, month);
+        new AccountingPeriodValidator().Validate(setup.AccountingPeriod, new AccountingPeriodState
         {
-            Key = accountingPeriod.Key,
+            Key = setup.AccountingPeriod.Key,
             IsOpen = true,
             Transactions = [],
             FundConversions = [],

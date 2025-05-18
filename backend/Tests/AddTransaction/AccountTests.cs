@@ -22,7 +22,7 @@ public class AccountTests
     [ClassData(typeof(AccountScenarios))]
     public void RunTest(AccountType? debitAccountType, AccountType? creditAccountType, SameAccountTypeBehavior sameAccountTypeBehavior)
     {
-        var setup = new AccountScenarioSetup(debitAccountType, creditAccountType, sameAccountTypeBehavior);
+        using var setup = new AccountScenarioSetup(debitAccountType, creditAccountType, sameAccountTypeBehavior);
         if (!AccountScenarios.IsValid(debitAccountType, creditAccountType, sameAccountTypeBehavior))
         {
             Assert.Throws<InvalidOperationException>(() => AddTransaction(setup));

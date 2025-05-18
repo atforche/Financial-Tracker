@@ -19,7 +19,7 @@ public class EventDateTests
     [ClassData(typeof(AddBalanceEventDateScenarios))]
     public void RunTest(DateOnly eventDate)
     {
-        var setup = new AddBalanceEventDateScenarioSetup(eventDate);
+        using var setup = new AddBalanceEventDateScenarioSetup(eventDate);
         Transaction transaction = AddTransaction(setup);
         if (!AddBalanceEventDateScenarios.IsValid(eventDate) || eventDate < new DateOnly(2025, 1, 1))
         {
