@@ -34,7 +34,7 @@ public class AccountModel
     /// <param name="account">Account entity to build this Account REST model from</param>
     public AccountModel(Domain.Accounts.Account account)
     {
-        Id = account.Id.ExternalId;
+        Id = account.Id.Value;
         Name = account.Name;
         Type = account.Type;
     }

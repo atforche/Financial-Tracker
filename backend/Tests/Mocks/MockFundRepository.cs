@@ -1,3 +1,4 @@
+using Domain;
 using Domain.Funds;
 
 namespace Tests.Mocks;
@@ -15,7 +16,7 @@ internal sealed class MockFundRepository : IFundRepository
     public MockFundRepository() => _funds = [];
 
     /// <inheritdoc/>
-    public Fund? FindByExternalIdOrNull(Guid id) => _funds.SingleOrDefault(fund => fund.Id.ExternalId == id);
+    public Fund? FindByIdOrNull(EntityId id) => _funds.SingleOrDefault(fund => fund.Id == id);
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Fund> FindAll() => _funds;

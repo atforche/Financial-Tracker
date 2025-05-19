@@ -42,7 +42,7 @@ public class ChangeInValueModel
     /// <param name="changeInValue">Change In Value entity to builder this Change In Value REST model from</param>
     public ChangeInValueModel(Domain.AccountingPeriods.ChangeInValue changeInValue)
     {
-        Id = changeInValue.Id.ExternalId;
+        Id = changeInValue.Id.Value;
         Account = new AccountModel(changeInValue.Account);
         EventDate = changeInValue.EventDate;
         AccountingEntry = new FundAmountModel(changeInValue.AccountingEntry);

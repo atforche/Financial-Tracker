@@ -1,5 +1,4 @@
 using Domain;
-using Microsoft.EntityFrameworkCore;
 
 namespace Data.Repositories;
 
@@ -14,17 +13,17 @@ public abstract class AggregateRepository<TAggregate>(DatabaseContext databaseCo
     protected DatabaseContext DatabaseContext { get; } = databaseContext;
 
     /// <summary>
-    /// Finds the Aggregate with the provided external ID
+    /// Finds the Aggregate with the provided ID
     /// </summary>
-    /// <param name="id">External ID of the Aggregate to find</param>
+    /// <param name="id">ID of the Aggregate to find</param>
     /// <returns>The Aggregate that was found. An exception is thrown if one isn't found</returns>
-    public TAggregate FindByExternalId(Guid id) => FindByExternalIdOrNull(id) ?? throw new InvalidOperationException();
+    public TAggregate FindById(EntityId id) => FindByIdOrNull(id) ?? throw new InvalidOperationException();
 
     /// <summary>
-    /// Finds the Aggregate with the provided external ID
+    /// Finds the Aggregate with the provided ID
     /// </summary>
-    /// <param name="id">External ID of the Aggregate to find</param>
+    /// <param name="id">ID of the Aggregate to find</param>
     /// <returns>The Aggregate that was found or null if one isn't found</returns>
-    public TAggregate? FindByExternalIdOrNull(Guid id) => DatabaseContext.Set<TAggregate>()
-        .SingleOrDefault(aggregate => EF.Property<Guid>(aggregate, "_externalId") == id);
+    public TAggregate? FindByIdOrNull(EntityId id) =>
+        DatabaseContext.Set<TAggregate>().SingleOrDefault(aggregate => aggregate.Id == id);
 }

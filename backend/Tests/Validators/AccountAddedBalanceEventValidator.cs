@@ -11,7 +11,7 @@ internal sealed class AccountAddedBalanceEventValidator : EntityValidator<Accoun
     /// <inheritdoc/>
     public override void Validate(AccountAddedBalanceEvent entityToValidate, AccountAddedBalanceEventState expectedState)
     {
-        Assert.NotEqual(Guid.Empty, entityToValidate.Id.ExternalId);
+        Assert.NotEqual(Guid.Empty, entityToValidate.Id.Value);
         Assert.Equal(expectedState.AccountingPeriodKey, entityToValidate.AccountingPeriodKey);
         Assert.Equal(expectedState.AccountName, entityToValidate.Account.Name);
         Assert.Equal(expectedState.EventDate, entityToValidate.EventDate);

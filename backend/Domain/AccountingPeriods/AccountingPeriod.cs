@@ -72,7 +72,6 @@ public class AccountingPeriod : Entity
     /// <param name="year">Year for this Accounting Period</param>
     /// <param name="month">Month for this Accounting Period</param>
     internal AccountingPeriod(int year, int month)
-        : base(new EntityId(default, Guid.NewGuid()))
     {
         Key = new AccountingPeriodKey(year, month);
         IsOpen = true;
@@ -118,7 +117,5 @@ public class AccountingPeriod : Entity
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private AccountingPeriod()
-        : base(new EntityId(default, Guid.NewGuid())) =>
-        Key = null!;
+    private AccountingPeriod() => Key = null!;
 }

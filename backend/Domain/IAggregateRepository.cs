@@ -6,9 +6,9 @@ namespace Domain;
 public interface IAggregateRepository<TAggregate>
 {
     /// <summary>
-    /// Finds the Aggregate with the specified external ID.
+    /// Finds the Aggregate with the specified ID.
     /// </summary>
     /// <param name="id">ID of the Aggregate to find</param>
     /// <returns>The Aggregate that was found, or null if one wasn't found</returns>
-    TAggregate? FindByExternalIdOrNull(Guid id);
+    TAggregate? FindByIdOrNull(EntityId id);
 }

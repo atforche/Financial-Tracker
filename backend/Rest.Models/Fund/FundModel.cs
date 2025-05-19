@@ -29,7 +29,7 @@ public class FundModel
     /// <param name="fund">Fund entity to build this Fund REST model from</param>
     public FundModel(Domain.Funds.Fund fund)
     {
-        Id = fund.Id.ExternalId;
+        Id = fund.Id.Value;
         Name = fund.Name;
     }
 }

@@ -16,8 +16,8 @@ internal sealed class MockAccountingPeriodRepository : IAccountingPeriodReposito
     public MockAccountingPeriodRepository() => _accountingPeriods = [];
 
     /// <inheritdoc/>
-    public AccountingPeriod? FindByExternalIdOrNull(Guid id) => _accountingPeriods
-        .SingleOrDefault(accountingPeriod => accountingPeriod.Id.ExternalId == id);
+    public AccountingPeriod? FindByIdOrNull(EntityId id) => _accountingPeriods
+        .SingleOrDefault(accountingPeriod => accountingPeriod.Id == id);
 
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> FindAll() => _accountingPeriods;

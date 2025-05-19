@@ -15,13 +15,11 @@ public class Fund : Entity
     /// </summary>
     public string Name { get; private set; }
 
-    private Fund() : base(new EntityId(default, Guid.NewGuid())) => Name = "";
+    private Fund() => Name = "";
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="name">Name for this Fund</param>
-    internal Fund(string name)
-        : base(new EntityId(default, Guid.NewGuid())) =>
-        Name = name;
+    internal Fund(string name) => Name = name;
 }

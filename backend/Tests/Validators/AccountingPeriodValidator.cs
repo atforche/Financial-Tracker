@@ -10,7 +10,7 @@ internal sealed class AccountingPeriodValidator : EntityValidator<AccountingPeri
     /// <inheritdoc/>
     public override void Validate(AccountingPeriod entity, AccountingPeriodState expectedState)
     {
-        Assert.NotEqual(Guid.Empty, entity.Id.ExternalId);
+        Assert.NotEqual(Guid.Empty, entity.Id.Value);
         Assert.Equal(expectedState.Key, entity.Key);
         Assert.Equal(expectedState.IsOpen, entity.IsOpen);
         new TransactionValidator().Validate(entity.Transactions, expectedState.Transactions);

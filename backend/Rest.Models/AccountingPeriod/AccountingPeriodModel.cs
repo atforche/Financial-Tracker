@@ -41,7 +41,7 @@ public class AccountingPeriodModel
     /// <param name="accountingPeriod">Accounting Period entity to build this Accounting Period REST model from</param>
     public AccountingPeriodModel(Domain.AccountingPeriods.AccountingPeriod accountingPeriod)
     {
-        Id = accountingPeriod.Id.ExternalId;
+        Id = accountingPeriod.Id.Value;
         Year = accountingPeriod.Year;
         Month = accountingPeriod.Month;
         IsOpen = accountingPeriod.IsOpen;

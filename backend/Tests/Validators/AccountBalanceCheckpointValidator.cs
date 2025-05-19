@@ -11,7 +11,7 @@ internal sealed class AccountBalanceCheckpointValidator : EntityValidator<Accoun
     /// <inheritdoc/>
     public override void Validate(AccountBalanceCheckpoint entity, AccountBalanceCheckpointState expectedState)
     {
-        Assert.NotEqual(Guid.Empty, entity.Id.ExternalId);
+        Assert.NotEqual(Guid.Empty, entity.Id.Value);
         Assert.Equal(expectedState.AccountName, entity.Account.Name);
         Assert.Equal(expectedState.AccountingPeriodKey, entity.AccountingPeriodKey);
         new FundAmountValidator().Validate(entity.FundBalances, expectedState.FundBalances);

@@ -54,7 +54,7 @@ public class TransactionModel
     /// <param name="transaction">Transaction entity to build this Transaction REST model from</param>
     public TransactionModel(Transaction transaction)
     {
-        Id = transaction.Id.ExternalId;
+        Id = transaction.Id.Value;
         TransactionDate = transaction.TransactionDate;
         DebitDetail = transaction.TransactionBalanceEvents
             .Any(balanceEvent => balanceEvent.TransactionAccountType == TransactionAccountType.Debit)

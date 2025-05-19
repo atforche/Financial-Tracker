@@ -52,7 +52,7 @@ public class FundConversionModel
     /// <param name="fundConversion">Fund Conversion entity to build this Fund Conversion REST model from</param>
     public FundConversionModel(Domain.AccountingPeriods.FundConversion fundConversion)
     {
-        Id = fundConversion.Id.ExternalId;
+        Id = fundConversion.Id.Value;
         Account = new AccountModel(fundConversion.Account);
         EventDate = fundConversion.EventDate;
         FromFund = new FundModel(fundConversion.FromFund);

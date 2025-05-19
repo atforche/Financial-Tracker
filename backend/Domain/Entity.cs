@@ -3,15 +3,12 @@ namespace Domain;
 /// <summary>
 /// Base class shared by all Entities
 /// </summary>
-public abstract class Entity(EntityId id) : IEquatable<Entity>
+public abstract class Entity : IEquatable<Entity>
 {
-    private readonly long _internalId = id.InternalId;
-    private readonly Guid _externalId = id.ExternalId;
-
     /// <summary>
     /// ID for this Entity
     /// </summary>
-    public EntityId Id => new(_internalId, _externalId);
+    public EntityId Id { get; } = new EntityId(Guid.NewGuid());
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is Entity other && Equals(other);

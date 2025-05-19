@@ -10,7 +10,7 @@ internal sealed class TransactionValidator : EntityValidator<Transaction, Transa
     /// <inheritdoc/>
     public override void Validate(Transaction entity, TransactionState expectedState)
     {
-        Assert.NotEqual(Guid.Empty, entity.Id.ExternalId);
+        Assert.NotEqual(Guid.Empty, entity.Id.Value);
         Assert.Equal(expectedState.TransactionDate, entity.TransactionDate);
         new FundAmountValidator().Validate(entity.AccountingEntries, expectedState.AccountingEntries);
         new TransactionBalanceEventValidator().Validate(entity.TransactionBalanceEvents, expectedState.TransactionBalanceEvents);

@@ -68,7 +68,6 @@ public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
     /// <param name="eventDate">Event Date for this Balance Event</param>
     /// <param name="sequenceOffset">Sequence offset for this Balance Event</param>
     protected BalanceEvent(AccountingPeriod accountingPeriod, Account account, DateOnly eventDate, int sequenceOffset = 0)
-        : base(new EntityId(default, Guid.NewGuid()))
     {
         AccountingPeriodKey = accountingPeriod.Key;
         Account = account;
@@ -80,7 +79,6 @@ public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
     /// Constructs a new default instance of this class
     /// </summary>
     protected BalanceEvent()
-        : base(new EntityId(default, Guid.NewGuid()))
     {
         AccountingPeriodKey = null!;
         Account = null!;

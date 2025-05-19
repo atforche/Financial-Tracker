@@ -10,7 +10,7 @@ internal sealed class FundConversionValidator : EntityValidator<FundConversion, 
     /// <inheritdoc/>
     public override void Validate(FundConversion entity, FundConversionState expectedState)
     {
-        Assert.NotEqual(Guid.Empty, entity.Id.ExternalId);
+        Assert.NotEqual(Guid.Empty, entity.Id.Value);
         Assert.Equal(expectedState.AccountingPeriodKey, entity.AccountingPeriodKey);
         Assert.Equal(expectedState.AccountName, entity.Account.Name);
         Assert.Equal(expectedState.EventDate, entity.EventDate);

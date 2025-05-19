@@ -47,7 +47,6 @@ public class Account : Entity
         AccountingPeriod accountingPeriod,
         DateOnly date,
         IEnumerable<FundAmount> startingFundBalances)
-        : base(new EntityId(default, Guid.NewGuid()))
     {
         Name = name;
         Type = type;
@@ -65,7 +64,7 @@ public class Account : Entity
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private Account() : base(new EntityId(default, Guid.NewGuid()))
+    private Account()
     {
         Name = "";
         AccountAddedBalanceEvent = null!;

@@ -1,3 +1,4 @@
+using Domain;
 using Domain.Accounts;
 using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ internal sealed class AccountBalanceController(IAccountRepository accountReposit
     [HttpPost("{accountId}/ByDate")]
     public IActionResult GetAccountBalanceByDate(Guid accountId, DateRangeModel dateRangeModel)
     {
-        Account? account = accountRepository.FindByExternalIdOrNull(accountId);
+        Account? account = accountRepository.FindByIdOrNull(new EntityId(accountId));
         if (account == null)
         {
             return NotFound();

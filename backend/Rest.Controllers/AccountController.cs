@@ -1,4 +1,5 @@
 using Data;
+using Domain;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
@@ -36,7 +37,7 @@ internal sealed class AccountController(
     [HttpGet("{accountId}")]
     public IActionResult GetAccount(Guid accountId)
     {
-        Account? account = accountRepository.FindByExternalIdOrNull(accountId);
+        Account? account = accountRepository.FindByIdOrNull(new EntityId(accountId));
         return account != null ? Ok(new AccountModel(account)) : NotFound();
     }
 
@@ -48,8 +49,8 @@ internal sealed class AccountController(
     [HttpPost("")]
     public async Task<IActionResult> CreateAccountAsync(CreateAccountModel createAccountModel)
     {
-        var funds = fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.FindByExternalIdOrNull(createAccountModel.AccountingPeriodId);
+        var funds = fundRepository.FindAll().ToDictionary(fund => fund.Id.Value, fund => fund);
+        AccountingPeriod? accountingPeriod = accountingPeriodRepository.FindByIdOrNull(new EntityId(createAccountModel.AccountingPeriodId));
         if (accountingPeriod == null)
         {
             return NotFound();

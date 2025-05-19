@@ -52,7 +52,6 @@ public class Transaction : Entity
         Account? debitAccount,
         Account? creditAccount,
         IEnumerable<FundAmount> accountingEntries)
-        : base(new EntityId(default, Guid.NewGuid()))
     {
         AccountingPeriod = accountingPeriod;
         TransactionDate = transactionDate;
@@ -96,7 +95,6 @@ public class Transaction : Entity
     /// Constructs a new default instance of this class
     /// </summary>
     private Transaction()
-        : base(new EntityId(default, Guid.NewGuid()))
     {
         AccountingPeriod = null!;
         _accountingEntries = [];
