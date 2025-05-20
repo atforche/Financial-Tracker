@@ -5,14 +5,17 @@ namespace Data.Repositories;
 /// <summary>
 /// Repository that allows Accounts to be persisted to the database
 /// </summary>
-public class AccountRepository(DatabaseContext context) : AggregateRepository<Account>(context), IAccountRepository
+public class AccountRepository(DatabaseContext databaseContext) : IAccountRepository
 {
     /// <inheritdoc/>
-    public IReadOnlyCollection<Account> FindAll() => DatabaseContext.Accounts.ToList();
+    public IReadOnlyCollection<Account> FindAll() => databaseContext.Accounts.ToList();
 
     /// <inheritdoc/>
-    public Account? FindByNameOrNull(string name) => DatabaseContext.Accounts.FirstOrDefault(account => account.Name == name);
+    public Account? FindByIdOrNull(AccountId id) => databaseContext.Accounts.FirstOrDefault(account => account.Id == id);
 
     /// <inheritdoc/>
-    public void Add(Account account) => DatabaseContext.Add(account);
+    public Account? FindByNameOrNull(string name) => databaseContext.Accounts.FirstOrDefault(account => account.Name == name);
+
+    /// <inheritdoc/>
+    public void Add(Account account) => databaseContext.Add(account);
 }

@@ -127,7 +127,7 @@ internal sealed class AccountingPeriodController(
         Account? debitAccount = null;
         if (createTransactionModel.DebitAccountId != null)
         {
-            debitAccount = accountRepository.FindByIdOrNull(new EntityId(createTransactionModel.DebitAccountId.Value));
+            debitAccount = accountRepository.FindByIdOrNull(new AccountId(createTransactionModel.DebitAccountId.Value));
             if (debitAccount == null)
             {
                 return NotFound();
@@ -136,7 +136,7 @@ internal sealed class AccountingPeriodController(
         Account? creditAccount = null;
         if (createTransactionModel.CreditAccountId != null)
         {
-            creditAccount = accountRepository.FindByIdOrNull(new EntityId(createTransactionModel.CreditAccountId.Value));
+            creditAccount = accountRepository.FindByIdOrNull(new AccountId(createTransactionModel.CreditAccountId.Value));
             if (creditAccount == null)
             {
                 return NotFound();
@@ -196,7 +196,7 @@ internal sealed class AccountingPeriodController(
         {
             return NotFound();
         }
-        Account? account = accountRepository.FindByIdOrNull(new EntityId(createFundConversionModel.AccountId));
+        Account? account = accountRepository.FindByIdOrNull(new AccountId(createFundConversionModel.AccountId));
         if (account == null)
         {
             return NotFound();
@@ -235,7 +235,7 @@ internal sealed class AccountingPeriodController(
         {
             return NotFound();
         }
-        Account? account = accountRepository.FindByIdOrNull(new EntityId(createChangeInValueModel.AccountId));
+        Account? account = accountRepository.FindByIdOrNull(new AccountId(createChangeInValueModel.AccountId));
         if (account == null)
         {
             return NotFound();

@@ -16,13 +16,6 @@ public abstract class AggregateRepository<TAggregate>(DatabaseContext databaseCo
     /// Finds the Aggregate with the provided ID
     /// </summary>
     /// <param name="id">ID of the Aggregate to find</param>
-    /// <returns>The Aggregate that was found. An exception is thrown if one isn't found</returns>
-    public TAggregate FindById(EntityId id) => FindByIdOrNull(id) ?? throw new InvalidOperationException();
-
-    /// <summary>
-    /// Finds the Aggregate with the provided ID
-    /// </summary>
-    /// <param name="id">ID of the Aggregate to find</param>
     /// <returns>The Aggregate that was found or null if one isn't found</returns>
     public TAggregate? FindByIdOrNull(EntityId id) =>
         DatabaseContext.Set<TAggregate>().SingleOrDefault(aggregate => aggregate.Id == id);

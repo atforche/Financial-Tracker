@@ -1,4 +1,4 @@
-using Data.Configuration;
+using Data.Configuration.Accounts;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
@@ -37,5 +37,5 @@ public class DatabaseContext : DbContext
 
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AccountEntityConfiguration).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AccountConfiguration).Assembly);
 }

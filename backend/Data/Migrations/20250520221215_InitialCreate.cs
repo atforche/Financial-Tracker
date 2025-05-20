@@ -37,27 +37,6 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AccountAddedBalanceEvent",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    AccountingPeriodKey_Year = table.Column<int>(type: "INTEGER", nullable: false),
-                    AccountingPeriodKey_Month = table.Column<int>(type: "INTEGER", nullable: false),
-                    EventDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    EventSequence = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AccountAddedBalanceEvent", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AccountAddedBalanceEvent_AccountingPeriods_AccountingPeriodId",
-                        column: x => x.AccountingPeriodId,
-                        principalTable: "AccountingPeriods",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Transaction",
                 columns: table => new
                 {
@@ -77,14 +56,35 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AccountAddedBalanceEvent",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    AccountingPeriodKey_Year = table.Column<int>(type: "INTEGER", nullable: false),
+                    AccountingPeriodKey_Month = table.Column<int>(type: "INTEGER", nullable: false),
+                    AccountId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    EventDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    EventSequence = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AccountAddedBalanceEvent", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AccountAddedBalanceEvent_AccountingPeriods_AccountingPeriodId",
+                        column: x => x.AccountingPeriodId,
+                        principalTable: "AccountingPeriods",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Accounts",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Type = table.Column<string>(type: "TEXT", nullable: false),
-                    AccountAddedBalanceEventId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    AccountAddedBalanceEventId1 = table.Column<Guid>(type: "TEXT", nullable: true)
+                    AccountAddedBalanceEventId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -95,11 +95,6 @@ namespace Data.Migrations
                         principalTable: "AccountAddedBalanceEvent",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Accounts_AccountAddedBalanceEvent_AccountAddedBalanceEventId1",
-                        column: x => x.AccountAddedBalanceEventId1,
-                        principalTable: "AccountAddedBalanceEvent",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -270,6 +265,11 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AccountAddedBalanceEvent_AccountId",
+                table: "AccountAddedBalanceEvent",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AccountAddedBalanceEvent_AccountingPeriodId",
                 table: "AccountAddedBalanceEvent",
                 column: "AccountingPeriodId");
@@ -283,12 +283,6 @@ namespace Data.Migrations
                 name: "IX_Accounts_AccountAddedBalanceEventId",
                 table: "Accounts",
                 column: "AccountAddedBalanceEventId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Accounts_AccountAddedBalanceEventId1",
-                table: "Accounts",
-                column: "AccountAddedBalanceEventId1",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -379,11 +373,27 @@ namespace Data.Migrations
                 name: "IX_TransactionBalanceEvent_TransactionId",
                 table: "TransactionBalanceEvent",
                 column: "TransactionId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_AccountAddedBalanceEvent_Accounts_AccountId",
+                table: "AccountAddedBalanceEvent",
+                column: "AccountId",
+                principalTable: "Accounts",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_AccountAddedBalanceEvent_AccountingPeriods_AccountingPeriodId",
+                table: "AccountAddedBalanceEvent");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_AccountAddedBalanceEvent_Accounts_AccountId",
+                table: "AccountAddedBalanceEvent");
+
             migrationBuilder.DropTable(
                 name: "ChangeInValue");
 
@@ -406,13 +416,13 @@ namespace Data.Migrations
                 name: "Transaction");
 
             migrationBuilder.DropTable(
+                name: "AccountingPeriods");
+
+            migrationBuilder.DropTable(
                 name: "Accounts");
 
             migrationBuilder.DropTable(
                 name: "AccountAddedBalanceEvent");
-
-            migrationBuilder.DropTable(
-                name: "AccountingPeriods");
         }
     }
 }

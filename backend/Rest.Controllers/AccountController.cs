@@ -37,7 +37,7 @@ internal sealed class AccountController(
     [HttpGet("{accountId}")]
     public IActionResult GetAccount(Guid accountId)
     {
-        Account? account = accountRepository.FindByIdOrNull(new EntityId(accountId));
+        Account? account = accountRepository.FindByIdOrNull(new AccountId(accountId));
         return account != null ? Ok(new AccountModel(account)) : NotFound();
     }
 

@@ -1,4 +1,3 @@
-using Domain;
 using Domain.Accounts;
 
 namespace Tests.Mocks;
@@ -16,7 +15,7 @@ internal sealed class MockAccountRepository : IAccountRepository
     public MockAccountRepository() => _accounts = [];
 
     /// <inheritdoc/>
-    public Account? FindByIdOrNull(EntityId id) => _accounts.SingleOrDefault(account => account.Id == id);
+    public Account? FindByIdOrNull(AccountId id) => _accounts.SingleOrDefault(account => account.Id == id);
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Account> FindAll() => _accounts;
