@@ -12,6 +12,13 @@ public interface IAccountingPeriodRepository : IAggregateRepository<AccountingPe
     IReadOnlyCollection<AccountingPeriod> FindAll();
 
     /// <summary>
+    /// Finds the Accounting Period with the specified ID.
+    /// </summary>
+    /// <param name="id">ID of the Accounting Period to find</param>
+    /// <returns>The Accounting Period that was found, or null if one wasn't found</returns>
+    AccountingPeriod FindById(EntityId id);
+
+    /// <summary>
     /// Finds the Accounting Period that the provided date falls within
     /// </summary>
     /// <param name="asOfDate">Date that corresponds to an Accounting Period</param>

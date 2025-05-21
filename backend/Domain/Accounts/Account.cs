@@ -79,7 +79,7 @@ public class Account
 }
 
 /// <summary>
-/// Value object class representing the ID of an Account
+/// Value object class representing the ID of an <see cref="Account"/>
 /// </summary>
 /// <param name="Value">Value for this Account ID</param>
 public record AccountId(Guid Value) : EntityId(Value);

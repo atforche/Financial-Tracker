@@ -14,6 +14,9 @@ public class AccountingPeriodRepository(DatabaseContext context) : AggregateRepo
         .OrderBy(entity => entity.PeriodStartDate).ToList();
 
     /// <inheritdoc/>
+    public AccountingPeriod FindById(EntityId id) => FindByIdOrNull(id) ?? throw new InvalidOperationException();
+
+    /// <inheritdoc/>
     public AccountingPeriod FindByDate(DateOnly asOfDate) => FindByDateOrNull(asOfDate) ?? throw new InvalidOperationException();
 
     /// <inheritdoc/>

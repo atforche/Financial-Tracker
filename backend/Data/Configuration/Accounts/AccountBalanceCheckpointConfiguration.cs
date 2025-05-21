@@ -1,4 +1,5 @@
 using Domain;
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -6,18 +7,22 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Data.Configuration.Accounts;
 
 /// <summary>
-/// EF Core entity configuration for an Account Balance Checkpoint
+/// EF Core entity configuration for an <see cref="AccountBalanceCheckpoint"/>
 /// </summary>
 internal sealed class AccountBalanceCheckpointConfiguration : IEntityTypeConfiguration<AccountBalanceCheckpoint>
 {
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<AccountBalanceCheckpoint> builder)
     {
-        builder.HasKey(entity => entity.Id);
-        builder.Property(entity => entity.Id).HasConversion(entityId => entityId.Value, value => new EntityId(value));
+        builder.HasKey(accountBalanceCheckpoint => accountBalanceCheckpoint.Id);
+        builder.Property(accountBalanceCheckpoint => accountBalanceCheckpoint.Id)
+            .HasConversion(entityId => entityId.Value, value => new AccountBalanceCheckpointId(value));
 
-        builder.OwnsOne(accountBalanceCheckpoint => accountBalanceCheckpoint.AccountingPeriodKey);
-        builder.Navigation(accountBalanceCheckpoint => accountBalanceCheckpoint.AccountingPeriodKey).AutoInclude();
+        builder.Property(accountBalanceCheckpoint => accountBalanceCheckpoint.AccountingPeriodId)
+            .HasConversion(entityId => entityId.Value, value => new EntityId(value));
+        builder.HasOne<AccountingPeriod>()
+            .WithMany()
+            .HasForeignKey(accountBalanceCheckpoint => accountBalanceCheckpoint.AccountingPeriodId);
 
         builder.HasMany(accountBalanceCheckpoint => accountBalanceCheckpoint.FundBalances)
             .WithOne()

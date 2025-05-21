@@ -117,7 +117,7 @@ public class MultipleAccountingPeriodTests
             results.Add(new AccountBalanceCheckpointState
             {
                 AccountName = setup.Account.Name,
-                AccountingPeriodKey = secondAccountingPeriod.Key,
+                AccountingPeriodId = secondAccountingPeriod.Id,
                 FundBalances =
                 [
                     new FundAmountState
@@ -133,7 +133,7 @@ public class MultipleAccountingPeriodTests
             results.Add(new AccountBalanceCheckpointState
             {
                 AccountName = setup.Account.Name,
-                AccountingPeriodKey = thirdAccountingPeriod.Key,
+                AccountingPeriodId = thirdAccountingPeriod.Id,
                 FundBalances =
                 [
                     new FundAmountState

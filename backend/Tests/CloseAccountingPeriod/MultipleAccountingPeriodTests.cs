@@ -108,14 +108,14 @@ public class MultipleAccountingPeriodTests
         List<AccountBalanceCheckpointState> results = [];
         foreach (AccountingPeriod accountingPeriod in setup.AccountingPeriods.OrderBy(period => period.PeriodStartDate))
         {
-            if (!accountingPeriod.IsOpen &&
-                setup.AccountingPeriods.Any(period => period.PeriodStartDate == accountingPeriod.PeriodStartDate.AddMonths(1)))
+            AccountingPeriod? futureAccountingPeriod = setup.AccountingPeriods
+                .FirstOrDefault(period => period.PeriodStartDate == accountingPeriod.PeriodStartDate.AddMonths(1));
+            if (!accountingPeriod.IsOpen && futureAccountingPeriod != null)
             {
-                DateOnly dateOfCheckpoint = accountingPeriod.PeriodStartDate.AddMonths(1);
                 results.Add(new AccountBalanceCheckpointState
                 {
                     AccountName = setup.Account.Name,
-                    AccountingPeriodKey = new AccountingPeriodKey(dateOfCheckpoint.Year, dateOfCheckpoint.Month),
+                    AccountingPeriodId = futureAccountingPeriod.Id,
                     FundBalances =
                     [
                         new FundAmountState
@@ -127,6 +127,6 @@ public class MultipleAccountingPeriodTests
                 });
             }
         }
-        return results.OrderBy(state => state.AccountingPeriodKey).ToList();
+        return results.ToList();
     }
 }

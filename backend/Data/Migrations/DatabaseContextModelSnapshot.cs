@@ -186,9 +186,6 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid?>("AccountingPeriodId")
                         .HasColumnType("TEXT");
 
@@ -199,8 +196,6 @@ namespace Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AccountId");
 
                     b.HasIndex("AccountingPeriodId");
 
@@ -215,9 +210,14 @@ namespace Data.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("AccountingPeriodId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
+
+                    b.HasIndex("AccountingPeriodId");
 
                     b.ToTable("AccountBalanceCheckpoint");
                 });
@@ -451,7 +451,7 @@ namespace Data.Migrations
             modelBuilder.Entity("Domain.Accounts.Account", b =>
                 {
                     b.HasOne("Domain.Accounts.AccountAddedBalanceEvent", "AccountAddedBalanceEvent")
-                        .WithOne()
+                        .WithOne("Account")
                         .HasForeignKey("Domain.Accounts.Account", "AccountAddedBalanceEventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -461,12 +461,6 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Domain.Accounts.AccountAddedBalanceEvent", b =>
                 {
-                    b.HasOne("Domain.Accounts.Account", "Account")
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Domain.AccountingPeriods.AccountingPeriod", null)
                         .WithMany("AccountAddedBalanceEvents")
                         .HasForeignKey("AccountingPeriodId");
@@ -490,8 +484,6 @@ namespace Data.Migrations
                                 .HasForeignKey("AccountAddedBalanceEventId");
                         });
 
-                    b.Navigation("Account");
-
                     b.Navigation("AccountingPeriodKey")
                         .IsRequired();
                 });
@@ -504,29 +496,13 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Domain.AccountingPeriods.AccountingPeriodKey", "AccountingPeriodKey", b1 =>
-                        {
-                            b1.Property<Guid>("AccountBalanceCheckpointId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int>("Month")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<int>("Year")
-                                .HasColumnType("INTEGER");
-
-                            b1.HasKey("AccountBalanceCheckpointId");
-
-                            b1.ToTable("AccountBalanceCheckpoint");
-
-                            b1.WithOwner()
-                                .HasForeignKey("AccountBalanceCheckpointId");
-                        });
+                    b.HasOne("Domain.AccountingPeriods.AccountingPeriod", null)
+                        .WithMany()
+                        .HasForeignKey("AccountingPeriodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Account");
-
-                    b.Navigation("AccountingPeriodKey")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Funds.FundAmount", b =>
@@ -577,6 +553,9 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Domain.Accounts.AccountAddedBalanceEvent", b =>
                 {
+                    b.Navigation("Account")
+                        .IsRequired();
+
                     b.Navigation("FundAmounts");
                 });
 

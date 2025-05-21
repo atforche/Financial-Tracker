@@ -10,9 +10,14 @@ namespace Domain.Accounts;
 /// An Account Balance Checkpoint represents the balance of an Account at the beginning of an Accounting Period.
 /// This saved balance serves as a checkpoint to improve the efficiency of calculating arbitrary Account balances.
 /// </remarks>
-public sealed class AccountBalanceCheckpoint : Entity
+public sealed class AccountBalanceCheckpoint
 {
     private readonly List<FundAmount> _fundBalances;
+
+    /// <summary>
+    /// ID for this Account Balance Checkpoint
+    /// </summary>
+    public AccountBalanceCheckpointId Id { get; private set; }
 
     /// <summary>
     /// Account for this Account Balance Checkpoint
@@ -20,9 +25,9 @@ public sealed class AccountBalanceCheckpoint : Entity
     public Account Account { get; private set; }
 
     /// <summary>
-    /// Accounting Period Key for this Account Balance Checkpoint
+    /// Accounting Period Id for this Account Balance Checkpoint
     /// </summary>
-    public AccountingPeriodKey AccountingPeriodKey { get; private set; }
+    public EntityId AccountingPeriodId { get; private set; }
 
     /// <summary>
     /// Fund Balances for this Account Balance Checkpoint
@@ -43,8 +48,9 @@ public sealed class AccountBalanceCheckpoint : Entity
     /// <param name="fundBalances">Collection of Fund Balances for this Account Balance Checkpoint</param>
     internal AccountBalanceCheckpoint(Account account, AccountingPeriod accountingPeriod, IEnumerable<FundAmount> fundBalances)
     {
+        Id = new AccountBalanceCheckpointId(Guid.NewGuid());
         Account = account;
-        AccountingPeriodKey = accountingPeriod.Key;
+        AccountingPeriodId = accountingPeriod.Id;
         _fundBalances = fundBalances.ToList();
         Validate();
     }
@@ -54,8 +60,9 @@ public sealed class AccountBalanceCheckpoint : Entity
     /// </summary>
     private AccountBalanceCheckpoint()
     {
+        Id = null!;
         Account = null!;
-        AccountingPeriodKey = null!;
+        AccountingPeriodId = null!;
         _fundBalances = [];
     }
 
@@ -70,3 +77,9 @@ public sealed class AccountBalanceCheckpoint : Entity
         }
     }
 }
+
+/// <summary>
+/// Value object class representing the ID of an <see cref="AccountBalanceCheckpoint"/>
+/// </summary>
+/// <param name="Value">Value for this Account Balance Checkpoint ID</param>
+public record AccountBalanceCheckpointId(Guid Value) : EntityId(Value);

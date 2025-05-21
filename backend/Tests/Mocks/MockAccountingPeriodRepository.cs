@@ -16,6 +16,9 @@ internal sealed class MockAccountingPeriodRepository : IAccountingPeriodReposito
     public MockAccountingPeriodRepository() => _accountingPeriods = [];
 
     /// <inheritdoc/>
+    public AccountingPeriod FindById(EntityId id) => FindByIdOrNull(id) ?? throw new InvalidOperationException();
+
+    /// <inheritdoc/>
     public AccountingPeriod? FindByIdOrNull(EntityId id) => _accountingPeriods
         .SingleOrDefault(accountingPeriod => accountingPeriod.Id == id);
 
