@@ -11,7 +11,10 @@ namespace Rest.Controllers;
 /// </summary>
 [ApiController]
 [Route("/accountBalance")]
-internal sealed class AccountBalanceController(IAccountRepository accountRepository, AccountBalanceService accountBalanceService) : ControllerBase
+internal sealed class AccountBalanceController(
+    IAccountRepository accountRepository,
+    AccountBalanceService accountBalanceService,
+    AccountIdFactory accountIdFactory) : ControllerBase
 {
     /// <summary>
     /// Retrieves the balance for the provided Account by date across the provided date range
@@ -22,11 +25,7 @@ internal sealed class AccountBalanceController(IAccountRepository accountReposit
     [HttpPost("{accountId}/ByDate")]
     public IActionResult GetAccountBalanceByDate(Guid accountId, DateRangeModel dateRangeModel)
     {
-        Account? account = accountRepository.FindByIdOrNull(new AccountId(accountId));
-        if (account == null)
-        {
-            return NotFound();
-        }
+        Account account = accountRepository.FindById(accountIdFactory.Create(accountId));
         IEnumerable<AccountBalanceByDate> accountBalances =
             accountBalanceService.GetAccountBalancesByDate(account, dateRangeModel.ConvertToDateRange());
         return Ok(accountBalances.Select(accountBalance => new AccountBalanceByDateModel(accountBalance)));

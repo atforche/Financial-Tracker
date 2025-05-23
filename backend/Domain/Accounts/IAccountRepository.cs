@@ -12,11 +12,18 @@ public interface IAccountRepository
     IReadOnlyCollection<Account> FindAll();
 
     /// <summary>
+    /// Determines if an Account with the provided ID exists
+    /// </summary>
+    /// <param name="id">ID of the Account</param>
+    /// <returns>True if an Account with the provided ID exists, false otherwise</returns>
+    bool DoesAccountWithIdExist(Guid id);
+
+    /// <summary>
     /// Finds the Account with the specified ID.
     /// </summary>
     /// <param name="id">ID of the Account to find</param>
-    /// <returns>The Account that was found, or null if one wasn't found</returns>
-    Account? FindByIdOrNull(AccountId id);
+    /// <returns>The Account that was found</returns>
+    Account FindById(AccountId id);
 
     /// <summary>
     /// Finds the Account with the specified name

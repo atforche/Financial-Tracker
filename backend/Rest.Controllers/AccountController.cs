@@ -18,7 +18,9 @@ internal sealed class AccountController(
     UnitOfWork unitOfWork,
     AddAccountAction addAccountAction,
     IAccountingPeriodRepository accountingPeriodRepository,
-    IAccountRepository accountRepository) : ControllerBase
+    IAccountRepository accountRepository,
+    AccountIdFactory accountIdFactory,
+    FundIdFactory fundIdFactory) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Accounts from the database
@@ -36,8 +38,8 @@ internal sealed class AccountController(
     [HttpGet("{accountId}")]
     public IActionResult GetAccount(Guid accountId)
     {
-        Account? account = accountRepository.FindByIdOrNull(new AccountId(accountId));
-        return account != null ? Ok(new AccountModel(account)) : NotFound();
+        AccountId id = accountIdFactory.Create(accountId);
+        return Ok(new AccountModel(accountRepository.FindById(id)));
     }
 
     /// <summary>
@@ -56,7 +58,7 @@ internal sealed class AccountController(
         Account newAccount = addAccountAction.Run(createAccountModel.Name, createAccountModel.Type, accountingPeriod, createAccountModel.Date,
             createAccountModel.StartingFundBalances.Select(fundBalance => new FundAmount
             {
-                FundId = new FundId(fundBalance.FundId),
+                FundId = fundIdFactory.Create(fundBalance.FundId),
                 Amount = fundBalance.Amount,
             }));
         accountRepository.Add(newAccount);

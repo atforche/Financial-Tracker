@@ -11,7 +11,11 @@ namespace Rest.Controllers;
 /// </summary>
 [ApiController]
 [Route("/funds")]
-internal sealed class FundController(UnitOfWork unitOfWork, AddFundAction addFundAction, IFundRepository fundRepository) : ControllerBase
+internal sealed class FundController(
+    UnitOfWork unitOfWork,
+    AddFundAction addFundAction,
+    IFundRepository fundRepository,
+    FundIdFactory fundIdFactory) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Funds from the database
@@ -29,8 +33,8 @@ internal sealed class FundController(UnitOfWork unitOfWork, AddFundAction addFun
     [HttpGet("{fundId}")]
     public IActionResult GetFund(Guid fundId)
     {
-        Fund? fund = fundRepository.FindByIdOrNull(new FundId(fundId));
-        return fund != null ? Ok(new FundModel(fund)) : NotFound();
+        FundId id = fundIdFactory.Create(fundId);
+        return Ok(new FundModel(fundRepository.FindById(id)));
     }
 
     /// <summary>

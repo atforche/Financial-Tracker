@@ -15,7 +15,10 @@ internal sealed class MockFundRepository : IFundRepository
     public MockFundRepository() => _funds = [];
 
     /// <inheritdoc/>
-    public Fund? FindByIdOrNull(FundId id) => _funds.SingleOrDefault(fund => fund.Id == id);
+    public bool DoesFundWithIdExist(Guid id) => _funds.Any(fund => fund.Id.Value == id);
+
+    /// <inheritdoc/>
+    public Fund FindById(FundId id) => _funds.Single(fund => fund.Id == id);
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Fund> FindAll() => _funds;

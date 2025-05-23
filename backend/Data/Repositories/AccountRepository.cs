@@ -11,7 +11,10 @@ public class AccountRepository(DatabaseContext databaseContext) : IAccountReposi
     public IReadOnlyCollection<Account> FindAll() => databaseContext.Accounts.ToList();
 
     /// <inheritdoc/>
-    public Account? FindByIdOrNull(AccountId id) => databaseContext.Accounts.FirstOrDefault(account => account.Id == id);
+    public bool DoesAccountWithIdExist(Guid id) => databaseContext.Accounts.Any(account => account.Id.Value == id);
+
+    /// <inheritdoc/>
+    public Account FindById(AccountId id) => databaseContext.Accounts.Single(account => account.Id == id);
 
     /// <inheritdoc/>
     public Account? FindByNameOrNull(string name) => databaseContext.Accounts.FirstOrDefault(account => account.Name == name);

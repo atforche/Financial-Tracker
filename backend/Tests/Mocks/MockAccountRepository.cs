@@ -15,7 +15,10 @@ internal sealed class MockAccountRepository : IAccountRepository
     public MockAccountRepository() => _accounts = [];
 
     /// <inheritdoc/>
-    public Account? FindByIdOrNull(AccountId id) => _accounts.SingleOrDefault(account => account.Id == id);
+    public bool DoesAccountWithIdExist(Guid id) => _accounts.Any(account => account.Id.Value == id);
+
+    /// <inheritdoc/>
+    public Account FindById(AccountId id) => _accounts.Single(account => account.Id == id);
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Account> FindAll() => _accounts;

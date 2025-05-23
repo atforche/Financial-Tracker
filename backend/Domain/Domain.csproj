@@ -4,4 +4,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <!-- Allow the Data project to access the internals of this project -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Data" />
+  </ItemGroup>
 </Project>

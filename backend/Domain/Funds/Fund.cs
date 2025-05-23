@@ -39,9 +39,3 @@ public class Fund
         Name = "";
     }
 }
-
-/// <summary>
-/// Value object class representing the ID of an <see cref="Fund"/>
-/// </summary>
-/// <param name="Value">Value for this Fund ID</param>
-public record FundId(Guid Value) : EntityId(Value);

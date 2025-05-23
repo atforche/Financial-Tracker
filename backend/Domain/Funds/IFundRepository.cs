@@ -12,11 +12,18 @@ public interface IFundRepository
     IReadOnlyCollection<Fund> FindAll();
 
     /// <summary>
+    /// Determines if a Fund with the provided ID exists
+    /// </summary>
+    /// <param name="id">ID of the Fund</param>
+    /// <returns>True if a Fund with the provided ID exists, false otherwise</returns>
+    bool DoesFundWithIdExist(Guid id);
+
+    /// <summary>
     /// Finds the Fund with the specified ID.
     /// </summary>
     /// <param name="id">ID of the Fund to find</param>
     /// <returns>The Fund that was found, or null if one wasn't found</returns>
-    Fund? FindByIdOrNull(FundId id);
+    Fund FindById(FundId id);
 
     /// <summary>
     /// Finds the Fund with the specified name

@@ -81,5 +81,16 @@ public sealed class AccountBalanceCheckpoint
 /// <summary>
 /// Value object class representing the ID of an <see cref="AccountBalanceCheckpoint"/>
 /// </summary>
-/// <param name="Value">Value for this Account Balance Checkpoint ID</param>
-public record AccountBalanceCheckpointId(Guid Value) : EntityId(Value);
+public record AccountBalanceCheckpointId : EntityId
+{
+    /// <summary>
+    /// Constructs a new instance of this class. 
+    /// This constructor should only even be used when creating a new Account Balance Checkpoint ID during 
+    /// Account Balance Checkpoint creation. 
+    /// </summary>
+    /// <param name="value">Value for this Account Balance Checkpoint ID</param>
+    internal AccountBalanceCheckpointId(Guid value)
+        : base(value)
+    {
+    }
+}
