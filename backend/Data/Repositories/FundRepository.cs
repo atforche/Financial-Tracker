@@ -5,14 +5,17 @@ namespace Data.Repositories;
 /// <summary>
 /// Repository that allows Funds to be persisted to the database
 /// </summary>
-public class FundRepository(DatabaseContext context) : AggregateRepository<Fund>(context), IFundRepository
+public class FundRepository(DatabaseContext databaseContext) : IFundRepository
 {
     /// <inheritdoc/>
-    public IReadOnlyCollection<Fund> FindAll() => DatabaseContext.Funds.ToList();
+    public IReadOnlyCollection<Fund> FindAll() => databaseContext.Funds.ToList();
 
     /// <inheritdoc/>
-    public Fund? FindByNameOrNull(string name) => DatabaseContext.Funds.FirstOrDefault(fund => fund.Name == name);
+    public Fund? FindByIdOrNull(FundId id) => databaseContext.Funds.FirstOrDefault(fund => fund.Id == id);
 
     /// <inheritdoc/>
-    public void Add(Fund fund) => DatabaseContext.Add(fund);
+    public Fund? FindByNameOrNull(string name) => databaseContext.Funds.FirstOrDefault(fund => fund.Name == name);
+
+    /// <inheritdoc/>
+    public void Add(Fund fund) => databaseContext.Add(fund);
 }

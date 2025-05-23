@@ -68,7 +68,7 @@ public class AccountingPeriodOverlapTests
                     [
                         new FundAmountState
                         {
-                            FundName = setup.Fund.Name,
+                            FundId = setup.Fund.Id,
                             Amount = amount
                         }
                     ],

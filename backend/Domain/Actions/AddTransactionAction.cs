@@ -100,7 +100,7 @@ public class AddTransactionAction(
             exception ??= new InvalidOperationException();
         }
         // Validate that we don't have multiple Accounting Entries for the same Fund
-        if (accountingEntries.GroupBy(entry => entry.Fund.Id).Any(group => group.Count() > 1))
+        if (accountingEntries.GroupBy(entry => entry.FundId).Any(group => group.Count() > 1))
         {
             exception ??= new InvalidOperationException();
         }

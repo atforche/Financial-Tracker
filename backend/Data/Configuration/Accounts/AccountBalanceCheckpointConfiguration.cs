@@ -16,7 +16,7 @@ internal sealed class AccountBalanceCheckpointConfiguration : IEntityTypeConfigu
     {
         builder.HasKey(accountBalanceCheckpoint => accountBalanceCheckpoint.Id);
         builder.Property(accountBalanceCheckpoint => accountBalanceCheckpoint.Id)
-            .HasConversion(entityId => entityId.Value, value => new AccountBalanceCheckpointId(value));
+            .HasConversion(accountBalanceCheckpointId => accountBalanceCheckpointId.Value, value => new AccountBalanceCheckpointId(value));
 
         builder.Property(accountBalanceCheckpoint => accountBalanceCheckpoint.AccountingPeriodId)
             .HasConversion(entityId => entityId.Value, value => new EntityId(value));

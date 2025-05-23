@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Rest.Models.Fund;
 
 namespace Rest.Models.FundAmount;
 
@@ -8,8 +7,8 @@ namespace Rest.Models.FundAmount;
 /// </summary>
 public class FundAmountModel
 {
-    /// <inheritdoc cref="Domain.Funds.FundAmount.Fund"/>
-    public FundModel Fund { get; init; }
+    /// <inheritdoc cref="Domain.Funds.FundAmount.FundId"/>
+    public Guid FundId { get; init; }
 
     /// <inheritdoc cref="Domain.Funds.FundAmount.Amount"/>
     public decimal Amount { get; init; }
@@ -18,9 +17,9 @@ public class FundAmountModel
     /// Constructs a new instance of this class
     /// </summary>
     [JsonConstructor]
-    public FundAmountModel(FundModel fund, decimal amount)
+    public FundAmountModel(Guid fundId, decimal amount)
     {
-        Fund = fund;
+        FundId = fundId;
         Amount = amount;
     }
 
@@ -30,7 +29,7 @@ public class FundAmountModel
     /// <param name="fundAmount">Fund Amount value object to build this Fund Amount REST model from</param>
     public FundAmountModel(Domain.Funds.FundAmount fundAmount)
     {
-        Fund = new FundModel(fundAmount.Fund);
+        FundId = fundAmount.FundId.Value;
         Amount = fundAmount.Amount;
     }
 }

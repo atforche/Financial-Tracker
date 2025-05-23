@@ -515,7 +515,7 @@ namespace Data.Migrations
                         .WithMany("FundBalances")
                         .HasForeignKey("AccountBalanceCheckpointId");
 
-                    b.HasOne("Domain.Funds.Fund", "Fund")
+                    b.HasOne("Domain.Funds.Fund", null)
                         .WithMany()
                         .HasForeignKey("FundId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -524,8 +524,6 @@ namespace Data.Migrations
                     b.HasOne("Domain.AccountingPeriods.Transaction", null)
                         .WithMany("AccountingEntries")
                         .HasForeignKey("TransactionId");
-
-                    b.Navigation("Fund");
                 });
 
             modelBuilder.Entity("Domain.AccountingPeriods.AccountingPeriod", b =>

@@ -26,7 +26,7 @@ public class DefaultTests
             [
                 new FundAmount
                 {
-                    Fund = setup.Fund,
+                    FundId = setup.Fund.Id,
                     Amount = 250.00m
                 }
             ]);
@@ -40,12 +40,12 @@ public class DefaultTests
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 1500.00m,
                     },
                     new FundAmountState
                     {
-                        FundName = setup.OtherFund.Name,
+                        FundId = setup.OtherFund.Id,
                         Amount = 1500.00m,
                     }
                 ],
@@ -53,7 +53,7 @@ public class DefaultTests
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = -250.00m,
                     }
                 ]

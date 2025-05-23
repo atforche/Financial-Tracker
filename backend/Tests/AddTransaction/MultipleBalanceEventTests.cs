@@ -61,7 +61,7 @@ public class MultipleBalanceEventTests
             [
                 new FundAmount
                 {
-                    Fund = setup.Fund,
+                    FundId = setup.Fund.Id,
                     Amount = 500.00m,
                 }
             ]);
@@ -95,7 +95,7 @@ public class MultipleBalanceEventTests
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = 500.00m,
                 }
             ],

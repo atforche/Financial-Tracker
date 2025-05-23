@@ -47,7 +47,7 @@ public class AmountTests
             setup.Account,
             new FundAmount
             {
-                Fund = setup.Fund,
+                FundId = setup.Fund.Id,
                 Amount = amount,
             });
 
@@ -66,7 +66,7 @@ public class AmountTests
             EventSequence = 1,
             AccountingEntry = new FundAmountState
             {
-                FundName = setup.Fund.Name,
+                FundId = setup.Fund.Id,
                 Amount = amount,
             }
         };

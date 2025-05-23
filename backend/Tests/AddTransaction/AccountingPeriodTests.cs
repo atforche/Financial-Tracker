@@ -41,7 +41,7 @@ public class AccountingPeriodTests
             [
                 new FundAmount()
                 {
-                    Fund = setup.Fund,
+                    FundId = setup.Fund.Id,
                     Amount = 25.00m,
                 }
             ]);
@@ -59,7 +59,7 @@ public class AccountingPeriodTests
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = 25.00m,
                 }
             ],

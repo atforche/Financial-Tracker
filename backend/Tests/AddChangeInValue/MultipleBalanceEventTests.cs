@@ -55,7 +55,7 @@ public class MultipleBalanceEventTests
             setup.Account,
             new FundAmount
             {
-                Fund = setup.Fund,
+                FundId = setup.Fund.Id,
                 Amount = -500.00m,
             });
 
@@ -76,7 +76,7 @@ public class MultipleBalanceEventTests
             EventSequence = scenario == AddBalanceEventMultipleBalanceEventScenario.MultipleEventsSameDay ? 2 : 1,
             AccountingEntry = new FundAmountState
             {
-                FundName = setup.Fund.Name,
+                FundId = setup.Fund.Id,
                 Amount = -500.00m,
             }
         };

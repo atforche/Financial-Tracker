@@ -41,7 +41,7 @@ internal sealed class MultipleAccountingPeriodScenarioSetup : ScenarioSetup
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 1500.00m,
                 }
             ]);

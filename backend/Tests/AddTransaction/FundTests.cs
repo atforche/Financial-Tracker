@@ -58,7 +58,7 @@ public class FundTest
             null,
             setup.Funds.Select(fund => new FundAmount
             {
-                Fund = fund,
+                FundId = fund.Id,
                 Amount = 25.00m
             }));
 
@@ -73,7 +73,7 @@ public class FundTest
             TransactionDate = new DateOnly(2025, 1, 15),
             AccountingEntries = setup.Funds.Select(fund => new FundAmountState
             {
-                FundName = fund.Name,
+                FundId = fund.Id,
                 Amount = 25.00m
             }).ToList(),
             TransactionBalanceEvents =

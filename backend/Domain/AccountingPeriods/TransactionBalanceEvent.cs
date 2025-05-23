@@ -104,14 +104,14 @@ public sealed class TransactionBalanceEvent : BalanceEvent
             return currentBalance;
         }
         var pendingFundBalanceChanges = currentBalance.PendingFundBalanceChanges
-            .ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
+            .ToDictionary(fundAmount => fundAmount.FundId, fundAmount => fundAmount.Amount);
         foreach (FundAmount fundAmount in Transaction.AccountingEntries)
         {
             decimal balanceChange = fundAmount.Amount * DetermineBalanceChangeFactor(currentBalance.Account, isReverse);
-            if (!pendingFundBalanceChanges.TryAdd(fundAmount.Fund, balanceChange))
+            if (!pendingFundBalanceChanges.TryAdd(fundAmount.FundId, balanceChange))
             {
-                pendingFundBalanceChanges[fundAmount.Fund] =
-                    pendingFundBalanceChanges[fundAmount.Fund] + balanceChange;
+                pendingFundBalanceChanges[fundAmount.FundId] =
+                    pendingFundBalanceChanges[fundAmount.FundId] + balanceChange;
             }
         }
         return new AccountBalance(currentBalance.Account,
@@ -119,7 +119,7 @@ public sealed class TransactionBalanceEvent : BalanceEvent
             pendingFundBalanceChanges
                 .Select(pair => new FundAmount
                 {
-                    Fund = pair.Key,
+                    FundId = pair.Key,
                     Amount = pair.Value,
                 }));
     }
@@ -138,37 +138,37 @@ public sealed class TransactionBalanceEvent : BalanceEvent
         }
         // Posting a transaction removes the pending balance change and adds it to the actual balance
         var fundBalances = currentBalance.FundBalances
-            .ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
+            .ToDictionary(fundAmount => fundAmount.FundId, fundAmount => fundAmount.Amount);
         var pendingFundBalanceChanges = currentBalance.PendingFundBalanceChanges
-            .ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
+            .ToDictionary(fundAmount => fundAmount.FundId, fundAmount => fundAmount.Amount);
         foreach (FundAmount fundAmount in Transaction.AccountingEntries)
         {
             decimal balanceChange = fundAmount.Amount * DetermineBalanceChangeFactor(currentBalance.Account, isReverse);
-            if (!pendingFundBalanceChanges.TryAdd(fundAmount.Fund, -balanceChange))
+            if (!pendingFundBalanceChanges.TryAdd(fundAmount.FundId, -balanceChange))
             {
-                pendingFundBalanceChanges[fundAmount.Fund] =
-                    pendingFundBalanceChanges[fundAmount.Fund] - balanceChange;
+                pendingFundBalanceChanges[fundAmount.FundId] =
+                    pendingFundBalanceChanges[fundAmount.FundId] - balanceChange;
             }
-            if (pendingFundBalanceChanges[fundAmount.Fund] == 0)
+            if (pendingFundBalanceChanges[fundAmount.FundId] == 0)
             {
-                _ = pendingFundBalanceChanges.Remove(fundAmount.Fund);
+                _ = pendingFundBalanceChanges.Remove(fundAmount.FundId);
             }
-            if (!fundBalances.TryAdd(fundAmount.Fund, balanceChange))
+            if (!fundBalances.TryAdd(fundAmount.FundId, balanceChange))
             {
-                fundBalances[fundAmount.Fund] = fundBalances[fundAmount.Fund] + balanceChange;
+                fundBalances[fundAmount.FundId] = fundBalances[fundAmount.FundId] + balanceChange;
             }
         }
         return new AccountBalance(currentBalance.Account,
             fundBalances
                 .Select(pair => new FundAmount
                 {
-                    Fund = pair.Key,
+                    FundId = pair.Key,
                     Amount = pair.Value,
                 }),
             pendingFundBalanceChanges
                 .Select(pair => new FundAmount
                 {
-                    Fund = pair.Key,
+                    FundId = pair.Key,
                     Amount = pair.Value,
                 }));
     }

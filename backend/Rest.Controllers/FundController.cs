@@ -1,5 +1,4 @@
 using Data;
-using Domain;
 using Domain.Actions;
 using Domain.Funds;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +29,7 @@ internal sealed class FundController(UnitOfWork unitOfWork, AddFundAction addFun
     [HttpGet("{fundId}")]
     public IActionResult GetFund(Guid fundId)
     {
-        Fund? fund = fundRepository.FindByIdOrNull(new EntityId(fundId));
+        Fund? fund = fundRepository.FindByIdOrNull(new FundId(fundId));
         return fund != null ? Ok(new FundModel(fund)) : NotFound();
     }
 

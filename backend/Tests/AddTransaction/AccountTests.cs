@@ -58,12 +58,12 @@ public class AccountTests
             [
                 new FundAmount()
                 {
-                    Fund = setup.Fund,
+                    FundId = setup.Fund.Id,
                     Amount = 25.00m,
                 },
                 new FundAmount
                 {
-                    Fund = setup.OtherFund,
+                    FundId = setup.OtherFund.Id,
                     Amount = 50.00m
                 }
             ]);
@@ -81,12 +81,12 @@ public class AccountTests
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = 25.00m,
                 },
                 new FundAmountState
                 {
-                    FundName = setup.OtherFund.Name,
+                    FundId = setup.OtherFund.Id,
                     Amount = 50.00m,
                 }
             ],
@@ -145,12 +145,12 @@ public class AccountTests
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = 1500.00m,
                 },
                 new FundAmountState
                 {
-                    FundName = setup.OtherFund.Name,
+                    FundId = setup.OtherFund.Id,
                     Amount = 1500.00m,
                 }
             ],
@@ -158,12 +158,12 @@ public class AccountTests
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = DetermineBalanceChangeFactor(setup, account) * 25.00m,
                 },
                 new FundAmountState
                 {
-                    FundName = setup.OtherFund.Name,
+                    FundId = setup.OtherFund.Id,
                     Amount = DetermineBalanceChangeFactor(setup, account) * 50.00m,
                 }
             ],

@@ -85,14 +85,14 @@ public class AccountingPeriodOverlapTests
                 ? [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 1000.00m
                     }
                   ]
                 : [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 1500.00m
                     }
                   ],
@@ -115,14 +115,14 @@ public class AccountingPeriodOverlapTests
                 ? [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 1000.00m
                     }
                   ]
                 : [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 1500.00m
                     }
                   ],
@@ -130,14 +130,14 @@ public class AccountingPeriodOverlapTests
                 ? [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 750.00m
                     }
                   ]
                 : [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 1250.00m
                     }
                   ],
@@ -160,14 +160,14 @@ public class AccountingPeriodOverlapTests
                 ? [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 750.00m
                     }
                   ]
                 : [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 1250.00m
                     }
                   ],
@@ -175,7 +175,7 @@ public class AccountingPeriodOverlapTests
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = 750.00m
                 }
             ],

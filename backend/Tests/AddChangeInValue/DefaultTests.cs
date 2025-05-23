@@ -23,7 +23,7 @@ public class DefaultTests
             setup.Account,
             new FundAmount
             {
-                Fund = setup.Fund,
+                FundId = setup.Fund.Id,
                 Amount = -100.00m,
             });
         new ChangeInValueValidator().Validate(changeInValue,
@@ -35,7 +35,7 @@ public class DefaultTests
                 EventSequence = 1,
                 AccountingEntry = new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = -100.00m,
                 }
             });

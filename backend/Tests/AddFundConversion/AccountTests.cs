@@ -79,12 +79,12 @@ public class AccountTests
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = reverse ? 1500.00m : 1400.00m,
                 },
                 new FundAmountState
                 {
-                    FundName = setup.OtherFund.Name,
+                    FundId = setup.OtherFund.Id,
                     Amount = reverse ? 1500.00m : 1600.00m,
                 }
             ],

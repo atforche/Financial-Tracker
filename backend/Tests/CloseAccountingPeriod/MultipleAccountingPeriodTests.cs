@@ -81,7 +81,7 @@ public class MultipleAccountingPeriodTests
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 1500.00m,
                     }
                 ]
@@ -120,7 +120,7 @@ public class MultipleAccountingPeriodTests
                     [
                         new FundAmountState
                         {
-                            FundName = setup.Fund.Name,
+                            FundId = setup.Fund.Id,
                             Amount = 1500.00m
                         },
                     ]

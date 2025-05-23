@@ -78,15 +78,15 @@ public class ChangeInValue : BalanceEvent
             return currentBalance;
         }
         int balanceChangeFactor = isReverse ? -1 : 1;
-        var fundBalances = currentBalance.FundBalances.ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
-        if (!fundBalances.TryAdd(AccountingEntry.Fund, balanceChangeFactor * AccountingEntry.Amount))
+        var fundBalances = currentBalance.FundBalances.ToDictionary(fundAmount => fundAmount.FundId, fundAmount => fundAmount.Amount);
+        if (!fundBalances.TryAdd(AccountingEntry.FundId, balanceChangeFactor * AccountingEntry.Amount))
         {
-            fundBalances[AccountingEntry.Fund] = fundBalances[AccountingEntry.Fund] + (balanceChangeFactor * AccountingEntry.Amount);
+            fundBalances[AccountingEntry.FundId] = fundBalances[AccountingEntry.FundId] + (balanceChangeFactor * AccountingEntry.Amount);
         }
         return new AccountBalance(currentBalance.Account,
             fundBalances.Select(pair => new FundAmount
             {
-                Fund = pair.Key,
+                FundId = pair.Key,
                 Amount = pair.Value
             }),
             currentBalance.PendingFundBalanceChanges);

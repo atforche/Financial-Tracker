@@ -1,6 +1,4 @@
 using Domain.AccountingPeriods;
-using Domain.Funds;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Data.Configuration;
@@ -113,21 +111,5 @@ internal sealed class TransactionBalanceEventEntityConfiguration : EntityConfigu
 
         builder.HasOne(transactionBalanceEvent => transactionBalanceEvent.Account).WithMany().HasForeignKey("AccountId");
         builder.Navigation(transactionBalanceEvent => transactionBalanceEvent.Account).IsRequired().AutoInclude();
-    }
-}
-
-/// <summary>
-/// EF Core configuration for the Fund Amount entity
-/// </summary>
-internal sealed class FundAmountEntityConfiguration : IEntityTypeConfiguration<FundAmount>
-{
-    /// <inheritdoc/>
-    public void Configure(EntityTypeBuilder<FundAmount> builder)
-    {
-        builder.Property<int>("Id");
-        builder.HasKey("Id");
-
-        builder.HasOne(fundAmount => fundAmount.Fund).WithMany().HasForeignKey("FundId");
-        builder.Navigation(fundAmount => fundAmount.Fund).IsRequired().AutoInclude();
     }
 }

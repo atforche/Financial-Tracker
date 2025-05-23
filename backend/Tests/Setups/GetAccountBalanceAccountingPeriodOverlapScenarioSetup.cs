@@ -53,7 +53,7 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 1500.00m,
                 }
             ]);
@@ -72,7 +72,7 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 250.00m
                 }
             ]);
@@ -86,7 +86,7 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 500.00m
                 }
             ]

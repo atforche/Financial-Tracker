@@ -60,12 +60,12 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 1500.00m,
                 },
                 new FundAmount
                 {
-                    Fund = OtherFund,
+                    FundId = OtherFund.Id,
                     Amount = 1500.00m,
                 }
             ]);
@@ -75,12 +75,12 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 1500.00m,
                 },
                 new FundAmount
                 {
-                    Fund = OtherFund,
+                    FundId = OtherFund.Id,
                     Amount = 1500.00m,
                 }
             ]);
@@ -104,7 +104,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                 [
                     new FundAmount
                     {
-                        Fund = Fund,
+                        FundId = Fund.Id,
                         Amount = 500.00m
                     }
                 ]);
@@ -118,7 +118,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                 [
                     new FundAmount
                     {
-                        Fund = Fund,
+                        FundId = Fund.Id,
                         Amount = 1250.00m
                     }
                 ]);
@@ -132,7 +132,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                 [
                     new FundAmount
                     {
-                        Fund = Fund,
+                        FundId = Fund.Id,
                         Amount = 2500.00m
                     }
                 ]);
@@ -146,7 +146,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                 [
                     new FundAmount
                     {
-                        Fund = Fund,
+                        FundId = Fund.Id,
                         Amount = 2750.00m
                     }
                 ]);
@@ -160,7 +160,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                 [
                     new FundAmount
                     {
-                        Fund = Fund,
+                        FundId = Fund.Id,
                         Amount = 2750.00m
                     }
                 ]);
@@ -174,7 +174,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                 [
                     new FundAmount
                     {
-                        Fund = Fund,
+                        FundId = Fund.Id,
                         Amount = 2750.00m
                     }
                 ]);
@@ -185,7 +185,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                 [
                     new FundAmount
                     {
-                        Fund = Fund,
+                        FundId = Fund.Id,
                         Amount = 2750.00m
                     }
                 ]);

@@ -46,8 +46,8 @@ public class FundConversion : BalanceEvent
         }
         // Cannot apply this Balance Event if there is an insufficient amount for this Fund in this Account.
         // For simplicity, count pending balance decreases but don't count pending balance increases.
-        FundAmount? fundAmount = currentBalance.FundBalances.SingleOrDefault(fundAmount => fundAmount.Fund == FromFund);
-        FundAmount? pendingFundAmount = currentBalance.PendingFundBalanceChanges.SingleOrDefault(fundAmount => fundAmount.Fund == FromFund);
+        FundAmount? fundAmount = currentBalance.FundBalances.SingleOrDefault(fundAmount => fundAmount.FundId == FromFund.Id);
+        FundAmount? pendingFundAmount = currentBalance.PendingFundBalanceChanges.SingleOrDefault(fundAmount => fundAmount.FundId == FromFund.Id);
         if (fundAmount == null || Math.Min(fundAmount.Amount, fundAmount.Amount + (pendingFundAmount?.Amount ?? 0)) < Amount)
         {
             return false;
@@ -101,19 +101,19 @@ public class FundConversion : BalanceEvent
         }
         int fromFundFactor = isReverse ? 1 : -1;
         int toFundFactor = isReverse ? -1 : 1;
-        var fundBalances = currentBalance.FundBalances.ToDictionary(fundAmount => fundAmount.Fund, fundAmount => fundAmount.Amount);
-        if (!fundBalances.TryAdd(FromFund, fromFundFactor * Amount))
+        var fundBalances = currentBalance.FundBalances.ToDictionary(fundAmount => fundAmount.FundId, fundAmount => fundAmount.Amount);
+        if (!fundBalances.TryAdd(FromFund.Id, fromFundFactor * Amount))
         {
-            fundBalances[FromFund] = fundBalances[FromFund] + (fromFundFactor * Amount);
+            fundBalances[FromFund.Id] = fundBalances[FromFund.Id] + (fromFundFactor * Amount);
         }
-        if (!fundBalances.TryAdd(ToFund, toFundFactor * Amount))
+        if (!fundBalances.TryAdd(ToFund.Id, toFundFactor * Amount))
         {
-            fundBalances[ToFund] = fundBalances[ToFund] + (toFundFactor * Amount);
+            fundBalances[ToFund.Id] = fundBalances[ToFund.Id] + (toFundFactor * Amount);
         }
         return new AccountBalance(currentBalance.Account,
             fundBalances.Select(pair => new FundAmount
             {
-                Fund = pair.Key,
+                FundId = pair.Key,
                 Amount = pair.Value
             }),
             currentBalance.PendingFundBalanceChanges);

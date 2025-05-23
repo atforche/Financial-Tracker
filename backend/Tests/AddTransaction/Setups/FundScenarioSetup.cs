@@ -44,7 +44,7 @@ internal sealed class FundScenarioSetup : ScenarioSetup
                 : [
                     new FundAmount
                     {
-                        Fund = Funds.First(),
+                        FundId = Funds.First().Id,
                         Amount = 1500.00m
                     }
                   ]);

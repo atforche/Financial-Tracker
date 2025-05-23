@@ -43,7 +43,7 @@ public class AccountingPeriodTests
             : [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = scenario == AccountingPeriodScenario.PriorPeriodHasPendingBalanceChanges ? 1000.00m : 1500.00m
                 }
             ];

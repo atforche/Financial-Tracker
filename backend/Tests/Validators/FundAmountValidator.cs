@@ -10,7 +10,7 @@ internal sealed class FundAmountValidator : EntityValidator<FundAmount, FundAmou
     /// <inheritdoc/>
     public override void Validate(FundAmount entityToValidate, FundAmountState expectedState)
     {
-        Assert.Equal(expectedState.FundName, entityToValidate.Fund.Name);
+        Assert.Equal(expectedState.FundId, entityToValidate.FundId);
         Assert.Equal(expectedState.Amount, entityToValidate.Amount);
     }
 }
@@ -23,7 +23,7 @@ internal sealed record FundAmountState
     /// <summary>
     /// Fund Name for this Fund Amount
     /// </summary>
-    public required string FundName { get; init; }
+    public required FundId FundId { get; init; }
 
     /// <summary>
     /// Amount for this Fund Amount

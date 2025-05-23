@@ -49,12 +49,12 @@ public class AmountTests
             [
                 new FundAmount
                 {
-                    Fund = setup.Fund,
+                    FundId = setup.Fund.Id,
                     Amount = 100.00m,
                 },
                 new FundAmount
                 {
-                    Fund = setup.OtherFund,
+                    FundId = setup.OtherFund.Id,
                     Amount = amount,
                 }
             ]);
@@ -73,12 +73,12 @@ public class AmountTests
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = 100.00m,
                 },
                 new FundAmountState
                 {
-                    FundName = setup.OtherFund.Name,
+                    FundId = setup.OtherFund.Id,
                     Amount = amount,
                 },
             ],

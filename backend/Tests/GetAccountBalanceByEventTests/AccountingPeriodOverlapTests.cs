@@ -83,7 +83,7 @@ public class AccountingPeriodOverlapTests
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 1500.00m
                     }
                 ],
@@ -91,7 +91,7 @@ public class AccountingPeriodOverlapTests
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = -500.00m
                     }
                 ]
@@ -106,7 +106,7 @@ public class AccountingPeriodOverlapTests
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 1000.00m
                     }
                 ],
@@ -139,7 +139,7 @@ public class AccountingPeriodOverlapTests
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = eventDate < new DateOnly(2025, 1, 15) || (eventDate == new DateOnly(2025, 1, 15) && accountingPeriodType == AccountingPeriodType.Past)
                         ? 1000.00m
                         : 1500.00m
@@ -149,7 +149,7 @@ public class AccountingPeriodOverlapTests
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = -250.00m
                 }
             ]
@@ -164,7 +164,7 @@ public class AccountingPeriodOverlapTests
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = eventDate < new DateOnly(2025, 1, 15) || (eventDate == new DateOnly(2025, 1, 15) && accountingPeriodType == AccountingPeriodType.Past)
                         ? 750.00m
                         : 1250.00m
@@ -200,7 +200,7 @@ public class AccountingPeriodOverlapTests
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 1250.00m
                     }
                 ],
@@ -208,7 +208,7 @@ public class AccountingPeriodOverlapTests
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = -500.00m
                     }
                 ]
@@ -223,7 +223,7 @@ public class AccountingPeriodOverlapTests
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 750.00m
                     }
                 ],

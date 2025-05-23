@@ -53,7 +53,7 @@ public class DateRangeTests
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 1500.00m,
                     }
                 ],

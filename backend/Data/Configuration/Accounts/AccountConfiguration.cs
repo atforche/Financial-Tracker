@@ -13,7 +13,7 @@ internal sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
     public void Configure(EntityTypeBuilder<Account> builder)
     {
         builder.HasKey(account => account.Id);
-        builder.Property(account => account.Id).HasConversion(entityId => entityId.Value, value => new AccountId(value));
+        builder.Property(account => account.Id).HasConversion(accountId => accountId.Value, value => new AccountId(value));
 
         builder.HasIndex(account => account.Name).IsUnique();
         builder.Property(account => account.Type).HasConversion<string>();

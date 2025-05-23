@@ -50,12 +50,12 @@ internal sealed class DefaultScenarioSetup : ScenarioSetup
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 1500.00m,
                 },
                 new FundAmount
                 {
-                    Fund = OtherFund,
+                    FundId = OtherFund.Id,
                     Amount = 1500.00m
                 }
             ]);

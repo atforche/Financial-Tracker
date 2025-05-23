@@ -142,14 +142,13 @@ internal sealed class AccountingPeriodController(
                 return NotFound();
             }
         }
-        var funds = fundRepository.FindAll().ToDictionary(fund => fund.Id.Value, fund => fund);
         Transaction newTransaction = addTransactionAction.Run(accountingPeriod,
             createTransactionModel.TransactionDate,
             debitAccount,
             creditAccount,
             createTransactionModel.AccountingEntries.Select(entry => new FundAmount
             {
-                Fund = funds[entry.FundId],
+                FundId = new FundId(entry.FundId),
                 Amount = entry.Amount,
             }));
         await unitOfWork.SaveChangesAsync();
@@ -201,12 +200,12 @@ internal sealed class AccountingPeriodController(
         {
             return NotFound();
         }
-        Fund? fromFund = fundRepository.FindByIdOrNull(new EntityId(createFundConversionModel.FromFundId));
+        Fund? fromFund = fundRepository.FindByIdOrNull(new FundId(createFundConversionModel.FromFundId));
         if (fromFund == null)
         {
             return NotFound();
         }
-        Fund? toFund = fundRepository.FindByIdOrNull(new EntityId(createFundConversionModel.ToFundId));
+        Fund? toFund = fundRepository.FindByIdOrNull(new FundId(createFundConversionModel.ToFundId));
         if (toFund == null)
         {
             return NotFound();
@@ -240,18 +239,13 @@ internal sealed class AccountingPeriodController(
         {
             return NotFound();
         }
-        Fund? fund = fundRepository.FindByIdOrNull(new EntityId(createChangeInValueModel.AccountingEntry.FundId));
-        if (fund == null)
-        {
-            return NotFound();
-        }
         var funds = fundRepository.FindAll().ToDictionary(fund => fund.Id.Value, fund => fund);
         ChangeInValue newChangeInValue = addChangeInValueAction.Run(accountingPeriod,
             createChangeInValueModel.EventDate,
             account,
             new FundAmount
             {
-                Fund = fund,
+                FundId = new FundId(createChangeInValueModel.AccountingEntry.FundId),
                 Amount = createChangeInValueModel.AccountingEntry.Amount
             });
         await unitOfWork.SaveChangesAsync();

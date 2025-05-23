@@ -5,7 +5,7 @@ namespace Rest.Models.FundAmount;
 /// </summary>
 public class CreateFundAmountModel
 {
-    /// <inheritdoc cref="Domain.Funds.FundAmount.Fund"/>
+    /// <inheritdoc cref="Domain.Funds.FundAmount.FundId"/>
     public required Guid FundId { get; init; }
 
     /// <inheritdoc cref="Domain.Funds.FundAmount.Amount"/>

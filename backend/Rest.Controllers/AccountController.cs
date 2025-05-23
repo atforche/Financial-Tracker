@@ -18,8 +18,7 @@ internal sealed class AccountController(
     UnitOfWork unitOfWork,
     AddAccountAction addAccountAction,
     IAccountingPeriodRepository accountingPeriodRepository,
-    IAccountRepository accountRepository,
-    IFundRepository fundRepository) : ControllerBase
+    IAccountRepository accountRepository) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Accounts from the database
@@ -49,7 +48,6 @@ internal sealed class AccountController(
     [HttpPost("")]
     public async Task<IActionResult> CreateAccountAsync(CreateAccountModel createAccountModel)
     {
-        var funds = fundRepository.FindAll().ToDictionary(fund => fund.Id.Value, fund => fund);
         AccountingPeriod? accountingPeriod = accountingPeriodRepository.FindByIdOrNull(new EntityId(createAccountModel.AccountingPeriodId));
         if (accountingPeriod == null)
         {
@@ -58,7 +56,7 @@ internal sealed class AccountController(
         Account newAccount = addAccountAction.Run(createAccountModel.Name, createAccountModel.Type, accountingPeriod, createAccountModel.Date,
             createAccountModel.StartingFundBalances.Select(fundBalance => new FundAmount
             {
-                Fund = funds[fundBalance.FundId],
+                FundId = new FundId(fundBalance.FundId),
                 Amount = fundBalance.Amount,
             }));
         accountRepository.Add(newAccount);

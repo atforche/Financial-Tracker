@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250521001722_InitialCreate")]
+    [Migration("20250523194925_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -518,7 +518,7 @@ namespace Data.Migrations
                         .WithMany("FundBalances")
                         .HasForeignKey("AccountBalanceCheckpointId");
 
-                    b.HasOne("Domain.Funds.Fund", "Fund")
+                    b.HasOne("Domain.Funds.Fund", null)
                         .WithMany()
                         .HasForeignKey("FundId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -527,8 +527,6 @@ namespace Data.Migrations
                     b.HasOne("Domain.AccountingPeriods.Transaction", null)
                         .WithMany("AccountingEntries")
                         .HasForeignKey("TransactionId");
-
-                    b.Navigation("Fund");
                 });
 
             modelBuilder.Entity("Domain.AccountingPeriods.AccountingPeriod", b =>

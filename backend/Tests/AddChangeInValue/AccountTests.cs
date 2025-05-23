@@ -43,7 +43,7 @@ public class AccountTests
             setup.Account,
             new FundAmount
             {
-                Fund = setup.Fund,
+                FundId = setup.Fund.Id,
                 Amount = amount,
             });
 
@@ -62,7 +62,7 @@ public class AccountTests
             EventSequence = amount < 0 ? 2 : 1,
             AccountingEntry = new FundAmountState
             {
-                FundName = setup.Fund.Name,
+                FundId = setup.Fund.Id,
                 Amount = amount,
             }
         };
@@ -84,12 +84,12 @@ public class AccountTests
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = amount < 0 ? 1500.00m : 1500.00m + amount,
                 },
                 new FundAmountState
                 {
-                    FundName = setup.OtherFund.Name,
+                    FundId = setup.OtherFund.Id,
                     Amount = 1500.00m,
                 }
             ],
