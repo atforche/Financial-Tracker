@@ -43,20 +43,22 @@ public class Account
     /// </summary>
     /// <param name="name">Name for this Account</param>
     /// <param name="type">Type for this Account</param>
-    /// <param name="accountingPeriod">First Accounting Period for this Account</param>
-    /// <param name="date">First Date for this Account</param>
-    /// <param name="startingFundBalances">Starting Fund Balances for this Account</param>
+    /// <param name="accountingPeriod">Accounting Period for the Account Added Balance Event for this Account</param>
+    /// <param name="date">Date for the Account Added Balance Event for this Account</param>
+    /// <param name="eventSequence">Event Sequence for the Account Added Balance Event for this Account</param>
+    /// <param name="fundAmounts">Fund Amounts for the Account Added Balance Event for this Account</param>
     internal Account(
         string name,
         AccountType type,
         AccountingPeriod accountingPeriod,
         DateOnly date,
-        IEnumerable<FundAmount> startingFundBalances)
+        int eventSequence,
+        IEnumerable<FundAmount> fundAmounts)
     {
         Id = new AccountId(Guid.NewGuid());
         Name = name;
         Type = type;
-        AccountAddedBalanceEvent = new AccountAddedBalanceEvent(accountingPeriod, this, date, startingFundBalances);
+        AccountAddedBalanceEvent = new AccountAddedBalanceEvent(accountingPeriod, date, eventSequence, this, fundAmounts);
     }
 
     /// <summary>

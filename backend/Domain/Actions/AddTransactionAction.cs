@@ -11,29 +11,31 @@ namespace Domain.Actions;
 /// Action class that adds a Transaction
 /// </summary>
 /// <param name="accountingPeriodRepository">Accounting Period Repository</param>
+/// <param name="balanceEventRepository">Balance Event Repository</param>
 /// <param name="accountBalanceService">Account Balance Service</param>
 public class AddTransactionAction(
     IAccountingPeriodRepository accountingPeriodRepository,
+    IBalanceEventRepository balanceEventRepository,
     AccountBalanceService accountBalanceService)
 {
     /// <summary>
     /// Runs this action
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period for the Transaction</param>
-    /// <param name="transactionDate">Transaction Date for the Transaction</param>
+    /// <param name="date">Date for the Transaction</param>
     /// <param name="debitAccount">Debit Account for the Transaction</param>
     /// <param name="creditAccount">Credit Account for the Transaction</param>
     /// <param name="accountingEntries">Accounting Entries for the Transaction</param>
     /// <returns>The newly created Transaction</returns>
     public Transaction Run(
         AccountingPeriod accountingPeriod,
-        DateOnly transactionDate,
+        DateOnly date,
         Account? debitAccount,
         Account? creditAccount,
         IEnumerable<FundAmount> accountingEntries)
     {
         if (!IsValid(accountingPeriod,
-                transactionDate,
+                date,
                 debitAccount,
                 creditAccount,
                 accountingEntries.ToList(),
@@ -41,7 +43,12 @@ public class AddTransactionAction(
         {
             throw exception;
         }
-        var transaction = new Transaction(accountingPeriod, transactionDate, debitAccount, creditAccount, accountingEntries);
+        var transaction = new Transaction(accountingPeriod,
+            date,
+            balanceEventRepository.GetHighestEventSequenceOnDate(date) + 1,
+            debitAccount,
+            creditAccount,
+            accountingEntries);
         var validator = new BalanceEventFutureEventValidator(accountingPeriodRepository, accountBalanceService);
         foreach (TransactionBalanceEvent balanceEvent in transaction.TransactionBalanceEvents)
         {
@@ -58,7 +65,7 @@ public class AddTransactionAction(
     /// Determines if this action is valid to run
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period for the Transaction</param>
-    /// <param name="transactionDate">Transaction Date for the Transaction</param>
+    /// <param name="date">Date for the Transaction</param>
     /// <param name="debitAccount">Debit Account for the Transaction</param>
     /// <param name="creditAccount">Credit Account for the Transaction</param>
     /// <param name="accountingEntries">Accounting Entries for the Transaction</param>
@@ -66,7 +73,7 @@ public class AddTransactionAction(
     /// <returns>True if this action is valid to run, false otherwise</returns>
     private static bool IsValid(
         AccountingPeriod accountingPeriod,
-        DateOnly transactionDate,
+        DateOnly date,
         Account? debitAccount,
         Account? creditAccount,
         List<FundAmount> accountingEntries,
@@ -81,11 +88,11 @@ public class AddTransactionAction(
         {
             accountsToValidate.Add(creditAccount);
         }
-        if (!new BalanceEventDateValidator(accountingPeriod, accountsToValidate, transactionDate).Validate(out exception))
+        if (!new BalanceEventDateValidator(accountingPeriod, accountsToValidate, date).Validate(out exception))
         {
             return false;
         }
-        if (transactionDate == DateOnly.MinValue)
+        if (date == DateOnly.MinValue)
         {
             exception ??= new InvalidOperationException();
         }

@@ -11,9 +11,11 @@ namespace Domain.Actions;
 /// Action class that adds a Fund Conversion
 /// </summary>
 /// <param name="accountingPeriodRepository">Accounting Period Repository</param>
+/// <param name="balanceEventRepository">Balance Event Repository</param>
 /// <param name="accountBalanceService">Account Balance Service</param>
 public class AddFundConversionAction(
     IAccountingPeriodRepository accountingPeriodRepository,
+    IBalanceEventRepository balanceEventRepository,
     AccountBalanceService accountBalanceService)
 {
     /// <summary>
@@ -38,7 +40,13 @@ public class AddFundConversionAction(
         {
             throw exception;
         }
-        var fundConversion = new FundConversion(accountingPeriod, account, eventDate, fromFund, toFund, amount);
+        var fundConversion = new FundConversion(accountingPeriod,
+            eventDate,
+            balanceEventRepository.GetHighestEventSequenceOnDate(eventDate) + 1,
+            account,
+            fromFund,
+            toFund,
+            amount);
         if (!new BalanceEventFutureEventValidator(accountingPeriodRepository, accountBalanceService).Validate(fundConversion, out exception))
         {
             throw exception;

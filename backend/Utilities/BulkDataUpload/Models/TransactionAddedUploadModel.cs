@@ -39,7 +39,7 @@ internal sealed class TransactionAddedUploadModel : BalanceEventUploadModel
         ICollection<FundModel> existingFunds,
         ICollection<AccountModel> existingAccounts) => new()
         {
-            TransactionDate = TransactionDate,
+            Date = TransactionDate,
             DebitAccountId = DebitAccountName != null
                 ? existingAccounts.Single(account => account.Name == DebitAccountName).Id
                 : null,

@@ -11,9 +11,11 @@ namespace Domain.Actions;
 /// Action class that adds a Change in Value
 /// </summary>
 /// <param name="accountingPeriodRepository">Accounting Period Repository</param>
+/// <param name="balanceEventRepository">Balance Event Repository</param>
 /// <param name="accountBalanceService">Account Balance Service</param>
 public class AddChangeInValueAction(
     IAccountingPeriodRepository accountingPeriodRepository,
+    IBalanceEventRepository balanceEventRepository,
     AccountBalanceService accountBalanceService)
 {
     /// <summary>
@@ -34,7 +36,11 @@ public class AddChangeInValueAction(
         {
             throw exception;
         }
-        var changeInValue = new ChangeInValue(accountingPeriod, account, eventDate, accountingEntry);
+        var changeInValue = new ChangeInValue(accountingPeriod,
+            eventDate,
+            balanceEventRepository.GetHighestEventSequenceOnDate(eventDate) + 1,
+            account,
+            accountingEntry);
         if (!new BalanceEventFutureEventValidator(accountingPeriodRepository, accountBalanceService).Validate(changeInValue, out exception))
         {
             throw exception;

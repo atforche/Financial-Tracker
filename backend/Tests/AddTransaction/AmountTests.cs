@@ -68,7 +68,7 @@ public class AmountTests
     private static TransactionState GetExpectedState(AddBalanceEventAmountScenarioSetup setup, decimal amount) =>
         new()
         {
-            TransactionDate = new DateOnly(2025, 1, 15),
+            Date = new DateOnly(2025, 1, 15),
             AccountingEntries =
             [
                 new FundAmountState
@@ -90,8 +90,8 @@ public class AmountTests
                     AccountName = setup.Account.Name,
                     EventDate = new DateOnly(2025, 1, 15),
                     EventSequence = 1,
-                    TransactionEventType = TransactionBalanceEventType.Added,
-                    TransactionAccountType = TransactionAccountType.Debit,
+                    EventType = TransactionBalanceEventType.Added,
+                    AccountType = TransactionAccountType.Debit,
                 }
             ]
         };

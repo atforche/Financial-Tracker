@@ -1,6 +1,7 @@
 using Domain;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.Actions;
 using Domain.Services;
 using Tests.PostTransaction.Scenarios;
 using Tests.PostTransaction.Setups;
@@ -53,11 +54,11 @@ public class AccountTypeTests
     {
         if (scenario is AccountTypeScenario.Debit or AccountTypeScenario.MissingDebit)
         {
-            setup.Transaction.Post(TransactionAccountType.Debit, new DateOnly(2025, 1, 15));
+            setup.GetService<PostTransactionAction>().Run(setup.Transaction, TransactionAccountType.Debit, new DateOnly(2025, 1, 15));
         }
         else
         {
-            setup.Transaction.Post(TransactionAccountType.Credit, new DateOnly(2025, 1, 15));
+            setup.GetService<PostTransactionAction>().Run(setup.Transaction, TransactionAccountType.Credit, new DateOnly(2025, 1, 15));
         }
     }
 
@@ -69,7 +70,7 @@ public class AccountTypeTests
     private static TransactionState GetExpectedState(AccountTypeScenarioSetup setup) =>
         new()
         {
-            TransactionDate = new DateOnly(2025, 1, 15),
+            Date = new DateOnly(2025, 1, 15),
             AccountingEntries =
             [
                 new FundAmountState
@@ -97,8 +98,8 @@ public class AccountTypeTests
                 AccountName = setup.DebitAccount.Name,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
-                TransactionEventType = TransactionBalanceEventType.Added,
-                TransactionAccountType = TransactionAccountType.Debit
+                EventType = TransactionBalanceEventType.Added,
+                AccountType = TransactionAccountType.Debit
             });
         }
         if (setup.CreditAccount != null)
@@ -109,8 +110,8 @@ public class AccountTypeTests
                 AccountName = setup.CreditAccount.Name,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = expectedBalanceEvents.Count + 1,
-                TransactionEventType = TransactionBalanceEventType.Added,
-                TransactionAccountType = TransactionAccountType.Credit
+                EventType = TransactionBalanceEventType.Added,
+                AccountType = TransactionAccountType.Credit
             });
         }
         if (setup.DebitAccount != null)
@@ -121,8 +122,8 @@ public class AccountTypeTests
                 AccountName = setup.DebitAccount.Name,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = expectedBalanceEvents.Count + 1,
-                TransactionEventType = TransactionBalanceEventType.Posted,
-                TransactionAccountType = TransactionAccountType.Debit
+                EventType = TransactionBalanceEventType.Posted,
+                AccountType = TransactionAccountType.Debit
             });
         }
         if (setup.CreditAccount != null)
@@ -133,8 +134,8 @@ public class AccountTypeTests
                 AccountName = setup.CreditAccount.Name,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = expectedBalanceEvents.Count + 1,
-                TransactionEventType = TransactionBalanceEventType.Posted,
-                TransactionAccountType = TransactionAccountType.Credit
+                EventType = TransactionBalanceEventType.Posted,
+                AccountType = TransactionAccountType.Credit
             });
         }
         return expectedBalanceEvents;

@@ -54,7 +54,7 @@ public class EventDateTests
     private static TransactionState GetExpectedState(AddBalanceEventDateScenarioSetup setup) =>
         new()
         {
-            TransactionDate = setup.EventDate,
+            Date = setup.EventDate,
             AccountingEntries =
             [
                 new FundAmountState
@@ -71,8 +71,8 @@ public class EventDateTests
                     AccountName = setup.Account.Name,
                     EventDate = setup.EventDate,
                     EventSequence = 1,
-                    TransactionEventType = TransactionBalanceEventType.Added,
-                    TransactionAccountType = TransactionAccountType.Debit,
+                    EventType = TransactionBalanceEventType.Added,
+                    AccountType = TransactionAccountType.Debit,
                 }
             ]
         };

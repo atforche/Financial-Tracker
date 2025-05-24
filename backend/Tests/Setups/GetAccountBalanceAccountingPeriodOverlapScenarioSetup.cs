@@ -76,7 +76,7 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
                     Amount = 250.00m
                 }
             ]);
-        transaction.Post(TransactionAccountType.Debit, transaction.TransactionDate);
+        GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, transaction.Date);
 
         Transaction otherPeriodTransaction = GetService<AddTransactionAction>().Run(
             accountingPeriodType == AccountingPeriodType.Past ? PastAccountingPeriod : FutureAccountingPeriod,
@@ -91,6 +91,6 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
                 }
             ]
         );
-        otherPeriodTransaction.Post(TransactionAccountType.Debit, otherPeriodTransaction.TransactionDate);
+        GetService<PostTransactionAction>().Run(otherPeriodTransaction, TransactionAccountType.Debit, otherPeriodTransaction.Date);
     }
 }

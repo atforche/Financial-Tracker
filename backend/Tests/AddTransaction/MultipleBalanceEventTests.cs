@@ -90,7 +90,7 @@ public class MultipleBalanceEventTests
 
         return new TransactionState
         {
-            TransactionDate = new DateOnly(2025, 1, 15),
+            Date = new DateOnly(2025, 1, 15),
             AccountingEntries =
             [
                 new FundAmountState
@@ -107,8 +107,8 @@ public class MultipleBalanceEventTests
                     AccountName = accountType == AccountType.Standard ? setup.Account.Name : setup.DebtAccount.Name,
                     EventDate = new DateOnly(2025, 1, 15),
                     EventSequence = expectedEventSequence,
-                    TransactionEventType = TransactionBalanceEventType.Added,
-                    TransactionAccountType = accountType == AccountType.Standard ? TransactionAccountType.Debit : TransactionAccountType.Credit
+                    EventType = TransactionBalanceEventType.Added,
+                    AccountType = accountType == AccountType.Standard ? TransactionAccountType.Debit : TransactionAccountType.Credit
                 }
             ]
         };

@@ -14,11 +14,6 @@ public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
     public AccountingPeriodKey AccountingPeriodKey { get; private set; }
 
     /// <summary>
-    /// Account for this Balance Event
-    /// </summary>
-    public Account Account { get; private set; }
-
-    /// <summary>
     /// Date for this Balance Event
     /// </summary>
     public DateOnly EventDate { get; private set; }
@@ -31,6 +26,11 @@ public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
     /// take place on the same date
     /// </remarks>
     public int EventSequence { get; private set; }
+
+    /// <summary>
+    /// Account for this Balance Event
+    /// </summary>
+    public Account Account { get; private set; }
 
     /// <summary>
     /// Applies this Balance Event to the current balance of an Account
@@ -64,15 +64,15 @@ public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period for this Balance Event</param>
-    /// <param name="account">Account for this Balance Event</param>
     /// <param name="eventDate">Event Date for this Balance Event</param>
-    /// <param name="sequenceOffset">Sequence offset for this Balance Event</param>
-    protected BalanceEvent(AccountingPeriod accountingPeriod, Account account, DateOnly eventDate, int sequenceOffset = 0)
+    /// <param name="eventSequence">Event Sequence for this Balance Event</param>
+    /// <param name="account">Account for this Balance Event</param>
+    protected BalanceEvent(AccountingPeriod accountingPeriod, DateOnly eventDate, int eventSequence, Account account)
     {
         AccountingPeriodKey = accountingPeriod.Key;
-        Account = account;
         EventDate = eventDate;
-        EventSequence = GetNextEventSequenceForDate(accountingPeriod, eventDate) + sequenceOffset;
+        EventSequence = eventSequence;
+        Account = account;
     }
 
     /// <summary>
@@ -82,23 +82,6 @@ public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
     {
         AccountingPeriodKey = null!;
         Account = null!;
-    }
-
-    /// <summary>
-    /// Gets the next Balance Event sequence for the provided date
-    /// </summary>
-    /// <param name="accountingPeriod">Accounting Period for the Balance Event</param>
-    /// <param name="eventDate">Event date to get the next Balance Event sequence for</param>
-    /// <returns>The next Balance Event sequence for the provided date</returns>
-    private static int GetNextEventSequenceForDate(AccountingPeriod accountingPeriod, DateOnly eventDate)
-    {
-        var balanceEventsOnDate = accountingPeriod.GetAllBalanceEvents()
-            .Where(balanceEvent => balanceEvent.EventDate == eventDate).ToList();
-        if (balanceEventsOnDate.Count == 0)
-        {
-            return 1;
-        }
-        return balanceEventsOnDate.Count + 1;
     }
 
     #region IComparable
@@ -113,10 +96,6 @@ public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
         if (EventDate != other.EventDate)
         {
             return EventDate.CompareTo(other.EventDate);
-        }
-        if (AccountingPeriodKey != other.AccountingPeriodKey)
-        {
-            return AccountingPeriodKey.CompareTo(other.AccountingPeriodKey);
         }
         return EventSequence.CompareTo(other.EventSequence);
     }

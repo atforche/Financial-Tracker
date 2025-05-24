@@ -48,14 +48,16 @@ public class ChangeInValue : BalanceEvent
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period for this Change In Value</param>
-    /// <param name="account">Account for this Change In Value</param>
     /// <param name="eventDate">Event Date for this Change In Value</param>
+    /// <param name="eventSequence">Event Sequence for this Change In Value</param>
+    /// <param name="account">Account for this Change In Value</param>
     /// <param name="accountingEntry">Accounting Entry for this Change In Value</param>
     internal ChangeInValue(AccountingPeriod accountingPeriod,
-        Account account,
         DateOnly eventDate,
+        int eventSequence,
+        Account account,
         FundAmount accountingEntry)
-        : base(accountingPeriod, account, eventDate) =>
+        : base(accountingPeriod, eventDate, eventSequence, account) =>
         AccountingEntry = accountingEntry;
 
     /// <summary>

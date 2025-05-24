@@ -70,7 +70,7 @@ public class FundTest
     private static TransactionState GetExpectedState(FundScenarioSetup setup) =>
         new()
         {
-            TransactionDate = new DateOnly(2025, 1, 15),
+            Date = new DateOnly(2025, 1, 15),
             AccountingEntries = setup.Funds.Select(fund => new FundAmountState
             {
                 FundId = fund.Id,
@@ -84,8 +84,8 @@ public class FundTest
                     AccountName = setup.Account.Name,
                     EventDate = new DateOnly(2025, 1, 15),
                     EventSequence = 1,
-                    TransactionEventType = TransactionBalanceEventType.Added,
-                    TransactionAccountType = TransactionAccountType.Debit,
+                    EventType = TransactionBalanceEventType.Added,
+                    AccountType = TransactionAccountType.Debit,
                 }
             ]
         };

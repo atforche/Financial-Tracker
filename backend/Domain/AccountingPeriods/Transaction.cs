@@ -1,5 +1,4 @@
 using Domain.Accounts;
-using Domain.BalanceEvents;
 using Domain.Funds;
 
 namespace Domain.AccountingPeriods;
@@ -25,9 +24,9 @@ public class Transaction : Entity
     public AccountingPeriod AccountingPeriod { get; private set; }
 
     /// <summary>
-    /// Transaction Date for this Transaction
+    /// Date for this Transaction
     /// </summary>
-    public DateOnly TransactionDate { get; private set; }
+    public DateOnly Date { get; private set; }
 
     /// <summary>
     /// List of Accounting Entries for this Transaction
@@ -43,53 +42,65 @@ public class Transaction : Entity
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="accountingPeriod">Parent Accounting Period for this Transaction</param>
-    /// <param name="transactionDate">Transaction Date for this Transaction</param>
+    /// <param name="eventDate">Date for this Transaction</param>
+    /// <param name="eventSequence">Event Sequence for the initial Transaction Balance Event</param>
     /// <param name="accountingEntries">Accounting Entries for this Transaction</param>
     /// <param name="debitAccount">Debit Account for this Transaction</param>
     /// <param name="creditAccount">Credit Account for this Transaction</param>
     internal Transaction(AccountingPeriod accountingPeriod,
-        DateOnly transactionDate,
+        DateOnly eventDate,
+        int eventSequence,
         Account? debitAccount,
         Account? creditAccount,
         IEnumerable<FundAmount> accountingEntries)
     {
         AccountingPeriod = accountingPeriod;
-        TransactionDate = transactionDate;
+        Date = eventDate;
         _accountingEntries = accountingEntries.ToList();
         _transactionBalanceEvents = [];
         if (debitAccount != null)
         {
             _transactionBalanceEvents.Add(new TransactionBalanceEvent(this,
+                Date,
+                eventSequence,
                 debitAccount,
-                TransactionDate,
                 TransactionBalanceEventType.Added,
                 TransactionAccountType.Debit));
         }
         if (creditAccount != null)
         {
             _transactionBalanceEvents.Add(new TransactionBalanceEvent(this,
+                Date,
+                debitAccount != null ? eventSequence + 1 : eventSequence,
                 creditAccount,
-                TransactionDate,
                 TransactionBalanceEventType.Added,
-                TransactionAccountType.Credit,
-                debitAccount != null ? 1 : 0));
+                TransactionAccountType.Credit));
         }
     }
+
+    /// <summary>
+    /// Gets the Account for this Transaction that corresponds to the provided Transaction Account Type
+    /// </summary>
+    /// <param name="accountType">Type of the Account to get</param>
+    /// <returns>The Account for this Transaction that corresponds to the provided type</returns>
+    internal Account? GetAccount(TransactionAccountType accountType) =>
+        TransactionBalanceEvents.SingleOrDefault(balanceEvent =>
+            balanceEvent.AccountType == accountType &&
+            balanceEvent.EventType == TransactionBalanceEventType.Added)?.Account;
 
     /// <summary>
     /// Posts the Transaction in the provided Account
     /// </summary>
     /// <param name="accountType">Account Type that this Transaction should be posted in</param>
     /// <param name="postedStatementDate">Posted statement date for this Transaction in the provided Account</param>
-    public void Post(TransactionAccountType accountType, DateOnly postedStatementDate)
-    {
-        ValidatePosting(accountType, postedStatementDate);
+    /// <param name="eventSequence">Event Sequence for this Transaction Balance Event</param>
+    internal void Post(TransactionAccountType accountType, DateOnly postedStatementDate, int eventSequence) =>
         _transactionBalanceEvents.Add(new TransactionBalanceEvent(this,
-            GetAccount(accountType) ?? throw new InvalidOperationException(),
             postedStatementDate,
+            eventSequence,
+            GetAccount(accountType) ?? throw new InvalidOperationException(),
             TransactionBalanceEventType.Posted,
             accountType));
-    }
 
     /// <summary>
     /// Constructs a new default instance of this class
@@ -99,42 +110,5 @@ public class Transaction : Entity
         AccountingPeriod = null!;
         _accountingEntries = [];
         _transactionBalanceEvents = [];
-    }
-
-    /// <summary>
-    /// Gets the Account for this Transaction that corresponds to the provided Transaction Account Type
-    /// </summary>
-    /// <param name="accountType">Type of the Account to get</param>
-    /// <returns>The Account for this Transaction that corresponds to the provided type</returns>
-    private Account? GetAccount(TransactionAccountType accountType) =>
-        TransactionBalanceEvents.SingleOrDefault(balanceEvent =>
-            balanceEvent.TransactionAccountType == accountType &&
-            balanceEvent.TransactionEventType == TransactionBalanceEventType.Added)?.Account;
-
-    /// <summary>
-    /// Validates posting a Transaction
-    /// </summary>
-    /// <param name="accountType">Account Type that this Transaction should be posted in</param>
-    /// <param name="postedStatementDate">Posted statement date for this Transaction in the provided Account</param>
-    private void ValidatePosting(TransactionAccountType accountType, DateOnly postedStatementDate)
-    {
-        Account? account = GetAccount(accountType) ?? throw new InvalidOperationException();
-        if (!new BalanceEventDateValidator(AccountingPeriod, [account], postedStatementDate).Validate(out Exception? exception))
-        {
-            throw exception;
-        }
-        // Validate that this Transaction hasn't already been posted for the provided Account
-        if (TransactionBalanceEvents.Any(balanceEvent => balanceEvent.TransactionAccountType == accountType &&
-                balanceEvent.TransactionEventType == TransactionBalanceEventType.Posted))
-        {
-            throw new InvalidOperationException();
-        }
-        // Validate that this posting date falls after the Transaction was added
-        if (TransactionBalanceEvents.Any(balanceEvent =>
-                balanceEvent.TransactionEventType == TransactionBalanceEventType.Added &&
-                balanceEvent.EventDate > postedStatementDate))
-        {
-            throw new InvalidOperationException();
-        }
     }
 }

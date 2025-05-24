@@ -76,7 +76,7 @@ public class AccountTests
     private static TransactionState GetExpectedState(AccountScenarioSetup setup) =>
         new()
         {
-            TransactionDate = new DateOnly(2025, 1, 15),
+            Date = new DateOnly(2025, 1, 15),
             AccountingEntries =
             [
                 new FundAmountState
@@ -109,8 +109,8 @@ public class AccountTests
                 AccountName = setup.DebitAccount.Name,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
-                TransactionEventType = TransactionBalanceEventType.Added,
-                TransactionAccountType = TransactionAccountType.Debit
+                EventType = TransactionBalanceEventType.Added,
+                AccountType = TransactionAccountType.Debit
             });
         }
         if (setup.CreditAccount != null)
@@ -121,8 +121,8 @@ public class AccountTests
                 AccountName = setup.CreditAccount.Name,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = setup.DebitAccount != null ? 2 : 1,
-                TransactionEventType = TransactionBalanceEventType.Added,
-                TransactionAccountType = TransactionAccountType.Credit
+                EventType = TransactionBalanceEventType.Added,
+                AccountType = TransactionAccountType.Credit
             });
         }
         return expectedBalanceEvents;

@@ -76,7 +76,9 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
         }
         if (scenario is BalanceEventScenario.PostedTransaction)
         {
-            AccountingPeriod.Transactions.First().Post(TransactionAccountType.Debit, new DateOnly(2025, 1, 15));
+            GetService<PostTransactionAction>().Run(AccountingPeriod.Transactions.First(),
+                TransactionAccountType.Debit,
+                new DateOnly(2025, 1, 15));
         }
         if (scenario is BalanceEventScenario.ChangeInValue)
         {

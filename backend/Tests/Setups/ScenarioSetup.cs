@@ -3,6 +3,7 @@ using Data.Repositories;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
+using Domain.BalanceEvents;
 using Domain.Funds;
 using Domain.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,17 +36,20 @@ internal abstract class ScenarioSetup : IDisposable
             serviceCollection.AddScoped<IAccountRepository, AccountRepository>();
             serviceCollection.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
             serviceCollection.AddScoped<IFundRepository, FundRepository>();
+            serviceCollection.AddScoped<IBalanceEventRepository, BalanceEventRepository>();
         }
         else
         {
             serviceCollection.AddScoped<IAccountRepository, MockAccountRepository>();
             serviceCollection.AddScoped<IAccountingPeriodRepository, MockAccountingPeriodRepository>();
             serviceCollection.AddScoped<IFundRepository, MockFundRepository>();
+            serviceCollection.AddScoped<IBalanceEventRepository, MockBalanceEventRepository>();
         }
         serviceCollection.AddScoped<TestUnitOfWork>();
         serviceCollection.AddScoped<AddAccountingPeriodAction>();
         serviceCollection.AddScoped<CloseAccountingPeriodAction>();
         serviceCollection.AddScoped<AddTransactionAction>();
+        serviceCollection.AddScoped<PostTransactionAction>();
         serviceCollection.AddScoped<AddChangeInValueAction>();
         serviceCollection.AddScoped<AddFundConversionAction>();
         serviceCollection.AddScoped<AccountBalanceService>();

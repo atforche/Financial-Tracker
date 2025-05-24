@@ -15,8 +15,8 @@ internal sealed class TransactionBalanceEventValidator : EntityValidator<Transac
         Assert.Equal(expectedState.AccountName, entity.Account.Name);
         Assert.Equal(expectedState.EventDate, entity.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.EventSequence);
-        Assert.Equal(expectedState.TransactionEventType, entity.TransactionEventType);
-        Assert.Equal(expectedState.TransactionAccountType, entity.TransactionAccountType);
+        Assert.Equal(expectedState.EventType, entity.EventType);
+        Assert.Equal(expectedState.AccountType, entity.AccountType);
     }
 }
 
@@ -46,12 +46,12 @@ internal sealed record TransactionBalanceEventState
     public required int EventSequence { get; init; }
 
     /// <summary>
-    /// Transaction Event Type for this Transaction Balance Event
+    /// Event Type for this Transaction Balance Event
     /// </summary>
-    public required TransactionBalanceEventType TransactionEventType { get; init; }
+    public required TransactionBalanceEventType EventType { get; init; }
 
     /// <summary>
-    /// Transaction Account Type for this Transaction Balance Event
+    /// Account Type for this Transaction Balance Event
     /// </summary>
-    public required TransactionAccountType TransactionAccountType { get; init; }
+    public required TransactionAccountType AccountType { get; init; }
 }

@@ -54,7 +54,7 @@ public class EventDateTests
     /// <param name="setup">Setup for this test case</param>
     /// <param name="transaction">Transaction to be posted</param>
     private static void PostTransaction(AddBalanceEventDateScenarioSetup setup, Transaction transaction) =>
-        transaction.Post(TransactionAccountType.Debit, setup.EventDate);
+        setup.GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, setup.EventDate);
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -64,7 +64,7 @@ public class EventDateTests
     private static TransactionState GetExpectedState(AddBalanceEventDateScenarioSetup setup) =>
         new()
         {
-            TransactionDate = new DateOnly(2025, 1, 1),
+            Date = new DateOnly(2025, 1, 1),
             AccountingEntries =
             [
                 new FundAmountState
@@ -81,8 +81,8 @@ public class EventDateTests
                     AccountName = setup.Account.Name,
                     EventDate = new DateOnly(2025, 1, 1),
                     EventSequence = 1,
-                    TransactionEventType = TransactionBalanceEventType.Added,
-                    TransactionAccountType = TransactionAccountType.Debit,
+                    EventType = TransactionBalanceEventType.Added,
+                    AccountType = TransactionAccountType.Debit,
                 },
                 new TransactionBalanceEventState
                 {
@@ -90,8 +90,8 @@ public class EventDateTests
                     AccountName = setup.Account.Name,
                     EventDate = setup.EventDate,
                     EventSequence = setup.EventDate == new DateOnly(2025, 1, 1) ? 2 : 1,
-                    TransactionEventType = TransactionBalanceEventType.Posted,
-                    TransactionAccountType = TransactionAccountType.Debit,
+                    EventType = TransactionBalanceEventType.Posted,
+                    AccountType = TransactionAccountType.Debit,
                 },
             ]
         };

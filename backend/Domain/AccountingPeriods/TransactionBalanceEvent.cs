@@ -22,22 +22,22 @@ public sealed class TransactionBalanceEvent : BalanceEvent
     /// <summary>
     /// Event Type for this Transaction Balance Event
     /// </summary>
-    public TransactionBalanceEventType TransactionEventType { get; private set; }
+    public TransactionBalanceEventType EventType { get; private set; }
 
     /// <summary>
     /// Account Type for this Transaction Balance Event
     /// </summary>
-    public TransactionAccountType TransactionAccountType { get; private set; }
+    public TransactionAccountType AccountType { get; private set; }
 
     /// <inheritdoc/>
     public override AccountBalance ApplyEventToBalance(AccountBalance currentBalance) =>
-        TransactionEventType == TransactionBalanceEventType.Added
+        EventType == TransactionBalanceEventType.Added
             ? ApplyTransactionAddedBalanceEvent(currentBalance, false)
             : ApplyTransactionPostedBalanceEvent(currentBalance, false);
 
     /// <inheritdoc/>
     public override AccountBalance ReverseEventFromBalance(AccountBalance currentBalance) =>
-        TransactionEventType == TransactionBalanceEventType.Added
+        EventType == TransactionBalanceEventType.Added
             ? ApplyTransactionAddedBalanceEvent(currentBalance, true)
             : ApplyTransactionPostedBalanceEvent(currentBalance, true);
 
@@ -49,7 +49,7 @@ public sealed class TransactionBalanceEvent : BalanceEvent
             return false;
         }
         // Posted Transaction Balance Events are always valid
-        if (TransactionEventType == TransactionBalanceEventType.Posted)
+        if (EventType == TransactionBalanceEventType.Posted)
         {
             return true;
         }
@@ -67,23 +67,23 @@ public sealed class TransactionBalanceEvent : BalanceEvent
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="transaction">Parent Transaction for this Transaction Balance Event</param>
-    /// <param name="account">Account for this Transaction Balance Event</param>
     /// <param name="eventDate">Event Date for this Transaction Balance Event</param>
-    /// <param name="transactionEventType">Transaction Balance Event Type for this Transaction Balance Event</param>
-    /// <param name="transactionAccountType">Transaction Account Type for this Transaction Balance Event</param>
-    /// <param name="sequenceOffset">Sequence offset for this Transaction Balance Event</param>
+    /// <param name="eventSequence">Event Sequence for this Transaction Balance Event</param>
+    /// <param name="account">Account for this Transaction Balance Event</param>
+    /// <param name="eventType">Event Type for this Transaction Balance Event</param>
+    /// <param name="accountType">Account Type for this Transaction Balance Event</param>
     internal TransactionBalanceEvent(
         Transaction transaction,
-        Account account,
         DateOnly eventDate,
-        TransactionBalanceEventType transactionEventType,
-        TransactionAccountType transactionAccountType,
-        int sequenceOffset = 0)
-        : base(transaction.AccountingPeriod, account, eventDate, sequenceOffset)
+        int eventSequence,
+        Account account,
+        TransactionBalanceEventType eventType,
+        TransactionAccountType accountType)
+        : base(transaction.AccountingPeriod, eventDate, eventSequence, account)
     {
         Transaction = transaction;
-        TransactionEventType = transactionEventType;
-        TransactionAccountType = transactionAccountType;
+        EventType = eventType;
+        AccountType = accountType;
     }
 
     /// <summary>
@@ -183,11 +183,11 @@ public sealed class TransactionBalanceEvent : BalanceEvent
     {
         int DetermineBalanceChangeFactor(Account account)
         {
-            if (TransactionAccountType == TransactionAccountType.Debit && account.Type == AccountType.Debt)
+            if (AccountType == TransactionAccountType.Debit && account.Type == Accounts.AccountType.Debt)
             {
                 return 1;
             }
-            if (TransactionAccountType != TransactionAccountType.Debit && account.Type != AccountType.Debt)
+            if (AccountType != TransactionAccountType.Debit && account.Type != Accounts.AccountType.Debt)
             {
                 return 1;
             }

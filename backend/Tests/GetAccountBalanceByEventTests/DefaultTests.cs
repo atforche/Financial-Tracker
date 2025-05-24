@@ -31,7 +31,7 @@ public class DefaultTests
                     Amount = 250.00m
                 }
             ]);
-        transaction.Post(TransactionAccountType.Debit, new DateOnly(2025, 1, 16));
+        setup.GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, new DateOnly(2025, 1, 16));
         new AccountBalanceByEventValidator().Validate(
             setup.GetService<AccountBalanceService>().GetAccountBalancesByEvent(setup.Account,
                 new DateRange(new DateOnly(2025, 1, 14), new DateOnly(2025, 1, 16))),

@@ -11,7 +11,7 @@ internal sealed class TransactionValidator : EntityValidator<Transaction, Transa
     public override void Validate(Transaction entity, TransactionState expectedState)
     {
         Assert.NotEqual(Guid.Empty, entity.Id.Value);
-        Assert.Equal(expectedState.TransactionDate, entity.TransactionDate);
+        Assert.Equal(expectedState.Date, entity.Date);
         new FundAmountValidator().Validate(entity.AccountingEntries, expectedState.AccountingEntries);
         new TransactionBalanceEventValidator().Validate(entity.TransactionBalanceEvents, expectedState.TransactionBalanceEvents);
     }
@@ -23,9 +23,9 @@ internal sealed class TransactionValidator : EntityValidator<Transaction, Transa
 internal sealed record TransactionState
 {
     /// <summary>
-    /// Transaction Date for this Transaction
+    /// Date for this Transaction
     /// </summary>
-    public required DateOnly TransactionDate { get; init; }
+    public required DateOnly Date { get; init; }
 
     /// <summary>
     /// Accounting Entries for this Transaction

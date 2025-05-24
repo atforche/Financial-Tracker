@@ -7,8 +7,8 @@ namespace Rest.Models.AccountingPeriod;
 /// </summary>
 public class CreateTransactionModel
 {
-    /// <inheritdoc cref="Domain.AccountingPeriods.Transaction.TransactionDate"/>
-    public required DateOnly TransactionDate { get; init; }
+    /// <inheritdoc cref="Domain.AccountingPeriods.Transaction.Date"/>
+    public required DateOnly Date { get; init; }
 
     /// <summary>
     /// ID of the Account being debited by this Transaction

@@ -15,8 +15,8 @@ public class TransactionModel
     /// <inheritdoc cref="Entity.Id"/>
     public Guid Id { get; init; }
 
-    /// <inheritdoc cref="Transaction.TransactionDate"/>
-    public DateOnly TransactionDate { get; init; }
+    /// <inheritdoc cref="Transaction.Date"/>
+    public DateOnly Date { get; init; }
 
     /// <summary>
     /// Transaction Account Detail Model for the Account being debited by this Transaction
@@ -36,13 +36,13 @@ public class TransactionModel
     /// </summary>
     [JsonConstructor]
     public TransactionModel(Guid id,
-        DateOnly transactionDate,
+        DateOnly date,
         TransactionAccountDetailModel? debitDetail,
         TransactionAccountDetailModel? creditDetail,
         ICollection<FundAmountModel> accountingEntries)
     {
         Id = id;
-        TransactionDate = transactionDate;
+        Date = date;
         DebitDetail = debitDetail;
         CreditDetail = creditDetail;
         AccountingEntries = accountingEntries;
@@ -55,13 +55,13 @@ public class TransactionModel
     public TransactionModel(Transaction transaction)
     {
         Id = transaction.Id.Value;
-        TransactionDate = transaction.TransactionDate;
+        Date = transaction.Date;
         DebitDetail = transaction.TransactionBalanceEvents
-            .Any(balanceEvent => balanceEvent.TransactionAccountType == TransactionAccountType.Debit)
+            .Any(balanceEvent => balanceEvent.AccountType == TransactionAccountType.Debit)
             ? new TransactionAccountDetailModel(transaction, TransactionAccountType.Debit)
             : null;
         CreditDetail = transaction.TransactionBalanceEvents
-            .Any(balanceEvent => balanceEvent.TransactionAccountType == TransactionAccountType.Credit)
+            .Any(balanceEvent => balanceEvent.AccountType == TransactionAccountType.Credit)
             ? new TransactionAccountDetailModel(transaction, TransactionAccountType.Credit)
             : null;
         AccountingEntries = transaction.AccountingEntries.Select(fundAmount => new FundAmountModel(fundAmount)).ToList();
@@ -99,14 +99,14 @@ public class TransactionAccountDetailModel
     public TransactionAccountDetailModel(Transaction transaction, TransactionAccountType type)
     {
         var balanceEvents = transaction.TransactionBalanceEvents
-            .Where(balanceEvent => balanceEvent.TransactionAccountType == type).ToList();
+            .Where(balanceEvent => balanceEvent.AccountType == type).ToList();
         if (balanceEvents.Count == 0)
         {
             throw new InvalidOperationException();
         }
         Account = new AccountModel(balanceEvents.First().Account);
         PostedStatementDate = balanceEvents
-            .SingleOrDefault(balanceEvent => balanceEvent.TransactionEventType == TransactionBalanceEventType.Posted)
+            .SingleOrDefault(balanceEvent => balanceEvent.EventType == TransactionBalanceEventType.Posted)
             ?.EventDate;
     }
 }

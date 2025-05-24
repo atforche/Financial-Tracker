@@ -19,6 +19,7 @@ internal sealed class AccountingPeriodController(
     AddAccountingPeriodAction addAccountingPeriodAction,
     CloseAccountingPeriodAction closeAccountingPeriodAction,
     AddTransactionAction addTransactionAction,
+    PostTransactionAction postTransactionAction,
     AddFundConversionAction addFundConversionAction,
     AddChangeInValueAction addChangeInValueAction,
     IAccountingPeriodRepository accountingPeriodRepository,
@@ -137,7 +138,7 @@ internal sealed class AccountingPeriodController(
             creditAccount = accountRepository.FindById(accountIdFactory.Create(createTransactionModel.CreditAccountId.Value));
         }
         Transaction newTransaction = addTransactionAction.Run(accountingPeriod,
-            createTransactionModel.TransactionDate,
+            createTransactionModel.Date,
             debitAccount,
             creditAccount,
             createTransactionModel.AccountingEntries.Select(entry => new FundAmount
@@ -170,7 +171,7 @@ internal sealed class AccountingPeriodController(
         {
             return NotFound();
         }
-        transaction.Post(postTransactionModel.AccountToPost, postTransactionModel.PostedStatementDate);
+        postTransactionAction.Run(transaction, postTransactionModel.AccountToPost, postTransactionModel.PostedStatementDate);
         await unitOfWork.SaveChangesAsync();
         return Ok(new TransactionModel(transaction));
     }

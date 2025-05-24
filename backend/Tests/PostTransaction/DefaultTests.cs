@@ -29,11 +29,11 @@ public class DefaultTests
                     Amount = 250.00m,
                 }
             ]);
-        PostTransaction(transaction);
+        PostTransaction(setup, transaction);
         new TransactionValidator().Validate(transaction,
             new TransactionState
             {
-                TransactionDate = new DateOnly(2025, 1, 15),
+                Date = new DateOnly(2025, 1, 15),
                 AccountingEntries =
                 [
                     new FundAmountState
@@ -50,8 +50,8 @@ public class DefaultTests
                         AccountName = setup.Account.Name,
                         EventDate = new DateOnly(2025, 1, 15),
                         EventSequence = 1,
-                        TransactionEventType = TransactionBalanceEventType.Added,
-                        TransactionAccountType = TransactionAccountType.Debit,
+                        EventType = TransactionBalanceEventType.Added,
+                        AccountType = TransactionAccountType.Debit,
                     },
                     new TransactionBalanceEventState
                     {
@@ -59,20 +59,21 @@ public class DefaultTests
                         AccountName = setup.Account.Name,
                         EventDate = new DateOnly(2025, 1, 15),
                         EventSequence = 2,
-                        TransactionEventType = TransactionBalanceEventType.Posted,
-                        TransactionAccountType = TransactionAccountType.Debit,
+                        EventType = TransactionBalanceEventType.Posted,
+                        AccountType = TransactionAccountType.Debit,
                     },
                 ]
             });
 
         // Verify that double posting a transaction results in an error
-        Assert.Throws<InvalidOperationException>(() => PostTransaction(transaction));
+        Assert.Throws<InvalidOperationException>(() => PostTransaction(setup, transaction));
     }
 
     /// <summary>
     /// Posts the Transaction for this test case
     /// </summary>
+    /// <param name="setup">Setup for this test case</param>
     /// <param name="transaction">Transaction to be posted</param>
-    private static void PostTransaction(Transaction transaction) =>
-        transaction.Post(TransactionAccountType.Debit, new DateOnly(2025, 1, 15));
+    private static void PostTransaction(DefaultScenarioSetup setup, Transaction transaction) =>
+        setup.GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, new DateOnly(2025, 1, 15));
 }

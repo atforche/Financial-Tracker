@@ -67,6 +67,17 @@ public class AccountingPeriod : Entity
     public IReadOnlyCollection<AccountAddedBalanceEvent> AccountAddedBalanceEvents => _accountAddedBalanceEvents;
 
     /// <summary>
+    /// Gets the list of all Balance Events for this Accounting Period
+    /// </summary>
+    /// <returns>The list of all Balance Events for this Accounting Period</returns>
+    public IEnumerable<BalanceEvent> GetAllBalanceEvents() =>
+        Transactions.SelectMany(transaction => (IEnumerable<BalanceEvent>)transaction.TransactionBalanceEvents)
+            .Concat(FundConversions)
+            .Concat(ChangeInValues)
+            .Concat(AccountAddedBalanceEvents)
+            .Order();
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="year">Year for this Accounting Period</param>
@@ -101,18 +112,6 @@ public class AccountingPeriod : Entity
     /// <param name="accountAddedBalanceEvent">Account Added Balance Event to add</param>
     internal void AddAccountAddedBalanceEvent(AccountAddedBalanceEvent accountAddedBalanceEvent) =>
         _accountAddedBalanceEvents.Add(accountAddedBalanceEvent);
-
-    /// <summary>
-    /// Gets the list of all Balance Events for this Accounting Period
-    /// </summary>
-    /// <returns>The list of all Balance Events for this Accounting Period</returns>
-    internal IEnumerable<BalanceEvent> GetAllBalanceEvents() =>
-        Transactions.SelectMany(transaction => (IEnumerable<BalanceEvent>)transaction.TransactionBalanceEvents)
-            .Concat(FundConversions)
-            .Concat(ChangeInValues)
-            .Concat(AccountAddedBalanceEvents)
-            .OrderBy(balanceEvent => balanceEvent.EventDate)
-            .ThenBy(balanceEvent => balanceEvent.EventSequence);
 
     /// <summary>
     /// Constructs a new default instance of this class
