@@ -30,10 +30,5 @@ internal sealed class AccountingPeriodConfiguration : IEntityTypeConfiguration<A
             .WithOne()
             .HasForeignKey(changeInValue => changeInValue.AccountingPeriodId);
         builder.Navigation(accountingPeriod => accountingPeriod.ChangeInValues).AutoInclude();
-
-        builder.HasMany(accountingPeriod => accountingPeriod.AccountAddedBalanceEvents)
-            .WithOne()
-            .HasForeignKey(accountAddedBalanceEvent => accountAddedBalanceEvent.AccountingPeriodId);
-        builder.Navigation(accountingPeriod => accountingPeriod.AccountAddedBalanceEvents).AutoInclude();
     }
 }

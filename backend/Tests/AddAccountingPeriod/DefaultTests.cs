@@ -24,30 +24,33 @@ public class DefaultTests
                 Transactions = [],
                 FundConversions = [],
                 ChangeInValues = [],
-                AccountAddedBalanceEvents =
-                [
-                    new AccountAddedBalanceEventState
-                    {
-                        AccountingPeriodId = setup.AccountingPeriod.Id,
-                        EventDate = setup.AccountingPeriod.PeriodStartDate,
-                        EventSequence = 1,
-                        AccountName = setup.Account.Name,
-                        FundAmounts =
-                        [
-                            new FundAmountState
-                            {
-                                FundId = setup.Fund.Id,
-                                Amount = 1500.00m,
-                            },
-                            new FundAmountState
-                            {
-                                FundId = setup.OtherFund.Id,
-                                Amount = 1500.00m
-                            }
-                        ]
-                    }
-                ]
             });
-        new AccountBalanceCheckpointValidator().Validate(setup.Account.AccountBalanceCheckpoints, []);
+        new AccountValidator().Validate(setup.Account,
+            new AccountState
+            {
+                Name = setup.Account.Name,
+                Type = setup.Account.Type,
+                AccountAddedBalanceEvent = new AccountAddedBalanceEventState
+                {
+                    AccountingPeriodId = setup.AccountingPeriod.Id,
+                    EventDate = setup.AccountingPeriod.PeriodStartDate,
+                    EventSequence = 1,
+                    AccountName = setup.Account.Name,
+                    FundAmounts =
+                    [
+                        new FundAmountState
+                        {
+                            FundId = setup.Fund.Id,
+                            Amount = 1500.00m,
+                        },
+                        new FundAmountState
+                        {
+                            FundId = setup.OtherFund.Id,
+                            Amount = 1500.00m
+                        }
+                    ]
+                },
+                AccountBalanceCheckpoints = []
+            });
     }
 }

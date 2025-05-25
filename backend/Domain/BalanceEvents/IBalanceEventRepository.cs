@@ -1,3 +1,5 @@
+using Domain.AccountingPeriods;
+
 namespace Domain.BalanceEvents;
 
 /// <summary>
@@ -14,4 +16,18 @@ public interface IBalanceEventRepository
     /// or zero if no Balance Events exist on the provided date
     /// </returns>
     int GetHighestEventSequenceOnDate(DateOnly eventDate);
+
+    /// <summary>
+    /// Finds all the Balance Events for the provided Accounting Period ID
+    /// </summary>
+    /// <param name="accountingPeriodId">ID of the Accounting Period</param>
+    /// <returns>All the Balance Events for the provided Accounting Period ID</returns>
+    IReadOnlyCollection<BalanceEvent> FindAllByAccountingPeriod(AccountingPeriodId accountingPeriodId);
+
+    /// <summary>
+    /// Finds all the Balance Events for the provided Date Range
+    /// </summary>
+    /// <param name="dateRange">Date Range</param>
+    /// <returns>All the Balance Events for the provided Date Range</returns>
+    IReadOnlyCollection<BalanceEvent> FindAllByDateRange(DateRange dateRange);
 }

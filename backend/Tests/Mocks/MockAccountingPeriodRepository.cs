@@ -1,4 +1,3 @@
-using Domain;
 using Domain.AccountingPeriods;
 
 namespace Tests.Mocks;
@@ -31,20 +30,6 @@ internal sealed class MockAccountingPeriodRepository : IAccountingPeriodReposito
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> FindOpenPeriods() => _accountingPeriods
         .Where(accountingPeriod => accountingPeriod.IsOpen).ToList();
-
-    /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> FindAccountingPeriodsWithBalanceEventsInDateRange(DateRange dateRange) =>
-        _accountingPeriods
-        .Where(accountingPeriod => accountingPeriod.Transactions
-                .SelectMany(transaction => transaction.TransactionBalanceEvents)
-                .Any(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate)) ||
-            accountingPeriod.FundConversions
-                .Any(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate)) ||
-            accountingPeriod.ChangeInValues
-                .Any(changeInValue => dateRange.IsInRange(changeInValue.EventDate)) ||
-            accountingPeriod.AccountAddedBalanceEvents
-                .Any(changeInValue => dateRange.IsInRange(changeInValue.EventDate)))
-        .ToList();
 
     /// <inheritdoc/>
     public void Add(AccountingPeriod accountingPeriod) => _accountingPeriods.Add(accountingPeriod);

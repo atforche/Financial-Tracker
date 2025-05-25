@@ -16,6 +16,6 @@ internal sealed class FundAmountConfiguration : IEntityTypeConfiguration<FundAmo
         builder.Property<int>("Id");
         builder.HasKey("Id");
 
-        builder.HasOne<Fund>().WithMany().HasForeignKey("FundId");
+        builder.HasOne<Fund>().WithMany().HasForeignKey(fundAmount => fundAmount.FundId);
     }
 }

@@ -30,7 +30,6 @@ public class YearAndMonthTests
             Transactions = [],
             FundConversions = [],
             ChangeInValues = [],
-            AccountAddedBalanceEvents = []
         });
     }
 }

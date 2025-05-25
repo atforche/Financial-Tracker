@@ -1,6 +1,3 @@
-using Domain.Accounts;
-using Domain.BalanceEvents;
-
 namespace Domain.AccountingPeriods;
 
 /// <summary>
@@ -14,7 +11,6 @@ public class AccountingPeriod
     private readonly List<Transaction> _transactions = [];
     private readonly List<FundConversion> _fundConversions = [];
     private readonly List<ChangeInValue> _changeInValues = [];
-    private readonly List<AccountAddedBalanceEvent> _accountAddedBalanceEvents = [];
 
     /// <summary>
     /// ID for this Accounting Period
@@ -62,22 +58,6 @@ public class AccountingPeriod
     public IReadOnlyCollection<ChangeInValue> ChangeInValues => _changeInValues;
 
     /// <summary>
-    /// Account Added Balance Events for this Accounting Period
-    /// </summary>
-    public IReadOnlyCollection<AccountAddedBalanceEvent> AccountAddedBalanceEvents => _accountAddedBalanceEvents;
-
-    /// <summary>
-    /// Gets the list of all Balance Events for this Accounting Period
-    /// </summary>
-    /// <returns>The list of all Balance Events for this Accounting Period</returns>
-    public IEnumerable<BalanceEvent> GetAllBalanceEvents() =>
-        Transactions.SelectMany(transaction => (IEnumerable<BalanceEvent>)transaction.TransactionBalanceEvents)
-            .Concat(FundConversions)
-            .Concat(ChangeInValues)
-            .Concat(AccountAddedBalanceEvents)
-            .Order();
-
-    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="year">Year for this Accounting Period</param>
@@ -107,13 +87,6 @@ public class AccountingPeriod
     /// </summary>
     /// <param name="changeInValue">Change in Value to add</param>
     internal void AddChangeInValue(ChangeInValue changeInValue) => _changeInValues.Add(changeInValue);
-
-    /// <summary>
-    /// Adds a new Account Added Balance Event to this Accounting Period
-    /// </summary>
-    /// <param name="accountAddedBalanceEvent">Account Added Balance Event to add</param>
-    internal void AddAccountAddedBalanceEvent(AccountAddedBalanceEvent accountAddedBalanceEvent) =>
-        _accountAddedBalanceEvents.Add(accountAddedBalanceEvent);
 
     /// <summary>
     /// Constructs a new default instance of this class

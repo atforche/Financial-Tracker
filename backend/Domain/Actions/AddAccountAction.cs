@@ -43,7 +43,6 @@ public class AddAccountAction(
             date,
             balanceEventRepository.GetHighestEventSequenceOnDate(date) + 1,
             fundAmounts);
-        accountingPeriod.AddAccountAddedBalanceEvent(newAccount.AccountAddedBalanceEvent);
         return newAccount;
     }
 

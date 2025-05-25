@@ -39,13 +39,6 @@ public interface IAccountingPeriodRepository
     IReadOnlyCollection<AccountingPeriod> FindOpenPeriods();
 
     /// <summary>
-    /// Finds the list of Accounting Periods that have Balance Events that fall in the provided Date Range
-    /// </summary>
-    /// <param name="dateRange">Date Range to find Accounting Periods with Balance Events within</param>
-    /// <returns>The list of Accounting Periods that have Balance Events that fall in the provided Date Range</returns>
-    IReadOnlyCollection<AccountingPeriod> FindAccountingPeriodsWithBalanceEventsInDateRange(DateRange dateRange);
-
-    /// <summary>
     /// Adds the provided Accounting Period to the repository
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period that should be added</param>

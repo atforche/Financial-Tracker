@@ -1,4 +1,3 @@
-using Domain;
 using Domain.AccountingPeriods;
 
 namespace Data.Repositories;
@@ -28,23 +27,6 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> FindOpenPeriods() => databaseContext.AccountingPeriods
         .Where(accountingPeriod => accountingPeriod.IsOpen).ToList();
-
-    /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> FindAccountingPeriodsWithBalanceEventsInDateRange(DateRange dateRange)
-    {
-        var dates = dateRange.GetInclusiveDates().ToList();
-        return databaseContext.AccountingPeriods
-            .Where(accountingPeriod => accountingPeriod.Transactions
-                    .SelectMany(transaction => transaction.TransactionBalanceEvents)
-                    .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()) ||
-                accountingPeriod.FundConversions
-                    .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()) ||
-                accountingPeriod.ChangeInValues
-                    .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()) ||
-                accountingPeriod.AccountAddedBalanceEvents
-                    .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()))
-            .ToList();
-    }
 
     /// <inheritdoc/>
     public void Add(AccountingPeriod accountingPeriod) => databaseContext.Add(accountingPeriod);

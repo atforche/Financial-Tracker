@@ -17,7 +17,6 @@ internal sealed class AccountingPeriodValidator : EntityValidator<AccountingPeri
         new TransactionValidator().Validate(entity.Transactions, expectedState.Transactions);
         new FundConversionValidator().Validate(entity.FundConversions, expectedState.FundConversions);
         new ChangeInValueValidator().Validate(entity.ChangeInValues, expectedState.ChangeInValues);
-        new AccountAddedBalanceEventValidator().Validate(entity.AccountAddedBalanceEvents, expectedState.AccountAddedBalanceEvents);
     }
 }
 
@@ -55,9 +54,4 @@ internal sealed record AccountingPeriodState
     /// Change in Values for this Accounting Period
     /// </summary>
     public required List<ChangeInValueState> ChangeInValues { get; init; }
-
-    /// <summary>
-    /// Account Added Balance Events for this Accounting Period
-    /// </summary>
-    public required List<AccountAddedBalanceEventState> AccountAddedBalanceEvents { get; init; }
 }

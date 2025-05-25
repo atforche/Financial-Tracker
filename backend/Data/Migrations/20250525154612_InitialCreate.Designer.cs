@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250525132412_InitialCreate")]
+    [Migration("20250525154612_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -401,7 +401,7 @@ namespace Data.Migrations
             modelBuilder.Entity("Domain.Accounts.AccountAddedBalanceEvent", b =>
                 {
                     b.HasOne("Domain.AccountingPeriods.AccountingPeriod", null)
-                        .WithMany("AccountAddedBalanceEvents")
+                        .WithMany()
                         .HasForeignKey("AccountingPeriodId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -447,8 +447,6 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Domain.AccountingPeriods.AccountingPeriod", b =>
                 {
-                    b.Navigation("AccountAddedBalanceEvents");
-
                     b.Navigation("ChangeInValues");
 
                     b.Navigation("FundConversions");

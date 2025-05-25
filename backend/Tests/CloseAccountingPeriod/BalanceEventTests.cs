@@ -51,29 +51,6 @@ public class BalanceEventTests
             Transactions = GetExpectedTransactionStates(scenario, setup),
             FundConversions = GetExpectedFundConversionStates(scenario, setup),
             ChangeInValues = GetExpectedChangeInValueStates(scenario, setup),
-            AccountAddedBalanceEvents =
-            [
-                new AccountAddedBalanceEventState
-                {
-                    AccountingPeriodId = setup.AccountingPeriod.Id,
-                    EventDate = setup.AccountingPeriod.PeriodStartDate,
-                    EventSequence = 1,
-                    AccountName = setup.Account.Name,
-                    FundAmounts =
-                    [
-                        new FundAmountState
-                        {
-                            FundId = setup.Fund.Id,
-                            Amount = 1500.00m,
-                        },
-                        new FundAmountState
-                        {
-                            FundId = setup.OtherFund.Id,
-                            Amount = 1500.00m,
-                        }
-                    ]
-                }
-            ]
         };
 
     /// <summary>

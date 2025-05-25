@@ -9,9 +9,11 @@ namespace Domain.BalanceEvents;
 /// Validator class that validates that a newly created Balance Event doesn't invalidate any future Balance Events
 /// </summary>
 /// <param name="accountingPeriodRepository">Accounting Period Repository</param>
+/// <param name="balanceEventRepository">Balance Event Repository</param>
 /// <param name="accountBalanceService">Account Balance Service</param>
 public sealed class BalanceEventFutureEventValidator(
     IAccountingPeriodRepository accountingPeriodRepository,
+    IBalanceEventRepository balanceEventRepository,
     AccountBalanceService accountBalanceService)
 {
     /// <summary>
@@ -33,10 +35,9 @@ public sealed class BalanceEventFutureEventValidator(
 
         // Validate that adding this Balance Event doesn't cause any of the future Balance Events to become invalid
         AccountBalance runningBalance = newBalanceEvent.ApplyEventToBalance(currentBalance);
-        var futureBalanceEventsForAccount = accountBalanceService
-            .GetAccountBalancesByEvent(newBalanceEvent.Account, new DateRange(newBalanceEvent.EventDate, DateOnly.MaxValue))
-            .Select(accountBalanceByEvent => accountBalanceByEvent.BalanceEvent)
-            .Where(balanceEvent => balanceEvent > newBalanceEvent)
+        var futureBalanceEventsForAccount = balanceEventRepository
+            .FindAllByDateRange(new DateRange(newBalanceEvent.EventDate, DateOnly.MaxValue))
+            .Where(balanceEvent => balanceEvent.Account.Id == newBalanceEvent.Account.Id && balanceEvent > newBalanceEvent)
             .Order()
             .ToList();
         foreach (BalanceEvent balanceEvent in futureBalanceEventsForAccount)
@@ -50,11 +51,15 @@ public sealed class BalanceEventFutureEventValidator(
 
         // Validate that adding this Balance Event doesn't cause the balance of this Account within the
         // Accounting Period to become invalid
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(newBalanceEvent.AccountingPeriodId);
-        runningBalance = accountBalanceService.GetAccountBalancesByAccountingPeriod(newBalanceEvent.Account, accountingPeriod).StartingBalance;
-        foreach (BalanceEvent balanceEvent in accountingPeriod.GetAllBalanceEvents()
-                    .Where(balanceEvent => balanceEvent.Account == newBalanceEvent.Account)
-                    .Concat([newBalanceEvent]).Order())
+        AccountingPeriod eventAccountingPeriod = accountingPeriodRepository.FindById(newBalanceEvent.AccountingPeriodId);
+        AccountingPeriod? previousAccountingPeriod = accountingPeriodRepository.FindByDateOrNull(eventAccountingPeriod.PeriodStartDate.AddMonths(-1));
+        runningBalance = previousAccountingPeriod != null
+            ? accountBalanceService.GetAccountBalancesByAccountingPeriod(newBalanceEvent.Account, previousAccountingPeriod).EndingBalance
+            : new AccountBalance(newBalanceEvent.Account, [], []);
+        foreach (BalanceEvent balanceEvent in balanceEventRepository.FindAllByAccountingPeriod(eventAccountingPeriod.Id)
+                    .Where(balanceEvent => balanceEvent.Account.Id == newBalanceEvent.Account.Id)
+                    .Concat([newBalanceEvent])
+                    .Order())
         {
             if (!balanceEvent.CanBeAppliedToBalance(runningBalance))
             {
@@ -78,9 +83,8 @@ public sealed class BalanceEventFutureEventValidator(
             new DateRange(newBalanceEvent.EventDate, newBalanceEvent.EventDate)).First().AccountBalance;
 
         // Grab all the Balance Events that occurred later on the same date as the new event and reverse them
-        var balanceEvents = accountingPeriodRepository
-            .FindAccountingPeriodsWithBalanceEventsInDateRange(new DateRange(newBalanceEvent.EventDate, newBalanceEvent.EventDate))
-            .SelectMany(accountingPeriod => accountingPeriod.GetAllBalanceEvents())
+        var balanceEvents = balanceEventRepository
+            .FindAllByDateRange(new DateRange(newBalanceEvent.EventDate, newBalanceEvent.EventDate))
             .Where(balanceEvent => balanceEvent.EventDate == newBalanceEvent.EventDate && balanceEvent > newBalanceEvent)
             .ToList();
         foreach (BalanceEvent balanceEvent in balanceEvents)
