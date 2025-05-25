@@ -6,47 +6,34 @@ namespace Data.Repositories;
 /// <summary>
 /// Repository that allows Accounting Periods to be persisted to the database
 /// </summary>
-public class AccountingPeriodRepository(DatabaseContext context) : AggregateRepository<AccountingPeriod>(context), IAccountingPeriodRepository
+public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAccountingPeriodRepository
 {
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> FindAll() => DatabaseContext.AccountingPeriods
+    public IReadOnlyCollection<AccountingPeriod> FindAll() => databaseContext.AccountingPeriods
         .AsEnumerable()
         .OrderBy(entity => entity.PeriodStartDate).ToList();
 
     /// <inheritdoc/>
-    public AccountingPeriod FindById(EntityId id) => FindByIdOrNull(id) ?? throw new InvalidOperationException();
+    public bool DoesAccountingPeriodWithIdExist(Guid id) => databaseContext.AccountingPeriods
+        .Any(accountingPeriod => accountingPeriod.Id.Value == id);
 
     /// <inheritdoc/>
-    public AccountingPeriod FindByDate(DateOnly asOfDate) => FindByDateOrNull(asOfDate) ?? throw new InvalidOperationException();
+    public AccountingPeriod FindById(AccountingPeriodId id) => databaseContext.AccountingPeriods
+        .Single(accountingPeriod => accountingPeriod.Id == id);
 
     /// <inheritdoc/>
-    public AccountingPeriod? FindByDateOrNull(DateOnly asOfDate) => DatabaseContext.AccountingPeriods
-        .SingleOrDefault(accountingPeriod => accountingPeriod.Key.Year == asOfDate.Year && accountingPeriod.Key.Month == asOfDate.Month);
+    public AccountingPeriod? FindByDateOrNull(DateOnly asOfDate) => databaseContext.AccountingPeriods
+        .SingleOrDefault(accountingPeriod => accountingPeriod.Year == asOfDate.Year && accountingPeriod.Month == asOfDate.Month);
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> FindOpenPeriods() => DatabaseContext.AccountingPeriods
+    public IReadOnlyCollection<AccountingPeriod> FindOpenPeriods() => databaseContext.AccountingPeriods
         .Where(accountingPeriod => accountingPeriod.IsOpen).ToList();
-
-    /// <inheritdoc/>
-    public AccountingPeriod FindLatestAccountingPeriodWithBalanceCheckpoints(DateOnly asOfDate)
-    {
-        AccountingPeriod? accountingPeriod = FindByDateOrNull(asOfDate);
-        if (accountingPeriod != null && !accountingPeriod.IsOpen)
-        {
-            return accountingPeriod;
-        }
-        return DatabaseContext.AccountingPeriods
-            .Where(accountingPeriod => accountingPeriod.IsOpen)
-            .OrderBy(accountingPeriod => accountingPeriod.Year)
-            .ThenBy(accountingPeriod => accountingPeriod.Month)
-            .First();
-    }
 
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> FindAccountingPeriodsWithBalanceEventsInDateRange(DateRange dateRange)
     {
         var dates = dateRange.GetInclusiveDates().ToList();
-        return DatabaseContext.AccountingPeriods
+        return databaseContext.AccountingPeriods
             .Where(accountingPeriod => accountingPeriod.Transactions
                     .SelectMany(transaction => transaction.TransactionBalanceEvents)
                     .Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()) ||
@@ -60,5 +47,5 @@ public class AccountingPeriodRepository(DatabaseContext context) : AggregateRepo
     }
 
     /// <inheritdoc/>
-    public void Add(AccountingPeriod accountingPeriod) => DatabaseContext.Add(accountingPeriod);
+    public void Add(AccountingPeriod accountingPeriod) => databaseContext.Add(accountingPeriod);
 }

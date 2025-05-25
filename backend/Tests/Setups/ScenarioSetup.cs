@@ -55,6 +55,8 @@ internal abstract class ScenarioSetup : IDisposable
         serviceCollection.AddScoped<AccountBalanceService>();
         serviceCollection.AddScoped<AddAccountAction>();
         serviceCollection.AddScoped<AddFundAction>();
+        serviceCollection.AddScoped<BalanceEventDateValidator>();
+        serviceCollection.AddScoped<BalanceEventFutureEventValidator>();
         _serviceProvider = serviceCollection.BuildServiceProvider();
 
         if (shouldUseDatabase)

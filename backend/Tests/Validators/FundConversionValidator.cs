@@ -11,7 +11,7 @@ internal sealed class FundConversionValidator : EntityValidator<FundConversion, 
     public override void Validate(FundConversion entity, FundConversionState expectedState)
     {
         Assert.NotEqual(Guid.Empty, entity.Id.Value);
-        Assert.Equal(expectedState.AccountingPeriodKey, entity.AccountingPeriodKey);
+        Assert.Equal(expectedState.AccountingPeriodId, entity.AccountingPeriodId);
         Assert.Equal(expectedState.AccountName, entity.Account.Name);
         Assert.Equal(expectedState.EventDate, entity.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.EventSequence);
@@ -27,14 +27,9 @@ internal sealed class FundConversionValidator : EntityValidator<FundConversion, 
 internal sealed record FundConversionState
 {
     /// <summary>
-    /// Accounting Period Key for this Fund Conversion
+    /// Accounting Period ID for this Fund Conversion
     /// </summary>
-    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
-
-    /// <summary>
-    /// Account Name for this Fund Conversion
-    /// </summary>
-    public required string AccountName { get; init; }
+    public required AccountingPeriodId AccountingPeriodId { get; init; }
 
     /// <summary>
     /// Event Date for this Fund Conversion
@@ -45,6 +40,11 @@ internal sealed record FundConversionState
     /// Event Sequence for this Fund Conversion
     /// </summary>
     public required int EventSequence { get; init; }
+
+    /// <summary>
+    /// Account Name for this Fund Conversion
+    /// </summary>
+    public required string AccountName { get; init; }
 
     /// <summary>
     /// From Fund for this Fund Conversion

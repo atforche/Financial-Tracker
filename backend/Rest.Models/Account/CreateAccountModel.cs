@@ -14,7 +14,7 @@ public class CreateAccountModel
     /// <inheritdoc cref="Domain.Accounts.Account.Type"/>
     public required AccountType Type { get; init; }
 
-    /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.AccountingPeriodKey"/>
+    /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.AccountingPeriodId"/>
     public required Guid AccountingPeriodId { get; init; }
 
     /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.EventDate"/>

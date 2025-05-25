@@ -56,10 +56,10 @@ public class AccountTests
     private static ChangeInValueState GetExpectedState(AccountScenarioSetup setup, decimal amount) =>
         new()
         {
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
-            AccountName = setup.Account.Name,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 10),
             EventSequence = amount < 0 ? 2 : 1,
+            AccountName = setup.Account.Name,
             AccountingEntry = new FundAmountState
             {
                 FundId = setup.Fund.Id,
@@ -76,10 +76,10 @@ public class AccountTests
     private static AccountBalanceByEventState GetExpectedAccountBalance(AccountScenarioSetup setup, decimal amount) =>
         new()
         {
-            AccountName = setup.Account.Name,
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 10),
             EventSequence = amount < 0 ? 2 : 1,
+            AccountName = setup.Account.Name,
             FundBalances =
             [
                 new FundAmountState

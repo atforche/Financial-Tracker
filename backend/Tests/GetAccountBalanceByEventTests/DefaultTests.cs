@@ -38,10 +38,10 @@ public class DefaultTests
             [
                 new AccountBalanceByEventState
                 {
-                    AccountingPeriodKey = setup.AccountingPeriod.Key,
-                    AccountName = setup.Account.Name,
+                    AccountingPeriodId = setup.AccountingPeriod.Id,
                     EventDate = new DateOnly(2025, 1, 15),
                     EventSequence = 1,
+                    AccountName = setup.Account.Name,
                     FundBalances =
                     [
                         new FundAmountState
@@ -66,10 +66,10 @@ public class DefaultTests
                 },
                 new AccountBalanceByEventState
                 {
-                    AccountingPeriodKey = setup.AccountingPeriod.Key,
-                    AccountName = setup.Account.Name,
+                    AccountingPeriodId = setup.AccountingPeriod.Id,
                     EventDate = new DateOnly(2025, 1, 16),
                     EventSequence = 1,
+                    AccountName = setup.Account.Name,
                     FundBalances =
                     [
                         new FundAmountState

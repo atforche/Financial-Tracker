@@ -18,7 +18,8 @@ public class DefaultTests
         new AccountingPeriodValidator().Validate(setup.AccountingPeriod,
             new AccountingPeriodState
             {
-                Key = setup.AccountingPeriod.Key,
+                Year = setup.AccountingPeriod.Year,
+                Month = setup.AccountingPeriod.Month,
                 IsOpen = true,
                 Transactions = [],
                 FundConversions = [],
@@ -27,10 +28,10 @@ public class DefaultTests
                 [
                     new AccountAddedBalanceEventState
                     {
-                        AccountingPeriodKey = setup.AccountingPeriod.Key,
-                        AccountName = setup.Account.Name,
+                        AccountingPeriodId = setup.AccountingPeriod.Id,
                         EventDate = setup.AccountingPeriod.PeriodStartDate,
                         EventSequence = 1,
+                        AccountName = setup.Account.Name,
                         FundAmounts =
                         [
                             new FundAmountState

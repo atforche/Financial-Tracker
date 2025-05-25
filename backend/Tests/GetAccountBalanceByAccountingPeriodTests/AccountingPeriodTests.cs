@@ -49,7 +49,7 @@ public class AccountingPeriodTests
             ];
         return new AccountBalanceByAccountingPeriodState
         {
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             StartingFundBalances = setup.AccountingPeriod.Month == 2 ? expectedFundAmounts : [],
             EndingFundBalances = expectedFundAmounts,
             EndingPendingFundBalanceChanges = []

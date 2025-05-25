@@ -1,4 +1,3 @@
-using Domain;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +18,7 @@ internal sealed class AccountBalanceCheckpointConfiguration : IEntityTypeConfigu
             .HasConversion(accountBalanceCheckpointId => accountBalanceCheckpointId.Value, value => new AccountBalanceCheckpointId(value));
 
         builder.Property(accountBalanceCheckpoint => accountBalanceCheckpoint.AccountingPeriodId)
-            .HasConversion(entityId => entityId.Value, value => new EntityId(value));
+            .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
         builder.HasOne<AccountingPeriod>()
             .WithMany()
             .HasForeignKey(accountBalanceCheckpoint => accountBalanceCheckpoint.AccountingPeriodId);

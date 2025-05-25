@@ -74,10 +74,10 @@ public class MultipleAccountingPeriodTests
         {
             expectedAccountAddedBalanceEvents.Add(new AccountAddedBalanceEventState
             {
-                AccountingPeriodKey = accountingPeriod.Key,
-                AccountName = setup.Account.Name,
+                AccountingPeriodId = accountingPeriod.Id,
                 EventDate = accountingPeriod.PeriodStartDate,
                 EventSequence = 1,
+                AccountName = setup.Account.Name,
                 FundAmounts =
                 [
                     new FundAmountState
@@ -90,7 +90,8 @@ public class MultipleAccountingPeriodTests
         }
         return new AccountingPeriodState()
         {
-            Key = accountingPeriod.Key,
+            Year = accountingPeriod.Year,
+            Month = accountingPeriod.Month,
             IsOpen = accountingPeriod.IsOpen,
             Transactions = [],
             FundConversions = [],

@@ -26,10 +26,10 @@ public class DefaultTests
         new FundConversionValidator().Validate(fundConversion,
             new FundConversionState
             {
-                AccountingPeriodKey = setup.AccountingPeriod.Key,
-                AccountName = setup.Account.Name,
+                AccountingPeriodId = setup.AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
+                AccountName = setup.Account.Name,
                 FromFundName = setup.Fund.Name,
                 ToFundName = setup.OtherFund.Name,
                 Amount = 100.00m,

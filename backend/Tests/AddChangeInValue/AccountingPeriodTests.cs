@@ -51,10 +51,10 @@ public class AccountingPeriodTests
     private static ChangeInValueState GetExpectedState(AddBalanceEventAccountingPeriodScenarioSetup setup) =>
         new()
         {
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
-            AccountName = setup.Account.Name,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 15),
             EventSequence = 1,
+            AccountName = setup.Account.Name,
             AccountingEntry = new FundAmountState
             {
                 FundId = setup.Fund.Id,

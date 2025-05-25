@@ -24,7 +24,8 @@ public class YearAndMonthTests
         using var setup = new YearAndMonthScenarioSetup(year, month);
         new AccountingPeriodValidator().Validate(setup.AccountingPeriod, new AccountingPeriodState
         {
-            Key = setup.AccountingPeriod.Key,
+            Year = setup.AccountingPeriod.Year,
+            Month = setup.AccountingPeriod.Month,
             IsOpen = true,
             Transactions = [],
             FundConversions = [],

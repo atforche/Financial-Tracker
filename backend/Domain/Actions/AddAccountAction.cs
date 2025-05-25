@@ -11,7 +11,11 @@ namespace Domain.Actions;
 /// </summary>
 /// <param name="accountRepository">Account Repository</param>
 /// <param name="balanceEventRepository">Balance Event Repository</param>
-public class AddAccountAction(IAccountRepository accountRepository, IBalanceEventRepository balanceEventRepository)
+/// <param name="balanceEventDateValidator">Balance Event Date Validator</param>
+public class AddAccountAction(
+    IAccountRepository accountRepository,
+    IBalanceEventRepository balanceEventRepository,
+    BalanceEventDateValidator balanceEventDateValidator)
 {
     /// <summary>
     /// Runs this action
@@ -53,7 +57,7 @@ public class AddAccountAction(IAccountRepository accountRepository, IBalanceEven
     /// <returns>True if this action is valid to run, false otherwise</returns>
     private bool IsValid(string name, AccountingPeriod accountingPeriod, DateOnly date, [NotNullWhen(false)] out Exception? exception)
     {
-        if (!new BalanceEventDateValidator(accountingPeriod, [], date).Validate(out exception))
+        if (!balanceEventDateValidator.Validate(accountingPeriod, [], date, out exception))
         {
             return false;
         }

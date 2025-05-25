@@ -73,7 +73,7 @@ public class CloseAccountingPeriodAction(
         }
         foreach (Account account in accountRepository.FindAll())
         {
-            account.AddAccountBalanceCheckpoint(futureAccountingPeriod,
+            account.AddAccountBalanceCheckpoint(futureAccountingPeriod.Id,
                 accountBalanceService.GetAccountBalancesByAccountingPeriod(account, accountingPeriod).EndingBalance.FundBalances);
         }
     }

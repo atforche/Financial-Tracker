@@ -48,10 +48,10 @@ public class EventDateTests
     private static FundConversionState GetExpectedState(AddBalanceEventDateScenarioSetup setup) =>
         new()
         {
-            AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
-            AccountName = setup.Account.Name,
+            AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
             EventDate = setup.EventDate,
             EventSequence = 1,
+            AccountName = setup.Account.Name,
             FromFundName = setup.Fund.Name,
             ToFundName = setup.OtherFund.Name,
             Amount = 100.00m,

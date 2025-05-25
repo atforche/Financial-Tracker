@@ -11,7 +11,7 @@ internal sealed class ChangeInValueValidator : EntityValidator<ChangeInValue, Ch
     public override void Validate(ChangeInValue entity, ChangeInValueState expectedState)
     {
         Assert.NotEqual(Guid.Empty, entity.Id.Value);
-        Assert.Equal(expectedState.AccountingPeriodKey, entity.AccountingPeriodKey);
+        Assert.Equal(expectedState.AccountingPeriodId, entity.AccountingPeriodId);
         Assert.Equal(expectedState.AccountName, entity.Account.Name);
         Assert.Equal(expectedState.EventDate, entity.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.EventSequence);
@@ -25,9 +25,9 @@ internal sealed class ChangeInValueValidator : EntityValidator<ChangeInValue, Ch
 internal sealed record ChangeInValueState
 {
     /// <summary>
-    /// Accounting Period Key for this Change In Value
+    /// Accounting Period ID for this Change In Value
     /// </summary>
-    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
+    public required AccountingPeriodId AccountingPeriodId { get; init; }
 
     /// <summary>
     /// Account Name for this Change In Value

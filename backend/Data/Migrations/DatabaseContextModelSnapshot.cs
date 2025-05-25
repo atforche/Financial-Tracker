@@ -25,6 +25,12 @@ namespace Data.Migrations
                     b.Property<bool>("IsOpen")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Month")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
                     b.ToTable("AccountingPeriods");
@@ -38,7 +44,7 @@ namespace Data.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("AccountingPeriodId")
+                    b.Property<Guid>("AccountingPeriodId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateOnly>("EventDate")
@@ -59,6 +65,9 @@ namespace Data.Migrations
                     b.HasIndex("FundAmountId")
                         .IsUnique();
 
+                    b.HasIndex("EventDate", "EventSequence")
+                        .IsUnique();
+
                     b.ToTable("ChangeInValue");
                 });
 
@@ -70,7 +79,7 @@ namespace Data.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("AccountingPeriodId")
+                    b.Property<Guid>("AccountingPeriodId")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Amount")
@@ -98,6 +107,9 @@ namespace Data.Migrations
 
                     b.HasIndex("ToFundId");
 
+                    b.HasIndex("EventDate", "EventSequence")
+                        .IsUnique();
+
                     b.ToTable("FundConversion");
                 });
 
@@ -109,7 +121,7 @@ namespace Data.Migrations
                     b.Property<Guid>("AccountingPeriodId")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateOnly>("TransactionDate")
+                    b.Property<DateOnly>("Date")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -127,16 +139,19 @@ namespace Data.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("AccountType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("AccountingPeriodId")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateOnly>("EventDate")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("EventSequence")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TransactionAccountType")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("TransactionEventType")
+                    b.Property<int>("EventType")
                         .HasColumnType("INTEGER");
 
                     b.Property<Guid>("TransactionId")
@@ -145,6 +160,8 @@ namespace Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
+
+                    b.HasIndex("AccountingPeriodId");
 
                     b.HasIndex("TransactionId");
 
@@ -186,7 +203,7 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("AccountingPeriodId")
+                    b.Property<Guid>("AccountingPeriodId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateOnly>("EventDate")
@@ -273,31 +290,6 @@ namespace Data.Migrations
                     b.ToTable("FundAmount");
                 });
 
-            modelBuilder.Entity("Domain.AccountingPeriods.AccountingPeriod", b =>
-                {
-                    b.OwnsOne("Domain.AccountingPeriods.AccountingPeriodKey", "Key", b1 =>
-                        {
-                            b1.Property<Guid>("AccountingPeriodId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int>("Month")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<int>("Year")
-                                .HasColumnType("INTEGER");
-
-                            b1.HasKey("AccountingPeriodId");
-
-                            b1.ToTable("AccountingPeriods");
-
-                            b1.WithOwner()
-                                .HasForeignKey("AccountingPeriodId");
-                        });
-
-                    b.Navigation("Key")
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Domain.AccountingPeriods.ChangeInValue", b =>
                 {
                     b.HasOne("Domain.Accounts.Account", "Account")
@@ -308,7 +300,9 @@ namespace Data.Migrations
 
                     b.HasOne("Domain.AccountingPeriods.AccountingPeriod", null)
                         .WithMany("ChangeInValues")
-                        .HasForeignKey("AccountingPeriodId");
+                        .HasForeignKey("AccountingPeriodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Domain.Funds.FundAmount", "AccountingEntry")
                         .WithOne()
@@ -316,31 +310,9 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Domain.AccountingPeriods.AccountingPeriodKey", "AccountingPeriodKey", b1 =>
-                        {
-                            b1.Property<Guid>("ChangeInValueId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int>("Month")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<int>("Year")
-                                .HasColumnType("INTEGER");
-
-                            b1.HasKey("ChangeInValueId");
-
-                            b1.ToTable("ChangeInValue");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ChangeInValueId");
-                        });
-
                     b.Navigation("Account");
 
                     b.Navigation("AccountingEntry");
-
-                    b.Navigation("AccountingPeriodKey")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.AccountingPeriods.FundConversion", b =>
@@ -353,7 +325,9 @@ namespace Data.Migrations
 
                     b.HasOne("Domain.AccountingPeriods.AccountingPeriod", null)
                         .WithMany("FundConversions")
-                        .HasForeignKey("AccountingPeriodId");
+                        .HasForeignKey("AccountingPeriodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Domain.Funds.Fund", "FromFund")
                         .WithMany()
@@ -367,29 +341,7 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Domain.AccountingPeriods.AccountingPeriodKey", "AccountingPeriodKey", b1 =>
-                        {
-                            b1.Property<Guid>("FundConversionId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int>("Month")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<int>("Year")
-                                .HasColumnType("INTEGER");
-
-                            b1.HasKey("FundConversionId");
-
-                            b1.ToTable("FundConversion");
-
-                            b1.WithOwner()
-                                .HasForeignKey("FundConversionId");
-                        });
-
                     b.Navigation("Account");
-
-                    b.Navigation("AccountingPeriodKey")
-                        .IsRequired();
 
                     b.Navigation("FromFund");
 
@@ -415,35 +367,19 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.AccountingPeriods.AccountingPeriod", null)
+                        .WithMany()
+                        .HasForeignKey("AccountingPeriodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Domain.AccountingPeriods.Transaction", "Transaction")
                         .WithMany("TransactionBalanceEvents")
                         .HasForeignKey("TransactionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Domain.AccountingPeriods.AccountingPeriodKey", "AccountingPeriodKey", b1 =>
-                        {
-                            b1.Property<Guid>("TransactionBalanceEventId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int>("Month")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<int>("Year")
-                                .HasColumnType("INTEGER");
-
-                            b1.HasKey("TransactionBalanceEventId");
-
-                            b1.ToTable("TransactionBalanceEvent");
-
-                            b1.WithOwner()
-                                .HasForeignKey("TransactionBalanceEventId");
-                        });
-
                     b.Navigation("Account");
-
-                    b.Navigation("AccountingPeriodKey")
-                        .IsRequired();
 
                     b.Navigation("Transaction");
                 });
@@ -463,28 +399,8 @@ namespace Data.Migrations
                 {
                     b.HasOne("Domain.AccountingPeriods.AccountingPeriod", null)
                         .WithMany("AccountAddedBalanceEvents")
-                        .HasForeignKey("AccountingPeriodId");
-
-                    b.OwnsOne("Domain.AccountingPeriods.AccountingPeriodKey", "AccountingPeriodKey", b1 =>
-                        {
-                            b1.Property<Guid>("AccountAddedBalanceEventId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int>("Month")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<int>("Year")
-                                .HasColumnType("INTEGER");
-
-                            b1.HasKey("AccountAddedBalanceEventId");
-
-                            b1.ToTable("AccountAddedBalanceEvent");
-
-                            b1.WithOwner()
-                                .HasForeignKey("AccountAddedBalanceEventId");
-                        });
-
-                    b.Navigation("AccountingPeriodKey")
+                        .HasForeignKey("AccountingPeriodId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

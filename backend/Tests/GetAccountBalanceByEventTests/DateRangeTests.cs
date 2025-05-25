@@ -45,10 +45,10 @@ public class DateRangeTests
         [
             new AccountBalanceByEventState
             {
-                AccountingPeriodKey = setup.Account.AccountAddedBalanceEvent.AccountingPeriodKey,
-                AccountName = setup.Account.Name,
+                AccountingPeriodId = setup.Account.AccountAddedBalanceEvent.AccountingPeriodId,
                 EventDate = setup.Account.AccountAddedBalanceEvent.EventDate,
                 EventSequence = 1,
+                AccountName = setup.Account.Name,
                 FundBalances =
                 [
                     new FundAmountState

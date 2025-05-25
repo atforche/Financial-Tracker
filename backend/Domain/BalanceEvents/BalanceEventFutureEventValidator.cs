@@ -10,7 +10,7 @@ namespace Domain.BalanceEvents;
 /// </summary>
 /// <param name="accountingPeriodRepository">Accounting Period Repository</param>
 /// <param name="accountBalanceService">Account Balance Service</param>
-internal sealed class BalanceEventFutureEventValidator(
+public sealed class BalanceEventFutureEventValidator(
     IAccountingPeriodRepository accountingPeriodRepository,
     AccountBalanceService accountBalanceService)
 {
@@ -50,7 +50,7 @@ internal sealed class BalanceEventFutureEventValidator(
 
         // Validate that adding this Balance Event doesn't cause the balance of this Account within the
         // Accounting Period to become invalid
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindByDate(newBalanceEvent.AccountingPeriodKey.ConvertToDate());
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(newBalanceEvent.AccountingPeriodId);
         runningBalance = accountBalanceService.GetAccountBalancesByAccountingPeriod(newBalanceEvent.Account, accountingPeriod).StartingBalance;
         foreach (BalanceEvent balanceEvent in accountingPeriod.GetAllBalanceEvents()
                     .Where(balanceEvent => balanceEvent.Account == newBalanceEvent.Account)

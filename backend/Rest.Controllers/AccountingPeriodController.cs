@@ -1,5 +1,4 @@
 using Data;
-using Domain;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
@@ -26,7 +25,8 @@ internal sealed class AccountingPeriodController(
     IAccountRepository accountRepository,
     IFundRepository fundRepository,
     AccountIdFactory accountIdFactory,
-    FundIdFactory fundIdFactory) : ControllerBase
+    FundIdFactory fundIdFactory,
+    AccountingPeriodIdFactory accountingPeriodIdFactory) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Accounting Periods from the database
@@ -44,8 +44,8 @@ internal sealed class AccountingPeriodController(
     [HttpGet("{accountingPeriodId}")]
     public IActionResult GetAccountingPeriod(Guid accountingPeriodId)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.FindByIdOrNull(new EntityId(accountingPeriodId));
-        return accountingPeriod != null ? Ok(new AccountingPeriodModel(accountingPeriod)) : NotFound();
+        AccountingPeriodId id = accountingPeriodIdFactory.Create(accountingPeriodId);
+        return Ok(new AccountingPeriodModel(accountingPeriodRepository.FindById(id)));
     }
 
     /// <summary>
@@ -56,11 +56,7 @@ internal sealed class AccountingPeriodController(
     [HttpGet("{accountingPeriodId}/Transactions")]
     public IActionResult GetTransactions(Guid accountingPeriodId)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.FindByIdOrNull(new EntityId(accountingPeriodId));
-        if (accountingPeriod == null)
-        {
-            return NotFound();
-        }
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(accountingPeriodId));
         return Ok(accountingPeriod.Transactions.Select(transaction => new TransactionModel(transaction)));
     }
 
@@ -72,11 +68,7 @@ internal sealed class AccountingPeriodController(
     [HttpGet("{accountingPeriodId}/FundConversions")]
     public IActionResult GetFundConversions(Guid accountingPeriodId)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.FindByIdOrNull(new EntityId(accountingPeriodId));
-        if (accountingPeriod == null)
-        {
-            return NotFound();
-        }
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(accountingPeriodId));
         return Ok(accountingPeriod.FundConversions.Select(fundConversion => new FundConversionModel(fundConversion)));
     }
 
@@ -88,11 +80,7 @@ internal sealed class AccountingPeriodController(
     [HttpGet("{accountingPeriodId}/ChangeInValues")]
     public IActionResult GetChangeInValues(Guid accountingPeriodId)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.FindByIdOrNull(new EntityId(accountingPeriodId));
-        if (accountingPeriod == null)
-        {
-            return NotFound();
-        }
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(accountingPeriodId));
         return Ok(accountingPeriod.ChangeInValues.Select(changeInValue => new ChangeInValueModel(changeInValue)));
     }
 
@@ -121,11 +109,7 @@ internal sealed class AccountingPeriodController(
     [HttpPost("{accountingPeriodId}/Transactions")]
     public async Task<IActionResult> CreateTransactionAsync(Guid accountingPeriodId, CreateTransactionModel createTransactionModel)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.FindByIdOrNull(new EntityId(accountingPeriodId));
-        if (accountingPeriod == null)
-        {
-            return NotFound();
-        }
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(accountingPeriodId));
 
         Account? debitAccount = null;
         if (createTransactionModel.DebitAccountId != null)
@@ -160,11 +144,7 @@ internal sealed class AccountingPeriodController(
     [HttpPost("{accountingPeriodId}/Transactions/{transactionId}")]
     public async Task<IActionResult> PostTransactionAsync(Guid accountingPeriodId, Guid transactionId, PostTransactionModel postTransactionModel)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.FindByIdOrNull(new EntityId(accountingPeriodId));
-        if (accountingPeriod == null)
-        {
-            return NotFound();
-        }
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(accountingPeriodId));
         Transaction? transaction = accountingPeriod.Transactions
             .SingleOrDefault(transaction => transaction.Id.Value == transactionId);
         if (transaction == null)
@@ -185,11 +165,7 @@ internal sealed class AccountingPeriodController(
     [HttpPost("{accountingPeriodId}/FundConversions")]
     public async Task<IActionResult> CreateFundConversionAsync(Guid accountingPeriodId, CreateFundConversionModel createFundConversionModel)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.FindByIdOrNull(new EntityId(accountingPeriodId));
-        if (accountingPeriod == null)
-        {
-            return NotFound();
-        }
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(accountingPeriodId));
         Account account = accountRepository.FindById(accountIdFactory.Create(createFundConversionModel.AccountId));
         Fund fromFund = fundRepository.FindById(fundIdFactory.Create(createFundConversionModel.FromFundId));
         Fund toFund = fundRepository.FindById(fundIdFactory.Create(createFundConversionModel.ToFundId));
@@ -212,11 +188,7 @@ internal sealed class AccountingPeriodController(
     [HttpPost("{accountingPeriodId}/ChangeInValues")]
     public async Task<IActionResult> CreateChangeInValueAsync(Guid accountingPeriodId, CreateChangeInValueModel createChangeInValueModel)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.FindByIdOrNull(new EntityId(accountingPeriodId));
-        if (accountingPeriod == null)
-        {
-            return NotFound();
-        }
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(accountingPeriodId));
         Account account = accountRepository.FindById(accountIdFactory.Create(createChangeInValueModel.AccountId));
         var funds = fundRepository.FindAll().ToDictionary(fund => fund.Id.Value, fund => fund);
         ChangeInValue newChangeInValue = addChangeInValueAction.Run(accountingPeriod,
@@ -239,11 +211,7 @@ internal sealed class AccountingPeriodController(
     [HttpPost("close/{accountingPeriodId}")]
     public async Task<IActionResult> CloseAccountingPeriod(Guid accountingPeriodId)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.FindByIdOrNull(new EntityId(accountingPeriodId));
-        if (accountingPeriod == null)
-        {
-            return NotFound();
-        }
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(accountingPeriodId));
         closeAccountingPeriodAction.Run(accountingPeriod);
         await unitOfWork.SaveChangesAsync();
         return Ok(new AccountingPeriodModel(accountingPeriod));

@@ -64,10 +64,10 @@ public class Account
     /// <summary>
     /// Adds a new Account Balance Checkpoint to this Account
     /// </summary>
-    /// <param name="accountingPeriod">Accounting Period for this Account Balance Checkpoint</param>
+    /// <param name="accountingPeriodId">Accounting Period ID for this Account Balance Checkpoint</param>
     /// <param name="fundBalances">Fund Balances for this Account Balance Checkpoint</param>
-    internal void AddAccountBalanceCheckpoint(AccountingPeriod accountingPeriod, IEnumerable<FundAmount> fundBalances) =>
-        _accountBalanceCheckpoints.Add(new AccountBalanceCheckpoint(this, accountingPeriod, fundBalances));
+    internal void AddAccountBalanceCheckpoint(AccountingPeriodId accountingPeriodId, IEnumerable<FundAmount> fundBalances) =>
+        _accountBalanceCheckpoints.Add(new AccountBalanceCheckpoint(this, accountingPeriodId, fundBalances));
 
     /// <summary>
     /// Constructs a new default instance of this class

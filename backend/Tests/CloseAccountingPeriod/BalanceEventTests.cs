@@ -45,7 +45,8 @@ public class BalanceEventTests
     private static AccountingPeriodState GetExpectedState(BalanceEventScenario scenario, BalanceEventScenarioSetup setup) =>
         new()
         {
-            Key = setup.AccountingPeriod.Key,
+            Year = setup.AccountingPeriod.Year,
+            Month = setup.AccountingPeriod.Month,
             IsOpen = false,
             Transactions = GetExpectedTransactionStates(scenario, setup),
             FundConversions = GetExpectedFundConversionStates(scenario, setup),
@@ -54,10 +55,10 @@ public class BalanceEventTests
             [
                 new AccountAddedBalanceEventState
                 {
-                    AccountingPeriodKey = setup.AccountingPeriod.Key,
-                    AccountName = setup.Account.Name,
+                    AccountingPeriodId = setup.AccountingPeriod.Id,
                     EventDate = setup.AccountingPeriod.PeriodStartDate,
                     EventSequence = 1,
+                    AccountName = setup.Account.Name,
                     FundAmounts =
                     [
                         new FundAmountState
@@ -92,10 +93,10 @@ public class BalanceEventTests
 
         expectedTransactionBalanceEvents.Add(new TransactionBalanceEventState
         {
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
-            AccountName = setup.Account.Name,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 15),
             EventSequence = 1,
+            AccountName = setup.Account.Name,
             EventType = TransactionBalanceEventType.Added,
             AccountType = TransactionAccountType.Debit
         });
@@ -103,10 +104,10 @@ public class BalanceEventTests
         {
             expectedTransactionBalanceEvents.Add(new TransactionBalanceEventState
             {
-                AccountingPeriodKey = setup.AccountingPeriod.Key,
-                AccountName = setup.Account.Name,
+                AccountingPeriodId = setup.AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 2,
+                AccountName = setup.Account.Name,
                 EventType = TransactionBalanceEventType.Posted,
                 AccountType = TransactionAccountType.Debit
             });
@@ -143,10 +144,10 @@ public class BalanceEventTests
         [
             new FundConversionState
             {
-                AccountingPeriodKey = setup.AccountingPeriod.Key,
-                AccountName = setup.Account.Name,
+                AccountingPeriodId = setup.AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
+                AccountName = setup.Account.Name,
                 FromFundName = setup.Fund.Name,
                 ToFundName = setup.OtherFund.Name,
                 Amount = 250.00m
@@ -170,10 +171,10 @@ public class BalanceEventTests
         [
             new ChangeInValueState
             {
-                AccountingPeriodKey = setup.AccountingPeriod.Key,
-                AccountName = setup.Account.Name,
+                AccountingPeriodId = setup.AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
+                AccountName = setup.Account.Name,
                 AccountingEntry = new FundAmountState
                 {
                     FundId = setup.Fund.Id,

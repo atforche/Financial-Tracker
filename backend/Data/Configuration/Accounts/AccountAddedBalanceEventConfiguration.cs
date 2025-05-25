@@ -1,4 +1,5 @@
 using Domain;
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -16,8 +17,8 @@ internal sealed class AccountAddedBalanceEventConfiguration : IEntityTypeConfigu
         builder.HasKey(entity => entity.Id);
         builder.Property(entity => entity.Id).HasConversion(entityId => entityId.Value, value => new EntityId(value));
 
-        builder.OwnsOne(accountAddedBalanceEvent => accountAddedBalanceEvent.AccountingPeriodKey);
-        builder.Navigation(accountAddedBalanceEvent => accountAddedBalanceEvent.AccountingPeriodKey).AutoInclude();
+        builder.Property(accountAddedBalanceEvent => accountAddedBalanceEvent.AccountingPeriodId)
+            .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
 
         builder.HasMany(accountAddedBalanceEvent => accountAddedBalanceEvent.FundAmounts)
             .WithOne()

@@ -11,10 +11,10 @@ internal sealed class TransactionBalanceEventValidator : EntityValidator<Transac
     public override void Validate(TransactionBalanceEvent entity, TransactionBalanceEventState expectedState)
     {
         Assert.NotEqual(Guid.Empty, entity.Id.Value);
-        Assert.Equal(expectedState.AccountingPeriodKey, entity.AccountingPeriodKey);
-        Assert.Equal(expectedState.AccountName, entity.Account.Name);
+        Assert.Equal(expectedState.AccountingPeriodId, entity.AccountingPeriodId);
         Assert.Equal(expectedState.EventDate, entity.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.EventSequence);
+        Assert.Equal(expectedState.AccountName, entity.Account.Name);
         Assert.Equal(expectedState.EventType, entity.EventType);
         Assert.Equal(expectedState.AccountType, entity.AccountType);
     }
@@ -26,14 +26,9 @@ internal sealed class TransactionBalanceEventValidator : EntityValidator<Transac
 internal sealed record TransactionBalanceEventState
 {
     /// <summary>
-    /// Accounting Period Key for this Transaction Balance Event
+    /// Accounting Period ID for this Transaction Balance Event
     /// </summary>
-    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
-
-    /// <summary>
-    /// Account Name for this Transaction Balance Event
-    /// </summary>
-    public required string AccountName { get; init; }
+    public required AccountingPeriodId AccountingPeriodId { get; init; }
 
     /// <summary>
     /// Event Date for this Transaction Balance Event
@@ -44,6 +39,11 @@ internal sealed record TransactionBalanceEventState
     /// Event Sequence for this Transaction Balance Event
     /// </summary>
     public required int EventSequence { get; init; }
+
+    /// <summary>
+    /// Account Name for this Transaction Balance Event
+    /// </summary>
+    public required string AccountName { get; init; }
 
     /// <summary>
     /// Event Type for this Transaction Balance Event

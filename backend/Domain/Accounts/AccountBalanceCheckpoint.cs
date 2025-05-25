@@ -27,7 +27,7 @@ public sealed class AccountBalanceCheckpoint
     /// <summary>
     /// Accounting Period Id for this Account Balance Checkpoint
     /// </summary>
-    public EntityId AccountingPeriodId { get; private set; }
+    public AccountingPeriodId AccountingPeriodId { get; private set; }
 
     /// <summary>
     /// Fund Balances for this Account Balance Checkpoint
@@ -44,13 +44,13 @@ public sealed class AccountBalanceCheckpoint
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="account">Parent Account for this Account Balance Checkpoint</param>
-    /// <param name="accountingPeriod">Parent Accounting Period for this Account Balance Checkpoint</param>
+    /// <param name="accountingPeriodId">Accounting Period ID for this Account Balance Checkpoint</param>
     /// <param name="fundBalances">Collection of Fund Balances for this Account Balance Checkpoint</param>
-    internal AccountBalanceCheckpoint(Account account, AccountingPeriod accountingPeriod, IEnumerable<FundAmount> fundBalances)
+    internal AccountBalanceCheckpoint(Account account, AccountingPeriodId accountingPeriodId, IEnumerable<FundAmount> fundBalances)
     {
         Id = new AccountBalanceCheckpointId(Guid.NewGuid());
         Account = account;
-        AccountingPeriodId = accountingPeriod.Id;
+        AccountingPeriodId = accountingPeriodId;
         _fundBalances = fundBalances.ToList();
         Validate();
     }

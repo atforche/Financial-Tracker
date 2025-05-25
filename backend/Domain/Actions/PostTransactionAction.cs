@@ -9,7 +9,8 @@ namespace Domain.Actions;
 /// Action class that posts a Transaction
 /// </summary>
 /// <param name="balanceEventRepository">Balance Event Repository</param>
-public class PostTransactionAction(IBalanceEventRepository balanceEventRepository)
+/// <param name="balanceEventDateValidator">Balance Event Date Validator</param>
+public class PostTransactionAction(IBalanceEventRepository balanceEventRepository, BalanceEventDateValidator balanceEventDateValidator)
 {
     /// <summary>
     /// Runs this action
@@ -42,14 +43,14 @@ public class PostTransactionAction(IBalanceEventRepository balanceEventRepositor
     /// <param name="postingDate">Posting Date for the Transaction in the provided Account</param>
     /// <param name="exception">Exception encountered during validation</param>
     /// <returns>True if this action is valid to run, false otherwise</returns>
-    private static bool IsValid(
+    private bool IsValid(
         Transaction transaction,
         TransactionAccountType accountType,
         DateOnly postingDate,
         [NotNullWhen(false)] out Exception? exception)
     {
         Account? account = transaction.GetAccount(accountType) ?? throw new InvalidOperationException();
-        _ = new BalanceEventDateValidator(transaction.AccountingPeriod, [account], postingDate).Validate(out exception);
+        _ = balanceEventDateValidator.Validate(transaction.AccountingPeriod, [account], postingDate, out exception);
         // Validate that this Transaction hasn't already been posted for the provided Account
         if (transaction.TransactionBalanceEvents.Any(balanceEvent => balanceEvent.AccountType == accountType &&
                 balanceEvent.EventType == TransactionBalanceEventType.Posted))

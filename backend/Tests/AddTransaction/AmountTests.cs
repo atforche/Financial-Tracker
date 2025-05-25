@@ -86,10 +86,10 @@ public class AmountTests
             [
                 new TransactionBalanceEventState
                 {
-                    AccountingPeriodKey = setup.AccountingPeriod.Key,
-                    AccountName = setup.Account.Name,
+                    AccountingPeriodId = setup.AccountingPeriod.Id,
                     EventDate = new DateOnly(2025, 1, 15),
                     EventSequence = 1,
+                    AccountName = setup.Account.Name,
                     EventType = TransactionBalanceEventType.Added,
                     AccountType = TransactionAccountType.Debit,
                 }

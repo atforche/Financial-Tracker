@@ -81,7 +81,7 @@ public class AddAccountingPeriodAction(
         }
         foreach (Account account in accountRepository.FindAll())
         {
-            account.AddAccountBalanceCheckpoint(newAccountingPeriod,
+            account.AddAccountBalanceCheckpoint(newAccountingPeriod.Id,
                 accountBalanceService.GetAccountBalancesByAccountingPeriod(account, previousAccountingPeriod).EndingBalance.FundBalances);
         }
     }

@@ -70,10 +70,10 @@ public class MultipleBalanceEventTests
         AddBalanceEventMultipleBalanceEventScenario scenario) =>
         new()
         {
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
-            AccountName = setup.Account.Name,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 15),
             EventSequence = scenario == AddBalanceEventMultipleBalanceEventScenario.MultipleEventsSameDay ? 2 : 1,
+            AccountName = setup.Account.Name,
             AccountingEntry = new FundAmountState
             {
                 FundId = setup.Fund.Id,

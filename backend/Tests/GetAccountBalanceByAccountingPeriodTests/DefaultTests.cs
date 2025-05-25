@@ -1,4 +1,3 @@
-using Domain.AccountingPeriods;
 using Domain.Actions;
 using Domain.Funds;
 using Domain.Services;
@@ -34,7 +33,7 @@ public class DefaultTests
             setup.GetService<AccountBalanceService>().GetAccountBalancesByAccountingPeriod(setup.Account, setup.AccountingPeriod),
             new AccountBalanceByAccountingPeriodState
             {
-                AccountingPeriodKey = new AccountingPeriodKey(2025, 1),
+                AccountingPeriodId = setup.AccountingPeriod.Id,
                 StartingFundBalances = [],
                 EndingFundBalances =
                 [

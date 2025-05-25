@@ -103,7 +103,7 @@ public class AccountBalanceService(IAccountingPeriodRepository accountingPeriodR
         foreach (AccountBalanceCheckpoint accountBalanceCheckpoint in balanceCheckpoints)
         {
             AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountBalanceCheckpoint.AccountingPeriodId);
-            if (accountingPeriod.Key.ConvertToDate() < date)
+            if (accountingPeriod.PeriodStartDate < date)
             {
                 return DetermineAccountBalanceAtStartOfDateWithCheckpoint(account, date, accountBalanceCheckpoint);
             }

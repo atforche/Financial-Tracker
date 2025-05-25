@@ -103,10 +103,10 @@ public class MultipleBalanceEventTests
             [
                 new TransactionBalanceEventState
                 {
-                    AccountingPeriodKey = setup.AccountingPeriod.Key,
-                    AccountName = accountType == AccountType.Standard ? setup.Account.Name : setup.DebtAccount.Name,
+                    AccountingPeriodId = setup.AccountingPeriod.Id,
                     EventDate = new DateOnly(2025, 1, 15),
                     EventSequence = expectedEventSequence,
+                    AccountName = accountType == AccountType.Standard ? setup.Account.Name : setup.DebtAccount.Name,
                     EventType = TransactionBalanceEventType.Added,
                     AccountType = accountType == AccountType.Standard ? TransactionAccountType.Debit : TransactionAccountType.Credit
                 }

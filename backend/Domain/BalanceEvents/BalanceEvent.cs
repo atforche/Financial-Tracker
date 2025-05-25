@@ -9,9 +9,9 @@ namespace Domain.BalanceEvents;
 public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
 {
     /// <summary>
-    /// Accounting Period Key for this Balance Event
+    /// Accounting Period ID for this Balance Event
     /// </summary>
-    public AccountingPeriodKey AccountingPeriodKey { get; private set; }
+    public AccountingPeriodId AccountingPeriodId { get; private set; }
 
     /// <summary>
     /// Date for this Balance Event
@@ -69,7 +69,7 @@ public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
     /// <param name="account">Account for this Balance Event</param>
     protected BalanceEvent(AccountingPeriod accountingPeriod, DateOnly eventDate, int eventSequence, Account account)
     {
-        AccountingPeriodKey = accountingPeriod.Key;
+        AccountingPeriodId = accountingPeriod.Id;
         EventDate = eventDate;
         EventSequence = eventSequence;
         Account = account;
@@ -80,7 +80,7 @@ public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
     /// </summary>
     protected BalanceEvent()
     {
-        AccountingPeriodKey = null!;
+        AccountingPeriodId = null!;
         Account = null!;
     }
 
@@ -122,7 +122,7 @@ public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
     public override bool Equals(object? obj) => obj is BalanceEvent otherBalanceEvent && CompareTo(otherBalanceEvent) == 0;
 
     /// <inheritdoc/>
-    public override int GetHashCode() => HashCode.Combine(AccountingPeriodKey, EventDate, EventSequence);
+    public override int GetHashCode() => HashCode.Combine(AccountingPeriodId, EventDate, EventSequence);
 
     #endregion
 }

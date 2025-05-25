@@ -79,7 +79,7 @@ public class AccountingPeriodOverlapTests
         AccountingPeriodType accountingPeriodType) =>
         new()
         {
-            AccountingPeriodKey = setup.PastAccountingPeriod.Key,
+            AccountingPeriodId = setup.PastAccountingPeriod.Id,
             StartingFundBalances = [],
             EndingFundBalances = accountingPeriodType == AccountingPeriodType.Past
                 ? [
@@ -110,7 +110,7 @@ public class AccountingPeriodOverlapTests
         AccountingPeriodType accountingPeriodType) =>
         new()
         {
-            AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
+            AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
             StartingFundBalances = accountingPeriodType == AccountingPeriodType.Past
                 ? [
                     new FundAmountState
@@ -155,7 +155,7 @@ public class AccountingPeriodOverlapTests
         AccountingPeriodType accountingPeriodType) =>
         new()
         {
-            AccountingPeriodKey = setup.FutureAccountingPeriod.Key,
+            AccountingPeriodId = setup.FutureAccountingPeriod.Id,
             StartingFundBalances = accountingPeriodType == AccountingPeriodType.Past
                 ? [
                     new FundAmountState

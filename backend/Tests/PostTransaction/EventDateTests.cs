@@ -77,19 +77,19 @@ public class EventDateTests
             [
                 new TransactionBalanceEventState
                 {
-                    AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
-                    AccountName = setup.Account.Name,
+                    AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
                     EventDate = new DateOnly(2025, 1, 1),
                     EventSequence = 1,
+                    AccountName = setup.Account.Name,
                     EventType = TransactionBalanceEventType.Added,
                     AccountType = TransactionAccountType.Debit,
                 },
                 new TransactionBalanceEventState
                 {
-                    AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
-                    AccountName = setup.Account.Name,
+                    AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
                     EventDate = setup.EventDate,
                     EventSequence = setup.EventDate == new DateOnly(2025, 1, 1) ? 2 : 1,
+                    AccountName = setup.Account.Name,
                     EventType = TransactionBalanceEventType.Posted,
                     AccountType = TransactionAccountType.Debit,
                 },

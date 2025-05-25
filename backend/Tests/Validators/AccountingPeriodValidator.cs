@@ -11,7 +11,8 @@ internal sealed class AccountingPeriodValidator : EntityValidator<AccountingPeri
     public override void Validate(AccountingPeriod entity, AccountingPeriodState expectedState)
     {
         Assert.NotEqual(Guid.Empty, entity.Id.Value);
-        Assert.Equal(expectedState.Key, entity.Key);
+        Assert.Equal(expectedState.Year, entity.Year);
+        Assert.Equal(expectedState.Month, entity.Month);
         Assert.Equal(expectedState.IsOpen, entity.IsOpen);
         new TransactionValidator().Validate(entity.Transactions, expectedState.Transactions);
         new FundConversionValidator().Validate(entity.FundConversions, expectedState.FundConversions);
@@ -26,9 +27,14 @@ internal sealed class AccountingPeriodValidator : EntityValidator<AccountingPeri
 internal sealed record AccountingPeriodState
 {
     /// <summary>
-    /// Key for this Accounting Period
+    /// Year for this Accounting Period
     /// </summary>
-    public required AccountingPeriodKey Key { get; init; }
+    public required int Year { get; init; }
+
+    /// <summary>
+    /// Month for this Accounting Period
+    /// </summary>
+    public required int Month { get; init; }
 
     /// <summary>
     /// Is Open Flag for this Accounting Period

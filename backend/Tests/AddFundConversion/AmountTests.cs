@@ -57,10 +57,10 @@ public class AmountTests
     private static FundConversionState GetExpectedState(AddBalanceEventAmountScenarioSetup setup, decimal amount) =>
         new()
         {
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
-            AccountName = setup.Account.Name,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 10),
             EventSequence = 1,
+            AccountName = setup.Account.Name,
             FromFundName = setup.Fund.Name,
             ToFundName = setup.OtherFund.Name,
             Amount = amount,

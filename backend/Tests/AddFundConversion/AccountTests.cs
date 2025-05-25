@@ -53,10 +53,10 @@ public class AccountTests
     private static FundConversionState GetExpectedState(AccountScenarioSetup setup, bool reverse) =>
         new()
         {
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
-            AccountName = setup.Account.Name,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 10),
             EventSequence = reverse ? 2 : 1,
+            AccountName = setup.Account.Name,
             FromFundName = reverse ? setup.OtherFund.Name : setup.Fund.Name,
             ToFundName = reverse ? setup.Fund.Name : setup.OtherFund.Name,
             Amount = 100.00m,
@@ -71,10 +71,10 @@ public class AccountTests
     private static AccountBalanceByEventState GetExpectedAccountBalance(AccountScenarioSetup setup, bool reverse) =>
         new()
         {
-            AccountName = setup.Account.Name,
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 10),
             EventSequence = reverse ? 2 : 1,
+            AccountName = setup.Account.Name,
             FundBalances =
             [
                 new FundAmountState

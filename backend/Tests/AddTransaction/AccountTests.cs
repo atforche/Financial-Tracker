@@ -105,10 +105,10 @@ public class AccountTests
         {
             expectedBalanceEvents.Add(new TransactionBalanceEventState
             {
-                AccountingPeriodKey = setup.AccountingPeriod.Key,
-                AccountName = setup.DebitAccount.Name,
+                AccountingPeriodId = setup.AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
+                AccountName = setup.DebitAccount.Name,
                 EventType = TransactionBalanceEventType.Added,
                 AccountType = TransactionAccountType.Debit
             });
@@ -117,10 +117,10 @@ public class AccountTests
         {
             expectedBalanceEvents.Add(new TransactionBalanceEventState
             {
-                AccountingPeriodKey = setup.AccountingPeriod.Key,
-                AccountName = setup.CreditAccount.Name,
+                AccountingPeriodId = setup.AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = setup.DebitAccount != null ? 2 : 1,
+                AccountName = setup.CreditAccount.Name,
                 EventType = TransactionBalanceEventType.Added,
                 AccountType = TransactionAccountType.Credit
             });
@@ -137,10 +137,10 @@ public class AccountTests
     private static AccountBalanceByEventState GetExpectedAccountBalance(AccountScenarioSetup setup, Account account) =>
         new()
         {
-            AccountName = account.Name,
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 15),
             EventSequence = setup.DebitAccount != account && setup.DebitAccount != null ? 2 : 1,
+            AccountName = account.Name,
             FundBalances =
             [
                 new FundAmountState

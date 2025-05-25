@@ -1,5 +1,4 @@
 using Data;
-using Domain;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
@@ -20,7 +19,8 @@ internal sealed class AccountController(
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
     AccountIdFactory accountIdFactory,
-    FundIdFactory fundIdFactory) : ControllerBase
+    FundIdFactory fundIdFactory,
+    AccountingPeriodIdFactory accountingPeriodIdFactory) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Accounts from the database
@@ -50,11 +50,7 @@ internal sealed class AccountController(
     [HttpPost("")]
     public async Task<IActionResult> CreateAccountAsync(CreateAccountModel createAccountModel)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.FindByIdOrNull(new EntityId(createAccountModel.AccountingPeriodId));
-        if (accountingPeriod == null)
-        {
-            return NotFound();
-        }
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(createAccountModel.AccountingPeriodId));
         Account newAccount = addAccountAction.Run(createAccountModel.Name, createAccountModel.Type, accountingPeriod, createAccountModel.Date,
             createAccountModel.StartingFundBalances.Select(fundBalance => new FundAmount
             {
