@@ -11,7 +11,7 @@ namespace Rest.Controllers;
 /// </summary>
 [ApiController]
 [Route("/funds")]
-internal sealed class FundController(
+public sealed class FundController(
     UnitOfWork unitOfWork,
     AddFundAction addFundAction,
     IFundRepository fundRepository,

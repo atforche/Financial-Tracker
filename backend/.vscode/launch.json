@@ -9,9 +9,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/.artifacts/bin/RestApi/RestApi.dll",
+            "program": "${workspaceFolder}/.artifacts/bin/Rest.Controllers/Rest.Controllers.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/RestApi",
+            "cwd": "${workspaceFolder}/Rest.Controllers",
             "serverReadyAction": {
                 "action": "openExternally",
                 "uriFormat": "http://localhost:%s/swagger",

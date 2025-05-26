@@ -13,7 +13,7 @@ namespace Rest.Controllers;
 /// </summary>
 [ApiController]
 [Route("/accountingPeriods")]
-internal sealed class AccountingPeriodController(
+public sealed class AccountingPeriodController(
     UnitOfWork unitOfWork,
     AddAccountingPeriodAction addAccountingPeriodAction,
     CloseAccountingPeriodAction closeAccountingPeriodAction,

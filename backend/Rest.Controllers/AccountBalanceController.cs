@@ -11,7 +11,7 @@ namespace Rest.Controllers;
 /// </summary>
 [ApiController]
 [Route("/accountBalance")]
-internal sealed class AccountBalanceController(
+public sealed class AccountBalanceController(
     IAccountRepository accountRepository,
     AccountBalanceService accountBalanceService,
     AccountIdFactory accountIdFactory) : ControllerBase
