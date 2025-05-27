@@ -43,6 +43,9 @@ builder.Services.AddScoped<AccountBalanceService>();
 builder.Services.AddScoped<AddFundAction>();
 builder.Services.AddScoped<BalanceEventDateValidator>();
 builder.Services.AddScoped<BalanceEventFutureEventValidator>();
+builder.Services.AddScoped<AccountIdFactory>();
+builder.Services.AddScoped<AccountingPeriodIdFactory>();
+builder.Services.AddScoped<FundIdFactory>();
 
 // Configure CORS to allow requests from select origins
 string corsPolicyName = "CORS";

@@ -11,7 +11,7 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
     public IReadOnlyCollection<Fund> FindAll() => databaseContext.Funds.ToList();
 
     /// <inheritdoc/>
-    public bool DoesFundWithIdExist(Guid id) => databaseContext.Funds.Any(fund => fund.Id.Value == id);
+    public bool DoesFundWithIdExist(Guid id) => databaseContext.Funds.Any(fund => ((Guid)(object)fund.Id) == id);
 
     /// <inheritdoc/>
     public Fund FindById(FundId id) => databaseContext.Funds.Single(fund => fund.Id == id);

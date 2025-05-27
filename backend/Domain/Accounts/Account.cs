@@ -9,14 +9,9 @@ namespace Domain.Accounts;
 /// <remarks>
 /// An Account represents a financial account that money can be held in and transferred from.
 /// </remarks>
-public class Account
+public class Account : Entity<AccountId>
 {
     private readonly List<AccountBalanceCheckpoint> _accountBalanceCheckpoints = [];
-
-    /// <summary>
-    /// ID for this Account
-    /// </summary>
-    public AccountId Id { get; private set; }
 
     /// <summary>
     /// Name for this Account
@@ -54,8 +49,8 @@ public class Account
         DateOnly date,
         int eventSequence,
         IEnumerable<FundAmount> fundAmounts)
+        : base(new AccountId(Guid.NewGuid()))
     {
-        Id = new AccountId(Guid.NewGuid());
         Name = name;
         Type = type;
         AccountAddedBalanceEvent = new AccountAddedBalanceEvent(accountingPeriod, date, eventSequence, this, fundAmounts);
@@ -72,9 +67,8 @@ public class Account
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private Account()
+    private Account() : base()
     {
-        Id = null!;
         Name = "";
         AccountAddedBalanceEvent = null!;
     }

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Domain.AccountingPeriods;
 
 namespace Rest.Models.AccountingPeriod;
 
@@ -7,7 +8,7 @@ namespace Rest.Models.AccountingPeriod;
 /// </summary>
 public class AccountingPeriodModel
 {
-    /// <inheritdoc cref="Domain.Entity.Id"/>
+    /// <inheritdoc cref="AccountingPeriodId"/>
     public Guid Id { get; init; }
 
     /// <inheritdoc cref="Domain.AccountingPeriods.AccountingPeriod.Year"/>

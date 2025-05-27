@@ -14,7 +14,7 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
 
     /// <inheritdoc/>
     public bool DoesAccountingPeriodWithIdExist(Guid id) => databaseContext.AccountingPeriods
-        .Any(accountingPeriod => accountingPeriod.Id.Value == id);
+        .Any(accountingPeriod => ((Guid)(object)accountingPeriod.Id) == id);
 
     /// <inheritdoc/>
     public AccountingPeriod FindById(AccountingPeriodId id) => databaseContext.AccountingPeriods

@@ -6,16 +6,11 @@ namespace Domain.AccountingPeriods;
 /// <remarks>
 /// An Accounting Period represents a month-long period used to organize transactions and track balances and budgets.
 /// </remarks>
-public class AccountingPeriod
+public class AccountingPeriod : Entity<AccountingPeriodId>
 {
     private readonly List<Transaction> _transactions = [];
     private readonly List<FundConversion> _fundConversions = [];
     private readonly List<ChangeInValue> _changeInValues = [];
-
-    /// <summary>
-    /// ID for this Accounting Period
-    /// </summary>
-    public AccountingPeriodId Id { get; private set; }
 
     /// <summary>
     /// Year for this Accounting Period
@@ -63,8 +58,8 @@ public class AccountingPeriod
     /// <param name="year">Year for this Accounting Period</param>
     /// <param name="month">Month for this Accounting Period</param>
     internal AccountingPeriod(int year, int month)
+        : base(new AccountingPeriodId(Guid.NewGuid()))
     {
-        Id = new AccountingPeriodId(Guid.NewGuid());
         Year = year;
         Month = month;
         IsOpen = true;
@@ -91,5 +86,7 @@ public class AccountingPeriod
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private AccountingPeriod() => Id = null!;
+    private AccountingPeriod() : base()
+    {
+    }
 }

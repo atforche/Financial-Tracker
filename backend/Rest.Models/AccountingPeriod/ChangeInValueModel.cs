@@ -9,7 +9,7 @@ namespace Rest.Models.AccountingPeriod;
 /// </summary>
 public class ChangeInValueModel
 {
-    /// <inheritdoc cref="Domain.Entity.Id"/>
+    /// <inheritdoc cref="Domain.EntityOld.Id"/>
     public Guid Id { get; init; }
 
     /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.Account"/>

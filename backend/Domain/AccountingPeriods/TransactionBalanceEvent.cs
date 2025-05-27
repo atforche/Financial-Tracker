@@ -99,7 +99,7 @@ public sealed class TransactionBalanceEvent : BalanceEvent
     /// <returns>The new Account Balance after this event has been applied</returns>
     private AccountBalance ApplyTransactionAddedBalanceEvent(AccountBalance currentBalance, bool isReverse)
     {
-        if (Account.Id != currentBalance.Account.Id)
+        if (Account != currentBalance.Account)
         {
             return currentBalance;
         }
@@ -132,7 +132,7 @@ public sealed class TransactionBalanceEvent : BalanceEvent
     /// <returns>The new Account Balance after this event has been applied</returns>
     private AccountBalance ApplyTransactionPostedBalanceEvent(AccountBalance currentBalance, bool isReverse)
     {
-        if (Account.Id != currentBalance.Account.Id)
+        if (Account != currentBalance.Account)
         {
             return currentBalance;
         }

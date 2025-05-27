@@ -97,7 +97,7 @@ public class FundConversion : BalanceEvent
     /// <returns>The new Account Balance after this event has been applied</returns>
     private AccountBalance ApplyEventPrivate(AccountBalance currentBalance, bool isReverse)
     {
-        if (Account.Id != currentBalance.Account.Id)
+        if (Account != currentBalance.Account)
         {
             return currentBalance;
         }

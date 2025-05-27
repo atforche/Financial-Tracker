@@ -12,7 +12,7 @@ namespace Rest.Models.AccountingPeriod;
 /// </summary>
 public class TransactionModel
 {
-    /// <inheritdoc cref="Entity.Id"/>
+    /// <inheritdoc cref="EntityOld.Id"/>
     public Guid Id { get; init; }
 
     /// <inheritdoc cref="Transaction.Date"/>

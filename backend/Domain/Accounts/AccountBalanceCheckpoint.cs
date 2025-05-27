@@ -10,14 +10,9 @@ namespace Domain.Accounts;
 /// An Account Balance Checkpoint represents the balance of an Account at the beginning of an Accounting Period.
 /// This saved balance serves as a checkpoint to improve the efficiency of calculating arbitrary Account balances.
 /// </remarks>
-public sealed class AccountBalanceCheckpoint
+public sealed class AccountBalanceCheckpoint : Entity<AccountBalanceCheckpointId>
 {
     private readonly List<FundAmount> _fundBalances;
-
-    /// <summary>
-    /// ID for this Account Balance Checkpoint
-    /// </summary>
-    public AccountBalanceCheckpointId Id { get; private set; }
 
     /// <summary>
     /// Account for this Account Balance Checkpoint
@@ -47,8 +42,8 @@ public sealed class AccountBalanceCheckpoint
     /// <param name="accountingPeriodId">Accounting Period ID for this Account Balance Checkpoint</param>
     /// <param name="fundBalances">Collection of Fund Balances for this Account Balance Checkpoint</param>
     internal AccountBalanceCheckpoint(Account account, AccountingPeriodId accountingPeriodId, IEnumerable<FundAmount> fundBalances)
+        : base(new AccountBalanceCheckpointId(Guid.NewGuid()))
     {
-        Id = new AccountBalanceCheckpointId(Guid.NewGuid());
         Account = account;
         AccountingPeriodId = accountingPeriodId;
         _fundBalances = fundBalances.ToList();
@@ -58,9 +53,8 @@ public sealed class AccountBalanceCheckpoint
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private AccountBalanceCheckpoint()
+    private AccountBalanceCheckpoint() : base()
     {
-        Id = null!;
         Account = null!;
         AccountingPeriodId = null!;
         _fundBalances = [];

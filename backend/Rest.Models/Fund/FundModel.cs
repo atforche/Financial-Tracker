@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Domain.Funds;
 
 namespace Rest.Models.Fund;
 
@@ -7,7 +8,7 @@ namespace Rest.Models.Fund;
 /// </summary>
 public class FundModel
 {
-    /// <inheritdoc cref="Domain.Entity.Id"/>
+    /// <inheritdoc cref="FundId"/>
     public Guid Id { get; init; }
 
     /// <inheritdoc cref="Domain.Funds.Fund.Name"/>

@@ -37,7 +37,7 @@ public sealed class BalanceEventFutureEventValidator(
         AccountBalance runningBalance = newBalanceEvent.ApplyEventToBalance(currentBalance);
         var futureBalanceEventsForAccount = balanceEventRepository
             .FindAllByDateRange(new DateRange(newBalanceEvent.EventDate, DateOnly.MaxValue))
-            .Where(balanceEvent => balanceEvent.Account.Id == newBalanceEvent.Account.Id && balanceEvent > newBalanceEvent)
+            .Where(balanceEvent => balanceEvent.Account == newBalanceEvent.Account && balanceEvent > newBalanceEvent)
             .Order()
             .ToList();
         foreach (BalanceEvent balanceEvent in futureBalanceEventsForAccount)
@@ -57,7 +57,7 @@ public sealed class BalanceEventFutureEventValidator(
             ? accountBalanceService.GetAccountBalancesByAccountingPeriod(newBalanceEvent.Account, previousAccountingPeriod).EndingBalance
             : new AccountBalance(newBalanceEvent.Account, [], []);
         foreach (BalanceEvent balanceEvent in balanceEventRepository.FindAllByAccountingPeriod(eventAccountingPeriod.Id)
-                    .Where(balanceEvent => balanceEvent.Account.Id == newBalanceEvent.Account.Id)
+                    .Where(balanceEvent => balanceEvent.Account == newBalanceEvent.Account)
                     .Concat([newBalanceEvent])
                     .Order())
         {

@@ -6,7 +6,7 @@ namespace Domain.BalanceEvents;
 /// <summary>
 /// Base class shared by all entities that impact the balance of an Account
 /// </summary>
-public abstract class BalanceEvent : Entity, IComparable<BalanceEvent>
+public abstract class BalanceEvent : EntityOld, IComparable<BalanceEvent>
 {
     /// <summary>
     /// Accounting Period ID for this Balance Event

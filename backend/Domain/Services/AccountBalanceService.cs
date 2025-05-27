@@ -87,7 +87,7 @@ public class AccountBalanceService(
             // Otherwise, calculate the ending balance by applying all the Balance Events currently in the Accounting Period
             foreach (BalanceEvent balanceEvent in balanceEventRepository
                                                     .FindAllByAccountingPeriod(accountingPeriod.Id)
-                                                    .Where(balanceEvent => balanceEvent.Account.Id == account.Id))
+                                                    .Where(balanceEvent => balanceEvent.Account == account))
             {
                 endingBalance = balanceEvent.ApplyEventToBalance(endingBalance);
             }
