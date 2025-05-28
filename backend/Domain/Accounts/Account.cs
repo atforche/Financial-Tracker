@@ -38,14 +38,14 @@ public class Account : Entity<AccountId>
     /// </summary>
     /// <param name="name">Name for this Account</param>
     /// <param name="type">Type for this Account</param>
-    /// <param name="accountingPeriod">Accounting Period for the Account Added Balance Event for this Account</param>
+    /// <param name="accountingPeriodId">Accounting Period ID for the Account Added Balance Event for this Account</param>
     /// <param name="date">Date for the Account Added Balance Event for this Account</param>
     /// <param name="eventSequence">Event Sequence for the Account Added Balance Event for this Account</param>
     /// <param name="fundAmounts">Fund Amounts for the Account Added Balance Event for this Account</param>
     internal Account(
         string name,
         AccountType type,
-        AccountingPeriod accountingPeriod,
+        AccountingPeriodId accountingPeriodId,
         DateOnly date,
         int eventSequence,
         IEnumerable<FundAmount> fundAmounts)
@@ -53,7 +53,7 @@ public class Account : Entity<AccountId>
     {
         Name = name;
         Type = type;
-        AccountAddedBalanceEvent = new AccountAddedBalanceEvent(accountingPeriod, date, eventSequence, this, fundAmounts);
+        AccountAddedBalanceEvent = new AccountAddedBalanceEvent(accountingPeriodId, date, eventSequence, this, fundAmounts);
     }
 
     /// <summary>

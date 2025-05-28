@@ -1,7 +1,7 @@
-using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.AddTransaction.Setups;
 using Tests.Scenarios;
 using Tests.Validators;
@@ -53,8 +53,9 @@ public class MultipleBalanceEventTests
     /// <param name="setup">Setup for this test case</param>
     /// <param name="accountType">Account Type for this Transaction</param>
     /// <returns>The Transaction that was added for this test case</returns>
-    private static Transaction AddTransaction(MultipleBalanceEventScenarioSetup setup, AccountType accountType) =>
-        setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
+    private static Transaction AddTransaction(MultipleBalanceEventScenarioSetup setup, AccountType accountType)
+    {
+        Transaction transaction = setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
             accountType == AccountType.Standard ? setup.Account : null,
             accountType == AccountType.Debt ? setup.DebtAccount : null,
@@ -65,6 +66,9 @@ public class MultipleBalanceEventTests
                     Amount = 500.00m,
                 }
             ]);
+        setup.GetService<ITransactionRepository>().Add(transaction);
+        return transaction;
+    }
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -90,6 +94,7 @@ public class MultipleBalanceEventTests
 
         return new TransactionState
         {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             Date = new DateOnly(2025, 1, 15),
             AccountingEntries =
             [

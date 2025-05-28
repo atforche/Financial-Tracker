@@ -1,6 +1,6 @@
-using Rest.Models.Account;
-using Rest.Models.AccountingPeriod;
-using Rest.Models.Fund;
+using Rest.Models.Accounts;
+using Rest.Models.Funds;
+using Rest.Models.Transactions;
 
 namespace Utilities.BulkDataUpload.Models;
 
@@ -39,6 +39,7 @@ internal sealed class TransactionAddedUploadModel : BalanceEventUploadModel
         ICollection<FundModel> existingFunds,
         ICollection<AccountModel> existingAccounts) => new()
         {
+            AccountingPeriodId = Guid.NewGuid(),
             Date = TransactionDate,
             DebitAccountId = DebitAccountName != null
                 ? existingAccounts.Single(account => account.Name == DebitAccountName).Id

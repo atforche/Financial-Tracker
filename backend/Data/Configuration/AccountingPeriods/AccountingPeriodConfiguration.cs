@@ -16,11 +16,6 @@ internal sealed class AccountingPeriodConfiguration : IEntityTypeConfiguration<A
         builder.Property(accountingPeriod => accountingPeriod.Id)
             .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
 
-        builder.HasMany(accountingPeriod => accountingPeriod.Transactions)
-            .WithOne(transaction => transaction.AccountingPeriod)
-            .HasForeignKey("AccountingPeriodId");
-        builder.Navigation(accountingPeriod => accountingPeriod.Transactions).AutoInclude();
-
         builder.HasMany(accountingPeriod => accountingPeriod.FundConversions)
             .WithOne()
             .HasForeignKey(fundConversion => fundConversion.AccountingPeriodId);

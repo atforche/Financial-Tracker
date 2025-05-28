@@ -39,7 +39,7 @@ public class AddAccountAction(
         }
         var newAccount = new Account(name,
             type,
-            accountingPeriod,
+            accountingPeriod.Id,
             date,
             balanceEventRepository.GetHighestEventSequenceOnDate(date) + 1,
             fundAmounts);

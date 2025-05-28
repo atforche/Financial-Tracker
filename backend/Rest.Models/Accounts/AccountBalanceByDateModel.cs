@@ -1,21 +1,17 @@
 using System.Text.Json.Serialization;
 using Domain.Accounts;
 
-namespace Rest.Models.AccountBalance;
+namespace Rest.Models.Accounts;
 
 /// <summary>
-/// REST model representing an Account Balance for a particular date
+/// REST model representing an <see cref="AccountBalanceByDate"/>
 /// </summary>
 public class AccountBalanceByDateModel
 {
-    /// <summary>
-    /// Date for this Account Balance By Date Model
-    /// </summary>
+    /// <inheritdoc cref="AccountBalanceByDate.Date"/>
     public DateOnly Date { get; init; }
 
-    /// <summary>
-    /// Account Balance for this Account Balance By Date Model
-    /// </summary>
+    /// <inheritdoc cref="AccountBalanceByDate.AccountBalance"/>
     public AccountBalanceModel AccountBalance { get; init; }
 
     /// <summary>

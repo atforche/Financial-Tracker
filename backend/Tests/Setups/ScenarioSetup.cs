@@ -6,6 +6,7 @@ using Domain.Actions;
 using Domain.BalanceEvents;
 using Domain.Funds;
 using Domain.Services;
+using Domain.Transactions;
 using Microsoft.Extensions.DependencyInjection;
 using Tests.Mocks;
 
@@ -37,6 +38,7 @@ internal abstract class ScenarioSetup : IDisposable
             serviceCollection.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
             serviceCollection.AddScoped<IFundRepository, FundRepository>();
             serviceCollection.AddScoped<IBalanceEventRepository, BalanceEventRepository>();
+            serviceCollection.AddScoped<ITransactionRepository, TransactionRepository>();
         }
         else
         {
@@ -44,6 +46,7 @@ internal abstract class ScenarioSetup : IDisposable
             serviceCollection.AddScoped<IAccountingPeriodRepository, MockAccountingPeriodRepository>();
             serviceCollection.AddScoped<IFundRepository, MockFundRepository>();
             serviceCollection.AddScoped<IBalanceEventRepository, MockBalanceEventRepository>();
+            serviceCollection.AddScoped<ITransactionRepository, MockTransactionRepository>();
         }
         serviceCollection.AddScoped<TestUnitOfWork>();
         serviceCollection.AddScoped<AddAccountingPeriodAction>();

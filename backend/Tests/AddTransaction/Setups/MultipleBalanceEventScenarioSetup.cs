@@ -2,6 +2,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.Scenarios;
 using Tests.Setups;
 
@@ -97,7 +98,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
     {
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.MultipleEventsSameDay)
         {
-            GetService<AddTransactionAction>().Run(AccountingPeriod,
+            Transaction transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
                 new DateOnly(2025, 1, 15),
                 Account,
                 DebtAccount,
@@ -108,10 +109,11 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                         Amount = 500.00m
                     }
                 ]);
+            GetService<ITransactionRepository>().Add(transaction);
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesFundBalanceNegative)
         {
-            GetService<AddTransactionAction>().Run(AccountingPeriod,
+            Transaction transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
                 new DateOnly(2025, 1, 10),
                 Account,
                 DebtAccount,
@@ -122,10 +124,11 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                         Amount = 1250.00m
                     }
                 ]);
+            GetService<ITransactionRepository>().Add(transaction);
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesAccountBalanceToZero)
         {
-            GetService<AddTransactionAction>().Run(AccountingPeriod,
+            Transaction transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
                 new DateOnly(2025, 1, 10),
                 Account,
                 DebtAccount,
@@ -136,10 +139,11 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                         Amount = 2500.00m
                     }
                 ]);
+            GetService<ITransactionRepository>().Add(transaction);
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesAccountBalanceNegative)
         {
-            GetService<AddTransactionAction>().Run(AccountingPeriod,
+            Transaction transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
                 new DateOnly(2025, 1, 10),
                 Account,
                 DebtAccount,
@@ -150,10 +154,11 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                         Amount = 2750.00m
                     }
                 ]);
+            GetService<ITransactionRepository>().Add(transaction);
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesFutureEventToMakeAccountBalanceNegative)
         {
-            GetService<AddTransactionAction>().Run(AccountingPeriod,
+            Transaction transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
                 new DateOnly(2025, 1, 20),
                 Account,
                 DebtAccount,
@@ -164,10 +169,11 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                         Amount = 2750.00m
                     }
                 ]);
+            GetService<ITransactionRepository>().Add(transaction);
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesAccountBalancesAtEndOfPeriodToBeNegative)
         {
-            GetService<AddTransactionAction>().Run(AccountingPeriod,
+            Transaction transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
                 new DateOnly(2025, 1, 10),
                 Account,
                 DebtAccount,
@@ -178,7 +184,8 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                         Amount = 2750.00m
                     }
                 ]);
-            GetService<AddTransactionAction>().Run(_futureAccountingPeriod,
+            GetService<ITransactionRepository>().Add(transaction);
+            transaction = GetService<AddTransactionAction>().Run(_futureAccountingPeriod,
                 new DateOnly(2025, 1, 10),
                 DebtAccount,
                 Account,
@@ -189,6 +196,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                         Amount = 2750.00m
                     }
                 ]);
+            GetService<ITransactionRepository>().Add(transaction);
         }
     }
 }

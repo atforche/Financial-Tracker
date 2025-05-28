@@ -2,7 +2,7 @@ using Data;
 using Domain.Actions;
 using Domain.Funds;
 using Microsoft.AspNetCore.Mvc;
-using Rest.Models.Fund;
+using Rest.Models.Funds;
 
 namespace Rest.Controllers;
 

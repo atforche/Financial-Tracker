@@ -26,10 +26,11 @@ public class BalanceEventRepository(DatabaseContext databaseContext) : IBalanceE
         IEnumerable<BalanceEvent> accountAddedBalanceEvents = databaseContext.Accounts
             .Select(account => account.AccountAddedBalanceEvent)
             .Where(accountAddedBalanceEvent => accountAddedBalanceEvent.AccountingPeriodId == accountingPeriodId);
+        IEnumerable<BalanceEvent> transactionBalanceEvents = databaseContext.Transactions
+            .Where(transaction => transaction.AccountingPeriodId == accountingPeriodId)
+            .SelectMany(transaction => transaction.TransactionBalanceEvents);
 
         AccountingPeriod accountingPeriod = databaseContext.AccountingPeriods.Single(accountingPeriod => accountingPeriod.Id == accountingPeriodId);
-        IEnumerable<BalanceEvent> transactionBalanceEvents = accountingPeriod.Transactions
-            .SelectMany(transaction => transaction.TransactionBalanceEvents);
         IEnumerable<BalanceEvent> fundConversions = accountingPeriod.FundConversions;
         IEnumerable<BalanceEvent> changeInValues = accountingPeriod.ChangeInValues;
 
@@ -49,8 +50,7 @@ public class BalanceEventRepository(DatabaseContext databaseContext) : IBalanceE
         IEnumerable<BalanceEvent> accountAddedBalanceEvents = databaseContext.Accounts
             .Select(account => account.AccountAddedBalanceEvent)
             .Where(accountAddedBalanceEvent => accountAddedBalanceEvent.EventDate >= dates.First() && accountAddedBalanceEvent.EventDate <= dates.Last());
-        IEnumerable<BalanceEvent> transactionBalanceEvents = databaseContext.AccountingPeriods
-            .SelectMany(accountingPeriod => accountingPeriod.Transactions)
+        IEnumerable<BalanceEvent> transactionBalanceEvents = databaseContext.Transactions
             .SelectMany(transaction => transaction.TransactionBalanceEvents)
             .Where(transactionBalanceEvent => transactionBalanceEvent.EventDate >= dates.First() && transactionBalanceEvent.EventDate <= dates.Last());
         IEnumerable<BalanceEvent> fundConversions = databaseContext.AccountingPeriods

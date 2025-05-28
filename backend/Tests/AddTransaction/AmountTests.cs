@@ -1,6 +1,6 @@
-using Domain.AccountingPeriods;
 using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
@@ -68,6 +68,7 @@ public class AmountTests
     private static TransactionState GetExpectedState(AddBalanceEventAmountScenarioSetup setup, decimal amount) =>
         new()
         {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             Date = new DateOnly(2025, 1, 15),
             AccountingEntries =
             [

@@ -1,8 +1,8 @@
 using Domain;
-using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
 using Domain.Services;
+using Domain.Transactions;
 using Tests.PostTransaction.Scenarios;
 using Tests.PostTransaction.Setups;
 using Tests.Validators;
@@ -70,6 +70,7 @@ public class AccountTypeTests
     private static TransactionState GetExpectedState(AccountTypeScenarioSetup setup) =>
         new()
         {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             Date = new DateOnly(2025, 1, 15),
             AccountingEntries =
             [

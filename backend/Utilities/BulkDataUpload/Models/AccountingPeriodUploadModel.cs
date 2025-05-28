@@ -1,4 +1,4 @@
-using Rest.Models.AccountingPeriod;
+using Rest.Models.AccountingPeriods;
 
 namespace Utilities.BulkDataUpload.Models;
 

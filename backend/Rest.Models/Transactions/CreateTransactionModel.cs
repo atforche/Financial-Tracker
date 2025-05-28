@@ -1,13 +1,17 @@
-using Rest.Models.FundAmount;
+using Domain.Transactions;
+using Rest.Models.Funds;
 
-namespace Rest.Models.AccountingPeriod;
+namespace Rest.Models.Transactions;
 
 /// <summary>
-/// REST model representing a request to create a Transaction
+/// REST model representing a request to create a <see cref="Transaction"/>
 /// </summary>
 public class CreateTransactionModel
 {
-    /// <inheritdoc cref="Domain.AccountingPeriods.Transaction.Date"/>
+    /// <inheritdoc cref="Transaction.AccountingPeriodId"/>
+    public required Guid AccountingPeriodId { get; init; }
+
+    /// <inheritdoc cref="Transaction.Date"/>
     public required DateOnly Date { get; init; }
 
     /// <summary>
@@ -20,6 +24,6 @@ public class CreateTransactionModel
     /// </summary>
     public Guid? CreditAccountId { get; init; }
 
-    /// <inheritdoc cref="Domain.AccountingPeriods.Transaction.AccountingEntries"/>
+    /// <inheritdoc cref="Transaction.AccountingEntries"/>
     public required IReadOnlyCollection<CreateFundAmountModel> AccountingEntries { get; init; }
 }

@@ -1,6 +1,6 @@
-using Domain.AccountingPeriods;
 using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -29,10 +29,12 @@ public class DefaultTests
                     Amount = 250.00m,
                 }
             ]);
+        setup.GetService<ITransactionRepository>().Add(transaction);
         PostTransaction(setup, transaction);
         new TransactionValidator().Validate(transaction,
             new TransactionState
             {
+                AccountingPeriodId = setup.AccountingPeriod.Id,
                 Date = new DateOnly(2025, 1, 15),
                 AccountingEntries =
                 [

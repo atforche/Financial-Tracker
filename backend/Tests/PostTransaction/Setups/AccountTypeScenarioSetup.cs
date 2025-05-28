@@ -2,6 +2,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.PostTransaction.Scenarios;
 using Tests.Setups;
 
@@ -85,5 +86,6 @@ internal sealed class AccountTypeScenarioSetup : ScenarioSetup
                     Amount = 500.00m
                 }
             ]);
+        GetService<ITransactionRepository>().Add(Transaction);
     }
 }

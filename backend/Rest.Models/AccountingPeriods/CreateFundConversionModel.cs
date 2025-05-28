@@ -1,7 +1,9 @@
-namespace Rest.Models.AccountingPeriod;
+using Domain.AccountingPeriods;
+
+namespace Rest.Models.AccountingPeriods;
 
 /// <summary>
-/// REST model representing a request to create a Fund Conversion
+/// REST model representing a request to create a <see cref="FundConversion"/>
 /// </summary>
 public class CreateFundConversionModel
 {
@@ -11,12 +13,12 @@ public class CreateFundConversionModel
     /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.EventDate"/>
     public required DateOnly EventDate { get; init; }
 
-    /// <inheritdoc cref="Domain.AccountingPeriods.FundConversion.FromFund"/>
+    /// <inheritdoc cref="FundConversion.FromFund"/>
     public required Guid FromFundId { get; init; }
 
-    /// <inheritdoc cref="Domain.AccountingPeriods.FundConversion.ToFund"/>
+    /// <inheritdoc cref="FundConversion.ToFund"/>
     public required Guid ToFundId { get; init; }
 
-    /// <inheritdoc cref="Domain.AccountingPeriods.FundConversion.Amount"/>
+    /// <inheritdoc cref="FundConversion.Amount"/>
     public required decimal Amount { get; init; }
 }

@@ -1,6 +1,6 @@
-using Domain.AccountingPeriods;
 using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.AddTransaction.Scenarios;
 using Tests.AddTransaction.Setups;
 using Tests.Validators;
@@ -70,6 +70,7 @@ public class FundTest
     private static TransactionState GetExpectedState(FundScenarioSetup setup) =>
         new()
         {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             Date = new DateOnly(2025, 1, 15),
             AccountingEntries = setup.Funds.Select(fund => new FundAmountState
             {

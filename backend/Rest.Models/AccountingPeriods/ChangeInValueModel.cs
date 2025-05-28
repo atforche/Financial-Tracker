@@ -1,11 +1,12 @@
 using System.Text.Json.Serialization;
-using Rest.Models.Account;
-using Rest.Models.FundAmount;
+using Domain.AccountingPeriods;
+using Rest.Models.Accounts;
+using Rest.Models.Funds;
 
-namespace Rest.Models.AccountingPeriod;
+namespace Rest.Models.AccountingPeriods;
 
 /// <summary>
-/// REST model representing a Change In Value
+/// REST model representing a <see cref="ChangeInValue"/>
 /// </summary>
 public class ChangeInValueModel
 {
@@ -18,7 +19,7 @@ public class ChangeInValueModel
     /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.EventDate"/>
     public DateOnly EventDate { get; init; }
 
-    /// <inheritdoc cref="Domain.AccountingPeriods.ChangeInValue.AccountingEntry"/>
+    /// <inheritdoc cref="ChangeInValue.AccountingEntry"/>
     public FundAmountModel AccountingEntry { get; init; }
 
     /// <summary>
@@ -40,7 +41,7 @@ public class ChangeInValueModel
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="changeInValue">Change In Value entity to builder this Change In Value REST model from</param>
-    public ChangeInValueModel(Domain.AccountingPeriods.ChangeInValue changeInValue)
+    public ChangeInValueModel(ChangeInValue changeInValue)
     {
         Id = changeInValue.Id.Value;
         Account = new AccountModel(changeInValue.Account);

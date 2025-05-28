@@ -1,7 +1,7 @@
 using Domain.Accounts;
 using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
-using Rest.Models.AccountBalance;
+using Rest.Models.Accounts;
 using Rest.Models.DateRange;
 
 namespace Rest.Controllers;

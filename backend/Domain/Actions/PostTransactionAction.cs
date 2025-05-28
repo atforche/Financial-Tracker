@@ -2,15 +2,17 @@ using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
+using Domain.Transactions;
 
 namespace Domain.Actions;
 
 /// <summary>
 /// Action class that posts a Transaction
 /// </summary>
-/// <param name="balanceEventRepository">Balance Event Repository</param>
-/// <param name="balanceEventDateValidator">Balance Event Date Validator</param>
-public class PostTransactionAction(IBalanceEventRepository balanceEventRepository, BalanceEventDateValidator balanceEventDateValidator)
+public class PostTransactionAction(
+    IAccountingPeriodRepository accountingPeriodRepository,
+    IBalanceEventRepository balanceEventRepository,
+    BalanceEventDateValidator balanceEventDateValidator)
 {
     /// <summary>
     /// Runs this action
@@ -50,7 +52,10 @@ public class PostTransactionAction(IBalanceEventRepository balanceEventRepositor
         [NotNullWhen(false)] out Exception? exception)
     {
         Account? account = transaction.GetAccount(accountType) ?? throw new InvalidOperationException();
-        _ = balanceEventDateValidator.Validate(transaction.AccountingPeriod, [account], postingDate, out exception);
+        _ = balanceEventDateValidator.Validate(accountingPeriodRepository.FindById(transaction.AccountingPeriodId),
+            [account],
+            postingDate,
+            out exception);
         // Validate that this Transaction hasn't already been posted for the provided Account
         if (transaction.TransactionBalanceEvents.Any(balanceEvent => balanceEvent.AccountType == accountType &&
                 balanceEvent.EventType == TransactionBalanceEventType.Posted))

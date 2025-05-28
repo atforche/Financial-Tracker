@@ -2,6 +2,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.Scenarios;
 
 namespace Tests.Setups;
@@ -76,6 +77,7 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
                     Amount = 250.00m
                 }
             ]);
+        GetService<ITransactionRepository>().Add(transaction);
         GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, transaction.Date);
 
         Transaction otherPeriodTransaction = GetService<AddTransactionAction>().Run(
@@ -91,6 +93,7 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
                 }
             ]
         );
+        GetService<ITransactionRepository>().Add(otherPeriodTransaction);
         GetService<PostTransactionAction>().Run(otherPeriodTransaction, TransactionAccountType.Debit, otherPeriodTransaction.Date);
     }
 }

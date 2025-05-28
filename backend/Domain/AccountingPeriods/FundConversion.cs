@@ -58,21 +58,21 @@ public class FundConversion : BalanceEvent
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="accountingPeriod">Parent Accounting Period for this Fund Conversion</param>
+    /// <param name="accountingPeriodId">Accounting Period ID for this Fund Conversion</param>
     /// <param name="eventDate">Event Date for this Fund Conversion</param>
     /// <param name="eventSequence">Event Sequence for this Fund Conversion</param>
     /// <param name="account">Account for this Fund Conversion</param>
     /// <param name="fromFund">From Fund for this Fund Conversion</param>
     /// <param name="toFund">To Fund for this Fund Conversion</param>
     /// <param name="amount">Amount for this Fund Conversion</param>
-    internal FundConversion(AccountingPeriod accountingPeriod,
+    internal FundConversion(AccountingPeriodId accountingPeriodId,
         DateOnly eventDate,
         int eventSequence,
         Account account,
         Fund fromFund,
         Fund toFund,
         decimal amount)
-        : base(accountingPeriod, eventDate, eventSequence, account)
+        : base(accountingPeriodId, eventDate, eventSequence, account)
     {
         FromFund = fromFund;
         ToFund = toFund;

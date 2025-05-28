@@ -1,23 +1,24 @@
 using System.Text.Json.Serialization;
-using Rest.Models.FundAmount;
+using Domain.Accounts;
+using Rest.Models.Funds;
 
-namespace Rest.Models.AccountBalance;
+namespace Rest.Models.Accounts;
 
 /// <summary>
-/// REST model representing an Account's balance at a particular moment in time
+/// REST model representing an <see cref="AccountBalance"/>
 /// </summary>
 public class AccountBalanceModel
 {
-    /// <inheritdoc cref="Domain.Accounts.AccountBalance.FundBalances"/>
+    /// <inheritdoc cref="AccountBalance.FundBalances"/>
     public IReadOnlyCollection<FundAmountModel> FundBalances { get; init; }
 
-    /// <inheritdoc cref="Domain.Accounts.AccountBalance.PendingFundBalanceChanges"/>
+    /// <inheritdoc cref="AccountBalance.PendingFundBalanceChanges"/>
     public IReadOnlyCollection<FundAmountModel> PendingFundBalanceChanges { get; init; }
 
-    /// <inheritdoc cref="Domain.Accounts.AccountBalance.Balance"/>
+    /// <inheritdoc cref="AccountBalance.Balance"/>
     public decimal Balance { get; init; }
 
-    /// <inheritdoc cref="Domain.Accounts.AccountBalance.TotalPendingBalanceChange"/>
+    /// <inheritdoc cref="AccountBalance.TotalPendingBalanceChange"/>
     public decimal TotalPendingBalanceChange { get; init; }
 
     /// <summary>
@@ -39,7 +40,7 @@ public class AccountBalanceModel
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="accountBalance">Account Balance value object to build this Account Balance REST model from</param>
-    public AccountBalanceModel(Domain.Accounts.AccountBalance accountBalance)
+    public AccountBalanceModel(AccountBalance accountBalance)
     {
         FundBalances = accountBalance.FundBalances.Select(fundAmount => new FundAmountModel(fundAmount)).ToList();
         PendingFundBalanceChanges = accountBalance.PendingFundBalanceChanges

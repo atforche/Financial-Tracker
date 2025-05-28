@@ -2,6 +2,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.GetAccountBalanceByAccountingPeriodTests.Scenarios;
 using Tests.Setups;
 
@@ -67,7 +68,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
 
         if (scenario == AccountingPeriodScenario.PriorPeriodHasPendingBalanceChanges)
         {
-            GetService<AddTransactionAction>().Run(secondAccountingPeriod,
+            Transaction transaction = GetService<AddTransactionAction>().Run(secondAccountingPeriod,
                 new DateOnly(2025, 1, 15),
                 Account,
                 null,
@@ -78,6 +79,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
                         Amount = 500.00m
                     }
                 ]);
+            GetService<ITransactionRepository>().Add(transaction);
         }
     }
 }

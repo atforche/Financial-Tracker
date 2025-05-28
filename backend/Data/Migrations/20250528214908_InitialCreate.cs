@@ -57,7 +57,7 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Transaction",
+                name: "Transactions",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -66,9 +66,9 @@ namespace Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Transaction", x => x.Id);
+                    table.PrimaryKey("PK_Transactions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Transaction_AccountingPeriods_AccountingPeriodId",
+                        name: "FK_Transactions_AccountingPeriods_AccountingPeriodId",
                         column: x => x.AccountingPeriodId,
                         principalTable: "AccountingPeriods",
                         principalColumn: "Id",
@@ -191,9 +191,9 @@ namespace Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TransactionBalanceEvent_Transaction_TransactionId",
+                        name: "FK_TransactionBalanceEvent_Transactions_TransactionId",
                         column: x => x.TransactionId,
-                        principalTable: "Transaction",
+                        principalTable: "Transactions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -230,9 +230,9 @@ namespace Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_FundAmount_Transaction_TransactionId",
+                        name: "FK_FundAmount_Transactions_TransactionId",
                         column: x => x.TransactionId,
-                        principalTable: "Transaction",
+                        principalTable: "Transactions",
                         principalColumn: "Id");
                 });
 
@@ -372,11 +372,6 @@ namespace Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transaction_AccountingPeriodId",
-                table: "Transaction",
-                column: "AccountingPeriodId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_TransactionBalanceEvent_AccountId",
                 table: "TransactionBalanceEvent",
                 column: "AccountId");
@@ -396,6 +391,11 @@ namespace Data.Migrations
                 name: "IX_TransactionBalanceEvent_TransactionId",
                 table: "TransactionBalanceEvent",
                 column: "TransactionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_AccountingPeriodId",
+                table: "Transactions",
+                column: "AccountingPeriodId");
         }
 
         /// <inheritdoc />
@@ -420,7 +420,7 @@ namespace Data.Migrations
                 name: "Funds");
 
             migrationBuilder.DropTable(
-                name: "Transaction");
+                name: "Transactions");
 
             migrationBuilder.DropTable(
                 name: "Accounts");

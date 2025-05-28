@@ -21,7 +21,6 @@ public class DefaultTests
                 Year = setup.AccountingPeriod.Year,
                 Month = setup.AccountingPeriod.Month,
                 IsOpen = true,
-                Transactions = [],
                 FundConversions = [],
                 ChangeInValues = [],
             });

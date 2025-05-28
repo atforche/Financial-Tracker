@@ -3,6 +3,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
 using Domain.Funds;
+using Domain.Transactions;
 
 namespace Domain.Actions;
 
@@ -42,7 +43,7 @@ public class AddTransactionAction(
         {
             throw exception;
         }
-        var transaction = new Transaction(accountingPeriod,
+        var transaction = new Transaction(accountingPeriod.Id,
             date,
             balanceEventRepository.GetHighestEventSequenceOnDate(date) + 1,
             debitAccount,
@@ -55,7 +56,6 @@ public class AddTransactionAction(
                 throw exception;
             }
         }
-        accountingPeriod.AddTransaction(transaction);
         return transaction;
     }
 

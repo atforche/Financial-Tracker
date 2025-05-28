@@ -39,7 +39,7 @@ public class AddFundConversionAction(
         {
             throw exception;
         }
-        var fundConversion = new FundConversion(accountingPeriod,
+        var fundConversion = new FundConversion(accountingPeriod.Id,
             eventDate,
             balanceEventRepository.GetHighestEventSequenceOnDate(eventDate) + 1,
             account,

@@ -1,11 +1,12 @@
 using System.Text.Json.Serialization;
-using Rest.Models.Account;
-using Rest.Models.Fund;
+using Domain.AccountingPeriods;
+using Rest.Models.Accounts;
+using Rest.Models.Funds;
 
-namespace Rest.Models.AccountingPeriod;
+namespace Rest.Models.AccountingPeriods;
 
 /// <summary>
-/// REST model representing a Fund Conversion
+/// REST model representing a <see cref="FundConversion"/>
 /// </summary>
 public class FundConversionModel
 {
@@ -18,13 +19,13 @@ public class FundConversionModel
     /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.EventDate"/>
     public DateOnly EventDate { get; init; }
 
-    /// <inheritdoc cref="Domain.AccountingPeriods.FundConversion.FromFund"/>
+    /// <inheritdoc cref="FundConversion.FromFund"/>
     public FundModel FromFund { get; init; }
 
-    /// <inheritdoc cref="Domain.AccountingPeriods.FundConversion.ToFund"/>
+    /// <inheritdoc cref="FundConversion.ToFund"/>
     public FundModel ToFund { get; init; }
 
-    /// <inheritdoc cref="Domain.AccountingPeriods.FundConversion.Amount"/>
+    /// <inheritdoc cref="FundConversion.Amount"/>
     public decimal Amount { get; init; }
 
     /// <summary>
@@ -50,7 +51,7 @@ public class FundConversionModel
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="fundConversion">Fund Conversion entity to build this Fund Conversion REST model from</param>
-    public FundConversionModel(Domain.AccountingPeriods.FundConversion fundConversion)
+    public FundConversionModel(FundConversion fundConversion)
     {
         Id = fundConversion.Id.Value;
         Account = new AccountModel(fundConversion.Account);

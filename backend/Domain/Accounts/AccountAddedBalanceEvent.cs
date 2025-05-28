@@ -27,18 +27,18 @@ public class AccountAddedBalanceEvent : BalanceEvent
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="accountingPeriod">Accounting Period for this Account Added Balance Event</param>
+    /// <param name="accountingPeriodId">Accounting Period ID for this Account Added Balance Event</param>
     /// <param name="eventDate">Event Date for this Account Added Balance Event</param>
     /// <param name="eventSequence">Event Sequence for this Account Added Balance Event</param>
     /// <param name="account">Account for this Account Added Balance Event</param>
     /// <param name="startingFundBalances">Starting Fund Balances for this Account Added Balance Event</param>
     internal AccountAddedBalanceEvent(
-        AccountingPeriod accountingPeriod,
+        AccountingPeriodId accountingPeriodId,
         DateOnly eventDate,
         int eventSequence,
         Account account,
         IEnumerable<FundAmount> startingFundBalances)
-        : base(accountingPeriod, eventDate, eventSequence, account) =>
+        : base(accountingPeriodId, eventDate, eventSequence, account) =>
         FundAmounts = startingFundBalances.ToList();
 
     /// <summary>

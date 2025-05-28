@@ -63,13 +63,13 @@ public abstract class BalanceEvent : EntityOld, IComparable<BalanceEvent>
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="accountingPeriod">Accounting Period for this Balance Event</param>
+    /// <param name="accountingPeriodId">Accounting Period ID for this Balance Event</param>
     /// <param name="eventDate">Event Date for this Balance Event</param>
     /// <param name="eventSequence">Event Sequence for this Balance Event</param>
     /// <param name="account">Account for this Balance Event</param>
-    protected BalanceEvent(AccountingPeriod accountingPeriod, DateOnly eventDate, int eventSequence, Account account)
+    protected BalanceEvent(AccountingPeriodId accountingPeriodId, DateOnly eventDate, int eventSequence, Account account)
     {
-        AccountingPeriodId = accountingPeriod.Id;
+        AccountingPeriodId = accountingPeriodId;
         EventDate = eventDate;
         EventSequence = eventSequence;
         Account = account;

@@ -1,6 +1,6 @@
-using Domain.AccountingPeriods;
 using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
@@ -21,6 +21,7 @@ public class EventDateTests
     {
         using var setup = new AddBalanceEventDateScenarioSetup(eventDate);
         Transaction transaction = AddTransaction(setup);
+        setup.GetService<ITransactionRepository>().Add(transaction);
         if (!AddBalanceEventDateScenarios.IsValid(eventDate) || eventDate < new DateOnly(2025, 1, 1))
         {
             Assert.Throws<InvalidOperationException>(() => PostTransaction(setup, transaction));
@@ -64,6 +65,7 @@ public class EventDateTests
     private static TransactionState GetExpectedState(AddBalanceEventDateScenarioSetup setup) =>
         new()
         {
+            AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
             Date = new DateOnly(2025, 1, 1),
             AccountingEntries =
             [

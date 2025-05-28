@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Domain.Transactions;
 
 namespace Tests.Validators;
 
@@ -11,6 +12,7 @@ internal sealed class TransactionValidator : EntityValidator<Transaction, Transa
     public override void Validate(Transaction entity, TransactionState expectedState)
     {
         Assert.NotEqual(Guid.Empty, entity.Id.Value);
+        Assert.Equal(expectedState.AccountingPeriodId, entity.AccountingPeriodId);
         Assert.Equal(expectedState.Date, entity.Date);
         new FundAmountValidator().Validate(entity.AccountingEntries, expectedState.AccountingEntries);
         new TransactionBalanceEventValidator().Validate(entity.TransactionBalanceEvents, expectedState.TransactionBalanceEvents);
@@ -22,6 +24,11 @@ internal sealed class TransactionValidator : EntityValidator<Transaction, Transa
 /// </summary>
 internal sealed record TransactionState
 {
+    /// <summary>
+    /// Accounting Period ID for this Transaction Balance Event
+    /// </summary>
+    public required AccountingPeriodId AccountingPeriodId { get; init; }
+
     /// <summary>
     /// Date for this Transaction
     /// </summary>

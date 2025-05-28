@@ -1,18 +1,15 @@
 using System.Text.Json.Serialization;
-using Domain;
-using Domain.AccountingPeriods;
-using Domain.BalanceEvents;
-using Rest.Models.Account;
-using Rest.Models.FundAmount;
+using Domain.Transactions;
+using Rest.Models.Funds;
 
-namespace Rest.Models.AccountingPeriod;
+namespace Rest.Models.Transactions;
 
 /// <summary>
-/// REST model representing a Transaction
+/// REST model representing a <see cref="Transaction"/>
 /// </summary>
 public class TransactionModel
 {
-    /// <inheritdoc cref="EntityOld.Id"/>
+    /// <inheritdoc cref="TransactionId"/>
     public Guid Id { get; init; }
 
     /// <inheritdoc cref="Transaction.Date"/>
@@ -65,48 +62,5 @@ public class TransactionModel
             ? new TransactionAccountDetailModel(transaction, TransactionAccountType.Credit)
             : null;
         AccountingEntries = transaction.AccountingEntries.Select(fundAmount => new FundAmountModel(fundAmount)).ToList();
-    }
-}
-
-/// <summary>
-/// REST model representing a Transaction Account Detail
-/// </summary>
-public class TransactionAccountDetailModel
-{
-    /// <inheritdoc cref="BalanceEvent.Account"/>
-    public AccountModel Account { get; init; }
-
-    /// <summary>
-    /// Statement date for this Transaction Account Detail once it has been posted
-    /// </summary>
-    public DateOnly? PostedStatementDate { get; init; }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    [JsonConstructor]
-    public TransactionAccountDetailModel(AccountModel account, DateOnly? postedStatementDate)
-    {
-        Account = account;
-        PostedStatementDate = postedStatementDate;
-    }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    /// <param name="transaction">Transaction entity to build this Transaction Account Detail REST model from</param>
-    /// <param name="type">Transaction Account Type for this Transaction Account Detail model</param>
-    public TransactionAccountDetailModel(Transaction transaction, TransactionAccountType type)
-    {
-        var balanceEvents = transaction.TransactionBalanceEvents
-            .Where(balanceEvent => balanceEvent.AccountType == type).ToList();
-        if (balanceEvents.Count == 0)
-        {
-            throw new InvalidOperationException();
-        }
-        Account = new AccountModel(balanceEvents.First().Account);
-        PostedStatementDate = balanceEvents
-            .SingleOrDefault(balanceEvent => balanceEvent.EventType == TransactionBalanceEventType.Posted)
-            ?.EventDate;
     }
 }

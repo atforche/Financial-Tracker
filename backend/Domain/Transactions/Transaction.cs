@@ -1,7 +1,8 @@
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 
-namespace Domain.AccountingPeriods;
+namespace Domain.Transactions;
 
 /// <summary>
 /// Entity class representing a Transaction
@@ -13,15 +14,15 @@ namespace Domain.AccountingPeriods;
 /// 3. Money is debited from one Account and credited to another Account
 /// If money moves from one Account to another, the amount debited is equal to the amount credited. 
 /// </remarks>
-public class Transaction : EntityOld
+public class Transaction : Entity<TransactionId>
 {
     private readonly List<FundAmount> _accountingEntries;
     private readonly List<TransactionBalanceEvent> _transactionBalanceEvents;
 
     /// <summary>
-    /// Accounting Period for this Transaction
+    /// Accounting Period ID for this Transaction
     /// </summary>
-    public AccountingPeriod AccountingPeriod { get; private set; }
+    public AccountingPeriodId AccountingPeriodId { get; private set; }
 
     /// <summary>
     /// Date for this Transaction
@@ -41,20 +42,21 @@ public class Transaction : EntityOld
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="accountingPeriod">Parent Accounting Period for this Transaction</param>
+    /// <param name="accountingPeriodId">Accounting Period ID for this Transaction</param>
     /// <param name="eventDate">Date for this Transaction</param>
     /// <param name="eventSequence">Event Sequence for the initial Transaction Balance Event</param>
     /// <param name="accountingEntries">Accounting Entries for this Transaction</param>
     /// <param name="debitAccount">Debit Account for this Transaction</param>
     /// <param name="creditAccount">Credit Account for this Transaction</param>
-    internal Transaction(AccountingPeriod accountingPeriod,
+    internal Transaction(AccountingPeriodId accountingPeriodId,
         DateOnly eventDate,
         int eventSequence,
         Account? debitAccount,
         Account? creditAccount,
         IEnumerable<FundAmount> accountingEntries)
+        : base(new TransactionId(Guid.NewGuid()))
     {
-        AccountingPeriod = accountingPeriod;
+        AccountingPeriodId = accountingPeriodId;
         Date = eventDate;
         _accountingEntries = accountingEntries.ToList();
         _transactionBalanceEvents = [];
@@ -105,9 +107,9 @@ public class Transaction : EntityOld
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private Transaction()
+    private Transaction() : base()
     {
-        AccountingPeriod = null!;
+        AccountingPeriodId = null!;
         _accountingEntries = [];
         _transactionBalanceEvents = [];
     }

@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Domain.Transactions;
 
 namespace Tests.Validators;
 

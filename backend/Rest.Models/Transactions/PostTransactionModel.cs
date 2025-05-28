@@ -1,15 +1,13 @@
-using Domain.AccountingPeriods;
+using Domain.Transactions;
 
-namespace Rest.Models.AccountingPeriod;
+namespace Rest.Models.Transactions;
 
 /// <summary>
-/// REST model representing a request to post a Transaction
+/// REST model representing a request to post a <see cref="Transaction"/>
 /// </summary>
 public class PostTransactionModel
 {
-    /// <summary>
-    /// Type of the Account to post this Transaction in
-    /// </summary>
+    /// <inheritdoc cref="TransactionBalanceEvent.AccountType"/>
     public required TransactionAccountType AccountToPost { get; init; }
 
     /// <summary>

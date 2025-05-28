@@ -2,6 +2,7 @@ using Domain;
 using Domain.Actions;
 using Domain.Funds;
 using Domain.Services;
+using Domain.Transactions;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -19,7 +20,7 @@ public class DefaultTests
     public void RunTest()
     {
         using var setup = new DefaultScenarioSetup();
-        setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
+        Transaction transaction = setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
             setup.Account,
             null,
@@ -30,6 +31,7 @@ public class DefaultTests
                     Amount = 250.00m
                 }
             ]);
+        setup.GetService<ITransactionRepository>().Add(transaction);
         new AccountBalanceByDateValidator().Validate(
             setup.GetService<AccountBalanceService>().GetAccountBalancesByDate(setup.Account,
                 new DateRange(new DateOnly(2025, 1, 14), new DateOnly(2025, 1, 16))),

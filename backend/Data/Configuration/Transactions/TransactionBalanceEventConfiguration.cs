@@ -1,7 +1,8 @@
 using Domain.AccountingPeriods;
+using Domain.Transactions;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Data.Configuration.AccountingPeriods;
+namespace Data.Configuration.Transactions;
 
 /// <summary>
 /// EF Core entity configuration for a <see cref="TransactionBalanceEvent"/>

@@ -1,5 +1,5 @@
-using Domain.AccountingPeriods;
 using Domain.Actions;
+using Domain.Transactions;
 using Tests.CloseAccountingPeriod.Scenarios;
 using Tests.CloseAccountingPeriod.Setups;
 using Tests.Validators;
@@ -26,6 +26,7 @@ public class BalanceEventTests
         }
         CloseAccountingPeriod(setup);
         new AccountingPeriodValidator().Validate(setup.AccountingPeriod, GetExpectedState(scenario, setup));
+        new TransactionValidator().Validate(setup.Transaction != null ? [setup.Transaction] : [], GetExpectedTransactionStates(scenario, setup));
         new AccountBalanceCheckpointValidator().Validate(setup.Account.AccountBalanceCheckpoints, []);
     }
 
@@ -48,7 +49,6 @@ public class BalanceEventTests
             Year = setup.AccountingPeriod.Year,
             Month = setup.AccountingPeriod.Month,
             IsOpen = false,
-            Transactions = GetExpectedTransactionStates(scenario, setup),
             FundConversions = GetExpectedFundConversionStates(scenario, setup),
             ChangeInValues = GetExpectedChangeInValueStates(scenario, setup),
         };
@@ -91,6 +91,7 @@ public class BalanceEventTests
         }
         expectedTransactionStates.Add(new TransactionState
         {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             Date = new DateOnly(2025, 1, 15),
             AccountingEntries =
             [

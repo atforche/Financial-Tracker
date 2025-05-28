@@ -1,17 +1,17 @@
 using System.Text.Json.Serialization;
 using Domain.Funds;
 
-namespace Rest.Models.Fund;
+namespace Rest.Models.Funds;
 
 /// <summary>
-/// REST model representing a Fund
+/// REST model representing a <see cref="Fund"/>
 /// </summary>
 public class FundModel
 {
     /// <inheritdoc cref="FundId"/>
     public Guid Id { get; init; }
 
-    /// <inheritdoc cref="Domain.Funds.Fund.Name"/>
+    /// <inheritdoc cref="Fund.Name"/>
     public string Name { get; init; }
 
     /// <summary>
@@ -28,7 +28,7 @@ public class FundModel
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="fund">Fund entity to build this Fund REST model from</param>
-    public FundModel(Domain.Funds.Fund fund)
+    public FundModel(Fund fund)
     {
         Id = fund.Id.Value;
         Name = fund.Name;

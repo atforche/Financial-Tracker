@@ -2,7 +2,7 @@ using Domain.Accounts;
 using Domain.BalanceEvents;
 using Domain.Funds;
 
-namespace Domain.AccountingPeriods;
+namespace Domain.Transactions;
 
 /// <summary>
 /// Entity class representing a Transaction Balance Event
@@ -79,7 +79,7 @@ public sealed class TransactionBalanceEvent : BalanceEvent
         Account account,
         TransactionBalanceEventType eventType,
         TransactionAccountType accountType)
-        : base(transaction.AccountingPeriod, eventDate, eventSequence, account)
+        : base(transaction.AccountingPeriodId, eventDate, eventSequence, account)
     {
         Transaction = transaction;
         EventType = eventType;

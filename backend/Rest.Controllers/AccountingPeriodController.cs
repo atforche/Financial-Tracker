@@ -4,7 +4,7 @@ using Domain.Accounts;
 using Domain.Actions;
 using Domain.Funds;
 using Microsoft.AspNetCore.Mvc;
-using Rest.Models.AccountingPeriod;
+using Rest.Models.AccountingPeriods;
 
 namespace Rest.Controllers;
 
@@ -17,8 +17,6 @@ public sealed class AccountingPeriodController(
     UnitOfWork unitOfWork,
     AddAccountingPeriodAction addAccountingPeriodAction,
     CloseAccountingPeriodAction closeAccountingPeriodAction,
-    AddTransactionAction addTransactionAction,
-    PostTransactionAction postTransactionAction,
     AddFundConversionAction addFundConversionAction,
     AddChangeInValueAction addChangeInValueAction,
     IAccountingPeriodRepository accountingPeriodRepository,
@@ -46,18 +44,6 @@ public sealed class AccountingPeriodController(
     {
         AccountingPeriodId id = accountingPeriodIdFactory.Create(accountingPeriodId);
         return Ok(new AccountingPeriodModel(accountingPeriodRepository.FindById(id)));
-    }
-
-    /// <summary>
-    /// Retrieves all the Transactions for the provided Accounting Period
-    /// </summary>
-    /// <param name="accountingPeriodId">ID of the Accounting Period</param>
-    /// <returns>A collection of Transactions that fall within the provided Accounting Period</returns>
-    [HttpGet("{accountingPeriodId}/Transactions")]
-    public IActionResult GetTransactions(Guid accountingPeriodId)
-    {
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(accountingPeriodId));
-        return Ok(accountingPeriod.Transactions.Select(transaction => new TransactionModel(transaction)));
     }
 
     /// <summary>
@@ -98,62 +84,6 @@ public sealed class AccountingPeriodController(
         accountingPeriodRepository.Add(newAccountingPeriod);
         await unitOfWork.SaveChangesAsync();
         return Ok(new AccountingPeriodModel(newAccountingPeriod));
-    }
-
-    /// <summary>
-    /// Creates a new Transaction with the provided properties
-    /// </summary>
-    /// <param name="accountingPeriodId">ID of the Accounting Period</param>
-    /// <param name="createTransactionModel">Request to create a Transaction</param>
-    /// <returns>The created Transaction</returns>
-    [HttpPost("{accountingPeriodId}/Transactions")]
-    public async Task<IActionResult> CreateTransactionAsync(Guid accountingPeriodId, CreateTransactionModel createTransactionModel)
-    {
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(accountingPeriodId));
-
-        Account? debitAccount = null;
-        if (createTransactionModel.DebitAccountId != null)
-        {
-            debitAccount = accountRepository.FindById(accountIdFactory.Create(createTransactionModel.DebitAccountId.Value));
-        }
-        Account? creditAccount = null;
-        if (createTransactionModel.CreditAccountId != null)
-        {
-            creditAccount = accountRepository.FindById(accountIdFactory.Create(createTransactionModel.CreditAccountId.Value));
-        }
-        Transaction newTransaction = addTransactionAction.Run(accountingPeriod,
-            createTransactionModel.Date,
-            debitAccount,
-            creditAccount,
-            createTransactionModel.AccountingEntries.Select(entry => new FundAmount
-            {
-                FundId = fundIdFactory.Create(entry.FundId),
-                Amount = entry.Amount,
-            }));
-        await unitOfWork.SaveChangesAsync();
-        return Ok(new TransactionModel(newTransaction));
-    }
-
-    /// <summary>
-    /// Posts the provided Transaction in the provided Account
-    /// </summary>
-    /// <param name="accountingPeriodId">ID of the Accounting Period</param>
-    /// <param name="transactionId">ID of the Transaction</param>
-    /// <param name="postTransactionModel">Request to post a Transaction</param>
-    /// <returns>The posted Transaction</returns>
-    [HttpPost("{accountingPeriodId}/Transactions/{transactionId}")]
-    public async Task<IActionResult> PostTransactionAsync(Guid accountingPeriodId, Guid transactionId, PostTransactionModel postTransactionModel)
-    {
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(accountingPeriodId));
-        Transaction? transaction = accountingPeriod.Transactions
-            .SingleOrDefault(transaction => transaction.Id.Value == transactionId);
-        if (transaction == null)
-        {
-            return NotFound();
-        }
-        postTransactionAction.Run(transaction, postTransactionModel.AccountToPost, postTransactionModel.PostedStatementDate);
-        await unitOfWork.SaveChangesAsync();
-        return Ok(new TransactionModel(transaction));
     }
 
     /// <summary>

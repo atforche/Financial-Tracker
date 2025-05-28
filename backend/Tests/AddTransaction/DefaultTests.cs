@@ -1,6 +1,6 @@
-using Domain.AccountingPeriods;
 using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -32,6 +32,7 @@ public class DefaultTests
         new TransactionValidator().Validate(transaction,
             new TransactionState
             {
+                AccountingPeriodId = setup.AccountingPeriod.Id,
                 Date = new DateOnly(2025, 1, 15),
                 AccountingEntries =
                 [

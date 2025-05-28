@@ -1,9 +1,10 @@
-using Rest.Models.FundAmount;
+using Domain.AccountingPeriods;
+using Rest.Models.Funds;
 
-namespace Rest.Models.AccountingPeriod;
+namespace Rest.Models.AccountingPeriods;
 
 /// <summary>
-/// REST model representing a request to create a Change In Value
+/// REST model representing a request to create a <see cref="ChangeInValue"/>
 /// </summary>
 public class CreateChangeInValueModel
 {
@@ -13,6 +14,6 @@ public class CreateChangeInValueModel
     /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.EventDate"/>
     public required DateOnly EventDate { get; init; }
 
-    /// <inheritdoc cref="Domain.AccountingPeriods.ChangeInValue.AccountingEntry"/>
+    /// <inheritdoc cref="ChangeInValue.AccountingEntry"/>
     public required CreateFundAmountModel AccountingEntry { get; init; }
 }

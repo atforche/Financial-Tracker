@@ -35,7 +35,7 @@ public class AddChangeInValueAction(
         {
             throw exception;
         }
-        var changeInValue = new ChangeInValue(accountingPeriod,
+        var changeInValue = new ChangeInValue(accountingPeriod.Id,
             eventDate,
             balanceEventRepository.GetHighestEventSequenceOnDate(eventDate) + 1,
             account,

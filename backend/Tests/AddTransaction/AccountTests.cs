@@ -1,9 +1,9 @@
 using Domain;
-using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
 using Domain.Funds;
 using Domain.Services;
+using Domain.Transactions;
 using Tests.AddTransaction.Scenarios;
 using Tests.AddTransaction.Setups;
 using Tests.Validators;
@@ -50,8 +50,9 @@ public class AccountTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
-    private static Transaction AddTransaction(AccountScenarioSetup setup) =>
-        setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
+    private static Transaction AddTransaction(AccountScenarioSetup setup)
+    {
+        Transaction transaction = setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
             new DateOnly(2025, 1, 15),
             setup.DebitAccount,
             setup.CreditAccount,
@@ -67,6 +68,9 @@ public class AccountTests
                     Amount = 50.00m
                 }
             ]);
+        setup.GetService<ITransactionRepository>().Add(transaction);
+        return transaction;
+    }
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -76,6 +80,7 @@ public class AccountTests
     private static TransactionState GetExpectedState(AccountScenarioSetup setup) =>
         new()
         {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             Date = new DateOnly(2025, 1, 15),
             AccountingEntries =
             [

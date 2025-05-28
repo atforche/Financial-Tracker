@@ -4,7 +4,7 @@ using Domain.Accounts;
 using Domain.Actions;
 using Domain.Funds;
 using Microsoft.AspNetCore.Mvc;
-using Rest.Models.Account;
+using Rest.Models.Accounts;
 
 namespace Rest.Controllers;
 

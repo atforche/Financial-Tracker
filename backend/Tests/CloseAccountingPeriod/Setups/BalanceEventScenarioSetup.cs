@@ -2,6 +2,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.CloseAccountingPeriod.Scenarios;
 using Tests.Setups;
 
@@ -33,6 +34,11 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
     public AccountingPeriod AccountingPeriod { get; }
 
     /// <summary>
+    /// Transaction for the Setup
+    /// </summary>
+    public Transaction? Transaction { get; }
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="scenario">Scenario for this test case</param>
@@ -62,7 +68,7 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
 
         if (scenario is BalanceEventScenario.UnpostedTransaction or BalanceEventScenario.PostedTransaction)
         {
-            GetService<AddTransactionAction>().Run(AccountingPeriod,
+            Transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
                 new DateOnly(2025, 1, 15),
                 Account,
                 null,
@@ -73,10 +79,11 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
                         Amount = 250.00m
                     }
                 ]);
+            GetService<ITransactionRepository>().Add(Transaction);
         }
         if (scenario is BalanceEventScenario.PostedTransaction)
         {
-            GetService<PostTransactionAction>().Run(AccountingPeriod.Transactions.First(),
+            GetService<PostTransactionAction>().Run(Transaction ?? throw new InvalidOperationException(),
                 TransactionAccountType.Debit,
                 new DateOnly(2025, 1, 15));
         }

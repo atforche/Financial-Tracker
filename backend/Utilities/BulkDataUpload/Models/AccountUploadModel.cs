@@ -1,6 +1,6 @@
 using Domain.Accounts;
-using Rest.Models.Account;
-using Rest.Models.Fund;
+using Rest.Models.Accounts;
+using Rest.Models.Funds;
 
 namespace Utilities.BulkDataUpload.Models;
 

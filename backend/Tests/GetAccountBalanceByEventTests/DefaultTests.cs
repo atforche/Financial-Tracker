@@ -1,8 +1,8 @@
 using Domain;
-using Domain.AccountingPeriods;
 using Domain.Actions;
 using Domain.Funds;
 using Domain.Services;
+using Domain.Transactions;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -31,6 +31,7 @@ public class DefaultTests
                     Amount = 250.00m
                 }
             ]);
+        setup.GetService<ITransactionRepository>().Add(transaction);
         setup.GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, new DateOnly(2025, 1, 16));
         new AccountBalanceByEventValidator().Validate(
             setup.GetService<AccountBalanceService>().GetAccountBalancesByEvent(setup.Account,
