@@ -17,8 +17,6 @@ internal sealed class AccountAddedBalanceEventConfiguration : IEntityTypeConfigu
         builder.HasKey(entity => entity.Id);
         builder.Property(entity => entity.Id).HasConversion(entityId => entityId.Value, value => new EntityId(value));
 
-        builder.Property(accountAddedBalanceEvent => accountAddedBalanceEvent.AccountingPeriodId)
-            .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
         builder.HasOne<AccountingPeriod>().WithMany().HasForeignKey(accountAddedBalanceEvent => accountAddedBalanceEvent.AccountingPeriodId);
 
         builder.HasMany(accountAddedBalanceEvent => accountAddedBalanceEvent.FundAmounts)

@@ -12,9 +12,6 @@ internal sealed class ChangeInValueConfiguration : EntityConfiguration<ChangeInV
     /// <inheritdoc/>
     protected override void ConfigurePrivate(EntityTypeBuilder<ChangeInValue> builder)
     {
-        builder.Property(changeInValue => changeInValue.AccountingPeriodId)
-            .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
-
         builder.HasIndex(changeInValue => new { changeInValue.EventDate, changeInValue.EventSequence }).IsUnique();
 
         builder.HasOne<Account>().WithMany().HasForeignKey(changeInValue => changeInValue.AccountId);
