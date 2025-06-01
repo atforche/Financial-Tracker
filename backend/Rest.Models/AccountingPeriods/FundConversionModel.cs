@@ -1,7 +1,6 @@
 using System.Text.Json.Serialization;
 using Domain.AccountingPeriods;
-using Rest.Models.Accounts;
-using Rest.Models.Funds;
+using Domain.BalanceEvents;
 
 namespace Rest.Models.AccountingPeriods;
 
@@ -13,17 +12,17 @@ public class FundConversionModel
     /// <inheritdoc cref="Domain.EntityOld.Id"/>
     public Guid Id { get; init; }
 
-    /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.Account"/>
-    public AccountModel Account { get; init; }
+    /// <inheritdoc cref="IBalanceEvent.AccountId"/>
+    public Guid AccountId { get; init; }
 
-    /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.EventDate"/>
+    /// <inheritdoc cref="IBalanceEvent.EventDate"/>
     public DateOnly EventDate { get; init; }
 
-    /// <inheritdoc cref="FundConversion.FromFund"/>
-    public FundModel FromFund { get; init; }
+    /// <inheritdoc cref="FundConversion.FromFundId"/>
+    public Guid FromFundId { get; init; }
 
-    /// <inheritdoc cref="FundConversion.ToFund"/>
-    public FundModel ToFund { get; init; }
+    /// <inheritdoc cref="FundConversion.ToFundId"/>
+    public Guid ToFundId { get; init; }
 
     /// <inheritdoc cref="FundConversion.Amount"/>
     public decimal Amount { get; init; }
@@ -33,17 +32,17 @@ public class FundConversionModel
     /// </summary>
     [JsonConstructor]
     public FundConversionModel(Guid id,
-        AccountModel account,
+        Guid accountId,
         DateOnly eventDate,
-        FundModel fromFund,
-        FundModel toFund,
+        Guid fromFundId,
+        Guid toFundId,
         decimal amount)
     {
         Id = id;
-        Account = account;
+        AccountId = accountId;
         EventDate = eventDate;
-        FromFund = fromFund;
-        ToFund = toFund;
+        FromFundId = fromFundId;
+        ToFundId = toFundId;
         Amount = amount;
     }
 
@@ -54,10 +53,10 @@ public class FundConversionModel
     public FundConversionModel(FundConversion fundConversion)
     {
         Id = fundConversion.Id.Value;
-        Account = new AccountModel(fundConversion.Account);
+        AccountId = fundConversion.AccountId.Value;
         EventDate = fundConversion.EventDate;
-        FromFund = new FundModel(fundConversion.FromFund);
-        ToFund = new FundModel(fundConversion.ToFund);
+        FromFundId = fundConversion.FromFundId.Value;
+        ToFundId = fundConversion.ToFundId.Value;
         Amount = fundConversion.Amount;
     }
 }

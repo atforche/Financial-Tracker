@@ -73,7 +73,7 @@ public class BalanceEventTests
             AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 15),
             EventSequence = 1,
-            AccountName = setup.Account.Name,
+            AccountId = setup.Account.Id,
             EventType = TransactionBalanceEventType.Added,
             AccountType = TransactionAccountType.Debit
         });
@@ -84,7 +84,7 @@ public class BalanceEventTests
                 AccountingPeriodId = setup.AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 2,
-                AccountName = setup.Account.Name,
+                AccountId = setup.Account.Id,
                 EventType = TransactionBalanceEventType.Posted,
                 AccountType = TransactionAccountType.Debit
             });
@@ -93,7 +93,7 @@ public class BalanceEventTests
         {
             AccountingPeriodId = setup.AccountingPeriod.Id,
             Date = new DateOnly(2025, 1, 15),
-            AccountingEntries =
+            FundAmounts =
             [
                 new FundAmountState
                 {
@@ -125,9 +125,9 @@ public class BalanceEventTests
                 AccountingPeriodId = setup.AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
-                AccountName = setup.Account.Name,
-                FromFundName = setup.Fund.Name,
-                ToFundName = setup.OtherFund.Name,
+                AccountId = setup.Account.Id,
+                FromFundId = setup.Fund.Id,
+                ToFundId = setup.OtherFund.Id,
                 Amount = 250.00m
             }
         ];
@@ -152,8 +152,8 @@ public class BalanceEventTests
                 AccountingPeriodId = setup.AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
-                AccountName = setup.Account.Name,
-                AccountingEntry = new FundAmountState
+                AccountId = setup.Account.Id,
+                FundAmount = new FundAmountState
                 {
                     FundId = setup.Fund.Id,
                     Amount = 250.00m

@@ -17,13 +17,11 @@ public sealed class AccountingPeriodController(
     UnitOfWork unitOfWork,
     AddAccountingPeriodAction addAccountingPeriodAction,
     CloseAccountingPeriodAction closeAccountingPeriodAction,
-    AddFundConversionAction addFundConversionAction,
-    AddChangeInValueAction addChangeInValueAction,
     IAccountingPeriodRepository accountingPeriodRepository,
-    IAccountRepository accountRepository,
-    IFundRepository fundRepository,
     AccountIdFactory accountIdFactory,
+    ChangeInValueFactory changeInValueFactory,
     FundIdFactory fundIdFactory,
+    FundConversionFactory fundConversionFactory,
     AccountingPeriodIdFactory accountingPeriodIdFactory) : ControllerBase
 {
     /// <summary>
@@ -95,16 +93,15 @@ public sealed class AccountingPeriodController(
     [HttpPost("{accountingPeriodId}/FundConversions")]
     public async Task<IActionResult> CreateFundConversionAsync(Guid accountingPeriodId, CreateFundConversionModel createFundConversionModel)
     {
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(accountingPeriodId));
-        Account account = accountRepository.FindById(accountIdFactory.Create(createFundConversionModel.AccountId));
-        Fund fromFund = fundRepository.FindById(fundIdFactory.Create(createFundConversionModel.FromFundId));
-        Fund toFund = fundRepository.FindById(fundIdFactory.Create(createFundConversionModel.ToFundId));
-        FundConversion newFundConversion = addFundConversionAction.Run(accountingPeriod,
-            createFundConversionModel.EventDate,
-            account,
-            fromFund,
-            toFund,
-            createFundConversionModel.Amount);
+        FundConversion newFundConversion = fundConversionFactory.Create(new CreateFundConversionRequest
+        {
+            AccountingPeriodId = accountingPeriodIdFactory.Create(accountingPeriodId),
+            EventDate = createFundConversionModel.EventDate,
+            AccountId = accountIdFactory.Create(createFundConversionModel.AccountId),
+            FromFundId = fundIdFactory.Create(createFundConversionModel.FromFundId),
+            ToFundId = fundIdFactory.Create(createFundConversionModel.ToFundId),
+            Amount = createFundConversionModel.Amount
+        });
         await unitOfWork.SaveChangesAsync();
         return Ok(new FundConversionModel(newFundConversion));
     }
@@ -118,17 +115,17 @@ public sealed class AccountingPeriodController(
     [HttpPost("{accountingPeriodId}/ChangeInValues")]
     public async Task<IActionResult> CreateChangeInValueAsync(Guid accountingPeriodId, CreateChangeInValueModel createChangeInValueModel)
     {
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(accountingPeriodId));
-        Account account = accountRepository.FindById(accountIdFactory.Create(createChangeInValueModel.AccountId));
-        var funds = fundRepository.FindAll().ToDictionary(fund => fund.Id.Value, fund => fund);
-        ChangeInValue newChangeInValue = addChangeInValueAction.Run(accountingPeriod,
-            createChangeInValueModel.EventDate,
-            account,
-            new FundAmount
+        ChangeInValue newChangeInValue = changeInValueFactory.Create(new CreateChangeInValueRequest
+        {
+            AccountingPeriodId = accountingPeriodIdFactory.Create(accountingPeriodId),
+            EventDate = createChangeInValueModel.EventDate,
+            AccountId = accountIdFactory.Create(createChangeInValueModel.AccountId),
+            FundAmount = new FundAmount
             {
-                FundId = fundIdFactory.Create(createChangeInValueModel.AccountingEntry.FundId),
-                Amount = createChangeInValueModel.AccountingEntry.Amount
-            });
+                FundId = fundIdFactory.Create(createChangeInValueModel.FundAmount.FundId),
+                Amount = createChangeInValueModel.FundAmount.Amount
+            }
+        });
         await unitOfWork.SaveChangesAsync();
         return Ok(new ChangeInValueModel(newChangeInValue));
     }

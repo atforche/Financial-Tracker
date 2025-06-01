@@ -45,13 +45,13 @@ public class CloseAccountingPeriodAction(
             exception = new InvalidOperationException();
         }
         // Validate that there are no other earlier open Accounting Periods
-        if (accountingPeriodRepository.FindOpenPeriods().Any(openPeriod => openPeriod.PeriodStartDate < accountingPeriod.PeriodStartDate))
+        if (accountingPeriodRepository.FindAllOpenPeriods().Any(openPeriod => openPeriod.PeriodStartDate < accountingPeriod.PeriodStartDate))
         {
             exception ??= new InvalidOperationException();
         }
         // Validate that there are no pending balance changes in this Accounting Period
         if (accountRepository.FindAll()
-                .Select(account => accountBalanceService.GetAccountBalancesByAccountingPeriod(account, accountingPeriod))
+                .Select(account => accountBalanceService.GetAccountBalanceByAccountingPeriod(account.Id, accountingPeriod.Id))
                 .Any(balance => balance.EndingBalance.PendingFundBalanceChanges.Count != 0))
         {
             exception ??= new InvalidOperationException();
@@ -65,8 +65,7 @@ public class CloseAccountingPeriodAction(
     /// <param name="accountingPeriod">Accounting Period to close</param>
     private void AddAccountBalanceCheckpoints(AccountingPeriod accountingPeriod)
     {
-        AccountingPeriod? futureAccountingPeriod =
-            accountingPeriodRepository.FindByDateOrNull(accountingPeriod.PeriodStartDate.AddMonths(1));
+        AccountingPeriod? futureAccountingPeriod = accountingPeriodRepository.FindNextAccountingPeriod(accountingPeriod.Id);
         if (futureAccountingPeriod == null)
         {
             return;
@@ -74,7 +73,7 @@ public class CloseAccountingPeriodAction(
         foreach (Account account in accountRepository.FindAll())
         {
             account.AddAccountBalanceCheckpoint(futureAccountingPeriod.Id,
-                accountBalanceService.GetAccountBalancesByAccountingPeriod(account, accountingPeriod).EndingBalance.FundBalances);
+                accountBalanceService.GetAccountBalanceByAccountingPeriod(account.Id, accountingPeriod.Id).EndingBalance.FundBalances);
         }
     }
 }

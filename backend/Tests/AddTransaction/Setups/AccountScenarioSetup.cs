@@ -58,7 +58,7 @@ internal sealed class AccountScenarioSetup : ScenarioSetup
 
         if (debitAccountType != null)
         {
-            DebitAccount = GetService<AddAccountAction>().Run("TestOne", debitAccountType.Value, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+            DebitAccount = GetService<AccountFactory>().Create("TestOne", debitAccountType.Value, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
                 [
                     new FundAmount
                     {
@@ -79,7 +79,7 @@ internal sealed class AccountScenarioSetup : ScenarioSetup
         }
         else if (creditAccountType != null)
         {
-            CreditAccount = GetService<AddAccountAction>().Run("TestTwo", creditAccountType.Value, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+            CreditAccount = GetService<AccountFactory>().Create("TestTwo", creditAccountType.Value, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
                 [
                     new FundAmount
                     {

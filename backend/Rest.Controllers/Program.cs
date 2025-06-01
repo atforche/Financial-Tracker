@@ -8,6 +8,7 @@ using Domain.Actions;
 using Domain.BalanceEvents;
 using Domain.Funds;
 using Domain.Services;
+using Domain.Transactions;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Rest.Models;
@@ -30,22 +31,26 @@ builder.Services.AddScoped<UnitOfWork>();
 // Add domain DI services
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
-builder.Services.AddScoped<IFundRepository, FundRepository>();
 builder.Services.AddScoped<IBalanceEventRepository, BalanceEventRepository>();
-builder.Services.AddScoped<AddAccountAction>();
-builder.Services.AddScoped<AddAccountingPeriodAction>();
-builder.Services.AddScoped<CloseAccountingPeriodAction>();
-builder.Services.AddScoped<AddTransactionAction>();
-builder.Services.AddScoped<PostTransactionAction>();
-builder.Services.AddScoped<AddFundConversionAction>();
-builder.Services.AddScoped<AddChangeInValueAction>();
-builder.Services.AddScoped<AccountBalanceService>();
-builder.Services.AddScoped<AddFundAction>();
-builder.Services.AddScoped<BalanceEventDateValidator>();
-builder.Services.AddScoped<BalanceEventFutureEventValidator>();
+builder.Services.AddScoped<IFundRepository, FundRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+
+builder.Services.AddScoped<AccountFactory>();
 builder.Services.AddScoped<AccountIdFactory>();
+builder.Services.AddScoped<AccountAddedBalanceEventFactory>();
 builder.Services.AddScoped<AccountingPeriodIdFactory>();
+builder.Services.AddScoped<ChangeInValueFactory>();
+builder.Services.AddScoped<FundConversionFactory>();
 builder.Services.AddScoped<FundIdFactory>();
+builder.Services.AddScoped<TransactionFactory>();
+builder.Services.AddScoped<TransactionBalanceEventFactory>();
+builder.Services.AddScoped<TransactionIdFactory>();
+
+builder.Services.AddScoped<AccountBalanceService>();
+builder.Services.AddScoped<AddAccountingPeriodAction>();
+builder.Services.AddScoped<AddFundAction>();
+builder.Services.AddScoped<CloseAccountingPeriodAction>();
+builder.Services.AddScoped<PostTransactionAction>();
 
 // Configure CORS to allow requests from select origins
 string corsPolicyName = "CORS";

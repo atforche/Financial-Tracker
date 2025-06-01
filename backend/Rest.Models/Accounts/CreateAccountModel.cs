@@ -15,10 +15,10 @@ public class CreateAccountModel
     /// <inheritdoc cref="Account.Type"/>
     public required AccountType Type { get; init; }
 
-    /// <inheritdoc cref="BalanceEvent.AccountingPeriodId"/>
+    /// <inheritdoc cref="IBalanceEvent.AccountingPeriodId"/>
     public required Guid AccountingPeriodId { get; init; }
 
-    /// <inheritdoc cref="BalanceEvent.EventDate"/>
+    /// <inheritdoc cref="IBalanceEvent.EventDate"/>
     public required DateOnly Date { get; init; }
 
     /// <inheritdoc cref="AccountAddedBalanceEvent.FundAmounts"/>

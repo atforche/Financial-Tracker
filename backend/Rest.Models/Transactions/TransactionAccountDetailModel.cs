@@ -1,7 +1,6 @@
 using System.Text.Json.Serialization;
 using Domain.BalanceEvents;
 using Domain.Transactions;
-using Rest.Models.Accounts;
 
 namespace Rest.Models.Transactions;
 
@@ -10,8 +9,8 @@ namespace Rest.Models.Transactions;
 /// </summary>
 public class TransactionAccountDetailModel
 {
-    /// <inheritdoc cref="BalanceEvent.Account"/>
-    public AccountModel Account { get; init; }
+    /// <inheritdoc cref="IBalanceEvent.AccountId"/>
+    public Guid AccountId { get; init; }
 
     /// <summary>
     /// Statement date for this Transaction Account Detail once it has been posted
@@ -22,9 +21,9 @@ public class TransactionAccountDetailModel
     /// Constructs a new instance of this class
     /// </summary>
     [JsonConstructor]
-    public TransactionAccountDetailModel(AccountModel account, DateOnly? postedStatementDate)
+    public TransactionAccountDetailModel(Guid accountId, DateOnly? postedStatementDate)
     {
-        Account = account;
+        AccountId = accountId;
         PostedStatementDate = postedStatementDate;
     }
 
@@ -41,7 +40,7 @@ public class TransactionAccountDetailModel
         {
             throw new InvalidOperationException();
         }
-        Account = new AccountModel(balanceEvents.First().Account);
+        AccountId = balanceEvents.First().AccountId.Value;
         PostedStatementDate = balanceEvents
             .SingleOrDefault(balanceEvent => balanceEvent.EventType == TransactionBalanceEventType.Posted)
             ?.EventDate;

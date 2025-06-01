@@ -73,8 +73,7 @@ public class AddAccountingPeriodAction(
     /// <param name="newAccountingPeriod">Newly created Accounting Period</param>
     private void AddAccountBalanceCheckpoints(AccountingPeriod newAccountingPeriod)
     {
-        AccountingPeriod? previousAccountingPeriod =
-            accountingPeriodRepository.FindByDateOrNull(newAccountingPeriod.PeriodStartDate.AddMonths(-1));
+        AccountingPeriod? previousAccountingPeriod = accountingPeriodRepository.FindLatestAccountingPeriod();
         if (previousAccountingPeriod == null || previousAccountingPeriod.IsOpen)
         {
             return;
@@ -82,7 +81,7 @@ public class AddAccountingPeriodAction(
         foreach (Account account in accountRepository.FindAll())
         {
             account.AddAccountBalanceCheckpoint(newAccountingPeriod.Id,
-                accountBalanceService.GetAccountBalancesByAccountingPeriod(account, previousAccountingPeriod).EndingBalance.FundBalances);
+                accountBalanceService.GetAccountBalanceByAccountingPeriod(account.Id, previousAccountingPeriod.Id).EndingBalance.FundBalances);
         }
     }
 }

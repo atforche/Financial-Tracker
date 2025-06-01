@@ -1,4 +1,6 @@
 using Domain.AccountingPeriods;
+using Domain.Accounts;
+using Domain.Funds;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Data.Configuration.AccountingPeriods;
@@ -16,13 +18,10 @@ internal sealed class FundConversionConfiguration : EntityConfiguration<FundConv
 
         builder.HasIndex(fundConversion => new { fundConversion.EventDate, fundConversion.EventSequence }).IsUnique();
 
-        builder.HasOne(fundConversion => fundConversion.Account).WithMany().HasForeignKey("AccountId");
-        builder.Navigation(fundConversion => fundConversion.Account).IsRequired().AutoInclude();
+        builder.HasOne<Account>().WithMany().HasForeignKey(fundConversion => fundConversion.AccountId);
 
-        builder.HasOne(fundConversion => fundConversion.FromFund).WithMany().HasForeignKey("FromFundId");
-        builder.Navigation(fundConversion => fundConversion.FromFund).IsRequired().AutoInclude();
+        builder.HasOne<Fund>().WithMany().HasForeignKey(fundConversion => fundConversion.FromFundId);
 
-        builder.HasOne(fundConversion => fundConversion.ToFund).WithMany().HasForeignKey("ToFundId");
-        builder.Navigation(fundConversion => fundConversion.ToFund).IsRequired().AutoInclude();
+        builder.HasOne<Fund>().WithMany().HasForeignKey(fundConversion => fundConversion.ToFundId);
     }
 }

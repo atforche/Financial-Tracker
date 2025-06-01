@@ -46,7 +46,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
         AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
 
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+        Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
@@ -72,21 +72,27 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
     {
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.MultipleEventsSameDay)
         {
-            GetService<AddFundConversionAction>().Run(AccountingPeriod,
-                new DateOnly(2025, 1, 15),
-                Account,
-                Fund,
-                OtherFund,
-                500.00m);
+            GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
+            {
+                AccountingPeriodId = AccountingPeriod.Id,
+                EventDate = new DateOnly(2025, 1, 15),
+                AccountId = Account.Id,
+                FromFundId = Fund.Id,
+                ToFundId = OtherFund.Id,
+                Amount = 500.00m
+            });
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesFundBalanceNegative)
         {
-            GetService<AddFundConversionAction>().Run(AccountingPeriod,
-                new DateOnly(2025, 1, 10),
-                Account,
-                Fund,
-                OtherFund,
-                1250.00m);
+            GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
+            {
+                AccountingPeriodId = AccountingPeriod.Id,
+                EventDate = new DateOnly(2025, 1, 10),
+                AccountId = Account.Id,
+                FromFundId = Fund.Id,
+                ToFundId = OtherFund.Id,
+                Amount = 1250.00m
+            });
         }
     }
 }

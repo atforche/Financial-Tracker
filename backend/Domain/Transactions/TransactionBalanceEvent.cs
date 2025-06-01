@@ -1,3 +1,4 @@
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
 using Domain.Funds;
@@ -12,12 +13,24 @@ namespace Domain.Transactions;
 /// accounts. For each account, a balance event will be generated when the 
 /// Transaction is added and when the Transaction is posted.
 /// </remarks>
-public sealed class TransactionBalanceEvent : BalanceEvent
+public sealed class TransactionBalanceEvent : EntityOld, IBalanceEvent
 {
     /// <summary>
     /// Parent Transaction for this Transaction Balance Event
     /// </summary>
     public Transaction Transaction { get; private set; }
+
+    /// <inheritdoc/>
+    public AccountingPeriodId AccountingPeriodId => Transaction.AccountingPeriodId;
+
+    /// <inheritdoc/>
+    public DateOnly EventDate { get; private set; }
+
+    /// <inheritdoc/>
+    public int EventSequence { get; internal set; }
+
+    /// <inheritdoc/>
+    public AccountId AccountId { get; private set; }
 
     /// <summary>
     /// Event Type for this Transaction Balance Event
@@ -30,23 +43,23 @@ public sealed class TransactionBalanceEvent : BalanceEvent
     public TransactionAccountType AccountType { get; private set; }
 
     /// <inheritdoc/>
-    public override AccountBalance ApplyEventToBalance(AccountBalance currentBalance) =>
+    public AccountBalance ApplyEventToBalance(AccountBalance currentBalance) =>
         EventType == TransactionBalanceEventType.Added
             ? ApplyTransactionAddedBalanceEvent(currentBalance, false)
             : ApplyTransactionPostedBalanceEvent(currentBalance, false);
 
     /// <inheritdoc/>
-    public override AccountBalance ReverseEventFromBalance(AccountBalance currentBalance) =>
+    public AccountBalance ReverseEventFromBalance(AccountBalance currentBalance) =>
         EventType == TransactionBalanceEventType.Added
             ? ApplyTransactionAddedBalanceEvent(currentBalance, true)
             : ApplyTransactionPostedBalanceEvent(currentBalance, true);
 
     /// <inheritdoc/>
-    public override bool CanBeAppliedToBalance(AccountBalance currentBalance)
+    public bool CanBeAppliedToBalance(AccountBalance currentBalance)
     {
-        if (!base.CanBeAppliedToBalance(currentBalance))
+        if (AccountId != currentBalance.Account.Id)
         {
-            return false;
+            return true;
         }
         // Posted Transaction Balance Events are always valid
         if (EventType == TransactionBalanceEventType.Posted)
@@ -60,7 +73,7 @@ public sealed class TransactionBalanceEvent : BalanceEvent
         }
         // Cannot apply this Balance Event if it will take the Accounts overall balance negative
         // For simplicity, count pending balance decreases but don't count pending balance increases.
-        return Math.Min(currentBalance.Balance, currentBalance.BalanceIncludingPending) - Transaction.AccountingEntries.Sum(entry => entry.Amount) >= 0;
+        return Math.Min(currentBalance.Balance, currentBalance.BalanceIncludingPending) - Transaction.FundAmounts.Sum(entry => entry.Amount) >= 0;
     }
 
     /// <summary>
@@ -69,19 +82,22 @@ public sealed class TransactionBalanceEvent : BalanceEvent
     /// <param name="transaction">Parent Transaction for this Transaction Balance Event</param>
     /// <param name="eventDate">Event Date for this Transaction Balance Event</param>
     /// <param name="eventSequence">Event Sequence for this Transaction Balance Event</param>
-    /// <param name="account">Account for this Transaction Balance Event</param>
+    /// <param name="accountId">Account ID for this Transaction Balance Event</param>
     /// <param name="eventType">Event Type for this Transaction Balance Event</param>
     /// <param name="accountType">Account Type for this Transaction Balance Event</param>
     internal TransactionBalanceEvent(
         Transaction transaction,
         DateOnly eventDate,
         int eventSequence,
-        Account account,
+        AccountId accountId,
         TransactionBalanceEventType eventType,
         TransactionAccountType accountType)
-        : base(transaction.AccountingPeriodId, eventDate, eventSequence, account)
+        : base()
     {
         Transaction = transaction;
+        EventDate = eventDate;
+        EventSequence = eventSequence;
+        AccountId = accountId;
         EventType = eventType;
         AccountType = accountType;
     }
@@ -89,7 +105,11 @@ public sealed class TransactionBalanceEvent : BalanceEvent
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private TransactionBalanceEvent() : base() => Transaction = null!;
+    private TransactionBalanceEvent() : base()
+    {
+        Transaction = null!;
+        AccountId = null!;
+    }
 
     /// <summary>
     /// Applies an Added Transaction Balance Event to the provided balance
@@ -99,13 +119,13 @@ public sealed class TransactionBalanceEvent : BalanceEvent
     /// <returns>The new Account Balance after this event has been applied</returns>
     private AccountBalance ApplyTransactionAddedBalanceEvent(AccountBalance currentBalance, bool isReverse)
     {
-        if (Account != currentBalance.Account)
+        if (AccountId != currentBalance.Account.Id)
         {
             return currentBalance;
         }
         var pendingFundBalanceChanges = currentBalance.PendingFundBalanceChanges
             .ToDictionary(fundAmount => fundAmount.FundId, fundAmount => fundAmount.Amount);
-        foreach (FundAmount fundAmount in Transaction.AccountingEntries)
+        foreach (FundAmount fundAmount in Transaction.FundAmounts)
         {
             decimal balanceChange = fundAmount.Amount * DetermineBalanceChangeFactor(currentBalance.Account, isReverse);
             if (!pendingFundBalanceChanges.TryAdd(fundAmount.FundId, balanceChange))
@@ -132,7 +152,7 @@ public sealed class TransactionBalanceEvent : BalanceEvent
     /// <returns>The new Account Balance after this event has been applied</returns>
     private AccountBalance ApplyTransactionPostedBalanceEvent(AccountBalance currentBalance, bool isReverse)
     {
-        if (Account != currentBalance.Account)
+        if (AccountId != currentBalance.Account.Id)
         {
             return currentBalance;
         }
@@ -141,7 +161,7 @@ public sealed class TransactionBalanceEvent : BalanceEvent
             .ToDictionary(fundAmount => fundAmount.FundId, fundAmount => fundAmount.Amount);
         var pendingFundBalanceChanges = currentBalance.PendingFundBalanceChanges
             .ToDictionary(fundAmount => fundAmount.FundId, fundAmount => fundAmount.Amount);
-        foreach (FundAmount fundAmount in Transaction.AccountingEntries)
+        foreach (FundAmount fundAmount in Transaction.FundAmounts)
         {
             decimal balanceChange = fundAmount.Amount * DetermineBalanceChangeFactor(currentBalance.Account, isReverse);
             if (!pendingFundBalanceChanges.TryAdd(fundAmount.FundId, -balanceChange))

@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Domain.Accounts;
 
 namespace Tests.Validators;
 
@@ -12,10 +13,10 @@ internal sealed class ChangeInValueValidator : EntityValidator<ChangeInValue, Ch
     {
         Assert.NotEqual(Guid.Empty, entity.Id.Value);
         Assert.Equal(expectedState.AccountingPeriodId, entity.AccountingPeriodId);
-        Assert.Equal(expectedState.AccountName, entity.Account.Name);
+        Assert.Equal(expectedState.AccountId, entity.AccountId);
         Assert.Equal(expectedState.EventDate, entity.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.EventSequence);
-        new FundAmountValidator().Validate(entity.AccountingEntry, expectedState.AccountingEntry);
+        new FundAmountValidator().Validate(entity.FundAmount, expectedState.FundAmount);
     }
 }
 
@@ -30,9 +31,9 @@ internal sealed record ChangeInValueState
     public required AccountingPeriodId AccountingPeriodId { get; init; }
 
     /// <summary>
-    /// Account Name for this Change In Value
+    /// Account ID for this Change In Value
     /// </summary>
-    public required string AccountName { get; init; }
+    public required AccountId AccountId { get; init; }
 
     /// <summary>
     /// Event Date for this Change In Value
@@ -45,7 +46,7 @@ internal sealed record ChangeInValueState
     public required int EventSequence { get; init; }
 
     /// <summary>
-    /// Accounting Entry for this Change In Value
+    /// Fund Amount for this Change In Value
     /// </summary>
-    public required FundAmountState AccountingEntry { get; init; }
+    public required FundAmountState FundAmount { get; init; }
 }

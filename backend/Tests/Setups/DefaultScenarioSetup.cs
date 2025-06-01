@@ -46,7 +46,7 @@ internal sealed class DefaultScenarioSetup : ScenarioSetup
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
         GetService<TestUnitOfWork>().SaveChanges();
 
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+        Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {

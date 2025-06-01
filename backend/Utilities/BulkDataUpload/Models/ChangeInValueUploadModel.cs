@@ -20,9 +20,9 @@ internal sealed class ChangeInValueUploadModel : BalanceEventUploadModel
     public required DateOnly EventDate { get; init; }
 
     /// <summary>
-    /// Accounting Entry for this Change In Value Balance Event
+    /// Fund Amount for this Change In Value Balance Event
     /// </summary>
-    public required FundAmountUploadModel AccountingEntry { get; init; }
+    public required FundAmountUploadModel FundAmount { get; init; }
 
     /// <summary>
     /// Gets a Create Change In Value Model corresponding to this Change In Value Upload Model
@@ -36,6 +36,6 @@ internal sealed class ChangeInValueUploadModel : BalanceEventUploadModel
         {
             AccountId = existingAccounts.Single(account => account.Name == AccountName).Id,
             EventDate = EventDate,
-            AccountingEntry = AccountingEntry.GetAsCreateFundAmountModel(existingFunds)
+            FundAmount = FundAmount.GetAsCreateFundAmountModel(existingFunds)
         };
 }

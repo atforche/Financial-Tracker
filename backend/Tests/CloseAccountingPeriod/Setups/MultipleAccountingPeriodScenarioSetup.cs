@@ -46,7 +46,7 @@ internal sealed class MultipleAccountingPeriodScenarioSetup : ScenarioSetup
 
             if (Account == null)
             {
-                Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, accountingPeriod, accountingPeriod.PeriodStartDate,
+                Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, accountingPeriod.Id, accountingPeriod.PeriodStartDate,
                 [
                     new FundAmount
                     {

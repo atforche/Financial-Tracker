@@ -125,13 +125,13 @@ namespace Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    FromFundId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ToFundId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
                     AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
                     EventDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
                     EventSequence = table.Column<int>(type: "INTEGER", nullable: false),
-                    AccountId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    AccountId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    FromFundId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ToFundId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Amount = table.Column<decimal>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -168,22 +168,15 @@ namespace Data.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     TransactionId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    EventType = table.Column<int>(type: "INTEGER", nullable: false),
-                    AccountType = table.Column<int>(type: "INTEGER", nullable: false),
-                    AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
                     EventDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
                     EventSequence = table.Column<int>(type: "INTEGER", nullable: false),
-                    AccountId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    AccountId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    EventType = table.Column<int>(type: "INTEGER", nullable: false),
+                    AccountType = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TransactionBalanceEvent", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TransactionBalanceEvent_AccountingPeriods_AccountingPeriodId",
-                        column: x => x.AccountingPeriodId,
-                        principalTable: "AccountingPeriods",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_TransactionBalanceEvent_Accounts_AccountId",
                         column: x => x.AccountId,
@@ -241,11 +234,11 @@ namespace Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    FundAmountId = table.Column<int>(type: "INTEGER", nullable: false),
                     AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
                     EventDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
                     EventSequence = table.Column<int>(type: "INTEGER", nullable: false),
-                    AccountId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    AccountId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    FundAmountId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -375,11 +368,6 @@ namespace Data.Migrations
                 name: "IX_TransactionBalanceEvent_AccountId",
                 table: "TransactionBalanceEvent",
                 column: "AccountId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TransactionBalanceEvent_AccountingPeriodId",
-                table: "TransactionBalanceEvent",
-                column: "AccountingPeriodId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TransactionBalanceEvent_EventDate_EventSequence",

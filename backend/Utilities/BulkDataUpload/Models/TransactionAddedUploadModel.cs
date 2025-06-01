@@ -25,9 +25,9 @@ internal sealed class TransactionAddedUploadModel : BalanceEventUploadModel
     public string? CreditAccountName { get; init; }
 
     /// <summary>
-    /// Accounting Entries for this Transaction
+    /// Fund Amounts for this Transaction
     /// </summary>
-    public required ICollection<FundAmountUploadModel> AccountingEntries { get; init; }
+    public required ICollection<FundAmountUploadModel> FundAmounts { get; init; }
 
     /// <summary>
     /// Gets a Create Transaction Model corresponding to this Transaction Added Upload Model
@@ -47,7 +47,7 @@ internal sealed class TransactionAddedUploadModel : BalanceEventUploadModel
             CreditAccountId = CreditAccountName != null
                 ? existingAccounts.Single(account => account.Name == CreditAccountName).Id
                 : null,
-            AccountingEntries = AccountingEntries
+            FundAmounts = FundAmounts
                 .Select(fundAmount => fundAmount.GetAsCreateFundAmountModel(existingFunds)).ToList(),
         };
 }

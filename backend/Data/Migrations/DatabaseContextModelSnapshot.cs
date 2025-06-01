@@ -261,9 +261,6 @@ namespace Data.Migrations
                     b.Property<int>("AccountType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("AccountingPeriodId")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateOnly>("EventDate")
                         .HasColumnType("TEXT");
 
@@ -280,8 +277,6 @@ namespace Data.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.HasIndex("AccountingPeriodId");
-
                     b.HasIndex("TransactionId");
 
                     b.HasIndex("EventDate", "EventSequence")
@@ -292,7 +287,7 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Domain.AccountingPeriods.ChangeInValue", b =>
                 {
-                    b.HasOne("Domain.Accounts.Account", "Account")
+                    b.HasOne("Domain.Accounts.Account", null)
                         .WithMany()
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -304,20 +299,18 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Funds.FundAmount", "AccountingEntry")
+                    b.HasOne("Domain.Funds.FundAmount", "FundAmount")
                         .WithOne()
                         .HasForeignKey("Domain.AccountingPeriods.ChangeInValue", "FundAmountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Account");
-
-                    b.Navigation("AccountingEntry");
+                    b.Navigation("FundAmount");
                 });
 
             modelBuilder.Entity("Domain.AccountingPeriods.FundConversion", b =>
                 {
-                    b.HasOne("Domain.Accounts.Account", "Account")
+                    b.HasOne("Domain.Accounts.Account", null)
                         .WithMany()
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -329,23 +322,17 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Funds.Fund", "FromFund")
+                    b.HasOne("Domain.Funds.Fund", null)
                         .WithMany()
                         .HasForeignKey("FromFundId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Funds.Fund", "ToFund")
+                    b.HasOne("Domain.Funds.Fund", null)
                         .WithMany()
                         .HasForeignKey("ToFundId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Account");
-
-                    b.Navigation("FromFund");
-
-                    b.Navigation("ToFund");
                 });
 
             modelBuilder.Entity("Domain.Accounts.Account", b =>
@@ -402,7 +389,7 @@ namespace Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Domain.Transactions.Transaction", null)
-                        .WithMany("AccountingEntries")
+                        .WithMany("FundAmounts")
                         .HasForeignKey("TransactionId");
                 });
 
@@ -417,15 +404,9 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Domain.Transactions.TransactionBalanceEvent", b =>
                 {
-                    b.HasOne("Domain.Accounts.Account", "Account")
+                    b.HasOne("Domain.Accounts.Account", null)
                         .WithMany()
                         .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.AccountingPeriods.AccountingPeriod", null)
-                        .WithMany()
-                        .HasForeignKey("AccountingPeriodId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -434,8 +415,6 @@ namespace Data.Migrations
                         .HasForeignKey("TransactionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Account");
 
                     b.Navigation("Transaction");
                 });
@@ -467,7 +446,7 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Domain.Transactions.Transaction", b =>
                 {
-                    b.Navigation("AccountingEntries");
+                    b.Navigation("FundAmounts");
 
                     b.Navigation("TransactionBalanceEvents");
                 });

@@ -18,10 +18,10 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
 
         builder.HasOne<AccountingPeriod>().WithMany().HasForeignKey(transaction => transaction.AccountingPeriodId);
 
-        builder.HasMany(transaction => transaction.AccountingEntries)
+        builder.HasMany(transaction => transaction.FundAmounts)
             .WithOne()
             .HasForeignKey("TransactionId");
-        builder.Navigation(transaction => transaction.AccountingEntries).AutoInclude();
+        builder.Navigation(transaction => transaction.FundAmounts).AutoInclude();
 
         builder.HasMany(transaction => transaction.TransactionBalanceEvents)
             .WithOne(transactionBalanceEvent => transactionBalanceEvent.Transaction)

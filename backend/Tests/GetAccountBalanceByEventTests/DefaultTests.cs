@@ -1,5 +1,4 @@
 using Domain;
-using Domain.Actions;
 using Domain.Funds;
 using Domain.Services;
 using Domain.Transactions;
@@ -20,9 +19,9 @@ public class DefaultTests
     public void RunTest()
     {
         using var setup = new DefaultScenarioSetup();
-        Transaction transaction = setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
+        Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
-            setup.Account,
+            setup.Account.Id,
             null,
             [
                 new FundAmount
@@ -34,7 +33,7 @@ public class DefaultTests
         setup.GetService<ITransactionRepository>().Add(transaction);
         setup.GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, new DateOnly(2025, 1, 16));
         new AccountBalanceByEventValidator().Validate(
-            setup.GetService<AccountBalanceService>().GetAccountBalancesByEvent(setup.Account,
+            setup.GetService<AccountBalanceService>().GetAccountBalancesByEvent(setup.Account.Id,
                 new DateRange(new DateOnly(2025, 1, 14), new DateOnly(2025, 1, 16))),
             [
                 new AccountBalanceByEventState
@@ -42,7 +41,7 @@ public class DefaultTests
                     AccountingPeriodId = setup.AccountingPeriod.Id,
                     EventDate = new DateOnly(2025, 1, 15),
                     EventSequence = 1,
-                    AccountName = setup.Account.Name,
+                    AccountId = setup.Account.Id,
                     FundBalances =
                     [
                         new FundAmountState
@@ -70,7 +69,7 @@ public class DefaultTests
                     AccountingPeriodId = setup.AccountingPeriod.Id,
                     EventDate = new DateOnly(2025, 1, 16),
                     EventSequence = 1,
-                    AccountName = setup.Account.Name,
+                    AccountId = setup.Account.Id,
                     FundBalances =
                     [
                         new FundAmountState

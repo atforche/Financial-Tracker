@@ -1,5 +1,4 @@
 using Domain.AccountingPeriods;
-using Domain.Actions;
 using Domain.Funds;
 using Tests.Scenarios;
 using Tests.Setups;
@@ -42,14 +41,17 @@ public class AmountTests
     /// <param name="amount">Amount for this test case</param>
     /// <returns>The Change In Value that was added for this test case</returns>
     private static ChangeInValue AddChangeInValue(AddBalanceEventAmountScenarioSetup setup, decimal amount) =>
-        setup.GetService<AddChangeInValueAction>().Run(setup.AccountingPeriod,
-            new DateOnly(2025, 1, 10),
-            setup.Account,
-            new FundAmount
+        setup.GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+        {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
+            EventDate = new DateOnly(2025, 1, 10),
+            AccountId = setup.Account.Id,
+            FundAmount = new FundAmount
             {
                 FundId = setup.Fund.Id,
                 Amount = amount,
-            });
+            }
+        });
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -63,8 +65,8 @@ public class AmountTests
             AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 10),
             EventSequence = 1,
-            AccountName = setup.Account.Name,
-            AccountingEntry = new FundAmountState
+            AccountId = setup.Account.Id,
+            FundAmount = new FundAmountState
             {
                 FundId = setup.Fund.Id,
                 Amount = amount,

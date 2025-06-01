@@ -57,7 +57,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
         _futureAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(_futureAccountingPeriod);
 
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+        Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
@@ -72,7 +72,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
             ]);
         GetService<IAccountRepository>().Add(Account);
 
-        DebtAccount = GetService<AddAccountAction>().Run("TestDebt", AccountType.Debt, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+        DebtAccount = GetService<AccountFactory>().Create("TestDebt", AccountType.Debt, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
@@ -98,10 +98,10 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
     {
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.MultipleEventsSameDay)
         {
-            Transaction transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
+            Transaction transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
                 new DateOnly(2025, 1, 15),
-                Account,
-                DebtAccount,
+                Account.Id,
+                DebtAccount.Id,
                 [
                     new FundAmount
                     {
@@ -113,10 +113,10 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesFundBalanceNegative)
         {
-            Transaction transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
+            Transaction transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
                 new DateOnly(2025, 1, 10),
-                Account,
-                DebtAccount,
+                Account.Id,
+                DebtAccount.Id,
                 [
                     new FundAmount
                     {
@@ -128,10 +128,10 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesAccountBalanceToZero)
         {
-            Transaction transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
+            Transaction transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
                 new DateOnly(2025, 1, 10),
-                Account,
-                DebtAccount,
+                Account.Id,
+                DebtAccount.Id,
                 [
                     new FundAmount
                     {
@@ -143,10 +143,10 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesAccountBalanceNegative)
         {
-            Transaction transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
+            Transaction transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
                 new DateOnly(2025, 1, 10),
-                Account,
-                DebtAccount,
+                Account.Id,
+                DebtAccount.Id,
                 [
                     new FundAmount
                     {
@@ -158,10 +158,10 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesFutureEventToMakeAccountBalanceNegative)
         {
-            Transaction transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
+            Transaction transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
                 new DateOnly(2025, 1, 20),
-                Account,
-                DebtAccount,
+                Account.Id,
+                DebtAccount.Id,
                 [
                     new FundAmount
                     {
@@ -173,10 +173,10 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesAccountBalancesAtEndOfPeriodToBeNegative)
         {
-            Transaction transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
+            Transaction transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
                 new DateOnly(2025, 1, 10),
-                Account,
-                DebtAccount,
+                Account.Id,
+                DebtAccount.Id,
                 [
                     new FundAmount
                     {
@@ -185,10 +185,10 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                     }
                 ]);
             GetService<ITransactionRepository>().Add(transaction);
-            transaction = GetService<AddTransactionAction>().Run(_futureAccountingPeriod,
+            transaction = GetService<TransactionFactory>().Create(_futureAccountingPeriod.Id,
                 new DateOnly(2025, 1, 10),
-                DebtAccount,
-                Account,
+                DebtAccount.Id,
+                Account.Id,
                 [
                     new FundAmount
                     {

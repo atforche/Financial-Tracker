@@ -1,7 +1,6 @@
 using Data;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
 using Microsoft.AspNetCore.Mvc;
 using Rest.Models.Accounts;
@@ -15,12 +14,11 @@ namespace Rest.Controllers;
 [Route("/accounts")]
 public sealed class AccountController(
     UnitOfWork unitOfWork,
-    AddAccountAction addAccountAction,
-    IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
+    AccountFactory accountFactory,
     AccountIdFactory accountIdFactory,
-    FundIdFactory fundIdFactory,
-    AccountingPeriodIdFactory accountingPeriodIdFactory) : ControllerBase
+    AccountingPeriodIdFactory accountingPeriodIdFactory,
+    FundIdFactory fundIdFactory) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Accounts from the database
@@ -50,8 +48,8 @@ public sealed class AccountController(
     [HttpPost("")]
     public async Task<IActionResult> CreateAccountAsync(CreateAccountModel createAccountModel)
     {
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(createAccountModel.AccountingPeriodId));
-        Account newAccount = addAccountAction.Run(createAccountModel.Name, createAccountModel.Type, accountingPeriod, createAccountModel.Date,
+        AccountingPeriodId accountingPeriodId = accountingPeriodIdFactory.Create(createAccountModel.AccountingPeriodId);
+        Account newAccount = accountFactory.Create(createAccountModel.Name, createAccountModel.Type, accountingPeriodId, createAccountModel.Date,
             createAccountModel.StartingFundBalances.Select(fundBalance => new FundAmount
             {
                 FundId = fundIdFactory.Create(fundBalance.FundId),

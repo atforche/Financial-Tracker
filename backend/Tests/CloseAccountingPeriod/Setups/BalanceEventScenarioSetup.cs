@@ -51,7 +51,7 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
 
         AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+        Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
@@ -68,9 +68,9 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
 
         if (scenario is BalanceEventScenario.UnpostedTransaction or BalanceEventScenario.PostedTransaction)
         {
-            Transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
+            Transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
                 new DateOnly(2025, 1, 15),
-                Account,
+                Account.Id,
                 null,
                 [
                     new FundAmount
@@ -89,23 +89,29 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
         }
         if (scenario is BalanceEventScenario.ChangeInValue)
         {
-            GetService<AddChangeInValueAction>().Run(AccountingPeriod,
-                new DateOnly(2025, 1, 15),
-                Account,
-                new FundAmount
+            GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+            {
+                AccountingPeriodId = AccountingPeriod.Id,
+                EventDate = new DateOnly(2025, 1, 15),
+                AccountId = Account.Id,
+                FundAmount = new FundAmount
                 {
                     FundId = Fund.Id,
                     Amount = 250.00m
-                });
+                }
+            });
         }
         if (scenario is BalanceEventScenario.FundConversion)
         {
-            GetService<AddFundConversionAction>().Run(AccountingPeriod,
-                new DateOnly(2025, 1, 15),
-                Account,
-                Fund,
-                OtherFund,
-                250.00m);
+            GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
+            {
+                AccountingPeriodId = AccountingPeriod.Id,
+                EventDate = new DateOnly(2025, 1, 15),
+                AccountId = Account.Id,
+                FromFundId = Fund.Id,
+                ToFundId = OtherFund.Id,
+                Amount = 250.00m
+            });
         }
     }
 }

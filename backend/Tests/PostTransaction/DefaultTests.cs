@@ -1,4 +1,3 @@
-using Domain.Actions;
 using Domain.Funds;
 using Domain.Transactions;
 using Tests.Setups;
@@ -18,9 +17,9 @@ public class DefaultTests
     public void RunTest()
     {
         using var setup = new DefaultScenarioSetup();
-        Transaction transaction = setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
+        Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
-            setup.Account,
+            setup.Account.Id,
             null,
             [
                 new FundAmount
@@ -36,7 +35,7 @@ public class DefaultTests
             {
                 AccountingPeriodId = setup.AccountingPeriod.Id,
                 Date = new DateOnly(2025, 1, 15),
-                AccountingEntries =
+                FundAmounts =
                 [
                     new FundAmountState
                     {
@@ -51,7 +50,7 @@ public class DefaultTests
                         AccountingPeriodId = setup.AccountingPeriod.Id,
                         EventDate = new DateOnly(2025, 1, 15),
                         EventSequence = 1,
-                        AccountName = setup.Account.Name,
+                        AccountId = setup.Account.Id,
                         EventType = TransactionBalanceEventType.Added,
                         AccountType = TransactionAccountType.Debit,
                     },
@@ -60,7 +59,7 @@ public class DefaultTests
                         AccountingPeriodId = setup.AccountingPeriod.Id,
                         EventDate = new DateOnly(2025, 1, 15),
                         EventSequence = 2,
-                        AccountName = setup.Account.Name,
+                        AccountId = setup.Account.Id,
                         EventType = TransactionBalanceEventType.Posted,
                         AccountType = TransactionAccountType.Debit,
                     },

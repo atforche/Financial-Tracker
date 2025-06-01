@@ -1,7 +1,6 @@
 using Domain;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Services;
 using Tests.Scenarios;
 using Tests.Setups;
@@ -26,7 +25,7 @@ public class AccountTests
         new FundConversionValidator().Validate(AddFundConversion(setup, true), GetExpectedState(setup, true));
         new AccountBalanceByEventValidator().Validate(
             setup.GetService<AccountBalanceService>()
-                .GetAccountBalancesByEvent(setup.Account, new DateRange(new DateOnly(2025, 1, 10), new DateOnly(2025, 1, 10))),
+                .GetAccountBalancesByEvent(setup.Account.Id, new DateRange(new DateOnly(2025, 1, 10), new DateOnly(2025, 1, 10))),
             [GetExpectedAccountBalance(setup, false), GetExpectedAccountBalance(setup, true)]);
     }
 
@@ -37,12 +36,15 @@ public class AccountTests
     /// <param name="reverse">True to convert funds from Other Fund to Fund, false to convert funds from Fund to Other Fund</param>
     /// <returns>The Fund Conversion that was added for this test case</returns>
     private static FundConversion AddFundConversion(AccountScenarioSetup setup, bool reverse) =>
-        setup.GetService<AddFundConversionAction>().Run(setup.AccountingPeriod,
-            new DateOnly(2025, 1, 10),
-            setup.Account,
-            reverse ? setup.OtherFund : setup.Fund,
-            reverse ? setup.Fund : setup.OtherFund,
-            100.00m);
+        setup.GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
+        {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
+            EventDate = new DateOnly(2025, 1, 10),
+            AccountId = setup.Account.Id,
+            FromFundId = reverse ? setup.OtherFund.Id : setup.Fund.Id,
+            ToFundId = reverse ? setup.Fund.Id : setup.OtherFund.Id,
+            Amount = 100.00m
+        });
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -56,9 +58,9 @@ public class AccountTests
             AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 10),
             EventSequence = reverse ? 2 : 1,
-            AccountName = setup.Account.Name,
-            FromFundName = reverse ? setup.OtherFund.Name : setup.Fund.Name,
-            ToFundName = reverse ? setup.Fund.Name : setup.OtherFund.Name,
+            AccountId = setup.Account.Id,
+            FromFundId = reverse ? setup.OtherFund.Id : setup.Fund.Id,
+            ToFundId = reverse ? setup.Fund.Id : setup.OtherFund.Id,
             Amount = 100.00m,
         };
 
@@ -74,7 +76,7 @@ public class AccountTests
             AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 10),
             EventSequence = reverse ? 2 : 1,
-            AccountName = setup.Account.Name,
+            AccountId = setup.Account.Id,
             FundBalances =
             [
                 new FundAmountState

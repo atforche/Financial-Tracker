@@ -59,7 +59,7 @@ internal sealed class AddBalanceEventDateScenarioSetup : ScenarioSetup
         _futureAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(_futureAccountingPeriod);
 
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, CurrentAccountingPeriod, _pastAccountingPeriod.PeriodStartDate.AddDays(14),
+        Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, CurrentAccountingPeriod.Id, _pastAccountingPeriod.PeriodStartDate.AddDays(14),
             [
                 new FundAmount
                 {

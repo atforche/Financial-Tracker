@@ -31,29 +31,19 @@ public class Account : Entity<AccountId>
     /// <summary>
     /// Account Added Balance Event for this Account
     /// </summary>
-    public AccountAddedBalanceEvent AccountAddedBalanceEvent { get; private set; }
+    public AccountAddedBalanceEvent AccountAddedBalanceEvent { get; internal set; }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="name">Name for this Account</param>
     /// <param name="type">Type for this Account</param>
-    /// <param name="accountingPeriodId">Accounting Period ID for the Account Added Balance Event for this Account</param>
-    /// <param name="date">Date for the Account Added Balance Event for this Account</param>
-    /// <param name="eventSequence">Event Sequence for the Account Added Balance Event for this Account</param>
-    /// <param name="fundAmounts">Fund Amounts for the Account Added Balance Event for this Account</param>
-    internal Account(
-        string name,
-        AccountType type,
-        AccountingPeriodId accountingPeriodId,
-        DateOnly date,
-        int eventSequence,
-        IEnumerable<FundAmount> fundAmounts)
+    internal Account(string name, AccountType type)
         : base(new AccountId(Guid.NewGuid()))
     {
         Name = name;
         Type = type;
-        AccountAddedBalanceEvent = new AccountAddedBalanceEvent(accountingPeriodId, date, eventSequence, this, fundAmounts);
+        AccountAddedBalanceEvent = null!;
     }
 
     /// <summary>

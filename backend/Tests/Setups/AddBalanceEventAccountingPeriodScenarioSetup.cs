@@ -48,9 +48,9 @@ internal sealed class AddBalanceEventAccountingPeriodScenarioSetup : ScenarioSet
         AccountingPeriod nextAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(nextAccountingPeriod);
 
-        Account = GetService<AddAccountAction>().Run("Test",
+        Account = GetService<AccountFactory>().Create("Test",
             AccountType.Standard,
-            scenario == AddBalanceEventAccountingPeriodScenario.PriorToAccountBeingAdded ? nextAccountingPeriod : AccountingPeriod,
+            scenario == AddBalanceEventAccountingPeriodScenario.PriorToAccountBeingAdded ? nextAccountingPeriod.Id : AccountingPeriod.Id,
             AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount

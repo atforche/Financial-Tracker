@@ -43,7 +43,7 @@ internal sealed class GetAccountBalanceDateRangeScenarioSetup : ScenarioSetup
         AccountingPeriod secondAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(secondAccountingPeriod);
 
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, secondAccountingPeriod, secondAccountingPeriod.PeriodStartDate,
+        Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, secondAccountingPeriod.Id, secondAccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {

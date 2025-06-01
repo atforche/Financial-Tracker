@@ -1,7 +1,6 @@
 using Data;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
@@ -16,15 +15,13 @@ namespace Rest.Controllers;
 [Route("/transactions")]
 public sealed class TransactionController(
     UnitOfWork unitOfWork,
-    AddTransactionAction addTransactionAction,
-    PostTransactionAction postTransactionAction,
-    IAccountingPeriodRepository accountingPeriodRepository,
-    IAccountRepository accountRepository,
     ITransactionRepository transactionRepository,
     AccountingPeriodIdFactory accountingPeriodIdFactory,
     AccountIdFactory accountIdFactory,
     FundIdFactory fundIdFactory,
-    TransactionIdFactory transactionIdFactory) : ControllerBase
+    TransactionFactory transactionFactory,
+    TransactionIdFactory transactionIdFactory,
+    PostTransactionAction postTransactionAction) : ControllerBase
 {
     /// <summary>
     /// Creates a new Transaction with the provided properties
@@ -34,27 +31,16 @@ public sealed class TransactionController(
     [HttpPost("")]
     public async Task<IActionResult> CreateTransactionAsync(CreateTransactionModel createTransactionModel)
     {
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(createTransactionModel.AccountingPeriodId));
-
-        Account? debitAccount = null;
-        if (createTransactionModel.DebitAccountId != null)
-        {
-            debitAccount = accountRepository.FindById(accountIdFactory.Create(createTransactionModel.DebitAccountId.Value));
-        }
-        Account? creditAccount = null;
-        if (createTransactionModel.CreditAccountId != null)
-        {
-            creditAccount = accountRepository.FindById(accountIdFactory.Create(createTransactionModel.CreditAccountId.Value));
-        }
-        Transaction newTransaction = addTransactionAction.Run(accountingPeriod,
+        Transaction newTransaction = transactionFactory.Create(
+            accountingPeriodIdFactory.Create(createTransactionModel.AccountingPeriodId),
             createTransactionModel.Date,
-            debitAccount,
-            creditAccount,
-            createTransactionModel.AccountingEntries.Select(entry => new FundAmount
+            createTransactionModel.DebitAccountId != null ? accountIdFactory.Create(createTransactionModel.DebitAccountId.Value) : null,
+            createTransactionModel.CreditAccountId != null ? accountIdFactory.Create(createTransactionModel.CreditAccountId.Value) : null,
+            createTransactionModel.FundAmounts.Select(entry => new FundAmount
             {
                 FundId = fundIdFactory.Create(entry.FundId),
                 Amount = entry.Amount,
-            }));
+            }).ToList());
         transactionRepository.Add(newTransaction);
         await unitOfWork.SaveChangesAsync();
         return Ok(new TransactionModel(newTransaction));

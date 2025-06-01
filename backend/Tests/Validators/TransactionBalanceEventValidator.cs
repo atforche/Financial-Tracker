@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Domain.Accounts;
 using Domain.Transactions;
 
 namespace Tests.Validators;
@@ -15,7 +16,7 @@ internal sealed class TransactionBalanceEventValidator : EntityValidator<Transac
         Assert.Equal(expectedState.AccountingPeriodId, entity.AccountingPeriodId);
         Assert.Equal(expectedState.EventDate, entity.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.EventSequence);
-        Assert.Equal(expectedState.AccountName, entity.Account.Name);
+        Assert.Equal(expectedState.AccountId, entity.AccountId);
         Assert.Equal(expectedState.EventType, entity.EventType);
         Assert.Equal(expectedState.AccountType, entity.AccountType);
     }
@@ -42,9 +43,9 @@ internal sealed record TransactionBalanceEventState
     public required int EventSequence { get; init; }
 
     /// <summary>
-    /// Account Name for this Transaction Balance Event
+    /// Account ID for this Transaction Balance Event
     /// </summary>
-    public required string AccountName { get; init; }
+    public required AccountId AccountId { get; init; }
 
     /// <summary>
     /// Event Type for this Transaction Balance Event

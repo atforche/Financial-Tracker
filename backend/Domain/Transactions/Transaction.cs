@@ -16,7 +16,7 @@ namespace Domain.Transactions;
 /// </remarks>
 public class Transaction : Entity<TransactionId>
 {
-    private readonly List<FundAmount> _accountingEntries;
+    private readonly List<FundAmount> _fundAmounts;
     private readonly List<TransactionBalanceEvent> _transactionBalanceEvents;
 
     /// <summary>
@@ -30,9 +30,9 @@ public class Transaction : Entity<TransactionId>
     public DateOnly Date { get; private set; }
 
     /// <summary>
-    /// List of Accounting Entries for this Transaction
+    /// List of Fund Amounts for this Transaction
     /// </summary>
-    public IReadOnlyCollection<FundAmount> AccountingEntries => _accountingEntries;
+    public IReadOnlyCollection<FundAmount> FundAmounts => _fundAmounts;
 
     /// <summary>
     /// List of Balance Events for this Transaction
@@ -44,65 +44,34 @@ public class Transaction : Entity<TransactionId>
     /// </summary>
     /// <param name="accountingPeriodId">Accounting Period ID for this Transaction</param>
     /// <param name="eventDate">Date for this Transaction</param>
-    /// <param name="eventSequence">Event Sequence for the initial Transaction Balance Event</param>
-    /// <param name="accountingEntries">Accounting Entries for this Transaction</param>
-    /// <param name="debitAccount">Debit Account for this Transaction</param>
-    /// <param name="creditAccount">Credit Account for this Transaction</param>
+    /// <param name="fundAmounts">Fund Amounts for this Transaction</param>
     internal Transaction(AccountingPeriodId accountingPeriodId,
         DateOnly eventDate,
-        int eventSequence,
-        Account? debitAccount,
-        Account? creditAccount,
-        IEnumerable<FundAmount> accountingEntries)
+        IEnumerable<FundAmount> fundAmounts)
         : base(new TransactionId(Guid.NewGuid()))
     {
         AccountingPeriodId = accountingPeriodId;
         Date = eventDate;
-        _accountingEntries = accountingEntries.ToList();
+        _fundAmounts = fundAmounts.ToList();
         _transactionBalanceEvents = [];
-        if (debitAccount != null)
-        {
-            _transactionBalanceEvents.Add(new TransactionBalanceEvent(this,
-                Date,
-                eventSequence,
-                debitAccount,
-                TransactionBalanceEventType.Added,
-                TransactionAccountType.Debit));
-        }
-        if (creditAccount != null)
-        {
-            _transactionBalanceEvents.Add(new TransactionBalanceEvent(this,
-                Date,
-                debitAccount != null ? eventSequence + 1 : eventSequence,
-                creditAccount,
-                TransactionBalanceEventType.Added,
-                TransactionAccountType.Credit));
-        }
     }
 
     /// <summary>
-    /// Gets the Account for this Transaction that corresponds to the provided Transaction Account Type
+    /// Gets the Account ID for this Transaction that corresponds to the provided Transaction Account Type
     /// </summary>
     /// <param name="accountType">Type of the Account to get</param>
-    /// <returns>The Account for this Transaction that corresponds to the provided type</returns>
-    internal Account? GetAccount(TransactionAccountType accountType) =>
+    /// <returns>The Account ID for this Transaction that corresponds to the provided type</returns>
+    internal AccountId? GetAccountId(TransactionAccountType accountType) =>
         TransactionBalanceEvents.SingleOrDefault(balanceEvent =>
             balanceEvent.AccountType == accountType &&
-            balanceEvent.EventType == TransactionBalanceEventType.Added)?.Account;
+            balanceEvent.EventType == TransactionBalanceEventType.Added)?.AccountId;
 
     /// <summary>
-    /// Posts the Transaction in the provided Account
+    /// Adds a Transaction Balance Event to this Transaction
     /// </summary>
-    /// <param name="accountType">Account Type that this Transaction should be posted in</param>
-    /// <param name="postedStatementDate">Posted statement date for this Transaction in the provided Account</param>
-    /// <param name="eventSequence">Event Sequence for this Transaction Balance Event</param>
-    internal void Post(TransactionAccountType accountType, DateOnly postedStatementDate, int eventSequence) =>
-        _transactionBalanceEvents.Add(new TransactionBalanceEvent(this,
-            postedStatementDate,
-            eventSequence,
-            GetAccount(accountType) ?? throw new InvalidOperationException(),
-            TransactionBalanceEventType.Posted,
-            accountType));
+    /// <param name="transactionBalanceEvent">Transaction Balance Event</param>
+    internal void AddBalanceEvent(TransactionBalanceEvent transactionBalanceEvent) =>
+        _transactionBalanceEvents.Add(transactionBalanceEvent);
 
     /// <summary>
     /// Constructs a new default instance of this class
@@ -110,7 +79,7 @@ public class Transaction : Entity<TransactionId>
     private Transaction() : base()
     {
         AccountingPeriodId = null!;
-        _accountingEntries = [];
+        _fundAmounts = [];
         _transactionBalanceEvents = [];
     }
 }

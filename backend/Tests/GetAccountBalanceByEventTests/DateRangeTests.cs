@@ -28,7 +28,7 @@ public class DateRangeTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Account Balance by Events for this test case</returns>
     private static IEnumerable<AccountBalanceByEvent> GetAccountBalance(GetAccountBalanceDateRangeScenarioSetup setup) =>
-        setup.GetService<AccountBalanceService>().GetAccountBalancesByEvent(setup.Account, setup.DateRange);
+        setup.GetService<AccountBalanceService>().GetAccountBalancesByEvent(setup.Account.Id, setup.DateRange);
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -48,7 +48,7 @@ public class DateRangeTests
                 AccountingPeriodId = setup.Account.AccountAddedBalanceEvent.AccountingPeriodId,
                 EventDate = setup.Account.AccountAddedBalanceEvent.EventDate,
                 EventSequence = 1,
-                AccountName = setup.Account.Name,
+                AccountId = setup.Account.Id,
                 FundBalances =
                 [
                     new FundAmountState

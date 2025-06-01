@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 using Domain.AccountingPeriods;
-using Rest.Models.Accounts;
+using Domain.BalanceEvents;
 using Rest.Models.Funds;
 
 namespace Rest.Models.AccountingPeriods;
@@ -13,28 +13,28 @@ public class ChangeInValueModel
     /// <inheritdoc cref="Domain.EntityOld.Id"/>
     public Guid Id { get; init; }
 
-    /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.Account"/>
-    public AccountModel Account { get; init; }
+    /// <inheritdoc cref="IBalanceEvent.AccountId"/>
+    public Guid AccountId { get; init; }
 
-    /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.EventDate"/>
+    /// <inheritdoc cref="IBalanceEvent.EventDate"/>
     public DateOnly EventDate { get; init; }
 
-    /// <inheritdoc cref="ChangeInValue.AccountingEntry"/>
-    public FundAmountModel AccountingEntry { get; init; }
+    /// <inheritdoc cref="ChangeInValue.FundAmount"/>
+    public FundAmountModel FundAmount { get; init; }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     [JsonConstructor]
     public ChangeInValueModel(Guid id,
-        AccountModel account,
+        Guid accountId,
         DateOnly eventDate,
-        FundAmountModel accountingEntry)
+        FundAmountModel fundAmount)
     {
         Id = id;
-        Account = account;
+        AccountId = accountId;
         EventDate = eventDate;
-        AccountingEntry = accountingEntry;
+        FundAmount = fundAmount;
     }
 
     /// <summary>
@@ -44,8 +44,8 @@ public class ChangeInValueModel
     public ChangeInValueModel(ChangeInValue changeInValue)
     {
         Id = changeInValue.Id.Value;
-        Account = new AccountModel(changeInValue.Account);
+        AccountId = changeInValue.AccountId.Value;
         EventDate = changeInValue.EventDate;
-        AccountingEntry = new FundAmountModel(changeInValue.AccountingEntry);
+        FundAmount = new FundAmountModel(changeInValue.FundAmount);
     }
 }

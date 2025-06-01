@@ -52,7 +52,7 @@ internal sealed class AccountTypeScenarioSetup : ScenarioSetup
 
         if (scenario is AccountTypeScenario.Debit or AccountTypeScenario.MissingCredit)
         {
-            DebitAccount = GetService<AddAccountAction>().Run("TestOne", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+            DebitAccount = GetService<AccountFactory>().Create("TestOne", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
                 [
                     new FundAmount
                     {
@@ -64,7 +64,7 @@ internal sealed class AccountTypeScenarioSetup : ScenarioSetup
         }
         else
         {
-            CreditAccount = GetService<AddAccountAction>().Run("TestOne", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+            CreditAccount = GetService<AccountFactory>().Create("TestOne", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
                 [
                     new FundAmount
                     {
@@ -75,10 +75,10 @@ internal sealed class AccountTypeScenarioSetup : ScenarioSetup
             GetService<IAccountRepository>().Add(CreditAccount);
         }
 
-        Transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
+        Transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
-            DebitAccount,
-            CreditAccount,
+            DebitAccount?.Id,
+            CreditAccount?.Id,
             [
                 new FundAmount
                 {

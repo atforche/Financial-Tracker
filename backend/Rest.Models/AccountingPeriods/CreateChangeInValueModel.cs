@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Domain.BalanceEvents;
 using Rest.Models.Funds;
 
 namespace Rest.Models.AccountingPeriods;
@@ -8,12 +9,12 @@ namespace Rest.Models.AccountingPeriods;
 /// </summary>
 public class CreateChangeInValueModel
 {
-    /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.Account"/>
+    /// <inheritdoc cref="IBalanceEvent.AccountId"/>
     public required Guid AccountId { get; init; }
 
-    /// <inheritdoc cref="Domain.BalanceEvents.BalanceEvent.EventDate"/>
+    /// <inheritdoc cref="IBalanceEvent.EventDate"/>
     public required DateOnly EventDate { get; init; }
 
-    /// <inheritdoc cref="ChangeInValue.AccountingEntry"/>
-    public required CreateFundAmountModel AccountingEntry { get; init; }
+    /// <inheritdoc cref="ChangeInValue.FundAmount"/>
+    public required CreateFundAmountModel FundAmount { get; init; }
 }

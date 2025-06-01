@@ -51,15 +51,15 @@ internal abstract class ScenarioSetup : IDisposable
         serviceCollection.AddScoped<TestUnitOfWork>();
         serviceCollection.AddScoped<AddAccountingPeriodAction>();
         serviceCollection.AddScoped<CloseAccountingPeriodAction>();
-        serviceCollection.AddScoped<AddTransactionAction>();
+        serviceCollection.AddScoped<TransactionFactory>();
+        serviceCollection.AddScoped<TransactionBalanceEventFactory>();
         serviceCollection.AddScoped<PostTransactionAction>();
-        serviceCollection.AddScoped<AddChangeInValueAction>();
-        serviceCollection.AddScoped<AddFundConversionAction>();
+        serviceCollection.AddScoped<AccountAddedBalanceEventFactory>();
+        serviceCollection.AddScoped<ChangeInValueFactory>();
+        serviceCollection.AddScoped<FundConversionFactory>();
         serviceCollection.AddScoped<AccountBalanceService>();
-        serviceCollection.AddScoped<AddAccountAction>();
+        serviceCollection.AddScoped<AccountFactory>();
         serviceCollection.AddScoped<AddFundAction>();
-        serviceCollection.AddScoped<BalanceEventDateValidator>();
-        serviceCollection.AddScoped<BalanceEventFutureEventValidator>();
         _serviceProvider = serviceCollection.BuildServiceProvider();
 
         if (shouldUseDatabase)

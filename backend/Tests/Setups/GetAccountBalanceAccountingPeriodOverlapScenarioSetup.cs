@@ -50,7 +50,7 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
         PastAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2024, 12);
         GetService<IAccountingPeriodRepository>().Add(PastAccountingPeriod);
 
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, PastAccountingPeriod, PastAccountingPeriod.PeriodStartDate,
+        Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, PastAccountingPeriod.Id, PastAccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
@@ -66,9 +66,9 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
         FutureAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(FutureAccountingPeriod);
 
-        Transaction transaction = GetService<AddTransactionAction>().Run(CurrentAccountingPeriod,
+        Transaction transaction = GetService<TransactionFactory>().Create(CurrentAccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
-            Account,
+            Account.Id,
             null,
             [
                 new FundAmount
@@ -80,10 +80,10 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
         GetService<ITransactionRepository>().Add(transaction);
         GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, transaction.Date);
 
-        Transaction otherPeriodTransaction = GetService<AddTransactionAction>().Run(
-            accountingPeriodType == AccountingPeriodType.Past ? PastAccountingPeriod : FutureAccountingPeriod,
+        Transaction otherPeriodTransaction = GetService<TransactionFactory>().Create(
+            accountingPeriodType == AccountingPeriodType.Past ? PastAccountingPeriod.Id : FutureAccountingPeriod.Id,
             eventDate,
-            Account,
+            Account.Id,
             null,
             [
                 new FundAmount

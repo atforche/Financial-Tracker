@@ -66,7 +66,7 @@ public class AccountingPeriodOverlapTests
     private static AccountBalanceByAccountingPeriod GetAccountBalance(
         GetAccountBalanceAccountingPeriodOverlapScenarioSetup setup,
         AccountingPeriod accountingPeriod) =>
-        setup.GetService<AccountBalanceService>().GetAccountBalancesByAccountingPeriod(setup.Account, accountingPeriod);
+        setup.GetService<AccountBalanceService>().GetAccountBalanceByAccountingPeriod(setup.Account.Id, accountingPeriod.Id);
 
     /// <summary>
     /// Gets the expected state for the past Accounting Period for this test case

@@ -12,36 +12,48 @@ namespace Domain.AccountingPeriods;
 /// represented as a single distinct Transaction on an account statement. Examples of this include interest
 /// that is constantly accruing on a loan or changes in stock market value for an investment Account.
 /// </remarks>
-public class ChangeInValue : BalanceEvent
+public class ChangeInValue : EntityOld, IBalanceEvent
 {
+    /// <inheritdoc/>
+    public AccountingPeriodId AccountingPeriodId { get; private set; }
+
+    /// <inheritdoc/>
+    public DateOnly EventDate { get; private set; }
+
+    /// <inheritdoc/>
+    public int EventSequence { get; private set; }
+
+    /// <inheritdoc/>
+    public AccountId AccountId { get; private set; }
+
     /// <summary>
-    /// Accounting Entry for this Change In Value
+    /// Fund Amount for this Change In Value
     /// </summary>
-    public FundAmount AccountingEntry { get; private set; }
+    public FundAmount FundAmount { get; private set; }
 
     /// <inheritdoc/>
-    public override AccountBalance ApplyEventToBalance(AccountBalance currentBalance) =>
+    public AccountBalance ApplyEventToBalance(AccountBalance currentBalance) =>
         ApplyEventPrivate(currentBalance, false);
 
     /// <inheritdoc/>
-    public override AccountBalance ReverseEventFromBalance(AccountBalance currentBalance) =>
+    public AccountBalance ReverseEventFromBalance(AccountBalance currentBalance) =>
         ApplyEventPrivate(currentBalance, false);
 
     /// <inheritdoc/>
-    public override bool CanBeAppliedToBalance(AccountBalance currentBalance)
+    public bool CanBeAppliedToBalance(AccountBalance currentBalance)
     {
-        if (!base.CanBeAppliedToBalance(currentBalance))
+        if (AccountId != currentBalance.Account.Id)
         {
-            return false;
+            return true;
         }
         // Change In Values that are increasing an Accounts balance are always valid
-        if (AccountingEntry.Amount > 0)
+        if (FundAmount.Amount > 0)
         {
             return true;
         }
         // Cannot apply this Balance Event if it will take the Account's overall balance negative
         // For simplicity, count pending balance decreases but don't count pending balance increases.
-        return Math.Min(currentBalance.Balance, currentBalance.BalanceIncludingPending) + AccountingEntry.Amount >= 0;
+        return Math.Min(currentBalance.Balance, currentBalance.BalanceIncludingPending) + FundAmount.Amount >= 0;
     }
 
     /// <summary>
@@ -50,22 +62,31 @@ public class ChangeInValue : BalanceEvent
     /// <param name="accountingPeriodId">Accounting Period ID for this Change In Value</param>
     /// <param name="eventDate">Event Date for this Change In Value</param>
     /// <param name="eventSequence">Event Sequence for this Change In Value</param>
-    /// <param name="account">Account for this Change In Value</param>
-    /// <param name="accountingEntry">Accounting Entry for this Change In Value</param>
+    /// <param name="accountId">Account ID for this Change In Value</param>
+    /// <param name="fundAmount">Fund Amount for this Change In Value</param>
     internal ChangeInValue(AccountingPeriodId accountingPeriodId,
         DateOnly eventDate,
         int eventSequence,
-        Account account,
-        FundAmount accountingEntry)
-        : base(accountingPeriodId, eventDate, eventSequence, account) =>
-        AccountingEntry = accountingEntry;
+        AccountId accountId,
+        FundAmount fundAmount)
+        : base()
+    {
+        AccountingPeriodId = accountingPeriodId;
+        EventDate = eventDate;
+        EventSequence = eventSequence;
+        AccountId = accountId;
+        FundAmount = fundAmount;
+    }
 
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private ChangeInValue()
-        : base() =>
-        AccountingEntry = null!;
+    private ChangeInValue() : base()
+    {
+        AccountingPeriodId = null!;
+        AccountId = null!;
+        FundAmount = null!;
+    }
 
     /// <summary>
     /// Applies the Fund Conversion to the provided balance
@@ -75,15 +96,15 @@ public class ChangeInValue : BalanceEvent
     /// <returns>The new Account Balance after this event has been applied</returns>
     private AccountBalance ApplyEventPrivate(AccountBalance currentBalance, bool isReverse)
     {
-        if (Account != currentBalance.Account)
+        if (AccountId != currentBalance.Account.Id)
         {
             return currentBalance;
         }
         int balanceChangeFactor = isReverse ? -1 : 1;
         var fundBalances = currentBalance.FundBalances.ToDictionary(fundAmount => fundAmount.FundId, fundAmount => fundAmount.Amount);
-        if (!fundBalances.TryAdd(AccountingEntry.FundId, balanceChangeFactor * AccountingEntry.Amount))
+        if (!fundBalances.TryAdd(FundAmount.FundId, balanceChangeFactor * FundAmount.Amount))
         {
-            fundBalances[AccountingEntry.FundId] = fundBalances[AccountingEntry.FundId] + (balanceChangeFactor * AccountingEntry.Amount);
+            fundBalances[FundAmount.FundId] = fundBalances[FundAmount.FundId] + (balanceChangeFactor * FundAmount.Amount);
         }
         return new AccountBalance(currentBalance.Account,
             fundBalances.Select(pair => new FundAmount

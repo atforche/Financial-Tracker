@@ -25,8 +25,8 @@ public class TransactionModel
     /// </summary>
     public TransactionAccountDetailModel? CreditDetail { get; init; }
 
-    /// <inheritdoc cref="Transaction.AccountingEntries"/>
-    public ICollection<FundAmountModel> AccountingEntries { get; init; }
+    /// <inheritdoc cref="Transaction.FundAmounts"/>
+    public ICollection<FundAmountModel> FundAmounts { get; init; }
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -36,13 +36,13 @@ public class TransactionModel
         DateOnly date,
         TransactionAccountDetailModel? debitDetail,
         TransactionAccountDetailModel? creditDetail,
-        ICollection<FundAmountModel> accountingEntries)
+        ICollection<FundAmountModel> fundAmounts)
     {
         Id = id;
         Date = date;
         DebitDetail = debitDetail;
         CreditDetail = creditDetail;
-        AccountingEntries = accountingEntries;
+        FundAmounts = fundAmounts;
     }
 
     /// <summary>
@@ -61,6 +61,6 @@ public class TransactionModel
             .Any(balanceEvent => balanceEvent.AccountType == TransactionAccountType.Credit)
             ? new TransactionAccountDetailModel(transaction, TransactionAccountType.Credit)
             : null;
-        AccountingEntries = transaction.AccountingEntries.Select(fundAmount => new FundAmountModel(fundAmount)).ToList();
+        FundAmounts = transaction.FundAmounts.Select(fundAmount => new FundAmountModel(fundAmount)).ToList();
     }
 }

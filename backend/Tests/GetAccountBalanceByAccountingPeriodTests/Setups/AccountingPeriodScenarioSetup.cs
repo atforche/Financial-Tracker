@@ -44,7 +44,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
         AccountingPeriod secondAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(secondAccountingPeriod);
 
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, secondAccountingPeriod, secondAccountingPeriod.PeriodStartDate,
+        Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, secondAccountingPeriod.Id, secondAccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
@@ -68,9 +68,9 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
 
         if (scenario == AccountingPeriodScenario.PriorPeriodHasPendingBalanceChanges)
         {
-            Transaction transaction = GetService<AddTransactionAction>().Run(secondAccountingPeriod,
+            Transaction transaction = GetService<TransactionFactory>().Create(secondAccountingPeriod.Id,
                 new DateOnly(2025, 1, 15),
-                Account,
+                Account.Id,
                 null,
                 [
                     new FundAmount

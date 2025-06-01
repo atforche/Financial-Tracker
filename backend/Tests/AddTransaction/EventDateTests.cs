@@ -1,4 +1,3 @@
-using Domain.Actions;
 using Domain.Funds;
 using Domain.Transactions;
 using Tests.Scenarios;
@@ -34,9 +33,9 @@ public class EventDateTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
     private static Transaction AddTransaction(AddBalanceEventDateScenarioSetup setup) =>
-        setup.GetService<AddTransactionAction>().Run(setup.CurrentAccountingPeriod,
+        setup.GetService<TransactionFactory>().Create(setup.CurrentAccountingPeriod.Id,
             setup.EventDate,
-            setup.Account,
+            setup.Account.Id,
             null,
             [
                 new FundAmount()
@@ -56,7 +55,7 @@ public class EventDateTests
         {
             AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
             Date = setup.EventDate,
-            AccountingEntries =
+            FundAmounts =
             [
                 new FundAmountState
                 {
@@ -71,7 +70,7 @@ public class EventDateTests
                     AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
                     EventDate = setup.EventDate,
                     EventSequence = 1,
-                    AccountName = setup.Account.Name,
+                    AccountId = setup.Account.Id,
                     EventType = TransactionBalanceEventType.Added,
                     AccountType = TransactionAccountType.Debit,
                 }

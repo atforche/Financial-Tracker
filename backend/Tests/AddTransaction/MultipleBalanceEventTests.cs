@@ -1,5 +1,4 @@
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
 using Domain.Transactions;
 using Tests.AddTransaction.Setups;
@@ -55,10 +54,10 @@ public class MultipleBalanceEventTests
     /// <returns>The Transaction that was added for this test case</returns>
     private static Transaction AddTransaction(MultipleBalanceEventScenarioSetup setup, AccountType accountType)
     {
-        Transaction transaction = setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
+        Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
-            accountType == AccountType.Standard ? setup.Account : null,
-            accountType == AccountType.Debt ? setup.DebtAccount : null,
+            accountType == AccountType.Standard ? setup.Account.Id : null,
+            accountType == AccountType.Debt ? setup.DebtAccount.Id : null,
             [
                 new FundAmount
                 {
@@ -96,7 +95,7 @@ public class MultipleBalanceEventTests
         {
             AccountingPeriodId = setup.AccountingPeriod.Id,
             Date = new DateOnly(2025, 1, 15),
-            AccountingEntries =
+            FundAmounts =
             [
                 new FundAmountState
                 {
@@ -111,7 +110,7 @@ public class MultipleBalanceEventTests
                     AccountingPeriodId = setup.AccountingPeriod.Id,
                     EventDate = new DateOnly(2025, 1, 15),
                     EventSequence = expectedEventSequence,
-                    AccountName = accountType == AccountType.Standard ? setup.Account.Name : setup.DebtAccount.Name,
+                    AccountId = accountType == AccountType.Standard ? setup.Account.Id : setup.DebtAccount.Id,
                     EventType = TransactionBalanceEventType.Added,
                     AccountType = accountType == AccountType.Standard ? TransactionAccountType.Debit : TransactionAccountType.Credit
                 }

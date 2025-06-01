@@ -14,7 +14,7 @@ internal sealed class TransactionValidator : EntityValidator<Transaction, Transa
         Assert.NotEqual(Guid.Empty, entity.Id.Value);
         Assert.Equal(expectedState.AccountingPeriodId, entity.AccountingPeriodId);
         Assert.Equal(expectedState.Date, entity.Date);
-        new FundAmountValidator().Validate(entity.AccountingEntries, expectedState.AccountingEntries);
+        new FundAmountValidator().Validate(entity.FundAmounts, expectedState.FundAmounts);
         new TransactionBalanceEventValidator().Validate(entity.TransactionBalanceEvents, expectedState.TransactionBalanceEvents);
     }
 }
@@ -35,9 +35,9 @@ internal sealed record TransactionState
     public required DateOnly Date { get; init; }
 
     /// <summary>
-    /// Accounting Entries for this Transaction
+    /// Fund Amounts for this Transaction
     /// </summary>
-    public required List<FundAmountState> AccountingEntries { get; init; }
+    public required List<FundAmountState> FundAmounts { get; init; }
 
     /// <summary>
     /// Transaction Balance Events for this Transaction

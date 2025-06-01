@@ -24,6 +24,6 @@ public class CreateTransactionModel
     /// </summary>
     public Guid? CreditAccountId { get; init; }
 
-    /// <inheritdoc cref="Transaction.AccountingEntries"/>
-    public required IReadOnlyCollection<CreateFundAmountModel> AccountingEntries { get; init; }
+    /// <inheritdoc cref="Transaction.FundAmounts"/>
+    public required IReadOnlyCollection<CreateFundAmountModel> FundAmounts { get; init; }
 }

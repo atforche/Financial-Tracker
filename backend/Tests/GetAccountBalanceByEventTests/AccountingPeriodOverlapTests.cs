@@ -39,7 +39,7 @@ public class AccountingPeriodOverlapTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Account Balance by Events for the provided Accounting Period</returns>
     private static IEnumerable<AccountBalanceByEvent> GetAccountBalance(GetAccountBalanceAccountingPeriodOverlapScenarioSetup setup) =>
-        setup.GetService<AccountBalanceService>().GetAccountBalancesByEvent(setup.Account,
+        setup.GetService<AccountBalanceService>().GetAccountBalancesByEvent(setup.Account.Id,
             new DateRange(new DateOnly(2025, 1, 10), new DateOnly(2025, 1, 20)));
 
     /// <summary>
@@ -74,7 +74,7 @@ public class AccountingPeriodOverlapTests
             AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 15),
             EventSequence = 1,
-            AccountName = setup.Account.Name,
+            AccountId = setup.Account.Id,
             FundBalances =
             [
                 new FundAmountState
@@ -97,7 +97,7 @@ public class AccountingPeriodOverlapTests
             AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 15),
             EventSequence = 2,
-            AccountName = setup.Account.Name,
+            AccountId = setup.Account.Id,
             FundBalances =
             [
                 new FundAmountState
@@ -131,7 +131,7 @@ public class AccountingPeriodOverlapTests
                 AccountingPeriodId = setup.PastAccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 3,
-                AccountName = setup.Account.Name,
+                AccountId = setup.Account.Id,
                 FundBalances =
                 [
                     new FundAmountState
@@ -154,7 +154,7 @@ public class AccountingPeriodOverlapTests
                 AccountingPeriodId = setup.PastAccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 4,
-                AccountName = setup.Account.Name,
+                AccountId = setup.Account.Id,
                 FundBalances =
                 [
                     new FundAmountState
@@ -189,7 +189,7 @@ public class AccountingPeriodOverlapTests
                 AccountingPeriodId = setup.FutureAccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 3,
-                AccountName = setup.Account.Name,
+                AccountId = setup.Account.Id,
                 FundBalances =
                 [
                     new FundAmountState
@@ -212,7 +212,7 @@ public class AccountingPeriodOverlapTests
                 AccountingPeriodId = setup.FutureAccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 4,
-                AccountName = setup.Account.Name,
+                AccountId = setup.Account.Id,
                 FundBalances =
                 [
                     new FundAmountState

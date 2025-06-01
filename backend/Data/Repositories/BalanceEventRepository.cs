@@ -12,7 +12,7 @@ public class BalanceEventRepository(DatabaseContext databaseContext) : IBalanceE
     /// <inheritdoc/>
     public int GetHighestEventSequenceOnDate(DateOnly eventDate)
     {
-        IReadOnlyCollection<BalanceEvent> balanceEvents = FindAllByDateRange(new DateRange(eventDate, eventDate));
+        IReadOnlyCollection<IBalanceEvent> balanceEvents = FindAllByDateRange(new DateRange(eventDate, eventDate));
         if (balanceEvents.Count == 0)
         {
             return 0;
@@ -21,42 +21,46 @@ public class BalanceEventRepository(DatabaseContext databaseContext) : IBalanceE
     }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<BalanceEvent> FindAllByAccountingPeriod(AccountingPeriodId accountingPeriodId)
+    public IReadOnlyCollection<IBalanceEvent> FindAllByAccountingPeriod(AccountingPeriodId accountingPeriodId)
     {
-        IEnumerable<BalanceEvent> accountAddedBalanceEvents = databaseContext.Accounts
+        IEnumerable<IBalanceEvent> accountAddedBalanceEvents = databaseContext.Accounts
             .Select(account => account.AccountAddedBalanceEvent)
             .Where(accountAddedBalanceEvent => accountAddedBalanceEvent.AccountingPeriodId == accountingPeriodId);
-        IEnumerable<BalanceEvent> transactionBalanceEvents = databaseContext.Transactions
+        IEnumerable<IBalanceEvent> transactionBalanceEvents = databaseContext.Transactions
             .Where(transaction => transaction.AccountingPeriodId == accountingPeriodId)
             .SelectMany(transaction => transaction.TransactionBalanceEvents);
 
         AccountingPeriod accountingPeriod = databaseContext.AccountingPeriods.Single(accountingPeriod => accountingPeriod.Id == accountingPeriodId);
-        IEnumerable<BalanceEvent> fundConversions = accountingPeriod.FundConversions;
-        IEnumerable<BalanceEvent> changeInValues = accountingPeriod.ChangeInValues;
+        IEnumerable<IBalanceEvent> fundConversions = accountingPeriod.FundConversions;
+        IEnumerable<IBalanceEvent> changeInValues = accountingPeriod.ChangeInValues;
 
         return accountAddedBalanceEvents
             .Concat(transactionBalanceEvents)
             .Concat(fundConversions)
             .Concat(changeInValues)
-            .Order()
+            .Order(new BalanceEventComparer())
             .ToList();
     }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<BalanceEvent> FindAllByDateRange(DateRange dateRange)
+    public IReadOnlyCollection<IBalanceEvent> FindAllByDate(DateOnly eventDate) =>
+        FindAllByDateRange(new DateRange(eventDate, eventDate));
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<IBalanceEvent> FindAllByDateRange(DateRange dateRange)
     {
         var dates = dateRange.GetInclusiveDates().ToList();
 
-        IEnumerable<BalanceEvent> accountAddedBalanceEvents = databaseContext.Accounts
+        IEnumerable<IBalanceEvent> accountAddedBalanceEvents = databaseContext.Accounts
             .Select(account => account.AccountAddedBalanceEvent)
             .Where(accountAddedBalanceEvent => accountAddedBalanceEvent.EventDate >= dates.First() && accountAddedBalanceEvent.EventDate <= dates.Last());
-        IEnumerable<BalanceEvent> transactionBalanceEvents = databaseContext.Transactions
+        IEnumerable<IBalanceEvent> transactionBalanceEvents = databaseContext.Transactions
             .SelectMany(transaction => transaction.TransactionBalanceEvents)
             .Where(transactionBalanceEvent => transactionBalanceEvent.EventDate >= dates.First() && transactionBalanceEvent.EventDate <= dates.Last());
-        IEnumerable<BalanceEvent> fundConversions = databaseContext.AccountingPeriods
+        IEnumerable<IBalanceEvent> fundConversions = databaseContext.AccountingPeriods
             .SelectMany(accountingPeriod => accountingPeriod.FundConversions)
             .Where(fundConversion => fundConversion.EventDate >= dates.First() && fundConversion.EventDate <= dates.Last());
-        IEnumerable<BalanceEvent> changeInValues = databaseContext.AccountingPeriods
+        IEnumerable<IBalanceEvent> changeInValues = databaseContext.AccountingPeriods
             .SelectMany(accountingPeriod => accountingPeriod.ChangeInValues)
             .Where(changeInValue => changeInValue.EventDate >= dates.First() && changeInValue.EventDate <= dates.Last());
 
@@ -64,7 +68,7 @@ public class BalanceEventRepository(DatabaseContext databaseContext) : IBalanceE
             .Concat(transactionBalanceEvents)
             .Concat(fundConversions)
             .Concat(changeInValues)
-            .Order()
+            .Order(new BalanceEventComparer())
             .ToList();
     }
 }

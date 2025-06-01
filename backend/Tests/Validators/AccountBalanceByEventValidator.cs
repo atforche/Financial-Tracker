@@ -14,7 +14,7 @@ internal sealed class AccountBalanceByEventValidator : EntityValidator<AccountBa
         Assert.Equal(expectedState.AccountingPeriodId, entity.BalanceEvent.AccountingPeriodId);
         Assert.Equal(expectedState.EventDate, entity.BalanceEvent.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.BalanceEvent.EventSequence);
-        Assert.Equal(expectedState.AccountName, entity.BalanceEvent.Account.Name);
+        Assert.Equal(expectedState.AccountId, entity.BalanceEvent.AccountId);
         new FundAmountValidator().Validate(entity.AccountBalance.FundBalances, expectedState.FundBalances);
         new FundAmountValidator().Validate(entity.AccountBalance.PendingFundBalanceChanges, expectedState.PendingFundBalanceChanges);
     }
@@ -41,9 +41,9 @@ internal sealed record AccountBalanceByEventState
     public required int EventSequence { get; init; }
 
     /// <summary>
-    /// Account Name for this Account Balance by Event
+    /// Account ID for this Account Balance by Event
     /// </summary>
-    public required string AccountName { get; init; }
+    public required AccountId AccountId { get; init; }
 
     /// <summary>
     /// Fund Balances for this Account Balance by Event

@@ -21,11 +21,31 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
         .Single(accountingPeriod => accountingPeriod.Id == id);
 
     /// <inheritdoc/>
-    public AccountingPeriod? FindByDateOrNull(DateOnly asOfDate) => databaseContext.AccountingPeriods
-        .SingleOrDefault(accountingPeriod => accountingPeriod.Year == asOfDate.Year && accountingPeriod.Month == asOfDate.Month);
+    public AccountingPeriod? FindLatestAccountingPeriod() => databaseContext.AccountingPeriods
+        .OrderBy(accountingPeriod => accountingPeriod.Year)
+        .ThenBy(accountingPeriod => accountingPeriod.Month)
+        .LastOrDefault();
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> FindOpenPeriods() => databaseContext.AccountingPeriods
+    public AccountingPeriod? FindNextAccountingPeriod(AccountingPeriodId id)
+    {
+        AccountingPeriod currentAccountingPeriod = FindById(id);
+        DateOnly nextMonth = currentAccountingPeriod.PeriodStartDate.AddMonths(1);
+        return databaseContext.AccountingPeriods
+            .SingleOrDefault(accountingPeriod => accountingPeriod.Year == nextMonth.Year && accountingPeriod.Month == nextMonth.Month);
+    }
+
+    /// <inheritdoc/>
+    public AccountingPeriod? FindPreviousAccountingPeriod(AccountingPeriodId id)
+    {
+        AccountingPeriod currentAccountingPeriod = FindById(id);
+        DateOnly nextMonth = currentAccountingPeriod.PeriodStartDate.AddMonths(-1);
+        return databaseContext.AccountingPeriods
+            .SingleOrDefault(accountingPeriod => accountingPeriod.Year == nextMonth.Year && accountingPeriod.Month == nextMonth.Month);
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<AccountingPeriod> FindAllOpenPeriods() => databaseContext.AccountingPeriods
         .Where(accountingPeriod => accountingPeriod.IsOpen).ToList();
 
     /// <inheritdoc/>

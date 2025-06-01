@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Domain.Accounts;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Data.Configuration.AccountingPeriods;
@@ -16,10 +17,9 @@ internal sealed class ChangeInValueConfiguration : EntityConfiguration<ChangeInV
 
         builder.HasIndex(changeInValue => new { changeInValue.EventDate, changeInValue.EventSequence }).IsUnique();
 
-        builder.HasOne(changeInValue => changeInValue.Account).WithMany().HasForeignKey("AccountId");
-        builder.Navigation(changeInValue => changeInValue.Account).IsRequired().AutoInclude();
+        builder.HasOne<Account>().WithMany().HasForeignKey(changeInValue => changeInValue.AccountId);
 
-        builder.HasOne(changeInValue => changeInValue.AccountingEntry).WithOne().HasForeignKey<ChangeInValue>("FundAmountId");
-        builder.Navigation(changeInValue => changeInValue.AccountingEntry).IsRequired().AutoInclude();
+        builder.HasOne(changeInValue => changeInValue.FundAmount).WithOne().HasForeignKey<ChangeInValue>("FundAmountId");
+        builder.Navigation(changeInValue => changeInValue.FundAmount).IsRequired().AutoInclude();
     }
 }

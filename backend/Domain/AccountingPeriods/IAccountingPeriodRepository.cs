@@ -26,17 +26,30 @@ public interface IAccountingPeriodRepository
     AccountingPeriod FindById(AccountingPeriodId id);
 
     /// <summary>
-    /// Finds the Accounting Period that the provided date falls within
+    /// Finds the latest Accounting Period
     /// </summary>
-    /// <param name="asOfDate">Date that corresponds to an Accounting Period</param>
-    /// <returns>The Accounting Period that the provided date falls within, or null if one wasn't found</returns>
-    AccountingPeriod? FindByDateOrNull(DateOnly asOfDate);
+    /// <returns>The latest Accounting Period</returns>
+    AccountingPeriod? FindLatestAccountingPeriod();
 
     /// <summary>
-    /// Finds the Accounting Periods that are currently open
+    /// Finds the next Accounting Period for the Accounting Period with the specified ID
+    /// </summary>
+    /// <param name="id">ID of the Accounting Period</param>
+    /// <returns>The next Accounting Period for the Accounting Period with the specified ID</returns>
+    AccountingPeriod? FindNextAccountingPeriod(AccountingPeriodId id);
+
+    /// <summary>
+    /// Finds the previous Accounting Period for the Accounting Period with the specified ID
+    /// </summary>
+    /// <param name="id">ID of the Accounting Period</param>
+    /// <returns>The previous Accounting Period for the Accounting Period with the specified ID</returns>
+    AccountingPeriod? FindPreviousAccountingPeriod(AccountingPeriodId id);
+
+    /// <summary>
+    /// Finds all the Accounting Periods that are currently open
     /// </summary>
     /// <returns>The list of open Accounting Periods</returns>
-    IReadOnlyCollection<AccountingPeriod> FindOpenPeriods();
+    IReadOnlyCollection<AccountingPeriod> FindAllOpenPeriods();
 
     /// <summary>
     /// Adds the provided Accounting Period to the repository

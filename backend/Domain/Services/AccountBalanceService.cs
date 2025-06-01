@@ -9,24 +9,36 @@ namespace Domain.Services;
 /// </summary>
 public class AccountBalanceService(
     IAccountingPeriodRepository accountingPeriodRepository,
+    IAccountRepository accountRepository,
     IBalanceEventRepository balanceEventRepository)
 {
     /// <summary>
+    /// Gets the Account Balance for a single date
+    /// </summary>
+    /// <param name="accountId">Account ID to get the balance for</param>
+    /// <param name="date">Date to get the balance for</param>
+    /// <returns>The Account Balance for the provided date</returns>
+    public AccountBalanceByDate GetAccountBalanceByDate(AccountId accountId, DateOnly date) =>
+        GetAccountBalancesByDateRange(accountId, new DateRange(date, date)).First();
+
+    /// <summary>
     /// Gets the list of Account Balances for each date over the provided Date Range
     /// </summary>
-    /// <param name="account">Account to get the balances for</param>
+    /// <param name="accountId">Account to get the balances for</param>
     /// <param name="dateRange">Date Range to get the daily balances for</param>
     /// <returns>The list of Account Balances for each date over the Date Range</returns>
-    public IReadOnlyCollection<AccountBalanceByDate> GetAccountBalancesByDate(Account account, DateRange dateRange)
+    public IReadOnlyCollection<AccountBalanceByDate> GetAccountBalancesByDateRange(AccountId accountId, DateRange dateRange)
     {
         List<AccountBalanceByDate> results = [];
+
+        Account account = accountRepository.FindById(accountId);
         AccountBalance accountBalance = DetermineAccountBalanceAtStartOfDate(account, dateRange.GetInclusiveDates().First());
-        var balanceEvents = GetAllBalanceEventsInDateRange(account, dateRange)
+        var balanceEvents = GetAllBalanceEventsForAccountInDateRange(accountId, dateRange)
             .GroupBy(balanceEvent => balanceEvent.EventDate)
             .ToDictionary(group => group.Key, group => group.ToList());
         foreach (DateOnly date in dateRange.GetInclusiveDates())
         {
-            foreach (BalanceEvent balanceEvent in balanceEvents.GetValueOrDefault(date) ?? [])
+            foreach (IBalanceEvent balanceEvent in balanceEvents.GetValueOrDefault(date) ?? [])
             {
                 accountBalance = balanceEvent.ApplyEventToBalance(accountBalance);
             }
@@ -42,14 +54,16 @@ public class AccountBalanceService(
     /// <summary>
     /// Gets the list of Account Balances for each Balance Event over the provided Date Range
     /// </summary>
-    /// <param name="account">Account to get the balances for</param>
+    /// <param name="accountId">Account ID to get the balances for</param>
     /// <param name="dateRange">Date Range to get the event balances for</param>
     /// <returns>The list of Account Balances for each Balance Event over the Date Range</returns>
-    public IReadOnlyCollection<AccountBalanceByEvent> GetAccountBalancesByEvent(Account account, DateRange dateRange)
+    public IReadOnlyCollection<AccountBalanceByEvent> GetAccountBalancesByEvent(AccountId accountId, DateRange dateRange)
     {
         List<AccountBalanceByEvent> results = [];
+
+        Account account = accountRepository.FindById(accountId);
         AccountBalance accountBalance = DetermineAccountBalanceAtStartOfDate(account, dateRange.GetInclusiveDates().First());
-        foreach (BalanceEvent balanceEvent in GetAllBalanceEventsInDateRange(account, dateRange))
+        foreach (IBalanceEvent balanceEvent in GetAllBalanceEventsForAccountInDateRange(accountId, dateRange))
         {
             accountBalance = balanceEvent.ApplyEventToBalance(accountBalance);
             results.Add(new AccountBalanceByEvent
@@ -62,19 +76,21 @@ public class AccountBalanceService(
     }
 
     /// <summary>
-    /// Gets the Account Balances at the beginning and end of the provided Accounting Period.
+    /// Gets the Account Balance at the beginning and end of the provided Accounting Period.
     /// </summary>
-    /// <param name="account">Account to get the balances for</param>
-    /// <param name="accountingPeriod">Accounting Period to get the </param>
-    /// <returns>The beginning and ending Account Balances for the Accounting Period</returns>
-    public AccountBalanceByAccountingPeriod GetAccountBalancesByAccountingPeriod(
-        Account account,
-        AccountingPeriod accountingPeriod)
+    /// <param name="accountId">Account ID to get the Account Balance for</param>
+    /// <param name="accountingPeriodId">Accounting Period ID to get the Account Balance for</param>
+    /// <returns>The beginning and ending Account Balance for the Accounting Period</returns>
+    public AccountBalanceByAccountingPeriod GetAccountBalanceByAccountingPeriod(
+        AccountId accountId,
+        AccountingPeriodId accountingPeriodId)
     {
+        Account account = accountRepository.FindById(accountId);
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodId);
         AccountBalance startingBalance = DetermineAccountBalanceAtStartOfAccountingPeriod(account, accountingPeriod);
         AccountBalance endingBalance = startingBalance;
 
-        AccountingPeriod? futureAccountingPeriod = accountingPeriodRepository.FindByDateOrNull(accountingPeriod.PeriodStartDate.AddMonths(1));
+        AccountingPeriod? futureAccountingPeriod = accountingPeriodRepository.FindNextAccountingPeriod(accountingPeriod.Id);
         AccountBalanceCheckpoint? futurePeriodCheckpoint = account.AccountBalanceCheckpoints
             .FirstOrDefault(checkpoint => checkpoint.AccountingPeriodId == futureAccountingPeriod?.Id);
         if (futurePeriodCheckpoint != null)
@@ -85,9 +101,7 @@ public class AccountBalanceService(
         else
         {
             // Otherwise, calculate the ending balance by applying all the Balance Events currently in the Accounting Period
-            foreach (BalanceEvent balanceEvent in balanceEventRepository
-                                                    .FindAllByAccountingPeriod(accountingPeriod.Id)
-                                                    .Where(balanceEvent => balanceEvent.Account == account))
+            foreach (IBalanceEvent balanceEvent in GetAllBalanceEventsForAccountInAccountingPeriod(accountId, accountingPeriod.Id))
             {
                 endingBalance = balanceEvent.ApplyEventToBalance(endingBalance);
             }
@@ -133,13 +147,13 @@ public class AccountBalanceService(
         // All of these events have already been applied to our balance checkpoint. But we really want to individually 
         // apply them as they occur on each date. So reverse all of them so they can be reapplied on their respective dates.
         AccountingPeriod checkpointPeriod = accountingPeriodRepository.FindById(balanceCheckpoint.AccountingPeriodId);
-        AccountingPeriod? pastAccountingPeriod = accountingPeriodRepository.FindByDateOrNull(checkpointPeriod.PeriodStartDate.AddMonths(-1));
+        AccountingPeriod? pastAccountingPeriod = accountingPeriodRepository.FindPreviousAccountingPeriod(checkpointPeriod.Id);
         if (pastAccountingPeriod != null)
         {
-            List<BalanceEvent> pastPeriodBalanceEventsDuringOrAfterDateRange = balanceEventRepository
+            List<IBalanceEvent> pastPeriodBalanceEventsDuringOrAfterDateRange = balanceEventRepository
                 .FindAllByAccountingPeriod(pastAccountingPeriod.Id)
                 .Where(balanceEvent => balanceEvent.EventDate >= checkpointPeriod.PeriodStartDate).ToList() ?? [];
-            foreach (BalanceEvent balanceEvent in Enumerable.Reverse(pastPeriodBalanceEventsDuringOrAfterDateRange))
+            foreach (IBalanceEvent balanceEvent in Enumerable.Reverse(pastPeriodBalanceEventsDuringOrAfterDateRange))
             {
                 accountBalance = balanceEvent.ReverseEventFromBalance(accountBalance);
             }
@@ -150,11 +164,11 @@ public class AccountBalanceService(
         if (date != checkpointPeriod.PeriodStartDate)
         {
             var beforeDateRange = new DateRange(checkpointPeriod.PeriodStartDate, date, endDateType: EndpointType.Exclusive);
-            IEnumerable<BalanceEvent> balanceEventsBeforeDate = balanceEventRepository
+            IEnumerable<IBalanceEvent> balanceEventsBeforeDate = balanceEventRepository
                 .FindAllByAccountingPeriod(checkpointPeriod.Id)
                 .Where(balanceEvent => !beforeDateRange.IsWithinStartDate(balanceEvent.EventDate))
-                .Concat(GetAllBalanceEventsInDateRange(account, beforeDateRange));
-            foreach (BalanceEvent balanceEvent in balanceEventsBeforeDate)
+                .Concat(GetAllBalanceEventsForAccountInDateRange(account.Id, beforeDateRange));
+            foreach (IBalanceEvent balanceEvent in balanceEventsBeforeDate)
             {
                 accountBalance = balanceEvent.ApplyEventToBalance(accountBalance);
             }
@@ -176,7 +190,7 @@ public class AccountBalanceService(
             return accountBalance;
         }
         var balanceEventDateRange = new DateRange(account.AccountAddedBalanceEvent.EventDate, date, endDateType: EndpointType.Exclusive);
-        foreach (BalanceEvent balanceEvent in GetAllBalanceEventsInDateRange(account, balanceEventDateRange))
+        foreach (IBalanceEvent balanceEvent in GetAllBalanceEventsForAccountInDateRange(account.Id, balanceEventDateRange))
         {
             accountBalance = balanceEvent.ApplyEventToBalance(accountBalance);
         }
@@ -197,25 +211,37 @@ public class AccountBalanceService(
         {
             return checkpoint.ConvertToAccountBalance();
         }
-        AccountingPeriod? pastAccountingPeriod = accountingPeriodRepository.FindByDateOrNull(
-            accountingPeriod.PeriodStartDate.AddMonths(-1));
+        AccountingPeriod? pastAccountingPeriod = accountingPeriodRepository.FindPreviousAccountingPeriod(accountingPeriod.Id);
         if (pastAccountingPeriod != null)
         {
-            AccountBalance pastPeriodEndingBalance = GetAccountBalancesByAccountingPeriod(account, pastAccountingPeriod).EndingBalance;
+            AccountBalance pastPeriodEndingBalance = GetAccountBalanceByAccountingPeriod(account.Id, pastAccountingPeriod.Id).EndingBalance;
             return new AccountBalance(account, pastPeriodEndingBalance.FundBalances.Concat(pastPeriodEndingBalance.PendingFundBalanceChanges), []);
         }
         return new AccountBalance(account, [], []);
     }
 
     /// <summary>
-    /// Gets all of the Balance Events that fall in the provided date range
+    /// Gets all the Balance Events for the provided Account that fall in the provided date range
     /// </summary>
-    /// <param name="account">Account for the Balance Events to find</param>
+    /// <param name="accountId">Account ID of the Balance Events to find</param>
     /// <param name="dateRange">Date range to get all the Balance Events from</param>
-    /// <returns>The list of Balance Events that fall in the provided date range</returns>
-    private IEnumerable<BalanceEvent> GetAllBalanceEventsInDateRange(Account account, DateRange dateRange) =>
+    /// <returns>The list of Balance Events for the provided Account that fall in the provided date range</returns>
+    private IEnumerable<IBalanceEvent> GetAllBalanceEventsForAccountInDateRange(AccountId accountId, DateRange dateRange) =>
         balanceEventRepository
             .FindAllByDateRange(dateRange)
-            .Where(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate) && balanceEvent.Account == account)
-            .Order();
+            .Where(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate) && balanceEvent.AccountId == accountId)
+            .Order(new BalanceEventComparer());
+
+    /// <summary>
+    /// Gets all the Balance Events for the provided Account that fall in the provided Accounting Period
+    /// </summary>
+    /// <param name="accountId">Account ID of the Balance Events to find</param>
+    /// <param name="accountingPeriodId">Accounting Period ID of the Balance Events to find</param>
+    /// <returns>The list of Balance Events for the provided Account that fall in the provided Accounting Period</returns>
+    private IEnumerable<IBalanceEvent> GetAllBalanceEventsForAccountInAccountingPeriod(
+        AccountId accountId,
+        AccountingPeriodId accountingPeriodId) =>
+        balanceEventRepository.FindAllByAccountingPeriod(accountingPeriodId)
+            .Where(balanceEvent => balanceEvent.AccountId == accountId)
+            .Order(new BalanceEventComparer());
 }

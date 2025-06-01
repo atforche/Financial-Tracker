@@ -51,7 +51,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
         _futureAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(_futureAccountingPeriod);
 
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+        Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
@@ -77,77 +77,98 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
     {
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.MultipleEventsSameDay)
         {
-            GetService<AddChangeInValueAction>().Run(AccountingPeriod,
-                new DateOnly(2025, 1, 15),
-                Account,
-                new FundAmount
+            GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+            {
+                AccountingPeriodId = AccountingPeriod.Id,
+                EventDate = new DateOnly(2025, 1, 15),
+                AccountId = Account.Id,
+                FundAmount = new FundAmount
                 {
                     FundId = Fund.Id,
                     Amount = 500.00m
-                });
+                }
+            });
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesFundBalanceNegative)
         {
-            GetService<AddChangeInValueAction>().Run(AccountingPeriod,
-                new DateOnly(2025, 1, 10),
-                Account,
-                new FundAmount
+            GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+            {
+                AccountingPeriodId = AccountingPeriod.Id,
+                EventDate = new DateOnly(2025, 1, 10),
+                AccountId = Account.Id,
+                FundAmount = new FundAmount
                 {
                     FundId = Fund.Id,
                     Amount = -1250.00m
-                });
+                }
+            });
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesAccountBalanceToZero)
         {
-            GetService<AddChangeInValueAction>().Run(AccountingPeriod,
-                new DateOnly(2025, 1, 10),
-                Account,
-                new FundAmount
+            GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+            {
+                AccountingPeriodId = AccountingPeriod.Id,
+                EventDate = new DateOnly(2025, 1, 10),
+                AccountId = Account.Id,
+                FundAmount = new FundAmount
                 {
                     FundId = Fund.Id,
                     Amount = -2500.00m
-                });
+                }
+            });
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesAccountBalanceNegative)
         {
-            GetService<AddChangeInValueAction>().Run(AccountingPeriod,
-                new DateOnly(2025, 1, 10),
-                Account,
-                new FundAmount
+            GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+            {
+                AccountingPeriodId = AccountingPeriod.Id,
+                EventDate = new DateOnly(2025, 1, 10),
+                AccountId = Account.Id,
+                FundAmount = new FundAmount
                 {
                     FundId = Fund.Id,
                     Amount = -2750.00m
-                });
+                }
+            });
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesFutureEventToMakeAccountBalanceNegative)
         {
-            GetService<AddChangeInValueAction>().Run(AccountingPeriod,
-                new DateOnly(2025, 1, 20),
-                Account,
-                new FundAmount
+            GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+            {
+                AccountingPeriodId = AccountingPeriod.Id,
+                EventDate = new DateOnly(2025, 1, 20),
+                AccountId = Account.Id,
+                FundAmount = new FundAmount
                 {
                     FundId = Fund.Id,
                     Amount = -2750.00m
-                });
+                }
+            });
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesAccountBalancesAtEndOfPeriodToBeNegative)
         {
-            GetService<AddChangeInValueAction>().Run(AccountingPeriod,
-                new DateOnly(2025, 1, 10),
-                Account,
-                new FundAmount
+            GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+            {
+                AccountingPeriodId = AccountingPeriod.Id,
+                EventDate = new DateOnly(2025, 1, 10),
+                AccountId = Account.Id,
+                FundAmount = new FundAmount
                 {
                     FundId = Fund.Id,
                     Amount = -2750.00m
-                });
-            GetService<AddChangeInValueAction>().Run(_futureAccountingPeriod,
-                new DateOnly(2025, 1, 10),
-                Account,
-                new FundAmount
+                }
+            });
+            GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+            {
+                AccountingPeriodId = _futureAccountingPeriod.Id,
+                EventDate = new DateOnly(2025, 1, 10),
+                AccountId = Account.Id,
+                FundAmount = new FundAmount
                 {
                     FundId = Fund.Id,
                     Amount = 2750.00m
-                });
+                }
+            });
         }
     }
 }
