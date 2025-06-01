@@ -1,14 +1,5 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
-using Data;
-using Data.Repositories;
-using Domain.AccountingPeriods;
-using Domain.Accounts;
-using Domain.Actions;
-using Domain.BalanceEvents;
-using Domain.Funds;
-using Domain.Services;
-using Domain.Transactions;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Rest.Models;
@@ -22,35 +13,9 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
-// Configure the DbContext to connect to the database
-builder.Services.AddDbContext<DatabaseContext>();
-
-// Add application DI services
-builder.Services.AddScoped<UnitOfWork>();
-
-// Add domain DI services
-builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-builder.Services.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
-builder.Services.AddScoped<IBalanceEventRepository, BalanceEventRepository>();
-builder.Services.AddScoped<IFundRepository, FundRepository>();
-builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
-
-builder.Services.AddScoped<AccountFactory>();
-builder.Services.AddScoped<AccountIdFactory>();
-builder.Services.AddScoped<AccountAddedBalanceEventFactory>();
-builder.Services.AddScoped<AccountingPeriodIdFactory>();
-builder.Services.AddScoped<ChangeInValueFactory>();
-builder.Services.AddScoped<FundConversionFactory>();
-builder.Services.AddScoped<FundIdFactory>();
-builder.Services.AddScoped<TransactionFactory>();
-builder.Services.AddScoped<TransactionBalanceEventFactory>();
-builder.Services.AddScoped<TransactionIdFactory>();
-
-builder.Services.AddScoped<AccountBalanceService>();
-builder.Services.AddScoped<AddAccountingPeriodAction>();
-builder.Services.AddScoped<AddFundAction>();
-builder.Services.AddScoped<CloseAccountingPeriodAction>();
-builder.Services.AddScoped<PostTransactionAction>();
+// Register needed DI services
+Data.ServiceManager.Register(builder.Services);
+Domain.ServiceManager.Register(builder.Services);
 
 // Configure CORS to allow requests from select origins
 string corsPolicyName = "CORS";

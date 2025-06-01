@@ -9,4 +9,10 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Data" />
   </ItemGroup>
+
+    <!-- Nuget Package References -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
+  </ItemGroup>
+
 </Project>
