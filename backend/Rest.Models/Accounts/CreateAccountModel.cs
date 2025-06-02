@@ -1,5 +1,4 @@
 using Domain.Accounts;
-using Domain.BalanceEvents;
 using Rest.Models.Funds;
 
 namespace Rest.Models.Accounts;
@@ -15,10 +14,10 @@ public class CreateAccountModel
     /// <inheritdoc cref="Account.Type"/>
     public required AccountType Type { get; init; }
 
-    /// <inheritdoc cref="IBalanceEvent.AccountingPeriodId"/>
+    /// <inheritdoc cref="AccountAddedBalanceEvent.AccountingPeriodId"/>
     public required Guid AccountingPeriodId { get; init; }
 
-    /// <inheritdoc cref="IBalanceEvent.EventDate"/>
+    /// <inheritdoc cref="AccountAddedBalanceEvent.EventDate"/>
     public required DateOnly Date { get; init; }
 
     /// <inheritdoc cref="AccountAddedBalanceEvent.FundAmounts"/>

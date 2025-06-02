@@ -1,6 +1,6 @@
 using Domain;
-using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.ChangeInValues;
 using Domain.Funds;
 using Domain.Services;
 using Tests.Scenarios;
@@ -36,8 +36,9 @@ public class AccountTests
     /// <param name="setup">Setup for this test case</param>
     /// <param name="amount">Amount for this Change In Value</param>
     /// <returns>The Change In Value that was added for this test case</returns>
-    private static ChangeInValue AddChangeInValue(AccountScenarioSetup setup, decimal amount) =>
-        setup.GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+    private static ChangeInValue AddChangeInValue(AccountScenarioSetup setup, decimal amount)
+    {
+        ChangeInValue changeInValue = setup.GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
         {
             AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 10),
@@ -48,6 +49,9 @@ public class AccountTests
                 Amount = amount,
             }
         });
+        setup.GetService<IChangeInValueRepository>().Add(changeInValue);
+        return changeInValue;
+    }
 
     /// <summary>
     /// Gets the expected state for this test case

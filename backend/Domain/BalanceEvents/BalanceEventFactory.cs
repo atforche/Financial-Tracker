@@ -55,11 +55,6 @@ public abstract class BalanceEventFactory<TBalanceEvent, TRequest>(
                 throw exception;
             }
         }
-        if (balanceEvent is ChangeInValue changeInValue)
-        {
-            accountingPeriod.AddChangeInValue(changeInValue);
-        }
-
         return balanceEvent;
     }
 

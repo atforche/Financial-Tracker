@@ -2,6 +2,7 @@ using Data.Repositories;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
+using Domain.ChangeInValues;
 using Domain.FundConversions;
 using Domain.Funds;
 using Domain.Transactions;
@@ -26,6 +27,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
         _ = serviceCollection.AddScoped<IAccountRepository, AccountRepository>();
         _ = serviceCollection.AddScoped<IBalanceEventRepository, BalanceEventRepository>();
+        _ = serviceCollection.AddScoped<IChangeInValueRepository, ChangeInValueRepository>();
         _ = serviceCollection.AddScoped<IFundConversionRepository, FundConversionRepository>();
         _ = serviceCollection.AddScoped<IFundRepository, FundRepository>();
         _ = serviceCollection.AddScoped<ITransactionRepository, TransactionRepository>();

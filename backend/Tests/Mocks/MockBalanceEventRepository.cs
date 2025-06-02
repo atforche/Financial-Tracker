@@ -2,6 +2,7 @@ using Domain;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
+using Domain.ChangeInValues;
 using Domain.FundConversions;
 using Domain.Transactions;
 
@@ -12,7 +13,7 @@ namespace Tests.Mocks;
 /// </summary>
 internal sealed class MockBalanceEventRepository(
     IAccountRepository accountRepository,
-    IAccountingPeriodRepository accountingPeriodRepository,
+    IChangeInValueRepository changeInValueRepository,
     IFundConversionRepository fundConversionRepository,
     ITransactionRepository transactionRepository) : IBalanceEventRepository
 {
@@ -35,10 +36,7 @@ internal sealed class MockBalanceEventRepository(
         IEnumerable<IBalanceEvent> transactionBalanceEvents = transactionRepository.FindAllByAccountingPeriod(accountingPeriodId)
             .SelectMany(transaction => transaction.TransactionBalanceEvents);
         IEnumerable<IBalanceEvent> fundConversions = fundConversionRepository.FindAllByAccountingPeriod(accountingPeriodId);
-
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodId);
-        IEnumerable<IBalanceEvent> changeInValues = accountingPeriod.ChangeInValues;
-
+        IEnumerable<IBalanceEvent> changeInValues = changeInValueRepository.FindAllByAccountingPeriod(accountingPeriodId);
         return accountAddedBalanceEvents
             .Concat(transactionBalanceEvents)
             .Concat(fundConversions)
@@ -63,9 +61,7 @@ internal sealed class MockBalanceEventRepository(
             .SelectMany(transaction => transaction.TransactionBalanceEvents)
             .Where(transactionBalanceEvent => transactionBalanceEvent.EventDate >= dates.First() && transactionBalanceEvent.EventDate <= dates.Last());
         IEnumerable<IBalanceEvent> fundConversions = fundConversionRepository.FindAllByDateRange(dateRange);
-        IEnumerable<IBalanceEvent> changeInValues = accountingPeriodRepository.FindAll()
-            .SelectMany(accountingPeriod => accountingPeriod.ChangeInValues)
-            .Where(changeInValue => changeInValue.EventDate >= dates.First() && changeInValue.EventDate <= dates.Last());
+        IEnumerable<IBalanceEvent> changeInValues = changeInValueRepository.FindAllByDateRange(dateRange);
 
         return accountAddedBalanceEvents
             .Concat(transactionBalanceEvents)

@@ -1,5 +1,5 @@
-using Rest.Models.AccountingPeriods;
 using Rest.Models.Accounts;
+using Rest.Models.ChangeInValues;
 using Rest.Models.Funds;
 
 namespace Utilities.BulkDataUpload.Models;
@@ -34,6 +34,7 @@ internal sealed class ChangeInValueUploadModel : BalanceEventUploadModel
         ICollection<FundModel> existingFunds,
         ICollection<AccountModel> existingAccounts) => new()
         {
+            AccountingPeriodId = Guid.NewGuid(),
             AccountId = existingAccounts.Single(account => account.Name == AccountName).Id,
             EventDate = EventDate,
             FundAmount = FundAmount.GetAsCreateFundAmountModel(existingFunds)

@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Domain.BalanceEvents;
 using Domain.FundConversions;
 
 namespace Rest.Models.FundConversions;
@@ -9,14 +8,17 @@ namespace Rest.Models.FundConversions;
 /// </summary>
 public class FundConversionModel
 {
-    /// <inheritdoc cref="Domain.EntityOld.Id"/>
+    /// <inheritdoc cref="FundConversionId"/>
     public Guid Id { get; init; }
 
-    /// <inheritdoc cref="IBalanceEvent.AccountId"/>
-    public Guid AccountId { get; init; }
+    /// <inheritdoc cref="FundConversion.AccountingPeriodId"/>
+    public Guid AccountingPeriodId { get; init; }
 
-    /// <inheritdoc cref="IBalanceEvent.EventDate"/>
+    /// <inheritdoc cref="FundConversion.EventDate"/>
     public DateOnly EventDate { get; init; }
+
+    /// <inheritdoc cref="FundConversion.AccountId"/>
+    public Guid AccountId { get; init; }
 
     /// <inheritdoc cref="FundConversion.FromFundId"/>
     public Guid FromFundId { get; init; }

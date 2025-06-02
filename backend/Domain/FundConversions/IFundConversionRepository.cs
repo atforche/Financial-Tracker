@@ -8,7 +8,7 @@ namespace Domain.FundConversions;
 public interface IFundConversionRepository
 {
     /// <summary>
-    /// Determines if an Fund Conversion with the provided ID exists
+    /// Determines if a Fund Conversion with the provided ID exists
     /// </summary>
     /// <param name="id">ID of the Fund Conversion</param>
     /// <returns>True if a Fund Conversion with the provided ID exists, false otherwise</returns>
@@ -32,7 +32,7 @@ public interface IFundConversionRepository
     /// Finds all the Fund Conversions that were added in the specified Date Range
     /// </summary>
     /// <param name="dateRange">Date Range</param>
-    /// <returns>All the Fund Conversions that were added or that had balance events in the specified Date Range</returns>
+    /// <returns>All the Fund Conversions that were added in the specified Date Range</returns>
     IReadOnlyCollection<FundConversion> FindAllByDateRange(DateRange dateRange);
 
     /// <summary>

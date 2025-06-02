@@ -23,7 +23,6 @@ public class DefaultTests
                 Year = setup.AccountingPeriod.Year,
                 Month = setup.AccountingPeriod.Month,
                 IsOpen = false,
-                ChangeInValues = [],
             });
         new AccountValidator().Validate(setup.Account,
             new AccountState

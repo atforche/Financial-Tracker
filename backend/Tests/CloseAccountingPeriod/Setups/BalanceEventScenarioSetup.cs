@@ -1,6 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
+using Domain.ChangeInValues;
 using Domain.FundConversions;
 using Domain.Funds;
 using Domain.Transactions;
@@ -33,6 +34,11 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
     /// First Accounting Period for the Setup
     /// </summary>
     public AccountingPeriod AccountingPeriod { get; }
+
+    /// <summary>
+    /// Change In Value for the setup
+    /// </summary>
+    public ChangeInValue? ChangeInValue { get; }
 
     /// <summary>
     /// Fund Conversion for the setup
@@ -95,7 +101,7 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
         }
         if (scenario is BalanceEventScenario.ChangeInValue)
         {
-            GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+            ChangeInValue = GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
             {
                 AccountingPeriodId = AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
@@ -106,6 +112,7 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
                     Amount = 250.00m
                 }
             });
+            GetService<IChangeInValueRepository>().Add(ChangeInValue);
         }
         if (scenario is BalanceEventScenario.FundConversion)
         {

@@ -31,9 +31,8 @@ public class BalanceEventRepository(DatabaseContext databaseContext) : IBalanceE
             .SelectMany(transaction => transaction.TransactionBalanceEvents);
         IEnumerable<IBalanceEvent> fundConversions = databaseContext.FundConversions
             .Where(fundConversion => fundConversion.AccountingPeriodId == accountingPeriodId);
-
-        AccountingPeriod accountingPeriod = databaseContext.AccountingPeriods.Single(accountingPeriod => accountingPeriod.Id == accountingPeriodId);
-        IEnumerable<IBalanceEvent> changeInValues = accountingPeriod.ChangeInValues;
+        IEnumerable<IBalanceEvent> changeInValues = databaseContext.ChangeInValues
+            .Where(changeInValue => changeInValue.AccountingPeriodId == accountingPeriodId);
 
         return accountAddedBalanceEvents
             .Concat(transactionBalanceEvents)
@@ -60,8 +59,7 @@ public class BalanceEventRepository(DatabaseContext databaseContext) : IBalanceE
             .Where(transactionBalanceEvent => transactionBalanceEvent.EventDate >= dates.First() && transactionBalanceEvent.EventDate <= dates.Last());
         IEnumerable<IBalanceEvent> fundConversions = databaseContext.FundConversions
             .Where(fundConversion => fundConversion.EventDate >= dates.First() && fundConversion.EventDate <= dates.Last());
-        IEnumerable<IBalanceEvent> changeInValues = databaseContext.AccountingPeriods
-            .SelectMany(accountingPeriod => accountingPeriod.ChangeInValues)
+        IEnumerable<IBalanceEvent> changeInValues = databaseContext.ChangeInValues
             .Where(changeInValue => changeInValue.EventDate >= dates.First() && changeInValue.EventDate <= dates.Last());
 
         return accountAddedBalanceEvents

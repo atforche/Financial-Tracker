@@ -25,7 +25,8 @@ public class BalanceEventTests
             return;
         }
         CloseAccountingPeriod(setup);
-        new AccountingPeriodValidator().Validate(setup.AccountingPeriod, GetExpectedState(scenario, setup));
+        new AccountingPeriodValidator().Validate(setup.AccountingPeriod, GetExpectedState(setup));
+        new ChangeInValueValidator().Validate(setup.ChangeInValue != null ? [setup.ChangeInValue] : [], GetExpectedChangeInValueStates(scenario, setup));
         new FundConversionValidator().Validate(setup.FundConversion != null ? [setup.FundConversion] : [], GetExpectedFundConversionStates(scenario, setup));
         new TransactionValidator().Validate(setup.Transaction != null ? [setup.Transaction] : [], GetExpectedTransactionStates(scenario, setup));
         new AccountBalanceCheckpointValidator().Validate(setup.Account.AccountBalanceCheckpoints, []);
@@ -41,16 +42,14 @@ public class BalanceEventTests
     /// <summary>
     /// Gets the expected state for this test case
     /// </summary>
-    /// <param name="scenario">Scenario for this test case</param>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static AccountingPeriodState GetExpectedState(BalanceEventScenario scenario, BalanceEventScenarioSetup setup) =>
+    private static AccountingPeriodState GetExpectedState(BalanceEventScenarioSetup setup) =>
         new()
         {
             Year = setup.AccountingPeriod.Year,
             Month = setup.AccountingPeriod.Month,
             IsOpen = false,
-            ChangeInValues = GetExpectedChangeInValueStates(scenario, setup),
         };
 
     /// <summary>

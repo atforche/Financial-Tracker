@@ -230,7 +230,7 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ChangeInValue",
+                name: "ChangeInValues",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -242,21 +242,21 @@ namespace Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ChangeInValue", x => x.Id);
+                    table.PrimaryKey("PK_ChangeInValues", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ChangeInValue_AccountingPeriods_AccountingPeriodId",
+                        name: "FK_ChangeInValues_AccountingPeriods_AccountingPeriodId",
                         column: x => x.AccountingPeriodId,
                         principalTable: "AccountingPeriods",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ChangeInValue_Accounts_AccountId",
+                        name: "FK_ChangeInValues_Accounts_AccountId",
                         column: x => x.AccountId,
                         principalTable: "Accounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ChangeInValue_FundAmount_FundAmountId",
+                        name: "FK_ChangeInValues_FundAmount_FundAmountId",
                         column: x => x.FundAmountId,
                         principalTable: "FundAmount",
                         principalColumn: "Id",
@@ -291,24 +291,24 @@ namespace Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChangeInValue_AccountId",
-                table: "ChangeInValue",
+                name: "IX_ChangeInValues_AccountId",
+                table: "ChangeInValues",
                 column: "AccountId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChangeInValue_AccountingPeriodId",
-                table: "ChangeInValue",
+                name: "IX_ChangeInValues_AccountingPeriodId",
+                table: "ChangeInValues",
                 column: "AccountingPeriodId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChangeInValue_EventDate_EventSequence",
-                table: "ChangeInValue",
+                name: "IX_ChangeInValues_EventDate_EventSequence",
+                table: "ChangeInValues",
                 columns: new[] { "EventDate", "EventSequence" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChangeInValue_FundAmountId",
-                table: "ChangeInValue",
+                name: "IX_ChangeInValues_FundAmountId",
+                table: "ChangeInValues",
                 column: "FundAmountId",
                 unique: true);
 
@@ -390,7 +390,7 @@ namespace Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ChangeInValue");
+                name: "ChangeInValues");
 
             migrationBuilder.DropTable(
                 name: "FundConversions");

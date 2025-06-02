@@ -69,7 +69,6 @@ public class MultipleAccountingPeriodTests
             Year = period.Year,
             Month = period.Month,
             IsOpen = period.IsOpen,
-            ChangeInValues = [],
         };
 
     /// <summary>

@@ -29,7 +29,7 @@ public sealed class TransactionController(
     /// <param name="accountingPeriodId">ID of the Accounting Period</param>
     /// <returns>A collection of Transactions that fall within the provided Accounting Period</returns>
     [HttpGet("{accountingPeriodId}")]
-    public IActionResult GetTransactionsByAccountingPeriod(Guid accountingPeriodId)
+    public IActionResult GetByAccountingPeriod(Guid accountingPeriodId)
     {
         IEnumerable<Transaction> transactions = transactionRepository.FindAllByAccountingPeriod(accountingPeriodIdFactory.Create(accountingPeriodId));
         return Ok(transactions.Select(transaction => new TransactionModel(transaction)));
@@ -41,7 +41,7 @@ public sealed class TransactionController(
     /// <param name="createTransactionModel">Request to create a Transaction</param>
     /// <returns>The created Transaction</returns>
     [HttpPost("")]
-    public async Task<IActionResult> CreateTransactionAsync(CreateTransactionModel createTransactionModel)
+    public async Task<IActionResult> CreateAsync(CreateTransactionModel createTransactionModel)
     {
         Transaction newTransaction = transactionFactory.Create(
             accountingPeriodIdFactory.Create(createTransactionModel.AccountingPeriodId),
@@ -65,7 +65,7 @@ public sealed class TransactionController(
     /// <param name="postTransactionModel">Request to post a Transaction</param>
     /// <returns>The posted Transaction</returns>
     [HttpPost("/post/{transactionId}")]
-    public async Task<IActionResult> PostTransactionAsync(Guid transactionId, PostTransactionModel postTransactionModel)
+    public async Task<IActionResult> PostAsync(Guid transactionId, PostTransactionModel postTransactionModel)
     {
         Transaction transaction = transactionRepository.FindById(transactionIdFactory.Create(transactionId));
         postTransactionAction.Run(transaction, postTransactionModel.AccountToPost, postTransactionModel.PostedStatementDate);

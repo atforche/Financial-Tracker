@@ -1,5 +1,6 @@
 using Rest.Models.AccountingPeriods;
 using Rest.Models.Accounts;
+using Rest.Models.ChangeInValues;
 using Rest.Models.FundConversions;
 using Rest.Models.Funds;
 using Rest.Models.Transactions;

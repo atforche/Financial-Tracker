@@ -1,8 +1,9 @@
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
 using Domain.Funds;
 
-namespace Domain.AccountingPeriods;
+namespace Domain.ChangeInValues;
 
 /// <summary>
 /// Entity class representing a Change in Value
@@ -12,7 +13,7 @@ namespace Domain.AccountingPeriods;
 /// represented as a single distinct Transaction on an account statement. Examples of this include interest
 /// that is constantly accruing on a loan or changes in stock market value for an investment Account.
 /// </remarks>
-public class ChangeInValue : EntityOld, IBalanceEvent
+public class ChangeInValue : Entity<ChangeInValueId>, IBalanceEvent
 {
     /// <inheritdoc/>
     public AccountingPeriodId AccountingPeriodId { get; private set; }
@@ -69,7 +70,7 @@ public class ChangeInValue : EntityOld, IBalanceEvent
         int eventSequence,
         AccountId accountId,
         FundAmount fundAmount)
-        : base()
+        : base(new ChangeInValueId(Guid.NewGuid()))
     {
         AccountingPeriodId = accountingPeriodId;
         EventDate = eventDate;

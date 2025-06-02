@@ -8,7 +8,7 @@ namespace Domain.Transactions;
 public interface ITransactionRepository
 {
     /// <summary>
-    /// Determines if an Transaction with the provided ID exists
+    /// Determines if a Transaction with the provided ID exists
     /// </summary>
     /// <param name="id">ID of the Transaction</param>
     /// <returns>True if a Transaction with the provided ID exists, false otherwise</returns>

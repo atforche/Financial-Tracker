@@ -8,8 +8,6 @@ namespace Domain.AccountingPeriods;
 /// </remarks>
 public class AccountingPeriod : Entity<AccountingPeriodId>
 {
-    private readonly List<ChangeInValue> _changeInValues = [];
-
     /// <summary>
     /// Year for this Accounting Period
     /// </summary>
@@ -36,11 +34,6 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
     public bool IsOpen { get; internal set; }
 
     /// <summary>
-    /// Change In Values for this Accounting Period
-    /// </summary>
-    public IReadOnlyCollection<ChangeInValue> ChangeInValues => _changeInValues;
-
-    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="year">Year for this Accounting Period</param>
@@ -52,12 +45,6 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
         Month = month;
         IsOpen = true;
     }
-
-    /// <summary>
-    /// Adds a new Change In Value to this Accounting Period
-    /// </summary>
-    /// <param name="changeInValue">Change in Value to add</param>
-    internal void AddChangeInValue(ChangeInValue changeInValue) => _changeInValues.Add(changeInValue);
 
     /// <summary>
     /// Constructs a new default instance of this class

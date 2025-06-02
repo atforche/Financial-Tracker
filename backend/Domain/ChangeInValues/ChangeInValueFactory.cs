@@ -1,10 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
 using Domain.Funds;
 using Domain.Services;
 
-namespace Domain.AccountingPeriods;
+namespace Domain.ChangeInValues;
 
 /// <summary>
 /// Factory for building a <see cref="ChangeInValue"/>

@@ -25,7 +25,7 @@ public sealed class AccountController(
     /// </summary>
     /// <returns>A collection of all Accounts</returns>
     [HttpGet("")]
-    public IReadOnlyCollection<AccountModel> GetAllAccounts() =>
+    public IReadOnlyCollection<AccountModel> GetAll() =>
         accountRepository.FindAll().Select(account => new AccountModel(account)).ToList();
 
     /// <summary>
@@ -34,7 +34,7 @@ public sealed class AccountController(
     /// <param name="accountId">ID of the Account to retrieve</param>
     /// <returns>The Account that matches the provided ID</returns>
     [HttpGet("{accountId}")]
-    public IActionResult GetAccount(Guid accountId)
+    public IActionResult Get(Guid accountId)
     {
         AccountId id = accountIdFactory.Create(accountId);
         return Ok(new AccountModel(accountRepository.FindById(id)));
@@ -46,7 +46,7 @@ public sealed class AccountController(
     /// <param name="createAccountModel">Request to create an Account</param>
     /// <returns>The created Account</returns>
     [HttpPost("")]
-    public async Task<IActionResult> CreateAccountAsync(CreateAccountModel createAccountModel)
+    public async Task<IActionResult> CreateAsync(CreateAccountModel createAccountModel)
     {
         AccountingPeriodId accountingPeriodId = accountingPeriodIdFactory.Create(createAccountModel.AccountingPeriodId);
         Account newAccount = accountFactory.Create(createAccountModel.Name, createAccountModel.Type, accountingPeriodId, createAccountModel.Date,

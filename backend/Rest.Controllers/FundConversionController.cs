@@ -27,7 +27,7 @@ public sealed class FundConversionController(
     /// <param name="accountingPeriodId">ID of the Accounting Period</param>
     /// <returns>A collection of Fund Conversions that fall within the provided Accounting Period</returns>
     [HttpGet("{accountingPeriodId}")]
-    public IActionResult GetFundConversionsByAccountingPeriod(Guid accountingPeriodId)
+    public IActionResult GetByAccountingPeriod(Guid accountingPeriodId)
     {
         IEnumerable<FundConversion> fundConversions = fundConversionRepository.FindAllByAccountingPeriod(accountingPeriodIdFactory.Create(accountingPeriodId));
         return Ok(fundConversions.Select(fundConversion => new FundConversionModel(fundConversion)));
@@ -39,7 +39,7 @@ public sealed class FundConversionController(
     /// <param name="createFundConversionModel">Request to create a Fund Conversion</param>
     /// <returns>The created Fund Conversion</returns>
     [HttpPost("")]
-    public async Task<IActionResult> CreateFundConversionAsync(CreateFundConversionModel createFundConversionModel)
+    public async Task<IActionResult> CreateAsync(CreateFundConversionModel createFundConversionModel)
     {
         FundConversion newFundConversion = fundConversionFactory.Create(new CreateFundConversionRequest
         {

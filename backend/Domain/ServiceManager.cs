@@ -1,6 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
+using Domain.ChangeInValues;
 using Domain.FundConversions;
 using Domain.Funds;
 using Domain.Services;
@@ -30,6 +31,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<AccountBalanceService>();
 
         _ = serviceCollection.AddScoped<ChangeInValueFactory>();
+        _ = serviceCollection.AddScoped<ChangeInValueIdFactory>();
 
         _ = serviceCollection.AddScoped<AddFundAction>();
         _ = serviceCollection.AddScoped<FundIdFactory>();
