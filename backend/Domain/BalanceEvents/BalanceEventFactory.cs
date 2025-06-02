@@ -59,10 +59,6 @@ public abstract class BalanceEventFactory<TBalanceEvent, TRequest>(
         {
             accountingPeriod.AddChangeInValue(changeInValue);
         }
-        if (balanceEvent is FundConversion fundConversion)
-        {
-            accountingPeriod.AddFundConversion(fundConversion);
-        }
 
         return balanceEvent;
     }

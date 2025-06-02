@@ -1,6 +1,6 @@
 using Domain;
-using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.FundConversions;
 using Domain.Services;
 using Tests.Scenarios;
 using Tests.Setups;
@@ -35,8 +35,9 @@ public class AccountTests
     /// <param name="setup">Setup for this test case</param>
     /// <param name="reverse">True to convert funds from Other Fund to Fund, false to convert funds from Fund to Other Fund</param>
     /// <returns>The Fund Conversion that was added for this test case</returns>
-    private static FundConversion AddFundConversion(AccountScenarioSetup setup, bool reverse) =>
-        setup.GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
+    private static FundConversion AddFundConversion(AccountScenarioSetup setup, bool reverse)
+    {
+        FundConversion fundConversion = setup.GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
         {
             AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 10),
@@ -45,6 +46,9 @@ public class AccountTests
             ToFundId = reverse ? setup.Fund.Id : setup.OtherFund.Id,
             Amount = 100.00m
         });
+        setup.GetService<IFundConversionRepository>().Add(fundConversion);
+        return fundConversion;
+    }
 
     /// <summary>
     /// Gets the expected state for this test case

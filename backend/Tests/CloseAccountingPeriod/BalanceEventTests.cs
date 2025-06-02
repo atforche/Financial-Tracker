@@ -26,6 +26,7 @@ public class BalanceEventTests
         }
         CloseAccountingPeriod(setup);
         new AccountingPeriodValidator().Validate(setup.AccountingPeriod, GetExpectedState(scenario, setup));
+        new FundConversionValidator().Validate(setup.FundConversion != null ? [setup.FundConversion] : [], GetExpectedFundConversionStates(scenario, setup));
         new TransactionValidator().Validate(setup.Transaction != null ? [setup.Transaction] : [], GetExpectedTransactionStates(scenario, setup));
         new AccountBalanceCheckpointValidator().Validate(setup.Account.AccountBalanceCheckpoints, []);
     }
@@ -49,7 +50,6 @@ public class BalanceEventTests
             Year = setup.AccountingPeriod.Year,
             Month = setup.AccountingPeriod.Month,
             IsOpen = false,
-            FundConversions = GetExpectedFundConversionStates(scenario, setup),
             ChangeInValues = GetExpectedChangeInValueStates(scenario, setup),
         };
 

@@ -1,6 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
+using Domain.FundConversions;
 using Domain.Funds;
 using Tests.Scenarios;
 using Tests.Setups;
@@ -72,7 +73,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
     {
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.MultipleEventsSameDay)
         {
-            GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
+            GetService<IFundConversionRepository>().Add(GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
             {
                 AccountingPeriodId = AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
@@ -80,11 +81,11 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                 FromFundId = Fund.Id,
                 ToFundId = OtherFund.Id,
                 Amount = 500.00m
-            });
+            }));
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesFundBalanceNegative)
         {
-            GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
+            GetService<IFundConversionRepository>().Add(GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
             {
                 AccountingPeriodId = AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 10),
@@ -92,7 +93,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                 FromFundId = Fund.Id,
                 ToFundId = OtherFund.Id,
                 Amount = 1250.00m
-            });
+            }));
         }
     }
 }

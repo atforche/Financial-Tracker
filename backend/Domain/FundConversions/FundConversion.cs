@@ -1,8 +1,9 @@
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
 using Domain.Funds;
 
-namespace Domain.AccountingPeriods;
+namespace Domain.FundConversions;
 
 /// <summary>
 /// Entity class representing a Fund Conversion
@@ -12,7 +13,7 @@ namespace Domain.AccountingPeriods;
 /// gets converted into an amount from a different Fund. A Fund Conversion is instantaneous and
 /// this represents the only way to transfer money directly between Funds.
 /// </remarks>
-public class FundConversion : EntityOld, IBalanceEvent
+public class FundConversion : Entity<FundConversionId>, IBalanceEvent
 {
     /// <inheritdoc/>
     public AccountingPeriodId AccountingPeriodId { get; private set; }
@@ -82,7 +83,7 @@ public class FundConversion : EntityOld, IBalanceEvent
         FundId fromFundId,
         FundId toFundId,
         decimal amount)
-        : base()
+        : base(new FundConversionId(Guid.NewGuid()))
     {
         AccountingPeriodId = accountingPeriodId;
         EventDate = eventDate;

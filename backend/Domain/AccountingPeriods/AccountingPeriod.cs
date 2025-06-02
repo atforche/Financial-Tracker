@@ -8,7 +8,6 @@ namespace Domain.AccountingPeriods;
 /// </remarks>
 public class AccountingPeriod : Entity<AccountingPeriodId>
 {
-    private readonly List<FundConversion> _fundConversions = [];
     private readonly List<ChangeInValue> _changeInValues = [];
 
     /// <summary>
@@ -37,11 +36,6 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
     public bool IsOpen { get; internal set; }
 
     /// <summary>
-    /// Fund Conversions for this Accounting Period
-    /// </summary>
-    public IReadOnlyCollection<FundConversion> FundConversions => _fundConversions;
-
-    /// <summary>
     /// Change In Values for this Accounting Period
     /// </summary>
     public IReadOnlyCollection<ChangeInValue> ChangeInValues => _changeInValues;
@@ -58,12 +52,6 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
         Month = month;
         IsOpen = true;
     }
-
-    /// <summary>
-    /// Adds a new Fund Conversion to this Accounting Period
-    /// </summary>
-    /// <param name="fundConversion">Fund Conversion to add</param>
-    internal void AddFundConversion(FundConversion fundConversion) => _fundConversions.Add(fundConversion);
 
     /// <summary>
     /// Adds a new Change In Value to this Accounting Period

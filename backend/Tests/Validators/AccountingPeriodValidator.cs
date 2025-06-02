@@ -14,7 +14,6 @@ internal sealed class AccountingPeriodValidator : EntityValidator<AccountingPeri
         Assert.Equal(expectedState.Year, entity.Year);
         Assert.Equal(expectedState.Month, entity.Month);
         Assert.Equal(expectedState.IsOpen, entity.IsOpen);
-        new FundConversionValidator().Validate(entity.FundConversions, expectedState.FundConversions);
         new ChangeInValueValidator().Validate(entity.ChangeInValues, expectedState.ChangeInValues);
     }
 }
@@ -38,11 +37,6 @@ internal sealed record AccountingPeriodState
     /// Is Open Flag for this Accounting Period
     /// </summary>
     public required bool IsOpen { get; init; }
-
-    /// <summary>
-    /// Fund Conversion for this Accounting Period
-    /// </summary>
-    public required List<FundConversionState> FundConversions { get; init; }
 
     /// <summary>
     /// Change in Values for this Accounting Period

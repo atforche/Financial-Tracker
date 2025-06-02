@@ -1,4 +1,4 @@
-using Domain.AccountingPeriods;
+using Domain.FundConversions;
 using Tests.AddFundConversion.Scenarios;
 using Tests.AddFundConversion.Setups;
 using Tests.Scenarios;

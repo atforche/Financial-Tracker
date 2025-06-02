@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using Domain.AccountingPeriods;
 using Domain.BalanceEvents;
+using Domain.FundConversions;
 
-namespace Rest.Models.AccountingPeriods;
+namespace Rest.Models.FundConversions;
 
 /// <summary>
 /// REST model representing a <see cref="FundConversion"/>

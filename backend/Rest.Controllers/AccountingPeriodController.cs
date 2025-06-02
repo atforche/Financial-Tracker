@@ -21,7 +21,6 @@ public sealed class AccountingPeriodController(
     AccountIdFactory accountIdFactory,
     ChangeInValueFactory changeInValueFactory,
     FundIdFactory fundIdFactory,
-    FundConversionFactory fundConversionFactory,
     AccountingPeriodIdFactory accountingPeriodIdFactory) : ControllerBase
 {
     /// <summary>
@@ -42,18 +41,6 @@ public sealed class AccountingPeriodController(
     {
         AccountingPeriodId id = accountingPeriodIdFactory.Create(accountingPeriodId);
         return Ok(new AccountingPeriodModel(accountingPeriodRepository.FindById(id)));
-    }
-
-    /// <summary>
-    /// Retrieves all the Fund Conversions for the provided Accounting Period
-    /// </summary>
-    /// <param name="accountingPeriodId">ID of the Accounting Period</param>
-    /// <returns>A collection of Fund Conversions that fall within the provided Accounting Period</returns>
-    [HttpGet("{accountingPeriodId}/FundConversions")]
-    public IActionResult GetFundConversions(Guid accountingPeriodId)
-    {
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodIdFactory.Create(accountingPeriodId));
-        return Ok(accountingPeriod.FundConversions.Select(fundConversion => new FundConversionModel(fundConversion)));
     }
 
     /// <summary>
@@ -82,28 +69,6 @@ public sealed class AccountingPeriodController(
         accountingPeriodRepository.Add(newAccountingPeriod);
         await unitOfWork.SaveChangesAsync();
         return Ok(new AccountingPeriodModel(newAccountingPeriod));
-    }
-
-    /// <summary>
-    /// Creates a new Fund Conversion with the provided properties
-    /// </summary>
-    /// <param name="accountingPeriodId">ID of the Accounting Period</param>
-    /// <param name="createFundConversionModel">Request to create a Fund Conversion</param>
-    /// <returns>The created Fund Conversion</returns>
-    [HttpPost("{accountingPeriodId}/FundConversions")]
-    public async Task<IActionResult> CreateFundConversionAsync(Guid accountingPeriodId, CreateFundConversionModel createFundConversionModel)
-    {
-        FundConversion newFundConversion = fundConversionFactory.Create(new CreateFundConversionRequest
-        {
-            AccountingPeriodId = accountingPeriodIdFactory.Create(accountingPeriodId),
-            EventDate = createFundConversionModel.EventDate,
-            AccountId = accountIdFactory.Create(createFundConversionModel.AccountId),
-            FromFundId = fundIdFactory.Create(createFundConversionModel.FromFundId),
-            ToFundId = fundIdFactory.Create(createFundConversionModel.ToFundId),
-            Amount = createFundConversionModel.Amount
-        });
-        await unitOfWork.SaveChangesAsync();
-        return Ok(new FundConversionModel(newFundConversion));
     }
 
     /// <summary>

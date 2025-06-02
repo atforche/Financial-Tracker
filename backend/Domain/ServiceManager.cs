@@ -1,6 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
+using Domain.FundConversions;
 using Domain.Funds;
 using Domain.Services;
 using Domain.Transactions;
@@ -34,6 +35,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<FundIdFactory>();
 
         _ = serviceCollection.AddScoped<FundConversionFactory>();
+        _ = serviceCollection.AddScoped<FundConversionIdFactory>();
 
         _ = serviceCollection.AddScoped<PostTransactionAction>();
         _ = serviceCollection.AddScoped<TransactionFactory>();

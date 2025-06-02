@@ -1,6 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Actions;
+using Domain.FundConversions;
 using Domain.Funds;
 using Domain.Transactions;
 using Tests.CloseAccountingPeriod.Scenarios;
@@ -32,6 +33,11 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
     /// First Accounting Period for the Setup
     /// </summary>
     public AccountingPeriod AccountingPeriod { get; }
+
+    /// <summary>
+    /// Fund Conversion for the setup
+    /// </summary>
+    public FundConversion? FundConversion { get; }
 
     /// <summary>
     /// Transaction for the Setup
@@ -103,7 +109,7 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
         }
         if (scenario is BalanceEventScenario.FundConversion)
         {
-            GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
+            FundConversion = GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
             {
                 AccountingPeriodId = AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
@@ -112,6 +118,7 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
                 ToFundId = OtherFund.Id,
                 Amount = 250.00m
             });
+            GetService<IFundConversionRepository>().Add(FundConversion);
         }
     }
 }

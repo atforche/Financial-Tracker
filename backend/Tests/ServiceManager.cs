@@ -2,6 +2,7 @@ using Data;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
+using Domain.FundConversions;
 using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,7 @@ public static class ServiceManager
             _ = serviceCollection.AddScoped<IAccountingPeriodRepository, MockAccountingPeriodRepository>();
             _ = serviceCollection.AddScoped<IAccountRepository, MockAccountRepository>();
             _ = serviceCollection.AddScoped<IBalanceEventRepository, MockBalanceEventRepository>();
+            _ = serviceCollection.AddScoped<IFundConversionRepository, MockFundConversionRepository>();
             _ = serviceCollection.AddScoped<IFundRepository, MockFundRepository>();
             _ = serviceCollection.AddScoped<ITransactionRepository, MockTransactionRepository>();
         }

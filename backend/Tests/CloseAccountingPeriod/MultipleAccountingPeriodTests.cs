@@ -70,7 +70,6 @@ public class MultipleAccountingPeriodTests
             Month = period.Month,
             IsOpen = period.IsOpen,
             ChangeInValues = [],
-            FundConversions = [],
         };
 
     /// <summary>

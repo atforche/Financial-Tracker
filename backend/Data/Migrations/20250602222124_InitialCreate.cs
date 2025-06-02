@@ -121,7 +121,7 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "FundConversion",
+                name: "FundConversions",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -135,27 +135,27 @@ namespace Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_FundConversion", x => x.Id);
+                    table.PrimaryKey("PK_FundConversions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_FundConversion_AccountingPeriods_AccountingPeriodId",
+                        name: "FK_FundConversions_AccountingPeriods_AccountingPeriodId",
                         column: x => x.AccountingPeriodId,
                         principalTable: "AccountingPeriods",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_FundConversion_Accounts_AccountId",
+                        name: "FK_FundConversions_Accounts_AccountId",
                         column: x => x.AccountId,
                         principalTable: "Accounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_FundConversion_Funds_FromFundId",
+                        name: "FK_FundConversions_Funds_FromFundId",
                         column: x => x.FromFundId,
                         principalTable: "Funds",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_FundConversion_Funds_ToFundId",
+                        name: "FK_FundConversions_Funds_ToFundId",
                         column: x => x.ToFundId,
                         principalTable: "Funds",
                         principalColumn: "Id",
@@ -333,29 +333,29 @@ namespace Data.Migrations
                 column: "TransactionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FundConversion_AccountId",
-                table: "FundConversion",
+                name: "IX_FundConversions_AccountId",
+                table: "FundConversions",
                 column: "AccountId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FundConversion_AccountingPeriodId",
-                table: "FundConversion",
+                name: "IX_FundConversions_AccountingPeriodId",
+                table: "FundConversions",
                 column: "AccountingPeriodId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FundConversion_EventDate_EventSequence",
-                table: "FundConversion",
+                name: "IX_FundConversions_EventDate_EventSequence",
+                table: "FundConversions",
                 columns: new[] { "EventDate", "EventSequence" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_FundConversion_FromFundId",
-                table: "FundConversion",
+                name: "IX_FundConversions_FromFundId",
+                table: "FundConversions",
                 column: "FromFundId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FundConversion_ToFundId",
-                table: "FundConversion",
+                name: "IX_FundConversions_ToFundId",
+                table: "FundConversions",
                 column: "ToFundId");
 
             migrationBuilder.CreateIndex(
@@ -393,7 +393,7 @@ namespace Data.Migrations
                 name: "ChangeInValue");
 
             migrationBuilder.DropTable(
-                name: "FundConversion");
+                name: "FundConversions");
 
             migrationBuilder.DropTable(
                 name: "TransactionBalanceEvent");

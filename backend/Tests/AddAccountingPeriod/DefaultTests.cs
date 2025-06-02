@@ -21,7 +21,6 @@ public class DefaultTests
                 Year = setup.AccountingPeriod.Year,
                 Month = setup.AccountingPeriod.Month,
                 IsOpen = true,
-                FundConversions = [],
                 ChangeInValues = [],
             });
         new AccountValidator().Validate(setup.Account,

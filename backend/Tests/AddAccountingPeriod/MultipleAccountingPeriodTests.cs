@@ -72,7 +72,6 @@ public class MultipleAccountingPeriodTests
             Year = accountingPeriod.Year,
             Month = accountingPeriod.Month,
             IsOpen = accountingPeriod.IsOpen,
-            FundConversions = [],
             ChangeInValues = [],
         };
 

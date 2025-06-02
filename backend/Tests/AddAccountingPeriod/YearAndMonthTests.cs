@@ -27,7 +27,6 @@ public class YearAndMonthTests
             Year = setup.AccountingPeriod.Year,
             Month = setup.AccountingPeriod.Month,
             IsOpen = true,
-            FundConversions = [],
             ChangeInValues = [],
         });
     }

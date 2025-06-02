@@ -17,7 +17,7 @@ public record TransactionId : EntityId
 }
 
 /// <summary>
-/// Factory for constructing an Transaction ID
+/// Factory for constructing a Transaction ID
 /// </summary>
 /// <param name="transactionRepository">Transaction Repository</param>
 public class TransactionIdFactory(ITransactionRepository transactionRepository)

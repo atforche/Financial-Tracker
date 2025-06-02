@@ -1,18 +1,21 @@
-using Domain.AccountingPeriods;
 using Domain.BalanceEvents;
+using Domain.FundConversions;
 
-namespace Rest.Models.AccountingPeriods;
+namespace Rest.Models.FundConversions;
 
 /// <summary>
 /// REST model representing a request to create a <see cref="FundConversion"/>
 /// </summary>
 public class CreateFundConversionModel
 {
-    /// <inheritdoc cref="IBalanceEvent.AccountId"/>
-    public required Guid AccountId { get; init; }
+    /// <inheritdoc cref="FundConversion.AccountingPeriodId"/>
+    public required Guid AccountingPeriodId { get; init; }
 
     /// <inheritdoc cref="IBalanceEvent.EventDate"/>
     public required DateOnly EventDate { get; init; }
+
+    /// <inheritdoc cref="IBalanceEvent.AccountId"/>
+    public required Guid AccountId { get; init; }
 
     /// <inheritdoc cref="FundConversion.FromFundId"/>
     public required Guid FromFundId { get; init; }

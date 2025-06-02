@@ -1,5 +1,6 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.FundConversions;
 using Domain.Funds;
 
 namespace Tests.Validators;

@@ -24,6 +24,18 @@ public sealed class TransactionController(
     PostTransactionAction postTransactionAction) : ControllerBase
 {
     /// <summary>
+    /// Retrieves all the Transactions for the provided Accounting Period
+    /// </summary>
+    /// <param name="accountingPeriodId">ID of the Accounting Period</param>
+    /// <returns>A collection of Transactions that fall within the provided Accounting Period</returns>
+    [HttpGet("{accountingPeriodId}")]
+    public IActionResult GetTransactionsByAccountingPeriod(Guid accountingPeriodId)
+    {
+        IEnumerable<Transaction> transactions = transactionRepository.FindAllByAccountingPeriod(accountingPeriodIdFactory.Create(accountingPeriodId));
+        return Ok(transactions.Select(transaction => new TransactionModel(transaction)));
+    }
+
+    /// <summary>
     /// Creates a new Transaction with the provided properties
     /// </summary>
     /// <param name="createTransactionModel">Request to create a Transaction</param>
