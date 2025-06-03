@@ -1,6 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Tests.Mocks;
 using Tests.Scenarios;
 
 namespace Tests.Setups;
@@ -40,12 +41,15 @@ internal sealed class AddBalanceEventAccountingPeriodScenarioSetup : ScenarioSet
         GetService<IFundRepository>().Add(Fund);
         OtherFund = GetService<FundFactory>().Create("Test2");
         GetService<IFundRepository>().Add(OtherFund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod nextAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(nextAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         Account = GetService<AccountFactory>().Create("Test",
             AccountType.Standard,
@@ -59,10 +63,12 @@ internal sealed class AddBalanceEventAccountingPeriodScenarioSetup : ScenarioSet
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         if (scenario == AddBalanceEventAccountingPeriodScenario.Closed)
         {
             GetService<CloseAccountingPeriodAction>().Run(AccountingPeriod);
+            GetService<TestUnitOfWork>().SaveChanges();
         }
     }
 }

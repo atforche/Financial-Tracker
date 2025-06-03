@@ -2,6 +2,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
+using Tests.Mocks;
 using Tests.PostTransaction.Scenarios;
 using Tests.Setups;
 
@@ -45,9 +46,11 @@ internal sealed class AccountTypeScenarioSetup : ScenarioSetup
     {
         Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         if (scenario is AccountTypeScenario.Debit or AccountTypeScenario.MissingCredit)
         {
@@ -60,6 +63,7 @@ internal sealed class AccountTypeScenarioSetup : ScenarioSetup
                     }
                 ]);
             GetService<IAccountRepository>().Add(DebitAccount);
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         else
         {
@@ -72,6 +76,7 @@ internal sealed class AccountTypeScenarioSetup : ScenarioSetup
                     }
                 ]);
             GetService<IAccountRepository>().Add(CreditAccount);
+            GetService<TestUnitOfWork>().SaveChanges();
         }
 
         Transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
@@ -86,5 +91,6 @@ internal sealed class AccountTypeScenarioSetup : ScenarioSetup
                 }
             ]);
         GetService<ITransactionRepository>().Add(Transaction);
+        GetService<TestUnitOfWork>().SaveChanges();
     }
 }

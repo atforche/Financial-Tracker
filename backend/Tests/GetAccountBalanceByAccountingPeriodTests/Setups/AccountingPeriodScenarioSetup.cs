@@ -3,6 +3,7 @@ using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
 using Tests.GetAccountBalanceByAccountingPeriodTests.Scenarios;
+using Tests.Mocks;
 using Tests.Setups;
 
 namespace Tests.GetAccountBalanceByAccountingPeriodTests.Setups;
@@ -35,13 +36,18 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
     {
         Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod firstAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2024, 12);
         GetService<IAccountingPeriodRepository>().Add(firstAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
+
         GetService<CloseAccountingPeriodAction>().Run(firstAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod secondAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(secondAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, secondAccountingPeriod.Id, secondAccountingPeriod.PeriodStartDate,
             [
@@ -52,9 +58,11 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod thirdAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(thirdAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod = scenario switch
         {
@@ -79,6 +87,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
                     }
                 ]);
             GetService<ITransactionRepository>().Add(transaction);
+            GetService<TestUnitOfWork>().SaveChanges();
         }
     }
 }

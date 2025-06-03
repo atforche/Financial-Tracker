@@ -7,7 +7,7 @@ namespace Tests.Setups;
 /// <summary>
 /// Abstract base class representing a Scenario Setup
 /// </summary>
-internal abstract class ScenarioSetup : IDisposable
+internal class ScenarioSetup : IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly bool shouldUseDatabase = Environment.GetEnvironmentVariable("USE_DATABASE") == "TRUE";
@@ -15,7 +15,7 @@ internal abstract class ScenarioSetup : IDisposable
     /// <summary>
     /// Constructs a new instance of this class.
     /// </summary>
-    protected ScenarioSetup()
+    public ScenarioSetup()
     {
         var serviceCollection = new ServiceCollection();
         ServiceManager.Register(serviceCollection, shouldUseDatabase);
@@ -36,12 +36,33 @@ internal abstract class ScenarioSetup : IDisposable
     /// </summary>
     public TService GetService<TService>() => _serviceProvider.GetService<TService>() ?? throw new InvalidOperationException();
 
+    #region IDisposable
+
+    private bool _disposed;
+
     /// <inheritdoc/>
     public void Dispose()
     {
-        if (shouldUseDatabase)
-        {
-            GetService<DatabaseContext>().Database.EnsureDeleted();
-        }
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
+
+    /// <inheritdoc/>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+        if (disposing)
+        {
+            if (shouldUseDatabase)
+            {
+                GetService<DatabaseContext>().Database.EnsureDeleted();
+            }
+        }
+        _disposed = true;
+    }
+
+    #endregion
 }

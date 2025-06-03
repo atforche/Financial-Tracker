@@ -2,6 +2,7 @@ using Domain;
 using Domain.Accounts;
 using Domain.ChangeInValues;
 using Domain.Funds;
+using Tests.Mocks;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
@@ -49,6 +50,7 @@ public class AccountTests
             }
         });
         setup.GetService<IChangeInValueRepository>().Add(changeInValue);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
         return changeInValue;
     }
 

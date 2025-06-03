@@ -1,6 +1,7 @@
 using Domain;
 using Domain.Accounts;
 using Domain.FundConversions;
+using Tests.Mocks;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
@@ -46,6 +47,7 @@ public class AccountTests
             Amount = 100.00m
         });
         setup.GetService<IFundConversionRepository>().Add(fundConversion);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
         return fundConversion;
     }
 

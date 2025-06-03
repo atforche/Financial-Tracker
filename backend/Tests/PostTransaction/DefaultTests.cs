@@ -1,5 +1,6 @@
 using Domain.Funds;
 using Domain.Transactions;
+using Tests.Mocks;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -29,6 +30,8 @@ public class DefaultTests
                 }
             ]);
         setup.GetService<ITransactionRepository>().Add(transaction);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
+
         PostTransaction(setup, transaction);
         new TransactionValidator().Validate(transaction,
             new TransactionState
@@ -75,6 +78,9 @@ public class DefaultTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <param name="transaction">Transaction to be posted</param>
-    private static void PostTransaction(DefaultScenarioSetup setup, Transaction transaction) =>
+    private static void PostTransaction(DefaultScenarioSetup setup, Transaction transaction)
+    {
         setup.GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, new DateOnly(2025, 1, 15));
+        setup.GetService<TestUnitOfWork>().SaveChanges();
+    }
 }

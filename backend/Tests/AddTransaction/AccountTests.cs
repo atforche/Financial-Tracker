@@ -4,6 +4,7 @@ using Domain.Funds;
 using Domain.Transactions;
 using Tests.AddTransaction.Scenarios;
 using Tests.AddTransaction.Setups;
+using Tests.Mocks;
 using Tests.Validators;
 
 namespace Tests.AddTransaction;
@@ -67,6 +68,7 @@ public class AccountTests
                 }
             ]);
         setup.GetService<ITransactionRepository>().Add(transaction);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
         return transaction;
     }
 

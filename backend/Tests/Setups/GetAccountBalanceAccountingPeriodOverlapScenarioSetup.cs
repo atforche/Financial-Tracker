@@ -2,6 +2,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
+using Tests.Mocks;
 using Tests.Scenarios;
 
 namespace Tests.Setups;
@@ -45,9 +46,11 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
     {
         Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         PastAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2024, 12);
         GetService<IAccountingPeriodRepository>().Add(PastAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, PastAccountingPeriod.Id, PastAccountingPeriod.PeriodStartDate,
             [
@@ -58,12 +61,15 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         CurrentAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(CurrentAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         FutureAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(FutureAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         Transaction transaction = GetService<TransactionFactory>().Create(CurrentAccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
@@ -77,7 +83,10 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
                 }
             ]);
         GetService<ITransactionRepository>().Add(transaction);
+        GetService<TestUnitOfWork>().SaveChanges();
+
         GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, transaction.Date);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         Transaction otherPeriodTransaction = GetService<TransactionFactory>().Create(
             accountingPeriodType == AccountingPeriodType.Past ? PastAccountingPeriod.Id : FutureAccountingPeriod.Id,
@@ -93,6 +102,9 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
             ]
         );
         GetService<ITransactionRepository>().Add(otherPeriodTransaction);
+        GetService<TestUnitOfWork>().SaveChanges();
+
         GetService<PostTransactionAction>().Run(otherPeriodTransaction, TransactionAccountType.Debit, otherPeriodTransaction.Date);
+        GetService<TestUnitOfWork>().SaveChanges();
     }
 }

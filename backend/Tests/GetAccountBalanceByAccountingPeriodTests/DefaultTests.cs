@@ -1,6 +1,7 @@
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
+using Tests.Mocks;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -30,6 +31,8 @@ public class DefaultTests
                 }
             ]);
         setup.GetService<ITransactionRepository>().Add(transaction);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
+
         new AccountBalanceByAccountingPeriodValidator().Validate(
             setup.GetService<AccountBalanceService>().GetAccountBalanceByAccountingPeriod(setup.Account.Id, setup.AccountingPeriod.Id),
             new AccountBalanceByAccountingPeriodState

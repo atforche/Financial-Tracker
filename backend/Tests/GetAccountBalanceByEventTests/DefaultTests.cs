@@ -2,6 +2,7 @@ using Domain;
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
+using Tests.Mocks;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -31,7 +32,11 @@ public class DefaultTests
                 }
             ]);
         setup.GetService<ITransactionRepository>().Add(transaction);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
+
         setup.GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, new DateOnly(2025, 1, 16));
+        setup.GetService<TestUnitOfWork>().SaveChanges();
+
         new AccountBalanceByEventValidator().Validate(
             setup.GetService<AccountBalanceService>().GetAccountBalancesByEvent(setup.Account.Id,
                 new DateRange(new DateOnly(2025, 1, 14), new DateOnly(2025, 1, 16))),

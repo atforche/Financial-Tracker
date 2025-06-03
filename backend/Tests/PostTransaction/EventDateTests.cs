@@ -1,5 +1,6 @@
 using Domain.Funds;
 using Domain.Transactions;
+using Tests.Mocks;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
@@ -20,7 +21,6 @@ public class EventDateTests
     {
         using var setup = new AddBalanceEventDateScenarioSetup(eventDate);
         Transaction transaction = AddTransaction(setup);
-        setup.GetService<ITransactionRepository>().Add(transaction);
         if (!AddBalanceEventDateScenarios.IsValid(eventDate) || eventDate < new DateOnly(2025, 1, 1))
         {
             Assert.Throws<InvalidOperationException>(() => PostTransaction(setup, transaction));
@@ -35,8 +35,9 @@ public class EventDateTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
-    private static Transaction AddTransaction(AddBalanceEventDateScenarioSetup setup) =>
-        setup.GetService<TransactionFactory>().Create(setup.CurrentAccountingPeriod.Id,
+    private static Transaction AddTransaction(AddBalanceEventDateScenarioSetup setup)
+    {
+        Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.CurrentAccountingPeriod.Id,
             new DateOnly(2025, 1, 1),
             setup.Account.Id,
             null,
@@ -47,14 +48,21 @@ public class EventDateTests
                     Amount = 25.00m,
                 }
             ]);
+        setup.GetService<ITransactionRepository>().Add(transaction);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
+        return transaction;
+    }
 
     /// <summary>
     /// Posts the Transaction for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <param name="transaction">Transaction to be posted</param>
-    private static void PostTransaction(AddBalanceEventDateScenarioSetup setup, Transaction transaction) =>
+    private static void PostTransaction(AddBalanceEventDateScenarioSetup setup, Transaction transaction)
+    {
         setup.GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, setup.EventDate);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
+    }
 
     /// <summary>
     /// Gets the expected state for this test case

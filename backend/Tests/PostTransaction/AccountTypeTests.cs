@@ -1,6 +1,7 @@
 using Domain;
 using Domain.Accounts;
 using Domain.Transactions;
+using Tests.Mocks;
 using Tests.PostTransaction.Scenarios;
 using Tests.PostTransaction.Setups;
 using Tests.Validators;
@@ -58,6 +59,7 @@ public class AccountTypeTests
         {
             setup.GetService<PostTransactionAction>().Run(setup.Transaction, TransactionAccountType.Credit, new DateOnly(2025, 1, 15));
         }
+        setup.GetService<TestUnitOfWork>().SaveChanges();
     }
 
     /// <summary>

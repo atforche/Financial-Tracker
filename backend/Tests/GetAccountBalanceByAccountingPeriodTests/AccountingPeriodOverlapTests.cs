@@ -1,5 +1,6 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Tests.Mocks;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
@@ -28,6 +29,7 @@ public class AccountingPeriodOverlapTests
             GetFuturePeriodExpectedState(setup, accountingPeriodType));
 
         setup.GetService<CloseAccountingPeriodAction>().Run(setup.PastAccountingPeriod);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
 
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.PastAccountingPeriod),
             GetPastPeriodExpectedState(setup, accountingPeriodType));
@@ -37,6 +39,7 @@ public class AccountingPeriodOverlapTests
             GetFuturePeriodExpectedState(setup, accountingPeriodType));
 
         setup.GetService<CloseAccountingPeriodAction>().Run(setup.CurrentAccountingPeriod);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
 
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.PastAccountingPeriod),
             GetPastPeriodExpectedState(setup, accountingPeriodType));
@@ -46,6 +49,7 @@ public class AccountingPeriodOverlapTests
             GetFuturePeriodExpectedState(setup, accountingPeriodType));
 
         setup.GetService<CloseAccountingPeriodAction>().Run(setup.FutureAccountingPeriod);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
 
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.PastAccountingPeriod),
             GetPastPeriodExpectedState(setup, accountingPeriodType));

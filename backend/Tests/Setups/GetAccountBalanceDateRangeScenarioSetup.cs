@@ -2,6 +2,7 @@ using Domain;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Tests.Mocks;
 using Tests.Scenarios;
 
 namespace Tests.Setups;
@@ -34,13 +35,18 @@ internal sealed class GetAccountBalanceDateRangeScenarioSetup : ScenarioSetup
     {
         Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod firstAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2024, 12);
         GetService<IAccountingPeriodRepository>().Add(firstAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
+
         GetService<CloseAccountingPeriodAction>().Run(firstAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod secondAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(secondAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, secondAccountingPeriod.Id, secondAccountingPeriod.PeriodStartDate,
             [
@@ -51,9 +57,11 @@ internal sealed class GetAccountBalanceDateRangeScenarioSetup : ScenarioSetup
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod thirdAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(thirdAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         DateRange = scenario switch
         {

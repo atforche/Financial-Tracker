@@ -2,6 +2,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.FundConversions;
 using Domain.Funds;
+using Tests.Mocks;
 using Tests.Scenarios;
 using Tests.Setups;
 
@@ -42,9 +43,11 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
         GetService<IFundRepository>().Add(Fund);
         OtherFund = GetService<FundFactory>().Create("Test2");
         GetService<IFundRepository>().Add(OtherFund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
             [
@@ -60,6 +63,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         DoScenarioSpecificSetup(scenario);
     }
@@ -81,6 +85,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                 ToFundId = OtherFund.Id,
                 Amount = 500.00m
             }));
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesFundBalanceNegative)
         {
@@ -93,6 +98,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                 ToFundId = OtherFund.Id,
                 Amount = 1250.00m
             }));
+            GetService<TestUnitOfWork>().SaveChanges();
         }
     }
 }

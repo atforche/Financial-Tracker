@@ -1,6 +1,7 @@
 using Domain.AccountingPeriods;
 using Tests.CloseAccountingPeriod.Scenarios;
 using Tests.CloseAccountingPeriod.Setups;
+using Tests.Mocks;
 using Tests.Validators;
 
 namespace Tests.CloseAccountingPeriod;
@@ -44,6 +45,7 @@ public class MultipleAccountingPeriodTests
         {
             setup.GetService<CloseAccountingPeriodAction>().Run(
                 setup.AccountingPeriods.First(period => period.Year == periodToClose.Year && period.Month == periodToClose.Month));
+            setup.GetService<TestUnitOfWork>().SaveChanges();
             new AccountingPeriodValidator().Validate(
                 setup.AccountingPeriods.ElementAt(0),
                 GetExpectedState(setup.AccountingPeriods.ElementAt(0)));

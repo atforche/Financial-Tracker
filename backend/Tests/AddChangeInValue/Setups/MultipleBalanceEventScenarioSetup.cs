@@ -2,6 +2,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.ChangeInValues;
 using Domain.Funds;
+using Tests.Mocks;
 using Tests.Scenarios;
 using Tests.Setups;
 
@@ -44,12 +45,15 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
         GetService<IFundRepository>().Add(Fund);
         OtherFund = GetService<FundFactory>().Create("Test2");
         GetService<IFundRepository>().Add(OtherFund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         _futureAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(_futureAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
             [
@@ -65,6 +69,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         DoScenarioSpecificSetup(scenario);
     }
@@ -88,6 +93,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                     Amount = 500.00m
                 }
             }));
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesFundBalanceNegative)
         {
@@ -102,6 +108,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                     Amount = -1250.00m
                 }
             }));
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesAccountBalanceToZero)
         {
@@ -116,6 +123,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                     Amount = -2500.00m
                 }
             }));
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesAccountBalanceNegative)
         {
@@ -130,6 +138,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                     Amount = -2750.00m
                 }
             }));
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesFutureEventToMakeAccountBalanceNegative)
         {
@@ -144,6 +153,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                     Amount = -2750.00m
                 }
             }));
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesAccountBalancesAtEndOfPeriodToBeNegative)
         {
@@ -158,6 +168,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                     Amount = -2750.00m
                 }
             }));
+            GetService<TestUnitOfWork>().SaveChanges();
             GetService<IChangeInValueRepository>().Add(GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
             {
                 AccountingPeriodId = _futureAccountingPeriod.Id,
@@ -169,6 +180,7 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
                     Amount = 2750.00m
                 }
             }));
+            GetService<TestUnitOfWork>().SaveChanges();
         }
     }
 }

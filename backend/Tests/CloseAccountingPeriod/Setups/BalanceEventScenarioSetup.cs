@@ -5,6 +5,7 @@ using Domain.FundConversions;
 using Domain.Funds;
 using Domain.Transactions;
 using Tests.CloseAccountingPeriod.Scenarios;
+using Tests.Mocks;
 using Tests.Setups;
 
 namespace Tests.CloseAccountingPeriod.Setups;
@@ -59,9 +60,12 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
         GetService<IFundRepository>().Add(Fund);
         OtherFund = GetService<FundFactory>().Create("Test2");
         GetService<IFundRepository>().Add(OtherFund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
+
         Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
@@ -76,6 +80,7 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         if (scenario is BalanceEventScenario.UnpostedTransaction or BalanceEventScenario.PostedTransaction)
         {
@@ -91,12 +96,14 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
                     }
                 ]);
             GetService<ITransactionRepository>().Add(Transaction);
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario is BalanceEventScenario.PostedTransaction)
         {
             GetService<PostTransactionAction>().Run(Transaction ?? throw new InvalidOperationException(),
                 TransactionAccountType.Debit,
                 new DateOnly(2025, 1, 15));
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario is BalanceEventScenario.ChangeInValue)
         {
@@ -112,6 +119,7 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
                 }
             });
             GetService<IChangeInValueRepository>().Add(ChangeInValue);
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario is BalanceEventScenario.FundConversion)
         {
@@ -125,6 +133,7 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
                 Amount = 250.00m
             });
             GetService<IFundConversionRepository>().Add(FundConversion);
+            GetService<TestUnitOfWork>().SaveChanges();
         }
     }
 }

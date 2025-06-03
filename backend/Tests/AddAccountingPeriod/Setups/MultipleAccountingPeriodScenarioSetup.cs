@@ -2,6 +2,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 using Tests.AddAccountingPeriod.Scenarios;
+using Tests.Mocks;
 using Tests.Setups;
 
 namespace Tests.AddAccountingPeriod.Setups;
@@ -34,8 +35,12 @@ internal sealed class MultipleAccountingPeriodScenarioSetup : ScenarioSetup
     {
         Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
+        GetService<TestUnitOfWork>().SaveChanges();
+
         FirstAccountingPeriod = GetService<AccountingPeriodFactory>().Create(firstPeriod.Year, firstPeriod.Month);
         GetService<IAccountingPeriodRepository>().Add(FirstAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
+
         Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, FirstAccountingPeriod.Id, FirstAccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
@@ -45,5 +50,6 @@ internal sealed class MultipleAccountingPeriodScenarioSetup : ScenarioSetup
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
     }
 }

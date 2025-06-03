@@ -2,6 +2,7 @@ using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
 using Tests.AddTransaction.Setups;
+using Tests.Mocks;
 using Tests.Scenarios;
 using Tests.Validators;
 
@@ -66,6 +67,7 @@ public class MultipleBalanceEventTests
                 }
             ]);
         setup.GetService<ITransactionRepository>().Add(transaction);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
         return transaction;
     }
 
