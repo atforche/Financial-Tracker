@@ -1,8 +1,8 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
 using Tests.AddTransaction.Scenarios;
+using Tests.Mocks;
 using Tests.Setups;
 
 namespace Tests.AddTransaction.Setups;
@@ -35,20 +35,22 @@ internal sealed class FundScenarioSetup : ScenarioSetup
     {
         Funds = GetFundsForScenario(scenario);
 
-        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
+        AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+        Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
             Funds.Count == 0
                 ? []
                 : [
                     new FundAmount
                     {
-                        Fund = Funds.First(),
+                        FundId = Funds.First().Id,
                         Amount = 1500.00m
                     }
                   ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
     }
 
     /// <summary>
@@ -59,22 +61,26 @@ internal sealed class FundScenarioSetup : ScenarioSetup
     {
         if (scenario == FundScenario.One)
         {
-            Fund fund = GetService<AddFundAction>().Run("Test");
+            Fund fund = GetService<FundFactory>().Create("Test");
             GetService<IFundRepository>().Add(fund);
+            GetService<TestUnitOfWork>().SaveChanges();
             return [fund];
         }
         if (scenario == FundScenario.Multiple)
         {
-            Fund fund = GetService<AddFundAction>().Run("Test");
+            Fund fund = GetService<FundFactory>().Create("Test");
             GetService<IFundRepository>().Add(fund);
-            Fund otherFund = GetService<AddFundAction>().Run("OtherTest");
+            GetService<TestUnitOfWork>().SaveChanges();
+            Fund otherFund = GetService<FundFactory>().Create("OtherTest");
             GetService<IFundRepository>().Add(otherFund);
+            GetService<TestUnitOfWork>().SaveChanges();
             return [fund, otherFund];
         }
         if (scenario == FundScenario.Duplicate)
         {
-            Fund fund = GetService<AddFundAction>().Run("Test");
+            Fund fund = GetService<FundFactory>().Create("Test");
             GetService<IFundRepository>().Add(fund);
+            GetService<TestUnitOfWork>().SaveChanges();
             return [fund, fund];
         }
         return [];

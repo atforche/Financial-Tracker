@@ -1,7 +1,7 @@
 using Domain;
+using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
-using Domain.Services;
+using Tests.Mocks;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
@@ -20,16 +20,19 @@ public class AccountingPeriodOverlapTests
     [ClassData(typeof(GetAccountBalanceAccountingPeriodOverlapScenarios))]
     public void RunTest(AccountingPeriodType accountingPeriodType, DateOnly eventDate)
     {
-        var setup = new GetAccountBalanceAccountingPeriodOverlapScenarioSetup(accountingPeriodType, eventDate);
+        using var setup = new GetAccountBalanceAccountingPeriodOverlapScenarioSetup(accountingPeriodType, eventDate);
         new AccountBalanceByEventValidator().Validate(GetAccountBalance(setup), GetExpectedState(setup, accountingPeriodType, eventDate));
 
         setup.GetService<CloseAccountingPeriodAction>().Run(setup.PastAccountingPeriod);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
         new AccountBalanceByEventValidator().Validate(GetAccountBalance(setup), GetExpectedState(setup, accountingPeriodType, eventDate));
 
         setup.GetService<CloseAccountingPeriodAction>().Run(setup.CurrentAccountingPeriod);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
         new AccountBalanceByEventValidator().Validate(GetAccountBalance(setup), GetExpectedState(setup, accountingPeriodType, eventDate));
 
         setup.GetService<CloseAccountingPeriodAction>().Run(setup.FutureAccountingPeriod);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
         new AccountBalanceByEventValidator().Validate(GetAccountBalance(setup), GetExpectedState(setup, accountingPeriodType, eventDate));
     }
 
@@ -39,7 +42,7 @@ public class AccountingPeriodOverlapTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Account Balance by Events for the provided Accounting Period</returns>
     private static IEnumerable<AccountBalanceByEvent> GetAccountBalance(GetAccountBalanceAccountingPeriodOverlapScenarioSetup setup) =>
-        setup.GetService<AccountBalanceService>().GetAccountBalancesByEvent(setup.Account,
+        setup.GetService<AccountBalanceService>().GetAccountBalancesByEvent(setup.Account.Id,
             new DateRange(new DateOnly(2025, 1, 10), new DateOnly(2025, 1, 20)));
 
     /// <summary>
@@ -53,10 +56,63 @@ public class AccountingPeriodOverlapTests
         GetAccountBalanceAccountingPeriodOverlapScenarioSetup setup,
         AccountingPeriodType accountingPeriodType,
         DateOnly eventDate) =>
-        GetPastPeriodExpectedState(setup, accountingPeriodType, eventDate)
-            .Concat(GetCurrentPeriodExpectedState(setup, accountingPeriodType, eventDate))
+        GetCurrentPeriodExpectedState(setup, eventDate)
+            .Concat(GetPastPeriodExpectedState(setup, accountingPeriodType, eventDate))
             .Concat(GetFuturePeriodExpectedState(setup, accountingPeriodType, eventDate))
             .ToList();
+
+    /// <summary>
+    /// Gets the expected states for the current Accounting Period for this test case
+    /// </summary>
+    /// <param name="setup">Setup for this test case</param>
+    /// <param name="eventDate">Event Date for this test case</param>
+    /// <returns>The expected states for the current Accounting Period for this test case</returns>
+    private static List<AccountBalanceByEventState> GetCurrentPeriodExpectedState(
+        GetAccountBalanceAccountingPeriodOverlapScenarioSetup setup,
+        DateOnly eventDate)
+    {
+        List<AccountBalanceByEventState> results = [];
+        results.Add(new AccountBalanceByEventState
+        {
+            AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
+            EventDate = new DateOnly(2025, 1, 15),
+            EventSequence = 1,
+            AccountId = setup.Account.Id,
+            FundBalances =
+            [
+                new FundAmountState
+                {
+                    FundId = setup.Fund.Id,
+                    Amount = eventDate < new DateOnly(2025, 1, 15) ? 1000.00m : 1500.00m
+                }
+            ],
+            PendingFundBalanceChanges =
+            [
+                new FundAmountState
+                {
+                    FundId = setup.Fund.Id,
+                    Amount = -250.00m
+                }
+            ]
+        });
+        results.Add(new AccountBalanceByEventState
+        {
+            AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
+            EventDate = new DateOnly(2025, 1, 15),
+            EventSequence = 2,
+            AccountId = setup.Account.Id,
+            FundBalances =
+            [
+                new FundAmountState
+                {
+                    FundId = setup.Fund.Id,
+                    Amount = eventDate < new DateOnly(2025, 1, 15) ? 750.00m : 1250.00m
+                }
+            ],
+            PendingFundBalanceChanges = []
+        });
+        return results;
+    }
 
     /// <summary>
     /// Gets the expected states for the past Accounting Period for this test case
@@ -75,103 +131,44 @@ public class AccountingPeriodOverlapTests
         {
             results.Add(new AccountBalanceByEventState
             {
-                AccountingPeriodKey = setup.PastAccountingPeriod.Key,
-                AccountName = setup.Account.Name,
+                AccountingPeriodId = setup.PastAccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
-                EventSequence = 1,
+                EventSequence = 3,
+                AccountId = setup.Account.Id,
                 FundBalances =
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
-                        Amount = 1500.00m
+                        FundId = setup.Fund.Id,
+                        Amount = 1250.00m
                     }
                 ],
                 PendingFundBalanceChanges =
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = -500.00m
                     }
                 ]
             });
             results.Add(new AccountBalanceByEventState
             {
-                AccountingPeriodKey = setup.PastAccountingPeriod.Key,
-                AccountName = setup.Account.Name,
+                AccountingPeriodId = setup.PastAccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
-                EventSequence = 2,
+                EventSequence = 4,
+                AccountId = setup.Account.Id,
                 FundBalances =
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
-                        Amount = 1000.00m
+                        FundId = setup.Fund.Id,
+                        Amount = 750.00m
                     }
                 ],
                 PendingFundBalanceChanges = []
             });
         }
-        return results;
-    }
-
-    /// <summary>
-    /// Gets the expected states for the current Accounting Period for this test case
-    /// </summary>
-    /// <param name="setup">Setup for this test case</param>
-    /// <param name="accountingPeriodType">Accounting Period Type for this test case</param>
-    /// <param name="eventDate">Event Date for this test case</param>
-    /// <returns>The expected states for the current Accounting Period for this test case</returns>
-    private static List<AccountBalanceByEventState> GetCurrentPeriodExpectedState(
-        GetAccountBalanceAccountingPeriodOverlapScenarioSetup setup,
-        AccountingPeriodType accountingPeriodType,
-        DateOnly eventDate)
-    {
-        List<AccountBalanceByEventState> results = [];
-        results.Add(new AccountBalanceByEventState
-        {
-            AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
-            AccountName = setup.Account.Name,
-            EventDate = new DateOnly(2025, 1, 15),
-            EventSequence = 1,
-            FundBalances =
-            [
-                new FundAmountState
-                {
-                    FundName = setup.Fund.Name,
-                    Amount = eventDate < new DateOnly(2025, 1, 15) || (eventDate == new DateOnly(2025, 1, 15) && accountingPeriodType == AccountingPeriodType.Past)
-                        ? 1000.00m
-                        : 1500.00m
-                }
-            ],
-            PendingFundBalanceChanges =
-            [
-                new FundAmountState
-                {
-                    FundName = setup.Fund.Name,
-                    Amount = -250.00m
-                }
-            ]
-        });
-        results.Add(new AccountBalanceByEventState
-        {
-            AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
-            AccountName = setup.Account.Name,
-            EventDate = new DateOnly(2025, 1, 15),
-            EventSequence = 2,
-            FundBalances =
-            [
-                new FundAmountState
-                {
-                    FundName = setup.Fund.Name,
-                    Amount = eventDate < new DateOnly(2025, 1, 15) || (eventDate == new DateOnly(2025, 1, 15) && accountingPeriodType == AccountingPeriodType.Past)
-                        ? 750.00m
-                        : 1250.00m
-                }
-            ],
-            PendingFundBalanceChanges = []
-        });
         return results;
     }
 
@@ -192,15 +189,15 @@ public class AccountingPeriodOverlapTests
         {
             results.Add(new AccountBalanceByEventState
             {
-                AccountingPeriodKey = setup.FutureAccountingPeriod.Key,
-                AccountName = setup.Account.Name,
+                AccountingPeriodId = setup.FutureAccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
-                EventSequence = 1,
+                EventSequence = 3,
+                AccountId = setup.Account.Id,
                 FundBalances =
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 1250.00m
                     }
                 ],
@@ -208,22 +205,22 @@ public class AccountingPeriodOverlapTests
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = -500.00m
                     }
                 ]
             });
             results.Add(new AccountBalanceByEventState
             {
-                AccountingPeriodKey = setup.FutureAccountingPeriod.Key,
-                AccountName = setup.Account.Name,
+                AccountingPeriodId = setup.FutureAccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
-                EventSequence = 2,
+                EventSequence = 4,
+                AccountId = setup.Account.Id,
                 FundBalances =
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 750.00m
                     }
                 ],

@@ -48,19 +48,19 @@ public class AccountBalance
         Account = account;
         FundBalances = fundBalances
             .Where(amount => amount.Amount != 0.00m)
-            .GroupBy(fundAmount => fundAmount.Fund)
+            .GroupBy(fundAmount => fundAmount.FundId)
             .Select(group => new FundAmount
             {
-                Fund = group.Key,
+                FundId = group.Key,
                 Amount = group.Sum(fundAmount => fundAmount.Amount)
             })
             .ToList();
         PendingFundBalanceChanges = pendingFundBalanceChanges
             .Where(amount => amount.Amount != 0.00m)
-            .GroupBy(fundAmount => fundAmount.Fund)
+            .GroupBy(fundAmount => fundAmount.FundId)
             .Select(group => new FundAmount
             {
-                Fund = group.Key,
+                FundId = group.Key,
                 Amount = group.Sum(fundAmount => fundAmount.Amount)
             })
             .ToList();
@@ -76,11 +76,11 @@ public class AccountBalance
         {
             throw new InvalidOperationException();
         }
-        if (FundBalances.GroupBy(fundBalance => fundBalance.Fund).Any(group => group.Count() > 1))
+        if (FundBalances.GroupBy(fundBalance => fundBalance.FundId).Any(group => group.Count() > 1))
         {
             throw new InvalidOperationException();
         }
-        if (PendingFundBalanceChanges.GroupBy(fundBalance => fundBalance.Fund).Any(group => group.Count() > 1))
+        if (PendingFundBalanceChanges.GroupBy(fundBalance => fundBalance.FundId).Any(group => group.Count() > 1))
         {
             throw new InvalidOperationException();
         }

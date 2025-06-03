@@ -1,6 +1,5 @@
-using Domain.AccountingPeriods;
-using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -17,27 +16,28 @@ public class DefaultTests
     [Fact]
     public void RunTest()
     {
-        var setup = new DefaultScenarioSetup();
-        Transaction transaction = setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
+        using var setup = new DefaultScenarioSetup();
+        Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
-            setup.Account,
+            setup.Account.Id,
             null,
             [
                 new FundAmount()
                 {
-                    Fund = setup.Fund,
+                    FundId = setup.Fund.Id,
                     Amount = 25.00m,
                 }
             ]);
         new TransactionValidator().Validate(transaction,
             new TransactionState
             {
-                TransactionDate = new DateOnly(2025, 1, 15),
-                AccountingEntries =
+                AccountingPeriodId = setup.AccountingPeriod.Id,
+                Date = new DateOnly(2025, 1, 15),
+                FundAmounts =
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 25.00m,
                     }
                 ],
@@ -45,12 +45,12 @@ public class DefaultTests
                 [
                     new TransactionBalanceEventState
                     {
-                        AccountingPeriodKey = setup.AccountingPeriod.Key,
-                        AccountName = setup.Account.Name,
+                        AccountingPeriodId = setup.AccountingPeriod.Id,
                         EventDate = new DateOnly(2025, 1, 15),
                         EventSequence = 1,
-                        TransactionEventType = TransactionBalanceEventType.Added,
-                        TransactionAccountType = TransactionAccountType.Debit,
+                        AccountId = setup.Account.Id,
+                        EventType = TransactionBalanceEventType.Added,
+                        AccountType = TransactionAccountType.Debit,
                     }
                 ]
             });

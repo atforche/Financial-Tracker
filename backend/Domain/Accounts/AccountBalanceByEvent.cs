@@ -10,7 +10,7 @@ public record AccountBalanceByEvent
     /// <summary>
     /// Balance Event for this Account Balance by Event
     /// </summary>
-    public required BalanceEvent BalanceEvent { get; init; }
+    public required IBalanceEvent BalanceEvent { get; init; }
 
     /// <summary>
     /// Account Balance for this Account Balance by Event

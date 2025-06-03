@@ -1,7 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
+using Tests.Mocks;
 using Tests.Scenarios;
 
 namespace Tests.Setups;
@@ -37,33 +37,38 @@ internal sealed class AddBalanceEventAccountingPeriodScenarioSetup : ScenarioSet
     /// <param name="scenario">Scenario for this test case</param>
     public AddBalanceEventAccountingPeriodScenarioSetup(AddBalanceEventAccountingPeriodScenario scenario)
     {
-        Fund = GetService<AddFundAction>().Run("Test");
+        Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<AddFundAction>().Run("Test2");
+        OtherFund = GetService<FundFactory>().Create("Test2");
         GetService<IFundRepository>().Add(OtherFund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
+        AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        AccountingPeriod nextAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
+        AccountingPeriod nextAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(nextAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        Account = GetService<AddAccountAction>().Run("Test",
+        Account = GetService<AccountFactory>().Create("Test",
             AccountType.Standard,
-            scenario == AddBalanceEventAccountingPeriodScenario.PriorToAccountBeingAdded ? nextAccountingPeriod : AccountingPeriod,
+            scenario == AddBalanceEventAccountingPeriodScenario.PriorToAccountBeingAdded ? nextAccountingPeriod.Id : AccountingPeriod.Id,
             AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 1500.00m,
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         if (scenario == AddBalanceEventAccountingPeriodScenario.Closed)
         {
             GetService<CloseAccountingPeriodAction>().Run(AccountingPeriod);
+            GetService<TestUnitOfWork>().SaveChanges();
         }
     }
 }

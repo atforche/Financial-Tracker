@@ -8,9 +8,9 @@ namespace Domain.Accounts;
 public record AccountBalanceByAccountingPeriod
 {
     /// <summary>
-    /// Accounting Period for this Account Balance by Accounting Period
+    /// Accounting Period ID for this Account Balance by Accounting Period
     /// </summary>
-    public AccountingPeriod AccountingPeriod { get; }
+    public AccountingPeriodId AccountingPeriodId { get; }
 
     /// <summary>
     /// Starting Balance for this Account Balance by Accounting Period
@@ -32,22 +32,22 @@ public record AccountBalanceByAccountingPeriod
         AccountBalance startingBalance,
         AccountBalance endingBalance)
     {
-        AccountingPeriod = accountingPeriod;
+        AccountingPeriodId = accountingPeriod.Id;
         StartingBalance = startingBalance;
         EndingBalance = endingBalance;
-        Validate();
+        Validate(accountingPeriod);
     }
 
     /// <summary>
     /// Validates this Account Balance by Accounting Period
     /// </summary>
-    private void Validate()
+    private void Validate(AccountingPeriod accountingPeriod)
     {
         if (StartingBalance.PendingFundBalanceChanges.Count != 0)
         {
             throw new InvalidOperationException();
         }
-        if (!AccountingPeriod.IsOpen && EndingBalance.PendingFundBalanceChanges.Count != 0)
+        if (!accountingPeriod.IsOpen && EndingBalance.PendingFundBalanceChanges.Count != 0)
         {
             throw new InvalidOperationException();
         }

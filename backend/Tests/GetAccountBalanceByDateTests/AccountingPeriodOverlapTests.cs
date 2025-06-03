@@ -1,7 +1,7 @@
 using Domain;
+using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
-using Domain.Services;
+using Tests.Mocks;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
@@ -20,16 +20,19 @@ public class AccountingPeriodOverlapTests
     [ClassData(typeof(GetAccountBalanceAccountingPeriodOverlapScenarios))]
     public void RunTest(AccountingPeriodType accountingPeriodType, DateOnly eventDate)
     {
-        var setup = new GetAccountBalanceAccountingPeriodOverlapScenarioSetup(accountingPeriodType, eventDate);
+        using var setup = new GetAccountBalanceAccountingPeriodOverlapScenarioSetup(accountingPeriodType, eventDate);
         new AccountBalanceByDateValidator().Validate(GetAccountBalance(setup), GetExpectedState(setup, eventDate));
 
         setup.GetService<CloseAccountingPeriodAction>().Run(setup.PastAccountingPeriod);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
         new AccountBalanceByDateValidator().Validate(GetAccountBalance(setup), GetExpectedState(setup, eventDate));
 
         setup.GetService<CloseAccountingPeriodAction>().Run(setup.CurrentAccountingPeriod);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
         new AccountBalanceByDateValidator().Validate(GetAccountBalance(setup), GetExpectedState(setup, eventDate));
 
         setup.GetService<CloseAccountingPeriodAction>().Run(setup.FutureAccountingPeriod);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
         new AccountBalanceByDateValidator().Validate(GetAccountBalance(setup), GetExpectedState(setup, eventDate));
     }
 
@@ -39,7 +42,7 @@ public class AccountingPeriodOverlapTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Account Balance by Date for the provided Accounting Period</returns>
     private static IEnumerable<AccountBalanceByDate> GetAccountBalance(GetAccountBalanceAccountingPeriodOverlapScenarioSetup setup) =>
-        setup.GetService<AccountBalanceService>().GetAccountBalancesByDate(setup.Account,
+        setup.GetService<AccountBalanceService>().GetAccountBalancesByDateRange(setup.Account.Id,
             new DateRange(new DateOnly(2025, 1, 10), new DateOnly(2025, 1, 20)));
 
     /// <summary>
@@ -68,7 +71,7 @@ public class AccountingPeriodOverlapTests
                     [
                         new FundAmountState
                         {
-                            FundName = setup.Fund.Name,
+                            FundId = setup.Fund.Id,
                             Amount = amount
                         }
                     ],

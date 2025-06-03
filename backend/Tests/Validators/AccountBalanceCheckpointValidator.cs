@@ -11,9 +11,9 @@ internal sealed class AccountBalanceCheckpointValidator : EntityValidator<Accoun
     /// <inheritdoc/>
     public override void Validate(AccountBalanceCheckpoint entity, AccountBalanceCheckpointState expectedState)
     {
-        Assert.NotEqual(Guid.Empty, entity.Id.ExternalId);
+        Assert.NotEqual(Guid.Empty, entity.Id.Value);
         Assert.Equal(expectedState.AccountName, entity.Account.Name);
-        Assert.Equal(expectedState.AccountingPeriodKey, entity.AccountingPeriodKey);
+        Assert.Equal(expectedState.AccountingPeriodId, entity.AccountingPeriodId);
         new FundAmountValidator().Validate(entity.FundBalances, expectedState.FundBalances);
     }
 }
@@ -29,9 +29,9 @@ internal sealed record AccountBalanceCheckpointState
     public required string AccountName { get; init; }
 
     /// <summary>
-    /// Accounting Period Key for this Account Balance Checkpoint
+    /// Accounting Period ID for this Account Balance Checkpoint
     /// </summary>
-    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
+    public required AccountingPeriodId AccountingPeriodId { get; init; }
 
     /// <summary>
     /// Fund Balances for this Account Balance Checkpoint

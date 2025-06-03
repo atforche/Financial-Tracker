@@ -11,10 +11,10 @@ internal sealed class AccountBalanceByEventValidator : EntityValidator<AccountBa
     /// <inheritdoc/>
     public override void Validate(AccountBalanceByEvent entity, AccountBalanceByEventState expectedState)
     {
-        Assert.Equal(expectedState.AccountingPeriodKey, entity.BalanceEvent.AccountingPeriodKey);
-        Assert.Equal(expectedState.AccountName, entity.BalanceEvent.Account.Name);
+        Assert.Equal(expectedState.AccountingPeriodId, entity.BalanceEvent.AccountingPeriodId);
         Assert.Equal(expectedState.EventDate, entity.BalanceEvent.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.BalanceEvent.EventSequence);
+        Assert.Equal(expectedState.AccountId, entity.BalanceEvent.AccountId);
         new FundAmountValidator().Validate(entity.AccountBalance.FundBalances, expectedState.FundBalances);
         new FundAmountValidator().Validate(entity.AccountBalance.PendingFundBalanceChanges, expectedState.PendingFundBalanceChanges);
     }
@@ -26,14 +26,9 @@ internal sealed class AccountBalanceByEventValidator : EntityValidator<AccountBa
 internal sealed record AccountBalanceByEventState
 {
     /// <summary>
-    /// Accounting Period Key for this Account Balance by Event
+    /// Accounting Period ID for this Account Balance by Event
     /// </summary>
-    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
-
-    /// <summary>
-    /// Account Name for this Account Balance by Event
-    /// </summary>
-    public required string AccountName { get; init; }
+    public required AccountingPeriodId AccountingPeriodId { get; init; }
 
     /// <summary>
     /// Event Date for this Account Balance by Event
@@ -44,6 +39,11 @@ internal sealed record AccountBalanceByEventState
     /// Event Sequence for this Account Balance by Event
     /// </summary>
     public required int EventSequence { get; init; }
+
+    /// <summary>
+    /// Account ID for this Account Balance by Event
+    /// </summary>
+    public required AccountId AccountId { get; init; }
 
     /// <summary>
     /// Fund Balances for this Account Balance by Event

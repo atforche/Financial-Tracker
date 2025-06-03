@@ -1,5 +1,4 @@
-using Domain.AccountingPeriods;
-using Domain.Actions;
+using Domain.FundConversions;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -16,22 +15,25 @@ public class DefaultTests
     [Fact]
     public void RunTest()
     {
-        var setup = new DefaultScenarioSetup();
-        FundConversion fundConversion = setup.GetService<AddFundConversionAction>().Run(setup.AccountingPeriod,
-            new DateOnly(2025, 1, 15),
-            setup.Account,
-            setup.Fund,
-            setup.OtherFund,
-            100.00m);
+        using var setup = new DefaultScenarioSetup();
+        FundConversion fundConversion = setup.GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
+        {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
+            EventDate = new DateOnly(2025, 1, 15),
+            AccountId = setup.Account.Id,
+            FromFundId = setup.Fund.Id,
+            ToFundId = setup.OtherFund.Id,
+            Amount = 100.00m
+        });
         new FundConversionValidator().Validate(fundConversion,
             new FundConversionState
             {
-                AccountingPeriodKey = setup.AccountingPeriod.Key,
-                AccountName = setup.Account.Name,
+                AccountingPeriodId = setup.AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
-                FromFundName = setup.Fund.Name,
-                ToFundName = setup.OtherFund.Name,
+                AccountId = setup.Account.Id,
+                FromFundId = setup.Fund.Id,
+                ToFundId = setup.OtherFund.Id,
                 Amount = 100.00m,
             });
     }

@@ -1,5 +1,4 @@
 using Domain.Accounts;
-using Domain.Services;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
@@ -18,7 +17,7 @@ public class DateRangeTests
     [ClassData(typeof(GetAccountBalanceDateRangeScenarios))]
     public void RunTest(GetAccountBalanceDateRangeScenario scenario)
     {
-        var setup = new GetAccountBalanceDateRangeScenarioSetup(scenario);
+        using var setup = new GetAccountBalanceDateRangeScenarioSetup(scenario);
         new AccountBalanceByDateValidator().Validate(GetAccountBalance(setup), GetExpectedState(setup));
     }
 
@@ -28,7 +27,7 @@ public class DateRangeTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Account Balance by Dates for this test case</returns>
     private static IEnumerable<AccountBalanceByDate> GetAccountBalance(GetAccountBalanceDateRangeScenarioSetup setup) =>
-        setup.GetService<AccountBalanceService>().GetAccountBalancesByDate(setup.Account, setup.DateRange);
+        setup.GetService<AccountBalanceService>().GetAccountBalancesByDateRange(setup.Account.Id, setup.DateRange);
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -44,7 +43,7 @@ public class DateRangeTests
                 : [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 1500.00m
                     }
                   ],

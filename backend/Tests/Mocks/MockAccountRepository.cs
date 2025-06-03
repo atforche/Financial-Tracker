@@ -7,7 +7,7 @@ namespace Tests.Mocks;
 /// </summary>
 internal sealed class MockAccountRepository : IAccountRepository
 {
-    private readonly List<Account> _accounts;
+    private readonly Dictionary<Guid, Account> _accounts;
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -15,14 +15,17 @@ internal sealed class MockAccountRepository : IAccountRepository
     public MockAccountRepository() => _accounts = [];
 
     /// <inheritdoc/>
-    public Account? FindByExternalIdOrNull(Guid id) => _accounts.SingleOrDefault(account => account.Id.ExternalId == id);
+    public bool DoesAccountWithIdExist(Guid id) => _accounts.ContainsKey(id);
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Account> FindAll() => _accounts;
+    public Account FindById(AccountId id) => _accounts[id.Value];
 
     /// <inheritdoc/>
-    public Account? FindByNameOrNull(string name) => _accounts.SingleOrDefault(account => account.Name == name);
+    public IReadOnlyCollection<Account> FindAll() => _accounts.Values;
 
     /// <inheritdoc/>
-    public void Add(Account account) => _accounts.Add(account);
+    public Account? FindByNameOrNull(string name) => _accounts.Values.SingleOrDefault(account => account.Name == name);
+
+    /// <inheritdoc/>
+    public void Add(Account account) => _accounts.Add(account.Id.Value, account);
 }

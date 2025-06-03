@@ -1,5 +1,4 @@
-using Domain.AccountingPeriods;
-using Domain.Actions;
+using Domain.FundConversions;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
@@ -18,7 +17,7 @@ public class AmountTests
     [ClassData(typeof(AddBalanceEventAmountScenarios))]
     public void RunTest(decimal amount)
     {
-        var setup = new AddBalanceEventAmountScenarioSetup();
+        using var setup = new AddBalanceEventAmountScenarioSetup();
         if (!IsValid(amount))
         {
             Assert.Throws<InvalidOperationException>(() => AddFundConversion(setup, amount));
@@ -41,12 +40,15 @@ public class AmountTests
     /// <param name="amount">Amount for this test case</param>
     /// <returns>The Fund Conversion that was added for this test case</returns>
     private static FundConversion AddFundConversion(AddBalanceEventAmountScenarioSetup setup, decimal amount) =>
-        setup.GetService<AddFundConversionAction>().Run(setup.AccountingPeriod,
-            new DateOnly(2025, 1, 10),
-            setup.Account,
-            setup.Fund,
-            setup.OtherFund,
-            amount);
+        setup.GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
+        {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
+            EventDate = new DateOnly(2025, 1, 10),
+            AccountId = setup.Account.Id,
+            FromFundId = setup.Fund.Id,
+            ToFundId = setup.OtherFund.Id,
+            Amount = amount
+        });
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -57,12 +59,12 @@ public class AmountTests
     private static FundConversionState GetExpectedState(AddBalanceEventAmountScenarioSetup setup, decimal amount) =>
         new()
         {
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
-            AccountName = setup.Account.Name,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 10),
             EventSequence = 1,
-            FromFundName = setup.Fund.Name,
-            ToFundName = setup.OtherFund.Name,
+            AccountId = setup.Account.Id,
+            FromFundId = setup.Fund.Id,
+            ToFundId = setup.OtherFund.Id,
             Amount = amount,
         };
 }

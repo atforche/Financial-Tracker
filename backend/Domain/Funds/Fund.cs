@@ -8,20 +8,21 @@ namespace Domain.Funds;
 /// The balance of each Account may be made up of money from multiple Funds. The balance of a Fund
 /// over time can be used to track financial changes in an Account-agnostic way.
 /// </remarks>
-public class Fund : Entity
+public class Fund : Entity<FundId>
 {
     /// <summary>
     /// Name for this Fund
     /// </summary>
     public string Name { get; private set; }
 
-    private Fund() : base(new EntityId(default, Guid.NewGuid())) => Name = "";
-
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="name">Name for this Fund</param>
-    internal Fund(string name)
-        : base(new EntityId(default, Guid.NewGuid())) =>
-        Name = name;
+    internal Fund(string name) : base(new FundId(Guid.NewGuid())) => Name = name;
+
+    /// <summary>
+    /// Constructs a new default instance of this class
+    /// </summary>
+    private Fund() : base() => Name = "";
 }

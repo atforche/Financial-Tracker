@@ -1,6 +1,6 @@
-using Domain.AccountingPeriods;
-using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
+using Tests.Mocks;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -17,28 +17,32 @@ public class DefaultTests
     [Fact]
     public void RunTest()
     {
-        var setup = new DefaultScenarioSetup();
-        Transaction transaction = setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
+        using var setup = new DefaultScenarioSetup();
+        Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
-            setup.Account,
+            setup.Account.Id,
             null,
             [
                 new FundAmount
                 {
-                    Fund = setup.Fund,
+                    FundId = setup.Fund.Id,
                     Amount = 250.00m,
                 }
             ]);
-        PostTransaction(transaction);
+        setup.GetService<ITransactionRepository>().Add(transaction);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
+
+        PostTransaction(setup, transaction);
         new TransactionValidator().Validate(transaction,
             new TransactionState
             {
-                TransactionDate = new DateOnly(2025, 1, 15),
-                AccountingEntries =
+                AccountingPeriodId = setup.AccountingPeriod.Id,
+                Date = new DateOnly(2025, 1, 15),
+                FundAmounts =
                 [
                     new FundAmountState
                     {
-                        FundName = setup.Fund.Name,
+                        FundId = setup.Fund.Id,
                         Amount = 250.00m,
                     }
                 ],
@@ -46,33 +50,37 @@ public class DefaultTests
                 [
                     new TransactionBalanceEventState
                     {
-                        AccountingPeriodKey = setup.AccountingPeriod.Key,
-                        AccountName = setup.Account.Name,
+                        AccountingPeriodId = setup.AccountingPeriod.Id,
                         EventDate = new DateOnly(2025, 1, 15),
                         EventSequence = 1,
-                        TransactionEventType = TransactionBalanceEventType.Added,
-                        TransactionAccountType = TransactionAccountType.Debit,
+                        AccountId = setup.Account.Id,
+                        EventType = TransactionBalanceEventType.Added,
+                        AccountType = TransactionAccountType.Debit,
                     },
                     new TransactionBalanceEventState
                     {
-                        AccountingPeriodKey = setup.AccountingPeriod.Key,
-                        AccountName = setup.Account.Name,
+                        AccountingPeriodId = setup.AccountingPeriod.Id,
                         EventDate = new DateOnly(2025, 1, 15),
                         EventSequence = 2,
-                        TransactionEventType = TransactionBalanceEventType.Posted,
-                        TransactionAccountType = TransactionAccountType.Debit,
+                        AccountId = setup.Account.Id,
+                        EventType = TransactionBalanceEventType.Posted,
+                        AccountType = TransactionAccountType.Debit,
                     },
                 ]
             });
 
         // Verify that double posting a transaction results in an error
-        Assert.Throws<InvalidOperationException>(() => PostTransaction(transaction));
+        Assert.Throws<InvalidOperationException>(() => PostTransaction(setup, transaction));
     }
 
     /// <summary>
     /// Posts the Transaction for this test case
     /// </summary>
+    /// <param name="setup">Setup for this test case</param>
     /// <param name="transaction">Transaction to be posted</param>
-    private static void PostTransaction(Transaction transaction) =>
-        transaction.Post(TransactionAccountType.Debit, new DateOnly(2025, 1, 15));
+    private static void PostTransaction(DefaultScenarioSetup setup, Transaction transaction)
+    {
+        setup.GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, new DateOnly(2025, 1, 15));
+        setup.GetService<TestUnitOfWork>().SaveChanges();
+    }
 }

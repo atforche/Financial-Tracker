@@ -1,7 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
+using Tests.Mocks;
 
 namespace Tests.Setups;
 
@@ -35,26 +35,30 @@ internal sealed class DefaultScenarioSetup : ScenarioSetup
     /// </summary>
     public DefaultScenarioSetup()
     {
-        Fund = GetService<AddFundAction>().Run("Test");
+        Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<AddFundAction>().Run("OtherTest");
+        OtherFund = GetService<FundFactory>().Create("OtherTest");
         GetService<IFundRepository>().Add(OtherFund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
+        AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+        GetService<TestUnitOfWork>().SaveChanges();
+
+        Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 1500.00m,
                 },
                 new FundAmount
                 {
-                    Fund = OtherFund,
+                    FundId = OtherFund.Id,
                     Amount = 1500.00m
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
     }
 }

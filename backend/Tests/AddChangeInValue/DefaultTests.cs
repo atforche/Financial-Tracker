@@ -1,5 +1,4 @@
-using Domain.AccountingPeriods;
-using Domain.Actions;
+using Domain.ChangeInValues;
 using Domain.Funds;
 using Tests.Setups;
 using Tests.Validators;
@@ -17,25 +16,28 @@ public class DefaultTests
     [Fact]
     public void RunTest()
     {
-        var setup = new DefaultScenarioSetup();
-        ChangeInValue changeInValue = setup.GetService<AddChangeInValueAction>().Run(setup.AccountingPeriod,
-            new DateOnly(2025, 1, 15),
-            setup.Account,
-            new FundAmount
+        using var setup = new DefaultScenarioSetup();
+        ChangeInValue changeInValue = setup.GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+        {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
+            EventDate = new DateOnly(2025, 1, 15),
+            AccountId = setup.Account.Id,
+            FundAmount = new FundAmount
             {
-                Fund = setup.Fund,
+                FundId = setup.Fund.Id,
                 Amount = -100.00m,
-            });
+            }
+        });
         new ChangeInValueValidator().Validate(changeInValue,
             new ChangeInValueState
             {
-                AccountingPeriodKey = setup.AccountingPeriod.Key,
-                AccountName = setup.Account.Name,
+                AccountingPeriodId = setup.AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
-                AccountingEntry = new FundAmountState
+                AccountId = setup.Account.Id,
+                FundAmount = new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = -100.00m,
                 }
             });

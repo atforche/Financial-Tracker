@@ -1,8 +1,11 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
+using Domain.ChangeInValues;
+using Domain.FundConversions;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.CloseAccountingPeriod.Scenarios;
+using Tests.Mocks;
 using Tests.Setups;
 
 namespace Tests.CloseAccountingPeriod.Setups;
@@ -33,70 +36,104 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
     public AccountingPeriod AccountingPeriod { get; }
 
     /// <summary>
+    /// Change In Value for the setup
+    /// </summary>
+    public ChangeInValue? ChangeInValue { get; }
+
+    /// <summary>
+    /// Fund Conversion for the setup
+    /// </summary>
+    public FundConversion? FundConversion { get; }
+
+    /// <summary>
+    /// Transaction for the Setup
+    /// </summary>
+    public Transaction? Transaction { get; }
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="scenario">Scenario for this test case</param>
     public BalanceEventScenarioSetup(BalanceEventScenario scenario)
     {
-        Fund = GetService<AddFundAction>().Run("Test");
+        Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<AddFundAction>().Run("Test2");
+        OtherFund = GetService<FundFactory>().Create("Test2");
         GetService<IFundRepository>().Add(OtherFund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
+        AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+        GetService<TestUnitOfWork>().SaveChanges();
+
+        Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 1500.00m,
                 },
                 new FundAmount
                 {
-                    Fund = OtherFund,
+                    FundId = OtherFund.Id,
                     Amount = 1500.00m,
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         if (scenario is BalanceEventScenario.UnpostedTransaction or BalanceEventScenario.PostedTransaction)
         {
-            GetService<AddTransactionAction>().Run(AccountingPeriod,
+            Transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
                 new DateOnly(2025, 1, 15),
-                Account,
+                Account.Id,
                 null,
                 [
                     new FundAmount
                     {
-                        Fund = Fund,
+                        FundId = Fund.Id,
                         Amount = 250.00m
                     }
                 ]);
+            GetService<ITransactionRepository>().Add(Transaction);
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario is BalanceEventScenario.PostedTransaction)
         {
-            AccountingPeriod.Transactions.First().Post(TransactionAccountType.Debit, new DateOnly(2025, 1, 15));
+            GetService<PostTransactionAction>().Run(Transaction ?? throw new InvalidOperationException(),
+                TransactionAccountType.Debit,
+                new DateOnly(2025, 1, 15));
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario is BalanceEventScenario.ChangeInValue)
         {
-            GetService<AddChangeInValueAction>().Run(AccountingPeriod,
-                new DateOnly(2025, 1, 15),
-                Account,
-                new FundAmount
+            ChangeInValue = GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+            {
+                AccountingPeriodId = AccountingPeriod.Id,
+                EventDate = new DateOnly(2025, 1, 15),
+                AccountId = Account.Id,
+                FundAmount = new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 250.00m
-                });
+                }
+            });
+            GetService<IChangeInValueRepository>().Add(ChangeInValue);
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario is BalanceEventScenario.FundConversion)
         {
-            GetService<AddFundConversionAction>().Run(AccountingPeriod,
-                new DateOnly(2025, 1, 15),
-                Account,
-                Fund,
-                OtherFund,
-                250.00m);
+            FundConversion = GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
+            {
+                AccountingPeriodId = AccountingPeriod.Id,
+                EventDate = new DateOnly(2025, 1, 15),
+                AccountId = Account.Id,
+                FromFundId = Fund.Id,
+                ToFundId = OtherFund.Id,
+                Amount = 250.00m
+            });
+            GetService<IFundConversionRepository>().Add(FundConversion);
+            GetService<TestUnitOfWork>().SaveChanges();
         }
     }
 }

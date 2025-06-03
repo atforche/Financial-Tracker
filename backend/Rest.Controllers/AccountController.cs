@@ -1,10 +1,9 @@
 using Data;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
 using Microsoft.AspNetCore.Mvc;
-using Rest.Models.Account;
+using Rest.Models.Accounts;
 
 namespace Rest.Controllers;
 
@@ -13,19 +12,20 @@ namespace Rest.Controllers;
 /// </summary>
 [ApiController]
 [Route("/accounts")]
-internal sealed class AccountController(
-    IUnitOfWork unitOfWork,
-    AddAccountAction addAccountAction,
-    IAccountingPeriodRepository accountingPeriodRepository,
+public sealed class AccountController(
+    UnitOfWork unitOfWork,
     IAccountRepository accountRepository,
-    IFundRepository fundRepository) : ControllerBase
+    AccountFactory accountFactory,
+    AccountIdFactory accountIdFactory,
+    AccountingPeriodIdFactory accountingPeriodIdFactory,
+    FundIdFactory fundIdFactory) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Accounts from the database
     /// </summary>
     /// <returns>A collection of all Accounts</returns>
     [HttpGet("")]
-    public IReadOnlyCollection<AccountModel> GetAllAccounts() =>
+    public IReadOnlyCollection<AccountModel> GetAll() =>
         accountRepository.FindAll().Select(account => new AccountModel(account)).ToList();
 
     /// <summary>
@@ -34,10 +34,10 @@ internal sealed class AccountController(
     /// <param name="accountId">ID of the Account to retrieve</param>
     /// <returns>The Account that matches the provided ID</returns>
     [HttpGet("{accountId}")]
-    public IActionResult GetAccount(Guid accountId)
+    public IActionResult Get(Guid accountId)
     {
-        Account? account = accountRepository.FindByExternalIdOrNull(accountId);
-        return account != null ? Ok(new AccountModel(account)) : NotFound();
+        AccountId id = accountIdFactory.Create(accountId);
+        return Ok(new AccountModel(accountRepository.FindById(id)));
     }
 
     /// <summary>
@@ -46,18 +46,13 @@ internal sealed class AccountController(
     /// <param name="createAccountModel">Request to create an Account</param>
     /// <returns>The created Account</returns>
     [HttpPost("")]
-    public async Task<IActionResult> CreateAccountAsync(CreateAccountModel createAccountModel)
+    public async Task<IActionResult> CreateAsync(CreateAccountModel createAccountModel)
     {
-        var funds = fundRepository.FindAll().ToDictionary(fund => fund.Id.ExternalId, fund => fund);
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.FindByExternalIdOrNull(createAccountModel.AccountingPeriodId);
-        if (accountingPeriod == null)
-        {
-            return NotFound();
-        }
-        Account newAccount = addAccountAction.Run(createAccountModel.Name, createAccountModel.Type, accountingPeriod, createAccountModel.Date,
+        AccountingPeriodId accountingPeriodId = accountingPeriodIdFactory.Create(createAccountModel.AccountingPeriodId);
+        Account newAccount = accountFactory.Create(createAccountModel.Name, createAccountModel.Type, accountingPeriodId, createAccountModel.Date,
             createAccountModel.StartingFundBalances.Select(fundBalance => new FundAmount
             {
-                Fund = funds[fundBalance.FundId],
+                FundId = fundIdFactory.Create(fundBalance.FundId),
                 Amount = fundBalance.Amount,
             }));
         accountRepository.Add(newAccount);

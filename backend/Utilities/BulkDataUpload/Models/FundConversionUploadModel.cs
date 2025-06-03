@@ -1,6 +1,6 @@
-using Rest.Models.Account;
-using Rest.Models.AccountingPeriod;
-using Rest.Models.Fund;
+using Rest.Models.Accounts;
+using Rest.Models.FundConversions;
+using Rest.Models.Funds;
 
 namespace Utilities.BulkDataUpload.Models;
 
@@ -44,6 +44,7 @@ internal sealed class FundConversionUploadModel : BalanceEventUploadModel
         ICollection<FundModel> existingFunds,
         ICollection<AccountModel> existingAccounts) => new()
         {
+            AccountingPeriodId = Guid.NewGuid(),
             AccountId = existingAccounts.Single(account => account.Name == AccountName).Id,
             EventDate = EventDate,
             FromFundId = existingFunds.Single(fund => fund.Name == FromFundName).Id,

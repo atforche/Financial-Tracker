@@ -11,8 +11,8 @@ internal sealed class AccountAddedBalanceEventValidator : EntityValidator<Accoun
     /// <inheritdoc/>
     public override void Validate(AccountAddedBalanceEvent entityToValidate, AccountAddedBalanceEventState expectedState)
     {
-        Assert.NotEqual(Guid.Empty, entityToValidate.Id.ExternalId);
-        Assert.Equal(expectedState.AccountingPeriodKey, entityToValidate.AccountingPeriodKey);
+        Assert.NotEqual(Guid.Empty, entityToValidate.Id.Value);
+        Assert.Equal(expectedState.AccountingPeriodId, entityToValidate.AccountingPeriodId);
         Assert.Equal(expectedState.AccountName, entityToValidate.Account.Name);
         Assert.Equal(expectedState.EventDate, entityToValidate.EventDate);
         Assert.Equal(expectedState.EventSequence, entityToValidate.EventSequence);
@@ -26,14 +26,9 @@ internal sealed class AccountAddedBalanceEventValidator : EntityValidator<Accoun
 internal sealed record AccountAddedBalanceEventState
 {
     /// <summary>
-    /// Accounting Period Key for this Account Added Balance Event
+    /// Accounting Period ID for this Account Added Balance Event
     /// </summary>
-    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
-
-    /// <summary>
-    /// Account for this Account Added Balance Event
-    /// </summary>
-    public required string AccountName { get; init; }
+    public required AccountingPeriodId AccountingPeriodId { get; init; }
 
     /// <summary>
     /// Event Date for this Account Added Balance Event
@@ -44,6 +39,11 @@ internal sealed record AccountAddedBalanceEventState
     /// Event Sequence for this Account Added Balance Event
     /// </summary>
     public required int EventSequence { get; init; }
+
+    /// <summary>
+    /// Account for this Account Added Balance Event
+    /// </summary>
+    public required string AccountName { get; init; }
 
     /// <summary>
     /// Fund Amounts for this Account Added Balance Event

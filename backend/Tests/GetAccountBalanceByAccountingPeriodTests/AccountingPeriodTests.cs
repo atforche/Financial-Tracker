@@ -1,5 +1,4 @@
 using Domain.Accounts;
-using Domain.Services;
 using Tests.GetAccountBalanceByAccountingPeriodTests.Scenarios;
 using Tests.GetAccountBalanceByAccountingPeriodTests.Setups;
 using Tests.Validators;
@@ -18,7 +17,7 @@ public class AccountingPeriodTests
     [ClassData(typeof(AccountingPeriodScenarios))]
     public void RunTest(AccountingPeriodScenario scenario)
     {
-        var setup = new AccountingPeriodScenarioSetup(scenario);
+        using var setup = new AccountingPeriodScenarioSetup(scenario);
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup), GetExpectedState(scenario, setup));
     }
 
@@ -28,7 +27,7 @@ public class AccountingPeriodTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Account Balance by Accounting Period for this test case</returns>
     private static AccountBalanceByAccountingPeriod GetAccountBalance(AccountingPeriodScenarioSetup setup) =>
-        setup.GetService<AccountBalanceService>().GetAccountBalancesByAccountingPeriod(setup.Account, setup.AccountingPeriod);
+        setup.GetService<AccountBalanceService>().GetAccountBalanceByAccountingPeriod(setup.Account.Id, setup.AccountingPeriod.Id);
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -43,13 +42,13 @@ public class AccountingPeriodTests
             : [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = scenario == AccountingPeriodScenario.PriorPeriodHasPendingBalanceChanges ? 1000.00m : 1500.00m
                 }
             ];
         return new AccountBalanceByAccountingPeriodState
         {
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             StartingFundBalances = setup.AccountingPeriod.Month == 2 ? expectedFundAmounts : [],
             EndingFundBalances = expectedFundAmounts,
             EndingPendingFundBalanceChanges = []

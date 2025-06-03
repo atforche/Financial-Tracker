@@ -1,6 +1,9 @@
-using Rest.Models.Account;
-using Rest.Models.AccountingPeriod;
-using Rest.Models.Fund;
+using Rest.Models.AccountingPeriods;
+using Rest.Models.Accounts;
+using Rest.Models.ChangeInValues;
+using Rest.Models.FundConversions;
+using Rest.Models.Funds;
+using Rest.Models.Transactions;
 using Utilities.BulkDataUpload.Models;
 
 namespace Utilities.BulkDataUpload.Uploaders;

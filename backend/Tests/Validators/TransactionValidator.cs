@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Domain.Transactions;
 
 namespace Tests.Validators;
 
@@ -10,9 +11,10 @@ internal sealed class TransactionValidator : EntityValidator<Transaction, Transa
     /// <inheritdoc/>
     public override void Validate(Transaction entity, TransactionState expectedState)
     {
-        Assert.NotEqual(Guid.Empty, entity.Id.ExternalId);
-        Assert.Equal(expectedState.TransactionDate, entity.TransactionDate);
-        new FundAmountValidator().Validate(entity.AccountingEntries, expectedState.AccountingEntries);
+        Assert.NotEqual(Guid.Empty, entity.Id.Value);
+        Assert.Equal(expectedState.AccountingPeriodId, entity.AccountingPeriodId);
+        Assert.Equal(expectedState.Date, entity.Date);
+        new FundAmountValidator().Validate(entity.FundAmounts, expectedState.FundAmounts);
         new TransactionBalanceEventValidator().Validate(entity.TransactionBalanceEvents, expectedState.TransactionBalanceEvents);
     }
 }
@@ -23,14 +25,19 @@ internal sealed class TransactionValidator : EntityValidator<Transaction, Transa
 internal sealed record TransactionState
 {
     /// <summary>
-    /// Transaction Date for this Transaction
+    /// Accounting Period ID for this Transaction Balance Event
     /// </summary>
-    public required DateOnly TransactionDate { get; init; }
+    public required AccountingPeriodId AccountingPeriodId { get; init; }
 
     /// <summary>
-    /// Accounting Entries for this Transaction
+    /// Date for this Transaction
     /// </summary>
-    public required List<FundAmountState> AccountingEntries { get; init; }
+    public required DateOnly Date { get; init; }
+
+    /// <summary>
+    /// Fund Amounts for this Transaction
+    /// </summary>
+    public required List<FundAmountState> FundAmounts { get; init; }
 
     /// <summary>
     /// Transaction Balance Events for this Transaction

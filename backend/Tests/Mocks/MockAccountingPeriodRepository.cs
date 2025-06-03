@@ -1,4 +1,3 @@
-using Domain;
 using Domain.AccountingPeriods;
 
 namespace Tests.Mocks;
@@ -8,7 +7,7 @@ namespace Tests.Mocks;
 /// </summary>
 internal sealed class MockAccountingPeriodRepository : IAccountingPeriodRepository
 {
-    private readonly List<AccountingPeriod> _accountingPeriods;
+    private readonly Dictionary<Guid, AccountingPeriod> _accountingPeriods;
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -16,66 +15,42 @@ internal sealed class MockAccountingPeriodRepository : IAccountingPeriodReposito
     public MockAccountingPeriodRepository() => _accountingPeriods = [];
 
     /// <inheritdoc/>
-    public AccountingPeriod? FindByExternalIdOrNull(Guid id) => _accountingPeriods
-        .SingleOrDefault(accountingPeriod => accountingPeriod.Id.ExternalId == id);
+    public bool DoesAccountingPeriodWithIdExist(Guid id) => _accountingPeriods.ContainsKey(id);
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> FindAll() => _accountingPeriods;
+    public AccountingPeriod FindById(AccountingPeriodId id) => _accountingPeriods[id.Value];
 
     /// <inheritdoc/>
-    public AccountingPeriod FindByDate(DateOnly asOfDate) => FindByDateOrNull(asOfDate) ?? throw new InvalidOperationException();
+    public IReadOnlyCollection<AccountingPeriod> FindAll() => _accountingPeriods.Values;
 
     /// <inheritdoc/>
-    public AccountingPeriod? FindByDateOrNull(DateOnly asOfDate) => _accountingPeriods
-        .SingleOrDefault(accountingPeriod => accountingPeriod.Year == asOfDate.Year && accountingPeriod.Month == asOfDate.Month);
+    public AccountingPeriod? FindLatestAccountingPeriod() => _accountingPeriods.Values
+        .OrderBy(accountingPeriod => accountingPeriod.Year)
+        .ThenBy(accountingPeriod => accountingPeriod.Month)
+        .LastOrDefault();
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> FindOpenPeriods() => _accountingPeriods
+    public AccountingPeriod? FindNextAccountingPeriod(AccountingPeriodId id)
+    {
+        AccountingPeriod currentAccountingPeriod = FindById(id);
+        DateOnly nextMonth = currentAccountingPeriod.PeriodStartDate.AddMonths(1);
+        return _accountingPeriods.Values
+            .SingleOrDefault(accountingPeriod => accountingPeriod.Year == nextMonth.Year && accountingPeriod.Month == nextMonth.Month);
+    }
+
+    /// <inheritdoc/>
+    public AccountingPeriod? FindPreviousAccountingPeriod(AccountingPeriodId id)
+    {
+        AccountingPeriod currentAccountingPeriod = FindById(id);
+        DateOnly nextMonth = currentAccountingPeriod.PeriodStartDate.AddMonths(-1);
+        return _accountingPeriods.Values
+            .SingleOrDefault(accountingPeriod => accountingPeriod.Year == nextMonth.Year && accountingPeriod.Month == nextMonth.Month);
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<AccountingPeriod> FindAllOpenPeriods() => _accountingPeriods.Values
         .Where(accountingPeriod => accountingPeriod.IsOpen).ToList();
 
     /// <inheritdoc/>
-    public AccountingPeriod FindLatestAccountingPeriodWithBalanceCheckpoints(DateOnly asOfDate)
-    {
-        AccountingPeriod? accountingPeriod = FindByDateOrNull(asOfDate);
-        if (accountingPeriod != null && !accountingPeriod.IsOpen)
-        {
-            return accountingPeriod;
-        }
-        return _accountingPeriods
-            .Where(accountingPeriod => accountingPeriod.IsOpen)
-            .OrderBy(accountingPeriod => accountingPeriod.Year)
-            .ThenBy(accountingPeriod => accountingPeriod.Month)
-            .First();
-    }
-
-    /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> FindAccountingPeriodsWithBalanceEventsInDateRange(DateRange dateRange) =>
-        _accountingPeriods
-        .Where(accountingPeriod => accountingPeriod.Transactions
-                .SelectMany(transaction => transaction.TransactionBalanceEvents)
-                .Any(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate)) ||
-            accountingPeriod.FundConversions
-                .Any(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate)) ||
-            accountingPeriod.ChangeInValues
-                .Any(changeInValue => dateRange.IsInRange(changeInValue.EventDate)) ||
-            accountingPeriod.AccountAddedBalanceEvents
-                .Any(changeInValue => dateRange.IsInRange(changeInValue.EventDate)))
-        .ToList();
-
-    /// <inheritdoc/>
-    public int FindMaximumBalanceEventSequenceForDate(DateOnly eventDate)
-    {
-        var existingBalanceEventsOnDate = _accountingPeriods
-            .SelectMany(accountingPeriod => accountingPeriod.Transactions)
-            .SelectMany(transaction => transaction.TransactionBalanceEvents)
-            .Where(balanceEvent => balanceEvent.EventDate == eventDate).ToList();
-        if (existingBalanceEventsOnDate.Count > 0)
-        {
-            return existingBalanceEventsOnDate.Max(balanceEvent => balanceEvent.EventSequence + 1);
-        }
-        return 1;
-    }
-
-    /// <inheritdoc/>
-    public void Add(AccountingPeriod accountingPeriod) => _accountingPeriods.Add(accountingPeriod);
+    public void Add(AccountingPeriod accountingPeriod) => _accountingPeriods.Add(accountingPeriod.Id.Value, accountingPeriod);
 }

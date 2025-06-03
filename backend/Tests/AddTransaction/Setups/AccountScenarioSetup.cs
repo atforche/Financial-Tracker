@@ -1,8 +1,8 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
 using Tests.AddTransaction.Scenarios;
+using Tests.Mocks;
 using Tests.Setups;
 
 namespace Tests.AddTransaction.Setups;
@@ -48,30 +48,33 @@ internal sealed class AccountScenarioSetup : ScenarioSetup
         AccountType? creditAccountType,
         SameAccountTypeBehavior sameAccountTypeBehavior)
     {
-        Fund = GetService<AddFundAction>().Run("Test");
+        Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<AddFundAction>().Run("OtherTest");
+        OtherFund = GetService<FundFactory>().Create("OtherTest");
         GetService<IFundRepository>().Add(OtherFund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
+        AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         if (debitAccountType != null)
         {
-            DebitAccount = GetService<AddAccountAction>().Run("TestOne", debitAccountType.Value, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+            DebitAccount = GetService<AccountFactory>().Create("TestOne", debitAccountType.Value, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
                 [
                     new FundAmount
                     {
-                        Fund = Fund,
+                        FundId = Fund.Id,
                         Amount = 1500.00m,
                     },
                     new FundAmount
                     {
-                        Fund = OtherFund,
+                        FundId = OtherFund.Id,
                         Amount = 1500.00m
                     }
                 ]);
             GetService<IAccountRepository>().Add(DebitAccount);
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         if (creditAccountType != null && creditAccountType == debitAccountType && sameAccountTypeBehavior == SameAccountTypeBehavior.UseSameAccount)
         {
@@ -79,20 +82,21 @@ internal sealed class AccountScenarioSetup : ScenarioSetup
         }
         else if (creditAccountType != null)
         {
-            CreditAccount = GetService<AddAccountAction>().Run("TestTwo", creditAccountType.Value, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+            CreditAccount = GetService<AccountFactory>().Create("TestTwo", creditAccountType.Value, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
                 [
                     new FundAmount
                     {
-                        Fund = Fund,
+                        FundId = Fund.Id,
                         Amount = 1500.00m,
                     },
                     new FundAmount
                     {
-                        Fund = OtherFund,
+                        FundId = OtherFund.Id,
                         Amount = 1500.00m
                     }
                 ]);
             GetService<IAccountRepository>().Add(CreditAccount);
+            GetService<TestUnitOfWork>().SaveChanges();
         }
     }
 }

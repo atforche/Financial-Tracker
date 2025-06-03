@@ -1,8 +1,7 @@
 using Data;
-using Domain.Actions;
 using Domain.Funds;
 using Microsoft.AspNetCore.Mvc;
-using Rest.Models.Fund;
+using Rest.Models.Funds;
 
 namespace Rest.Controllers;
 
@@ -11,14 +10,18 @@ namespace Rest.Controllers;
 /// </summary>
 [ApiController]
 [Route("/funds")]
-internal sealed class FundController(IUnitOfWork unitOfWork, AddFundAction addFundAction, IFundRepository fundRepository) : ControllerBase
+public sealed class FundController(
+    UnitOfWork unitOfWork,
+    IFundRepository fundRepository,
+    FundFactory fundFactory,
+    FundIdFactory fundIdFactory) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Funds from the database
     /// </summary>
     /// <returns>A collection of all Funds</returns>
     [HttpGet("")]
-    public IReadOnlyCollection<FundModel> GetAllFunds() =>
+    public IReadOnlyCollection<FundModel> GetAll() =>
         fundRepository.FindAll().Select(fund => new FundModel(fund)).ToList();
 
     /// <summary>
@@ -27,10 +30,10 @@ internal sealed class FundController(IUnitOfWork unitOfWork, AddFundAction addFu
     /// <param name="fundId">Id of the Fund to retrieve</param>
     /// <returns>The Fund that matches the provided ID</returns>
     [HttpGet("{fundId}")]
-    public IActionResult GetFund(Guid fundId)
+    public IActionResult Get(Guid fundId)
     {
-        Fund? fund = fundRepository.FindByExternalIdOrNull(fundId);
-        return fund != null ? Ok(new FundModel(fund)) : NotFound();
+        FundId id = fundIdFactory.Create(fundId);
+        return Ok(new FundModel(fundRepository.FindById(id)));
     }
 
     /// <summary>
@@ -39,9 +42,9 @@ internal sealed class FundController(IUnitOfWork unitOfWork, AddFundAction addFu
     /// <param name="createFundModel">Request to create a Fund</param>
     /// <returns>The created Fund</returns>
     [HttpPost("")]
-    public async Task<IActionResult> CreateFundAsync(CreateFundModel createFundModel)
+    public async Task<IActionResult> CreateAsync(CreateFundModel createFundModel)
     {
-        Fund newFund = addFundAction.Run(createFundModel.Name);
+        Fund newFund = fundFactory.Create(createFundModel.Name);
         fundRepository.Add(newFund);
         await unitOfWork.SaveChangesAsync();
         return Ok(new FundModel(newFund));

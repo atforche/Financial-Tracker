@@ -9,7 +9,7 @@ namespace Domain.Accounts;
 /// <remarks>
 /// An Account represents a financial account that money can be held in and transferred from.
 /// </remarks>
-public class Account : Entity
+public class Account : Entity<AccountId>
 {
     private readonly List<AccountBalanceCheckpoint> _accountBalanceCheckpoints = [];
 
@@ -31,41 +31,33 @@ public class Account : Entity
     /// <summary>
     /// Account Added Balance Event for this Account
     /// </summary>
-    public AccountAddedBalanceEvent AccountAddedBalanceEvent { get; private set; }
+    public AccountAddedBalanceEvent AccountAddedBalanceEvent { get; internal set; }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="name">Name for this Account</param>
     /// <param name="type">Type for this Account</param>
-    /// <param name="accountingPeriod">First Accounting Period for this Account</param>
-    /// <param name="date">First Date for this Account</param>
-    /// <param name="startingFundBalances">Starting Fund Balances for this Account</param>
-    internal Account(
-        string name,
-        AccountType type,
-        AccountingPeriod accountingPeriod,
-        DateOnly date,
-        IEnumerable<FundAmount> startingFundBalances)
-        : base(new EntityId(default, Guid.NewGuid()))
+    internal Account(string name, AccountType type)
+        : base(new AccountId(Guid.NewGuid()))
     {
         Name = name;
         Type = type;
-        AccountAddedBalanceEvent = new AccountAddedBalanceEvent(accountingPeriod, this, date, startingFundBalances);
+        AccountAddedBalanceEvent = null!;
     }
 
     /// <summary>
     /// Adds a new Account Balance Checkpoint to this Account
     /// </summary>
-    /// <param name="accountingPeriod">Accounting Period for this Account Balance Checkpoint</param>
+    /// <param name="accountingPeriodId">Accounting Period ID for this Account Balance Checkpoint</param>
     /// <param name="fundBalances">Fund Balances for this Account Balance Checkpoint</param>
-    internal void AddAccountBalanceCheckpoint(AccountingPeriod accountingPeriod, IEnumerable<FundAmount> fundBalances) =>
-        _accountBalanceCheckpoints.Add(new AccountBalanceCheckpoint(this, accountingPeriod, fundBalances));
+    internal void AddAccountBalanceCheckpoint(AccountingPeriodId accountingPeriodId, IEnumerable<FundAmount> fundBalances) =>
+        _accountBalanceCheckpoints.Add(new AccountBalanceCheckpoint(this, accountingPeriodId, fundBalances));
 
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private Account() : base(new EntityId(default, Guid.NewGuid()))
+    private Account() : base()
     {
         Name = "";
         AccountAddedBalanceEvent = null!;

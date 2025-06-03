@@ -1,7 +1,8 @@
 using Domain;
-using Domain.Actions;
+using Domain.Accounts;
 using Domain.Funds;
-using Domain.Services;
+using Domain.Transactions;
+using Tests.Mocks;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -18,20 +19,23 @@ public class DefaultTests
     [Fact]
     public void RunTest()
     {
-        var setup = new DefaultScenarioSetup();
-        setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
+        using var setup = new DefaultScenarioSetup();
+        Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
-            setup.Account,
+            setup.Account.Id,
             null,
             [
                 new FundAmount
                 {
-                    Fund = setup.Fund,
+                    FundId = setup.Fund.Id,
                     Amount = 250.00m
                 }
             ]);
+        setup.GetService<ITransactionRepository>().Add(transaction);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
+
         new AccountBalanceByDateValidator().Validate(
-            setup.GetService<AccountBalanceService>().GetAccountBalancesByDate(setup.Account,
+            setup.GetService<AccountBalanceService>().GetAccountBalancesByDateRange(setup.Account.Id,
                 new DateRange(new DateOnly(2025, 1, 14), new DateOnly(2025, 1, 16))),
             [
                 new AccountBalanceByDateState
@@ -41,12 +45,12 @@ public class DefaultTests
                     [
                         new FundAmountState
                         {
-                            FundName = setup.Fund.Name,
+                            FundId = setup.Fund.Id,
                             Amount = 1500.00m
                         },
                         new FundAmountState
                         {
-                            FundName = setup.OtherFund.Name,
+                            FundId = setup.OtherFund.Id,
                             Amount = 1500.00m
                         }
                     ],
@@ -59,12 +63,12 @@ public class DefaultTests
                     [
                         new FundAmountState
                         {
-                            FundName = setup.Fund.Name,
+                            FundId = setup.Fund.Id,
                             Amount = 1500.00m
                         },
                         new FundAmountState
                         {
-                            FundName = setup.OtherFund.Name,
+                            FundId = setup.OtherFund.Id,
                             Amount = 1500.00m
                         }
                     ],
@@ -72,7 +76,7 @@ public class DefaultTests
                     [
                         new FundAmountState
                         {
-                            FundName = setup.Fund.Name,
+                            FundId = setup.Fund.Id,
                             Amount = -250.00m
                         }
                     ]
@@ -84,12 +88,12 @@ public class DefaultTests
                     [
                         new FundAmountState
                         {
-                            FundName = setup.Fund.Name,
+                            FundId = setup.Fund.Id,
                             Amount = 1500.00m
                         },
                         new FundAmountState
                         {
-                            FundName = setup.OtherFund.Name,
+                            FundId = setup.OtherFund.Id,
                             Amount = 1500.00m
                         }
                     ],
@@ -97,7 +101,7 @@ public class DefaultTests
                     [
                         new FundAmountState
                         {
-                            FundName = setup.Fund.Name,
+                            FundId = setup.Fund.Id,
                             Amount = -250.00m
                         }
                     ]

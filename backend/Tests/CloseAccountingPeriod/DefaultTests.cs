@@ -1,4 +1,4 @@
-using Domain.Actions;
+using Domain.AccountingPeriods;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -15,40 +15,41 @@ public class DefaultTests
     [Fact]
     public void RunTest()
     {
-        var setup = new DefaultScenarioSetup();
+        using var setup = new DefaultScenarioSetup();
         setup.GetService<CloseAccountingPeriodAction>().Run(setup.AccountingPeriod);
         new AccountingPeriodValidator().Validate(setup.AccountingPeriod,
             new AccountingPeriodState
             {
-                Key = setup.AccountingPeriod.Key,
+                Year = setup.AccountingPeriod.Year,
+                Month = setup.AccountingPeriod.Month,
                 IsOpen = false,
-                Transactions = [],
-                FundConversions = [],
-                ChangeInValues = [],
-                AccountAddedBalanceEvents =
-                [
-                    new AccountAddedBalanceEventState
-                    {
-                        AccountingPeriodKey = setup.AccountingPeriod.Key,
-                        AccountName = setup.Account.Name,
-                        EventDate = setup.AccountingPeriod.PeriodStartDate,
-                        EventSequence = 1,
-                        FundAmounts =
-                        [
-                            new FundAmountState
-                            {
-                                FundName = setup.Fund.Name,
-                                Amount = 1500.00m
-                            },
-                            new FundAmountState
-                            {
-                                FundName = setup.OtherFund.Name,
-                                Amount = 1500.00m
-                            }
-                        ]
-                    }
-                ]
             });
-        new AccountBalanceCheckpointValidator().Validate(setup.Account.AccountBalanceCheckpoints, []);
+        new AccountValidator().Validate(setup.Account,
+            new AccountState
+            {
+                Name = setup.Account.Name,
+                Type = setup.Account.Type,
+                AccountAddedBalanceEvent = new AccountAddedBalanceEventState
+                {
+                    AccountingPeriodId = setup.AccountingPeriod.Id,
+                    EventDate = setup.AccountingPeriod.PeriodStartDate,
+                    EventSequence = 1,
+                    AccountName = setup.Account.Name,
+                    FundAmounts =
+                    [
+                        new FundAmountState
+                        {
+                            FundId = setup.Fund.Id,
+                            Amount = 1500.00m,
+                        },
+                        new FundAmountState
+                        {
+                            FundId = setup.OtherFund.Id,
+                            Amount = 1500.00m
+                        }
+                    ]
+                },
+                AccountBalanceCheckpoints = []
+            });
     }
 }

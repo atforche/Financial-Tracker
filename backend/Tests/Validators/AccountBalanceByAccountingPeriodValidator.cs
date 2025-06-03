@@ -11,7 +11,7 @@ internal sealed class AccountBalanceByAccountingPeriodValidator : EntityValidato
     /// <inheritdoc/>
     public override void Validate(AccountBalanceByAccountingPeriod entityToValidate, AccountBalanceByAccountingPeriodState expectedState)
     {
-        Assert.Equal(expectedState.AccountingPeriodKey, entityToValidate.AccountingPeriod.Key);
+        Assert.Equal(expectedState.AccountingPeriodId, entityToValidate.AccountingPeriodId);
         new FundAmountValidator().Validate(entityToValidate.StartingBalance.FundBalances, expectedState.StartingFundBalances);
         Assert.Empty(entityToValidate.StartingBalance.PendingFundBalanceChanges);
         new FundAmountValidator().Validate(entityToValidate.EndingBalance.FundBalances, expectedState.EndingFundBalances);
@@ -25,9 +25,9 @@ internal sealed class AccountBalanceByAccountingPeriodValidator : EntityValidato
 internal sealed record AccountBalanceByAccountingPeriodState
 {
     /// <summary>
-    /// Key for this Accounting Period
+    /// Accounting Period ID for this Account Balance by Accounting Period
     /// </summary>
-    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
+    public required AccountingPeriodId AccountingPeriodId { get; init; }
 
     /// <summary>
     /// Starting Fund Balances for this Account Balance by Accounting Period

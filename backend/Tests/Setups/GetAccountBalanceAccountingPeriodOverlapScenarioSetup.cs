@@ -1,7 +1,8 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
+using Tests.Mocks;
 using Tests.Scenarios;
 
 namespace Tests.Setups;
@@ -43,54 +44,67 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
     /// <param name="eventDate">Balance Event Date for this test case</param>
     public GetAccountBalanceAccountingPeriodOverlapScenarioSetup(AccountingPeriodType accountingPeriodType, DateOnly eventDate)
     {
-        Fund = GetService<AddFundAction>().Run("Test");
+        Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        PastAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2024, 12);
+        PastAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2024, 12);
         GetService<IAccountingPeriodRepository>().Add(PastAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, PastAccountingPeriod, PastAccountingPeriod.PeriodStartDate,
+        Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, PastAccountingPeriod.Id, PastAccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 1500.00m,
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        CurrentAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
+        CurrentAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(CurrentAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        FutureAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
+        FutureAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(FutureAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        Transaction transaction = GetService<AddTransactionAction>().Run(CurrentAccountingPeriod,
+        Transaction transaction = GetService<TransactionFactory>().Create(CurrentAccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
-            Account,
+            Account.Id,
             null,
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 250.00m
                 }
             ]);
-        transaction.Post(TransactionAccountType.Debit, transaction.TransactionDate);
+        GetService<ITransactionRepository>().Add(transaction);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        Transaction otherPeriodTransaction = GetService<AddTransactionAction>().Run(
-            accountingPeriodType == AccountingPeriodType.Past ? PastAccountingPeriod : FutureAccountingPeriod,
+        GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, transaction.Date);
+        GetService<TestUnitOfWork>().SaveChanges();
+
+        Transaction otherPeriodTransaction = GetService<TransactionFactory>().Create(
+            accountingPeriodType == AccountingPeriodType.Past ? PastAccountingPeriod.Id : FutureAccountingPeriod.Id,
             eventDate,
-            Account,
+            Account.Id,
             null,
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 500.00m
                 }
             ]
         );
-        otherPeriodTransaction.Post(TransactionAccountType.Debit, otherPeriodTransaction.TransactionDate);
+        GetService<ITransactionRepository>().Add(otherPeriodTransaction);
+        GetService<TestUnitOfWork>().SaveChanges();
+
+        GetService<PostTransactionAction>().Run(otherPeriodTransaction, TransactionAccountType.Debit, otherPeriodTransaction.Date);
+        GetService<TestUnitOfWork>().SaveChanges();
     }
 }

@@ -1,5 +1,4 @@
-using Domain.AccountingPeriods;
-using Domain.Actions;
+using Domain.ChangeInValues;
 using Domain.Funds;
 using Tests.AddChangeInValue.Setups;
 using Tests.Scenarios;
@@ -19,7 +18,7 @@ public class MultipleBalanceEventTests
     [ClassData(typeof(AddBalanceEventMultipleBalanceEventScenarios))]
     public void RunTest(AddBalanceEventMultipleBalanceEventScenario scenario)
     {
-        var setup = new MultipleBalanceEventScenarioSetup(scenario);
+        using var setup = new MultipleBalanceEventScenarioSetup(scenario);
         if (!IsValid(scenario))
         {
             Assert.Throws<InvalidOperationException>(() => AddChangeInValue(setup));
@@ -50,14 +49,17 @@ public class MultipleBalanceEventTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Change In Value that was added for this test case</returns>
     private static ChangeInValue AddChangeInValue(MultipleBalanceEventScenarioSetup setup) =>
-        setup.GetService<AddChangeInValueAction>().Run(setup.AccountingPeriod,
-            new DateOnly(2025, 1, 15),
-            setup.Account,
-            new FundAmount
+        setup.GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+        {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
+            EventDate = new DateOnly(2025, 1, 15),
+            AccountId = setup.Account.Id,
+            FundAmount = new FundAmount
             {
-                Fund = setup.Fund,
+                FundId = setup.Fund.Id,
                 Amount = -500.00m,
-            });
+            }
+        });
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -70,13 +72,13 @@ public class MultipleBalanceEventTests
         AddBalanceEventMultipleBalanceEventScenario scenario) =>
         new()
         {
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
-            AccountName = setup.Account.Name,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 15),
             EventSequence = scenario == AddBalanceEventMultipleBalanceEventScenario.MultipleEventsSameDay ? 2 : 1,
-            AccountingEntry = new FundAmountState
+            AccountId = setup.Account.Id,
+            FundAmount = new FundAmountState
             {
-                FundName = setup.Fund.Name,
+                FundId = setup.Fund.Id,
                 Amount = -500.00m,
             }
         };

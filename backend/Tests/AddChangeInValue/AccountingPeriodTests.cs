@@ -1,5 +1,4 @@
-using Domain.AccountingPeriods;
-using Domain.Actions;
+using Domain.ChangeInValues;
 using Domain.Funds;
 using Tests.Scenarios;
 using Tests.Setups;
@@ -19,7 +18,7 @@ public class AccountingPeriodTests
     [ClassData(typeof(AddBalanceEventAccountingPeriodScenarios))]
     public void RunTest(AddBalanceEventAccountingPeriodScenario scenario)
     {
-        var setup = new AddBalanceEventAccountingPeriodScenarioSetup(scenario);
+        using var setup = new AddBalanceEventAccountingPeriodScenarioSetup(scenario);
         if (!AddBalanceEventAccountingPeriodScenarios.IsValid(scenario))
         {
             Assert.Throws<InvalidOperationException>(() => AddChangeInValue(setup));
@@ -34,14 +33,17 @@ public class AccountingPeriodTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Change In Value that was added for this test case</returns>
     private static ChangeInValue AddChangeInValue(AddBalanceEventAccountingPeriodScenarioSetup setup) =>
-        setup.GetService<AddChangeInValueAction>().Run(setup.AccountingPeriod,
-            new DateOnly(2025, 1, 15),
-            setup.Account,
-            new FundAmount
+        setup.GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+        {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
+            EventDate = new DateOnly(2025, 1, 15),
+            AccountId = setup.Account.Id,
+            FundAmount = new FundAmount
             {
-                Fund = setup.Fund,
+                FundId = setup.Fund.Id,
                 Amount = -100.00m,
-            });
+            }
+        });
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -51,13 +53,13 @@ public class AccountingPeriodTests
     private static ChangeInValueState GetExpectedState(AddBalanceEventAccountingPeriodScenarioSetup setup) =>
         new()
         {
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
-            AccountName = setup.Account.Name,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 15),
             EventSequence = 1,
-            AccountingEntry = new FundAmountState
+            AccountId = setup.Account.Id,
+            FundAmount = new FundAmountState
             {
-                FundName = setup.Fund.Name,
+                FundId = setup.Fund.Id,
                 Amount = -100.00m,
             }
         };

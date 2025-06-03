@@ -1,7 +1,8 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
+using Tests.Mocks;
 using Tests.PostTransaction.Scenarios;
 using Tests.Setups;
 
@@ -43,47 +44,53 @@ internal sealed class AccountTypeScenarioSetup : ScenarioSetup
     /// <param name="scenario">Scenario for this test case</param>
     public AccountTypeScenarioSetup(AccountTypeScenario scenario)
     {
-        Fund = GetService<AddFundAction>().Run("Test");
+        Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
+        AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         if (scenario is AccountTypeScenario.Debit or AccountTypeScenario.MissingCredit)
         {
-            DebitAccount = GetService<AddAccountAction>().Run("TestOne", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+            DebitAccount = GetService<AccountFactory>().Create("TestOne", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
                 [
                     new FundAmount
                     {
-                        Fund = Fund,
+                        FundId = Fund.Id,
                         Amount = 1500.00m,
                     }
                 ]);
             GetService<IAccountRepository>().Add(DebitAccount);
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         else
         {
-            CreditAccount = GetService<AddAccountAction>().Run("TestOne", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+            CreditAccount = GetService<AccountFactory>().Create("TestOne", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
                 [
                     new FundAmount
                     {
-                        Fund = Fund,
+                        FundId = Fund.Id,
                         Amount = 1500.00m,
                     }
                 ]);
             GetService<IAccountRepository>().Add(CreditAccount);
+            GetService<TestUnitOfWork>().SaveChanges();
         }
 
-        Transaction = GetService<AddTransactionAction>().Run(AccountingPeriod,
+        Transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
-            DebitAccount,
-            CreditAccount,
+            DebitAccount?.Id,
+            CreditAccount?.Id,
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 500.00m
                 }
             ]);
+        GetService<ITransactionRepository>().Add(Transaction);
+        GetService<TestUnitOfWork>().SaveChanges();
     }
 }

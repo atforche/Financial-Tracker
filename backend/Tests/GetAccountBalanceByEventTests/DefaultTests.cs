@@ -1,8 +1,8 @@
 using Domain;
-using Domain.AccountingPeriods;
-using Domain.Actions;
+using Domain.Accounts;
 using Domain.Funds;
-using Domain.Services;
+using Domain.Transactions;
+using Tests.Mocks;
 using Tests.Setups;
 using Tests.Validators;
 
@@ -19,39 +19,44 @@ public class DefaultTests
     [Fact]
     public void RunTest()
     {
-        var setup = new DefaultScenarioSetup();
-        Transaction transaction = setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
+        using var setup = new DefaultScenarioSetup();
+        Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
-            setup.Account,
+            setup.Account.Id,
             null,
             [
                 new FundAmount
                 {
-                    Fund = setup.Fund,
+                    FundId = setup.Fund.Id,
                     Amount = 250.00m
                 }
             ]);
-        transaction.Post(TransactionAccountType.Debit, new DateOnly(2025, 1, 16));
+        setup.GetService<ITransactionRepository>().Add(transaction);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
+
+        setup.GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, new DateOnly(2025, 1, 16));
+        setup.GetService<TestUnitOfWork>().SaveChanges();
+
         new AccountBalanceByEventValidator().Validate(
-            setup.GetService<AccountBalanceService>().GetAccountBalancesByEvent(setup.Account,
+            setup.GetService<AccountBalanceService>().GetAccountBalancesByEvent(setup.Account.Id,
                 new DateRange(new DateOnly(2025, 1, 14), new DateOnly(2025, 1, 16))),
             [
                 new AccountBalanceByEventState
                 {
-                    AccountingPeriodKey = setup.AccountingPeriod.Key,
-                    AccountName = setup.Account.Name,
+                    AccountingPeriodId = setup.AccountingPeriod.Id,
                     EventDate = new DateOnly(2025, 1, 15),
                     EventSequence = 1,
+                    AccountId = setup.Account.Id,
                     FundBalances =
                     [
                         new FundAmountState
                         {
-                            FundName = setup.Fund.Name,
+                            FundId = setup.Fund.Id,
                             Amount = 1500.00m
                         },
                         new FundAmountState
                         {
-                            FundName = setup.OtherFund.Name,
+                            FundId = setup.OtherFund.Id,
                             Amount = 1500.00m
                         }
                     ],
@@ -59,27 +64,27 @@ public class DefaultTests
                     [
                         new FundAmountState
                         {
-                            FundName = setup.Fund.Name,
+                            FundId = setup.Fund.Id,
                             Amount = -250.00m
                         }
                     ]
                 },
                 new AccountBalanceByEventState
                 {
-                    AccountingPeriodKey = setup.AccountingPeriod.Key,
-                    AccountName = setup.Account.Name,
+                    AccountingPeriodId = setup.AccountingPeriod.Id,
                     EventDate = new DateOnly(2025, 1, 16),
                     EventSequence = 1,
+                    AccountId = setup.Account.Id,
                     FundBalances =
                     [
                         new FundAmountState
                         {
-                            FundName = setup.Fund.Name,
+                            FundId = setup.Fund.Id,
                             Amount = 1250.00m
                         },
                         new FundAmountState
                         {
-                            FundName = setup.OtherFund.Name,
+                            FundId = setup.OtherFund.Id,
                             Amount = 1500.00m
                         }
                     ],

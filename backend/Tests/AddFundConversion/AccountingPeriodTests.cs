@@ -1,5 +1,4 @@
-using Domain.AccountingPeriods;
-using Domain.Actions;
+using Domain.FundConversions;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
@@ -18,7 +17,7 @@ public class AccountingPeriodTests
     [ClassData(typeof(AddBalanceEventAccountingPeriodScenarios))]
     public void RunTest(AddBalanceEventAccountingPeriodScenario scenario)
     {
-        var setup = new AddBalanceEventAccountingPeriodScenarioSetup(scenario);
+        using var setup = new AddBalanceEventAccountingPeriodScenarioSetup(scenario);
         if (!AddBalanceEventAccountingPeriodScenarios.IsValid(scenario))
         {
             Assert.Throws<InvalidOperationException>(() => AddFundConversion(setup));
@@ -33,12 +32,15 @@ public class AccountingPeriodTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Fund Conversion that was added for this test case</returns>
     private static FundConversion AddFundConversion(AddBalanceEventAccountingPeriodScenarioSetup setup) =>
-        setup.GetService<AddFundConversionAction>().Run(setup.AccountingPeriod,
-            new DateOnly(2025, 1, 15),
-            setup.Account,
-            setup.Fund,
-            setup.OtherFund,
-            100.00m);
+        setup.GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
+        {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
+            EventDate = new DateOnly(2025, 1, 15),
+            AccountId = setup.Account.Id,
+            FromFundId = setup.Fund.Id,
+            ToFundId = setup.OtherFund.Id,
+            Amount = 100.00m
+        });
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -48,12 +50,12 @@ public class AccountingPeriodTests
     private static FundConversionState GetExpectedState(AddBalanceEventAccountingPeriodScenarioSetup setup) =>
         new()
         {
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
-            AccountName = setup.Account.Name,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 15),
             EventSequence = 1,
-            FromFundName = setup.Fund.Name,
-            ToFundName = setup.OtherFund.Name,
+            AccountId = setup.Account.Id,
+            FromFundId = setup.Fund.Id,
+            ToFundId = setup.OtherFund.Id,
             Amount = 100.00m,
         };
 }

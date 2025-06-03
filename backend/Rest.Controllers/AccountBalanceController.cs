@@ -1,7 +1,6 @@
 using Domain.Accounts;
-using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
-using Rest.Models.AccountBalance;
+using Rest.Models.Accounts;
 using Rest.Models.DateRange;
 
 namespace Rest.Controllers;
@@ -11,7 +10,9 @@ namespace Rest.Controllers;
 /// </summary>
 [ApiController]
 [Route("/accountBalance")]
-internal sealed class AccountBalanceController(IAccountRepository accountRepository, AccountBalanceService accountBalanceService) : ControllerBase
+public sealed class AccountBalanceController(
+    AccountBalanceService accountBalanceService,
+    AccountIdFactory accountIdFactory) : ControllerBase
 {
     /// <summary>
     /// Retrieves the balance for the provided Account by date across the provided date range
@@ -22,13 +23,8 @@ internal sealed class AccountBalanceController(IAccountRepository accountReposit
     [HttpPost("{accountId}/ByDate")]
     public IActionResult GetAccountBalanceByDate(Guid accountId, DateRangeModel dateRangeModel)
     {
-        Account? account = accountRepository.FindByExternalIdOrNull(accountId);
-        if (account == null)
-        {
-            return NotFound();
-        }
         IEnumerable<AccountBalanceByDate> accountBalances =
-            accountBalanceService.GetAccountBalancesByDate(account, dateRangeModel.ConvertToDateRange());
+            accountBalanceService.GetAccountBalancesByDateRange(accountIdFactory.Create(accountId), dateRangeModel.ConvertToDateRange());
         return Ok(accountBalances.Select(accountBalance => new AccountBalanceByDateModel(accountBalance)));
     }
 }

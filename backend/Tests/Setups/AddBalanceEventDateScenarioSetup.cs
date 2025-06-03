@@ -1,7 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
+using Tests.Mocks;
 using Tests.Scenarios;
 
 namespace Tests.Setups;
@@ -47,31 +47,38 @@ internal sealed class AddBalanceEventDateScenarioSetup : ScenarioSetup
     {
         EventDate = eventDate;
 
-        Fund = GetService<AddFundAction>().Run("Test");
+        Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<AddFundAction>().Run("OtherTest");
+        OtherFund = GetService<FundFactory>().Create("OtherTest");
         GetService<IFundRepository>().Add(OtherFund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        _pastAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2024, 12);
+        _pastAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2024, 12);
         GetService<IAccountingPeriodRepository>().Add(_pastAccountingPeriod);
-        CurrentAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
-        GetService<IAccountingPeriodRepository>().Add(CurrentAccountingPeriod);
-        _futureAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
-        GetService<IAccountingPeriodRepository>().Add(_futureAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, CurrentAccountingPeriod, _pastAccountingPeriod.PeriodStartDate.AddDays(14),
+        CurrentAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
+        GetService<IAccountingPeriodRepository>().Add(CurrentAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
+
+        _futureAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 2);
+        GetService<IAccountingPeriodRepository>().Add(_futureAccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
+
+        Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, CurrentAccountingPeriod.Id, _pastAccountingPeriod.PeriodStartDate.AddDays(14),
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 1500.00m,
                 },
                 new FundAmount
                 {
-                    Fund = OtherFund,
+                    FundId = OtherFund.Id,
                     Amount = 1500.00m,
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
     }
 }

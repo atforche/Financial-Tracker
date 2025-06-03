@@ -1,6 +1,6 @@
-using Rest.Models.Account;
-using Rest.Models.AccountingPeriod;
-using Rest.Models.Fund;
+using Rest.Models.Accounts;
+using Rest.Models.Funds;
+using Rest.Models.Transactions;
 
 namespace Utilities.BulkDataUpload.Models;
 
@@ -25,9 +25,9 @@ internal sealed class TransactionAddedUploadModel : BalanceEventUploadModel
     public string? CreditAccountName { get; init; }
 
     /// <summary>
-    /// Accounting Entries for this Transaction
+    /// Fund Amounts for this Transaction
     /// </summary>
-    public required ICollection<FundAmountUploadModel> AccountingEntries { get; init; }
+    public required ICollection<FundAmountUploadModel> FundAmounts { get; init; }
 
     /// <summary>
     /// Gets a Create Transaction Model corresponding to this Transaction Added Upload Model
@@ -39,14 +39,15 @@ internal sealed class TransactionAddedUploadModel : BalanceEventUploadModel
         ICollection<FundModel> existingFunds,
         ICollection<AccountModel> existingAccounts) => new()
         {
-            TransactionDate = TransactionDate,
+            AccountingPeriodId = Guid.NewGuid(),
+            Date = TransactionDate,
             DebitAccountId = DebitAccountName != null
                 ? existingAccounts.Single(account => account.Name == DebitAccountName).Id
                 : null,
             CreditAccountId = CreditAccountName != null
                 ? existingAccounts.Single(account => account.Name == CreditAccountName).Id
                 : null,
-            AccountingEntries = AccountingEntries
+            FundAmounts = FundAmounts
                 .Select(fundAmount => fundAmount.GetAsCreateFundAmountModel(existingFunds)).ToList(),
         };
 }

@@ -1,4 +1,7 @@
 using Domain.AccountingPeriods;
+using Domain.Accounts;
+using Domain.FundConversions;
+using Domain.Funds;
 
 namespace Tests.Validators;
 
@@ -10,13 +13,13 @@ internal sealed class FundConversionValidator : EntityValidator<FundConversion, 
     /// <inheritdoc/>
     public override void Validate(FundConversion entity, FundConversionState expectedState)
     {
-        Assert.NotEqual(Guid.Empty, entity.Id.ExternalId);
-        Assert.Equal(expectedState.AccountingPeriodKey, entity.AccountingPeriodKey);
-        Assert.Equal(expectedState.AccountName, entity.Account.Name);
+        Assert.NotEqual(Guid.Empty, entity.Id.Value);
+        Assert.Equal(expectedState.AccountingPeriodId, entity.AccountingPeriodId);
+        Assert.Equal(expectedState.AccountId, entity.AccountId);
         Assert.Equal(expectedState.EventDate, entity.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.EventSequence);
-        Assert.Equal(expectedState.FromFundName, entity.FromFund.Name);
-        Assert.Equal(expectedState.ToFundName, entity.ToFund.Name);
+        Assert.Equal(expectedState.FromFundId, entity.FromFundId);
+        Assert.Equal(expectedState.ToFundId, entity.ToFundId);
         Assert.Equal(expectedState.Amount, entity.Amount);
     }
 }
@@ -27,14 +30,9 @@ internal sealed class FundConversionValidator : EntityValidator<FundConversion, 
 internal sealed record FundConversionState
 {
     /// <summary>
-    /// Accounting Period Key for this Fund Conversion
+    /// Accounting Period ID for this Fund Conversion
     /// </summary>
-    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
-
-    /// <summary>
-    /// Account Name for this Fund Conversion
-    /// </summary>
-    public required string AccountName { get; init; }
+    public required AccountingPeriodId AccountingPeriodId { get; init; }
 
     /// <summary>
     /// Event Date for this Fund Conversion
@@ -47,14 +45,19 @@ internal sealed record FundConversionState
     public required int EventSequence { get; init; }
 
     /// <summary>
-    /// From Fund for this Fund Conversion
+    /// Account ID for this Fund Conversion
     /// </summary>
-    public required string FromFundName { get; init; }
+    public required AccountId AccountId { get; init; }
 
     /// <summary>
-    /// To Fund for this Fund Conversion
+    /// From Fund ID for this Fund Conversion
     /// </summary>
-    public required string ToFundName { get; init; }
+    public required FundId FromFundId { get; init; }
+
+    /// <summary>
+    /// To Fund ID for this Fund Conversion
+    /// </summary>
+    public required FundId ToFundId { get; init; }
 
     /// <summary>
     /// Amount for this Fund Conversion

@@ -1,5 +1,5 @@
-using Domain.AccountingPeriods;
-using Rest.Models.AccountingPeriod;
+using Domain.Transactions;
+using Rest.Models.Transactions;
 
 namespace Utilities.BulkDataUpload.Models;
 

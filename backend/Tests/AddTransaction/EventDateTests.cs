@@ -1,6 +1,5 @@
-using Domain.AccountingPeriods;
-using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
@@ -19,7 +18,7 @@ public class EventDateTests
     [ClassData(typeof(AddBalanceEventDateScenarios))]
     public void RunTest(DateOnly eventDate)
     {
-        var setup = new AddBalanceEventDateScenarioSetup(eventDate);
+        using var setup = new AddBalanceEventDateScenarioSetup(eventDate);
         if (!AddBalanceEventDateScenarios.IsValid(eventDate))
         {
             Assert.Throws<InvalidOperationException>(() => AddTransaction(setup));
@@ -34,14 +33,14 @@ public class EventDateTests
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
     private static Transaction AddTransaction(AddBalanceEventDateScenarioSetup setup) =>
-        setup.GetService<AddTransactionAction>().Run(setup.CurrentAccountingPeriod,
+        setup.GetService<TransactionFactory>().Create(setup.CurrentAccountingPeriod.Id,
             setup.EventDate,
-            setup.Account,
+            setup.Account.Id,
             null,
             [
                 new FundAmount()
                 {
-                    Fund = setup.Fund,
+                    FundId = setup.Fund.Id,
                     Amount = 25.00m,
                 }
             ]);
@@ -54,12 +53,13 @@ public class EventDateTests
     private static TransactionState GetExpectedState(AddBalanceEventDateScenarioSetup setup) =>
         new()
         {
-            TransactionDate = setup.EventDate,
-            AccountingEntries =
+            AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
+            Date = setup.EventDate,
+            FundAmounts =
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = 25.00m,
                 }
             ],
@@ -67,12 +67,12 @@ public class EventDateTests
             [
                 new TransactionBalanceEventState
                 {
-                    AccountingPeriodKey = setup.CurrentAccountingPeriod.Key,
-                    AccountName = setup.Account.Name,
+                    AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
                     EventDate = setup.EventDate,
                     EventSequence = 1,
-                    TransactionEventType = TransactionBalanceEventType.Added,
-                    TransactionAccountType = TransactionAccountType.Debit,
+                    AccountId = setup.Account.Id,
+                    EventType = TransactionBalanceEventType.Added,
+                    AccountType = TransactionAccountType.Debit,
                 }
             ]
         };

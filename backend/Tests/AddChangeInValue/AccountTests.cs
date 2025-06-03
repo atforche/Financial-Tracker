@@ -1,9 +1,8 @@
 using Domain;
-using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
+using Domain.ChangeInValues;
 using Domain.Funds;
-using Domain.Services;
+using Tests.Mocks;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
@@ -22,12 +21,12 @@ public class AccountTests
     [ClassData(typeof(AccountScenarios))]
     public void RunTest(AccountType accountType)
     {
-        var setup = new AccountScenarioSetup(accountType);
+        using var setup = new AccountScenarioSetup(accountType);
         new ChangeInValueValidator().Validate(AddChangeInValue(setup, 100.00m), GetExpectedState(setup, 100.00m));
         new ChangeInValueValidator().Validate(AddChangeInValue(setup, -100.00m), GetExpectedState(setup, -100.00m));
         new AccountBalanceByEventValidator().Validate(
             setup.GetService<AccountBalanceService>()
-                .GetAccountBalancesByEvent(setup.Account, new DateRange(new DateOnly(2025, 1, 10), new DateOnly(2025, 1, 10))),
+                .GetAccountBalancesByEvent(setup.Account.Id, new DateRange(new DateOnly(2025, 1, 10), new DateOnly(2025, 1, 10))),
             [GetExpectedAccountBalance(setup, 100.00m), GetExpectedAccountBalance(setup, -100.00m)]);
     }
 
@@ -37,15 +36,23 @@ public class AccountTests
     /// <param name="setup">Setup for this test case</param>
     /// <param name="amount">Amount for this Change In Value</param>
     /// <returns>The Change In Value that was added for this test case</returns>
-    private static ChangeInValue AddChangeInValue(AccountScenarioSetup setup, decimal amount) =>
-        setup.GetService<AddChangeInValueAction>().Run(setup.AccountingPeriod,
-            new DateOnly(2025, 1, 10),
-            setup.Account,
-            new FundAmount
+    private static ChangeInValue AddChangeInValue(AccountScenarioSetup setup, decimal amount)
+    {
+        ChangeInValue changeInValue = setup.GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
+        {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
+            EventDate = new DateOnly(2025, 1, 10),
+            AccountId = setup.Account.Id,
+            FundAmount = new FundAmount
             {
-                Fund = setup.Fund,
+                FundId = setup.Fund.Id,
                 Amount = amount,
-            });
+            }
+        });
+        setup.GetService<IChangeInValueRepository>().Add(changeInValue);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
+        return changeInValue;
+    }
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -56,13 +63,13 @@ public class AccountTests
     private static ChangeInValueState GetExpectedState(AccountScenarioSetup setup, decimal amount) =>
         new()
         {
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
-            AccountName = setup.Account.Name,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 10),
             EventSequence = amount < 0 ? 2 : 1,
-            AccountingEntry = new FundAmountState
+            AccountId = setup.Account.Id,
+            FundAmount = new FundAmountState
             {
-                FundName = setup.Fund.Name,
+                FundId = setup.Fund.Id,
                 Amount = amount,
             }
         };
@@ -76,20 +83,20 @@ public class AccountTests
     private static AccountBalanceByEventState GetExpectedAccountBalance(AccountScenarioSetup setup, decimal amount) =>
         new()
         {
-            AccountName = setup.Account.Name,
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 10),
             EventSequence = amount < 0 ? 2 : 1,
+            AccountId = setup.Account.Id,
             FundBalances =
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = amount < 0 ? 1500.00m : 1500.00m + amount,
                 },
                 new FundAmountState
                 {
-                    FundName = setup.OtherFund.Name,
+                    FundId = setup.OtherFund.Id,
                     Amount = 1500.00m,
                 }
             ],

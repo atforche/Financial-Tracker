@@ -1,4 +1,6 @@
 using Domain.AccountingPeriods;
+using Domain.Accounts;
+using Domain.Transactions;
 
 namespace Tests.Validators;
 
@@ -10,13 +12,13 @@ internal sealed class TransactionBalanceEventValidator : EntityValidator<Transac
     /// <inheritdoc/>
     public override void Validate(TransactionBalanceEvent entity, TransactionBalanceEventState expectedState)
     {
-        Assert.NotEqual(Guid.Empty, entity.Id.ExternalId);
-        Assert.Equal(expectedState.AccountingPeriodKey, entity.AccountingPeriodKey);
-        Assert.Equal(expectedState.AccountName, entity.Account.Name);
+        Assert.NotEqual(Guid.Empty, entity.Id.Value);
+        Assert.Equal(expectedState.AccountingPeriodId, entity.AccountingPeriodId);
         Assert.Equal(expectedState.EventDate, entity.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.EventSequence);
-        Assert.Equal(expectedState.TransactionEventType, entity.TransactionEventType);
-        Assert.Equal(expectedState.TransactionAccountType, entity.TransactionAccountType);
+        Assert.Equal(expectedState.AccountId, entity.AccountId);
+        Assert.Equal(expectedState.EventType, entity.EventType);
+        Assert.Equal(expectedState.AccountType, entity.AccountType);
     }
 }
 
@@ -26,14 +28,9 @@ internal sealed class TransactionBalanceEventValidator : EntityValidator<Transac
 internal sealed record TransactionBalanceEventState
 {
     /// <summary>
-    /// Accounting Period Key for this Transaction Balance Event
+    /// Accounting Period ID for this Transaction Balance Event
     /// </summary>
-    public required AccountingPeriodKey AccountingPeriodKey { get; init; }
-
-    /// <summary>
-    /// Account Name for this Transaction Balance Event
-    /// </summary>
-    public required string AccountName { get; init; }
+    public required AccountingPeriodId AccountingPeriodId { get; init; }
 
     /// <summary>
     /// Event Date for this Transaction Balance Event
@@ -46,12 +43,17 @@ internal sealed record TransactionBalanceEventState
     public required int EventSequence { get; init; }
 
     /// <summary>
-    /// Transaction Event Type for this Transaction Balance Event
+    /// Account ID for this Transaction Balance Event
     /// </summary>
-    public required TransactionBalanceEventType TransactionEventType { get; init; }
+    public required AccountId AccountId { get; init; }
 
     /// <summary>
-    /// Transaction Account Type for this Transaction Balance Event
+    /// Event Type for this Transaction Balance Event
     /// </summary>
-    public required TransactionAccountType TransactionAccountType { get; init; }
+    public required TransactionBalanceEventType EventType { get; init; }
+
+    /// <summary>
+    /// Account Type for this Transaction Balance Event
+    /// </summary>
+    public required TransactionAccountType AccountType { get; init; }
 }

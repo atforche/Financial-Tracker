@@ -1,7 +1,8 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
+using Domain.FundConversions;
 using Domain.Funds;
+using Tests.Mocks;
 using Tests.Scenarios;
 using Tests.Setups;
 
@@ -38,28 +39,31 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
     /// <param name="scenario">Scenario for this test case</param>
     public MultipleBalanceEventScenarioSetup(AddBalanceEventMultipleBalanceEventScenario scenario)
     {
-        Fund = GetService<AddFundAction>().Run("Test");
+        Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<AddFundAction>().Run("Test2");
+        OtherFund = GetService<FundFactory>().Create("Test2");
         GetService<IFundRepository>().Add(OtherFund);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
+        AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
+        GetService<TestUnitOfWork>().SaveChanges();
 
-        Account = GetService<AddAccountAction>().Run("Test", AccountType.Standard, AccountingPeriod, AccountingPeriod.PeriodStartDate,
+        Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
-                    Fund = Fund,
+                    FundId = Fund.Id,
                     Amount = 1500.00m,
                 },
                 new FundAmount
                 {
-                    Fund = OtherFund,
+                    FundId = OtherFund.Id,
                     Amount = 1500.00m,
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
 
         DoScenarioSpecificSetup(scenario);
     }
@@ -72,21 +76,29 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
     {
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.MultipleEventsSameDay)
         {
-            GetService<AddFundConversionAction>().Run(AccountingPeriod,
-                new DateOnly(2025, 1, 15),
-                Account,
-                Fund,
-                OtherFund,
-                500.00m);
+            GetService<IFundConversionRepository>().Add(GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
+            {
+                AccountingPeriodId = AccountingPeriod.Id,
+                EventDate = new DateOnly(2025, 1, 15),
+                AccountId = Account.Id,
+                FromFundId = Fund.Id,
+                ToFundId = OtherFund.Id,
+                Amount = 500.00m
+            }));
+            GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesFundBalanceNegative)
         {
-            GetService<AddFundConversionAction>().Run(AccountingPeriod,
-                new DateOnly(2025, 1, 10),
-                Account,
-                Fund,
-                OtherFund,
-                1250.00m);
+            GetService<IFundConversionRepository>().Add(GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
+            {
+                AccountingPeriodId = AccountingPeriod.Id,
+                EventDate = new DateOnly(2025, 1, 10),
+                AccountId = Account.Id,
+                FromFundId = Fund.Id,
+                ToFundId = OtherFund.Id,
+                Amount = 1250.00m
+            }));
+            GetService<TestUnitOfWork>().SaveChanges();
         }
     }
 }

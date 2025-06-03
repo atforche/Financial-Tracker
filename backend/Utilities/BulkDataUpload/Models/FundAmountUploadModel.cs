@@ -1,5 +1,4 @@
-using Rest.Models.Fund;
-using Rest.Models.FundAmount;
+using Rest.Models.Funds;
 
 namespace Utilities.BulkDataUpload.Models;
 

@@ -1,12 +1,5 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
-using Data;
-using Data.Repositories;
-using Domain.AccountingPeriods;
-using Domain.Accounts;
-using Domain.Actions;
-using Domain.Funds;
-using Domain.Services;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Rest.Models;
@@ -20,24 +13,9 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
-// Configure the DbContext to connect to the database
-builder.Services.AddDbContext<DatabaseContext>();
-
-// Add application DI services
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-// Add domain DI services
-builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-builder.Services.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
-builder.Services.AddScoped<IFundRepository, FundRepository>();
-builder.Services.AddScoped<AddAccountAction>();
-builder.Services.AddScoped<AddAccountingPeriodAction>();
-builder.Services.AddScoped<CloseAccountingPeriodAction>();
-builder.Services.AddScoped<AddTransactionAction>();
-builder.Services.AddScoped<AddFundConversionAction>();
-builder.Services.AddScoped<AddChangeInValueAction>();
-builder.Services.AddScoped<AccountBalanceService>();
-builder.Services.AddScoped<AddFundAction>();
+// Register needed DI services
+Data.ServiceManager.Register(builder.Services);
+Domain.ServiceManager.Register(builder.Services);
 
 // Configure CORS to allow requests from select origins
 string corsPolicyName = "CORS";

@@ -1,6 +1,5 @@
-using Domain.AccountingPeriods;
-using Domain.Actions;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;
@@ -19,7 +18,7 @@ public class AmountTests
     [ClassData(typeof(AddBalanceEventAmountScenarios))]
     public void RunTest(decimal amount)
     {
-        var setup = new AddBalanceEventAmountScenarioSetup();
+        using var setup = new AddBalanceEventAmountScenarioSetup();
         if (!IsValid(amount))
         {
             Assert.Throws<InvalidOperationException>(() => AddTransaction(setup, amount));
@@ -42,19 +41,19 @@ public class AmountTests
     /// <param name="amount">Amount for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
     private static Transaction AddTransaction(AddBalanceEventAmountScenarioSetup setup, decimal amount) =>
-        setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
+        setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
-            setup.Account,
+            setup.Account.Id,
             null,
             [
                 new FundAmount
                 {
-                    Fund = setup.Fund,
+                    FundId = setup.Fund.Id,
                     Amount = 100.00m,
                 },
                 new FundAmount
                 {
-                    Fund = setup.OtherFund,
+                    FundId = setup.OtherFund.Id,
                     Amount = amount,
                 }
             ]);
@@ -68,17 +67,18 @@ public class AmountTests
     private static TransactionState GetExpectedState(AddBalanceEventAmountScenarioSetup setup, decimal amount) =>
         new()
         {
-            TransactionDate = new DateOnly(2025, 1, 15),
-            AccountingEntries =
+            AccountingPeriodId = setup.AccountingPeriod.Id,
+            Date = new DateOnly(2025, 1, 15),
+            FundAmounts =
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = 100.00m,
                 },
                 new FundAmountState
                 {
-                    FundName = setup.OtherFund.Name,
+                    FundId = setup.OtherFund.Id,
                     Amount = amount,
                 },
             ],
@@ -86,12 +86,12 @@ public class AmountTests
             [
                 new TransactionBalanceEventState
                 {
-                    AccountingPeriodKey = setup.AccountingPeriod.Key,
-                    AccountName = setup.Account.Name,
+                    AccountingPeriodId = setup.AccountingPeriod.Id,
                     EventDate = new DateOnly(2025, 1, 15),
                     EventSequence = 1,
-                    TransactionEventType = TransactionBalanceEventType.Added,
-                    TransactionAccountType = TransactionAccountType.Debit,
+                    AccountId = setup.Account.Id,
+                    EventType = TransactionBalanceEventType.Added,
+                    AccountType = TransactionAccountType.Debit,
                 }
             ]
         };

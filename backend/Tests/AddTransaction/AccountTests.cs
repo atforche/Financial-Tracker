@@ -1,11 +1,10 @@
 using Domain;
-using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
-using Domain.Services;
+using Domain.Transactions;
 using Tests.AddTransaction.Scenarios;
 using Tests.AddTransaction.Setups;
+using Tests.Mocks;
 using Tests.Validators;
 
 namespace Tests.AddTransaction;
@@ -22,7 +21,7 @@ public class AccountTests
     [ClassData(typeof(AccountScenarios))]
     public void RunTest(AccountType? debitAccountType, AccountType? creditAccountType, SameAccountTypeBehavior sameAccountTypeBehavior)
     {
-        var setup = new AccountScenarioSetup(debitAccountType, creditAccountType, sameAccountTypeBehavior);
+        using var setup = new AccountScenarioSetup(debitAccountType, creditAccountType, sameAccountTypeBehavior);
         if (!AccountScenarios.IsValid(debitAccountType, creditAccountType, sameAccountTypeBehavior))
         {
             Assert.Throws<InvalidOperationException>(() => AddTransaction(setup));
@@ -33,14 +32,14 @@ public class AccountTests
         {
             new AccountBalanceByEventValidator().Validate(
                 setup.GetService<AccountBalanceService>()
-                    .GetAccountBalancesByEvent(setup.DebitAccount, new DateRange(new DateOnly(2025, 1, 15), new DateOnly(2025, 1, 15))),
+                    .GetAccountBalancesByEvent(setup.DebitAccount.Id, new DateRange(new DateOnly(2025, 1, 15), new DateOnly(2025, 1, 15))),
                 [GetExpectedAccountBalance(setup, setup.DebitAccount)]);
         }
         if (setup.CreditAccount != null)
         {
             new AccountBalanceByEventValidator().Validate(
                 setup.GetService<AccountBalanceService>()
-                    .GetAccountBalancesByEvent(setup.CreditAccount, new DateRange(new DateOnly(2025, 1, 15), new DateOnly(2025, 1, 15))),
+                    .GetAccountBalancesByEvent(setup.CreditAccount.Id, new DateRange(new DateOnly(2025, 1, 15), new DateOnly(2025, 1, 15))),
                 [GetExpectedAccountBalance(setup, setup.CreditAccount)]);
         }
     }
@@ -50,23 +49,28 @@ public class AccountTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The Transaction that was added for this test case</returns>
-    private static Transaction AddTransaction(AccountScenarioSetup setup) =>
-        setup.GetService<AddTransactionAction>().Run(setup.AccountingPeriod,
+    private static Transaction AddTransaction(AccountScenarioSetup setup)
+    {
+        Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
-            setup.DebitAccount,
-            setup.CreditAccount,
+            setup.DebitAccount?.Id,
+            setup.CreditAccount?.Id,
             [
                 new FundAmount()
                 {
-                    Fund = setup.Fund,
+                    FundId = setup.Fund.Id,
                     Amount = 25.00m,
                 },
                 new FundAmount
                 {
-                    Fund = setup.OtherFund,
+                    FundId = setup.OtherFund.Id,
                     Amount = 50.00m
                 }
             ]);
+        setup.GetService<ITransactionRepository>().Add(transaction);
+        setup.GetService<TestUnitOfWork>().SaveChanges();
+        return transaction;
+    }
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -76,17 +80,18 @@ public class AccountTests
     private static TransactionState GetExpectedState(AccountScenarioSetup setup) =>
         new()
         {
-            TransactionDate = new DateOnly(2025, 1, 15),
-            AccountingEntries =
+            AccountingPeriodId = setup.AccountingPeriod.Id,
+            Date = new DateOnly(2025, 1, 15),
+            FundAmounts =
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = 25.00m,
                 },
                 new FundAmountState
                 {
-                    FundName = setup.OtherFund.Name,
+                    FundId = setup.OtherFund.Id,
                     Amount = 50.00m,
                 }
             ],
@@ -105,24 +110,24 @@ public class AccountTests
         {
             expectedBalanceEvents.Add(new TransactionBalanceEventState
             {
-                AccountingPeriodKey = setup.AccountingPeriod.Key,
-                AccountName = setup.DebitAccount.Name,
+                AccountingPeriodId = setup.AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
-                TransactionEventType = TransactionBalanceEventType.Added,
-                TransactionAccountType = TransactionAccountType.Debit
+                AccountId = setup.DebitAccount.Id,
+                EventType = TransactionBalanceEventType.Added,
+                AccountType = TransactionAccountType.Debit
             });
         }
         if (setup.CreditAccount != null)
         {
             expectedBalanceEvents.Add(new TransactionBalanceEventState
             {
-                AccountingPeriodKey = setup.AccountingPeriod.Key,
-                AccountName = setup.CreditAccount.Name,
+                AccountingPeriodId = setup.AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = setup.DebitAccount != null ? 2 : 1,
-                TransactionEventType = TransactionBalanceEventType.Added,
-                TransactionAccountType = TransactionAccountType.Credit
+                AccountId = setup.CreditAccount.Id,
+                EventType = TransactionBalanceEventType.Added,
+                AccountType = TransactionAccountType.Credit
             });
         }
         return expectedBalanceEvents;
@@ -137,20 +142,20 @@ public class AccountTests
     private static AccountBalanceByEventState GetExpectedAccountBalance(AccountScenarioSetup setup, Account account) =>
         new()
         {
-            AccountName = account.Name,
-            AccountingPeriodKey = setup.AccountingPeriod.Key,
+            AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 15),
             EventSequence = setup.DebitAccount != account && setup.DebitAccount != null ? 2 : 1,
+            AccountId = account.Id,
             FundBalances =
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = 1500.00m,
                 },
                 new FundAmountState
                 {
-                    FundName = setup.OtherFund.Name,
+                    FundId = setup.OtherFund.Id,
                     Amount = 1500.00m,
                 }
             ],
@@ -158,12 +163,12 @@ public class AccountTests
             [
                 new FundAmountState
                 {
-                    FundName = setup.Fund.Name,
+                    FundId = setup.Fund.Id,
                     Amount = DetermineBalanceChangeFactor(setup, account) * 25.00m,
                 },
                 new FundAmountState
                 {
-                    FundName = setup.OtherFund.Name,
+                    FundId = setup.OtherFund.Id,
                     Amount = DetermineBalanceChangeFactor(setup, account) * 50.00m,
                 }
             ],

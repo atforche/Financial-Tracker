@@ -7,9 +7,9 @@ namespace Domain.Funds;
 public class FundAmount
 {
     /// <summary>
-    /// Fund for this Fund Amount
+    /// Fund ID for this Fund Amount
     /// </summary>
-    public required Fund Fund { get; init; }
+    public required FundId FundId { get; init; }
 
     /// <summary>
     /// Amount for this Fund Amount
