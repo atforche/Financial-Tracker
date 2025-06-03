@@ -13,7 +13,7 @@ namespace Domain.Transactions;
 /// accounts. For each account, a balance event will be generated when the 
 /// Transaction is added and when the Transaction is posted.
 /// </remarks>
-public sealed class TransactionBalanceEvent : EntityOld, IBalanceEvent
+public sealed class TransactionBalanceEvent : Entity<TransactionBalanceEventId>, IBalanceEvent
 {
     /// <summary>
     /// Parent Transaction for this Transaction Balance Event
@@ -92,7 +92,7 @@ public sealed class TransactionBalanceEvent : EntityOld, IBalanceEvent
         AccountId accountId,
         TransactionBalanceEventType eventType,
         TransactionAccountType accountType)
-        : base()
+        : base(new TransactionBalanceEventId(Guid.NewGuid()))
     {
         Transaction = transaction;
         EventDate = eventDate;
@@ -247,4 +247,21 @@ public enum TransactionAccountType
     /// Account that is being credited by the Transaction
     /// </summary>
     Credit,
+}
+
+/// <summary>
+/// Value object class representing the ID of an <see cref="TransactionBalanceEvent"/>
+/// </summary>
+public record TransactionBalanceEventId : EntityId
+{
+    /// <summary>
+    /// Constructs a new instance of this class. 
+    /// This constructor should only even be used when creating a new Transaction Balance Event ID during 
+    /// Transaction creation. 
+    /// </summary>
+    /// <param name="value">Value for this Transaction Balance Event ID</param>
+    internal TransactionBalanceEventId(Guid value)
+        : base(value)
+    {
+    }
 }

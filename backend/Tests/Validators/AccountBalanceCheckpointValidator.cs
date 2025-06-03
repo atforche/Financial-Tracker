@@ -1,4 +1,4 @@
-using Domain;
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 
 namespace Tests.Validators;
@@ -31,7 +31,7 @@ internal sealed record AccountBalanceCheckpointState
     /// <summary>
     /// Accounting Period ID for this Account Balance Checkpoint
     /// </summary>
-    public required EntityId AccountingPeriodId { get; init; }
+    public required AccountingPeriodId AccountingPeriodId { get; init; }
 
     /// <summary>
     /// Fund Balances for this Account Balance Checkpoint
