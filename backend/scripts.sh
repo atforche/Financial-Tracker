@@ -4,6 +4,7 @@ run-full-pipeline()
     format-solution
     build-solution
     run-unit-tests
+    run-database-integration-tests
 }
 
 restore-solution()
