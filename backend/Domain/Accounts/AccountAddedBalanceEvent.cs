@@ -11,7 +11,7 @@ namespace Domain.Accounts;
 /// An Account Added Balance Event represents the very first Balance Event for an Account after it is added.
 /// The Account cannot have any Balance Events that fall on earlier dates or in earlier Accounting Periods.
 /// </remarks>
-public class AccountAddedBalanceEvent : EntityOld, IBalanceEvent
+public class AccountAddedBalanceEvent : Entity<AccountAddedBalanceEventId>, IBalanceEvent
 {
     /// <summary>
     /// Account for this Account Added Balance Event
@@ -58,7 +58,7 @@ public class AccountAddedBalanceEvent : EntityOld, IBalanceEvent
         DateOnly eventDate,
         int eventSequence,
         IEnumerable<FundAmount> startingFundBalances)
-        : base()
+        : base(new AccountAddedBalanceEventId(Guid.NewGuid()))
     {
         Account = account;
         AccountingPeriodId = accountingPeriodId;
@@ -76,5 +76,22 @@ public class AccountAddedBalanceEvent : EntityOld, IBalanceEvent
         Account = null!;
         AccountingPeriodId = null!;
         FundAmounts = null!;
+    }
+}
+
+/// <summary>
+/// Value object class representing the ID of an <see cref="AccountAddedBalanceEvent"/>
+/// </summary>
+public record AccountAddedBalanceEventId : EntityId
+{
+    /// <summary>
+    /// Constructs a new instance of this class. 
+    /// This constructor should only even be used when creating a new Account Added Balance Event ID during 
+    /// Account creation. 
+    /// </summary>
+    /// <param name="value">Value for this Account Added Balance Event ID</param>
+    internal AccountAddedBalanceEventId(Guid value)
+        : base(value)
+    {
     }
 }
