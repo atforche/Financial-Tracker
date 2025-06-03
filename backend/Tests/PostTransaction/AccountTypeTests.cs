@@ -1,6 +1,5 @@
 using Domain;
 using Domain.Accounts;
-using Domain.Services;
 using Domain.Transactions;
 using Tests.PostTransaction.Scenarios;
 using Tests.PostTransaction.Setups;

@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Services;
 
 namespace Domain.BalanceEvents;
 

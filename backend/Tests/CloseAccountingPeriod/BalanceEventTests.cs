@@ -1,4 +1,4 @@
-using Domain.Actions;
+using Domain.AccountingPeriods;
 using Domain.Transactions;
 using Tests.CloseAccountingPeriod.Scenarios;
 using Tests.CloseAccountingPeriod.Setups;

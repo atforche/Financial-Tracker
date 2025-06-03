@@ -1,8 +1,7 @@
 using Domain.AccountingPeriods;
-using Domain.Accounts;
 using Domain.BalanceEvents;
 
-namespace Domain.Services;
+namespace Domain.Accounts;
 
 /// <summary>
 /// Service used to calculate the balance of an Account as of a particular point in time

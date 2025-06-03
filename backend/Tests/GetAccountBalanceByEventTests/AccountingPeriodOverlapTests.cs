@@ -1,7 +1,6 @@
 using Domain;
+using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
-using Domain.Services;
 using Tests.Scenarios;
 using Tests.Setups;
 using Tests.Validators;

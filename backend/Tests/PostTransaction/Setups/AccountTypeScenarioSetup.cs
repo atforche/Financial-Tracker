@@ -1,6 +1,5 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
 using Domain.Transactions;
 using Tests.PostTransaction.Scenarios;
@@ -44,10 +43,10 @@ internal sealed class AccountTypeScenarioSetup : ScenarioSetup
     /// <param name="scenario">Scenario for this test case</param>
     public AccountTypeScenarioSetup(AccountTypeScenario scenario)
     {
-        Fund = GetService<AddFundAction>().Run("Test");
+        Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
 
-        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
+        AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
 
         if (scenario is AccountTypeScenario.Debit or AccountTypeScenario.MissingCredit)

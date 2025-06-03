@@ -1,30 +1,29 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Services;
 
-namespace Domain.Actions;
+namespace Domain.AccountingPeriods;
 
 /// <summary>
-/// Action class that adds an Accounting Period
+/// Factory for building a <see cref="AccountingPeriod"/>
 /// </summary>
-/// <param name="accountingPeriodRepository">Accounting Period Repository</param>
-/// <param name="accountRepository">Account Repository</param>
-/// <param name="accountBalanceService">Account Balance Service</param>
-public class AddAccountingPeriodAction(
+public class AccountingPeriodFactory(
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
     AccountBalanceService accountBalanceService)
 {
     /// <summary>
-    /// Runs this action
+    /// Creates a new Accounting Period
     /// </summary>
     /// <param name="year">Year for the Accounting Period</param>
     /// <param name="month">Month for the Accounting Period</param>
-    /// <returns>The Accounting Period that was added</returns>
-    public AccountingPeriod Run(int year, int month)
+    /// <returns>The newly create Accounting Period</returns>
+    public AccountingPeriod Create(int year, int month)
     {
-        if (!IsValid(year, month, out Exception? exception))
+        if (!ValidateYearAndMonth(year, month, out Exception? exception))
+        {
+            throw exception;
+        }
+        if (!ValidateOtherAccountingPeriods(year, month, out exception))
         {
             throw exception;
         }
@@ -34,13 +33,13 @@ public class AddAccountingPeriodAction(
     }
 
     /// <summary>
-    /// Determines if this action is valid to run
+    /// Validates the Year and Month for this Accounting Period
     /// </summary>
     /// <param name="year">Year for the Accounting Period</param>
     /// <param name="month">Month for the Accounting Period</param>
     /// <param name="exception">Exception encountered during validation</param>
-    /// <returns>True if this action is valid to run, false otherwise</returns>
-    private bool IsValid(int year, int month, [NotNullWhen(false)] out Exception? exception)
+    /// <returns>True if the Year and Month for this Accounting Period are valid, false otherwise</returns>
+    private static bool ValidateYearAndMonth(int year, int month, [NotNullWhen(false)] out Exception? exception)
     {
         exception = null;
 
@@ -52,6 +51,20 @@ public class AddAccountingPeriodAction(
         {
             exception ??= new InvalidOperationException();
         }
+        return exception == null;
+    }
+
+    /// <summary>
+    /// Validates the other Accounting Periods for this Accounting Period
+    /// </summary>
+    /// <param name="year">Year for the Accounting Period</param>
+    /// <param name="month">Month for the Accounting Period</param>
+    /// <param name="exception">Exception encountered during validation</param>
+    /// <returns>True if the other Accounting Periods are valid, false otherwise</returns>
+    private bool ValidateOtherAccountingPeriods(int year, int month, [NotNullWhen(false)] out Exception? exception)
+    {
+        exception = null;
+
         // Validate that there are no duplicate accounting periods
         var existingAccountingPeriods = accountingPeriodRepository.FindAll().ToList();
         if (existingAccountingPeriods.Any(period => period.PeriodStartDate == new DateOnly(year, month, 1)))

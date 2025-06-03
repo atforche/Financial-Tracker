@@ -1,4 +1,4 @@
-using Domain.Actions;
+using Domain.AccountingPeriods;
 using Tests.Setups;
 using Tests.Validators;
 

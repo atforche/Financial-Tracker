@@ -1,6 +1,5 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
 using Tests.Scenarios;
 
@@ -37,15 +36,15 @@ internal sealed class AddBalanceEventAccountingPeriodScenarioSetup : ScenarioSet
     /// <param name="scenario">Scenario for this test case</param>
     public AddBalanceEventAccountingPeriodScenarioSetup(AddBalanceEventAccountingPeriodScenario scenario)
     {
-        Fund = GetService<AddFundAction>().Run("Test");
+        Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<AddFundAction>().Run("Test2");
+        OtherFund = GetService<FundFactory>().Create("Test2");
         GetService<IFundRepository>().Add(OtherFund);
 
-        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
+        AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
 
-        AccountingPeriod nextAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
+        AccountingPeriod nextAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(nextAccountingPeriod);
 
         Account = GetService<AccountFactory>().Create("Test",

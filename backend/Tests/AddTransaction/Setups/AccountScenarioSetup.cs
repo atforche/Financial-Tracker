@@ -1,6 +1,5 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
 using Tests.AddTransaction.Scenarios;
 using Tests.Setups;
@@ -48,12 +47,12 @@ internal sealed class AccountScenarioSetup : ScenarioSetup
         AccountType? creditAccountType,
         SameAccountTypeBehavior sameAccountTypeBehavior)
     {
-        Fund = GetService<AddFundAction>().Run("Test");
+        Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<AddFundAction>().Run("OtherTest");
+        OtherFund = GetService<FundFactory>().Create("OtherTest");
         GetService<IFundRepository>().Add(OtherFund);
 
-        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
+        AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
 
         if (debitAccountType != null)

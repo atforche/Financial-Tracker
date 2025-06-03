@@ -1,6 +1,5 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
 using Domain.Transactions;
 using Tests.GetAccountBalanceByAccountingPeriodTests.Scenarios;
@@ -34,14 +33,14 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
     /// <param name="scenario">Scenario for this test case</param>
     public AccountingPeriodScenarioSetup(AccountingPeriodScenario scenario)
     {
-        Fund = GetService<AddFundAction>().Run("Test");
+        Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
 
-        AccountingPeriod firstAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2024, 12);
+        AccountingPeriod firstAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2024, 12);
         GetService<IAccountingPeriodRepository>().Add(firstAccountingPeriod);
         GetService<CloseAccountingPeriodAction>().Run(firstAccountingPeriod);
 
-        AccountingPeriod secondAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
+        AccountingPeriod secondAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(secondAccountingPeriod);
 
         Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, secondAccountingPeriod.Id, secondAccountingPeriod.PeriodStartDate,
@@ -54,7 +53,7 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
             ]);
         GetService<IAccountRepository>().Add(Account);
 
-        AccountingPeriod thirdAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
+        AccountingPeriod thirdAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(thirdAccountingPeriod);
 
         AccountingPeriod = scenario switch

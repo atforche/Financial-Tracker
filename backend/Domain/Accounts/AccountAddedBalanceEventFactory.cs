@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.BalanceEvents;
 using Domain.Funds;
-using Domain.Services;
 
 namespace Domain.Accounts;
 

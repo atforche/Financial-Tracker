@@ -1,6 +1,5 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
 using Tests.Scenarios;
 
@@ -47,16 +46,16 @@ internal sealed class AddBalanceEventDateScenarioSetup : ScenarioSetup
     {
         EventDate = eventDate;
 
-        Fund = GetService<AddFundAction>().Run("Test");
+        Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<AddFundAction>().Run("OtherTest");
+        OtherFund = GetService<FundFactory>().Create("OtherTest");
         GetService<IFundRepository>().Add(OtherFund);
 
-        _pastAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2024, 12);
+        _pastAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2024, 12);
         GetService<IAccountingPeriodRepository>().Add(_pastAccountingPeriod);
-        CurrentAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
+        CurrentAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(CurrentAccountingPeriod);
-        _futureAccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 2);
+        _futureAccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 2);
         GetService<IAccountingPeriodRepository>().Add(_futureAccountingPeriod);
 
         Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, CurrentAccountingPeriod.Id, _pastAccountingPeriod.PeriodStartDate.AddDays(14),

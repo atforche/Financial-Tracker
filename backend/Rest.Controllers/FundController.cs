@@ -1,5 +1,4 @@
 using Data;
-using Domain.Actions;
 using Domain.Funds;
 using Microsoft.AspNetCore.Mvc;
 using Rest.Models.Funds;
@@ -13,8 +12,8 @@ namespace Rest.Controllers;
 [Route("/funds")]
 public sealed class FundController(
     UnitOfWork unitOfWork,
-    AddFundAction addFundAction,
     IFundRepository fundRepository,
+    FundFactory fundFactory,
     FundIdFactory fundIdFactory) : ControllerBase
 {
     /// <summary>
@@ -45,7 +44,7 @@ public sealed class FundController(
     [HttpPost("")]
     public async Task<IActionResult> CreateAsync(CreateFundModel createFundModel)
     {
-        Fund newFund = addFundAction.Run(createFundModel.Name);
+        Fund newFund = fundFactory.Create(createFundModel.Name);
         fundRepository.Add(newFund);
         await unitOfWork.SaveChangesAsync();
         return Ok(new FundModel(newFund));

@@ -1,9 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Services;
 
-namespace Domain.Actions;
+namespace Domain.AccountingPeriods;
 
 /// <summary>
 /// Action class that closes an Accounting Period

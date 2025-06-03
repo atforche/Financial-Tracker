@@ -1,6 +1,5 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
 using Tests.AddTransaction.Scenarios;
 using Tests.Setups;
@@ -35,7 +34,7 @@ internal sealed class FundScenarioSetup : ScenarioSetup
     {
         Funds = GetFundsForScenario(scenario);
 
-        AccountingPeriod = GetService<AddAccountingPeriodAction>().Run(2025, 1);
+        AccountingPeriod = GetService<AccountingPeriodFactory>().Create(2025, 1);
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
 
         Account = GetService<AccountFactory>().Create("Test", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
@@ -59,21 +58,21 @@ internal sealed class FundScenarioSetup : ScenarioSetup
     {
         if (scenario == FundScenario.One)
         {
-            Fund fund = GetService<AddFundAction>().Run("Test");
+            Fund fund = GetService<FundFactory>().Create("Test");
             GetService<IFundRepository>().Add(fund);
             return [fund];
         }
         if (scenario == FundScenario.Multiple)
         {
-            Fund fund = GetService<AddFundAction>().Run("Test");
+            Fund fund = GetService<FundFactory>().Create("Test");
             GetService<IFundRepository>().Add(fund);
-            Fund otherFund = GetService<AddFundAction>().Run("OtherTest");
+            Fund otherFund = GetService<FundFactory>().Create("OtherTest");
             GetService<IFundRepository>().Add(otherFund);
             return [fund, otherFund];
         }
         if (scenario == FundScenario.Duplicate)
         {
-            Fund fund = GetService<AddFundAction>().Run("Test");
+            Fund fund = GetService<FundFactory>().Create("Test");
             GetService<IFundRepository>().Add(fund);
             return [fund, fund];
         }

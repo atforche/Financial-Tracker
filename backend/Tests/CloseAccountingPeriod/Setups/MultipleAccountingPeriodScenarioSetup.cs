@@ -1,6 +1,5 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Actions;
 using Domain.Funds;
 using Tests.CloseAccountingPeriod.Scenarios;
 using Tests.Setups;
@@ -32,15 +31,15 @@ internal sealed class MultipleAccountingPeriodScenarioSetup : ScenarioSetup
     /// </summary>
     public MultipleAccountingPeriodScenarioSetup()
     {
-        Fund = GetService<AddFundAction>().Run("Test");
+        Fund = GetService<FundFactory>().Create("Test");
         GetService<IFundRepository>().Add(Fund);
 
         List<AccountingPeriod> accountingPeriods = [];
         List<DateOnly> accountingPeriodDates = [new DateOnly(2024, 12, 1), new DateOnly(2025, 1, 1), new DateOnly(2025, 2, 1)];
         foreach (DateOnly accountingPeriodDate in accountingPeriodDates)
         {
-            AccountingPeriod accountingPeriod = GetService<AddAccountingPeriodAction>()
-                .Run(accountingPeriodDate.Year, accountingPeriodDate.Month);
+            AccountingPeriod accountingPeriod = GetService<AccountingPeriodFactory>()
+                .Create(accountingPeriodDate.Year, accountingPeriodDate.Month);
             GetService<IAccountingPeriodRepository>().Add(accountingPeriod);
             accountingPeriods.Add(accountingPeriod);
 

@@ -1,5 +1,4 @@
 using Domain.AccountingPeriods;
-using Domain.Actions;
 using Tests.AddAccountingPeriod.Scenarios;
 using Tests.AddAccountingPeriod.Setups;
 using Tests.Validators;
@@ -47,7 +46,7 @@ public class MultipleAccountingPeriodTests
             setup.GetService<CloseAccountingPeriodAction>().Run(setup.FirstAccountingPeriod);
         }
 
-        AccountingPeriod secondAccountingPeriod = setup.GetService<AddAccountingPeriodAction>().Run(secondPeriod.Year, secondPeriod.Month);
+        AccountingPeriod secondAccountingPeriod = setup.GetService<AccountingPeriodFactory>().Create(secondPeriod.Year, secondPeriod.Month);
         setup.GetService<IAccountingPeriodRepository>().Add(secondAccountingPeriod);
         new AccountingPeriodValidator().Validate(secondAccountingPeriod, GetExpectedState(secondAccountingPeriod));
         new AccountValidator().Validate(setup.Account, GetExpectedAccountState(setup, secondAccountingPeriod, null));
@@ -56,7 +55,7 @@ public class MultipleAccountingPeriodTests
             setup.GetService<CloseAccountingPeriodAction>().Run(secondAccountingPeriod);
         }
 
-        AccountingPeriod thirdAccountingPeriod = setup.GetService<AddAccountingPeriodAction>().Run(thirdPeriod.Year, thirdPeriod.Month);
+        AccountingPeriod thirdAccountingPeriod = setup.GetService<AccountingPeriodFactory>().Create(thirdPeriod.Year, thirdPeriod.Month);
         new AccountingPeriodValidator().Validate(thirdAccountingPeriod, GetExpectedState(thirdAccountingPeriod));
         new AccountValidator().Validate(setup.Account, GetExpectedAccountState(setup, secondAccountingPeriod, thirdAccountingPeriod));
     }

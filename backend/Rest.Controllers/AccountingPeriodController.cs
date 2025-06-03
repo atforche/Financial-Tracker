@@ -1,6 +1,5 @@
 using Data;
 using Domain.AccountingPeriods;
-using Domain.Actions;
 using Microsoft.AspNetCore.Mvc;
 using Rest.Models.AccountingPeriods;
 
@@ -13,10 +12,10 @@ namespace Rest.Controllers;
 [Route("/accountingPeriods")]
 public sealed class AccountingPeriodController(
     UnitOfWork unitOfWork,
-    AddAccountingPeriodAction addAccountingPeriodAction,
-    CloseAccountingPeriodAction closeAccountingPeriodAction,
     IAccountingPeriodRepository accountingPeriodRepository,
-    AccountingPeriodIdFactory accountingPeriodIdFactory) : ControllerBase
+    AccountingPeriodFactory accountingPeriodFactory,
+    AccountingPeriodIdFactory accountingPeriodIdFactory,
+    CloseAccountingPeriodAction closeAccountingPeriodAction) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Accounting Periods from the database
@@ -46,7 +45,7 @@ public sealed class AccountingPeriodController(
     [HttpPost("")]
     public async Task<IActionResult> CreateAsync(CreateAccountingPeriodModel createAccountingPeriodModel)
     {
-        AccountingPeriod newAccountingPeriod = addAccountingPeriodAction.Run(
+        AccountingPeriod newAccountingPeriod = accountingPeriodFactory.Create(
             createAccountingPeriodModel.Year,
             createAccountingPeriodModel.Month);
         accountingPeriodRepository.Add(newAccountingPeriod);

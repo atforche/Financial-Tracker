@@ -1,6 +1,6 @@
 using Domain;
+using Domain.Accounts;
 using Domain.Funds;
-using Domain.Services;
 using Domain.Transactions;
 using Tests.Setups;
 using Tests.Validators;

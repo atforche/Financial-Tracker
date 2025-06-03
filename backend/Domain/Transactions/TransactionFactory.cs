@@ -13,6 +13,11 @@ public class TransactionFactory(TransactionBalanceEventFactory transactionBalanc
     /// <summary>
     /// Create a new Transaction
     /// </summary>
+    /// <param name="accountingPeriodId">Accounting Period ID for the Transaction</param>
+    /// <param name="date">Date for the Transaction</param>
+    /// <param name="debitAccountId">Debit Account ID for the Transaction</param>
+    /// <param name="creditAccountId">Credit Account ID for the Transaction</param>
+    /// <param name="fundAmounts">Fund Amounts for the Transaction</param>
     /// <returns>The newly created Transaction</returns>
     public Transaction Create(
         AccountingPeriodId accountingPeriodId,
