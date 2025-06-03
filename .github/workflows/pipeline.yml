@@ -42,6 +42,11 @@ jobs:
         . ./scripts.sh 
         run-unit-tests
 
+    - name: Database Integration Test
+      run: |
+        . ./scripts.sh 
+        run-database-integration-tests
+
   # Builds and tests the Vite project
   build_vite:
 
