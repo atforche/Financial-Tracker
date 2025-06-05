@@ -15,7 +15,7 @@ public class DefaultTests
     [Fact]
     public void RunTest()
     {
-        using var setup = new DefaultScenarioSetup();
+        var setup = new DefaultScenarioSetup();
         FundConversion fundConversion = setup.GetService<FundConversionFactory>().Create(new CreateFundConversionRequest
         {
             AccountingPeriodId = setup.AccountingPeriod.Id,

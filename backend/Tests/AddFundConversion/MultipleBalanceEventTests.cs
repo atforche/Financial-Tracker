@@ -18,7 +18,7 @@ public class MultipleBalanceEventTests
     [ClassData(typeof(MultipleBalanceEventScenarios))]
     public void RunTest(AddBalanceEventMultipleBalanceEventScenario scenario)
     {
-        using var setup = new MultipleBalanceEventScenarioSetup(scenario);
+        var setup = new MultipleBalanceEventScenarioSetup(scenario);
         if (!MultipleBalanceEventScenarios.IsValid(scenario))
         {
             Assert.Throws<InvalidOperationException>(() => AddFundConversion(setup));

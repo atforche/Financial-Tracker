@@ -18,7 +18,7 @@ public class MultipleAccountingPeriodTests
     [ClassData(typeof(MultipleAccountingPeriodScenarios))]
     public void RunTest(DateOnly firstPeriod, DateOnly secondPeriod, DateOnly thirdPeriod)
     {
-        using var setup = new MultipleAccountingPeriodScenarioSetup();
+        var setup = new MultipleAccountingPeriodScenarioSetup();
         if (!MultipleAccountingPeriodScenarios.IsValid(firstPeriod, secondPeriod, thirdPeriod))
         {
             Assert.Throws<InvalidOperationException>(() => RunTestPrivate(setup, firstPeriod, secondPeriod, thirdPeriod));

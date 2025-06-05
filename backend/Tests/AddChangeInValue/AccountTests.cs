@@ -21,7 +21,7 @@ public class AccountTests
     [ClassData(typeof(AccountScenarios))]
     public void RunTest(AccountType accountType)
     {
-        using var setup = new AccountScenarioSetup(accountType);
+        var setup = new AccountScenarioSetup(accountType);
         new ChangeInValueValidator().Validate(AddChangeInValue(setup, 100.00m), GetExpectedState(setup, 100.00m));
         new ChangeInValueValidator().Validate(AddChangeInValue(setup, -100.00m), GetExpectedState(setup, -100.00m));
         new AccountBalanceByEventValidator().Validate(

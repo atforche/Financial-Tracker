@@ -19,7 +19,7 @@ public class AccountingPeriodOverlapTests
     [ClassData(typeof(GetAccountBalanceAccountingPeriodOverlapScenarios))]
     public void RunTest(AccountingPeriodType accountingPeriodType, DateOnly eventDate)
     {
-        using var setup = new GetAccountBalanceAccountingPeriodOverlapScenarioSetup(accountingPeriodType, eventDate);
+        var setup = new GetAccountBalanceAccountingPeriodOverlapScenarioSetup(accountingPeriodType, eventDate);
 
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup, setup.PastAccountingPeriod),
             GetPastPeriodExpectedState(setup, accountingPeriodType));

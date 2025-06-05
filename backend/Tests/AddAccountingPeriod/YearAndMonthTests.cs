@@ -17,7 +17,7 @@ public class YearAndMonthTests
     [ClassData(typeof(YearAndMonthScenarios))]
     public void RunTest(int year, int month)
     {
-        using var setup = new ScenarioSetup();
+        var setup = new ScenarioSetup();
         if (!YearAndMonthScenarios.IsValid(year, month))
         {
             Assert.Throws<InvalidOperationException>(() => setup.GetService<AccountingPeriodFactory>().Create(year, month));

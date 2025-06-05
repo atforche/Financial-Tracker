@@ -7,11 +7,6 @@ namespace Tests.Mocks;
 /// </summary>
 public class TestDatabaseContext : DatabaseContext
 {
-    /// <summary>
-    /// Gets the directory where the test databases will be located
-    /// </summary>
-    public static string DatabaseDirectory => $"{AppContext.BaseDirectory}/Database";
-
     /// <inheritdoc/>
-    protected override string GetDatabasePath() => Path.Join(DatabaseDirectory, $"{Guid.NewGuid()}.db");
+    protected override string DatabasePath { get; } = Path.Join(DatabaseFixture.DatabaseDirectory, $"{Guid.NewGuid()}.db");
 }
