@@ -18,7 +18,7 @@ public class DefaultTests
     [Fact]
     public void RunTest()
     {
-        using var setup = new DefaultScenarioSetup();
+        var setup = new DefaultScenarioSetup();
         Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
             setup.Account.Id,

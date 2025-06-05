@@ -17,7 +17,7 @@ public class DateRangeTests
     [ClassData(typeof(GetAccountBalanceDateRangeScenarios))]
     public void RunTest(GetAccountBalanceDateRangeScenario scenario)
     {
-        using var setup = new GetAccountBalanceDateRangeScenarioSetup(scenario);
+        var setup = new GetAccountBalanceDateRangeScenarioSetup(scenario);
         new AccountBalanceByDateValidator().Validate(GetAccountBalance(setup), GetExpectedState(setup));
     }
 

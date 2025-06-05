@@ -16,7 +16,7 @@ public class DefaultTests
     [Fact]
     public void RunTest()
     {
-        using var setup = new DefaultScenarioSetup();
+        var setup = new DefaultScenarioSetup();
         ChangeInValue changeInValue = setup.GetService<ChangeInValueFactory>().Create(new CreateChangeInValueRequest
         {
             AccountingPeriodId = setup.AccountingPeriod.Id,

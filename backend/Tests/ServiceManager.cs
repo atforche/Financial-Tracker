@@ -21,13 +21,12 @@ public static class ServiceManager
     /// Registers all the Test DI services in the provided service collection
     /// </summary>
     /// <param name="serviceCollection">Service Collection</param>
-    /// <param name="shouldUseDatabase">True if the tests should run against a real database, false otherwise</param>
-    public static void Register(IServiceCollection serviceCollection, bool shouldUseDatabase)
+    public static void Register(IServiceCollection serviceCollection)
     {
         _ = serviceCollection.AddScoped<TestUnitOfWork>();
         Domain.ServiceManager.Register(serviceCollection);
 
-        if (!shouldUseDatabase)
+        if (!DatabaseFixture.ShouldUseDatabase)
         {
             _ = serviceCollection.AddScoped<IAccountingPeriodRepository, MockAccountingPeriodRepository>();
             _ = serviceCollection.AddScoped<IAccountRepository, MockAccountRepository>();

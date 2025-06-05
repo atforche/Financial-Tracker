@@ -14,7 +14,7 @@ public class DefaultTests
     [Fact]
     public void RunTest()
     {
-        using var setup = new DefaultScenarioSetup();
+        var setup = new DefaultScenarioSetup();
         new AccountingPeriodValidator().Validate(setup.AccountingPeriod,
             new AccountingPeriodState
             {

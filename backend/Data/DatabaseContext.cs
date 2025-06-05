@@ -47,11 +47,11 @@ public class DatabaseContext : DbContext
     /// <summary>
     /// Gets the database path for this Database Context
     /// </summary>
-    protected virtual string GetDatabasePath() => Path.Join("/workspaces/Financial-Tracker/backend", "backend.db");
+    protected virtual string DatabasePath { get; } = Path.Join("/workspaces/Financial-Tracker/backend", "backend.db");
 
     /// <inheritdoc/>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.UseSqlite($"Data Source={GetDatabasePath()}");
+        optionsBuilder.UseSqlite($"Data Source={DatabasePath}");
 
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>

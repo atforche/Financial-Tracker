@@ -17,7 +17,7 @@ public class AccountingPeriodTests
     [ClassData(typeof(AccountingPeriodScenarios))]
     public void RunTest(AccountingPeriodScenario scenario)
     {
-        using var setup = new AccountingPeriodScenarioSetup(scenario);
+        var setup = new AccountingPeriodScenarioSetup(scenario);
         new AccountBalanceByAccountingPeriodValidator().Validate(GetAccountBalance(setup), GetExpectedState(scenario, setup));
     }
 

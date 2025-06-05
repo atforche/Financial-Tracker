@@ -20,7 +20,7 @@ public class AccountTests
     [ClassData(typeof(AccountScenarios))]
     public void RunTest(AccountType accountType)
     {
-        using var setup = new AccountScenarioSetup(accountType);
+        var setup = new AccountScenarioSetup(accountType);
         new FundConversionValidator().Validate(AddFundConversion(setup, false), GetExpectedState(setup, false));
         new FundConversionValidator().Validate(AddFundConversion(setup, true), GetExpectedState(setup, true));
         new AccountBalanceByEventValidator().Validate(

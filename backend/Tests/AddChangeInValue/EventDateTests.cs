@@ -18,7 +18,7 @@ public class EventDateTests
     [ClassData(typeof(AddBalanceEventDateScenarios))]
     public void RunTest(DateOnly eventDate)
     {
-        using var setup = new AddBalanceEventDateScenarioSetup(eventDate);
+        var setup = new AddBalanceEventDateScenarioSetup(eventDate);
         if (!AddBalanceEventDateScenarios.IsValid(eventDate))
         {
             Assert.Throws<InvalidOperationException>(() => AddChangeInValue(setup));

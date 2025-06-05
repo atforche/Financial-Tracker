@@ -20,7 +20,7 @@ public class AccountTypeTests
     [ClassData(typeof(AccountTypeScenarios))]
     public void RunTest(AccountTypeScenario scenario)
     {
-        using var setup = new AccountTypeScenarioSetup(scenario);
+        var setup = new AccountTypeScenarioSetup(scenario);
         if (!AccountTypeScenarios.IsValid(scenario))
         {
             Assert.Throws<InvalidOperationException>(() => PostTransaction(setup, scenario));
