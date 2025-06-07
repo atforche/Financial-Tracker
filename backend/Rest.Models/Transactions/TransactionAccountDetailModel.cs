@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Domain.BalanceEvents;
 using Domain.Transactions;
 
 namespace Rest.Models.Transactions;
@@ -9,7 +8,7 @@ namespace Rest.Models.Transactions;
 /// </summary>
 public class TransactionAccountDetailModel
 {
-    /// <inheritdoc cref="IBalanceEvent.AccountId"/>
+    /// <inheritdoc cref="TransactionBalanceEvent.AccountId"/>
     public Guid AccountId { get; init; }
 
     /// <summary>

@@ -24,7 +24,9 @@ public class FundConversion : Entity<FundConversionId>, IBalanceEvent
     /// <inheritdoc/>
     public int EventSequence { get; private set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Account ID for this Fund Conversion
+    /// </summary>
     public AccountId AccountId { get; private set; }
 
     /// <summary>
@@ -41,6 +43,9 @@ public class FundConversion : Entity<FundConversionId>, IBalanceEvent
     /// Amount for this Fund Conversion
     /// </summary>
     public decimal Amount { get; private set; }
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<AccountId> GetAccountIds() => [AccountId];
 
     /// <inheritdoc/>
     public AccountBalance ApplyEventToBalance(AccountBalance currentBalance) => ApplyEventPrivate(currentBalance, false);

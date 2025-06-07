@@ -54,6 +54,11 @@ public record CreateTransactionBalanceEventRequest : CreateBalanceEventRequest
     public required Transaction Transaction { get; init; }
 
     /// <summary>
+    /// Account ID for the Transaction Balance Event
+    /// </summary>
+    public required AccountId AccountId { get; init; }
+
+    /// <summary>
     /// Event Type for the Transaction Balance Event
     /// </summary>
     public required TransactionBalanceEventType EventType { get; init; }
@@ -62,4 +67,7 @@ public record CreateTransactionBalanceEventRequest : CreateBalanceEventRequest
     /// Account Type for the Transaction Balance Event
     /// </summary>
     public required TransactionAccountType AccountType { get; init; }
+
+    /// <inheritdoc/>
+    public override IReadOnlyCollection<AccountId> GetAccountIds() => [AccountId];
 }

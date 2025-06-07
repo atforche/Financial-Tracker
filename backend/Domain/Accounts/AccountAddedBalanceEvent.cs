@@ -27,13 +27,13 @@ public class AccountAddedBalanceEvent : Entity<AccountAddedBalanceEventId>, IBal
     /// <inheritdoc/>
     public int EventSequence { get; private set; }
 
-    /// <inheritdoc/>
-    public AccountId AccountId => Account.Id;
-
     /// <summary>
     /// Fund Amounts for this Account Added Balance Event
     /// </summary>
     public IReadOnlyCollection<FundAmount> FundAmounts { get; private set; }
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<AccountId> GetAccountIds() => [Account.Id];
 
     /// <inheritdoc/>
     public AccountBalance ApplyEventToBalance(AccountBalance currentBalance) => new(Account, FundAmounts, []);

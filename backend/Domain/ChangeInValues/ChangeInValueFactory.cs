@@ -46,7 +46,15 @@ public class ChangeInValueFactory(
 public record CreateChangeInValueRequest : CreateBalanceEventRequest
 {
     /// <summary>
+    /// Account ID for the Change in Value
+    /// </summary>
+    public required AccountId AccountId { get; init; }
+
+    /// <summary>
     /// Fund Amount for the Change in Value
     /// </summary>
     public required FundAmount FundAmount { get; init; }
+
+    /// <inheritdoc/>
+    public override IReadOnlyCollection<AccountId> GetAccountIds() => [AccountId];
 }

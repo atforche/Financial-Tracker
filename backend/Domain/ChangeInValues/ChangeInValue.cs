@@ -24,13 +24,18 @@ public class ChangeInValue : Entity<ChangeInValueId>, IBalanceEvent
     /// <inheritdoc/>
     public int EventSequence { get; private set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Account ID for this Change In Value
+    /// </summary>
     public AccountId AccountId { get; private set; }
 
     /// <summary>
     /// Fund Amount for this Change In Value
     /// </summary>
     public FundAmount FundAmount { get; private set; }
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<AccountId> GetAccountIds() => [AccountId];
 
     /// <inheritdoc/>
     public AccountBalance ApplyEventToBalance(AccountBalance currentBalance) =>

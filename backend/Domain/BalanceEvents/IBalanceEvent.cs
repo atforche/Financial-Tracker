@@ -24,9 +24,9 @@ public interface IBalanceEvent
     int EventSequence { get; }
 
     /// <summary>
-    /// Account ID for this Balance Event
+    /// Gets the Account IDs associated with this Balance Event
     /// </summary>
-    AccountId AccountId { get; }
+    IReadOnlyCollection<AccountId> GetAccountIds();
 
     /// <summary>
     /// Applies this Balance Event to the current balance of an Account

@@ -29,7 +29,9 @@ public sealed class TransactionBalanceEvent : Entity<TransactionBalanceEventId>,
     /// <inheritdoc/>
     public int EventSequence { get; internal set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Account ID for this Transaction Balance Event
+    /// </summary>
     public AccountId AccountId { get; private set; }
 
     /// <summary>
@@ -41,6 +43,9 @@ public sealed class TransactionBalanceEvent : Entity<TransactionBalanceEventId>,
     /// Account Type for this Transaction Balance Event
     /// </summary>
     public TransactionAccountType AccountType { get; private set; }
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<AccountId> GetAccountIds() => [AccountId];
 
     /// <inheritdoc/>
     public AccountBalance ApplyEventToBalance(AccountBalance currentBalance) =>

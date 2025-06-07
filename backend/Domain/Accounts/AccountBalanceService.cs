@@ -228,7 +228,7 @@ public class AccountBalanceService(
     private IEnumerable<IBalanceEvent> GetAllBalanceEventsForAccountInDateRange(AccountId accountId, DateRange dateRange) =>
         balanceEventRepository
             .FindAllByDateRange(dateRange)
-            .Where(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate) && balanceEvent.AccountId == accountId)
+            .Where(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate) && balanceEvent.GetAccountIds().Contains(accountId))
             .Order(new BalanceEventComparer());
 
     /// <summary>
@@ -241,6 +241,6 @@ public class AccountBalanceService(
         AccountId accountId,
         AccountingPeriodId accountingPeriodId) =>
         balanceEventRepository.FindAllByAccountingPeriod(accountingPeriodId)
-            .Where(balanceEvent => balanceEvent.AccountId == accountId)
+            .Where(balanceEvent => balanceEvent.GetAccountIds().Contains(accountId))
             .Order(new BalanceEventComparer());
 }
