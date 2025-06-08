@@ -43,29 +43,43 @@ public class AccountBalance
     /// <param name="account">Account for this Account Balance</param>
     /// <param name="fundBalances">Fund Balances for this Account Balance</param>
     /// <param name="pendingFundBalanceChanges">Pending Fund Balance Changes for this Account Balance</param>
-    public AccountBalance(Account account, IEnumerable<FundAmount> fundBalances, IEnumerable<FundAmount> pendingFundBalanceChanges)
+    internal AccountBalance(Account account, IEnumerable<FundAmount> fundBalances, IEnumerable<FundAmount> pendingFundBalanceChanges)
     {
         Account = account;
         FundBalances = fundBalances
-            .Where(amount => amount.Amount != 0.00m)
             .GroupBy(fundAmount => fundAmount.FundId)
             .Select(group => new FundAmount
             {
                 FundId = group.Key,
                 Amount = group.Sum(fundAmount => fundAmount.Amount)
             })
+            .Where(amount => amount.Amount != 0.00m)
             .ToList();
         PendingFundBalanceChanges = pendingFundBalanceChanges
-            .Where(amount => amount.Amount != 0.00m)
             .GroupBy(fundAmount => fundAmount.FundId)
             .Select(group => new FundAmount
             {
                 FundId = group.Key,
                 Amount = group.Sum(fundAmount => fundAmount.Amount)
             })
+            .Where(amount => amount.Amount != 0.00m)
             .ToList();
         Validate();
     }
+
+    /// <summary>
+    /// Adds the provided Fund Amount to the current Account Balance
+    /// </summary>
+    /// <param name="fundAmount">Fund Amount to add to the current balance</param>
+    /// <returns>The new Account Balance</returns>
+    internal AccountBalance AddNewAmount(FundAmount fundAmount) => new(Account, FundBalances.Concat([fundAmount]), PendingFundBalanceChanges);
+
+    /// <summary>
+    /// Adds the provided Fund Amount to the current pending Account Balance
+    /// </summary>
+    /// <param name="fundAmount">Fund Amount to add to the current pending balance</param>
+    /// <returns>The new Account Balance</returns>
+    internal AccountBalance AddNewPendingAmount(FundAmount fundAmount) => new(Account, FundBalances, PendingFundBalanceChanges.Concat([fundAmount]));
 
     /// <summary>
     /// Validates this Account Balance

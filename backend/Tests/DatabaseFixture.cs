@@ -44,7 +44,7 @@ public class DatabaseFixture : IDisposable
         {
             return;
         }
-        if (disposing)
+        if (disposing && ShouldUseDatabase)
         {
             Directory.Delete(DatabaseDirectory, true);
         }

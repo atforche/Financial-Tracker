@@ -15,4 +15,13 @@ public class FundAmount
     /// Amount for this Fund Amount
     /// </summary>
     public required decimal Amount { get; init; }
+
+    /// <summary>
+    /// Builds a new Fund Amount with the sign of the Amount field flipped 
+    /// </summary>
+    internal FundAmount GetWithReversedAmount() => new()
+    {
+        FundId = FundId,
+        Amount = Amount * -1
+    };
 }

@@ -168,10 +168,7 @@ public abstract class BalanceEventFactory<TBalanceEvent, TRequest>(
         foreach (AccountId account in newBalanceEvent.GetAccountIds())
         {
             AccountBalance currentBalance = GetAccountBalanceBeforeEventWasAdded(newBalanceEvent, account);
-            if (!newBalanceEvent.CanBeAppliedToBalance(currentBalance))
-            {
-                exception = new InvalidOperationException();
-            }
+            _ = newBalanceEvent.IsValidToApplyToBalance(currentBalance, out exception);
         }
         return exception == null;
     }
@@ -191,7 +188,7 @@ public abstract class BalanceEventFactory<TBalanceEvent, TRequest>(
         foreach (AccountId account in newBalanceEvent.GetAccountIds())
         {
             AccountBalance runningBalance = GetAccountBalanceBeforeEventWasAdded(newBalanceEvent, account);
-            runningBalance = newBalanceEvent.ApplyEventToBalance(runningBalance);
+            runningBalance = newBalanceEvent.ApplyEventToBalance(runningBalance, ApplicationDirection.Standard);
             var futureBalanceEvents = balanceEventRepository
                 .FindAllByDateRange(new DateRange(newBalanceEvent.EventDate, DateOnly.MaxValue))
                 .Where(balanceEvent => balanceEvent.IsLaterThan(newBalanceEvent))
@@ -199,11 +196,11 @@ public abstract class BalanceEventFactory<TBalanceEvent, TRequest>(
                 .ToList();
             foreach (IBalanceEvent balanceEvent in futureBalanceEvents)
             {
-                if (!balanceEvent.CanBeAppliedToBalance(runningBalance))
+                if (!balanceEvent.IsValidToApplyToBalance(runningBalance, out exception))
                 {
-                    exception ??= new InvalidOperationException();
+                    return false;
                 }
-                runningBalance = balanceEvent.ApplyEventToBalance(runningBalance);
+                runningBalance = balanceEvent.ApplyEventToBalance(runningBalance, ApplicationDirection.Standard);
             }
         }
         return exception == null;
@@ -247,17 +244,16 @@ public abstract class BalanceEventFactory<TBalanceEvent, TRequest>(
                 // Ensure all the Balance Events can be applied to the Accounting Period balance
                 foreach (IBalanceEvent balanceEvent in balanceEvents)
                 {
-                    if (!balanceEvent.CanBeAppliedToBalance(runningBalance))
+                    if (!balanceEvent.IsValidToApplyToBalance(runningBalance, out exception))
                     {
-                        exception ??= new InvalidOperationException();
+                        return false;
                     }
-                    runningBalance = balanceEvent.ApplyEventToBalance(runningBalance);
+                    runningBalance = balanceEvent.ApplyEventToBalance(runningBalance, ApplicationDirection.Standard);
                 }
                 // Move on to the next Accounting Period
                 accountingPeriod = accountingPeriodRepository.FindNextAccountingPeriod(accountingPeriod.Id);
             }
         }
-
         return exception == null;
     }
 
@@ -282,7 +278,7 @@ public abstract class BalanceEventFactory<TBalanceEvent, TRequest>(
             .ToList();
         foreach (IBalanceEvent balanceEvent in balanceEvents)
         {
-            accountBalance = balanceEvent.ReverseEventFromBalance(accountBalance);
+            accountBalance = balanceEvent.ApplyEventToBalance(accountBalance, ApplicationDirection.Reverse);
         }
         return accountBalance;
     }

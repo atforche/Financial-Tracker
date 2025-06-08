@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.BalanceEvents;
 using Domain.Funds;
@@ -36,13 +37,17 @@ public class AccountAddedBalanceEvent : Entity<AccountAddedBalanceEventId>, IBal
     public IReadOnlyCollection<AccountId> GetAccountIds() => [Account.Id];
 
     /// <inheritdoc/>
-    public AccountBalance ApplyEventToBalance(AccountBalance currentBalance) => new(Account, FundAmounts, []);
+    public bool IsValidToApplyToBalance(AccountBalance currentBalance, [NotNullWhen(false)] out Exception? exception)
+    {
+        exception = null;
+        return true;
+    }
 
     /// <inheritdoc/>
-    public AccountBalance ReverseEventFromBalance(AccountBalance currentBalance) => new(Account, [], []);
-
-    /// <inheritdoc/>
-    public bool CanBeAppliedToBalance(AccountBalance currentBalance) => true;
+    public AccountBalance ApplyEventToBalance(AccountBalance currentBalance, ApplicationDirection direction) =>
+        direction == ApplicationDirection.Standard
+            ? new(Account, FundAmounts, [])
+            : new(Account, [], []);
 
     /// <summary>
     /// Constructs a new instance of this class
