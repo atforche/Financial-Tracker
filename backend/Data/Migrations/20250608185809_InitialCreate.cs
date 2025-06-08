@@ -184,7 +184,8 @@ namespace Data.Migrations
                     Amount = table.Column<decimal>(type: "TEXT", nullable: false),
                     AccountAddedBalanceEventId = table.Column<Guid>(type: "TEXT", nullable: true),
                     AccountBalanceCheckpointId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    TransactionId = table.Column<Guid>(type: "TEXT", nullable: true)
+                    CreditTransactionId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    DebitTransactionId = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -206,8 +207,13 @@ namespace Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_FundAmount_Transactions_TransactionId",
-                        column: x => x.TransactionId,
+                        name: "FK_FundAmount_Transactions_CreditTransactionId",
+                        column: x => x.CreditTransactionId,
+                        principalTable: "Transactions",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_FundAmount_Transactions_DebitTransactionId",
+                        column: x => x.DebitTransactionId,
                         principalTable: "Transactions",
                         principalColumn: "Id");
                 });
@@ -345,14 +351,19 @@ namespace Data.Migrations
                 column: "AccountBalanceCheckpointId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_FundAmount_CreditTransactionId",
+                table: "FundAmount",
+                column: "CreditTransactionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FundAmount_DebitTransactionId",
+                table: "FundAmount",
+                column: "DebitTransactionId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_FundAmount_FundId",
                 table: "FundAmount",
                 column: "FundId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_FundAmount_TransactionId",
-                table: "FundAmount",
-                column: "TransactionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FundConversions_AccountId",

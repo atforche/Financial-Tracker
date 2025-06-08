@@ -55,17 +55,20 @@ public class MultipleBalanceEventTests
     /// <returns>The Transaction that was added for this test case</returns>
     private static Transaction AddTransaction(MultipleBalanceEventScenarioSetup setup, AccountType accountType)
     {
+        List<FundAmount> fundAmounts =
+        [
+            new FundAmount
+            {
+                FundId = setup.Fund.Id,
+                Amount = 500.00m,
+            }
+        ];
         Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
             accountType == AccountType.Standard ? setup.Account.Id : null,
+            accountType == AccountType.Standard ? fundAmounts : null,
             accountType == AccountType.Debt ? setup.DebtAccount.Id : null,
-            [
-                new FundAmount
-                {
-                    FundId = setup.Fund.Id,
-                    Amount = 500.00m,
-                }
-            ]);
+            accountType == AccountType.Debt ? fundAmounts : null);
         setup.GetService<ITransactionRepository>().Add(transaction);
         setup.GetService<TestUnitOfWork>().SaveChanges();
         return transaction;
@@ -93,18 +96,22 @@ public class MultipleBalanceEventTests
             expectedEventSequence++;
         }
 
+        List<FundAmountState> fundAmounts =
+        [
+            new FundAmountState
+            {
+                FundId = setup.Fund.Id,
+                Amount = 500.00m,
+            }
+        ];
         return new TransactionState
         {
             AccountingPeriodId = setup.AccountingPeriod.Id,
             Date = new DateOnly(2025, 1, 15),
-            FundAmounts =
-            [
-                new FundAmountState
-                {
-                    FundId = setup.Fund.Id,
-                    Amount = 500.00m,
-                }
-            ],
+            DebitAccountId = accountType == AccountType.Standard ? setup.Account.Id : null,
+            DebitFundAmounts = accountType == AccountType.Standard ? fundAmounts : null,
+            CreditAccountId = accountType == AccountType.Debt ? setup.DebtAccount.Id : null,
+            CreditFundAmounts = accountType == AccountType.Debt ? fundAmounts : null,
             TransactionBalanceEvents =
             [
                 new TransactionBalanceEventState

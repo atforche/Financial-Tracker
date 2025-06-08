@@ -51,22 +51,25 @@ public class AccountTests
     /// <returns>The Transaction that was added for this test case</returns>
     private static Transaction AddTransaction(AccountScenarioSetup setup)
     {
+        List<FundAmount> fundAmounts =
+        [
+            new FundAmount()
+            {
+                FundId = setup.Fund.Id,
+                Amount = 25.00m,
+            },
+            new FundAmount
+            {
+                FundId = setup.OtherFund.Id,
+                Amount = 50.00m
+            }
+        ];
         Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
             setup.DebitAccount?.Id,
+            setup.DebitAccount != null ? fundAmounts : null,
             setup.CreditAccount?.Id,
-            [
-                new FundAmount()
-                {
-                    FundId = setup.Fund.Id,
-                    Amount = 25.00m,
-                },
-                new FundAmount
-                {
-                    FundId = setup.OtherFund.Id,
-                    Amount = 50.00m
-                }
-            ]);
+            setup.CreditAccount != null ? fundAmounts : null);
         setup.GetService<ITransactionRepository>().Add(transaction);
         setup.GetService<TestUnitOfWork>().SaveChanges();
         return transaction;
@@ -77,26 +80,32 @@ public class AccountTests
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static TransactionState GetExpectedState(AccountScenarioSetup setup) =>
-        new()
+    private static TransactionState GetExpectedState(AccountScenarioSetup setup)
+    {
+        List<FundAmountState> fundAmounts =
+        [
+            new FundAmountState
+            {
+                FundId = setup.Fund.Id,
+                Amount = 25.00m,
+            },
+            new FundAmountState
+            {
+                FundId = setup.OtherFund.Id,
+                Amount = 50.00m,
+            }
+        ];
+        return new()
         {
             AccountingPeriodId = setup.AccountingPeriod.Id,
             Date = new DateOnly(2025, 1, 15),
-            FundAmounts =
-            [
-                new FundAmountState
-                {
-                    FundId = setup.Fund.Id,
-                    Amount = 25.00m,
-                },
-                new FundAmountState
-                {
-                    FundId = setup.OtherFund.Id,
-                    Amount = 50.00m,
-                }
-            ],
+            DebitAccountId = setup.DebitAccount?.Id,
+            DebitFundAmounts = setup.DebitAccount != null ? fundAmounts : [],
+            CreditAccountId = setup.CreditAccount?.Id,
+            CreditFundAmounts = setup.CreditAccount != null ? fundAmounts : [],
             TransactionBalanceEvents = [GetExpectedBalanceEvent(setup)],
         };
+    }
 
     /// <summary>
     /// Gets the expected Transaction Balance Event for this test case

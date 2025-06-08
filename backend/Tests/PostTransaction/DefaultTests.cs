@@ -21,14 +21,15 @@ public class DefaultTests
         Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
             setup.Account.Id,
-            null,
             [
                 new FundAmount
                 {
                     FundId = setup.Fund.Id,
                     Amount = 250.00m,
                 }
-            ]);
+            ],
+            null,
+            null);
         setup.GetService<ITransactionRepository>().Add(transaction);
         setup.GetService<TestUnitOfWork>().SaveChanges();
 
@@ -38,7 +39,8 @@ public class DefaultTests
             {
                 AccountingPeriodId = setup.AccountingPeriod.Id,
                 Date = new DateOnly(2025, 1, 15),
-                FundAmounts =
+                DebitAccountId = setup.Account.Id,
+                DebitFundAmounts =
                 [
                     new FundAmountState
                     {
@@ -73,7 +75,7 @@ public class DefaultTests
     /// <param name="transaction">Transaction to be posted</param>
     private static void PostTransaction(DefaultScenarioSetup setup, Transaction transaction)
     {
-        setup.GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, new DateOnly(2025, 1, 15));
+        setup.GetService<PostTransactionAction>().Run(transaction, setup.Account.Id, new DateOnly(2025, 1, 15));
         setup.GetService<TestUnitOfWork>().SaveChanges();
     }
 }

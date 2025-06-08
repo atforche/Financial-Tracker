@@ -54,12 +54,13 @@ public class FundTest
         setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
             setup.Account.Id,
-            null,
             setup.Funds.Select(fund => new FundAmount
             {
                 FundId = fund.Id,
                 Amount = 25.00m
-            }).ToList());
+            }).ToList(),
+            null,
+            null);
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -71,7 +72,8 @@ public class FundTest
         {
             AccountingPeriodId = setup.AccountingPeriod.Id,
             Date = new DateOnly(2025, 1, 15),
-            FundAmounts = setup.Funds.Select(fund => new FundAmountState
+            DebitAccountId = setup.Account.Id,
+            DebitFundAmounts = setup.Funds.Select(fund => new FundAmountState
             {
                 FundId = fund.Id,
                 Amount = 25.00m

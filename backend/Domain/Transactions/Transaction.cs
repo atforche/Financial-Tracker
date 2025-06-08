@@ -16,7 +16,8 @@ namespace Domain.Transactions;
 /// </remarks>
 public class Transaction : Entity<TransactionId>
 {
-    private readonly List<FundAmount> _fundAmounts;
+    private readonly List<FundAmount>? _debitFundAmounts;
+    private readonly List<FundAmount>? _creditFundAmounts;
     private readonly List<TransactionBalanceEvent> _transactionBalanceEvents;
 
     /// <summary>
@@ -35,14 +36,19 @@ public class Transaction : Entity<TransactionId>
     public AccountId? DebitAccountId { get; private set; }
 
     /// <summary>
+    /// Debit Fund Amounts for this Transaction
+    /// </summary>
+    public IReadOnlyCollection<FundAmount>? DebitFundAmounts => _debitFundAmounts;
+
+    /// <summary>
     /// Credit Account ID for this Transaction
     /// </summary>
     public AccountId? CreditAccountId { get; private set; }
 
     /// <summary>
-    /// List of Fund Amounts for this Transaction
+    /// Credit Fund Amounts for this Transaction
     /// </summary>
-    public IReadOnlyCollection<FundAmount> FundAmounts => _fundAmounts;
+    public IReadOnlyCollection<FundAmount>? CreditFundAmounts => _creditFundAmounts;
 
     /// <summary>
     /// List of Balance Events for this Transaction
@@ -55,20 +61,23 @@ public class Transaction : Entity<TransactionId>
     /// <param name="accountingPeriodId">Accounting Period ID for this Transaction</param>
     /// <param name="eventDate">Date for this Transaction</param>
     /// <param name="debitAccountId">Debit Account ID for this Transaction</param>
+    /// <param name="debitFundAmounts">Debit Fund Amounts for this Transaction</param>
     /// <param name="creditAccountId">Credit Account ID for this Transaction</param>
-    /// <param name="fundAmounts">Fund Amounts for this Transaction</param>
+    /// <param name="creditFundAmounts">Credit Fund Amounts for this Transaction</param>
     internal Transaction(AccountingPeriodId accountingPeriodId,
         DateOnly eventDate,
         AccountId? debitAccountId,
+        IEnumerable<FundAmount>? debitFundAmounts,
         AccountId? creditAccountId,
-        IEnumerable<FundAmount> fundAmounts)
+        IEnumerable<FundAmount>? creditFundAmounts)
         : base(new TransactionId(Guid.NewGuid()))
     {
         AccountingPeriodId = accountingPeriodId;
         Date = eventDate;
         DebitAccountId = debitAccountId;
+        _debitFundAmounts = debitFundAmounts?.ToList();
         CreditAccountId = creditAccountId;
-        _fundAmounts = fundAmounts.ToList();
+        _creditFundAmounts = creditFundAmounts?.ToList();
         _transactionBalanceEvents = [];
     }
 
@@ -85,7 +94,8 @@ public class Transaction : Entity<TransactionId>
     private Transaction() : base()
     {
         AccountingPeriodId = null!;
-        _fundAmounts = [];
+        _debitFundAmounts = null!;
+        _creditFundAmounts = null!;
         _transactionBalanceEvents = [];
     }
 }

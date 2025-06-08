@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250608134520_InitialCreate")]
+    [Migration("20250608185809_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -216,10 +216,13 @@ namespace Data.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("FundId")
+                    b.Property<Guid?>("CreditTransactionId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("TransactionId")
+                    b.Property<Guid?>("DebitTransactionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("FundId")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -228,9 +231,11 @@ namespace Data.Migrations
 
                     b.HasIndex("AccountBalanceCheckpointId");
 
-                    b.HasIndex("FundId");
+                    b.HasIndex("CreditTransactionId");
 
-                    b.HasIndex("TransactionId");
+                    b.HasIndex("DebitTransactionId");
+
+                    b.HasIndex("FundId");
 
                     b.ToTable("FundAmount");
                 });
@@ -403,15 +408,19 @@ namespace Data.Migrations
                         .WithMany("FundBalances")
                         .HasForeignKey("AccountBalanceCheckpointId");
 
+                    b.HasOne("Domain.Transactions.Transaction", null)
+                        .WithMany("CreditFundAmounts")
+                        .HasForeignKey("CreditTransactionId");
+
+                    b.HasOne("Domain.Transactions.Transaction", null)
+                        .WithMany("DebitFundAmounts")
+                        .HasForeignKey("DebitTransactionId");
+
                     b.HasOne("Domain.Funds.Fund", null)
                         .WithMany()
                         .HasForeignKey("FundId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Domain.Transactions.Transaction", null)
-                        .WithMany("FundAmounts")
-                        .HasForeignKey("TransactionId");
                 });
 
             modelBuilder.Entity("Domain.Transactions.Transaction", b =>
@@ -473,7 +482,9 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Domain.Transactions.Transaction", b =>
                 {
-                    b.Navigation("FundAmounts");
+                    b.Navigation("CreditFundAmounts");
+
+                    b.Navigation("DebitFundAmounts");
 
                     b.Navigation("TransactionBalanceEvents");
                 });

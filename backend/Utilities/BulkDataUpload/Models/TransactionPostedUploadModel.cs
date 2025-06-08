@@ -1,4 +1,3 @@
-using Domain.Transactions;
 using Rest.Models.Transactions;
 
 namespace Utilities.BulkDataUpload.Models;
@@ -19,9 +18,9 @@ internal sealed class TransactionPostedUploadModel : BalanceEventUploadModel
     public required DateOnly EventDate { get; init; }
 
     /// <summary>
-    /// Account Type for this Transaction Posted Balance Event
+    /// Account ID for this Transaction Posted Balance Event
     /// </summary>
-    public required TransactionAccountType AccountType { get; init; }
+    public required Guid AccountId { get; init; }
 
     /// <summary>
     /// Gets the ID of the Transaction to post
@@ -37,7 +36,7 @@ internal sealed class TransactionPostedUploadModel : BalanceEventUploadModel
     /// <returns>A Post Transaction Model corresponding to this Post Transaction Upload Model</returns>
     public PostTransactionModel GetAsPostTransactionModel() => new()
     {
-        AccountToPost = AccountType,
+        AccountId = AccountId,
         PostedStatementDate = EventDate,
     };
 }

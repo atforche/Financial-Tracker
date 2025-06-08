@@ -22,14 +22,15 @@ public class DefaultTests
         Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
             setup.Account.Id,
-            null,
             [
                 new FundAmount
                 {
                     FundId = setup.Fund.Id,
                     Amount = 250.00m
                 }
-            ]);
+            ],
+            null,
+            null);
         setup.GetService<ITransactionRepository>().Add(transaction);
         setup.GetService<TestUnitOfWork>().SaveChanges();
 

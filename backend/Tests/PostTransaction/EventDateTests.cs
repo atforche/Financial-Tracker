@@ -37,17 +37,20 @@ public class EventDateTests
     /// <returns>The Transaction that was added for this test case</returns>
     private static Transaction AddTransaction(AddBalanceEventDateScenarioSetup setup)
     {
+        List<FundAmount> fundAmounts =
+        [
+            new FundAmount()
+            {
+                FundId = setup.Fund.Id,
+                Amount = 25.00m,
+            }
+        ];
         Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.CurrentAccountingPeriod.Id,
             new DateOnly(2025, 1, 1),
             setup.Account.Id,
+            fundAmounts,
             setup.OtherAccount.Id,
-            [
-                new FundAmount()
-                {
-                    FundId = setup.Fund.Id,
-                    Amount = 25.00m,
-                }
-            ]);
+            fundAmounts);
         setup.GetService<ITransactionRepository>().Add(transaction);
         setup.GetService<TestUnitOfWork>().SaveChanges();
         return transaction;
@@ -60,10 +63,10 @@ public class EventDateTests
     /// <param name="transaction">Transaction to be posted</param>
     private static void PostTransaction(AddBalanceEventDateScenarioSetup setup, Transaction transaction)
     {
-        setup.GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, setup.EventDate);
+        setup.GetService<PostTransactionAction>().Run(transaction, setup.Account.Id, setup.EventDate);
         setup.GetService<TestUnitOfWork>().SaveChanges();
 
-        setup.GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Credit, setup.EventDate);
+        setup.GetService<PostTransactionAction>().Run(transaction, setup.OtherAccount.Id, setup.EventDate);
         setup.GetService<TestUnitOfWork>().SaveChanges();
     }
 
@@ -116,18 +119,22 @@ public class EventDateTests
                 ]
             });
         }
+        List<FundAmountState> fundAmounts =
+        [
+            new FundAmountState
+            {
+                FundId = setup.Fund.Id,
+                Amount = 25.00m,
+            }
+        ];
         return new()
         {
             AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
             Date = new DateOnly(2025, 1, 1),
-            FundAmounts =
-            [
-                new FundAmountState
-                {
-                    FundId = setup.Fund.Id,
-                    Amount = 25.00m,
-                }
-            ],
+            DebitAccountId = setup.Account.Id,
+            DebitFundAmounts = fundAmounts,
+            CreditAccountId = setup.OtherAccount.Id,
+            CreditFundAmounts = fundAmounts,
             TransactionBalanceEvents = expectedBalanceEvents
         };
     }

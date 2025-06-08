@@ -78,14 +78,15 @@ internal sealed class AccountingPeriodScenarioSetup : ScenarioSetup
             Transaction transaction = GetService<TransactionFactory>().Create(secondAccountingPeriod.Id,
                 new DateOnly(2025, 1, 15),
                 Account.Id,
-                null,
                 [
                     new FundAmount
                     {
                         FundId = Fund.Id,
                         Amount = 500.00m
                     }
-                ]);
+                ],
+                null,
+                null);
             GetService<ITransactionRepository>().Add(transaction);
             GetService<TestUnitOfWork>().SaveChanges();
         }

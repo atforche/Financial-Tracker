@@ -103,111 +103,132 @@ internal sealed class MultipleBalanceEventScenarioSetup : ScenarioSetup
     {
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.MultipleEventsSameDay)
         {
+            List<FundAmount> fundAmounts =
+            [
+                new FundAmount
+                {
+                    FundId = Fund.Id,
+                    Amount = 500.00m
+                }
+            ];
             Transaction transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
                 new DateOnly(2025, 1, 15),
                 Account.Id,
+                fundAmounts,
                 DebtAccount.Id,
-                [
-                    new FundAmount
-                    {
-                        FundId = Fund.Id,
-                        Amount = 500.00m
-                    }
-                ]);
+                fundAmounts);
             GetService<ITransactionRepository>().Add(transaction);
             GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesFundBalanceNegative)
         {
+            List<FundAmount> fundAmounts =
+            [
+                new FundAmount
+                {
+                    FundId = Fund.Id,
+                    Amount = 1250.00m
+                }
+            ];
             Transaction transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
                 new DateOnly(2025, 1, 10),
                 Account.Id,
+                fundAmounts,
                 DebtAccount.Id,
-                [
-                    new FundAmount
-                    {
-                        FundId = Fund.Id,
-                        Amount = 1250.00m
-                    }
-                ]);
+                fundAmounts);
             GetService<ITransactionRepository>().Add(transaction);
             GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesAccountBalanceToZero)
         {
+            List<FundAmount> fundAmounts =
+            [
+                new FundAmount
+                {
+                    FundId = Fund.Id,
+                    Amount = 2500.00m
+                }
+            ];
             Transaction transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
                 new DateOnly(2025, 1, 10),
                 Account.Id,
+                fundAmounts,
                 DebtAccount.Id,
-                [
-                    new FundAmount
-                    {
-                        FundId = Fund.Id,
-                        Amount = 2500.00m
-                    }
-                ]);
+                fundAmounts);
             GetService<ITransactionRepository>().Add(transaction);
             GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesAccountBalanceNegative)
         {
+            List<FundAmount> fundAmounts =
+            [
+                new FundAmount
+                {
+                    FundId = Fund.Id,
+                    Amount = 2750.00m
+                }
+            ];
             Transaction transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
                 new DateOnly(2025, 1, 10),
                 Account.Id,
+                fundAmounts,
                 DebtAccount.Id,
-                [
-                    new FundAmount
-                    {
-                        FundId = Fund.Id,
-                        Amount = 2750.00m
-                    }
-                ]);
+                fundAmounts);
             GetService<ITransactionRepository>().Add(transaction);
             GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesFutureEventToMakeAccountBalanceNegative)
         {
+            List<FundAmount> fundAmounts =
+            [
+                new FundAmount
+                {
+                    FundId = Fund.Id,
+                    Amount = 2750.00m
+                }
+            ];
             Transaction transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
                 new DateOnly(2025, 1, 20),
                 Account.Id,
+                fundAmounts,
                 DebtAccount.Id,
-                [
-                    new FundAmount
-                    {
-                        FundId = Fund.Id,
-                        Amount = 2750.00m
-                    }
-                ]);
+                fundAmounts);
             GetService<ITransactionRepository>().Add(transaction);
             GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.ForcesAccountBalancesAtEndOfPeriodToBeNegative)
         {
+            List<FundAmount> fundAmounts =
+            [
+                new FundAmount
+                {
+                    FundId = Fund.Id,
+                    Amount = 2750.00m
+                }
+            ];
             Transaction transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
                 new DateOnly(2025, 1, 10),
                 Account.Id,
+                fundAmounts,
                 DebtAccount.Id,
-                [
-                    new FundAmount
-                    {
-                        FundId = Fund.Id,
-                        Amount = 2750.00m
-                    }
-                ]);
+                fundAmounts);
             GetService<ITransactionRepository>().Add(transaction);
             GetService<TestUnitOfWork>().SaveChanges();
 
+            fundAmounts =
+            [
+                new FundAmount
+                {
+                    FundId = Fund.Id,
+                    Amount = 2750.00m
+                }
+            ];
             transaction = GetService<TransactionFactory>().Create(_futureAccountingPeriod.Id,
                 new DateOnly(2025, 1, 10),
                 DebtAccount.Id,
+                fundAmounts,
                 Account.Id,
-                [
-                    new FundAmount
-                    {
-                        FundId = Fund.Id,
-                        Amount = 2750.00m
-                    }
-                ]);
+                fundAmounts);
             GetService<ITransactionRepository>().Add(transaction);
             GetService<TestUnitOfWork>().SaveChanges();
         }

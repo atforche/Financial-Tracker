@@ -76,7 +76,8 @@ public class BalanceEventTests
             {
                 AccountingPeriodId = setup.AccountingPeriod.Id,
                 Date = new DateOnly(2025, 1, 15),
-                FundAmounts =
+                DebitAccountId = setup.Account.Id,
+                DebitFundAmounts =
                 [
                     new FundAmountState
                     {

@@ -87,21 +87,22 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
             Transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
                 new DateOnly(2025, 1, 15),
                 Account.Id,
-                null,
                 [
                     new FundAmount
                     {
                         FundId = Fund.Id,
                         Amount = 250.00m
                     }
-                ]);
+                ],
+                null,
+                null);
             GetService<ITransactionRepository>().Add(Transaction);
             GetService<TestUnitOfWork>().SaveChanges();
         }
         if (scenario is BalanceEventScenario.PostedTransaction)
         {
             GetService<PostTransactionAction>().Run(Transaction ?? throw new InvalidOperationException(),
-                TransactionAccountType.Debit,
+                Account.Id,
                 new DateOnly(2025, 1, 15));
             GetService<TestUnitOfWork>().SaveChanges();
         }

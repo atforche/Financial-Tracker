@@ -15,18 +15,20 @@ public class TransactionModel
     /// <inheritdoc cref="Transaction.Date"/>
     public DateOnly Date { get; init; }
 
-    /// <summary>
-    /// Transaction Account Detail Model for the Account being debited by this Transaction
-    /// </summary>
-    public TransactionAccountDetailModel? DebitDetail { get; init; }
+    /// <inheritdoc cref="Transaction.DebitAccountId"/>
+    public Guid? DebitAccountId { get; init; }
 
-    /// <summary>
-    /// Transaction Account Detail Model for the Account being credited by this Transaction
-    /// </summary>
-    public TransactionAccountDetailModel? CreditDetail { get; init; }
+    /// <inheritdoc cref="Transaction.DebitFundAmounts"/>
+    public ICollection<FundAmountModel>? DebitFundAmounts { get; init; }
 
-    /// <inheritdoc cref="Transaction.FundAmounts"/>
-    public ICollection<FundAmountModel> FundAmounts { get; init; }
+    /// <inheritdoc cref="Transaction.CreditAccountId"/>
+    public Guid? CreditAccountId { get; init; }
+
+    /// <inheritdoc cref="Transaction.CreditFundAmounts"/>
+    public ICollection<FundAmountModel>? CreditFundAmounts { get; init; }
+
+    /// <inheritdoc cref="Transaction.TransactionBalanceEvents"/>
+    public ICollection<TransactionBalanceEventModel> BalanceEvents { get; init; }
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -34,15 +36,19 @@ public class TransactionModel
     [JsonConstructor]
     public TransactionModel(Guid id,
         DateOnly date,
-        TransactionAccountDetailModel? debitDetail,
-        TransactionAccountDetailModel? creditDetail,
-        ICollection<FundAmountModel> fundAmounts)
+        Guid? debitAccountId,
+        ICollection<FundAmountModel>? debitFundAmounts,
+        Guid? creditAccountId,
+        ICollection<FundAmountModel>? creditFundAmounts,
+        ICollection<TransactionBalanceEventModel> balanceEvents)
     {
         Id = id;
         Date = date;
-        DebitDetail = debitDetail;
-        CreditDetail = creditDetail;
-        FundAmounts = fundAmounts;
+        DebitAccountId = debitAccountId;
+        DebitFundAmounts = debitFundAmounts;
+        CreditAccountId = creditAccountId;
+        CreditFundAmounts = creditFundAmounts;
+        BalanceEvents = balanceEvents;
     }
 
     /// <summary>
@@ -53,12 +59,10 @@ public class TransactionModel
     {
         Id = transaction.Id.Value;
         Date = transaction.Date;
-        DebitDetail = transaction.DebitAccountId != null
-            ? new TransactionAccountDetailModel(transaction, TransactionAccountType.Debit)
-            : null;
-        CreditDetail = transaction.CreditAccountId != null
-            ? new TransactionAccountDetailModel(transaction, TransactionAccountType.Credit)
-            : null;
-        FundAmounts = transaction.FundAmounts.Select(fundAmount => new FundAmountModel(fundAmount)).ToList();
+        DebitAccountId = transaction.DebitAccountId?.Value;
+        DebitFundAmounts = transaction.DebitFundAmounts?.Select(fundAmount => new FundAmountModel(fundAmount)).ToList();
+        CreditAccountId = transaction.CreditAccountId?.Value;
+        CreditFundAmounts = transaction.CreditFundAmounts?.Select(fundAmount => new FundAmountModel(fundAmount)).ToList();
+        BalanceEvents = transaction.TransactionBalanceEvents.Select(balanceEvent => new TransactionBalanceEventModel(balanceEvent)).ToList();
     }
 }

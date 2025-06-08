@@ -47,8 +47,13 @@ public sealed class TransactionController(
             accountingPeriodIdFactory.Create(createTransactionModel.AccountingPeriodId),
             createTransactionModel.Date,
             createTransactionModel.DebitAccountId != null ? accountIdFactory.Create(createTransactionModel.DebitAccountId.Value) : null,
+            createTransactionModel.DebitFundAmounts?.Select(entry => new FundAmount
+            {
+                FundId = fundIdFactory.Create(entry.FundId),
+                Amount = entry.Amount,
+            }).ToList(),
             createTransactionModel.CreditAccountId != null ? accountIdFactory.Create(createTransactionModel.CreditAccountId.Value) : null,
-            createTransactionModel.FundAmounts.Select(entry => new FundAmount
+            createTransactionModel.CreditFundAmounts?.Select(entry => new FundAmount
             {
                 FundId = fundIdFactory.Create(entry.FundId),
                 Amount = entry.Amount,
@@ -68,7 +73,7 @@ public sealed class TransactionController(
     public async Task<IActionResult> PostAsync(Guid transactionId, PostTransactionModel postTransactionModel)
     {
         Transaction transaction = transactionRepository.FindById(transactionIdFactory.Create(transactionId));
-        postTransactionAction.Run(transaction, postTransactionModel.AccountToPost, postTransactionModel.PostedStatementDate);
+        postTransactionAction.Run(transaction, accountIdFactory.Create(postTransactionModel.AccountId), postTransactionModel.PostedStatementDate);
         await unitOfWork.SaveChangesAsync();
         return Ok(new TransactionModel(transaction));
     }

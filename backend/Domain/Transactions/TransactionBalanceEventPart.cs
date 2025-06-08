@@ -63,8 +63,7 @@ public sealed class TransactionBalanceEventPart : Entity<TransactionBalanceEvent
             // Transaction Balance Events that are increasing an Account's balance are always valid
             return true;
         }
-        if (Math.Min(currentBalance.Balance, currentBalance.BalanceIncludingPending) -
-                TransactionBalanceEvent.Transaction.FundAmounts.Sum(entry => entry.Amount) < 0)
+        if (Math.Min(currentBalance.Balance, currentBalance.BalanceIncludingPending) - GetTransactionFundAmounts().Sum(entry => entry.Amount) < 0)
         {
             // Cannot apply this Balance Event if it will take the Accounts overall balance negative
             // For simplicity, count pending balance decreases but don't count pending balance increases.
@@ -116,9 +115,18 @@ public sealed class TransactionBalanceEventPart : Entity<TransactionBalanceEvent
             shouldBalanceEventIncreaseAccountBalance = !shouldBalanceEventIncreaseAccountBalance;
         }
         return shouldBalanceEventIncreaseAccountBalance
-            ? TransactionBalanceEvent.Transaction.FundAmounts
-            : TransactionBalanceEvent.Transaction.FundAmounts.Select(fundAmount => fundAmount.GetWithReversedAmount()).ToList();
+            ? GetTransactionFundAmounts()
+            : GetTransactionFundAmounts().Select(fundAmount => fundAmount.GetWithReversedAmount()).ToList();
     }
+
+    /// <summary>
+    /// Gets the Transaction Fund Amounts that are relevant for this Transaction Balance Event Part
+    /// </summary>
+    /// <returns>The Transaction Fund Amounts that are relevant for this Transaction Balance Event Part</returns>
+    private IReadOnlyCollection<FundAmount> GetTransactionFundAmounts() =>
+        Type is TransactionBalanceEventPartType.AddedDebit or TransactionBalanceEventPartType.PostedDebit
+            ? TransactionBalanceEvent.Transaction.DebitFundAmounts ?? throw new InvalidOperationException()
+            : TransactionBalanceEvent.Transaction.CreditFundAmounts ?? throw new InvalidOperationException();
 
     /// <summary>
     /// Validates this Transaction Balance Event Part

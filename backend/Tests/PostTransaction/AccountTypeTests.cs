@@ -27,15 +27,15 @@ public class AccountTypeTests
             return;
         }
         PostTransaction(setup, scenario);
-        new TransactionValidator().Validate(setup.Transaction, GetExpectedState(setup));
-        if (setup.DebitAccount != null)
+        new TransactionValidator().Validate(setup.Transaction, GetExpectedState(setup, scenario));
+        if (scenario is AccountTypeScenario.Debit or AccountTypeScenario.MissingCredit)
         {
             new AccountBalanceByEventValidator().Validate(
                 setup.GetService<AccountBalanceService>()
                     .GetAccountBalancesByEvent(setup.DebitAccount.Id, new DateRange(new DateOnly(2025, 1, 15), new DateOnly(2025, 1, 15))),
                 GetExpectedAccountBalance(setup, setup.DebitAccount));
         }
-        if (setup.CreditAccount != null)
+        else
         {
             new AccountBalanceByEventValidator().Validate(
                 setup.GetService<AccountBalanceService>()
@@ -53,11 +53,11 @@ public class AccountTypeTests
     {
         if (scenario is AccountTypeScenario.Debit or AccountTypeScenario.MissingDebit)
         {
-            setup.GetService<PostTransactionAction>().Run(setup.Transaction, TransactionAccountType.Debit, new DateOnly(2025, 1, 15));
+            setup.GetService<PostTransactionAction>().Run(setup.Transaction, setup.DebitAccount!.Id, new DateOnly(2025, 1, 15));
         }
         else
         {
-            setup.GetService<PostTransactionAction>().Run(setup.Transaction, TransactionAccountType.Credit, new DateOnly(2025, 1, 15));
+            setup.GetService<PostTransactionAction>().Run(setup.Transaction, setup.CreditAccount!.Id, new DateOnly(2025, 1, 15));
         }
         setup.GetService<TestUnitOfWork>().SaveChanges();
     }
@@ -66,46 +66,57 @@ public class AccountTypeTests
     /// Gets the expected state for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
+    /// <param name="scenario">Scenario for this test case</param>
     /// <returns>The expected state for this test case</returns>
-    private static TransactionState GetExpectedState(AccountTypeScenarioSetup setup) =>
-        new()
+    private static TransactionState GetExpectedState(AccountTypeScenarioSetup setup, AccountTypeScenario scenario)
+    {
+        List<FundAmountState> fundAmounts =
+        [
+            new FundAmountState
+            {
+                FundId = setup.Fund.Id,
+                Amount = 500.00m,
+            }
+        ];
+        if (scenario is AccountTypeScenario.Debit or AccountTypeScenario.MissingCredit)
+        {
+            return new()
+            {
+                AccountingPeriodId = setup.AccountingPeriod.Id,
+                Date = new DateOnly(2025, 1, 15),
+                DebitAccountId = setup.DebitAccount.Id,
+                DebitFundAmounts = fundAmounts,
+                TransactionBalanceEvents = GetExpectedBalanceEvents(setup, scenario),
+            };
+        }
+        return new()
         {
             AccountingPeriodId = setup.AccountingPeriod.Id,
             Date = new DateOnly(2025, 1, 15),
-            FundAmounts =
-            [
-                new FundAmountState
-                {
-                    FundId = setup.Fund.Id,
-                    Amount = 500.00m,
-                }
-            ],
-            TransactionBalanceEvents = GetExpectedBalanceEvents(setup),
+            CreditAccountId = setup.CreditAccount.Id,
+            CreditFundAmounts = fundAmounts,
+            TransactionBalanceEvents = GetExpectedBalanceEvents(setup, scenario),
         };
+    }
 
     /// <summary>
     /// Gets the expected Transaction Balance Events for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
+    /// <param name="scenario">Scenario for this test case</param>
     /// <returns>The expected Transaction Balance Events for this test case</returns>
-    private static List<TransactionBalanceEventState> GetExpectedBalanceEvents(AccountTypeScenarioSetup setup)
+    private static List<TransactionBalanceEventState> GetExpectedBalanceEvents(AccountTypeScenarioSetup setup, AccountTypeScenario scenario)
     {
         List<TransactionBalanceEventPartType> expectedBalanceEventParts = [];
 
-        if (setup.DebitAccount != null)
+        if (scenario is AccountTypeScenario.Debit or AccountTypeScenario.MissingCredit)
         {
             expectedBalanceEventParts.Add(TransactionBalanceEventPartType.AddedDebit);
-        }
-        if (setup.CreditAccount != null)
-        {
-            expectedBalanceEventParts.Add(TransactionBalanceEventPartType.AddedCredit);
-        }
-        if (setup.DebitAccount != null)
-        {
             expectedBalanceEventParts.Add(TransactionBalanceEventPartType.PostedDebit);
         }
-        if (setup.CreditAccount != null)
+        else
         {
+            expectedBalanceEventParts.Add(TransactionBalanceEventPartType.AddedCredit);
             expectedBalanceEventParts.Add(TransactionBalanceEventPartType.PostedCredit);
         }
         return

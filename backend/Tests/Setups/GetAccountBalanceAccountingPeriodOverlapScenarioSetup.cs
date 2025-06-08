@@ -74,37 +74,39 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
         Transaction transaction = GetService<TransactionFactory>().Create(CurrentAccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
             Account.Id,
-            null,
             [
                 new FundAmount
                 {
                     FundId = Fund.Id,
                     Amount = 250.00m
                 }
-            ]);
+            ],
+            null,
+            null);
         GetService<ITransactionRepository>().Add(transaction);
         GetService<TestUnitOfWork>().SaveChanges();
 
-        GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, transaction.Date);
+        GetService<PostTransactionAction>().Run(transaction, Account.Id, transaction.Date);
         GetService<TestUnitOfWork>().SaveChanges();
 
         Transaction otherPeriodTransaction = GetService<TransactionFactory>().Create(
             accountingPeriodType == AccountingPeriodType.Past ? PastAccountingPeriod.Id : FutureAccountingPeriod.Id,
             eventDate,
             Account.Id,
-            null,
             [
                 new FundAmount
                 {
                     FundId = Fund.Id,
                     Amount = 500.00m
                 }
-            ]
+            ],
+            null,
+            null
         );
         GetService<ITransactionRepository>().Add(otherPeriodTransaction);
         GetService<TestUnitOfWork>().SaveChanges();
 
-        GetService<PostTransactionAction>().Run(otherPeriodTransaction, TransactionAccountType.Debit, otherPeriodTransaction.Date);
+        GetService<PostTransactionAction>().Run(otherPeriodTransaction, Account.Id, otherPeriodTransaction.Date);
         GetService<TestUnitOfWork>().SaveChanges();
     }
 }

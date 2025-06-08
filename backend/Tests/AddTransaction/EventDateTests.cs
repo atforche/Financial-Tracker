@@ -36,14 +36,15 @@ public class EventDateTests
         setup.GetService<TransactionFactory>().Create(setup.CurrentAccountingPeriod.Id,
             setup.EventDate,
             setup.Account.Id,
-            null,
             [
                 new FundAmount()
                 {
                     FundId = setup.Fund.Id,
                     Amount = 25.00m,
                 }
-            ]);
+            ],
+            null,
+            null);
 
     /// <summary>
     /// Gets the expected state for this test case
@@ -55,7 +56,8 @@ public class EventDateTests
         {
             AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
             Date = setup.EventDate,
-            FundAmounts =
+            DebitAccountId = setup.Account.Id,
+            DebitFundAmounts =
             [
                 new FundAmountState
                 {

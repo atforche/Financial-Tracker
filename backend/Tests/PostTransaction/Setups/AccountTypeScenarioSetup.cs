@@ -26,12 +26,12 @@ internal sealed class AccountTypeScenarioSetup : ScenarioSetup
     /// <summary>
     /// Debit Account for this Setup
     /// </summary>
-    public Account? DebitAccount { get; }
+    public Account DebitAccount { get; }
 
     /// <summary>
     /// Credit Account for this Setup
     /// </summary>
-    public Account? CreditAccount { get; }
+    public Account CreditAccount { get; }
 
     /// <summary>
     /// Transaction for this Setup
@@ -52,44 +52,49 @@ internal sealed class AccountTypeScenarioSetup : ScenarioSetup
         GetService<IAccountingPeriodRepository>().Add(AccountingPeriod);
         GetService<TestUnitOfWork>().SaveChanges();
 
-        if (scenario is AccountTypeScenario.Debit or AccountTypeScenario.MissingCredit)
-        {
-            DebitAccount = GetService<AccountFactory>().Create("TestOne", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
-                [
-                    new FundAmount
-                    {
-                        FundId = Fund.Id,
-                        Amount = 1500.00m,
-                    }
-                ]);
-            GetService<IAccountRepository>().Add(DebitAccount);
-            GetService<TestUnitOfWork>().SaveChanges();
-        }
-        else
-        {
-            CreditAccount = GetService<AccountFactory>().Create("TestOne", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
-                [
-                    new FundAmount
-                    {
-                        FundId = Fund.Id,
-                        Amount = 1500.00m,
-                    }
-                ]);
-            GetService<IAccountRepository>().Add(CreditAccount);
-            GetService<TestUnitOfWork>().SaveChanges();
-        }
-
-        Transaction = GetService<TransactionFactory>().Create(AccountingPeriod.Id,
-            new DateOnly(2025, 1, 15),
-            DebitAccount?.Id,
-            CreditAccount?.Id,
+        DebitAccount = GetService<AccountFactory>().Create("Debit", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
             [
                 new FundAmount
                 {
                     FundId = Fund.Id,
-                    Amount = 500.00m
+                    Amount = 1500.00m,
                 }
             ]);
+        GetService<IAccountRepository>().Add(DebitAccount);
+        GetService<TestUnitOfWork>().SaveChanges();
+
+        CreditAccount = GetService<AccountFactory>().Create("Credit", AccountType.Standard, AccountingPeriod.Id, AccountingPeriod.PeriodStartDate,
+            [
+                new FundAmount
+                {
+                    FundId = Fund.Id,
+                    Amount = 1500.00m,
+                }
+            ]);
+        GetService<IAccountRepository>().Add(CreditAccount);
+        GetService<TestUnitOfWork>().SaveChanges();
+
+        List<FundAmount> fundAmounts =
+        [
+            new FundAmount
+            {
+                FundId = Fund.Id,
+                Amount = 500.00m
+            }
+        ];
+        Transaction = scenario is AccountTypeScenario.Debit or AccountTypeScenario.MissingCredit
+            ? GetService<TransactionFactory>().Create(AccountingPeriod.Id,
+                new DateOnly(2025, 1, 15),
+                DebitAccount.Id,
+                fundAmounts,
+                null,
+                null)
+            : GetService<TransactionFactory>().Create(AccountingPeriod.Id,
+                new DateOnly(2025, 1, 15),
+                null,
+                null,
+                CreditAccount.Id,
+                fundAmounts);
         GetService<ITransactionRepository>().Add(Transaction);
         GetService<TestUnitOfWork>().SaveChanges();
     }

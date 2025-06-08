@@ -23,18 +23,19 @@ public class DefaultTests
         Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
             new DateOnly(2025, 1, 15),
             setup.Account.Id,
-            null,
             [
                 new FundAmount
                 {
                     FundId = setup.Fund.Id,
                     Amount = 250.00m
                 }
-            ]);
+            ],
+            null,
+            null);
         setup.GetService<ITransactionRepository>().Add(transaction);
         setup.GetService<TestUnitOfWork>().SaveChanges();
 
-        setup.GetService<PostTransactionAction>().Run(transaction, TransactionAccountType.Debit, new DateOnly(2025, 1, 16));
+        setup.GetService<PostTransactionAction>().Run(transaction, setup.Account.Id, new DateOnly(2025, 1, 16));
         setup.GetService<TestUnitOfWork>().SaveChanges();
 
         new AccountBalanceByEventValidator().Validate(

@@ -47,11 +47,11 @@ internal sealed class AccountingPeriodUploader : DataUploader<AccountingPeriodUp
                 _transactions.Add(transactionAddedUploadModel.Id,
                     await PostAsync<CreateTransactionModel, TransactionModel>(
                         $"/accountingPeriods/{accountingPeriod.Id}/Transactions",
-                        transactionAddedUploadModel.GetAsCreateTransactionModel(_funds, _accounts)));
+                        transactionAddedUploadModel.GetAsCreateTransactionModel(_accounts)));
             }
             else if (balanceEventUploadModel is TransactionPostedUploadModel transactionPostedUploadModel)
             {
-                Console.WriteLine($"Posting Transaction '{transactionPostedUploadModel.TransactionId}' in Account '{transactionPostedUploadModel.AccountType}'");
+                Console.WriteLine($"Posting Transaction '{transactionPostedUploadModel.TransactionId}' in Account '{transactionPostedUploadModel.AccountId}'");
                 _ = await PostAsync<PostTransactionModel, TransactionModel>(
                     $"/accountingPeriods/{accountingPeriod.Id}/Transactions/{transactionPostedUploadModel.GetTransactionIdToPost(_transactions)}",
                     transactionPostedUploadModel.GetAsPostTransactionModel());
