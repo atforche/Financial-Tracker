@@ -90,7 +90,7 @@ public class MultipleBalanceEventTests
         }
         if (scenario == AddBalanceEventMultipleBalanceEventScenario.MultipleEventsSameDay)
         {
-            expectedEventSequence += 2;
+            expectedEventSequence++;
         }
 
         return new TransactionState
@@ -112,9 +112,12 @@ public class MultipleBalanceEventTests
                     AccountingPeriodId = setup.AccountingPeriod.Id,
                     EventDate = new DateOnly(2025, 1, 15),
                     EventSequence = expectedEventSequence,
-                    AccountId = accountType == AccountType.Standard ? setup.Account.Id : setup.DebtAccount.Id,
-                    EventType = TransactionBalanceEventType.Added,
-                    AccountType = accountType == AccountType.Standard ? TransactionAccountType.Debit : TransactionAccountType.Credit
+                    Parts =
+                    [
+                        accountType == AccountType.Standard
+                            ? TransactionBalanceEventPartType.AddedDebit
+                            : TransactionBalanceEventPartType.AddedCredit
+                    ]
                 }
             ]
         };

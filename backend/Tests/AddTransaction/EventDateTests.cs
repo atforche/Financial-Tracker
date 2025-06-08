@@ -70,9 +70,10 @@ public class EventDateTests
                     AccountingPeriodId = setup.CurrentAccountingPeriod.Id,
                     EventDate = setup.EventDate,
                     EventSequence = 1,
-                    AccountId = setup.Account.Id,
-                    EventType = TransactionBalanceEventType.Added,
-                    AccountType = TransactionAccountType.Debit,
+                    Parts =
+                    [
+                        TransactionBalanceEventPartType.AddedDebit
+                    ]
                 }
             ]
         };

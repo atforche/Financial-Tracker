@@ -53,12 +53,10 @@ public class TransactionModel
     {
         Id = transaction.Id.Value;
         Date = transaction.Date;
-        DebitDetail = transaction.TransactionBalanceEvents
-            .Any(balanceEvent => balanceEvent.AccountType == TransactionAccountType.Debit)
+        DebitDetail = transaction.DebitAccountId != null
             ? new TransactionAccountDetailModel(transaction, TransactionAccountType.Debit)
             : null;
-        CreditDetail = transaction.TransactionBalanceEvents
-            .Any(balanceEvent => balanceEvent.AccountType == TransactionAccountType.Credit)
+        CreditDetail = transaction.CreditAccountId != null
             ? new TransactionAccountDetailModel(transaction, TransactionAccountType.Credit)
             : null;
         FundAmounts = transaction.FundAmounts.Select(fundAmount => new FundAmountModel(fundAmount)).ToList();

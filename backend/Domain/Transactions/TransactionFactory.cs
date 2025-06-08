@@ -34,36 +34,24 @@ public class TransactionFactory(TransactionBalanceEventFactory transactionBalanc
         {
             throw exception;
         }
-        var transaction = new Transaction(accountingPeriodId, date, fundAmounts);
+        var transaction = new Transaction(accountingPeriodId, date, debitAccountId, creditAccountId, fundAmounts);
+
+        List<TransactionBalanceEventPartType> balanceEventParts = [];
         if (debitAccountId != null)
         {
-            transaction.AddBalanceEvent(transactionBalanceEventFactory.Create(new CreateTransactionBalanceEventRequest
-            {
-                AccountingPeriodId = accountingPeriodId,
-                EventDate = date,
-                AccountId = debitAccountId,
-                Transaction = transaction,
-                EventType = TransactionBalanceEventType.Added,
-                AccountType = TransactionAccountType.Debit
-            }));
+            balanceEventParts.Add(TransactionBalanceEventPartType.AddedDebit);
         }
         if (creditAccountId != null)
         {
-            TransactionBalanceEvent balanceEvent = transactionBalanceEventFactory.Create(new CreateTransactionBalanceEventRequest
-            {
-                AccountingPeriodId = accountingPeriodId,
-                EventDate = date,
-                AccountId = creditAccountId,
-                Transaction = transaction,
-                EventType = TransactionBalanceEventType.Added,
-                AccountType = TransactionAccountType.Credit
-            });
-            if (debitAccountId != null)
-            {
-                balanceEvent.EventSequence += 1;
-            }
-            transaction.AddBalanceEvent(balanceEvent);
+            balanceEventParts.Add(TransactionBalanceEventPartType.AddedCredit);
         }
+        transaction.AddBalanceEvent(transactionBalanceEventFactory.Create(new CreateTransactionBalanceEventRequest
+        {
+            AccountingPeriodId = transaction.AccountingPeriodId,
+            EventDate = transaction.Date,
+            Transaction = transaction,
+            Parts = balanceEventParts
+        }));
         return transaction;
     }
 

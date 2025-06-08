@@ -90,56 +90,34 @@ public class AccountTypeTests
     /// <returns>The expected Transaction Balance Events for this test case</returns>
     private static List<TransactionBalanceEventState> GetExpectedBalanceEvents(AccountTypeScenarioSetup setup)
     {
-        List<TransactionBalanceEventState> expectedBalanceEvents = [];
+        List<TransactionBalanceEventPartType> expectedBalanceEventParts = [];
+
         if (setup.DebitAccount != null)
         {
-            expectedBalanceEvents.Add(new TransactionBalanceEventState
+            expectedBalanceEventParts.Add(TransactionBalanceEventPartType.AddedDebit);
+        }
+        if (setup.CreditAccount != null)
+        {
+            expectedBalanceEventParts.Add(TransactionBalanceEventPartType.AddedCredit);
+        }
+        if (setup.DebitAccount != null)
+        {
+            expectedBalanceEventParts.Add(TransactionBalanceEventPartType.PostedDebit);
+        }
+        if (setup.CreditAccount != null)
+        {
+            expectedBalanceEventParts.Add(TransactionBalanceEventPartType.PostedCredit);
+        }
+        return
+        [
+            new TransactionBalanceEventState
             {
                 AccountingPeriodId = setup.AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
                 EventSequence = 1,
-                AccountId = setup.DebitAccount.Id,
-                EventType = TransactionBalanceEventType.Added,
-                AccountType = TransactionAccountType.Debit
-            });
-        }
-        if (setup.CreditAccount != null)
-        {
-            expectedBalanceEvents.Add(new TransactionBalanceEventState
-            {
-                AccountingPeriodId = setup.AccountingPeriod.Id,
-                EventDate = new DateOnly(2025, 1, 15),
-                EventSequence = expectedBalanceEvents.Count + 1,
-                AccountId = setup.CreditAccount.Id,
-                EventType = TransactionBalanceEventType.Added,
-                AccountType = TransactionAccountType.Credit
-            });
-        }
-        if (setup.DebitAccount != null)
-        {
-            expectedBalanceEvents.Add(new TransactionBalanceEventState
-            {
-                AccountingPeriodId = setup.AccountingPeriod.Id,
-                EventDate = new DateOnly(2025, 1, 15),
-                EventSequence = expectedBalanceEvents.Count + 1,
-                AccountId = setup.DebitAccount.Id,
-                EventType = TransactionBalanceEventType.Posted,
-                AccountType = TransactionAccountType.Debit
-            });
-        }
-        if (setup.CreditAccount != null)
-        {
-            expectedBalanceEvents.Add(new TransactionBalanceEventState
-            {
-                AccountingPeriodId = setup.AccountingPeriod.Id,
-                EventDate = new DateOnly(2025, 1, 15),
-                EventSequence = expectedBalanceEvents.Count + 1,
-                AccountId = setup.CreditAccount.Id,
-                EventType = TransactionBalanceEventType.Posted,
-                AccountType = TransactionAccountType.Credit
-            });
-        }
-        return expectedBalanceEvents;
+                Parts = expectedBalanceEventParts
+            }
+        ];
     }
 
     /// <summary>
@@ -154,30 +132,7 @@ public class AccountTypeTests
             {
                 AccountingPeriodId = setup.AccountingPeriod.Id,
                 EventDate = new DateOnly(2025, 1, 15),
-                EventSequence = DetermineBalanceEventSequence(setup, account, TransactionBalanceEventType.Added),
-                AccountId = account.Id,
-                FundBalances =
-                [
-                    new FundAmountState
-                    {
-                        FundId = setup.Fund.Id,
-                        Amount = 1500.00m,
-                    }
-                ],
-                PendingFundBalanceChanges =
-                [
-                    new FundAmountState
-                    {
-                        FundId = setup.Fund.Id,
-                        Amount = DetermineBalanceChangeFactor(setup, account) * 500.00m,
-                    },
-                ],
-            },
-            new()
-            {
-                AccountingPeriodId = setup.AccountingPeriod.Id,
-                EventDate = new DateOnly(2025, 1, 15),
-                EventSequence = DetermineBalanceEventSequence(setup, account, TransactionBalanceEventType.Posted),
+                EventSequence = 1,
                 AccountId = account.Id,
                 FundBalances =
                 [
@@ -187,48 +142,9 @@ public class AccountTypeTests
                         Amount = 1500.00m + (DetermineBalanceChangeFactor(setup, account) * 500.00m),
                     }
                 ],
-                PendingFundBalanceChanges = [],
+                PendingFundBalanceChanges = []
             },
         ];
-
-    /// <summary>
-    /// Determines the Balance Event Sequence that should be associated with the provided event
-    /// </summary>
-    /// <param name="setup">Setup for this test case</param>
-    /// <param name="account">Account for this Balance Event</param>
-    /// <param name="eventType">Event Type for this Balance Event</param>
-    /// <returns>The Balance Event Sequence that should be associated with the provided event</returns>
-    private static int DetermineBalanceEventSequence(
-        AccountTypeScenarioSetup setup,
-        Account account,
-        TransactionBalanceEventType eventType)
-    {
-        if (eventType == TransactionBalanceEventType.Added)
-        {
-            if (setup.DebitAccount == account)
-            {
-                return 1;
-            }
-            if (setup.DebitAccount != null)
-            {
-                return 2;
-            }
-            return 1;
-        }
-        if (setup.DebitAccount == account)
-        {
-            if (setup.CreditAccount == null)
-            {
-                return 2;
-            }
-            return 3;
-        }
-        if (setup.DebitAccount == null)
-        {
-            return 2;
-        }
-        return 4;
-    }
 
     /// <summary>
     /// Determines the expected balance change factor for the provided test case and Account

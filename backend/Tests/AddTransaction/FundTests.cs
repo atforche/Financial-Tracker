@@ -83,9 +83,10 @@ public class FundTest
                     AccountingPeriodId = setup.AccountingPeriod.Id,
                     EventDate = new DateOnly(2025, 1, 15),
                     EventSequence = 1,
-                    AccountId = setup.Account.Id,
-                    EventType = TransactionBalanceEventType.Added,
-                    AccountType = TransactionAccountType.Debit,
+                    Parts =
+                    [
+                        TransactionBalanceEventPartType.AddedDebit
+                    ]
                 }
             ]
         };

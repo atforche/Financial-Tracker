@@ -95,42 +95,32 @@ public class AccountTests
                     Amount = 50.00m,
                 }
             ],
-            TransactionBalanceEvents = GetExpectedBalanceEvents(setup),
+            TransactionBalanceEvents = [GetExpectedBalanceEvent(setup)],
         };
 
     /// <summary>
-    /// Gets the expected Transaction Balance Events for this test case
+    /// Gets the expected Transaction Balance Event for this test case
     /// </summary>
     /// <param name="setup">Setup for this test case</param>
-    /// <returns>The expected Transaction Balance Events for this test case</returns>
-    private static List<TransactionBalanceEventState> GetExpectedBalanceEvents(AccountScenarioSetup setup)
+    /// <returns>The expected Transaction Balance Event for this test case</returns>
+    private static TransactionBalanceEventState GetExpectedBalanceEvent(AccountScenarioSetup setup)
     {
-        List<TransactionBalanceEventState> expectedBalanceEvents = [];
+        List<TransactionBalanceEventPartType> expectedBalanceEventParts = [];
         if (setup.DebitAccount != null)
         {
-            expectedBalanceEvents.Add(new TransactionBalanceEventState
-            {
-                AccountingPeriodId = setup.AccountingPeriod.Id,
-                EventDate = new DateOnly(2025, 1, 15),
-                EventSequence = 1,
-                AccountId = setup.DebitAccount.Id,
-                EventType = TransactionBalanceEventType.Added,
-                AccountType = TransactionAccountType.Debit
-            });
+            expectedBalanceEventParts.Add(TransactionBalanceEventPartType.AddedDebit);
         }
         if (setup.CreditAccount != null)
         {
-            expectedBalanceEvents.Add(new TransactionBalanceEventState
-            {
-                AccountingPeriodId = setup.AccountingPeriod.Id,
-                EventDate = new DateOnly(2025, 1, 15),
-                EventSequence = setup.DebitAccount != null ? 2 : 1,
-                AccountId = setup.CreditAccount.Id,
-                EventType = TransactionBalanceEventType.Added,
-                AccountType = TransactionAccountType.Credit
-            });
+            expectedBalanceEventParts.Add(TransactionBalanceEventPartType.AddedCredit);
         }
-        return expectedBalanceEvents;
+        return new TransactionBalanceEventState
+        {
+            AccountingPeriodId = setup.AccountingPeriod.Id,
+            EventDate = new DateOnly(2025, 1, 15),
+            EventSequence = 1,
+            Parts = expectedBalanceEventParts
+        };
     }
 
     /// <summary>
@@ -144,7 +134,7 @@ public class AccountTests
         {
             AccountingPeriodId = setup.AccountingPeriod.Id,
             EventDate = new DateOnly(2025, 1, 15),
-            EventSequence = setup.DebitAccount != account && setup.DebitAccount != null ? 2 : 1,
+            EventSequence = 1,
             AccountId = account.Id,
             FundBalances =
             [

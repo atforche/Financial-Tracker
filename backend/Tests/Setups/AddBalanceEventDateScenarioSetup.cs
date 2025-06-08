@@ -35,6 +35,11 @@ internal sealed class AddBalanceEventDateScenarioSetup : ScenarioSetup
     public Account Account { get; }
 
     /// <summary>
+    /// Other Account for the Setup
+    /// </summary>
+    public Account OtherAccount { get; }
+
+    /// <summary>
     /// Current Accounting Period for the Setup
     /// </summary>
     public AccountingPeriod CurrentAccountingPeriod { get; }
@@ -79,6 +84,22 @@ internal sealed class AddBalanceEventDateScenarioSetup : ScenarioSetup
                 }
             ]);
         GetService<IAccountRepository>().Add(Account);
+        GetService<TestUnitOfWork>().SaveChanges();
+
+        OtherAccount = GetService<AccountFactory>().Create("OtherTest", AccountType.Standard, CurrentAccountingPeriod.Id, _pastAccountingPeriod.PeriodStartDate.AddDays(14),
+            [
+                new FundAmount
+                {
+                    FundId = Fund.Id,
+                    Amount = 1500.00m,
+                },
+                new FundAmount
+                {
+                    FundId = OtherFund.Id,
+                    Amount = 1500.00m,
+                }
+            ]);
+        GetService<IAccountRepository>().Add(OtherAccount);
         GetService<TestUnitOfWork>().SaveChanges();
     }
 }

@@ -1,5 +1,4 @@
 using Domain.AccountingPeriods;
-using Domain.Accounts;
 using Domain.Transactions;
 
 namespace Tests.Validators;
@@ -16,9 +15,12 @@ internal sealed class TransactionBalanceEventValidator : EntityValidator<Transac
         Assert.Equal(expectedState.AccountingPeriodId, entity.AccountingPeriodId);
         Assert.Equal(expectedState.EventDate, entity.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.EventSequence);
-        Assert.Equal(expectedState.AccountId, entity.AccountId);
-        Assert.Equal(expectedState.EventType, entity.EventType);
-        Assert.Equal(expectedState.AccountType, entity.AccountType);
+
+        Assert.Equal(expectedState.Parts.Count, entity.Parts.Count);
+        foreach ((TransactionBalanceEventPartType expectedPart, TransactionBalanceEventPart part) in expectedState.Parts.Zip(entity.Parts))
+        {
+            Assert.Equal(expectedPart, part.Type);
+        }
     }
 }
 
@@ -43,17 +45,7 @@ internal sealed record TransactionBalanceEventState
     public required int EventSequence { get; init; }
 
     /// <summary>
-    /// Account ID for this Transaction Balance Event
+    /// Transaction Balance Event Parts for this Transaction Balance Event
     /// </summary>
-    public required AccountId AccountId { get; init; }
-
-    /// <summary>
-    /// Event Type for this Transaction Balance Event
-    /// </summary>
-    public required TransactionBalanceEventType EventType { get; init; }
-
-    /// <summary>
-    /// Account Type for this Transaction Balance Event
-    /// </summary>
-    public required TransactionAccountType AccountType { get; init; }
+    public required IReadOnlyCollection<TransactionBalanceEventPartType> Parts { get; init; }
 }

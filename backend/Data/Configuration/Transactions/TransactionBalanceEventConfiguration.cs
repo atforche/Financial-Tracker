@@ -1,4 +1,3 @@
-using Domain.Accounts;
 using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -21,6 +20,9 @@ internal sealed class TransactionBalanceEventConfiguration : IEntityTypeConfigur
 
         builder.HasIndex(transactionBalanceEvent => new { transactionBalanceEvent.EventDate, transactionBalanceEvent.EventSequence }).IsUnique();
 
-        builder.HasOne<Account>().WithMany().HasForeignKey(transactionBalanceEvent => transactionBalanceEvent.AccountId);
+        builder.HasMany(transactionBalanceEvent => transactionBalanceEvent.Parts)
+            .WithOne(transactionBalanceEventPart => transactionBalanceEventPart.TransactionBalanceEvent)
+            .HasForeignKey("TransactionBalanceEventId");
+        builder.Navigation(transactionBalanceEvent => transactionBalanceEvent.Parts).AutoInclude();
     }
 }

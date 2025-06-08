@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Domain.Accounts;
 using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -17,6 +18,9 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
         builder.Property(transaction => transaction.Id).HasConversion(transactionId => transactionId.Value, value => new TransactionId(value));
 
         builder.HasOne<AccountingPeriod>().WithMany().HasForeignKey(transaction => transaction.AccountingPeriodId);
+
+        builder.HasOne<Account>().WithMany().HasForeignKey(transaction => transaction.DebitAccountId);
+        builder.HasOne<Account>().WithMany().HasForeignKey(transaction => transaction.CreditAccountId);
 
         builder.HasMany(transaction => transaction.FundAmounts)
             .WithOne()

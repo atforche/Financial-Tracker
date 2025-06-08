@@ -53,18 +53,11 @@ public class DefaultTests
                         AccountingPeriodId = setup.AccountingPeriod.Id,
                         EventDate = new DateOnly(2025, 1, 15),
                         EventSequence = 1,
-                        AccountId = setup.Account.Id,
-                        EventType = TransactionBalanceEventType.Added,
-                        AccountType = TransactionAccountType.Debit,
-                    },
-                    new TransactionBalanceEventState
-                    {
-                        AccountingPeriodId = setup.AccountingPeriod.Id,
-                        EventDate = new DateOnly(2025, 1, 15),
-                        EventSequence = 2,
-                        AccountId = setup.Account.Id,
-                        EventType = TransactionBalanceEventType.Posted,
-                        AccountType = TransactionAccountType.Debit,
+                        Parts =
+                        [
+                            TransactionBalanceEventPartType.AddedDebit,
+                            TransactionBalanceEventPartType.PostedDebit,
+                        ]
                     },
                 ]
             });

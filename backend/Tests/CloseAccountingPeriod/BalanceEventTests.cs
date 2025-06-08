@@ -64,45 +64,38 @@ public class BalanceEventTests
         {
             return [];
         }
-        List<TransactionState> expectedTransactionStates = [];
-        List<TransactionBalanceEventState> expectedTransactionBalanceEvents = [];
-
-        expectedTransactionBalanceEvents.Add(new TransactionBalanceEventState
-        {
-            AccountingPeriodId = setup.AccountingPeriod.Id,
-            EventDate = new DateOnly(2025, 1, 15),
-            EventSequence = 1,
-            AccountId = setup.Account.Id,
-            EventType = TransactionBalanceEventType.Added,
-            AccountType = TransactionAccountType.Debit
-        });
+        List<TransactionBalanceEventPartType> expectedTransactionBalanceEventParts = [];
+        expectedTransactionBalanceEventParts.Add(TransactionBalanceEventPartType.AddedDebit);
         if (scenario is BalanceEventScenario.PostedTransaction)
         {
-            expectedTransactionBalanceEvents.Add(new TransactionBalanceEventState
+            expectedTransactionBalanceEventParts.Add(TransactionBalanceEventPartType.PostedDebit);
+        }
+        return
+        [
+            new TransactionState
             {
                 AccountingPeriodId = setup.AccountingPeriod.Id,
-                EventDate = new DateOnly(2025, 1, 15),
-                EventSequence = 2,
-                AccountId = setup.Account.Id,
-                EventType = TransactionBalanceEventType.Posted,
-                AccountType = TransactionAccountType.Debit
-            });
-        }
-        expectedTransactionStates.Add(new TransactionState
-        {
-            AccountingPeriodId = setup.AccountingPeriod.Id,
-            Date = new DateOnly(2025, 1, 15),
-            FundAmounts =
-            [
-                new FundAmountState
-                {
-                    FundId = setup.Fund.Id,
-                    Amount = 250.00m,
-                }
-            ],
-            TransactionBalanceEvents = expectedTransactionBalanceEvents
-        });
-        return expectedTransactionStates;
+                Date = new DateOnly(2025, 1, 15),
+                FundAmounts =
+                [
+                    new FundAmountState
+                    {
+                        FundId = setup.Fund.Id,
+                        Amount = 250.00m,
+                    }
+                ],
+                TransactionBalanceEvents =
+                [
+                    new TransactionBalanceEventState
+                    {
+                        AccountingPeriodId = setup.AccountingPeriod.Id,
+                        EventDate = new DateOnly(2025, 1, 15),
+                        EventSequence = 1,
+                        Parts = expectedTransactionBalanceEventParts
+                    }
+                ]
+            }
+        ];
     }
 
     /// <summary>

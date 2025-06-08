@@ -23,15 +23,24 @@ public class PostTransactionAction(TransactionBalanceEventFactory transactionBal
         {
             throw exception;
         }
-        transaction.AddBalanceEvent(transactionBalanceEventFactory.Create(new CreateTransactionBalanceEventRequest
+        TransactionBalanceEventPartType partType = accountType == TransactionAccountType.Debit
+            ? TransactionBalanceEventPartType.PostedDebit
+            : TransactionBalanceEventPartType.PostedCredit;
+        TransactionBalanceEvent? existingBalanceEvent = transaction.TransactionBalanceEvents.SingleOrDefault(balanceEvent => balanceEvent.EventDate == date);
+        if (existingBalanceEvent != null)
         {
-            AccountingPeriodId = transaction.AccountingPeriodId,
-            EventDate = date,
-            AccountId = transaction.GetAccountId(accountType) ?? throw new InvalidOperationException(),
-            Transaction = transaction,
-            EventType = TransactionBalanceEventType.Posted,
-            AccountType = accountType
-        }));
+            existingBalanceEvent.AddPart(new TransactionBalanceEventPart(existingBalanceEvent, partType));
+        }
+        else
+        {
+            transaction.AddBalanceEvent(transactionBalanceEventFactory.Create(new CreateTransactionBalanceEventRequest
+            {
+                AccountingPeriodId = transaction.AccountingPeriodId,
+                EventDate = date,
+                Transaction = transaction,
+                Parts = [partType]
+            }));
+        }
     }
 
     /// <summary>
@@ -63,10 +72,30 @@ public class PostTransactionAction(TransactionBalanceEventFactory transactionBal
     {
         exception = null;
 
-        if (transaction.GetAccountId(accountType) == null)
+        if (accountType == TransactionAccountType.Debit && transaction.DebitAccountId == null)
         {
             exception = new InvalidOperationException();
         }
+        if (accountType == TransactionAccountType.Credit && transaction.CreditAccountId == null)
+        {
+            exception ??= new InvalidOperationException();
+        }
         return exception == null;
     }
+}
+
+/// <summary>
+/// Enum representing the different Accounts affected by the Transaction
+/// </summary>
+public enum TransactionAccountType
+{
+    /// <summary>
+    /// Account that is being debited by the Transaction
+    /// </summary>
+    Debit,
+
+    /// <summary>
+    /// Account that is being credited by the Transaction
+    /// </summary>
+    Credit,
 }

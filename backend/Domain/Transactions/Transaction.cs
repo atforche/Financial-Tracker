@@ -30,6 +30,16 @@ public class Transaction : Entity<TransactionId>
     public DateOnly Date { get; private set; }
 
     /// <summary>
+    /// Debit Account ID for this Transaction
+    /// </summary>
+    public AccountId? DebitAccountId { get; private set; }
+
+    /// <summary>
+    /// Credit Account ID for this Transaction
+    /// </summary>
+    public AccountId? CreditAccountId { get; private set; }
+
+    /// <summary>
     /// List of Fund Amounts for this Transaction
     /// </summary>
     public IReadOnlyCollection<FundAmount> FundAmounts => _fundAmounts;
@@ -44,27 +54,23 @@ public class Transaction : Entity<TransactionId>
     /// </summary>
     /// <param name="accountingPeriodId">Accounting Period ID for this Transaction</param>
     /// <param name="eventDate">Date for this Transaction</param>
+    /// <param name="debitAccountId">Debit Account ID for this Transaction</param>
+    /// <param name="creditAccountId">Credit Account ID for this Transaction</param>
     /// <param name="fundAmounts">Fund Amounts for this Transaction</param>
     internal Transaction(AccountingPeriodId accountingPeriodId,
         DateOnly eventDate,
+        AccountId? debitAccountId,
+        AccountId? creditAccountId,
         IEnumerable<FundAmount> fundAmounts)
         : base(new TransactionId(Guid.NewGuid()))
     {
         AccountingPeriodId = accountingPeriodId;
         Date = eventDate;
+        DebitAccountId = debitAccountId;
+        CreditAccountId = creditAccountId;
         _fundAmounts = fundAmounts.ToList();
         _transactionBalanceEvents = [];
     }
-
-    /// <summary>
-    /// Gets the Account ID for this Transaction that corresponds to the provided Transaction Account Type
-    /// </summary>
-    /// <param name="accountType">Type of the Account to get</param>
-    /// <returns>The Account ID for this Transaction that corresponds to the provided type</returns>
-    internal AccountId? GetAccountId(TransactionAccountType accountType) =>
-        TransactionBalanceEvents.SingleOrDefault(balanceEvent =>
-            balanceEvent.AccountType == accountType &&
-            balanceEvent.EventType == TransactionBalanceEventType.Added)?.AccountId;
 
     /// <summary>
     /// Adds a Transaction Balance Event to this Transaction

@@ -8,7 +8,7 @@ namespace Rest.Models.Transactions;
 /// </summary>
 public class TransactionAccountDetailModel
 {
-    /// <inheritdoc cref="TransactionBalanceEvent.AccountId"/>
+    /// <inheritdoc cref="Transaction.DebitAccountId"/>
     public Guid AccountId { get; init; }
 
     /// <summary>
@@ -33,15 +33,14 @@ public class TransactionAccountDetailModel
     /// <param name="type">Transaction Account Type for this Transaction Account Detail model</param>
     public TransactionAccountDetailModel(Transaction transaction, TransactionAccountType type)
     {
-        var balanceEvents = transaction.TransactionBalanceEvents
-            .Where(balanceEvent => balanceEvent.AccountType == type).ToList();
-        if (balanceEvents.Count == 0)
-        {
-            throw new InvalidOperationException();
-        }
-        AccountId = balanceEvents.First().AccountId.Value;
-        PostedStatementDate = balanceEvents
-            .SingleOrDefault(balanceEvent => balanceEvent.EventType == TransactionBalanceEventType.Posted)
-            ?.EventDate;
+        AccountId = (type == TransactionAccountType.Debit
+            ? transaction.DebitAccountId ?? throw new InvalidOperationException()
+            : transaction.CreditAccountId ?? throw new InvalidOperationException()).Value;
+
+        TransactionBalanceEventPartType postedType = type == TransactionAccountType.Debit
+            ? TransactionBalanceEventPartType.PostedDebit
+            : TransactionBalanceEventPartType.PostedCredit;
+        PostedStatementDate = transaction.TransactionBalanceEvents.SingleOrDefault(balanceEvent =>
+            balanceEvent.Parts.Any(part => part.Type == postedType))?.EventDate;
     }
 }
