@@ -20,16 +20,7 @@ public class BalanceCheckpointTests : TestClass
     {
         AccountingPeriod firstAccountingPeriod = GetService<AccountingPeriodBuilder>().Build();
         Fund fund = GetService<FundBuilder>().Build();
-        Account account = GetService<AccountBuilder>()
-            .WithAddedFundAmounts(
-                [
-                    new FundAmount
-                    {
-                        FundId = fund.Id,
-                        Amount = 1500.00m
-                    }
-                ])
-            .Build();
+        Account account = GetService<AccountBuilder>().Build();
 
         GetService<AccountingPeriodBuilder>()
             .WithMonth(2)
@@ -50,7 +41,7 @@ public class BalanceCheckpointTests : TestClass
                         new FundAmountState
                         {
                             FundId = fund.Id,
-                            Amount = 1500.00m
+                            Amount = 2500.00m
                         }
                     ]
                 },
@@ -66,16 +57,7 @@ public class BalanceCheckpointTests : TestClass
     {
         AccountingPeriod firstAccountingPeriod = GetService<AccountingPeriodBuilder>().Build();
         Fund fund = GetService<FundBuilder>().Build();
-        Account account = GetService<AccountBuilder>()
-            .WithAddedFundAmounts(
-                [
-                    new FundAmount
-                    {
-                        FundId = fund.Id,
-                        Amount = 1500.00m
-                    }
-                ])
-            .Build();
+        Account account = GetService<AccountBuilder>().Build();
         GetService<CloseAccountingPeriodAction>().Run(firstAccountingPeriod);
         GetService<TestUnitOfWork>().SaveChanges();
 
@@ -98,7 +80,7 @@ public class BalanceCheckpointTests : TestClass
                         new FundAmountState
                         {
                             FundId = fund.Id,
-                            Amount = 1500.00m
+                            Amount = 2500.00m
                         }
                     ]
                 },
@@ -113,7 +95,7 @@ public class BalanceCheckpointTests : TestClass
                             new FundAmountState
                             {
                                 FundId = fund.Id,
-                                Amount = 1500.00m
+                                Amount = 2500.00m
                             }
                         ]
                     }

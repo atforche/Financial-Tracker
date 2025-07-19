@@ -12,13 +12,14 @@ public sealed class AccountBuilder(
     AccountFactory accountFactory,
     IAccountRepository accountRepository,
     IAccountingPeriodRepository accountingPeriodRepository,
+    IFundRepository fundRepository,
     TestUnitOfWork testUnitOfWork)
 {
-    private string _name = Guid.NewGuid().ToString();
+    private string? _name;
     private AccountType _type = AccountType.Standard;
     private AccountingPeriodId? _accountingPeriodId;
     private DateOnly _addedDate = new(2025, 1, 1);
-    private List<FundAmount> _addedFundAmounts = [];
+    private List<FundAmount>? _addedFundAmounts;
 
     /// <summary>
     /// Builds the specified Account
@@ -26,9 +27,12 @@ public sealed class AccountBuilder(
     /// <returns>The newly constructed Account</returns>
     public Account Build()
     {
-        AccountingPeriodId accountingPeriodId = _accountingPeriodId ?? accountingPeriodRepository.FindAll()
-            .Single(accountingPeriod => accountingPeriod.Year == _addedDate.Year && accountingPeriod.Month == _addedDate.Month).Id;
-        Account account = accountFactory.Create(_name, _type, accountingPeriodId, _addedDate, _addedFundAmounts);
+        Account account = accountFactory.Create(
+            _name ?? Guid.NewGuid().ToString(),
+            _type,
+            DetermineAccountingPeriod(),
+            _addedDate,
+            DetermineFundAmounts());
         accountRepository.Add(account);
         testUnitOfWork.SaveChanges();
         return account;
@@ -77,5 +81,42 @@ public sealed class AccountBuilder(
     {
         _addedFundAmounts = addedFundAmounts.ToList();
         return this;
+    }
+
+    /// <summary>
+    /// Determines the Accounting Period to use for this Account
+    /// </summary>
+    private AccountingPeriodId DetermineAccountingPeriod()
+    {
+        if (_accountingPeriodId != null)
+        {
+            return _accountingPeriodId;
+        }
+        return accountingPeriodRepository.FindAll()
+            .Single(accountingPeriod => accountingPeriod.Year == _addedDate.Year && accountingPeriod.Month == _addedDate.Month).Id;
+    }
+
+    /// <summary>
+    /// Determines the Added Fund Amounts to use for this Account
+    /// </summary>
+    private List<FundAmount> DetermineFundAmounts()
+    {
+        if (_addedFundAmounts != null)
+        {
+            return _addedFundAmounts;
+        }
+        var funds = fundRepository.FindAll().ToList();
+        if (funds.Count == 1)
+        {
+            return
+            [
+                new FundAmount
+                {
+                    FundId = funds.First().Id,
+                    Amount = 2500.00m
+                }
+            ];
+        }
+        return [];
     }
 }

@@ -28,6 +28,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<AccountingPeriodBuilder>();
         _ = serviceCollection.AddScoped<AccountBuilder>();
         _ = serviceCollection.AddScoped<FundBuilder>();
+        _ = serviceCollection.AddScoped<TransactionBuilder>();
 
         Domain.ServiceManager.Register(serviceCollection);
 
