@@ -7,8 +7,10 @@ namespace Rest.Models.Transactions;
 /// </summary>
 public class PostTransactionModel
 {
-    /// <inheritdoc cref="TransactionBalanceEvent.AccountType"/>
-    public required TransactionAccountType AccountToPost { get; init; }
+    /// <summary>
+    /// Account to post this Transaction in
+    /// </summary>
+    public required Guid AccountId { get; init; }
 
     /// <summary>
     /// Date to post this Transaction on

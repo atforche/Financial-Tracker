@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
@@ -24,7 +25,9 @@ public class ChangeInValue : Entity<ChangeInValueId>, IBalanceEvent
     /// <inheritdoc/>
     public int EventSequence { get; private set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Account ID for this Change In Value
+    /// </summary>
     public AccountId AccountId { get; private set; }
 
     /// <summary>
@@ -33,28 +36,40 @@ public class ChangeInValue : Entity<ChangeInValueId>, IBalanceEvent
     public FundAmount FundAmount { get; private set; }
 
     /// <inheritdoc/>
-    public AccountBalance ApplyEventToBalance(AccountBalance currentBalance) =>
-        ApplyEventPrivate(currentBalance, false);
+    public IReadOnlyCollection<AccountId> GetAccountIds() => [AccountId];
 
     /// <inheritdoc/>
-    public AccountBalance ReverseEventFromBalance(AccountBalance currentBalance) =>
-        ApplyEventPrivate(currentBalance, false);
+    public bool IsValidToApplyToBalance(AccountBalance currentBalance, [NotNullWhen(false)] out Exception? exception)
+    {
+        exception = null;
+
+        if (AccountId != currentBalance.Account.Id)
+        {
+            // Balance Event doesn't affect the provided balance
+            return true;
+        }
+        if (FundAmount.Amount > 0)
+        {
+            // Change In Values that are increasing an Accounts balance are always valid
+            return true;
+        }
+        if (Math.Min(currentBalance.Balance, currentBalance.BalanceIncludingPending) + FundAmount.Amount < 0)
+        {
+            // Cannot apply this Balance Event if it will take the Account's overall balance negative
+            // For simplicity, count pending balance decreases but don't count pending balance increases.
+            exception = new InvalidOperationException();
+        }
+        return exception == null;
+    }
 
     /// <inheritdoc/>
-    public bool CanBeAppliedToBalance(AccountBalance currentBalance)
+    public AccountBalance ApplyEventToBalance(AccountBalance currentBalance, ApplicationDirection direction)
     {
         if (AccountId != currentBalance.Account.Id)
         {
-            return true;
+            return currentBalance;
         }
-        // Change In Values that are increasing an Accounts balance are always valid
-        if (FundAmount.Amount > 0)
-        {
-            return true;
-        }
-        // Cannot apply this Balance Event if it will take the Account's overall balance negative
-        // For simplicity, count pending balance decreases but don't count pending balance increases.
-        return Math.Min(currentBalance.Balance, currentBalance.BalanceIncludingPending) + FundAmount.Amount >= 0;
+        return currentBalance.AddNewAmount(direction == ApplicationDirection.Reverse ? FundAmount.GetWithReversedAmount() : FundAmount);
     }
 
     /// <summary>
@@ -87,32 +102,5 @@ public class ChangeInValue : Entity<ChangeInValueId>, IBalanceEvent
         AccountingPeriodId = null!;
         AccountId = null!;
         FundAmount = null!;
-    }
-
-    /// <summary>
-    /// Applies the Fund Conversion to the provided balance
-    /// </summary>
-    /// <param name="currentBalance">Account Balance to apply this event to</param>
-    /// <param name="isReverse">True if this Fund Conversion is being reversed, false otherwise</param>
-    /// <returns>The new Account Balance after this event has been applied</returns>
-    private AccountBalance ApplyEventPrivate(AccountBalance currentBalance, bool isReverse)
-    {
-        if (AccountId != currentBalance.Account.Id)
-        {
-            return currentBalance;
-        }
-        int balanceChangeFactor = isReverse ? -1 : 1;
-        var fundBalances = currentBalance.FundBalances.ToDictionary(fundAmount => fundAmount.FundId, fundAmount => fundAmount.Amount);
-        if (!fundBalances.TryAdd(FundAmount.FundId, balanceChangeFactor * FundAmount.Amount))
-        {
-            fundBalances[FundAmount.FundId] = fundBalances[FundAmount.FundId] + (balanceChangeFactor * FundAmount.Amount);
-        }
-        return new AccountBalance(currentBalance.Account,
-            fundBalances.Select(pair => new FundAmount
-            {
-                FundId = pair.Key,
-                Amount = pair.Value
-            }),
-            currentBalance.PendingFundBalanceChanges);
     }
 }

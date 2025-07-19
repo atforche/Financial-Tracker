@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.Accounts;
 
 namespace Domain.Transactions;
 
@@ -11,27 +12,36 @@ public class PostTransactionAction(TransactionBalanceEventFactory transactionBal
     /// Runs this Action
     /// </summary>
     /// <param name="transaction">Transaction to post</param>
-    /// <param name="accountType">Account Type that this Transaction should be posted in</param>
+    /// <param name="accountId">Account that this Transaction should be posted in</param>
     /// <param name="date">Posting Date for the Transaction in the provided Account</param>
-    public void Run(Transaction transaction, TransactionAccountType accountType, DateOnly date)
+    public void Run(Transaction transaction, AccountId accountId, DateOnly date)
     {
         if (!ValidatePostingDate(transaction, date, out Exception? exception))
         {
             throw exception;
         }
-        if (!ValidateAccount(transaction, accountType, out exception))
+        if (!ValidateAccount(transaction, accountId, out exception))
         {
             throw exception;
         }
-        transaction.AddBalanceEvent(transactionBalanceEventFactory.Create(new CreateTransactionBalanceEventRequest
+        TransactionBalanceEventPartType partType = accountId == transaction.DebitAccountId
+            ? TransactionBalanceEventPartType.PostedDebit
+            : TransactionBalanceEventPartType.PostedCredit;
+        TransactionBalanceEvent? existingBalanceEvent = transaction.TransactionBalanceEvents.SingleOrDefault(balanceEvent => balanceEvent.EventDate == date);
+        if (existingBalanceEvent != null)
         {
-            AccountingPeriodId = transaction.AccountingPeriodId,
-            EventDate = date,
-            AccountId = transaction.GetAccountId(accountType) ?? throw new InvalidOperationException(),
-            Transaction = transaction,
-            EventType = TransactionBalanceEventType.Posted,
-            AccountType = accountType
-        }));
+            existingBalanceEvent.AddPart(new TransactionBalanceEventPart(existingBalanceEvent, partType));
+        }
+        else
+        {
+            transaction.AddBalanceEvent(transactionBalanceEventFactory.Create(new CreateTransactionBalanceEventRequest
+            {
+                AccountingPeriodId = transaction.AccountingPeriodId,
+                EventDate = date,
+                Transaction = transaction,
+                Parts = [partType]
+            }));
+        }
     }
 
     /// <summary>
@@ -56,14 +66,14 @@ public class PostTransactionAction(TransactionBalanceEventFactory transactionBal
     /// Validates the posting Account for this Transaction
     /// </summary>
     /// <param name="transaction">Transaction to post</param>
-    /// <param name="accountType">Account Type that this Transaction should be posted in</param>
+    /// <param name="accountId">Account that this Transaction should be posted in</param>
     /// <param name="exception">Exception encountered during validation</param>
     /// <returns>True if the posting Account for this Transaction is valid, false otherwise</returns>
-    private static bool ValidateAccount(Transaction transaction, TransactionAccountType accountType, [NotNullWhen(false)] out Exception? exception)
+    private static bool ValidateAccount(Transaction transaction, AccountId accountId, [NotNullWhen(false)] out Exception? exception)
     {
         exception = null;
 
-        if (transaction.GetAccountId(accountType) == null)
+        if (accountId != transaction.DebitAccountId && accountId != transaction.CreditAccountId)
         {
             exception = new InvalidOperationException();
         }

@@ -14,16 +14,15 @@ public class CreateTransactionModel
     /// <inheritdoc cref="Transaction.Date"/>
     public required DateOnly Date { get; init; }
 
-    /// <summary>
-    /// ID of the Account being debited by this Transaction
-    /// </summary>
+    /// <inheritdoc cref="Transaction.DebitAccountId"/>
     public Guid? DebitAccountId { get; init; }
 
-    /// <summary>
-    /// ID of the Account being credited by this Transaction
-    /// </summary>
+    /// <inheritdoc cref="Transaction.DebitFundAmounts"/>
+    public IReadOnlyCollection<CreateFundAmountModel>? DebitFundAmounts { get; init; }
+
+    /// <inheritdoc cref="Transaction.CreditAccountId"/>
     public Guid? CreditAccountId { get; init; }
 
-    /// <inheritdoc cref="Transaction.FundAmounts"/>
-    public required IReadOnlyCollection<CreateFundAmountModel> FundAmounts { get; init; }
+    /// <inheritdoc cref="Transaction.CreditFundAmounts"/>
+    public IReadOnlyCollection<CreateFundAmountModel>? CreditFundAmounts { get; init; }
 }

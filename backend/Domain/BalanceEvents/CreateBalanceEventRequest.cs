@@ -19,7 +19,7 @@ public abstract record CreateBalanceEventRequest
     public required DateOnly EventDate { get; init; }
 
     /// <summary>
-    /// Account ID for this Balance Event
+    /// Gets the Account IDs for this Balance Event
     /// </summary>
-    public required AccountId AccountId { get; init; }
+    public abstract IReadOnlyCollection<AccountId> GetAccountIds();
 }

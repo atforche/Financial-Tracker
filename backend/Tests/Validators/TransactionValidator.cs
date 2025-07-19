@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Domain.Accounts;
 using Domain.Transactions;
 
 namespace Tests.Validators;
@@ -6,7 +7,7 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided <see cref="Transaction"/> matches the expected state
 /// </summary>
-internal sealed class TransactionValidator : EntityValidator<Transaction, TransactionState>
+internal sealed class TransactionValidator : Validator<Transaction, TransactionState>
 {
     /// <inheritdoc/>
     public override void Validate(Transaction entity, TransactionState expectedState)
@@ -14,7 +15,10 @@ internal sealed class TransactionValidator : EntityValidator<Transaction, Transa
         Assert.NotEqual(Guid.Empty, entity.Id.Value);
         Assert.Equal(expectedState.AccountingPeriodId, entity.AccountingPeriodId);
         Assert.Equal(expectedState.Date, entity.Date);
-        new FundAmountValidator().Validate(entity.FundAmounts, expectedState.FundAmounts);
+        Assert.Equal(expectedState.DebitAccountId, entity.DebitAccountId);
+        new FundAmountValidator().Validate(entity.DebitFundAmounts ?? [], expectedState.DebitFundAmounts ?? []);
+        Assert.Equal(expectedState.CreditAccountId, entity.CreditAccountId);
+        new FundAmountValidator().Validate(entity.CreditFundAmounts ?? [], expectedState.CreditFundAmounts ?? []);
         new TransactionBalanceEventValidator().Validate(entity.TransactionBalanceEvents, expectedState.TransactionBalanceEvents);
     }
 }
@@ -35,9 +39,24 @@ internal sealed record TransactionState
     public required DateOnly Date { get; init; }
 
     /// <summary>
-    /// Fund Amounts for this Transaction
+    /// Debit Account ID for this Transaction
     /// </summary>
-    public required List<FundAmountState> FundAmounts { get; init; }
+    public AccountId? DebitAccountId { get; init; }
+
+    /// <summary>
+    /// Debit Fund Amounts for this Transaction
+    /// </summary>
+    public List<FundAmountState>? DebitFundAmounts { get; init; }
+
+    /// <summary>
+    /// Credit Account ID for this Transaction
+    /// </summary>
+    public AccountId? CreditAccountId { get; init; }
+
+    /// <summary>
+    /// Credit Fund Amounts for this Transaction
+    /// </summary>
+    public List<FundAmountState>? CreditFundAmounts { get; init; }
 
     /// <summary>
     /// Transaction Balance Events for this Transaction

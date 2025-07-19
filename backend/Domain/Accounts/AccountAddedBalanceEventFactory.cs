@@ -58,4 +58,7 @@ public record CreateAccountAddedBalanceEventRequest : CreateBalanceEventRequest
     /// Fund Amounts for the Account Added Balance Event
     /// </summary>
     public required IReadOnlyCollection<FundAmount> FundAmounts { get; init; }
+
+    /// <inheritdoc/>
+    public override IReadOnlyCollection<AccountId> GetAccountIds() => [Account.Id];
 }

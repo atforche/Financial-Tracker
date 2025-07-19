@@ -52,6 +52,11 @@ public class FundConversionFactory(
 public record CreateFundConversionRequest : CreateBalanceEventRequest
 {
     /// <summary>
+    /// Account ID for the Fund Conversion
+    /// </summary>
+    public required AccountId AccountId { get; init; }
+
+    /// <summary>
     /// From Fund ID for the Fund Conversion
     /// </summary>
     public required FundId FromFundId { get; init; }
@@ -65,4 +70,7 @@ public record CreateFundConversionRequest : CreateBalanceEventRequest
     /// Amount for the Fund Conversion
     /// </summary>
     public required decimal Amount { get; init; }
+
+    /// <inheritdoc/>
+    public override IReadOnlyCollection<AccountId> GetAccountIds() => [AccountId];
 }

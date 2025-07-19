@@ -5,7 +5,7 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided <see cref="FundAmount"/> match the expected states
 /// </summary>
-internal sealed class FundAmountValidator : EntityValidator<FundAmount, FundAmountState>
+internal sealed class FundAmountValidator : Validator<FundAmount, FundAmountState>
 {
     /// <inheritdoc/>
     public override void Validate(FundAmount entityToValidate, FundAmountState expectedState)
@@ -21,7 +21,7 @@ internal sealed class FundAmountValidator : EntityValidator<FundAmount, FundAmou
 internal sealed record FundAmountState
 {
     /// <summary>
-    /// Fund Name for this Fund Amount
+    /// Fund ID for this Fund Amount
     /// </summary>
     public required FundId FundId { get; init; }
 

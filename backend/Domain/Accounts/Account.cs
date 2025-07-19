@@ -88,15 +88,4 @@ public enum AccountType
     /// Debt Account will decrease its balance.
     /// </remarks>
     Debt,
-
-    /// <summary>
-    /// Investment Account
-    /// </summary>
-    /// <remarks>
-    /// An Investment Account represents a retirement or brokerage account.
-    /// Investment Accounts are similar to Standard Accounts, however they
-    /// also experience periodic changes in value as the value of the assets
-    /// in the Account change.
-    /// </remarks>
-    Investment,
 }

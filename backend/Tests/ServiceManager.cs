@@ -8,6 +8,7 @@ using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Tests.Builders;
 using Tests.Mocks;
 
 namespace Tests;
@@ -24,6 +25,11 @@ public static class ServiceManager
     public static void Register(IServiceCollection serviceCollection)
     {
         _ = serviceCollection.AddScoped<TestUnitOfWork>();
+        _ = serviceCollection.AddScoped<AccountingPeriodBuilder>();
+        _ = serviceCollection.AddScoped<AccountBuilder>();
+        _ = serviceCollection.AddScoped<FundBuilder>();
+        _ = serviceCollection.AddScoped<TransactionBuilder>();
+
         Domain.ServiceManager.Register(serviceCollection);
 
         if (!DatabaseFixture.ShouldUseDatabase)

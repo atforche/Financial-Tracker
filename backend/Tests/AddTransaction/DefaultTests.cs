@@ -1,56 +1,63 @@
+using Domain.AccountingPeriods;
+using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
-using Tests.Setups;
+using Tests.Builders;
 using Tests.Validators;
 
 namespace Tests.AddTransaction;
 
 /// <summary>
-/// Test class that tests adding a Transaction with a default scenario
+/// Test class that tests adding a basic Transaction
 /// </summary>
-public class DefaultTests
+public class DefaultTests : TestClass
 {
     /// <summary>
-    /// Runs the test for this test class
+    /// Runs the default test for adding a Transaction
     /// </summary>
     [Fact]
     public void RunTest()
     {
-        var setup = new DefaultScenarioSetup();
-        Transaction transaction = setup.GetService<TransactionFactory>().Create(setup.AccountingPeriod.Id,
-            new DateOnly(2025, 1, 15),
-            setup.Account.Id,
-            null,
+        AccountingPeriod accountingPeriod = GetService<AccountingPeriodBuilder>().Build();
+        Fund fund = GetService<FundBuilder>().Build();
+        Account account = GetService<AccountBuilder>().Build();
+
+        Transaction transaction = GetService<TransactionBuilder>()
+            .WithDebitAccount(account.Id)
+            .WithDebitFundAmounts(
             [
-                new FundAmount()
+                new FundAmount
                 {
-                    FundId = setup.Fund.Id,
-                    Amount = 25.00m,
+                    FundId = fund.Id,
+                    Amount = 500.00m
                 }
-            ]);
+            ])
+            .Build();
         new TransactionValidator().Validate(transaction,
             new TransactionState
             {
-                AccountingPeriodId = setup.AccountingPeriod.Id,
+                AccountingPeriodId = accountingPeriod.Id,
                 Date = new DateOnly(2025, 1, 15),
-                FundAmounts =
+                DebitAccountId = account.Id,
+                DebitFundAmounts =
                 [
                     new FundAmountState
                     {
-                        FundId = setup.Fund.Id,
-                        Amount = 25.00m,
+                        FundId = fund.Id,
+                        Amount = 500.00m,
                     }
                 ],
                 TransactionBalanceEvents =
                 [
                     new TransactionBalanceEventState
                     {
-                        AccountingPeriodId = setup.AccountingPeriod.Id,
+                        AccountingPeriodId = accountingPeriod.Id,
                         EventDate = new DateOnly(2025, 1, 15),
                         EventSequence = 1,
-                        AccountId = setup.Account.Id,
-                        EventType = TransactionBalanceEventType.Added,
-                        AccountType = TransactionAccountType.Debit,
+                        Parts =
+                        [
+                            TransactionBalanceEventPartType.AddedDebit
+                        ]
                     }
                 ]
             });

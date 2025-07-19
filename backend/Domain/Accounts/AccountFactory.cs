@@ -34,7 +34,6 @@ public class AccountFactory(IAccountRepository accountRepository, AccountAddedBa
         {
             AccountingPeriodId = accountingPeriodId,
             EventDate = eventDate,
-            AccountId = account.Id,
             Account = account,
             FundAmounts = fundAmounts.ToList()
         });

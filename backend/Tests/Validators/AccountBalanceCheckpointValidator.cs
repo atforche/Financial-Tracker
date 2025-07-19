@@ -6,13 +6,13 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided <see cref="AccountBalanceCheckpoint"/> match the expected states
 /// </summary>
-internal sealed class AccountBalanceCheckpointValidator : EntityValidator<AccountBalanceCheckpoint, AccountBalanceCheckpointState>
+internal sealed class AccountBalanceCheckpointValidator : Validator<AccountBalanceCheckpoint, AccountBalanceCheckpointState>
 {
     /// <inheritdoc/>
     public override void Validate(AccountBalanceCheckpoint entity, AccountBalanceCheckpointState expectedState)
     {
         Assert.NotEqual(Guid.Empty, entity.Id.Value);
-        Assert.Equal(expectedState.AccountName, entity.Account.Name);
+        Assert.Equal(expectedState.AccountId, entity.Account.Id);
         Assert.Equal(expectedState.AccountingPeriodId, entity.AccountingPeriodId);
         new FundAmountValidator().Validate(entity.FundBalances, expectedState.FundBalances);
     }
@@ -24,9 +24,9 @@ internal sealed class AccountBalanceCheckpointValidator : EntityValidator<Accoun
 internal sealed record AccountBalanceCheckpointState
 {
     /// <summary>
-    /// Account Name for this Account Balance Checkpoint
+    /// Account ID for this Account Balance Checkpoint
     /// </summary>
-    public required string AccountName { get; init; }
+    public required AccountId AccountId { get; init; }
 
     /// <summary>
     /// Accounting Period ID for this Account Balance Checkpoint

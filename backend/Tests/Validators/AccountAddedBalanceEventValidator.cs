@@ -6,14 +6,14 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided <see cref="AccountAddedBalanceEvent"/> matches the expected state
 /// </summary>
-internal sealed class AccountAddedBalanceEventValidator : EntityValidator<AccountAddedBalanceEvent, AccountAddedBalanceEventState>
+internal sealed class AccountAddedBalanceEventValidator : Validator<AccountAddedBalanceEvent, AccountAddedBalanceEventState>
 {
     /// <inheritdoc/>
     public override void Validate(AccountAddedBalanceEvent entityToValidate, AccountAddedBalanceEventState expectedState)
     {
         Assert.NotEqual(Guid.Empty, entityToValidate.Id.Value);
         Assert.Equal(expectedState.AccountingPeriodId, entityToValidate.AccountingPeriodId);
-        Assert.Equal(expectedState.AccountName, entityToValidate.Account.Name);
+        Assert.Equal(expectedState.AccountId, entityToValidate.Account.Id);
         Assert.Equal(expectedState.EventDate, entityToValidate.EventDate);
         Assert.Equal(expectedState.EventSequence, entityToValidate.EventSequence);
         new FundAmountValidator().Validate(entityToValidate.FundAmounts, expectedState.FundAmounts);
@@ -41,9 +41,9 @@ internal sealed record AccountAddedBalanceEventState
     public required int EventSequence { get; init; }
 
     /// <summary>
-    /// Account for this Account Added Balance Event
+    /// Account ID for this Account Added Balance Event
     /// </summary>
-    public required string AccountName { get; init; }
+    public required AccountId AccountId { get; init; }
 
     /// <summary>
     /// Fund Amounts for this Account Added Balance Event

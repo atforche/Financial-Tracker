@@ -39,7 +39,7 @@ public class AccountBalanceService(
         {
             foreach (IBalanceEvent balanceEvent in balanceEvents.GetValueOrDefault(date) ?? [])
             {
-                accountBalance = balanceEvent.ApplyEventToBalance(accountBalance);
+                accountBalance = balanceEvent.ApplyEventToBalance(accountBalance, ApplicationDirection.Standard);
             }
             results.Add(new AccountBalanceByDate
             {
@@ -64,7 +64,7 @@ public class AccountBalanceService(
         AccountBalance accountBalance = DetermineAccountBalanceAtStartOfDate(account, dateRange.GetInclusiveDates().First());
         foreach (IBalanceEvent balanceEvent in GetAllBalanceEventsForAccountInDateRange(accountId, dateRange))
         {
-            accountBalance = balanceEvent.ApplyEventToBalance(accountBalance);
+            accountBalance = balanceEvent.ApplyEventToBalance(accountBalance, ApplicationDirection.Standard);
             results.Add(new AccountBalanceByEvent
             {
                 BalanceEvent = balanceEvent,
@@ -102,7 +102,7 @@ public class AccountBalanceService(
             // Otherwise, calculate the ending balance by applying all the Balance Events currently in the Accounting Period
             foreach (IBalanceEvent balanceEvent in GetAllBalanceEventsForAccountInAccountingPeriod(accountId, accountingPeriod.Id))
             {
-                endingBalance = balanceEvent.ApplyEventToBalance(endingBalance);
+                endingBalance = balanceEvent.ApplyEventToBalance(endingBalance, ApplicationDirection.Standard);
             }
         }
         return new AccountBalanceByAccountingPeriod(accountingPeriod, startingBalance, endingBalance);
@@ -154,7 +154,7 @@ public class AccountBalanceService(
                 .Where(balanceEvent => balanceEvent.EventDate >= checkpointPeriod.PeriodStartDate).ToList() ?? [];
             foreach (IBalanceEvent balanceEvent in Enumerable.Reverse(pastPeriodBalanceEventsDuringOrAfterDateRange))
             {
-                accountBalance = balanceEvent.ReverseEventFromBalance(accountBalance);
+                accountBalance = balanceEvent.ApplyEventToBalance(accountBalance, ApplicationDirection.Reverse);
             }
         }
 
@@ -169,7 +169,7 @@ public class AccountBalanceService(
                 .Concat(GetAllBalanceEventsForAccountInDateRange(account.Id, beforeDateRange));
             foreach (IBalanceEvent balanceEvent in balanceEventsBeforeDate)
             {
-                accountBalance = balanceEvent.ApplyEventToBalance(accountBalance);
+                accountBalance = balanceEvent.ApplyEventToBalance(accountBalance, ApplicationDirection.Standard);
             }
         }
         return accountBalance;
@@ -191,7 +191,7 @@ public class AccountBalanceService(
         var balanceEventDateRange = new DateRange(account.AccountAddedBalanceEvent.EventDate, date, endDateType: EndpointType.Exclusive);
         foreach (IBalanceEvent balanceEvent in GetAllBalanceEventsForAccountInDateRange(account.Id, balanceEventDateRange))
         {
-            accountBalance = balanceEvent.ApplyEventToBalance(accountBalance);
+            accountBalance = balanceEvent.ApplyEventToBalance(accountBalance, ApplicationDirection.Standard);
         }
         return accountBalance;
     }
@@ -228,7 +228,7 @@ public class AccountBalanceService(
     private IEnumerable<IBalanceEvent> GetAllBalanceEventsForAccountInDateRange(AccountId accountId, DateRange dateRange) =>
         balanceEventRepository
             .FindAllByDateRange(dateRange)
-            .Where(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate) && balanceEvent.AccountId == accountId)
+            .Where(balanceEvent => dateRange.IsInRange(balanceEvent.EventDate) && balanceEvent.GetAccountIds().Contains(accountId))
             .Order(new BalanceEventComparer());
 
     /// <summary>
@@ -241,6 +241,6 @@ public class AccountBalanceService(
         AccountId accountId,
         AccountingPeriodId accountingPeriodId) =>
         balanceEventRepository.FindAllByAccountingPeriod(accountingPeriodId)
-            .Where(balanceEvent => balanceEvent.AccountId == accountId)
+            .Where(balanceEvent => balanceEvent.GetAccountIds().Contains(accountId))
             .Order(new BalanceEventComparer());
 }

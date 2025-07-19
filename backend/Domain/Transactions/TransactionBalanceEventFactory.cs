@@ -24,20 +24,29 @@ public class TransactionBalanceEventFactory(
         new(request.Transaction,
             request.EventDate,
             GetBalanceEventSequence(request.EventDate),
-            request.AccountId,
-            request.EventType,
-            request.AccountType);
+            request.Parts);
 
     /// <inheritdoc/>
     protected override bool ValidatePrivate(CreateTransactionBalanceEventRequest request, [NotNullWhen(false)] out Exception? exception)
     {
         exception = null;
 
-        if (request.Transaction.TransactionBalanceEvents.Any(balanceEvent =>
-            balanceEvent.EventType == request.EventType && balanceEvent.AccountType == request.AccountType))
+        if (request.Transaction.TransactionBalanceEvents.Any(balanceEvent => balanceEvent.EventDate == request.EventDate))
         {
-            // Validate that we aren't creating a duplicate balance Event
+            // Validate that multiple Transaction Balance Events can't exist for the same date
             exception = new InvalidOperationException();
+        }
+        if (request.Transaction.DebitAccountId == null &&
+            (request.Parts.Contains(TransactionBalanceEventPartType.AddedDebit) || request.Parts.Contains(TransactionBalanceEventPartType.PostedDebit)))
+        {
+            // Validate that the Transaction must have a debit account for the balance event to have debit account parts
+            exception ??= new InvalidOperationException();
+        }
+        if (request.Transaction.CreditAccountId == null &&
+            (request.Parts.Contains(TransactionBalanceEventPartType.AddedCredit) || request.Parts.Contains(TransactionBalanceEventPartType.PostedCredit)))
+        {
+            // Validate that the Transaction must have a credit account for the balance event to have credit account parts
+            exception ??= new InvalidOperationException();
         }
         return exception == null;
     }
@@ -54,12 +63,22 @@ public record CreateTransactionBalanceEventRequest : CreateBalanceEventRequest
     public required Transaction Transaction { get; init; }
 
     /// <summary>
-    /// Event Type for the Transaction Balance Event
+    /// Transaction Balance Event Parts for the Transaction Balance Event
     /// </summary>
-    public required TransactionBalanceEventType EventType { get; init; }
+    public required IReadOnlyCollection<TransactionBalanceEventPartType> Parts { get; init; }
 
-    /// <summary>
-    /// Account Type for the Transaction Balance Event
-    /// </summary>
-    public required TransactionAccountType AccountType { get; init; }
+    /// <inheritdoc/>
+    public override IReadOnlyCollection<AccountId> GetAccountIds()
+    {
+        List<AccountId> results = [];
+        if (Parts.Contains(TransactionBalanceEventPartType.AddedDebit) || Parts.Contains(TransactionBalanceEventPartType.PostedDebit))
+        {
+            results.Add(Transaction.DebitAccountId ?? throw new InvalidOperationException());
+        }
+        if (Parts.Contains(TransactionBalanceEventPartType.AddedCredit) || Parts.Contains(TransactionBalanceEventPartType.PostedCredit))
+        {
+            results.Add(Transaction.CreditAccountId ?? throw new InvalidOperationException());
+        }
+        return results;
+    }
 }

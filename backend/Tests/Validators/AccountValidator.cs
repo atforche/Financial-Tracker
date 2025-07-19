@@ -5,7 +5,7 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates that the provided <see cref="Account"/> matches the expected state
 /// </summary>
-internal sealed class AccountValidator : EntityValidator<Account, AccountState>
+internal sealed class AccountValidator : Validator<Account, AccountState>
 {
     /// <inheritdoc/>
     public override void Validate(Account entity, AccountState expectedState)

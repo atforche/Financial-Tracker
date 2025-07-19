@@ -6,7 +6,7 @@ namespace Tests.Validators;
 /// <summary>
 /// Validator class that validates the provided <see cref="AccountBalanceByEvent"/> matches the expected state
 /// </summary>
-internal sealed class AccountBalanceByEventValidator : EntityValidator<AccountBalanceByEvent, AccountBalanceByEventState>
+internal sealed class AccountBalanceByEventValidator : Validator<AccountBalanceByEvent, AccountBalanceByEventState>
 {
     /// <inheritdoc/>
     public override void Validate(AccountBalanceByEvent entity, AccountBalanceByEventState expectedState)
@@ -14,7 +14,7 @@ internal sealed class AccountBalanceByEventValidator : EntityValidator<AccountBa
         Assert.Equal(expectedState.AccountingPeriodId, entity.BalanceEvent.AccountingPeriodId);
         Assert.Equal(expectedState.EventDate, entity.BalanceEvent.EventDate);
         Assert.Equal(expectedState.EventSequence, entity.BalanceEvent.EventSequence);
-        Assert.Equal(expectedState.AccountId, entity.BalanceEvent.AccountId);
+        Assert.Equal(expectedState.AccountId, entity.AccountBalance.Account.Id);
         new FundAmountValidator().Validate(entity.AccountBalance.FundBalances, expectedState.FundBalances);
         new FundAmountValidator().Validate(entity.AccountBalance.PendingFundBalanceChanges, expectedState.PendingFundBalanceChanges);
     }
