@@ -14,14 +14,18 @@ public class FundModel
     /// <inheritdoc cref="Fund.Name"/>
     public string Name { get; init; }
 
+    /// <inheritdoc cref="Fund.Description"/>
+    public string Description { get; init; }
+
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     [JsonConstructor]
-    public FundModel(Guid id, string name)
+    public FundModel(Guid id, string name, string description)
     {
         Id = id;
         Name = name;
+        Description = description;
     }
 
     /// <summary>
@@ -32,5 +36,6 @@ public class FundModel
     {
         Id = fund.Id.Value;
         Name = fund.Name;
+        Description = fund.Description;
     }
 }

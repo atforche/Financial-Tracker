@@ -16,13 +16,29 @@ public class Fund : Entity<FundId>
     public string Name { get; private set; }
 
     /// <summary>
+    /// Description for this Funds
+    /// </summary>
+    public string Description { get; private set; }
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="name">Name for this Fund</param>
-    internal Fund(string name) : base(new FundId(Guid.NewGuid())) => Name = name;
+    /// <param name="description">Description for this Fund</param>
+    internal Fund(string name, string description)
+        : base(new FundId(Guid.NewGuid()))
+    {
+        Name = name;
+        Description = description;
+    }
 
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private Fund() : base() => Name = "";
+    private Fund()
+        : base()
+    {
+        Name = "";
+        Description = "";
+    }
 }

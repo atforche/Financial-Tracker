@@ -44,7 +44,7 @@ public sealed class FundController(
     [HttpPost("")]
     public async Task<IActionResult> CreateAsync(CreateFundModel createFundModel)
     {
-        Fund newFund = fundFactory.Create(createFundModel.Name);
+        Fund newFund = fundFactory.Create(createFundModel.Name, createFundModel.Description);
         fundRepository.Add(newFund);
         await unitOfWork.SaveChangesAsync();
         return Ok(new FundModel(newFund));

@@ -11,14 +11,15 @@ public class FundFactory(IFundRepository fundRepository)
     /// Create a new Fund
     /// </summary>
     /// <param name="name">Name for the Fund</param>
+    /// <param name="description">Description for the Fund</param>
     /// <returns>The newly created Fund</returns>
-    public Fund Create(string name)
+    public Fund Create(string name, string description)
     {
         if (!ValidateName(name, out Exception? exception))
         {
             throw exception;
         }
-        return new Fund(name);
+        return new Fund(name, description);
     }
 
     /// <summary>

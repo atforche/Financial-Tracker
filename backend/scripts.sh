@@ -41,3 +41,17 @@ run-database-integration-tests()
     dotnet test ./Backend.sln --no-build --verbosity normal --environment USE_DATABASE=TRUE
     echo -e "Database integration tests completed\n" 
 }
+
+create-new-migration()
+{
+    echo "Creating new migration"
+    dotnet ef migrations add $1 --msbuildprojectextensionspath ../.artifacts/obj/Data
+    echo -e "New migration created\n"
+}
+
+apply-migrations()
+{
+    echo "Applying database migrations"
+    dotnet ef database update
+    echo -e "Database migrations applied\n"
+}

@@ -32,7 +32,7 @@ internal sealed class MultipleAccountingPeriodScenarioSetup : ScenarioSetup
     /// </summary>
     public MultipleAccountingPeriodScenarioSetup()
     {
-        Fund = GetService<FundFactory>().Create("Test");
+        Fund = GetService<FundFactory>().Create("Test", "");
         GetService<IFundRepository>().Add(Fund);
         GetService<TestUnitOfWork>().SaveChanges();
 

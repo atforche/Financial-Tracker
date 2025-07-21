@@ -35,9 +35,9 @@ internal sealed class DefaultScenarioSetup : ScenarioSetup
     /// </summary>
     public DefaultScenarioSetup()
     {
-        Fund = GetService<FundFactory>().Create("Test");
+        Fund = GetService<FundFactory>().Create("Test", "");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<FundFactory>().Create("OtherTest");
+        OtherFund = GetService<FundFactory>().Create("OtherTest", "");
         GetService<IFundRepository>().Add(OtherFund);
         GetService<TestUnitOfWork>().SaveChanges();
 

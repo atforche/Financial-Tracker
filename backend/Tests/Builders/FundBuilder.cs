@@ -19,7 +19,7 @@ public sealed class FundBuilder(
     /// <returns>The newly constructed Fund</returns>
     public Fund Build()
     {
-        Fund fund = fundFactory.Create(_name);
+        Fund fund = fundFactory.Create(_name, "");
         fundRepository.Add(fund);
         testUnitOfWork.SaveChanges();
         return fund;

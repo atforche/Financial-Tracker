@@ -37,9 +37,9 @@ internal sealed class AccountScenarioSetup : ScenarioSetup
     /// <param name="accountType">Account Type for this Setup</param>
     public AccountScenarioSetup(AccountType accountType)
     {
-        Fund = GetService<FundFactory>().Create("Test");
+        Fund = GetService<FundFactory>().Create("Test", "");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<FundFactory>().Create("OtherTest");
+        OtherFund = GetService<FundFactory>().Create("OtherTest", "");
         GetService<IFundRepository>().Add(OtherFund);
         GetService<TestUnitOfWork>().SaveChanges();
 
