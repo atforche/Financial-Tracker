@@ -20,9 +20,19 @@ class NavigationPage extends FieldValue {
   );
 
   /**
+   * The FundDashboard page displays a dashboard highlighting fund information.
+   */
+  public static readonly FundDashboard = new NavigationPage("Funds", false);
+
+  /**
    * The AccountEntry page displays a data entry page for entering accounts.
    */
   public static readonly AccountEntry = new NavigationPage("Accounts", true);
+
+  /**
+   * The FundEntry page displays a data entry page for entering funds.
+   */
+  public static readonly FundEntry = new NavigationPage("Funds", true);
 
   /**
    * Collection of all NavigationPages.
@@ -30,7 +40,9 @@ class NavigationPage extends FieldValue {
   public static override readonly Collection = [
     NavigationPage.Overview,
     NavigationPage.AccountDashboard,
+    NavigationPage.FundDashboard,
     NavigationPage.AccountEntry,
+    NavigationPage.FundEntry,
   ];
 
   /**

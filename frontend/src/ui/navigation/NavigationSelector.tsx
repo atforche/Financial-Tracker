@@ -1,4 +1,11 @@
-import { AccountBalance, GridView, Timeline } from "@mui/icons-material";
+import {
+  AccountBalance,
+  Assessment,
+  AttachMoney,
+  GridView,
+  QuestionMark,
+  Timeline,
+} from "@mui/icons-material";
 import {
   Box,
   Divider,
@@ -24,7 +31,16 @@ const getNavigationIcon = function (page: NavigationPage): JSX.Element {
   if (page === NavigationPage.AccountDashboard) {
     return <Timeline key="Accounts" />;
   }
-  return <AccountBalance key="Accounts" />;
+  if (page === NavigationPage.FundDashboard) {
+    return <Assessment key="Funds" />;
+  }
+  if (page === NavigationPage.AccountEntry) {
+    return <AccountBalance key="Accounts" />;
+  }
+  if (page === NavigationPage.FundEntry) {
+    return <AttachMoney key="Funds" />;
+  }
+  return <QuestionMark />;
 };
 
 /**
