@@ -16,6 +16,7 @@ import type { Fund, FundKey } from "@data/Fund";
 import DialogMode from "@core/fieldValues/DialogMode";
 import FundDialog from "./FundDialog";
 import { getAllFunds } from "@data/FundRepository";
+import { useQuery } from "@data/useQuery";
 import { useState } from "react";
 
 /**
@@ -46,8 +47,6 @@ interface DialogState {
   key: FundKey | null;
 }
 
-const rows: Fund[] = getAllFunds();
-
 /**
  * Component that provides a list of funds and makes the basic create, read, update, and delete
  * operations available on them.
@@ -61,6 +60,11 @@ const FundEntryList = function (): JSX.Element {
     isOpen: false,
     mode: DialogMode.Create,
     key: null,
+  });
+
+  const { data } = useQuery<Fund[]>({
+    queryFunction: getAllFunds,
+    initialData: [],
   });
 
   const columns: Column[] = [
@@ -171,7 +175,7 @@ const FundEntryList = function (): JSX.Element {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows
+              {data
                 .sort((first, second) => Number(first.key - second.key))
                 .map((row) => (
                   <TableRow hover role="checkbox" tabIndex={-1} key={row.name}>

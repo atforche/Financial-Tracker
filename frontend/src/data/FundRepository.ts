@@ -41,8 +41,10 @@ const addFund = function (request: CreateFundRequest): Fund {
  * Retrieves all Funds.
  * @returns {Fund[]} An array of all Funds.
  */
-const getAllFunds = function (): Fund[] {
-  return funds;
+const getAllFunds = async function (): Promise<Fund[]> {
+  const response = await fetch("http://localhost:8080/funds");
+  const parsedResponse = (await response.json()) as Fund[];
+  return parsedResponse;
 };
 
 /**
