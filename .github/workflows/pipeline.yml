@@ -24,28 +24,23 @@ jobs:
 
     - name: Restore dependencies
       run: |
-        . ./scripts.sh 
-        restore-solution
+        python3 dev-scripts.py restore
 
     - name: Verify formatting
       run: |
-        . ./scripts.sh 
-        format-solution
+        python3 dev-scripts.py format
 
     - name: Build
       run: |
-        . ./scripts.sh 
-        build-solution
+        python3 dev-scripts.py build
 
     - name: Test
       run: |
-        . ./scripts.sh 
-        run-unit-tests
+        python3 dev-scripts.py test
 
     - name: Database Integration Test
       run: |
-        . ./scripts.sh 
-        run-database-integration-tests
+        python3 dev-scripts.py test --use-database
 
   # Builds and tests the Vite project
   build_vite:
