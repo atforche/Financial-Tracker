@@ -24,7 +24,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(corsPolicyName,
         policy =>
         {
-            _ = policy.WithOrigins("http://localhost:5000").AllowAnyHeader().AllowAnyMethod();
+            _ = policy.WithOrigins(Rest.Controllers.EnvironmentManager.FrontendOrigin).AllowAnyHeader().AllowAnyMethod();
         });
 });
 
@@ -42,20 +42,23 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 WebApplication app = builder.Build();
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     _ = app.UseSwagger();
     _ = app.UseSwaggerUI();
 }
-
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.UseCors(corsPolicyName);
-
 app.MapControllers();
+
+using (IServiceScope serviceScope = app.Services.CreateScope())
+{
+    // Ensure the database is healthy and the environment variables are all defined
+    IServiceProvider services = serviceScope.ServiceProvider;
+    services.GetRequiredService<Data.DatabaseContext>()?.RunHealthCheck();
+    Data.EnvironmentManager.PrintEnvironment();
+    Rest.Controllers.EnvironmentManager.PrintEnvironment();
+}
 
 app.Run();

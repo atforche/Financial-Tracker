@@ -47,7 +47,30 @@ public class DatabaseContext : DbContext
     /// <summary>
     /// Gets the database path for this Database Context
     /// </summary>
-    protected virtual string DatabasePath { get; } = Path.Join("/workspaces/Financial-Tracker/backend", "backend.db");
+    protected virtual string DatabasePath => EnvironmentManager.DatabasePath;
+
+    /// <summary>
+    /// Run a health check to ensure the database is in the correct state
+    /// </summary>
+    public void RunHealthCheck()
+    {
+        if (!Path.Exists(DatabasePath))
+        {
+            throw new InvalidOperationException();
+        }
+        if (!Database.CanConnect())
+        {
+            throw new InvalidOperationException();
+        }
+        if (Database.HasPendingModelChanges())
+        {
+            throw new InvalidOperationException();
+        }
+        if (Database.GetPendingMigrations().Any())
+        {
+            throw new InvalidOperationException();
+        }
+    }
 
     /// <inheritdoc/>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>

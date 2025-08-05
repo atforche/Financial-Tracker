@@ -17,6 +17,7 @@ def main():
     setup_build_solution_command(subparsers)
     setup_test_solution_command(subparsers)
     setup_run_pipeline(parser, subparsers)
+    setup_run(subparsers)
     setup_create_new_migration_command(subparsers)
     setup_apply_migrations_command(subparsers)
 
@@ -80,6 +81,21 @@ def setup_run_pipeline(parser, subparsers):
 
     subparser = subparsers.add_parser("run-pipeline", help="Runs the full build pipeline for the backend solution")
     subparser.set_defaults(func=run_pipeline)
+
+def setup_run(subparsers):
+    def run(args):
+        print(f"Running the backend on port {args.port} with database at {args.database_path}")
+        run_command(f"""dotnet run --project ./Rest.Controllers/Rest.Controllers.csproj 
+                    --environment ASPNETCORE_ENVIRONMENT=Development 
+                    --environment ASPNETCORE_HTTP_PORTS={args.port} 
+                    --environment DATABASE_PATH={args.database_path}
+                    --environment FRONTEND_ORIGIN={args.frontend_origin}""")
+
+    parser = subparsers.add_parser("run", help="Runs the backend solution")
+    parser.add_argument("port", help="Specifies the port the backend should listen on")
+    parser.add_argument("database_path", help="Specifies the path to the database file")
+    parser.add_argument("frontend_origin", help="Specifies the origin of frontend to allow cross-origin requests")
+    parser.set_defaults(func=run)
 
 def setup_create_new_migration_command(subparsers):
     def create_new_migration(args):

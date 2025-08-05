@@ -8,5 +8,5 @@ namespace Tests.Mocks;
 public class TestDatabaseContext : DatabaseContext
 {
     /// <inheritdoc/>
-    protected override string DatabasePath { get; } = Path.Join(DatabaseFixture.DatabaseDirectory, $"{Guid.NewGuid()}.db");
+    protected override string DatabasePath => Path.Join(DatabaseFixture.DatabaseDirectory, $"{Guid.NewGuid()}.db");
 }
