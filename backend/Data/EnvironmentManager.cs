@@ -10,7 +10,7 @@ public static class EnvironmentManager
     /// <summary>
     /// Environment variable that stores the path to the database file
     /// </summary>
-    public static string DatabasePath { get; } = Environment.GetEnvironmentVariable("DATABASE_PATH") ?? throw new InvalidOperationException();
+    public static string DatabasePath { get; } = Environment.GetEnvironmentVariable("DATABASE_PATH") ?? "backend.db";
 
     /// <summary>
     /// Prints a summary of the current environment variables

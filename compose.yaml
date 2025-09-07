@@ -1,0 +1,11 @@
+name: "$INSTANCE_NAME"
+
+services:
+  backend:
+    image: "backend-$INSTANCE_NAME"
+    container_name: "backend-$INSTANCE_NAME"
+    ports: 
+      - "$ASPNETCORE_HTTP_PORTS:$EXTERNAL_PORT"
+    volumes:
+      - $EXTERNAL_DATABASE_PATH:$DATABASE_PATH
+    env_file: ".env"

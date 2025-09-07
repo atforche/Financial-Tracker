@@ -1,5 +1,2 @@
 [*.cs]
-dotnet_diagnostic.CA1861.severity = none
-dotnet_diagnostic.IDE0058.severity = none
-dotnet_diagnostic.IDE0161.severity = none
-dotnet_diagnostic.IDE0300.severity = none
+generated_code = true

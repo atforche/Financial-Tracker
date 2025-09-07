@@ -1,0 +1,11 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /backend 
+
+COPY . ./
+RUN dotnet restore
+RUN dotnet publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:9.0
+WORKDIR /backend
+COPY --from=build /backend/.artifacts/publish .
+ENTRYPOINT ["dotnet", "./Rest.Controllers/Rest.Controllers.dll"]
