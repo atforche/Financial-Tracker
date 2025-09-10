@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./frontend
+        working-directory: ./scripts
 
     steps:
     - uses: actions/checkout@v4
@@ -61,13 +61,13 @@ jobs:
         node-version: 22.5.1
 
     - name: Install dependencies
-      run: npm ci
+      run: python3 frontend_scripts.py install
 
     - name: Verify Formatting
-      run: npx prettier . --check
+      run: python3 frontend_scripts.py format
 
     - name: Lint
-      run: npm run lint    
+      run: python3 frontend_scripts.py lint
 
     - name: Build
-      run: npm run build
+      run: python3 frontend_scripts.py build

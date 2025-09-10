@@ -70,7 +70,7 @@ class TestSolution(Command):
             self.run_subprocess("dotnet test ../backend/Backend.sln --no-build --verbosity normal")
 
 class RunPipeline(Command):
-    """Command class that runs the entire build pipeline"""
+    """Command class that runs the entire build pipeline for the backend solution"""
 
     def __init__(self):
         """Constructs a new instance of this class"""
