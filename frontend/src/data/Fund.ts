@@ -12,7 +12,7 @@ type FundKey = bigint;
  * Data class representing a fund.
  */
 class Fund {
-  private readonly _key: FundKey;
+  private readonly _id: FundKey;
   private _name = "";
   private _description: string | null = null;
 
@@ -21,7 +21,7 @@ class Fund {
    * @param {CreateFundRequest} request - Request to create a Fund.
    */
   public constructor({ name, description }: CreateFundRequest) {
-    this._key = fundKey++;
+    this._id = fundKey++;
     this._name = name;
     this._description = description;
   }
@@ -31,7 +31,7 @@ class Fund {
    * @returns {FundKey} The key for this Fund.
    */
   public get key(): FundKey {
-    return this._key;
+    return this._id;
   }
 
   /**

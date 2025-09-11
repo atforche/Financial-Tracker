@@ -80,6 +80,10 @@ module.exports = {
         format: ['StrictPascalCase']
       },
       {
+        selector: 'objectLiteralProperty',
+        format: null
+      },
+      {
         selector: 'classProperty',
         modifiers: ['public'],
         format: ['StrictPascalCase']

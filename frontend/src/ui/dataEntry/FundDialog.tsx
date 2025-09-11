@@ -69,7 +69,7 @@ const FundDialog = function ({
     addFund({
       name: fundName,
       description: fundDescription,
-    });
+    }).catch(() => null);
     handleClose();
   };
   const handleUpdate = function (): void {

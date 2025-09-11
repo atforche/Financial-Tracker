@@ -31,10 +31,15 @@ interface CreateFundRequest {
  * @param {CreateFundRequest} request - Request to create a new Fund.
  * @returns {Fund} The newly created Fund.
  */
-const addFund = function (request: CreateFundRequest): Fund {
-  const fund = new Fund(request);
-  funds.push(fund);
-  return fund;
+const addFund = async function (request: CreateFundRequest): Promise<Fund> {
+  const response = await fetch("http://localhost:8080/funds", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
+  return (await response.json()) as Fund;
 };
 
 /**
