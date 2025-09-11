@@ -62,7 +62,7 @@ const FundEntryList = function (): JSX.Element {
     key: null,
   });
 
-  const { data } = useQuery<Fund[]>({
+  const { data, refetch } = useQuery<Fund[]>({
     queryFunction: getAllFunds,
     initialData: [],
   });
@@ -202,6 +202,7 @@ const FundEntryList = function (): JSX.Element {
             mode: dialogState.mode,
             key: dialogState.key,
           });
+          refetch();
         }}
         fundKey={dialogState.key}
       />

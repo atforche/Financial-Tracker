@@ -156,7 +156,7 @@ module.exports = {
     "no-lone-blocks": "error",
     "no-lonely-if": "error",
     "no-loop-func": "error",
-    "no-magic-numbers": "error",
+    "no-magic-numbers": ["error", { ignore: [0, 1] }],
     "no-multi-assign": "error",
     "no-multi-str": "error",
     "no-nested-ternary": "error",

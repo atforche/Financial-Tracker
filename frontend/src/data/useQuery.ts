@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 /**
  * Interface representing the arguments to the useQuery hook.
@@ -18,10 +18,20 @@ interface UseQueryArgs<T> {
 const useQuery = function <T>({
   queryFunction,
   initialData,
-}: UseQueryArgs<T>): { data: T; isLoading: boolean; isError: boolean } {
+}: UseQueryArgs<T>): {
+  data: T;
+  isLoading: boolean;
+  isError: boolean;
+  refetch: () => void;
+} {
   const [data, setData] = useState<T>(initialData);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [refetchIndex, setRefetchIndex] = useState(0);
+
+  const refetch = useCallback(() => {
+    setRefetchIndex((prev) => prev + 1);
+  }, []);
 
   useEffect(() => {
     const fetchData = async function (): Promise<void> {
@@ -39,9 +49,9 @@ const useQuery = function <T>({
     };
 
     fetchData().catch(() => null);
-  }, [queryFunction]);
+  }, [queryFunction, refetchIndex]);
 
-  return { data, isLoading, isError };
+  return { data, isLoading, isError, refetch };
 };
 
 export { useQuery };
