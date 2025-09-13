@@ -14,7 +14,7 @@ import {
   updateFund,
 } from "@data/FundRepository";
 import DialogMode from "@core/fieldValues/DialogMode";
-import StringEntryField from "@ui/framework/StringEntryField";
+import StringEntryField from "@ui/framework/dialog/StringEntryField";
 import { useState } from "react";
 
 const defaultFundName = null;

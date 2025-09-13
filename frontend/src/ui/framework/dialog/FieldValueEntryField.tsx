@@ -1,6 +1,6 @@
 import { Autocomplete, TextField } from "@mui/material";
 import DialogMode from "@core/fieldValues/DialogMode";
-import type { EntryFieldProps } from "@ui/framework/EntryFieldProps";
+import type { EntryFieldProps } from "@ui/framework/dialog/EntryFieldProps";
 import type FieldValue from "@core/fieldValues/FieldValue";
 
 interface FieldValueEntryFieldProps<T extends FieldValue>

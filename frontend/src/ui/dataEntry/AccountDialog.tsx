@@ -14,10 +14,10 @@ import {
   updateAccount,
 } from "@data/AccountRepository";
 import AccountType from "@core/fieldValues/AccountType";
-import BooleanEntryField from "@ui/framework/BooleanEntryField";
+import BooleanEntryField from "@ui/framework/dialog/BooleanEntryField";
 import DialogMode from "@core/fieldValues/DialogMode";
-import FieldValueEntryField from "@ui/framework/FieldValueEntryField";
-import StringEntryField from "@ui/framework/StringEntryField";
+import FieldValueEntryField from "@ui/framework/dialog/FieldValueEntryField";
+import StringEntryField from "@ui/framework/dialog/StringEntryField";
 import { useState } from "react";
 
 const defaultAccountName = null;

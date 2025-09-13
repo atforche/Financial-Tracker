@@ -1,5 +1,5 @@
 import DialogMode from "@core/fieldValues/DialogMode";
-import type { NullableEntryFieldProps } from "@ui/framework/EntryFieldProps";
+import type { NullableEntryFieldProps } from "@ui/framework/dialog/EntryFieldProps";
 import { TextField } from "@mui/material";
 import { toNullIfBlank } from "@core/utils";
 

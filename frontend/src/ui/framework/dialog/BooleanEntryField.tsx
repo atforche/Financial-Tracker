@@ -1,6 +1,6 @@
 import { Checkbox, FormControlLabel } from "@mui/material";
 import DialogMode from "@core/fieldValues/DialogMode";
-import type { EntryFieldProps } from "@ui/framework/EntryFieldProps";
+import type { EntryFieldProps } from "@ui/framework/dialog/EntryFieldProps";
 
 /**
  * Component that presents the user with an entry field where they can enter boolean values.
