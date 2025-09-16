@@ -1,5 +1,4 @@
 import { Stack, useMediaQuery, useTheme } from "@mui/material";
-import AccountEntryList from "@ui/dataEntry/AccountEntryList";
 import FundEntryList from "./dataEntry/FundEntryList";
 import NavigationPage from "@core/fieldValues/NavigationPage";
 import PermanentNavigation from "@ui/navigation/PermanentNavigation";
@@ -46,9 +45,6 @@ const App = function (): JSX.Element {
   };
 
   const buildContent = function (): JSX.Element {
-    if (currentPage === NavigationPage.AccountEntry) {
-      return <AccountEntryList />;
-    }
     if (currentPage === NavigationPage.FundEntry) {
       return <FundEntryList />;
     }

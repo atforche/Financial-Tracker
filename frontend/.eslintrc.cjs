@@ -198,7 +198,7 @@ module.exports = {
     "prefer-rest-params": "error",
     "prefer-spread": "error",
     "prefer-template": "error",
-    "require-await": "error",
+    "require-await": "off",
     "sort-imports": "error",
     "sort-keys": "off",
     "sort-vars": "error",

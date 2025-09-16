@@ -30,10 +30,10 @@ public sealed class FundController(
     /// <param name="fundId">Id of the Fund to retrieve</param>
     /// <returns>The Fund that matches the provided ID</returns>
     [HttpGet("{fundId}")]
-    public IActionResult Get(Guid fundId)
+    public FundModel Get(Guid fundId)
     {
         FundId id = fundIdFactory.Create(fundId);
-        return Ok(new FundModel(fundRepository.FindById(id)));
+        return new FundModel(fundRepository.FindById(id));
     }
 
     /// <summary>
@@ -42,11 +42,11 @@ public sealed class FundController(
     /// <param name="createFundModel">Request to create a Fund</param>
     /// <returns>The created Fund</returns>
     [HttpPost("")]
-    public async Task<IActionResult> CreateAsync(CreateFundModel createFundModel)
+    public async Task<FundModel> CreateAsync(CreateFundModel createFundModel)
     {
         Fund newFund = fundFactory.Create(createFundModel.Name, createFundModel.Description);
         fundRepository.Add(newFund);
         await unitOfWork.SaveChangesAsync();
-        return Ok(new FundModel(newFund));
+        return new FundModel(newFund);
     }
 }

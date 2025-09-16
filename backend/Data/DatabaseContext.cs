@@ -47,7 +47,7 @@ public class DatabaseContext : DbContext
     /// <summary>
     /// Gets the database path for this Database Context
     /// </summary>
-    protected virtual string DatabasePath => EnvironmentManager.DatabasePath;
+    protected virtual string DatabasePath => EnvironmentManager.Instance.DatabasePath;
 
     /// <summary>
     /// Run a health check to ensure the database is in the correct state

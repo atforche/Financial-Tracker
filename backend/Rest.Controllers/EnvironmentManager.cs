@@ -1,37 +1,39 @@
-using System.Reflection;
-
 namespace Rest.Controllers;
 
 /// <summary>
-/// Static class for managing environment variables required by the Rest.Controllers assembly
+/// Class for managing environment variables required by the Rest.Controllers assembly
 /// </summary>
-public static class EnvironmentManager
+public class EnvironmentManager : Data.EnvironmentVariableManager
 {
+    private static readonly Lazy<EnvironmentManager> _instance = new(() => new EnvironmentManager());
+
     /// <summary>
     /// Environment variable that stores the environment type that is running
     /// </summary>
-    public static string EnvironmentType { get; } = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? throw new InvalidOperationException();
+    public string EnvironmentType { get; }
 
     /// <summary>
     /// Environment variable that stores the port that the backend should run on
     /// </summary>
-    public static string Port { get; } = Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS") ?? throw new InvalidOperationException();
+    public string Port { get; }
 
     /// <summary>
     /// Environment variables that stores the origin that frontend requests will come from
     /// </summary>
-    public static string FrontendOrigin { get; } = Environment.GetEnvironmentVariable("FRONTEND_ORIGIN") ?? throw new InvalidOperationException();
+    public string FrontendOrigin { get; }
 
     /// <summary>
-    /// Prints a summary of the current environment variables
+    /// Gets the singleton instance of EnvironmentManager
     /// </summary>
-    public static void PrintEnvironment()
+    public static EnvironmentManager Instance => _instance.Value;
+
+    /// <summary>
+    /// Constructs a new instance of this class
+    /// </summary>
+    private EnvironmentManager()
     {
-        Console.WriteLine("Rest.Controllers Environment Variables:");
-        foreach (PropertyInfo property in typeof(EnvironmentManager).GetProperties())
-        {
-            Console.WriteLine($"{property.Name}: {property.GetValue(null)}");
-        }
-        Console.WriteLine("");
+        EnvironmentType = GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        Port = GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS");
+        FrontendOrigin = GetEnvironmentVariable("FRONTEND_ORIGIN");
     }
 }

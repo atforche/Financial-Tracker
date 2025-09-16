@@ -4,3 +4,4 @@ dist
 tsconfig.json
 vite.config.ts
 .vscode
+api.d.ts

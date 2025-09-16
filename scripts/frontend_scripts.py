@@ -16,6 +16,7 @@ def main():
     commands.commands.append(BuildFrontend())
     commands.commands.append(RunPipeline())
     commands.commands.append(RunFrontend())
+    commands.commands.append(RefreshModels())
     commands.run()
 
 class InstallPackages(Command):
@@ -105,6 +106,21 @@ class RunFrontend(Command):
 
         os.chdir("../frontend")
         self.run_subprocess("npx vite")
+
+class RefreshModels(Command):
+    """Command class that refreshes the API models used by the frontend"""
+
+    def __init__(self):
+        """Constructs a new instance of this class"""
+
+        super().__init__("refresh-models", "Refreshes the models used by the frontend")
+        self.steps.append(Step("Refresh Models", "Models refreshed", self.refresh_models))
+
+    def refresh_models(self):
+        """Refreshes the models used by the frontend"""
+
+        os.chdir("../frontend")
+        self.run_subprocess("npx openapi-typescript ../backend/.artifacts/obj/Rest.Controllers/Financial-Tracker-API.json --output src/data/api.d.ts")
 
 if __name__ == "__main__":
     main()

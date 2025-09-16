@@ -16,6 +16,7 @@ def main():
     commands.commands.append(FormatSolution())
     commands.commands.append(BuildSolution())
     commands.commands.append(TestSolution())
+    commands.commands.append(RunPipeline())
     commands.commands.append(RunApi())
     commands.commands.append(CreateMigration())
     commands.run()

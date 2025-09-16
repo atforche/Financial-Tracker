@@ -1,27 +1,24 @@
-using System.Reflection;
-
 namespace Data;
 
 /// <summary>
-/// Static class for managing environment variables required by the Data assembly
+/// Class for managing environment variables required by the Data assembly
 /// </summary>
-public static class EnvironmentManager
+public class EnvironmentManager : EnvironmentVariableManager
 {
+    private static readonly Lazy<EnvironmentManager> _instance = new(() => new EnvironmentManager());
+
     /// <summary>
     /// Environment variable that stores the path to the database file
     /// </summary>
-    public static string DatabasePath { get; } = Environment.GetEnvironmentVariable("DATABASE_PATH") ?? "backend.db";
+    public string DatabasePath { get; }
 
     /// <summary>
-    /// Prints a summary of the current environment variables
+    /// Gets the singleton instance of EnvironmentManager
     /// </summary>
-    public static void PrintEnvironment()
-    {
-        Console.WriteLine("Data Environment Variables:");
-        foreach (PropertyInfo property in typeof(EnvironmentManager).GetProperties())
-        {
-            Console.WriteLine($"{property.Name}: {property.GetValue(null)}");
-        }
-        Console.WriteLine("");
-    }
+    public static EnvironmentManager Instance => _instance.Value;
+
+    /// <summary>
+    /// Constructs a new instance of this class
+    /// </summary>
+    private EnvironmentManager() => DatabasePath = GetEnvironmentVariable("DATABASE_PATH");
 }

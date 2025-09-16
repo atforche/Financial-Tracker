@@ -9,7 +9,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import type { Fund, FundKey } from "@data/Fund";
+import { type Fund, getAllFunds } from "@data/FundRepository";
 import Action from "@ui/framework/listframe/Action";
 import ActionColumn from "@ui/framework/listframe/ActionColumn";
 import type Column from "@ui/framework/listframe/Column";
@@ -17,7 +17,6 @@ import DialogMode from "@core/fieldValues/DialogMode";
 import FundDialog from "@ui/dataEntry/FundDialog";
 import HeaderAction from "@ui/framework/listframe/HeaderAction";
 import StringColumn from "@ui/framework/listframe/StringColumn";
-import { getAllFunds } from "@data/FundRepository";
 import { useQuery } from "@data/useQuery";
 import { useState } from "react";
 
@@ -25,12 +24,12 @@ import { useState } from "react";
  * Interface representing the state of the child dialog.
  * @param {boolean} isOpen - Boolean flag indicating whether the dialog is open.
  * @param {DialogMode} mode - Current mode for the dialog.
- * @param {FundKey | null} key - Key of the current Fund for the dialog, or null if no Fund is selected.
+ * @param {string | null} id - ID of the current Fund for the dialog, or null if no Fund is selected.
  */
 interface DialogState {
   isOpen: boolean;
   mode: DialogMode;
-  key: FundKey | null;
+  id: string | null;
 }
 
 /**
@@ -42,7 +41,7 @@ const FundEntryList = function (): JSX.Element {
   const [dialogState, setDialogState] = useState<DialogState>({
     isOpen: false,
     mode: DialogMode.Create,
-    key: null,
+    id: null,
   });
 
   const { data, refetch } = useQuery<Fund[]>({
@@ -52,27 +51,27 @@ const FundEntryList = function (): JSX.Element {
 
   const columns: Column<Fund>[] = [
     new StringColumn<Fund>("Name", (value) => value.name),
-    new StringColumn<Fund>("Description", (value) => value.description ?? ""),
+    new StringColumn<Fund>("Description", (value) => value.description),
     new ActionColumn<Fund>(
       new HeaderAction(<AddCircleOutline />, "Add", () => {
-        setDialogState({ isOpen: true, mode: DialogMode.Create, key: null });
+        setDialogState({ isOpen: true, mode: DialogMode.Create, id: null });
       }),
       [
         new Action<Fund>(<Info />, (row: Fund) => () => {
-          setDialogState({ isOpen: true, mode: DialogMode.View, key: row.key });
+          setDialogState({ isOpen: true, mode: DialogMode.View, id: row.id });
         }),
         new Action<Fund>(<ModeEdit />, (row: Fund) => () => {
           setDialogState({
             isOpen: true,
             mode: DialogMode.Update,
-            key: row.key,
+            id: row.id,
           });
         }),
         new Action<Fund>(<Delete />, (row: Fund) => () => {
           setDialogState({
             isOpen: true,
             mode: DialogMode.Delete,
-            key: row.key,
+            id: row.id,
           });
         }),
       ],
@@ -108,13 +107,11 @@ const FundEntryList = function (): JSX.Element {
               </TableRow>
             </TableHead>
             <TableBody>
-              {data
-                .sort((first, second) => Number(first.key - second.key))
-                .map((row) => (
-                  <TableRow hover role="checkbox" tabIndex={-1} key={row.name}>
-                    {columns.map((column) => column.getRowElement(row))}
-                  </TableRow>
-                ))}
+              {data.map((row) => (
+                <TableRow hover role="checkbox" tabIndex={-1} key={row.name}>
+                  {columns.map((column) => column.getRowElement(row))}
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>
@@ -126,11 +123,11 @@ const FundEntryList = function (): JSX.Element {
           setDialogState({
             isOpen: false,
             mode: dialogState.mode,
-            key: dialogState.key,
+            id: null,
           });
           refetch();
         }}
-        fundKey={dialogState.key}
+        fundId={dialogState.id}
       />
     </Box>
   );

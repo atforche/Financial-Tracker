@@ -4,18 +4,12 @@ import {
   DialogContent,
   DialogTitle,
   Stack,
-  Typography,
 } from "@mui/material";
-import type { Fund, FundKey } from "@data/Fund";
-import {
-  addFund,
-  deleteFund,
-  getFundByKey,
-  updateFund,
-} from "@data/FundRepository";
+import { type Fund, addFund, getFundById } from "@data/FundRepository";
+import { useCallback, useState } from "react";
 import DialogMode from "@core/fieldValues/DialogMode";
 import StringEntryField from "@ui/framework/dialog/StringEntryField";
-import { useState } from "react";
+import { useQuery } from "@data/useQuery";
 
 const defaultFundName = null;
 const defaultFundDescription = null;
@@ -25,13 +19,13 @@ const defaultFundDescription = null;
  * @param {boolean} isOpen - True if this modal should be open, false otherwise.
  * @param {DialogMode} mode - Mode this dialog should open in.
  * @param {Function} onClose - Callback to perform when this modal is closed.
- * @param {FundKey} fundKey - Key of a Fund to populate the dialog, or null if the Fund is being created.
+ * @param {string | null} fundId - ID of a Fund to populate the dialog, or null if the Fund is being created.
  */
 interface FundDialogProps {
   isOpen: boolean;
   mode: DialogMode;
   onClose: () => void;
-  fundKey?: FundKey | null;
+  fundId?: string | null;
 }
 
 /**
@@ -46,7 +40,7 @@ const FundDialog = function ({
   isOpen,
   mode,
   onClose,
-  fundKey = null,
+  fundId = null,
 }: FundDialogProps): JSX.Element {
   // State for this component
   const [fund, setFund] = useState<Fund | null>(null);
@@ -54,6 +48,18 @@ const FundDialog = function ({
   const [fundDescription, setFundDescription] = useState<string | null>(
     defaultFundDescription,
   );
+
+  const fetchFund = useCallback(async () => {
+    if (fundId !== null) {
+      return getFundById(fundId);
+    }
+    return null;
+  }, [fundId]);
+
+  const { data } = useQuery<Fund | null>({
+    queryFunction: fetchFund,
+    initialData: null,
+  });
 
   // Event handlers for this component
   const handleClose = function (): void {
@@ -68,22 +74,8 @@ const FundDialog = function ({
     }
     addFund({
       name: fundName,
-      description: fundDescription,
+      description: fundDescription ?? "",
     }).catch(() => null);
-    handleClose();
-  };
-  const handleUpdate = function (): void {
-    if (fundKey === null) {
-      throw new Error("Key must be defined");
-    }
-    updateFund(fundKey, { name: fundName, description: fundDescription });
-    handleClose();
-  };
-  const handleDelete = function (): void {
-    if (fundKey === null) {
-      throw new Error("Key must be defined");
-    }
-    deleteFund(fundKey);
     handleClose();
   };
 
@@ -92,18 +84,12 @@ const FundDialog = function ({
   if (
     isOpen &&
     fund === null &&
-    [DialogMode.View, DialogMode.Update].includes(mode)
+    [DialogMode.View, DialogMode.Update].includes(mode) &&
+    data !== null
   ) {
-    if (fundKey === null) {
-      throw new Error("Key must be defined");
-    }
-    const existingFund = getFundByKey(fundKey);
-    if (existingFund === null) {
-      throw new Error("Invalid key for account");
-    }
-    setFund(existingFund);
-    setFundName(existingFund.name);
-    setFundDescription(existingFund.description);
+    setFund(data);
+    setFundName(data.name);
+    setFundDescription(data.description);
   }
 
   return (
@@ -123,37 +109,25 @@ const FundDialog = function ({
           spacing={3}
           sx={{ paddingLeft: "25px", paddingRight: "25px", paddingTop: "25px" }}
         >
-          {mode !== DialogMode.Delete ? (
-            <>
-              <StringEntryField
-                dialogMode={mode}
-                label="Name"
-                setValue={setFundName}
-                value={fundName}
-              />
-              <StringEntryField
-                dialogMode={mode}
-                label="Description"
-                setValue={setFundDescription}
-                value={fundDescription}
-              />
-            </>
-          ) : (
-            <Typography>
-              Are you sure you want to delete this Account?
-            </Typography>
-          )}
+          <>
+            <StringEntryField
+              dialogMode={mode}
+              label="Name"
+              setValue={setFundName}
+              value={fundName ?? ""}
+            />
+            <StringEntryField
+              dialogMode={mode}
+              label="Description"
+              setValue={setFundDescription}
+              value={fundDescription ?? ""}
+            />
+          </>
         </Stack>
         <Stack direction="row" justifyContent="right">
           <Button onClick={handleClose}>Close</Button>
           {mode === DialogMode.Create ? (
             <Button onClick={handleAdd}>Add</Button>
-          ) : null}
-          {mode === DialogMode.Update ? (
-            <Button onClick={handleUpdate}>Update</Button>
-          ) : null}
-          {mode === DialogMode.Delete ? (
-            <Button onClick={handleDelete}>Delete</Button>
           ) : null}
         </Stack>
       </DialogContent>
