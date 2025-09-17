@@ -4,10 +4,9 @@ on: [push]
 
 jobs:
 
-  # Builds and tests the .NET solution
-  build_dotnet:
+  pipeline:
 
-    name: ".NET Build"
+    name: "CI Pipeline"
 
     runs-on: ubuntu-latest
     defaults:
@@ -22,52 +21,42 @@ jobs:
       with:
         dotnet-version: 9.x.x
 
-    - name: Restore dependencies
-      run: |
-        python3 backend_scripts.py restore
-
-    - name: Verify formatting
-      run: |
-        python3 backend_scripts.py format
-
-    - name: Build
-      run: |
-        python3 backend_scripts.py build
-
-    - name: Test
-      run: |
-        python3 backend_scripts.py test
-
-    - name: Database Integration Test
-      run: |
-        python3 backend_scripts.py test --use-database
-
-  # Builds and tests the Vite project
-  build_vite:
-
-    name: "Vite Build"
-
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./scripts
-
-    steps:
-    - uses: actions/checkout@v4
-
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
         node-version: 22.5.1
 
-    - name: Install dependencies
+    - name: Restore Backend Solution
+      run: |
+        python3 backend_scripts.py restore
+
+    - name: Format Backend Solution
+      run: |
+        python3 backend_scripts.py format
+
+    - name: Build Backend Solution
+      run: |
+        python3 backend_scripts.py build
+
+    - name: Test Backend Solution
+      run: |
+        python3 backend_scripts.py test
+
+    - name: Test Backend Solution
+      run: |
+        python3 backend_scripts.py test --use-database
+
+    - name: Install Frontend Dependencies
       run: python3 frontend_scripts.py install
 
-    - name: Verify Formatting
+    - name: Format Frontend
       run: python3 frontend_scripts.py format
 
-    - name: Lint
+    - name: Lint Frontend
       run: python3 frontend_scripts.py lint
 
-    - name: Build
+    - name: Verify Frontend Models
+      run: python3 frontend_scripts.py verify-models
+
+    - name: Build Frontend
       run: python3 frontend_scripts.py build

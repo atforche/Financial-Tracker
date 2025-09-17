@@ -10,23 +10,23 @@ def main():
     """Builds and runs the command collection for this script"""
 
     commands = CommandCollection("Helper scripts for developing the Financial Tracker frontend")
-    commands.commands.append(InstallPackages())
+    commands.commands.append(InstallFrontendPackages())
     commands.commands.append(FormatFrontend())
     commands.commands.append(LintFrontend())
     commands.commands.append(BuildFrontend())
-    commands.commands.append(RunPipeline())
     commands.commands.append(RunFrontend())
-    commands.commands.append(RefreshModels())
+    commands.commands.append(RefreshFrontendModels())
+    commands.commands.append(VerifyFrontendModels())
     commands.run()
 
-class InstallPackages(Command):
+class InstallFrontendPackages(Command):
     """Command class that installs the npm dependencies for the frontend"""
 
     def __init__(self):
         """Constructs a new instance of this class"""
 
-        super().__init__("install", "Installs the npm dependencies frontend")
-        self.steps.append(Step("Install Dependencies", "Dependencies installed", self.install_dependencies))
+        super().__init__("install", "Installs the npm dependencies for the frontend")
+        self.steps.append(Step("Install Frontend Dependencies", "Dependencies installed", self.install_dependencies))
 
     def install_dependencies(self):
         """Installs the npm dependencies for the frontend"""
@@ -80,18 +80,6 @@ class BuildFrontend(Command):
         self.run_subprocess("npx tsc")
         self.run_subprocess("npx vite build")
 
-class RunPipeline(Command):
-    """Command class that runs the entire build pipeline for the frontend"""
-
-    def __init__(self):
-        """Constructs a new instance of this class"""
-
-        super().__init__("run-pipeline", "Runs the full build pipeline for the frontend")
-        self.steps.append(Step("", "", lambda: InstallPackages().run([])))
-        self.steps.append(Step("", "", lambda: FormatFrontend().run([])))
-        self.steps.append(Step("", "", lambda: LintFrontend().run([])))
-        self.steps.append(Step("", "", lambda: BuildFrontend().run([])))
-
 class RunFrontend(Command):
     """Command class that runs the frontend"""
 
@@ -107,20 +95,35 @@ class RunFrontend(Command):
         os.chdir("../frontend")
         self.run_subprocess("npx vite")
 
-class RefreshModels(Command):
+class RefreshFrontendModels(Command):
     """Command class that refreshes the API models used by the frontend"""
 
     def __init__(self):
         """Constructs a new instance of this class"""
 
         super().__init__("refresh-models", "Refreshes the models used by the frontend")
-        self.steps.append(Step("Refresh Models", "Models refreshed", self.refresh_models))
+        self.steps.append(Step("Refresh Frontend Models", "Models refreshed", self.refresh_models))
 
     def refresh_models(self):
         """Refreshes the models used by the frontend"""
 
         os.chdir("../frontend")
         self.run_subprocess("npx openapi-typescript ../backend/.artifacts/obj/Rest.Controllers/Financial-Tracker-API.json --output src/data/api.d.ts")
+
+class VerifyFrontendModels(Command):
+    """Command class that verifies the API models used by the frontend are up to date"""
+
+    def __init__(self):
+        """Constructs a new instance of this class"""
+
+        super().__init__("verify-models", "Verifies the models used by the frontend are up to date")
+        self.steps.append(Step("Verify Frontend Models", "Models verified", self.verify_models))
+
+    def verify_models(self):
+        """Verifies the models used by the frontend are up to date"""
+
+        os.chdir("../frontend")
+        self.run_subprocess("npx openapi-typescript ../backend/.artifacts/obj/Rest.Controllers/Financial-Tracker-API.json --output src/data/api.d.ts --check")
 
 if __name__ == "__main__":
     main()

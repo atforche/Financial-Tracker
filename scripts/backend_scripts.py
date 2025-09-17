@@ -12,45 +12,44 @@ def main():
     """Builds and runs the command collection for this script"""
 
     commands = CommandCollection("Helper scripts for developing the Financial Tracker backend")
-    commands.commands.append(RestoreSolution())
-    commands.commands.append(FormatSolution())
-    commands.commands.append(BuildSolution())
-    commands.commands.append(TestSolution())
-    commands.commands.append(RunPipeline())
-    commands.commands.append(RunApi())
+    commands.commands.append(RestoreBackendSolution())
+    commands.commands.append(FormatBackendSolution())
+    commands.commands.append(BuildBackendSolution())
+    commands.commands.append(TestBackendSolution())
+    commands.commands.append(RunBackendApi())
     commands.commands.append(CreateMigration())
     commands.run()
 
-class RestoreSolution(Command):
+class RestoreBackendSolution(Command):
     """Command class that runs a Nuget restore on the solution"""
 
     def __init__(self):
         """Constructs a new instance of this class"""
 
         super().__init__("restore", "Runs a Nuget restore on the solution")
-        self.steps.append(Step("Restore Solution", "Restore completed", lambda: self.run_subprocess("dotnet restore ../backend/Backend.sln")))
+        self.steps.append(Step("Restore Backend Solution", "Restore completed", lambda: self.run_subprocess("dotnet restore ../backend/Backend.sln")))
 
-class FormatSolution(Command):
+class FormatBackendSolution(Command):
     """Command class that runs formatting on the solution"""
 
     def __init__(self) -> None:
         """Constructs a new instance of this class"""
 
         super().__init__("format", "Runs formatting on the solution")
-        self.steps.append(Step("Format Solution", "Format completed",
+        self.steps.append(Step("Format Backend Solution", "Format completed",
                                lambda: self.run_subprocess("dotnet format ../backend/Backend.sln --verify-no-changes --no-restore --severity info")))
 
-class BuildSolution(Command):
+class BuildBackendSolution(Command):
     """Command class that builds the solution"""
 
     def __init__(self):
         """Constructs a new instance of this class"""
 
         super().__init__("build", "Builds the backend solution")
-        self.steps.append(Step("Build Solution", "Build completed", lambda: self.run_subprocess("dotnet build ../backend/Backend.sln --no-restore")))
+        self.steps.append(Step("Build Backend Solution", "Build completed", lambda: self.run_subprocess("dotnet build ../backend/Backend.sln --no-restore")))
 
-class TestSolution(Command):
-    """Command class that tests the solution"""
+class TestBackendSolution(Command):
+    """Command class that tests the backend solution"""
 
     use_database: Annotated[bool, "If provided, runs the unit test against an actual database"]
 
@@ -58,7 +57,7 @@ class TestSolution(Command):
         """Constructs a new instance of this class"""
 
         super().__init__("test", "Runs the unit tests on the backend solution")
-        self.steps.append(Step("Test solution", "Tests completed", self.run_tests))
+        self.steps.append(Step("Test Backend Solution", "Tests completed", self.run_tests))
 
     def run_tests(self):
         """Runs the tests"""
@@ -70,20 +69,7 @@ class TestSolution(Command):
             print("Running unit tests")
             self.run_subprocess("dotnet test ../backend/Backend.sln --no-build --verbosity normal")
 
-class RunPipeline(Command):
-    """Command class that runs the entire build pipeline for the backend solution"""
-
-    def __init__(self):
-        """Constructs a new instance of this class"""
-
-        super().__init__("run-pipeline", "Runs the full build pipeline for the backend solution")
-        self.steps.append(Step("", "", lambda: RestoreSolution().run([])))
-        self.steps.append(Step("", "", lambda: FormatSolution().run([])))
-        self.steps.append(Step("", "", lambda: BuildSolution().run([])))
-        self.steps.append(Step("", "", lambda: TestSolution().run([])))
-        self.steps.append(Step("", "", lambda: TestSolution().run(["--use-database"])))
-
-class RunApi(Command):
+class RunBackendApi(Command):
     """Command class that runs the backend API"""
 
     port: Annotated[int, "Port that the backend REST API should listen on"]
