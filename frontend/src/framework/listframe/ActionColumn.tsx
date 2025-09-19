@@ -1,6 +1,6 @@
-import type Action from "@ui/framework/listframe/Action";
-import Column from "@ui/framework/listframe/Column";
-import type HeaderAction from "@ui/framework/listframe/HeaderAction";
+import type Action from "@framework/listframe/Action";
+import Column from "@framework/listframe/Column";
+import type HeaderAction from "@framework/listframe/HeaderAction";
 
 /**
  * Class that represents a column that displays action buttons in a list frame.
@@ -18,7 +18,7 @@ class ActionColumn<T> extends Column<T> {
       mapping: (value: T) => (
         <>{actions.map((action) => action.getElement(value))}</>
       ),
-      align: "center",
+      align: "right",
       width: 125,
     });
   }

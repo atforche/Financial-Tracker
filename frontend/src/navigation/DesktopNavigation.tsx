@@ -1,27 +1,27 @@
 import { Drawer, Toolbar, Typography } from "@mui/material";
-import type NavigationPage from "@core/fieldValues/NavigationPage";
-import NavigationSelector from "@ui/navigation/NavigationSelector";
+import type { NavigationPage } from "@navigation/NavigationPage";
+import NavigationSelector from "@navigation/NavigationSelector";
 import appLogo from "/logo.svg";
 
 /**
- * Props for the PermanentNavigation component.
+ * Props for the DesktopNavigation component.
  * @param {NavigationPage} initialPage - Initial page to be selected.
  * @param {Function} onNavigation - Callback to be executed whenever the navigation selection changes.
  */
-interface PermanentNavigationProps {
+interface DesktopNavigationProps {
   initialPage: NavigationPage;
   onNavigation: (val: NavigationPage) => void;
 }
 
 /**
  * Component that presents the user with a navigation layout that is permanently on the screen.
- * @param {PermanentNavigationProps} props - Props for the PermanentNavigation component.
- * @returns {JSX.Element} JSX element representing the PermanentNavigation component.
+ * @param {DesktopNavigationProps} props - Props for the DesktopNavigation component.
+ * @returns {JSX.Element} JSX element representing the DesktopNavigation component.
  */
-const PermanentNavigation = function ({
+const DesktopNavigation = function ({
   initialPage,
   onNavigation,
-}: PermanentNavigationProps): JSX.Element {
+}: DesktopNavigationProps): JSX.Element {
   const drawerWidth = 260;
   return (
     <Drawer
@@ -46,4 +46,4 @@ const PermanentNavigation = function ({
   );
 };
 
-export default PermanentNavigation;
+export default DesktopNavigation;

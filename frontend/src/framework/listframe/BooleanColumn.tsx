@@ -1,5 +1,5 @@
 import { Checkbox } from "@mui/material";
-import Column from "@ui/framework/listframe/Column";
+import Column from "src/framework/listframe/Column";
 
 /**
  * Class that represents a column that displays boolean values in a list frame.

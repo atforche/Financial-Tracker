@@ -8,30 +8,30 @@ import {
   useTheme,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import type NavigationPage from "@core/fieldValues/NavigationPage";
-import NavigationSelector from "@ui/navigation/NavigationSelector";
+import type { NavigationPage } from "@navigation/NavigationPage";
+import NavigationSelector from "@navigation/NavigationSelector";
 import appLogo from "/logo.svg";
 import { useState } from "react";
 
 /**
- * Props for the TemporaryNavigation component.
+ * Props for the MobileNavigation component.
  * @param {NavigationPage} initialPage - Initial page to be selected.
  * @param {Function} onNavigation - Callback to be executed whenever the navigation selection changes.
  */
-interface TemporaryNavigationProps {
+interface MobileNavigationProps {
   initialPage: NavigationPage;
   onNavigation: (val: NavigationPage) => void;
 }
 
 /**
- * Component that presents the user with a navigation layout that is only temporarily on the screen.
- * @param {TemporaryNavigationProps} props - Props for the TemporaryNavigation component.
- * @returns {JSX.Element} JSX element representing the TemporaryNavigation component.
+ * Component that presents the user with a navigation layout for mobile devices.
+ * @param {MobileNavigationProps} props - Props for the MobileNavigation component.
+ * @returns {JSX.Element} JSX element representing the MobileNavigation component.
  */
-const TemporaryNavigation = function ({
+const MobileNavigation = function ({
   initialPage,
   onNavigation,
-}: TemporaryNavigationProps): JSX.Element {
+}: MobileNavigationProps): JSX.Element {
   const theme = useTheme();
   const zIndexIncrement = 1;
   const drawerWidth = 260;
@@ -100,4 +100,4 @@ const TemporaryNavigation = function ({
   );
 };
 
-export default TemporaryNavigation;
+export default MobileNavigation;

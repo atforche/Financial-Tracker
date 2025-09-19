@@ -12,7 +12,7 @@ interface ColumnArgs<T> {
   id: string;
   label: string | JSX.Element;
   mapping: (value: T) => string | JSX.Element;
-  align: "center" | "left";
+  align: "center" | "left" | "right";
   width: number;
 }
 
@@ -23,7 +23,7 @@ class Column<T> {
   private readonly _id: string;
   private readonly _label: string | JSX.Element;
   private readonly _mapping: (value: T) => string | JSX.Element;
-  private readonly _align: "center" | "left";
+  private readonly _align: "center" | "left" | "right";
   private readonly _width: number;
 
   /**

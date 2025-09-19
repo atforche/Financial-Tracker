@@ -1,4 +1,4 @@
-import { AddCircleOutline, Delete, Info, ModeEdit } from "@mui/icons-material";
+import { AddCircleOutline, Info } from "@mui/icons-material";
 import {
   Box,
   Paper,
@@ -10,39 +10,23 @@ import {
   Typography,
 } from "@mui/material";
 import { type Fund, getAllFunds } from "@data/FundRepository";
-import Action from "@ui/framework/listframe/Action";
-import ActionColumn from "@ui/framework/listframe/ActionColumn";
-import type Column from "@ui/framework/listframe/Column";
-import DialogMode from "@core/fieldValues/DialogMode";
-import FundDialog from "@ui/dataEntry/FundDialog";
-import HeaderAction from "@ui/framework/listframe/HeaderAction";
-import StringColumn from "@ui/framework/listframe/StringColumn";
+import Action from "@framework/listframe/Action";
+import ActionColumn from "@framework/listframe/ActionColumn";
+import type Column from "@framework/listframe/Column";
+import FundDialog from "@funds/FundDialog";
+import HeaderAction from "@framework/listframe/HeaderAction";
+import ModifyFundDialog from "@funds/ModifyFundDialog";
+import StringColumn from "@framework/listframe/StringColumn";
 import { useQuery } from "@data/useQuery";
 import { useState } from "react";
-
-/**
- * Interface representing the state of the child dialog.
- * @param {boolean} isOpen - Boolean flag indicating whether the dialog is open.
- * @param {DialogMode} mode - Current mode for the dialog.
- * @param {string | null} id - ID of the current Fund for the dialog, or null if no Fund is selected.
- */
-interface DialogState {
-  isOpen: boolean;
-  mode: DialogMode;
-  id: string | null;
-}
 
 /**
  * Component that provides a list of funds and makes the basic create, read, update, and delete
  * operations available on them.
  * @returns {JSX.Element} JSX element representing a list of funds with various action buttons.
  */
-const FundEntryList = function (): JSX.Element {
-  const [dialogState, setDialogState] = useState<DialogState>({
-    isOpen: false,
-    mode: DialogMode.Create,
-    id: null,
-  });
+const FundListFrame = function (): JSX.Element {
+  const [dialog, setDialog] = useState<JSX.Element | null>(null);
 
   const { data, refetch } = useQuery<Fund[]>({
     queryFunction: getAllFunds,
@@ -54,25 +38,26 @@ const FundEntryList = function (): JSX.Element {
     new StringColumn<Fund>("Description", (value) => value.description),
     new ActionColumn<Fund>(
       new HeaderAction(<AddCircleOutline />, "Add", () => {
-        setDialogState({ isOpen: true, mode: DialogMode.Create, id: null });
+        setDialog(
+          <ModifyFundDialog
+            fundId={null}
+            onClose={() => {
+              setDialog(null);
+              refetch();
+            }}
+          />,
+        );
       }),
       [
         new Action<Fund>(<Info />, (row: Fund) => () => {
-          setDialogState({ isOpen: true, mode: DialogMode.View, id: row.id });
-        }),
-        new Action<Fund>(<ModeEdit />, (row: Fund) => () => {
-          setDialogState({
-            isOpen: true,
-            mode: DialogMode.Update,
-            id: row.id,
-          });
-        }),
-        new Action<Fund>(<Delete />, (row: Fund) => () => {
-          setDialogState({
-            isOpen: true,
-            mode: DialogMode.Delete,
-            id: row.id,
-          });
+          setDialog(
+            <FundDialog
+              fundId={row.id}
+              onClose={() => {
+                setDialog(null);
+              }}
+            />,
+          );
         }),
       ],
     ),
@@ -116,21 +101,9 @@ const FundEntryList = function (): JSX.Element {
           </Table>
         </TableContainer>
       </Paper>
-      <FundDialog
-        isOpen={dialogState.isOpen}
-        mode={dialogState.mode}
-        onClose={() => {
-          setDialogState({
-            isOpen: false,
-            mode: dialogState.mode,
-            id: null,
-          });
-          refetch();
-        }}
-        fundId={dialogState.id}
-      />
+      {dialog}
     </Box>
   );
 };
 
-export default FundEntryList;
+export default FundListFrame;

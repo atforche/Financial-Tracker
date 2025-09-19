@@ -1,4 +1,4 @@
-import Column from "@ui/framework/listframe/Column";
+import Column from "@framework/listframe/Column";
 
 /**
  * Class that represents a column that displays string values in a list frame.
