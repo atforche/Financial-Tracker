@@ -27,7 +27,7 @@ const StringEntryField = function ({
       label={label}
       variant="outlined"
       value={value}
-      InputProps={{ disabled: setValue === null }}
+      InputProps={{ readOnly: setValue === null }}
       onChange={(event) => {
         setValue?.(event.target.value);
       }}

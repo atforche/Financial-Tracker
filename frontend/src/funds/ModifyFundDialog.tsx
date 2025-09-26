@@ -78,6 +78,7 @@ const ModifyFundDialog = function ({
           </>
         </Stack>
         <Stack direction="row" justifyContent="right">
+          <Button onClick={onClose}>Cancel</Button>
           <Button
             onClick={() => {
               addFund({ name: fundName, description: fundDescription }).catch(
