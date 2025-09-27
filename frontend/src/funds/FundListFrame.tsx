@@ -1,4 +1,4 @@
-import { AddCircleOutline, Info } from "@mui/icons-material";
+import { AddCircleOutline, Info, ModeEdit } from "@mui/icons-material";
 import {
   Box,
   Paper,
@@ -40,7 +40,7 @@ const FundListFrame = function (): JSX.Element {
       new HeaderAction(<AddCircleOutline />, "Add", () => {
         setDialog(
           <ModifyFundDialog
-            fundId={null}
+            fund={null}
             onClose={() => {
               setDialog(null);
               refetch();
@@ -52,9 +52,20 @@ const FundListFrame = function (): JSX.Element {
         new Action<Fund>(<Info />, (row: Fund) => () => {
           setDialog(
             <FundDialog
-              fundId={row.id}
+              fund={row}
               onClose={() => {
                 setDialog(null);
+              }}
+            />,
+          );
+        }),
+        new Action<Fund>(<ModeEdit />, (row: Fund) => () => {
+          setDialog(
+            <ModifyFundDialog
+              fund={row}
+              onClose={() => {
+                setDialog(null);
+                refetch();
               }}
             />,
           );

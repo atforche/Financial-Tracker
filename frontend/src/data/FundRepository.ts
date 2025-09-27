@@ -1,15 +1,38 @@
 import type { components } from "@data/api";
 
 type Fund = components["schemas"]["FundModel"];
-type CreateFundRequest = components["schemas"]["CreateFundModel"];
+type CreateOrUpdateFundRequest =
+  components["schemas"]["CreateOrUpdateFundModel"];
 
 /**
  * Creates a new Fund and returns it.
- * @param {CreateFundRequest} request - Request to create a new Fund.
+ * @param {CreateOrUpdateFundRequest} request - Request to create a new Fund.
  * @returns {Fund} The newly created Fund.
  */
-const addFund = async function (request: CreateFundRequest): Promise<Fund> {
+const addFund = async function (
+  request: CreateOrUpdateFundRequest,
+): Promise<Fund> {
   const response = await fetch("http://localhost:8080/funds", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
+  return (await response.json()) as Fund;
+};
+
+/**
+ * Updates an existing Fund.
+ * @param {Fund} fund - Existing Fund to update.
+ * @param {CreateOrUpdateFundRequest} request - Request to update the Fund.
+ * @returns {Fund} The updated Fund.
+ */
+const updateFund = async function (
+  fund: Fund,
+  request: CreateOrUpdateFundRequest,
+): Promise<Fund> {
+  const response = await fetch(`http://localhost:8080/funds/${fund.id}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -41,4 +64,11 @@ const getFundById = async function (id: string): Promise<Fund | null> {
   return (await response.json()) as Fund;
 };
 
-export { type Fund, type CreateFundRequest, addFund, getAllFunds, getFundById };
+export {
+  type Fund,
+  type CreateOrUpdateFundRequest,
+  addFund,
+  updateFund,
+  getAllFunds,
+  getFundById,
+};

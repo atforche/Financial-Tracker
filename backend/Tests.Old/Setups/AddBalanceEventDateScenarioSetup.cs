@@ -52,9 +52,9 @@ internal sealed class AddBalanceEventDateScenarioSetup : ScenarioSetup
     {
         EventDate = eventDate;
 
-        Fund = GetService<FundFactory>().Create("Test", "");
+        Fund = GetService<FundService>().Create("Test", "");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<FundFactory>().Create("OtherTest", "");
+        OtherFund = GetService<FundService>().Create("OtherTest", "");
         GetService<IFundRepository>().Add(OtherFund);
         GetService<TestUnitOfWork>().SaveChanges();
 

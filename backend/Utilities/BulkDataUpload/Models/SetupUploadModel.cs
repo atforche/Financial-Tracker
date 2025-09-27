@@ -10,5 +10,5 @@ internal sealed class SetupUploadModel
     /// <summary>
     /// Funds for this Setup Model
     /// </summary>
-    public required ICollection<CreateFundModel> Funds { get; init; }
+    public required ICollection<CreateOrUpdateFundModel> Funds { get; init; }
 }

@@ -61,24 +61,24 @@ internal sealed class FundScenarioSetup : ScenarioSetup
     {
         if (scenario == FundScenario.One)
         {
-            Fund fund = GetService<FundFactory>().Create("Test", "");
+            Fund fund = GetService<FundService>().Create("Test", "");
             GetService<IFundRepository>().Add(fund);
             GetService<TestUnitOfWork>().SaveChanges();
             return [fund];
         }
         if (scenario == FundScenario.Multiple)
         {
-            Fund fund = GetService<FundFactory>().Create("Test", "");
+            Fund fund = GetService<FundService>().Create("Test", "");
             GetService<IFundRepository>().Add(fund);
             GetService<TestUnitOfWork>().SaveChanges();
-            Fund otherFund = GetService<FundFactory>().Create("OtherTest", "");
+            Fund otherFund = GetService<FundService>().Create("OtherTest", "");
             GetService<IFundRepository>().Add(otherFund);
             GetService<TestUnitOfWork>().SaveChanges();
             return [fund, otherFund];
         }
         if (scenario == FundScenario.Duplicate)
         {
-            Fund fund = GetService<FundFactory>().Create("Test", "");
+            Fund fund = GetService<FundService>().Create("Test", "");
             GetService<IFundRepository>().Add(fund);
             GetService<TestUnitOfWork>().SaveChanges();
             return [fund, fund];

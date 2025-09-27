@@ -44,7 +44,7 @@ internal sealed class GetAccountBalanceAccountingPeriodOverlapScenarioSetup : Sc
     /// <param name="eventDate">Balance Event Date for this test case</param>
     public GetAccountBalanceAccountingPeriodOverlapScenarioSetup(AccountingPeriodType accountingPeriodType, DateOnly eventDate)
     {
-        Fund = GetService<FundFactory>().Create("Test", "");
+        Fund = GetService<FundService>().Create("Test", "");
         GetService<IFundRepository>().Add(Fund);
         GetService<TestUnitOfWork>().SaveChanges();
 

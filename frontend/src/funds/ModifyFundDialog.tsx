@@ -5,18 +5,17 @@ import {
   DialogTitle,
   Stack,
 } from "@mui/material";
-import { type Fund, addFund, getFundById } from "@data/FundRepository";
-import { useCallback, useState } from "react";
+import { type Fund, addFund, updateFund } from "@data/FundRepository";
 import StringEntryField from "@framework/dialog/StringEntryField";
-import { useQuery } from "@data/useQuery";
+import { useState } from "react";
 
 /**
  * Props for the ModifyFundDialog component.
- * @param {string | null} fundId - ID of a Fund to display in this dialog, or null if a Fund is being added.
+ * @param {Fund | null} fund - Fund to display in this dialog, or null if a Fund is being added.
  * @param {Function} onClose - Callback to perform when this dialog is closed.
  */
 interface ModifyFundDialogProps {
-  fundId: string | null;
+  fund: Fund | null;
   onClose: () => void;
 }
 
@@ -27,25 +26,13 @@ interface ModifyFundDialogProps {
  * @throws An error if the Fund ID is provided and doesn't point to a valid fund.
  */
 const ModifyFundDialog = function ({
-  fundId,
+  fund,
   onClose,
 }: ModifyFundDialogProps): JSX.Element {
-  const [fundName, setFundName] = useState<string>("");
-  const [fundDescription, setFundDescription] = useState<string>("");
-
-  const fetchFund = useCallback(
-    async () => (fundId !== null ? getFundById(fundId) : null),
-    [fundId],
+  const [fundName, setFundName] = useState<string>(fund?.name ?? "");
+  const [fundDescription, setFundDescription] = useState<string>(
+    fund?.description ?? "",
   );
-  const { data } = useQuery<Fund | null>({
-    queryFunction: fetchFund,
-    initialData: null,
-  });
-
-  if (data !== null) {
-    setFundName(data.name);
-    setFundDescription(data.description);
-  }
 
   return (
     <Dialog open={true}>
@@ -56,7 +43,7 @@ const ModifyFundDialog = function ({
           minWidth: "500px",
         }}
       >
-        {fundId === null ? "Add Fund" : "Edit Fund"}
+        {fund === null ? "Add Fund" : "Edit Fund"}
       </DialogTitle>
       <DialogContent>
         <Stack
@@ -81,13 +68,20 @@ const ModifyFundDialog = function ({
           <Button onClick={onClose}>Cancel</Button>
           <Button
             onClick={() => {
-              addFund({ name: fundName, description: fundDescription }).catch(
-                () => null,
-              );
+              if (fund === null) {
+                addFund({ name: fundName, description: fundDescription }).catch(
+                  () => null,
+                );
+              } else {
+                updateFund(fund, {
+                  name: fundName,
+                  description: fundDescription,
+                }).catch(() => null);
+              }
               onClose();
             }}
           >
-            Add
+            {fund === null ? "Add" : "Update"}
           </Button>
         </Stack>
       </DialogContent>

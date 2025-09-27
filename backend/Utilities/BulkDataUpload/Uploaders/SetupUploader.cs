@@ -11,10 +11,10 @@ internal sealed class SetupUploader : DataUploader<SetupUploadModel>
     /// <inheritdoc/>
     public override async Task UploadAsync(SetupUploadModel model)
     {
-        foreach (CreateFundModel createFundModel in model.Funds)
+        foreach (CreateOrUpdateFundModel createFundModel in model.Funds)
         {
             Console.WriteLine($"Uploading Fund: {createFundModel.Name}");
-            _ = await PostAsync<CreateFundModel, FundModel>("/funds", createFundModel);
+            _ = await PostAsync<CreateOrUpdateFundModel, FundModel>("/funds", createFundModel);
         }
     }
 }

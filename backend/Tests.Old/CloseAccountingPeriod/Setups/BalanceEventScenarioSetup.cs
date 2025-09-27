@@ -56,9 +56,9 @@ internal sealed class BalanceEventScenarioSetup : ScenarioSetup
     /// <param name="scenario">Scenario for this test case</param>
     public BalanceEventScenarioSetup(BalanceEventScenario scenario)
     {
-        Fund = GetService<FundFactory>().Create("Test", "");
+        Fund = GetService<FundService>().Create("Test", "");
         GetService<IFundRepository>().Add(Fund);
-        OtherFund = GetService<FundFactory>().Create("Test2", "");
+        OtherFund = GetService<FundService>().Create("Test2", "");
         GetService<IFundRepository>().Add(OtherFund);
         GetService<TestUnitOfWork>().SaveChanges();
 

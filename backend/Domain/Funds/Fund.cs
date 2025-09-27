@@ -13,12 +13,12 @@ public class Fund : Entity<FundId>
     /// <summary>
     /// Name for this Fund
     /// </summary>
-    public string Name { get; private set; }
+    public string Name { get; internal set; }
 
     /// <summary>
     /// Description for this Funds
     /// </summary>
-    public string Description { get; private set; }
+    public string Description { get; internal set; }
 
     /// <summary>
     /// Constructs a new instance of this class

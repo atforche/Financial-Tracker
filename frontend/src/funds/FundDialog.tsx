@@ -5,18 +5,16 @@ import {
   DialogTitle,
   Stack,
 } from "@mui/material";
-import { type Fund, getFundById } from "@data/FundRepository";
+import type { Fund } from "@data/FundRepository";
 import StringEntryField from "@framework/dialog/StringEntryField";
-import { useCallback } from "react";
-import { useQuery } from "@data/useQuery";
 
 /**
  * Props for the FundDialog component.
- * @param {string} fundId - ID of a Fund to display in this dialog.
+ * @param {Fund} fund - Fund to display in this dialog.
  * @param {Function} onClose - Callback to perform when this dialog is closed.
  */
 interface FundDialogProps {
-  fundId: string;
+  fund: Fund;
   onClose: () => void;
 }
 
@@ -26,16 +24,7 @@ interface FundDialogProps {
  * @returns {JSX.Element} JSX element representing the FundDialog.
  * @throws An error if the Fund ID doesn't point to a valid fund.
  */
-const FundDialog = function ({
-  fundId,
-  onClose,
-}: FundDialogProps): JSX.Element {
-  const fetchFund = useCallback(async () => getFundById(fundId), [fundId]);
-  const { data } = useQuery<Fund | null>({
-    queryFunction: fetchFund,
-    initialData: null,
-  });
-
+const FundDialog = function ({ fund, onClose }: FundDialogProps): JSX.Element {
   return (
     <Dialog open={true}>
       <DialogTitle
@@ -54,11 +43,8 @@ const FundDialog = function ({
           sx={{ paddingLeft: "25px", paddingRight: "25px", paddingTop: "25px" }}
         >
           <>
-            <StringEntryField label="Name" value={data?.name ?? ""} />
-            <StringEntryField
-              label="Description"
-              value={data?.description ?? ""}
-            />
+            <StringEntryField label="Name" value={fund.name} />
+            <StringEntryField label="Description" value={fund.description} />
           </>
         </Stack>
         <Stack direction="row" justifyContent="right">

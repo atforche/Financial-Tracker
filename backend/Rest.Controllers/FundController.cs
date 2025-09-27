@@ -13,8 +13,8 @@ namespace Rest.Controllers;
 public sealed class FundController(
     UnitOfWork unitOfWork,
     IFundRepository fundRepository,
-    FundFactory fundFactory,
-    FundIdFactory fundIdFactory) : ControllerBase
+    FundIdFactory fundIdFactory,
+    FundService fundService) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Funds from the database
@@ -42,11 +42,27 @@ public sealed class FundController(
     /// <param name="createFundModel">Request to create a Fund</param>
     /// <returns>The created Fund</returns>
     [HttpPost("")]
-    public async Task<FundModel> CreateAsync(CreateFundModel createFundModel)
+    public async Task<FundModel> CreateAsync(CreateOrUpdateFundModel createFundModel)
     {
-        Fund newFund = fundFactory.Create(createFundModel.Name, createFundModel.Description);
+        Fund newFund = fundService.Create(createFundModel.Name, createFundModel.Description);
         fundRepository.Add(newFund);
         await unitOfWork.SaveChangesAsync();
         return new FundModel(newFund);
+    }
+
+    /// <summary>
+    /// Updates the provided Fund with the provided properties
+    /// </summary>
+    /// <param name="fundId">ID of the Fund to update</param>
+    /// <param name="updateFundModel">Request to update a Fund</param>
+    /// <returns>The updated Fund</returns>
+    [HttpPost("{fundId}")]
+    public async Task<FundModel> UpdateAsync(Guid fundId, CreateOrUpdateFundModel updateFundModel)
+    {
+        FundId id = fundIdFactory.Create(fundId);
+        Fund fundToUpdate = fundRepository.FindById(id);
+        fundToUpdate = fundService.Update(fundToUpdate, updateFundModel.Name, updateFundModel.Description);
+        await unitOfWork.SaveChangesAsync();
+        return new FundModel(fundToUpdate);
     }
 }

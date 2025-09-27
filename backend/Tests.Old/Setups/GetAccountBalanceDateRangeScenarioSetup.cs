@@ -33,7 +33,7 @@ internal sealed class GetAccountBalanceDateRangeScenarioSetup : ScenarioSetup
     /// <param name="scenario">Scenario for this test case</param>
     public GetAccountBalanceDateRangeScenarioSetup(GetAccountBalanceDateRangeScenario scenario)
     {
-        Fund = GetService<FundFactory>().Create("Test", "");
+        Fund = GetService<FundService>().Create("Test", "");
         GetService<IFundRepository>().Add(Fund);
         GetService<TestUnitOfWork>().SaveChanges();
 

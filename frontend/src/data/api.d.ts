@@ -383,9 +383,9 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["CreateFundModel"];
-                    "text/json": components["schemas"]["CreateFundModel"];
-                    "application/*+json": components["schemas"]["CreateFundModel"];
+                    "application/json": components["schemas"]["CreateOrUpdateFundModel"];
+                    "text/json": components["schemas"]["CreateOrUpdateFundModel"];
+                    "application/*+json": components["schemas"]["CreateOrUpdateFundModel"];
                 };
             };
             responses: {
@@ -440,7 +440,36 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    fundId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateOrUpdateFundModel"];
+                    "text/json": components["schemas"]["CreateOrUpdateFundModel"];
+                    "application/*+json": components["schemas"]["CreateOrUpdateFundModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["FundModel"];
+                        "application/json": components["schemas"]["FundModel"];
+                        "text/json": components["schemas"]["FundModel"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -701,7 +730,7 @@ export interface components {
             /** Format: double */
             amount: number;
         };
-        CreateFundModel: {
+        CreateOrUpdateFundModel: {
             name: string;
             description: string;
         };
