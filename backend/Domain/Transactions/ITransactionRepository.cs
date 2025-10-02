@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Domain.Funds;
 
 namespace Domain.Transactions;
 
@@ -13,6 +14,13 @@ public interface ITransactionRepository
     /// <param name="id">ID of the Transaction</param>
     /// <returns>True if a Transaction with the provided ID exists, false otherwise</returns>
     bool DoesTransactionWithIdExist(Guid id);
+
+    /// <summary>
+    /// Determines if a Transaction that affects the provided Fund exists
+    /// </summary>
+    /// <param name="fund">Fund to check for associated Transactions</param>
+    /// <returns>True if a Transaction that affects the provided Fund exists, false otherwise</returns>
+    bool DoesTransactionWithFundExist(Fund fund);
 
     /// <summary>
     /// Finds the Transaction with the specified ID.

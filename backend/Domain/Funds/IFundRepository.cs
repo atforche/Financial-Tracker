@@ -37,4 +37,10 @@ public interface IFundRepository
     /// </summary>
     /// <param name="fund">Fund that should be added</param>
     void Add(Fund fund);
+
+    /// <summary>
+    /// Deletes the provided Fund from the repository
+    /// </summary>
+    /// <param name="fund">Fund to be deleted</param>
+    void Delete(Fund fund);
 }

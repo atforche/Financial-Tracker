@@ -28,4 +28,7 @@ internal sealed class MockFundRepository : IFundRepository
 
     /// <inheritdoc/>
     public void Add(Fund fund) => _funds.Add(fund.Id.Value, fund);
+
+    /// <inheritdoc/>
+    public void Delete(Fund fund) => _funds.Remove(fund.Id.Value);
 }

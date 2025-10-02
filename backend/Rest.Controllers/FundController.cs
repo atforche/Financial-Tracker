@@ -65,4 +65,17 @@ public sealed class FundController(
         await unitOfWork.SaveChangesAsync();
         return new FundModel(fundToUpdate);
     }
+
+    /// <summary>
+    /// Deletes the Fund with the provided ID
+    /// </summary>
+    /// <param name="fundId">ID of the Fund to delete</param>
+    [HttpDelete("{fundId}")]
+    public async Task DeleteAsync(Guid fundId)
+    {
+        FundId id = fundIdFactory.Create(fundId);
+        Fund fundToDelete = fundRepository.FindById(id);
+        fundRepository.Delete(fundToDelete);
+        await unitOfWork.SaveChangesAsync();
+    }
 }

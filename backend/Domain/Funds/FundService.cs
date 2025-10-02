@@ -1,11 +1,16 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.FundConversions;
+using Domain.Transactions;
 
 namespace Domain.Funds;
 
 /// <summary>
 /// Service for managing Funds
 /// </summary>
-public class FundService(IFundRepository fundRepository)
+public class FundService(
+    IFundRepository fundRepository,
+    IFundConversionRepository fundConversionRepository,
+    ITransactionRepository transactionRepository)
 {
     /// <summary>
     /// Create a new Fund
@@ -41,6 +46,19 @@ public class FundService(IFundRepository fundRepository)
     }
 
     /// <summary>
+    /// Deletes an existing Fund
+    /// </summary>
+    /// <param name="fund">Fund to be deleted</param>
+    public void Delete(Fund fund)
+    {
+        if (!ValidateDelete(fund, out Exception? exception))
+        {
+            throw exception;
+        }
+        fundRepository.Delete(fund);
+    }
+
+    /// <summary>
     /// Validates the name for this Fund
     /// </summary>
     /// <param name="name">Name for the Fund</param>
@@ -57,6 +75,26 @@ public class FundService(IFundRepository fundRepository)
         }
         Fund? existingFundWithName = fundRepository.FindByNameOrNull(name);
         if (existingFundWithName != null && existingFundWithName != existingFund)
+        {
+            exception ??= new InvalidOperationException();
+        }
+        return exception == null;
+    }
+
+    /// <summary>
+    /// Validates that the Fund can be deleted
+    /// </summary>
+    /// <param name="fund">Fund to be deleted</param>
+    /// <param name="exception">Exception encountered during validation</param>
+    /// <returns>True if the Fund can be deleted, false otherwise</returns>
+    private bool ValidateDelete(Fund fund, [NotNullWhen(false)] out Exception? exception)
+    {
+        exception = null;
+        if (transactionRepository.DoesTransactionWithFundExist(fund))
+        {
+            exception = new InvalidOperationException();
+        }
+        if (fundConversionRepository.DoesFundConversionWithFundExist(fund))
         {
             exception ??= new InvalidOperationException();
         }

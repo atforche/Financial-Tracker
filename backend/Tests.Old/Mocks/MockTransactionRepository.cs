@@ -1,5 +1,6 @@
 using Domain;
 using Domain.AccountingPeriods;
+using Domain.Funds;
 using Domain.Transactions;
 
 namespace Tests.Old.Mocks;
@@ -13,6 +14,12 @@ public class MockTransactionRepository : ITransactionRepository
 
     /// <inheritdoc/>
     public bool DoesTransactionWithIdExist(Guid id) => _transactions.ContainsKey(id);
+
+    /// <inheritdoc/>
+    public bool DoesTransactionWithFundExist(Fund fund) =>
+        _transactions.Values.Any(transaction =>
+        (transaction.DebitFundAmounts != null && transaction.DebitFundAmounts.Any(fundAmount => fundAmount.FundId == fund.Id)) ||
+            (transaction.CreditFundAmounts != null && transaction.CreditFundAmounts.Any(fundAmount => fundAmount.FundId == fund.Id)));
 
     /// <inheritdoc/>
     public Transaction FindById(TransactionId id) => _transactions[id.Value];

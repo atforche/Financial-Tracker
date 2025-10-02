@@ -1,4 +1,4 @@
-import { AddCircleOutline, Info, ModeEdit } from "@mui/icons-material";
+import { AddCircleOutline, Delete, Info, ModeEdit } from "@mui/icons-material";
 import {
   Box,
   Paper,
@@ -13,6 +13,7 @@ import { type Fund, getAllFunds } from "@data/FundRepository";
 import Action from "@framework/listframe/Action";
 import ActionColumn from "@framework/listframe/ActionColumn";
 import type Column from "@framework/listframe/Column";
+import DeleteFundDialog from "@funds/DeleteFundDialog";
 import FundDialog from "@funds/FundDialog";
 import HeaderAction from "@framework/listframe/HeaderAction";
 import ModifyFundDialog from "@funds/ModifyFundDialog";
@@ -62,6 +63,17 @@ const FundListFrame = function (): JSX.Element {
         new Action<Fund>(<ModeEdit />, (row: Fund) => () => {
           setDialog(
             <ModifyFundDialog
+              fund={row}
+              onClose={() => {
+                setDialog(null);
+                refetch();
+              }}
+            />,
+          );
+        }),
+        new Action<Fund>(<Delete />, (row: Fund) => () => {
+          setDialog(
+            <DeleteFundDialog
               fund={row}
               onClose={() => {
                 setDialog(null);

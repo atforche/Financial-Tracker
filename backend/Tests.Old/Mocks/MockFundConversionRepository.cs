@@ -1,6 +1,7 @@
 using Domain;
 using Domain.AccountingPeriods;
 using Domain.FundConversions;
+using Domain.Funds;
 
 namespace Tests.Old.Mocks;
 
@@ -13,6 +14,10 @@ public class MockFundConversionRepository : IFundConversionRepository
 
     /// <inheritdoc/>
     public bool DoesFundConversionWithIdExist(Guid id) => _fundConversions.ContainsKey(id);
+
+    /// <inheritdoc/>
+    public bool DoesFundConversionWithFundExist(Fund fund) =>
+        _fundConversions.Values.Any(fundConversion => fundConversion.FromFundId == fund.Id || fundConversion.ToFundId == fund.Id);
 
     /// <inheritdoc/>
     public FundConversion FindById(FundConversionId id) => _fundConversions[id.Value];

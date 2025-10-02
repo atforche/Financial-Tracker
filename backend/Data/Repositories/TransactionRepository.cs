@@ -1,5 +1,6 @@
 using Domain;
 using Domain.AccountingPeriods;
+using Domain.Funds;
 using Domain.Transactions;
 
 namespace Data.Repositories;
@@ -11,6 +12,12 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
 {
     /// <inheritdoc/>
     public bool DoesTransactionWithIdExist(Guid id) => databaseContext.Transactions.Any(transaction => ((Guid)(object)transaction.Id) == id);
+
+    /// <inheritdoc/>
+    public bool DoesTransactionWithFundExist(Fund fund) =>
+        databaseContext.Transactions.Any(transaction =>
+        (transaction.DebitFundAmounts != null && transaction.DebitFundAmounts.Any(fundAmount => fundAmount.FundId == fund.Id)) ||
+            (transaction.CreditFundAmounts != null && transaction.CreditFundAmounts.Any(fundAmount => fundAmount.FundId == fund.Id)));
 
     /// <inheritdoc/>
     public Transaction FindById(TransactionId id) => databaseContext.Transactions.Single(transaction => transaction.Id == id);

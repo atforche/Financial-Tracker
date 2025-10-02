@@ -69,16 +69,21 @@ const ModifyFundDialog = function ({
           <Button
             onClick={() => {
               if (fund === null) {
-                addFund({ name: fundName, description: fundDescription }).catch(
-                  () => null,
-                );
+                addFund({ name: fundName, description: fundDescription })
+                  .then(() => {
+                    onClose();
+                  })
+                  .catch(() => null);
               } else {
                 updateFund(fund, {
                   name: fundName,
                   description: fundDescription,
-                }).catch(() => null);
+                })
+                  .then(() => {
+                    onClose();
+                  })
+                  .catch(() => null);
               }
-              onClose();
             }}
           >
             {fund === null ? "Add" : "Update"}

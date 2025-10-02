@@ -21,4 +21,7 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
 
     /// <inheritdoc/>
     public void Add(Fund fund) => databaseContext.Add(fund);
+
+    /// <inheritdoc/>
+    public void Delete(Fund fund) => databaseContext.Remove(fund);
 }

@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Domain.Funds;
 
 namespace Domain.FundConversions;
 
@@ -13,6 +14,13 @@ public interface IFundConversionRepository
     /// <param name="id">ID of the Fund Conversion</param>
     /// <returns>True if a Fund Conversion with the provided ID exists, false otherwise</returns>
     bool DoesFundConversionWithIdExist(Guid id);
+
+    /// <summary>
+    /// Determines if a Fund Conversion that affects the provided Fund exists
+    /// </summary>
+    /// <param name="fund">Fund to check for associated Fund Conversions</param>
+    /// <returns>True if a Fund Conversion that affects the provided Fund exists, false otherwise</returns>
+    bool DoesFundConversionWithFundExist(Fund fund);
 
     /// <summary>
     /// Finds the Fund Conversion with the specified ID.

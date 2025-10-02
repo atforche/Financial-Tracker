@@ -43,6 +43,16 @@ const updateFund = async function (
 };
 
 /**
+ * Deletes an existing Fund.
+ * @param {Fund} fund - Fund to delete.
+ */
+const deleteFund = async function (fund: Fund): Promise<void> {
+  await fetch(`http://localhost:8080/funds/${fund.id}`, {
+    method: "DELETE",
+  });
+};
+
+/**
  * Retrieves all Funds.
  * @returns {Fund[]} An array of all Funds.
  */
@@ -69,6 +79,7 @@ export {
   type CreateOrUpdateFundRequest,
   addFund,
   updateFund,
+  deleteFund,
   getAllFunds,
   getFundById,
 };
