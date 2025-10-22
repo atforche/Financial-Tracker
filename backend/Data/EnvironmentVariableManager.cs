@@ -1,4 +1,5 @@
 using System.Reflection;
+using Serilog;
 
 namespace Data;
 
@@ -12,12 +13,12 @@ public abstract class EnvironmentVariableManager
     /// </summary>
     public void PrintEnvironment()
     {
-        Console.WriteLine($"{GetType().Assembly.GetName()} Environment Variables:");
-        foreach (PropertyInfo property in GetType().GetProperties())
+        Log.Information($"{GetType().Assembly.GetName()} Environment Variables:");
+        foreach (PropertyInfo property in GetType().GetProperties().Where(property => property.Name != "Instance"))
         {
-            Console.WriteLine($"{property.Name}: {property.GetValue(this)}");
+            Log.Information($"{property.Name}: {property.GetValue(this)}");
         }
-        Console.WriteLine("");
+        Log.Information("");
     }
 
     /// <summary>

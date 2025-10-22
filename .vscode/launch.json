@@ -1,0 +1,51 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Edge with Debugger",
+      "request": "launch",
+      "type": "msedge",
+      "url": "http://localhost:5000",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "Launch Vite DEV server",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--open"],
+      "type": "node"
+    },
+    {
+      "name": "REST API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/backend/.artifacts/bin/Rest.Controllers/Rest.Controllers.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/backend/Rest.Controllers",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "uriFormat": "http://localhost:%s/swagger",
+        "pattern": "\\bNow listening on:\\s+https?://.+:([0-9]+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_HTTP_PORTS": "8080",
+        "DATABASE_PATH": "/workspaces/Financial-Tracker/backend/database.db",
+        "FRONTEND_ORIGIN": "localhost:5000"
+      }
+    },
+    {
+      "name": "Utilities",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/.artifacts/bin/Utilities/Utilities.dll",
+      "args": [
+        "upload",
+        "--folder",
+        "/workspaces/Financial-Tracker/backend/Utilities/BulkDataUpload/SampleUpload"
+      ]
+    }
+  ]
+}

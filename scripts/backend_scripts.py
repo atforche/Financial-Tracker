@@ -75,6 +75,7 @@ class RunBackendApi(Command):
     port: Annotated[int, "Port that the backend REST API should listen on"]
     database_path: Annotated[str, "Path to the database file"]
     frontend_origin: Annotated[str, "Origin that the frontend will make requests from"]
+    log_directory: Annotated[str, "Directory where logs should be written"]
 
     def __init__(self):
         """Constructs a new instance of this class"""
@@ -90,7 +91,8 @@ class RunBackendApi(Command):
                                 --environment ASPNETCORE_ENVIRONMENT=Development 
                                 --environment ASPNETCORE_HTTP_PORTS={self.port}
                                 --environment DATABASE_PATH={self.database_path}
-                                --environment FRONTEND_ORIGIN={self.frontend_origin}""")
+                                --environment FRONTEND_ORIGIN={self.frontend_origin}
+                                --environment LOG_DIRECTORY={self.log_directory}""")
 
 class CreateMigration(Command):
     """Command class that creates a new database migration"""

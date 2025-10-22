@@ -1,5 +1,7 @@
+using System.Globalization;
 using System.Text.Json.Serialization;
 using Rest.Models;
+using Serilog;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -21,8 +23,19 @@ builder.Services.AddCors(options =>
     options.AddPolicy(corsPolicyName,
         policy =>
         {
-            _ = policy.WithOrigins(Rest.Controllers.EnvironmentManager.Instance.FrontendOrigin).AllowAnyHeader().AllowAnyMethod();
+            _ = policy.WithOrigins(Rest.Controllers.EnvironmentManager.Instance.FrontendOrigin)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
         });
+});
+
+// Configure logging
+builder.Host.UseSerilog((context, configuration) =>
+{
+    _ = configuration.WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+        .WriteTo.File(Rest.Controllers.EnvironmentManager.Instance.LogDirectory + "/api-log-.log",
+            rollingInterval: RollingInterval.Day,
+            formatProvider: CultureInfo.InvariantCulture);
 });
 
 // Configure OpenAPI document generation

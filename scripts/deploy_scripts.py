@@ -78,9 +78,9 @@ class CreateCommand(Command):
             EnvironmentVariable[str](environment_file_path, "INSTANCE_DIR", self.path),
             EnvironmentVariable[str](environment_file_path, "ASPNETCORE_ENVIRONMENT", self.environment),
             EnvironmentVariable[int](environment_file_path, "ASPNETCORE_HTTP_PORTS", 8080),
-            EnvironmentVariable[int](environment_file_path, "EXTERNAL_PORT", self.backend_port),
+            EnvironmentVariable[int](environment_file_path, "BACKEND_PORT", self.backend_port),
             EnvironmentVariable[str](environment_file_path, "DATABASE_PATH", "/data/database.db"),
-            EnvironmentVariable[str](environment_file_path, "EXTERNAL_DATABASE_PATH", f"{self.path}/database.db"),
+            EnvironmentVariable[str](environment_file_path, "LOG_DIRECTORY", "/logs"),
             EnvironmentVariable[str](environment_file_path, "FRONTEND_ORIGIN", self.frontend_origin),
             EnvironmentVariable[int](environment_file_path, "DATABASE_REVISION", 0)
         ]

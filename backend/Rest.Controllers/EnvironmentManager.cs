@@ -23,6 +23,11 @@ public class EnvironmentManager : Data.EnvironmentVariableManager
     public string FrontendOrigin { get; }
 
     /// <summary>
+    /// Environment variable that stores the directory where logs should be written
+    /// </summary>
+    public string LogDirectory { get; }
+
+    /// <summary>
     /// Gets the singleton instance of EnvironmentManager
     /// </summary>
     public static EnvironmentManager Instance => _instance.Value;
@@ -35,5 +40,6 @@ public class EnvironmentManager : Data.EnvironmentVariableManager
         EnvironmentType = GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
         Port = GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS");
         FrontendOrigin = GetEnvironmentVariable("FRONTEND_ORIGIN");
+        LogDirectory = GetEnvironmentVariable("LOG_DIRECTORY");
     }
 }

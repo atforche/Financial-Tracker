@@ -5,7 +5,8 @@ services:
     image: "backend-$INSTANCE_NAME"
     container_name: "backend-$INSTANCE_NAME"
     ports: 
-      - "$ASPNETCORE_HTTP_PORTS:$EXTERNAL_PORT"
+      - "$ASPNETCORE_HTTP_PORTS:$BACKEND_PORT"
     volumes:
-      - $EXTERNAL_DATABASE_PATH:$DATABASE_PATH
+      - $INSTANCE_DIR/database.db:$DATABASE_PATH
+      - $INSTANCE_DIR/logs:$LOG_DIRECTORY
     env_file: ".env"
