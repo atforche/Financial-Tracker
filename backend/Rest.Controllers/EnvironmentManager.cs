@@ -33,6 +33,15 @@ public class EnvironmentManager : Data.EnvironmentVariableManager
     public static EnvironmentManager Instance => _instance.Value;
 
     /// <summary>
+    /// Returns true if the API should actually be run, false otherwise.
+    /// </summary>
+    /// <remarks>
+    /// The REST API project is launched by various design-time tools (like MSBuild) to generate OpenAPI specs and other tasks.
+    /// However, we don't want the API to actually start up in those cases since we don't have the full environment defined.
+    /// </remarks>
+    public static bool ShouldLaunchAPI() => Environment.GetEnvironmentVariable("MSBuildSDKsPath") is null;
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     private EnvironmentManager()
