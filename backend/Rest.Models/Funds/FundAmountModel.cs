@@ -17,20 +17,20 @@ public class FundAmountModel
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    [JsonConstructor]
-    public FundAmountModel(Guid fundId, decimal amount)
-    {
-        FundId = fundId;
-        Amount = amount;
-    }
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
     /// <param name="fundAmount">Fund Amount value object to build this Fund Amount REST model from</param>
     public FundAmountModel(FundAmount fundAmount)
     {
         FundId = fundAmount.FundId.Value;
         Amount = fundAmount.Amount;
+    }
+
+    /// <summary>
+    /// Constructs a new instance of this class
+    /// </summary>
+    [JsonConstructor]
+    private FundAmountModel(Guid fundId, decimal amount)
+    {
+        FundId = fundId;
+        Amount = amount;
     }
 }
