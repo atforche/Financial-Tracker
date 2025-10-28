@@ -9,7 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="../Domain/Domain.csproj" />
     <ProjectReference Include="../Data/Data.csproj" />
-    <ProjectReference Include="../Rest.Models/Rest.Models.csproj" />
+    <ProjectReference Include="../Models/Models.csproj" />
   </ItemGroup>
 
   <!-- Nuget Package References -->

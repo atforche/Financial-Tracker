@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Rest.Models;
+namespace Models;
 
 /// <summary>
 /// JSON converter class to convert a DateOnly object into yyyy-MM-dd format

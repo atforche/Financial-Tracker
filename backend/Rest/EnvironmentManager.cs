@@ -1,4 +1,4 @@
-namespace Rest.Controllers;
+namespace Rest;
 
 /// <summary>
 /// Class for managing environment variables required by the Rest.Controllers assembly

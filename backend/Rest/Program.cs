@@ -1,6 +1,6 @@
 using System.Globalization;
 using System.Text.Json.Serialization;
-using Rest.Models;
+using Models;
 using Serilog;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -12,7 +12,7 @@ _ = builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
-if (Rest.Controllers.EnvironmentManager.ShouldLaunchAPI())
+if (Rest.EnvironmentManager.ShouldLaunchAPI())
 {
     // Register needed DI services
     Data.ServiceManager.Register(builder.Services);
@@ -24,7 +24,7 @@ if (Rest.Controllers.EnvironmentManager.ShouldLaunchAPI())
         options.AddDefaultPolicy(
             policy =>
             {
-                _ = policy.WithOrigins(Rest.Controllers.EnvironmentManager.Instance.FrontendOrigin)
+                _ = policy.WithOrigins(Rest.EnvironmentManager.Instance.FrontendOrigin)
                     .AllowAnyHeader()
                     .AllowAnyMethod();
             });
@@ -34,7 +34,7 @@ if (Rest.Controllers.EnvironmentManager.ShouldLaunchAPI())
     _ = builder.Host.UseSerilog((context, configuration) =>
     {
         _ = configuration.WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
-            .WriteTo.File(Rest.Controllers.EnvironmentManager.Instance.LogDirectory + "/api-log-.log",
+            .WriteTo.File(Rest.EnvironmentManager.Instance.LogDirectory + "/api-log-.log",
                 rollingInterval: RollingInterval.Day,
                 formatProvider: CultureInfo.InvariantCulture);
     });
@@ -59,14 +59,14 @@ app.UseAuthorization();
 app.UseCors();
 app.MapControllers();
 
-if (Rest.Controllers.EnvironmentManager.ShouldLaunchAPI())
+if (Rest.EnvironmentManager.ShouldLaunchAPI())
 {
     // Ensure the database is healthy and the environment variables are all defined
     using IServiceScope serviceScope = app.Services.CreateScope();
     IServiceProvider services = serviceScope.ServiceProvider;
     services.GetRequiredService<Data.DatabaseContext>()?.RunHealthCheck();
     Data.EnvironmentManager.Instance.PrintEnvironment();
-    Rest.Controllers.EnvironmentManager.Instance.PrintEnvironment();
+    Rest.EnvironmentManager.Instance.PrintEnvironment();
 
     app.Run();
 }

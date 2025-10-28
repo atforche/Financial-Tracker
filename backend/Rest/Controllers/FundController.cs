@@ -1,7 +1,8 @@
 using Data;
 using Domain.Funds;
 using Microsoft.AspNetCore.Mvc;
-using Rest.Models.Funds;
+using Models.Funds;
+using Rest.Mappers;
 
 namespace Rest.Controllers;
 
@@ -21,8 +22,7 @@ public sealed class FundController(
     /// </summary>
     /// <returns>A collection of all Funds</returns>
     [HttpGet("")]
-    public IReadOnlyCollection<FundModel> GetAll() =>
-        fundRepository.FindAll().Select(fund => new FundModel(fund)).ToList();
+    public IReadOnlyCollection<FundModel> GetAll() => fundRepository.FindAll().Select(FundMapper.ToModel).ToList();
 
     /// <summary>
     /// Retrieves the Fund that matches the provided ID
@@ -33,7 +33,7 @@ public sealed class FundController(
     public FundModel Get(Guid fundId)
     {
         FundId id = fundIdFactory.Create(fundId);
-        return new FundModel(fundRepository.FindById(id));
+        return FundMapper.ToModel(fundRepository.FindById(id));
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ public sealed class FundController(
         Fund newFund = fundService.Create(createFundModel.Name, createFundModel.Description);
         fundRepository.Add(newFund);
         await unitOfWork.SaveChangesAsync();
-        return new FundModel(newFund);
+        return FundMapper.ToModel(newFund);
     }
 
     /// <summary>
@@ -63,7 +63,7 @@ public sealed class FundController(
         Fund fundToUpdate = fundRepository.FindById(id);
         fundToUpdate = fundService.Update(fundToUpdate, updateFundModel.Name, updateFundModel.Description);
         await unitOfWork.SaveChangesAsync();
-        return new FundModel(fundToUpdate);
+        return FundMapper.ToModel(fundToUpdate);
     }
 
     /// <summary>

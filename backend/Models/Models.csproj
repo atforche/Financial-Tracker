@@ -5,9 +5,4 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <OutputType>Library</OutputType>
   </PropertyGroup>
-
-  <!-- Project References-->
-  <ItemGroup>
-    <ProjectReference Include="../Domain/Domain.csproj" />
-  </ItemGroup>
 </Project>
