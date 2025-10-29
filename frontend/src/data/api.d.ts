@@ -54,11 +54,7 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content: {
-                        "text/plain": components["schemas"]["FundModel"];
-                        "application/json": components["schemas"]["FundModel"];
-                        "text/json": components["schemas"]["FundModel"];
-                    };
+                    content?: never;
                 };
             };
         };
@@ -91,11 +87,7 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content: {
-                        "text/plain": components["schemas"]["FundModel"];
-                        "application/json": components["schemas"]["FundModel"];
-                        "text/json": components["schemas"]["FundModel"];
-                    };
+                    content?: never;
                 };
             };
         };
@@ -122,11 +114,7 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content: {
-                        "text/plain": components["schemas"]["FundModel"];
-                        "application/json": components["schemas"]["FundModel"];
-                        "text/json": components["schemas"]["FundModel"];
-                    };
+                    content?: never;
                 };
             };
         };

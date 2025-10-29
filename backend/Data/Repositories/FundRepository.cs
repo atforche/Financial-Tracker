@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Domain.Funds;
 
 namespace Data.Repositories;
@@ -11,13 +12,21 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
     public IReadOnlyCollection<Fund> FindAll() => databaseContext.Funds.ToList();
 
     /// <inheritdoc/>
-    public bool DoesFundWithIdExist(Guid id) => databaseContext.Funds.Any(fund => ((Guid)(object)fund.Id) == id);
-
-    /// <inheritdoc/>
     public Fund FindById(FundId id) => databaseContext.Funds.Single(fund => fund.Id == id);
 
     /// <inheritdoc/>
-    public Fund? FindByNameOrNull(string name) => databaseContext.Funds.FirstOrDefault(fund => fund.Name == name);
+    public bool TryFindById(Guid id, [NotNullWhen(true)] out Fund? fund)
+    {
+        fund = databaseContext.Funds.FirstOrDefault(f => f.Id.Value == id);
+        return fund != null;
+    }
+
+    /// <inheritdoc/>
+    public bool TryFindByName(string name, [NotNullWhen(true)] out Fund? fund)
+    {
+        fund = databaseContext.Funds.FirstOrDefault(f => f.Name == name);
+        return fund != null;
+    }
 
     /// <inheritdoc/>
     public void Add(Fund fund) => databaseContext.Add(fund);

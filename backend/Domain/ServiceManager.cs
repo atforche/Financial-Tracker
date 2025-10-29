@@ -31,7 +31,6 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<ChangeInValueFactory>();
         _ = serviceCollection.AddScoped<ChangeInValueIdFactory>();
 
-        _ = serviceCollection.AddScoped<FundIdFactory>();
         _ = serviceCollection.AddScoped<FundService>();
 
         _ = serviceCollection.AddScoped<FundConversionFactory>();

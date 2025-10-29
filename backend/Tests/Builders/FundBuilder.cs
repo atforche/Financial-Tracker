@@ -19,7 +19,10 @@ public sealed class FundBuilder(
     /// <returns>The newly constructed Fund</returns>
     public Fund Build()
     {
-        Fund fund = fundService.Create(_name, "");
+        if (!fundService.TryCreate(_name, "", out Fund? fund, out List<Exception> exceptions))
+        {
+            throw new InvalidOperationException("Failed to create Fund.", exceptions.First());
+        }
         fundRepository.Add(fund);
         testUnitOfWork.SaveChanges();
         return fund;

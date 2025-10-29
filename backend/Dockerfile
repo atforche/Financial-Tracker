@@ -8,4 +8,4 @@ RUN dotnet publish
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /backend
 COPY --from=build /backend/.artifacts/publish .
-ENTRYPOINT ["dotnet", "./Rest.Controllers/Rest.Controllers.dll"]
+ENTRYPOINT ["dotnet", "./Rest/Rest.dll"]
