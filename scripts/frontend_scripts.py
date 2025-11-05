@@ -12,6 +12,7 @@ def main():
     commands = CommandCollection("Helper scripts for developing the Financial Tracker frontend")
     commands.commands.append(InstallFrontendPackages())
     commands.commands.append(FormatFrontend())
+    commands.commands.append(FixFrontendFormatting())
     commands.commands.append(LintFrontend())
     commands.commands.append(BuildFrontend())
     commands.commands.append(RunFrontend())
@@ -48,6 +49,21 @@ class FormatFrontend(Command):
 
         os.chdir("../frontend")
         self.run_subprocess("npx prettier . --check")
+
+class FixFrontendFormatting(Command):
+    """Command class that fixes formatting for the frontend"""
+
+    def __init__(self):
+        """Constructs a new instance of this class"""
+
+        super().__init__("fix-formatting", "Fixes formatting for the frontend")
+        self.steps.append(Step("Fix Frontend Formatting", "Formatting fixed", self.fix_formatting))
+
+    def fix_formatting(self):
+        """Fixes formatting for the frontend"""
+
+        os.chdir("../frontend")
+        self.run_subprocess("npx prettier . --write")
 
 class LintFrontend(Command):
     """Command class that runs linting for the frontend"""

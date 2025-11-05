@@ -1,61 +1,53 @@
 import { Checkbox } from "@mui/material";
-import type Column from "@framework/listframe/Column";
 import ColumnCell from "@framework/listframe/ColumnCell";
 import ColumnHeader from "@framework/listframe/ColumnHeader";
 
 /**
- * Class that represents a column that displays boolean in a list frame.
+ * Props for the Boolean Column Header component.
+ * @param {string} label - Label for the column.
  */
-class BooleanColumn<T> implements Column<T> {
-  private readonly label: string;
-  private readonly mapping: (value: T) => boolean;
-
-  /**
-   * Constructs a new instance of this class.
-   * @param {string} label - Label for this column.
-   * @param {Function} mapping - Mapping function that maps an object to the value that should be displayed in this column.
-   */
-  public constructor(label: string, mapping: (value: T) => boolean) {
-    this.label = label;
-    this.mapping = mapping;
-  }
-
-  /**
-   * Get the header element for this column.
-   * @returns {JSX.Element} The header element for this column.
-   */
-  public getHeaderElement(): JSX.Element {
-    return (
-      <ColumnHeader
-        id={this.label}
-        label={this.label}
-        align="center"
-        width={100}
-      />
-    );
-  }
-
-  /**
-   * Get the row element for this column.
-   * @param {T} value - The object to map to a value for this column.
-   * @returns {JSX.Element} The row element for this column.
-   */
-  public getRowElement(value: T): JSX.Element {
-    return (
-      <ColumnCell
-        id={this.label}
-        value={
-          this.mapping(value) ? (
-            <Checkbox disabled checked />
-          ) : (
-            <Checkbox disabled />
-          )
-        }
-        align="center"
-        width={100}
-      />
-    );
-  }
+interface BooleanColumnHeaderProps {
+  label: string;
 }
 
-export default BooleanColumn;
+/**
+ * Component that renders the header for a boolean column.
+ * @param {BooleanColumnHeaderProps} props - Props for the Boolean Column Header component.
+ * @returns {JSX.Element} JSX element representing the Boolean Column Header.
+ */
+const BooleanColumnHeader = function ({
+  label,
+}: BooleanColumnHeaderProps): JSX.Element {
+  return <ColumnHeader id={label} label={label} align="center" width={100} />;
+};
+
+/**
+ * Props for the Boolean Column Cell component.
+ * @param {string} label - Label for the column.
+ * @param {boolean} value - Value to display in the cell.
+ */
+interface BooleanColumnCellProps {
+  label: string;
+  value: boolean;
+}
+
+/**
+ * Component that renders a cell for a boolean column.
+ * @param {BooleanColumnCellProps} props - Props for the Boolean Column Cell component.
+ * @returns {JSX.Element} JSX element representing the Boolean Column Cell.
+ */
+const BooleanColumnCell = function ({
+  label,
+  value,
+}: BooleanColumnCellProps): JSX.Element {
+  return (
+    <ColumnCell
+      id={label}
+      value={value ? <Checkbox disabled checked /> : <Checkbox disabled />}
+      align="center"
+      width={100}
+    />
+  );
+};
+
+export { BooleanColumnHeader, BooleanColumnCell };

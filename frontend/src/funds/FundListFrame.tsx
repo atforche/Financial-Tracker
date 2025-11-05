@@ -1,3 +1,7 @@
+import {
+  ActionColumnCell,
+  ActionColumnHeader,
+} from "@framework/listframe/ActionColumn";
 import { AddCircleOutline, Delete, Info, ModeEdit } from "@mui/icons-material";
 import {
   Box,
@@ -10,14 +14,13 @@ import {
   Typography,
 } from "@mui/material";
 import { type Fund, getAllFunds } from "@data/FundRepository";
-import Action from "@framework/listframe/Action";
-import ActionColumn from "@framework/listframe/ActionColumn";
-import type Column from "@framework/listframe/Column";
+import {
+  StringColumnCell,
+  StringColumnHeader,
+} from "@framework/listframe/StringColumn";
 import DeleteFundDialog from "@funds/DeleteFundDialog";
 import FundDialog from "@funds/FundDialog";
-import HeaderAction from "@framework/listframe/HeaderAction";
 import ModifyFundDialog from "@funds/ModifyFundDialog";
-import StringColumn from "@framework/listframe/StringColumn";
 import { useQuery } from "@data/useQuery";
 import { useState } from "react";
 
@@ -33,58 +36,6 @@ const FundListFrame = function (): JSX.Element {
     queryFunction: getAllFunds,
     initialData: [],
   });
-
-  const columns: Column<Fund>[] = [
-    new StringColumn<Fund>("Name", (value) => value.name),
-    new StringColumn<Fund>("Description", (value) => value.description),
-    new ActionColumn<Fund>(
-      new HeaderAction(<AddCircleOutline />, "Add", () => {
-        setDialog(
-          <ModifyFundDialog
-            fund={null}
-            onClose={() => {
-              setDialog(null);
-              refetch();
-            }}
-          />,
-        );
-      }),
-      [
-        new Action<Fund>(<Info />, (row: Fund) => () => {
-          setDialog(
-            <FundDialog
-              fund={row}
-              onClose={() => {
-                setDialog(null);
-              }}
-            />,
-          );
-        }),
-        new Action<Fund>(<ModeEdit />, (row: Fund) => () => {
-          setDialog(
-            <ModifyFundDialog
-              fund={row}
-              onClose={() => {
-                setDialog(null);
-                refetch();
-              }}
-            />,
-          );
-        }),
-        new Action<Fund>(<Delete />, (row: Fund) => () => {
-          setDialog(
-            <DeleteFundDialog
-              fund={row}
-              onClose={() => {
-                setDialog(null);
-                refetch();
-              }}
-            />,
-          );
-        }),
-      ],
-    ),
-  ];
 
   return (
     <Box sx={{ paddingLeft: "25px" }}>
@@ -111,13 +62,78 @@ const FundListFrame = function (): JSX.Element {
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                {columns.map((column) => column.getHeaderElement())}
+                <StringColumnHeader label="Name" />
+                <StringColumnHeader label="Description" />
+                <ActionColumnHeader
+                  icon={<AddCircleOutline />}
+                  caption="Add"
+                  onClick={(): void => {
+                    setDialog(
+                      <ModifyFundDialog
+                        fund={null}
+                        onClose={(): void => {
+                          setDialog(null);
+                          refetch();
+                        }}
+                      />,
+                    );
+                  }}
+                />
               </TableRow>
             </TableHead>
             <TableBody>
               {data.map((row) => (
                 <TableRow hover role="checkbox" tabIndex={-1} key={row.name}>
-                  {columns.map((column) => column.getRowElement(row))}
+                  <StringColumnCell label="Name" value={row.name} />
+                  <StringColumnCell
+                    label="Description"
+                    value={row.description}
+                  />
+                  <ActionColumnCell
+                    actions={[
+                      {
+                        icon: <Info />,
+                        onClick: (): void => {
+                          setDialog(
+                            <FundDialog
+                              fund={row}
+                              onClose={(): void => {
+                                setDialog(null);
+                              }}
+                            />,
+                          );
+                        },
+                      },
+                      {
+                        icon: <ModeEdit />,
+                        onClick: (): void => {
+                          setDialog(
+                            <ModifyFundDialog
+                              fund={row}
+                              onClose={(): void => {
+                                setDialog(null);
+                                refetch();
+                              }}
+                            />,
+                          );
+                        },
+                      },
+                      {
+                        icon: <Delete />,
+                        onClick: (): void => {
+                          setDialog(
+                            <DeleteFundDialog
+                              fund={row}
+                              onClose={(): void => {
+                                setDialog(null);
+                                refetch();
+                              }}
+                            />,
+                          );
+                        },
+                      },
+                    ]}
+                  />
                 </TableRow>
               ))}
             </TableBody>
