@@ -1,4 +1,4 @@
-import { Checkbox } from "@mui/material";
+import { Checkbox, Skeleton } from "@mui/material";
 import ColumnCell from "@framework/listframe/ColumnCell";
 import ColumnHeader from "@framework/listframe/ColumnHeader";
 
@@ -25,10 +25,12 @@ const BooleanColumnHeader = function ({
  * Props for the Boolean Column Cell component.
  * @param {string} label - Label for the column.
  * @param {boolean} value - Value to display in the cell.
+ * @param {boolean} isLoading - Loading state of the cell.
  */
 interface BooleanColumnCellProps {
   label: string;
   value: boolean;
+  isLoading: boolean;
 }
 
 /**
@@ -39,15 +41,17 @@ interface BooleanColumnCellProps {
 const BooleanColumnCell = function ({
   label,
   value,
+  isLoading,
 }: BooleanColumnCellProps): JSX.Element {
-  return (
-    <ColumnCell
-      id={label}
-      value={value ? <Checkbox disabled checked /> : <Checkbox disabled />}
-      align="center"
-      width={100}
-    />
+  let cellValue: string | JSX.Element = value ? (
+    <Checkbox disabled checked />
+  ) : (
+    <Checkbox disabled />
   );
+  if (isLoading) {
+    cellValue = <Skeleton />;
+  }
+  return <ColumnCell id={label} value={cellValue} align="center" width={100} />;
 };
 
 export { BooleanColumnHeader, BooleanColumnCell };

@@ -32,9 +32,12 @@ import { useState } from "react";
 const FundListFrame = function (): JSX.Element {
   const [dialog, setDialog] = useState<JSX.Element | null>(null);
 
-  const { data, refetch } = useQuery<Fund[]>({
+  const loadingRowCount = 10;
+  const { data, isLoading, refetch } = useQuery<Fund[]>({
     queryFunction: getAllFunds,
-    initialData: [],
+    initialData: Array(loadingRowCount)
+      .fill(null)
+      .map((_, index) => ({ id: index.toString(), name: "", description: "" })),
   });
 
   return (
@@ -83,11 +86,16 @@ const FundListFrame = function (): JSX.Element {
             </TableHead>
             <TableBody>
               {data.map((row) => (
-                <TableRow hover role="checkbox" tabIndex={-1} key={row.name}>
-                  <StringColumnCell label="Name" value={row.name} />
+                <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
+                  <StringColumnCell
+                    label="Name"
+                    value={row.name}
+                    isLoading={isLoading}
+                  />
                   <StringColumnCell
                     label="Description"
                     value={row.description}
+                    isLoading={isLoading}
                   />
                   <ActionColumnCell
                     actions={[
@@ -133,6 +141,7 @@ const FundListFrame = function (): JSX.Element {
                         },
                       },
                     ]}
+                    isLoading={isLoading}
                   />
                 </TableRow>
               ))}

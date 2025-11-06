@@ -1,4 +1,4 @@
-import { Box, Button, IconButton } from "@mui/material";
+import { Box, Button, IconButton, Skeleton } from "@mui/material";
 import ColumnCell from "@framework/listframe/ColumnCell";
 import ColumnHeader from "@framework/listframe/ColumnHeader";
 
@@ -56,11 +56,12 @@ interface Action {
 
 /**
  * Props for the Action Column Cell component.
- * @param {string} label - Label for the column.
  * @param {Action[]} actions - List of actions to display in the cell.
+ * @param {boolean} isLoading - Loading state of the cell.
  */
 interface ActionColumnCellProps {
   actions: Action[];
+  isLoading: boolean;
 }
 
 /**
@@ -70,22 +71,22 @@ interface ActionColumnCellProps {
  */
 const ActionColumnCell = function ({
   actions,
+  isLoading,
 }: ActionColumnCellProps): JSX.Element {
+  let cellValue: string | JSX.Element = (
+    <>
+      {actions.map((action, index) => (
+        <IconButton key={index} onClick={action.onClick}>
+          {action.icon}
+        </IconButton>
+      ))}
+    </>
+  );
+  if (isLoading) {
+    cellValue = <Skeleton />;
+  }
   return (
-    <ColumnCell
-      id="actions"
-      value={
-        <>
-          {actions.map((action, index) => (
-            <IconButton key={index} onClick={action.onClick}>
-              {action.icon}
-            </IconButton>
-          ))}
-        </>
-      }
-      align="right"
-      width={125}
-    />
+    <ColumnCell id="actions" value={cellValue} align="right" width={125} />
   );
 };
 

@@ -1,5 +1,6 @@
 import ColumnCell from "@framework/listframe/ColumnCell";
 import ColumnHeader from "@framework/listframe/ColumnHeader";
+import Skeleton from "@mui/material/Skeleton/Skeleton";
 
 /**
  * Props for the String Column Header component.
@@ -24,10 +25,12 @@ const StringColumnHeader = function ({
  * Props for the String Column Cell component.
  * @param {string} label - Label for the column.
  * @param {string | null} value - Value to display in the cell.
+ * @param {boolean} isLoading - Loading state of the cell.
  */
 interface StringColumnCellProps {
   label: string;
   value: string | null;
+  isLoading: boolean;
 }
 
 /**
@@ -38,8 +41,13 @@ interface StringColumnCellProps {
 const StringColumnCell = function ({
   label,
   value,
+  isLoading,
 }: StringColumnCellProps): JSX.Element {
-  return <ColumnCell id={label} value={value ?? ""} align="left" width={170} />;
+  let cellValue: string | JSX.Element = value ?? "";
+  if (isLoading) {
+    cellValue = <Skeleton />;
+  }
+  return <ColumnCell id={label} value={cellValue} align="left" width={170} />;
 };
 
 export { StringColumnHeader, StringColumnCell };
