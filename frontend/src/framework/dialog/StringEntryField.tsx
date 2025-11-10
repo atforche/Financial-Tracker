@@ -1,5 +1,5 @@
-import { TextField } from "@mui/material";
 import { type JSX } from "react";
+import { TextField } from "@mui/material";
 
 /**
  * Props for the StringEntryField component.

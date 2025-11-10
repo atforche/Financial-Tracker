@@ -1,9 +1,8 @@
 import { Drawer, Toolbar, Typography } from "@mui/material";
+import { type JSX } from "react";
 import type { NavigationPage } from "@navigation/NavigationPage";
 import NavigationSelector from "@navigation/NavigationSelector";
 import appLogo from "/logo.svg";
-import { type JSX } from "react";
-
 /**
  * Props for the DesktopNavigation component.
  * @param {NavigationPage} initialPage - Initial page to be selected.

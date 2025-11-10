@@ -1,7 +1,7 @@
 import ColumnCell from "@framework/listframe/ColumnCell";
 import ColumnHeader from "@framework/listframe/ColumnHeader";
-import Skeleton from "@mui/material/Skeleton";
 import { type JSX } from "react";
+import Skeleton from "@mui/material/Skeleton";
 
 /**
  * Props for the String Column Header component.

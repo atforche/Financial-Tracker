@@ -7,12 +7,12 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
+import { type JSX, useState } from "react";
 import {
   NavigationIcons,
   type NavigationPage,
   NavigationPages,
 } from "@navigation/NavigationPage";
-import { type JSX, useState } from "react";
 
 /**
  * Props for the NavigationSelector component.

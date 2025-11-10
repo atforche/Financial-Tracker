@@ -1,5 +1,5 @@
-import TableCell from "@mui/material/TableCell";
 import { type JSX } from "react";
+import TableCell from "@mui/material/TableCell";
 
 /**
  * Props for the ColumnHeader component.

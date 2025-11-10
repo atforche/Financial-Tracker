@@ -14,11 +14,11 @@ import {
   Typography,
 } from "@mui/material";
 import { type Fund, getAllFunds } from "@data/FundRepository";
+import { type JSX, useState } from "react";
 import {
   StringColumnCell,
   StringColumnHeader,
 } from "@framework/listframe/StringColumn";
-import { type JSX, useState } from "react";
 import DeleteFundDialog from "@funds/DeleteFundDialog";
 import FundDialog from "@funds/FundDialog";
 import ModifyFundDialog from "@funds/ModifyFundDialog";

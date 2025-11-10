@@ -6,8 +6,8 @@ import {
   Stack,
 } from "@mui/material";
 import type { Fund } from "@data/FundRepository";
-import StringEntryField from "@framework/dialog/StringEntryField";
 import { type JSX } from "react";
+import StringEntryField from "@framework/dialog/StringEntryField";
 
 /**
  * Props for the FundDialog component.
