@@ -1,4 +1,5 @@
-import TableCell from "@mui/material/TableCell/TableCell";
+import TableCell from "@mui/material/TableCell";
+import { type JSX } from "react";
 
 /**
  * Props for the ColumnCell component.

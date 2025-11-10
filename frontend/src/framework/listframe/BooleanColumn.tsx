@@ -1,6 +1,7 @@
 import { Checkbox, Skeleton } from "@mui/material";
 import ColumnCell from "@framework/listframe/ColumnCell";
 import ColumnHeader from "@framework/listframe/ColumnHeader";
+import { type JSX } from "react";
 
 /**
  * Props for the Boolean Column Header component.

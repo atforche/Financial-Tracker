@@ -12,7 +12,7 @@ import {
   type NavigationPage,
   NavigationPages,
 } from "@navigation/NavigationPage";
-import { useState } from "react";
+import { type JSX, useState } from "react";
 
 /**
  * Props for the NavigationSelector component.

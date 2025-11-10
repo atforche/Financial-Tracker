@@ -6,8 +6,8 @@ import {
   Stack,
 } from "@mui/material";
 import { type Fund, addFund, updateFund } from "@data/FundRepository";
+import { type JSX, useState } from "react";
 import StringEntryField from "@framework/dialog/StringEntryField";
-import { useState } from "react";
 
 /**
  * Props for the ModifyFundDialog component.

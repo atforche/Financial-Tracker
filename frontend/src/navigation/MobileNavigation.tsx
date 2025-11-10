@@ -7,11 +7,11 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
+import { type JSX, useState } from "react";
 import MenuIcon from "@mui/icons-material/Menu";
 import type { NavigationPage } from "@navigation/NavigationPage";
 import NavigationSelector from "@navigation/NavigationSelector";
 import appLogo from "/logo.svg";
-import { useState } from "react";
 
 /**
  * Props for the MobileNavigation component.

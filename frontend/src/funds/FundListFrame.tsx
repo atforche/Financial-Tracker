@@ -18,11 +18,11 @@ import {
   StringColumnCell,
   StringColumnHeader,
 } from "@framework/listframe/StringColumn";
+import { type JSX, useState } from "react";
 import DeleteFundDialog from "@funds/DeleteFundDialog";
 import FundDialog from "@funds/FundDialog";
 import ModifyFundDialog from "@funds/ModifyFundDialog";
 import { useQuery } from "@data/useQuery";
-import { useState } from "react";
 
 /**
  * Component that provides a list of funds and makes the basic create, read, update, and delete

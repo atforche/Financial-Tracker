@@ -1,3 +1,4 @@
+import { JSX, useState } from "react";
 import {
   NavigationContent,
   type NavigationPage,
@@ -5,7 +6,6 @@ import {
 import Navigation from "@navigation/Navigation";
 import Stack from "@mui/material/Stack";
 import useMobile from "@framework/useMobile";
-import { useState } from "react";
 
 /**
  * Primary component that manages the application.

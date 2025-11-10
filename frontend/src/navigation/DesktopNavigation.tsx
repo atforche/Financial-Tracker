@@ -2,6 +2,7 @@ import { Drawer, Toolbar, Typography } from "@mui/material";
 import type { NavigationPage } from "@navigation/NavigationPage";
 import NavigationSelector from "@navigation/NavigationSelector";
 import appLogo from "/logo.svg";
+import { type JSX } from "react";
 
 /**
  * Props for the DesktopNavigation component.

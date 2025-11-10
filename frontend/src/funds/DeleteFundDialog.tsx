@@ -7,6 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { type Fund, deleteFund } from "@data/FundRepository";
+import { type JSX } from "react";
 
 /**
  * Props for the DeleteFundDialog component.
