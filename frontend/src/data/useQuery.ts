@@ -41,7 +41,7 @@ const useQuery = function <T>({
       try {
         const result = await queryFunction();
         setData(result);
-      } catch (error) {
+      } catch {
         setIsError(true);
       }
 

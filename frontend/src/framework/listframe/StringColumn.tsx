@@ -1,6 +1,6 @@
 import ColumnCell from "@framework/listframe/ColumnCell";
 import ColumnHeader from "@framework/listframe/ColumnHeader";
-import { type JSX } from "react";
+import type { JSX } from "react";
 import Skeleton from "@mui/material/Skeleton";
 
 /**

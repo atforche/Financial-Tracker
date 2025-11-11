@@ -6,7 +6,7 @@ import {
   Stack,
 } from "@mui/material";
 import type { Fund } from "@data/FundRepository";
-import { type JSX } from "react";
+import type { JSX } from "react";
 import StringEntryField from "@framework/dialog/StringEntryField";
 
 /**

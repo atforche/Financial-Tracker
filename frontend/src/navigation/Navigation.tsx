@@ -1,5 +1,5 @@
 import DesktopNavigation from "@navigation/DesktopNavigation";
-import { type JSX } from "react";
+import type { JSX } from "react";
 import MobileNavigation from "@navigation/MobileNavigation";
 import type { NavigationPage } from "@navigation/NavigationPage";
 import useMobile from "@framework/useMobile";

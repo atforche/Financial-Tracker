@@ -1,8 +1,13 @@
-import type { components } from "@data/api";
+import type { components, paths } from "@data/api";
+import createClient from "openapi-fetch";
 
 type Fund = components["schemas"]["FundModel"];
 type CreateOrUpdateFundRequest =
   components["schemas"]["CreateOrUpdateFundModel"];
+
+const client = createClient<paths>({
+  baseUrl: "http://localhost:8080",
+});
 
 /**
  * Creates a new Fund and returns it.
@@ -12,14 +17,13 @@ type CreateOrUpdateFundRequest =
 const addFund = async function (
   request: CreateOrUpdateFundRequest,
 ): Promise<Fund> {
-  const response = await fetch("http://localhost:8080/funds", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(request),
+  const { data, error } = await client.POST("/funds", {
+    body: request,
   });
-  return (await response.json()) as Fund;
+  if (typeof error !== "undefined") {
+    throw new Error(`Failed to add fund: ${error.message}`);
+  }
+  return data;
 };
 
 /**
@@ -32,14 +36,18 @@ const updateFund = async function (
   fund: Fund,
   request: CreateOrUpdateFundRequest,
 ): Promise<Fund> {
-  const response = await fetch(`http://localhost:8080/funds/${fund.id}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const { data, error } = await client.POST("/funds/{fundId}", {
+    params: {
+      path: {
+        fundId: fund.id,
+      },
     },
-    body: JSON.stringify(request),
+    body: request,
   });
-  return (await response.json()) as Fund;
+  if (typeof error !== "undefined") {
+    throw new Error(`Failed to update fund: ${error.message}`);
+  }
+  return data;
 };
 
 /**
@@ -47,9 +55,16 @@ const updateFund = async function (
  * @param {Fund} fund - Fund to delete.
  */
 const deleteFund = async function (fund: Fund): Promise<void> {
-  await fetch(`http://localhost:8080/funds/${fund.id}`, {
-    method: "DELETE",
+  const { error } = await client.DELETE("/funds/{fundId}", {
+    params: {
+      path: {
+        fundId: fund.id,
+      },
+    },
   });
+  if (typeof error !== "undefined") {
+    throw new Error(`Failed to delete fund: ${error.message}`);
+  }
 };
 
 /**
@@ -57,21 +72,11 @@ const deleteFund = async function (fund: Fund): Promise<void> {
  * @returns {Fund[]} An array of all Funds.
  */
 const getAllFunds = async function (): Promise<Fund[]> {
-  const response = await fetch("http://localhost:8080/funds");
-  return (await response.json()) as Fund[];
-};
-
-/**
- * Retrieves the Fund that matches the provided ID, or null if one is not found.
- * @param {string} id - ID of the Fund to retrieve.
- * @returns {Fund | null} Fund that matches the provided ID, or null.
- */
-const getFundById = async function (id: string): Promise<Fund | null> {
-  const response = await fetch(`http://localhost:8080/funds/${id}`);
-  if (!response.ok) {
-    return null;
+  const { data, error } = await client.GET("/funds");
+  if (typeof error !== "undefined") {
+    throw new Error(`Failed to get funds`);
   }
-  return (await response.json()) as Fund;
+  return data;
 };
 
 export {
@@ -81,5 +86,4 @@ export {
   updateFund,
   deleteFund,
   getAllFunds,
-  getFundById,
 };

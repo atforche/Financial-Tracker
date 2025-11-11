@@ -40,18 +40,58 @@ export default defineConfig([
       import: _import,
     },
 
-    extends: [eslint.configs.all],
+    extends: [eslint.configs.all, tseslint.configs.all],
 
     rules: {
       // base eslint rules
       "func-names": "off",
       "id-length": "off",
       "max-lines-per-function": "off",
-      "no-magic-numbers": ["error", { ignore: [0, 1] }],
+      "new-cap": ["error", { capIsNewExceptions: ["DELETE", "GET", "POST"] }],
+      "no-magic-numbers": "off", // handled by typescript-eslint
       "no-ternary": "off",
-      "no-unused-vars": "off", // temporary failure, handled by typescript-eslint
       "one-var": ["error", "never"],
       "sort-keys": ["off"],
+
+      // typescript-eslint rules
+      "@typescript-eslint/no-magic-numbers": ["error", { ignore: [0, 1] }],
+      "@typescript-eslint/naming-convention": [
+        "error",
+        {
+          selector: "default",
+          format: ["strictCamelCase"],
+          leadingUnderscore: "allow",
+          trailingUnderscore: "allow",
+        },
+        {
+          selector: "import",
+          format: ["strictCamelCase", "StrictPascalCase"],
+        },
+        {
+          selector: "variable",
+          format: ["strictCamelCase", "UPPER_CASE", "StrictPascalCase"],
+          leadingUnderscore: "allow",
+          trailingUnderscore: "allow",
+        },
+        {
+          selector: ["typeLike"],
+          format: ["StrictPascalCase"],
+        },
+        {
+          selector: ["enumMember"],
+          format: ["StrictPascalCase"],
+        },
+        {
+          selector: "objectLiteralProperty",
+          format: null,
+        },
+        {
+          selector: "classProperty",
+          modifiers: ["public"],
+          format: ["StrictPascalCase"],
+        },
+      ],
+      "@typescript-eslint/prefer-readonly-parameter-types": "off",
     },
   },
   globalIgnores([

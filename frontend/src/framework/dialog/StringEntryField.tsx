@@ -1,4 +1,4 @@
-import { type JSX } from "react";
+import type { JSX } from "react";
 import { TextField } from "@mui/material";
 
 /**
@@ -28,7 +28,11 @@ const StringEntryField = function ({
       label={label}
       variant="outlined"
       value={value}
-      InputProps={{ readOnly: setValue === null }}
+      slotProps={{
+        input: {
+          readOnly: setValue === null,
+        },
+      }}
       onChange={(event) => {
         setValue?.(event.target.value);
       }}

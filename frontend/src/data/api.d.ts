@@ -54,7 +54,22 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "text/plain": components["schemas"]["FundModel"];
+                        "application/json": components["schemas"]["FundModel"];
+                        "text/json": components["schemas"]["FundModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
                 };
             };
         };
@@ -114,7 +129,22 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "text/plain": components["schemas"]["FundModel"];
+                        "application/json": components["schemas"]["FundModel"];
+                        "text/json": components["schemas"]["FundModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
                 };
             };
         };
@@ -129,12 +159,16 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
-                200: {
+                /** @description Unprocessable Entity */
+                422: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
                 };
             };
         };
@@ -150,6 +184,16 @@ export interface components {
         CreateOrUpdateFundModel: {
             name: string;
             description: string;
+        };
+        /** @enum {unknown} */
+        ErrorCode: "Generic" | "InvalidFundName";
+        ErrorDetailModel: {
+            errorCode: components["schemas"]["ErrorCode"];
+            description: string;
+        };
+        ErrorModel: {
+            message: string;
+            details: components["schemas"]["ErrorDetailModel"][];
         };
         FundModel: {
             /** Format: uuid */

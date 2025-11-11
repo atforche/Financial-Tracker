@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Data;
 using Domain.Funds;
 using Microsoft.AspNetCore.Mvc;
+using Models.Errors;
 using Models.Funds;
 using Rest.Mappers;
 
@@ -45,6 +46,8 @@ public sealed class FundController(
     /// <param name="createFundModel">Request to create a Fund</param>
     /// <returns>The created Fund</returns>
     [HttpPost("")]
+    [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> CreateAsync(CreateOrUpdateFundModel createFundModel)
     {
         if (!fundService.TryCreate(createFundModel.Name, createFundModel.Description, out Fund? newFund, out List<Exception> exceptions))
@@ -63,6 +66,8 @@ public sealed class FundController(
     /// <param name="updateFundModel">Request to update a Fund</param>
     /// <returns>The updated Fund</returns>
     [HttpPost("{fundId}")]
+    [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UpdateAsync(Guid fundId, CreateOrUpdateFundModel updateFundModel)
     {
         if (!TryFindById(fundId, out Fund? fundToUpdate, out IActionResult? errorResult))
@@ -82,6 +87,7 @@ public sealed class FundController(
     /// </summary>
     /// <param name="fundId">ID of the Fund to delete</param>
     [HttpDelete("{fundId}")]
+    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> DeleteAsync(Guid fundId)
     {
         if (!TryFindById(fundId, out Fund? fundToDelete, out IActionResult? errorResult))

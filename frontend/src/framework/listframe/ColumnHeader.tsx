@@ -1,4 +1,4 @@
-import { type JSX } from "react";
+import type { JSX } from "react";
 import TableCell from "@mui/material/TableCell";
 
 /**
