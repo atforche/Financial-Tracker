@@ -18,7 +18,7 @@ const NavigationIcons = {
  * Collection of content components corresponding to each NavigationPage.
  */
 const NavigationContent = {
-  Overview: <></>,
+  Overview: null,
   Funds: <FundListFrame />,
 };
 

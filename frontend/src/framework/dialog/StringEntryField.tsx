@@ -1,4 +1,4 @@
-import type { JSX } from "react";
+import { type JSX, useCallback } from "react";
 import { TextField } from "@mui/material";
 
 /**
@@ -8,9 +8,9 @@ import { TextField } from "@mui/material";
  * @param {string} value - Current value for this String Entry Field.
  */
 interface StringEntryFieldProps {
-  label: string;
-  value: string;
-  setValue?: ((newValue: string) => void) | null;
+  readonly label: string;
+  readonly value: string;
+  readonly setValue?: ((newValue: string) => void) | null;
 }
 
 /**
@@ -23,6 +23,13 @@ const StringEntryField = function ({
   value,
   setValue = null,
 }: StringEntryFieldProps): JSX.Element {
+  const onChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setValue?.(event.target.value);
+    },
+    [setValue],
+  );
+
   return (
     <TextField
       label={label}
@@ -33,9 +40,7 @@ const StringEntryField = function ({
           readOnly: setValue === null,
         },
       }}
-      onChange={(event) => {
-        setValue?.(event.target.value);
-      }}
+      onChange={onChange}
     />
   );
 };

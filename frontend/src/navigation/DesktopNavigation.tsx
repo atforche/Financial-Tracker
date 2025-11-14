@@ -9,8 +9,8 @@ import appLogo from "/logo.svg";
  * @param {Function} onNavigation - Callback to be executed whenever the navigation selection changes.
  */
 interface DesktopNavigationProps {
-  initialPage: NavigationPage;
-  onNavigation: (val: NavigationPage) => void;
+  readonly initialPage: NavigationPage;
+  readonly onNavigation: (val: NavigationPage) => void;
 }
 
 /**

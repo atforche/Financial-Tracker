@@ -10,9 +10,9 @@ import type { JSX } from "react";
  * @param {Function} onClick - Callback to perform when the header is clicked.
  */
 interface ActionColumnHeaderProps {
-  icon: JSX.Element;
-  caption: string;
-  onClick: () => void;
+  readonly icon: JSX.Element;
+  readonly caption: string;
+  readonly onClick: () => void;
 }
 
 /**
@@ -51,8 +51,9 @@ const ActionColumnHeader = function ({
  * Props for the Action to be displayed in the Action Column.
  */
 interface Action {
+  readonly key: string;
   icon: JSX.Element;
-  onClick: () => void;
+  handleClick: () => void;
 }
 
 /**
@@ -61,8 +62,8 @@ interface Action {
  * @param {boolean} isLoading - Loading state of the cell.
  */
 interface ActionColumnCellProps {
-  actions: Action[];
-  isLoading: boolean;
+  readonly actions: Action[];
+  readonly isLoading: boolean;
 }
 
 /**
@@ -76,8 +77,8 @@ const ActionColumnCell = function ({
 }: ActionColumnCellProps): JSX.Element {
   let cellValue: string | JSX.Element = (
     <>
-      {actions.map((action, index) => (
-        <IconButton key={index} onClick={action.onClick}>
+      {actions.map((action) => (
+        <IconButton key={action.key} onClick={action.handleClick}>
           {action.icon}
         </IconButton>
       ))}

@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { type Fund, deleteFund } from "@data/FundRepository";
-import type { JSX } from "react";
+import { type JSX, useCallback } from "react";
 
 /**
  * Props for the DeleteFundDialog component.
@@ -15,8 +15,8 @@ import type { JSX } from "react";
  * @param {Function} onClose - Callback to perform when this dialog is closed.
  */
 interface DeleteFundDialogProps {
-  fund: Fund;
-  onClose: () => void;
+  readonly fund: Fund;
+  readonly onClose: () => void;
 }
 
 /**
@@ -29,8 +29,16 @@ const DeleteFundDialog = function ({
   fund,
   onClose,
 }: DeleteFundDialogProps): JSX.Element {
+  const onDelete = useCallback(() => {
+    deleteFund(fund)
+      .then(() => {
+        onClose();
+      })
+      .catch(() => null);
+  }, [fund, onClose]);
+
   return (
-    <Dialog open={true}>
+    <Dialog open>
       <DialogTitle
         sx={{
           backgroundColor: "primary.main",
@@ -47,17 +55,7 @@ const DeleteFundDialog = function ({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button
-          onClick={() => {
-            deleteFund(fund)
-              .then(() => {
-                onClose();
-              })
-              .catch(() => null);
-          }}
-        >
-          Delete
-        </Button>
+        <Button onClick={onDelete}>Delete</Button>
       </DialogActions>
     </Dialog>
   );

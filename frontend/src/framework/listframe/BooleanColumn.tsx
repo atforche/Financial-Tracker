@@ -8,7 +8,7 @@ import type { JSX } from "react";
  * @param {string} label - Label for the column.
  */
 interface BooleanColumnHeaderProps {
-  label: string;
+  readonly label: string;
 }
 
 /**
@@ -29,9 +29,9 @@ const BooleanColumnHeader = function ({
  * @param {boolean} isLoading - Loading state of the cell.
  */
 interface BooleanColumnCellProps {
-  label: string;
-  value: boolean;
-  isLoading: boolean;
+  readonly label: string;
+  readonly value: boolean;
+  readonly isLoading: boolean;
 }
 
 /**

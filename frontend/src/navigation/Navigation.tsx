@@ -10,8 +10,8 @@ import useMobile from "@framework/useMobile";
  * @param {Function} onNavigation - Callback to be executed whenever the navigation selection changes.
  */
 interface NavigationProps {
-  initialPage: NavigationPage;
-  onNavigation: (val: NavigationPage) => void;
+  readonly initialPage: NavigationPage;
+  readonly onNavigation: (val: NavigationPage) => void;
 }
 
 /**

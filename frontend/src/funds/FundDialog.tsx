@@ -15,8 +15,8 @@ import StringEntryField from "@framework/dialog/StringEntryField";
  * @param {Function} onClose - Callback to perform when this dialog is closed.
  */
 interface FundDialogProps {
-  fund: Fund;
-  onClose: () => void;
+  readonly fund: Fund;
+  readonly onClose: () => void;
 }
 
 /**
@@ -27,7 +27,7 @@ interface FundDialogProps {
  */
 const FundDialog = function ({ fund, onClose }: FundDialogProps): JSX.Element {
   return (
-    <Dialog open={true}>
+    <Dialog open>
       <DialogTitle
         sx={{
           backgroundColor: "primary.main",

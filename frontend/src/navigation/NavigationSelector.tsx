@@ -7,7 +7,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import { type JSX, useState } from "react";
+import { type JSX, useCallback, useState } from "react";
 import {
   NavigationIcons,
   type NavigationPage,
@@ -20,8 +20,8 @@ import {
  * @param {Function} onNavigation - Callback to be executed whenever the navigation selection changes.
  */
 interface NavigationSelectorProps {
-  initialPage: NavigationPage;
-  onNavigation: (val: NavigationPage) => void;
+  readonly initialPage: NavigationPage;
+  readonly onNavigation: (val: NavigationPage) => void;
 }
 
 /**
@@ -38,14 +38,15 @@ export const NavigationSelector = function ({
   const buildNavigationElements = function (
     navigationPage: NavigationPage,
   ): JSX.Element {
+    const onClickCallback = useCallback(() => {
+      setCurrentPage(navigationPage);
+      onNavigation(navigationPage);
+    }, [navigationPage, onNavigation]);
     return (
       <ListItem key={navigationPage} disablePadding>
         <ListItemButton
           selected={navigationPage === currentPage}
-          onClick={() => {
-            setCurrentPage(navigationPage);
-            onNavigation(navigationPage);
-          }}
+          onClick={onClickCallback}
         >
           <ListItemIcon sx={{ paddingLeft: "15px" }}>
             {NavigationIcons[navigationPage]}

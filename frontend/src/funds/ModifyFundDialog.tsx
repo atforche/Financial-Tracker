@@ -6,7 +6,7 @@ import {
   Stack,
 } from "@mui/material";
 import { type Fund, addFund, updateFund } from "@data/FundRepository";
-import { type JSX, useState } from "react";
+import { type JSX, useCallback, useState } from "react";
 import StringEntryField from "@framework/dialog/StringEntryField";
 
 /**
@@ -15,8 +15,8 @@ import StringEntryField from "@framework/dialog/StringEntryField";
  * @param {Function} onClose - Callback to perform when this dialog is closed.
  */
 interface ModifyFundDialogProps {
-  fund: Fund | null;
-  onClose: () => void;
+  readonly fund: Fund | null;
+  readonly onClose: () => void;
 }
 
 /**
@@ -33,9 +33,27 @@ const ModifyFundDialog = function ({
   const [fundDescription, setFundDescription] = useState<string>(
     fund?.description ?? "",
   );
+  const onAddUpdate = useCallback(() => {
+    if (fund === null) {
+      addFund({ name: fundName, description: fundDescription })
+        .then(() => {
+          onClose();
+        })
+        .catch(() => null);
+    } else {
+      updateFund(fund, {
+        name: fundName,
+        description: fundDescription,
+      })
+        .then(() => {
+          onClose();
+        })
+        .catch(() => null);
+    }
+  }, [fund, fundName, fundDescription, onClose]);
 
   return (
-    <Dialog open={true}>
+    <Dialog open>
       <DialogTitle
         sx={{
           backgroundColor: "primary.main",
@@ -66,26 +84,7 @@ const ModifyFundDialog = function ({
         </Stack>
         <Stack direction="row" justifyContent="right">
           <Button onClick={onClose}>Cancel</Button>
-          <Button
-            onClick={() => {
-              if (fund === null) {
-                addFund({ name: fundName, description: fundDescription })
-                  .then(() => {
-                    onClose();
-                  })
-                  .catch(() => null);
-              } else {
-                updateFund(fund, {
-                  name: fundName,
-                  description: fundDescription,
-                })
-                  .then(() => {
-                    onClose();
-                  })
-                  .catch(() => null);
-              }
-            }}
-          >
+          <Button onClick={onAddUpdate}>
             {fund === null ? "Add" : "Update"}
           </Button>
         </Stack>

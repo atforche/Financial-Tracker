@@ -8,7 +8,7 @@ import Skeleton from "@mui/material/Skeleton";
  * @param {string} label - Label for the column.
  */
 interface StringColumnHeaderProps {
-  label: string;
+  readonly label: string;
 }
 
 /**
@@ -29,9 +29,9 @@ const StringColumnHeader = function ({
  * @param {boolean} isLoading - Loading state of the cell.
  */
 interface StringColumnCellProps {
-  label: string;
-  value: string | null;
-  isLoading: boolean;
+  readonly label: string;
+  readonly value: string | null;
+  readonly isLoading: boolean;
 }
 
 /**

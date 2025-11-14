@@ -7,7 +7,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { type JSX, useState } from "react";
+import { type JSX, useCallback, useState } from "react";
 import MenuIcon from "@mui/icons-material/Menu";
 import type { NavigationPage } from "@navigation/NavigationPage";
 import NavigationSelector from "@navigation/NavigationSelector";
@@ -19,8 +19,8 @@ import appLogo from "/logo.svg";
  * @param {Function} onNavigation - Callback to be executed whenever the navigation selection changes.
  */
 interface MobileNavigationProps {
-  initialPage: NavigationPage;
-  onNavigation: (val: NavigationPage) => void;
+  readonly initialPage: NavigationPage;
+  readonly onNavigation: (val: NavigationPage) => void;
 }
 
 /**
@@ -38,20 +38,20 @@ const MobileNavigation = function ({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
-  const handleDrawerClose = (): void => {
+  const handleDrawerClose = useCallback((): void => {
     setIsClosing(true);
     setMobileOpen(false);
-  };
+  }, []);
 
-  const handleDrawerTransitionEnd = (): void => {
+  const handleDrawerTransitionEnd = useCallback((): void => {
     setIsClosing(false);
-  };
+  }, []);
 
-  const handleDrawerToggle = (): void => {
+  const handleDrawerToggle = useCallback((): void => {
     if (!isClosing) {
       setMobileOpen(!mobileOpen);
     }
-  };
+  }, [isClosing, mobileOpen]);
 
   return (
     <Box>

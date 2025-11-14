@@ -9,10 +9,10 @@ import TableCell from "@mui/material/TableCell";
  * @param {number} width - Width for this Column Header.
  */
 interface ColumnHeaderProps {
-  id: string;
-  label: string | JSX.Element;
-  align: "center" | "left" | "right";
-  width: number;
+  readonly id: string;
+  readonly label: string | JSX.Element;
+  readonly align: "center" | "left" | "right";
+  readonly width: number;
 }
 
 /**
