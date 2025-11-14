@@ -14,6 +14,7 @@ export default defineConfig({
       "@framework": "/src/framework",
       "@funds": "/src/funds",
       "@navigation": "/src/navigation",
+      "@public": "/public",
       "@src": "/src",
     }
   }

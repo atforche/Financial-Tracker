@@ -11,7 +11,7 @@ import { type JSX, useCallback, useState } from "react";
 import MenuIcon from "@mui/icons-material/Menu";
 import type { NavigationPage } from "@navigation/NavigationPage";
 import NavigationSelector from "@navigation/NavigationSelector";
-import appLogo from "/logo.svg";
+import appLogo from "@public/logo.svg";
 
 /**
  * Props for the MobileNavigation component.

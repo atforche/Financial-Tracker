@@ -36,14 +36,10 @@ export default defineConfig([
       },
     },
 
-    plugins: {
-      reactRefresh,
-      jsdoc,
-      import: _import,
-    },
-
     extends: [
       eslint.configs.all,
+      _import.flatConfigs.recommended,
+      _import.flatConfigs.typescript,
       tseslint.configs.all,
       react.configs.flat.all,
       reactHooks.configs.flat["recommended-latest"],
