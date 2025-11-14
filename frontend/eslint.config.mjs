@@ -3,6 +3,7 @@ import eslint from "@eslint/js";
 import jsdoc from "eslint-plugin-jsdoc";
 import _import from "eslint-plugin-import";
 import react from "eslint-plugin-react";
+import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import globals from "globals";
 import tseslint from "typescript-eslint";
@@ -41,7 +42,12 @@ export default defineConfig([
       import: _import,
     },
 
-    extends: [eslint.configs.all, tseslint.configs.all, react.configs.flat.all],
+    extends: [
+      eslint.configs.all,
+      tseslint.configs.all,
+      react.configs.flat.all,
+      reactHooks.configs.flat["recommended-latest"],
+    ],
 
     rules: {
       // base eslint rules

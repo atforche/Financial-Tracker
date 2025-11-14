@@ -1,18 +1,10 @@
-import {
-  Box,
-  Divider,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-} from "@mui/material";
+import { Box, Divider, List } from "@mui/material";
 import { type JSX, useCallback, useState } from "react";
 import {
-  NavigationIcons,
   type NavigationPage,
   NavigationPages,
 } from "@navigation/NavigationPage";
+import NavigationElement from "./NavigationElement";
 
 /**
  * Props for the NavigationSelector component.
@@ -29,39 +21,32 @@ interface NavigationSelectorProps {
  * @param {NavigationSelectorProps} props - Props for the NavigationSelector component.
  * @returns {JSX.Element} JSX element representing the NavigationSelector component.
  */
-export const NavigationSelector = function ({
+const NavigationSelector = function ({
   initialPage,
   onNavigation,
 }: NavigationSelectorProps): JSX.Element {
   const [currentPage, setCurrentPage] = useState(initialPage);
 
-  const buildNavigationElements = function (
-    navigationPage: NavigationPage,
-  ): JSX.Element {
-    const onClickCallback = useCallback(() => {
+  const onClickCallback = useCallback(
+    (navigationPage: NavigationPage) => {
       setCurrentPage(navigationPage);
       onNavigation(navigationPage);
-    }, [navigationPage, onNavigation]);
-    return (
-      <ListItem key={navigationPage} disablePadding>
-        <ListItemButton
-          selected={navigationPage === currentPage}
-          onClick={onClickCallback}
-        >
-          <ListItemIcon sx={{ paddingLeft: "15px" }}>
-            {NavigationIcons[navigationPage]}
-          </ListItemIcon>
-          <ListItemText primary={navigationPage} />
-        </ListItemButton>
-      </ListItem>
-    );
-  };
+    },
+    [onNavigation],
+  );
 
   return (
     <Box sx={{ overflow: "auto" }}>
       <Divider />
       <List>
-        {NavigationPages.map((page) => buildNavigationElements(page))}
+        {NavigationPages.map((page) => (
+          <NavigationElement
+            key={page}
+            navigationPage={page}
+            isSelected={page === currentPage}
+            onSelect={onClickCallback}
+          />
+        ))}
       </List>
       <Divider />
     </Box>
