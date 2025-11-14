@@ -4,7 +4,7 @@ import { TextField } from "@mui/material";
 /**
  * Props for the StringEntryField component.
  * @param {string} label - Label for this String Entry Field.
- * @param {Function} setValue - Callback to update the value in this String Entry Field. If null, this field is read-only.
+ * @param {(newValue: string) => void | null} setValue - Callback to update the value in this String Entry Field. If null, this field is read-only.
  * @param {string} value - Current value for this String Entry Field.
  */
 interface StringEntryFieldProps {

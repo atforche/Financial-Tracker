@@ -12,7 +12,7 @@ import StringEntryField from "@framework/dialog/StringEntryField";
 /**
  * Props for the ModifyFundDialog component.
  * @param {Fund | null} fund - Fund to display in this dialog, or null if a Fund is being added.
- * @param {Function} onClose - Callback to perform when this dialog is closed.
+ * @param {() => void} onClose - Callback to perform when this dialog is closed.
  */
 interface ModifyFundDialogProps {
   readonly fund: Fund | null;
@@ -23,7 +23,6 @@ interface ModifyFundDialogProps {
  * Component that presents the user with a dialog to create or update a Fund.
  * @param {ModifyFundDialogProps} props - Props for the ModifyFundDialog component.
  * @returns {JSX.Element} JSX element representing the ModifyFundDialog.
- * @throws An error if the Fund ID is provided and doesn't point to a valid fund.
  */
 const ModifyFundDialog = function ({
   fund,

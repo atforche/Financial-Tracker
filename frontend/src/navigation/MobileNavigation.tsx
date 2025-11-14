@@ -16,7 +16,7 @@ import appLogo from "@public/logo.svg";
 /**
  * Props for the MobileNavigation component.
  * @param {NavigationPage} initialPage - Initial page to be selected.
- * @param {Function} onNavigation - Callback to be executed whenever the navigation selection changes.
+ * @param {(val: NavigationPage) => void} onNavigation - Callback to be executed whenever the navigation selection changes.
  */
 interface MobileNavigationProps {
   readonly initialPage: NavigationPage;

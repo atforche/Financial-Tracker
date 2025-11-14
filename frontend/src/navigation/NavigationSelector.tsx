@@ -9,7 +9,7 @@ import NavigationElement from "./NavigationElement";
 /**
  * Props for the NavigationSelector component.
  * @param {NavigationPage} initialPage - Initial page to be selected.
- * @param {Function} onNavigation - Callback to be executed whenever the navigation selection changes.
+ * @param {(val: NavigationPage) => void} onNavigation - Callback to be executed whenever the navigation selection changes.
  */
 interface NavigationSelectorProps {
   readonly initialPage: NavigationPage;

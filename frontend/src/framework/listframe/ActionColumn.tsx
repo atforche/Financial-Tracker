@@ -7,7 +7,7 @@ import type { JSX } from "react";
  * Props for the Action Column Header component.
  * @param {JSX.Element} icon - Icon to display in the header.
  * @param {string} caption - Caption for the header.
- * @param {Function} onClick - Callback to perform when the header is clicked.
+ * @param {() => void} onClick - Callback to perform when the header is clicked.
  */
 interface ActionColumnHeaderProps {
   readonly icon: JSX.Element;

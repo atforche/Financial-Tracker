@@ -3,10 +3,11 @@ import type { JSX } from "react";
 import type { NavigationPage } from "@navigation/NavigationPage";
 import NavigationSelector from "@navigation/NavigationSelector";
 import appLogo from "@public/logo.svg";
+
 /**
  * Props for the DesktopNavigation component.
  * @param {NavigationPage} initialPage - Initial page to be selected.
- * @param {Function} onNavigation - Callback to be executed whenever the navigation selection changes.
+ * @param {(val: NavigationPage) => void} onNavigation - Callback to be executed whenever the navigation selection changes.
  */
 interface DesktopNavigationProps {
   readonly initialPage: NavigationPage;

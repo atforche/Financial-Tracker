@@ -14,7 +14,7 @@ import {
  * Props for the NavigationElement component.
  * @param {NavigationPage} navigationPage - Navigation page represented by this element.
  * @param {boolean} isSelected - Whether or not this element is currently selected.
- * @param {Function} onSelect - Callback to be executed when this element is selected.
+ * @param {(val: NavigationPage) => void} onSelect - Callback to be executed when this element is selected.
  */
 interface NavigationElementProps {
   readonly navigationPage: NavigationPage;

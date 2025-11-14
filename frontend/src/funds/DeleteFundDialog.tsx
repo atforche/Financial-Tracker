@@ -12,7 +12,7 @@ import { type JSX, useCallback } from "react";
 /**
  * Props for the DeleteFundDialog component.
  * @param {Fund} fund - Fund to display to delete.
- * @param {Function} onClose - Callback to perform when this dialog is closed.
+ * @param {() => void} onClose - Callback to perform when this dialog is closed.
  */
 interface DeleteFundDialogProps {
   readonly fund: Fund;
@@ -23,7 +23,6 @@ interface DeleteFundDialogProps {
  * Component that presents the user with a dialog to delete a Fund.
  * @param {DeleteFundDialogProps} props - Props for the DeleteFundDialog component.
  * @returns {JSX.Element} JSX element representing the DeleteFundDialog.
- * @throws An error if the Fund ID is provided and doesn't point to a valid fund.
  */
 const DeleteFundDialog = function ({
   fund,
