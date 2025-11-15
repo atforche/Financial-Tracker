@@ -8,6 +8,7 @@ import {
 import { type Fund, addFund, updateFund } from "@data/FundRepository";
 import { type JSX, useCallback, useState } from "react";
 import StringEntryField from "@framework/dialog/StringEntryField";
+import { useApiRequest } from "@data/useApiRequest";
 
 /**
  * Props for the ModifyFundDialog component.
@@ -32,24 +33,25 @@ const ModifyFundDialog = function ({
   const [fundDescription, setFundDescription] = useState<string>(
     fund?.description ?? "",
   );
-  const onAddUpdate = useCallback(() => {
+
+  const apiRequestFunction = useCallback(async () => {
     if (fund === null) {
-      addFund({ name: fundName, description: fundDescription })
-        .then(() => {
-          onClose();
-        })
-        .catch(() => null);
+      await addFund({ name: fundName, description: fundDescription });
     } else {
-      updateFund(fund, {
+      await updateFund(fund, {
         name: fundName,
         description: fundDescription,
-      })
-        .then(() => {
-          onClose();
-        })
-        .catch(() => null);
+      });
     }
-  }, [fund, fundName, fundDescription, onClose]);
+  }, [fund, fundName, fundDescription]);
+
+  const { isRunning, isSuccess, execute } = useApiRequest({
+    apiRequestFunction,
+  });
+
+  if (isSuccess) {
+    onClose();
+  }
 
   return (
     <Dialog open>
@@ -82,8 +84,10 @@ const ModifyFundDialog = function ({
           </>
         </Stack>
         <Stack direction="row" justifyContent="right">
-          <Button onClick={onClose}>Cancel</Button>
-          <Button onClick={onAddUpdate}>
+          <Button onClick={onClose} disabled={isRunning}>
+            Cancel
+          </Button>
+          <Button onClick={execute} loading={isRunning}>
             {fund === null ? "Add" : "Update"}
           </Button>
         </Stack>

@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import { type Fund, deleteFund } from "@data/FundRepository";
 import { type JSX, useCallback } from "react";
+import { useApiRequest } from "@data/useApiRequest";
 
 /**
  * Props for the DeleteFundDialog component.
@@ -28,13 +29,17 @@ const DeleteFundDialog = function ({
   fund,
   onClose,
 }: DeleteFundDialogProps): JSX.Element {
-  const onDelete = useCallback(() => {
-    deleteFund(fund)
-      .then(() => {
-        onClose();
-      })
-      .catch(() => null);
-  }, [fund, onClose]);
+  const apiRequestFunction = useCallback(async () => {
+    await deleteFund(fund);
+  }, [fund]);
+
+  const { isRunning, isSuccess, execute } = useApiRequest({
+    apiRequestFunction,
+  });
+
+  if (isSuccess) {
+    onClose();
+  }
 
   return (
     <Dialog open>
@@ -53,8 +58,12 @@ const DeleteFundDialog = function ({
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={onDelete}>Delete</Button>
+        <Button onClick={onClose} disabled={isRunning}>
+          Cancel
+        </Button>
+        <Button onClick={execute} loading={isRunning}>
+          Delete
+        </Button>
       </DialogActions>
     </Dialog>
   );

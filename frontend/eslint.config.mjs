@@ -145,6 +145,9 @@ export default defineConfig([
       "react/react-in-jsx-scope": "off",
       "react/require-default-props": "off",
 
+      // react-hooks rules
+      "react-hooks/set-state-in-effect": "off",
+
       // typescript-eslint rules
       "@typescript-eslint/no-magic-numbers": ["error", { ignore: [0, 1] }],
       "@typescript-eslint/naming-convention": [

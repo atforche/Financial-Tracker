@@ -17,7 +17,7 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
     /// <inheritdoc/>
     public bool TryFindById(Guid id, [NotNullWhen(true)] out Fund? fund)
     {
-        fund = databaseContext.Funds.FirstOrDefault(f => f.Id.Value == id);
+        fund = databaseContext.Funds.FirstOrDefault(f => ((Guid)(object)f.Id) == id);
         return fund != null;
     }
 

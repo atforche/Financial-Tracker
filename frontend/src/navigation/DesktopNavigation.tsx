@@ -2,7 +2,6 @@ import { Drawer, Toolbar, Typography } from "@mui/material";
 import type { JSX } from "react";
 import type { NavigationPage } from "@navigation/NavigationPage";
 import NavigationSelector from "@navigation/NavigationSelector";
-import appLogo from "@public/logo.svg";
 
 /**
  * Props for the DesktopNavigation component.
@@ -34,7 +33,7 @@ const DesktopNavigation = function ({
       }}
     >
       <Toolbar>
-        <img src={appLogo} height="60px" width="60px" />
+        <img src="/logo.svg" height="60px" width="60px" />
         <Typography variant="h6" sx={{ marginLeft: 2 }}>
           Financial Tracker
         </Typography>

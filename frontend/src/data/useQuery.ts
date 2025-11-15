@@ -34,21 +34,18 @@ const useQuery = function <T>({
   }, []);
 
   useEffect(() => {
-    const fetchData = async function (): Promise<void> {
-      setIsError(false);
-      setIsLoading(true);
-
-      try {
-        const result = await queryFunction();
+    setIsError(false);
+    setIsLoading(true);
+    queryFunction()
+      .then((result) => {
         setData(result);
-      } catch {
+      })
+      .catch(() => {
         setIsError(true);
-      }
-
-      setIsLoading(false);
-    };
-
-    fetchData().catch(() => null);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, [queryFunction, refetchIndex]);
 
   return { data, isLoading, isError, refetch };

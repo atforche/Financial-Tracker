@@ -11,7 +11,6 @@ import { type JSX, useCallback, useState } from "react";
 import MenuIcon from "@mui/icons-material/Menu";
 import type { NavigationPage } from "@navigation/NavigationPage";
 import NavigationSelector from "@navigation/NavigationSelector";
-import appLogo from "@public/logo.svg";
 
 /**
  * Props for the MobileNavigation component.
@@ -65,7 +64,7 @@ const MobileNavigation = function ({
           <IconButton size="large" edge="start" color="inherit" sx={{ mr: 2 }}>
             <MenuIcon onClick={handleDrawerToggle} />
           </IconButton>
-          <img src={appLogo} height="60px" width="60px" />
+          <img src="/logo.svg" height="60px" width="60px" />
           <Typography variant="h6" sx={{ marginLeft: 2 }}>
             Financial Tracker
           </Typography>
