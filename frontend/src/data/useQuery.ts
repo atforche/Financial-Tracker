@@ -1,19 +1,20 @@
+import { type ApiError, isApiError } from "@data/ApiError";
 import { useCallback, useEffect, useState } from "react";
 
 /**
  * Interface representing the arguments to the useQuery hook.
- * @param {() => Promise<T>} queryFunction - Function to execute the asynchronous operation.
+ * @param {() => Promise<T | ApiError>} queryFunction - Function to execute the asynchronous operation.
  * @param {T} initialData - Placeholder data to use until the asynchronous operation has completed.
  */
 interface UseQueryArgs<T> {
-  queryFunction: () => Promise<T>;
+  queryFunction: () => Promise<T | ApiError>;
   initialData: T;
 }
 
 /**
  * Hook used to query data in an asynchronous manner.
  * @param {UseQueryArgs<T>} queryArgs - Arguments to use to query the data.
- * @returns {{T, boolean, boolean}} - Data that was retrieved, the loading state, and the error state.
+ * @returns {{T, boolean, boolean}} - Data that was retrieved, the loading state, and the current error.
  */
 const useQuery = function <T>({
   queryFunction,
@@ -21,12 +22,12 @@ const useQuery = function <T>({
 }: UseQueryArgs<T>): {
   data: T;
   isLoading: boolean;
-  isError: boolean;
+  error: ApiError | null;
   refetch: () => void;
 } {
   const [data, setData] = useState<T>(initialData);
   const [isLoading, setIsLoading] = useState(false);
-  const [isError, setIsError] = useState(false);
+  const [error, setError] = useState<ApiError | null>(null);
   const [refetchIndex, setRefetchIndex] = useState(0);
 
   const refetch = useCallback(() => {
@@ -34,21 +35,28 @@ const useQuery = function <T>({
   }, []);
 
   useEffect(() => {
-    setIsError(false);
+    setError(null);
     setIsLoading(true);
     queryFunction()
       .then((result) => {
-        setData(result);
+        if (isApiError(result)) {
+          setError(result);
+        } else {
+          setData(result);
+        }
       })
-      .catch(() => {
-        setIsError(true);
+      .catch((err: unknown) => {
+        setError({
+          message: `An unknown error occurred: ${String(err)}`,
+          details: [],
+        });
       })
       .finally(() => {
         setIsLoading(false);
       });
   }, [queryFunction, refetchIndex]);
 
-  return { data, isLoading, isError, refetch };
+  return { data, isLoading, error, refetch };
 };
 
 export { useQuery };

@@ -27,11 +27,13 @@ const StringColumnHeader = function ({
  * @param {string} label - Label for the column.
  * @param {string | null} value - Value to display in the cell.
  * @param {boolean} isLoading - Loading state of the cell.
+ * @param {boolean} isError - Error state of the cell.
  */
 interface StringColumnCellProps {
   readonly label: string;
   readonly value: string | null;
   readonly isLoading: boolean;
+  readonly isError: boolean;
 }
 
 /**
@@ -43,10 +45,14 @@ const StringColumnCell = function ({
   label,
   value,
   isLoading,
+  isError,
 }: StringColumnCellProps): JSX.Element {
   let cellValue: string | JSX.Element = value ?? "";
   if (isLoading) {
     cellValue = <Skeleton />;
+  }
+  if (isError) {
+    cellValue = <Skeleton animation={false} />;
   }
   return <ColumnCell id={label} value={cellValue} align="left" width={170} />;
 };

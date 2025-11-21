@@ -20,8 +20,10 @@ import {
   StringColumnHeader,
 } from "@framework/listframe/StringColumn";
 import DeleteFundDialog from "@funds/DeleteFundDialog";
+import ErrorAlert from "@framework/alerts/ErrorAlert";
 import FundDialog from "@funds/FundDialog";
 import ModifyFundDialog from "@funds/ModifyFundDialog";
+import SuccessAlert from "@framework/alerts/SuccessAlert";
 import { useQuery } from "@data/useQuery";
 
 /**
@@ -31,43 +33,76 @@ import { useQuery } from "@data/useQuery";
  */
 const FundListFrame = function (): JSX.Element {
   const [dialog, setDialog] = useState<JSX.Element | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
   const loadingRowCount = 10;
-  const { data, isLoading, refetch } = useQuery<Fund[]>({
+  const { data, isLoading, error, refetch } = useQuery<Fund[]>({
     queryFunction: getAllFunds,
     initialData: Array(loadingRowCount)
       .fill(null)
       .map((_, index) => ({ id: index.toString(), name: "", description: "" })),
   });
 
-  const onClose = useCallback((): void => {
-    setDialog(null);
-    refetch();
-  }, [refetch]);
-
+  const onAddFinish = useCallback(
+    (success: boolean): void => {
+      setDialog(null);
+      if (success) {
+        setMessage("Fund added successfully.");
+      }
+      refetch();
+    },
+    [refetch],
+  );
   const onAdd = useCallback((): void => {
-    setDialog(<ModifyFundDialog fund={null} onClose={onClose} />);
-  }, [onClose]);
+    setDialog(<ModifyFundDialog fund={null} onClose={onAddFinish} />);
+    setMessage(null);
+  }, [onAddFinish]);
 
+  const onViewClose = useCallback((): void => {
+    setDialog(null);
+  }, []);
   const onView = useCallback(
     (row: Fund): void => {
-      setDialog(<FundDialog fund={row} onClose={onClose} />);
+      setDialog(<FundDialog fund={row} onClose={onViewClose} />);
+      setMessage(null);
     },
-    [onClose],
+    [onViewClose],
   );
 
+  const onEditFinish = useCallback(
+    (success: boolean): void => {
+      setDialog(null);
+      if (success) {
+        setMessage("Fund updated successfully.");
+      }
+      refetch();
+    },
+    [refetch],
+  );
   const onEdit = useCallback(
     (row: Fund): void => {
-      setDialog(<ModifyFundDialog fund={row} onClose={onClose} />);
+      setDialog(<ModifyFundDialog fund={row} onClose={onEditFinish} />);
+      setMessage(null);
     },
-    [onClose],
+    [onEditFinish],
   );
 
+  const onDeleteFinish = useCallback(
+    (success: boolean): void => {
+      setDialog(null);
+      if (success) {
+        setMessage("Fund deleted successfully.");
+      }
+      refetch();
+    },
+    [refetch],
+  );
   const onDelete = useCallback(
     (row: Fund): void => {
-      setDialog(<DeleteFundDialog fund={row} onClose={onClose} />);
+      setDialog(<DeleteFundDialog fund={row} onClose={onDeleteFinish} />);
+      setMessage(null);
     },
-    [onClose],
+    [onDeleteFinish],
   );
 
   return (
@@ -111,11 +146,13 @@ const FundListFrame = function (): JSX.Element {
                     label="Name"
                     value={row.name}
                     isLoading={isLoading}
+                    isError={error !== null}
                   />
                   <StringColumnCell
                     label="Description"
                     value={row.description}
                     isLoading={isLoading}
+                    isError={error !== null}
                   />
                   <ActionColumnCell
                     actions={[
@@ -142,6 +179,7 @@ const FundListFrame = function (): JSX.Element {
                       },
                     ]}
                     isLoading={isLoading}
+                    isError={error !== null}
                   />
                 </TableRow>
               ))}
@@ -150,6 +188,8 @@ const FundListFrame = function (): JSX.Element {
         </TableContainer>
       </Paper>
       {dialog}
+      <SuccessAlert message={message} />
+      <ErrorAlert error={error} />
     </Box>
   );
 };

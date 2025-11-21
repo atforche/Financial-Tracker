@@ -1,4 +1,5 @@
 import { type JSX, useCallback } from "react";
+import type { ApiErrorDetail } from "@data/ApiError";
 import { TextField } from "@mui/material";
 
 /**
@@ -11,6 +12,7 @@ interface StringEntryFieldProps {
   readonly label: string;
   readonly value: string;
   readonly setValue?: ((newValue: string) => void) | null;
+  readonly error?: ApiErrorDetail | null;
 }
 
 /**
@@ -22,6 +24,7 @@ const StringEntryField = function ({
   label,
   value,
   setValue = null,
+  error = null,
 }: StringEntryFieldProps): JSX.Element {
   const onChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,6 +44,8 @@ const StringEntryField = function ({
         },
       }}
       onChange={onChange}
+      error={error !== null}
+      helperText={error?.description ?? ""}
     />
   );
 };

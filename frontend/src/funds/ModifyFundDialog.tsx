@@ -1,3 +1,4 @@
+import { type ApiError, isApiError } from "@data/ApiError";
 import {
   Button,
   Dialog,
@@ -7,17 +8,18 @@ import {
 } from "@mui/material";
 import { type Fund, addFund, updateFund } from "@data/FundRepository";
 import { type JSX, useCallback, useState } from "react";
+import ErrorAlert from "@framework/alerts/ErrorAlert";
 import StringEntryField from "@framework/dialog/StringEntryField";
 import { useApiRequest } from "@data/useApiRequest";
 
 /**
  * Props for the ModifyFundDialog component.
  * @param {Fund | null} fund - Fund to display in this dialog, or null if a Fund is being added.
- * @param {() => void} onClose - Callback to perform when this dialog is closed.
+ * @param {(boolean) => void} onClose - Callback to perform when this dialog is closed.
  */
 interface ModifyFundDialogProps {
   readonly fund: Fund | null;
-  readonly onClose: () => void;
+  readonly onClose: (success: boolean) => void;
 }
 
 /**
@@ -34,23 +36,30 @@ const ModifyFundDialog = function ({
     fund?.description ?? "",
   );
 
-  const apiRequestFunction = useCallback(async () => {
+  const apiRequestFunction = useCallback<
+    () => Promise<ApiError | null>
+  >(async () => {
     if (fund === null) {
-      await addFund({ name: fundName, description: fundDescription });
-    } else {
-      await updateFund(fund, {
-        name: fundName,
-        description: fundDescription,
-      });
+      return addFund({ name: fundName, description: fundDescription }).then(
+        (result) => (isApiError(result) ? result : null),
+      );
     }
+    return updateFund(fund, {
+      name: fundName,
+      description: fundDescription,
+    }).then((result) => (isApiError(result) ? result : null));
   }, [fund, fundName, fundDescription]);
 
-  const { isRunning, isSuccess, execute } = useApiRequest({
+  const { isRunning, isSuccess, error, execute } = useApiRequest({
     apiRequestFunction,
   });
 
+  const onCancel = useCallback((): void => {
+    onClose(false);
+  }, [onClose]);
+
   if (isSuccess) {
-    onClose();
+    onClose(true);
   }
 
   return (
@@ -75,6 +84,11 @@ const ModifyFundDialog = function ({
               label="Name"
               value={fundName}
               setValue={setFundName}
+              error={
+                error?.details.find(
+                  (detail) => detail.errorCode === "InvalidFundName",
+                ) ?? null
+              }
             />
             <StringEntryField
               label="Description"
@@ -84,7 +98,7 @@ const ModifyFundDialog = function ({
           </>
         </Stack>
         <Stack direction="row" justifyContent="right">
-          <Button onClick={onClose} disabled={isRunning}>
+          <Button onClick={onCancel} disabled={isRunning}>
             Cancel
           </Button>
           <Button onClick={execute} loading={isRunning}>
@@ -92,6 +106,7 @@ const ModifyFundDialog = function ({
           </Button>
         </Stack>
       </DialogContent>
+      <ErrorAlert error={error} />
     </Dialog>
   );
 };

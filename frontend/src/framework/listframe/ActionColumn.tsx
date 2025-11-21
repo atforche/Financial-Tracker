@@ -60,10 +60,12 @@ interface Action {
  * Props for the Action Column Cell component.
  * @param {Action[]} actions - List of actions to display in the cell.
  * @param {boolean} isLoading - Loading state of the cell.
+ * @param {boolean} isError - Error state of the cell.
  */
 interface ActionColumnCellProps {
   readonly actions: Action[];
   readonly isLoading: boolean;
+  readonly isError: boolean;
 }
 
 /**
@@ -74,6 +76,7 @@ interface ActionColumnCellProps {
 const ActionColumnCell = function ({
   actions,
   isLoading,
+  isError,
 }: ActionColumnCellProps): JSX.Element {
   let cellValue: string | JSX.Element = (
     <>
@@ -86,6 +89,9 @@ const ActionColumnCell = function ({
   );
   if (isLoading) {
     cellValue = <Skeleton />;
+  }
+  if (isError) {
+    cellValue = <Skeleton animation={false} />;
   }
   return (
     <ColumnCell id="actions" value={cellValue} align="right" width={125} />

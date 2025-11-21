@@ -8,16 +8,18 @@ import {
 } from "@mui/material";
 import { type Fund, deleteFund } from "@data/FundRepository";
 import { type JSX, useCallback } from "react";
+import ErrorAlert from "@framework/alerts/ErrorAlert";
+import { isApiError } from "@data/ApiError";
 import { useApiRequest } from "@data/useApiRequest";
 
 /**
  * Props for the DeleteFundDialog component.
  * @param {Fund} fund - Fund to display to delete.
- * @param {() => void} onClose - Callback to perform when this dialog is closed.
+ * @param {(boolean) => void} onClose - Callback to perform when this dialog is closed.
  */
 interface DeleteFundDialogProps {
   readonly fund: Fund;
-  readonly onClose: () => void;
+  readonly onClose: (success: boolean) => void;
 }
 
 /**
@@ -29,16 +31,22 @@ const DeleteFundDialog = function ({
   fund,
   onClose,
 }: DeleteFundDialogProps): JSX.Element {
-  const apiRequestFunction = useCallback(async () => {
-    await deleteFund(fund);
-  }, [fund]);
+  const apiRequestFunction = useCallback(
+    async () =>
+      deleteFund(fund).then((result) => (isApiError(result) ? result : null)),
+    [fund],
+  );
 
-  const { isRunning, isSuccess, execute } = useApiRequest({
+  const { isRunning, isSuccess, error, execute } = useApiRequest({
     apiRequestFunction,
   });
 
+  const onCancel = useCallback((): void => {
+    onClose(false);
+  }, [onClose]);
+
   if (isSuccess) {
-    onClose();
+    onClose(true);
   }
 
   return (
@@ -58,13 +66,14 @@ const DeleteFundDialog = function ({
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={isRunning}>
+        <Button onClick={onCancel} disabled={isRunning}>
           Cancel
         </Button>
         <Button onClick={execute} loading={isRunning}>
           Delete
         </Button>
       </DialogActions>
+      <ErrorAlert error={error} />
     </Dialog>
   );
 };

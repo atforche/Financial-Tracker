@@ -52,6 +52,7 @@ export default defineConfig([
       "func-names": "off",
       "id-length": "off",
       "max-lines-per-function": "off",
+      "max-statements": "off",
       "new-cap": ["error", { capIsNewExceptions: ["DELETE", "GET", "POST"] }],
       "no-magic-numbers": "off", // handled by typescript-eslint
       "no-ternary": "off",
