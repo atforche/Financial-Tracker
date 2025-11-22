@@ -13,7 +13,6 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { type Fund, getAllFunds } from "@data/FundRepository";
 import { type JSX, useCallback, useState } from "react";
 import {
   StringColumnCell,
@@ -21,10 +20,11 @@ import {
 } from "@framework/listframe/StringColumn";
 import DeleteFundDialog from "@funds/DeleteFundDialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
+import type { Fund } from "@funds/ApiTypes";
 import FundDialog from "@funds/FundDialog";
 import ModifyFundDialog from "@funds/ModifyFundDialog";
 import SuccessAlert from "@framework/alerts/SuccessAlert";
-import { useQuery } from "@data/useQuery";
+import useGetAllFunds from "@funds/useGetAllFunds";
 
 /**
  * Component that provides a list of funds and makes the basic create, read, update, and delete
@@ -35,13 +35,7 @@ const FundListFrame = function (): JSX.Element {
   const [dialog, setDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  const loadingRowCount = 10;
-  const { data, isLoading, error, refetch } = useQuery<Fund[]>({
-    queryFunction: getAllFunds,
-    initialData: Array(loadingRowCount)
-      .fill(null)
-      .map((_, index) => ({ id: index.toString(), name: "", description: "" })),
-  });
+  const { funds, isLoading, error, refetch } = useGetAllFunds();
 
   const onAddFinish = useCallback(
     (success: boolean): void => {
@@ -140,17 +134,17 @@ const FundListFrame = function (): JSX.Element {
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.map((row) => (
-                <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
+              {funds.map((fund) => (
+                <TableRow hover role="checkbox" tabIndex={-1} key={fund.id}>
                   <StringColumnCell
                     label="Name"
-                    value={row.name}
+                    value={fund.name}
                     isLoading={isLoading}
                     isError={error !== null}
                   />
                   <StringColumnCell
                     label="Description"
-                    value={row.description}
+                    value={fund.description}
                     isLoading={isLoading}
                     isError={error !== null}
                   />
@@ -160,21 +154,21 @@ const FundListFrame = function (): JSX.Element {
                         key: "view",
                         icon: <Info />,
                         handleClick: (): void => {
-                          onView(row);
+                          onView(fund);
                         },
                       },
                       {
                         key: "edit",
                         icon: <ModeEdit />,
                         handleClick: (): void => {
-                          onEdit(row);
+                          onEdit(fund);
                         },
                       },
                       {
                         key: "delete",
                         icon: <Delete />,
                         handleClick: (): void => {
-                          onDelete(row);
+                          onDelete(fund);
                         },
                       },
                     ]}

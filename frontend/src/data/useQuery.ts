@@ -59,4 +59,4 @@ const useQuery = function <T>({
   return { data, isLoading, error, refetch };
 };
 
-export { useQuery };
+export default useQuery;

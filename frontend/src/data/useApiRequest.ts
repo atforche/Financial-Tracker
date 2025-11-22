@@ -58,4 +58,4 @@ const useApiRequest = function ({ apiRequestFunction }: UseApiRequestArgs): {
   return { isRunning, isSuccess, error, execute };
 };
 
-export { useApiRequest };
+export default useApiRequest;

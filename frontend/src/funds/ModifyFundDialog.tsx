@@ -1,4 +1,3 @@
-import { type ApiError, isApiError } from "@data/ApiError";
 import {
   Button,
   Dialog,
@@ -6,11 +5,11 @@ import {
   DialogTitle,
   Stack,
 } from "@mui/material";
-import { type Fund, addFund, updateFund } from "@data/FundRepository";
 import { type JSX, useCallback, useState } from "react";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
+import type { Fund } from "@funds/ApiTypes";
 import StringEntryField from "@framework/dialog/StringEntryField";
-import { useApiRequest } from "@data/useApiRequest";
+import useModifyFund from "@funds/useModifyFund";
 
 /**
  * Props for the ModifyFundDialog component.
@@ -36,22 +35,10 @@ const ModifyFundDialog = function ({
     fund?.description ?? "",
   );
 
-  const apiRequestFunction = useCallback<
-    () => Promise<ApiError | null>
-  >(async () => {
-    if (fund === null) {
-      return addFund({ name: fundName, description: fundDescription }).then(
-        (result) => (isApiError(result) ? result : null),
-      );
-    }
-    return updateFund(fund, {
-      name: fundName,
-      description: fundDescription,
-    }).then((result) => (isApiError(result) ? result : null));
-  }, [fund, fundName, fundDescription]);
-
-  const { isRunning, isSuccess, error, execute } = useApiRequest({
-    apiRequestFunction,
+  const { isRunning, isSuccess, error, modifyFund } = useModifyFund({
+    fund,
+    fundName,
+    fundDescription,
   });
 
   const onCancel = useCallback((): void => {
@@ -101,7 +88,7 @@ const ModifyFundDialog = function ({
           <Button onClick={onCancel} disabled={isRunning}>
             Cancel
           </Button>
-          <Button onClick={execute} loading={isRunning}>
+          <Button onClick={modifyFund} loading={isRunning}>
             {fund === null ? "Add" : "Update"}
           </Button>
         </Stack>
