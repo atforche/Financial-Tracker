@@ -139,6 +139,7 @@ export default defineConfig([
       "react/jsx-max-depth": "off",
       "react/jsx-max-props-per-line": "off",
       "react/jsx-newline": "off",
+      "react/jsx-no-bind": "off",
       "react/jsx-no-literals": "off",
       "react/jsx-one-expression-per-line": "off",
       "react/jsx-sort-props": "off",

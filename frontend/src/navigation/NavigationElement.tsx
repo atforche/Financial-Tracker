@@ -1,4 +1,3 @@
-import { type JSX, useCallback } from "react";
 import {
   ListItem,
   ListItemButton,
@@ -9,6 +8,7 @@ import {
   NavigationIcons,
   type NavigationPage,
 } from "@navigation/NavigationPage";
+import type { JSX } from "react";
 
 /**
  * Props for the NavigationElement component.
@@ -32,13 +32,14 @@ const NavigationElement = function ({
   isSelected,
   onSelect,
 }: NavigationElementProps): JSX.Element {
-  const onClick = useCallback(() => {
-    onSelect(navigationPage);
-  }, [navigationPage, onSelect]);
-
   return (
     <ListItem key={navigationPage} disablePadding>
-      <ListItemButton selected={isSelected} onClick={onClick}>
+      <ListItemButton
+        selected={isSelected}
+        onClick={() => {
+          onSelect(navigationPage);
+        }}
+      >
         <ListItemIcon sx={{ paddingLeft: "15px" }}>
           {NavigationIcons[navigationPage]}
         </ListItemIcon>

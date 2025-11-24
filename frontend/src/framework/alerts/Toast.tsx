@@ -1,5 +1,5 @@
-import { Alert, Snackbar, type SnackbarCloseReason } from "@mui/material";
-import { type JSX, useCallback, useState } from "react";
+import { Alert, Snackbar } from "@mui/material";
+import { type JSX, useState } from "react";
 
 /**
  * Props for the Toast component.
@@ -25,45 +25,33 @@ const Toast = function ({
 }: ToastProps): JSX.Element {
   const [open, setOpen] = useState(false);
   const [hasBeenCleared, setHasBeenCleared] = useState(false);
-
-  const handleAlertClose = useCallback<
-    (event: React.SyntheticEvent | Event) => void
-  >(() => {
+  const onClose = function (): void {
     setOpen(false);
     setHasBeenCleared(true);
-  }, []);
-
-  const handleSnackbarClose = useCallback<
-    (event: React.SyntheticEvent | Event, reason: SnackbarCloseReason) => void
-  >(
-    (event, reason) => {
-      if (reason === "clickaway") {
-        return;
-      }
-      handleAlertClose(event);
-    },
-    [handleAlertClose],
-  );
-
+  };
   if (message !== null && !open && !hasBeenCleared) {
     setOpen(true);
   } else if (message === null && (open || hasBeenCleared)) {
     setOpen(false);
     setHasBeenCleared(false);
   }
-
   return (
     <Snackbar
       open={open}
       anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      onClose={handleSnackbarClose}
+      onClose={(_, reason) => {
+        if (reason === "clickaway") {
+          return;
+        }
+        onClose();
+      }}
       autoHideDuration={autoHideDuration}
     >
       <Alert
         severity={severity}
         variant="filled"
         sx={{ width: "100%" }}
-        onClose={handleAlertClose}
+        onClose={onClose}
       >
         {message}
       </Alert>

@@ -6,9 +6,9 @@ import {
   DialogTitle,
   Typography,
 } from "@mui/material";
-import { type JSX, useCallback } from "react";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import type { Fund } from "@funds/ApiTypes";
+import type { JSX } from "react";
 import useDeleteFund from "@funds/useDeleteFund";
 
 /**
@@ -33,15 +33,9 @@ const DeleteFundDialog = function ({
   const { isRunning, isSuccess, error, deleteFund } = useDeleteFund({
     fund,
   });
-
-  const onCancel = useCallback((): void => {
-    onClose(false);
-  }, [onClose]);
-
   if (isSuccess) {
     onClose(true);
   }
-
   return (
     <Dialog open>
       <DialogTitle
@@ -59,7 +53,12 @@ const DeleteFundDialog = function ({
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCancel} disabled={isRunning}>
+        <Button
+          onClick={() => {
+            onClose(false);
+          }}
+          disabled={isRunning}
+        >
           Cancel
         </Button>
         <Button onClick={deleteFund} loading={isRunning}>

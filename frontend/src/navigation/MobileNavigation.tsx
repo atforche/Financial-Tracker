@@ -7,7 +7,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { type JSX, useCallback, useState } from "react";
+import { type JSX, useState } from "react";
 import MenuIcon from "@mui/icons-material/Menu";
 import type { NavigationPage } from "@navigation/NavigationPage";
 import NavigationSelector from "@navigation/NavigationSelector";
@@ -36,22 +36,6 @@ const MobileNavigation = function ({
   const drawerWidth = 260;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-
-  const handleDrawerClose = useCallback((): void => {
-    setIsClosing(true);
-    setMobileOpen(false);
-  }, []);
-
-  const handleDrawerTransitionEnd = useCallback((): void => {
-    setIsClosing(false);
-  }, []);
-
-  const handleDrawerToggle = useCallback((): void => {
-    if (!isClosing) {
-      setMobileOpen(!mobileOpen);
-    }
-  }, [isClosing, mobileOpen]);
-
   return (
     <Box>
       <AppBar
@@ -62,7 +46,13 @@ const MobileNavigation = function ({
       >
         <Toolbar>
           <IconButton size="large" edge="start" color="inherit" sx={{ mr: 2 }}>
-            <MenuIcon onClick={handleDrawerToggle} />
+            <MenuIcon
+              onClick={() => {
+                if (!isClosing) {
+                  setMobileOpen(!mobileOpen);
+                }
+              }}
+            />
           </IconButton>
           <img src="/logo.svg" height="60px" width="60px" />
           <Typography variant="h6" sx={{ marginLeft: 2 }}>
@@ -73,8 +63,13 @@ const MobileNavigation = function ({
       <Drawer
         variant="temporary"
         open={mobileOpen}
-        onTransitionEnd={handleDrawerTransitionEnd}
-        onClose={handleDrawerClose}
+        onTransitionEnd={() => {
+          setIsClosing(false);
+        }}
+        onClose={() => {
+          setIsClosing(true);
+          setMobileOpen(false);
+        }}
         ModalProps={{
           keepMounted: true,
         }}

@@ -5,7 +5,7 @@ import {
   DialogTitle,
   Stack,
 } from "@mui/material";
-import { type JSX, useCallback, useState } from "react";
+import { type JSX, useState } from "react";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import type { Fund } from "@funds/ApiTypes";
 import StringEntryField from "@framework/dialog/StringEntryField";
@@ -34,21 +34,14 @@ const ModifyFundDialog = function ({
   const [fundDescription, setFundDescription] = useState<string>(
     fund?.description ?? "",
   );
-
   const { isRunning, isSuccess, error, modifyFund } = useModifyFund({
     fund,
     fundName,
     fundDescription,
   });
-
-  const onCancel = useCallback((): void => {
-    onClose(false);
-  }, [onClose]);
-
   if (isSuccess) {
     onClose(true);
   }
-
   return (
     <Dialog open>
       <DialogTitle
@@ -85,7 +78,12 @@ const ModifyFundDialog = function ({
           </>
         </Stack>
         <Stack direction="row" justifyContent="right">
-          <Button onClick={onCancel} disabled={isRunning}>
+          <Button
+            onClick={() => {
+              onClose(false);
+            }}
+            disabled={isRunning}
+          >
             Cancel
           </Button>
           <Button onClick={modifyFund} loading={isRunning}>

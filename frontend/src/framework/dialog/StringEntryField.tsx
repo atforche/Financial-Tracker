@@ -1,5 +1,5 @@
-import { type JSX, useCallback } from "react";
 import type { ApiErrorDetail } from "@data/ApiError";
+import type { JSX } from "react";
 import { TextField } from "@mui/material";
 
 /**
@@ -26,13 +26,6 @@ const StringEntryField = function ({
   setValue = null,
   error = null,
 }: StringEntryFieldProps): JSX.Element {
-  const onChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setValue?.(event.target.value);
-    },
-    [setValue],
-  );
-
   return (
     <TextField
       label={label}
@@ -43,7 +36,7 @@ const StringEntryField = function ({
           readOnly: setValue === null,
         },
       }}
-      onChange={onChange}
+      onChange={(event) => setValue?.(event.target.value)}
       error={error !== null}
       helperText={error?.description ?? ""}
     />

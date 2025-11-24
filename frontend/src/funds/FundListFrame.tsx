@@ -13,7 +13,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { type JSX, useCallback, useState } from "react";
+import { type JSX, useState } from "react";
 import {
   StringColumnCell,
   StringColumnHeader,
@@ -34,70 +34,67 @@ import useGetAllFunds from "@funds/useGetAllFunds";
 const FundListFrame = function (): JSX.Element {
   const [dialog, setDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-
   const { funds, isLoading, error, refetch } = useGetAllFunds();
 
-  const onAddFinish = useCallback(
-    (success: boolean): void => {
-      setDialog(null);
-      if (success) {
-        setMessage("Fund added successfully.");
-      }
-      refetch();
-    },
-    [refetch],
-  );
-  const onAdd = useCallback((): void => {
-    setDialog(<ModifyFundDialog fund={null} onClose={onAddFinish} />);
+  const onAdd = function (): void {
+    setDialog(
+      <ModifyFundDialog
+        fund={null}
+        onClose={(success) => {
+          setDialog(null);
+          if (success) {
+            setMessage("Fund added successfully.");
+          }
+          refetch();
+        }}
+      />,
+    );
     setMessage(null);
-  }, [onAddFinish]);
+  };
 
-  const onViewClose = useCallback((): void => {
-    setDialog(null);
-  }, []);
-  const onView = useCallback(
-    (row: Fund): void => {
-      setDialog(<FundDialog fund={row} onClose={onViewClose} />);
-      setMessage(null);
-    },
-    [onViewClose],
-  );
+  const onView = function (fund: Fund): void {
+    setDialog(
+      <FundDialog
+        fund={fund}
+        onClose={() => {
+          setDialog(null);
+        }}
+      />,
+    );
+    setMessage(null);
+  };
 
-  const onEditFinish = useCallback(
-    (success: boolean): void => {
-      setDialog(null);
-      if (success) {
-        setMessage("Fund updated successfully.");
-      }
-      refetch();
-    },
-    [refetch],
-  );
-  const onEdit = useCallback(
-    (row: Fund): void => {
-      setDialog(<ModifyFundDialog fund={row} onClose={onEditFinish} />);
-      setMessage(null);
-    },
-    [onEditFinish],
-  );
+  const onEdit = function (fund: Fund): void {
+    setDialog(
+      <ModifyFundDialog
+        fund={fund}
+        onClose={(success) => {
+          setDialog(null);
+          if (success) {
+            setMessage("Fund updated successfully.");
+          }
+          refetch();
+        }}
+      />,
+    );
+    setMessage(null);
+  };
 
-  const onDeleteFinish = useCallback(
-    (success: boolean): void => {
-      setDialog(null);
-      if (success) {
-        setMessage("Fund deleted successfully.");
-      }
-      refetch();
-    },
-    [refetch],
-  );
-  const onDelete = useCallback(
-    (row: Fund): void => {
-      setDialog(<DeleteFundDialog fund={row} onClose={onDeleteFinish} />);
-      setMessage(null);
-    },
-    [onDeleteFinish],
-  );
+  const onDelete = function (fund: Fund): void {
+    setDialog(
+      <DeleteFundDialog
+        fund={fund}
+        onClose={(success) => {
+          setDialog(null);
+          if (success) {
+            setMessage("Fund deleted successfully.");
+          }
+          refetch();
+        }}
+      />,
+    );
+    setMessage(null);
+  };
 
   return (
     <Box sx={{ paddingLeft: "25px" }}>

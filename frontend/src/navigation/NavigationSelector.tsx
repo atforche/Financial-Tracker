@@ -1,5 +1,5 @@
 import { Box, Divider, List } from "@mui/material";
-import { type JSX, useCallback, useState } from "react";
+import { type JSX, useState } from "react";
 import {
   type NavigationPage,
   NavigationPages,
@@ -26,15 +26,6 @@ const NavigationSelector = function ({
   onNavigation,
 }: NavigationSelectorProps): JSX.Element {
   const [currentPage, setCurrentPage] = useState(initialPage);
-
-  const onClickCallback = useCallback(
-    (navigationPage: NavigationPage) => {
-      setCurrentPage(navigationPage);
-      onNavigation(navigationPage);
-    },
-    [onNavigation],
-  );
-
   return (
     <Box sx={{ overflow: "auto" }}>
       <Divider />
@@ -44,7 +35,10 @@ const NavigationSelector = function ({
             key={page}
             navigationPage={page}
             isSelected={page === currentPage}
-            onSelect={onClickCallback}
+            onSelect={(navigationPage) => {
+              setCurrentPage(navigationPage);
+              onNavigation(navigationPage);
+            }}
           />
         ))}
       </List>
