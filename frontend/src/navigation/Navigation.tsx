@@ -6,8 +6,8 @@ import useMobile from "@framework/useMobile";
 
 /**
  * Props for the Navigation component.
- * @param {NavigationPage} initialPage - Initial page to be selected.
- * @param {(val: NavigationPage) => void} onNavigation - Callback to be executed whenever the navigation selection changes.
+ * @param initialPage - Initial page to be selected.
+ * @param onNavigation - Callback to be executed whenever the navigation selection changes.
  */
 interface NavigationProps {
   readonly initialPage: NavigationPage;
@@ -16,8 +16,8 @@ interface NavigationProps {
 
 /**
  * Component that presents the user with a navigation layout.
- * @param {NavigationProps} props - Props for the Navigation component.
- * @returns {JSX.Element} JSX element representing the Navigation component.
+ * @param props - Props for the Navigation component.
+ * @returns JSX element representing the Navigation component.
  */
 const Navigation = function ({
   initialPage,

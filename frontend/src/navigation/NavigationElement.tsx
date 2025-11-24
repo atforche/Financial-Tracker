@@ -12,9 +12,9 @@ import type { JSX } from "react";
 
 /**
  * Props for the NavigationElement component.
- * @param {NavigationPage} navigationPage - Navigation page represented by this element.
- * @param {boolean} isSelected - Whether or not this element is currently selected.
- * @param {(val: NavigationPage) => void} onSelect - Callback to be executed when this element is selected.
+ * @param navigationPage - Navigation page represented by this element.
+ * @param isSelected - Whether or not this element is currently selected.
+ * @param onSelect - Callback to be executed when this element is selected.
  */
 interface NavigationElementProps {
   readonly navigationPage: NavigationPage;
@@ -24,8 +24,8 @@ interface NavigationElementProps {
 
 /**
  * Component that represents a single navigation element in the navigation selector.
- * @param {NavigationElementProps} props - Props for the NavigationElement component.
- * @returns {JSX.Element} JSX element representing the NavigationElement component.
+ * @param props - Props for the NavigationElement component.
+ * @returns JSX element representing the NavigationElement component.
  */
 const NavigationElement = function ({
   navigationPage,

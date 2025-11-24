@@ -8,8 +8,8 @@ import NavigationElement from "./NavigationElement";
 
 /**
  * Props for the NavigationSelector component.
- * @param {NavigationPage} initialPage - Initial page to be selected.
- * @param {(val: NavigationPage) => void} onNavigation - Callback to be executed whenever the navigation selection changes.
+ * @param initialPage - Initial page to be selected.
+ * @param onNavigation - Callback to be executed whenever the navigation selection changes.
  */
 interface NavigationSelectorProps {
   readonly initialPage: NavigationPage;
@@ -18,8 +18,8 @@ interface NavigationSelectorProps {
 
 /**
  * Component that allows users to select which of the main navigation pages they want to navigate to.
- * @param {NavigationSelectorProps} props - Props for the NavigationSelector component.
- * @returns {JSX.Element} JSX element representing the NavigationSelector component.
+ * @param props - Props for the NavigationSelector component.
+ * @returns JSX element representing the NavigationSelector component.
  */
 const NavigationSelector = function ({
   initialPage,

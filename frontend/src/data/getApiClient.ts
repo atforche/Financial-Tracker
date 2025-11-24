@@ -3,7 +3,7 @@ import type { paths } from "@data/api";
 
 /**
  * Gets the API client for making requests to the backend.
- * @returns {Client<paths>} The API client to use for making requests.
+ * @returns The API client to use for making requests.
  */
 const getApiClient = function (): Client<paths> {
   return createClient<paths>({

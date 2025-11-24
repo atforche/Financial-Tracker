@@ -3,9 +3,9 @@ import { type JSX, useState } from "react";
 
 /**
  * Props for the Toast component.
- * @param {string} message - The message to display in the toast.
- * @param { "error" | "success" } severity - The severity level of the toast.
- * @param {number | undefined} autoHideDuration - Duration in milliseconds before the toast auto-hides.
+ * @param message - The message to display in the toast.
+ * @param severity - The severity level of the toast.
+ * @param autoHideDuration - Duration in milliseconds before the toast auto-hides.
  */
 interface ToastProps {
   readonly message: string | null;
@@ -15,8 +15,8 @@ interface ToastProps {
 
 /**
  * Component that displays an toast message to the user.
- * @param {Toast} props - Props for the Toast component.
- * @returns {JSX.Element} JSX element representing the Toast.
+ * @param props - Props for the Toast component.
+ * @returns JSX element representing the Toast.
  */
 const Toast = function ({
   message,

@@ -5,7 +5,7 @@ import type { JSX } from "react";
 
 /**
  * Props for the Boolean Column Header component.
- * @param {string} label - Label for the column.
+ * @param label - Label for the column.
  */
 interface BooleanColumnHeaderProps {
   readonly label: string;
@@ -13,8 +13,8 @@ interface BooleanColumnHeaderProps {
 
 /**
  * Component that renders the header for a boolean column.
- * @param {BooleanColumnHeaderProps} props - Props for the Boolean Column Header component.
- * @returns {JSX.Element} JSX element representing the Boolean Column Header.
+ * @param props - Props for the Boolean Column Header component.
+ * @returns JSX element representing the Boolean Column Header.
  */
 const BooleanColumnHeader = function ({
   label,
@@ -24,9 +24,9 @@ const BooleanColumnHeader = function ({
 
 /**
  * Props for the Boolean Column Cell component.
- * @param {string} label - Label for the column.
- * @param {boolean} value - Value to display in the cell.
- * @param {boolean} isLoading - Loading state of the cell.
+ * @param label - Label for the column.
+ * @param value - Value to display in the cell.
+ * @param isLoading - Loading state of the cell.
  */
 interface BooleanColumnCellProps {
   readonly label: string;
@@ -36,8 +36,8 @@ interface BooleanColumnCellProps {
 
 /**
  * Component that renders a cell for a boolean column.
- * @param {BooleanColumnCellProps} props - Props for the Boolean Column Cell component.
- * @returns {JSX.Element} JSX element representing the Boolean Column Cell.
+ * @param props - Props for the Boolean Column Cell component.
+ * @returns JSX element representing the Boolean Column Cell.
  */
 const BooleanColumnCell = function ({
   label,

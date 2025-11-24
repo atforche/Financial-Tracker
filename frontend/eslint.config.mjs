@@ -90,6 +90,7 @@ export default defineConfig([
       // jsdoc rules
       "jsdoc/check-indentation": "error",
       "jsdoc/check-line-alignment": "error",
+      "jsdoc/check-param-names": ["error", { checkDestructured: false }],
       "jsdoc/check-syntax": "error",
       "jsdoc/check-template-names": "error",
       "jsdoc/informative-docs": "error",
@@ -97,7 +98,6 @@ export default defineConfig([
       "jsdoc/no-bad-blocks": "error",
       "jsdoc/no-blank-block-descriptions": "error",
       "jsdoc/no-blank-blocks": "error",
-      "jsdoc/no-types": "off",
       "jsdoc/require-asterisk-prefix": "error",
       "jsdoc/require-description": "error",
       "jsdoc/require-description-complete-sentence": "error",
@@ -118,10 +118,7 @@ export default defineConfig([
           checkSetters: true,
         },
       ],
-      "jsdoc/require-param-type": "error",
-      "jsdoc/require-property-type": "error",
-      "jsdoc/require-returns-type": "error",
-      "jsdoc/require-throws-type": "error",
+      "jsdoc/require-param": ["error", { checkDestructured: false }],
       "jsdoc/ts-method-signature-style": "error",
 
       // react rules

@@ -2,7 +2,7 @@ import { useMediaQuery, useTheme } from "@mui/material";
 
 /**
  * Hook that determines if the current device is a mobile device based on screen size.
- * @returns {boolean} True if the device is mobile, false otherwise.
+ * @returns True if the device is mobile, false otherwise.
  */
 const useMobile = function (): boolean {
   const theme = useTheme();

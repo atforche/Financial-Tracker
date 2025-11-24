@@ -12,8 +12,8 @@ type ApiErrorDetail = components["schemas"]["ErrorDetailModel"];
 
 /**
  * Checks if the given object is an ApiError.
- * @param {unknown} obj - The object to check.
- * @returns {boolean} True if the object is an ApiError, false otherwise.
+ * @param obj - The object to check.
+ * @returns True if the object is an ApiError, false otherwise.
  */
 const isApiError = function (obj: unknown): obj is ApiError {
   if (typeof obj !== "object" || obj === null) {

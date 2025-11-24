@@ -4,9 +4,9 @@ import { TextField } from "@mui/material";
 
 /**
  * Props for the StringEntryField component.
- * @param {string} label - Label for this String Entry Field.
- * @param {(newValue: string) => void | null} setValue - Callback to update the value in this String Entry Field. If null, this field is read-only.
- * @param {string} value - Current value for this String Entry Field.
+ * @param label - Label for this String Entry Field.
+ * @param setValue - Callback to update the value in this String Entry Field. If null, this field is read-only.
+ * @param value - Current value for this String Entry Field.
  */
 interface StringEntryFieldProps {
   readonly label: string;
@@ -17,8 +17,8 @@ interface StringEntryFieldProps {
 
 /**
  * Component the presents the user with an entry field where they can enter string values.
- * @param {StringEntryFieldProps} props - Props for the StringEntryField component.
- * @returns {JSX.Element} JSX element representing the StringEntryField component.
+ * @param props - Props for the StringEntryField component.
+ * @returns JSX element representing the StringEntryField component.
  */
 const StringEntryField = function ({
   label,

@@ -3,10 +3,10 @@ import TableCell from "@mui/material/TableCell";
 
 /**
  * Props for the ColumnCell component.
- * @param {string} id - Id that uniquely identifies this Column Cell.
- * @param {string | JSX.Element} value - Value for this Column Cell.
- * @param {"center" | "left" | "right"} align - Alignment for this Column Cell.
- * @param {number} width - Width for this Column Cell.
+ * @param id - Id that uniquely identifies this Column Cell.
+ * @param value - Value for this Column Cell.
+ * @param align - Alignment for this Column Cell.
+ * @param width - Width for this Column Cell.
  */
 interface ColumnCellProps {
   readonly id: string;
@@ -17,8 +17,8 @@ interface ColumnCellProps {
 
 /**
  * Component for rendering a column cell in a list frame.
- * @param {ColumnCellProps} props - Props for the ColumnCell component.
- * @returns {JSX.Element} The column cell element.
+ * @param props - Props for the ColumnCell component.
+ * @returns The column cell element.
  */
 const ColumnCell = function ({
   id,

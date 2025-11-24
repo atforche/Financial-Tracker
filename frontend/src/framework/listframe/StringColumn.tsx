@@ -5,7 +5,7 @@ import Skeleton from "@mui/material/Skeleton";
 
 /**
  * Props for the String Column Header component.
- * @param {string} label - Label for the column.
+ * @param label - Label for the column.
  */
 interface StringColumnHeaderProps {
   readonly label: string;
@@ -13,8 +13,8 @@ interface StringColumnHeaderProps {
 
 /**
  * Component that renders the header for a string column.
- * @param {StringColumnHeaderProps} props - Props for the String Column Header component.
- * @returns {JSX.Element} JSX element representing the String Column Header.
+ * @param props - Props for the String Column Header component.
+ * @returns JSX element representing the String Column Header.
  */
 const StringColumnHeader = function ({
   label,
@@ -24,10 +24,10 @@ const StringColumnHeader = function ({
 
 /**
  * Props for the String Column Cell component.
- * @param {string} label - Label for the column.
- * @param {string | null} value - Value to display in the cell.
- * @param {boolean} isLoading - Loading state of the cell.
- * @param {boolean} isError - Error state of the cell.
+ * @param label - Label for the column.
+ * @param value - Value to display in the cell.
+ * @param isLoading - Loading state of the cell.
+ * @param isError - Error state of the cell.
  */
 interface StringColumnCellProps {
   readonly label: string;
@@ -38,8 +38,8 @@ interface StringColumnCellProps {
 
 /**
  * Component that renders a cell for a string column.
- * @param {StringColumnCellProps} props - Props for the String Column Cell component.
- * @returns {JSX.Element} JSX element representing the String Column Cell.
+ * @param props - Props for the String Column Cell component.
+ * @returns JSX element representing the String Column Cell.
  */
 const StringColumnCell = function ({
   label,

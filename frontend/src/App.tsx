@@ -10,7 +10,7 @@ import useMobile from "@framework/useMobile";
 /**
  * Primary component that manages the application.
  * Provides the navigation layout and manages which content components are displayed.
- * @returns {JSX.Element} JSX element representing the entire application.
+ * @returns JSX element representing the entire application.
  */
 const App = function (): JSX.Element {
   const [currentPage, setCurrentPage] = useState<NavigationPage>("Overview");

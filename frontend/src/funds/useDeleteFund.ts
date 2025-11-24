@@ -6,7 +6,7 @@ import { useCallback } from "react";
 
 /**
  * Interface representing the arguments for deleting a fund.
- * @param {Fund} fund - Fund to delete.
+ * @param fund - Fund to delete.
  */
 interface UseDeleteFundArgs {
   readonly fund: Fund;
@@ -14,8 +14,8 @@ interface UseDeleteFundArgs {
 
 /**
  * Hook used to delete a Fund via the API.
- * @param {UseDeleteFundArgs} args - Arguments for deleting a Fund.
- * @returns {{isRunning: boolean, isSuccess: boolean, error: ApiError | null, deleteFund: () => void}} - Running state, success state, current error, and function to delete the Fund.
+ * @param args - Arguments for deleting a Fund.
+ * @returns Running state, success state, current error, and function to delete the Fund.
  */
 const useDeleteFund = function ({ fund }: UseDeleteFundArgs): {
   isRunning: boolean;

@@ -29,7 +29,7 @@ import useGetAllFunds from "@funds/useGetAllFunds";
 /**
  * Component that provides a list of funds and makes the basic create, read, update, and delete
  * operations available on them.
- * @returns {JSX.Element} JSX element representing a list of funds with various action buttons.
+ * @returns JSX element representing a list of funds with various action buttons.
  */
 const FundListFrame = function (): JSX.Element {
   const [dialog, setDialog] = useState<JSX.Element | null>(null);

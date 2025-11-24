@@ -5,8 +5,8 @@ import NavigationSelector from "@navigation/NavigationSelector";
 
 /**
  * Props for the DesktopNavigation component.
- * @param {NavigationPage} initialPage - Initial page to be selected.
- * @param {(val: NavigationPage) => void} onNavigation - Callback to be executed whenever the navigation selection changes.
+ * @param initialPage - Initial page to be selected.
+ * @param onNavigation - Callback to be executed whenever the navigation selection changes.
  */
 interface DesktopNavigationProps {
   readonly initialPage: NavigationPage;
@@ -15,8 +15,8 @@ interface DesktopNavigationProps {
 
 /**
  * Component that presents the user with a navigation layout that is permanently on the screen.
- * @param {DesktopNavigationProps} props - Props for the DesktopNavigation component.
- * @returns {JSX.Element} JSX element representing the DesktopNavigation component.
+ * @param props - Props for the DesktopNavigation component.
+ * @returns JSX element representing the DesktopNavigation component.
  */
 const DesktopNavigation = function ({
   initialPage,

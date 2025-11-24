@@ -4,7 +4,7 @@ import Toast from "@framework/alerts/Toast";
 
 /**
  * Props for the ErrorAlert component.
- * @param {ApiError | null} error - The API error to display.
+ * @param error - The API error to display.
  */
 interface ErrorAlertProps {
   readonly error: ApiError | null;
@@ -12,8 +12,8 @@ interface ErrorAlertProps {
 
 /**
  * Component that displays an error alert for the given API error.
- * @param {ErrorAlertProps} props - Props for the ErrorAlert component.
- * @returns {JSX.Element} JSX element representing the ErrorAlert.
+ * @param props - Props for the ErrorAlert component.
+ * @returns JSX element representing the ErrorAlert.
  */
 const ErrorAlert = function ({ error }: ErrorAlertProps): JSX.Element {
   return (

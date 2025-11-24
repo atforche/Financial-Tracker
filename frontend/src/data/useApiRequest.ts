@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 
 /**
  * Interface representing the arguments to the useApiRequest hook.
- * @param {() => Promise<void>} apiRequestFunction - Function to execute the API request.
+ * @param apiRequestFunction - Function to execute the API request.
  */
 interface UseApiRequestArgs {
   apiRequestFunction: () => Promise<ApiError | null>;
@@ -11,8 +11,8 @@ interface UseApiRequestArgs {
 
 /**
  * Hook used to execute an API request in an asynchronous manner.
- * @param {UseApiRequestArgs} args - Arguments to use to execute the API request.
- * @returns {{isRunning: boolean, isSuccess: boolean, error: ApiError | null, execute: () => void}} - Running state, success state, current error, and function to execute the API request.
+ * @param args - Arguments to use to execute the API request.
+ * @returns Running state, success state, current error, and function to execute the API request.
  */
 const useApiRequest = function ({ apiRequestFunction }: UseApiRequestArgs): {
   isRunning: boolean;

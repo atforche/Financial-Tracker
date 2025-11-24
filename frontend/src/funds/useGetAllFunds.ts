@@ -6,7 +6,7 @@ import useQuery from "@data/useQuery";
 
 /**
  * Hook used to retrieve all Funds via the API.
- * @returns {{funds: Fund[] | null, isLoading: boolean, error: Error | null, refetch: () => void}} - Retrieved Funds, loading state, current error, and function to refetch the Funds.
+ * @returns Retrieved Funds, loading state, current error, and function to refetch the Funds.
  */
 const useGetAllFunds = function (): {
   funds: Fund[];

@@ -13,8 +13,8 @@ import useDeleteFund from "@funds/useDeleteFund";
 
 /**
  * Props for the DeleteFundDialog component.
- * @param {Fund} fund - Fund to display to delete.
- * @param {(boolean) => void} onClose - Callback to perform when this dialog is closed.
+ * @param fund - Fund to display to delete.
+ * @param onClose - Callback to perform when this dialog is closed.
  */
 interface DeleteFundDialogProps {
   readonly fund: Fund;
@@ -23,8 +23,8 @@ interface DeleteFundDialogProps {
 
 /**
  * Component that presents the user with a dialog to delete a Fund.
- * @param {DeleteFundDialogProps} props - Props for the DeleteFundDialog component.
- * @returns {JSX.Element} JSX element representing the DeleteFundDialog.
+ * @param props - Props for the DeleteFundDialog component.
+ * @returns JSX element representing the DeleteFundDialog.
  */
 const DeleteFundDialog = function ({
   fund,

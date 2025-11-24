@@ -13,8 +13,8 @@ import useModifyFund from "@funds/useModifyFund";
 
 /**
  * Props for the ModifyFundDialog component.
- * @param {Fund | null} fund - Fund to display in this dialog, or null if a Fund is being added.
- * @param {(boolean) => void} onClose - Callback to perform when this dialog is closed.
+ * @param fund - Fund to display in this dialog, or null if a Fund is being added.
+ * @param onClose - Callback to perform when this dialog is closed.
  */
 interface ModifyFundDialogProps {
   readonly fund: Fund | null;
@@ -23,8 +23,8 @@ interface ModifyFundDialogProps {
 
 /**
  * Component that presents the user with a dialog to create or update a Fund.
- * @param {ModifyFundDialogProps} props - Props for the ModifyFundDialog component.
- * @returns {JSX.Element} JSX element representing the ModifyFundDialog.
+ * @param props - Props for the ModifyFundDialog component.
+ * @returns JSX element representing the ModifyFundDialog.
  */
 const ModifyFundDialog = function ({
   fund,

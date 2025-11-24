@@ -5,9 +5,9 @@ import type { JSX } from "react";
 
 /**
  * Props for the Action Column Header component.
- * @param {JSX.Element} icon - Icon to display in the header.
- * @param {string} caption - Caption for the header.
- * @param {() => void} onClick - Callback to perform when the header is clicked.
+ * @param icon - Icon to display in the header.
+ * @param caption - Caption for the header.
+ * @param onClick - Callback to perform when the header is clicked.
  */
 interface ActionColumnHeaderProps {
   readonly icon: JSX.Element;
@@ -17,8 +17,8 @@ interface ActionColumnHeaderProps {
 
 /**
  * Component that renders the header for an action column.
- * @param {ActionColumnHeaderProps} props - Props for the Action Column Header component.
- * @returns {JSX.Element} JSX.Element representing the Action Column Header.
+ * @param props - Props for the Action Column Header component.
+ * @returns JSX.Element representing the Action Column Header.
  */
 const ActionColumnHeader = function ({
   icon,
@@ -58,9 +58,9 @@ interface Action {
 
 /**
  * Props for the Action Column Cell component.
- * @param {Action[]} actions - List of actions to display in the cell.
- * @param {boolean} isLoading - Loading state of the cell.
- * @param {boolean} isError - Error state of the cell.
+ * @param actions - List of actions to display in the cell.
+ * @param isLoading - Loading state of the cell.
+ * @param isError - Error state of the cell.
  */
 interface ActionColumnCellProps {
   readonly actions: Action[];
@@ -70,8 +70,8 @@ interface ActionColumnCellProps {
 
 /**
  * Component that renders a cell for an action column.
- * @param {ActionColumnCellProps} props - Props for the Action Column Cell component.
- * @returns {JSX.Element} JSX.Element representing the Action Column Cell.
+ * @param props - Props for the Action Column Cell component.
+ * @returns JSX.Element representing the Action Column Cell.
  */
 const ActionColumnCell = function ({
   actions,

@@ -6,9 +6,9 @@ import { useCallback } from "react";
 
 /**
  * Interface representing the arguments for modifying a fund.
- * @param {Fund | null} fund - Fund to modify, or null if creating a new Fund.
- * @param {string} fundName - New name of the Fund.
- * @param {string} fundDescription - New description of the Fund.
+ * @param fund - Fund to modify, or null if creating a new Fund.
+ * @param fundName - New name of the Fund.
+ * @param fundDescription - New description of the Fund.
  */
 interface UseModifyFundArgs {
   readonly fund: Fund | null;
@@ -18,8 +18,8 @@ interface UseModifyFundArgs {
 
 /**
  * Hook used to create or update a Fund via the API.
- * @param {UseModifyFundArgs} args - Arguments for modifying a Fund.
- * @returns {{isRunning: boolean, isSuccess: boolean, error: ApiError | null, modifyFund: () => void}} - Running state, success state, current error, and function to modify the Fund.
+ * @param args - Arguments for modifying a Fund.
+ * @returns Running state, success state, current error, and function to modify the Fund.
  */
 const useModifyFund = function ({
   fund,

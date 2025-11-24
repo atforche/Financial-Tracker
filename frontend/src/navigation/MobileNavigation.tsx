@@ -14,8 +14,8 @@ import NavigationSelector from "@navigation/NavigationSelector";
 
 /**
  * Props for the MobileNavigation component.
- * @param {NavigationPage} initialPage - Initial page to be selected.
- * @param {(val: NavigationPage) => void} onNavigation - Callback to be executed whenever the navigation selection changes.
+ * @param initialPage - Initial page to be selected.
+ * @param onNavigation - Callback to be executed whenever the navigation selection changes.
  */
 interface MobileNavigationProps {
   readonly initialPage: NavigationPage;
@@ -24,8 +24,8 @@ interface MobileNavigationProps {
 
 /**
  * Component that presents the user with a navigation layout for mobile devices.
- * @param {MobileNavigationProps} props - Props for the MobileNavigation component.
- * @returns {JSX.Element} JSX element representing the MobileNavigation component.
+ * @param props - Props for the MobileNavigation component.
+ * @returns JSX element representing the MobileNavigation component.
  */
 const MobileNavigation = function ({
   initialPage,
