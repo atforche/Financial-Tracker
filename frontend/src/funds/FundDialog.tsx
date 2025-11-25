@@ -1,10 +1,5 @@
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Stack,
-} from "@mui/material";
+import { Button } from "@mui/material";
+import Dialog from "@framework/dialog/Dialog";
 import type { Fund } from "@funds/ApiTypes";
 import type { JSX } from "react";
 import StringEntryField from "@framework/dialog/StringEntryField";
@@ -26,32 +21,16 @@ interface FundDialogProps {
  */
 const FundDialog = function ({ fund, onClose }: FundDialogProps): JSX.Element {
   return (
-    <Dialog open>
-      <DialogTitle
-        sx={{
-          backgroundColor: "primary.main",
-          color: "white",
-          minWidth: "500px",
-        }}
-      >
-        View Fund
-      </DialogTitle>
-      <DialogContent>
-        <Stack
-          direction="column"
-          spacing={3}
-          sx={{ paddingLeft: "25px", paddingRight: "25px", paddingTop: "25px" }}
-        >
-          <>
-            <StringEntryField label="Name" value={fund.name} />
-            <StringEntryField label="Description" value={fund.description} />
-          </>
-        </Stack>
-        <Stack direction="row" justifyContent="right">
-          <Button onClick={onClose}>Close</Button>
-        </Stack>
-      </DialogContent>
-    </Dialog>
+    <Dialog
+      title="View Fund"
+      content={
+        <>
+          <StringEntryField label="Name" value={fund.name} />
+          <StringEntryField label="Description" value={fund.description} />
+        </>
+      }
+      actions={<Button onClick={onClose}>Close</Button>}
+    />
   );
 };
 

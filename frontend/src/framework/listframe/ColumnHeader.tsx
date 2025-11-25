@@ -3,16 +3,16 @@ import TableCell from "@mui/material/TableCell";
 
 /**
  * Props for the ColumnHeader component.
- * @param id - Id that uniquely identifies this Column Header.
- * @param label - Label for this Column Header.
+ * @param key - Key that uniquely identifies this Column Header.
+ * @param content - Content for this Column Header.
  * @param align - Alignment for this Column Header.
  * @param width - Width for this Column Header.
  */
 interface ColumnHeaderProps {
-  readonly id: string;
-  readonly label: string | JSX.Element;
+  readonly key: string;
+  readonly content: string | JSX.Element;
   readonly align: "center" | "left" | "right";
-  readonly width: number;
+  readonly minWidth: number;
 }
 
 /**
@@ -21,19 +21,19 @@ interface ColumnHeaderProps {
  * @returns The column header element.
  */
 const ColumnHeader = function ({
-  id,
-  label,
+  key,
+  content,
   align,
-  width,
+  minWidth,
 }: ColumnHeaderProps): JSX.Element {
   return (
     <TableCell
-      key={id}
+      key={key}
       align={align}
-      style={{ minWidth: width }}
+      style={{ minWidth }}
       sx={{ backgroundColor: "primary.main", color: "white" }}
     >
-      {label}
+      {content}
     </TableCell>
   );
 };

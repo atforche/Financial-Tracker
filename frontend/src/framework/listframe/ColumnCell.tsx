@@ -1,18 +1,20 @@
+import { Skeleton, TableCell } from "@mui/material";
 import type { JSX } from "react";
-import TableCell from "@mui/material/TableCell";
 
 /**
  * Props for the ColumnCell component.
- * @param id - Id that uniquely identifies this Column Cell.
- * @param value - Value for this Column Cell.
+ * @param key - Key that uniquely identifies this Column Cell.
+ * @param content - Content for this Column Cell.
  * @param align - Alignment for this Column Cell.
- * @param width - Width for this Column Cell.
+ * @param isLoading - Loading state for this Column Cell.
+ * @param isError - Error state for this Column Cell.
  */
 interface ColumnCellProps {
-  readonly id: string;
-  readonly value: string | JSX.Element;
+  readonly key: string;
+  readonly content: string | JSX.Element;
   readonly align: "center" | "left" | "right";
-  readonly width: number;
+  readonly isLoading: boolean;
+  readonly isError: boolean;
 }
 
 /**
@@ -21,14 +23,22 @@ interface ColumnCellProps {
  * @returns The column cell element.
  */
 const ColumnCell = function ({
-  id,
-  value,
+  key,
+  content,
   align,
-  width,
+  isLoading,
+  isError,
 }: ColumnCellProps): JSX.Element {
+  let cellContent: string | JSX.Element = content;
+  if (isLoading) {
+    cellContent = <Skeleton />;
+  }
+  if (isError) {
+    cellContent = <Skeleton animation={false} />;
+  }
   return (
-    <TableCell key={id} align={align} style={{ minWidth: width }}>
-      {value}
+    <TableCell key={key} align={align}>
+      {cellContent}
     </TableCell>
   );
 };

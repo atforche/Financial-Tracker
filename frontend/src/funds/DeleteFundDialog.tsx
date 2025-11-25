@@ -1,11 +1,5 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from "@mui/material";
+import { Button, Typography } from "@mui/material";
+import Dialog from "@framework/dialog/Dialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import type { Fund } from "@funds/ApiTypes";
 import type { JSX } from "react";
@@ -37,36 +31,32 @@ const DeleteFundDialog = function ({
     onClose(true);
   }
   return (
-    <Dialog open>
-      <DialogTitle
-        sx={{
-          backgroundColor: "primary.main",
-          color: "white",
-          minWidth: "500px",
-        }}
-      >
-        Delete Fund
-      </DialogTitle>
-      <DialogContent>
-        <Typography>
-          Are you sure you want to delete the fund &quot;{fund.name}&quot;?
-        </Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            onClose(false);
-          }}
-          disabled={isRunning}
-        >
-          Cancel
-        </Button>
-        <Button onClick={deleteFund} loading={isRunning}>
-          Delete
-        </Button>
-      </DialogActions>
-      <ErrorAlert error={error} />
-    </Dialog>
+    <Dialog
+      title="Delete Fund"
+      content={
+        <>
+          <Typography>
+            Are you sure you want to delete the fund &quot;{fund.name}&quot;?
+          </Typography>
+          <ErrorAlert error={error} />
+        </>
+      }
+      actions={
+        <>
+          <Button
+            onClick={() => {
+              onClose(false);
+            }}
+            disabled={isRunning}
+          >
+            Cancel
+          </Button>
+          <Button onClick={deleteFund} disabled={isRunning}>
+            Delete
+          </Button>
+        </>
+      }
+    />
   );
 };
 

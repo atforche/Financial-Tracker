@@ -1,11 +1,6 @@
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Stack,
-} from "@mui/material";
 import { type JSX, useState } from "react";
+import { Button } from "@mui/material";
+import Dialog from "@framework/dialog/Dialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import type { Fund } from "@funds/ApiTypes";
 import StringEntryField from "@framework/dialog/StringEntryField";
@@ -43,41 +38,30 @@ const ModifyFundDialog = function ({
     onClose(true);
   }
   return (
-    <Dialog open>
-      <DialogTitle
-        sx={{
-          backgroundColor: "primary.main",
-          color: "white",
-          minWidth: "500px",
-        }}
-      >
-        {fund === null ? "Add Fund" : "Edit Fund"}
-      </DialogTitle>
-      <DialogContent>
-        <Stack
-          direction="column"
-          spacing={3}
-          sx={{ paddingLeft: "25px", paddingRight: "25px", paddingTop: "25px" }}
-        >
-          <>
-            <StringEntryField
-              label="Name"
-              value={fundName}
-              setValue={setFundName}
-              error={
-                error?.details.find(
-                  (detail) => detail.errorCode === "InvalidFundName",
-                ) ?? null
-              }
-            />
-            <StringEntryField
-              label="Description"
-              value={fundDescription}
-              setValue={setFundDescription}
-            />
-          </>
-        </Stack>
-        <Stack direction="row" justifyContent="right">
+    <Dialog
+      title={fund === null ? "Add Fund" : "Edit Fund"}
+      content={
+        <>
+          <StringEntryField
+            label="Name"
+            value={fundName}
+            setValue={setFundName}
+            error={
+              error?.details.find(
+                (detail) => detail.errorCode === "InvalidFundName",
+              ) ?? null
+            }
+          />
+          <StringEntryField
+            label="Description"
+            value={fundDescription}
+            setValue={setFundDescription}
+          />
+          <ErrorAlert error={error} />
+        </>
+      }
+      actions={
+        <>
           <Button
             onClick={() => {
               onClose(false);
@@ -86,13 +70,12 @@ const ModifyFundDialog = function ({
           >
             Cancel
           </Button>
-          <Button onClick={modifyFund} loading={isRunning}>
+          <Button onClick={modifyFund} disabled={isRunning}>
             {fund === null ? "Add" : "Update"}
           </Button>
-        </Stack>
-      </DialogContent>
-      <ErrorAlert error={error} />
-    </Dialog>
+        </>
+      }
+    />
   );
 };
 
