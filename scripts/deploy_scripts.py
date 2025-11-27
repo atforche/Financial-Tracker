@@ -26,7 +26,7 @@ class CreateCommand(Command):
     path: Annotated[str, "Path to the directory where this instance should be created. This directory should not already exist."]
     environment: Annotated[str, "Type of environment for this instance. Must be one of Development or Production"]
     backend_port: Annotated[int, "Port for the backend REST API to be exposed on"]
-    frontend_origin: Annotated[str, "Origin where requests from the frontend will originate from"]
+    frontend_port: Annotated[int, "Port for the frontend to be exposed on"]
 
     def __init__(self) -> None:
         """Constructs a new instance of this class"""
@@ -38,7 +38,7 @@ class CreateCommand(Command):
         self.steps.append(Step("", "", lambda: CopyScripts().run(["--path", self.path])))
         self.steps.append(Step("Create Empty Database", "Empty database created", self.create_empty_database))
         self.steps.append(Step("", "", lambda: ApplyMigrations().run(["--path", self.path])))
-        self.steps.append(Step("", "", lambda: BuildContainerImages().run(["--name", self.name])))
+        self.steps.append(Step("", "", lambda: BuildContainerImages().run(["--name", self.name, "--backend-port", str(self.backend_port), "--frontend-port", str(self.frontend_port)])))
 
     def validate_arguments(self) -> None:
         """Runs additional validation on the provided arguments"""
@@ -81,7 +81,9 @@ class CreateCommand(Command):
             EnvironmentVariable[int](environment_file_path, "BACKEND_PORT", self.backend_port),
             EnvironmentVariable[str](environment_file_path, "DATABASE_PATH", "/data/database.db"),
             EnvironmentVariable[str](environment_file_path, "LOG_DIRECTORY", "/logs"),
-            EnvironmentVariable[str](environment_file_path, "FRONTEND_ORIGIN", self.frontend_origin),
+            EnvironmentVariable[int](environment_file_path, "FRONTEND_PORT", self.frontend_port),
+            EnvironmentVariable[str](environment_file_path, "FRONTEND_ORIGIN", f"http://localhost:{self.frontend_port}"),
+            EnvironmentVariable[int](environment_file_path, "NGINX_PORT", 80),
             EnvironmentVariable[int](environment_file_path, "DATABASE_REVISION", 0)
         ]
         for environment_variable in environment_variables:
@@ -198,6 +200,8 @@ class BuildContainerImages(Command):
     """Command class that builds a new set of container images for the Financial Tracker"""
 
     name: Annotated[str, "Name for this instance of the Financial Tracker"]
+    backend_port: Annotated[int, "Port for the backend REST API to be exposed on"]
+    frontend_port: Annotated[int, "Port for the frontend to be exposed on"]
 
     def __init__(self) -> None:
         """Constructs a new instance of this class"""
@@ -210,6 +214,8 @@ class BuildContainerImages(Command):
 
         print("Building the backend container image")
         self.run_subprocess(f"docker build ../backend -t backend-{self.name}")
+        print("Building the frontend container image")
+        self.run_subprocess(f"docker build ../frontend -t frontend-{self.name} --build-arg VITE_API_URL=http://localhost:{self.backend_port} --build-arg NGINX_PORT={self.frontend_port}")
 
 if __name__ == "__main__":
     main()

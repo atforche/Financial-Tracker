@@ -7,7 +7,7 @@ import type { paths } from "@data/api";
  */
 const getApiClient = function (): Client<paths> {
   return createClient<paths>({
-    baseUrl: "http://localhost:8080",
+    baseUrl: import.meta.env.VITE_API_URL,
   });
 };
 
