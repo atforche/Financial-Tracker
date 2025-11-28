@@ -25,23 +25,8 @@ class EnvironmentVariable(Generic[T]):
         self.name = name
         self.value = value
 
-    def write_to_file(self):
-        """Writes this Environment Variable out to the .env file, updating the existing value if it already exists"""
-
-        with open(self.file_path, "r", encoding="utf-8") as file:
-            content = file.read()
-
-        variable_match = re.search(rf'{self.name.upper()}="(\S+)"', content)
-        if variable_match is None:
-            content += f'\n{self.name.upper()}="{self.value}"'
-        else:
-            content = re.sub(rf'{self.name.upper()}="(\S+)"', f'{self.name.upper()}="{self.value}"', content)
-
-        with open(self.file_path, "w", encoding="utf-8") as file:
-            file.write(content)
-
     @classmethod
-    def read_from_file(cls, file_path: str, name: str, variable_type: type):
+    def try_read_from_file(cls, file_path: str, name: str, variable_type: type):
         """Reads in the provided environment variable from the provided .env file path
         
         Args:
@@ -55,6 +40,6 @@ class EnvironmentVariable(Generic[T]):
 
         variable_match = re.search(rf'{name.upper()}="(\S+)"', content)
         if variable_match is None:
-            raise RuntimeError(f"Variable {name} was not found in environment file {file_path}")
+            return None
 
         return EnvironmentVariable(file_path, name, variable_type(variable_match.group(1)))

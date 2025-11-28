@@ -60,6 +60,8 @@ class Command:
 
         for property_name, property_annotations in get_annotations(type(self)).items():
             annotations = get_args(property_annotations)
+            if (len(annotations) == 0):
+                continue
             results.append(Argument[annotations[0]](property_name, annotations[1]))
 
         return results
@@ -91,8 +93,14 @@ class Command:
             int: The return code from the subprocess
         """
 
-        print(f"Running subprocess: '{command_string}'")
-        result = subprocess.run(command_string.split(), text=True, input=process_input, check=False, stdout=subprocess.DEVNULL if suppress_output else None)
+        if not suppress_output:
+            print(f"Running subprocess: '{command_string}'")
+        result = subprocess.run(command_string.split(),
+                                text=True,
+                                input=process_input,
+                                check=False,
+                                stdout=subprocess.DEVNULL if suppress_output else None,
+                                stderr=subprocess.DEVNULL if suppress_output else None)
         if throw_on_error and result.returncode != 0:
             raise RuntimeError("Command ended with error")
         return result.returncode

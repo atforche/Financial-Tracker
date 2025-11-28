@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Helper scripts for managing an instance of the Financial Tracker"""
 
+import os
 import pathlib
-import re
 import shutil
+from shared.configuration import Configuration
 from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.step import Step
@@ -47,10 +48,14 @@ class StopCommand(Command):
 class DestroyCommand(Command):
     """Command class that destroys this instance of the Financial Tracker"""
 
+    configuration: Configuration
+
     def __init__(self) -> None:
         """Constructs a new instance of this class"""
 
         super().__init__("destroy", "Destroys this instance of the Financial Tracker")
+        self.configuration = Configuration.build_from_existing_instance("..")
+
         self.steps.append(Step("", "", self.verify))
         self.steps.append(Step("", "", lambda: StopCommand().run([])))
         self.steps.append(Step("Destroy Instance", "Instance destroyed", self.destroy))
@@ -58,31 +63,23 @@ class DestroyCommand(Command):
     def verify(self) -> None:
         """Verifies that the user intends to use this command"""
 
+        if os.geteuid() != 0:
+            raise PermissionError("This command must be run as root")
+
         print("WARNING: This command will completely destroy this instance. All data will be lost and unrecoverable. " +
               "Please type the name of this instance to confirm your intent.")
         confirmation = input()
 
-        instance_name = self.get_instance_name()
-        if instance_name.upper() != confirmation.upper():
-            raise RuntimeError(f"Confirmation did not match. Expected '{instance_name}'")
+        if self.configuration.name.upper() != confirmation.upper():
+            raise RuntimeError(f"Confirmation did not match. Expected '{self.configuration.name}'")
 
     def destroy(self) -> None:
         """Destroys this instance of the Financial Tracker"""
 
-        instance_name = self.get_instance_name()
-        print(f"Destroying the '{instance_name}' of the Financial Tracker")
-        self.run_subprocess(f"docker image rm backend-{instance_name}")
-        self.run_subprocess(f"docker image rm frontend-{instance_name}")
+        print(f"Destroying the '{self.configuration.name}' of the Financial Tracker")
+        self.run_subprocess(f"docker image rm backend-{self.configuration.name}")
+        self.run_subprocess(f"docker image rm frontend-{self.configuration.name}")
         shutil.rmtree(pathlib.Path(__file__).parent.parent.resolve())
-
-    def get_instance_name(self) -> str:
-        """Gets the instance name for this instance of the Financial Tracker"""
-
-        with open("../.env", "r", encoding="utf-8 ") as file:
-            instance_name_match = re.search(r'INSTANCE_NAME="(\S+)"', file.read())
-            if instance_name_match is None:
-                raise ValueError("Instance name not defined in environment file")
-            return instance_name_match.group(1)
 
 if __name__ == "__main__":
     main()
