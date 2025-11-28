@@ -54,7 +54,7 @@ class DestroyCommand(Command):
         """Constructs a new instance of this class"""
 
         super().__init__("destroy", "Destroys this instance of the Financial Tracker")
-        self.configuration = Configuration.build_from_existing_instance("..")
+        self.configuration = Configuration.build_from_existing_instance("..", False)
 
         self.steps.append(Step("", "", self.verify))
         self.steps.append(Step("", "", lambda: StopCommand().run([])))
