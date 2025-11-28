@@ -40,7 +40,7 @@ class CreateCommand(Command):
     def build_configuration(self) -> None:
         """Builds the configuration from user input"""
         
-        self.configuration = Configuration.build_from_user_input({})
+        self.configuration = Configuration.build_from_user_input({}, False)
 
         if self.run_subprocess(f"docker image inspect backend-{self.configuration.name}", throw_on_error=False, suppress_output=True) == 0:
             raise ValueError(f"Instance name {self.configuration.name} is already in use")
@@ -81,6 +81,7 @@ class DeployCommand(Command):
 
     configuration: Configuration
     path: Annotated[str, "Path to the instance directory"]
+    change_configuration: Annotated[bool, "True to prompt to overwrite existing configuration values, false otherwise"]
 
     def __init__(self):
         """Constructs a new instance of this class"""
@@ -101,7 +102,7 @@ class DeployCommand(Command):
     def build_configuration(self) -> None:
         """Builds the configuration from the existing instance directory, prompting for new options as necessary"""
 
-        self.configuration = Configuration.build_from_existing_instance(self.path)
+        self.configuration = Configuration.build_from_existing_instance(self.path, self.change_configuration)
 
 class CopyScripts(Command):
     """Command class that copies scripts to the instance directory"""

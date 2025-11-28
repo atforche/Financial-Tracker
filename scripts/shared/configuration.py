@@ -78,11 +78,12 @@ class Configuration:
         return f"{self.path}/scripts"
 
     @classmethod
-    def build_from_existing_instance(cls, instance_path: str):
+    def build_from_existing_instance(cls, instance_path: str, change_configuration: bool):
         """Constructs a new instance of this class from the provided file name
         
         Args:
             file_path (str): The path of the file to build the configuration from
+            change_configuration (bool): True to prompt to overwrite existing configuration values, false otherwise
         """
 
         results: dict[str, EnvironmentVariable[Any]] = {}
@@ -112,43 +113,54 @@ class Configuration:
         if database_revision is not None:
             results["DATABASE_REVISION"] = database_revision
 
-        return Configuration.build_from_user_input(results)
+        return Configuration.build_from_user_input(results, change_configuration)
 
     @classmethod
-    def build_from_user_input(cls, existing_values: dict[str, EnvironmentVariable[Any]]):
+    def build_from_user_input(cls, existing_values: dict[str, EnvironmentVariable[Any]], change_configuration: bool):
         """Constructs a new instance of this class from user input
 
         Args:
             existing_values (dict[str, EnvironmentVariable[Any]]): Existing environment variable values to use as defaults
+            change_configuration (bool): True to prompt to overwrite existing configuration values, false otherwise
         """
 
         existing_name = existing_values.get("INSTANCE_NAME")
         if existing_name is None:
             name = input("Enter the instance name: ")
+        elif change_configuration:
+            name = input(f"Enter the instance name [{existing_name.value}]: ") or existing_name.value
         else:
             name = existing_name.value
 
         existing_path = existing_values.get("INSTANCE_DIR")
         if existing_path is None:
             path = input("Enter the instance path: ")
+        elif change_configuration:
+            path = input(f"Enter the instance path [{existing_path.value}]: ") or existing_path.value
         else:
             path = existing_path.value
 
         existing_environment = existing_values.get("ENVIRONMENT")
         if existing_environment is None:
             environment = Environment(input("Enter the environment (Development/Production): "))
+        elif change_configuration:
+            environment = Environment(input(f"Enter the environment (Development/Production) [{existing_environment.value}]: ") or existing_environment.value)
         else:
             environment = existing_environment.value
 
         existing_backend_port = existing_values.get("BACKEND_PORT")
         if existing_backend_port is None:
             backend_port = int(input("Enter the backend port: "))
+        elif change_configuration:
+            backend_port = int(input(f"Enter the backend port [{existing_backend_port.value}]: ") or existing_backend_port.value)
         else:
             backend_port = existing_backend_port.value
 
         existing_frontend_port = existing_values.get("FRONTEND_PORT")
         if existing_frontend_port is None:
             frontend_port = int(input("Enter the frontend port: "))
+        elif change_configuration:
+            frontend_port = int(input(f"Enter the frontend port [{existing_frontend_port.value}]: ") or existing_frontend_port.value)
         else:
             frontend_port = existing_frontend_port.value
 
