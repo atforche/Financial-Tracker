@@ -1,0 +1,38 @@
+import DesktopNavigation from "@navigation/DesktopNavigation";
+import type { JSX } from "react";
+import MobileNavigation from "@navigation/MobileNavigation";
+import type { NavigationPage } from "@navigation/NavigationPage";
+import useMobile from "@framework/useMobile";
+
+/**
+ * Props for the Navigation component.
+ * @param initialPage - Initial page to be selected.
+ * @param onNavigation - Callback to be executed whenever the navigation selection changes.
+ */
+interface NavigationProps {
+  readonly initialPage: NavigationPage;
+  readonly onNavigation: (val: NavigationPage) => void;
+}
+
+/**
+ * Component that presents the user with a navigation layout.
+ * @param props - Props for the Navigation component.
+ * @returns JSX element representing the Navigation component.
+ */
+const Navigation = function ({
+  initialPage,
+  onNavigation,
+}: NavigationProps): JSX.Element {
+  const isMobile = useMobile();
+
+  if (isMobile) {
+    return (
+      <MobileNavigation initialPage={initialPage} onNavigation={onNavigation} />
+    );
+  }
+  return (
+    <DesktopNavigation initialPage={initialPage} onNavigation={onNavigation} />
+  );
+};
+
+export default Navigation;

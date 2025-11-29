@@ -1,6 +1,7 @@
 using Domain;
 using Domain.AccountingPeriods;
 using Domain.FundConversions;
+using Domain.Funds;
 
 namespace Data.Repositories;
 
@@ -11,6 +12,10 @@ public class FundConversionRepository(DatabaseContext databaseContext) : IFundCo
 {
     /// <inheritdoc/>
     public bool DoesFundConversionWithIdExist(Guid id) => databaseContext.FundConversions.Any(fundConversion => ((Guid)(object)fundConversion.Id) == id);
+
+    /// <inheritdoc/>
+    public bool DoesFundConversionWithFundExist(Fund fund) =>
+        databaseContext.FundConversions.Any(fundConversion => fundConversion.FromFundId == fund.Id || fundConversion.ToFundId == fund.Id);
 
     /// <inheritdoc/>
     public FundConversion FindById(FundConversionId id) => databaseContext.FundConversions.Single(fundConversion => fundConversion.Id == id);

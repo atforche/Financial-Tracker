@@ -29,9 +29,11 @@
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
-      "@core/*": ["./src/core/*"],
       "@data/*": ["./src/data/*"],
-      "@ui/*": ["./src/ui/*"],
+      "@framework/*": ["./src/framework/*"],
+      "@funds/*": ["./src/funds/*"],
+      "@navigation/*": ["./src/navigation/*"],
+      "@src/*": ["./src/*"]
     },
     "rootDirs": [],
     "typeRoots": [],

@@ -10,9 +10,11 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@core": "/src/core",
       "@data": "/src/data",
-      "@ui": "/src/ui",
+      "@framework": "/src/framework",
+      "@funds": "/src/funds",
+      "@navigation": "/src/navigation",
+      "@src": "/src",
     }
   }
 })

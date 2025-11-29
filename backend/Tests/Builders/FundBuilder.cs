@@ -7,7 +7,7 @@ namespace Tests.Builders;
 /// Builder class that constructs a Fund
 /// </summary>
 public sealed class FundBuilder(
-    FundFactory fundFactory,
+    FundService fundService,
     IFundRepository fundRepository,
     TestUnitOfWork testUnitOfWork)
 {
@@ -19,7 +19,10 @@ public sealed class FundBuilder(
     /// <returns>The newly constructed Fund</returns>
     public Fund Build()
     {
-        Fund fund = fundFactory.Create(_name);
+        if (!fundService.TryCreate(_name, "", out Fund? fund, out List<Exception> exceptions))
+        {
+            throw new InvalidOperationException("Failed to create Fund.", exceptions.First());
+        }
         fundRepository.Add(fund);
         testUnitOfWork.SaveChanges();
         return fund;

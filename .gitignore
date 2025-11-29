@@ -4,3 +4,4 @@ dist
 *.db*
 *obj*
 Work
+__pycache__

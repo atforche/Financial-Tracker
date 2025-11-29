@@ -4,15 +4,14 @@ on: [push]
 
 jobs:
 
-  # Builds and tests the .NET solution
-  build_dotnet:
+  pipeline:
 
-    name: ".NET Build"
+    name: "CI Pipeline"
 
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend
+        working-directory: ./scripts
 
     steps:
     - uses: actions/checkout@v4
@@ -22,57 +21,42 @@ jobs:
       with:
         dotnet-version: 9.x.x
 
-    - name: Restore dependencies
-      run: |
-        . ./scripts.sh 
-        restore-solution
-
-    - name: Verify formatting
-      run: |
-        . ./scripts.sh 
-        format-solution
-
-    - name: Build
-      run: |
-        . ./scripts.sh 
-        build-solution
-
-    - name: Test
-      run: |
-        . ./scripts.sh 
-        run-unit-tests
-
-    - name: Database Integration Test
-      run: |
-        . ./scripts.sh 
-        run-database-integration-tests
-
-  # Builds and tests the Vite project
-  build_vite:
-
-    name: "Vite Build"
-
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./frontend
-
-    steps:
-    - uses: actions/checkout@v4
-
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
         node-version: 22.5.1
 
-    - name: Install dependencies
-      run: npm ci
+    - name: Restore Backend Solution
+      run: |
+        python3 backend_scripts.py restore
 
-    - name: Verify Formatting
-      run: npx prettier . --check
+    - name: Format Backend Solution
+      run: |
+        python3 backend_scripts.py format
 
-    - name: Lint
-      run: npm run lint    
+    - name: Build Backend Solution
+      run: |
+        python3 backend_scripts.py build
 
-    - name: Build
-      run: npm run build
+    - name: Test Backend Solution
+      run: |
+        python3 backend_scripts.py test
+
+    - name: Test Backend Solution
+      run: |
+        python3 backend_scripts.py test --use-database
+
+    - name: Install Frontend Dependencies
+      run: python3 frontend_scripts.py install
+
+    - name: Format Frontend
+      run: python3 frontend_scripts.py format
+
+    - name: Lint Frontend
+      run: python3 frontend_scripts.py lint
+
+    - name: Verify Frontend Models
+      run: python3 frontend_scripts.py verify-models
+
+    - name: Build Frontend
+      run: python3 frontend_scripts.py build

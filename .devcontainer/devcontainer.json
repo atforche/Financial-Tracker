@@ -1,0 +1,21 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
+{
+	"name": "C# (.NET)",
+	"image": "mcr.microsoft.com/devcontainers/dotnet:9.0-bookworm",
+	"features": {
+		"ghcr.io/warrenbuckley/codespace-features/sqlite:latest": {},
+        "ghcr.io/devcontainers/features/python:latest": { "version": "3.12" },
+        "ghcr.io/devcontainers/features/node:latest": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+                "esbenp.prettier-vscode",
+				"ms-dotnettools.csdevkit",
+                "ms-python.pylint",
+				"streetsidesoftware.code-spell-checker"
+			]
+		}
+	}
+}
