@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 
 namespace Data.Repositories;
@@ -13,12 +14,15 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
         .OrderBy(entity => entity.PeriodStartDate).ToList();
 
     /// <inheritdoc/>
-    public bool DoesAccountingPeriodWithIdExist(Guid id) => databaseContext.AccountingPeriods
-        .Any(accountingPeriod => ((Guid)(object)accountingPeriod.Id) == id);
-
-    /// <inheritdoc/>
     public AccountingPeriod FindById(AccountingPeriodId id) => databaseContext.AccountingPeriods
         .Single(accountingPeriod => accountingPeriod.Id == id);
+
+    /// <inheritdoc/>
+    public bool TryFindById(Guid id, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod)
+    {
+        accountingPeriod = databaseContext.AccountingPeriods.FirstOrDefault(accountingPeriod => ((Guid)(object)accountingPeriod.Id) == id);
+        return accountingPeriod != null;
+    }
 
     /// <inheritdoc/>
     public AccountingPeriod? FindLatestAccountingPeriod() => databaseContext.AccountingPeriods
@@ -50,4 +54,7 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
 
     /// <inheritdoc/>
     public void Add(AccountingPeriod accountingPeriod) => databaseContext.Add(accountingPeriod);
+
+    /// <inheritdoc/>
+    public void Delete(AccountingPeriod accountingPeriod) => databaseContext.Remove(accountingPeriod);
 }

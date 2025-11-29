@@ -7,7 +7,7 @@ namespace Tests.Builders;
 /// Builder class that constructs an Accounting Period
 /// </summary>
 public sealed class AccountingPeriodBuilder(
-    AccountingPeriodFactory accountingPeriodFactory,
+    AccountingPeriodService accountingPeriodService,
     IAccountingPeriodRepository accountingPeriodRepository,
     TestUnitOfWork testUnitOfWork)
 {
@@ -20,7 +20,10 @@ public sealed class AccountingPeriodBuilder(
     /// <returns>The newly constructed Accounting Period</returns>
     public AccountingPeriod Build()
     {
-        AccountingPeriod accountingPeriod = accountingPeriodFactory.Create(_year, _month);
+        if (!accountingPeriodService.TryCreate(_year, _month, out AccountingPeriod? accountingPeriod, out IEnumerable<Exception> exceptions))
+        {
+            throw new InvalidOperationException("Failed to create Accounting Period.", exceptions.First());
+        }
         accountingPeriodRepository.Add(accountingPeriod);
         testUnitOfWork.SaveChanges();
         return accountingPeriod;

@@ -21,16 +21,16 @@ public class FundService(
     /// <param name="fund">The created Fund, or null if creation failed</param>
     /// <param name="exceptions">List of exceptions encountered during creation</param>
     /// <returns>True if the Fund was created successfully, false otherwise</returns>
-    public bool TryCreate(string name, string description, [NotNullWhen(true)] out Fund? fund, out List<Exception> exceptions)
+    public bool TryCreate(string name, string description, [NotNullWhen(true)] out Fund? fund, out IEnumerable<Exception> exceptions)
     {
         fund = null;
         exceptions = [];
 
-        if (!ValidateName(name, null, out List<Exception> nameExceptions))
+        if (!ValidateName(name, null, out IEnumerable<Exception> nameExceptions))
         {
-            exceptions.AddRange(nameExceptions);
+            exceptions = exceptions.Concat(nameExceptions);
         }
-        if (exceptions.Count > 0)
+        if (exceptions.Any())
         {
             return false;
         }
@@ -46,15 +46,15 @@ public class FundService(
     /// <param name="description">New description for the Fund</param>
     /// <param name="exceptions">List of exceptions encountered during update</param>
     /// <returns>True if the Fund was updated successfully, false otherwise</returns>
-    public bool TryUpdate(Fund fund, string name, string description, out List<Exception> exceptions)
+    public bool TryUpdate(Fund fund, string name, string description, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
-        if (!ValidateName(name, fund, out List<Exception> nameExceptions))
+        if (!ValidateName(name, fund, out IEnumerable<Exception> nameExceptions))
         {
-            exceptions.AddRange(nameExceptions);
+            exceptions = exceptions.Concat(nameExceptions);
         }
-        if (exceptions.Count > 0)
+        if (exceptions.Any())
         {
             return false;
         }
@@ -69,19 +69,19 @@ public class FundService(
     /// <param name="fund">Fund to be deleted</param>
     /// <param name="exceptions">List of exceptions encountered during deletion</param>
     /// <returns>True if the Fund was deleted successfully, false otherwise</returns>
-    public bool TryDelete(Fund fund, out List<Exception> exceptions)
+    public bool TryDelete(Fund fund, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
         if (transactionRepository.DoesTransactionWithFundExist(fund))
         {
-            exceptions.Add(new FundStillInUseException("Cannot delete Fund that is used on an existing Transaction."));
+            exceptions = exceptions.Append(new FundStillInUseException("Cannot delete Fund that is used on an existing Transaction."));
         }
         if (fundConversionRepository.DoesFundConversionWithFundExist(fund))
         {
-            exceptions.Add(new FundStillInUseException("Cannot delete Fund with existing Fund Conversion."));
+            exceptions = exceptions.Append(new FundStillInUseException("Cannot delete Fund with existing Fund Conversion."));
         }
-        if (exceptions.Count > 0)
+        if (exceptions.Any())
         {
             return false;
         }
@@ -96,18 +96,18 @@ public class FundService(
     /// <param name="existingFund">The existing Fund being updated, if any</param>
     /// <param name="exceptions">Exceptions encountered during validation</param>
     /// <returns>True if this name is valid for a Fund, false otherwise</returns>
-    private bool ValidateName(string name, Fund? existingFund, out List<Exception> exceptions)
+    private bool ValidateName(string name, Fund? existingFund, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
         if (string.IsNullOrEmpty(name))
         {
-            exceptions.Add(new InvalidFundNameException("Fund name cannot be empty"));
+            exceptions = exceptions.Append(new InvalidFundNameException("Fund name cannot be empty"));
         }
         if (fundRepository.TryFindByName(name, out Fund? existingFundWithName) && existingFundWithName != existingFund)
         {
-            exceptions.Add(new InvalidFundNameException("Fund name must be unique"));
+            exceptions = exceptions.Append(new InvalidFundNameException("Fund name must be unique"));
         }
-        return exceptions.Count == 0;
+        return !exceptions.Any();
     }
 }

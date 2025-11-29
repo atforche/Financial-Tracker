@@ -12,18 +12,19 @@ public interface IAccountingPeriodRepository
     IReadOnlyCollection<AccountingPeriod> FindAll();
 
     /// <summary>
-    /// Determines if an Accounting Period with the provided ID exists
-    /// </summary>
-    /// <param name="id">ID of the Accounting Period</param>
-    /// <returns>True if an Accounting Period with the provided ID exists, false otherwise</returns>
-    bool DoesAccountingPeriodWithIdExist(Guid id);
-
-    /// <summary>
     /// Finds the Accounting Period with the specified ID.
     /// </summary>
     /// <param name="id">ID of the Accounting Period to find</param>
     /// <returns>The Accounting Period that was found, or null if one wasn't found</returns>
     AccountingPeriod FindById(AccountingPeriodId id);
+
+    /// <summary>
+    /// Attempts to find the Accounting Period with the specified ID.
+    /// </summary>
+    /// <param name="id">ID of the Accounting Period to find</param>
+    /// <param name="accountingPeriod">The Accounting Period that was found, or null if one wasn't found</param>
+    /// <returns>True if an Accounting Period with the provided ID was found, false otherwise</returns>
+    bool TryFindById(Guid id, out AccountingPeriod? accountingPeriod);
 
     /// <summary>
     /// Finds the latest Accounting Period
@@ -56,4 +57,10 @@ public interface IAccountingPeriodRepository
     /// </summary>
     /// <param name="accountingPeriod">Accounting Period that should be added</param>
     void Add(AccountingPeriod accountingPeriod);
+
+    /// <summary>
+    /// Deletes the provided Accounting Period from the repository
+    /// </summary>
+    /// <param name="accountingPeriod">Accounting Period that should be deleted</param>
+    void Delete(AccountingPeriod accountingPeriod);
 }

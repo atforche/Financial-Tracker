@@ -15,24 +15,3 @@ public record AccountingPeriodId : EntityId
     {
     }
 }
-
-/// <summary>
-/// Factory for constructing an Accounting Period ID
-/// </summary>
-/// <param name="accountingPeriodRepository">Accounting Period Repository</param>
-public class AccountingPeriodIdFactory(IAccountingPeriodRepository accountingPeriodRepository)
-{
-    /// <summary>
-    /// Creates a new Accounting Period ID with the given value
-    /// </summary>
-    /// <param name="value">Value for this Accounting Period ID</param>
-    /// <returns>The newly created Accounting Period ID</returns>
-    public AccountingPeriodId Create(Guid value)
-    {
-        if (!accountingPeriodRepository.DoesAccountingPeriodWithIdExist(value))
-        {
-            throw new InvalidOperationException();
-        }
-        return new AccountingPeriodId(value);
-    }
-}

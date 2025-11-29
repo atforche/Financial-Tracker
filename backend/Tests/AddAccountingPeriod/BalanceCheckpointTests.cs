@@ -58,7 +58,7 @@ public class BalanceCheckpointTests : TestClass
         AccountingPeriod firstAccountingPeriod = GetService<AccountingPeriodBuilder>().Build();
         Fund fund = GetService<FundBuilder>().Build();
         Account account = GetService<AccountBuilder>().Build();
-        GetService<CloseAccountingPeriodAction>().Run(firstAccountingPeriod);
+        GetService<AccountingPeriodService>().TryClose(firstAccountingPeriod, out _);
         GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod secondAccountingPeriod = GetService<AccountingPeriodBuilder>()
@@ -111,7 +111,7 @@ public class BalanceCheckpointTests : TestClass
     {
         AccountingPeriod firstAccountingPeriod = GetService<AccountingPeriodBuilder>().Build();
         Account account = GetService<AccountBuilder>().Build();
-        GetService<CloseAccountingPeriodAction>().Run(firstAccountingPeriod);
+        GetService<AccountingPeriodService>().TryClose(firstAccountingPeriod, out _);
         GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod secondAccountingPeriod = GetService<AccountingPeriodBuilder>()

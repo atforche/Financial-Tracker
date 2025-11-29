@@ -64,7 +64,7 @@ public class MultipleAccountingPeriodTests : TestClass
                 Month = 1,
                 IsOpen = true
             });
-        GetService<CloseAccountingPeriodAction>().Run(firstAccountingPeriod);
+        GetService<AccountingPeriodService>().TryClose(firstAccountingPeriod, out _);
         GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod secondAccountingPeriod = GetService<AccountingPeriodBuilder>()
@@ -78,7 +78,7 @@ public class MultipleAccountingPeriodTests : TestClass
                 Month = 2,
                 IsOpen = true
             });
-        GetService<CloseAccountingPeriodAction>().Run(secondAccountingPeriod);
+        GetService<AccountingPeriodService>().TryClose(secondAccountingPeriod, out _);
         GetService<TestUnitOfWork>().SaveChanges();
 
         AccountingPeriod thirdAccountingPeriod = GetService<AccountingPeriodBuilder>()
