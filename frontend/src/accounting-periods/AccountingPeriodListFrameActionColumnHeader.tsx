@@ -1,39 +1,38 @@
 import { AddCircleOutline } from "@mui/icons-material";
 import ColumnHeader from "@framework/listframe/ColumnHeader";
 import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
+import CreateAccountingPeriodDialog from "@accounting-periods/CreateAccountingPeriodDialog";
 import type { JSX } from "react";
-import ModifyFundDialog from "@funds/ModifyFundDialog";
 
 /**
- * Props for the FundListFrameActionColumnHeader component.
+ * Props for the AccountingPeriodListFrameActionColumnHeader component.
  * @param setDialog - Function to set the current dialog.
  * @param setMessage - Function to set the current message.
- * @param refetch - Function to refetch the list of Funds.
+ * @param refetch - Function to refetch the list of Accounting Periods.
  */
-interface FundListFrameActionColumnHeaderProps {
+interface AccountingPeriodListFrameActionColumnHeaderProps {
   readonly setDialog: (dialog: JSX.Element | null) => void;
   readonly setMessage: (message: string | null) => void;
   readonly refetch: () => void;
 }
 
 /**
- * Component for the action column header in the Fund list frame.
- * @param props - Props for the FundListFrameActionColumnHeader component.
- * @returns JSX element representing the FundListFrameActionColumnHeader.
+ * Component for the action column header in the Accounting Period list frame.
+ * @param props - Props for the AccountingPeriodListFrameActionColumnHeader component.
+ * @returns JSX element representing the AccountingPeriodListFrameActionColumnHeader.
  */
-const FundListFrameActionColumnHeader = function ({
+const AccountingPeriodListFrameActionColumnHeader = function ({
   setDialog,
   setMessage,
   refetch,
-}: FundListFrameActionColumnHeaderProps): JSX.Element {
+}: AccountingPeriodListFrameActionColumnHeaderProps): JSX.Element {
   const onAdd = function (): void {
     setDialog(
-      <ModifyFundDialog
-        fund={null}
+      <CreateAccountingPeriodDialog
         onClose={(success) => {
           setDialog(null);
           if (success) {
-            setMessage("Fund added successfully.");
+            setMessage("Accounting Period added successfully.");
           }
           refetch();
         }}
@@ -57,4 +56,4 @@ const FundListFrameActionColumnHeader = function ({
   );
 };
 
-export default FundListFrameActionColumnHeader;
+export default AccountingPeriodListFrameActionColumnHeader;

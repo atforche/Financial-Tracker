@@ -7,7 +7,7 @@ import useDeleteFund from "@funds/useDeleteFund";
 
 /**
  * Props for the DeleteFundDialog component.
- * @param fund - Fund to display to delete.
+ * @param fund - Fund to delete.
  * @param onClose - Callback to perform when this dialog is closed.
  */
 interface DeleteFundDialogProps {

@@ -25,7 +25,7 @@ class StartCommand(Command):
         """Constructs a new instance of this class"""
 
         super().__init__("start", "Starts this instance of the Financial Tracker")
-        self.steps.append(Step("Start Instance", "Instance started", lambda: self.run_subprocess("docker compose -f ../compose.yaml up -d")))
+        self.steps.append(Step("Start Instance", "Instance started", lambda: self.run_subprocess(f"docker compose -f {os.path.dirname(__file__)}/../compose.yaml up -d")))
 
 class StopCommand(Command):
     """Command class that stops this instance of the Financial Tracker"""
@@ -34,7 +34,7 @@ class StopCommand(Command):
         """Constructs a new instance of this class"""
 
         super().__init__("stop", "Stops this instance of the Financial Tracker")
-        self.steps.append(Step("Stop Instance", "Instance stopped", lambda: self.stop_instance("../compose.yaml")))
+        self.steps.append(Step("Stop Instance", "Instance stopped", lambda: self.stop_instance(f"{os.path.dirname(__file__)}/../compose.yaml")))
 
     def stop_instance(self, compose_file_path: str):
         """Stops an instance of the Financial Tracker
@@ -54,7 +54,7 @@ class DestroyCommand(Command):
         """Constructs a new instance of this class"""
 
         super().__init__("destroy", "Destroys this instance of the Financial Tracker")
-        self.configuration = Configuration.build_from_existing_instance("..", False)
+        self.configuration = Configuration.build_from_existing_instance(f"{os.path.dirname(__file__)}/..", False)
 
         self.steps.append(Step("", "", self.verify))
         self.steps.append(Step("", "", lambda: StopCommand().run([])))

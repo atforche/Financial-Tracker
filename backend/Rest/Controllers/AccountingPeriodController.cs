@@ -22,7 +22,9 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     /// </summary>
     /// <returns>The collection of all Accounting Periods</returns>
     [HttpGet("")]
-    public IReadOnlyCollection<AccountingPeriodModel> GetAll() => accountingPeriodRepository.FindAll().Select(AccountingPeriodMapper.ToModel).ToList();
+    public IReadOnlyCollection<AccountingPeriodModel> GetAll() => accountingPeriodRepository.FindAll()
+        .OrderByDescending(accountingPeriod => accountingPeriod.PeriodStartDate)
+        .Select(AccountingPeriodMapper.ToModel).ToList();
 
     /// <summary>
     /// Retrieves the Accounting Period that matches the provided ID

@@ -130,6 +130,7 @@ export default defineConfig([
           unnamedComponents: "function-expression",
         },
       ],
+      "react/jsx-curly-newline": "off",
       "react/jsx-filename-extension": ["error", { extensions: [".tsx"] }],
       "react/jsx-indent": ["error", 2],
       "react/jsx-indent-props": ["error", 2],

@@ -10,6 +10,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      "@accounting-periods": "/src/accounting-periods",
       "@data": "/src/data",
       "@framework": "/src/framework",
       "@funds": "/src/funds",

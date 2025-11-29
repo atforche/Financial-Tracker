@@ -57,7 +57,10 @@ const ModifyFundDialog = function ({
             value={fundDescription}
             setValue={setFundDescription}
           />
-          <ErrorAlert error={error} />
+          <ErrorAlert
+            error={error}
+            detailFilter={(detail) => detail.errorCode !== "InvalidFundName"}
+          />
         </>
       }
       actions={

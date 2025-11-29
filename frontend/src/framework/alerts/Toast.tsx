@@ -3,12 +3,12 @@ import { type JSX, useState } from "react";
 
 /**
  * Props for the Toast component.
- * @param message - The message to display in the toast.
+ * @param children - The content to display in the toast.
  * @param severity - The severity level of the toast.
  * @param autoHideDuration - Duration in milliseconds before the toast auto-hides.
  */
 interface ToastProps {
-  readonly message: string | null;
+  readonly children: React.ReactNode | null;
   readonly severity: "error" | "success";
   readonly autoHideDuration: number | null;
 }
@@ -19,7 +19,7 @@ interface ToastProps {
  * @returns JSX element representing the Toast.
  */
 const Toast = function ({
-  message,
+  children,
   severity,
   autoHideDuration,
 }: ToastProps): JSX.Element {
@@ -29,9 +29,9 @@ const Toast = function ({
     setOpen(false);
     setHasBeenCleared(true);
   };
-  if (message !== null && !open && !hasBeenCleared) {
+  if (children !== null && !open && !hasBeenCleared) {
     setOpen(true);
-  } else if (message === null && (open || hasBeenCleared)) {
+  } else if (children === null && (open || hasBeenCleared)) {
     setOpen(false);
     setHasBeenCleared(false);
   }
@@ -53,7 +53,7 @@ const Toast = function ({
         sx={{ width: "100%" }}
         onClose={onClose}
       >
-        {message}
+        {children}
       </Alert>
     </Snackbar>
   );

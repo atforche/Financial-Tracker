@@ -14,4 +14,14 @@ public enum ErrorCode
     /// Invalid Fund Name
     /// </summary>
     InvalidFundName,
+
+    /// <summary>
+    /// Invalid Accounting Period Year
+    /// </summary>
+    InvalidAccountingPeriodYear,
+
+    /// <summary>
+    /// Invalid Accounting Period Month
+    /// </summary>
+    InvalidAccountingPeriodMonth,
 }

@@ -1,16 +1,18 @@
-import { Assessment, GridView } from "@mui/icons-material";
+import { Assessment, CalendarMonth, GridView } from "@mui/icons-material";
+import AccountingPeriodListFrame from "@accounting-periods/AccountingPeriodListFrame";
 import FundListFrame from "@funds/FundListFrame";
 
 /**
  * Collection of all navigation pages available in the application.
  */
-const NavigationPages = ["Overview", "Funds"] as const;
+const NavigationPages = ["Overview", "Accounting Periods", "Funds"] as const;
 
 /**
  * Collection of icons corresponding to each NavigationPage.
  */
 const NavigationIcons = {
   Overview: <GridView key="Overview" />,
+  "Accounting Periods": <CalendarMonth key="Accounting Periods" />,
   Funds: <Assessment key="Funds" />,
 };
 
@@ -19,6 +21,7 @@ const NavigationIcons = {
  */
 const NavigationContent = {
   Overview: null,
+  "Accounting Periods": <AccountingPeriodListFrame />,
   Funds: <FundListFrame />,
 };
 

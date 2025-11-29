@@ -384,7 +384,7 @@ export interface components {
             description: string;
         };
         /** @enum {unknown} */
-        ErrorCode: "Generic" | "InvalidFundName";
+        ErrorCode: "Generic" | "InvalidFundName" | "InvalidAccountingPeriodYear" | "InvalidAccountingPeriodMonth";
         ErrorDetailModel: {
             errorCode: components["schemas"]["ErrorCode"];
             description: string;

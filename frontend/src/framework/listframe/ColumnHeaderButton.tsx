@@ -1,4 +1,4 @@
-import { Box, Button } from "@mui/material";
+import { Box, Button, Tooltip } from "@mui/material";
 import type { JSX } from "react/jsx-runtime";
 
 /**
@@ -25,19 +25,21 @@ const ColumnHeaderButton = function ({
 }: ColumnHeaderButtonProps): JSX.Element {
   return (
     <Box sx={{ verticalAlign: "middle" }}>
-      <Button
-        variant="contained"
-        startIcon={icon}
-        disableElevation
-        sx={{
-          backgroundColor: "primary",
-          border: 1,
-          borderColor: "white",
-        }}
-        onClick={onClick}
-      >
-        {label}
-      </Button>
+      <Tooltip title={label}>
+        <Button
+          variant="contained"
+          startIcon={icon}
+          disableElevation
+          sx={{
+            backgroundColor: "primary",
+            border: 1,
+            borderColor: "white",
+          }}
+          onClick={onClick}
+        >
+          {label}
+        </Button>
+      </Tooltip>
     </Box>
   );
 };

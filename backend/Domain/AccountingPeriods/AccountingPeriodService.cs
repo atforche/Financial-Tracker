@@ -102,7 +102,7 @@ public class AccountingPeriodService(
         if (existingAccountingPeriods.Count > 0 &&
             !existingAccountingPeriods.Any(period => period.PeriodStartDate == new DateOnly(year, month, 1).AddMonths(-1)))
         {
-            exceptions = exceptions.Append(new AccountingPeriodGapException());
+            exceptions = exceptions.Append(new NonSequentialAccountingPeriodException());
         }
         return !exceptions.Any();
     }
