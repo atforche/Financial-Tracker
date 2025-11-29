@@ -1,10 +1,10 @@
 import { Delete, Info, ModeEdit } from "@mui/icons-material";
 import type { ApiError } from "@data/ApiError";
+import ColumnButton from "@framework/listframe/ColumnButton";
 import ColumnCell from "@framework/listframe/ColumnCell";
 import DeleteFundDialog from "@funds/DeleteFundDialog";
 import type { Fund } from "@funds/ApiTypes";
 import FundDialog from "@funds/FundDialog";
-import { IconButton } from "@mui/material";
 import type { JSX } from "react";
 import ModifyFundDialog from "@funds/ModifyFundDialog";
 
@@ -27,7 +27,7 @@ interface FundListFrameActionColumnProps {
 }
 
 /**
- * Component that renders the action column for a fund in the FundListFrame.
+ * Component that renders the action column for a Fund in the FundListFrame.
  * @param props - Props for the FundListFrameActionColumn component.
  * @returns JSX element representing the FundListFrameActionColumn.
  */
@@ -85,30 +85,9 @@ const FundListFrameActionColumn = function ({
       key="actions"
       content={
         <>
-          <IconButton
-            key="view"
-            onClick={(): void => {
-              onView();
-            }}
-          >
-            <Info />
-          </IconButton>
-          <IconButton
-            key="edit"
-            onClick={(): void => {
-              onEdit();
-            }}
-          >
-            <ModeEdit />
-          </IconButton>
-          <IconButton
-            key="delete"
-            onClick={(): void => {
-              onDelete();
-            }}
-          >
-            <Delete />
-          </IconButton>
+          <ColumnButton label="View" icon={<Info />} onClick={onView} />
+          <ColumnButton label="Edit" icon={<ModeEdit />} onClick={onEdit} />
+          <ColumnButton label="Delete" icon={<Delete />} onClick={onDelete} />
         </>
       }
       align="right"

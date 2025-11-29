@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 
 namespace Tests.Mocks;
@@ -15,10 +16,10 @@ internal sealed class MockAccountingPeriodRepository : IAccountingPeriodReposito
     public MockAccountingPeriodRepository() => _accountingPeriods = [];
 
     /// <inheritdoc/>
-    public bool DoesAccountingPeriodWithIdExist(Guid id) => _accountingPeriods.ContainsKey(id);
+    public AccountingPeriod FindById(AccountingPeriodId id) => _accountingPeriods[id.Value];
 
     /// <inheritdoc/>
-    public AccountingPeriod FindById(AccountingPeriodId id) => _accountingPeriods[id.Value];
+    public bool TryFindById(Guid id, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod) => _accountingPeriods.TryGetValue(id, out accountingPeriod);
 
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> FindAll() => _accountingPeriods.Values;
@@ -53,4 +54,7 @@ internal sealed class MockAccountingPeriodRepository : IAccountingPeriodReposito
 
     /// <inheritdoc/>
     public void Add(AccountingPeriod accountingPeriod) => _accountingPeriods.Add(accountingPeriod.Id.Value, accountingPeriod);
+
+    /// <inheritdoc/>
+    public void Delete(AccountingPeriod accountingPeriod) => _accountingPeriods.Remove(accountingPeriod.Id.Value);
 }

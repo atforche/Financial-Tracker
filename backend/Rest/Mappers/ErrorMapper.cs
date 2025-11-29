@@ -1,3 +1,4 @@
+using Domain.AccountingPeriods.Exceptions;
 using Domain.Funds.Exceptions;
 using Models.Errors;
 
@@ -33,6 +34,8 @@ internal sealed class ErrorMapper
     private static ErrorCode MapErrorCode(Exception exception) => exception switch
     {
         InvalidFundNameException => ErrorCode.InvalidFundName,
+        InvalidYearException => ErrorCode.InvalidAccountingPeriodYear,
+        InvalidMonthException => ErrorCode.InvalidAccountingPeriodMonth,
         _ => ErrorCode.Generic
     };
 }

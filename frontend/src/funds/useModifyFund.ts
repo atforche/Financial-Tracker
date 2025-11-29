@@ -5,7 +5,7 @@ import useApiRequest from "@data/useApiRequest";
 import { useCallback } from "react";
 
 /**
- * Interface representing the arguments for modifying a fund.
+ * Interface representing the arguments for modifying a Fund.
  * @param fund - Fund to modify, or null if creating a new Fund.
  * @param fundName - New name of the Fund.
  * @param fundDescription - New description of the Fund.

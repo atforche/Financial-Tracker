@@ -19,9 +19,7 @@ public static class ServiceManager
     /// <param name="serviceCollection">Service Collection</param>
     public static void Register(IServiceCollection serviceCollection)
     {
-        _ = serviceCollection.AddScoped<AccountingPeriodFactory>();
-        _ = serviceCollection.AddScoped<AccountingPeriodIdFactory>();
-        _ = serviceCollection.AddScoped<CloseAccountingPeriodAction>();
+        _ = serviceCollection.AddScoped<AccountingPeriodService>();
 
         _ = serviceCollection.AddScoped<AccountFactory>();
         _ = serviceCollection.AddScoped<AccountIdFactory>();

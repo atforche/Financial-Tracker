@@ -21,21 +21,21 @@ public sealed class FundController(
     /// <summary>
     /// Retrieves all the Funds from the database
     /// </summary>
-    /// <returns>A collection of all Funds</returns>
+    /// <returns>The collection of all Funds</returns>
     [HttpGet("")]
     public IReadOnlyCollection<FundModel> GetAll() => fundRepository.FindAll().Select(FundMapper.ToModel).ToList();
 
     /// <summary>
     /// Retrieves the Fund that matches the provided ID
     /// </summary>
-    /// <param name="fundId">Id of the Fund to retrieve</param>
+    /// <param name="fundId">ID of the Fund to retrieve</param>
     /// <returns>The Fund that matches the provided ID</returns>
     [HttpGet("{fundId}")]
     public IActionResult Get(Guid fundId)
     {
         if (!TryFindById(fundId, out Fund? fund, out IActionResult? errorResult))
         {
-            return errorResult!;
+            return errorResult;
         }
         return Ok(FundMapper.ToModel(fund));
     }
@@ -50,7 +50,7 @@ public sealed class FundController(
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> CreateAsync(CreateOrUpdateFundModel createFundModel)
     {
-        if (!fundService.TryCreate(createFundModel.Name, createFundModel.Description, out Fund? newFund, out List<Exception> exceptions))
+        if (!fundService.TryCreate(createFundModel.Name, createFundModel.Description, out Fund? newFund, out IEnumerable<Exception> exceptions))
         {
             return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to create Fund.", exceptions));
         }
@@ -72,9 +72,9 @@ public sealed class FundController(
     {
         if (!TryFindById(fundId, out Fund? fundToUpdate, out IActionResult? errorResult))
         {
-            return errorResult!;
+            return errorResult;
         }
-        if (!fundService.TryUpdate(fundToUpdate, updateFundModel.Name, updateFundModel.Description, out List<Exception> exceptions))
+        if (!fundService.TryUpdate(fundToUpdate, updateFundModel.Name, updateFundModel.Description, out IEnumerable<Exception> exceptions))
         {
             return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to update Fund.", exceptions));
         }
@@ -92,9 +92,9 @@ public sealed class FundController(
     {
         if (!TryFindById(fundId, out Fund? fundToDelete, out IActionResult? errorResult))
         {
-            return errorResult!;
+            return errorResult;
         }
-        if (!fundService.TryDelete(fundToDelete, out List<Exception> exceptions))
+        if (!fundService.TryDelete(fundToDelete, out IEnumerable<Exception> exceptions))
         {
             return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to delete Fund.", exceptions));
         }
@@ -103,7 +103,7 @@ public sealed class FundController(
     }
 
     /// <summary>
-    /// Attempts to find the Fund with the specified ID
+    /// Attempts to find the Fund with the provided ID
     /// </summary>
     /// <param name="fundId">ID of the Fund to find</param>
     /// <param name="fund">Fund that was found</param>

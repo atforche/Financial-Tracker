@@ -15,7 +15,11 @@ interface SuccessAlertProps {
  * @returns JSX element representing the SuccessAlert.
  */
 const SuccessAlert = function ({ message }: SuccessAlertProps): JSX.Element {
-  return <Toast message={message} severity="success" autoHideDuration={5000} />;
+  return (
+    <Toast severity="success" autoHideDuration={5000}>
+      {message}
+    </Toast>
+  );
 };
 
 export default SuccessAlert;
