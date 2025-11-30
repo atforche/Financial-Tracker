@@ -1,7 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
+using Domain.FundConversions.Exceptions;
 using Domain.Funds;
 
 namespace Domain.FundConversions;
@@ -30,19 +30,19 @@ public class FundConversionFactory(
             request.Amount);
 
     /// <inheritdoc/>
-    protected override bool ValidatePrivate(CreateFundConversionRequest request, [NotNullWhen(false)] out Exception? exception)
+    protected override bool ValidatePrivate(CreateFundConversionRequest request, out IEnumerable<Exception> exceptions)
     {
-        exception = null;
+        exceptions = [];
 
         if (request.FromFundId == request.ToFundId)
         {
-            exception = new InvalidOperationException();
+            exceptions = exceptions.Append(new InvalidFundsException());
         }
         if (request.Amount <= 0)
         {
-            exception ??= new InvalidOperationException();
+            exceptions = exceptions.Append(new InvalidAmountException());
         }
-        return exception == null;
+        return !exceptions.Any();
     }
 }
 

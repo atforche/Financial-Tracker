@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.BalanceEvents;
 using Domain.Funds;
@@ -37,9 +36,9 @@ public class AccountAddedBalanceEvent : Entity<AccountAddedBalanceEventId>, IBal
     public IReadOnlyCollection<AccountId> GetAccountIds() => [Account.Id];
 
     /// <inheritdoc/>
-    public bool IsValidToApplyToBalance(AccountBalance currentBalance, [NotNullWhen(false)] out Exception? exception)
+    public bool IsValidToApplyToBalance(AccountBalance currentBalance, out IEnumerable<Exception> exceptions)
     {
-        exception = null;
+        exceptions = [];
         return true;
     }
 

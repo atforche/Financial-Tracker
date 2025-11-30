@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
+using Domain.Accounts.Exceptions;
 using Domain.BalanceEvents;
 using Domain.Funds;
 
@@ -28,19 +28,19 @@ public class AccountAddedBalanceEventFactory(
             request.FundAmounts);
 
     /// <inheritdoc/>
-    protected override bool ValidatePrivate(CreateAccountAddedBalanceEventRequest request, [NotNullWhen(false)] out Exception? exception)
+    protected override bool ValidatePrivate(CreateAccountAddedBalanceEventRequest request, out IEnumerable<Exception> exceptions)
     {
-        exception = null;
+        exceptions = [];
 
         if (request.FundAmounts.GroupBy(amount => amount.FundId).Any(group => group.Count() > 1))
         {
-            exception = new InvalidOperationException();
+            exceptions = exceptions.Append(new InvalidFundAmountException("Multiple fund amounts for the same fund are not allowed."));
         }
         if (request.FundAmounts.Any(amount => amount.Amount <= 0))
         {
-            exception ??= new InvalidOperationException();
+            exceptions = exceptions.Append(new InvalidFundAmountException("Fund amounts must be greater than zero."));
         }
-        return exception == null;
+        return !exceptions.Any();
     }
 }
 

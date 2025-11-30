@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 
@@ -33,9 +32,9 @@ public interface IBalanceEvent
     /// Determines if this Balance Event can be applied to the current balance 
     /// </summary>
     /// <param name="currentBalance">Current Account Balance for an Account</param>
-    /// <param name="exception">Exception encountered during validation</param>
+    /// <param name="exceptions">Exceptions encountered during validation</param>
     /// <returns>True if this Balance Event can be applied to the current balance, false otherwise</returns>
-    bool IsValidToApplyToBalance(AccountBalance currentBalance, [NotNullWhen(false)] out Exception? exception);
+    bool IsValidToApplyToBalance(AccountBalance currentBalance, out IEnumerable<Exception> exceptions);
 
     /// <summary>
     /// Applies this Balance Event to the current balance of an Account

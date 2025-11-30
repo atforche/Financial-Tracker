@@ -55,13 +55,17 @@ public class TransactionFactory(TransactionBalanceEventFactory transactionBalanc
         {
             balanceEventParts.Add(TransactionBalanceEventPartType.AddedCredit);
         }
-        transaction.AddBalanceEvent(transactionBalanceEventFactory.Create(new CreateTransactionBalanceEventRequest
+        if (!transactionBalanceEventFactory.TryCreate(new CreateTransactionBalanceEventRequest
         {
             AccountingPeriodId = transaction.AccountingPeriodId,
             EventDate = transaction.Date,
             Transaction = transaction,
             Parts = balanceEventParts
-        }));
+        }, out TransactionBalanceEvent? transactionBalanceEvent, out IEnumerable<Exception> exceptions))
+        {
+            throw exceptions.First();
+        }
+        transaction.AddBalanceEvent(transactionBalanceEvent);
         return transaction;
     }
 

@@ -1,8 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
-
+using Domain.BalanceEvents.Exceptions;
+using Domain.Transactions.Exceptions;
 namespace Domain.Transactions;
 
 /// <summary>
@@ -27,28 +27,28 @@ public class TransactionBalanceEventFactory(
             request.Parts);
 
     /// <inheritdoc/>
-    protected override bool ValidatePrivate(CreateTransactionBalanceEventRequest request, [NotNullWhen(false)] out Exception? exception)
+    protected override bool ValidatePrivate(CreateTransactionBalanceEventRequest request, out IEnumerable<Exception> exceptions)
     {
-        exception = null;
+        exceptions = [];
 
         if (request.Transaction.TransactionBalanceEvents.Any(balanceEvent => balanceEvent.EventDate == request.EventDate))
         {
             // Validate that multiple Transaction Balance Events can't exist for the same date
-            exception = new InvalidOperationException();
+            exceptions = exceptions.Append(new InvalidEventDateException("A Transaction Balance Event already exists for the specified event date."));
         }
         if (request.Transaction.DebitAccountId == null &&
             (request.Parts.Contains(TransactionBalanceEventPartType.AddedDebit) || request.Parts.Contains(TransactionBalanceEventPartType.PostedDebit)))
         {
             // Validate that the Transaction must have a debit account for the balance event to have debit account parts
-            exception ??= new InvalidOperationException();
+            exceptions = exceptions.Append(new InvalidBalanceEventPartException("A Transaction without a debit account cannot have a debit balance event part."));
         }
         if (request.Transaction.CreditAccountId == null &&
             (request.Parts.Contains(TransactionBalanceEventPartType.AddedCredit) || request.Parts.Contains(TransactionBalanceEventPartType.PostedCredit)))
         {
             // Validate that the Transaction must have a credit account for the balance event to have credit account parts
-            exception ??= new InvalidOperationException();
+            exceptions = exceptions.Append(new InvalidBalanceEventPartException("A Transaction without a credit account cannot have a credit balance event part."));
         }
-        return exception == null;
+        return !exceptions.Any();
     }
 }
 

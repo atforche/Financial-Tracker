@@ -34,13 +34,17 @@ public class PostTransactionAction(TransactionBalanceEventFactory transactionBal
         }
         else
         {
-            transaction.AddBalanceEvent(transactionBalanceEventFactory.Create(new CreateTransactionBalanceEventRequest
+            if (!transactionBalanceEventFactory.TryCreate(new CreateTransactionBalanceEventRequest
             {
                 AccountingPeriodId = transaction.AccountingPeriodId,
                 EventDate = date,
                 Transaction = transaction,
                 Parts = [partType]
-            }));
+            }, out TransactionBalanceEvent? createdBalanceEvent, out IEnumerable<Exception> exceptions))
+            {
+                throw exceptions.First();
+            }
+            transaction.AddBalanceEvent(createdBalanceEvent);
         }
     }
 

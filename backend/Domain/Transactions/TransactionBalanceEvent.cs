@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
@@ -40,15 +39,18 @@ public sealed class TransactionBalanceEvent : Entity<TransactionBalanceEventId>,
     public IReadOnlyCollection<AccountId> GetAccountIds() => Parts.Select(part => part.AccountId).Distinct().ToList();
 
     /// <inheritdoc/>
-    public bool IsValidToApplyToBalance(AccountBalance currentBalance, [NotNullWhen(false)] out Exception? exception)
+    public bool IsValidToApplyToBalance(AccountBalance currentBalance, out IEnumerable<Exception> exceptions)
     {
-        exception = null;
+        exceptions = [];
 
         foreach (TransactionBalanceEventPart part in Parts)
         {
-            _ = part.IsValidToApplyToBalance(currentBalance, out exception);
+            if (!part.IsValidToApplyToBalance(currentBalance, out IEnumerable<Exception> partExceptions))
+            {
+                exceptions = exceptions.Concat(partExceptions);
+            }
         }
-        return exception == null;
+        return !exceptions.Any();
     }
 
     /// <inheritdoc/>

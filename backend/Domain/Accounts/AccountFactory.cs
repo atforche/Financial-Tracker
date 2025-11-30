@@ -37,13 +37,18 @@ public class AccountFactory(IAccountRepository accountRepository, AccountAddedBa
             return false;
         }
         account = new Account(name, type);
-        account.AccountAddedBalanceEvent = accountAddedBalanceEventFactory.Create(new CreateAccountAddedBalanceEventRequest
+        if (!accountAddedBalanceEventFactory.TryCreate(new CreateAccountAddedBalanceEventRequest
         {
             AccountingPeriodId = accountingPeriodId,
             EventDate = addDate,
             Account = account,
             FundAmounts = initialFundAmounts.ToList()
-        });
+        }, out AccountAddedBalanceEvent? accountAddedBalanceEvent, out exceptions))
+        {
+            account = null;
+            return false;
+        }
+        account.AccountAddedBalanceEvent = accountAddedBalanceEvent;
         return true;
     }
 

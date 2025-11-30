@@ -1,7 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
+using Domain.BalanceEvents.Exceptions;
 using Domain.Funds;
 
 namespace Domain.ChangeInValues;
@@ -39,9 +39,9 @@ public class ChangeInValue : Entity<ChangeInValueId>, IBalanceEvent
     public IReadOnlyCollection<AccountId> GetAccountIds() => [AccountId];
 
     /// <inheritdoc/>
-    public bool IsValidToApplyToBalance(AccountBalance currentBalance, [NotNullWhen(false)] out Exception? exception)
+    public bool IsValidToApplyToBalance(AccountBalance currentBalance, out IEnumerable<Exception> exceptions)
     {
-        exception = null;
+        exceptions = [];
 
         if (AccountId != currentBalance.Account.Id)
         {
@@ -57,9 +57,9 @@ public class ChangeInValue : Entity<ChangeInValueId>, IBalanceEvent
         {
             // Cannot apply this Balance Event if it will take the Account's overall balance negative
             // For simplicity, count pending balance decreases but don't count pending balance increases.
-            exception = new InvalidOperationException();
+            exceptions = exceptions.Append(new InvalidAccountBalanceException());
         }
-        return exception == null;
+        return !exceptions.Any();
     }
 
     /// <inheritdoc/>

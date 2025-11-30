@@ -1,7 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
+using Domain.BalanceEvents.Exceptions;
 using Domain.Funds;
 
 namespace Domain.FundConversions;
@@ -49,9 +49,9 @@ public class FundConversion : Entity<FundConversionId>, IBalanceEvent
     public IReadOnlyCollection<AccountId> GetAccountIds() => [AccountId];
 
     /// <inheritdoc/>
-    public bool IsValidToApplyToBalance(AccountBalance currentBalance, [NotNullWhen(false)] out Exception? exception)
+    public bool IsValidToApplyToBalance(AccountBalance currentBalance, out IEnumerable<Exception> exceptions)
     {
-        exception = null;
+        exceptions = [];
 
         if (currentBalance.Account.Id != AccountId)
         {
@@ -64,9 +64,9 @@ public class FundConversion : Entity<FundConversionId>, IBalanceEvent
         {
             // Cannot apply this Balance Event if there is an insufficient amount for this Fund in this Account.
             // For simplicity, count pending balance decreases but don't count pending balance increases.
-            exception = new InvalidOperationException();
+            exceptions = exceptions.Append(new InvalidFundBalanceException());
         }
-        return exception == null;
+        return !exceptions.Any();
     }
 
     /// <inheritdoc/>
