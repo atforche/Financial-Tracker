@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Domain.Accounts;
 
 namespace Tests.Mocks;
@@ -15,17 +16,28 @@ internal sealed class MockAccountRepository : IAccountRepository
     public MockAccountRepository() => _accounts = [];
 
     /// <inheritdoc/>
-    public bool DoesAccountWithIdExist(Guid id) => _accounts.ContainsKey(id);
+    public IReadOnlyCollection<Account> FindAll() => _accounts.Values;
 
     /// <inheritdoc/>
     public Account FindById(AccountId id) => _accounts[id.Value];
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Account> FindAll() => _accounts.Values;
+    public bool TryFindById(Guid id, [NotNullWhen(true)] out Account? account)
+    {
+        account = _accounts.GetValueOrDefault(id);
+        return account != null;
+    }
 
     /// <inheritdoc/>
-    public Account? FindByNameOrNull(string name) => _accounts.Values.SingleOrDefault(account => account.Name == name);
+    public bool TryFindByName(string name, [NotNullWhen(true)] out Account? account)
+    {
+        account = _accounts.Values.SingleOrDefault(account => account.Name == name);
+        return account != null;
+    }
 
     /// <inheritdoc/>
     public void Add(Account account) => _accounts.Add(account.Id.Value, account);
+
+    /// <inheritdoc/>
+    public void Delete(Account account) => _accounts.Remove(account.Id.Value);
 }

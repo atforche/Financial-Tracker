@@ -22,7 +22,6 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<AccountingPeriodService>();
 
         _ = serviceCollection.AddScoped<AccountFactory>();
-        _ = serviceCollection.AddScoped<AccountIdFactory>();
         _ = serviceCollection.AddScoped<AccountAddedBalanceEventFactory>();
         _ = serviceCollection.AddScoped<AccountBalanceService>();
 

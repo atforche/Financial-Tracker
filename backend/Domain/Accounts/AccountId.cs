@@ -15,24 +15,3 @@ public record AccountId : EntityId
     {
     }
 }
-
-/// <summary>
-/// Factory for constructing an Account ID
-/// </summary>
-/// <param name="accountRepository">Account Repository</param>
-public class AccountIdFactory(IAccountRepository accountRepository)
-{
-    /// <summary>
-    /// Creates a new Account ID with the given value
-    /// </summary>
-    /// <param name="value">Value for this Account ID</param>
-    /// <returns>The newly created Account ID</returns>
-    public AccountId Create(Guid value)
-    {
-        if (!accountRepository.DoesAccountWithIdExist(value))
-        {
-            throw new InvalidOperationException();
-        }
-        return new AccountId(value);
-    }
-}

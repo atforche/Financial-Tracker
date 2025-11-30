@@ -27,12 +27,17 @@ public sealed class AccountBuilder(
     /// <returns>The newly constructed Account</returns>
     public Account Build()
     {
-        Account account = accountFactory.Create(
+        if (!accountFactory.TryCreate(
             _name ?? Guid.NewGuid().ToString(),
             _type,
             DetermineAccountingPeriod(),
             _addedDate,
-            DetermineFundAmounts());
+            DetermineFundAmounts(),
+            out Account? account,
+            out IEnumerable<Exception> exceptions))
+        {
+            throw new InvalidOperationException("Failed to create Account.", exceptions.First());
+        }
         accountRepository.Add(account);
         testUnitOfWork.SaveChanges();
         return account;

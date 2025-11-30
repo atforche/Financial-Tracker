@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Domain.Accounts;
 
 namespace Data.Repositories;
@@ -11,14 +12,25 @@ public class AccountRepository(DatabaseContext databaseContext) : IAccountReposi
     public IReadOnlyCollection<Account> FindAll() => databaseContext.Accounts.ToList();
 
     /// <inheritdoc/>
-    public bool DoesAccountWithIdExist(Guid id) => databaseContext.Accounts.Any(account => ((Guid)(object)account.Id) == id);
-
-    /// <inheritdoc/>
     public Account FindById(AccountId id) => databaseContext.Accounts.Single(account => account.Id == id);
 
     /// <inheritdoc/>
-    public Account? FindByNameOrNull(string name) => databaseContext.Accounts.FirstOrDefault(account => account.Name == name);
+    public bool TryFindById(Guid id, [NotNullWhen(true)] out Account? account)
+    {
+        account = databaseContext.Accounts.FirstOrDefault(account => ((Guid)(object)account.Id) == id);
+        return account != null;
+    }
+
+    /// <inheritdoc/>
+    public bool TryFindByName(string name, [NotNullWhen(true)] out Account? account)
+    {
+        account = databaseContext.Accounts.FirstOrDefault(account => account.Name == name);
+        return account != null;
+    }
 
     /// <inheritdoc/>
     public void Add(Account account) => databaseContext.Add(account);
+
+    /// <inheritdoc/>
+    public void Delete(Account account) => databaseContext.Remove(account);
 }

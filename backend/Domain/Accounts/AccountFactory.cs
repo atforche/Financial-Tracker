@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
+using Domain.Accounts.Exceptions;
 using Domain.Funds;
 
 namespace Domain.Accounts;
@@ -10,54 +11,60 @@ namespace Domain.Accounts;
 public class AccountFactory(IAccountRepository accountRepository, AccountAddedBalanceEventFactory accountAddedBalanceEventFactory)
 {
     /// <summary>
-    /// Create a new Account
+    /// Attempts to create a new Account
     /// </summary>
     /// <param name="name">Name for the Account</param>
     /// <param name="type">Type for the Account</param>
-    /// <param name="accountingPeriodId">Accounting Period ID for the Account Added Balance Event for the Account</param>
-    /// <param name="eventDate">Event Date for the Account Added Balance Event for the Account</param>
-    /// <param name="fundAmounts">Fund Amounts for the Account Added Balance Event for the Account</param>
+    /// <param name="accountingPeriodId">Accounting Period that the Account is being added to</param>
+    /// <param name="addDate">Date the Account is being added</param>
+    /// <param name="initialFundAmounts">Initial amounts for each Fund in the Account</param>
+    /// <param name="account">The created Account, or null if creation failed</param>
+    /// <param name="exceptions">Exceptions encountered during creation</param>
     /// <returns>The newly created Account</returns>
-    public Account Create(
+    public bool TryCreate(
         string name,
         AccountType type,
         AccountingPeriodId accountingPeriodId,
-        DateOnly eventDate,
-        IEnumerable<FundAmount> fundAmounts)
+        DateOnly addDate,
+        IEnumerable<FundAmount> initialFundAmounts,
+        [NotNullWhen(true)] out Account? account,
+        out IEnumerable<Exception> exceptions)
     {
-        if (!ValidateAccountName(name, out Exception? exception))
+        account = null;
+
+        if (!ValidateAccountName(name, out exceptions))
         {
-            throw exception;
+            return false;
         }
-        var account = new Account(name, type);
+        account = new Account(name, type);
         account.AccountAddedBalanceEvent = accountAddedBalanceEventFactory.Create(new CreateAccountAddedBalanceEventRequest
         {
             AccountingPeriodId = accountingPeriodId,
-            EventDate = eventDate,
+            EventDate = addDate,
             Account = account,
-            FundAmounts = fundAmounts.ToList()
+            FundAmounts = initialFundAmounts.ToList()
         });
-        return account;
+        return true;
     }
 
     /// <summary>
     /// Validates the name for this Account
     /// </summary>
     /// <param name="name">Name for the Account</param>
-    /// <param name="exception">Exception encountered during validation</param>
+    /// <param name="exceptions">Exceptions encountered during validation</param>
     /// <returns>True if name is valid for this Account, false otherwise</returns>
-    private bool ValidateAccountName(string name, [NotNullWhen(false)] out Exception? exception)
+    private bool ValidateAccountName(string name, out IEnumerable<Exception> exceptions)
     {
-        exception = null;
+        exceptions = [];
 
         if (string.IsNullOrEmpty(name))
         {
-            exception = new InvalidOperationException();
+            exceptions = exceptions.Append(new InvalidAccountNameException("Account name cannot be empty"));
         }
-        if (accountRepository.FindByNameOrNull(name) != null)
+        if (accountRepository.TryFindByName(name, out _))
         {
-            exception ??= new InvalidOperationException();
+            exceptions = exceptions.Append(new InvalidAccountNameException("Account name must be unique"));
         }
-        return exception == null;
+        return !exceptions.Any();
     }
 }
