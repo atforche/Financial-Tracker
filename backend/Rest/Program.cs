@@ -17,6 +17,7 @@ if (Rest.EnvironmentManager.ShouldLaunchAPI())
     // Register needed DI services
     Data.ServiceManager.Register(builder.Services);
     Domain.ServiceManager.Register(builder.Services);
+    Rest.ServiceManager.Register(builder.Services);
 
     // Configure CORS to allow requests from select origins
     _ = builder.Services.AddCors(options =>

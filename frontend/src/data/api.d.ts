@@ -4,6 +4,179 @@
  */
 
 export interface paths {
+    "/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountModel"][];
+                        "application/json": components["schemas"]["AccountModel"][];
+                        "text/json": components["schemas"]["AccountModel"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateAccountModel"];
+                    "text/json": components["schemas"]["CreateAccountModel"];
+                    "application/*+json": components["schemas"]["CreateAccountModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountModel"];
+                        "application/json": components["schemas"]["AccountModel"];
+                        "text/json": components["schemas"]["AccountModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/{accountId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateAccountModel"];
+                    "text/json": components["schemas"]["UpdateAccountModel"];
+                    "application/*+json": components["schemas"]["UpdateAccountModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountModel"];
+                        "application/json": components["schemas"]["AccountModel"];
+                        "text/json": components["schemas"]["AccountModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
+                };
+            };
+        };
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/accounting-periods": {
         parameters: {
             query?: never;
@@ -373,11 +546,28 @@ export interface components {
             month: number;
             isOpen: boolean;
         };
+        AccountModel: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            type: components["schemas"]["AccountTypeModel"];
+        };
+        /** @enum {unknown} */
+        AccountTypeModel: "Standard" | "Debt";
         CreateAccountingPeriodModel: {
             /** Format: int32 */
             year: number;
             /** Format: int32 */
             month: number;
+        };
+        CreateAccountModel: {
+            name: string;
+            type: components["schemas"]["AccountTypeModel"];
+            /** Format: uuid */
+            accountingPeriodId: string;
+            /** Format: date */
+            addDate: string;
+            initialFundAmounts: components["schemas"]["FundAmountModel"][];
         };
         CreateOrUpdateFundModel: {
             name: string;
@@ -393,11 +583,20 @@ export interface components {
             message: string;
             details: components["schemas"]["ErrorDetailModel"][];
         };
+        FundAmountModel: {
+            /** Format: uuid */
+            fundId: string;
+            /** Format: double */
+            amount: number;
+        };
         FundModel: {
             /** Format: uuid */
             id: string;
             name: string;
             description: string;
+        };
+        UpdateAccountModel: {
+            name: string;
         };
     };
     responses: never;
