@@ -24,4 +24,9 @@ public enum ErrorCode
     /// Invalid Accounting Period Month
     /// </summary>
     InvalidAccountingPeriodMonth,
+
+    /// <summary>
+    /// Invalid Account Name
+    /// </summary>
+    InvalidAccountName,
 }

@@ -2,6 +2,7 @@ import { type JSX, useState } from "react";
 import { Button } from "@mui/material";
 import Dialog from "@framework/dialog/Dialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
+import { ErrorCode } from "@data/api";
 import IntegerEntryField from "@framework/dialog/IntegerEntryField";
 import useCreateAccountingPeriod from "@accounting-periods/useCreateAccountingPeriod";
 
@@ -42,7 +43,8 @@ const CreateAccountingPeriodDialog = function ({
             setValue={setYear}
             error={
               error?.details.find(
-                (detail) => detail.errorCode === "InvalidAccountingPeriodYear",
+                (detail) =>
+                  detail.errorCode === ErrorCode.InvalidAccountingPeriodYear,
               ) ?? null
             }
           />
@@ -52,15 +54,16 @@ const CreateAccountingPeriodDialog = function ({
             setValue={setMonth}
             error={
               error?.details.find(
-                (detail) => detail.errorCode === "InvalidAccountingPeriodMonth",
+                (detail) =>
+                  detail.errorCode === ErrorCode.InvalidAccountingPeriodMonth,
               ) ?? null
             }
           />
           <ErrorAlert
             error={error}
             detailFilter={(detail) =>
-              detail.errorCode !== "InvalidAccountingPeriodYear" &&
-              detail.errorCode !== "InvalidAccountingPeriodMonth"
+              detail.errorCode !== ErrorCode.InvalidAccountingPeriodYear &&
+              detail.errorCode !== ErrorCode.InvalidAccountingPeriodMonth
             }
           />
         </>

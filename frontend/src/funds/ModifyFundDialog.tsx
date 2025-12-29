@@ -2,6 +2,7 @@ import { type JSX, useState } from "react";
 import { Button } from "@mui/material";
 import Dialog from "@framework/dialog/Dialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
+import { ErrorCode } from "@data/api";
 import type { Fund } from "@funds/ApiTypes";
 import StringEntryField from "@framework/dialog/StringEntryField";
 import useModifyFund from "@funds/useModifyFund";
@@ -48,7 +49,7 @@ const ModifyFundDialog = function ({
             setValue={setFundName}
             error={
               error?.details.find(
-                (detail) => detail.errorCode === "InvalidFundName",
+                (detail) => detail.errorCode === ErrorCode.InvalidFundName,
               ) ?? null
             }
           />
@@ -59,7 +60,9 @@ const ModifyFundDialog = function ({
           />
           <ErrorAlert
             error={error}
-            detailFilter={(detail) => detail.errorCode !== "InvalidFundName"}
+            detailFilter={(detail) =>
+              detail.errorCode !== ErrorCode.InvalidFundName
+            }
           />
         </>
       }

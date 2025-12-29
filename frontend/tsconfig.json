@@ -29,6 +29,7 @@
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
+      "@accounts/*": ["./src/accounts/*"],
       "@accounting-periods/*": ["./src/accounting-periods/*"],
       "@data/*": ["./src/data/*"],
       "@framework/*": ["./src/framework/*"],

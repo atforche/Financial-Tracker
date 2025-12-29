@@ -553,7 +553,7 @@ export interface components {
             type: components["schemas"]["AccountTypeModel"];
         };
         /** @enum {unknown} */
-        AccountTypeModel: "Standard" | "Debt";
+        AccountTypeModel: AccountTypeModel;
         CreateAccountingPeriodModel: {
             /** Format: int32 */
             year: number;
@@ -574,7 +574,7 @@ export interface components {
             description: string;
         };
         /** @enum {unknown} */
-        ErrorCode: "Generic" | "InvalidFundName" | "InvalidAccountingPeriodYear" | "InvalidAccountingPeriodMonth";
+        ErrorCode: ErrorCode;
         ErrorDetailModel: {
             errorCode: components["schemas"]["ErrorCode"];
             description: string;
@@ -606,4 +606,15 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
+export enum AccountTypeModel {
+    Standard = "Standard",
+    Debt = "Debt"
+}
+export enum ErrorCode {
+    Generic = "Generic",
+    InvalidFundName = "InvalidFundName",
+    InvalidAccountingPeriodYear = "InvalidAccountingPeriodYear",
+    InvalidAccountingPeriodMonth = "InvalidAccountingPeriodMonth",
+    InvalidAccountName = "InvalidAccountName"
+}
 export type operations = Record<string, never>;
