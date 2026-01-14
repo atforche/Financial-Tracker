@@ -29,11 +29,11 @@ class CreateCommand(Command):
 
         super().__init__("create", "Creates a new instance at the specified location")
         self.steps.append(Step("Create Configuration", "Configuration created", self.build_configuration))
-        self.steps.append(Step("Create Instance Directory", "Instance directory created", self.create_instance_directory))
+        self.steps.append(Step("", "", lambda: CreateInstanceDirectory(self.configuration).run([])))
         self.steps.append(Step("Copy Docker Compose File", "Docker compose file copied", self.copy_compose_file))
         self.steps.append(Step("Create Environment File", "Environment file created", self.create_environment_file))
         self.steps.append(Step("", "", lambda: CopyScripts(self.configuration).run([])))
-        self.steps.append(Step("Create Empty Database", "Empty database created", self.create_empty_database))
+        self.steps.append(Step("", "", lambda: CreateEmptyDatabase(self.configuration).run([])))
         self.steps.append(Step("", "", lambda: ApplyMigrations(self.configuration).run([])))
         self.steps.append(Step("", "", lambda: BuildContainerImages(self.configuration).run([])))
         
@@ -51,12 +51,6 @@ class CreateCommand(Command):
         if os.path.isdir(self.configuration.path):
             raise ValueError(f"Directory '{self.configuration.path}' already exists")
 
-    def create_instance_directory(self) -> None:
-        """Create the main directory for a new instance of the application"""
-
-        print(f"Creating instance directory at {self.configuration.path}")
-        os.mkdir(self.configuration.path)
-
     def copy_compose_file(self) -> None:
         """Copies the Docker compose file from the source code directory to the instance directory"""
 
@@ -68,13 +62,6 @@ class CreateCommand(Command):
 
         print(f"Writing the environment file to {self.configuration.get_environment_file_path()}")
         self.configuration.write_to_file()
-
-    def create_empty_database(self) -> None:
-        """Creates an empty database in the instance directory with all the needed migrations applied"""
-    
-        print(f"Creating database file at {self.configuration.get_database_file_path()}")
-        with open(self.configuration.get_database_file_path(), 'w', encoding="utf-8") as _:
-            pass
 
 class DeployCommand(Command):
     """Command class that deploys a new version to an existing instance of the Financial Tracker"""
@@ -103,6 +90,28 @@ class DeployCommand(Command):
         """Builds the configuration from the existing instance directory, prompting for new options as necessary"""
 
         self.configuration = Configuration.build_from_existing_instance(self.path, self.change_configuration)
+
+class CreateInstanceDirectory(Command):
+    """Command class that creates the instance directory"""
+
+    configuration: Configuration
+
+    def __init__(self, configuration: Configuration) -> None:
+        """Constructs a new instance of this class
+        
+        Args:
+            configuration: The configuration for the instance
+        """
+
+        super().__init__("create-instance-directory", "Creates the instance directory")
+        self.configuration = configuration
+        self.steps.append(Step("Create Instance Directory", "Instance directory created", self.create_instance_directory))
+
+    def create_instance_directory(self) -> None:
+        """Creates the instance directory"""
+
+        print(f"Creating instance directory at {self.configuration.path}")
+        os.mkdir(self.configuration.path)
 
 class CopyScripts(Command):
     """Command class that copies scripts to the instance directory"""
@@ -138,6 +147,29 @@ class CopyScripts(Command):
         shutil.copy("./shared/step.py", f"{self.configuration.get_scripts_directory_path()}/shared/step.py")
         self.run_subprocess(f"chmod +x {self.configuration.get_scripts_directory_path()}/instance_scripts.py")
 
+class CreateEmptyDatabase(Command):
+    """Command class that creates an empty database for the instance"""
+
+    configuration: Configuration
+
+    def __init__(self, configuration: Configuration) -> None:
+        """Constructs a new instance of this class
+        
+        Args:
+            configuration: The configuration for the instance
+        """
+
+        super().__init__("create-empty-database", "Creates an empty database for the instance")
+        self.configuration = configuration
+        self.steps.append(Step("Create Empty Database", "Empty database created", self.create_empty_database))
+
+    def create_empty_database(self) -> None:
+        """Creates an empty database in the instance directory"""
+
+        print(f"Creating database file at {self.configuration.get_database_file_path()}")
+        with open(self.configuration.get_database_file_path(), 'w', encoding="utf-8") as _:
+            pass
+
 class ApplyMigrations(Command):
     """Command class that applies all missing migrations to the database"""
 
@@ -156,7 +188,7 @@ class ApplyMigrations(Command):
 
     def apply_missing_migrations(self) -> None:
         """Applies all the missing migrations to the instance database"""
-    
+
         print(f"Applying all missing migrations to database {self.configuration.get_database_file_path()}")
 
         print(f"Last migration applied {self.configuration.database_revision}")

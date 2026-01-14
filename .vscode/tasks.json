@@ -1,38 +1,102 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "build",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "build"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}/backend"
-            },
-            "problemMatcher": "$msCompile"
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "debug-frontend",
+      "dependsOn": ["create-debug-environment", "run-backend", "run-frontend"]
+    },
+    {
+      "label": "debug-backend",
+      "dependsOn": ["create-debug-environment", "build-backend"]
+    },
+    {
+      "label": "debug-backend-with-frontend",
+      "dependsOn": ["create-debug-environment", "build-backend", "run-frontend"]
+    },
+    {
+      "label": "end-debug-session",
+      "dependsOn": ["kill-all-tasks", "destroy-debug-environment"]
+    },
+    {
+      "label": "create-debug-environment",
+      "type": "process",
+      "command": "./debug_scripts.py",
+      "args": ["create"],
+      "options": {
+        "cwd": "${workspaceFolder}/scripts"
+      }
+    },
+    {
+      "label": "destroy-debug-environment",
+      "type": "process",
+      "command": "./debug_scripts.py",
+      "args": ["destroy"],
+      "options": {
+        "cwd": "${workspaceFolder}/scripts"
+      }
+    },
+    {
+      "label": "run-frontend",
+      "type": "process",
+      "command": "./debug_scripts.py",
+      "args": ["frontend"],
+      "options": {
+        "cwd": "${workspaceFolder}/scripts"
+      },
+      "isBackground": true, // Mark the task as running in the background
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "Traceback (most recent call last):" // Pattern indicating an error in the task
         },
-        {
-            "label": "publish",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "publish"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "watch",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "watch",
-                "run",
-                "--project",
-                "${workspaceFolder}/Rest.Controllers/Rest.Controllers.csproj"
-            ],
-            "problemMatcher": "$msCompile"
+        "background": {
+          "activeOnStart": true, // The task is considered "busy" as soon as it starts
+          "beginsPattern": "Run Debug Frontend", // Pattern indicating this task is busy
+          "endsPattern": "Local:.*http://localhost:3001" // Pattern indicating this task has reached its background state. Allows us to move past the preLaunchTask step
         }
-    ]
+      }
+    },
+    {
+      "label": "run-backend",
+      "type": "process",
+      "command": "./debug_scripts.py",
+      "args": ["backend"],
+      "options": {
+        "cwd": "${workspaceFolder}/scripts"
+      },
+      "isBackground": true, // Mark the task as running in the background
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "Traceback (most recent call last):" // Pattern indicating an error in the task
+        },
+        "background": {
+          "activeOnStart": true, // The task is considered "busy" as soon as it starts
+          "beginsPattern": "Run Debug Backend", // Pattern indicating this task is busy
+          "endsPattern": "Now listening on:.*8081" // Pattern indicating this task has reached its background state. Allows us to move past the preLaunchTask step
+        }
+      }
+    },
+    {
+      "label": "build-backend",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build"],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "problemMatcher": "$msCompile" // Use the built-in MSBuild problem matcher
+    },
+    {
+      "label": "kill-all-tasks",
+      "type": "shell",
+      "command": "echo ${input:terminate}" // Invokes the terminate command variable defined below
+    }
+  ],
+  "inputs": [
+    {
+      "id": "terminate",
+      "type": "command",
+      "command": "workbench.action.tasks.terminate", // Built-in VS Code command to terminate tasks
+      "args": "terminateAll" // Argument to terminate all running tasks
+    }
+  ]
 }
