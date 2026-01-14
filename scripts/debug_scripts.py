@@ -41,6 +41,9 @@ class CreateDebugEnvironment(Command):
         self.steps.append(Step("", "", lambda: CreateInstanceDirectory(get_debug_configuration()).run([])))
         self.steps.append(Step("", "", lambda: CreateEmptyDatabase(get_debug_configuration()).run([])))
         self.steps.append(Step("", "", lambda: ApplyMigrations(get_debug_configuration()).run([])))
+        self.steps.append(Step("Seed Debug Database", "Debug database seeded",
+                               lambda: self.run_subprocess(f"sqlite3 {get_debug_configuration().get_database_file_path()}",
+                                                           ".read ../scripts/seed_debug_database.sql")))
 
 class DestroyDebugEnvironment(Command):
     """Command class that destroys the debug environment"""
