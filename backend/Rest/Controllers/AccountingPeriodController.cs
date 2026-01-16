@@ -27,6 +27,15 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         .Select(AccountingPeriodMapper.ToModel).ToList();
 
     /// <summary>
+    /// Retrieves all the open Accounting Periods from the database
+    /// </summary>
+    /// <returns>The collection of all open Accounting Periods</returns>
+    [HttpGet("open")]
+    public IReadOnlyCollection<AccountingPeriodModel> GetAllOpen() => accountingPeriodRepository.FindAllOpenPeriods()
+        .OrderByDescending(accountingPeriod => accountingPeriod.PeriodStartDate)
+        .Select(AccountingPeriodMapper.ToModel).ToList();
+
+    /// <summary>
     /// Retrieves the Accounting Period that matches the provided ID
     /// </summary>
     /// <param name="accountingPeriodId">ID of the Accounting Period to retrieve</param>

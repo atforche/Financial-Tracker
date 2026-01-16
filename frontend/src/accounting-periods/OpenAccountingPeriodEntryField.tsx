@@ -1,0 +1,55 @@
+import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
+import ComboBoxEntryField from "@framework/dialog/ComboBoxEntryField";
+import type { JSX } from "react";
+import useGetAllOpenAccountingPeriods from "@accounting-periods/useGetAllOpenAccountingPeriods";
+
+/**
+ * Props for the OpenAccountingPeriodEntryField component.
+ * @param label - Label for this Open Accounting Period Entry Field.
+ * @param value - Current value for this Open Accounting Period Entry Field.
+ * @param setValue - Callback to update the value in this Open Accounting Period Entry Field. If null, this field is read-only.
+ */
+interface OpenAccountingPeriodEntryFieldProps {
+  readonly label: string;
+  readonly value: AccountingPeriod | null;
+  readonly setValue?: ((newValue: AccountingPeriod | null) => void) | null;
+}
+
+/**
+ * Component that presents the user with an entry field where they can select an Open Accounting Period.
+ * @param props - Props for the OpenAccountingPeriodEntryField component.
+ * @returns JSX element representing the OpenAccountingPeriodEntryField component.
+ */
+const OpenAccountingPeriodEntryField = function ({
+  label,
+  value,
+  setValue = null,
+}: OpenAccountingPeriodEntryFieldProps): JSX.Element {
+  const { accountingPeriods, isLoading, error } =
+    useGetAllOpenAccountingPeriods();
+  return (
+    <ComboBoxEntryField<AccountingPeriod>
+      label={label}
+      options={accountingPeriods.map((period) => ({
+        label: `${period.year}-${period.month}`,
+        value: period,
+      }))}
+      value={
+        value === null
+          ? { label: "", value: null }
+          : { label: `${value.year}-${value.month}`, value }
+      }
+      setValue={
+        setValue
+          ? (newValue): void => {
+              setValue(newValue.value);
+            }
+          : null
+      }
+      loading={isLoading}
+      error={error}
+    />
+  );
+};
+
+export default OpenAccountingPeriodEntryField;

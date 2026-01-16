@@ -1,9 +1,16 @@
 import { type JSX, useState } from "react";
 import { AccountType } from "@accounts/ApiTypes";
+import AccountTypeEntryField from "@accounts/AccountTypeEntryField";
+import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
 import { Button } from "@mui/material";
-import ComboBoxEntryField from "@framework/dialog/ComboBoxEntryField";
+import DateEntryField from "@framework/dialog/DateEntryField";
+import type { Dayjs } from "dayjs";
 import Dialog from "@framework/dialog/Dialog";
+import type { FundAmount } from "@funds/ApiTypes";
+import FundAmountEntryField from "@funds/FundAmountEntryField";
+import OpenAccountingPeriodEntryField from "@accounting-periods/OpenAccountingPeriodEntryField";
 import StringEntryField from "@framework/dialog/StringEntryField";
+import useCreateAccount from "@accounts/useCreateAccount";
 
 /**
  * Props for the CreateAccountDialog component.
@@ -22,10 +29,23 @@ const CreateAccountDialog = function ({
   onClose,
 }: CreateAccountDialogProps): JSX.Element {
   const [accountName, setAccountName] = useState<string>("");
-  const [accountType, setAccountType] = useState<AccountType>(
+  const [accountType, setAccountType] = useState<AccountType | null>(
     AccountType.Standard,
   );
-
+  const [accountingPeriod, setAccountingPeriod] =
+    useState<AccountingPeriod | null>(null);
+  const [addDate, setAddDate] = useState<Dayjs | null>(null);
+  const [fundAmount, setFundAmount] = useState<FundAmount | null>(null);
+  const { isRunning, isSuccess, createAccount } = useCreateAccount({
+    name: accountName,
+    type: accountType,
+    accountingPeriod,
+    addDate,
+    initialFundAmounts: fundAmount ? [fundAmount] : [],
+  });
+  if (isSuccess) {
+    onClose(true);
+  }
   return (
     <Dialog
       title="Add Account"
@@ -36,12 +56,25 @@ const CreateAccountDialog = function ({
             value={accountName}
             setValue={setAccountName}
           />
-          <ComboBoxEntryField<AccountType>
+          <AccountTypeEntryField
             label="Type"
-            options={Object.values(AccountType)}
-            getOptionLabel={(option: AccountType) => option}
             value={accountType}
             setValue={setAccountType}
+          />
+          <OpenAccountingPeriodEntryField
+            label="Initial Accounting Period"
+            value={accountingPeriod}
+            setValue={setAccountingPeriod}
+          />
+          <DateEntryField
+            label="Date Opened"
+            value={addDate}
+            setValue={setAddDate}
+          />
+          <FundAmountEntryField
+            label="Opening Balance"
+            value={fundAmount}
+            setValue={setFundAmount}
           />
         </>
       }
@@ -51,11 +84,13 @@ const CreateAccountDialog = function ({
             onClick={() => {
               onClose(false);
             }}
-            disabled={false}
+            disabled={isRunning}
           >
             Cancel
           </Button>
-          <Button disabled={false}>Add</Button>
+          <Button onClick={createAccount} disabled={isRunning}>
+            Add
+          </Button>
         </>
       }
     />

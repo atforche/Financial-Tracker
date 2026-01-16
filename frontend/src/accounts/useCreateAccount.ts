@@ -1,6 +1,7 @@
-import type { AccountType } from "@accounts/ApiTypes";
+import { AccountType } from "@accounts/ApiTypes";
 import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
 import type { ApiError } from "@data/ApiError";
+import type { Dayjs } from "dayjs";
 import type { FundAmount } from "@funds/ApiTypes";
 import getApiClient from "@data/getApiClient";
 import useApiRequest from "@data/useApiRequest";
@@ -16,9 +17,9 @@ import { useCallback } from "react";
  */
 interface UseCreateAccountArgs {
   readonly name: string;
-  readonly type: AccountType;
-  readonly accountingPeriod: AccountingPeriod;
-  readonly addDate: Date;
+  readonly type: AccountType | null;
+  readonly accountingPeriod: AccountingPeriod | null;
+  readonly addDate: Dayjs | null;
   readonly initialFundAmounts: FundAmount[];
 }
 
@@ -46,10 +47,13 @@ const useCreateAccount = function ({
     const { error } = await client.POST("/accounts", {
       body: {
         name,
-        type,
-        accountingPeriodId: accountingPeriod.id,
-        addDate: `${addDate.getFullYear()}-${addDate.getMonth() + 1}-${addDate.getDate()}`,
-        initialFundAmounts,
+        type: type ?? AccountType.Standard,
+        accountingPeriodId: accountingPeriod?.id ?? "",
+        addDate: addDate ? addDate.format("YYYY-MM-DD") : "",
+        initialFundAmounts: initialFundAmounts.map((fundAmount) => ({
+          fundId: fundAmount.fund.id,
+          amount: fundAmount.amount,
+        })),
       },
     });
     return typeof error === "undefined" ? null : error;
