@@ -20,6 +20,7 @@ interface ComboBoxOption<T> {
  * @param value - Current value for this Combo Box Entry Field.
  * @param setValue - Callback to update the value in this Combo Box Entry Field. If null, this field is read-only.
  * @param loading - Whether or not this Combo Box Entry Field is in a loading state.
+ * @param error - Optional error to display for this Combo Box Entry Field.
  */
 interface ComboBoxEntryFieldProps<T> {
   readonly label: string;
@@ -54,7 +55,8 @@ const ComboBoxEntryField = function <T>({
 
   return (
     <Autocomplete
-      readOnly={setValue === null}
+      className="combo-box-entry-field"
+      disabled={setValue === null}
       disableClearable
       options={options}
       value={value}

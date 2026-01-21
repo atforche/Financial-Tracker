@@ -1,5 +1,5 @@
 import { type JSX, useState } from "react";
-import { AccountType } from "@accounts/ApiTypes";
+import type { AccountType } from "@accounts/ApiTypes";
 import AccountTypeEntryField from "@accounts/AccountTypeEntryField";
 import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
 import { Button } from "@mui/material";
@@ -7,7 +7,7 @@ import DateEntryField from "@framework/dialog/DateEntryField";
 import type { Dayjs } from "dayjs";
 import Dialog from "@framework/dialog/Dialog";
 import type { FundAmount } from "@funds/ApiTypes";
-import FundAmountEntryField from "@funds/FundAmountEntryField";
+import FundAmountCollectionEntryFrame from "@funds/FundAmountCollectionEntryFrame";
 import OpenAccountingPeriodEntryField from "@accounting-periods/OpenAccountingPeriodEntryField";
 import StringEntryField from "@framework/dialog/StringEntryField";
 import useCreateAccount from "@accounts/useCreateAccount";
@@ -29,19 +29,17 @@ const CreateAccountDialog = function ({
   onClose,
 }: CreateAccountDialogProps): JSX.Element {
   const [accountName, setAccountName] = useState<string>("");
-  const [accountType, setAccountType] = useState<AccountType | null>(
-    AccountType.Standard,
-  );
+  const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(null);
   const [addDate, setAddDate] = useState<Dayjs | null>(null);
-  const [fundAmount, setFundAmount] = useState<FundAmount | null>(null);
+  const [fundAmounts, setFundAmounts] = useState<FundAmount[]>([]);
   const { isRunning, isSuccess, createAccount } = useCreateAccount({
     name: accountName,
     type: accountType,
     accountingPeriod,
     addDate,
-    initialFundAmounts: fundAmount ? [fundAmount] : [],
+    initialFundAmounts: fundAmounts,
   });
   if (isSuccess) {
     onClose(true);
@@ -71,10 +69,10 @@ const CreateAccountDialog = function ({
             value={addDate}
             setValue={setAddDate}
           />
-          <FundAmountEntryField
+          <FundAmountCollectionEntryFrame
             label="Opening Balance"
-            value={fundAmount}
-            setValue={setFundAmount}
+            value={fundAmounts}
+            setValue={setFundAmounts}
           />
         </>
       }

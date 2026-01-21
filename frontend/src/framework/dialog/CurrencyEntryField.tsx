@@ -27,14 +27,18 @@ const CurrencyEntryField = function ({
   error = null,
 }: CurrencyEntryFieldProps): JSX.Element {
   const [stringValue, setStringValue] = useState<string>(value.toFixed(2));
+  if (value !== Number(stringValue.replace(",", ""))) {
+    setStringValue(value.toFixed(2));
+  }
   return (
     <TextField
+      className="currency-entry-field"
       label={label}
       variant="outlined"
       value={stringValue}
       slotProps={{
         input: {
-          readOnly: setValue === null,
+          disabled: setValue === null,
           startAdornment: <InputAdornment position="start">$</InputAdornment>,
         },
         htmlInput: {

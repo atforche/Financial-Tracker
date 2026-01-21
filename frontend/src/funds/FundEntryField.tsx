@@ -8,11 +8,13 @@ import useGetAllFunds from "@funds/useGetAllFunds";
  * @param label - Label for this Fund Entry Field.
  * @param value - Current value for this Fund Entry Field.
  * @param setValue - Callback to update the value in this Fund Entry Field. If null, this field is read-only.
+ * @param filter - Function to filter the available funds for selection.
  */
 interface FundEntryFieldProps {
   readonly label: string;
   readonly value: Fund | null;
   readonly setValue?: ((newValue: Fund | null) => void) | null;
+  readonly filter: ((fund: Fund) => boolean) | null;
 }
 
 /**
@@ -24,15 +26,18 @@ const FundEntryField = function ({
   label,
   value,
   setValue = null,
+  filter = null,
 }: FundEntryFieldProps): JSX.Element {
   const { funds, isLoading, error } = useGetAllFunds();
   return (
     <ComboBoxEntryField<Fund>
       label={label}
-      options={funds.map((fund) => ({
-        label: fund.name,
-        value: fund,
-      }))}
+      options={funds
+        .filter((fund) => (filter ? filter(fund) : true))
+        .map((fund) => ({
+          label: fund.name,
+          value: fund,
+        }))}
       value={
         value === null
           ? { label: "", value: null }
