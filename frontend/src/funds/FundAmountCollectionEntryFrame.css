@@ -23,3 +23,7 @@
 .fund-amount-collection-entry-frame > .MuiTypography-root {
   margin-top: 15px;
 }
+
+.fund-amount-collection-entry-frame .MuiTypography-body2 {
+  margin-top: 10px;
+}

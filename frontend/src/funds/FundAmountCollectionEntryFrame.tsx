@@ -79,6 +79,12 @@ const FundAmountCollectionEntryFrame = function ({
             />
           </Stack>
         ))}
+        <Typography variant="body2">
+          Total: $
+          {value
+            .reduce((acc, fundAmount) => acc + fundAmount.amount, 0)
+            .toFixed(2)}
+        </Typography>
       </Box>
     </div>
   );
