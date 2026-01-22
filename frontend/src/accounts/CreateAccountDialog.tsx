@@ -102,7 +102,14 @@ const CreateAccountDialog = function ({
           </Button>
           <Button
             onClick={createAccount}
-            disabled={isRunning}
+            disabled={
+              isRunning ||
+              accountName.trim() === "" ||
+              accountType === null ||
+              accountingPeriod === null ||
+              addDate === null ||
+              fundAmounts.length === 0
+            }
             variant="contained"
             sx={{ margin: "15px" }}
           >
