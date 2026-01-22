@@ -1,10 +1,10 @@
 import { type JSX, useState } from "react";
+import dayjs, { type Dayjs } from "dayjs";
 import type { AccountType } from "@accounts/ApiTypes";
 import AccountTypeEntryField from "@accounts/AccountTypeEntryField";
 import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
 import { Button } from "@mui/material";
 import DateEntryField from "@framework/dialog/DateEntryField";
-import type { Dayjs } from "dayjs";
 import Dialog from "@framework/dialog/Dialog";
 import type { FundAmount } from "@funds/ApiTypes";
 import FundAmountCollectionEntryFrame from "@funds/FundAmountCollectionEntryFrame";
@@ -68,6 +68,20 @@ const CreateAccountDialog = function ({
             label="Date Opened"
             value={addDate}
             setValue={setAddDate}
+            minDate={
+              accountingPeriod
+                ? dayjs(
+                    `${accountingPeriod.year}-${accountingPeriod.month}-01`,
+                  ).subtract(1, "month")
+                : null
+            }
+            maxDate={
+              accountingPeriod
+                ? dayjs(`${accountingPeriod.year}-${accountingPeriod.month}-01`)
+                    .add(2, "month")
+                    .subtract(1, "day")
+                : null
+            }
           />
           <FundAmountCollectionEntryFrame
             label="Opening Balance"
@@ -86,7 +100,12 @@ const CreateAccountDialog = function ({
           >
             Cancel
           </Button>
-          <Button onClick={createAccount} disabled={isRunning}>
+          <Button
+            onClick={createAccount}
+            disabled={isRunning}
+            variant="contained"
+            sx={{ margin: "15px" }}
+          >
             Add
           </Button>
         </>
