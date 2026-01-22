@@ -59,7 +59,7 @@ const DateEntryField = function ({
         slotProps={{
           textField: {
             error: error !== null || internalErrorMessage !== null,
-            helperText: error?.description ?? internalErrorMessage,
+            helperText: internalErrorMessage ?? error?.description,
           },
         }}
       />

@@ -6,6 +6,8 @@ import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
 import { Button } from "@mui/material";
 import DateEntryField from "@framework/dialog/DateEntryField";
 import Dialog from "@framework/dialog/Dialog";
+import ErrorAlert from "@framework/alerts/ErrorAlert";
+import { ErrorCode } from "@data/api";
 import type { FundAmount } from "@funds/ApiTypes";
 import FundAmountCollectionEntryFrame from "@funds/FundAmountCollectionEntryFrame";
 import OpenAccountingPeriodEntryField from "@accounting-periods/OpenAccountingPeriodEntryField";
@@ -34,7 +36,7 @@ const CreateAccountDialog = function ({
     useState<AccountingPeriod | null>(null);
   const [addDate, setAddDate] = useState<Dayjs | null>(null);
   const [fundAmounts, setFundAmounts] = useState<FundAmount[]>([]);
-  const { isRunning, isSuccess, createAccount } = useCreateAccount({
+  const { isRunning, isSuccess, error, createAccount } = useCreateAccount({
     name: accountName,
     type: accountType,
     accountingPeriod,
@@ -53,6 +55,11 @@ const CreateAccountDialog = function ({
             label="Name"
             value={accountName}
             setValue={setAccountName}
+            error={
+              error?.details.find(
+                (detail) => detail.errorCode === ErrorCode.InvalidAccountName,
+              ) ?? null
+            }
           />
           <AccountTypeEntryField
             label="Type"
@@ -63,11 +70,22 @@ const CreateAccountDialog = function ({
             label="Initial Accounting Period"
             value={accountingPeriod}
             setValue={setAccountingPeriod}
+            error={
+              error?.details.find(
+                (detail) =>
+                  detail.errorCode === ErrorCode.InvalidAccountingPeriod,
+              ) ?? null
+            }
           />
           <DateEntryField
             label="Date Opened"
             value={addDate}
             setValue={setAddDate}
+            error={
+              error?.details.find(
+                (detail) => detail.errorCode === ErrorCode.InvalidEventDate,
+              ) ?? null
+            }
             minDate={
               accountingPeriod
                 ? dayjs(
@@ -87,6 +105,14 @@ const CreateAccountDialog = function ({
             label="Opening Balance"
             value={fundAmounts}
             setValue={setFundAmounts}
+          />
+          <ErrorAlert
+            error={error}
+            detailFilter={(detail) =>
+              detail.errorCode !== ErrorCode.InvalidAccountName &&
+              detail.errorCode !== ErrorCode.InvalidAccountingPeriod &&
+              detail.errorCode !== ErrorCode.InvalidEventDate
+            }
           />
         </>
       }

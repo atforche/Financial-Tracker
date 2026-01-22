@@ -1,4 +1,5 @@
 import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
+import type { ApiErrorDetail } from "@data/ApiError";
 import ComboBoxEntryField from "@framework/dialog/ComboBoxEntryField";
 import type { JSX } from "react";
 import useGetAllOpenAccountingPeriods from "@accounting-periods/useGetAllOpenAccountingPeriods";
@@ -8,11 +9,13 @@ import useGetAllOpenAccountingPeriods from "@accounting-periods/useGetAllOpenAcc
  * @param label - Label for this Open Accounting Period Entry Field.
  * @param value - Current value for this Open Accounting Period Entry Field.
  * @param setValue - Callback to update the value in this Open Accounting Period Entry Field. If null, this field is read-only.
+ * @param error - Error detail to display for this Open Accounting Period Entry Field.
  */
 interface OpenAccountingPeriodEntryFieldProps {
   readonly label: string;
   readonly value: AccountingPeriod | null;
   readonly setValue?: ((newValue: AccountingPeriod | null) => void) | null;
+  readonly error?: ApiErrorDetail | null;
 }
 
 /**
@@ -24,9 +27,13 @@ const OpenAccountingPeriodEntryField = function ({
   label,
   value,
   setValue = null,
+  error = null,
 }: OpenAccountingPeriodEntryFieldProps): JSX.Element {
-  const { accountingPeriods, isLoading, error } =
-    useGetAllOpenAccountingPeriods();
+  const {
+    accountingPeriods,
+    isLoading,
+    error: fetchError,
+  } = useGetAllOpenAccountingPeriods();
   return (
     <ComboBoxEntryField<AccountingPeriod>
       label={label}
@@ -47,7 +54,7 @@ const OpenAccountingPeriodEntryField = function ({
           : null
       }
       loading={isLoading}
-      error={error}
+      error={error ?? fetchError}
     />
   );
 };

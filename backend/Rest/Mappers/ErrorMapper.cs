@@ -1,5 +1,6 @@
 using Domain.AccountingPeriods.Exceptions;
 using Domain.Accounts.Exceptions;
+using Domain.BalanceEvents.Exceptions;
 using Domain.Funds.Exceptions;
 using Models.Errors;
 
@@ -38,6 +39,8 @@ internal sealed class ErrorMapper
         InvalidYearException => ErrorCode.InvalidAccountingPeriodYear,
         InvalidMonthException => ErrorCode.InvalidAccountingPeriodMonth,
         InvalidAccountNameException => ErrorCode.InvalidAccountName,
+        InvalidAccountingPeriodException => ErrorCode.InvalidAccountingPeriod,
+        InvalidEventDateException => ErrorCode.InvalidEventDate,
         _ => ErrorCode.Generic
     };
 }

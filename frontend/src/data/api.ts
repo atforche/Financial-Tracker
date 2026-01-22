@@ -652,6 +652,8 @@ export enum ErrorCode {
     InvalidFundName = "InvalidFundName",
     InvalidAccountingPeriodYear = "InvalidAccountingPeriodYear",
     InvalidAccountingPeriodMonth = "InvalidAccountingPeriodMonth",
-    InvalidAccountName = "InvalidAccountName"
+    InvalidAccountName = "InvalidAccountName",
+    InvalidAccountingPeriod = "InvalidAccountingPeriod",
+    InvalidEventDate = "InvalidEventDate"
 }
 export type operations = Record<string, never>;

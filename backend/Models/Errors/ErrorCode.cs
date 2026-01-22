@@ -29,4 +29,14 @@ public enum ErrorCode
     /// Invalid Account Name
     /// </summary>
     InvalidAccountName,
+
+    /// <summary>
+    /// Invalid Accounting Period
+    /// </summary>
+    InvalidAccountingPeriod,
+
+    /// <summary>
+    /// Invalid Event Date
+    /// </summary>
+    InvalidEventDate,
 }
