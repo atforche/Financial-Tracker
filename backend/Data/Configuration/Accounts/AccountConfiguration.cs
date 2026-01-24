@@ -17,15 +17,5 @@ internal sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
 
         builder.HasIndex(account => account.Name).IsUnique();
         builder.Property(account => account.Type).HasConversion<string>();
-
-        builder.HasMany(account => account.AccountBalanceCheckpoints)
-            .WithOne(accountingBalanceCheckpoint => accountingBalanceCheckpoint.Account)
-            .HasForeignKey("AccountId");
-        builder.Navigation(account => account.AccountBalanceCheckpoints).AutoInclude();
-
-        builder.HasOne(account => account.AccountAddedBalanceEvent)
-            .WithOne(accountAddedBalanceEvent => accountAddedBalanceEvent.Account)
-            .HasForeignKey<Account>("AccountAddedBalanceEventId");
-        builder.Navigation(account => account.AccountAddedBalanceEvent).AutoInclude();
     }
 }

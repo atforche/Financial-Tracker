@@ -6,7 +6,7 @@ namespace Domain.Accounts;
 /// <summary>
 /// Service for managing Accounts
 /// </summary>
-public class AccountService(IAccountRepository accountRepository, AccountAddedBalanceEventFactory accountAddedBalanceEventFactory)
+public class AccountService(IAccountRepository accountRepository)
 {
     /// <summary>
     /// Attempts to create a new Account
@@ -24,18 +24,6 @@ public class AccountService(IAccountRepository accountRepository, AccountAddedBa
             return false;
         }
         account = new Account(request.Name, request.Type);
-        if (!accountAddedBalanceEventFactory.TryCreate(new CreateAccountAddedBalanceEventRequest
-        {
-            AccountingPeriodId = request.AccountingPeriodId,
-            EventDate = request.AddDate,
-            Account = account,
-            FundAmounts = request.InitialFundAmounts.ToList()
-        }, out AccountAddedBalanceEvent? accountAddedBalanceEvent, out exceptions))
-        {
-            account = null;
-            return false;
-        }
-        account.AccountAddedBalanceEvent = accountAddedBalanceEvent;
         return true;
     }
 

@@ -1,6 +1,3 @@
-using Domain.AccountingPeriods;
-using Domain.Funds;
-
 namespace Domain.Accounts;
 
 /// <summary>
@@ -11,8 +8,6 @@ namespace Domain.Accounts;
 /// </remarks>
 public class Account : Entity<AccountId>
 {
-    private readonly List<AccountBalanceCheckpoint> _accountBalanceCheckpoints = [];
-
     /// <summary>
     /// Name for this Account
     /// </summary>
@@ -24,16 +19,6 @@ public class Account : Entity<AccountId>
     public AccountType Type { get; private set; }
 
     /// <summary>
-    /// Account Balance Checkpoints for this Account
-    /// </summary>
-    public IReadOnlyCollection<AccountBalanceCheckpoint> AccountBalanceCheckpoints => _accountBalanceCheckpoints;
-
-    /// <summary>
-    /// Account Added Balance Event for this Account
-    /// </summary>
-    public AccountAddedBalanceEvent AccountAddedBalanceEvent { get; internal set; }
-
-    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="name">Name for this Account</param>
@@ -43,25 +28,12 @@ public class Account : Entity<AccountId>
     {
         Name = name;
         Type = type;
-        AccountAddedBalanceEvent = null!;
     }
-
-    /// <summary>
-    /// Adds a new Account Balance Checkpoint to this Account
-    /// </summary>
-    /// <param name="accountingPeriodId">Accounting Period ID for this Account Balance Checkpoint</param>
-    /// <param name="fundBalances">Fund Balances for this Account Balance Checkpoint</param>
-    internal void AddAccountBalanceCheckpoint(AccountingPeriodId accountingPeriodId, IEnumerable<FundAmount> fundBalances) =>
-        _accountBalanceCheckpoints.Add(new AccountBalanceCheckpoint(this, accountingPeriodId, fundBalances));
 
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private Account() : base()
-    {
-        Name = "";
-        AccountAddedBalanceEvent = null!;
-    }
+    private Account() : base() => Name = "";
 }
 
 /// <summary>

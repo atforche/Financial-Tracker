@@ -1,11 +1,7 @@
 using Data;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.BalanceEvents;
-using Domain.ChangeInValues;
-using Domain.FundConversions;
 using Domain.Funds;
-using Domain.Transactions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Tests.Builders;
@@ -28,7 +24,6 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<AccountingPeriodBuilder>();
         _ = serviceCollection.AddScoped<AccountBuilder>();
         _ = serviceCollection.AddScoped<FundBuilder>();
-        _ = serviceCollection.AddScoped<TransactionBuilder>();
 
         Domain.ServiceManager.Register(serviceCollection);
 
@@ -36,11 +31,7 @@ public static class ServiceManager
         {
             _ = serviceCollection.AddScoped<IAccountingPeriodRepository, MockAccountingPeriodRepository>();
             _ = serviceCollection.AddScoped<IAccountRepository, MockAccountRepository>();
-            _ = serviceCollection.AddScoped<IBalanceEventRepository, MockBalanceEventRepository>();
-            _ = serviceCollection.AddScoped<IChangeInValueRepository, MockChangeInValueRepository>();
-            _ = serviceCollection.AddScoped<IFundConversionRepository, MockFundConversionRepository>();
             _ = serviceCollection.AddScoped<IFundRepository, MockFundRepository>();
-            _ = serviceCollection.AddScoped<ITransactionRepository, MockTransactionRepository>();
         }
         else
         {
