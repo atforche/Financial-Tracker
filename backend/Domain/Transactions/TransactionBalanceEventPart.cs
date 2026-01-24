@@ -1,6 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.Accounts;
 using Domain.BalanceEvents;
+using Domain.BalanceEvents.Exceptions;
 using Domain.Funds;
 
 namespace Domain.Transactions;
@@ -43,9 +43,9 @@ public sealed class TransactionBalanceEventPart : Entity<TransactionBalanceEvent
     }
 
     /// <inheritdoc cref="IBalanceEvent.IsValidToApplyToBalance"/>
-    internal bool IsValidToApplyToBalance(AccountBalance currentBalance, [NotNullWhen(false)] out Exception? exception)
+    internal bool IsValidToApplyToBalance(AccountBalance currentBalance, out IEnumerable<Exception> exceptions)
     {
-        exception = null;
+        exceptions = [];
 
         if (AccountId != currentBalance.Account.Id)
         {
@@ -67,9 +67,9 @@ public sealed class TransactionBalanceEventPart : Entity<TransactionBalanceEvent
         {
             // Cannot apply this Balance Event if it will take the Accounts overall balance negative
             // For simplicity, count pending balance decreases but don't count pending balance increases.
-            exception = new InvalidOperationException();
+            exceptions = exceptions.Append(new InvalidAccountBalanceException());
         }
-        return exception == null;
+        return !exceptions.Any();
     }
 
     /// <inheritdoc cref="IBalanceEvent.ApplyEventToBalance"/>

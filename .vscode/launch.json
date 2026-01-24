@@ -2,50 +2,57 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch Edge with Debugger",
+      "name": "UI",
       "request": "launch",
-      "type": "msedge",
-      "url": "http://localhost:5000",
-      "webRoot": "${workspaceFolder}"
+      "type": "chrome", // Launches Chrome at the specified URL for debugging
+      "url": "http://localhost:3001",
+      "webRoot": "${workspaceFolder}/frontend",
+      "preLaunchTask": "debug-frontend",
+      "postDebugTask": "end-debug-session",
     },
     {
-      "name": "Launch Vite DEV server",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--open"],
-      "type": "node"
-    },
-    {
-      "name": "REST API",
+      "name": "REST API (swagger)",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "build",
-      "program": "${workspaceFolder}/backend/.artifacts/bin/Rest.Controllers/Rest.Controllers.dll",
+      "program": "${workspaceFolder}/backend/.artifacts/bin/Rest/Rest.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/backend/Rest.Controllers",
+      "cwd": "${workspaceFolder}/backend/Rest",
       "serverReadyAction": {
+        "pattern": "\\bNow listening on:\\s+https?://.+:([0-9]+)", // Pattern to detect when the server is ready
         "action": "openExternally",
-        "uriFormat": "http://localhost:%s/swagger",
-        "pattern": "\\bNow listening on:\\s+https?://.+:([0-9]+)"
+        "uriFormat": "http://localhost:%s/swagger", // Opens Swagger UI in the browser when the server is ready
       },
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HTTP_PORTS": "8080",
-        "DATABASE_PATH": "/workspaces/Financial-Tracker/backend/database.db",
-        "FRONTEND_ORIGIN": "localhost:5000"
-      }
+        "ASPNETCORE_HTTP_PORTS": "8081",
+        "DATABASE_PATH": "${workspaceFolder}/debug/database.db",
+        "LOG_DIRECTORY": "${workspaceFolder}/debug/logs",
+        "FRONTEND_ORIGIN": "http://localhost:3001"
+      },
+      "preLaunchTask": "debug-backend",
+      "postDebugTask": "end-debug-session",
     },
     {
-      "name": "Utilities",
+      "name": "REST API (UI)",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "build",
-      "program": "${workspaceFolder}/.artifacts/bin/Utilities/Utilities.dll",
-      "args": [
-        "upload",
-        "--folder",
-        "/workspaces/Financial-Tracker/backend/Utilities/BulkDataUpload/SampleUpload"
-      ]
-    }
+      "program": "${workspaceFolder}/backend/.artifacts/bin/Rest/Rest.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/backend/Rest",
+      "serverReadyAction": {
+        "pattern": "\\bNow listening on:\\s+https?://.+:", // Pattern to detect when the server is ready
+        "action": "openExternally",
+        "uriFormat": "http://localhost:3001", // Opens the frontend UI in the browser when the server is ready
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_HTTP_PORTS": "8081",
+        "DATABASE_PATH": "${workspaceFolder}/debug/database.db",
+        "LOG_DIRECTORY": "${workspaceFolder}/debug/logs",
+        "FRONTEND_ORIGIN": "http://localhost:3001"
+      },
+      "preLaunchTask": "debug-backend-with-frontend",
+      "postDebugTask": "end-debug-session",
+    },
   ]
 }

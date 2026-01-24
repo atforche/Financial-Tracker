@@ -10,7 +10,7 @@ import type { JSX } from "react/jsx-runtime";
 interface ColumnButtonProps {
   readonly label: string;
   readonly icon: JSX.Element;
-  readonly onClick: () => void;
+  readonly onClick: (() => void) | null;
 }
 
 /**
@@ -24,12 +24,13 @@ const ColumnButton = function ({
   onClick,
 }: ColumnButtonProps): JSX.Element {
   return (
-    <Tooltip title={label}>
+    <Tooltip title={label} className="column-button">
       <IconButton
         key={label}
         onClick={(): void => {
-          onClick();
+          onClick?.();
         }}
+        disabled={onClick === null}
       >
         {icon}
       </IconButton>

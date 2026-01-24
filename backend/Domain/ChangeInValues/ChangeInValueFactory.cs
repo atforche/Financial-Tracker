@@ -1,7 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.BalanceEvents;
+using Domain.ChangeInValues.Exceptions;
 using Domain.Funds;
 
 namespace Domain.ChangeInValues;
@@ -28,15 +28,15 @@ public class ChangeInValueFactory(
             request.FundAmount);
 
     /// <inheritdoc/>
-    protected override bool ValidatePrivate(CreateChangeInValueRequest request, [NotNullWhen(false)] out Exception? exception)
+    protected override bool ValidatePrivate(CreateChangeInValueRequest request, out IEnumerable<Exception> exceptions)
     {
-        exception = null;
+        exceptions = [];
 
         if (request.FundAmount.Amount == 0)
         {
-            exception = new InvalidOperationException();
+            exceptions = exceptions.Append(new InvalidAmountException());
         }
-        return exception == null;
+        return !exceptions.Any();
     }
 }
 

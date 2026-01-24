@@ -24,7 +24,7 @@ public interface IFundRepository
     /// Attempts to find the Fund with the specified ID
     /// </summary>
     /// <param name="id">ID of the Fund to find</param>
-    /// <param name="fund">The Fund was was found, or null if one wasn't found</param>
+    /// <param name="fund">The Fund that was found, or null if one wasn't found</param>
     /// <returns>True if the Fund was found, false otherwise</returns>
     bool TryFindById(Guid id, [NotNullWhen(true)] out Fund? fund);
 

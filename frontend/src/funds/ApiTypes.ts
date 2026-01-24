@@ -11,4 +11,12 @@ type Fund = components["schemas"]["FundModel"];
 type CreateOrUpdateFundRequest =
   components["schemas"]["CreateOrUpdateFundModel"];
 
-export { type Fund, type CreateOrUpdateFundRequest };
+/**
+ * Type representing a Fund Amount.
+ */
+interface FundAmount {
+  fund: Fund;
+  amount: number;
+}
+
+export { type Fund, type CreateOrUpdateFundRequest, type FundAmount };

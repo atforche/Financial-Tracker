@@ -140,6 +140,7 @@ export default defineConfig([
       "react/jsx-no-bind": "off",
       "react/jsx-no-literals": "off",
       "react/jsx-one-expression-per-line": "off",
+      "react/jsx-props-no-spreading": "off",
       "react/jsx-sort-props": "off",
       "react/no-multi-comp": "off",
       "react/react-in-jsx-scope": "off",
@@ -149,7 +150,7 @@ export default defineConfig([
       "react-hooks/set-state-in-effect": "off",
 
       // typescript-eslint rules
-      "@typescript-eslint/no-magic-numbers": ["error", { ignore: [0, 1] }],
+      "@typescript-eslint/no-magic-numbers": ["error", { ignore: [0, 1, 2] }],
       "@typescript-eslint/naming-convention": [
         "error",
         {
@@ -194,6 +195,6 @@ export default defineConfig([
     "**/eslint.config.mjs",
     "**/vite-env.d.ts",
     "**/vite.config.ts",
-    "**/api.d.ts",
+    "**/api.ts",
   ]),
 ]);

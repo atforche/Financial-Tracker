@@ -9,7 +9,7 @@ namespace Tests.Builders;
 /// Builder class that constructs an Account
 /// </summary>
 public sealed class AccountBuilder(
-    AccountFactory accountFactory,
+    AccountService accountService,
     IAccountRepository accountRepository,
     IAccountingPeriodRepository accountingPeriodRepository,
     IFundRepository fundRepository,
@@ -27,12 +27,20 @@ public sealed class AccountBuilder(
     /// <returns>The newly constructed Account</returns>
     public Account Build()
     {
-        Account account = accountFactory.Create(
-            _name ?? Guid.NewGuid().ToString(),
-            _type,
-            DetermineAccountingPeriod(),
-            _addedDate,
-            DetermineFundAmounts());
+        if (!accountService.TryCreate(
+            new CreateAccountRequest
+            {
+                Name = _name ?? Guid.NewGuid().ToString(),
+                Type = _type,
+                AccountingPeriodId = DetermineAccountingPeriod(),
+                AddDate = _addedDate,
+                InitialFundAmounts = DetermineFundAmounts()
+            },
+            out Account? account,
+            out IEnumerable<Exception> exceptions))
+        {
+            throw new InvalidOperationException("Failed to create Account.", exceptions.First());
+        }
         accountRepository.Add(account);
         testUnitOfWork.SaveChanges();
         return account;

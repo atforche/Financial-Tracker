@@ -80,7 +80,12 @@ class Command:
             for argument in self.build_argument_collection():
                 print(f"{argument.get_usage():<25} {argument.description}")
 
-    def run_subprocess(self, command_string: str, process_input: str = "", throw_on_error: bool = True, suppress_output: bool = False) -> int:
+    def run_subprocess(self,
+                       command_string: str,
+                       process_input: str = "",
+                       throw_on_error: bool = True,
+                       suppress_output: bool = False,
+                       env: dict[str, str] | None = None) -> int:
         """Runs the provided command as a subprocess. An exception is raised if the command ends in error.
         
         Args:
@@ -88,7 +93,7 @@ class Command:
             process_input (str): Input string to pipe into the process
             throw_on_error (bool): True if an exception should be thrown if the command ends in error, false otherwise
             suppress_output (bool): True if output should be suppressed, false otherwise
-
+            env (dict[str, str], optional): Environment variables to set for the subprocess. Defaults to None.
         Returns:
             int: The return code from the subprocess
         """
@@ -100,7 +105,8 @@ class Command:
                                 input=process_input,
                                 check=False,
                                 stdout=subprocess.DEVNULL if suppress_output else None,
-                                stderr=subprocess.DEVNULL if suppress_output else None)
+                                stderr=subprocess.DEVNULL if suppress_output else None,
+                                env=env)
         if throw_on_error and result.returncode != 0:
             raise RuntimeError("Command ended with error")
         return result.returncode

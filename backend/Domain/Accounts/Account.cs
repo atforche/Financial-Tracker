@@ -16,7 +16,7 @@ public class Account : Entity<AccountId>
     /// <summary>
     /// Name for this Account
     /// </summary>
-    public string Name { get; private set; }
+    public string Name { get; internal set; }
 
     /// <summary>
     /// Type for this Account

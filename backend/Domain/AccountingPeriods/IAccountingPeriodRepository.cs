@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Domain.AccountingPeriods;
 
 /// <summary>
@@ -24,7 +26,7 @@ public interface IAccountingPeriodRepository
     /// <param name="id">ID of the Accounting Period to find</param>
     /// <param name="accountingPeriod">The Accounting Period that was found, or null if one wasn't found</param>
     /// <returns>True if an Accounting Period with the provided ID was found, false otherwise</returns>
-    bool TryFindById(Guid id, out AccountingPeriod? accountingPeriod);
+    bool TryFindById(Guid id, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod);
 
     /// <summary>
     /// Finds the latest Accounting Period
