@@ -35,7 +35,9 @@ public class TransactionService(
         {
             exceptions = exceptions.Concat(dateExceptions);
         }
-        if (!ValidateAccountFundAmounts(request.DebitAccount?.FundAmounts.ToList(),
+        if (!ValidateAccountFundAmounts(request.DebitAccount?.Account.Id,
+                request.DebitAccount?.FundAmounts.ToList(),
+                request.CreditAccount?.Account.Id,
                 request.CreditAccount?.FundAmounts.ToList(),
                 null,
                 out IEnumerable<Exception> accountExceptions))
@@ -73,7 +75,9 @@ public class TransactionService(
         {
             exceptions = exceptions.Concat(dateExceptions);
         }
-        if (!ValidateAccountFundAmounts(request.DebitAccount?.FundAmounts.ToList(),
+        if (!ValidateAccountFundAmounts(transaction.DebitAccount?.Account,
+                request.DebitAccount?.FundAmounts.ToList(),
+                transaction.CreditAccount?.Account,
                 request.CreditAccount?.FundAmounts.ToList(),
                 transaction,
                 out IEnumerable<Exception> accountExceptions))
@@ -235,16 +239,31 @@ public class TransactionService(
     /// Validates the fund amounts for each Account for this Transaction
     /// </summary>
     private static bool ValidateAccountFundAmounts(
+        AccountId? debitAccount,
         List<FundAmount>? debitFundAmounts,
+        AccountId? creditAccount,
         List<FundAmount>? creditFundAmounts,
         Transaction? existingTransaction,
         out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
+        if (debitAccount == null != (debitFundAmounts == null))
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("The Debit Account and its Fund Amounts must both be provided or both be null."));
+        }
+        if (creditAccount == null != (creditFundAmounts == null))
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("The Credit Account and its Fund Amounts must both be provided or both be null."));
+        }
         if (debitFundAmounts == null && creditFundAmounts == null)
         {
             exceptions = exceptions.Append(new InvalidAccountException("At least one of Debit Account or Credit Account must be provided."));
+        }
+        if (debitAccount == creditAccount && debitFundAmounts != null && creditFundAmounts != null &&
+            debitFundAmounts.Any(debitFund => creditFundAmounts.Select(fundAmount => fundAmount.FundId).Contains(debitFund.FundId)))
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("For a Transaction with a single Account, the same Fund cannot be both debited and credited"));
         }
         if (debitFundAmounts != null)
         {
