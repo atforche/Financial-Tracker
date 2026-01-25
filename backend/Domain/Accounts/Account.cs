@@ -1,3 +1,5 @@
+using Domain.Transactions;
+
 namespace Domain.Accounts;
 
 /// <summary>
@@ -17,6 +19,12 @@ public class Account : Entity<AccountId>
     /// Type for this Account
     /// </summary>
     public AccountType Type { get; private set; }
+
+    /// <summary>
+    /// Initial Transaction for this Account
+    /// </summary>
+    /// <remarks>This will only be null when we're creating a new Account and the initial Transaction has not yet been created.</remarks>
+    public TransactionId? InitialTransaction { get; internal set; }
 
     /// <summary>
     /// Constructs a new instance of this class

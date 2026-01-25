@@ -2,6 +2,7 @@ using Data;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Transactions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Tests.Builders;
@@ -32,6 +33,7 @@ public static class ServiceManager
             _ = serviceCollection.AddScoped<IAccountingPeriodRepository, MockAccountingPeriodRepository>();
             _ = serviceCollection.AddScoped<IAccountRepository, MockAccountRepository>();
             _ = serviceCollection.AddScoped<IFundRepository, MockFundRepository>();
+            _ = serviceCollection.AddScoped<ITransactionRepository, MockTransactionRepository>();
         }
         else
         {

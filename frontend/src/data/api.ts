@@ -570,6 +570,158 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/transactions/{transactionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    transactionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    transactionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateTransactionModel"];
+                    "text/json": components["schemas"]["UpdateTransactionModel"];
+                    "application/*+json": components["schemas"]["UpdateTransactionModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionModel"];
+                        "application/json": components["schemas"]["TransactionModel"];
+                        "text/json": components["schemas"]["TransactionModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
+                };
+            };
+        };
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    transactionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateTransactionModel"];
+                    "text/json": components["schemas"]["CreateTransactionModel"];
+                    "application/*+json": components["schemas"]["CreateTransactionModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionModel"];
+                        "application/json": components["schemas"]["TransactionModel"];
+                        "text/json": components["schemas"]["TransactionModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -610,6 +762,21 @@ export interface components {
             name: string;
             description: string;
         };
+        CreateTransactionAccountModel: {
+            /** Format: uuid */
+            accountId: string;
+            fundAmounts: components["schemas"]["FundAmountModel"][];
+        } | null;
+        CreateTransactionModel: {
+            /** Format: uuid */
+            accountingPeriodId: string;
+            /** Format: date */
+            date: string;
+            location: string;
+            description: string;
+            debitAccount: components["schemas"]["CreateTransactionAccountModel"];
+            creditAccount: components["schemas"]["CreateTransactionAccountModel"];
+        };
         /** @enum {unknown} */
         ErrorCode: ErrorCode;
         ErrorDetailModel: {
@@ -632,8 +799,33 @@ export interface components {
             name: string;
             description: string;
         };
+        TransactionModel: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date */
+            date: string;
+            location: string;
+            description: string;
+            /** Format: uuid */
+            debitAccountId?: string | null;
+            debitFundAmounts?: components["schemas"]["FundAmountModel"][] | null;
+            /** Format: uuid */
+            creditAccountId?: string | null;
+            creditFundAmounts?: unknown[] | null;
+        };
         UpdateAccountModel: {
             name: string;
+        };
+        UpdateTransactionAccountModel: {
+            fundAmounts: components["schemas"]["FundAmountModel"][];
+        } | null;
+        UpdateTransactionModel: {
+            /** Format: date */
+            date: string;
+            location: string;
+            description: string;
+            debitAccount: components["schemas"]["UpdateTransactionAccountModel"];
+            creditAccount: components["schemas"]["UpdateTransactionAccountModel"];
         };
     };
     responses: never;

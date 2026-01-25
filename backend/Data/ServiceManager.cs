@@ -2,6 +2,7 @@ using Data.Repositories;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Transactions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Data;
@@ -23,5 +24,6 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
         _ = serviceCollection.AddScoped<IAccountRepository, AccountRepository>();
         _ = serviceCollection.AddScoped<IFundRepository, FundRepository>();
+        _ = serviceCollection.AddScoped<ITransactionRepository, TransactionRepository>();
     }
 }

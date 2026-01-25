@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Data;
 using Domain.AccountingPeriods;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +14,8 @@ namespace Rest.Controllers;
 [Route("/accounting-periods")]
 public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     IAccountingPeriodRepository accountingPeriodRepository,
-    AccountingPeriodService accountingPeriodService) : ControllerBase
+    AccountingPeriodService accountingPeriodService,
+    AccountingPeriodMapper accountingPeriodMapper) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Accounting Periods from the database
@@ -43,7 +43,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     [HttpGet("{accountingPeriodId}")]
     public IActionResult Get(Guid accountingPeriodId)
     {
-        if (!TryFindById(accountingPeriodId, out AccountingPeriod? accountingPeriod, out IActionResult? errorResult))
+        if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod, out IActionResult? errorResult))
         {
             return errorResult;
         }
@@ -79,7 +79,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> CloseAsync(Guid accountingPeriodId)
     {
-        if (!TryFindById(accountingPeriodId, out AccountingPeriod? accountingPeriod, out IActionResult? errorResult))
+        if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod, out IActionResult? errorResult))
         {
             return errorResult;
         }
@@ -99,7 +99,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> DeleteAsync(Guid accountingPeriodId)
     {
-        if (!TryFindById(accountingPeriodId, out AccountingPeriod? accountingPeriod, out IActionResult? errorResult))
+        if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod, out IActionResult? errorResult))
         {
             return errorResult;
         }
@@ -109,22 +109,5 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         }
         await unitOfWork.SaveChangesAsync();
         return Ok();
-    }
-
-    /// <summary>
-    /// Attempts to find the Accounting Period with the provided ID
-    /// </summary>
-    /// <param name="accountingPeriodId">ID of the Accounting Period to find</param>
-    /// <param name="accountingPeriod">Accounting Period that was found</param>
-    /// <param name="errorResult">Result to return if the accounting period was not found</param>
-    /// <returns>True if the accounting period was found, false otherwise</returns>
-    private bool TryFindById(Guid accountingPeriodId, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod, [NotNullWhen(false)] out IActionResult? errorResult)
-    {
-        errorResult = null;
-        if (!accountingPeriodRepository.TryFindById(accountingPeriodId, out accountingPeriod))
-        {
-            errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Accounting Period with ID {accountingPeriodId} was not found.", Array.Empty<Exception>()));
-        }
-        return errorResult == null;
     }
 }

@@ -1,14 +1,14 @@
-namespace Domain.AccountingPeriods.Exceptions;
+namespace Domain.Transactions.Exceptions;
 
 /// <summary>
-/// Exception thrown when a duplicate Accounting Period is being created
+/// Exception thrown when a Transaction has an invalid Transaction Date
 /// </summary>
-public class DuplicateAccountingPeriodException : Exception
+public class InvalidTransactionDateException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public DuplicateAccountingPeriodException() : base("This Accounting Period already exists.")
+    public InvalidTransactionDateException() : base("The Transaction has an invalid Transaction Date.")
     {
     }
 
@@ -16,7 +16,7 @@ public class DuplicateAccountingPeriodException : Exception
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="message">Message for this Exception</param>
-    public DuplicateAccountingPeriodException(string message) : base(message)
+    public InvalidTransactionDateException(string message) : base(message)
     {
     }
 
@@ -25,7 +25,7 @@ public class DuplicateAccountingPeriodException : Exception
     /// </summary>
     /// <param name="message">Message for this Exception</param>
     /// <param name="innerException">Inner Exception</param>
-    public DuplicateAccountingPeriodException(string message, Exception innerException) : base(message, innerException)
+    public InvalidTransactionDateException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

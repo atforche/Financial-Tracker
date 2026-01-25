@@ -1,12 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.Funds.Exceptions;
+using Domain.Transactions;
 
 namespace Domain.Funds;
 
 /// <summary>
 /// Service for managing Funds
 /// </summary>
-public class FundService(IFundRepository fundRepository)
+public class FundService(IFundRepository fundRepository, ITransactionRepository transactionRepository)
 {
     /// <summary>
     /// Attempts to create a new Fund
@@ -68,8 +69,9 @@ public class FundService(IFundRepository fundRepository)
     {
         exceptions = [];
 
-        if (exceptions.Any())
+        if (transactionRepository.FindAllByFund(fund.Id).Count > 0)
         {
+            exceptions = [new UnableToDeleteFundException("Cannot delete a Fund that has Transactions.")];
             return false;
         }
         fundRepository.Delete(fund);

@@ -1,14 +1,14 @@
 namespace Domain.AccountingPeriods.Exceptions;
 
 /// <summary>
-/// Exception thrown when deleting an Accounting Period would cause a gap between existing Accounting Periods
+/// Exception thrown when we're unable to delete an Accounting Period
 /// </summary>
-public class AccountingPeriodGapException : Exception
+public class UnableToDeleteAccountingPeriodException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public AccountingPeriodGapException() : base("Deleting this Accounting Period would cause a gap between existing Accounting Periods.")
+    public UnableToDeleteAccountingPeriodException() : base("Unable to delete this Accounting Period.")
     {
     }
 
@@ -16,7 +16,7 @@ public class AccountingPeriodGapException : Exception
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="message">Message for this Exception</param>
-    public AccountingPeriodGapException(string message) : base(message)
+    public UnableToDeleteAccountingPeriodException(string message) : base(message)
     {
     }
 
@@ -25,7 +25,7 @@ public class AccountingPeriodGapException : Exception
     /// </summary>
     /// <param name="message">Message for this Exception</param>
     /// <param name="innerException">Inner Exception</param>
-    public AccountingPeriodGapException(string message, Exception innerException) : base(message, innerException)
+    public UnableToDeleteAccountingPeriodException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

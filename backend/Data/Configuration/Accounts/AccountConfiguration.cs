@@ -1,4 +1,5 @@
 using Domain.Accounts;
+using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,5 +18,8 @@ internal sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
 
         builder.HasIndex(account => account.Name).IsUnique();
         builder.Property(account => account.Type).HasConversion<string>();
+
+        builder.Property(account => account.InitialTransaction)
+            .HasConversion(transactionId => transactionId!.Value, value => new TransactionId(value));
     }
 }

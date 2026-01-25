@@ -1,8 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
 using Data;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Models.Accounts;
 using Models.Errors;
@@ -19,8 +19,10 @@ namespace Rest.Controllers;
 public sealed class AccountController(
     UnitOfWork unitOfWork,
     IAccountRepository accountRepository,
-    IAccountingPeriodRepository accountingPeriodRepository,
+    ITransactionRepository transactionRepository,
     AccountService accountService,
+    AccountingPeriodMapper accountingPeriodMapper,
+    AccountMapper accountMapper,
     FundAmountMapper fundAmountMapper) : ControllerBase
 {
     /// <summary>
@@ -38,7 +40,7 @@ public sealed class AccountController(
     [HttpGet("{accountId}")]
     public IActionResult Get(Guid accountId)
     {
-        if (!TryFindById(accountId, out Account? account, out IActionResult? errorResult))
+        if (!accountMapper.TryToDomain(accountId, out Account? account, out IActionResult? errorResult))
         {
             return errorResult;
         }
@@ -55,16 +57,16 @@ public sealed class AccountController(
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> CreateAsync(CreateAccountModel createAccountModel)
     {
-        if (!accountingPeriodRepository.TryFindById(createAccountModel.AccountingPeriodId, out AccountingPeriod? accountingPeriod))
+        if (!accountingPeriodMapper.TryToDomain(createAccountModel.AccountingPeriodId, out AccountingPeriod? accountingPeriod, out IActionResult? errorResult))
         {
-            return new UnprocessableEntityObjectResult(ErrorMapper.ToModel($"Accounting Period with ID {createAccountModel.AccountingPeriodId} was not found.", []));
+            return errorResult;
         }
         List<FundAmount> fundAmounts = [];
         foreach (FundAmountModel fundAmountModel in createAccountModel.InitialFundAmounts)
         {
-            if (!fundAmountMapper.TryMapToDomain(fundAmountModel, out FundAmount? fundAmount, out Exception? exception))
+            if (!fundAmountMapper.TryToDomain(fundAmountModel, out FundAmount? fundAmount, out errorResult))
             {
-                return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Fund with ID " + fundAmountModel.FundId + " could not be found.", [exception]));
+                return errorResult;
             }
             fundAmounts.Add(fundAmount);
         }
@@ -78,11 +80,13 @@ public sealed class AccountController(
                 InitialFundAmounts = fundAmounts
             },
             out Account? newAccount,
+            out Transaction? initialTransaction,
             out IEnumerable<Exception> exceptions))
         {
             return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to create Account.", exceptions));
         }
         accountRepository.Add(newAccount);
+        transactionRepository.Add(initialTransaction);
         await unitOfWork.SaveChangesAsync();
         return Ok(AccountMapper.ToModel(newAccount));
     }
@@ -98,7 +102,7 @@ public sealed class AccountController(
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UpdateAsync(Guid accountId, UpdateAccountModel updateAccountModel)
     {
-        if (!TryFindById(accountId, out Account? accountToUpdate, out IActionResult? errorResult))
+        if (!accountMapper.TryToDomain(accountId, out Account? accountToUpdate, out IActionResult? errorResult))
         {
             return errorResult;
         }
@@ -118,7 +122,7 @@ public sealed class AccountController(
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> DeleteAsync(Guid accountId)
     {
-        if (!TryFindById(accountId, out Account? accountToDelete, out IActionResult? errorResult))
+        if (!accountMapper.TryToDomain(accountId, out Account? accountToDelete, out IActionResult? errorResult))
         {
             return errorResult;
         }
@@ -128,22 +132,5 @@ public sealed class AccountController(
         }
         await unitOfWork.SaveChangesAsync();
         return Ok();
-    }
-
-    /// <summary>
-    /// Attempts to find the Account with the provided ID
-    /// </summary>
-    /// <param name="accountId">ID of the Account to find</param>
-    /// <param name="account">Account that was found</param>
-    /// <param name="errorResult">Result to return if the account was not found</param>
-    /// <returns>True if the account was found, false otherwise</returns>
-    private bool TryFindById(Guid accountId, [NotNullWhen(true)] out Account? account, [NotNullWhen(false)] out IActionResult? errorResult)
-    {
-        errorResult = null;
-        if (!accountRepository.TryFindById(accountId, out account))
-        {
-            errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Account with ID {accountId} was not found.", []));
-        }
-        return errorResult == null;
     }
 }

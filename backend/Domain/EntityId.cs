@@ -30,4 +30,11 @@ public record EntityId
             throw new InvalidOperationException();
         }
     }
+
+    /// <summary>
+    /// Constructs a new default instance of this class
+    /// </summary>
+    protected EntityId()
+    {
+    }
 }

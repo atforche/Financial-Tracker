@@ -1,14 +1,14 @@
 namespace Domain.AccountingPeriods.Exceptions;
 
 /// <summary>
-/// Exception thrown when attempting to close an Accounting Period while an earlier period is still open
+/// Exception thrown when we're unable to close an Accounting Period
 /// </summary>
-public class EarlierAccountingPeriodStillOpenException : Exception
+public class UnableToCloseAccountingPeriodException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public EarlierAccountingPeriodStillOpenException() : base("An earlier Accounting Period is still open.")
+    public UnableToCloseAccountingPeriodException() : base("Unable to close this Accounting Period.")
     {
     }
 
@@ -16,7 +16,7 @@ public class EarlierAccountingPeriodStillOpenException : Exception
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="message">Message for this Exception</param>
-    public EarlierAccountingPeriodStillOpenException(string message) : base(message)
+    public UnableToCloseAccountingPeriodException(string message) : base(message)
     {
     }
 
@@ -25,7 +25,7 @@ public class EarlierAccountingPeriodStillOpenException : Exception
     /// </summary>
     /// <param name="message">Message for this Exception</param>
     /// <param name="innerException">Inner Exception</param>
-    public EarlierAccountingPeriodStillOpenException(string message, Exception innerException) : base(message, innerException)
+    public UnableToCloseAccountingPeriodException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

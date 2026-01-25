@@ -1,14 +1,14 @@
-namespace Domain.AccountingPeriods.Exceptions;
+namespace Domain.Transactions.Exceptions;
 
 /// <summary>
-/// Exception thrown when attempting to do something with an already closed Accounting Period
+/// Exception thrown when a Transaction has an invalid Accounting Period
 /// </summary>
-public class AccountingPeriodIsClosedException : Exception
+public class InvalidAccountingPeriodException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public AccountingPeriodIsClosedException() : base("This Accounting Period is closed.")
+    public InvalidAccountingPeriodException() : base("The Transaction has an invalid Accounting Period.")
     {
     }
 
@@ -16,7 +16,7 @@ public class AccountingPeriodIsClosedException : Exception
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="message">Message for this Exception</param>
-    public AccountingPeriodIsClosedException(string message) : base(message)
+    public InvalidAccountingPeriodException(string message) : base(message)
     {
     }
 
@@ -25,7 +25,7 @@ public class AccountingPeriodIsClosedException : Exception
     /// </summary>
     /// <param name="message">Message for this Exception</param>
     /// <param name="innerException">Inner Exception</param>
-    public AccountingPeriodIsClosedException(string message, Exception innerException) : base(message, innerException)
+    public InvalidAccountingPeriodException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

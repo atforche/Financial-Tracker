@@ -14,4 +14,12 @@ public record AccountingPeriodId : EntityId
         : base(value)
     {
     }
+
+    /// <summary>
+    /// Constructs a new default instance of this class
+    /// </summary>
+    private AccountingPeriodId()
+        : base()
+    {
+    }
 }

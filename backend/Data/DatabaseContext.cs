@@ -2,6 +2,7 @@ using Data.Configuration.Accounts;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data;
@@ -25,6 +26,11 @@ public class DatabaseContext : DbContext
     /// Collection of Funds in the database
     /// </summary>
     internal DbSet<Fund> Funds { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of Transactions in the database
+    /// </summary>
+    internal DbSet<Transaction> Transactions { get; set; } = default!;
 
     /// <summary>
     /// Gets the database path for this Database Context
