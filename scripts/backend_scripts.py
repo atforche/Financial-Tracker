@@ -109,6 +109,7 @@ class CreateMigration(Command):
         """Creates a new database migration"""
 
         print(f"Creating new migration {self.name}")
+        os.environ["DATABASE_PATH"] = ""
         self.run_subprocess(f"dotnet ef migrations add {self.name} \
                             --project ../backend/Data/Data.csproj --msbuildprojectextensionspath ../backend/.artifacts/obj/Data")
 

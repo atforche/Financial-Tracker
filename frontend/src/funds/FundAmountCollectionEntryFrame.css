@@ -4,20 +4,15 @@
   border: 2px solid rgba(0, 0, 0, 0.12);
   border-radius: 5px;
   margin-top: 15px;
+  min-width: 300px;
 }
 
 .fund-amount-collection-entry-frame .combo-box-entry-field {
-  width: 50%;
   margin-top: 15px;
 }
 
 .fund-amount-collection-entry-frame .currency-entry-field {
-  width: 50%;
   margin-top: 15px;
-}
-
-.fund-amount-collection-entry-frame .MuiStack-root {
-  width: 100%;
 }
 
 .fund-amount-collection-entry-frame > .MuiTypography-root {

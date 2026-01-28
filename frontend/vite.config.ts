@@ -17,6 +17,7 @@ export default defineConfig({
       "@funds": "/src/funds",
       "@navigation": "/src/navigation",
       "@src": "/src",
+      "@transactions": "/src/transactions"
     }
   }
 })

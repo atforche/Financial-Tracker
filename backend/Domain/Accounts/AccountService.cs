@@ -1,41 +1,60 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.Accounts.Exceptions;
+using Domain.Transactions;
 
 namespace Domain.Accounts;
 
 /// <summary>
 /// Service for managing Accounts
 /// </summary>
-public class AccountService(IAccountRepository accountRepository, AccountAddedBalanceEventFactory accountAddedBalanceEventFactory)
+public class AccountService(
+    IAccountRepository accountRepository,
+    ITransactionRepository transactionRepository,
+    TransactionService transactionService)
 {
     /// <summary>
     /// Attempts to create a new Account
     /// </summary>
-    /// <param name="request">Request to create the Account</param>
-    /// <param name="account">The created Account, or null if creation failed</param>
-    /// <param name="exceptions">Exceptions encountered during creation</param>
-    /// <returns>The newly created Account</returns>
-    public bool TryCreate(CreateAccountRequest request, [NotNullWhen(true)] out Account? account, out IEnumerable<Exception> exceptions)
+    public bool TryCreate(
+        CreateAccountRequest request,
+        [NotNullWhen(true)] out Account? account,
+        [NotNullWhen(true)] out Transaction? initialTransaction,
+        out IEnumerable<Exception> exceptions)
     {
         account = null;
+        initialTransaction = null;
 
         if (!ValidateAccountName(request.Name, out exceptions))
         {
             return false;
         }
         account = new Account(request.Name, request.Type);
-        if (!accountAddedBalanceEventFactory.TryCreate(new CreateAccountAddedBalanceEventRequest
+        if (!transactionService.TryCreate(new CreateTransactionRequest
         {
-            AccountingPeriodId = request.AccountingPeriodId,
-            EventDate = request.AddDate,
-            Account = account,
-            FundAmounts = request.InitialFundAmounts.ToList()
-        }, out AccountAddedBalanceEvent? accountAddedBalanceEvent, out exceptions))
+            AccountingPeriod = request.AccountingPeriodId,
+            Date = request.AddDate,
+            Location = "Initial",
+            Description = "Initial Balance",
+            DebitAccount = null,
+            CreditAccount = new CreateTransactionAccountRequest
+            {
+                Account = account,
+                FundAmounts = request.InitialFundAmounts
+            },
+            IsInitialTransactionForCreditAccount = true
+        }, out initialTransaction, out IEnumerable<Exception> transactionExceptions))
         {
+            exceptions = exceptions.Concat(transactionExceptions);
             account = null;
             return false;
         }
-        account.AccountAddedBalanceEvent = accountAddedBalanceEvent;
+        if (!TransactionService.TryPost(initialTransaction, account.Id, request.AddDate, out IEnumerable<Exception> postingExceptions))
+        {
+            exceptions = exceptions.Concat(postingExceptions);
+            account = null;
+            return false;
+        }
+        account.InitialTransaction = initialTransaction.Id;
         return true;
     }
 
@@ -69,6 +88,20 @@ public class AccountService(IAccountRepository accountRepository, AccountAddedBa
     {
         exceptions = [];
 
+        if (transactionRepository.FindAllByAccount(account.Id).Any(transaction => transaction.Id != account.InitialTransaction))
+        {
+            exceptions = [new UnableToDeleteAccountException("Cannot delete an Account that has Transactions.")];
+            return false;
+        }
+        if (account.InitialTransaction != null)
+        {
+            Transaction initialTransaction = transactionRepository.FindById(account.InitialTransaction);
+            if (!transactionService.TryDelete(initialTransaction, account.Id, out IEnumerable<Exception> transactionExceptions))
+            {
+                exceptions = exceptions.Concat(transactionExceptions);
+                return false;
+            }
+        }
         accountRepository.Delete(account);
         return true;
     }

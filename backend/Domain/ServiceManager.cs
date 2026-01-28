@@ -1,7 +1,5 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.ChangeInValues;
-using Domain.FundConversions;
 using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,22 +18,8 @@ public static class ServiceManager
     public static void Register(IServiceCollection serviceCollection)
     {
         _ = serviceCollection.AddScoped<AccountingPeriodService>();
-
         _ = serviceCollection.AddScoped<AccountService>();
-        _ = serviceCollection.AddScoped<AccountAddedBalanceEventFactory>();
-        _ = serviceCollection.AddScoped<AccountBalanceService>();
-
-        _ = serviceCollection.AddScoped<ChangeInValueFactory>();
-        _ = serviceCollection.AddScoped<ChangeInValueIdFactory>();
-
         _ = serviceCollection.AddScoped<FundService>();
-
-        _ = serviceCollection.AddScoped<FundConversionFactory>();
-        _ = serviceCollection.AddScoped<FundConversionIdFactory>();
-
-        _ = serviceCollection.AddScoped<PostTransactionAction>();
-        _ = serviceCollection.AddScoped<TransactionFactory>();
-        _ = serviceCollection.AddScoped<TransactionBalanceEventFactory>();
-        _ = serviceCollection.AddScoped<TransactionIdFactory>();
+        _ = serviceCollection.AddScoped<TransactionService>();
     }
 }

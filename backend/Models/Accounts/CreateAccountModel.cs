@@ -30,5 +30,5 @@ public class CreateAccountModel
     /// <summary>
     /// Initial amounts for each Fund associated with the Account
     /// </summary>
-    public required IReadOnlyCollection<FundAmountModel> InitialFundAmounts { get; init; }
+    public required IReadOnlyCollection<CreateFundAmountModel> InitialFundAmounts { get; init; }
 }

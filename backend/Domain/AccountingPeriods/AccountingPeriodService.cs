@@ -1,18 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods.Exceptions;
-using Domain.Accounts;
-using Domain.BalanceEvents;
+using Domain.Transactions;
 
 namespace Domain.AccountingPeriods;
 
 /// <summary>
 /// Service for managing Accounting Periods
 /// </summary>
-public class AccountingPeriodService(
-    IAccountingPeriodRepository accountingPeriodRepository,
-    IAccountRepository accountRepository,
-    IBalanceEventRepository balanceEventRepository,
-    AccountBalanceService accountBalanceService)
+public class AccountingPeriodService(IAccountingPeriodRepository accountingPeriodRepository, ITransactionRepository transactionRepository)
 {
     /// <summary>
     /// Attempts to create a new Accounting Period
@@ -31,7 +26,6 @@ public class AccountingPeriodService(
             return false;
         }
         accountingPeriod = new AccountingPeriod(year, month);
-        AddAccountBalanceCheckpointsForNewAccountingPeriod(accountingPeriod);
         return true;
     }
 
@@ -48,7 +42,6 @@ public class AccountingPeriodService(
             return false;
         }
         accountingPeriod.IsOpen = false;
-        AddAccountBalanceCheckpointsForClosedAccountingPeriod(accountingPeriod);
         return true;
     }
 
@@ -96,13 +89,13 @@ public class AccountingPeriodService(
         var existingAccountingPeriods = accountingPeriodRepository.FindAll().ToList();
         if (existingAccountingPeriods.Any(period => period.PeriodStartDate == new DateOnly(year, month, 1)))
         {
-            exceptions = exceptions.Append(new DuplicateAccountingPeriodException());
+            exceptions = exceptions.Append(new InvalidMonthException("This Accounting Period already exists."));
         }
         // Validate that accounting periods can only be added after existing accounting periods
         if (existingAccountingPeriods.Count > 0 &&
             !existingAccountingPeriods.Any(period => period.PeriodStartDate == new DateOnly(year, month, 1).AddMonths(-1)))
         {
-            exceptions = exceptions.Append(new NonSequentialAccountingPeriodException());
+            exceptions = exceptions.Append(new InvalidMonthException("New Accounting Period must directly follow the most recent existing Accounting Period."));
         }
         return !exceptions.Any();
     }
@@ -119,19 +112,17 @@ public class AccountingPeriodService(
 
         if (!accountingPeriod.IsOpen)
         {
-            exceptions = exceptions.Append(new AccountingPeriodIsClosedException());
+            exceptions = exceptions.Append(new UnableToCloseAccountingPeriodException("This Accounting Period is already closed."));
         }
-        // Validate that there are no other earlier open Accounting Periods
+        if (transactionRepository.FindAllByAccountingPeriod(accountingPeriod.Id).Any(transaction =>
+            (transaction.DebitAccount != null && transaction.DebitAccount.PostedDate == null) ||
+            (transaction.CreditAccount != null && transaction.CreditAccount.PostedDate == null)))
+        {
+            exceptions = exceptions.Append(new UnableToCloseAccountingPeriodException("There are unposted transactions in this Accounting Period."));
+        }
         if (accountingPeriodRepository.FindAllOpenPeriods().Any(openPeriod => openPeriod.PeriodStartDate < accountingPeriod.PeriodStartDate))
         {
-            exceptions = exceptions.Append(new EarlierAccountingPeriodStillOpenException());
-        }
-        // Validate that there are no pending balance changes in this Accounting Period
-        if (accountRepository.FindAll()
-                .Select(account => accountBalanceService.GetAccountBalanceByAccountingPeriod(account.Id, accountingPeriod.Id))
-                .Any(balance => balance.EndingBalance.PendingFundBalanceChanges.Count != 0))
-        {
-            exceptions = exceptions.Append(new AccountingPeriodHasPendingBalanceChangesException());
+            exceptions = exceptions.Append(new UnableToCloseAccountingPeriodException("An earlier Accounting Period is still open."));
         }
         return !exceptions.Any();
     }
@@ -148,52 +139,16 @@ public class AccountingPeriodService(
 
         if (!accountingPeriod.IsOpen)
         {
-            exceptions = exceptions.Append(new AccountingPeriodIsClosedException());
+            exceptions = exceptions.Append(new UnableToDeleteAccountingPeriodException("This Accounting Period is closed."));
+        }
+        if (transactionRepository.FindAllByAccountingPeriod(accountingPeriod.Id).Count > 0)
+        {
+            exceptions = exceptions.Append(new UnableToDeleteAccountingPeriodException("This Accounting Period has transactions."));
         }
         if (accountingPeriodRepository.FindNextAccountingPeriod(accountingPeriod.Id) != null)
         {
-            exceptions = exceptions.Append(new AccountingPeriodGapException());
-        }
-        if (balanceEventRepository.FindAllByAccountingPeriod(accountingPeriod.Id).Count != 0)
-        {
-            exceptions = exceptions.Append(new AccountingPeriodHasBalanceEventsException());
+            exceptions = exceptions.Append(new UnableToDeleteAccountingPeriodException("Deleting this Accounting Period would cause a gap between existing Accounting Periods."));
         }
         return !exceptions.Any();
-    }
-
-    /// <summary>
-    /// Adds Account Balance Checkpoints for the newly creating Accounting Period if necessary
-    /// </summary>
-    /// <param name="newAccountingPeriod">Newly created Accounting Period</param>
-    private void AddAccountBalanceCheckpointsForNewAccountingPeriod(AccountingPeriod newAccountingPeriod)
-    {
-        AccountingPeriod? previousAccountingPeriod = accountingPeriodRepository.FindLatestAccountingPeriod();
-        if (previousAccountingPeriod == null || previousAccountingPeriod.IsOpen)
-        {
-            return;
-        }
-        foreach (Account account in accountRepository.FindAll())
-        {
-            account.AddAccountBalanceCheckpoint(newAccountingPeriod.Id,
-                accountBalanceService.GetAccountBalanceByAccountingPeriod(account.Id, previousAccountingPeriod.Id).EndingBalance.FundBalances);
-        }
-    }
-
-    /// <summary>
-    /// Adds Account Balance Checkpoints for the future Accounting Period if necessary
-    /// </summary>
-    /// <param name="closedAccountingPeriod">Accounting Period to close</param>
-    private void AddAccountBalanceCheckpointsForClosedAccountingPeriod(AccountingPeriod closedAccountingPeriod)
-    {
-        AccountingPeriod? futureAccountingPeriod = accountingPeriodRepository.FindNextAccountingPeriod(closedAccountingPeriod.Id);
-        if (futureAccountingPeriod == null)
-        {
-            return;
-        }
-        foreach (Account account in accountRepository.FindAll())
-        {
-            account.AddAccountBalanceCheckpoint(futureAccountingPeriod.Id,
-                accountBalanceService.GetAccountBalanceByAccountingPeriod(account.Id, closedAccountingPeriod.Id).EndingBalance.FundBalances);
-        }
     }
 }

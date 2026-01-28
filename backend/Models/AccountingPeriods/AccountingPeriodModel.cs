@@ -11,6 +11,11 @@ public class AccountingPeriodModel
     public required Guid Id { get; init; }
 
     /// <summary>
+    /// Name of the Accounting Period
+    /// </summary>
+    public required string Name { get; init; }
+
+    /// <summary>
     /// Year for the Accounting Period
     /// </summary>
     public required int Year { get; init; }

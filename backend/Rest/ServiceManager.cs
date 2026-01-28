@@ -11,5 +11,12 @@ public static class ServiceManager
     /// Registers all the Data DI services in the provided service collection
     /// </summary>
     /// <param name="serviceCollection">Service Collection</param>
-    public static void Register(IServiceCollection serviceCollection) => serviceCollection.AddScoped<FundAmountMapper>();
+    public static void Register(IServiceCollection serviceCollection)
+    {
+        _ = serviceCollection.AddScoped<AccountingPeriodMapper>();
+        _ = serviceCollection.AddScoped<AccountMapper>();
+        _ = serviceCollection.AddScoped<FundMapper>();
+        _ = serviceCollection.AddScoped<FundAmountMapper>();
+        _ = serviceCollection.AddScoped<TransactionMapper>();
+    }
 }

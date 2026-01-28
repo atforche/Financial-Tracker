@@ -11,6 +11,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** Retrieves all the Accounts from the database */
         get: {
             parameters: {
                 query?: never;
@@ -20,7 +21,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description The collection of all Accounts */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -34,6 +35,7 @@ export interface paths {
             };
         };
         put?: never;
+        /** Creates a new Account with the provided properties */
         post: {
             parameters: {
                 query?: never;
@@ -41,6 +43,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
+            /** @description Request to create an Account */
             requestBody: {
                 content: {
                     "application/json": components["schemas"]["CreateAccountModel"];
@@ -86,18 +89,20 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** Retrieves the Account that matches the provided ID */
         get: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
+                    /** @description ID of the Account to retrieve */
                     accountId: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description The Account that matches the provided ID */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -107,15 +112,18 @@ export interface paths {
             };
         };
         put?: never;
+        /** Updates the provided Account with the provided properties */
         post: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
+                    /** @description ID of the Account to update */
                     accountId: string;
                 };
                 cookie?: never;
             };
+            /** @description Request to update an Account */
             requestBody: {
                 content: {
                     "application/json": components["schemas"]["UpdateAccountModel"];
@@ -148,11 +156,13 @@ export interface paths {
                 };
             };
         };
+        /** Deletes the Account with the provided ID */
         delete: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
+                    /** @description ID of the Account to delete */
                     accountId: string;
                 };
                 cookie?: never;
@@ -184,6 +194,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** Retrieves all the Accounting Periods from the database */
         get: {
             parameters: {
                 query?: never;
@@ -193,7 +204,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description The collection of all Accounting Periods */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -207,6 +218,7 @@ export interface paths {
             };
         };
         put?: never;
+        /** Creates a new Accounting Period with the provided properties */
         post: {
             parameters: {
                 query?: never;
@@ -214,6 +226,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
+            /** @description Request to create an Accounting Period */
             requestBody: {
                 content: {
                     "application/json": components["schemas"]["CreateAccountingPeriodModel"];
@@ -259,6 +272,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** Retrieves all the open Accounting Periods from the database */
         get: {
             parameters: {
                 query?: never;
@@ -268,7 +282,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description The collection of all open Accounting Periods */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -296,18 +310,20 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** Retrieves the Accounting Period that matches the provided ID */
         get: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
+                    /** @description ID of the Accounting Period to retrieve */
                     accountingPeriodId: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description The Accounting Period that matches the provided ID */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -318,11 +334,13 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        /** Deletes the Accounting Period with the provided ID */
         delete: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
+                    /** @description ID of the Accounting Period to delete */
                     accountingPeriodId: string;
                 };
                 cookie?: never;
@@ -356,11 +374,13 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** Closes the Accounting Period with the provided ID */
         post: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
+                    /** @description ID of the Accounting Period to close */
                     accountingPeriodId: string;
                 };
                 cookie?: never;
@@ -404,6 +424,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** Retrieves all the Funds from the database */
         get: {
             parameters: {
                 query?: never;
@@ -413,7 +434,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description The collection of all Funds */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -427,6 +448,7 @@ export interface paths {
             };
         };
         put?: never;
+        /** Creates a new Fund with the provided properties */
         post: {
             parameters: {
                 query?: never;
@@ -434,6 +456,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
+            /** @description Request to create a Fund */
             requestBody: {
                 content: {
                     "application/json": components["schemas"]["CreateOrUpdateFundModel"];
@@ -479,18 +502,20 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** Retrieves the Fund that matches the provided ID */
         get: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
+                    /** @description ID of the Fund to retrieve */
                     fundId: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description The Fund that matches the provided ID */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -500,15 +525,18 @@ export interface paths {
             };
         };
         put?: never;
+        /** Updates the provided Fund with the provided properties */
         post: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
+                    /** @description ID of the Fund to update */
                     fundId: string;
                 };
                 cookie?: never;
             };
+            /** @description Request to update a Fund */
             requestBody: {
                 content: {
                     "application/json": components["schemas"]["CreateOrUpdateFundModel"];
@@ -541,12 +569,192 @@ export interface paths {
                 };
             };
         };
+        /** Deletes the Fund with the provided ID */
         delete: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
+                    /** @description ID of the Fund to delete */
                     fundId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves all the Transactions from the database */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionModel"][];
+                        "application/json": components["schemas"]["TransactionModel"][];
+                        "text/json": components["schemas"]["TransactionModel"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Creates a new Transaction with the provided properties */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateTransactionModel"];
+                    "text/json": components["schemas"]["CreateTransactionModel"];
+                    "application/*+json": components["schemas"]["CreateTransactionModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionModel"];
+                        "application/json": components["schemas"]["TransactionModel"];
+                        "text/json": components["schemas"]["TransactionModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/transactions/{transactionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves the Transaction that matches the provided ID */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    transactionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Updates the provided Transaction with the provided properties */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    transactionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateTransactionModel"];
+                    "text/json": components["schemas"]["UpdateTransactionModel"];
+                    "application/*+json": components["schemas"]["UpdateTransactionModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionModel"];
+                        "application/json": components["schemas"]["TransactionModel"];
+                        "text/json": components["schemas"]["TransactionModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
+                };
+            };
+        };
+        /** Deletes the Transaction with the provided ID */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    transactionId: string;
                 };
                 cookie?: never;
             };
@@ -574,66 +782,237 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Model representing an Accounting Period */
         AccountingPeriodModel: {
-            /** Format: uuid */
+            /**
+             * Format: uuid
+             * @description ID for the Accounting Period
+             */
             id: string;
-            /** Format: int32 */
+            /** @description Name of the Accounting Period */
+            name: string;
+            /**
+             * Format: int32
+             * @description Year for the Accounting Period
+             */
             year: number;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description Month for the Accounting Period
+             */
             month: number;
+            /** @description True if the Accounting Period is open, false otherwise */
             isOpen: boolean;
         };
+        /** @description Model representing an Account */
         AccountModel: {
-            /** Format: uuid */
+            /**
+             * Format: uuid
+             * @description ID for the Account
+             */
             id: string;
+            /** @description Name for the Account */
             name: string;
+            /** @description Type for the Account */
             type: components["schemas"]["AccountTypeModel"];
         };
-        /** @enum {unknown} */
+        /**
+         * @description Enum representing the different Account types
+         * @enum {unknown}
+         */
         AccountTypeModel: AccountTypeModel;
+        /** @description Model representing a request to create an Accounting Period */
         CreateAccountingPeriodModel: {
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description Year for the Accounting Period
+             */
             year: number;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description Month for the Accounting Period
+             */
             month: number;
         };
+        /** @description Model representing a request to create an Account. */
         CreateAccountModel: {
+            /** @description Name for the Account */
             name: string;
+            /** @description Description for the Account */
             type: components["schemas"]["AccountTypeModel"];
-            /** Format: uuid */
+            /**
+             * Format: uuid
+             * @description Accounting Period that the Account is being added to
+             */
             accountingPeriodId: string;
-            /** Format: date */
+            /**
+             * Format: date
+             * @description Date the Account is being added
+             */
             addDate: string;
-            initialFundAmounts: components["schemas"]["FundAmountModel"][];
+            /** @description Initial amounts for each Fund associated with the Account */
+            initialFundAmounts: components["schemas"]["CreateFundAmountModel"][];
         };
-        CreateOrUpdateFundModel: {
-            name: string;
-            description: string;
-        };
-        /** @enum {unknown} */
-        ErrorCode: ErrorCode;
-        ErrorDetailModel: {
-            errorCode: components["schemas"]["ErrorCode"];
-            description: string;
-        };
-        ErrorModel: {
-            message: string;
-            details: components["schemas"]["ErrorDetailModel"][];
-        };
-        FundAmountModel: {
-            /** Format: uuid */
+        /** @description Model representing a request to create a Fund Amount */
+        CreateFundAmountModel: {
+            /**
+             * Format: uuid
+             * @description Fund for this Fund Amount
+             */
             fundId: string;
-            /** Format: double */
+            /**
+             * Format: double
+             * @description Amount for this Fund Amount
+             */
             amount: number;
         };
-        FundModel: {
-            /** Format: uuid */
-            id: string;
+        /** @description Model representing a request to create or update a Fund */
+        CreateOrUpdateFundModel: {
+            /** @description Name for the Fund */
             name: string;
+            /** @description Description for the Fund */
             description: string;
         };
-        UpdateAccountModel: {
+        /** @description Model representing a request to create a Transaction Account. */
+        CreateTransactionAccountModel: {
+            /**
+             * Format: uuid
+             * @description Account for the Transaction Account
+             */
+            accountId: string;
+            /** @description Fund Amounts for the Transaction Account */
+            fundAmounts: components["schemas"]["CreateFundAmountModel"][];
+        };
+        /** @description Model representing a request to create a Transaction. */
+        CreateTransactionModel: {
+            /**
+             * Format: uuid
+             * @description Accounting Period for the Transaction
+             */
+            accountingPeriodId: string;
+            /**
+             * Format: date
+             * @description Date for the Transaction
+             */
+            date: string;
+            /** @description Location for the Transaction */
+            location: string;
+            /** @description Description for the Transaction */
+            description: string;
+            debitAccount: null | components["schemas"]["CreateTransactionAccountModel"];
+            creditAccount: null | components["schemas"]["CreateTransactionAccountModel"];
+        };
+        /**
+         * @description Enum representing the different error codes that the API can return
+         * @enum {unknown}
+         */
+        ErrorCode: ErrorCode;
+        /** @description Model representing a piece of detailed information about an error */
+        ErrorDetailModel: {
+            /** @description Error Code for this Error Detail */
+            errorCode: components["schemas"]["ErrorCode"];
+            /** @description Description for this Error Detail */
+            description: string;
+        };
+        /** @description Model representing an error returned by the API */
+        ErrorModel: {
+            /** @description Message for this Error */
+            message: string;
+            /** @description Details for this Error */
+            details: components["schemas"]["ErrorDetailModel"][];
+        };
+        /** @description Model representing an amount associated with a particular Fund */
+        FundAmountModel: {
+            /**
+             * Format: uuid
+             * @description Fund for this Fund Amount
+             */
+            fundId: string;
+            /** @description Name of the Fund for this Fund Amount */
+            fundName: string;
+            /**
+             * Format: double
+             * @description Amount for this Fund Amount
+             */
+            amount: number;
+        };
+        /** @description Model representing a Fund */
+        FundModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Fund
+             */
+            id: string;
+            /** @description Name for the Fund */
             name: string;
+            /** @description Description for the Fund */
+            description: string;
+        };
+        /** @description Model representing a Transaction */
+        TransactionModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Transaction
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description Accounting Period ID for the Transaction
+             */
+            accountingPeriodId: string;
+            /** @description Name of the Accounting Period for the Transaction */
+            accountingPeriodName: string;
+            /**
+             * Format: date
+             * @description Date for the Transaction
+             */
+            date: string;
+            /** @description Location for the Transaction */
+            location: string;
+            /** @description Description for the Transaction */
+            description: string;
+            /**
+             * Format: uuid
+             * @description ID of the Debit Account for the Transaction
+             */
+            debitAccountId?: null | string;
+            /** @description Name of the Debit Account for the Transaction */
+            debitAccountName?: null | string;
+            /** @description Fund Amounts for the Debit Account of the Transaction */
+            debitFundAmounts?: null | components["schemas"]["FundAmountModel"][];
+            /**
+             * Format: uuid
+             * @description ID of the Credit Account for the Transaction
+             */
+            creditAccountId?: null | string;
+            /** @description Name of the Credit Account for the Transaction */
+            creditAccountName?: null | string;
+            /** @description Fund Amounts for the Credit Account of the Transaction */
+            creditFundAmounts?: null | components["schemas"]["FundAmountModel"][];
+        };
+        /** @description Model representing a request to update an Account */
+        UpdateAccountModel: {
+            /** @description Name for the Account */
+            name: string;
+        };
+        /** @description Model representing a request to update a Transaction Account. */
+        UpdateTransactionAccountModel: {
+            /** @description Fund Amounts for the Transaction Account */
+            fundAmounts: components["schemas"]["CreateFundAmountModel"][];
+        };
+        /** @description Model representing a request to update a Transaction. */
+        UpdateTransactionModel: {
+            /**
+             * Format: date
+             * @description Date for the Transaction
+             */
+            date: string;
+            /** @description Location for the Transaction */
+            location: string;
+            /** @description Description for the Transaction */
+            description: string;
+            debitAccount: null | components["schemas"]["UpdateTransactionAccountModel"];
+            creditAccount: null | components["schemas"]["UpdateTransactionAccountModel"];
         };
     };
     responses: never;

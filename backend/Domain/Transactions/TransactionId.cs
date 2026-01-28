@@ -1,7 +1,7 @@
 namespace Domain.Transactions;
 
 /// <summary>
-/// Value object class representing the ID of an <see cref="Transaction"/>
+/// Value object class representing the ID of a <see cref="Transaction"/>
 /// </summary>
 public record TransactionId : EntityId
 {
@@ -14,25 +14,12 @@ public record TransactionId : EntityId
         : base(value)
     {
     }
-}
 
-/// <summary>
-/// Factory for constructing a Transaction ID
-/// </summary>
-/// <param name="transactionRepository">Transaction Repository</param>
-public class TransactionIdFactory(ITransactionRepository transactionRepository)
-{
     /// <summary>
-    /// Creates a new Transaction ID with the given value
+    /// Constructs a new default instance of this class
     /// </summary>
-    /// <param name="value">Value for this Transaction ID</param>
-    /// <returns>The newly created Transaction ID</returns>
-    public TransactionId Create(Guid value)
+    private TransactionId()
+        : base()
     {
-        if (!transactionRepository.DoesTransactionWithIdExist(value))
-        {
-            throw new InvalidOperationException();
-        }
-        return new TransactionId(value);
     }
 }

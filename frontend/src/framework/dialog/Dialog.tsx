@@ -30,7 +30,7 @@ const Dialog = function ({
   actions,
 }: DialogProps): JSX.Element {
   return (
-    <MuiDialog open>
+    <MuiDialog open maxWidth="lg">
       <DialogTitle
         sx={{
           backgroundColor: "primary.main",

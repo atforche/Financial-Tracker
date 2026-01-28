@@ -15,7 +15,7 @@ namespace Data.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.2");
 
             modelBuilder.Entity("Domain.AccountingPeriods.AccountingPeriod", b =>
                 {
@@ -41,7 +41,7 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("AccountAddedBalanceEventId")
+                    b.Property<Guid?>("InitialTransaction")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -54,131 +54,10 @@ namespace Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountAddedBalanceEventId")
-                        .IsUnique();
-
                     b.HasIndex("Name")
                         .IsUnique();
 
                     b.ToTable("Accounts");
-                });
-
-            modelBuilder.Entity("Domain.Accounts.AccountAddedBalanceEvent", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("AccountingPeriodId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("EventDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("EventSequence")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountingPeriodId");
-
-                    b.ToTable("AccountAddedBalanceEvent");
-                });
-
-            modelBuilder.Entity("Domain.Accounts.AccountBalanceCheckpoint", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("AccountingPeriodId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountId");
-
-                    b.HasIndex("AccountingPeriodId");
-
-                    b.ToTable("AccountBalanceCheckpoint");
-                });
-
-            modelBuilder.Entity("Domain.ChangeInValues.ChangeInValue", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("AccountingPeriodId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("EventDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("EventSequence")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("FundAmountId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountId");
-
-                    b.HasIndex("AccountingPeriodId");
-
-                    b.HasIndex("FundAmountId")
-                        .IsUnique();
-
-                    b.HasIndex("EventDate", "EventSequence")
-                        .IsUnique();
-
-                    b.ToTable("ChangeInValues");
-                });
-
-            modelBuilder.Entity("Domain.FundConversions.FundConversion", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("AccountingPeriodId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("EventDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("EventSequence")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("FromFundId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ToFundId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountId");
-
-                    b.HasIndex("AccountingPeriodId");
-
-                    b.HasIndex("FromFundId");
-
-                    b.HasIndex("ToFundId");
-
-                    b.HasIndex("EventDate", "EventSequence")
-                        .IsUnique();
-
-                    b.ToTable("FundConversions");
                 });
 
             modelBuilder.Entity("Domain.Funds.Fund", b =>
@@ -208,35 +87,20 @@ namespace Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("AccountAddedBalanceEventId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("AccountBalanceCheckpointId")
-                        .HasColumnType("TEXT");
-
                     b.Property<decimal>("Amount")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CreditTransactionId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("DebitTransactionId")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("FundId")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("TransactionAccountId")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountAddedBalanceEventId");
-
-                    b.HasIndex("AccountBalanceCheckpointId");
-
-                    b.HasIndex("CreditTransactionId");
-
-                    b.HasIndex("DebitTransactionId");
-
                     b.HasIndex("FundId");
+
+                    b.HasIndex("TransactionAccountId");
 
                     b.ToTable("FundAmount");
                 });
@@ -246,21 +110,30 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("AccountingPeriodId")
+                    b.Property<Guid>("AccountingPeriod")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("CreditAccountId")
-                        .HasColumnType("TEXT");
+                    b.Property<int?>("CreditAccountId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateOnly>("Date")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("DebitAccountId")
+                    b.Property<int?>("DebitAccountId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("InitialAccountTransaction")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AccountingPeriodId");
 
                     b.HasIndex("CreditAccountId");
 
@@ -269,230 +142,65 @@ namespace Data.Migrations
                     b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("Domain.Transactions.TransactionBalanceEvent", b =>
+            modelBuilder.Entity("Domain.Transactions.TransactionAccount", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("EventDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("EventSequence")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("TransactionId")
+                    b.Property<Guid>("Account")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly?>("PostedDate")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TransactionId");
+                    b.HasIndex("Account");
 
-                    b.HasIndex("EventDate", "EventSequence")
-                        .IsUnique();
-
-                    b.ToTable("TransactionBalanceEvent");
-                });
-
-            modelBuilder.Entity("Domain.Transactions.TransactionBalanceEventPart", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("TransactionBalanceEventId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TransactionBalanceEventId");
-
-                    b.ToTable("TransactionBalanceEventPart");
-                });
-
-            modelBuilder.Entity("Domain.Accounts.Account", b =>
-                {
-                    b.HasOne("Domain.Accounts.AccountAddedBalanceEvent", "AccountAddedBalanceEvent")
-                        .WithOne("Account")
-                        .HasForeignKey("Domain.Accounts.Account", "AccountAddedBalanceEventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AccountAddedBalanceEvent");
-                });
-
-            modelBuilder.Entity("Domain.Accounts.AccountAddedBalanceEvent", b =>
-                {
-                    b.HasOne("Domain.AccountingPeriods.AccountingPeriod", null)
-                        .WithMany()
-                        .HasForeignKey("AccountingPeriodId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Domain.Accounts.AccountBalanceCheckpoint", b =>
-                {
-                    b.HasOne("Domain.Accounts.Account", "Account")
-                        .WithMany("AccountBalanceCheckpoints")
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.AccountingPeriods.AccountingPeriod", null)
-                        .WithMany()
-                        .HasForeignKey("AccountingPeriodId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Account");
-                });
-
-            modelBuilder.Entity("Domain.ChangeInValues.ChangeInValue", b =>
-                {
-                    b.HasOne("Domain.Accounts.Account", null)
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.AccountingPeriods.AccountingPeriod", null)
-                        .WithMany()
-                        .HasForeignKey("AccountingPeriodId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Funds.FundAmount", "FundAmount")
-                        .WithOne()
-                        .HasForeignKey("Domain.ChangeInValues.ChangeInValue", "FundAmountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FundAmount");
-                });
-
-            modelBuilder.Entity("Domain.FundConversions.FundConversion", b =>
-                {
-                    b.HasOne("Domain.Accounts.Account", null)
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.AccountingPeriods.AccountingPeriod", null)
-                        .WithMany()
-                        .HasForeignKey("AccountingPeriodId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Funds.Fund", null)
-                        .WithMany()
-                        .HasForeignKey("FromFundId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Funds.Fund", null)
-                        .WithMany()
-                        .HasForeignKey("ToFundId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.ToTable("TransactionAccount");
                 });
 
             modelBuilder.Entity("Domain.Funds.FundAmount", b =>
                 {
-                    b.HasOne("Domain.Accounts.AccountAddedBalanceEvent", null)
-                        .WithMany("FundAmounts")
-                        .HasForeignKey("AccountAddedBalanceEventId");
-
-                    b.HasOne("Domain.Accounts.AccountBalanceCheckpoint", null)
-                        .WithMany("FundBalances")
-                        .HasForeignKey("AccountBalanceCheckpointId");
-
-                    b.HasOne("Domain.Transactions.Transaction", null)
-                        .WithMany("CreditFundAmounts")
-                        .HasForeignKey("CreditTransactionId");
-
-                    b.HasOne("Domain.Transactions.Transaction", null)
-                        .WithMany("DebitFundAmounts")
-                        .HasForeignKey("DebitTransactionId");
-
                     b.HasOne("Domain.Funds.Fund", null)
                         .WithMany()
                         .HasForeignKey("FundId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Domain.Transactions.TransactionAccount", null)
+                        .WithMany("FundAmounts")
+                        .HasForeignKey("TransactionAccountId");
                 });
 
             modelBuilder.Entity("Domain.Transactions.Transaction", b =>
                 {
-                    b.HasOne("Domain.AccountingPeriods.AccountingPeriod", null)
-                        .WithMany()
-                        .HasForeignKey("AccountingPeriodId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Accounts.Account", null)
+                    b.HasOne("Domain.Transactions.TransactionAccount", "CreditAccount")
                         .WithMany()
                         .HasForeignKey("CreditAccountId");
 
-                    b.HasOne("Domain.Accounts.Account", null)
+                    b.HasOne("Domain.Transactions.TransactionAccount", "DebitAccount")
                         .WithMany()
                         .HasForeignKey("DebitAccountId");
+
+                    b.Navigation("CreditAccount");
+
+                    b.Navigation("DebitAccount");
                 });
 
-            modelBuilder.Entity("Domain.Transactions.TransactionBalanceEvent", b =>
+            modelBuilder.Entity("Domain.Transactions.TransactionAccount", b =>
                 {
-                    b.HasOne("Domain.Transactions.Transaction", "Transaction")
-                        .WithMany("TransactionBalanceEvents")
-                        .HasForeignKey("TransactionId")
+                    b.HasOne("Domain.Accounts.Account", null)
+                        .WithMany()
+                        .HasForeignKey("Account")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Transaction");
                 });
 
-            modelBuilder.Entity("Domain.Transactions.TransactionBalanceEventPart", b =>
+            modelBuilder.Entity("Domain.Transactions.TransactionAccount", b =>
                 {
-                    b.HasOne("Domain.Transactions.TransactionBalanceEvent", "TransactionBalanceEvent")
-                        .WithMany("Parts")
-                        .HasForeignKey("TransactionBalanceEventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TransactionBalanceEvent");
-                });
-
-            modelBuilder.Entity("Domain.Accounts.Account", b =>
-                {
-                    b.Navigation("AccountBalanceCheckpoints");
-                });
-
-            modelBuilder.Entity("Domain.Accounts.AccountAddedBalanceEvent", b =>
-                {
-                    b.Navigation("Account")
-                        .IsRequired();
-
                     b.Navigation("FundAmounts");
-                });
-
-            modelBuilder.Entity("Domain.Accounts.AccountBalanceCheckpoint", b =>
-                {
-                    b.Navigation("FundBalances");
-                });
-
-            modelBuilder.Entity("Domain.Transactions.Transaction", b =>
-                {
-                    b.Navigation("CreditFundAmounts");
-
-                    b.Navigation("DebitFundAmounts");
-
-                    b.Navigation("TransactionBalanceEvents");
-                });
-
-            modelBuilder.Entity("Domain.Transactions.TransactionBalanceEvent", b =>
-                {
-                    b.Navigation("Parts");
                 });
 #pragma warning restore 612, 618
         }

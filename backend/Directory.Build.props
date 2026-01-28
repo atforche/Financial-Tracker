@@ -1,22 +1,28 @@
 <Project>
-    <PropertyGroup>
-        <!-- Override the bin and obj directories for building the solution -->
-        <OutputPath>..\.artifacts\bin\$(MSBuildProjectName)</OutputPath>
-        <IntermediateOutputPath>..\.artifacts\obj\$(MSBuildProjectName)</IntermediateOutputPath>
-        <BaseIntermediateOutputPath>..\.artifacts\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
-        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
 
-        <!-- Override the publish directory for publishing the solution -->
-        <PublishDir>..\.artifacts\publish\$(MSBuildProjectName)</PublishDir>
+  <PropertyGroup>
+    <!-- Override the bin and obj directories for building the solution -->
+    <OutputPath>..\.artifacts\bin\$(MSBuildProjectName)</OutputPath>
+    <IntermediateOutputPath>..\.artifacts\obj\$(MSBuildProjectName)</IntermediateOutputPath>
+    <BaseIntermediateOutputPath>..\.artifacts\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 
-        <!-- Generate XML documentation for this project -->
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Override the publish directory for publishing the solution -->
+    <PublishDir>..\.artifacts\publish\$(MSBuildProjectName)</PublishDir>
 
-        <!-- Run all code and style analyzers while building this project -->
-        <AnalysisMode>All</AnalysisMode>
-        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- Generate XML documentation for this project -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-        <!-- Force warnings to be treated as errors -->
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    </PropertyGroup>
+    <!-- Run all code and style analyzers while building this project -->
+    <AnalysisMode>All</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <!-- Force warnings to be treated as errors -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
 </Project>

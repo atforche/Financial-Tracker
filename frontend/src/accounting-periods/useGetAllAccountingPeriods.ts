@@ -32,6 +32,7 @@ const useGetAllAccountingPeriods = function (): {
       .fill(null)
       .map((_, index) => ({
         id: index.toString(),
+        name: "",
         year: 0,
         month: 0,
         isOpen: false,

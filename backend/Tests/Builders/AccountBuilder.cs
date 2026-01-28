@@ -1,6 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Transactions;
 using Tests.Mocks;
 
 namespace Tests.Builders;
@@ -37,6 +38,7 @@ public sealed class AccountBuilder(
                 InitialFundAmounts = DetermineFundAmounts()
             },
             out Account? account,
+            out Transaction? _,
             out IEnumerable<Exception> exceptions))
         {
             throw new InvalidOperationException("Failed to create Account.", exceptions.First());

@@ -11,6 +11,11 @@ public class FundAmountModel
     public required Guid FundId { get; init; }
 
     /// <summary>
+    /// Name of the Fund for this Fund Amount
+    /// </summary>
+    public required string FundName { get; init; }
+
+    /// <summary>
     /// Amount for this Fund Amount
     /// </summary>
     public required decimal Amount { get; init; }

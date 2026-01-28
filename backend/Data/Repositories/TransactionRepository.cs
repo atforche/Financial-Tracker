@@ -1,5 +1,6 @@
-using Domain;
+using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
+using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
 
@@ -11,31 +12,35 @@ namespace Data.Repositories;
 public class TransactionRepository(DatabaseContext databaseContext) : ITransactionRepository
 {
     /// <inheritdoc/>
-    public bool DoesTransactionWithIdExist(Guid id) => databaseContext.Transactions.Any(transaction => ((Guid)(object)transaction.Id) == id);
+    public IReadOnlyCollection<Transaction> GetAll() => databaseContext.Transactions.ToList();
 
     /// <inheritdoc/>
-    public bool DoesTransactionWithFundExist(Fund fund) =>
-        databaseContext.Transactions.Any(transaction =>
-        (transaction.DebitFundAmounts != null && transaction.DebitFundAmounts.Any(fundAmount => fundAmount.FundId == fund.Id)) ||
-            (transaction.CreditFundAmounts != null && transaction.CreditFundAmounts.Any(fundAmount => fundAmount.FundId == fund.Id)));
+    public IReadOnlyCollection<Transaction> FindAllByAccount(AccountId accountId) => databaseContext.Transactions.Where(transaction =>
+        (transaction.DebitAccount != null && transaction.DebitAccount.Account == accountId) ||
+        (transaction.CreditAccount != null && transaction.CreditAccount.Account == accountId)).ToList();
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<Transaction> FindAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
+        databaseContext.Transactions.Where(transaction => transaction.AccountingPeriod == accountingPeriodId).ToList();
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<Transaction> FindAllByFund(FundId fundId) => databaseContext.Transactions.Where(transaction =>
+        (transaction.DebitAccount != null && transaction.DebitAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId)) ||
+        (transaction.CreditAccount != null && transaction.CreditAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId))).ToList();
 
     /// <inheritdoc/>
     public Transaction FindById(TransactionId id) => databaseContext.Transactions.Single(transaction => transaction.Id == id);
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> FindAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
-        databaseContext.Transactions.Where(transaction => transaction.AccountingPeriodId == accountingPeriodId).ToList();
-
-    /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> FindAllByDateRange(DateRange dateRange)
+    public bool TryFindById(Guid id, [NotNullWhen(true)] out Transaction? transaction)
     {
-        var dates = dateRange.GetInclusiveDates().ToList();
-        return databaseContext.Transactions
-            .Where(transaction => (transaction.Date >= dates.First() && transaction.Date <= dates.Last()) ||
-                transaction.TransactionBalanceEvents.Any(balanceEvent => balanceEvent.EventDate >= dates.First() && balanceEvent.EventDate <= dates.Last()))
-            .ToList();
+        transaction = databaseContext.Transactions.FirstOrDefault(transaction => ((Guid)(object)transaction.Id) == id);
+        return transaction != null;
     }
 
     /// <inheritdoc/>
     public void Add(Transaction transaction) => databaseContext.Add(transaction);
+
+    /// <inheritdoc/>
+    public void Delete(Transaction transaction) => databaseContext.Remove(transaction);
 }

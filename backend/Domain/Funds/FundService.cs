@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.FundConversions;
 using Domain.Funds.Exceptions;
 using Domain.Transactions;
 
@@ -8,10 +7,7 @@ namespace Domain.Funds;
 /// <summary>
 /// Service for managing Funds
 /// </summary>
-public class FundService(
-    IFundRepository fundRepository,
-    IFundConversionRepository fundConversionRepository,
-    ITransactionRepository transactionRepository)
+public class FundService(IFundRepository fundRepository, ITransactionRepository transactionRepository)
 {
     /// <summary>
     /// Attempts to create a new Fund
@@ -73,16 +69,9 @@ public class FundService(
     {
         exceptions = [];
 
-        if (transactionRepository.DoesTransactionWithFundExist(fund))
+        if (transactionRepository.FindAllByFund(fund.Id).Count > 0)
         {
-            exceptions = exceptions.Append(new FundStillInUseException("Cannot delete Fund that is used on an existing Transaction."));
-        }
-        if (fundConversionRepository.DoesFundConversionWithFundExist(fund))
-        {
-            exceptions = exceptions.Append(new FundStillInUseException("Cannot delete Fund with existing Fund Conversion."));
-        }
-        if (exceptions.Any())
-        {
+            exceptions = [new UnableToDeleteFundException("Cannot delete a Fund that has Transactions.")];
             return false;
         }
         fundRepository.Delete(fund);

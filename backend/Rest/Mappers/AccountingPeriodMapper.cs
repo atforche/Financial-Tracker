@@ -1,4 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Domain.AccountingPeriods;
+using Microsoft.AspNetCore.Mvc;
 using Models.AccountingPeriods;
 
 namespace Rest.Mappers;
@@ -6,18 +9,34 @@ namespace Rest.Mappers;
 /// <summary>
 /// Mapper class that handles mapping Accounting Periods to Accounting Period Models
 /// </summary>
-internal sealed class AccountingPeriodMapper
+public sealed class AccountingPeriodMapper(IAccountingPeriodRepository accountingPeriodRepository)
 {
     /// <summary>
-    /// Converts the provided Accounting Period into an Accounting Period Model
+    /// Maps the provided Accounting Period to an Accounting Period Model
     /// </summary>
-    /// <param name="accountingPeriod">Accounting Period to convert into a model</param>
-    /// <returns>The Accounting Period Model corresponding to the provided Accounting Period</returns>
     public static AccountingPeriodModel ToModel(AccountingPeriod accountingPeriod) => new()
     {
         Id = accountingPeriod.Id.Value,
+        Name = accountingPeriod.PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
         Year = accountingPeriod.Year,
         Month = accountingPeriod.Month,
         IsOpen = accountingPeriod.IsOpen
     };
+
+    /// <summary>
+    /// Attempts to map the provided ID to an Accounting Period
+    /// </summary>
+    public bool TryToDomain(
+        Guid accountingPeriodId,
+        [NotNullWhen(true)] out AccountingPeriod? accountingPeriod,
+        [NotNullWhen(false)] out IActionResult? errorResult)
+    {
+        errorResult = null;
+        if (!accountingPeriodRepository.TryFindById(accountingPeriodId, out accountingPeriod))
+        {
+            errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Accounting Period with ID {accountingPeriodId} was not found.", []));
+            return false;
+        }
+        return true;
+    }
 }

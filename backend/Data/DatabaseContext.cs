@@ -1,8 +1,6 @@
 using Data.Configuration.Accounts;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.ChangeInValues;
-using Domain.FundConversions;
 using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
@@ -23,16 +21,6 @@ public class DatabaseContext : DbContext
     /// Collection of Accounting Periods in the database
     /// </summary>
     internal DbSet<AccountingPeriod> AccountingPeriods { get; set; } = default!;
-
-    /// <summary>
-    /// Collection of Change In Values in the database
-    /// </summary>
-    internal DbSet<ChangeInValue> ChangeInValues { get; set; } = default!;
-
-    /// <summary>
-    /// Collection of Fund Conversions in the database
-    /// </summary>
-    internal DbSet<FundConversion> FundConversions { get; set; } = default!;
 
     /// <summary>
     /// Collection of Funds in the database

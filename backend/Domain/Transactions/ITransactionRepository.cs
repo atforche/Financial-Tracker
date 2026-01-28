@@ -1,4 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
+using Domain.Accounts;
 using Domain.Funds;
 
 namespace Domain.Transactions;
@@ -9,18 +11,24 @@ namespace Domain.Transactions;
 public interface ITransactionRepository
 {
     /// <summary>
-    /// Determines if a Transaction with the provided ID exists
+    /// Finds all the Transactions currently in the repository
     /// </summary>
-    /// <param name="id">ID of the Transaction</param>
-    /// <returns>True if a Transaction with the provided ID exists, false otherwise</returns>
-    bool DoesTransactionWithIdExist(Guid id);
+    IReadOnlyCollection<Transaction> GetAll();
 
     /// <summary>
-    /// Determines if a Transaction that affects the provided Fund exists
+    /// Finds all the Transactions that are associated with the specified Account
     /// </summary>
-    /// <param name="fund">Fund to check for associated Transactions</param>
-    /// <returns>True if a Transaction that affects the provided Fund exists, false otherwise</returns>
-    bool DoesTransactionWithFundExist(Fund fund);
+    IReadOnlyCollection<Transaction> FindAllByAccount(AccountId accountId);
+
+    /// <summary>
+    /// Finds all the Transactions that are associated with the specified Accounting Period
+    /// </summary>
+    IReadOnlyCollection<Transaction> FindAllByAccountingPeriod(AccountingPeriodId accountingPeriodId);
+
+    /// <summary>
+    /// Finds all the Transactions that are associated with the specified Fund
+    /// </summary>
+    IReadOnlyCollection<Transaction> FindAllByFund(FundId fundId);
 
     /// <summary>
     /// Finds the Transaction with the specified ID.
@@ -30,22 +38,22 @@ public interface ITransactionRepository
     Transaction FindById(TransactionId id);
 
     /// <summary>
-    /// Finds all the Transactions with the specified Accounting Period ID
+    /// Attempts to find the Transaction with the specified ID
     /// </summary>
-    /// <param name="accountingPeriodId">Accounting Period ID</param>
-    /// <returns>All the Transactions with the specified Accounting Period ID</returns>
-    IReadOnlyCollection<Transaction> FindAllByAccountingPeriod(AccountingPeriodId accountingPeriodId);
-
-    /// <summary>
-    /// Finds all the Transactions that were added or that had balance events in the specified Date Range
-    /// </summary>
-    /// <param name="dateRange">Date Range</param>
-    /// <returns>All the Transactions that were added or that had balance events in the specified Date Range</returns>
-    IReadOnlyCollection<Transaction> FindAllByDateRange(DateRange dateRange);
+    /// <param name="id">ID of the Transaction to find</param>
+    /// <param name="transaction">The Transaction that was found, or null if one wasn't found</param>
+    /// <returns>True if a Transaction with the provided ID was found, false otherwise</returns>
+    bool TryFindById(Guid id, [NotNullWhen(true)] out Transaction? transaction);
 
     /// <summary>
     /// Adds the provided Transaction to the repository
     /// </summary>
     /// <param name="transaction">Transaction that should be added</param>
     void Add(Transaction transaction);
+
+    /// <summary>
+    /// Deletes the provided Transaction from the repository
+    /// </summary>
+    /// <param name="transaction">Transaction to be deleted</param>
+    void Delete(Transaction transaction);
 }

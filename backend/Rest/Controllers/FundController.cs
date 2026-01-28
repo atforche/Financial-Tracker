@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Data;
 using Domain.Funds;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +15,8 @@ namespace Rest.Controllers;
 public sealed class FundController(
     UnitOfWork unitOfWork,
     IFundRepository fundRepository,
-    FundService fundService) : ControllerBase
+    FundService fundService,
+    FundMapper fundMapper) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Funds from the database
@@ -33,7 +33,7 @@ public sealed class FundController(
     [HttpGet("{fundId}")]
     public IActionResult Get(Guid fundId)
     {
-        if (!TryFindById(fundId, out Fund? fund, out IActionResult? errorResult))
+        if (!fundMapper.TryToDomain(fundId, out Fund? fund, out IActionResult? errorResult))
         {
             return errorResult;
         }
@@ -70,7 +70,7 @@ public sealed class FundController(
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UpdateAsync(Guid fundId, CreateOrUpdateFundModel updateFundModel)
     {
-        if (!TryFindById(fundId, out Fund? fundToUpdate, out IActionResult? errorResult))
+        if (!fundMapper.TryToDomain(fundId, out Fund? fundToUpdate, out IActionResult? errorResult))
         {
             return errorResult;
         }
@@ -90,7 +90,7 @@ public sealed class FundController(
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> DeleteAsync(Guid fundId)
     {
-        if (!TryFindById(fundId, out Fund? fundToDelete, out IActionResult? errorResult))
+        if (!fundMapper.TryToDomain(fundId, out Fund? fundToDelete, out IActionResult? errorResult))
         {
             return errorResult;
         }
@@ -100,22 +100,5 @@ public sealed class FundController(
         }
         await unitOfWork.SaveChangesAsync();
         return Ok();
-    }
-
-    /// <summary>
-    /// Attempts to find the Fund with the provided ID
-    /// </summary>
-    /// <param name="fundId">ID of the Fund to find</param>
-    /// <param name="fund">Fund that was found</param>
-    /// <param name="errorResult">Result to return if the fund was not found</param>
-    /// <returns>True if the fund was found, false otherwise</returns>
-    private bool TryFindById(Guid fundId, [NotNullWhen(true)] out Fund? fund, [NotNullWhen(false)] out IActionResult? errorResult)
-    {
-        errorResult = null;
-        if (!fundRepository.TryFindById(fundId, out fund))
-        {
-            errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Fund with ID {fundId} was not found.", Array.Empty<Exception>()));
-        }
-        return errorResult == null;
     }
 }

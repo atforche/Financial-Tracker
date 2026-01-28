@@ -1,6 +1,5 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Funds;
 
 namespace Domain.Transactions;
 
@@ -8,94 +7,69 @@ namespace Domain.Transactions;
 /// Entity class representing a Transaction
 /// </summary>
 /// <remarks>
-/// A Transaction represents an event where money moves in one of the following ways:
-/// 1. Money is debited from an Account
-/// 2. Money is credited to an Account
-/// 3. Money is debited from one Account and credited to another Account
-/// If money moves from one Account to another, the amount debited is equal to the amount credited. 
+/// A Transaction represents a financial transaction were money is moved between accounts or funds.
 /// </remarks>
 public class Transaction : Entity<TransactionId>
 {
-    private readonly List<FundAmount>? _debitFundAmounts;
-    private readonly List<FundAmount>? _creditFundAmounts;
-    private readonly List<TransactionBalanceEvent> _transactionBalanceEvents;
-
     /// <summary>
-    /// Accounting Period ID for this Transaction
+    /// Accounting Period for this Transaction
     /// </summary>
-    public AccountingPeriodId AccountingPeriodId { get; private set; }
+    public AccountingPeriodId AccountingPeriod { get; private set; }
 
     /// <summary>
     /// Date for this Transaction
     /// </summary>
-    public DateOnly Date { get; private set; }
+    public DateOnly Date { get; internal set; }
 
     /// <summary>
-    /// Debit Account ID for this Transaction
+    /// Location for this Transaction
     /// </summary>
-    public AccountId? DebitAccountId { get; private set; }
+    public string Location { get; internal set; }
 
     /// <summary>
-    /// Debit Fund Amounts for this Transaction
+    /// Description for this Transaction
     /// </summary>
-    public IReadOnlyCollection<FundAmount>? DebitFundAmounts => _debitFundAmounts;
+    public string Description { get; internal set; }
 
     /// <summary>
-    /// Credit Account ID for this Transaction
+    /// Debit Account for this Transaction
     /// </summary>
-    public AccountId? CreditAccountId { get; private set; }
+    public TransactionAccount? DebitAccount { get; internal set; }
 
     /// <summary>
-    /// Credit Fund Amounts for this Transaction
+    /// Credit Account for this Transaction
     /// </summary>
-    public IReadOnlyCollection<FundAmount>? CreditFundAmounts => _creditFundAmounts;
+    public TransactionAccount? CreditAccount { get; internal set; }
 
     /// <summary>
-    /// List of Balance Events for this Transaction
+    /// Account ID of the Account that created this transaction when it was created, or null
     /// </summary>
-    public IReadOnlyCollection<TransactionBalanceEvent> TransactionBalanceEvents => _transactionBalanceEvents;
+    public AccountId? InitialAccountTransaction { get; internal set; }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="accountingPeriodId">Accounting Period ID for this Transaction</param>
-    /// <param name="eventDate">Date for this Transaction</param>
-    /// <param name="debitAccountId">Debit Account ID for this Transaction</param>
-    /// <param name="debitFundAmounts">Debit Fund Amounts for this Transaction</param>
-    /// <param name="creditAccountId">Credit Account ID for this Transaction</param>
-    /// <param name="creditFundAmounts">Credit Fund Amounts for this Transaction</param>
-    internal Transaction(AccountingPeriodId accountingPeriodId,
-        DateOnly eventDate,
-        AccountId? debitAccountId,
-        IEnumerable<FundAmount>? debitFundAmounts,
-        AccountId? creditAccountId,
-        IEnumerable<FundAmount>? creditFundAmounts)
+    internal Transaction(CreateTransactionRequest request)
         : base(new TransactionId(Guid.NewGuid()))
     {
-        AccountingPeriodId = accountingPeriodId;
-        Date = eventDate;
-        DebitAccountId = debitAccountId;
-        _debitFundAmounts = debitFundAmounts?.ToList();
-        CreditAccountId = creditAccountId;
-        _creditFundAmounts = creditFundAmounts?.ToList();
-        _transactionBalanceEvents = [];
+        AccountingPeriod = request.AccountingPeriod;
+        Date = request.Date;
+        Location = request.Location;
+        Description = request.Description;
+        DebitAccount = request.DebitAccount != null ? new TransactionAccount(request.DebitAccount.Account.Id, request.DebitAccount.FundAmounts) : null;
+        CreditAccount = request.CreditAccount != null ? new TransactionAccount(request.CreditAccount.Account.Id, request.CreditAccount.FundAmounts) : null;
+        InitialAccountTransaction = request.IsInitialTransactionForCreditAccount ? CreditAccount?.Account : null;
     }
-
-    /// <summary>
-    /// Adds a Transaction Balance Event to this Transaction
-    /// </summary>
-    /// <param name="transactionBalanceEvent">Transaction Balance Event</param>
-    internal void AddBalanceEvent(TransactionBalanceEvent transactionBalanceEvent) =>
-        _transactionBalanceEvents.Add(transactionBalanceEvent);
 
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
     private Transaction() : base()
     {
-        AccountingPeriodId = null!;
-        _debitFundAmounts = null!;
-        _creditFundAmounts = null!;
-        _transactionBalanceEvents = [];
+        AccountingPeriod = null!;
+        Location = null!;
+        Description = null!;
+        DebitAccount = null;
+        CreditAccount = null;
     }
 }

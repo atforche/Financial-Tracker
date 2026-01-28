@@ -46,6 +46,7 @@ builder.Services.AddOpenApi();
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
 {
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
 });
 
 WebApplication app = builder.Build();

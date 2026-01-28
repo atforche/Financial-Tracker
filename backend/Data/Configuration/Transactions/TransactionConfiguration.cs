@@ -17,24 +17,17 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
         builder.HasKey(transaction => transaction.Id);
         builder.Property(transaction => transaction.Id).HasConversion(transactionId => transactionId.Value, value => new TransactionId(value));
 
-        builder.HasOne<AccountingPeriod>().WithMany().HasForeignKey(transaction => transaction.AccountingPeriodId);
+        builder.Property(transaction => transaction.AccountingPeriod)
+            .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
 
-        builder.HasOne<Account>().WithMany().HasForeignKey(transaction => transaction.DebitAccountId);
-        builder.HasOne<Account>().WithMany().HasForeignKey(transaction => transaction.CreditAccountId);
+        builder.HasOne(transaction => transaction.DebitAccount).WithMany().HasForeignKey("DebitAccountId");
+        builder.Navigation(transaction => transaction.DebitAccount).AutoInclude();
 
-        builder.HasMany(transaction => transaction.DebitFundAmounts)
-            .WithOne()
-            .HasForeignKey("DebitTransactionId");
-        builder.Navigation(transaction => transaction.DebitFundAmounts).AutoInclude();
+        builder.HasOne(transaction => transaction.CreditAccount).WithMany().HasForeignKey("CreditAccountId");
+        builder.Navigation(transaction => transaction.CreditAccount).AutoInclude();
 
-        builder.HasMany(transaction => transaction.CreditFundAmounts)
-            .WithOne()
-            .HasForeignKey("CreditTransactionId");
-        builder.Navigation(transaction => transaction.CreditFundAmounts).AutoInclude();
-
-        builder.HasMany(transaction => transaction.TransactionBalanceEvents)
-            .WithOne(transactionBalanceEvent => transactionBalanceEvent.Transaction)
-            .HasForeignKey("TransactionId");
-        builder.Navigation(transaction => transaction.TransactionBalanceEvents).AutoInclude();
+        builder.Property(transaction => transaction.InitialAccountTransaction)
+            .HasConversion(accountingPeriodId => accountingPeriodId == null ? (Guid?)null : accountingPeriodId.Value,
+                value => value == null ? null : new AccountId(value.Value));
     }
 }
