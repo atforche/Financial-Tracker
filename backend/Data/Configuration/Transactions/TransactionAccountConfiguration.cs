@@ -20,5 +20,6 @@ internal sealed class TransactionAccountConfiguration : IEntityTypeConfiguration
         builder.HasOne<Account>().WithMany().HasForeignKey(transactionAccount => transactionAccount.Account);
 
         builder.HasMany(transactionAccount => transactionAccount.FundAmounts).WithOne().HasForeignKey("TransactionAccountId");
+        builder.Navigation(transactionAccount => transactionAccount.FundAmounts).AutoInclude();
     }
 }

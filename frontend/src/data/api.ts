@@ -600,6 +600,83 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves all the Transactions from the database */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionModel"][];
+                        "application/json": components["schemas"]["TransactionModel"][];
+                        "text/json": components["schemas"]["TransactionModel"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Creates a new Transaction with the provided properties */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateTransactionModel"];
+                    "text/json": components["schemas"]["CreateTransactionModel"];
+                    "application/*+json": components["schemas"]["CreateTransactionModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionModel"];
+                        "application/json": components["schemas"]["TransactionModel"];
+                        "text/json": components["schemas"]["TransactionModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/transactions/{transactionId}": {
         parameters: {
             query?: never;
@@ -701,61 +778,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/transactions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Creates a new Transaction with the provided properties */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateTransactionModel"];
-                    "text/json": components["schemas"]["CreateTransactionModel"];
-                    "application/*+json": components["schemas"]["CreateTransactionModel"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["TransactionModel"];
-                        "application/json": components["schemas"]["TransactionModel"];
-                        "text/json": components["schemas"]["TransactionModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -767,6 +789,8 @@ export interface components {
              * @description ID for the Accounting Period
              */
             id: string;
+            /** @description Name of the Accounting Period */
+            name: string;
             /**
              * Format: int32
              * @description Year for the Accounting Period
@@ -827,7 +851,20 @@ export interface components {
              */
             addDate: string;
             /** @description Initial amounts for each Fund associated with the Account */
-            initialFundAmounts: components["schemas"]["FundAmountModel"][];
+            initialFundAmounts: components["schemas"]["CreateFundAmountModel"][];
+        };
+        /** @description Model representing a request to create a Fund Amount */
+        CreateFundAmountModel: {
+            /**
+             * Format: uuid
+             * @description Fund for this Fund Amount
+             */
+            fundId: string;
+            /**
+             * Format: double
+             * @description Amount for this Fund Amount
+             */
+            amount: number;
         };
         /** @description Model representing a request to create or update a Fund */
         CreateOrUpdateFundModel: {
@@ -844,7 +881,7 @@ export interface components {
              */
             accountId: string;
             /** @description Fund Amounts for the Transaction Account */
-            fundAmounts: components["schemas"]["FundAmountModel"][];
+            fundAmounts: components["schemas"]["CreateFundAmountModel"][];
         };
         /** @description Model representing a request to create a Transaction. */
         CreateTransactionModel: {
@@ -891,6 +928,8 @@ export interface components {
              * @description Fund for this Fund Amount
              */
             fundId: string;
+            /** @description Name of the Fund for this Fund Amount */
+            fundName: string;
             /**
              * Format: double
              * @description Amount for this Fund Amount
@@ -917,6 +956,13 @@ export interface components {
              */
             id: string;
             /**
+             * Format: uuid
+             * @description Accounting Period ID for the Transaction
+             */
+            accountingPeriodId: string;
+            /** @description Name of the Accounting Period for the Transaction */
+            accountingPeriodName: string;
+            /**
              * Format: date
              * @description Date for the Transaction
              */
@@ -930,6 +976,8 @@ export interface components {
              * @description ID of the Debit Account for the Transaction
              */
             debitAccountId?: null | string;
+            /** @description Name of the Debit Account for the Transaction */
+            debitAccountName?: null | string;
             /** @description Fund Amounts for the Debit Account of the Transaction */
             debitFundAmounts?: null | components["schemas"]["FundAmountModel"][];
             /**
@@ -937,6 +985,8 @@ export interface components {
              * @description ID of the Credit Account for the Transaction
              */
             creditAccountId?: null | string;
+            /** @description Name of the Credit Account for the Transaction */
+            creditAccountName?: null | string;
             /** @description Fund Amounts for the Credit Account of the Transaction */
             creditFundAmounts?: null | components["schemas"]["FundAmountModel"][];
         };
@@ -948,7 +998,7 @@ export interface components {
         /** @description Model representing a request to update a Transaction Account. */
         UpdateTransactionAccountModel: {
             /** @description Fund Amounts for the Transaction Account */
-            fundAmounts: components["schemas"]["FundAmountModel"][];
+            fundAmounts: components["schemas"]["CreateFundAmountModel"][];
         };
         /** @description Model representing a request to update a Transaction. */
         UpdateTransactionModel: {

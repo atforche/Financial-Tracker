@@ -21,7 +21,10 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
             .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
 
         builder.HasOne(transaction => transaction.DebitAccount).WithMany().HasForeignKey("DebitAccountId");
+        builder.Navigation(transaction => transaction.DebitAccount).AutoInclude();
+
         builder.HasOne(transaction => transaction.CreditAccount).WithMany().HasForeignKey("CreditAccountId");
+        builder.Navigation(transaction => transaction.CreditAccount).AutoInclude();
 
         builder.Property(transaction => transaction.InitialAccountTransaction)
             .HasConversion(accountingPeriodId => accountingPeriodId == null ? (Guid?)null : accountingPeriodId.Value,

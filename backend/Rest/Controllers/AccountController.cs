@@ -62,7 +62,7 @@ public sealed class AccountController(
             return errorResult;
         }
         List<FundAmount> fundAmounts = [];
-        foreach (FundAmountModel fundAmountModel in createAccountModel.InitialFundAmounts)
+        foreach (CreateFundAmountModel fundAmountModel in createAccountModel.InitialFundAmounts)
         {
             if (!fundAmountMapper.TryToDomain(fundAmountModel, out FundAmount? fundAmount, out errorResult))
             {

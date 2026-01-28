@@ -38,13 +38,13 @@ const OpenAccountingPeriodEntryField = function ({
     <ComboBoxEntryField<AccountingPeriod>
       label={label}
       options={accountingPeriods.map((period) => ({
-        label: `${period.year}-${period.month}`,
+        label: period.name,
         value: period,
       }))}
       value={
         value === null
           ? { label: "", value: null }
-          : { label: `${value.year}-${value.month}`, value }
+          : { label: value.name, value }
       }
       setValue={
         setValue

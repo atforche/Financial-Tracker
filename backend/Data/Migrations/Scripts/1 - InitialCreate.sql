@@ -68,7 +68,7 @@ CREATE INDEX "IX_Transactions_CreditAccountId" ON "Transactions" ("CreditAccount
 CREATE INDEX "IX_Transactions_DebitAccountId" ON "Transactions" ("DebitAccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260125004130_InitialCreate', '9.0.5');
+VALUES ('20260125151334_InitialCreate', '10.0.2');
 
 COMMIT;
 

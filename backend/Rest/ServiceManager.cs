@@ -17,5 +17,6 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<AccountMapper>();
         _ = serviceCollection.AddScoped<FundMapper>();
         _ = serviceCollection.AddScoped<FundAmountMapper>();
+        _ = serviceCollection.AddScoped<TransactionMapper>();
     }
 }

@@ -11,6 +11,11 @@ namespace Domain.Transactions;
 public interface ITransactionRepository
 {
     /// <summary>
+    /// Finds all the Transactions currently in the repository
+    /// </summary>
+    IReadOnlyCollection<Transaction> GetAll();
+
+    /// <summary>
     /// Finds all the Transactions that are associated with the specified Account
     /// </summary>
     IReadOnlyCollection<Transaction> FindAllByAccount(AccountId accountId);

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Domain.AccountingPeriods;
 using Microsoft.AspNetCore.Mvc;
 using Models.AccountingPeriods;
@@ -16,6 +17,7 @@ public sealed class AccountingPeriodMapper(IAccountingPeriodRepository accountin
     public static AccountingPeriodModel ToModel(AccountingPeriod accountingPeriod) => new()
     {
         Id = accountingPeriod.Id.Value,
+        Name = accountingPeriod.PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
         Year = accountingPeriod.Year,
         Month = accountingPeriod.Month,
         IsOpen = accountingPeriod.IsOpen

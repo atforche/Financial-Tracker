@@ -12,6 +12,9 @@ namespace Data.Repositories;
 public class TransactionRepository(DatabaseContext databaseContext) : ITransactionRepository
 {
     /// <inheritdoc/>
+    public IReadOnlyCollection<Transaction> GetAll() => databaseContext.Transactions.ToList();
+
+    /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> FindAllByAccount(AccountId accountId) => databaseContext.Transactions.Where(transaction =>
         (transaction.DebitAccount != null && transaction.DebitAccount.Account == accountId) ||
         (transaction.CreditAccount != null && transaction.CreditAccount.Account == accountId)).ToList();

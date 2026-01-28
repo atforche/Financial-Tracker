@@ -63,7 +63,7 @@ public class TransactionService(
         {
             exceptions = exceptions.Concat(initialTransactionExceptions);
         }
-        if (!ValidateNotPosted(transaction, out IEnumerable<Exception> postedExceptions))
+        if (!ValidateNotPosted(transaction, null, out IEnumerable<Exception> postedExceptions))
         {
             exceptions = exceptions.Concat(postedExceptions);
         }
@@ -133,7 +133,7 @@ public class TransactionService(
         {
             exceptions = exceptions.Concat(accountingPeriodExceptions);
         }
-        if (!ValidateNotPosted(transaction, out IEnumerable<Exception> notPostedExceptions))
+        if (!ValidateNotPosted(transaction, accountBeingDeleted, out IEnumerable<Exception> notPostedExceptions))
         {
             exceptions = exceptions.Concat(notPostedExceptions);
         }
@@ -287,6 +287,15 @@ public class TransactionService(
                 exceptions = exceptions.Append(new InvalidFundAmountException("All Fund Amounts for the Credit Account must be greater than zero."));
             }
         }
+        if (debitFundAmounts != null && creditFundAmounts != null)
+        {
+            decimal totalDebit = debitFundAmounts.Sum(fundAmount => fundAmount.Amount);
+            decimal totalCredit = creditFundAmounts.Sum(fundAmount => fundAmount.Amount);
+            if (totalDebit != totalCredit)
+            {
+                exceptions = exceptions.Append(new InvalidFundAmountException("The total Debit Fund Amounts must equal the total Credit Fund Amounts."));
+            }
+        }
         if (existingTransaction != null)
         {
             if (existingTransaction.DebitAccount == null != (debitFundAmounts == null))
@@ -356,15 +365,15 @@ public class TransactionService(
     /// <summary>
     /// Validates that the Transaction has not been posted to either Account
     /// </summary>
-    private static bool ValidateNotPosted(Transaction transaction, out IEnumerable<Exception> exceptions)
+    private static bool ValidateNotPosted(Transaction transaction, AccountId? accountBeingDeleted, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
-        if (transaction.DebitAccount != null && transaction.DebitAccount.PostedDate != null)
+        if (transaction.DebitAccount != null && accountBeingDeleted != transaction.DebitAccount.Account && transaction.DebitAccount.PostedDate != null)
         {
             exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction has been posted to the Debit Account."));
         }
-        if (transaction.CreditAccount != null && transaction.CreditAccount.PostedDate != null)
+        if (transaction.CreditAccount != null && accountBeingDeleted != transaction.CreditAccount.Account && transaction.CreditAccount.PostedDate != null)
         {
             exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction has been posted to the Credit Account."));
         }

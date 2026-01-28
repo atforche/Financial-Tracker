@@ -1,4 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using Domain.AccountingPeriods;
+using Domain.Accounts;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Models.Transactions;
@@ -8,21 +11,29 @@ namespace Rest.Mappers;
 /// <summary>
 /// Mapper class that handles mapping Transactions to Transaction Models
 /// </summary>
-public sealed class TransactionMapper(ITransactionRepository transactionRepository)
+public sealed class TransactionMapper(
+    IAccountingPeriodRepository accountingPeriodRepository,
+    IAccountRepository accountRepository,
+    ITransactionRepository transactionRepository,
+    FundAmountMapper fundAmountMapper)
 {
     /// <summary>
     /// Maps the provided Transaction to a Transaction Model
     /// </summary>
-    public static TransactionModel ToModel(Transaction transaction) => new()
+    public TransactionModel ToModel(Transaction transaction) => new()
     {
         Id = transaction.Id.Value,
+        AccountingPeriodId = transaction.AccountingPeriod.Value,
+        AccountingPeriodName = accountingPeriodRepository.FindById(transaction.AccountingPeriod).PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
         Date = transaction.Date,
         Location = transaction.Location,
         Description = transaction.Description,
         DebitAccountId = transaction.DebitAccount?.Account.Value,
-        DebitFundAmounts = transaction.DebitAccount?.FundAmounts.Select(FundAmountMapper.ToModel),
+        DebitAccountName = transaction.DebitAccount != null ? accountRepository.FindById(transaction.DebitAccount.Account).Name : null,
+        DebitFundAmounts = transaction.DebitAccount?.FundAmounts.Select(fundAmountMapper.ToModel),
         CreditAccountId = transaction.CreditAccount?.Account.Value,
-        CreditFundAmounts = transaction.CreditAccount?.FundAmounts.Select(FundAmountMapper.ToModel)
+        CreditAccountName = transaction.CreditAccount != null ? accountRepository.FindById(transaction.CreditAccount.Account).Name : null,
+        CreditFundAmounts = transaction.CreditAccount?.FundAmounts.Select(fundAmountMapper.ToModel)
     };
 
     /// <summary>

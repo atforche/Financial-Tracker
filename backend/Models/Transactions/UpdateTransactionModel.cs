@@ -41,5 +41,5 @@ public class UpdateTransactionAccountModel
     /// <summary>
     /// Fund Amounts for the Transaction Account
     /// </summary>
-    public required IEnumerable<FundAmountModel> FundAmounts { get; init; }
+    public required IEnumerable<CreateFundAmountModel> FundAmounts { get; init; }
 }

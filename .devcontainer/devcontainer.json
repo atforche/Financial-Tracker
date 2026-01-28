@@ -16,5 +16,5 @@
 			]
 		}
 	},
-	"postCreateCommand": "sudo apt update || true && sudo apt install sqlite3 && sudo apt install -y python3"
+	"postCreateCommand": "sudo apt update || true && sudo apt install sqlite3 && sudo apt install -y python3 && dotnet tool install --global dotnet-ef"
 }

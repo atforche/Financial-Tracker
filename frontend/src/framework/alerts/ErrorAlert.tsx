@@ -37,6 +37,7 @@ const ErrorAlert = function ({
         {details.map((detail) => (
           <Typography variant="caption" key={detail.description}>
             - {detail.description}
+            <br />
           </Typography>
         ))}
       </>

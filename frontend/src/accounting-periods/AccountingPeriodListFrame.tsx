@@ -24,10 +24,9 @@ const AccountingPeriodListFrame = function (): JSX.Element {
     <ListFrame<AccountingPeriod>
       name="Accounting Periods"
       headers={[
-        <ColumnHeader key="year" content="Year" minWidth={100} align="left" />,
         <ColumnHeader
-          key="month"
-          content="Month"
+          key="period"
+          content="Period"
           minWidth={100}
           align="left"
         />,
@@ -46,15 +45,8 @@ const AccountingPeriodListFrame = function (): JSX.Element {
       ]}
       columns={(accountingPeriod: AccountingPeriod) => [
         <ColumnCell
-          key="year"
-          content={accountingPeriod.year.toString()}
-          align="left"
-          isLoading={isLoading}
-          isError={error !== null}
-        />,
-        <ColumnCell
-          key="month"
-          content={accountingPeriod.month.toString()}
+          key="period"
+          content={accountingPeriod.name}
           align="left"
           isLoading={isLoading}
           isError={error !== null}

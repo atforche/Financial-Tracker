@@ -35,7 +35,8 @@
       "@framework/*": ["./src/framework/*"],
       "@funds/*": ["./src/funds/*"],
       "@navigation/*": ["./src/navigation/*"],
-      "@src/*": ["./src/*"]
+      "@src/*": ["./src/*"],
+      "@transactions/*": ["./src/transactions/*"]
     },
     "rootDirs": [],
     "typeRoots": [],

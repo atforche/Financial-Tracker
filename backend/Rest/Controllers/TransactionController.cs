@@ -27,6 +27,12 @@ public sealed class TransactionController(
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
+    /// Retrieves all the Transactions from the database
+    /// </summary>
+    [HttpGet("")]
+    public IReadOnlyCollection<TransactionModel> GetAll() => transactionRepository.GetAll().Select(transactionMapper.ToModel).ToList();
+
+    /// <summary>
     /// Retrieves the Transaction that matches the provided ID
     /// </summary>
     [HttpGet("{transactionId}")]
@@ -36,7 +42,7 @@ public sealed class TransactionController(
         {
             return errorResult;
         }
-        return Ok(TransactionMapper.ToModel(transaction));
+        return Ok(transactionMapper.ToModel(transaction));
     }
 
     /// <summary>
@@ -76,7 +82,7 @@ public sealed class TransactionController(
         }
         transactionRepository.Add(newTransaction);
         await unitOfWork.SaveChangesAsync();
-        return Ok(TransactionMapper.ToModel(newTransaction));
+        return Ok(transactionMapper.ToModel(newTransaction));
     }
 
     /// <summary>
@@ -114,7 +120,7 @@ public sealed class TransactionController(
             return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to update Transaction.", exceptions));
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(TransactionMapper.ToModel(transaction));
+        return Ok(transactionMapper.ToModel(transaction));
     }
 
     /// <summary>
@@ -156,7 +162,7 @@ public sealed class TransactionController(
             return false;
         }
         List<FundAmount> fundAmounts = [];
-        foreach (FundAmountModel fundAmountModel in model.FundAmounts)
+        foreach (CreateFundAmountModel fundAmountModel in model.FundAmounts)
         {
             if (!fundAmountMapper.TryToDomain(fundAmountModel, out FundAmount? fundAmount, out errorResult))
             {
@@ -188,7 +194,7 @@ public sealed class TransactionController(
             return true;
         }
         List<FundAmount> fundAmounts = [];
-        foreach (FundAmountModel fundAmountModel in model.FundAmounts)
+        foreach (CreateFundAmountModel fundAmountModel in model.FundAmounts)
         {
             if (!fundAmountMapper.TryToDomain(fundAmountModel, out FundAmount? fundAmount, out errorResult))
             {

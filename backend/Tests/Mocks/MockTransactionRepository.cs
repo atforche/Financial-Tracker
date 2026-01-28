@@ -19,6 +19,9 @@ internal sealed class MockTransactionRepository : ITransactionRepository
     public MockTransactionRepository() => _transactions = new Dictionary<Guid, Transaction>();
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<Transaction> GetAll() => _transactions.Values;
+
+    /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> FindAllByAccount(AccountId accountId) => _transactions.Values.Where(transaction =>
         (transaction.DebitAccount != null && transaction.DebitAccount.Account == accountId) ||
         (transaction.CreditAccount != null && transaction.CreditAccount.Account == accountId)).ToList();
