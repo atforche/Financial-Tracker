@@ -30,7 +30,7 @@ public sealed class AccountController(
     /// </summary>
     /// <returns>The collection of all Accounts</returns>
     [HttpGet("")]
-    public IReadOnlyCollection<AccountModel> GetAll() => accountRepository.FindAll().Select(AccountMapper.ToModel).ToList();
+    public IReadOnlyCollection<AccountModel> GetAll() => accountRepository.FindAll().Select(accountMapper.ToModel).ToList();
 
     /// <summary>
     /// Retrieves the Account that matches the provided ID
@@ -44,7 +44,7 @@ public sealed class AccountController(
         {
             return errorResult;
         }
-        return Ok(AccountMapper.ToModel(account));
+        return Ok(accountMapper.ToModel(account));
     }
 
     /// <summary>
@@ -88,7 +88,7 @@ public sealed class AccountController(
         accountRepository.Add(newAccount);
         transactionRepository.Add(initialTransaction);
         await unitOfWork.SaveChangesAsync();
-        return Ok(AccountMapper.ToModel(newAccount));
+        return Ok(accountMapper.ToModel(newAccount));
     }
 
     /// <summary>
@@ -111,7 +111,7 @@ public sealed class AccountController(
             return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to update Account.", exceptions));
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(AccountMapper.ToModel(accountToUpdate));
+        return Ok(accountMapper.ToModel(accountToUpdate));
     }
 
     /// <summary>

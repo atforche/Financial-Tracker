@@ -9,9 +9,14 @@ namespace Domain.Accounts;
 public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalanceHistoryRepository)
 {
     /// <summary>
+    /// Gets the current balance for the provided Account
+    /// </summary>
+    public AccountBalance GetCurrentBalance(AccountId accountId) => accountBalanceHistoryRepository.FindLatestForAccount(accountId).ToAccountBalance();
+
+    /// <summary>
     /// Attempts to update the Account Balances for a newly added Transaction
     /// </summary>
-    public bool TryAddTransaction(Transaction newTransaction, out IEnumerable<Exception> exceptions)
+    internal bool TryAddTransaction(Transaction newTransaction, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
@@ -63,7 +68,7 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
     /// <summary>
     /// Attempts to update the Account Balances for an updated Transaction
     /// </summary>
-    public bool TryUpdateTransaction(Transaction transaction, out IEnumerable<Exception> exceptions)
+    internal bool TryUpdateTransaction(Transaction transaction, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
@@ -107,7 +112,7 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
     /// <summary>
     /// Attempts to update the Account Balances for a newly posted Transaction
     /// </summary>
-    public bool TryPostTransaction(Transaction transaction, TransactionAccount transactionAccount, out IEnumerable<Exception> exceptions)
+    internal bool TryPostTransaction(Transaction transaction, TransactionAccount transactionAccount, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 

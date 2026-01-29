@@ -9,6 +9,23 @@ namespace Data.Repositories;
 public class AccountBalanceHistoryRepository(DatabaseContext databaseContext) : IAccountBalanceHistoryRepository
 {
     /// <inheritdoc/>
+    public int GetNextSequenceForAccountAndDate(AccountId accountId, DateOnly historyDate)
+    {
+        var historiesOnDate = databaseContext.AccountBalanceHistories
+            .Where(history => history.AccountId == accountId && history.Date == historyDate)
+            .ToList();
+        return historiesOnDate.Count == 0 ? 1 : historiesOnDate.Max(history => history.Sequence) + 1;
+    }
+
+    /// <inheritdoc/>
+    public AccountBalanceHistory FindLatestForAccount(AccountId accountId) =>
+        databaseContext.AccountBalanceHistories
+            .Where(history => history.AccountId == accountId)
+            .OrderByDescending(history => history.Date)
+            .ThenByDescending(history => history.Sequence)
+            .First();
+
+    /// <inheritdoc/>
     public IReadOnlyCollection<AccountBalanceHistory> GetAllByTransactionId(TransactionId transactionId) =>
         databaseContext.AccountBalanceHistories
             .Where(history => history.TransactionId == transactionId)
@@ -26,15 +43,6 @@ public class AccountBalanceHistoryRepository(DatabaseContext databaseContext) : 
             .OrderBy(history => history.Date)
             .ThenBy(history => history.Sequence)
             .First();
-
-    /// <inheritdoc/>
-    public int GetNextSequenceForAccountAndDate(AccountId accountId, DateOnly historyDate)
-    {
-        var historiesOnDate = databaseContext.AccountBalanceHistories
-            .Where(history => history.AccountId == accountId && history.Date == historyDate)
-            .ToList();
-        return historiesOnDate.Count == 0 ? 1 : historiesOnDate.Max(history => history.Sequence) + 1;
-    }
 
     /// <inheritdoc/>
     public AccountBalanceHistory? FindLatestHistoryEarlierThan(AccountId accountId, DateOnly historyDate, int sequenceNumber) =>

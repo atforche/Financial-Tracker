@@ -8,6 +8,16 @@ namespace Domain.Accounts;
 public interface IAccountBalanceHistoryRepository
 {
     /// <summary>
+    /// Gets the next sequence number for the specified Account ID and date
+    /// </summary>
+    int GetNextSequenceForAccountAndDate(AccountId accountId, DateOnly historyDate);
+
+    /// <summary>
+    /// Gets the latest Account Balance History entry for the specified Account ID
+    /// </summary>
+    AccountBalanceHistory FindLatestForAccount(AccountId accountId);
+
+    /// <summary>
     /// Gets all Account Balance History entries for the specified Transaction ID
     /// </summary>
     IReadOnlyCollection<AccountBalanceHistory> GetAllByTransactionId(TransactionId transactionId);
@@ -16,11 +26,6 @@ public interface IAccountBalanceHistoryRepository
     /// Finds the earliest Account Balance History entry for the specified Transaction ID
     /// </summary>
     AccountBalanceHistory FindEarliestByTransactionId(AccountId accountId, TransactionId transactionId);
-
-    /// <summary>
-    /// Gets the next sequence number for the specified Account ID and date
-    /// </summary>
-    int GetNextSequenceForAccountAndDate(AccountId accountId, DateOnly historyDate);
 
     /// <summary>
     /// Finds the latest Account Balance History entry earlier than the specified date and sequence number

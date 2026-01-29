@@ -815,6 +815,11 @@ export interface components {
             name: string;
             /** @description Type for the Account */
             type: components["schemas"]["AccountTypeModel"];
+            /**
+             * Format: double
+             * @description Current Balance for the Account
+             */
+            currentBalance: number;
         };
         /**
          * @description Enum representing the different Account types

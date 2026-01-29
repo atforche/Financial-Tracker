@@ -34,6 +34,7 @@ const useGetAllAccounts = function (): {
         id: index.toString(),
         name: "",
         type: AccountType.Standard,
+        currentBalance: 0,
       })),
   });
   return {
