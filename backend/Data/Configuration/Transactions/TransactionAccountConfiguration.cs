@@ -1,4 +1,5 @@
 using Domain.Accounts;
+using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -19,7 +20,15 @@ internal sealed class TransactionAccountConfiguration : IEntityTypeConfiguration
 
         builder.HasOne<Account>().WithMany().HasForeignKey(transactionAccount => transactionAccount.Account);
 
-        builder.HasMany(transactionAccount => transactionAccount.FundAmounts).WithOne().HasForeignKey("TransactionAccountId");
+        builder.OwnsMany(transactionAccount => transactionAccount.FundAmounts, fundAmount =>
+        {
+            fundAmount.ToTable("TransactionAccountFundAmounts");
+            fundAmount.Property<int>("Id");
+            fundAmount.HasKey("Id");
+
+            fundAmount.Property(fundAmount => fundAmount.FundId)
+                .HasConversion(fundId => fundId.Value, value => new FundId(value));
+        });
         builder.Navigation(transactionAccount => transactionAccount.FundAmounts).AutoInclude();
     }
 }

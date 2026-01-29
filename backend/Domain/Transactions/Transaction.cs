@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.Funds;
+using Domain.Transactions.Exceptions;
 
 namespace Domain.Transactions;
 
@@ -47,6 +50,30 @@ public class Transaction : Entity<TransactionId>
     public AccountId? InitialAccountTransaction { get; internal set; }
 
     /// <summary>
+    /// Attempts to apply this Transaction to the provided existing Account Balance as of the specified date
+    /// </summary>
+    public bool TryApplyToAccountBalance(
+        AccountBalance existingAccountBalance,
+        DateOnly date,
+        [NotNullWhen(true)] out AccountBalance? newAccountBalance,
+        out IEnumerable<Exception> exceptions)
+    {
+        newAccountBalance = null;
+        exceptions = [];
+
+        if (DebitAccount?.Account == existingAccountBalance.AccountId)
+        {
+            return TryApplyToTransactionAccountBalance(DebitAccount, TransactionAccountType.Debit, existingAccountBalance, date, out newAccountBalance, out exceptions);
+        }
+        if (CreditAccount?.Account == existingAccountBalance.AccountId)
+        {
+            return TryApplyToTransactionAccountBalance(CreditAccount, TransactionAccountType.Credit, existingAccountBalance, date, out newAccountBalance, out exceptions);
+        }
+        exceptions = exceptions.Append(new InvalidAccountException("Transaction does not involve the account for the provided balance."));
+        return false;
+    }
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     internal Transaction(CreateTransactionRequest request)
@@ -71,5 +98,73 @@ public class Transaction : Entity<TransactionId>
         Description = null!;
         DebitAccount = null;
         CreditAccount = null;
+    }
+
+    /// <summary>
+    /// Attempts to apply this Transaction to the provided existing Account Balance as of the specified date
+    /// </summary>
+    private bool TryApplyToTransactionAccountBalance(
+        TransactionAccount transactionAccount,
+        TransactionAccountType transactionAccountType,
+        AccountBalance existingAccountBalance,
+        DateOnly date,
+        [NotNullWhen(true)] out AccountBalance? newAccountBalance,
+        out IEnumerable<Exception> exceptions)
+    {
+        newAccountBalance = existingAccountBalance;
+        exceptions = [];
+
+        if (Date == date)
+        {
+            IEnumerable<FundAmount> pendingFundAmounts = transactionAccount.FundAmounts.Select(fundAmount => new FundAmount
+            {
+                FundId = fundAmount.FundId,
+                Amount = transactionAccountType == TransactionAccountType.Debit ? -fundAmount.Amount : fundAmount.Amount
+            });
+            if (!newAccountBalance.TryAddNewPendingAmounts(pendingFundAmounts, out newAccountBalance, out IEnumerable<Exception> addExceptions))
+            {
+                exceptions = exceptions.Concat(addExceptions);
+                return false;
+            }
+        }
+        if (transactionAccount.PostedDate == date)
+        {
+            IEnumerable<FundAmount> pendingFundAmounts = transactionAccount.FundAmounts.Select(fundAmount => new FundAmount
+            {
+                FundId = fundAmount.FundId,
+                Amount = transactionAccountType == TransactionAccountType.Debit ? fundAmount.Amount : -fundAmount.Amount
+            });
+            if (!newAccountBalance.TryAddNewPendingAmounts(pendingFundAmounts, out newAccountBalance, out IEnumerable<Exception> addExceptions))
+            {
+                exceptions = exceptions.Concat(addExceptions);
+                return false;
+            }
+            IEnumerable<FundAmount> fundAmounts = transactionAccount.FundAmounts.Select(fundAmount => new FundAmount
+            {
+                FundId = fundAmount.FundId,
+                Amount = transactionAccountType == TransactionAccountType.Debit ? -fundAmount.Amount : fundAmount.Amount
+            });
+            if (!newAccountBalance.TryAddNewAmounts(fundAmounts, out newAccountBalance, out IEnumerable<Exception> addExceptions2))
+            {
+                exceptions = exceptions.Concat(addExceptions2);
+                return false;
+            }
+            return true;
+        }
+        if (newAccountBalance == null)
+        {
+            exceptions = exceptions.Append(new InvalidTransactionDateException("Transaction is not applicable for the provided date."));
+            return false;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Enum representing the types of Transaction Accounts
+    /// </summary>
+    private enum TransactionAccountType
+    {
+        Debit,
+        Credit
     }
 }

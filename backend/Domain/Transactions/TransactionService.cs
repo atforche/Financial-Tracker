@@ -11,6 +11,7 @@ namespace Domain.Transactions;
 /// Service for managing Transactions
 /// </summary>
 public class TransactionService(
+    AccountBalanceService accountBalanceService,
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
     ITransactionRepository transactionRepository)
@@ -49,6 +50,13 @@ public class TransactionService(
             return false;
         }
         transaction = new Transaction(request);
+        if (!accountBalanceService.TryAddTransaction(transaction, out IEnumerable<Exception> balanceExceptions))
+        {
+            exceptions = exceptions.Concat(balanceExceptions);
+            transaction = null;
+            return false;
+        }
+        transactionRepository.Add(transaction);
         return true;
     }
 
@@ -99,13 +107,18 @@ public class TransactionService(
         {
             transaction.CreditAccount = new TransactionAccount(transaction.CreditAccount.Account, request.CreditAccount.FundAmounts);
         }
+        if (!accountBalanceService.TryUpdateTransaction(transaction, out IEnumerable<Exception> balanceExceptions))
+        {
+            exceptions = exceptions.Concat(balanceExceptions);
+            return false;
+        }
         return true;
     }
 
     /// <summary>
     /// Attempts to post an existing Transaction within an Account
     /// </summary>
-    public static bool TryPost(Transaction transaction, AccountId account, DateOnly postedDate, out IEnumerable<Exception> exceptions)
+    public bool TryPost(Transaction transaction, AccountId account, DateOnly postedDate, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
@@ -115,6 +128,12 @@ public class TransactionService(
             return false;
         }
         transactionAccount.PostedDate = postedDate;
+        if (!accountBalanceService.TryPostTransaction(transaction, transactionAccount, out IEnumerable<Exception> balanceExceptions))
+        {
+            exceptions = exceptions.Concat(balanceExceptions);
+            transactionAccount.PostedDate = null;
+            return false;
+        }
         return true;
     }
 
@@ -136,6 +155,10 @@ public class TransactionService(
         if (!ValidateNotPosted(transaction, accountBeingDeleted, out IEnumerable<Exception> notPostedExceptions))
         {
             exceptions = exceptions.Concat(notPostedExceptions);
+        }
+        if (!accountBalanceService.TryDeleteTransaction(transaction, out IEnumerable<Exception> balanceExceptions))
+        {
+            exceptions = exceptions.Concat(balanceExceptions);
         }
         if (exceptions.Any())
         {

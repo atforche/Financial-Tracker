@@ -80,7 +80,6 @@ public sealed class TransactionController(
         {
             return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to create Transaction.", exceptions));
         }
-        transactionRepository.Add(newTransaction);
         await unitOfWork.SaveChangesAsync();
         return Ok(transactionMapper.ToModel(newTransaction));
     }
