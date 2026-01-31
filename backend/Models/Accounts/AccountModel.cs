@@ -24,4 +24,14 @@ public class AccountModel
     /// Current Balance for the Account
     /// </summary>
     public required decimal CurrentBalance { get; init; }
+
+    /// <summary>
+    /// Pending Debit Amount for the Account
+    /// </summary>
+    public required decimal PendingDebitAmount { get; init; }
+
+    /// <summary>
+    /// Pending Credit Amount for the Account
+    /// </summary>
+    public required decimal PendingCreditAmount { get; init; }
 }

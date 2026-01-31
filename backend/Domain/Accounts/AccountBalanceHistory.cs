@@ -9,7 +9,8 @@ namespace Domain.Accounts;
 public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
 {
     private List<FundAmount> _fundBalances = [];
-    private List<FundAmount> _pendingFundBalanceChanges = [];
+    private List<FundAmount> _pendingDebits = [];
+    private List<FundAmount> _pendingCredits = [];
 
     /// <summary>
     /// Account ID for this Account Balance History
@@ -44,19 +45,28 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     }
 
     /// <summary>
-    /// Pending Fund Balance Changes for this Account Balance History
+    /// Pending Debits for this Account Balance History
     /// </summary>
-    public IReadOnlyCollection<FundAmount> PendingFundBalanceChanges
+    public IReadOnlyCollection<FundAmount> PendingDebits
     {
-        get => _pendingFundBalanceChanges;
-        internal set => _pendingFundBalanceChanges = value.ToList();
+        get => _pendingDebits;
+        internal set => _pendingDebits = value.ToList();
+    }
+
+    /// <summary>
+    /// Pending Credits for this Account Balance History
+    /// </summary>
+    public IReadOnlyCollection<FundAmount> PendingCredits
+    {
+        get => _pendingCredits;
+        internal set => _pendingCredits = value.ToList();
     }
 
     /// <summary>
     /// Converts this Account Balance History to an Account Balance
     /// </summary>
     /// <returns></returns>
-    public AccountBalance ToAccountBalance() => new(AccountId, FundBalances, PendingFundBalanceChanges);
+    public AccountBalance ToAccountBalance() => new(AccountId, FundBalances, PendingDebits, PendingCredits);
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -66,7 +76,8 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
         DateOnly date,
         int sequence,
         IEnumerable<FundAmount> fundBalances,
-        IEnumerable<FundAmount> pendingFundBalanceChanges)
+        IEnumerable<FundAmount> pendingDebits,
+        IEnumerable<FundAmount> pendingCredits)
         : base(new AccountBalanceHistoryId(Guid.NewGuid()))
     {
         AccountId = accountId;
@@ -74,7 +85,8 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
         Date = date;
         Sequence = sequence;
         _fundBalances = fundBalances.ToList();
-        _pendingFundBalanceChanges = pendingFundBalanceChanges.ToList();
+        _pendingDebits = pendingDebits.ToList();
+        _pendingCredits = pendingCredits.ToList();
     }
 
     /// <summary>

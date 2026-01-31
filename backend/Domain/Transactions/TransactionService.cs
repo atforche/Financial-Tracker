@@ -12,6 +12,7 @@ namespace Domain.Transactions;
 /// </summary>
 public class TransactionService(
     AccountBalanceService accountBalanceService,
+    FundBalanceService fundBalanceService,
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
     ITransactionRepository transactionRepository)
@@ -53,6 +54,12 @@ public class TransactionService(
         if (!accountBalanceService.TryAddTransaction(transaction, out IEnumerable<Exception> balanceExceptions))
         {
             exceptions = exceptions.Concat(balanceExceptions);
+            transaction = null;
+            return false;
+        }
+        if (!fundBalanceService.TryAddTransaction(transaction, out IEnumerable<Exception> fundBalanceExceptions))
+        {
+            exceptions = exceptions.Concat(fundBalanceExceptions);
             transaction = null;
             return false;
         }
@@ -112,6 +119,11 @@ public class TransactionService(
             exceptions = exceptions.Concat(balanceExceptions);
             return false;
         }
+        if (!fundBalanceService.TryUpdateTransaction(transaction, out IEnumerable<Exception> fundBalanceExceptions))
+        {
+            exceptions = exceptions.Concat(fundBalanceExceptions);
+            return false;
+        }
         return true;
     }
 
@@ -133,6 +145,11 @@ public class TransactionService(
             exceptions = exceptions.Concat(balanceExceptions);
             transactionAccount.PostedDate = null;
             return false;
+        }
+        if (!fundBalanceService.TryPostTransaction(transaction, transactionAccount, out IEnumerable<Exception> fundBalanceExceptions))
+        {
+            exceptions = exceptions.Concat(fundBalanceExceptions);
+            transactionAccount.PostedDate = null;
         }
         return true;
     }
@@ -159,6 +176,10 @@ public class TransactionService(
         if (!accountBalanceService.TryDeleteTransaction(transaction, out IEnumerable<Exception> balanceExceptions))
         {
             exceptions = exceptions.Concat(balanceExceptions);
+        }
+        if (!fundBalanceService.TryDeleteTransaction(transaction, out IEnumerable<Exception> fundBalanceExceptions))
+        {
+            exceptions = exceptions.Concat(fundBalanceExceptions);
         }
         if (exceptions.Any())
         {

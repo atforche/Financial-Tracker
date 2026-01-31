@@ -35,7 +35,14 @@ const FundAmountEntryFrame = function ({
           setValue
             ? (newValue): void => {
                 setValue({
-                  fund: newValue ?? { id: "", name: "", description: "" },
+                  fund: newValue ?? {
+                    id: "",
+                    name: "",
+                    description: "",
+                    currentBalance: 0,
+                    pendingDebitAmount: 0,
+                    pendingCreditAmount: 0,
+                  },
                   amount: value?.amount ?? 0,
                 });
               }
@@ -50,7 +57,14 @@ const FundAmountEntryFrame = function ({
           setValue
             ? (newAmount): void => {
                 setValue({
-                  fund: value?.fund ?? { id: "", name: "", description: "" },
+                  fund: value?.fund ?? {
+                    id: "",
+                    name: "",
+                    description: "",
+                    currentBalance: 0,
+                    pendingDebitAmount: 0,
+                    pendingCreditAmount: 0,
+                  },
                   amount: newAmount,
                 });
               }

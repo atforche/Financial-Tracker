@@ -35,6 +35,8 @@ const useGetAllAccounts = function (): {
         name: "",
         type: AccountType.Standard,
         currentBalance: 0,
+        pendingDebitAmount: 0,
+        pendingCreditAmount: 0,
       })),
   });
   return {

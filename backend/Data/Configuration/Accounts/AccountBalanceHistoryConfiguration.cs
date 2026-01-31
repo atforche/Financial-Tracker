@@ -34,15 +34,26 @@ internal sealed class AccountBalanceHistoryConfiguration : IEntityTypeConfigurat
         });
         builder.Navigation(accountBalanceHistory => accountBalanceHistory.FundBalances).AutoInclude();
 
-        builder.OwnsMany(accountBalanceHistory => accountBalanceHistory.PendingFundBalanceChanges, fundAmount =>
+        builder.OwnsMany(accountBalanceHistory => accountBalanceHistory.PendingDebits, fundAmount =>
         {
-            fundAmount.ToTable("AccountBalanceHistoryPendingFundBalanceChanges");
+            fundAmount.ToTable("AccountBalanceHistoryPendingDebits");
             fundAmount.Property<int>("Id");
             fundAmount.HasKey("Id");
 
             fundAmount.Property(fundBalance => fundBalance.FundId)
                 .HasConversion(fundId => fundId.Value, value => new FundId(value));
         });
-        builder.Navigation(accountBalanceHistory => accountBalanceHistory.PendingFundBalanceChanges).AutoInclude();
+        builder.Navigation(accountBalanceHistory => accountBalanceHistory.PendingDebits).AutoInclude();
+
+        builder.OwnsMany(accountBalanceHistory => accountBalanceHistory.PendingCredits, fundAmount =>
+        {
+            fundAmount.ToTable("AccountBalanceHistoryPendingCredits");
+            fundAmount.Property<int>("Id");
+            fundAmount.HasKey("Id");
+
+            fundAmount.Property(fundBalance => fundBalance.FundId)
+                .HasConversion(fundId => fundId.Value, value => new FundId(value));
+        });
+        builder.Navigation(accountBalanceHistory => accountBalanceHistory.PendingCredits).AutoInclude();
     }
 }

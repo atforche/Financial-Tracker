@@ -30,6 +30,12 @@ const AccountListFrame = function (): JSX.Element {
           minWidth={170}
           align="left"
         />,
+        <ColumnHeader
+          key="available"
+          content="Available to Spend"
+          minWidth={170}
+          align="left"
+        />,
         <AccountListFrameActionColumnHeader
           key="actions"
           setDialog={setDialog}
@@ -55,6 +61,13 @@ const AccountListFrame = function (): JSX.Element {
         <ColumnCell
           key="balance"
           content={`$ ${account.currentBalance.toLocaleString([], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          align="left"
+          isLoading={isLoading}
+          isError={error !== null}
+        />,
+        <ColumnCell
+          key="available"
+          content={`$ ${(account.currentBalance - account.pendingDebitAmount).toLocaleString([], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           align="left"
           isLoading={isLoading}
           isError={error !== null}

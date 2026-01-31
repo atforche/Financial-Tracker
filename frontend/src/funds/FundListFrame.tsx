@@ -29,6 +29,18 @@ const FundListFrame = function (): JSX.Element {
           minWidth={170}
           align="left"
         />,
+        <ColumnHeader
+          key="balance"
+          content="Current Balance"
+          minWidth={170}
+          align="left"
+        />,
+        <ColumnHeader
+          key="available"
+          content="Available to Spend"
+          minWidth={170}
+          align="left"
+        />,
         <FundListFrameActionColumnHeader
           key="actions"
           setDialog={setDialog}
@@ -47,6 +59,20 @@ const FundListFrame = function (): JSX.Element {
         <ColumnCell
           key="description"
           content={fund.description}
+          align="left"
+          isLoading={isLoading}
+          isError={error !== null}
+        />,
+        <ColumnCell
+          key="balance"
+          content={`$ ${fund.currentBalance.toLocaleString([], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          align="left"
+          isLoading={isLoading}
+          isError={error !== null}
+        />,
+        <ColumnCell
+          key="available"
+          content={`$ ${(fund.currentBalance - fund.pendingDebitAmount).toLocaleString([], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           align="left"
           isLoading={isLoading}
           isError={error !== null}

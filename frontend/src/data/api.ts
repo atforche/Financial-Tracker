@@ -820,6 +820,16 @@ export interface components {
              * @description Current Balance for the Account
              */
             currentBalance: number;
+            /**
+             * Format: double
+             * @description Pending Debit Amount for the Account
+             */
+            pendingDebitAmount: number;
+            /**
+             * Format: double
+             * @description Pending Credit Amount for the Account
+             */
+            pendingCreditAmount: number;
         };
         /**
          * @description Enum representing the different Account types
@@ -952,6 +962,21 @@ export interface components {
             name: string;
             /** @description Description for the Fund */
             description: string;
+            /**
+             * Format: double
+             * @description Current Balance for the Fund
+             */
+            currentBalance: number;
+            /**
+             * Format: double
+             * @description Pending Debit Amount for the Fund
+             */
+            pendingDebitAmount: number;
+            /**
+             * Format: double
+             * @description Pending Credit Amount for the Fund
+             */
+            pendingCreditAmount: number;
         };
         /** @description Model representing a Transaction */
         TransactionModel: {

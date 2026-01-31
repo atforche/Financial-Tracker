@@ -8,17 +8,24 @@ namespace Rest.Mappers;
 /// <summary>
 /// Mapper class that handles mapping Funds to Fund Models
 /// </summary>
-public sealed class FundMapper(IFundRepository fundRepository)
+public sealed class FundMapper(FundBalanceService fundBalanceService, IFundRepository fundRepository)
 {
     /// <summary>
     /// Maps the provided Fund to a Fund Model
     /// </summary>
-    public static FundModel ToModel(Fund fund) => new()
+    public FundModel ToModel(Fund fund)
     {
-        Id = fund.Id.Value,
-        Name = fund.Name,
-        Description = fund.Description
-    };
+        FundBalance currentBalance = fundBalanceService.GetCurrentBalance(fund.Id);
+        return new FundModel
+        {
+            Id = fund.Id.Value,
+            Name = fund.Name,
+            Description = fund.Description,
+            CurrentBalance = currentBalance.Balance,
+            PendingDebitAmount = currentBalance.PendingDebits.Sum(accountAmount => accountAmount.Amount),
+            PendingCreditAmount = currentBalance.PendingCredits.Sum(accountAmount => accountAmount.Amount)
+        };
+    }
 
     /// <summary>
     /// Attempts to map the provided ID to a Fund

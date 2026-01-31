@@ -19,4 +19,19 @@ public class FundModel
     /// Description for the Fund
     /// </summary>
     public required string Description { get; init; }
+
+    /// <summary>
+    /// Current Balance for the Fund
+    /// </summary>
+    public required decimal CurrentBalance { get; init; }
+
+    /// <summary>
+    /// Pending Debit Amount for the Fund
+    /// </summary>
+    public required decimal PendingDebitAmount { get; init; }
+
+    /// <summary>
+    /// Pending Credit Amount for the Fund
+    /// </summary>
+    public required decimal PendingCreditAmount { get; init; }
 }

@@ -13,13 +13,19 @@ public sealed class AccountMapper(AccountBalanceService accountBalanceService, I
     /// <summary>
     /// Maps the provided Account to an Account Model
     /// </summary>
-    public AccountModel ToModel(Account account) => new()
+    public AccountModel ToModel(Account account)
     {
-        Id = account.Id.Value,
-        Name = account.Name,
-        Type = AccountTypeMapper.ToModel(account.Type),
-        CurrentBalance = accountBalanceService.GetCurrentBalance(account.Id).Balance
-    };
+        AccountBalance currentBalance = accountBalanceService.GetCurrentBalance(account.Id);
+        return new AccountModel
+        {
+            Id = account.Id.Value,
+            Name = account.Name,
+            Type = AccountTypeMapper.ToModel(account.Type),
+            CurrentBalance = currentBalance.Balance,
+            PendingDebitAmount = currentBalance.PendingDebits.Sum(fundAmount => fundAmount.Amount),
+            PendingCreditAmount = currentBalance.PendingCredits.Sum(fundAmount => fundAmount.Amount)
+        };
+    }
 
     /// <summary>
     /// Attempts to map the provided ID to an Account

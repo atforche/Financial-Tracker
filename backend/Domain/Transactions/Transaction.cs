@@ -63,14 +63,50 @@ public class Transaction : Entity<TransactionId>
 
         if (DebitAccount?.Account == existingAccountBalance.AccountId)
         {
-            return TryApplyToTransactionAccountBalance(DebitAccount, TransactionAccountType.Debit, existingAccountBalance, date, out newAccountBalance, out exceptions);
+            return TryApplyToAccountBalancePrivate(DebitAccount, TransactionAccountType.Debit, existingAccountBalance, date, out newAccountBalance, out exceptions);
         }
         if (CreditAccount?.Account == existingAccountBalance.AccountId)
         {
-            return TryApplyToTransactionAccountBalance(CreditAccount, TransactionAccountType.Credit, existingAccountBalance, date, out newAccountBalance, out exceptions);
+            return TryApplyToAccountBalancePrivate(CreditAccount, TransactionAccountType.Credit, existingAccountBalance, date, out newAccountBalance, out exceptions);
         }
         exceptions = exceptions.Append(new InvalidAccountException("Transaction does not involve the account for the provided balance."));
         return false;
+    }
+
+    /// <summary>
+    /// Attempts to apply this Transaction to the provided existing Fund Balance as of the specified date
+    /// </summary>
+    public bool TryApplyToFundBalance(
+        FundBalance existingFundBalance,
+        DateOnly date,
+        [NotNullWhen(true)] out FundBalance? newFundBalance,
+        out IEnumerable<Exception> exceptions)
+    {
+        newFundBalance = null;
+        exceptions = [];
+
+        FundAmount? debitFundAmount = DebitAccount?.FundAmounts.SingleOrDefault(fundAmount => fundAmount.FundId == existingFundBalance.FundId);
+        if (DebitAccount != null && debitFundAmount != null)
+        {
+            if (!TryApplyToFundBalancePrivate(DebitAccount, debitFundAmount, TransactionAccountType.Debit, existingFundBalance, date, out newFundBalance, out exceptions))
+            {
+                return false;
+            }
+        }
+        FundAmount? creditFundAmount = CreditAccount?.FundAmounts.SingleOrDefault(fundAmount => fundAmount.FundId == existingFundBalance.FundId);
+        if (CreditAccount != null && creditFundAmount != null)
+        {
+            if (!TryApplyToFundBalancePrivate(CreditAccount, creditFundAmount, TransactionAccountType.Credit, newFundBalance ?? existingFundBalance, date, out newFundBalance, out exceptions))
+            {
+                return false;
+            }
+        }
+        if (newFundBalance == null)
+        {
+            exceptions = exceptions.Append(new InvalidFundException("Transaction does not involve the fund for the provided balance."));
+            return false;
+        }
+        return true;
     }
 
     /// <summary>
@@ -103,7 +139,7 @@ public class Transaction : Entity<TransactionId>
     /// <summary>
     /// Attempts to apply this Transaction to the provided existing Account Balance as of the specified date
     /// </summary>
-    private bool TryApplyToTransactionAccountBalance(
+    private bool TryApplyToAccountBalancePrivate(
         TransactionAccount transactionAccount,
         TransactionAccountType transactionAccountType,
         AccountBalance existingAccountBalance,
@@ -119,9 +155,14 @@ public class Transaction : Entity<TransactionId>
             IEnumerable<FundAmount> pendingFundAmounts = transactionAccount.FundAmounts.Select(fundAmount => new FundAmount
             {
                 FundId = fundAmount.FundId,
-                Amount = transactionAccountType == TransactionAccountType.Debit ? -fundAmount.Amount : fundAmount.Amount
+                Amount = fundAmount.Amount
             });
-            if (!newAccountBalance.TryAddNewPendingAmounts(pendingFundAmounts, out newAccountBalance, out IEnumerable<Exception> addExceptions))
+            if (transactionAccountType == TransactionAccountType.Debit && !newAccountBalance.TryAddNewPendingDebits(pendingFundAmounts, out newAccountBalance, out IEnumerable<Exception> addExceptions))
+            {
+                exceptions = exceptions.Concat(addExceptions);
+                return false;
+            }
+            if (transactionAccountType == TransactionAccountType.Credit && !newAccountBalance.TryAddNewPendingCredits(pendingFundAmounts, out newAccountBalance, out addExceptions))
             {
                 exceptions = exceptions.Concat(addExceptions);
                 return false;
@@ -132,9 +173,14 @@ public class Transaction : Entity<TransactionId>
             IEnumerable<FundAmount> pendingFundAmounts = transactionAccount.FundAmounts.Select(fundAmount => new FundAmount
             {
                 FundId = fundAmount.FundId,
-                Amount = transactionAccountType == TransactionAccountType.Debit ? fundAmount.Amount : -fundAmount.Amount
+                Amount = -fundAmount.Amount
             });
-            if (!newAccountBalance.TryAddNewPendingAmounts(pendingFundAmounts, out newAccountBalance, out IEnumerable<Exception> addExceptions))
+            if (transactionAccountType == TransactionAccountType.Debit && !newAccountBalance.TryAddNewPendingDebits(pendingFundAmounts, out newAccountBalance, out IEnumerable<Exception> addExceptions))
+            {
+                exceptions = exceptions.Concat(addExceptions);
+                return false;
+            }
+            if (transactionAccountType == TransactionAccountType.Credit && !newAccountBalance.TryAddNewPendingCredits(pendingFundAmounts, out newAccountBalance, out addExceptions))
             {
                 exceptions = exceptions.Concat(addExceptions);
                 return false;
@@ -142,16 +188,84 @@ public class Transaction : Entity<TransactionId>
             IEnumerable<FundAmount> fundAmounts = transactionAccount.FundAmounts.Select(fundAmount => new FundAmount
             {
                 FundId = fundAmount.FundId,
-                Amount = transactionAccountType == TransactionAccountType.Debit ? -fundAmount.Amount : fundAmount.Amount
+                Amount = fundAmount.Amount
             });
             if (!newAccountBalance.TryAddNewAmounts(fundAmounts, out newAccountBalance, out IEnumerable<Exception> addExceptions2))
             {
                 exceptions = exceptions.Concat(addExceptions2);
                 return false;
             }
-            return true;
         }
         if (newAccountBalance == null)
+        {
+            exceptions = exceptions.Append(new InvalidTransactionDateException("Transaction is not applicable for the provided date."));
+            return false;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to apply this Transaction to the provided existing Fund Balance as of the specified date
+    /// </summary>
+    private bool TryApplyToFundBalancePrivate(
+        TransactionAccount transactionAccount,
+        FundAmount fundAmount,
+        TransactionAccountType transactionAccountType,
+        FundBalance existingFundBalance,
+        DateOnly date,
+        [NotNullWhen(true)] out FundBalance? newFundBalance,
+        out IEnumerable<Exception> exceptions)
+    {
+        newFundBalance = existingFundBalance;
+        exceptions = [];
+
+        if (Date == date)
+        {
+            var pendingAccountAmount = new AccountAmount
+            {
+                AccountId = transactionAccount.Account,
+                Amount = fundAmount.Amount
+            };
+            if (transactionAccountType == TransactionAccountType.Debit && !newFundBalance.TryAddNewPendingDebits(pendingAccountAmount, out newFundBalance, out IEnumerable<Exception> addExceptions))
+            {
+                exceptions = exceptions.Concat(addExceptions);
+                return false;
+            }
+            if (transactionAccountType == TransactionAccountType.Credit && !newFundBalance.TryAddNewPendingCredits(pendingAccountAmount, out newFundBalance, out addExceptions))
+            {
+                exceptions = exceptions.Concat(addExceptions);
+                return false;
+            }
+        }
+        if (transactionAccount.PostedDate == date)
+        {
+            var pendingAccountAmount = new AccountAmount
+            {
+                AccountId = transactionAccount.Account,
+                Amount = -fundAmount.Amount
+            };
+            if (transactionAccountType == TransactionAccountType.Debit && !newFundBalance.TryAddNewPendingDebits(pendingAccountAmount, out newFundBalance, out IEnumerable<Exception> addExceptions))
+            {
+                exceptions = exceptions.Concat(addExceptions);
+                return false;
+            }
+            if (transactionAccountType == TransactionAccountType.Credit && !newFundBalance.TryAddNewPendingCredits(pendingAccountAmount, out newFundBalance, out addExceptions))
+            {
+                exceptions = exceptions.Concat(addExceptions);
+                return false;
+            }
+            var accountAmount = new AccountAmount
+            {
+                AccountId = transactionAccount.Account,
+                Amount = fundAmount.Amount
+            };
+            if (!newFundBalance.TryAddNewAmount(accountAmount, out newFundBalance, out IEnumerable<Exception> addExceptions2))
+            {
+                exceptions = exceptions.Concat(addExceptions2);
+                return false;
+            }
+        }
+        if (newFundBalance == null)
         {
             exceptions = exceptions.Append(new InvalidTransactionDateException("Transaction is not applicable for the provided date."));
             return false;

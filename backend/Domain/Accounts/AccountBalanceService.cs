@@ -34,7 +34,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
                 newTransaction.Date,
                 debitSequence,
                 newDebitBalance.FundBalances,
-                newDebitBalance.PendingFundBalanceChanges);
+                newDebitBalance.PendingDebits,
+                newDebitBalance.PendingCredits);
             if (!TryAddNewBalanceHistory(newDebitBalanceHistory, out IEnumerable<Exception> balanceHistoryExceptions))
             {
                 exceptions = exceptions.Concat(balanceHistoryExceptions);
@@ -55,7 +56,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
                 newTransaction.Date,
                 creditSequence,
                 newCreditBalance.FundBalances,
-                newCreditBalance.PendingFundBalanceChanges);
+                newCreditBalance.PendingDebits,
+                newCreditBalance.PendingCredits);
             if (!TryAddNewBalanceHistory(newCreditBalanceHistory, out IEnumerable<Exception> balanceHistoryExceptions))
             {
                 exceptions = exceptions.Concat(balanceHistoryExceptions);
@@ -82,7 +84,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
                 return false;
             }
             existingDebitHistory.FundBalances = updatedDebitBalance.FundBalances;
-            existingDebitHistory.PendingFundBalanceChanges = updatedDebitBalance.PendingFundBalanceChanges;
+            existingDebitHistory.PendingDebits = updatedDebitBalance.PendingDebits;
+            existingDebitHistory.PendingCredits = updatedDebitBalance.PendingCredits;
             if (!TryUpdateExistingBalanceHistory(existingDebitHistory, out IEnumerable<Exception> updateExceptions))
             {
                 exceptions = exceptions.Concat(updateExceptions);
@@ -99,7 +102,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
                 return false;
             }
             existingCreditHistory.FundBalances = updatedCreditBalance.FundBalances;
-            existingCreditHistory.PendingFundBalanceChanges = updatedCreditBalance.PendingFundBalanceChanges;
+            existingCreditHistory.PendingDebits = updatedCreditBalance.PendingDebits;
+            existingCreditHistory.PendingCredits = updatedCreditBalance.PendingCredits;
             if (!TryUpdateExistingBalanceHistory(existingCreditHistory, out IEnumerable<Exception> updateExceptions))
             {
                 exceptions = exceptions.Concat(updateExceptions);
@@ -131,7 +135,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
                 return false;
             }
             existingHistory.FundBalances = updatedBalance.FundBalances;
-            existingHistory.PendingFundBalanceChanges = updatedBalance.PendingFundBalanceChanges;
+            existingHistory.PendingDebits = updatedBalance.PendingDebits;
+            existingHistory.PendingCredits = updatedBalance.PendingCredits;
             if (!TryUpdateExistingBalanceHistory(existingHistory, out IEnumerable<Exception> updateExceptions))
             {
                 exceptions = exceptions.Concat(updateExceptions);
@@ -151,7 +156,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
             transactionAccount.PostedDate.Value,
             newSequence,
             newBalance.FundBalances,
-            newBalance.PendingFundBalanceChanges);
+            newBalance.PendingDebits,
+            newBalance.PendingCredits);
         if (!TryAddNewBalanceHistory(newBalanceHistory, out IEnumerable<Exception> balanceHistoryExceptions))
         {
             exceptions = exceptions.Concat(balanceHistoryExceptions);
@@ -200,7 +206,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
                 return false;
             }
             history.FundBalances = updatedBalance.FundBalances;
-            history.PendingFundBalanceChanges = updatedBalance.PendingFundBalanceChanges;
+            history.PendingDebits = updatedBalance.PendingDebits;
+            history.PendingCredits = updatedBalance.PendingCredits;
             existingBalance = updatedBalance;
         }
         accountBalanceHistoryRepository.Add(newBalanceHistory);
@@ -224,7 +231,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
                 return false;
             }
             history.FundBalances = updatedBalance.FundBalances;
-            history.PendingFundBalanceChanges = updatedBalance.PendingFundBalanceChanges;
+            history.PendingDebits = updatedBalance.PendingDebits;
+            history.PendingCredits = updatedBalance.PendingCredits;
             existingBalance = updatedBalance;
         }
         return true;
@@ -251,7 +259,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
                 return false;
             }
             history.FundBalances = updatedBalance.FundBalances;
-            history.PendingFundBalanceChanges = updatedBalance.PendingFundBalanceChanges;
+            history.PendingDebits = updatedBalance.PendingDebits;
+            history.PendingCredits = updatedBalance.PendingCredits;
             existingBalance = updatedBalance;
         }
         return true;
@@ -267,6 +276,6 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
         {
             return existingHistory.ToAccountBalance();
         }
-        return new AccountBalance(accountId, [], []);
+        return new AccountBalance(accountId, [], [], []);
     }
 }
