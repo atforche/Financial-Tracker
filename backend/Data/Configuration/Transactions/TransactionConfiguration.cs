@@ -1,5 +1,6 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -20,10 +21,44 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
         builder.Property(transaction => transaction.AccountingPeriod)
             .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
 
-        builder.HasOne(transaction => transaction.DebitAccount).WithMany().HasForeignKey("DebitAccountId");
+        builder.OwnsOne(transaction => transaction.DebitAccount, builder =>
+        {
+            builder.WithOwner(transactionAccount => transactionAccount.Transaction);
+            builder.Navigation(transactionAccount => transactionAccount.Transaction).AutoInclude();
+
+            builder.HasOne<Account>().WithMany().HasForeignKey(transactionAccount => transactionAccount.AccountId);
+
+            builder.OwnsMany(transactionAccount => transactionAccount.FundAmounts, fundAmount =>
+            {
+                fundAmount.ToTable("TransactionDebitAccountFundAmounts");
+                fundAmount.Property<int>("Id");
+                fundAmount.HasKey("Id");
+
+                fundAmount.Property(fundAmount => fundAmount.FundId)
+                    .HasConversion(fundId => fundId.Value, value => new FundId(value));
+            });
+            builder.Navigation(transactionAccount => transactionAccount.FundAmounts).AutoInclude();
+        });
         builder.Navigation(transaction => transaction.DebitAccount).AutoInclude();
 
-        builder.HasOne(transaction => transaction.CreditAccount).WithMany().HasForeignKey("CreditAccountId");
+        builder.OwnsOne(transaction => transaction.CreditAccount, builder =>
+        {
+            builder.WithOwner(transactionAccount => transactionAccount.Transaction);
+            builder.Navigation(transactionAccount => transactionAccount.Transaction).AutoInclude();
+
+            builder.HasOne<Account>().WithMany().HasForeignKey(transactionAccount => transactionAccount.AccountId);
+
+            builder.OwnsMany(transactionAccount => transactionAccount.FundAmounts, fundAmount =>
+            {
+                fundAmount.ToTable("TransactionCreditAccountFundAmounts");
+                fundAmount.Property<int>("Id");
+                fundAmount.HasKey("Id");
+
+                fundAmount.Property(fundAmount => fundAmount.FundId)
+                    .HasConversion(fundId => fundId.Value, value => new FundId(value));
+            });
+            builder.Navigation(transactionAccount => transactionAccount.FundAmounts).AutoInclude();
+        });
         builder.Navigation(transaction => transaction.CreditAccount).AutoInclude();
 
         builder.Property(transaction => transaction.InitialAccountTransaction)

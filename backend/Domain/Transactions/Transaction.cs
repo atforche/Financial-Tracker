@@ -35,6 +35,11 @@ public class Transaction : Entity<TransactionId>
     public string Description { get; internal set; }
 
     /// <summary>
+    /// Amount for this Transaction
+    /// </summary>
+    public decimal Amount => DebitAccount?.FundAmounts.Sum(fundAmount => fundAmount.Amount) ?? CreditAccount?.FundAmounts.Sum(fundAmount => fundAmount.Amount) ?? 0m;
+
+    /// <summary>
     /// Debit Account for this Transaction
     /// </summary>
     public TransactionAccount? DebitAccount { get; internal set; }
@@ -61,11 +66,11 @@ public class Transaction : Entity<TransactionId>
         newAccountBalance = null;
         exceptions = [];
 
-        if (DebitAccount?.Account == existingAccountBalance.AccountId)
+        if (DebitAccount?.AccountId == existingAccountBalance.AccountId)
         {
             return TryApplyToAccountBalancePrivate(DebitAccount, TransactionAccountType.Debit, existingAccountBalance, date, out newAccountBalance, out exceptions);
         }
-        if (CreditAccount?.Account == existingAccountBalance.AccountId)
+        if (CreditAccount?.AccountId == existingAccountBalance.AccountId)
         {
             return TryApplyToAccountBalancePrivate(CreditAccount, TransactionAccountType.Credit, existingAccountBalance, date, out newAccountBalance, out exceptions);
         }
@@ -119,9 +124,9 @@ public class Transaction : Entity<TransactionId>
         Date = request.Date;
         Location = request.Location;
         Description = request.Description;
-        DebitAccount = request.DebitAccount != null ? new TransactionAccount(request.DebitAccount.Account.Id, request.DebitAccount.FundAmounts) : null;
-        CreditAccount = request.CreditAccount != null ? new TransactionAccount(request.CreditAccount.Account.Id, request.CreditAccount.FundAmounts) : null;
-        InitialAccountTransaction = request.IsInitialTransactionForCreditAccount ? CreditAccount?.Account : null;
+        DebitAccount = request.DebitAccount != null ? new TransactionAccount(this, request.DebitAccount.Account.Id, request.DebitAccount.FundAmounts) : null;
+        CreditAccount = request.CreditAccount != null ? new TransactionAccount(this, request.CreditAccount.Account.Id, request.CreditAccount.FundAmounts) : null;
+        InitialAccountTransaction = request.IsInitialTransactionForCreditAccount ? CreditAccount?.AccountId : null;
     }
 
     /// <summary>
@@ -223,47 +228,29 @@ public class Transaction : Entity<TransactionId>
         {
             var pendingAccountAmount = new AccountAmount
             {
-                AccountId = transactionAccount.Account,
+                AccountId = transactionAccount.AccountId,
                 Amount = fundAmount.Amount
             };
-            if (transactionAccountType == TransactionAccountType.Debit && !newFundBalance.TryAddNewPendingDebits(pendingAccountAmount, out newFundBalance, out IEnumerable<Exception> addExceptions))
-            {
-                exceptions = exceptions.Concat(addExceptions);
-                return false;
-            }
-            if (transactionAccountType == TransactionAccountType.Credit && !newFundBalance.TryAddNewPendingCredits(pendingAccountAmount, out newFundBalance, out addExceptions))
-            {
-                exceptions = exceptions.Concat(addExceptions);
-                return false;
-            }
+            newFundBalance = transactionAccountType == TransactionAccountType.Debit
+                ? newFundBalance.AddNewPendingDebits(pendingAccountAmount)
+                : newFundBalance.AddNewPendingCredits(pendingAccountAmount);
         }
         if (transactionAccount.PostedDate == date)
         {
             var pendingAccountAmount = new AccountAmount
             {
-                AccountId = transactionAccount.Account,
+                AccountId = transactionAccount.AccountId,
                 Amount = -fundAmount.Amount
             };
-            if (transactionAccountType == TransactionAccountType.Debit && !newFundBalance.TryAddNewPendingDebits(pendingAccountAmount, out newFundBalance, out IEnumerable<Exception> addExceptions))
-            {
-                exceptions = exceptions.Concat(addExceptions);
-                return false;
-            }
-            if (transactionAccountType == TransactionAccountType.Credit && !newFundBalance.TryAddNewPendingCredits(pendingAccountAmount, out newFundBalance, out addExceptions))
-            {
-                exceptions = exceptions.Concat(addExceptions);
-                return false;
-            }
+            newFundBalance = transactionAccountType == TransactionAccountType.Debit
+                ? newFundBalance.AddNewPendingDebits(pendingAccountAmount)
+                : newFundBalance.AddNewPendingCredits(pendingAccountAmount);
             var accountAmount = new AccountAmount
             {
-                AccountId = transactionAccount.Account,
+                AccountId = transactionAccount.AccountId,
                 Amount = fundAmount.Amount
             };
-            if (!newFundBalance.TryAddNewAmount(accountAmount, out newFundBalance, out IEnumerable<Exception> addExceptions2))
-            {
-                exceptions = exceptions.Concat(addExceptions2);
-                return false;
-            }
+            newFundBalance = newFundBalance.AddNewAmount(accountAmount);
         }
         if (newFundBalance == null)
         {

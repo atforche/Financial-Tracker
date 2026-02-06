@@ -38,32 +38,27 @@ public class TransactionModel
     public required string Description { get; init; }
 
     /// <summary>
-    /// ID of the Debit Account for the Transaction
+    /// Amount for the Transaction
     /// </summary>
-    public Guid? DebitAccountId { get; init; }
+    public required decimal Amount { get; init; }
 
     /// <summary>
-    /// Name of the Debit Account for the Transaction
+    /// Debit Account for the Transaction
     /// </summary>
-    public string? DebitAccountName { get; init; }
+    public TransactionAccountModel? DebitAccount { get; init; }
 
     /// <summary>
-    /// Fund Amounts for the Debit Account of the Transaction
+    /// Credit Account for the Transaction
     /// </summary>
-    public IEnumerable<FundAmountModel>? DebitFundAmounts { get; init; }
+    public TransactionAccountModel? CreditAccount { get; init; }
 
     /// <summary>
-    /// ID of the Credit Account for the Transaction
+    /// Previous Fund Balances for the Transaction
     /// </summary>
-    public Guid? CreditAccountId { get; init; }
+    public required IReadOnlyCollection<FundBalanceModel> PreviousFundBalances { get; init; }
 
     /// <summary>
-    /// Name of the Credit Account for the Transaction
+    /// New Fund Balances for the Transaction
     /// </summary>
-    public string? CreditAccountName { get; init; }
-
-    /// <summary>
-    /// Fund Amounts for the Credit Account of the Transaction
-    /// </summary>
-    public IEnumerable<FundAmountModel>? CreditFundAmounts { get; init; }
+    public required IReadOnlyCollection<FundBalanceModel> NewFundBalances { get; init; }
 }

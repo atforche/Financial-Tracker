@@ -64,11 +64,19 @@ CREATE TABLE "AccountBalanceHistoryPendingDebits" (
     CONSTRAINT "FK_AccountBalanceHistoryPendingDebits_AccountBalanceHistories_AccountBalanceHistoryId" FOREIGN KEY ("AccountBalanceHistoryId") REFERENCES "AccountBalanceHistories" ("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE "TransactionAccount" (
-    "Id" INTEGER NOT NULL CONSTRAINT "PK_TransactionAccount" PRIMARY KEY AUTOINCREMENT,
-    "Account" TEXT NOT NULL,
-    "PostedDate" TEXT NULL,
-    CONSTRAINT "FK_TransactionAccount_Accounts_Account" FOREIGN KEY ("Account") REFERENCES "Accounts" ("Id") ON DELETE CASCADE
+CREATE TABLE "Transactions" (
+    "Id" TEXT NOT NULL CONSTRAINT "PK_Transactions" PRIMARY KEY,
+    "AccountingPeriod" TEXT NOT NULL,
+    "Date" TEXT NOT NULL,
+    "Location" TEXT NOT NULL,
+    "Description" TEXT NOT NULL,
+    "DebitAccount_AccountId" TEXT NULL,
+    "DebitAccount_PostedDate" TEXT NULL,
+    "CreditAccount_AccountId" TEXT NULL,
+    "CreditAccount_PostedDate" TEXT NULL,
+    "InitialAccountTransaction" TEXT NULL,
+    CONSTRAINT "FK_Transactions_Accounts_CreditAccount_AccountId" FOREIGN KEY ("CreditAccount_AccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
+    CONSTRAINT "FK_Transactions_Accounts_DebitAccount_AccountId" FOREIGN KEY ("DebitAccount_AccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE
 );
 
 CREATE TABLE "FundBalanceHistoryAccountBalances" (
@@ -95,25 +103,20 @@ CREATE TABLE "FundBalanceHistoryPendingDebits" (
     CONSTRAINT "FK_FundBalanceHistoryPendingDebits_FundBalanceHistories_FundBalanceHistoryId" FOREIGN KEY ("FundBalanceHistoryId") REFERENCES "FundBalanceHistories" ("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE "TransactionAccountFundAmounts" (
-    "Id" INTEGER NOT NULL CONSTRAINT "PK_TransactionAccountFundAmounts" PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE "TransactionCreditAccountFundAmounts" (
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_TransactionCreditAccountFundAmounts" PRIMARY KEY AUTOINCREMENT,
     "FundId" TEXT NOT NULL,
     "Amount" TEXT NOT NULL,
-    "TransactionAccountId" INTEGER NOT NULL,
-    CONSTRAINT "FK_TransactionAccountFundAmounts_TransactionAccount_TransactionAccountId" FOREIGN KEY ("TransactionAccountId") REFERENCES "TransactionAccount" ("Id") ON DELETE CASCADE
+    "TransactionAccountTransactionId" TEXT NOT NULL,
+    CONSTRAINT "FK_TransactionCreditAccountFundAmounts_Transactions_TransactionAccountTransactionId" FOREIGN KEY ("TransactionAccountTransactionId") REFERENCES "Transactions" ("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE "Transactions" (
-    "Id" TEXT NOT NULL CONSTRAINT "PK_Transactions" PRIMARY KEY,
-    "AccountingPeriod" TEXT NOT NULL,
-    "Date" TEXT NOT NULL,
-    "Location" TEXT NOT NULL,
-    "Description" TEXT NOT NULL,
-    "DebitAccountId" INTEGER NULL,
-    "CreditAccountId" INTEGER NULL,
-    "InitialAccountTransaction" TEXT NULL,
-    CONSTRAINT "FK_Transactions_TransactionAccount_CreditAccountId" FOREIGN KEY ("CreditAccountId") REFERENCES "TransactionAccount" ("Id"),
-    CONSTRAINT "FK_Transactions_TransactionAccount_DebitAccountId" FOREIGN KEY ("DebitAccountId") REFERENCES "TransactionAccount" ("Id")
+CREATE TABLE "TransactionDebitAccountFundAmounts" (
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_TransactionDebitAccountFundAmounts" PRIMARY KEY AUTOINCREMENT,
+    "FundId" TEXT NOT NULL,
+    "Amount" TEXT NOT NULL,
+    "TransactionAccountTransactionId" TEXT NOT NULL,
+    CONSTRAINT "FK_TransactionDebitAccountFundAmounts_Transactions_TransactionAccountTransactionId" FOREIGN KEY ("TransactionAccountTransactionId") REFERENCES "Transactions" ("Id") ON DELETE CASCADE
 );
 
 CREATE INDEX "IX_AccountBalanceHistoryFundBalances_AccountBalanceHistoryId" ON "AccountBalanceHistoryFundBalances" ("AccountBalanceHistoryId");
@@ -132,16 +135,16 @@ CREATE INDEX "IX_FundBalanceHistoryPendingDebits_FundBalanceHistoryId" ON "FundB
 
 CREATE UNIQUE INDEX "IX_Funds_Name" ON "Funds" ("Name");
 
-CREATE INDEX "IX_TransactionAccount_Account" ON "TransactionAccount" ("Account");
+CREATE INDEX "IX_TransactionCreditAccountFundAmounts_TransactionAccountTransactionId" ON "TransactionCreditAccountFundAmounts" ("TransactionAccountTransactionId");
 
-CREATE INDEX "IX_TransactionAccountFundAmounts_TransactionAccountId" ON "TransactionAccountFundAmounts" ("TransactionAccountId");
+CREATE INDEX "IX_TransactionDebitAccountFundAmounts_TransactionAccountTransactionId" ON "TransactionDebitAccountFundAmounts" ("TransactionAccountTransactionId");
 
-CREATE INDEX "IX_Transactions_CreditAccountId" ON "Transactions" ("CreditAccountId");
+CREATE INDEX "IX_Transactions_CreditAccount_AccountId" ON "Transactions" ("CreditAccount_AccountId");
 
-CREATE INDEX "IX_Transactions_DebitAccountId" ON "Transactions" ("DebitAccountId");
+CREATE INDEX "IX_Transactions_DebitAccount_AccountId" ON "Transactions" ("DebitAccount_AccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260130234029_InitialCreate', '10.0.2');
+VALUES ('20260131152248_InitialCreate', '10.0.2');
 
 COMMIT;
 

@@ -14,6 +14,34 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
     public AccountBalance GetCurrentBalance(AccountId accountId) => accountBalanceHistoryRepository.FindLatestForAccount(accountId).ToAccountBalance();
 
     /// <summary>
+    /// Gets the Account Balance prior to the provided Transaction
+    /// </summary>
+    public AccountBalance GetPreviousBalanceForTransaction(TransactionAccount transactionAccount)
+    {
+        var balanceHistories = accountBalanceHistoryRepository.GetAllByTransactionId(transactionAccount.Transaction.Id).ToList();
+        if (transactionAccount.PostedDate != null)
+        {
+            AccountBalanceHistory postedHistory = balanceHistories.First(bh => bh.Date == transactionAccount.PostedDate);
+            return GetExistingAccountBalanceAsOf(transactionAccount.AccountId, postedHistory.Date, postedHistory.Sequence);
+        }
+        AccountBalanceHistory earliestHistory = balanceHistories.OrderBy(bh => bh.Date).ThenBy(bh => bh.Sequence).First();
+        return GetExistingAccountBalanceAsOf(transactionAccount.AccountId, earliestHistory.Date, earliestHistory.Sequence);
+    }
+
+    /// <summary>
+    /// Gets the Account Balance after the provided Transaction
+    /// </summary>
+    public AccountBalance GetNewBalanceForTransaction(TransactionAccount transactionAccount)
+    {
+        var balanceHistories = accountBalanceHistoryRepository.GetAllByTransactionId(transactionAccount.Transaction.Id).ToList();
+        if (transactionAccount.PostedDate != null)
+        {
+            return balanceHistories.Single(bh => bh.Date == transactionAccount.PostedDate).ToAccountBalance();
+        }
+        return balanceHistories.OrderBy(bh => bh.Date).ThenBy(bh => bh.Sequence).First().ToAccountBalance();
+    }
+
+    /// <summary>
     /// Attempts to update the Account Balances for a newly added Transaction
     /// </summary>
     internal bool TryAddTransaction(Transaction newTransaction, out IEnumerable<Exception> exceptions)
@@ -22,8 +50,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
 
         if (newTransaction.DebitAccount != null)
         {
-            int debitSequence = accountBalanceHistoryRepository.GetNextSequenceForAccountAndDate(newTransaction.DebitAccount.Account, newTransaction.Date);
-            AccountBalance existingDebitBalance = GetExistingAccountBalanceAsOf(newTransaction.DebitAccount.Account, newTransaction.Date, debitSequence);
+            int debitSequence = accountBalanceHistoryRepository.GetNextSequenceForAccountAndDate(newTransaction.DebitAccount.AccountId, newTransaction.Date);
+            AccountBalance existingDebitBalance = GetExistingAccountBalanceAsOf(newTransaction.DebitAccount.AccountId, newTransaction.Date, debitSequence);
             if (!newTransaction.TryApplyToAccountBalance(existingDebitBalance, newTransaction.Date, out AccountBalance? newDebitBalance, out IEnumerable<Exception> debitExceptions))
             {
                 exceptions = exceptions.Concat(debitExceptions);
@@ -44,8 +72,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
         }
         if (newTransaction.CreditAccount != null)
         {
-            int creditSequence = accountBalanceHistoryRepository.GetNextSequenceForAccountAndDate(newTransaction.CreditAccount.Account, newTransaction.Date);
-            AccountBalance existingCreditBalance = GetExistingAccountBalanceAsOf(newTransaction.CreditAccount.Account, newTransaction.Date, creditSequence);
+            int creditSequence = accountBalanceHistoryRepository.GetNextSequenceForAccountAndDate(newTransaction.CreditAccount.AccountId, newTransaction.Date);
+            AccountBalance existingCreditBalance = GetExistingAccountBalanceAsOf(newTransaction.CreditAccount.AccountId, newTransaction.Date, creditSequence);
             if (!newTransaction.TryApplyToAccountBalance(existingCreditBalance, newTransaction.Date, out AccountBalance? newCreditBalance, out IEnumerable<Exception> creditExceptions))
             {
                 exceptions = exceptions.Concat(creditExceptions);
@@ -76,8 +104,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
 
         if (transaction.DebitAccount != null)
         {
-            AccountBalanceHistory existingDebitHistory = accountBalanceHistoryRepository.FindEarliestByTransactionId(transaction.DebitAccount.Account, transaction.Id);
-            AccountBalance previousBalance = GetExistingAccountBalanceAsOf(transaction.DebitAccount.Account, existingDebitHistory.Date, existingDebitHistory.Sequence);
+            AccountBalanceHistory existingDebitHistory = accountBalanceHistoryRepository.FindEarliestByTransactionId(transaction.DebitAccount.AccountId, transaction.Id);
+            AccountBalance previousBalance = GetExistingAccountBalanceAsOf(transaction.DebitAccount.AccountId, existingDebitHistory.Date, existingDebitHistory.Sequence);
             if (!transaction.TryApplyToAccountBalance(previousBalance, existingDebitHistory.Date, out AccountBalance? updatedDebitBalance, out IEnumerable<Exception> debitExceptions))
             {
                 exceptions = exceptions.Concat(debitExceptions);
@@ -94,8 +122,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
         }
         if (transaction.CreditAccount != null)
         {
-            AccountBalanceHistory existingCreditHistory = accountBalanceHistoryRepository.FindEarliestByTransactionId(transaction.CreditAccount.Account, transaction.Id);
-            AccountBalance previousBalance = GetExistingAccountBalanceAsOf(transaction.CreditAccount.Account, existingCreditHistory.Date, existingCreditHistory.Sequence);
+            AccountBalanceHistory existingCreditHistory = accountBalanceHistoryRepository.FindEarliestByTransactionId(transaction.CreditAccount.AccountId, transaction.Id);
+            AccountBalance previousBalance = GetExistingAccountBalanceAsOf(transaction.CreditAccount.AccountId, existingCreditHistory.Date, existingCreditHistory.Sequence);
             if (!transaction.TryApplyToAccountBalance(previousBalance, existingCreditHistory.Date, out AccountBalance? updatedCreditBalance, out IEnumerable<Exception> creditExceptions))
             {
                 exceptions = exceptions.Concat(creditExceptions);
@@ -127,8 +155,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
         }
         if (transactionAccount.PostedDate == transaction.Date)
         {
-            AccountBalanceHistory existingHistory = accountBalanceHistoryRepository.FindEarliestByTransactionId(transactionAccount.Account, transaction.Id);
-            AccountBalance previousBalance = GetExistingAccountBalanceAsOf(transactionAccount.Account, existingHistory.Date, existingHistory.Sequence);
+            AccountBalanceHistory existingHistory = accountBalanceHistoryRepository.FindEarliestByTransactionId(transactionAccount.AccountId, transaction.Id);
+            AccountBalance previousBalance = GetExistingAccountBalanceAsOf(transactionAccount.AccountId, existingHistory.Date, existingHistory.Sequence);
             if (!transaction.TryApplyToAccountBalance(previousBalance, transaction.Date, out AccountBalance? updatedBalance, out IEnumerable<Exception> updatedBalanceExceptions))
             {
                 exceptions = exceptions.Concat(updatedBalanceExceptions);
@@ -144,8 +172,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
             }
             return true;
         }
-        int newSequence = accountBalanceHistoryRepository.GetNextSequenceForAccountAndDate(transactionAccount.Account, transactionAccount.PostedDate.Value);
-        AccountBalance existingBalance = GetExistingAccountBalanceAsOf(transactionAccount.Account, transactionAccount.PostedDate.Value, newSequence);
+        int newSequence = accountBalanceHistoryRepository.GetNextSequenceForAccountAndDate(transactionAccount.AccountId, transactionAccount.PostedDate.Value);
+        AccountBalance existingBalance = GetExistingAccountBalanceAsOf(transactionAccount.AccountId, transactionAccount.PostedDate.Value, newSequence);
         if (!transaction.TryApplyToAccountBalance(existingBalance, transactionAccount.PostedDate.Value, out AccountBalance? newBalance, out IEnumerable<Exception> balanceExceptions))
         {
             exceptions = exceptions.Concat(balanceExceptions);
@@ -169,7 +197,7 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
     /// <summary>
     /// Attempts to update the Account Balances for a deleted Transaction
     /// </summary>
-    public bool TryDeleteTransaction(Transaction transaction, out IEnumerable<Exception> exceptions)
+    internal bool TryDeleteTransaction(Transaction transaction, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 

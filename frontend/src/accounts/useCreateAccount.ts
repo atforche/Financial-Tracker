@@ -51,7 +51,7 @@ const useCreateAccount = function ({
         accountingPeriodId: accountingPeriod?.id ?? "",
         addDate: addDate ? addDate.format("YYYY-MM-DD") : "",
         initialFundAmounts: initialFundAmounts.map((fundAmount) => ({
-          fundId: fundAmount.fund.id,
+          fundId: fundAmount.fundId,
           amount: fundAmount.amount,
         })),
       },

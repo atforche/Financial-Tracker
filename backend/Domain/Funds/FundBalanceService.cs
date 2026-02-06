@@ -15,6 +15,36 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
         fundBalanceHistoryRepository.FindLatestForFund(fundId)?.ToFundBalance() ?? new FundBalance(fundId, [], [], []);
 
     /// <summary>
+    /// Gets the Fund Balances prior to the provided Transaction
+    /// </summary>
+    public IEnumerable<FundBalance> GetPreviousBalancesForTransaction(Transaction transaction) =>
+        GetAllAffectedFunds(transaction)
+            .Select(fundId =>
+            {
+                FundBalanceHistory latestHistory = fundBalanceHistoryRepository.GetAllByTransactionId(transaction.Id)
+                    .Where(fundBalanceHistory => fundBalanceHistory.FundId == fundId)
+                    .OrderBy(fundBalanceHistory => fundBalanceHistory.Date)
+                    .ThenBy(fundBalanceHistory => fundBalanceHistory.Sequence)
+                    .First();
+                return GetExistingFundBalanceAsOf(fundId, latestHistory.Date, latestHistory.Sequence);
+            });
+
+    /// <summary>
+    /// Gets the Fund Balances after the provided Transaction
+    /// </summary>
+    public IEnumerable<FundBalance> GetNewBalanceForTransaction(Transaction transaction) =>
+        GetAllAffectedFunds(transaction)
+            .Select(fundId =>
+            {
+                FundBalanceHistory latestHistory = fundBalanceHistoryRepository.GetAllByTransactionId(transaction.Id)
+                    .Where(fundBalanceHistory => fundBalanceHistory.FundId == fundId)
+                    .OrderByDescending(fundBalanceHistory => fundBalanceHistory.Date)
+                    .ThenByDescending(fundBalanceHistory => fundBalanceHistory.Sequence)
+                    .First();
+                return latestHistory.ToFundBalance();
+            });
+
+    /// <summary>
     /// Attempts to update the Fund Balances for a newly added Transaction
     /// </summary>
     internal bool TryAddTransaction(Transaction newTransaction, out IEnumerable<Exception> exceptions)
@@ -136,7 +166,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
     /// <summary>
     /// Attempts to update the Fund Balances for a deleted Transaction
     /// </summary>
-    public bool TryDeleteTransaction(Transaction transaction, out IEnumerable<Exception> exceptions)
+    internal bool TryDeleteTransaction(Transaction transaction, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 

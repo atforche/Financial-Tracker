@@ -6,6 +6,14 @@ import type { components } from "@data/api";
 type Fund = components["schemas"]["FundModel"];
 
 /**
+ * Interface representing a Fund identifier with its ID and name.
+ */
+interface FundIdentifier {
+  readonly id: string;
+  readonly name: string;
+}
+
+/**
  * Type representing a request to create or update a Fund.
  */
 type CreateOrUpdateFundRequest =
@@ -14,9 +22,11 @@ type CreateOrUpdateFundRequest =
 /**
  * Type representing a Fund Amount.
  */
-interface FundAmount {
-  fund: Fund;
-  amount: number;
-}
+type FundAmount = components["schemas"]["FundAmountModel"];
 
-export { type Fund, type CreateOrUpdateFundRequest, type FundAmount };
+export {
+  type Fund,
+  type FundIdentifier,
+  type CreateOrUpdateFundRequest,
+  type FundAmount,
+};

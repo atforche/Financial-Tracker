@@ -57,7 +57,7 @@ const useCreateTransaction = function ({
             : {
                 accountId: debitAccount.id,
                 fundAmounts: debitFundAmounts.map((fundAmount) => ({
-                  fundId: fundAmount.fund.id,
+                  fundId: fundAmount.fundId,
                   amount: fundAmount.amount,
                 })),
               },
@@ -67,7 +67,7 @@ const useCreateTransaction = function ({
             : {
                 accountId: creditAccount.id,
                 fundAmounts: creditFundAmounts.map((fundAmount) => ({
-                  fundId: fundAmount.fund.id,
+                  fundId: fundAmount.fundId,
                   amount: fundAmount.amount,
                 })),
               },

@@ -23,8 +23,8 @@ internal sealed class MockTransactionRepository : ITransactionRepository
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> FindAllByAccount(AccountId accountId) => _transactions.Values.Where(transaction =>
-        (transaction.DebitAccount != null && transaction.DebitAccount.Account == accountId) ||
-        (transaction.CreditAccount != null && transaction.CreditAccount.Account == accountId)).ToList();
+        (transaction.DebitAccount != null && transaction.DebitAccount.AccountId == accountId) ||
+        (transaction.CreditAccount != null && transaction.CreditAccount.AccountId == accountId)).ToList();
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> FindAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>

@@ -7,6 +7,7 @@ import FundListFrameActionColumn from "@funds/FundListFrameActionColumn";
 import FundListFrameActionColumnHeader from "@funds/FundListFrameActionColumnHeader";
 import ListFrame from "@framework/listframe/ListFrame";
 import SuccessAlert from "@framework/alerts/SuccessAlert";
+import formatCurrency from "@framework/formatCurrency";
 import useGetAllFunds from "@funds/useGetAllFunds";
 
 /**
@@ -65,14 +66,17 @@ const FundListFrame = function (): JSX.Element {
         />,
         <ColumnCell
           key="balance"
-          content={`$ ${fund.currentBalance.toLocaleString([], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          content={formatCurrency(fund.currentBalance.balance)}
           align="left"
           isLoading={isLoading}
           isError={error !== null}
         />,
         <ColumnCell
           key="available"
-          content={`$ ${(fund.currentBalance - fund.pendingDebitAmount).toLocaleString([], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          content={formatCurrency(
+            fund.currentBalance.balance -
+              fund.currentBalance.pendingDebitAmount,
+          )}
           align="left"
           isLoading={isLoading}
           isError={error !== null}

@@ -7,6 +7,7 @@ import ColumnHeader from "@framework/listframe/ColumnHeader";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import ListFrame from "@framework/listframe/ListFrame";
 import SuccessAlert from "@framework/alerts/SuccessAlert";
+import formatCurrency from "@framework/formatCurrency";
 import useGetAllAccounts from "@accounts/useGetAllAccounts";
 
 /**
@@ -60,14 +61,17 @@ const AccountListFrame = function (): JSX.Element {
         />,
         <ColumnCell
           key="balance"
-          content={`$ ${account.currentBalance.toLocaleString([], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          content={formatCurrency(account.currentBalance.balance)}
           align="left"
           isLoading={isLoading}
           isError={error !== null}
         />,
         <ColumnCell
           key="available"
-          content={`$ ${(account.currentBalance - account.pendingDebitAmount).toLocaleString([], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          content={formatCurrency(
+            account.currentBalance.balance -
+              account.currentBalance.pendingDebitAmount,
+          )}
           align="left"
           isLoading={isLoading}
           isError={error !== null}

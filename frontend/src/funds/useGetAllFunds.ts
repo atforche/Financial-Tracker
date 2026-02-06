@@ -34,9 +34,15 @@ const useGetAllFunds = function (): {
         id: index.toString(),
         name: "",
         description: "",
-        currentBalance: 0,
-        pendingDebitAmount: 0,
-        pendingCreditAmount: 0,
+        currentBalance: {
+          fundId: "",
+          balance: 0,
+          accountBalances: [],
+          pendingDebitAmount: 0,
+          pendingDebits: [],
+          pendingCreditAmount: 0,
+          pendingCredits: [],
+        },
       })),
   });
   return {

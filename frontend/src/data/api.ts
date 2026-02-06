@@ -782,6 +782,50 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Model representing an amount associated with a particular Account */
+        AccountAmountModel: {
+            /**
+             * Format: uuid
+             * @description Account for this Account Amount
+             */
+            accountId: string;
+            /** @description Name of the Account for this Account Amount */
+            accountName: string;
+            /**
+             * Format: double
+             * @description Amount for this Account Amount
+             */
+            amount: number;
+        };
+        /** @description Model representing an Account Balance */
+        AccountBalanceModel: {
+            /**
+             * Format: uuid
+             * @description Account ID for the Account Balance
+             */
+            accountId: string;
+            /**
+             * Format: double
+             * @description Balance for the Account Balance
+             */
+            balance: number;
+            /** @description Fund Balances for the Account Balance */
+            fundBalances: components["schemas"]["FundAmountModel"][];
+            /**
+             * Format: double
+             * @description Pending Debit Amount for the Account Balance
+             */
+            pendingDebitAmount: number;
+            /** @description Pending Debits for the Account Balance */
+            pendingDebits: components["schemas"]["FundAmountModel"][];
+            /**
+             * Format: double
+             * @description Pending Credit Amount for the Account Balance
+             */
+            pendingCreditAmount: number;
+            /** @description Pending Credits for the Account Balance */
+            pendingCredits: components["schemas"]["FundAmountModel"][];
+        };
         /** @description Model representing an Accounting Period */
         AccountingPeriodModel: {
             /**
@@ -815,21 +859,8 @@ export interface components {
             name: string;
             /** @description Type for the Account */
             type: components["schemas"]["AccountTypeModel"];
-            /**
-             * Format: double
-             * @description Current Balance for the Account
-             */
-            currentBalance: number;
-            /**
-             * Format: double
-             * @description Pending Debit Amount for the Account
-             */
-            pendingDebitAmount: number;
-            /**
-             * Format: double
-             * @description Pending Credit Amount for the Account
-             */
-            pendingCreditAmount: number;
+            /** @description Current Balance for the Account */
+            currentBalance: components["schemas"]["AccountBalanceModel"];
         };
         /**
          * @description Enum representing the different Account types
@@ -951,6 +982,35 @@ export interface components {
              */
             amount: number;
         };
+        /** @description Model representing an Fund Balance */
+        FundBalanceModel: {
+            /**
+             * Format: uuid
+             * @description Fund ID for the Fund Balance
+             */
+            fundId: string;
+            /**
+             * Format: double
+             * @description Balance for the Fund Balance
+             */
+            balance: number;
+            /** @description Account Balances for the Fund Balance */
+            accountBalances: components["schemas"]["AccountAmountModel"][];
+            /**
+             * Format: double
+             * @description Pending Debit Amount for the Fund Balance
+             */
+            pendingDebitAmount: number;
+            /** @description Pending Debits for the Fund Balance */
+            pendingDebits: components["schemas"]["AccountAmountModel"][];
+            /**
+             * Format: double
+             * @description Pending Credit Amount for the Fund Balance
+             */
+            pendingCreditAmount: number;
+            /** @description Pending Credits for the Fund Balance */
+            pendingCredits: components["schemas"]["AccountAmountModel"][];
+        };
         /** @description Model representing a Fund */
         FundModel: {
             /**
@@ -962,21 +1022,29 @@ export interface components {
             name: string;
             /** @description Description for the Fund */
             description: string;
+            /** @description Current Balance for the Fund */
+            currentBalance: components["schemas"]["FundBalanceModel"];
+        };
+        /** @description Model representing a Transaction Account */
+        TransactionAccountModel: {
             /**
-             * Format: double
-             * @description Current Balance for the Fund
+             * Format: uuid
+             * @description Account ID for the Transaction Account
              */
-            currentBalance: number;
+            accountId: string;
+            /** @description Account Name for the Transaction Account */
+            accountName: string;
             /**
-             * Format: double
-             * @description Pending Debit Amount for the Fund
+             * Format: date
+             * @description Posted Date for the Transaction Account
              */
-            pendingDebitAmount: number;
-            /**
-             * Format: double
-             * @description Pending Credit Amount for the Fund
-             */
-            pendingCreditAmount: number;
+            postedDate: null | string;
+            /** @description Fund Amounts for the Transaction Account */
+            fundAmounts: components["schemas"]["FundAmountModel"][];
+            /** @description Previous Account Balance for the Transaction Account */
+            previousAccountBalance: components["schemas"]["AccountBalanceModel"];
+            /** @description New Account Balance for the Transaction Account */
+            newAccountBalance: components["schemas"]["AccountBalanceModel"];
         };
         /** @description Model representing a Transaction */
         TransactionModel: {
@@ -1002,23 +1070,16 @@ export interface components {
             /** @description Description for the Transaction */
             description: string;
             /**
-             * Format: uuid
-             * @description ID of the Debit Account for the Transaction
+             * Format: double
+             * @description Amount for the Transaction
              */
-            debitAccountId?: null | string;
-            /** @description Name of the Debit Account for the Transaction */
-            debitAccountName?: null | string;
-            /** @description Fund Amounts for the Debit Account of the Transaction */
-            debitFundAmounts?: null | components["schemas"]["FundAmountModel"][];
-            /**
-             * Format: uuid
-             * @description ID of the Credit Account for the Transaction
-             */
-            creditAccountId?: null | string;
-            /** @description Name of the Credit Account for the Transaction */
-            creditAccountName?: null | string;
-            /** @description Fund Amounts for the Credit Account of the Transaction */
-            creditFundAmounts?: null | components["schemas"]["FundAmountModel"][];
+            amount: number;
+            debitAccount?: null | components["schemas"]["TransactionAccountModel"];
+            creditAccount?: null | components["schemas"]["TransactionAccountModel"];
+            /** @description Previous Fund Balances for the Transaction */
+            previousFundBalances: components["schemas"]["FundBalanceModel"][];
+            /** @description New Fund Balances for the Transaction */
+            newFundBalances: components["schemas"]["FundBalanceModel"][];
         };
         /** @description Model representing a request to update an Account */
         UpdateAccountModel: {

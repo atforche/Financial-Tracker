@@ -49,6 +49,7 @@ export default defineConfig([
 
     rules: {
       // base eslint rules
+      complexity: ["error", { max: 30 }],
       "func-names": "off",
       "id-length": "off",
       "max-lines-per-function": "off",

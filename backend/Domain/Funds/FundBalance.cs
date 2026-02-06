@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.Accounts;
 
 namespace Domain.Funds;
@@ -34,67 +33,19 @@ public class FundBalance
     public decimal Balance => AccountBalances.Sum(balance => balance.Amount);
 
     /// <summary>
-    /// Attempts to construct a new instance of this class
-    /// </summary>
-    internal static bool TryCreate(
-        FundId fundId,
-        IEnumerable<AccountAmount> accountBalances,
-        IEnumerable<AccountAmount> pendingDebits,
-        IEnumerable<AccountAmount> pendingCredits,
-        out FundBalance? fundBalance,
-        out IEnumerable<Exception> exceptions)
-    {
-        fundBalance = null;
-        exceptions = [];
-
-        accountBalances = accountBalances
-            .GroupBy(accountAmount => accountAmount.AccountId)
-            .Select(group => new AccountAmount
-            {
-                AccountId = group.Key,
-                Amount = group.Sum(accountAmount => accountAmount.Amount)
-            })
-            .Where(amount => amount.Amount != 0.00m)
-            .ToList();
-        pendingDebits = pendingDebits
-            .GroupBy(accountAmount => accountAmount.AccountId)
-            .Select(group => new AccountAmount
-            {
-                AccountId = group.Key,
-                Amount = group.Sum(accountAmount => accountAmount.Amount)
-            })
-            .Where(amount => amount.Amount != 0.00m)
-            .ToList();
-        pendingCredits = pendingCredits
-            .GroupBy(accountAmount => accountAmount.AccountId)
-            .Select(group => new AccountAmount
-            {
-                AccountId = group.Key,
-                Amount = group.Sum(accountAmount => accountAmount.Amount)
-            })
-            .Where(amount => amount.Amount != 0.00m)
-            .ToList();
-        fundBalance = new FundBalance(fundId, accountBalances, pendingDebits, pendingCredits);
-        return true;
-    }
-
-    /// <summary>
     /// Attempts to add the provided Account Amount to the current Fund Balance
     /// </summary>
-    internal bool TryAddNewAmount(AccountAmount accountAmount, [NotNullWhen(true)] out FundBalance? newFundBalance, out IEnumerable<Exception> exceptions) =>
-        TryCreate(FundId, AccountBalances.Append(accountAmount), PendingDebits, PendingCredits, out newFundBalance, out exceptions);
+    internal FundBalance AddNewAmount(AccountAmount accountAmount) => new(FundId, AccountBalances.Append(accountAmount), PendingDebits, PendingCredits);
 
     /// <summary>
     /// Attempts to add the provided pending debits to the current pending Fund Balance
     /// </summary>
-    internal bool TryAddNewPendingDebits(AccountAmount accountAmount, [NotNullWhen(true)] out FundBalance? newFundBalance, out IEnumerable<Exception> exceptions) =>
-        TryCreate(FundId, AccountBalances, PendingDebits.Append(accountAmount), PendingCredits, out newFundBalance, out exceptions);
+    internal FundBalance AddNewPendingDebits(AccountAmount accountAmount) => new(FundId, AccountBalances, PendingDebits.Append(accountAmount), PendingCredits);
 
     /// <summary>
     /// Attempts to add the provided pending credits to the current pending Fund Balance
     /// </summary>
-    internal bool TryAddNewPendingCredits(AccountAmount accountAmount, [NotNullWhen(true)] out FundBalance? newFundBalance, out IEnumerable<Exception> exceptions) =>
-        TryCreate(FundId, AccountBalances, PendingDebits, PendingCredits.Append(accountAmount), out newFundBalance, out exceptions);
+    internal FundBalance AddNewPendingCredits(AccountAmount accountAmount) => new(FundId, AccountBalances, PendingDebits, PendingCredits.Append(accountAmount));
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -102,8 +53,32 @@ public class FundBalance
     internal FundBalance(FundId fundId, IEnumerable<AccountAmount> accountBalances, IEnumerable<AccountAmount> pendingDebits, IEnumerable<AccountAmount> pendingCredits)
     {
         FundId = fundId;
-        AccountBalances = accountBalances.ToList();
-        PendingDebits = pendingDebits.ToList();
-        PendingCredits = pendingCredits.ToList();
+        AccountBalances = accountBalances
+            .GroupBy(accountAmount => accountAmount.AccountId)
+            .Select(group => new AccountAmount
+            {
+                AccountId = group.Key,
+                Amount = group.Sum(accountAmount => accountAmount.Amount)
+            })
+            .Where(amount => amount.Amount != 0.00m)
+            .ToList();
+        PendingDebits = pendingDebits
+            .GroupBy(accountAmount => accountAmount.AccountId)
+            .Select(group => new AccountAmount
+            {
+                AccountId = group.Key,
+                Amount = group.Sum(accountAmount => accountAmount.Amount)
+            })
+            .Where(amount => amount.Amount != 0.00m)
+            .ToList();
+        PendingCredits = pendingCredits
+            .GroupBy(accountAmount => accountAmount.AccountId)
+            .Select(group => new AccountAmount
+            {
+                AccountId = group.Key,
+                Amount = group.Sum(accountAmount => accountAmount.Amount)
+            })
+            .Where(amount => amount.Amount != 0.00m)
+            .ToList();
     }
 }

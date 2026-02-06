@@ -146,20 +146,32 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TransactionAccount",
+                name: "Transactions",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Account = table.Column<Guid>(type: "TEXT", nullable: false),
-                    PostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true)
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AccountingPeriod = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Date = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    Location = table.Column<string>(type: "TEXT", nullable: false),
+                    Description = table.Column<string>(type: "TEXT", nullable: false),
+                    DebitAccount_AccountId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    DebitAccount_PostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+                    CreditAccount_AccountId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    CreditAccount_PostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+                    InitialAccountTransaction = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TransactionAccount", x => x.Id);
+                    table.PrimaryKey("PK_Transactions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TransactionAccount_Accounts_Account",
-                        column: x => x.Account,
+                        name: "FK_Transactions_Accounts_CreditAccount_AccountId",
+                        column: x => x.CreditAccount_AccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Transactions_Accounts_DebitAccount_AccountId",
+                        column: x => x.DebitAccount_AccountId,
                         principalTable: "Accounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -229,52 +241,45 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TransactionAccountFundAmounts",
+                name: "TransactionCreditAccountFundAmounts",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     FundId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Amount = table.Column<decimal>(type: "TEXT", nullable: false),
-                    TransactionAccountId = table.Column<int>(type: "INTEGER", nullable: false)
+                    TransactionAccountTransactionId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TransactionAccountFundAmounts", x => x.Id);
+                    table.PrimaryKey("PK_TransactionCreditAccountFundAmounts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TransactionAccountFundAmounts_TransactionAccount_TransactionAccountId",
-                        column: x => x.TransactionAccountId,
-                        principalTable: "TransactionAccount",
+                        name: "FK_TransactionCreditAccountFundAmounts_Transactions_TransactionAccountTransactionId",
+                        column: x => x.TransactionAccountTransactionId,
+                        principalTable: "Transactions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Transactions",
+                name: "TransactionDebitAccountFundAmounts",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    AccountingPeriod = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Date = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    Location = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    DebitAccountId = table.Column<int>(type: "INTEGER", nullable: true),
-                    CreditAccountId = table.Column<int>(type: "INTEGER", nullable: true),
-                    InitialAccountTransaction = table.Column<Guid>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    FundId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    TransactionAccountTransactionId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Transactions", x => x.Id);
+                    table.PrimaryKey("PK_TransactionDebitAccountFundAmounts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Transactions_TransactionAccount_CreditAccountId",
-                        column: x => x.CreditAccountId,
-                        principalTable: "TransactionAccount",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Transactions_TransactionAccount_DebitAccountId",
-                        column: x => x.DebitAccountId,
-                        principalTable: "TransactionAccount",
-                        principalColumn: "Id");
+                        name: "FK_TransactionDebitAccountFundAmounts_Transactions_TransactionAccountTransactionId",
+                        column: x => x.TransactionAccountTransactionId,
+                        principalTable: "Transactions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -320,24 +325,24 @@ namespace Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_TransactionAccount_Account",
-                table: "TransactionAccount",
-                column: "Account");
+                name: "IX_TransactionCreditAccountFundAmounts_TransactionAccountTransactionId",
+                table: "TransactionCreditAccountFundAmounts",
+                column: "TransactionAccountTransactionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TransactionAccountFundAmounts_TransactionAccountId",
-                table: "TransactionAccountFundAmounts",
-                column: "TransactionAccountId");
+                name: "IX_TransactionDebitAccountFundAmounts_TransactionAccountTransactionId",
+                table: "TransactionDebitAccountFundAmounts",
+                column: "TransactionAccountTransactionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_CreditAccountId",
+                name: "IX_Transactions_CreditAccount_AccountId",
                 table: "Transactions",
-                column: "CreditAccountId");
+                column: "CreditAccount_AccountId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_DebitAccountId",
+                name: "IX_Transactions_DebitAccount_AccountId",
                 table: "Transactions",
-                column: "DebitAccountId");
+                column: "DebitAccount_AccountId");
         }
 
         /// <inheritdoc />
@@ -368,10 +373,10 @@ namespace Data.Migrations
                 name: "Funds");
 
             migrationBuilder.DropTable(
-                name: "TransactionAccountFundAmounts");
+                name: "TransactionCreditAccountFundAmounts");
 
             migrationBuilder.DropTable(
-                name: "Transactions");
+                name: "TransactionDebitAccountFundAmounts");
 
             migrationBuilder.DropTable(
                 name: "AccountBalanceHistories");
@@ -380,7 +385,7 @@ namespace Data.Migrations
                 name: "FundBalanceHistories");
 
             migrationBuilder.DropTable(
-                name: "TransactionAccount");
+                name: "Transactions");
 
             migrationBuilder.DropTable(
                 name: "Accounts");

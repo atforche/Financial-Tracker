@@ -9,14 +9,12 @@ import type { JSX } from "react/jsx-runtime";
 
 /**
  * Props for the Dialog component.
- * @param title - Title to display along the top of the dialog.
- * @param content - Content to display within the dialog.
- * @param actions - Actions to display along the bottom of the dialog.
  */
 interface DialogProps {
   readonly title: string;
   readonly content: JSX.Element;
   readonly actions: JSX.Element;
+  readonly headerActions?: JSX.Element | null;
 }
 
 /**
@@ -28,6 +26,7 @@ const Dialog = function ({
   title,
   content,
   actions,
+  headerActions = null,
 }: DialogProps): JSX.Element {
   return (
     <MuiDialog open maxWidth="lg">
@@ -38,7 +37,14 @@ const Dialog = function ({
           minWidth: "500px",
         }}
       >
-        {title}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          {title}
+          {headerActions}
+        </Stack>
       </DialogTitle>
       <DialogContent>
         <Stack

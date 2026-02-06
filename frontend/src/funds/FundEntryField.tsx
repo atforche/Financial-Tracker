@@ -1,5 +1,5 @@
 import ComboBoxEntryField from "@framework/dialog/ComboBoxEntryField";
-import type { Fund } from "@funds/ApiTypes";
+import type { FundIdentifier } from "@funds/ApiTypes";
 import type { JSX } from "react";
 import useGetAllFunds from "@funds/useGetAllFunds";
 
@@ -12,9 +12,9 @@ import useGetAllFunds from "@funds/useGetAllFunds";
  */
 interface FundEntryFieldProps {
   readonly label: string;
-  readonly value: Fund | null;
-  readonly setValue?: ((newValue: Fund | null) => void) | null;
-  readonly filter: ((fund: Fund) => boolean) | null;
+  readonly value: FundIdentifier | null;
+  readonly setValue?: ((newValue: FundIdentifier | null) => void) | null;
+  readonly filter: ((fund: FundIdentifier) => boolean) | null;
 }
 
 /**
@@ -30,7 +30,7 @@ const FundEntryField = function ({
 }: FundEntryFieldProps): JSX.Element {
   const { funds, isLoading, error } = useGetAllFunds();
   return (
-    <ComboBoxEntryField<Fund>
+    <ComboBoxEntryField<FundIdentifier>
       label={label}
       options={funds
         .filter((fund) => (filter ? filter(fund) : true))

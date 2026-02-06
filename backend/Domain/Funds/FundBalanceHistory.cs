@@ -61,6 +61,7 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
         get => _pendingCredits;
         internal set => _pendingCredits = value.ToList();
     }
+
     /// <summary>
     /// Converts this Account Balance History to an Account Balance
     /// </summary>

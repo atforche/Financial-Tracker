@@ -133,14 +133,8 @@ namespace Data.Migrations
                     b.Property<Guid>("AccountingPeriod")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("CreditAccountId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<DateOnly>("Date")
                         .HasColumnType("TEXT");
-
-                    b.Property<int?>("DebitAccountId")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -155,30 +149,7 @@ namespace Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreditAccountId");
-
-                    b.HasIndex("DebitAccountId");
-
                     b.ToTable("Transactions");
-                });
-
-            modelBuilder.Entity("Domain.Transactions.TransactionAccount", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("Account")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly?>("PostedDate")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Account");
-
-                    b.ToTable("TransactionAccount");
                 });
 
             modelBuilder.Entity("Domain.Accounts.AccountBalanceHistory", b =>
@@ -351,53 +322,121 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Domain.Transactions.Transaction", b =>
                 {
-                    b.HasOne("Domain.Transactions.TransactionAccount", "CreditAccount")
-                        .WithMany()
-                        .HasForeignKey("CreditAccountId");
+                    b.OwnsOne("Domain.Transactions.TransactionAccount", "CreditAccount", b1 =>
+                        {
+                            b1.Property<Guid>("TransactionId")
+                                .HasColumnType("TEXT");
 
-                    b.HasOne("Domain.Transactions.TransactionAccount", "DebitAccount")
-                        .WithMany()
-                        .HasForeignKey("DebitAccountId");
+                            b1.Property<Guid>("AccountId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<DateOnly?>("PostedDate")
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("TransactionId");
+
+                            b1.HasIndex("AccountId");
+
+                            b1.ToTable("Transactions");
+
+                            b1.HasOne("Domain.Accounts.Account", null)
+                                .WithMany()
+                                .HasForeignKey("AccountId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
+
+                            b1.WithOwner("Transaction")
+                                .HasForeignKey("TransactionId");
+
+                            b1.OwnsMany("Domain.Funds.FundAmount", "FundAmounts", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("INTEGER");
+
+                                    b2.Property<decimal>("Amount")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<Guid>("FundId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<Guid>("TransactionAccountTransactionId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("TransactionAccountTransactionId");
+
+                                    b2.ToTable("TransactionCreditAccountFundAmounts", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("TransactionAccountTransactionId");
+                                });
+
+                            b1.Navigation("FundAmounts");
+
+                            b1.Navigation("Transaction");
+                        });
+
+                    b.OwnsOne("Domain.Transactions.TransactionAccount", "DebitAccount", b1 =>
+                        {
+                            b1.Property<Guid>("TransactionId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("AccountId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<DateOnly?>("PostedDate")
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("TransactionId");
+
+                            b1.HasIndex("AccountId");
+
+                            b1.ToTable("Transactions");
+
+                            b1.HasOne("Domain.Accounts.Account", null)
+                                .WithMany()
+                                .HasForeignKey("AccountId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
+
+                            b1.WithOwner("Transaction")
+                                .HasForeignKey("TransactionId");
+
+                            b1.OwnsMany("Domain.Funds.FundAmount", "FundAmounts", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("INTEGER");
+
+                                    b2.Property<decimal>("Amount")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<Guid>("FundId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<Guid>("TransactionAccountTransactionId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("TransactionAccountTransactionId");
+
+                                    b2.ToTable("TransactionDebitAccountFundAmounts", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("TransactionAccountTransactionId");
+                                });
+
+                            b1.Navigation("FundAmounts");
+
+                            b1.Navigation("Transaction");
+                        });
 
                     b.Navigation("CreditAccount");
 
                     b.Navigation("DebitAccount");
-                });
-
-            modelBuilder.Entity("Domain.Transactions.TransactionAccount", b =>
-                {
-                    b.HasOne("Domain.Accounts.Account", null)
-                        .WithMany()
-                        .HasForeignKey("Account")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.OwnsMany("Domain.Funds.FundAmount", "FundAmounts", b1 =>
-                        {
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<decimal>("Amount")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<Guid>("FundId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int>("TransactionAccountId")
-                                .HasColumnType("INTEGER");
-
-                            b1.HasKey("Id");
-
-                            b1.HasIndex("TransactionAccountId");
-
-                            b1.ToTable("TransactionAccountFundAmounts", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("TransactionAccountId");
-                        });
-
-                    b.Navigation("FundAmounts");
                 });
 #pragma warning restore 612, 618
         }

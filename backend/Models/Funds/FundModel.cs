@@ -23,15 +23,5 @@ public class FundModel
     /// <summary>
     /// Current Balance for the Fund
     /// </summary>
-    public required decimal CurrentBalance { get; init; }
-
-    /// <summary>
-    /// Pending Debit Amount for the Fund
-    /// </summary>
-    public required decimal PendingDebitAmount { get; init; }
-
-    /// <summary>
-    /// Pending Credit Amount for the Fund
-    /// </summary>
-    public required decimal PendingCreditAmount { get; init; }
+    public required FundBalanceModel CurrentBalance { get; init; }
 }
