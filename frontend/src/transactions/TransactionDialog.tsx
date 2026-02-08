@@ -10,7 +10,8 @@ import Dialog from "@framework/dialog/Dialog";
 import DialogHeaderButton from "@framework/dialog/DialogHeaderButton";
 import TransactionAccountFrame from "@transactions/TransactionAccountFrame";
 import TransactionDetailsFrame from "@transactions/TransactionDetailsFrame";
-import TransactionFundFrame from "./TransactionFundFrame";
+import TransactionFundFrame from "@transactions/TransactionFundFrame";
+import UpdateTransactionDialog from "@transactions/UpdateTransactionDialog";
 
 /**
  * Props for the TransactionDialog component.
@@ -18,7 +19,7 @@ import TransactionFundFrame from "./TransactionFundFrame";
 interface TransactionDialogProps {
   readonly transaction: Transaction;
   readonly setMessage: (message: string | null) => void;
-  readonly onClose: (success: boolean) => void;
+  readonly onClose: (needsRefetch: boolean) => void;
 }
 
 /**
@@ -31,17 +32,36 @@ const TransactionDialog = function ({
   setMessage,
   onClose,
 }: TransactionDialogProps): JSX.Element {
+  const [existingTransaction, setExistingTransaction] =
+    useState<Transaction>(transaction);
+  const [needsRefetch, setNeedsRefetch] = useState<boolean>(false);
   const [childDialog, setChildDialog] = useState<JSX.Element | null>(null);
+
+  const onEdit = function (): void {
+    setChildDialog(
+      <UpdateTransactionDialog
+        existingTransaction={existingTransaction}
+        setExistingTransaction={setExistingTransaction}
+        onClose={(success) => {
+          setChildDialog(null);
+          if (success) {
+            setMessage("Transaction updated successfully.");
+            setNeedsRefetch(true);
+          }
+        }}
+      />,
+    );
+  };
 
   const onDelete = function (): void {
     setChildDialog(
       <DeleteTransactionDialog
-        transaction={transaction}
+        transaction={existingTransaction}
         onClose={(success) => {
           setChildDialog(null);
           if (success) {
             setMessage("Transaction deleted successfully.");
-            onClose(success);
+            onClose(true);
           }
         }}
       />,
@@ -54,29 +74,29 @@ const TransactionDialog = function ({
       title="Transaction Details"
       content={
         <>
-          <TransactionDetailsFrame transaction={transaction} />
+          <TransactionDetailsFrame transaction={existingTransaction} />
           <Stack direction="row" spacing={2}>
-            {transaction.debitAccount ? (
+            {existingTransaction.debitAccount ? (
               <TransactionAccountFrame
-                transactionAccount={transaction.debitAccount}
+                transactionAccount={existingTransaction.debitAccount}
                 transactionAccountType={TransactionAccountType.Debit}
               />
             ) : null}
-            {transaction.creditAccount ? (
+            {existingTransaction.creditAccount ? (
               <TransactionAccountFrame
-                transactionAccount={transaction.creditAccount}
+                transactionAccount={existingTransaction.creditAccount}
                 transactionAccountType={TransactionAccountType.Credit}
               />
             ) : null}
           </Stack>
-          <TransactionFundFrame transaction={transaction} />
+          <TransactionFundFrame transaction={existingTransaction} />
           {childDialog}
         </>
       }
       actions={
         <Button
           onClick={() => {
-            onClose(false);
+            onClose(needsRefetch);
           }}
         >
           Close
@@ -84,7 +104,7 @@ const TransactionDialog = function ({
       }
       headerActions={
         <Stack direction="row" spacing={2}>
-          <Edit />
+          <DialogHeaderButton label="Edit" icon={<Edit />} onClick={onEdit} />
           <DialogHeaderButton
             label="Delete"
             icon={<Delete />}

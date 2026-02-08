@@ -1,4 +1,4 @@
-import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
+import type { AccountingPeriodIdentifier } from "@accounting-periods/ApiTypes";
 import type { ApiErrorDetail } from "@data/ApiError";
 import ComboBoxEntryField from "@framework/dialog/ComboBoxEntryField";
 import type { JSX } from "react";
@@ -6,15 +6,13 @@ import useGetAllOpenAccountingPeriods from "@accounting-periods/useGetAllOpenAcc
 
 /**
  * Props for the OpenAccountingPeriodEntryField component.
- * @param label - Label for this Open Accounting Period Entry Field.
- * @param value - Current value for this Open Accounting Period Entry Field.
- * @param setValue - Callback to update the value in this Open Accounting Period Entry Field. If null, this field is read-only.
- * @param error - Error detail to display for this Open Accounting Period Entry Field.
  */
 interface OpenAccountingPeriodEntryFieldProps {
   readonly label: string;
-  readonly value: AccountingPeriod | null;
-  readonly setValue?: ((newValue: AccountingPeriod | null) => void) | null;
+  readonly value: AccountingPeriodIdentifier | null;
+  readonly setValue?:
+    | ((newValue: AccountingPeriodIdentifier | null) => void)
+    | null;
   readonly error?: ApiErrorDetail | null;
 }
 
@@ -35,11 +33,11 @@ const OpenAccountingPeriodEntryField = function ({
     error: fetchError,
   } = useGetAllOpenAccountingPeriods();
   return (
-    <ComboBoxEntryField<AccountingPeriod>
+    <ComboBoxEntryField<AccountingPeriodIdentifier>
       label={label}
       options={accountingPeriods.map((period) => ({
         label: period.name,
-        value: period,
+        value: { id: period.id, name: period.name },
       }))}
       value={
         value === null

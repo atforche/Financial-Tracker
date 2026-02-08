@@ -58,6 +58,7 @@ export default defineConfig([
       "no-magic-numbers": "off", // handled by typescript-eslint
       "no-ternary": "off",
       "one-var": ["error", "never"],
+      "prefer-named-capture-group": "off",
       "sort-keys": ["off"],
 
       // import rules

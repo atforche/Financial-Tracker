@@ -46,7 +46,7 @@ const FundAmountEntryFrame = function ({
       />
       <CurrencyEntryField
         label="Amount"
-        value={value?.amount ?? 0}
+        value={value ? value.amount : null}
         setValue={
           setValue
             ? (newAmount): void => {

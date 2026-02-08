@@ -1,4 +1,4 @@
-import type { Account } from "@accounts/ApiTypes";
+import type { AccountIdentifier } from "@accounts/ApiTypes";
 import ComboBoxEntryField from "@framework/dialog/ComboBoxEntryField";
 import type { JSX } from "react";
 import useGetAllAccounts from "@accounts/useGetAllAccounts";
@@ -8,8 +8,8 @@ import useGetAllAccounts from "@accounts/useGetAllAccounts";
  */
 interface AccountEntryFieldProps {
   readonly label: string;
-  readonly value: Account | null;
-  readonly setValue?: ((newValue: Account | null) => void) | null;
+  readonly value: AccountIdentifier | null;
+  readonly setValue?: ((newValue: AccountIdentifier | null) => void) | null;
 }
 
 /**
@@ -24,11 +24,11 @@ const AccountEntryField = function ({
 }: AccountEntryFieldProps): JSX.Element {
   const { accounts, isLoading, error } = useGetAllAccounts();
   return (
-    <ComboBoxEntryField<Account>
+    <ComboBoxEntryField<AccountIdentifier>
       label={label}
       options={accounts.map((account) => ({
         label: account.name,
-        value: account,
+        value: { id: account.id, name: account.name },
       }))}
       value={
         value === null

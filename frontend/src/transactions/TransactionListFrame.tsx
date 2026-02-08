@@ -150,9 +150,9 @@ const TransactionListFrame = function (): JSX.Element {
                   <TransactionDialog
                     transaction={transaction}
                     setMessage={setMessage}
-                    onClose={(success) => {
+                    onClose={(needsRefetch) => {
                       setDialog(null);
-                      if (success) {
+                      if (needsRefetch) {
                         refetch();
                       }
                     }}

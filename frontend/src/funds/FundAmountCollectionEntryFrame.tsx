@@ -6,6 +6,7 @@ import CaptionedFrame from "@framework/dialog/CaptionedFrame";
 import ColumnButton from "@framework/listframe/ColumnButton";
 import type { FundAmount } from "@funds/ApiTypes";
 import FundAmountEntryFrame from "@funds/FundAmountEntryFrame";
+import formatCurrency from "@framework/formatCurrency";
 
 /**
  * Props for the FundAmountCollectionEntryFrame component.
@@ -80,10 +81,10 @@ const FundAmountCollectionEntryFrame = function ({
           </Stack>
         ))}
         <Typography variant="body2">
-          Total: $
-          {value
-            .reduce((acc, fundAmount) => acc + fundAmount.amount, 0)
-            .toFixed(2)}
+          Total:{" "}
+          {formatCurrency(
+            value.reduce((acc, fundAmount) => acc + fundAmount.amount, 0),
+          )}
         </Typography>
       </CaptionedFrame>
     </div>
