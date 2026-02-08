@@ -55,12 +55,12 @@ public class AccountBalanceHistoryRepository(DatabaseContext databaseContext) : 
             .FirstOrDefault();
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<(AccountBalanceHistory History, Transaction Transaction)> FindAllHistoriesLaterThanOrEqualTo(AccountId accountId, DateOnly historyDate, int sequence)
+    public IReadOnlyCollection<(AccountBalanceHistory History, Transaction Transaction)> FindAllHistoriesLaterThan(AccountId accountId, DateOnly historyDate, int sequence)
     {
         var results = databaseContext.AccountBalanceHistories
             .Where(history => history.AccountId == accountId &&
                               (history.Date > historyDate ||
-                               (history.Date == historyDate && history.Sequence >= sequence)))
+                               (history.Date == historyDate && history.Sequence > sequence)))
             .Join(databaseContext.Transactions,
                 history => history.TransactionId,
                 transaction => transaction.Id,

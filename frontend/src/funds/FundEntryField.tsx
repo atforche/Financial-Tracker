@@ -1,4 +1,4 @@
-import ComboBoxEntryField from "@framework/dialog/ComboBoxEntryField";
+import { ComboBoxEntryField } from "@framework/dialog/ComboBoxEntryField";
 import type { FundIdentifier } from "@funds/ApiTypes";
 import type { JSX } from "react";
 import useGetAllFunds from "@funds/useGetAllFunds";

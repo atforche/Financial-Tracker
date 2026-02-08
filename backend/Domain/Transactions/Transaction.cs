@@ -193,7 +193,7 @@ public class Transaction : Entity<TransactionId>
             IEnumerable<FundAmount> fundAmounts = transactionAccount.FundAmounts.Select(fundAmount => new FundAmount
             {
                 FundId = fundAmount.FundId,
-                Amount = fundAmount.Amount
+                Amount = transactionAccountType == TransactionAccountType.Debit ? -1 * fundAmount.Amount : fundAmount.Amount
             });
             if (!newAccountBalance.TryAddNewAmounts(fundAmounts, out newAccountBalance, out IEnumerable<Exception> addExceptions2))
             {
@@ -248,7 +248,7 @@ public class Transaction : Entity<TransactionId>
             var accountAmount = new AccountAmount
             {
                 AccountId = transactionAccount.AccountId,
-                Amount = fundAmount.Amount
+                Amount = transactionAccountType == TransactionAccountType.Debit ? -1 * fundAmount.Amount : fundAmount.Amount
             };
             newFundBalance = newFundBalance.AddNewAmount(accountAmount);
         }

@@ -33,9 +33,9 @@ public interface IAccountBalanceHistoryRepository
     AccountBalanceHistory? FindLatestHistoryEarlierThan(AccountId accountId, DateOnly historyDate, int sequenceNumber);
 
     /// <summary>
-    /// Gets all Account Balance History entries later than or equal to the specified date and sequence number
+    /// Gets all Account Balance History entries later than the specified date and sequence number
     /// </summary>
-    IReadOnlyCollection<(AccountBalanceHistory History, Transaction Transaction)> FindAllHistoriesLaterThanOrEqualTo(AccountId accountId, DateOnly historyDate, int sequence);
+    IReadOnlyCollection<(AccountBalanceHistory History, Transaction Transaction)> FindAllHistoriesLaterThan(AccountId accountId, DateOnly historyDate, int sequence);
 
     /// <summary>
     /// Adds the provided Account Balance History to the repository

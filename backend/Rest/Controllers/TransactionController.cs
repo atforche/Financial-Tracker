@@ -123,6 +123,34 @@ public sealed class TransactionController(
     }
 
     /// <summary>
+    /// Posts the provided Transaction
+    /// </summary>
+    [HttpPost("{transactionId}/post")]
+    [ProducesResponseType(typeof(TransactionModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> PostAsync(Guid transactionId, PostTransactionModel postTransactionModel)
+    {
+        if (!transactionMapper.TryToDomain(transactionId, out Transaction? transaction, out IActionResult? errorResult))
+        {
+            return errorResult;
+        }
+        if (!accountMapper.TryToDomain(postTransactionModel.AccountId, out Account? account, out errorResult))
+        {
+            return errorResult;
+        }
+        if (!transactionService.TryPost(
+                transaction,
+                account.Id,
+                postTransactionModel.Date,
+                out IEnumerable<Exception> exceptions))
+        {
+            return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to post Transaction.", exceptions));
+        }
+        await unitOfWork.SaveChangesAsync();
+        return Ok(transactionMapper.ToModel(transaction));
+    }
+
+    /// <summary>
     /// Deletes the Transaction with the provided ID
     /// </summary>
     [HttpDelete("{transactionId}")]

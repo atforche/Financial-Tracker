@@ -1,5 +1,5 @@
 import type { AccountIdentifier } from "@accounts/ApiTypes";
-import ComboBoxEntryField from "@framework/dialog/ComboBoxEntryField";
+import { ComboBoxEntryField } from "@framework/dialog/ComboBoxEntryField";
 import type { JSX } from "react";
 import useGetAllAccounts from "@accounts/useGetAllAccounts";
 

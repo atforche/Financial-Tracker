@@ -1,5 +1,5 @@
 import { Button, Stack } from "@mui/material";
-import { Delete, Edit } from "@mui/icons-material";
+import { Delete, Edit, Signpost } from "@mui/icons-material";
 import { type JSX, useState } from "react";
 import {
   type Transaction,
@@ -8,6 +8,7 @@ import {
 import DeleteTransactionDialog from "@transactions/DeleteTransactionDialog";
 import Dialog from "@framework/dialog/Dialog";
 import DialogHeaderButton from "@framework/dialog/DialogHeaderButton";
+import PostTransactionDialog from "@transactions/PostTransactionDialog";
 import TransactionAccountFrame from "@transactions/TransactionAccountFrame";
 import TransactionDetailsFrame from "@transactions/TransactionDetailsFrame";
 import TransactionFundFrame from "@transactions/TransactionFundFrame";
@@ -46,6 +47,22 @@ const TransactionDialog = function ({
           setChildDialog(null);
           if (success) {
             setMessage("Transaction updated successfully.");
+            setNeedsRefetch(true);
+          }
+        }}
+      />,
+    );
+  };
+
+  const onPost = function (): void {
+    setChildDialog(
+      <PostTransactionDialog
+        transaction={existingTransaction}
+        setTransaction={setExistingTransaction}
+        onClose={(success) => {
+          setChildDialog(null);
+          if (success) {
+            setMessage("Transaction posted successfully.");
             setNeedsRefetch(true);
           }
         }}
@@ -105,6 +122,11 @@ const TransactionDialog = function ({
       headerActions={
         <Stack direction="row" spacing={2}>
           <DialogHeaderButton label="Edit" icon={<Edit />} onClick={onEdit} />
+          <DialogHeaderButton
+            label="Post"
+            icon={<Signpost />}
+            onClick={onPost}
+          />
           <DialogHeaderButton
             label="Delete"
             icon={<Delete />}

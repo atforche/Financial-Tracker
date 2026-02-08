@@ -1,6 +1,6 @@
 import type { AccountingPeriodIdentifier } from "@accounting-periods/ApiTypes";
 import type { ApiErrorDetail } from "@data/ApiError";
-import ComboBoxEntryField from "@framework/dialog/ComboBoxEntryField";
+import { ComboBoxEntryField } from "@framework/dialog/ComboBoxEntryField";
 import type { JSX } from "react";
 import useGetAllOpenAccountingPeriods from "@accounting-periods/useGetAllOpenAccountingPeriods";
 

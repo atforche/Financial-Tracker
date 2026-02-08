@@ -778,6 +778,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/transactions/{transactionId}/post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Posts the provided Transaction */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    transactionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PostTransactionModel"];
+                    "text/json": components["schemas"]["PostTransactionModel"];
+                    "application/*+json": components["schemas"]["PostTransactionModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionModel"];
+                        "application/json": components["schemas"]["TransactionModel"];
+                        "text/json": components["schemas"]["TransactionModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1024,6 +1081,19 @@ export interface components {
             description: string;
             /** @description Current Balance for the Fund */
             currentBalance: components["schemas"]["FundBalanceModel"];
+        };
+        /** @description Model representing a request to post a Transaction */
+        PostTransactionModel: {
+            /**
+             * Format: uuid
+             * @description Account to post the Transaction to
+             */
+            accountId: string;
+            /**
+             * Format: date
+             * @description Date for the Transaction
+             */
+            date: string;
         };
         /** @description Model representing a Transaction Account */
         TransactionAccountModel: {

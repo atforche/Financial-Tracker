@@ -191,7 +191,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
 
         var existingBalance = newBalanceHistory.ToFundBalance();
         foreach ((FundBalanceHistory history, Transaction transaction) in fundBalanceHistoryRepository
-            .FindAllHistoriesLaterThanOrEqualTo(newBalanceHistory.FundId, newBalanceHistory.Date, newBalanceHistory.Sequence))
+            .FindAllHistoriesLaterThan(newBalanceHistory.FundId, newBalanceHistory.Date, newBalanceHistory.Sequence))
         {
             if (history.Date == newBalanceHistory.Date)
             {
@@ -220,7 +220,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
 
         var existingBalance = updatedBalanceHistory.ToFundBalance();
         foreach ((FundBalanceHistory history, Transaction transaction) in fundBalanceHistoryRepository
-            .FindAllHistoriesLaterThanOrEqualTo(updatedBalanceHistory.FundId, updatedBalanceHistory.Date, updatedBalanceHistory.Sequence))
+            .FindAllHistoriesLaterThan(updatedBalanceHistory.FundId, updatedBalanceHistory.Date, updatedBalanceHistory.Sequence))
         {
             if (!transaction.TryApplyToFundBalance(existingBalance, history.Date, out FundBalance? updatedBalance, out IEnumerable<Exception> updateExceptions))
             {
@@ -244,7 +244,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
 
         FundBalance existingBalance = GetExistingFundBalanceAsOf(deletedBalanceHistory.FundId, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence);
         foreach ((FundBalanceHistory history, Transaction transaction) in fundBalanceHistoryRepository
-            .FindAllHistoriesLaterThanOrEqualTo(deletedBalanceHistory.FundId, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence + 1))
+            .FindAllHistoriesLaterThan(deletedBalanceHistory.FundId, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence + 1))
         {
             if (history.Date == deletedBalanceHistory.Date)
             {

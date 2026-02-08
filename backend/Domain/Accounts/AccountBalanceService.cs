@@ -222,7 +222,7 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
 
         var existingBalance = newBalanceHistory.ToAccountBalance();
         foreach ((AccountBalanceHistory history, Transaction transaction) in accountBalanceHistoryRepository
-            .FindAllHistoriesLaterThanOrEqualTo(newBalanceHistory.AccountId, newBalanceHistory.Date, newBalanceHistory.Sequence))
+            .FindAllHistoriesLaterThan(newBalanceHistory.AccountId, newBalanceHistory.Date, newBalanceHistory.Sequence))
         {
             if (history.Date == newBalanceHistory.Date)
             {
@@ -251,7 +251,7 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
 
         var existingBalance = updatedBalanceHistory.ToAccountBalance();
         foreach ((AccountBalanceHistory history, Transaction transaction) in accountBalanceHistoryRepository
-            .FindAllHistoriesLaterThanOrEqualTo(updatedBalanceHistory.AccountId, updatedBalanceHistory.Date, updatedBalanceHistory.Sequence))
+            .FindAllHistoriesLaterThan(updatedBalanceHistory.AccountId, updatedBalanceHistory.Date, updatedBalanceHistory.Sequence))
         {
             if (!transaction.TryApplyToAccountBalance(existingBalance, history.Date, out AccountBalance? updatedBalance, out IEnumerable<Exception> updateExceptions))
             {
@@ -275,7 +275,7 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
 
         AccountBalance existingBalance = GetExistingAccountBalanceAsOf(deletedBalanceHistory.AccountId, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence);
         foreach ((AccountBalanceHistory history, Transaction transaction) in accountBalanceHistoryRepository
-            .FindAllHistoriesLaterThanOrEqualTo(deletedBalanceHistory.AccountId, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence + 1))
+            .FindAllHistoriesLaterThan(deletedBalanceHistory.AccountId, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence + 1))
         {
             if (history.Date == deletedBalanceHistory.Date)
             {

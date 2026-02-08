@@ -357,7 +357,7 @@ public class TransactionService(
     /// <summary>
     /// Validates the posting of this Transaction within an Account
     /// </summary>
-    private static bool ValidatePosting(
+    private bool ValidatePosting(
         Transaction transaction,
         AccountId account,
         DateOnly postedDate,
@@ -387,6 +387,15 @@ public class TransactionService(
         else if (postedDate < transaction.Date)
         {
             exceptions = exceptions.Append(new InvalidTransactionDateException("The posted date is before the Transaction date."));
+        }
+        else
+        {
+            AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(transaction.AccountingPeriod);
+            int monthDifference = Math.Abs(((accountingPeriod.Year - postedDate.Year) * 12) + accountingPeriod.Month - postedDate.Month);
+            if (monthDifference > 1)
+            {
+                exceptions = exceptions.Append(new InvalidTransactionDateException("The posted date must be in a month adjacent to the Accounting Period month."));
+            }
         }
         return !exceptions.Any();
     }
