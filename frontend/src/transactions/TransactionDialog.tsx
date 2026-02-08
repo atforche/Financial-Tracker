@@ -1,11 +1,13 @@
 import { Button, Stack } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
+import { type JSX, useState } from "react";
 import {
   type Transaction,
   TransactionAccountType,
 } from "@transactions/ApiTypes";
+import DeleteTransactionDialog from "@transactions/DeleteTransactionDialog";
 import Dialog from "@framework/dialog/Dialog";
-import type { JSX } from "react";
+import DialogHeaderButton from "@framework/dialog/DialogHeaderButton";
 import TransactionAccountFrame from "@transactions/TransactionAccountFrame";
 import TransactionDetailsFrame from "@transactions/TransactionDetailsFrame";
 import TransactionFundFrame from "./TransactionFundFrame";
@@ -15,6 +17,7 @@ import TransactionFundFrame from "./TransactionFundFrame";
  */
 interface TransactionDialogProps {
   readonly transaction: Transaction;
+  readonly setMessage: (message: string | null) => void;
   readonly onClose: (success: boolean) => void;
 }
 
@@ -25,8 +28,27 @@ interface TransactionDialogProps {
  */
 const TransactionDialog = function ({
   transaction,
+  setMessage,
   onClose,
 }: TransactionDialogProps): JSX.Element {
+  const [childDialog, setChildDialog] = useState<JSX.Element | null>(null);
+
+  const onDelete = function (): void {
+    setChildDialog(
+      <DeleteTransactionDialog
+        transaction={transaction}
+        onClose={(success) => {
+          setChildDialog(null);
+          if (success) {
+            setMessage("Transaction deleted successfully.");
+            onClose(success);
+          }
+        }}
+      />,
+    );
+    setMessage(null);
+  };
+
   return (
     <Dialog
       title="Transaction Details"
@@ -48,6 +70,7 @@ const TransactionDialog = function ({
             ) : null}
           </Stack>
           <TransactionFundFrame transaction={transaction} />
+          {childDialog}
         </>
       }
       actions={
@@ -62,7 +85,11 @@ const TransactionDialog = function ({
       headerActions={
         <Stack direction="row" spacing={2}>
           <Edit />
-          <Delete />
+          <DialogHeaderButton
+            label="Delete"
+            icon={<Delete />}
+            onClick={onDelete}
+          />
         </Stack>
       }
     />

@@ -9,5 +9,5 @@ values
 
 insert into AccountingPeriods (Id, Year, Month, IsOpen)
 values    
-    ('EA26EA49-876F-4E97-A9C0-661737EFAC5C', 2025, 12, false),
-    ('95033FED-2BE0-4A7B-A9FC-F359C072AD4D', 2026, 1, true);
+    ('EA26EA49-876F-4E97-A9C0-661737EFAC5C', 2026, 1, false),
+    ('95033FED-2BE0-4A7B-A9FC-F359C072AD4D', 2026, 2, true);

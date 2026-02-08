@@ -149,8 +149,12 @@ const TransactionListFrame = function (): JSX.Element {
                 setDialog(
                   <TransactionDialog
                     transaction={transaction}
-                    onClose={() => {
+                    setMessage={setMessage}
+                    onClose={(success) => {
                       setDialog(null);
+                      if (success) {
+                        refetch();
+                      }
                     }}
                   />,
                 );
