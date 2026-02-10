@@ -1,5 +1,5 @@
 import { AccountType } from "@accounts/ApiTypes";
-import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
+import type { AccountingPeriodIdentifier } from "@accounting-periods/ApiTypes";
 import type { ApiError } from "@data/ApiError";
 import type { Dayjs } from "dayjs";
 import type { FundAmount } from "@funds/ApiTypes";
@@ -9,16 +9,11 @@ import { useCallback } from "react";
 
 /**
  * Interface representing the arguments for creating an Account.
- * @param name - Name for the Account.
- * @param type - Type for the Account.
- * @param accountingPeriod - Accounting Period for the Account.
- * @param addDate - Date to add the Account.
- * @param initialFundAmounts - Initial Fund amounts for the Account.
  */
 interface UseCreateAccountArgs {
   readonly name: string;
   readonly type: AccountType | null;
-  readonly accountingPeriod: AccountingPeriod | null;
+  readonly accountingPeriod: AccountingPeriodIdentifier | null;
   readonly addDate: Dayjs | null;
   readonly initialFundAmounts: FundAmount[];
 }
@@ -51,7 +46,7 @@ const useCreateAccount = function ({
         accountingPeriodId: accountingPeriod?.id ?? "",
         addDate: addDate ? addDate.format("YYYY-MM-DD") : "",
         initialFundAmounts: initialFundAmounts.map((fundAmount) => ({
-          fundId: fundAmount.fund.id,
+          fundId: fundAmount.fundId,
           amount: fundAmount.amount,
         })),
       },

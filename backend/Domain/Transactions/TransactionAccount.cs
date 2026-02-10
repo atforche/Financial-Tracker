@@ -11,9 +11,14 @@ public class TransactionAccount
     private readonly List<FundAmount> _fundAmounts = [];
 
     /// <summary>
-    /// Account for this Transaction Account
+    /// Parent Transaction for this Transaction Account
     /// </summary>
-    public AccountId Account { get; private set; }
+    public Transaction Transaction { get; private set; }
+
+    /// <summary>
+    /// Account id for this Transaction Account
+    /// </summary>
+    public AccountId AccountId { get; private set; }
 
     /// <summary>
     /// Fund Amounts for this Transaction Account
@@ -28,14 +33,19 @@ public class TransactionAccount
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal TransactionAccount(AccountId account, IEnumerable<FundAmount> fundAmounts)
+    internal TransactionAccount(Transaction transaction, AccountId accountId, IEnumerable<FundAmount> fundAmounts)
     {
-        Account = account;
+        Transaction = transaction;
+        AccountId = accountId;
         _fundAmounts = fundAmounts.ToList();
     }
 
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private TransactionAccount() => Account = null!;
+    private TransactionAccount()
+    {
+        Transaction = null!;
+        AccountId = null!;
+    }
 }

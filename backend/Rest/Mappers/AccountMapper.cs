@@ -8,16 +8,17 @@ namespace Rest.Mappers;
 /// <summary>
 /// Mapper class that handles mapping Accounts to Account Models
 /// </summary>
-public sealed class AccountMapper(IAccountRepository accountRepository)
+public sealed class AccountMapper(AccountBalanceService accountBalanceService, AccountBalanceMapper accountBalanceMapper, IAccountRepository accountRepository)
 {
     /// <summary>
     /// Maps the provided Account to an Account Model
     /// </summary>
-    public static AccountModel ToModel(Account account) => new()
+    public AccountModel ToModel(Account account) => new()
     {
         Id = account.Id.Value,
         Name = account.Name,
-        Type = AccountTypeMapper.ToModel(account.Type)
+        Type = AccountTypeMapper.ToModel(account.Type),
+        CurrentBalance = accountBalanceMapper.ToModel(accountBalanceService.GetCurrentBalance(account.Id))
     };
 
     /// <summary>

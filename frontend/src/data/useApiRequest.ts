@@ -5,8 +5,8 @@ import { useCallback, useEffect, useState } from "react";
  * Interface representing the arguments to the useApiRequest hook.
  * @param apiRequestFunction - Function to execute the API request.
  */
-interface UseApiRequestArgs {
-  apiRequestFunction: () => Promise<ApiError | null>;
+interface UseApiRequestArgs<T> {
+  apiRequestFunction: () => Promise<T | ApiError | null>;
 }
 
 /**
@@ -14,14 +14,18 @@ interface UseApiRequestArgs {
  * @param args - Arguments to use to execute the API request.
  * @returns Running state, success state, current error, and function to execute the API request.
  */
-const useApiRequest = function ({ apiRequestFunction }: UseApiRequestArgs): {
+const useApiRequest = function <T>({
+  apiRequestFunction,
+}: UseApiRequestArgs<T>): {
   isRunning: boolean;
   isSuccess: boolean;
+  response: T | null;
   error: ApiError | null;
   execute: () => void;
 } {
   const [isRunning, setIsRunning] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [response, setResponse] = useState<T | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
   const [shouldRun, setShouldRun] = useState(false);
 
@@ -41,6 +45,7 @@ const useApiRequest = function ({ apiRequestFunction }: UseApiRequestArgs): {
         if (isApiError(result)) {
           setError(result);
         } else {
+          setResponse(result);
           setIsSuccess(true);
         }
       })
@@ -55,7 +60,7 @@ const useApiRequest = function ({ apiRequestFunction }: UseApiRequestArgs): {
       });
   }, [apiRequestFunction, shouldRun]);
 
-  return { isRunning, isSuccess, error, execute };
+  return { isRunning, isSuccess, response, error, execute };
 };
 
 export default useApiRequest;

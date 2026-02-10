@@ -90,4 +90,4 @@ const ComboBoxEntryField = function <T>({
   );
 };
 
-export default ComboBoxEntryField;
+export { type ComboBoxOption, ComboBoxEntryField };

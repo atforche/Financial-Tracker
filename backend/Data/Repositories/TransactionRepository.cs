@@ -16,8 +16,8 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> FindAllByAccount(AccountId accountId) => databaseContext.Transactions.Where(transaction =>
-        (transaction.DebitAccount != null && transaction.DebitAccount.Account == accountId) ||
-        (transaction.CreditAccount != null && transaction.CreditAccount.Account == accountId)).ToList();
+        (transaction.DebitAccount != null && transaction.DebitAccount.AccountId == accountId) ||
+        (transaction.CreditAccount != null && transaction.CreditAccount.AccountId == accountId)).ToList();
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> FindAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>

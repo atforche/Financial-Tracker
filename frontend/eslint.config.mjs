@@ -49,6 +49,7 @@ export default defineConfig([
 
     rules: {
       // base eslint rules
+      complexity: ["error", { max: 30 }],
       "func-names": "off",
       "id-length": "off",
       "max-lines-per-function": "off",
@@ -57,6 +58,7 @@ export default defineConfig([
       "no-magic-numbers": "off", // handled by typescript-eslint
       "no-ternary": "off",
       "one-var": ["error", "never"],
+      "prefer-named-capture-group": "off",
       "sort-keys": ["off"],
 
       // import rules

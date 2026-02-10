@@ -1,10 +1,12 @@
 import "@funds/FundAmountCollectionEntryFrame.css";
 import { AddCircleOutline, Delete } from "@mui/icons-material";
-import { Box, Stack, Typography } from "@mui/material";
 import { type JSX, useState } from "react";
+import { Stack, Typography } from "@mui/material";
+import CaptionedFrame from "@framework/dialog/CaptionedFrame";
 import ColumnButton from "@framework/listframe/ColumnButton";
 import type { FundAmount } from "@funds/ApiTypes";
 import FundAmountEntryFrame from "@funds/FundAmountEntryFrame";
+import formatCurrency from "@framework/formatCurrency";
 
 /**
  * Props for the FundAmountCollectionEntryFrame component.
@@ -31,14 +33,13 @@ const FundAmountCollectionEntryFrame = function ({
   const [newFundAmount, setNewFundAmount] = useState<FundAmount | null>(null);
   return (
     <div className="fund-amount-collection-entry-frame">
-      <Typography variant="body1">{label}</Typography>
-      <Box>
+      <CaptionedFrame caption={label}>
         <Stack direction="row" spacing={2} alignItems="center">
           <FundAmountEntryFrame
             value={newFundAmount}
             setValue={setNewFundAmount}
             filter={(fund) =>
-              !value.some((fundAmount) => fundAmount.fund.id === fund.id)
+              !value.some((fundAmount) => fundAmount.fundId === fund.id)
             }
           />
           <ColumnButton
@@ -46,7 +47,7 @@ const FundAmountCollectionEntryFrame = function ({
             icon={<AddCircleOutline />}
             onClick={
               newFundAmount === null ||
-              newFundAmount.fund.id === "" ||
+              newFundAmount.fundId === "" ||
               newFundAmount.amount === 0
                 ? null
                 : (): void => {
@@ -61,7 +62,7 @@ const FundAmountCollectionEntryFrame = function ({
         </Stack>
         {value.map((fundAmount, index) => (
           <Stack
-            key={fundAmount.fund.id}
+            key={fundAmount.fundId}
             direction="row"
             spacing={2}
             alignItems="center"
@@ -80,12 +81,12 @@ const FundAmountCollectionEntryFrame = function ({
           </Stack>
         ))}
         <Typography variant="body2">
-          Total: $
-          {value
-            .reduce((acc, fundAmount) => acc + fundAmount.amount, 0)
-            .toFixed(2)}
+          Total:{" "}
+          {formatCurrency(
+            value.reduce((acc, fundAmount) => acc + fundAmount.amount, 0),
+          )}
         </Typography>
-      </Box>
+      </CaptionedFrame>
     </div>
   );
 };

@@ -2,7 +2,7 @@ import { type JSX, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountType } from "@accounts/ApiTypes";
 import AccountTypeEntryField from "@accounts/AccountTypeEntryField";
-import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
+import type { AccountingPeriodIdentifier } from "@accounting-periods/ApiTypes";
 import { Button } from "@mui/material";
 import DateEntryField from "@framework/dialog/DateEntryField";
 import Dialog from "@framework/dialog/Dialog";
@@ -33,7 +33,7 @@ const CreateAccountDialog = function ({
   const [accountName, setAccountName] = useState<string>("");
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [accountingPeriod, setAccountingPeriod] =
-    useState<AccountingPeriod | null>(null);
+    useState<AccountingPeriodIdentifier | null>(null);
   const [addDate, setAddDate] = useState<Dayjs | null>(null);
   const [fundAmounts, setFundAmounts] = useState<FundAmount[]>([]);
   const { isRunning, isSuccess, error, createAccount } = useCreateAccount({
@@ -88,14 +88,12 @@ const CreateAccountDialog = function ({
             }
             minDate={
               accountingPeriod
-                ? dayjs(
-                    `${accountingPeriod.year}-${accountingPeriod.month}-01`,
-                  ).subtract(1, "month")
+                ? dayjs(accountingPeriod.name, "MMMM YYYY").subtract(1, "month")
                 : null
             }
             maxDate={
               accountingPeriod
-                ? dayjs(`${accountingPeriod.year}-${accountingPeriod.month}-01`)
+                ? dayjs(accountingPeriod.name, "MMMM YYYY")
                     .add(2, "month")
                     .subtract(1, "day")
                 : null

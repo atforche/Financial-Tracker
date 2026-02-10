@@ -34,6 +34,15 @@ const useGetAllAccounts = function (): {
         id: index.toString(),
         name: "",
         type: AccountType.Standard,
+        currentBalance: {
+          accountId: "",
+          balance: 0,
+          fundBalances: [],
+          pendingDebitAmount: 0,
+          pendingDebits: [],
+          pendingCreditAmount: 0,
+          pendingCredits: [],
+        },
       })),
   });
   return {

@@ -1,5 +1,5 @@
 import { AccountType } from "@accounts/ApiTypes";
-import ComboBoxEntryField from "@framework/dialog/ComboBoxEntryField";
+import { ComboBoxEntryField } from "@framework/dialog/ComboBoxEntryField";
 import type { JSX } from "react";
 
 /**

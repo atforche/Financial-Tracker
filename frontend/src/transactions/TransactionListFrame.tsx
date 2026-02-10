@@ -1,12 +1,16 @@
+import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type JSX, useState } from "react";
+import ColumnButton from "@framework/listframe/ColumnButton";
 import ColumnCell from "@framework/listframe/ColumnCell";
 import ColumnHeader from "@framework/listframe/ColumnHeader";
+import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
+import CreateTransactionDialog from "@transactions/CreateTransactionDialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import ListFrame from "@framework/listframe/ListFrame";
 import SuccessAlert from "@framework/alerts/SuccessAlert";
 import type { Transaction } from "@transactions/ApiTypes";
-import TransactionListFrameActionColumn from "@transactions/TransactionListFrameActionColumn";
-import TransactionListFrameActionColumnHeader from "@transactions/TransactionListFrameActionColumnHeader";
+import TransactionDialog from "@transactions/TransactionDialog";
+import formatCurrency from "@framework/formatCurrency";
 import useGetAllTransactions from "@transactions/useGetAllTransactions";
 
 /**
@@ -18,24 +22,6 @@ const TransactionListFrame = function (): JSX.Element {
   const [dialog, setDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const { transactions, isLoading, error, refetch } = useGetAllTransactions();
-  const getAmountDisplay = function (transaction: Transaction): string {
-    let total = 0.0;
-    if (transaction.debitFundAmounts) {
-      total = transaction.debitFundAmounts.reduce(
-        (sum, fundAmount) => sum + fundAmount.amount,
-        0,
-      );
-    } else if (transaction.creditFundAmounts) {
-      total = transaction.creditFundAmounts.reduce(
-        (sum, fundAmount) => sum + fundAmount.amount,
-        0,
-      );
-    }
-    return `$ ${total.toLocaleString([], {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
-  };
   return (
     <ListFrame<Transaction>
       name="Transactions"
@@ -77,11 +63,30 @@ const TransactionListFrame = function (): JSX.Element {
           minWidth={170}
           align="left"
         />,
-        <TransactionListFrameActionColumnHeader
+        <ColumnHeader
           key="actions"
-          setDialog={setDialog}
-          setMessage={setMessage}
-          refetch={refetch}
+          content={
+            <ColumnHeaderButton
+              label="Add"
+              icon={<AddCircleOutline />}
+              onClick={() => {
+                setDialog(
+                  <CreateTransactionDialog
+                    onClose={(success) => {
+                      setDialog(null);
+                      if (success) {
+                        setMessage("Transaction added successfully.");
+                      }
+                      refetch();
+                    }}
+                  />,
+                );
+                setMessage(null);
+              }}
+            />
+          }
+          minWidth={125}
+          align="right"
         />,
       ]}
       columns={(transaction: Transaction) => [
@@ -115,33 +120,51 @@ const TransactionListFrame = function (): JSX.Element {
         />,
         <ColumnCell
           key="debitAccount"
-          content={transaction.debitAccountName ?? ""}
+          content={transaction.debitAccount?.accountName ?? ""}
           align="left"
           isLoading={isLoading}
           isError={error !== null}
         />,
         <ColumnCell
           key="creditAccount"
-          content={transaction.creditAccountName ?? ""}
+          content={transaction.creditAccount?.accountName ?? ""}
           align="left"
           isLoading={isLoading}
           isError={error !== null}
         />,
         <ColumnCell
           key="amount"
-          content={getAmountDisplay(transaction)}
+          content={formatCurrency(transaction.amount)}
           align="left"
           isLoading={isLoading}
           isError={error !== null}
         />,
-        <TransactionListFrameActionColumn
-          key="actions"
-          transaction={transaction}
+        <ColumnCell
+          key="view"
+          content={
+            <ColumnButton
+              label="View"
+              icon={<ArrowForwardIos />}
+              onClick={() => {
+                setDialog(
+                  <TransactionDialog
+                    transaction={transaction}
+                    setMessage={setMessage}
+                    onClose={(needsRefetch) => {
+                      setDialog(null);
+                      if (needsRefetch) {
+                        refetch();
+                      }
+                    }}
+                  />,
+                );
+                setMessage(null);
+              }}
+            />
+          }
+          align="right"
           isLoading={isLoading}
-          error={error}
-          setDialog={setDialog}
-          setMessage={setMessage}
-          refetch={refetch}
+          isError={error !== null}
         />,
       ]}
       getId={(transaction: Transaction) => transaction.id}

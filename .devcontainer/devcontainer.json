@@ -9,10 +9,11 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-                "esbenp.prettier-vscode",
+				"esbenp.prettier-vscode",
 				"ms-dotnettools.csdevkit",
-                "ms-python.pylint",
-				"streetsidesoftware.code-spell-checker"
+				"ms-python.pylint",
+				"streetsidesoftware.code-spell-checker",
+				"alexcvzz.vscode-sqlite"
 			]
 		}
 	},

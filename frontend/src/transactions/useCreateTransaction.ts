@@ -1,5 +1,5 @@
-import type { Account } from "@accounts/ApiTypes";
-import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
+import type { AccountIdentifier } from "@accounts/ApiTypes";
+import type { AccountingPeriodIdentifier } from "@accounting-periods/ApiTypes";
 import type { ApiError } from "@data/ApiError";
 import type { Dayjs } from "dayjs";
 import type { FundAmount } from "@funds/ApiTypes";
@@ -11,13 +11,13 @@ import { useCallback } from "react";
  * Interface representing the arguments for creating a Transaction.
  */
 interface UseCreateTransactionArgs {
-  readonly accountingPeriod: AccountingPeriod | null;
+  readonly accountingPeriod: AccountingPeriodIdentifier | null;
   readonly date: Dayjs | null;
   readonly location: string;
   readonly description: string;
-  readonly debitAccount: Account | null;
+  readonly debitAccount: AccountIdentifier | null;
   readonly debitFundAmounts: FundAmount[];
-  readonly creditAccount: Account | null;
+  readonly creditAccount: AccountIdentifier | null;
   readonly creditFundAmounts: FundAmount[];
 }
 
@@ -57,7 +57,7 @@ const useCreateTransaction = function ({
             : {
                 accountId: debitAccount.id,
                 fundAmounts: debitFundAmounts.map((fundAmount) => ({
-                  fundId: fundAmount.fund.id,
+                  fundId: fundAmount.fundId,
                   amount: fundAmount.amount,
                 })),
               },
@@ -67,7 +67,7 @@ const useCreateTransaction = function ({
             : {
                 accountId: creditAccount.id,
                 fundAmounts: creditFundAmounts.map((fundAmount) => ({
-                  fundId: fundAmount.fund.id,
+                  fundId: fundAmount.fundId,
                   amount: fundAmount.amount,
                 })),
               },

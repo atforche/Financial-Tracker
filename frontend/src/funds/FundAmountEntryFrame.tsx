@@ -1,6 +1,6 @@
-import type { Fund, FundAmount } from "@funds/ApiTypes";
+import type { FundAmount, FundIdentifier } from "@funds/ApiTypes";
 import CurrencyEntryField from "@framework/dialog/CurrencyEntryField";
-import FundEntryField from "./FundEntryField";
+import FundEntryField from "@funds/FundEntryField";
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
 
@@ -13,7 +13,7 @@ import { Stack } from "@mui/material";
 interface FundAmountEntryFrameProps {
   readonly value: FundAmount | null;
   readonly setValue?: ((newValue: FundAmount | null) => void) | null;
-  readonly filter?: ((fund: Fund) => boolean) | null;
+  readonly filter?: ((fund: FundIdentifier) => boolean) | null;
 }
 
 /**
@@ -30,12 +30,13 @@ const FundAmountEntryFrame = function ({
     <Stack direction="row" spacing={2} alignItems="center">
       <FundEntryField
         label="Fund"
-        value={value?.fund ?? null}
+        value={value ? { id: value.fundId, name: value.fundName } : null}
         setValue={
           setValue
             ? (newValue): void => {
                 setValue({
-                  fund: newValue ?? { id: "", name: "", description: "" },
+                  fundId: newValue?.id ?? "",
+                  fundName: newValue?.name ?? "",
                   amount: value?.amount ?? 0,
                 });
               }
@@ -45,12 +46,13 @@ const FundAmountEntryFrame = function ({
       />
       <CurrencyEntryField
         label="Amount"
-        value={value?.amount ?? 0}
+        value={value ? value.amount : null}
         setValue={
           setValue
             ? (newAmount): void => {
                 setValue({
-                  fund: value?.fund ?? { id: "", name: "", description: "" },
+                  fundId: value?.fundId ?? "",
+                  fundName: value?.fundName ?? "",
                   amount: newAmount,
                 });
               }

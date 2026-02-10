@@ -48,7 +48,7 @@ public class AccountService(
             account = null;
             return false;
         }
-        if (!TransactionService.TryPost(initialTransaction, account.Id, request.AddDate, out IEnumerable<Exception> postingExceptions))
+        if (!transactionService.TryPost(initialTransaction, account.Id, request.AddDate, out IEnumerable<Exception> postingExceptions))
         {
             exceptions = exceptions.Concat(postingExceptions);
             account = null;

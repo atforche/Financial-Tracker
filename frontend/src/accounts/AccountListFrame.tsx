@@ -7,6 +7,7 @@ import ColumnHeader from "@framework/listframe/ColumnHeader";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import ListFrame from "@framework/listframe/ListFrame";
 import SuccessAlert from "@framework/alerts/SuccessAlert";
+import formatCurrency from "@framework/formatCurrency";
 import useGetAllAccounts from "@accounts/useGetAllAccounts";
 
 /**
@@ -24,6 +25,18 @@ const AccountListFrame = function (): JSX.Element {
       headers={[
         <ColumnHeader key="name" content="Name" minWidth={170} align="left" />,
         <ColumnHeader key="type" content="Type" minWidth={170} align="left" />,
+        <ColumnHeader
+          key="balance"
+          content="Current Balance"
+          minWidth={170}
+          align="left"
+        />,
+        <ColumnHeader
+          key="available"
+          content="Available to Spend"
+          minWidth={170}
+          align="left"
+        />,
         <AccountListFrameActionColumnHeader
           key="actions"
           setDialog={setDialog}
@@ -42,6 +55,23 @@ const AccountListFrame = function (): JSX.Element {
         <ColumnCell
           key="type"
           content={account.type}
+          align="left"
+          isLoading={isLoading}
+          isError={error !== null}
+        />,
+        <ColumnCell
+          key="balance"
+          content={formatCurrency(account.currentBalance.balance)}
+          align="left"
+          isLoading={isLoading}
+          isError={error !== null}
+        />,
+        <ColumnCell
+          key="available"
+          content={formatCurrency(
+            account.currentBalance.balance -
+              account.currentBalance.pendingDebitAmount,
+          )}
           align="left"
           isLoading={isLoading}
           isError={error !== null}

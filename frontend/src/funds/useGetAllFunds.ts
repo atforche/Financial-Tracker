@@ -30,7 +30,20 @@ const useGetAllFunds = function (): {
     queryFunction: getAllFundsCallback,
     initialData: Array(loadingRowCount)
       .fill(null)
-      .map((_, index) => ({ id: index.toString(), name: "", description: "" })),
+      .map((_, index) => ({
+        id: index.toString(),
+        name: "",
+        description: "",
+        currentBalance: {
+          fundId: "",
+          balance: 0,
+          accountBalances: [],
+          pendingDebitAmount: 0,
+          pendingDebits: [],
+          pendingCreditAmount: 0,
+          pendingCredits: [],
+        },
+      })),
   });
   return {
     funds: data,

@@ -18,6 +18,11 @@ public class DatabaseContext : DbContext
     internal DbSet<Account> Accounts { get; set; } = default!;
 
     /// <summary>
+    /// Collection of Account Balance Histories in the database
+    /// </summary>
+    internal DbSet<AccountBalanceHistory> AccountBalanceHistories { get; set; } = default!;
+
+    /// <summary>
     /// Collection of Accounting Periods in the database
     /// </summary>
     internal DbSet<AccountingPeriod> AccountingPeriods { get; set; } = default!;
@@ -26,6 +31,11 @@ public class DatabaseContext : DbContext
     /// Collection of Funds in the database
     /// </summary>
     internal DbSet<Fund> Funds { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of Fund Balance Histories in the database
+    /// </summary>
+    internal DbSet<FundBalanceHistory> FundBalanceHistories { get; set; } = default!;
 
     /// <summary>
     /// Collection of Transactions in the database

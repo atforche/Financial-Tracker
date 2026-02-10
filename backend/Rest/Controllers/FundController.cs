@@ -23,7 +23,7 @@ public sealed class FundController(
     /// </summary>
     /// <returns>The collection of all Funds</returns>
     [HttpGet("")]
-    public IReadOnlyCollection<FundModel> GetAll() => fundRepository.FindAll().Select(FundMapper.ToModel).ToList();
+    public IReadOnlyCollection<FundModel> GetAll() => fundRepository.FindAll().Select(fundMapper.ToModel).ToList();
 
     /// <summary>
     /// Retrieves the Fund that matches the provided ID
@@ -37,7 +37,7 @@ public sealed class FundController(
         {
             return errorResult;
         }
-        return Ok(FundMapper.ToModel(fund));
+        return Ok(fundMapper.ToModel(fund));
     }
 
     /// <summary>
@@ -56,7 +56,7 @@ public sealed class FundController(
         }
         fundRepository.Add(newFund);
         await unitOfWork.SaveChangesAsync();
-        return Ok(FundMapper.ToModel(newFund));
+        return Ok(fundMapper.ToModel(newFund));
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ public sealed class FundController(
             return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to update Fund.", exceptions));
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(FundMapper.ToModel(fundToUpdate));
+        return Ok(fundMapper.ToModel(fundToUpdate));
     }
 
     /// <summary>

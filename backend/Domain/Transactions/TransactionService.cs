@@ -11,6 +11,8 @@ namespace Domain.Transactions;
 /// Service for managing Transactions
 /// </summary>
 public class TransactionService(
+    AccountBalanceService accountBalanceService,
+    FundBalanceService fundBalanceService,
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
     ITransactionRepository transactionRepository)
@@ -49,6 +51,19 @@ public class TransactionService(
             return false;
         }
         transaction = new Transaction(request);
+        if (!accountBalanceService.TryAddTransaction(transaction, out IEnumerable<Exception> balanceExceptions))
+        {
+            exceptions = exceptions.Concat(balanceExceptions);
+            transaction = null;
+            return false;
+        }
+        if (!fundBalanceService.TryAddTransaction(transaction, out IEnumerable<Exception> fundBalanceExceptions))
+        {
+            exceptions = exceptions.Concat(fundBalanceExceptions);
+            transaction = null;
+            return false;
+        }
+        transactionRepository.Add(transaction);
         return true;
     }
 
@@ -68,16 +83,16 @@ public class TransactionService(
             exceptions = exceptions.Concat(postedExceptions);
         }
         if (!ValidateDate(transaction.AccountingPeriod,
-                transaction.DebitAccount != null ? accountRepository.FindById(transaction.DebitAccount.Account) : null,
-                transaction.CreditAccount != null ? accountRepository.FindById(transaction.CreditAccount.Account) : null,
+                transaction.DebitAccount != null ? accountRepository.FindById(transaction.DebitAccount.AccountId) : null,
+                transaction.CreditAccount != null ? accountRepository.FindById(transaction.CreditAccount.AccountId) : null,
                 request.Date,
                 out IEnumerable<Exception> dateExceptions))
         {
             exceptions = exceptions.Concat(dateExceptions);
         }
-        if (!ValidateAccountFundAmounts(transaction.DebitAccount?.Account,
+        if (!ValidateAccountFundAmounts(transaction.DebitAccount?.AccountId,
                 request.DebitAccount?.FundAmounts.ToList(),
-                transaction.CreditAccount?.Account,
+                transaction.CreditAccount?.AccountId,
                 request.CreditAccount?.FundAmounts.ToList(),
                 transaction,
                 out IEnumerable<Exception> accountExceptions))
@@ -93,11 +108,21 @@ public class TransactionService(
         transaction.Description = request.Description;
         if (transaction.DebitAccount != null && request.DebitAccount != null)
         {
-            transaction.DebitAccount = new TransactionAccount(transaction.DebitAccount.Account, request.DebitAccount.FundAmounts);
+            transaction.DebitAccount = new TransactionAccount(transaction, transaction.DebitAccount.AccountId, request.DebitAccount.FundAmounts);
         }
         if (transaction.CreditAccount != null && request.CreditAccount != null)
         {
-            transaction.CreditAccount = new TransactionAccount(transaction.CreditAccount.Account, request.CreditAccount.FundAmounts);
+            transaction.CreditAccount = new TransactionAccount(transaction, transaction.CreditAccount.AccountId, request.CreditAccount.FundAmounts);
+        }
+        if (!accountBalanceService.TryUpdateTransaction(transaction, out IEnumerable<Exception> balanceExceptions))
+        {
+            exceptions = exceptions.Concat(balanceExceptions);
+            return false;
+        }
+        if (!fundBalanceService.TryUpdateTransaction(transaction, out IEnumerable<Exception> fundBalanceExceptions))
+        {
+            exceptions = exceptions.Concat(fundBalanceExceptions);
+            return false;
         }
         return true;
     }
@@ -105,7 +130,7 @@ public class TransactionService(
     /// <summary>
     /// Attempts to post an existing Transaction within an Account
     /// </summary>
-    public static bool TryPost(Transaction transaction, AccountId account, DateOnly postedDate, out IEnumerable<Exception> exceptions)
+    public bool TryPost(Transaction transaction, AccountId account, DateOnly postedDate, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
@@ -115,6 +140,17 @@ public class TransactionService(
             return false;
         }
         transactionAccount.PostedDate = postedDate;
+        if (!accountBalanceService.TryPostTransaction(transaction, transactionAccount, out IEnumerable<Exception> balanceExceptions))
+        {
+            exceptions = exceptions.Concat(balanceExceptions);
+            transactionAccount.PostedDate = null;
+            return false;
+        }
+        if (!fundBalanceService.TryPostTransaction(transaction, transactionAccount, out IEnumerable<Exception> fundBalanceExceptions))
+        {
+            exceptions = exceptions.Concat(fundBalanceExceptions);
+            transactionAccount.PostedDate = null;
+        }
         return true;
     }
 
@@ -136,6 +172,14 @@ public class TransactionService(
         if (!ValidateNotPosted(transaction, accountBeingDeleted, out IEnumerable<Exception> notPostedExceptions))
         {
             exceptions = exceptions.Concat(notPostedExceptions);
+        }
+        if (!accountBalanceService.TryDeleteTransaction(transaction, out IEnumerable<Exception> balanceExceptions))
+        {
+            exceptions = exceptions.Concat(balanceExceptions);
+        }
+        if (!fundBalanceService.TryDeleteTransaction(transaction, out IEnumerable<Exception> fundBalanceExceptions))
+        {
+            exceptions = exceptions.Concat(fundBalanceExceptions);
         }
         if (exceptions.Any())
         {
@@ -313,7 +357,7 @@ public class TransactionService(
     /// <summary>
     /// Validates the posting of this Transaction within an Account
     /// </summary>
-    private static bool ValidatePosting(
+    private bool ValidatePosting(
         Transaction transaction,
         AccountId account,
         DateOnly postedDate,
@@ -323,11 +367,11 @@ public class TransactionService(
         transactionAccount = null;
         exceptions = [];
 
-        if (transaction.DebitAccount != null && transaction.DebitAccount.Account == account)
+        if (transaction.DebitAccount != null && transaction.DebitAccount.AccountId == account)
         {
             transactionAccount = transaction.DebitAccount;
         }
-        else if (transaction.CreditAccount != null && transaction.CreditAccount.Account == account)
+        else if (transaction.CreditAccount != null && transaction.CreditAccount.AccountId == account)
         {
             transactionAccount = transaction.CreditAccount;
         }
@@ -343,6 +387,15 @@ public class TransactionService(
         else if (postedDate < transaction.Date)
         {
             exceptions = exceptions.Append(new InvalidTransactionDateException("The posted date is before the Transaction date."));
+        }
+        else
+        {
+            AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(transaction.AccountingPeriod);
+            int monthDifference = Math.Abs(((accountingPeriod.Year - postedDate.Year) * 12) + accountingPeriod.Month - postedDate.Month);
+            if (monthDifference > 1)
+            {
+                exceptions = exceptions.Append(new InvalidTransactionDateException("The posted date must be in a month adjacent to the Accounting Period month."));
+            }
         }
         return !exceptions.Any();
     }
@@ -369,11 +422,11 @@ public class TransactionService(
     {
         exceptions = [];
 
-        if (transaction.DebitAccount != null && accountBeingDeleted != transaction.DebitAccount.Account && transaction.DebitAccount.PostedDate != null)
+        if (transaction.DebitAccount != null && accountBeingDeleted != transaction.DebitAccount.AccountId && transaction.DebitAccount.PostedDate != null)
         {
             exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction has been posted to the Debit Account."));
         }
-        if (transaction.CreditAccount != null && accountBeingDeleted != transaction.CreditAccount.Account && transaction.CreditAccount.PostedDate != null)
+        if (transaction.CreditAccount != null && accountBeingDeleted != transaction.CreditAccount.AccountId && transaction.CreditAccount.PostedDate != null)
         {
             exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction has been posted to the Credit Account."));
         }
