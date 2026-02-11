@@ -1,12 +1,12 @@
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type JSX, useState } from "react";
-import type { Account } from "@accounts/ApiTypes";
 import ColumnButton from "@framework/listframe/ColumnButton";
 import ColumnCell from "@framework/listframe/ColumnCell";
 import ColumnHeader from "@framework/listframe/ColumnHeader";
 import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
 import CreateTransactionDialog from "@transactions/CreateTransactionDialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
+import type { Fund } from "@funds/ApiTypes";
 import ListFrame from "@framework/listframe/ListFrame";
 import { Stack } from "@mui/material";
 import SuccessAlert from "@framework/alerts/SuccessAlert";
@@ -16,44 +16,54 @@ import formatCurrency from "@framework/formatCurrency";
 import useGetAllTransactions from "@transactions/useGetAllTransactions";
 
 /**
- * Props for the AccountTransactionListFrame component.
+ * Props for the FundTransactionListFrame component.
  */
-interface AccountTransactionListFrameProps {
-  readonly account: Account;
+interface FundTransactionListFrameProps {
+  readonly fund: Fund;
 }
 
 /**
- * Helper function to determine the type of a Transaction (debit, credit, or transfer) based on the perspective of a given Account.
+ * Helper function to determine the type of a Transaction (debit, credit, or transfer) based on the perspective of a given Fund.
  * @param transaction - The Transaction for which to determine the type.
- * @param accountId - The ID of the Account for which to determine the Transaction type.
+ * @param fundId - The ID of the Fund for which to determine the Transaction type.
  * @returns A string representing the Transaction type ("Debit", "Credit", or "Transfer").
  */
 const getTransactionType = function (
   transaction: Transaction,
-  accountId: string,
+  fundId: string,
 ): string {
   if (
-    transaction.debitAccount?.accountId === accountId &&
-    transaction.creditAccount?.accountId === accountId
+    (transaction.debitAccount?.fundAmounts.some(
+      (amount) => amount.fundId === fundId,
+    ) ??
+      false) &&
+    (transaction.creditAccount?.fundAmounts.some(
+      (amount) => amount.fundId === fundId,
+    ) ??
+      false)
   ) {
     return "Transfer";
   }
-  return transaction.debitAccount?.accountId === accountId ? "Debit" : "Credit";
+  return (transaction.debitAccount?.fundAmounts.some(
+    (amount) => amount.fundId === fundId,
+  ) ?? false)
+    ? "Debit"
+    : "Credit";
 };
 
 /**
- * Component that provides a list of Transactions for an Account and makes the basic create, read, update, and delete
+ * Component that provides a list of Transactions for a Fund and makes the basic create, read, update, and delete
  * operations available on them.
- * @param props - Props for the AccountTransactionListFrame component.
+ * @param props - Props for the FundTransactionListFrame component.
  * @returns JSX element representing a list of Transactions with various action buttons.
  */
-const AccountTransactionListFrame = function ({
-  account,
-}: AccountTransactionListFrameProps): JSX.Element {
+const FundTransactionListFrame = function ({
+  fund,
+}: FundTransactionListFrameProps): JSX.Element {
   const [childDialog, setChildDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const { transactions, isLoading, error, refetch } = useGetAllTransactions({
-    accountId: account.id,
+    fundId: fund.id,
   });
   return (
     <ListFrame<Transaction>
@@ -94,11 +104,7 @@ const AccountTransactionListFrame = function ({
       columns={(transaction: Transaction) => [
         <ColumnCell
           key="date"
-          content={
-            (transaction.debitAccount?.accountId === account.id
-              ? transaction.debitAccount.postedDate
-              : transaction.creditAccount?.postedDate) ?? "Pending"
-          }
+          content={transaction.date}
           align="left"
           isLoading={isLoading}
           isError={error !== null}
@@ -112,7 +118,7 @@ const AccountTransactionListFrame = function ({
         />,
         <ColumnCell
           key="type"
-          content={getTransactionType(transaction, account.id)}
+          content={getTransactionType(transaction, fund.id)}
           align="left"
           isLoading={isLoading}
           isError={error !== null}
@@ -162,4 +168,4 @@ const AccountTransactionListFrame = function ({
   );
 };
 
-export default AccountTransactionListFrame;
+export default FundTransactionListFrame;

@@ -10,6 +10,7 @@ import useQuery from "@data/useQuery";
 interface UseGetAllTransactionsArgs {
   accountId?: string;
   accountingPeriodId?: string;
+  fundId?: string;
 }
 
 /**
@@ -20,6 +21,7 @@ interface UseGetAllTransactionsArgs {
 const useGetAllTransactions = function ({
   accountId,
   accountingPeriodId,
+  fundId,
 }: UseGetAllTransactionsArgs): {
   transactions: Transaction[];
   isLoading: boolean;
@@ -35,6 +37,7 @@ const useGetAllTransactions = function ({
         query: {
           accountId: accountId ?? "",
           accountingPeriodId: accountingPeriodId ?? "",
+          fundId: fundId ?? "",
         },
       },
     });
@@ -42,7 +45,7 @@ const useGetAllTransactions = function ({
       return error;
     }
     return data;
-  }, [accountId, accountingPeriodId]);
+  }, [accountId, accountingPeriodId, fundId]);
 
   const loadingRowCount = 10;
   const { data, isLoading, error, refetch } = useQuery<Transaction[]>({

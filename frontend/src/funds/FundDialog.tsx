@@ -8,6 +8,7 @@ import DeleteFundDialog from "@funds/DeleteFundDialog";
 import Dialog from "@framework/dialog/Dialog";
 import DialogHeaderButton from "@framework/dialog/DialogHeaderButton";
 import type { Fund } from "@funds/ApiTypes";
+import FundTransactionListFrame from "@funds/FundTransactionListFrame";
 import formatCurrency from "@framework/formatCurrency";
 
 /**
@@ -86,6 +87,7 @@ const FundDialog = function ({
               />
             ))}
           </CaptionedFrame>
+          <FundTransactionListFrame fund={fund} />
           {childDialog}
         </>
       }
