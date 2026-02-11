@@ -36,7 +36,7 @@ const DeleteAccountingPeriodDialog = function ({
         <>
           <Typography>
             Are you sure you want to delete the accounting period &quot;
-            {accountingPeriod.year}-{accountingPeriod.month}&quot;?
+            {accountingPeriod.name}&quot;?
           </Typography>
           <ErrorAlert error={error} />
         </>

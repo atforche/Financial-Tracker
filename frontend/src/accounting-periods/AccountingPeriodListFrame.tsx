@@ -1,10 +1,13 @@
+import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type JSX, useState } from "react";
 import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
-import AccountingPeriodListFrameActionColumn from "@accounting-periods/AccountingPeriodListFrameActionColumn";
-import AccountingPeriodListFrameActionColumnHeader from "@accounting-periods/AccountingPeriodListFrameActionColumnHeader";
+import AccountingPeriodDialog from "@accounting-periods/AccountingPeriodDialog";
 import { Checkbox } from "@mui/material";
+import ColumnButton from "@framework/listframe/ColumnButton";
 import ColumnCell from "@framework/listframe/ColumnCell";
 import ColumnHeader from "@framework/listframe/ColumnHeader";
+import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
+import CreateAccountingPeriodDialog from "@accounting-periods/CreateAccountingPeriodDialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import ListFrame from "@framework/listframe/ListFrame";
 import SuccessAlert from "@framework/alerts/SuccessAlert";
@@ -36,11 +39,30 @@ const AccountingPeriodListFrame = function (): JSX.Element {
           minWidth={100}
           align="left"
         />,
-        <AccountingPeriodListFrameActionColumnHeader
+        <ColumnHeader
           key="actions"
-          setDialog={setDialog}
-          setMessage={setMessage}
-          refetch={refetch}
+          content={
+            <ColumnHeaderButton
+              label="Add"
+              icon={<AddCircleOutline />}
+              onClick={() => {
+                setDialog(
+                  <CreateAccountingPeriodDialog
+                    onClose={(success) => {
+                      setDialog(null);
+                      if (success) {
+                        setMessage("Accounting Period added successfully.");
+                      }
+                      refetch();
+                    }}
+                  />,
+                );
+                setMessage(null);
+              }}
+            />
+          }
+          minWidth={125}
+          align="right"
         />,
       ]}
       columns={(accountingPeriod: AccountingPeriod) => [
@@ -58,14 +80,32 @@ const AccountingPeriodListFrame = function (): JSX.Element {
           isLoading={isLoading}
           isError={error !== null}
         />,
-        <AccountingPeriodListFrameActionColumn
-          key="actions"
-          accountingPeriod={accountingPeriod}
+        <ColumnCell
+          key="view"
+          content={
+            <ColumnButton
+              label="View"
+              icon={<ArrowForwardIos />}
+              onClick={() => {
+                setDialog(
+                  <AccountingPeriodDialog
+                    inputAccountingPeriod={accountingPeriod}
+                    setMessage={setMessage}
+                    onClose={(needsRefetch) => {
+                      setDialog(null);
+                      if (needsRefetch) {
+                        refetch();
+                      }
+                    }}
+                  />,
+                );
+                setMessage(null);
+              }}
+            />
+          }
+          align="right"
           isLoading={isLoading}
-          error={error}
-          setDialog={setDialog}
-          setMessage={setMessage}
-          refetch={refetch}
+          isError={error !== null}
         />,
       ]}
       getId={(accountingPeriod: AccountingPeriod) => accountingPeriod.id}

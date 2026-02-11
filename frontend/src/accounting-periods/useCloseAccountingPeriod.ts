@@ -6,7 +6,6 @@ import { useCallback } from "react";
 
 /**
  * Interface representing the arguments for closing an Accounting Period.
- * @param accountingPeriod - Accounting Period to close.
  */
 interface UseCloseAccountingPeriodArgs {
   readonly accountingPeriod: AccountingPeriod;
@@ -22,14 +21,15 @@ const useCloseAccountingPeriod = function ({
 }: UseCloseAccountingPeriodArgs): {
   isRunning: boolean;
   isSuccess: boolean;
+  updatedAccountingPeriod: AccountingPeriod | null;
   error: ApiError | null;
   closeAccountingPeriod: () => void;
 } {
   const closeAccountingPeriodCallback = useCallback<
-    () => Promise<ApiError | null>
+    () => Promise<AccountingPeriod | ApiError | null>
   >(async () => {
     const client = getApiClient();
-    const { error } = await client.POST(
+    const { data, error } = await client.POST(
       "/accounting-periods/{accountingPeriodId}/close",
       {
         params: {
@@ -39,15 +39,22 @@ const useCloseAccountingPeriod = function ({
         },
       },
     );
-    return typeof error === "undefined" ? null : error;
+    return typeof error === "undefined" ? data : error;
   }, [accountingPeriod]);
 
-  const { isRunning, isSuccess, error, execute } = useApiRequest({
+  const {
+    isRunning,
+    isSuccess,
+    response: updatedAccountingPeriod,
+    error,
+    execute,
+  } = useApiRequest<AccountingPeriod>({
     apiRequestFunction: closeAccountingPeriodCallback,
   });
   return {
     isRunning,
     isSuccess,
+    updatedAccountingPeriod,
     error,
     closeAccountingPeriod: execute,
   };
