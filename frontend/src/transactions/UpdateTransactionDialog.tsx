@@ -12,8 +12,8 @@ import useUpdateTransaction from "@transactions/useUpdateTransaction";
  * Props for the UpdateTransactionDialog component.
  */
 interface UpdateTransactionDialogProps {
-  readonly existingTransaction: Transaction;
-  readonly setExistingTransaction: (transaction: Transaction) => void;
+  readonly transaction: Transaction;
+  readonly setTransaction: (transaction: Transaction) => void;
   readonly onClose: (success: boolean) => void;
 }
 
@@ -23,32 +23,26 @@ interface UpdateTransactionDialogProps {
  * @returns JSX element representing the UpdateTransactionDialog.
  */
 const UpdateTransactionDialog = function ({
-  existingTransaction,
-  setExistingTransaction,
+  transaction,
+  setTransaction,
   onClose,
 }: UpdateTransactionDialogProps): JSX.Element {
   const [date, setDate] = useState<Dayjs | null>(
-    dayjs(existingTransaction.date, "YYYY-MM-DD"),
+    dayjs(transaction.date, "YYYY-MM-DD"),
   );
-  const [location, setLocation] = useState<string>(
-    existingTransaction.location,
-  );
+  const [location, setLocation] = useState<string>(transaction.location);
   const [description, setDescription] = useState<string>(
-    existingTransaction.description,
+    transaction.description,
   );
   const [debitFundAmounts, setDebitFundAmounts] = useState<FundAmount[]>(
-    existingTransaction.debitAccount
-      ? existingTransaction.debitAccount.fundAmounts
-      : [],
+    transaction.debitAccount ? transaction.debitAccount.fundAmounts : [],
   );
   const [creditFundAmounts, setCreditFundAmounts] = useState<FundAmount[]>(
-    existingTransaction.creditAccount
-      ? existingTransaction.creditAccount.fundAmounts
-      : [],
+    transaction.creditAccount ? transaction.creditAccount.fundAmounts : [],
   );
   const { isRunning, isSuccess, updatedTransaction, error, updateTransaction } =
     useUpdateTransaction({
-      existingTransaction,
+      transaction,
       date,
       location,
       description,
@@ -57,7 +51,7 @@ const UpdateTransactionDialog = function ({
     });
   if (isSuccess) {
     if (updatedTransaction) {
-      setExistingTransaction(updatedTransaction);
+      setTransaction(updatedTransaction);
     }
     onClose(true);
   }
@@ -68,8 +62,8 @@ const UpdateTransactionDialog = function ({
         <>
           <CreateOrUpdateTransactionFrame
             accountingPeriod={{
-              id: existingTransaction.accountingPeriodId,
-              name: existingTransaction.accountingPeriodName,
+              id: transaction.accountingPeriodId,
+              name: transaction.accountingPeriodName,
             }}
             setAccountingPeriod={null}
             date={date}
@@ -79,30 +73,30 @@ const UpdateTransactionDialog = function ({
             description={description}
             setDescription={setDescription}
             debitAccount={
-              existingTransaction.debitAccount
+              transaction.debitAccount
                 ? {
-                    id: existingTransaction.debitAccount.accountId,
-                    name: existingTransaction.debitAccount.accountName,
+                    id: transaction.debitAccount.accountId,
+                    name: transaction.debitAccount.accountName,
                   }
                 : null
             }
             setDebitAccount={null}
             debitFundAmounts={debitFundAmounts}
             setDebitFundAmounts={
-              existingTransaction.debitAccount ? setDebitFundAmounts : null
+              transaction.debitAccount ? setDebitFundAmounts : null
             }
             creditAccount={
-              existingTransaction.creditAccount
+              transaction.creditAccount
                 ? {
-                    id: existingTransaction.creditAccount.accountId,
-                    name: existingTransaction.creditAccount.accountName,
+                    id: transaction.creditAccount.accountId,
+                    name: transaction.creditAccount.accountName,
                   }
                 : null
             }
             setCreditAccount={null}
             creditFundAmounts={creditFundAmounts}
             setCreditFundAmounts={
-              existingTransaction.creditAccount ? setCreditFundAmounts : null
+              transaction.creditAccount ? setCreditFundAmounts : null
             }
           />
           <ErrorAlert error={error} />
@@ -125,9 +119,9 @@ const UpdateTransactionDialog = function ({
               date === null ||
               location.trim() === "" ||
               description.trim() === "" ||
-              ((existingTransaction.debitAccount === null ||
+              ((transaction.debitAccount === null ||
                 debitFundAmounts.length === 0) &&
-                (existingTransaction.creditAccount === null ||
+                (transaction.creditAccount === null ||
                   creditFundAmounts.length === 0))
             }
             variant="contained"

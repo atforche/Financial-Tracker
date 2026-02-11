@@ -32,13 +32,7 @@ const FundListFrame = function (): JSX.Element {
         />,
         <ColumnHeader
           key="balance"
-          content="Current Balance"
-          minWidth={170}
-          align="left"
-        />,
-        <ColumnHeader
-          key="available"
-          content="Available to Spend"
+          content="Posted Balance"
           minWidth={170}
           align="left"
         />,
@@ -67,16 +61,6 @@ const FundListFrame = function (): JSX.Element {
         <ColumnCell
           key="balance"
           content={formatCurrency(fund.currentBalance.balance)}
-          align="left"
-          isLoading={isLoading}
-          isError={error !== null}
-        />,
-        <ColumnCell
-          key="available"
-          content={formatCurrency(
-            fund.currentBalance.balance -
-              fund.currentBalance.pendingDebitAmount,
-          )}
           align="left"
           isLoading={isLoading}
           isError={error !== null}

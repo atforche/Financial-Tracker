@@ -1,9 +1,12 @@
+import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type JSX, useState } from "react";
 import type { Account } from "@accounts/ApiTypes";
-import AccountListFrameActionColumn from "@accounts/AccountListFrameActionColumn";
-import AccountListFrameActionColumnHeader from "@accounts/AccountListFrameActionColumnHeader";
+import AccountDialog from "@accounts/AccountDialog";
+import ColumnButton from "@framework/listframe/ColumnButton";
 import ColumnCell from "@framework/listframe/ColumnCell";
 import ColumnHeader from "@framework/listframe/ColumnHeader";
+import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
+import CreateAccountDialog from "@accounts/CreateAccountDialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import ListFrame from "@framework/listframe/ListFrame";
 import SuccessAlert from "@framework/alerts/SuccessAlert";
@@ -27,7 +30,7 @@ const AccountListFrame = function (): JSX.Element {
         <ColumnHeader key="type" content="Type" minWidth={170} align="left" />,
         <ColumnHeader
           key="balance"
-          content="Current Balance"
+          content="Posted Balance"
           minWidth={170}
           align="left"
         />,
@@ -37,11 +40,30 @@ const AccountListFrame = function (): JSX.Element {
           minWidth={170}
           align="left"
         />,
-        <AccountListFrameActionColumnHeader
+        <ColumnHeader
           key="actions"
-          setDialog={setDialog}
-          setMessage={setMessage}
-          refetch={refetch}
+          content={
+            <ColumnHeaderButton
+              label="Add"
+              icon={<AddCircleOutline />}
+              onClick={() => {
+                setDialog(
+                  <CreateAccountDialog
+                    onClose={(success) => {
+                      setDialog(null);
+                      if (success) {
+                        setMessage("Account added successfully.");
+                      }
+                      refetch();
+                    }}
+                  />,
+                );
+                setMessage(null);
+              }}
+            />
+          }
+          minWidth={125}
+          align="right"
         />,
       ]}
       columns={(account: Account) => [
@@ -76,14 +98,32 @@ const AccountListFrame = function (): JSX.Element {
           isLoading={isLoading}
           isError={error !== null}
         />,
-        <AccountListFrameActionColumn
-          key="actions"
-          account={account}
+        <ColumnCell
+          key="view"
+          content={
+            <ColumnButton
+              label="View"
+              icon={<ArrowForwardIos />}
+              onClick={() => {
+                setDialog(
+                  <AccountDialog
+                    inputAccount={account}
+                    setMessage={setMessage}
+                    onClose={(needsRefetch) => {
+                      setDialog(null);
+                      if (needsRefetch) {
+                        refetch();
+                      }
+                    }}
+                  />,
+                );
+                setMessage(null);
+              }}
+            />
+          }
+          align="right"
           isLoading={isLoading}
-          error={error}
-          setDialog={setDialog}
-          setMessage={setMessage}
-          refetch={refetch}
+          isError={error !== null}
         />,
       ]}
       getId={(account: Account) => account.id}

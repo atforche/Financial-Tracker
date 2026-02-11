@@ -9,11 +9,10 @@ import useUpdateAccount from "@accounts/useUpdateAccount";
 
 /**
  * Props for the UpdateAccountDialog component.
- * @param account - Account to display in this dialog.
- * @param onClose - Callback to perform when this dialog is closed.
  */
 interface UpdateAccountDialogProps {
   readonly account: Account;
+  readonly setAccount: (account: Account) => void;
   readonly onClose: (success: boolean) => void;
 }
 
@@ -24,14 +23,19 @@ interface UpdateAccountDialogProps {
  */
 const UpdateAccountDialog = function ({
   account,
+  setAccount,
   onClose,
 }: UpdateAccountDialogProps): JSX.Element {
   const [accountName, setAccountName] = useState<string>(account.name);
-  const { isRunning, isSuccess, error, updateAccount } = useUpdateAccount({
-    account,
-    name: accountName,
-  });
+  const { isRunning, isSuccess, updatedAccount, error, updateAccount } =
+    useUpdateAccount({
+      account,
+      name: accountName,
+    });
   if (isSuccess) {
+    if (updatedAccount) {
+      setAccount(updatedAccount);
+    }
     onClose(true);
   }
   return (
@@ -49,7 +53,6 @@ const UpdateAccountDialog = function ({
               ) ?? null
             }
           />
-          <StringEntryField label="Type" value={account.type} />
           <ErrorAlert
             error={error}
             detailFilter={(detail) =>

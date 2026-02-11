@@ -10,7 +10,7 @@ import { useCallback } from "react";
  * Interface representing the arguments for updating a Transaction.
  */
 interface UseUpdateTransactionArgs {
-  readonly existingTransaction: Transaction;
+  readonly transaction: Transaction;
   readonly date: Dayjs | null;
   readonly location: string;
   readonly description: string;
@@ -24,7 +24,7 @@ interface UseUpdateTransactionArgs {
  * @returns Running state, success state, current error, and function to update the Transaction.
  */
 const useUpdateTransaction = function ({
-  existingTransaction,
+  transaction,
   date,
   location,
   description,
@@ -44,7 +44,7 @@ const useUpdateTransaction = function ({
     const { data, error } = await client.POST("/transactions/{transactionId}", {
       params: {
         path: {
-          transactionId: existingTransaction.id,
+          transactionId: transaction.id,
         },
       },
       body: {
@@ -52,7 +52,7 @@ const useUpdateTransaction = function ({
         location,
         description,
         debitAccount:
-          existingTransaction.debitAccount === null
+          transaction.debitAccount === null
             ? null
             : {
                 fundAmounts: debitFundAmounts.map((fundAmount) => ({
@@ -61,7 +61,7 @@ const useUpdateTransaction = function ({
                 })),
               },
         creditAccount:
-          existingTransaction.creditAccount === null
+          transaction.creditAccount === null
             ? null
             : {
                 fundAmounts: creditFundAmounts.map((fundAmount) => ({
@@ -73,7 +73,7 @@ const useUpdateTransaction = function ({
     });
     return typeof error === "undefined" ? data : error;
   }, [
-    existingTransaction,
+    transaction,
     date,
     location,
     description,
