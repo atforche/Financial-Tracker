@@ -2,13 +2,11 @@ import {
   AccountBalance,
   Assessment,
   CalendarMonth,
-  CompareArrows,
   GridView,
 } from "@mui/icons-material";
 import AccountListFrame from "@accounts/AccountListFrame";
 import AccountingPeriodListFrame from "@accounting-periods/AccountingPeriodListFrame";
 import FundListFrame from "@funds/FundListFrame";
-import TransactionListFrame from "@transactions/TransactionListFrame";
 
 /**
  * Collection of all navigation pages available in the application.
@@ -18,7 +16,6 @@ const NavigationPages = [
   "Accounting Periods",
   "Accounts",
   "Funds",
-  "Transactions",
 ] as const;
 
 /**
@@ -29,7 +26,6 @@ const NavigationIcons = {
   "Accounting Periods": <CalendarMonth key="Accounting Periods" />,
   Accounts: <AccountBalance key="Accounts" />,
   Funds: <Assessment key="Funds" />,
-  Transactions: <CompareArrows key="Transactions" />,
 };
 
 /**
@@ -40,7 +36,6 @@ const NavigationContent = {
   "Accounting Periods": <AccountingPeriodListFrame />,
   Accounts: <AccountListFrame />,
   Funds: <FundListFrame />,
-  Transactions: <TransactionListFrame />,
 };
 
 /**

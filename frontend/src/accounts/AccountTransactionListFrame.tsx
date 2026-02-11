@@ -33,9 +33,9 @@ const AccountTransactionListFrame = function ({
 }: AccountTransactionListFrameProps): JSX.Element {
   const [childDialog, setChildDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const { transactions, isLoading, error, refetch } = useGetAllTransactions(
-    account.id,
-  );
+  const { transactions, isLoading, error, refetch } = useGetAllTransactions({
+    accountId: account.id,
+  });
   return (
     <ListFrame<Transaction>
       name="Transactions"

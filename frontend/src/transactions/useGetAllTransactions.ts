@@ -5,11 +5,22 @@ import { useCallback } from "react";
 import useQuery from "@data/useQuery";
 
 /**
+ * Arguments for the useGetAllTransactions hook.
+ */
+interface UseGetAllTransactionsArgs {
+  accountId?: string;
+  accountingPeriodId?: string;
+}
+
+/**
  * Hook used to retrieve all Transactions via the API.
- * @param accountId - The Account for which to retrieve Transactions.
+ * @param args - The arguments for the useGetAllTransactions hook.
  * @returns Retrieved Transactions, loading state, current error, and function to refetch the Transactions.
  */
-const useGetAllTransactions = function (accountId?: string): {
+const useGetAllTransactions = function ({
+  accountId,
+  accountingPeriodId,
+}: UseGetAllTransactionsArgs): {
   transactions: Transaction[];
   isLoading: boolean;
   error: ApiError | null;
@@ -23,6 +34,7 @@ const useGetAllTransactions = function (accountId?: string): {
       params: {
         query: {
           accountId: accountId ?? "",
+          accountingPeriodId: accountingPeriodId ?? "",
         },
       },
     });
@@ -30,7 +42,7 @@ const useGetAllTransactions = function (accountId?: string): {
       return error;
     }
     return data;
-  }, [accountId]);
+  }, [accountId, accountingPeriodId]);
 
   const loadingRowCount = 10;
   const { data, isLoading, error, refetch } = useQuery<Transaction[]>({

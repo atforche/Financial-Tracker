@@ -2,6 +2,7 @@ import { Balance, Delete } from "@mui/icons-material";
 import { Button, Stack } from "@mui/material";
 import { type JSX, useState } from "react";
 import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
+import AccountingPeriodTransactionListFrame from "@accounting-periods/AccountingPeriodTransactionListFrame";
 import CaptionedFrame from "@framework/dialog/CaptionedFrame";
 import CaptionedValue from "@framework/dialog/CaptionedValue";
 import CloseAccountingPeriodDialog from "@accounting-periods/CloseAccountingPeriodDialog";
@@ -77,6 +78,9 @@ const AccountingPeriodDialog = function ({
               value={accountingPeriod.isOpen ? "Yes" : "No"}
             />
           </CaptionedFrame>
+          <AccountingPeriodTransactionListFrame
+            accountingPeriod={accountingPeriod}
+          />
           {childDialog}
         </>
       }
