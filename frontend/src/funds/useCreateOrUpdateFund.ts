@@ -5,12 +5,9 @@ import useApiRequest from "@data/useApiRequest";
 import { useCallback } from "react";
 
 /**
- * Interface representing the arguments for modifying a Fund.
- * @param fund - Fund to modify, or null if creating a new Fund.
- * @param fundName - New name of the Fund.
- * @param fundDescription - New description of the Fund.
+ * Interface representing the arguments for creating of updating a Fund.
  */
-interface UseModifyFundArgs {
+interface UseCreateOrUpdateFundArgs {
   readonly fund: Fund | null;
   readonly fundName: string;
   readonly fundDescription: string;
@@ -18,32 +15,33 @@ interface UseModifyFundArgs {
 
 /**
  * Hook used to create or update a Fund via the API.
- * @param args - Arguments for modifying a Fund.
+ * @param args - Arguments for creating or updating a Fund.
  * @returns Running state, success state, current error, and function to modify the Fund.
  */
-const useModifyFund = function ({
+const useCreateOrUpdateFund = function ({
   fund,
   fundName,
   fundDescription,
-}: UseModifyFundArgs): {
+}: UseCreateOrUpdateFundArgs): {
   isRunning: boolean;
   isSuccess: boolean;
+  createdOrUpdatedFund: Fund | null;
   error: ApiError | null;
   modifyFund: () => void;
 } {
   const modifyFundCallback = useCallback<
-    () => Promise<ApiError | null>
+    () => Promise<Fund | ApiError | null>
   >(async () => {
     const client = getApiClient();
     if (fund === null) {
       // Create a new Fund
-      const { error } = await client.POST("/funds", {
+      const { data, error } = await client.POST("/funds", {
         body: { name: fundName, description: fundDescription },
       });
-      return typeof error === "undefined" ? null : error;
+      return typeof error === "undefined" ? data : error;
     }
     // Update an existing Fund
-    const { error } = await client.POST("/funds/{fundId}", {
+    const { data, error } = await client.POST("/funds/{fundId}", {
       params: {
         path: {
           fundId: fund.id,
@@ -51,14 +49,26 @@ const useModifyFund = function ({
       },
       body: { name: fundName, description: fundDescription },
     });
-    return typeof error === "undefined" ? null : error;
+    return typeof error === "undefined" ? data : error;
   }, [fund, fundName, fundDescription]);
 
-  const { isRunning, isSuccess, error, execute } = useApiRequest({
+  const {
+    isRunning,
+    isSuccess,
+    response: createdOrUpdatedFund,
+    error,
+    execute,
+  } = useApiRequest<Fund>({
     apiRequestFunction: modifyFundCallback,
   });
 
-  return { isRunning, isSuccess, error, modifyFund: execute };
+  return {
+    isRunning,
+    isSuccess,
+    createdOrUpdatedFund,
+    error,
+    modifyFund: execute,
+  };
 };
 
-export default useModifyFund;
+export default useCreateOrUpdateFund;

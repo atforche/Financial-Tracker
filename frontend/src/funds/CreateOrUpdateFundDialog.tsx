@@ -5,37 +5,41 @@ import ErrorAlert from "@framework/alerts/ErrorAlert";
 import { ErrorCode } from "@data/api";
 import type { Fund } from "@funds/ApiTypes";
 import StringEntryField from "@framework/dialog/StringEntryField";
-import useModifyFund from "@funds/useModifyFund";
+import useCreateOrUpdateFund from "@funds/useCreateOrUpdateFund";
 
 /**
- * Props for the ModifyFundDialog component.
- * @param fund - Fund to display in this dialog, or null if a Fund is being added.
- * @param onClose - Callback to perform when this dialog is closed.
+ * Props for the CreateOrUpdateFundDialog component.
  */
-interface ModifyFundDialogProps {
+interface CreateOrUpdateFundDialogProps {
   readonly fund: Fund | null;
+  readonly setFund: ((fund: Fund) => void) | null;
   readonly onClose: (success: boolean) => void;
 }
 
 /**
  * Component that presents the user with a dialog to create or update a Fund.
- * @param props - Props for the ModifyFundDialog component.
- * @returns JSX element representing the ModifyFundDialog.
+ * @param props - Props for the CreateOrUpdateFundDialog component.
+ * @returns JSX element representing the CreateOrUpdateFundDialog.
  */
-const ModifyFundDialog = function ({
+const CreateOrUpdateFundDialog = function ({
   fund,
+  setFund,
   onClose,
-}: ModifyFundDialogProps): JSX.Element {
+}: CreateOrUpdateFundDialogProps): JSX.Element {
   const [fundName, setFundName] = useState<string>(fund?.name ?? "");
   const [fundDescription, setFundDescription] = useState<string>(
     fund?.description ?? "",
   );
-  const { isRunning, isSuccess, error, modifyFund } = useModifyFund({
-    fund,
-    fundName,
-    fundDescription,
-  });
+  const { isRunning, isSuccess, createdOrUpdatedFund, error, modifyFund } =
+    useCreateOrUpdateFund({
+      fund,
+      fundName,
+      fundDescription,
+    });
   if (isSuccess) {
+    if (setFund && createdOrUpdatedFund) {
+      setFund(createdOrUpdatedFund);
+    }
     onClose(true);
   }
   return (
@@ -85,4 +89,4 @@ const ModifyFundDialog = function ({
   );
 };
 
-export default ModifyFundDialog;
+export default CreateOrUpdateFundDialog;

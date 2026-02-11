@@ -1,10 +1,13 @@
+import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type JSX, useState } from "react";
+import ColumnButton from "@framework/listframe/ColumnButton";
 import ColumnCell from "@framework/listframe/ColumnCell";
 import ColumnHeader from "@framework/listframe/ColumnHeader";
+import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
+import CreateOrUpdateFundDialog from "@funds/CreateOrUpdateFundDialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import type { Fund } from "@funds/ApiTypes";
-import FundListFrameActionColumn from "@funds/FundListFrameActionColumn";
-import FundListFrameActionColumnHeader from "@funds/FundListFrameActionColumnHeader";
+import FundDialog from "@funds/FundDialog";
 import ListFrame from "@framework/listframe/ListFrame";
 import SuccessAlert from "@framework/alerts/SuccessAlert";
 import formatCurrency from "@framework/formatCurrency";
@@ -36,11 +39,32 @@ const FundListFrame = function (): JSX.Element {
           minWidth={170}
           align="left"
         />,
-        <FundListFrameActionColumnHeader
+        <ColumnHeader
           key="actions"
-          setDialog={setDialog}
-          setMessage={setMessage}
-          refetch={refetch}
+          content={
+            <ColumnHeaderButton
+              label="Add"
+              icon={<AddCircleOutline />}
+              onClick={() => {
+                setDialog(
+                  <CreateOrUpdateFundDialog
+                    fund={null}
+                    setFund={null}
+                    onClose={(success) => {
+                      setDialog(null);
+                      if (success) {
+                        setMessage("Fund added successfully.");
+                      }
+                      refetch();
+                    }}
+                  />,
+                );
+                setMessage(null);
+              }}
+            />
+          }
+          minWidth={125}
+          align="right"
         />,
       ]}
       columns={(fund: Fund) => [
@@ -65,14 +89,32 @@ const FundListFrame = function (): JSX.Element {
           isLoading={isLoading}
           isError={error !== null}
         />,
-        <FundListFrameActionColumn
-          key="actions"
-          fund={fund}
+        <ColumnCell
+          key="view"
+          content={
+            <ColumnButton
+              label="View"
+              icon={<ArrowForwardIos />}
+              onClick={() => {
+                setDialog(
+                  <FundDialog
+                    inputFund={fund}
+                    setMessage={setMessage}
+                    onClose={(needsRefetch) => {
+                      setDialog(null);
+                      if (needsRefetch) {
+                        refetch();
+                      }
+                    }}
+                  />,
+                );
+                setMessage(null);
+              }}
+            />
+          }
+          align="right"
           isLoading={isLoading}
-          error={error}
-          setDialog={setDialog}
-          setMessage={setMessage}
-          refetch={refetch}
+          isError={error !== null}
         />,
       ]}
       getId={(fund: Fund) => fund.id}

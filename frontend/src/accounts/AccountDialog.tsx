@@ -12,8 +12,6 @@ import formatCurrency from "@framework/formatCurrency";
 
 /**
  * Props for the AccountDialog component.
- * @param account - Account to display in this dialog.
- * @param onClose - Callback to perform when this dialog is closed.
  */
 interface AccountDialogProps {
   readonly inputAccount: Account;
