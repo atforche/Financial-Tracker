@@ -26,17 +26,15 @@ const FundListFrame = function (): JSX.Element {
     <ListFrame<Fund>
       name="Funds"
       headers={[
-        <ColumnHeader key="name" content="Name" minWidth={170} align="left" />,
+        <ColumnHeader key="name" content="Name" align="left" />,
         <ColumnHeader
           key="description"
           content="Description"
-          minWidth={170}
           align="left"
         />,
         <ColumnHeader
           key="balance"
           content="Posted Balance"
-          minWidth={170}
           align="left"
         />,
         <ColumnHeader
@@ -63,7 +61,6 @@ const FundListFrame = function (): JSX.Element {
               }}
             />
           }
-          minWidth={125}
           align="right"
         />,
       ]}

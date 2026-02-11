@@ -23,6 +23,7 @@ public sealed class TransactionController(
     TransactionService transactionService,
     AccountingPeriodMapper accountingPeriodMapper,
     AccountMapper accountMapper,
+    FundMapper fundMapper,
     FundAmountMapper fundAmountMapper,
     TransactionMapper transactionMapper) : ControllerBase
 {
@@ -30,7 +31,32 @@ public sealed class TransactionController(
     /// Retrieves all the Transactions from the database
     /// </summary>
     [HttpGet("")]
-    public IReadOnlyCollection<TransactionModel> GetAll() => transactionRepository.GetAll().Select(transactionMapper.ToModel).ToList();
+    [ProducesResponseType(typeof(IReadOnlyCollection<TransactionModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetAll([FromQuery] Guid? accountId, [FromQuery] Guid? accountingPeriodId, [FromQuery] Guid? fundId)
+    {
+        Account? account = null;
+        if (accountId != null && !accountMapper.TryToDomain(accountId.Value, out account, out IActionResult? errorResult))
+        {
+            return errorResult;
+        }
+        AccountingPeriod? accountingPeriod = null;
+        if (accountingPeriodId != null && !accountingPeriodMapper.TryToDomain(accountingPeriodId.Value, out accountingPeriod, out errorResult))
+        {
+            return errorResult;
+        }
+        Fund? fund = null;
+        if (fundId != null && !fundMapper.TryToDomain(fundId.Value, out fund, out errorResult))
+        {
+            return errorResult;
+        }
+        return Ok(transactionRepository.GetAll(new TransactionFilter
+        {
+            AccountId = account?.Id,
+            AccountingPeriodId = accountingPeriod?.Id,
+            FundId = fund?.Id
+        }).Select(transactionMapper.ToModel).ToList());
+    }
 
     /// <summary>
     /// Retrieves the Transaction that matches the provided ID

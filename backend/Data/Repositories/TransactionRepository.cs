@@ -1,7 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.AccountingPeriods;
-using Domain.Accounts;
-using Domain.Funds;
 using Domain.Transactions;
 
 namespace Data.Repositories;
@@ -12,21 +9,27 @@ namespace Data.Repositories;
 public class TransactionRepository(DatabaseContext databaseContext) : ITransactionRepository
 {
     /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> GetAll() => databaseContext.Transactions.ToList();
-
-    /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> FindAllByAccount(AccountId accountId) => databaseContext.Transactions.Where(transaction =>
-        (transaction.DebitAccount != null && transaction.DebitAccount.AccountId == accountId) ||
-        (transaction.CreditAccount != null && transaction.CreditAccount.AccountId == accountId)).ToList();
-
-    /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> FindAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
-        databaseContext.Transactions.Where(transaction => transaction.AccountingPeriod == accountingPeriodId).ToList();
-
-    /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> FindAllByFund(FundId fundId) => databaseContext.Transactions.Where(transaction =>
-        (transaction.DebitAccount != null && transaction.DebitAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId)) ||
-        (transaction.CreditAccount != null && transaction.CreditAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId))).ToList();
+    public IReadOnlyCollection<Transaction> GetAll(TransactionFilter? filter = null)
+    {
+        IQueryable<Transaction> results = databaseContext.Transactions;
+        if (filter?.AccountId != null)
+        {
+            results = results.Where(transaction =>
+                (transaction.DebitAccount != null && transaction.DebitAccount.AccountId == filter.AccountId) ||
+                (transaction.CreditAccount != null && transaction.CreditAccount.AccountId == filter.AccountId));
+        }
+        if (filter?.AccountingPeriodId != null)
+        {
+            results = results.Where(transaction => transaction.AccountingPeriod == filter.AccountingPeriodId);
+        }
+        if (filter?.FundId != null)
+        {
+            results = results.Where(transaction =>
+                (transaction.DebitAccount != null && transaction.DebitAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == filter.FundId)) ||
+                (transaction.CreditAccount != null && transaction.CreditAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == filter.FundId)));
+        }
+        return results.ToList();
+    }
 
     /// <inheritdoc/>
     public Transaction FindById(TransactionId id) => databaseContext.Transactions.Single(transaction => transaction.Id == id);

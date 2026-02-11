@@ -1,18 +1,16 @@
 import type { JSX } from "react";
 import TableCell from "@mui/material/TableCell";
 
+const defaultMaxWidth = 100;
+
 /**
  * Props for the ColumnHeader component.
- * @param key - Key that uniquely identifies this Column Header.
- * @param content - Content for this Column Header.
- * @param align - Alignment for this Column Header.
- * @param width - Width for this Column Header.
  */
 interface ColumnHeaderProps {
   readonly key: string;
   readonly content: string | JSX.Element;
   readonly align: "center" | "left" | "right";
-  readonly minWidth: number;
+  readonly maxWidth?: number;
 }
 
 /**
@@ -24,13 +22,13 @@ const ColumnHeader = function ({
   key,
   content,
   align,
-  minWidth,
+  maxWidth = defaultMaxWidth,
 }: ColumnHeaderProps): JSX.Element {
   return (
     <TableCell
       key={key}
       align={align}
-      style={{ minWidth }}
+      style={{ maxWidth }}
       sx={{ backgroundColor: "primary.main", color: "white" }}
     >
       {content}

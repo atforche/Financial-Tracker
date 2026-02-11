@@ -1,5 +1,9 @@
-import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
+import {
+  AddCircleOutline,
+  ArrowForwardIos,
+} from "@mui/icons-material";
 import { type JSX, useState } from "react";
+import type { Account } from "@accounts/ApiTypes";
 import ColumnButton from "@framework/listframe/ColumnButton";
 import ColumnCell from "@framework/listframe/ColumnCell";
 import ColumnHeader from "@framework/listframe/ColumnHeader";
@@ -7,6 +11,7 @@ import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
 import CreateTransactionDialog from "@transactions/CreateTransactionDialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import ListFrame from "@framework/listframe/ListFrame";
+import { Stack } from "@mui/material";
 import SuccessAlert from "@framework/alerts/SuccessAlert";
 import type { Transaction } from "@transactions/ApiTypes";
 import TransactionDialog from "@transactions/TransactionDialog";
@@ -14,86 +19,68 @@ import formatCurrency from "@framework/formatCurrency";
 import useGetAllTransactions from "@transactions/useGetAllTransactions";
 
 /**
- * Component that provides a list of Transactions and makes the basic create, read, update, and delete
+ * Props for the AccountTransactionListFrame component.
+ */
+interface AccountTransactionListFrameProps {
+  readonly account: Account;
+}
+
+/**
+ * Component that provides a list of Transactions for an Account and makes the basic create, read, update, and delete
  * operations available on them.
+ * @param props - Props for the AccountTransactionListFrame component.
  * @returns JSX element representing a list of Transactions with various action buttons.
  */
-const TransactionListFrame = function (): JSX.Element {
-  const [dialog, setDialog] = useState<JSX.Element | null>(null);
+const AccountTransactionListFrame = function ({
+  account,
+}: AccountTransactionListFrameProps): JSX.Element {
+  const [childDialog, setChildDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const { transactions, isLoading, error, refetch } = useGetAllTransactions();
+  const { transactions, isLoading, error, refetch } = useGetAllTransactions(account.id);
   return (
     <ListFrame<Transaction>
       name="Transactions"
       headers={[
-        <ColumnHeader
-          key="accountingPeriod"
-          content="Accounting Period"
-          maxWidth={125}
-          align="left"
-        />,
-        <ColumnHeader key="date" content="Date" align="left" />,
-        <ColumnHeader
-          key="location"
-          content="Location"
-          align="left"
-        />,
-        <ColumnHeader
-          key="description"
-          content="Description"
-          align="left"
-        />,
-        <ColumnHeader
-          key="debitAccount"
-          content="Debit Account"
-          align="left"
-        />,
-        <ColumnHeader
-          key="creditAccount"
-          content="Credit Account"
-          align="left"
-        />,
-        <ColumnHeader
-          key="amount"
-          content="Amount"
-          align="left"
-        />,
+        <ColumnHeader key="date" content="Date" maxWidth={100} align="left" />,
+        <ColumnHeader key="location" content="Location" align="left" />,
+        <ColumnHeader key="type" content="Type" align="left" />,
+        <ColumnHeader key="amount" content="Amount" align="left" />,
         <ColumnHeader
           key="actions"
           content={
-            <ColumnHeaderButton
-              label="Add"
-              icon={<AddCircleOutline />}
-              onClick={() => {
-                setDialog(
-                  <CreateTransactionDialog
-                    onClose={(success) => {
-                      setDialog(null);
-                      if (success) {
-                        setMessage("Transaction added successfully.");
-                      }
-                      refetch();
-                    }}
-                  />,
-                );
-                setMessage(null);
-              }}
-            />
+            <Stack direction="row">
+              <ColumnHeaderButton
+                label="Add"
+                icon={<AddCircleOutline />}
+                onClick={() => {
+                  setChildDialog(
+                    <CreateTransactionDialog
+                      onClose={(success) => {
+                        setChildDialog(null);
+                        if (success) {
+                          setMessage("Transaction added successfully.");
+                        }
+                        refetch();
+                      }}
+                    />,
+                  );
+                  setMessage(null);
+                }}
+              />
+            </Stack>
           }
+          maxWidth={150}
           align="right"
         />,
       ]}
       columns={(transaction: Transaction) => [
         <ColumnCell
-          key="accountingPeriod"
-          content={transaction.accountingPeriodName}
-          align="left"
-          isLoading={isLoading}
-          isError={error !== null}
-        />,
-        <ColumnCell
           key="date"
-          content={transaction.date}
+          content={
+            (transaction.debitAccount?.accountId === account.id
+              ? transaction.debitAccount.postedDate
+              : transaction.creditAccount?.postedDate) ?? "Pending"
+          }
           align="left"
           isLoading={isLoading}
           isError={error !== null}
@@ -106,22 +93,12 @@ const TransactionListFrame = function (): JSX.Element {
           isError={error !== null}
         />,
         <ColumnCell
-          key="description"
-          content={transaction.description}
-          align="left"
-          isLoading={isLoading}
-          isError={error !== null}
-        />,
-        <ColumnCell
-          key="debitAccount"
-          content={transaction.debitAccount?.accountName ?? ""}
-          align="left"
-          isLoading={isLoading}
-          isError={error !== null}
-        />,
-        <ColumnCell
-          key="creditAccount"
-          content={transaction.creditAccount?.accountName ?? ""}
+          key="type"
+          content={
+            transaction.debitAccount?.accountId === account.id
+              ? "Debit"
+              : "Credit"
+          }
           align="left"
           isLoading={isLoading}
           isError={error !== null}
@@ -140,12 +117,12 @@ const TransactionListFrame = function (): JSX.Element {
               label="View"
               icon={<ArrowForwardIos />}
               onClick={() => {
-                setDialog(
+                setChildDialog(
                   <TransactionDialog
                     inputTransaction={transaction}
                     setMessage={setMessage}
                     onClose={(needsRefetch) => {
-                      setDialog(null);
+                      setChildDialog(null);
                       if (needsRefetch) {
                         refetch();
                       }
@@ -164,11 +141,11 @@ const TransactionListFrame = function (): JSX.Element {
       getId={(transaction: Transaction) => transaction.id}
       data={transactions}
     >
-      {dialog}
+      {childDialog}
       <SuccessAlert message={message} />
       <ErrorAlert error={error} />
     </ListFrame>
   );
 };
 
-export default TransactionListFrame;
+export default AccountTransactionListFrame;

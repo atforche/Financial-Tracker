@@ -88,7 +88,7 @@ public class AccountService(
     {
         exceptions = [];
 
-        if (transactionRepository.FindAllByAccount(account.Id).Any(transaction => transaction.Id != account.InitialTransaction))
+        if (transactionRepository.GetAll(new TransactionFilter { AccountId = account.Id }).Any(transaction => transaction.Id != account.InitialTransaction))
         {
             exceptions = [new UnableToDeleteAccountException("Cannot delete an Account that has Transactions.")];
             return false;

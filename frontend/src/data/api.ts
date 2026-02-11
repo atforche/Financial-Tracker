@@ -610,7 +610,11 @@ export interface paths {
         /** Retrieves all the Transactions from the database */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    accountId?: string;
+                    accountingPeriodId?: string;
+                    fundId?: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -626,6 +630,17 @@ export interface paths {
                         "text/plain": components["schemas"]["TransactionModel"][];
                         "application/json": components["schemas"]["TransactionModel"][];
                         "text/json": components["schemas"]["TransactionModel"][];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
                     };
                 };
             };

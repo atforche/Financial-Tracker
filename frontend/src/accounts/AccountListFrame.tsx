@@ -26,18 +26,16 @@ const AccountListFrame = function (): JSX.Element {
     <ListFrame<Account>
       name="Accounts"
       headers={[
-        <ColumnHeader key="name" content="Name" minWidth={170} align="left" />,
-        <ColumnHeader key="type" content="Type" minWidth={170} align="left" />,
+        <ColumnHeader key="name" content="Name" align="left" />,
+        <ColumnHeader key="type" content="Type" align="left" />,
         <ColumnHeader
           key="balance"
           content="Posted Balance"
-          minWidth={170}
           align="left"
         />,
         <ColumnHeader
           key="available"
           content="Available to Spend"
-          minWidth={170}
           align="left"
         />,
         <ColumnHeader
@@ -62,7 +60,6 @@ const AccountListFrame = function (): JSX.Element {
               }}
             />
           }
-          minWidth={125}
           align="right"
         />,
       ]}

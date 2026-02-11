@@ -2,6 +2,7 @@ import { Button, Stack } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import { type JSX, useState } from "react";
 import type { Account } from "@accounts/ApiTypes";
+import AccountTransactionListFrame from "@accounts/AccountTransactionListFrame";
 import CaptionedFrame from "@framework/dialog/CaptionedFrame";
 import CaptionedValue from "@framework/dialog/CaptionedValue";
 import DeleteAccountDialog from "@accounts/DeleteAccountDialog";
@@ -93,6 +94,7 @@ const AccountDialog = function ({
               />
             ))}
           </CaptionedFrame>
+          <AccountTransactionListFrame account={account} />
           {childDialog}
         </>
       }

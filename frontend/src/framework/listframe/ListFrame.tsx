@@ -43,23 +43,12 @@ const ListFrame = function <T>({
   children,
 }: ListFrameProps<T>): JSX.Element {
   return (
-    <Box sx={{ paddingLeft: "25px" }}>
-      <Typography
-        variant="h6"
-        sx={{ paddingBottom: "25px", paddingTop: "25px" }}
-      >
+    <Box>
+      <Typography variant="h6" sx={{ paddingBottom: "25px" }}>
         {name}
       </Typography>
       <Paper
         sx={{
-          [`& .MuiIconButton-root`]: {
-            display: "none",
-          },
-          [`& .MuiTableRow-hover:hover`]: {
-            [`.MuiIconButton-root`]: {
-              display: "inline-block",
-            },
-          },
           width: "100%",
         }}
       >

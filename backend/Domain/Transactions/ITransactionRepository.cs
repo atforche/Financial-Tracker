@@ -1,7 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.AccountingPeriods;
-using Domain.Accounts;
-using Domain.Funds;
 
 namespace Domain.Transactions;
 
@@ -13,22 +10,7 @@ public interface ITransactionRepository
     /// <summary>
     /// Finds all the Transactions currently in the repository
     /// </summary>
-    IReadOnlyCollection<Transaction> GetAll();
-
-    /// <summary>
-    /// Finds all the Transactions that are associated with the specified Account
-    /// </summary>
-    IReadOnlyCollection<Transaction> FindAllByAccount(AccountId accountId);
-
-    /// <summary>
-    /// Finds all the Transactions that are associated with the specified Accounting Period
-    /// </summary>
-    IReadOnlyCollection<Transaction> FindAllByAccountingPeriod(AccountingPeriodId accountingPeriodId);
-
-    /// <summary>
-    /// Finds all the Transactions that are associated with the specified Fund
-    /// </summary>
-    IReadOnlyCollection<Transaction> FindAllByFund(FundId fundId);
+    IReadOnlyCollection<Transaction> GetAll(TransactionFilter? filter);
 
     /// <summary>
     /// Finds the Transaction with the specified ID.

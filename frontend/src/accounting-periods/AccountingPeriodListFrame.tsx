@@ -30,13 +30,11 @@ const AccountingPeriodListFrame = function (): JSX.Element {
         <ColumnHeader
           key="period"
           content="Period"
-          minWidth={100}
           align="left"
         />,
         <ColumnHeader
           key="isOpen"
           content="Is Open"
-          minWidth={100}
           align="left"
         />,
         <ColumnHeader
@@ -61,7 +59,6 @@ const AccountingPeriodListFrame = function (): JSX.Element {
               }}
             />
           }
-          minWidth={125}
           align="right"
         />,
       ]}

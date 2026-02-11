@@ -6,9 +6,10 @@ import useQuery from "@data/useQuery";
 
 /**
  * Hook used to retrieve all Transactions via the API.
+ * @param accountId - The Account for which to retrieve Transactions.
  * @returns Retrieved Transactions, loading state, current error, and function to refetch the Transactions.
  */
-const useGetAllTransactions = function (): {
+const useGetAllTransactions = function (accountId?: string): {
   transactions: Transaction[];
   isLoading: boolean;
   error: ApiError | null;
@@ -18,12 +19,18 @@ const useGetAllTransactions = function (): {
     () => Promise<Transaction[] | ApiError>
   >(async () => {
     const client = getApiClient();
-    const { data, error } = await client.GET("/transactions");
+    const { data, error } = await client.GET("/transactions", {
+      params: {
+        query: {
+          accountId: accountId ?? "",
+        }
+      }
+    });
     if (typeof error !== "undefined") {
       return error;
     }
     return data;
-  }, []);
+  }, [accountId]);
 
   const loadingRowCount = 10;
   const { data, isLoading, error, refetch } = useQuery<Transaction[]>({
