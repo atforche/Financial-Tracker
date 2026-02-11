@@ -33,16 +33,8 @@ const TransactionListFrame = function (): JSX.Element {
           align="left"
         />,
         <ColumnHeader key="date" content="Date" align="left" />,
-        <ColumnHeader
-          key="location"
-          content="Location"
-          align="left"
-        />,
-        <ColumnHeader
-          key="description"
-          content="Description"
-          align="left"
-        />,
+        <ColumnHeader key="location" content="Location" align="left" />,
+        <ColumnHeader key="description" content="Description" align="left" />,
         <ColumnHeader
           key="debitAccount"
           content="Debit Account"
@@ -53,11 +45,7 @@ const TransactionListFrame = function (): JSX.Element {
           content="Credit Account"
           align="left"
         />,
-        <ColumnHeader
-          key="amount"
-          content="Amount"
-          align="left"
-        />,
+        <ColumnHeader key="amount" content="Amount" align="left" />,
         <ColumnHeader
           key="actions"
           content={

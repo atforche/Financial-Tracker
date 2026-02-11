@@ -27,16 +27,8 @@ const AccountingPeriodListFrame = function (): JSX.Element {
     <ListFrame<AccountingPeriod>
       name="Accounting Periods"
       headers={[
-        <ColumnHeader
-          key="period"
-          content="Period"
-          align="left"
-        />,
-        <ColumnHeader
-          key="isOpen"
-          content="Is Open"
-          align="left"
-        />,
+        <ColumnHeader key="period" content="Period" align="left" />,
+        <ColumnHeader key="isOpen" content="Is Open" align="left" />,
         <ColumnHeader
           key="actions"
           content={

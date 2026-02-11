@@ -27,16 +27,8 @@ const FundListFrame = function (): JSX.Element {
       name="Funds"
       headers={[
         <ColumnHeader key="name" content="Name" align="left" />,
-        <ColumnHeader
-          key="description"
-          content="Description"
-          align="left"
-        />,
-        <ColumnHeader
-          key="balance"
-          content="Posted Balance"
-          align="left"
-        />,
+        <ColumnHeader key="description" content="Description" align="left" />,
+        <ColumnHeader key="balance" content="Posted Balance" align="left" />,
         <ColumnHeader
           key="actions"
           content={

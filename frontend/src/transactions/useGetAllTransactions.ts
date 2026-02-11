@@ -23,8 +23,8 @@ const useGetAllTransactions = function (accountId?: string): {
       params: {
         query: {
           accountId: accountId ?? "",
-        }
-      }
+        },
+      },
     });
     if (typeof error !== "undefined") {
       return error;

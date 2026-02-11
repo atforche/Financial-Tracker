@@ -28,11 +28,7 @@ const AccountListFrame = function (): JSX.Element {
       headers={[
         <ColumnHeader key="name" content="Name" align="left" />,
         <ColumnHeader key="type" content="Type" align="left" />,
-        <ColumnHeader
-          key="balance"
-          content="Posted Balance"
-          align="left"
-        />,
+        <ColumnHeader key="balance" content="Posted Balance" align="left" />,
         <ColumnHeader
           key="available"
           content="Available to Spend"
