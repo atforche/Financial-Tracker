@@ -102,7 +102,7 @@ public sealed class AccountBuilder(
         {
             return _accountingPeriodId;
         }
-        return accountingPeriodRepository.FindAll()
+        return accountingPeriodRepository.GetAll()
             .Single(accountingPeriod => accountingPeriod.Year == _addedDate.Year && accountingPeriod.Month == _addedDate.Month).Id;
     }
 
@@ -115,7 +115,7 @@ public sealed class AccountBuilder(
         {
             return _addedFundAmounts;
         }
-        var funds = fundRepository.FindAll().ToList();
+        var funds = fundRepository.GetAll().ToList();
         if (funds.Count == 1)
         {
             return

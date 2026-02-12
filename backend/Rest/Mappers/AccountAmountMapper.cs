@@ -14,7 +14,7 @@ public sealed class AccountAmountMapper(IAccountRepository accountRepository)
     public AccountAmountModel ToModel(AccountAmount accountAmount) => new()
     {
         AccountId = accountAmount.AccountId.Value,
-        AccountName = accountRepository.FindById(accountAmount.AccountId).Name,
+        AccountName = accountRepository.GetById(accountAmount.AccountId).Name,
         Amount = accountAmount.Amount
     };
 }

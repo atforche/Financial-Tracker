@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20260131152248_InitialCreate")]
+    [Migration("20260212002508_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -149,6 +149,9 @@ namespace Data.Migrations
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("Sequence")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

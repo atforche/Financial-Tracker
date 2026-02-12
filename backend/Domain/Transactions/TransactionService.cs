@@ -50,7 +50,7 @@ public class TransactionService(
         {
             return false;
         }
-        transaction = new Transaction(request);
+        transaction = new Transaction(request, transactionRepository.GetNextSequenceForDate(request.Date));
         if (!accountBalanceService.TryAddTransaction(transaction, out IEnumerable<Exception> balanceExceptions))
         {
             exceptions = exceptions.Concat(balanceExceptions);
@@ -83,8 +83,8 @@ public class TransactionService(
             exceptions = exceptions.Concat(postedExceptions);
         }
         if (!ValidateDate(transaction.AccountingPeriod,
-                transaction.DebitAccount != null ? accountRepository.FindById(transaction.DebitAccount.AccountId) : null,
-                transaction.CreditAccount != null ? accountRepository.FindById(transaction.CreditAccount.AccountId) : null,
+                transaction.DebitAccount != null ? accountRepository.GetById(transaction.DebitAccount.AccountId) : null,
+                transaction.CreditAccount != null ? accountRepository.GetById(transaction.CreditAccount.AccountId) : null,
                 request.Date,
                 out IEnumerable<Exception> dateExceptions))
         {
@@ -196,7 +196,7 @@ public class TransactionService(
     {
         exceptions = [];
 
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodId);
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(accountingPeriodId);
         if (!accountingPeriod.IsOpen)
         {
             exceptions = exceptions.Append(new InvalidAccountingPeriodException("The Accounting Period is closed."));
@@ -212,15 +212,15 @@ public class TransactionService(
     {
         exceptions = [];
 
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(request.AccountingPeriod);
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(request.AccountingPeriod);
         if (!ValidateAccountingPeriodNotClosed(request.AccountingPeriod, out IEnumerable<Exception> accountingPeriodExceptions))
         {
             exceptions = exceptions.Concat(accountingPeriodExceptions);
         }
         if (request.DebitAccount?.Account.InitialTransaction != null)
         {
-            Transaction debitAccountInitialTransaction = transactionRepository.FindById(request.DebitAccount.Account.InitialTransaction);
-            AccountingPeriod debitAccountInitialPeriod = accountingPeriodRepository.FindById(debitAccountInitialTransaction.AccountingPeriod);
+            Transaction debitAccountInitialTransaction = transactionRepository.GetById(request.DebitAccount.Account.InitialTransaction);
+            AccountingPeriod debitAccountInitialPeriod = accountingPeriodRepository.GetById(debitAccountInitialTransaction.AccountingPeriod);
             if (accountingPeriod.PeriodStartDate < debitAccountInitialPeriod.PeriodStartDate)
             {
                 exceptions = exceptions.Append(new InvalidAccountingPeriodException("The Debit Account did not exist during the provided Accounting Period."));
@@ -228,8 +228,8 @@ public class TransactionService(
         }
         if (request.CreditAccount?.Account.InitialTransaction != null)
         {
-            Transaction creditAccountInitialTransaction = transactionRepository.FindById(request.CreditAccount.Account.InitialTransaction);
-            AccountingPeriod creditAccountInitialPeriod = accountingPeriodRepository.FindById(creditAccountInitialTransaction.AccountingPeriod);
+            Transaction creditAccountInitialTransaction = transactionRepository.GetById(request.CreditAccount.Account.InitialTransaction);
+            AccountingPeriod creditAccountInitialPeriod = accountingPeriodRepository.GetById(creditAccountInitialTransaction.AccountingPeriod);
             if (accountingPeriod.PeriodStartDate < creditAccountInitialPeriod.PeriodStartDate)
             {
                 exceptions = exceptions.Append(new InvalidAccountingPeriodException("The Credit Account did not exist during the provided Accounting Period."));
@@ -254,7 +254,7 @@ public class TransactionService(
         {
             exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction must have a valid Date."));
         }
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(accountingPeriodId);
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(accountingPeriodId);
         int monthDifference = Math.Abs(((accountingPeriod.Year - date.Year) * 12) + accountingPeriod.Month - date.Month);
         if (monthDifference > 1)
         {
@@ -262,7 +262,7 @@ public class TransactionService(
         }
         if (debitAccount?.InitialTransaction != null)
         {
-            Transaction debitAccountInitialTransaction = transactionRepository.FindById(debitAccount.InitialTransaction);
+            Transaction debitAccountInitialTransaction = transactionRepository.GetById(debitAccount.InitialTransaction);
             if (date < debitAccountInitialTransaction.Date)
             {
                 exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction Date is before the Debit Account was created."));
@@ -270,7 +270,7 @@ public class TransactionService(
         }
         if (creditAccount?.InitialTransaction != null)
         {
-            Transaction creditAccountInitialTransaction = transactionRepository.FindById(creditAccount.InitialTransaction);
+            Transaction creditAccountInitialTransaction = transactionRepository.GetById(creditAccount.InitialTransaction);
             if (date < creditAccountInitialTransaction.Date)
             {
                 exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction Date is before the Credit Account was created."));
@@ -390,7 +390,7 @@ public class TransactionService(
         }
         else
         {
-            AccountingPeriod accountingPeriod = accountingPeriodRepository.FindById(transaction.AccountingPeriod);
+            AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(transaction.AccountingPeriod);
             int monthDifference = Math.Abs(((accountingPeriod.Year - postedDate.Year) * 12) + accountingPeriod.Month - postedDate.Month);
             if (monthDifference > 1)
             {

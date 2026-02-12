@@ -13,7 +13,7 @@ import SuccessAlert from "@framework/alerts/SuccessAlert";
 import type { Transaction } from "@transactions/ApiTypes";
 import TransactionDialog from "@transactions/TransactionDialog";
 import formatCurrency from "@framework/formatCurrency";
-import useGetAllTransactions from "@transactions/useGetAllTransactions";
+import useGetAccountingPeriodTransactions from "@accounting-periods/useGetAccountingPeriodTransactions";
 
 /**
  * Props for the AccountingPeriodTransactionListFrame component.
@@ -33,9 +33,10 @@ const AccountingPeriodTransactionListFrame = function ({
 }: AccountingPeriodTransactionListFrameProps): JSX.Element {
   const [childDialog, setChildDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const { transactions, isLoading, error, refetch } = useGetAllTransactions({
-    accountingPeriodId: accountingPeriod.id,
-  });
+  const { transactions, isLoading, error, refetch } =
+    useGetAccountingPeriodTransactions({
+      accountingPeriod,
+    });
   return (
     <ListFrame<Transaction>
       name="Transactions"

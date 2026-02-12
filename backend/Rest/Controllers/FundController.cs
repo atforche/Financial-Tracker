@@ -1,8 +1,10 @@
 using Data;
 using Domain.Funds;
+using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Models.Errors;
 using Models.Funds;
+using Models.Transactions;
 using Rest.Mappers;
 
 namespace Rest.Controllers;
@@ -15,15 +17,20 @@ namespace Rest.Controllers;
 public sealed class FundController(
     UnitOfWork unitOfWork,
     IFundRepository fundRepository,
+    ITransactionRepository transactionRepository,
     FundService fundService,
-    FundMapper fundMapper) : ControllerBase
+    FundMapper fundMapper,
+    TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Funds from the database
     /// </summary>
     /// <returns>The collection of all Funds</returns>
     [HttpGet("")]
-    public IReadOnlyCollection<FundModel> GetAll() => fundRepository.FindAll().Select(fundMapper.ToModel).ToList();
+    public IReadOnlyCollection<FundModel> GetAll() => fundRepository.GetAll()
+        .Select(fundMapper.ToModel)
+        .OrderBy(fund => fund.Name)
+        .ToList();
 
     /// <summary>
     /// Retrieves the Fund that matches the provided ID
@@ -38,6 +45,21 @@ public sealed class FundController(
             return errorResult;
         }
         return Ok(fundMapper.ToModel(fund));
+    }
+
+    /// <summary>
+    /// Retrieves the Transactions for the Fund that matches the provided ID
+    /// </summary>
+    [HttpGet("{fundId}/transactions")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<TransactionModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetTransactions(Guid fundId)
+    {
+        if (!fundMapper.TryToDomain(fundId, out Fund? fund, out IActionResult? errorResult))
+        {
+            return errorResult;
+        }
+        return Ok(transactionRepository.GetAllByFund(fund.Id).Select(transactionMapper.ToModel).ToList());
     }
 
     /// <summary>

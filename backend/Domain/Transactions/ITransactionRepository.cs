@@ -1,4 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.AccountingPeriods;
+using Domain.Accounts;
+using Domain.Funds;
 
 namespace Domain.Transactions;
 
@@ -8,34 +11,42 @@ namespace Domain.Transactions;
 public interface ITransactionRepository
 {
     /// <summary>
-    /// Finds all the Transactions currently in the repository
+    /// Gets the next sequence number for the specified transaction date
     /// </summary>
-    IReadOnlyCollection<Transaction> GetAll(TransactionFilter? filter);
+    int GetNextSequenceForDate(DateOnly transactionDate);
 
     /// <summary>
-    /// Finds the Transaction with the specified ID.
+    /// Gets all the Transactions that are associated with the specified Account
     /// </summary>
-    /// <param name="id">ID of the Transaction to find</param>
-    /// <returns>The Transaction that was found</returns>
-    Transaction FindById(TransactionId id);
+    IReadOnlyCollection<Transaction> GetAllByAccount(AccountId accountId);
 
     /// <summary>
-    /// Attempts to find the Transaction with the specified ID
+    /// Gets all the Transactions that are associated with the specified Accounting Period
     /// </summary>
-    /// <param name="id">ID of the Transaction to find</param>
-    /// <param name="transaction">The Transaction that was found, or null if one wasn't found</param>
-    /// <returns>True if a Transaction with the provided ID was found, false otherwise</returns>
-    bool TryFindById(Guid id, [NotNullWhen(true)] out Transaction? transaction);
+    IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId);
+
+    /// <summary>
+    /// Gets all the Transactions that are associated with the specified Fund
+    /// </summary>
+    IReadOnlyCollection<Transaction> GetAllByFund(FundId fundId);
+
+    /// <summary>
+    /// Gets the Transaction with the specified ID.
+    /// </summary>
+    Transaction GetById(TransactionId id);
+
+    /// <summary>
+    /// Attempts to get the Transaction with the specified ID
+    /// </summary>
+    bool TryGetById(Guid id, [NotNullWhen(true)] out Transaction? transaction);
 
     /// <summary>
     /// Adds the provided Transaction to the repository
     /// </summary>
-    /// <param name="transaction">Transaction that should be added</param>
     void Add(Transaction transaction);
 
     /// <summary>
     /// Deletes the provided Transaction from the repository
     /// </summary>
-    /// <param name="transaction">Transaction to be deleted</param>
     void Delete(Transaction transaction);
 }

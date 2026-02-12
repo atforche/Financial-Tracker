@@ -32,7 +32,7 @@ public sealed class AccountingPeriodMapper(IAccountingPeriodRepository accountin
         [NotNullWhen(false)] out IActionResult? errorResult)
     {
         errorResult = null;
-        if (!accountingPeriodRepository.TryFindById(accountingPeriodId, out accountingPeriod))
+        if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out accountingPeriod))
         {
             errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Accounting Period with ID {accountingPeriodId} was not found.", []));
             return false;

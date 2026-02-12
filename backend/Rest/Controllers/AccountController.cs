@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Models.Accounts;
 using Models.Errors;
 using Models.Funds;
+using Models.Transactions;
 using Rest.Mappers;
 
 namespace Rest.Controllers;
@@ -23,28 +24,32 @@ public sealed class AccountController(
     AccountService accountService,
     AccountingPeriodMapper accountingPeriodMapper,
     AccountMapper accountMapper,
-    FundAmountMapper fundAmountMapper) : ControllerBase
+    FundAmountMapper fundAmountMapper,
+    TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Accounts from the database
     /// </summary>
     /// <returns>The collection of all Accounts</returns>
     [HttpGet("")]
-    public IReadOnlyCollection<AccountModel> GetAll() => accountRepository.FindAll().Select(accountMapper.ToModel).ToList();
+    public IReadOnlyCollection<AccountModel> GetAll() => accountRepository.GetAll()
+        .Select(accountMapper.ToModel)
+        .OrderBy(account => account.Name)
+        .ToList();
 
     /// <summary>
-    /// Retrieves the Account that matches the provided ID
+    /// Retrieves the Transactions for the Account that matches the provided ID
     /// </summary>
-    /// <param name="accountId">ID of the Account to retrieve</param>
-    /// <returns>The Account that matches the provided ID</returns>
-    [HttpGet("{accountId}")]
-    public IActionResult Get(Guid accountId)
+    [HttpGet("{accountId}/transactions")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<TransactionModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetTransactions(Guid accountId)
     {
         if (!accountMapper.TryToDomain(accountId, out Account? account, out IActionResult? errorResult))
         {
             return errorResult;
         }
-        return Ok(accountMapper.ToModel(account));
+        return Ok(transactionRepository.GetAllByAccount(account.Id).Select(transactionMapper.ToModel).ToList());
     }
 
     /// <summary>

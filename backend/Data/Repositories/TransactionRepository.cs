@@ -1,4 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.AccountingPeriods;
+using Domain.Accounts;
+using Domain.Funds;
 using Domain.Transactions;
 
 namespace Data.Repositories;
@@ -9,33 +12,86 @@ namespace Data.Repositories;
 public class TransactionRepository(DatabaseContext databaseContext) : ITransactionRepository
 {
     /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> GetAll(TransactionFilter? filter = null)
+    public int GetNextSequenceForDate(DateOnly transactionDate)
     {
-        IQueryable<Transaction> results = databaseContext.Transactions;
-        if (filter?.AccountId != null)
-        {
-            results = results.Where(transaction =>
-                (transaction.DebitAccount != null && transaction.DebitAccount.AccountId == filter.AccountId) ||
-                (transaction.CreditAccount != null && transaction.CreditAccount.AccountId == filter.AccountId));
-        }
-        if (filter?.AccountingPeriodId != null)
-        {
-            results = results.Where(transaction => transaction.AccountingPeriod == filter.AccountingPeriodId);
-        }
-        if (filter?.FundId != null)
-        {
-            results = results.Where(transaction =>
-                (transaction.DebitAccount != null && transaction.DebitAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == filter.FundId)) ||
-                (transaction.CreditAccount != null && transaction.CreditAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == filter.FundId)));
-        }
-        return results.ToList();
+        var historiesOnDate = databaseContext.Transactions
+            .Where(transaction => transaction.Date == transactionDate)
+            .ToList();
+        return historiesOnDate.Count == 0 ? 1 : historiesOnDate.Max(transaction => transaction.Sequence) + 1;
     }
 
     /// <inheritdoc/>
-    public Transaction FindById(TransactionId id) => databaseContext.Transactions.Single(transaction => transaction.Id == id);
+    public IReadOnlyCollection<Transaction> GetAllByAccount(AccountId accountId)
+    {
+        var transferTransactions = databaseContext.Transactions
+            .Where(transaction =>
+                transaction.DebitAccount != null && transaction.DebitAccount.AccountId == accountId &&
+                transaction.CreditAccount != null && transaction.CreditAccount.AccountId == accountId)
+            .LeftJoin(databaseContext.AccountBalanceHistories,
+                transaction => new { transactionId = transaction.Id, date = transaction.DebitAccount!.PostedDate },
+                history => new { transactionId = history.TransactionId, date = (DateOnly?)history.Date },
+                (transaction, history) => new { transaction, history })
+            .ToList();
+        var debitTransactions = databaseContext.Transactions
+            .Where(transaction =>
+                transaction.DebitAccount != null && transaction.DebitAccount.AccountId == accountId &&
+                (transaction.CreditAccount == null || transaction.CreditAccount.AccountId != accountId))
+            .LeftJoin(databaseContext.AccountBalanceHistories,
+                transaction => new { transactionId = transaction.Id, date = transaction.DebitAccount!.PostedDate },
+                history => new { transactionId = history.TransactionId, date = (DateOnly?)history.Date },
+                (transaction, history) => new { transaction, history })
+            .ToList();
+        var creditTransactions = databaseContext.Transactions
+            .Where(transaction =>
+                transaction.CreditAccount != null && transaction.CreditAccount.AccountId == accountId &&
+                (transaction.DebitAccount == null || transaction.DebitAccount.AccountId != accountId))
+            .LeftJoin(databaseContext.AccountBalanceHistories,
+                transaction => new { transactionId = transaction.Id, date = transaction.CreditAccount!.PostedDate },
+                history => new { transactionId = history.TransactionId, date = (DateOnly?)history.Date },
+                (transaction, history) => new { transaction, history })
+            .ToList();
+        return transferTransactions.Union(debitTransactions).Union(creditTransactions)
+            .OrderBy(item => item.history?.Date ?? DateOnly.MaxValue)
+            .ThenBy(item => item.history?.Sequence ?? int.MaxValue)
+            .ThenBy(item => item.transaction.Date)
+            .ThenBy(item => item.transaction.Sequence)
+            .Select(item => item.transaction)
+            .ToList();
+    }
 
     /// <inheritdoc/>
-    public bool TryFindById(Guid id, [NotNullWhen(true)] out Transaction? transaction)
+    public IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
+        databaseContext.Transactions.Where(transaction => transaction.AccountingPeriod == accountingPeriodId)
+            .OrderBy(transaction => transaction.Date)
+            .ThenBy(transaction => transaction.Sequence)
+            .ToList();
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<Transaction> GetAllByFund(FundId fundId)
+    {
+        IQueryable<Transaction> transferTransactions = databaseContext.Transactions
+            .Where(transaction =>
+                transaction.DebitAccount != null && transaction.DebitAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId) &&
+                transaction.CreditAccount != null && transaction.CreditAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId));
+        IQueryable<Transaction> debitTransactions = databaseContext.Transactions
+            .Where(transaction =>
+                transaction.DebitAccount != null && transaction.DebitAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId) &&
+                (transaction.CreditAccount == null || !transaction.CreditAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId)));
+        IQueryable<Transaction> creditTransactions = databaseContext.Transactions
+            .Where(transaction =>
+                transaction.CreditAccount != null && transaction.CreditAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId) &&
+                (transaction.DebitAccount == null || !transaction.DebitAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId)));
+        return transferTransactions.Union(debitTransactions).Union(creditTransactions)
+            .OrderBy(transaction => transaction.Date)
+            .ThenBy(transaction => transaction.Sequence)
+            .ToList();
+    }
+
+    /// <inheritdoc/>
+    public Transaction GetById(TransactionId id) => databaseContext.Transactions.Single(transaction => transaction.Id == id);
+
+    /// <inheritdoc/>
+    public bool TryGetById(Guid id, [NotNullWhen(true)] out Transaction? transaction)
     {
         transaction = databaseContext.Transactions.FirstOrDefault(transaction => ((Guid)(object)transaction.Id) == id);
         return transaction != null;

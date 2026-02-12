@@ -86,7 +86,7 @@ public class AccountingPeriodService(IAccountingPeriodRepository accountingPerio
             return false;
         }
         // Validate that there are no duplicate accounting periods
-        var existingAccountingPeriods = accountingPeriodRepository.FindAll().ToList();
+        var existingAccountingPeriods = accountingPeriodRepository.GetAll().ToList();
         if (existingAccountingPeriods.Any(period => period.PeriodStartDate == new DateOnly(year, month, 1)))
         {
             exceptions = exceptions.Append(new InvalidMonthException("This Accounting Period already exists."));
@@ -114,13 +114,13 @@ public class AccountingPeriodService(IAccountingPeriodRepository accountingPerio
         {
             exceptions = exceptions.Append(new UnableToCloseAccountingPeriodException("This Accounting Period is already closed."));
         }
-        if (transactionRepository.GetAll(new TransactionFilter { AccountingPeriodId = accountingPeriod.Id }).Any(transaction =>
+        if (transactionRepository.GetAllByAccountingPeriod(accountingPeriod.Id).Any(transaction =>
             (transaction.DebitAccount != null && transaction.DebitAccount.PostedDate == null) ||
             (transaction.CreditAccount != null && transaction.CreditAccount.PostedDate == null)))
         {
             exceptions = exceptions.Append(new UnableToCloseAccountingPeriodException("There are unposted transactions in this Accounting Period."));
         }
-        if (accountingPeriodRepository.FindAllOpenPeriods().Any(openPeriod => openPeriod.PeriodStartDate < accountingPeriod.PeriodStartDate))
+        if (accountingPeriodRepository.GetAllOpenPeriods().Any(openPeriod => openPeriod.PeriodStartDate < accountingPeriod.PeriodStartDate))
         {
             exceptions = exceptions.Append(new UnableToCloseAccountingPeriodException("An earlier Accounting Period is still open."));
         }
@@ -141,11 +141,11 @@ public class AccountingPeriodService(IAccountingPeriodRepository accountingPerio
         {
             exceptions = exceptions.Append(new UnableToDeleteAccountingPeriodException("This Accounting Period is closed."));
         }
-        if (transactionRepository.GetAll(new TransactionFilter { AccountingPeriodId = accountingPeriod.Id }).Count > 0)
+        if (transactionRepository.GetAllByAccountingPeriod(accountingPeriod.Id).Count > 0)
         {
             exceptions = exceptions.Append(new UnableToDeleteAccountingPeriodException("This Accounting Period has transactions."));
         }
-        if (accountingPeriodRepository.FindNextAccountingPeriod(accountingPeriod.Id) != null)
+        if (accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id) != null)
         {
             exceptions = exceptions.Append(new UnableToDeleteAccountingPeriodException("Deleting this Accounting Period would cause a gap between existing Accounting Periods."));
         }

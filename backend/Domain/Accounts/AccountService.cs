@@ -88,14 +88,14 @@ public class AccountService(
     {
         exceptions = [];
 
-        if (transactionRepository.GetAll(new TransactionFilter { AccountId = account.Id }).Any(transaction => transaction.Id != account.InitialTransaction))
+        if (transactionRepository.GetAllByAccount(account.Id).Any(transaction => transaction.Id != account.InitialTransaction))
         {
             exceptions = [new UnableToDeleteAccountException("Cannot delete an Account that has Transactions.")];
             return false;
         }
         if (account.InitialTransaction != null)
         {
-            Transaction initialTransaction = transactionRepository.FindById(account.InitialTransaction);
+            Transaction initialTransaction = transactionRepository.GetById(account.InitialTransaction);
             if (!transactionService.TryDelete(initialTransaction, account.Id, out IEnumerable<Exception> transactionExceptions))
             {
                 exceptions = exceptions.Concat(transactionExceptions);
@@ -120,7 +120,7 @@ public class AccountService(
         {
             exceptions = exceptions.Append(new InvalidAccountNameException("Account name cannot be empty"));
         }
-        if (accountRepository.TryFindByName(name, out _))
+        if (accountRepository.TryGetByName(name, out _))
         {
             exceptions = exceptions.Append(new InvalidAccountNameException("Account name must be unique"));
         }

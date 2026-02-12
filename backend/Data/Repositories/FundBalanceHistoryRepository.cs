@@ -18,7 +18,7 @@ public class FundBalanceHistoryRepository(DatabaseContext databaseContext) : IFu
     }
 
     /// <inheritdoc/>
-    public FundBalanceHistory? FindLatestForFund(FundId fundId) =>
+    public FundBalanceHistory? GetLatestForFund(FundId fundId) =>
         databaseContext.FundBalanceHistories
             .Where(history => history.FundId == fundId)
             .OrderByDescending(history => history.Date)
@@ -29,10 +29,11 @@ public class FundBalanceHistoryRepository(DatabaseContext databaseContext) : IFu
     public IReadOnlyCollection<FundBalanceHistory> GetAllByTransactionId(TransactionId transactionId) =>
         databaseContext.FundBalanceHistories
             .Where(history => history.TransactionId == transactionId)
+            .OrderBy(history => history.Date)
             .ToList();
 
     /// <inheritdoc/>
-    public FundBalanceHistory FindEarliestByTransactionId(FundId fundId, TransactionId transactionId) =>
+    public FundBalanceHistory GetEarliestByTransactionId(FundId fundId, TransactionId transactionId) =>
         databaseContext.FundBalanceHistories
             .Where(history => history.FundId == fundId && history.TransactionId == transactionId)
             .OrderBy(history => history.Date)
@@ -45,7 +46,7 @@ public class FundBalanceHistoryRepository(DatabaseContext databaseContext) : IFu
             .First();
 
     /// <inheritdoc/>
-    public FundBalanceHistory? FindLatestHistoryEarlierThan(FundId fundId, DateOnly historyDate, int sequenceNumber) =>
+    public FundBalanceHistory? GetLatestHistoryEarlierThan(FundId fundId, DateOnly historyDate, int sequenceNumber) =>
         databaseContext.FundBalanceHistories
             .Where(history => history.FundId == fundId &&
                               (history.Date < historyDate ||
@@ -55,7 +56,7 @@ public class FundBalanceHistoryRepository(DatabaseContext databaseContext) : IFu
             .FirstOrDefault();
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<(FundBalanceHistory History, Transaction Transaction)> FindAllHistoriesLaterThan(FundId fundId, DateOnly historyDate, int sequence)
+    public IReadOnlyCollection<(FundBalanceHistory History, Transaction Transaction)> GetAllHistoriesLaterThan(FundId fundId, DateOnly historyDate, int sequence)
     {
         var results = databaseContext.FundBalanceHistories
             .Where(history => history.FundId == fundId &&
@@ -65,6 +66,8 @@ public class FundBalanceHistoryRepository(DatabaseContext databaseContext) : IFu
                 history => history.TransactionId,
                 transaction => transaction.Id,
                 (history, transaction) => new { history, transaction })
+            .OrderBy(result => result.history.Date)
+            .ThenBy(result => result.history.Sequence)
             .ToList();
         return results.Select(result => (result.history, result.transaction)).ToList();
     }

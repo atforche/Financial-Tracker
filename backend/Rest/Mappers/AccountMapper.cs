@@ -30,7 +30,7 @@ public sealed class AccountMapper(AccountBalanceService accountBalanceService, A
         [NotNullWhen(false)] out IActionResult? errorResult)
     {
         errorResult = null;
-        if (!accountRepository.TryFindById(accountId, out account))
+        if (!accountRepository.TryGetById(accountId, out account))
         {
             errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Account with ID {accountId} was not found.", []));
             return false;

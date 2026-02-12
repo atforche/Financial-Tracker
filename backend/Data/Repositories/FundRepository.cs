@@ -9,20 +9,20 @@ namespace Data.Repositories;
 public class FundRepository(DatabaseContext databaseContext) : IFundRepository
 {
     /// <inheritdoc/>
-    public IReadOnlyCollection<Fund> FindAll() => databaseContext.Funds.ToList();
+    public IReadOnlyCollection<Fund> GetAll() => databaseContext.Funds.OrderBy(fund => fund.Name).ToList();
 
     /// <inheritdoc/>
-    public Fund FindById(FundId id) => databaseContext.Funds.Single(fund => fund.Id == id);
+    public Fund GetById(FundId id) => databaseContext.Funds.Single(fund => fund.Id == id);
 
     /// <inheritdoc/>
-    public bool TryFindById(Guid id, [NotNullWhen(true)] out Fund? fund)
+    public bool TryGetById(Guid id, [NotNullWhen(true)] out Fund? fund)
     {
         fund = databaseContext.Funds.FirstOrDefault(fund => ((Guid)(object)fund.Id) == id);
         return fund != null;
     }
 
     /// <inheritdoc/>
-    public bool TryFindByName(string name, [NotNullWhen(true)] out Fund? fund)
+    public bool TryGetByName(string name, [NotNullWhen(true)] out Fund? fund)
     {
         fund = databaseContext.Funds.FirstOrDefault(f => f.Name == name);
         return fund != null;

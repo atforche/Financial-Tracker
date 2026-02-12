@@ -16,40 +16,40 @@ internal sealed class MockAccountingPeriodRepository : IAccountingPeriodReposito
     public MockAccountingPeriodRepository() => _accountingPeriods = [];
 
     /// <inheritdoc/>
-    public AccountingPeriod FindById(AccountingPeriodId id) => _accountingPeriods[id.Value];
+    public AccountingPeriod GetById(AccountingPeriodId id) => _accountingPeriods[id.Value];
 
     /// <inheritdoc/>
-    public bool TryFindById(Guid id, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod) => _accountingPeriods.TryGetValue(id, out accountingPeriod);
+    public bool TryGetById(Guid id, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod) => _accountingPeriods.TryGetValue(id, out accountingPeriod);
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> FindAll() => _accountingPeriods.Values;
+    public IReadOnlyCollection<AccountingPeriod> GetAll() => _accountingPeriods.Values;
 
     /// <inheritdoc/>
-    public AccountingPeriod? FindLatestAccountingPeriod() => _accountingPeriods.Values
+    public AccountingPeriod? GetLatestAccountingPeriod() => _accountingPeriods.Values
         .OrderBy(accountingPeriod => accountingPeriod.Year)
         .ThenBy(accountingPeriod => accountingPeriod.Month)
         .LastOrDefault();
 
     /// <inheritdoc/>
-    public AccountingPeriod? FindNextAccountingPeriod(AccountingPeriodId id)
+    public AccountingPeriod? GetNextAccountingPeriod(AccountingPeriodId id)
     {
-        AccountingPeriod currentAccountingPeriod = FindById(id);
+        AccountingPeriod currentAccountingPeriod = GetById(id);
         DateOnly nextMonth = currentAccountingPeriod.PeriodStartDate.AddMonths(1);
         return _accountingPeriods.Values
             .SingleOrDefault(accountingPeriod => accountingPeriod.Year == nextMonth.Year && accountingPeriod.Month == nextMonth.Month);
     }
 
     /// <inheritdoc/>
-    public AccountingPeriod? FindPreviousAccountingPeriod(AccountingPeriodId id)
+    public AccountingPeriod? GetPreviousAccountingPeriod(AccountingPeriodId id)
     {
-        AccountingPeriod currentAccountingPeriod = FindById(id);
+        AccountingPeriod currentAccountingPeriod = GetById(id);
         DateOnly nextMonth = currentAccountingPeriod.PeriodStartDate.AddMonths(-1);
         return _accountingPeriods.Values
             .SingleOrDefault(accountingPeriod => accountingPeriod.Year == nextMonth.Year && accountingPeriod.Month == nextMonth.Month);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> FindAllOpenPeriods() => _accountingPeriods.Values
+    public IReadOnlyCollection<AccountingPeriod> GetAllOpenPeriods() => _accountingPeriods.Values
         .Where(accountingPeriod => accountingPeriod.IsOpen).ToList();
 
     /// <inheritdoc/>

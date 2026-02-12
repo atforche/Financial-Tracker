@@ -9,20 +9,20 @@ namespace Data.Repositories;
 public class AccountRepository(DatabaseContext databaseContext) : IAccountRepository
 {
     /// <inheritdoc/>
-    public IReadOnlyCollection<Account> FindAll() => databaseContext.Accounts.ToList();
+    public IReadOnlyCollection<Account> GetAll() => databaseContext.Accounts.OrderBy(account => account.Name).ToList();
 
     /// <inheritdoc/>
-    public Account FindById(AccountId id) => databaseContext.Accounts.Single(account => account.Id == id);
+    public Account GetById(AccountId id) => databaseContext.Accounts.Single(account => account.Id == id);
 
     /// <inheritdoc/>
-    public bool TryFindById(Guid id, [NotNullWhen(true)] out Account? account)
+    public bool TryGetById(Guid id, [NotNullWhen(true)] out Account? account)
     {
         account = databaseContext.Accounts.FirstOrDefault(account => ((Guid)(object)account.Id) == id);
         return account != null;
     }
 
     /// <inheritdoc/>
-    public bool TryFindByName(string name, [NotNullWhen(true)] out Account? account)
+    public bool TryGetByName(string name, [NotNullWhen(true)] out Account? account)
     {
         account = databaseContext.Accounts.FirstOrDefault(account => account.Name == name);
         return account != null;

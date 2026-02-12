@@ -152,6 +152,7 @@ namespace Data.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     AccountingPeriod = table.Column<Guid>(type: "TEXT", nullable: false),
                     Date = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    Sequence = table.Column<int>(type: "INTEGER", nullable: false),
                     Location = table.Column<string>(type: "TEXT", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
                     DebitAccount_AccountId = table.Column<Guid>(type: "TEXT", nullable: true),

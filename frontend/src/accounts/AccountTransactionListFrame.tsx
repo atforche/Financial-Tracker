@@ -13,7 +13,7 @@ import SuccessAlert from "@framework/alerts/SuccessAlert";
 import type { Transaction } from "@transactions/ApiTypes";
 import TransactionDialog from "@transactions/TransactionDialog";
 import formatCurrency from "@framework/formatCurrency";
-import useGetAllTransactions from "@transactions/useGetAllTransactions";
+import useGetAccountTransactions from "@accounts/useGetAccountTransactions";
 
 /**
  * Props for the AccountTransactionListFrame component.
@@ -52,9 +52,11 @@ const AccountTransactionListFrame = function ({
 }: AccountTransactionListFrameProps): JSX.Element {
   const [childDialog, setChildDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const { transactions, isLoading, error, refetch } = useGetAllTransactions({
-    accountId: account.id,
-  });
+  const { transactions, isLoading, error, refetch } = useGetAccountTransactions(
+    {
+      account,
+    },
+  );
   return (
     <ListFrame<Transaction>
       name="Transactions"

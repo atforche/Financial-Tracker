@@ -30,7 +30,7 @@ public sealed class FundMapper(FundBalanceService fundBalanceService, FundBalanc
         [NotNullWhen(false)] out IActionResult? errorResult)
     {
         errorResult = null;
-        if (!fundRepository.TryFindById(fundId, out fund))
+        if (!fundRepository.TryGetById(fundId, out fund))
         {
             errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Fund with ID {fundId} was not found.", []));
             return false;

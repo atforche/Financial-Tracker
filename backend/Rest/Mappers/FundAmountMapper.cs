@@ -16,7 +16,7 @@ public sealed class FundAmountMapper(FundMapper fundMapper, IFundRepository fund
     public FundAmountModel ToModel(FundAmount fundAmount) => new()
     {
         FundId = fundAmount.FundId.Value,
-        FundName = fundRepository.FindById(fundAmount.FundId).Name,
+        FundName = fundRepository.GetById(fundAmount.FundId).Name,
         Amount = fundAmount.Amount
     };
 

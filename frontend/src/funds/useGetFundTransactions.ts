@@ -1,28 +1,25 @@
 import type { ApiError } from "@data/ApiError";
+import type { Fund } from "@funds/ApiTypes";
 import type { Transaction } from "@transactions/ApiTypes";
 import getApiClient from "@data/getApiClient";
 import { useCallback } from "react";
 import useQuery from "@data/useQuery";
 
 /**
- * Arguments for the useGetAllTransactions hook.
+ * Arguments for the useGetFundTransactions hook.
  */
-interface UseGetAllTransactionsArgs {
-  accountId?: string;
-  accountingPeriodId?: string;
-  fundId?: string;
+interface UseGetFundTransactionsArgs {
+  fund: Fund;
 }
 
 /**
- * Hook used to retrieve all Transactions via the API.
- * @param args - The arguments for the useGetAllTransactions hook.
+ * Hook used to retrieve Fund Transactions via the API.
+ * @param args - The arguments for the useGetFundTransactions hook.
  * @returns Retrieved Transactions, loading state, current error, and function to refetch the Transactions.
  */
-const useGetAllTransactions = function ({
-  accountId,
-  accountingPeriodId,
-  fundId,
-}: UseGetAllTransactionsArgs): {
+const useGetFundTransactions = function ({
+  fund,
+}: UseGetFundTransactionsArgs): {
   transactions: Transaction[];
   isLoading: boolean;
   error: ApiError | null;
@@ -32,12 +29,10 @@ const useGetAllTransactions = function ({
     () => Promise<Transaction[] | ApiError>
   >(async () => {
     const client = getApiClient();
-    const { data, error } = await client.GET("/transactions", {
+    const { data, error } = await client.GET("/funds/{fundId}/transactions", {
       params: {
-        query: {
-          accountId: accountId ?? "",
-          accountingPeriodId: accountingPeriodId ?? "",
-          fundId: fundId ?? "",
+        path: {
+          fundId: fund.id,
         },
       },
     });
@@ -45,7 +40,7 @@ const useGetAllTransactions = function ({
       return error;
     }
     return data;
-  }, [accountId, accountingPeriodId, fundId]);
+  }, [fund.id]);
 
   const loadingRowCount = 10;
   const { data, isLoading, error, refetch } = useQuery<Transaction[]>({
@@ -122,4 +117,4 @@ const useGetAllTransactions = function ({
   };
 };
 
-export default useGetAllTransactions;
+export default useGetFundTransactions;

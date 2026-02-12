@@ -13,7 +13,7 @@ import SuccessAlert from "@framework/alerts/SuccessAlert";
 import type { Transaction } from "@transactions/ApiTypes";
 import TransactionDialog from "@transactions/TransactionDialog";
 import formatCurrency from "@framework/formatCurrency";
-import useGetAllTransactions from "@transactions/useGetAllTransactions";
+import useGetFundTransactions from "@funds/useGetFundTransactions";
 
 /**
  * Props for the FundTransactionListFrame component.
@@ -62,8 +62,8 @@ const FundTransactionListFrame = function ({
 }: FundTransactionListFrameProps): JSX.Element {
   const [childDialog, setChildDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const { transactions, isLoading, error, refetch } = useGetAllTransactions({
-    fundId: fund.id,
+  const { transactions, isLoading, error, refetch } = useGetFundTransactions({
+    fund,
   });
   return (
     <ListFrame<Transaction>

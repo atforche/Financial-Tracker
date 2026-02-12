@@ -25,6 +25,14 @@ public class Transaction : Entity<TransactionId>
     public DateOnly Date { get; internal set; }
 
     /// <summary>
+    /// Sequence number for this Transaction
+    /// </summary> 
+    /// <remarks>
+    /// The sequence number is used to order multiple transactions for the same date.
+    /// </remarks>
+    public int Sequence { get; internal set; }
+
+    /// <summary>
     /// Location for this Transaction
     /// </summary>
     public string Location { get; internal set; }
@@ -117,11 +125,12 @@ public class Transaction : Entity<TransactionId>
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal Transaction(CreateTransactionRequest request)
+    internal Transaction(CreateTransactionRequest request, int sequence)
         : base(new TransactionId(Guid.NewGuid()))
     {
         AccountingPeriod = request.AccountingPeriod;
         Date = request.Date;
+        Sequence = sequence;
         Location = request.Location;
         Description = request.Description;
         DebitAccount = request.DebitAccount != null ? new TransactionAccount(this, request.DebitAccount.Account.Id, request.DebitAccount.FundAmounts) : null;

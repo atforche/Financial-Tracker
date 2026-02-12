@@ -1,8 +1,10 @@
 using Data;
 using Domain.AccountingPeriods;
+using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Models.AccountingPeriods;
 using Models.Errors;
+using Models.Transactions;
 using Rest.Mappers;
 
 namespace Rest.Controllers;
@@ -14,15 +16,17 @@ namespace Rest.Controllers;
 [Route("/accounting-periods")]
 public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     IAccountingPeriodRepository accountingPeriodRepository,
+    ITransactionRepository transactionRepository,
     AccountingPeriodService accountingPeriodService,
-    AccountingPeriodMapper accountingPeriodMapper) : ControllerBase
+    AccountingPeriodMapper accountingPeriodMapper,
+    TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Accounting Periods from the database
     /// </summary>
     /// <returns>The collection of all Accounting Periods</returns>
     [HttpGet("")]
-    public IReadOnlyCollection<AccountingPeriodModel> GetAll() => accountingPeriodRepository.FindAll()
+    public IReadOnlyCollection<AccountingPeriodModel> GetAll() => accountingPeriodRepository.GetAll()
         .OrderByDescending(accountingPeriod => accountingPeriod.PeriodStartDate)
         .Select(AccountingPeriodMapper.ToModel).ToList();
 
@@ -31,23 +35,23 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     /// </summary>
     /// <returns>The collection of all open Accounting Periods</returns>
     [HttpGet("open")]
-    public IReadOnlyCollection<AccountingPeriodModel> GetAllOpen() => accountingPeriodRepository.FindAllOpenPeriods()
+    public IReadOnlyCollection<AccountingPeriodModel> GetAllOpen() => accountingPeriodRepository.GetAllOpenPeriods()
         .OrderByDescending(accountingPeriod => accountingPeriod.PeriodStartDate)
         .Select(AccountingPeriodMapper.ToModel).ToList();
 
     /// <summary>
-    /// Retrieves the Accounting Period that matches the provided ID
+    /// Retrieves the Transactions for the Accounting Period that matches the provided ID
     /// </summary>
-    /// <param name="accountingPeriodId">ID of the Accounting Period to retrieve</param>
-    /// <returns>The Accounting Period that matches the provided ID</returns>
-    [HttpGet("{accountingPeriodId}")]
-    public IActionResult Get(Guid accountingPeriodId)
+    [HttpGet("{accountingPeriodId}/transactions")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<TransactionModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetTransactions(Guid accountingPeriodId)
     {
         if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod, out IActionResult? errorResult))
         {
             return errorResult;
         }
-        return Ok(AccountingPeriodMapper.ToModel(accountingPeriod));
+        return Ok(transactionRepository.GetAllByAccountingPeriod(accountingPeriod.Id).Select(transactionMapper.ToModel).ToList());
     }
 
     /// <summary>

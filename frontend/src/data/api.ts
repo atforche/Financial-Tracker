@@ -82,6 +82,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/accounts/{accountId}/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves the Transactions for the Account that matches the provided ID */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionModel"][];
+                        "application/json": components["schemas"]["TransactionModel"][];
+                        "text/json": components["schemas"]["TransactionModel"][];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/accounts/{accountId}": {
         parameters: {
             query?: never;
@@ -89,28 +140,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Retrieves the Account that matches the provided ID */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID of the Account to retrieve */
-                    accountId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description The Account that matches the provided ID */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get?: never;
         put?: never;
         /** Updates the provided Account with the provided properties */
         post: {
@@ -303,50 +333,36 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/accounting-periods/{accountingPeriodId}": {
+    "/accounting-periods/{accountingPeriodId}/transactions": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Retrieves the Accounting Period that matches the provided ID */
+        /** Retrieves the Transactions for the Accounting Period that matches the provided ID */
         get: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description ID of the Accounting Period to retrieve */
                     accountingPeriodId: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description The Accounting Period that matches the provided ID */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "text/plain": components["schemas"]["TransactionModel"][];
+                        "application/json": components["schemas"]["TransactionModel"][];
+                        "text/json": components["schemas"]["TransactionModel"][];
+                    };
                 };
-            };
-        };
-        put?: never;
-        post?: never;
-        /** Deletes the Accounting Period with the provided ID */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID of the Accounting Period to delete */
-                    accountingPeriodId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
                 /** @description Unprocessable Entity */
                 422: {
                     headers: {
@@ -360,6 +376,9 @@ export interface paths {
                 };
             };
         };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -412,6 +431,47 @@ export interface paths {
             };
         };
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounting-periods/{accountingPeriodId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Deletes the Accounting Period with the provided ID */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description ID of the Accounting Period to delete */
+                    accountingPeriodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -600,23 +660,21 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/transactions": {
+    "/funds/{fundId}/transactions": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Retrieves all the Transactions from the database */
+        /** Retrieves the Transactions for the Fund that matches the provided ID */
         get: {
             parameters: {
-                query?: {
-                    accountId?: string;
-                    accountingPeriodId?: string;
-                    fundId?: string;
-                };
+                query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    fundId: string;
+                };
                 cookie?: never;
             };
             requestBody?: never;
@@ -646,46 +704,7 @@ export interface paths {
             };
         };
         put?: never;
-        /** Creates a new Transaction with the provided properties */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateTransactionModel"];
-                    "text/json": components["schemas"]["CreateTransactionModel"];
-                    "application/*+json": components["schemas"]["CreateTransactionModel"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["TransactionModel"];
-                        "application/json": components["schemas"]["TransactionModel"];
-                        "text/json": components["schemas"]["TransactionModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
-                    };
-                };
-            };
-        };
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -788,6 +807,61 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Creates a new Transaction with the provided properties */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateTransactionModel"];
+                    "text/json": components["schemas"]["CreateTransactionModel"];
+                    "application/*+json": components["schemas"]["CreateTransactionModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionModel"];
+                        "application/json": components["schemas"]["TransactionModel"];
+                        "text/json": components["schemas"]["TransactionModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
