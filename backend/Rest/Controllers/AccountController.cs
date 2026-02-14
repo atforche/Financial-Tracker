@@ -32,10 +32,21 @@ public sealed class AccountController(
     /// </summary>
     /// <returns>The collection of all Accounts</returns>
     [HttpGet("")]
-    public IReadOnlyCollection<AccountModel> GetAll() => accountRepository.GetAll()
-        .Select(accountMapper.ToModel)
-        .OrderBy(account => account.Name)
-        .ToList();
+    [ProducesResponseType(typeof(IReadOnlyCollection<AccountModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetAll()
+    {
+        List<AccountModel> results = [];
+        foreach (Account account in accountRepository.GetAll())
+        {
+            if (!accountMapper.TryToModel(account, out AccountModel? accountModel, out IActionResult? errorResult))
+            {
+                return errorResult;
+            }
+            results.Add(accountModel);
+        }
+        return Ok(results);
+    }
 
     /// <summary>
     /// Retrieves the Transactions for the Account that matches the provided ID
@@ -66,6 +77,10 @@ public sealed class AccountController(
         {
             return errorResult;
         }
+        if (!AccountTypeMapper.TryToDomain(createAccountModel.Type, out AccountType? accountType, out errorResult))
+        {
+            return errorResult;
+        }
         List<FundAmount> fundAmounts = [];
         foreach (CreateFundAmountModel fundAmountModel in createAccountModel.InitialFundAmounts)
         {
@@ -79,7 +94,7 @@ public sealed class AccountController(
             new CreateAccountRequest
             {
                 Name = createAccountModel.Name,
-                Type = AccountTypeMapper.ToDomain(createAccountModel.Type),
+                Type = accountType.Value,
                 AccountingPeriodId = accountingPeriod.Id,
                 AddDate = createAccountModel.AddDate,
                 InitialFundAmounts = fundAmounts
@@ -92,8 +107,12 @@ public sealed class AccountController(
         }
         accountRepository.Add(newAccount);
         transactionRepository.Add(initialTransaction);
+        if (!accountMapper.TryToModel(newAccount, out AccountModel? accountModel, out errorResult))
+        {
+            return errorResult;
+        }
         await unitOfWork.SaveChangesAsync();
-        return Ok(accountMapper.ToModel(newAccount));
+        return Ok(accountModel);
     }
 
     /// <summary>
@@ -115,8 +134,12 @@ public sealed class AccountController(
         {
             return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to update Account.", exceptions));
         }
+        if (!accountMapper.TryToModel(accountToUpdate, out AccountModel? accountModel, out errorResult))
+        {
+            return errorResult;
+        }
         await unitOfWork.SaveChangesAsync();
-        return Ok(accountMapper.ToModel(accountToUpdate));
+        return Ok(accountModel);
     }
 
     /// <summary>

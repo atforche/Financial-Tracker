@@ -13,13 +13,25 @@ public sealed class AccountMapper(AccountBalanceService accountBalanceService, A
     /// <summary>
     /// Maps the provided Account to an Account Model
     /// </summary>
-    public AccountModel ToModel(Account account) => new()
+    public bool TryToModel(
+        Account account,
+        [NotNullWhen(true)] out AccountModel? accountModel,
+        [NotNullWhen(false)] out IActionResult? errorResult)
     {
-        Id = account.Id.Value,
-        Name = account.Name,
-        Type = AccountTypeMapper.ToModel(account.Type),
-        CurrentBalance = accountBalanceMapper.ToModel(accountBalanceService.GetCurrentBalance(account.Id))
-    };
+        accountModel = null;
+        if (!AccountTypeMapper.TryToModel(account.Type, out AccountTypeModel? accountTypeModel, out errorResult))
+        {
+            return false;
+        }
+        accountModel = new AccountModel
+        {
+            Id = account.Id.Value,
+            Name = account.Name,
+            Type = accountTypeModel.Value,
+            CurrentBalance = accountBalanceMapper.ToModel(accountBalanceService.GetCurrentBalance(account.Id))
+        };
+        return true;
+    }
 
     /// <summary>
     /// Attempts to map the provided ID to an Account

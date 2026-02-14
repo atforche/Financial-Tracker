@@ -21,7 +21,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description The collection of all Accounts */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -30,6 +30,17 @@ export interface paths {
                         "text/plain": components["schemas"]["AccountModel"][];
                         "application/json": components["schemas"]["AccountModel"][];
                         "text/json": components["schemas"]["AccountModel"][];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
                     };
                 };
             };
@@ -487,14 +498,16 @@ export interface paths {
         /** Retrieves all the Funds from the database */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    sortBy?: components["schemas"]["FundSortOrderModel"];
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description The collection of all Funds */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -503,6 +516,17 @@ export interface paths {
                         "text/plain": components["schemas"]["FundModel"][];
                         "application/json": components["schemas"]["FundModel"][];
                         "text/json": components["schemas"]["FundModel"][];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
                     };
                 };
             };
@@ -1171,6 +1195,8 @@ export interface components {
             /** @description Current Balance for the Fund */
             currentBalance: components["schemas"]["FundBalanceModel"];
         };
+        /** @enum {unknown} */
+        FundSortOrderModel: FundSortOrderModel | null;
         /** @description Model representing a request to post a Transaction */
         PostTransactionModel: {
             /**
@@ -1284,5 +1310,13 @@ export enum ErrorCode {
     InvalidAccountName = "InvalidAccountName",
     InvalidAccountingPeriod = "InvalidAccountingPeriod",
     InvalidEventDate = "InvalidEventDate"
+}
+export enum FundSortOrderModel {
+    Name = "Name",
+    NameDescending = "NameDescending",
+    Description = "Description",
+    DescriptionDescending = "DescriptionDescending",
+    Balance = "Balance",
+    BalanceDescending = "BalanceDescending"
 }
 export type operations = Record<string, never>;

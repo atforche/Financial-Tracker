@@ -10,7 +10,7 @@ public interface IFundRepository
     /// <summary>
     /// Gets all the Funds currently in the repository
     /// </summary>
-    IReadOnlyCollection<Fund> GetAll();
+    IReadOnlyCollection<Fund> GetAll(FundSortOrder? sortBy = null);
 
     /// <summary>
     /// Gets the Fund with the specified ID.

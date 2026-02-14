@@ -27,10 +27,17 @@ public sealed class FundController(
     /// </summary>
     /// <returns>The collection of all Funds</returns>
     [HttpGet("")]
-    public IReadOnlyCollection<FundModel> GetAll() => fundRepository.GetAll()
-        .Select(fundMapper.ToModel)
-        .OrderBy(fund => fund.Name)
-        .ToList();
+    [ProducesResponseType(typeof(IReadOnlyCollection<FundModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetAll([FromQuery] FundSortOrderModel? sortBy)
+    {
+        FundSortOrder? fundSortOrder = null;
+        if (sortBy != null && !FundSortOrderMapper.TryToDomain(sortBy.Value, out fundSortOrder, out IActionResult? errorResult))
+        {
+            return errorResult;
+        }
+        return Ok(fundRepository.GetAll(fundSortOrder).Select(fundMapper.ToModel).ToList());
+    }
 
     /// <summary>
     /// Retrieves the Fund that matches the provided ID
