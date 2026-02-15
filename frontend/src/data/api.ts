@@ -499,7 +499,14 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    sortBy?: components["schemas"]["FundSortOrderModel"];
+                    /** @description Sort order to apply to the results */
+                    SortBy?: components["schemas"]["FundSortOrderModel"];
+                    /** @description Fund names to include in the results */
+                    Names?: string[];
+                    /** @description Maximum number of results to return */
+                    Limit?: number;
+                    /** @description Number of results to skip */
+                    Offset?: number;
                 };
                 header?: never;
                 path?: never;

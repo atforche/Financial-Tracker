@@ -29,14 +29,20 @@ public sealed class FundController(
     [HttpGet("")]
     [ProducesResponseType(typeof(IReadOnlyCollection<FundModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetAll([FromQuery] FundSortOrderModel? sortBy)
+    public IActionResult GetAll([FromQuery] FundQueryParameterModel queryParameters)
     {
         FundSortOrder? fundSortOrder = null;
-        if (sortBy != null && !FundSortOrderMapper.TryToDomain(sortBy.Value, out fundSortOrder, out IActionResult? errorResult))
+        if (queryParameters.SortBy != null && !FundSortOrderMapper.TryToDomain(queryParameters.SortBy.Value, out fundSortOrder, out IActionResult? errorResult))
         {
             return errorResult;
         }
-        return Ok(fundRepository.GetAll(fundSortOrder).Select(fundMapper.ToModel).ToList());
+        return Ok(fundRepository.GetAll(new GetAllFundsRequest
+        {
+            SortBy = fundSortOrder,
+            Names = queryParameters.Names,
+            Limit = queryParameters.Limit,
+            Offset = queryParameters.Offset,
+        }).Select(fundMapper.ToModel).ToList());
     }
 
     /// <summary>

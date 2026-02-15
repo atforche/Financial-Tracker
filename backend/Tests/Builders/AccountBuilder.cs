@@ -115,7 +115,7 @@ public sealed class AccountBuilder(
         {
             return _addedFundAmounts;
         }
-        var funds = fundRepository.GetAll().ToList();
+        var funds = fundRepository.GetAll(new GetAllFundsRequest()).ToList();
         if (funds.Count == 1)
         {
             return

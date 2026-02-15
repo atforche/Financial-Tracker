@@ -16,7 +16,7 @@ internal sealed class MockFundRepository : IFundRepository
     public MockFundRepository() => _funds = [];
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Fund> GetAll(FundSortOrder? sortBy = null) => _funds.Values;
+    public IReadOnlyCollection<Fund> GetAll(GetAllFundsRequest request) => _funds.Values;
 
     /// <inheritdoc/>
     public Fund GetById(FundId id) => _funds[id.Value];

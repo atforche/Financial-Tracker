@@ -10,7 +10,7 @@ public interface IFundRepository
     /// <summary>
     /// Gets all the Funds currently in the repository
     /// </summary>
-    IReadOnlyCollection<Fund> GetAll(FundSortOrder? sortBy = null);
+    IReadOnlyCollection<Fund> GetAll(GetAllFundsRequest request);
 
     /// <summary>
     /// Gets the Fund with the specified ID.
@@ -36,4 +36,30 @@ public interface IFundRepository
     /// Deletes the provided Fund from the repository
     /// </summary>
     void Delete(Fund fund);
+}
+
+/// <summary>
+/// Request to retrieve all Funds
+/// </summary>
+public record GetAllFundsRequest
+{
+    /// <summary>
+    /// Sort order to apply to the results
+    /// </summary>
+    public FundSortOrder? SortBy { get; init; }
+
+    /// <summary>
+    /// Fund names to include in the results
+    /// </summary>
+    public IReadOnlyCollection<string>? Names { get; init; }
+
+    /// <summary>
+    /// Maximum number of results to return
+    /// </summary>
+    public int? Limit { get; init; }
+
+    /// <summary>
+    /// Number of results to skip
+    /// </summary>
+    public int? Offset { get; init; }
 }
