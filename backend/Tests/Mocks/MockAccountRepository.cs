@@ -16,7 +16,7 @@ internal sealed class MockAccountRepository : IAccountRepository
     public MockAccountRepository() => _accounts = [];
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Account> GetAll() => _accounts.Values;
+    public IReadOnlyCollection<Account> GetAll(GetAllAccountsRequest request) => _accounts.Values;
 
     /// <inheritdoc/>
     public Account GetById(AccountId id) => _accounts[id.Value];

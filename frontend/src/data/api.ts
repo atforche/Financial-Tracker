@@ -14,7 +14,18 @@ export interface paths {
         /** Retrieves all the Accounts from the database */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Sort order to apply to the results */
+                    SortBy?: components["schemas"]["AccountSortOrderModel"];
+                    /** @description Account names to include in the results */
+                    Names?: string[];
+                    /** @description Account types to include in the results */
+                    Types?: components["schemas"]["AccountTypeModel"][];
+                    /** @description Maximum number of results to return */
+                    Limit?: number;
+                    /** @description Number of results to skip */
+                    Offset?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -1039,6 +1050,8 @@ export interface components {
             /** @description Current Balance for the Account */
             currentBalance: components["schemas"]["AccountBalanceModel"];
         };
+        /** @enum {unknown} */
+        AccountSortOrderModel: AccountSortOrderModel | null;
         /**
          * @description Enum representing the different Account types
          * @enum {unknown}
@@ -1305,6 +1318,16 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
+export enum AccountSortOrderModel {
+    Name = "Name",
+    NameDescending = "NameDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    PostedBalance = "PostedBalance",
+    PostedBalanceDescending = "PostedBalanceDescending",
+    AvailableToSpend = "AvailableToSpend",
+    AvailableToSpendDescending = "AvailableToSpendDescending"
+}
 export enum AccountTypeModel {
     Standard = "Standard",
     Debt = "Debt"

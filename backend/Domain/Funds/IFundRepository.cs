@@ -39,7 +39,7 @@ public interface IFundRepository
 }
 
 /// <summary>
-/// Request to retrieve all Funds
+/// Request to retrieve all the Funds that match the specified criteria
 /// </summary>
 public record GetAllFundsRequest
 {

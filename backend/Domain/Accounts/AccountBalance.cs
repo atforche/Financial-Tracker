@@ -34,6 +34,11 @@ public class AccountBalance
     public decimal Balance => FundBalances.Sum(balance => balance.Amount);
 
     /// <summary>
+    /// Total Pending Debit Amount for this Account Balance
+    /// </summary>
+    public decimal PendingDebitAmount => PendingDebits.Sum(debit => debit.Amount);
+
+    /// <summary>
     /// Attempts to construct a new instance of this class
     /// </summary>
     internal static bool TryCreate(

@@ -11,33 +11,6 @@ namespace Rest.Mappers;
 internal sealed class FundSortOrderMapper
 {
     /// <summary>
-    /// Attempts to map the provided Fund Sort Order to a Fund Sort Order Model
-    /// </summary>
-    public static bool TryToModel(
-        FundSortOrder fundSortOrder,
-        [NotNullWhen(true)] out FundSortOrderModel? fundSortOrderModel,
-        [NotNullWhen(false)] out IActionResult? errorResult)
-    {
-        errorResult = null;
-        fundSortOrderModel = fundSortOrder switch
-        {
-            FundSortOrder.Name => FundSortOrderModel.Name,
-            FundSortOrder.NameDescending => FundSortOrderModel.NameDescending,
-            FundSortOrder.Description => FundSortOrderModel.Description,
-            FundSortOrder.DescriptionDescending => FundSortOrderModel.DescriptionDescending,
-            FundSortOrder.Balance => FundSortOrderModel.Balance,
-            FundSortOrder.BalanceDescending => FundSortOrderModel.BalanceDescending,
-            _ => null
-        };
-        if (fundSortOrderModel == null)
-        {
-            errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Unrecognized Fund Sort Order: {fundSortOrder}", []));
-            return false;
-        }
-        return true;
-    }
-
-    /// <summary>
     /// Attempts to map the provided Fund Sort Order Model to a Fund Sort Order
     /// </summary>
     public static bool TryToDomain(

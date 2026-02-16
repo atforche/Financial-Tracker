@@ -34,12 +34,39 @@ public sealed class AccountController(
     [HttpGet("")]
     [ProducesResponseType(typeof(IReadOnlyCollection<AccountModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetAll()
+    public IActionResult GetAll([FromQuery] AccountQueryParameterModel queryParameters)
     {
         List<AccountModel> results = [];
-        foreach (Account account in accountRepository.GetAll())
+
+        AccountSortOrder? accountSortOrder = null;
+        if (queryParameters.SortBy != null && !AccountSortOrderMapper.TryToDomain(queryParameters.SortBy.Value, out accountSortOrder, out IActionResult? errorResult))
         {
-            if (!accountMapper.TryToModel(account, out AccountModel? accountModel, out IActionResult? errorResult))
+            return errorResult;
+        }
+        IEnumerable<AccountType> accountTypes = [];
+        if (queryParameters.Types != null)
+        {
+            accountTypes = [];
+            foreach (AccountTypeModel accountTypeModel in queryParameters.Types)
+            {
+                if (!AccountTypeMapper.TryToDomain(accountTypeModel, out AccountType? accountType, out errorResult))
+                {
+                    return errorResult;
+                }
+                accountTypes = accountTypes.Append(accountType.Value);
+            }
+        }
+
+        foreach (Account account in accountRepository.GetAll(new GetAllAccountsRequest
+        {
+            SortBy = accountSortOrder,
+            Names = queryParameters.Names,
+            Types = accountTypes.Any() ? accountTypes.ToList() : null,
+            Limit = queryParameters.Limit,
+            Offset = queryParameters.Offset,
+        }))
+        {
+            if (!accountMapper.TryToModel(account, out AccountModel? accountModel, out errorResult))
             {
                 return errorResult;
             }
