@@ -102,7 +102,7 @@ public sealed class AccountBuilder(
         {
             return _accountingPeriodId;
         }
-        return accountingPeriodRepository.GetAll()
+        return accountingPeriodRepository.GetAll(new())
             .Single(accountingPeriod => accountingPeriod.Year == _addedDate.Year && accountingPeriod.Month == _addedDate.Month).Id;
     }
 

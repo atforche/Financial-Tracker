@@ -249,14 +249,27 @@ export interface paths {
         /** Retrieves all the Accounting Periods from the database */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Sort order to apply to the results */
+                    SortBy?: components["schemas"]["AccountingPeriodSortOrderModel"];
+                    /** @description Years to include in the results */
+                    Years?: number[];
+                    /** @description Months to include in the results */
+                    Months?: number[];
+                    /** @description True to include only open Accounting Periods in the results, false to include only closed Accounting Periods, null to include all Accounting Periods */
+                    IsOpen?: boolean;
+                    /** @description Maximum number of results to return */
+                    Limit?: number;
+                    /** @description Number of results to skip */
+                    Offset?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description The collection of all Accounting Periods */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -265,6 +278,17 @@ export interface paths {
                         "text/plain": components["schemas"]["AccountingPeriodModel"][];
                         "application/json": components["schemas"]["AccountingPeriodModel"][];
                         "text/json": components["schemas"]["AccountingPeriodModel"][];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorModel"];
+                        "application/json": components["schemas"]["ErrorModel"];
+                        "text/json": components["schemas"]["ErrorModel"];
                     };
                 };
             };
@@ -1036,6 +1060,8 @@ export interface components {
             /** @description True if the Accounting Period is open, false otherwise */
             isOpen: boolean;
         };
+        /** @enum {unknown} */
+        AccountingPeriodSortOrderModel: AccountingPeriodSortOrderModel | null;
         /** @description Model representing an Account */
         AccountModel: {
             /**
@@ -1318,6 +1344,12 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
+export enum AccountingPeriodSortOrderModel {
+    Date = "Date",
+    DateDescending = "DateDescending",
+    IsOpen = "IsOpen",
+    IsOpenDescending = "IsOpenDescending"
+}
 export enum AccountSortOrderModel {
     Name = "Name",
     NameDescending = "NameDescending",

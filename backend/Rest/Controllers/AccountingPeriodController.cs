@@ -26,9 +26,25 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     /// </summary>
     /// <returns>The collection of all Accounting Periods</returns>
     [HttpGet("")]
-    public IReadOnlyCollection<AccountingPeriodModel> GetAll() => accountingPeriodRepository.GetAll()
-        .OrderByDescending(accountingPeriod => accountingPeriod.PeriodStartDate)
-        .Select(AccountingPeriodMapper.ToModel).ToList();
+    [ProducesResponseType(typeof(IReadOnlyCollection<AccountingPeriodModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetAll([FromQuery] AccountingPeriodQueryParameterModel queryParameters)
+    {
+        AccountingPeriodSortOrder? accountingPeriodSortOrder = null;
+        if (queryParameters.SortBy != null && !AccountingPeriodSortOrderMapper.TryToDomain(queryParameters.SortBy.Value, out accountingPeriodSortOrder, out IActionResult? errorResult))
+        {
+            return errorResult;
+        }
+        return Ok(accountingPeriodRepository.GetAll(new GetAllAccountingPeriodsRequest
+        {
+            SortBy = accountingPeriodSortOrder,
+            Years = queryParameters.Years,
+            Months = queryParameters.Months,
+            IsOpen = queryParameters.IsOpen,
+            Limit = queryParameters.Limit,
+            Offset = queryParameters.Offset,
+        }).Select(AccountingPeriodMapper.ToModel).ToList());
+    }
 
     /// <summary>
     /// Retrieves all the open Accounting Periods from the database

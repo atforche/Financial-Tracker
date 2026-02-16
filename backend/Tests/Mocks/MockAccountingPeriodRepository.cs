@@ -22,7 +22,7 @@ internal sealed class MockAccountingPeriodRepository : IAccountingPeriodReposito
     public bool TryGetById(Guid id, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod) => _accountingPeriods.TryGetValue(id, out accountingPeriod);
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> GetAll() => _accountingPeriods.Values;
+    public IReadOnlyCollection<AccountingPeriod> GetAll(GetAllAccountingPeriodsRequest request) => _accountingPeriods.Values;
 
     /// <inheritdoc/>
     public AccountingPeriod? GetLatestAccountingPeriod() => _accountingPeriods.Values

@@ -9,9 +9,12 @@ namespace Data.Repositories;
 public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAccountingPeriodRepository
 {
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> GetAll() => databaseContext.AccountingPeriods
-        .OrderBy(accountingPeriod => accountingPeriod.Year)
-        .ThenBy(accountingPeriod => accountingPeriod.Month).ToList();
+    public IReadOnlyCollection<AccountingPeriod> GetAll(GetAllAccountingPeriodsRequest request)
+    {
+        IQueryable<AccountingPeriod> filteredAccountingPeriods = GetFilteredAccountingPeriods(request);
+        List<AccountingPeriod> sortedAccountingPeriods = GetSortedAccountingPeriods(filteredAccountingPeriods, request.SortBy);
+        return GetPagedAccountingPeriods(sortedAccountingPeriods, request.Limit, request.Offset);
+    }
 
     /// <inheritdoc/>
     public AccountingPeriod GetById(AccountingPeriodId id) => databaseContext.AccountingPeriods
@@ -60,4 +63,67 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
 
     /// <inheritdoc/>
     public void Delete(AccountingPeriod accountingPeriod) => databaseContext.Remove(accountingPeriod);
+
+    /// <summary>
+    /// Gets the filtered collection of Accounting Periods based on the provided request
+    /// </summary>
+    private IQueryable<AccountingPeriod> GetFilteredAccountingPeriods(GetAllAccountingPeriodsRequest request)
+    {
+        IQueryable<AccountingPeriod> results = databaseContext.AccountingPeriods.AsQueryable();
+        if (request.Years != null)
+        {
+            results = results.Where(accountingPeriod => request.Years.Contains(accountingPeriod.Year));
+        }
+        if (request.Months != null)
+        {
+            results = results.Where(accountingPeriod => request.Months.Contains(accountingPeriod.Month));
+        }
+        if (request.IsOpen != null)
+        {
+            results = results.Where(accountingPeriod => accountingPeriod.IsOpen == request.IsOpen);
+        }
+        return results;
+    }
+
+    /// <summary>
+    /// Gets the sorted collection of Accounting Periods based on the provided request
+    /// </summary>
+    private static List<AccountingPeriod> GetSortedAccountingPeriods(IQueryable<AccountingPeriod> filteredAccountingPeriods, AccountingPeriodSortOrder? sortBy)
+    {
+        if (sortBy is null or AccountingPeriodSortOrder.Date)
+        {
+            return filteredAccountingPeriods.OrderBy(accountingPeriod => accountingPeriod.Year)
+                .ThenBy(accountingPeriod => accountingPeriod.Month).ToList();
+        }
+        if (sortBy == AccountingPeriodSortOrder.DateDescending)
+        {
+            return filteredAccountingPeriods.OrderByDescending(accountingPeriod => accountingPeriod.Year)
+                .ThenByDescending(accountingPeriod => accountingPeriod.Month).ToList();
+        }
+        if (sortBy == AccountingPeriodSortOrder.IsOpen)
+        {
+            return filteredAccountingPeriods.OrderBy(accountingPeriod => accountingPeriod.IsOpen)
+                .ThenBy(accountingPeriod => accountingPeriod.Year)
+                .ThenBy(accountingPeriod => accountingPeriod.Month).ToList();
+        }
+        return filteredAccountingPeriods.OrderByDescending(accountingPeriod => accountingPeriod.IsOpen)
+            .ThenBy(accountingPeriod => accountingPeriod.Year)
+            .ThenBy(accountingPeriod => accountingPeriod.Month).ToList();
+    }
+
+    /// <summary>
+    /// Gets the paged collection of Accounting Periods based on the provided request
+    /// </summary>
+    private static List<AccountingPeriod> GetPagedAccountingPeriods(List<AccountingPeriod> sortedAccountingPeriods, int? limit, int? offset)
+    {
+        if (offset != null)
+        {
+            sortedAccountingPeriods = sortedAccountingPeriods.Skip(offset.Value).ToList();
+        }
+        if (limit != null)
+        {
+            sortedAccountingPeriods = sortedAccountingPeriods.Take(limit.Value).ToList();
+        }
+        return sortedAccountingPeriods;
+    }
 }

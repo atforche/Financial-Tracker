@@ -86,7 +86,11 @@ public class AccountingPeriodService(IAccountingPeriodRepository accountingPerio
             return false;
         }
         // Validate that there are no duplicate accounting periods
-        var existingAccountingPeriods = accountingPeriodRepository.GetAll().ToList();
+        var existingAccountingPeriods = accountingPeriodRepository.GetAll(new GetAllAccountingPeriodsRequest
+        {
+            Years = [year],
+            Months = [month]
+        }).ToList();
         if (existingAccountingPeriods.Any(period => period.PeriodStartDate == new DateOnly(year, month, 1)))
         {
             exceptions = exceptions.Append(new InvalidMonthException("This Accounting Period already exists."));
