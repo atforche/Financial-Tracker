@@ -4,8 +4,7 @@ import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
 import AccountingPeriodDialog from "@accounting-periods/AccountingPeriodDialog";
 import { Checkbox } from "@mui/material";
 import ColumnButton from "@framework/listframe/ColumnButton";
-import ColumnCell from "@framework/listframe/ColumnCell";
-import ColumnHeader from "@framework/listframe/ColumnHeader";
+import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
 import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
 import CreateAccountingPeriodDialog from "@accounting-periods/CreateAccountingPeriodDialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
@@ -23,74 +22,72 @@ const AccountingPeriodListFrame = function (): JSX.Element {
   const [message, setMessage] = useState<string | null>(null);
   const { accountingPeriods, isLoading, error, refetch } =
     useGetAllAccountingPeriods();
+
+  const columns: ColumnDefinition<AccountingPeriod>[] = [
+    {
+      name: "period",
+      headerContent: "Period",
+      getBodyContent: (accountingPeriod: AccountingPeriod) =>
+        accountingPeriod.name,
+    },
+    {
+      name: "isOpen",
+      headerContent: "Is Open",
+      getBodyContent: (accountingPeriod: AccountingPeriod) => (
+        <Checkbox checked={accountingPeriod.isOpen} />
+      ),
+    },
+    {
+      name: "actions",
+      headerContent: (
+        <ColumnHeaderButton
+          label="Add"
+          icon={<AddCircleOutline />}
+          onClick={() => {
+            setDialog(
+              <CreateAccountingPeriodDialog
+                onClose={(success) => {
+                  setDialog(null);
+                  if (success) {
+                    setMessage("Accounting Period added successfully.");
+                  }
+                  refetch();
+                }}
+              />,
+            );
+            setMessage(null);
+          }}
+        />
+      ),
+      getBodyContent: (accountingPeriod: AccountingPeriod) => (
+        <ColumnButton
+          label="View"
+          icon={<ArrowForwardIos />}
+          onClick={() => {
+            setDialog(
+              <AccountingPeriodDialog
+                inputAccountingPeriod={accountingPeriod}
+                setMessage={setMessage}
+                onClose={(needsRefetch) => {
+                  setDialog(null);
+                  if (needsRefetch) {
+                    refetch();
+                  }
+                }}
+              />,
+            );
+            setMessage(null);
+          }}
+        />
+      ),
+      alignment: "right",
+    },
+  ];
+
   return (
     <ListFrame<AccountingPeriod>
       name="Accounting Periods"
-      headers={[
-        <ColumnHeader key="period" content="Period" align="left" />,
-        <ColumnHeader key="isOpen" content="Is Open" align="left" />,
-        <ColumnHeader
-          key="actions"
-          content={
-            <ColumnHeaderButton
-              label="Add"
-              icon={<AddCircleOutline />}
-              onClick={() => {
-                setDialog(
-                  <CreateAccountingPeriodDialog
-                    onClose={(success) => {
-                      setDialog(null);
-                      if (success) {
-                        setMessage("Accounting Period added successfully.");
-                      }
-                      refetch();
-                    }}
-                  />,
-                );
-                setMessage(null);
-              }}
-            />
-          }
-          align="right"
-        />,
-      ]}
-      columns={(accountingPeriod: AccountingPeriod) => [
-        <ColumnCell
-          key="period"
-          content={accountingPeriod.name}
-          align="left"
-        />,
-        <ColumnCell
-          key="isOpen"
-          content={<Checkbox checked={accountingPeriod.isOpen} />}
-          align="left"
-        />,
-        <ColumnCell
-          key="view"
-          content={
-            <ColumnButton
-              label="View"
-              icon={<ArrowForwardIos />}
-              onClick={() => {
-                setDialog(
-                  <AccountingPeriodDialog
-                    inputAccountingPeriod={accountingPeriod}
-                    setMessage={setMessage}
-                    onClose={(needsRefetch) => {
-                      setDialog(null);
-                      if (needsRefetch) {
-                        refetch();
-                      }
-                    }}
-                  />,
-                );
-                setMessage(null);
-              }}
-            />
-          }
-          align="right"
-        />,
-      ]}
+      columns={columns}
       getId={(accountingPeriod: AccountingPeriod) => accountingPeriod.id}
       data={accountingPeriods}
       isLoading={isLoading}

@@ -2,8 +2,7 @@ import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type JSX, useState } from "react";
 import type { Account } from "@accounts/ApiTypes";
 import ColumnButton from "@framework/listframe/ColumnButton";
-import ColumnCell from "@framework/listframe/ColumnCell";
-import ColumnHeader from "@framework/listframe/ColumnHeader";
+import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
 import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
 import CreateTransactionDialog from "@transactions/CreateTransactionDialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
@@ -57,93 +56,85 @@ const AccountTransactionListFrame = function ({
       account,
     },
   );
+
+  const columns: ColumnDefinition<Transaction>[] = [
+    {
+      name: "date",
+      headerContent: "Date",
+      getBodyContent: (transaction: Transaction) =>
+        transaction.debitAccount?.accountId === account.id
+          ? (transaction.debitAccount.postedDate ?? "Pending")
+          : (transaction.creditAccount?.postedDate ?? "Pending"),
+    },
+    {
+      name: "location",
+      headerContent: "Location",
+      getBodyContent: (transaction: Transaction) => transaction.location,
+    },
+    {
+      name: "type",
+      headerContent: "Type",
+      getBodyContent: (transaction: Transaction) =>
+        getTransactionType(transaction, account.id),
+    },
+    {
+      name: "amount",
+      headerContent: "Amount",
+      getBodyContent: (transaction: Transaction) =>
+        formatCurrency(transaction.amount),
+    },
+    {
+      name: "actions",
+      headerContent: (
+        <Stack direction="row">
+          <ColumnHeaderButton
+            label="Add"
+            icon={<AddCircleOutline />}
+            onClick={() => {
+              setChildDialog(
+                <CreateTransactionDialog
+                  onClose={(success) => {
+                    setChildDialog(null);
+                    if (success) {
+                      setMessage("Transaction added successfully.");
+                    }
+                    refetch();
+                  }}
+                />,
+              );
+              setMessage(null);
+            }}
+          />
+        </Stack>
+      ),
+      getBodyContent: (transaction: Transaction) => (
+        <ColumnButton
+          label="View"
+          icon={<ArrowForwardIos />}
+          onClick={() => {
+            setChildDialog(
+              <TransactionDialog
+                inputTransaction={transaction}
+                setMessage={setMessage}
+                onClose={(needsRefetch) => {
+                  setChildDialog(null);
+                  if (needsRefetch) {
+                    refetch();
+                  }
+                }}
+              />,
+            );
+            setMessage(null);
+          }}
+        />
+      ),
+    },
+  ];
+
   return (
     <ListFrame<Transaction>
       name="Transactions"
-      headers={[
-        <ColumnHeader key="date" content="Date" maxWidth={100} align="left" />,
-        <ColumnHeader key="location" content="Location" align="left" />,
-        <ColumnHeader key="type" content="Type" align="left" />,
-        <ColumnHeader key="amount" content="Amount" align="left" />,
-        <ColumnHeader
-          key="actions"
-          content={
-            <Stack direction="row">
-              <ColumnHeaderButton
-                label="Add"
-                icon={<AddCircleOutline />}
-                onClick={() => {
-                  setChildDialog(
-                    <CreateTransactionDialog
-                      onClose={(success) => {
-                        setChildDialog(null);
-                        if (success) {
-                          setMessage("Transaction added successfully.");
-                        }
-                        refetch();
-                      }}
-                    />,
-                  );
-                  setMessage(null);
-                }}
-              />
-            </Stack>
-          }
-          maxWidth={150}
-          align="right"
-        />,
-      ]}
-      columns={(transaction: Transaction) => [
-        <ColumnCell
-          key="date"
-          content={
-            (transaction.debitAccount?.accountId === account.id
-              ? transaction.debitAccount.postedDate
-              : transaction.creditAccount?.postedDate) ?? "Pending"
-          }
-          align="left"
-        />,
-        <ColumnCell
-          key="location"
-          content={transaction.location}
-          align="left"
-        />,
-        <ColumnCell
-          key="type"
-          content={getTransactionType(transaction, account.id)}
-          align="left"
-        />,
-        <ColumnCell
-          key="amount"
-          content={formatCurrency(transaction.amount)}
-          align="left"
-        />,
-        <ColumnCell
-          key="view"
-          content={
-            <ColumnButton
-              label="View"
-              icon={<ArrowForwardIos />}
-              onClick={() => {
-                setChildDialog(
-                  <TransactionDialog
-                    inputTransaction={transaction}
-                    setMessage={setMessage}
-                    onClose={(needsRefetch) => {
-                      setChildDialog(null);
-                      if (needsRefetch) {
-                        refetch();
-                      }
-                    }}
-                  />,
-                );
-                setMessage(null);
-              }}
-            />
-          }
-          align="right"
-        />,
-      ]}
+      columns={columns}
       getId={(transaction: Transaction) => transaction.id}
       data={transactions}
       isLoading={isLoading}

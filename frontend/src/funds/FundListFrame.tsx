@@ -1,8 +1,7 @@
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type JSX, useState } from "react";
 import ColumnButton from "@framework/listframe/ColumnButton";
-import ColumnCell from "@framework/listframe/ColumnCell";
-import ColumnHeader from "@framework/listframe/ColumnHeader";
+import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
 import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
 import CreateOrUpdateFundDialog from "@funds/CreateOrUpdateFundDialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
@@ -22,78 +21,77 @@ const FundListFrame = function (): JSX.Element {
   const [dialog, setDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const { funds, isLoading, error, refetch } = useGetAllFunds();
+
+  const columns: ColumnDefinition<Fund>[] = [
+    {
+      name: "name",
+      headerContent: "Name",
+      getBodyContent: (fund: Fund) => fund.name,
+    },
+    {
+      name: "description",
+      headerContent: "Description",
+      getBodyContent: (fund: Fund) => fund.description,
+    },
+    {
+      name: "balance",
+      headerContent: "Posted Balance",
+      getBodyContent: (fund: Fund) =>
+        formatCurrency(fund.currentBalance.balance),
+    },
+    {
+      name: "actions",
+      headerContent: (
+        <ColumnHeaderButton
+          label="Add"
+          icon={<AddCircleOutline />}
+          onClick={() => {
+            setDialog(
+              <CreateOrUpdateFundDialog
+                fund={null}
+                setFund={null}
+                onClose={(success) => {
+                  setDialog(null);
+                  if (success) {
+                    setMessage("Fund added successfully.");
+                  }
+                  refetch();
+                }}
+              />,
+            );
+            setMessage(null);
+          }}
+        />
+      ),
+      getBodyContent: (fund: Fund) => (
+        <ColumnButton
+          label="View"
+          icon={<ArrowForwardIos />}
+          onClick={() => {
+            setDialog(
+              <FundDialog
+                inputFund={fund}
+                setMessage={setMessage}
+                onClose={(needsRefetch) => {
+                  setDialog(null);
+                  if (needsRefetch) {
+                    refetch();
+                  }
+                }}
+              />,
+            );
+            setMessage(null);
+          }}
+        />
+      ),
+      alignment: "right",
+    },
+  ];
+
   return (
     <ListFrame<Fund>
       name="Funds"
-      headers={[
-        <ColumnHeader key="name" content="Name" align="left" />,
-        <ColumnHeader key="description" content="Description" align="left" />,
-        <ColumnHeader key="balance" content="Posted Balance" align="left" />,
-        <ColumnHeader
-          key="actions"
-          content={
-            <ColumnHeaderButton
-              label="Add"
-              icon={<AddCircleOutline />}
-              onClick={() => {
-                setDialog(
-                  <CreateOrUpdateFundDialog
-                    fund={null}
-                    setFund={null}
-                    onClose={(success) => {
-                      setDialog(null);
-                      if (success) {
-                        setMessage("Fund added successfully.");
-                      }
-                      refetch();
-                    }}
-                  />,
-                );
-                setMessage(null);
-              }}
-            />
-          }
-          align="right"
-        />,
-      ]}
-      columns={(fund: Fund) => [
-        <ColumnCell key="name" content={fund.name} align="left" />,
-        <ColumnCell
-          key="description"
-          content={fund.description}
-          align="left"
-        />,
-        <ColumnCell
-          key="balance"
-          content={formatCurrency(fund.currentBalance.balance)}
-          align="left"
-        />,
-        <ColumnCell
-          key="view"
-          content={
-            <ColumnButton
-              label="View"
-              icon={<ArrowForwardIos />}
-              onClick={() => {
-                setDialog(
-                  <FundDialog
-                    inputFund={fund}
-                    setMessage={setMessage}
-                    onClose={(needsRefetch) => {
-                      setDialog(null);
-                      if (needsRefetch) {
-                        refetch();
-                      }
-                    }}
-                  />,
-                );
-                setMessage(null);
-              }}
-            />
-          }
-          align="right"
-        />,
-      ]}
+      columns={columns}
       getId={(fund: Fund) => fund.id}
       data={funds}
       isLoading={isLoading}

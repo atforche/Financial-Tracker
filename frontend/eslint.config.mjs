@@ -149,6 +149,7 @@ export default defineConfig([
       "react/react-in-jsx-scope": "off",
       "react/require-default-props": "off",
       "react/no-array-index-key": "off",
+      "react/no-unstable-nested-components": "off",
 
       // react-hooks rules
       "react-hooks/set-state-in-effect": "off",
