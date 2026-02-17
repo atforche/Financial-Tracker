@@ -57,26 +57,16 @@ const FundListFrame = function (): JSX.Element {
         />,
       ]}
       columns={(fund: Fund) => [
-        <ColumnCell
-          key="name"
-          content={fund.name}
-          align="left"
-          isLoading={isLoading}
-          isError={error !== null}
-        />,
+        <ColumnCell key="name" content={fund.name} align="left" />,
         <ColumnCell
           key="description"
           content={fund.description}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="balance"
           content={formatCurrency(fund.currentBalance.balance)}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="view"
@@ -102,12 +92,12 @@ const FundListFrame = function (): JSX.Element {
             />
           }
           align="right"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
       ]}
       getId={(fund: Fund) => fund.id}
       data={funds}
+      isLoading={isLoading}
+      isError={error !== null}
     >
       {dialog}
       <SuccessAlert message={message} />

@@ -20,7 +20,7 @@ interface UseGetAccountTransactionsArgs {
 const useGetAccountTransactions = function ({
   account,
 }: UseGetAccountTransactionsArgs): {
-  transactions: Transaction[];
+  transactions: Transaction[] | null;
   isLoading: boolean;
   error: ApiError | null;
   refetch: () => void;
@@ -45,72 +45,8 @@ const useGetAccountTransactions = function ({
     return data;
   }, [account.id]);
 
-  const loadingRowCount = 10;
   const { data, isLoading, error, refetch } = useQuery<Transaction[]>({
     queryFunction: getAllTransactionsCallback,
-    initialData: Array(loadingRowCount)
-      .fill(null)
-      .map((_, index) => ({
-        id: index.toString(),
-        accountingPeriodId: "",
-        accountingPeriodName: "",
-        date: "",
-        location: "",
-        description: "",
-        amount: 0,
-        debitAccount: {
-          accountId: "",
-          accountName: "",
-          postedDate: null,
-          fundAmounts: [],
-          previousAccountBalance: {
-            accountId: "",
-            balance: 0,
-            fundBalances: [],
-            pendingDebitAmount: 0,
-            pendingDebits: [],
-            pendingCreditAmount: 0,
-            pendingCredits: [],
-          },
-          newAccountBalance: {
-            accountId: "",
-            accountName: "",
-            balance: 0,
-            fundBalances: [],
-            pendingDebitAmount: 0,
-            pendingDebits: [],
-            pendingCreditAmount: 0,
-            pendingCredits: [],
-          },
-        },
-        creditAccount: {
-          accountId: "",
-          accountName: "",
-          postedDate: null,
-          fundAmounts: [],
-          previousAccountBalance: {
-            accountId: "",
-            balance: 0,
-            fundBalances: [],
-            pendingDebitAmount: 0,
-            pendingDebits: [],
-            pendingCreditAmount: 0,
-            pendingCredits: [],
-          },
-          newAccountBalance: {
-            accountId: "",
-            accountName: "",
-            balance: 0,
-            fundBalances: [],
-            pendingDebitAmount: 0,
-            pendingDebits: [],
-            pendingCreditAmount: 0,
-            pendingCredits: [],
-          },
-        },
-        previousFundBalances: [],
-        newFundBalances: [],
-      })),
   });
   return {
     transactions: data,

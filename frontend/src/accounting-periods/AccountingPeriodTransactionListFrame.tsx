@@ -83,40 +83,26 @@ const AccountingPeriodTransactionListFrame = function ({
         />,
       ]}
       columns={(transaction: Transaction) => [
-        <ColumnCell
-          key="date"
-          content={transaction.date}
-          align="left"
-          isLoading={isLoading}
-          isError={error !== null}
-        />,
+        <ColumnCell key="date" content={transaction.date} align="left" />,
         <ColumnCell
           key="location"
           content={transaction.location}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="debitAccount"
           content={transaction.debitAccount?.accountName ?? ""}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="creditAccount"
           content={transaction.creditAccount?.accountName ?? ""}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="amount"
           content={formatCurrency(transaction.amount)}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="view"
@@ -142,12 +128,12 @@ const AccountingPeriodTransactionListFrame = function ({
             />
           }
           align="right"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
       ]}
       getId={(transaction: Transaction) => transaction.id}
       data={transactions}
+      isLoading={isLoading}
+      isError={error !== null}
     >
       {childDialog}
       <SuccessAlert message={message} />

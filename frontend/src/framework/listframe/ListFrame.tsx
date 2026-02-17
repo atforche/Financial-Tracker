@@ -1,8 +1,10 @@
 import {
   Box,
   Paper,
+  Skeleton,
   Table,
   TableBody,
+  TableCell,
   TableContainer,
   TableHead,
   TableRow,
@@ -10,21 +12,24 @@ import {
 } from "@mui/material";
 import type { JSX } from "react";
 
+/** Height of each row in the list frame. */
+const listFrameRowHeight = 50;
+
+/** Minimum number of rows to display in the list frame. */
+const rowsPerPage = 10;
+
 /**
  * Props for the ListFrame component.
- * @param {string} name - Name to display at the top of the list frame.
- * @param {JSX.Element[]} headers - Array of JSX elements representing the table headers.
- * @param {(item: T) => JSX.Element[]} columns - Function that takes an item of type T and returns an array of JSX elements representing the table columns.
- * @param {(item: T) => string} getId - Function that takes an item of type T and returns its unique identifier as a string.
- * @param {T[]} data - Array of data items of type T to be displayed in the list frame.
- * @param {React.ReactNode} children - Child components to be rendered within the ListFrame.
+ * @template T - Type of the data items to be displayed in the list frame.
  */
 interface ListFrameProps<T> {
   readonly name: string;
   readonly headers: JSX.Element[];
   readonly columns: (item: T) => JSX.Element[];
   readonly getId: (item: T) => string;
-  readonly data: T[];
+  readonly data: T[] | null;
+  readonly isLoading: boolean;
+  readonly isError: boolean;
   readonly children: React.ReactNode;
 }
 
@@ -40,6 +45,8 @@ const ListFrame = function <T>({
   columns,
   getId,
   data,
+  isLoading,
+  isError,
   children,
 }: ListFrameProps<T>): JSX.Element {
   return (
@@ -58,11 +65,32 @@ const ListFrame = function <T>({
               <TableRow>{headers}</TableRow>
             </TableHead>
             <TableBody>
-              {data.map((item) => (
-                <TableRow hover role="checkbox" tabIndex={-1} key={getId(item)}>
+              {data?.map((item) => (
+                <TableRow hover tabIndex={-1} key={getId(item)}>
                   {columns(item)}
                 </TableRow>
               ))}
+              {(data?.length ?? 0) < rowsPerPage &&
+                Array(rowsPerPage - (data?.length ?? 0))
+                  .fill(null)
+                  .map((_, index) => (
+                    <TableRow
+                      style={{ height: listFrameRowHeight }}
+                      key={index}
+                    >
+                      {Array(headers.length)
+                        .fill(null)
+                        .map((__, cellIndex) => (
+                          <TableCell key={`skeleton-${index}-${cellIndex}`}>
+                            {isLoading ? (
+                              <Skeleton />
+                            ) : isError ? (
+                              <Skeleton animation={false} />
+                            ) : null}
+                          </TableCell>
+                        ))}
+                    </TableRow>
+                  ))}
             </TableBody>
           </Table>
         </TableContainer>

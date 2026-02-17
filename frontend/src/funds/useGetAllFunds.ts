@@ -9,7 +9,7 @@ import useQuery from "@data/useQuery";
  * @returns Retrieved Funds, loading state, current error, and function to refetch the Funds.
  */
 const useGetAllFunds = function (): {
-  funds: Fund[];
+  funds: Fund[] | null;
   isLoading: boolean;
   error: ApiError | null;
   refetch: () => void;
@@ -25,25 +25,8 @@ const useGetAllFunds = function (): {
     return data;
   }, []);
 
-  const loadingRowCount = 10;
   const { data, isLoading, error, refetch } = useQuery<Fund[]>({
     queryFunction: getAllFundsCallback,
-    initialData: Array(loadingRowCount)
-      .fill(null)
-      .map((_, index) => ({
-        id: index.toString(),
-        name: "",
-        description: "",
-        currentBalance: {
-          fundId: "",
-          balance: 0,
-          accountBalances: [],
-          pendingDebitAmount: 0,
-          pendingDebits: [],
-          pendingCreditAmount: 0,
-          pendingCredits: [],
-        },
-      })),
   });
   return {
     funds: data,

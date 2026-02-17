@@ -26,10 +26,12 @@ const AccountEntryField = function ({
   return (
     <ComboBoxEntryField<AccountIdentifier>
       label={label}
-      options={accounts.map((account) => ({
-        label: account.name,
-        value: { id: account.id, name: account.name },
-      }))}
+      options={
+        accounts?.map((account) => ({
+          label: account.name,
+          value: { id: account.id, name: account.name },
+        })) ?? []
+      }
       value={
         value === null
           ? { label: "", value: null }

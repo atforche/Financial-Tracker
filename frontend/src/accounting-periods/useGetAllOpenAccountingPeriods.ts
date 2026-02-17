@@ -9,7 +9,7 @@ import useQuery from "@data/useQuery";
  * @returns Retrieved Accounting Periods, loading state, current error, and function to refetch the Accounting Periods.
  */
 const useGetAllOpenAccountingPeriods = function (): {
-  accountingPeriods: AccountingPeriod[];
+  accountingPeriods: AccountingPeriod[] | null;
   isLoading: boolean;
   error: ApiError | null;
   refetch: () => void;
@@ -27,7 +27,6 @@ const useGetAllOpenAccountingPeriods = function (): {
 
   const { data, isLoading, error, refetch } = useQuery<AccountingPeriod[]>({
     queryFunction: getAllOpenAccountingPeriodsCallback,
-    initialData: [],
   });
   return {
     accountingPeriods: data,

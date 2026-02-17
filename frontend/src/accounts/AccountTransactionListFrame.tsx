@@ -102,29 +102,21 @@ const AccountTransactionListFrame = function ({
               : transaction.creditAccount?.postedDate) ?? "Pending"
           }
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="location"
           content={transaction.location}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="type"
           content={getTransactionType(transaction, account.id)}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="amount"
           content={formatCurrency(transaction.amount)}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="view"
@@ -150,12 +142,12 @@ const AccountTransactionListFrame = function ({
             />
           }
           align="right"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
       ]}
       getId={(transaction: Transaction) => transaction.id}
       data={transactions}
+      isLoading={isLoading}
+      isError={error !== null}
     >
       {childDialog}
       <SuccessAlert message={message} />

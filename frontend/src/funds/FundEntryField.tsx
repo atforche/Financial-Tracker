@@ -32,12 +32,14 @@ const FundEntryField = function ({
   return (
     <ComboBoxEntryField<FundIdentifier>
       label={label}
-      options={funds
-        .filter((fund) => (filter ? filter(fund) : true))
-        .map((fund) => ({
-          label: fund.name,
-          value: fund,
-        }))}
+      options={
+        funds
+          ?.filter((fund) => (filter ? filter(fund) : true))
+          .map((fund) => ({
+            label: fund.name,
+            value: fund,
+          })) ?? []
+      }
       value={
         value === null
           ? { label: "", value: null }

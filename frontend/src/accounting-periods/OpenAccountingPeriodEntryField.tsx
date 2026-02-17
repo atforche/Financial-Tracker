@@ -35,10 +35,12 @@ const OpenAccountingPeriodEntryField = function ({
   return (
     <ComboBoxEntryField<AccountingPeriodIdentifier>
       label={label}
-      options={accountingPeriods.map((period) => ({
-        label: period.name,
-        value: { id: period.id, name: period.name },
-      }))}
+      options={
+        accountingPeriods?.map((period) => ({
+          label: period.name,
+          value: { id: period.id, name: period.name },
+        })) ?? []
+      }
       value={
         value === null
           ? { label: "", value: null }

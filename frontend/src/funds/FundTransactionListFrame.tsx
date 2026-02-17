@@ -102,33 +102,21 @@ const FundTransactionListFrame = function ({
         />,
       ]}
       columns={(transaction: Transaction) => [
-        <ColumnCell
-          key="date"
-          content={transaction.date}
-          align="left"
-          isLoading={isLoading}
-          isError={error !== null}
-        />,
+        <ColumnCell key="date" content={transaction.date} align="left" />,
         <ColumnCell
           key="location"
           content={transaction.location}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="type"
           content={getTransactionType(transaction, fund.id)}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="amount"
           content={formatCurrency(transaction.amount)}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="view"
@@ -154,12 +142,12 @@ const FundTransactionListFrame = function ({
             />
           }
           align="right"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
       ]}
       getId={(transaction: Transaction) => transaction.id}
       data={transactions}
+      isLoading={isLoading}
+      isError={error !== null}
     >
       {childDialog}
       <SuccessAlert message={message} />

@@ -1,4 +1,4 @@
-import { type Account, AccountType } from "@accounts/ApiTypes";
+import type { Account } from "@accounts/ApiTypes";
 import type { ApiError } from "@data/ApiError";
 import getApiClient from "@data/getApiClient";
 import { useCallback } from "react";
@@ -9,7 +9,7 @@ import useQuery from "@data/useQuery";
  * @returns Retrieved Accounts, loading state, current error, and function to refetch the Accounts.
  */
 const useGetAllAccounts = function (): {
-  accounts: Account[];
+  accounts: Account[] | null;
   isLoading: boolean;
   error: ApiError | null;
   refetch: () => void;
@@ -25,25 +25,8 @@ const useGetAllAccounts = function (): {
     return data;
   }, []);
 
-  const loadingRowCount = 10;
   const { data, isLoading, error, refetch } = useQuery<Account[]>({
     queryFunction: getAllAccountsCallback,
-    initialData: Array(loadingRowCount)
-      .fill(null)
-      .map((_, index) => ({
-        id: index.toString(),
-        name: "",
-        type: AccountType.Standard,
-        currentBalance: {
-          accountId: "",
-          balance: 0,
-          fundBalances: [],
-          pendingDebitAmount: 0,
-          pendingDebits: [],
-          pendingCreditAmount: 0,
-          pendingCredits: [],
-        },
-      })),
   });
   return {
     accounts: data,

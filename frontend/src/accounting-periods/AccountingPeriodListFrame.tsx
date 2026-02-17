@@ -59,15 +59,11 @@ const AccountingPeriodListFrame = function (): JSX.Element {
           key="period"
           content={accountingPeriod.name}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="isOpen"
           content={<Checkbox checked={accountingPeriod.isOpen} />}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="view"
@@ -93,12 +89,12 @@ const AccountingPeriodListFrame = function (): JSX.Element {
             />
           }
           align="right"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
       ]}
       getId={(accountingPeriod: AccountingPeriod) => accountingPeriod.id}
       data={accountingPeriods}
+      isLoading={isLoading}
+      isError={error !== null}
     >
       {dialog}
       <SuccessAlert message={message} />

@@ -60,26 +60,12 @@ const AccountListFrame = function (): JSX.Element {
         />,
       ]}
       columns={(account: Account) => [
-        <ColumnCell
-          key="name"
-          content={account.name}
-          align="left"
-          isLoading={isLoading}
-          isError={error !== null}
-        />,
-        <ColumnCell
-          key="type"
-          content={account.type}
-          align="left"
-          isLoading={isLoading}
-          isError={error !== null}
-        />,
+        <ColumnCell key="name" content={account.name} align="left" />,
+        <ColumnCell key="type" content={account.type} align="left" />,
         <ColumnCell
           key="balance"
           content={formatCurrency(account.currentBalance.balance)}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="available"
@@ -88,8 +74,6 @@ const AccountListFrame = function (): JSX.Element {
               account.currentBalance.pendingDebitAmount,
           )}
           align="left"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
         <ColumnCell
           key="view"
@@ -115,12 +99,12 @@ const AccountListFrame = function (): JSX.Element {
             />
           }
           align="right"
-          isLoading={isLoading}
-          isError={error !== null}
         />,
       ]}
       getId={(account: Account) => account.id}
       data={accounts}
+      isLoading={isLoading}
+      isError={error !== null}
     >
       {dialog}
       <SuccessAlert message={message} />
