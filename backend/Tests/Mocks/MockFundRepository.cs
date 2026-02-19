@@ -16,13 +16,7 @@ internal sealed class MockFundRepository : IFundRepository
     public MockFundRepository() => _funds = [];
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Fund> GetAll(GetAllFundsRequest request) => _funds.Values;
-
-    /// <inheritdoc/>
     public Fund GetById(FundId id) => _funds[id.Value];
-
-    /// <inheritdoc/>
-    public bool TryGetById(Guid id, [NotNullWhen(true)] out Fund? fund) => _funds.TryGetValue(id, out fund);
 
     /// <inheritdoc/>
     public bool TryGetByName(string name, [NotNullWhen(true)] out Fund? fund)

@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.AccountingPeriods;
+using Data.AccountingPeriods;
 using Microsoft.AspNetCore.Mvc;
 using Models.AccountingPeriods;
 
@@ -13,7 +13,7 @@ internal sealed class AccountingPeriodSortOrderMapper
     /// <summary>
     /// Attempts to map the provided Accounting Period Sort Order Model to an Accounting Period Sort Order
     /// </summary>
-    public static bool TryToDomain(
+    public static bool TryToData(
         AccountingPeriodSortOrderModel accountingPeriodSortOrderModel,
         [NotNullWhen(true)] out AccountingPeriodSortOrder? accountingPeriodSortOrder,
         [NotNullWhen(false)] out IActionResult? errorResult)

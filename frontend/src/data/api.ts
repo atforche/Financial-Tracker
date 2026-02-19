@@ -246,7 +246,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Retrieves all the Accounting Periods from the database */
+        /** Retrieves the Accounting Periods that match the specified criteria */
         get: {
             parameters: {
                 query?: {
@@ -530,7 +530,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Retrieves all the Funds from the database */
+        /** Retrieves the Funds that match the specified criteria */
         get: {
             parameters: {
                 query?: {
@@ -1018,9 +1018,9 @@ export interface components {
             accountId: string;
             /**
              * Format: double
-             * @description Balance for the Account Balance
+             * @description Posted Balance for the Account Balance
              */
-            balance: number;
+            postedBalance: number;
             /** @description Fund Balances for the Account Balance */
             fundBalances: components["schemas"]["FundAmountModel"][];
             /**
@@ -1207,9 +1207,9 @@ export interface components {
             fundId: string;
             /**
              * Format: double
-             * @description Balance for the Fund Balance
+             * @description Posted Balance for the Fund Balance
              */
-            balance: number;
+            postedBalance: number;
             /** @description Account Balances for the Fund Balance */
             accountBalances: components["schemas"]["AccountAmountModel"][];
             /**

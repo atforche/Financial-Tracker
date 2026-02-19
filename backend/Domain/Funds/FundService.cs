@@ -69,7 +69,7 @@ public class FundService(IFundRepository fundRepository, ITransactionRepository 
     {
         exceptions = [];
 
-        if (transactionRepository.GetAllByFund(fund.Id).Count > 0)
+        if (transactionRepository.DoAnyTransactionsExistForFund(fund.Id))
         {
             exceptions = [new UnableToDeleteFundException("Cannot delete a Fund that has Transactions.")];
             return false;

@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 
 namespace Tests.Mocks;
@@ -19,10 +18,8 @@ internal sealed class MockAccountingPeriodRepository : IAccountingPeriodReposito
     public AccountingPeriod GetById(AccountingPeriodId id) => _accountingPeriods[id.Value];
 
     /// <inheritdoc/>
-    public bool TryGetById(Guid id, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod) => _accountingPeriods.TryGetValue(id, out accountingPeriod);
-
-    /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> GetAll(GetAllAccountingPeriodsRequest request) => _accountingPeriods.Values;
+    public AccountingPeriod? GetByYearAndMonth(int year, int month) => _accountingPeriods.Values
+        .SingleOrDefault(accountingPeriod => accountingPeriod.Year == year && accountingPeriod.Month == month);
 
     /// <inheritdoc/>
     public AccountingPeriod? GetLatestAccountingPeriod() => _accountingPeriods.Values

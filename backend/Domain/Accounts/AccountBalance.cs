@@ -29,14 +29,14 @@ public class AccountBalance
     public IReadOnlyCollection<FundAmount> PendingCredits { get; }
 
     /// <summary>
-    /// Balance for this Account Balance
+    /// Posted Balance for this Account Balance
     /// </summary>
-    public decimal Balance => FundBalances.Sum(balance => balance.Amount);
+    public decimal PostedBalance => FundBalances.Sum(balance => balance.Amount);
 
     /// <summary>
-    /// Total Pending Debit Amount for this Account Balance
+    /// Available to Spend Balance for this Account Balance
     /// </summary>
-    public decimal PendingDebitAmount => PendingDebits.Sum(debit => debit.Amount);
+    public decimal AvailableToSpend => PostedBalance - PendingDebits.Sum(debit => debit.Amount);
 
     /// <summary>
     /// Attempts to construct a new instance of this class

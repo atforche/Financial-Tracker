@@ -13,7 +13,6 @@ public sealed class AccountBuilder(
     AccountService accountService,
     IAccountRepository accountRepository,
     IAccountingPeriodRepository accountingPeriodRepository,
-    IFundRepository fundRepository,
     TestUnitOfWork testUnitOfWork)
 {
     private string? _name;
@@ -102,8 +101,7 @@ public sealed class AccountBuilder(
         {
             return _accountingPeriodId;
         }
-        return accountingPeriodRepository.GetAll(new())
-            .Single(accountingPeriod => accountingPeriod.Year == _addedDate.Year && accountingPeriod.Month == _addedDate.Month).Id;
+        return accountingPeriodRepository.GetByYearAndMonth(_addedDate.Year, _addedDate.Month)?.Id ?? throw new InvalidOperationException();
     }
 
     /// <summary>
@@ -114,18 +112,6 @@ public sealed class AccountBuilder(
         if (_addedFundAmounts != null)
         {
             return _addedFundAmounts;
-        }
-        var funds = fundRepository.GetAll(new GetAllFundsRequest()).ToList();
-        if (funds.Count == 1)
-        {
-            return
-            [
-                new FundAmount
-                {
-                    FundId = funds.First().Id,
-                    Amount = 2500.00m
-                }
-            ];
         }
         return [];
     }

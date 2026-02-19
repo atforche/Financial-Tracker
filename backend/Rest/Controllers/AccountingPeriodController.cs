@@ -1,4 +1,5 @@
 using Data;
+using Data.AccountingPeriods;
 using Domain.AccountingPeriods;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
@@ -15,27 +16,26 @@ namespace Rest.Controllers;
 [ApiController]
 [Route("/accounting-periods")]
 public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
-    IAccountingPeriodRepository accountingPeriodRepository,
+    AccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository,
     AccountingPeriodService accountingPeriodService,
     AccountingPeriodMapper accountingPeriodMapper,
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
-    /// Retrieves all the Accounting Periods from the database
+    /// Retrieves the Accounting Periods that match the specified criteria
     /// </summary>
-    /// <returns>The collection of all Accounting Periods</returns>
     [HttpGet("")]
     [ProducesResponseType(typeof(IReadOnlyCollection<AccountingPeriodModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public IActionResult GetAll([FromQuery] AccountingPeriodQueryParameterModel queryParameters)
     {
         AccountingPeriodSortOrder? accountingPeriodSortOrder = null;
-        if (queryParameters.SortBy != null && !AccountingPeriodSortOrderMapper.TryToDomain(queryParameters.SortBy.Value, out accountingPeriodSortOrder, out IActionResult? errorResult))
+        if (queryParameters.SortBy != null && !AccountingPeriodSortOrderMapper.TryToData(queryParameters.SortBy.Value, out accountingPeriodSortOrder, out IActionResult? errorResult))
         {
             return errorResult;
         }
-        return Ok(accountingPeriodRepository.GetAll(new GetAllAccountingPeriodsRequest
+        return Ok(accountingPeriodRepository.GetMany(new GetAccountingPeriodsRequest
         {
             SortBy = accountingPeriodSortOrder,
             Years = queryParameters.Years,

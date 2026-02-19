@@ -45,7 +45,7 @@ const TransactionFundFrame = function ({
     uniqueFunds.forEach((fund) => {
       const previousBalance =
         transaction.previousFundBalances.find((fb) => fb.fundId === fund)
-          ?.balance ?? null;
+          ?.postedBalance ?? null;
       const debitFundAmount =
         transaction.debitAccount?.fundAmounts.find(
           (fa) => fa.fundId === fund,
@@ -55,8 +55,8 @@ const TransactionFundFrame = function ({
           (fa) => fa.fundId === fund,
         ) ?? null;
       const newBalance =
-        transaction.newFundBalances.find((fb) => fb.fundId === fund)?.balance ??
-        null;
+        transaction.newFundBalances.find((fb) => fb.fundId === fund)
+          ?.postedBalance ?? null;
       if (debitFundAmount !== null || creditFundAmount !== null) {
         const fundId =
           debitFundAmount?.fundId ?? creditFundAmount?.fundId ?? "";

@@ -37,7 +37,7 @@ const FundListFrame = function (): JSX.Element {
       name: "balance",
       headerContent: "Posted Balance",
       getBodyContent: (fund: Fund) =>
-        formatCurrency(fund.currentBalance.balance),
+        formatCurrency(fund.currentBalance.postedBalance),
     },
     {
       name: "actions",

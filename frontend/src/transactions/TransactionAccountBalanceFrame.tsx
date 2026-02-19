@@ -110,7 +110,9 @@ const TransactionAccountBalanceFrame = function ({
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr" }}>
         <Caption caption="Total" />
         <Typography variant="subtitle1">
-          {formatCurrency(transactionAccount.previousAccountBalance.balance)}
+          {formatCurrency(
+            transactionAccount.previousAccountBalance.postedBalance,
+          )}
         </Typography>
         <Typography
           variant="subtitle1"
@@ -124,7 +126,7 @@ const TransactionAccountBalanceFrame = function ({
           {`${transactionAccount.postedDate === null ? "(" : ""} ${transactionAccountType === TransactionAccountType.Credit ? "+" : "-"} ${formatCurrency(transactionAccount.fundAmounts.reduce((sum, fundAmount) => sum + fundAmount.amount, 0))} ${transactionAccount.postedDate === null ? ")" : ""}`}
         </Typography>
         <Typography variant="subtitle1" sx={{ textAlign: "right" }}>
-          {formatCurrency(transactionAccount.newAccountBalance.balance)}
+          {formatCurrency(transactionAccount.newAccountBalance.postedBalance)}
         </Typography>
       </div>
     </>

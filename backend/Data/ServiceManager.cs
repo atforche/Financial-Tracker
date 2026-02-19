@@ -1,4 +1,7 @@
-using Data.Repositories;
+using Data.AccountingPeriods;
+using Data.Accounts;
+using Data.Funds;
+using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
@@ -22,10 +25,21 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<UnitOfWork>();
 
         _ = serviceCollection.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
+        _ = serviceCollection.AddScoped<AccountingPeriodRepository>();
+
         _ = serviceCollection.AddScoped<IAccountRepository, AccountRepository>();
+        _ = serviceCollection.AddScoped<AccountRepository>();
+
         _ = serviceCollection.AddScoped<IAccountBalanceHistoryRepository, AccountBalanceHistoryRepository>();
+        _ = serviceCollection.AddScoped<AccountBalanceHistoryRepository>();
+
         _ = serviceCollection.AddScoped<IFundRepository, FundRepository>();
+        _ = serviceCollection.AddScoped<FundRepository>();
+
         _ = serviceCollection.AddScoped<IFundBalanceHistoryRepository, FundBalanceHistoryRepository>();
+        _ = serviceCollection.AddScoped<FundBalanceHistoryRepository>();
+
         _ = serviceCollection.AddScoped<ITransactionRepository, TransactionRepository>();
+        _ = serviceCollection.AddScoped<TransactionRepository>();
     }
 }

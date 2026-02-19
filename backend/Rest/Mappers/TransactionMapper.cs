@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
@@ -20,7 +21,7 @@ public sealed class TransactionMapper(
     FundBalanceMapper fundBalanceMapper,
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
-    ITransactionRepository transactionRepository)
+    TransactionRepository transactionRepository)
 {
     /// <summary>
     /// Maps the provided Transaction to a Transaction Model

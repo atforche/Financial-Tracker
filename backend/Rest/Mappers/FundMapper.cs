@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Data.Funds;
 using Domain.Funds;
 using Microsoft.AspNetCore.Mvc;
 using Models.Funds;
@@ -8,7 +9,7 @@ namespace Rest.Mappers;
 /// <summary>
 /// Mapper class that handles mapping Funds to Fund Models
 /// </summary>
-public sealed class FundMapper(FundBalanceService fundBalanceService, FundBalanceMapper fundBalanceMapper, IFundRepository fundRepository)
+public sealed class FundMapper(FundBalanceService fundBalanceService, FundBalanceMapper fundBalanceMapper, FundRepository fundRepository)
 {
     /// <summary>
     /// Maps the provided Fund to a Fund Model

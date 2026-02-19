@@ -75,7 +75,7 @@ const FundDialog = function ({
             <CaptionedValue caption="Description" value={fund.description} />
             <CaptionedValue
               caption="Posted Balance"
-              value={formatCurrency(fund.currentBalance.balance)}
+              value={formatCurrency(fund.currentBalance.postedBalance)}
             />
           </CaptionedFrame>
           <CaptionedFrame caption="Posted Balance By Account">

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Data.Accounts;
 using Domain.Accounts;
 using Microsoft.AspNetCore.Mvc;
 using Models.Accounts;
@@ -8,7 +9,7 @@ namespace Rest.Mappers;
 /// <summary>
 /// Mapper class that handles mapping Accounts to Account Models
 /// </summary>
-public sealed class AccountMapper(AccountBalanceService accountBalanceService, AccountBalanceMapper accountBalanceMapper, IAccountRepository accountRepository)
+public sealed class AccountMapper(AccountBalanceService accountBalanceService, AccountBalanceMapper accountBalanceMapper, AccountRepository accountRepository)
 {
     /// <summary>
     /// Maps the provided Account to an Account Model

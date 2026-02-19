@@ -86,18 +86,13 @@ public class AccountingPeriodService(IAccountingPeriodRepository accountingPerio
             return false;
         }
         // Validate that there are no duplicate accounting periods
-        var existingAccountingPeriods = accountingPeriodRepository.GetAll(new GetAllAccountingPeriodsRequest
-        {
-            Years = [year],
-            Months = [month]
-        }).ToList();
-        if (existingAccountingPeriods.Any(period => period.PeriodStartDate == new DateOnly(year, month, 1)))
+        if (accountingPeriodRepository.GetByYearAndMonth(year, month) != null)
         {
             exceptions = exceptions.Append(new InvalidMonthException("This Accounting Period already exists."));
         }
         // Validate that accounting periods can only be added after existing accounting periods
-        if (existingAccountingPeriods.Count > 0 &&
-            !existingAccountingPeriods.Any(period => period.PeriodStartDate == new DateOnly(year, month, 1).AddMonths(-1)))
+        AccountingPeriod? latestAccountingPeriod = accountingPeriodRepository.GetLatestAccountingPeriod();
+        if (latestAccountingPeriod != null && latestAccountingPeriod.PeriodStartDate != new DateOnly(year, month, 1).AddMonths(-1))
         {
             exceptions = exceptions.Append(new InvalidMonthException("New Accounting Period must directly follow the most recent existing Accounting Period."));
         }

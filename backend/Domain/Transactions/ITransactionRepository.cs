@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
@@ -16,9 +15,9 @@ public interface ITransactionRepository
     int GetNextSequenceForDate(DateOnly transactionDate);
 
     /// <summary>
-    /// Gets all the Transactions that are associated with the specified Account
+    /// Checks if any Transactions exist for the specified Account (excluding the initial balance transaction)
     /// </summary>
-    IReadOnlyCollection<Transaction> GetAllByAccount(AccountId accountId);
+    bool DoAnyTransactionsExistForAccount(Account account);
 
     /// <summary>
     /// Gets all the Transactions that are associated with the specified Accounting Period
@@ -26,19 +25,14 @@ public interface ITransactionRepository
     IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId);
 
     /// <summary>
-    /// Gets all the Transactions that are associated with the specified Fund
+    /// Checks if any Transactions exist for the specified Fund
     /// </summary>
-    IReadOnlyCollection<Transaction> GetAllByFund(FundId fundId);
+    bool DoAnyTransactionsExistForFund(FundId fundId);
 
     /// <summary>
     /// Gets the Transaction with the specified ID.
     /// </summary>
     Transaction GetById(TransactionId id);
-
-    /// <summary>
-    /// Attempts to get the Transaction with the specified ID
-    /// </summary>
-    bool TryGetById(Guid id, [NotNullWhen(true)] out Transaction? transaction);
 
     /// <summary>
     /// Adds the provided Transaction to the repository

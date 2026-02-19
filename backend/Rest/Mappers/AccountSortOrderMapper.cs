@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.Accounts;
+using Data.Accounts;
 using Microsoft.AspNetCore.Mvc;
 using Models.Accounts;
 
@@ -13,7 +13,7 @@ internal sealed class AccountSortOrderMapper
     /// <summary>
     /// Attempts to map the provided Account Sort Order Model to an Account Sort Order
     /// </summary>
-    public static bool TryToDomain(
+    public static bool TryToData(
         AccountSortOrderModel accountSortOrderModel,
         [NotNullWhen(true)] out AccountSortOrder? accountSortOrder,
         [NotNullWhen(false)] out IActionResult? errorResult)

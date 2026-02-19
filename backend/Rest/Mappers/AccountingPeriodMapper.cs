@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Data.AccountingPeriods;
 using Domain.AccountingPeriods;
 using Microsoft.AspNetCore.Mvc;
 using Models.AccountingPeriods;
@@ -9,7 +10,7 @@ namespace Rest.Mappers;
 /// <summary>
 /// Mapper class that handles mapping Accounting Periods to Accounting Period Models
 /// </summary>
-public sealed class AccountingPeriodMapper(IAccountingPeriodRepository accountingPeriodRepository)
+public sealed class AccountingPeriodMapper(AccountingPeriodRepository accountingPeriodRepository)
 {
     /// <summary>
     /// Maps the provided Accounting Period to an Accounting Period Model

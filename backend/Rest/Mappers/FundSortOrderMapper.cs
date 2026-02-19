@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.Funds;
+using Data.Funds;
 using Microsoft.AspNetCore.Mvc;
 using Models.Funds;
 
@@ -13,7 +13,7 @@ internal sealed class FundSortOrderMapper
     /// <summary>
     /// Attempts to map the provided Fund Sort Order Model to a Fund Sort Order
     /// </summary>
-    public static bool TryToDomain(
+    public static bool TryToData(
         FundSortOrderModel fundSortOrderModel,
         [NotNullWhen(true)] out FundSortOrder? fundSortOrder,
         [NotNullWhen(false)] out IActionResult? errorResult)

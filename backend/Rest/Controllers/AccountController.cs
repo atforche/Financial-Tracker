@@ -1,4 +1,6 @@
 using Data;
+using Data.Accounts;
+using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
@@ -19,8 +21,8 @@ namespace Rest.Controllers;
 [Route("/accounts")]
 public sealed class AccountController(
     UnitOfWork unitOfWork,
-    IAccountRepository accountRepository,
-    ITransactionRepository transactionRepository,
+    AccountRepository accountRepository,
+    TransactionRepository transactionRepository,
     AccountService accountService,
     AccountingPeriodMapper accountingPeriodMapper,
     AccountMapper accountMapper,
@@ -39,7 +41,7 @@ public sealed class AccountController(
         List<AccountModel> results = [];
 
         AccountSortOrder? accountSortOrder = null;
-        if (queryParameters.SortBy != null && !AccountSortOrderMapper.TryToDomain(queryParameters.SortBy.Value, out accountSortOrder, out IActionResult? errorResult))
+        if (queryParameters.SortBy != null && !AccountSortOrderMapper.TryToData(queryParameters.SortBy.Value, out accountSortOrder, out IActionResult? errorResult))
         {
             return errorResult;
         }
@@ -57,7 +59,7 @@ public sealed class AccountController(
             }
         }
 
-        foreach (Account account in accountRepository.GetAll(new GetAllAccountsRequest
+        foreach (Account account in accountRepository.GetMany(new GetAccountsRequest
         {
             SortBy = accountSortOrder,
             Names = queryParameters.Names,
@@ -87,7 +89,7 @@ public sealed class AccountController(
         {
             return errorResult;
         }
-        return Ok(transactionRepository.GetAllByAccount(account.Id).Select(transactionMapper.ToModel).ToList());
+        return Ok(transactionRepository.GetManyByAccount(account.Id, new()).Select(transactionMapper.ToModel).ToList());
     }
 
     /// <summary>

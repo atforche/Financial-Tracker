@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
@@ -26,10 +25,9 @@ internal sealed class MockTransactionRepository : ITransactionRepository
     }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> GetAllByAccount(AccountId accountId) =>
-        _transactions.Values.Where(transaction =>
-            (transaction.DebitAccount != null && transaction.DebitAccount.AccountId == accountId) ||
-            (transaction.CreditAccount != null && transaction.CreditAccount.AccountId == accountId)).ToList();
+    public bool DoAnyTransactionsExistForAccount(Account account) =>
+        _transactions.Values.Any(transaction => (transaction.DebitAccount?.AccountId == account.Id || transaction.CreditAccount?.AccountId == account.Id) &&
+        transaction.Id != account.InitialTransaction);
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
@@ -39,19 +37,12 @@ internal sealed class MockTransactionRepository : ITransactionRepository
             .ToList();
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> GetAllByFund(FundId fundId) =>
-        _transactions.Values.Where(transaction =>
-            (transaction.DebitAccount != null && transaction.DebitAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId)) ||
-            (transaction.CreditAccount != null && transaction.CreditAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId))).ToList();
+    public bool DoAnyTransactionsExistForFund(FundId fundId) =>
+        _transactions.Values.Any(transaction => (transaction.DebitAccount?.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId) ?? false) ||
+                                (transaction.CreditAccount?.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId) ?? false));
 
     /// <inheritdoc/>
     public Transaction GetById(TransactionId id) => _transactions[id.Value];
-
-    /// <inheritdoc/>
-    public bool TryGetById(Guid id, [NotNullWhen(true)] out Transaction? transaction) => _transactions.TryGetValue(id, out transaction);
-
-    /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> GetAll() => _transactions.Values;
 
     /// <inheritdoc/>
     public void Add(Transaction transaction) => _transactions.Add(transaction.Id.Value, transaction);

@@ -13,9 +13,9 @@ public class AccountBalanceModel
     public required Guid AccountId { get; init; }
 
     /// <summary>
-    /// Balance for the Account Balance
+    /// Posted Balance for the Account Balance
     /// </summary>
-    public required decimal Balance { get; init; }
+    public required decimal PostedBalance { get; init; }
 
     /// <summary>
     /// Fund Balances for the Account Balance

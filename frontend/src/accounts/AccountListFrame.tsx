@@ -37,14 +37,14 @@ const AccountListFrame = function (): JSX.Element {
       name: "balance",
       headerContent: "Posted Balance",
       getBodyContent: (account: Account) =>
-        formatCurrency(account.currentBalance.balance),
+        formatCurrency(account.currentBalance.postedBalance),
     },
     {
       name: "available",
       headerContent: "Available to Spend",
       getBodyContent: (account: Account) =>
         formatCurrency(
-          account.currentBalance.balance -
+          account.currentBalance.postedBalance -
             account.currentBalance.pendingDebitAmount,
         ),
     },

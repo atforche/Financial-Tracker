@@ -1,6 +1,7 @@
 using Data;
+using Data.Funds;
+using Data.Transactions;
 using Domain.Funds;
-using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Models.Errors;
 using Models.Funds;
@@ -16,27 +17,26 @@ namespace Rest.Controllers;
 [Route("/funds")]
 public sealed class FundController(
     UnitOfWork unitOfWork,
-    IFundRepository fundRepository,
-    ITransactionRepository transactionRepository,
+    FundRepository fundRepository,
+    TransactionRepository transactionRepository,
     FundService fundService,
     FundMapper fundMapper,
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
-    /// Retrieves all the Funds from the database
+    /// Retrieves the Funds that match the specified criteria
     /// </summary>
-    /// <returns>The collection of all Funds</returns>
     [HttpGet("")]
     [ProducesResponseType(typeof(IReadOnlyCollection<FundModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public IActionResult GetAll([FromQuery] FundQueryParameterModel queryParameters)
     {
         FundSortOrder? fundSortOrder = null;
-        if (queryParameters.SortBy != null && !FundSortOrderMapper.TryToDomain(queryParameters.SortBy.Value, out fundSortOrder, out IActionResult? errorResult))
+        if (queryParameters.SortBy != null && !FundSortOrderMapper.TryToData(queryParameters.SortBy.Value, out fundSortOrder, out IActionResult? errorResult))
         {
             return errorResult;
         }
-        return Ok(fundRepository.GetAll(new GetAllFundsRequest
+        return Ok(fundRepository.GetMany(new GetFundsRequest
         {
             SortBy = fundSortOrder,
             Names = queryParameters.Names,
@@ -72,7 +72,7 @@ public sealed class FundController(
         {
             return errorResult;
         }
-        return Ok(transactionRepository.GetAllByFund(fund.Id).Select(transactionMapper.ToModel).ToList());
+        return Ok(transactionRepository.GetManyByFund(fund.Id, new()).Select(transactionMapper.ToModel).ToList());
     }
 
     /// <summary>

@@ -28,9 +28,9 @@ public class FundBalance
     public IReadOnlyCollection<AccountAmount> PendingCredits { get; }
 
     /// <summary>
-    /// Balance for this Fund Balance
+    /// Posted Balance for this Fund Balance
     /// </summary>
-    public decimal Balance => AccountBalances.Sum(balance => balance.Amount);
+    public decimal PostedBalance => AccountBalances.Sum(balance => balance.Amount);
 
     /// <summary>
     /// Attempts to add the provided Account Amount to the current Fund Balance

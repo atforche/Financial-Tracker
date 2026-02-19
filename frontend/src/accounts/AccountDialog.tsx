@@ -75,12 +75,12 @@ const AccountDialog = function ({
             <CaptionedValue caption="Type" value={account.type} />
             <CaptionedValue
               caption="Posted Balance"
-              value={formatCurrency(account.currentBalance.balance)}
+              value={formatCurrency(account.currentBalance.postedBalance)}
             />
             <CaptionedValue
               caption="Available to Spend"
               value={formatCurrency(
-                account.currentBalance.balance -
+                account.currentBalance.postedBalance -
                   account.currentBalance.pendingDebitAmount,
               )}
             />
