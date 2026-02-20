@@ -20,7 +20,11 @@ import useGetAllAccounts from "@accounts/useGetAllAccounts";
 const AccountListFrame = function (): JSX.Element {
   const [dialog, setDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const { accounts, isLoading, error, refetch } = useGetAllAccounts();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const { accounts, totalCount, isLoading, error, refetch } = useGetAllAccounts(
+    { page, rowsPerPage },
+  );
 
   const columns: ColumnDefinition<Account>[] = [
     {
@@ -100,8 +104,13 @@ const AccountListFrame = function (): JSX.Element {
       columns={columns}
       getId={(account: Account) => account.id}
       data={accounts}
+      totalCount={totalCount}
       isLoading={isLoading}
       isError={error !== null}
+      page={page}
+      setPage={setPage}
+      rowsPerPage={rowsPerPage}
+      setRowsPerPage={setRowsPerPage}
     >
       {dialog}
       <SuccessAlert message={message} />

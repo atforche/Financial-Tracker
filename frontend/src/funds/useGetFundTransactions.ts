@@ -9,7 +9,9 @@ import useQuery from "@data/useQuery";
  * Arguments for the useGetFundTransactions hook.
  */
 interface UseGetFundTransactionsArgs {
-  fund: Fund;
+  readonly fund: Fund;
+  readonly page: number;
+  readonly rowsPerPage: number;
 }
 
 /**
@@ -19,14 +21,17 @@ interface UseGetFundTransactionsArgs {
  */
 const useGetFundTransactions = function ({
   fund,
+  page,
+  rowsPerPage,
 }: UseGetFundTransactionsArgs): {
   transactions: Transaction[] | null;
+  totalCount: number | null;
   isLoading: boolean;
   error: ApiError | null;
   refetch: () => void;
 } {
   const getAllTransactionsCallback = useCallback<
-    () => Promise<Transaction[] | ApiError>
+    () => Promise<{ items: Transaction[]; totalCount: number } | ApiError>
   >(async () => {
     const client = getApiClient();
     const { data, error } = await client.GET("/funds/{fundId}/transactions", {
@@ -34,19 +39,27 @@ const useGetFundTransactions = function ({
         path: {
           fundId: fund.id,
         },
+        query: {
+          Limit: rowsPerPage,
+          Offset: page * rowsPerPage,
+        },
       },
     });
     if (typeof error !== "undefined") {
       return error;
     }
     return data;
-  }, [fund.id]);
+  }, [fund.id, page, rowsPerPage]);
 
-  const { data, isLoading, error, refetch } = useQuery<Transaction[]>({
+  const { data, isLoading, error, refetch } = useQuery<{
+    items: Transaction[];
+    totalCount: number;
+  }>({
     queryFunction: getAllTransactionsCallback,
   });
   return {
-    transactions: data,
+    transactions: data?.items ?? null,
+    totalCount: data?.totalCount ?? null,
     isLoading,
     error,
     refetch,

@@ -2,7 +2,9 @@ using Data;
 using Data.Funds;
 using Data.Transactions;
 using Domain.Funds;
+using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
+using Models;
 using Models.Errors;
 using Models.Funds;
 using Models.Transactions;
@@ -27,7 +29,7 @@ public sealed class FundController(
     /// Retrieves the Funds that match the specified criteria
     /// </summary>
     [HttpGet("")]
-    [ProducesResponseType(typeof(IReadOnlyCollection<FundModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CollectionModel<FundModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public IActionResult GetAll([FromQuery] FundQueryParameterModel queryParameters)
     {
@@ -36,43 +38,64 @@ public sealed class FundController(
         {
             return errorResult;
         }
-        return Ok(fundRepository.GetMany(new GetFundsRequest
+        PaginatedCollection<Fund> funds = fundRepository.GetMany(new GetFundsRequest
         {
             SortBy = fundSortOrder,
             Names = queryParameters.Names,
             Limit = queryParameters.Limit,
             Offset = queryParameters.Offset,
-        }).Select(fundMapper.ToModel).ToList());
-    }
-
-    /// <summary>
-    /// Retrieves the Fund that matches the provided ID
-    /// </summary>
-    /// <param name="fundId">ID of the Fund to retrieve</param>
-    /// <returns>The Fund that matches the provided ID</returns>
-    [HttpGet("{fundId}")]
-    public IActionResult Get(Guid fundId)
-    {
-        if (!fundMapper.TryToDomain(fundId, out Fund? fund, out IActionResult? errorResult))
+        });
+        return Ok(new CollectionModel<FundModel>
         {
-            return errorResult;
-        }
-        return Ok(fundMapper.ToModel(fund));
+            Items = funds.Items.Select(fundMapper.ToModel).ToList(),
+            TotalCount = funds.TotalCount
+        });
     }
 
     /// <summary>
     /// Retrieves the Transactions for the Fund that matches the provided ID
     /// </summary>
     [HttpGet("{fundId}/transactions")]
-    [ProducesResponseType(typeof(IReadOnlyCollection<TransactionModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetTransactions(Guid fundId)
+    public IActionResult GetTransactions(Guid fundId, [FromQuery] FundTransactionQueryParameterModel queryParameters)
     {
         if (!fundMapper.TryToDomain(fundId, out Fund? fund, out IActionResult? errorResult))
         {
             return errorResult;
         }
-        return Ok(transactionRepository.GetManyByFund(fund.Id, new()).Select(transactionMapper.ToModel).ToList());
+        FundTransactionSortOrder? fundTransactionSortOrder = null;
+        if (queryParameters.SortBy != null && !FundTransactionSortOrderMapper.TryToData(queryParameters.SortBy.Value, out fundTransactionSortOrder, out errorResult))
+        {
+            return errorResult;
+        }
+        IEnumerable<TransactionType> transactionTypes = [];
+        if (queryParameters.Types != null)
+        {
+            foreach (TransactionTypeModel transactionTypeModel in queryParameters.Types)
+            {
+                if (!TransactionTypeMapper.TryToData(transactionTypeModel, out TransactionType? transactionType, out errorResult))
+                {
+                    return errorResult;
+                }
+                transactionTypes = transactionTypes.Append(transactionType.Value);
+            }
+        }
+        PaginatedCollection<Transaction> paginatedResults = transactionRepository.GetManyByFund(fund.Id, new GetFundTransactionsRequest
+        {
+            SortBy = fundTransactionSortOrder,
+            MinDate = queryParameters.MinDate,
+            MaxDate = queryParameters.MaxDate,
+            Locations = queryParameters.Locations,
+            Types = transactionTypes.Any() ? transactionTypes.ToList() : null,
+            Limit = queryParameters.Limit,
+            Offset = queryParameters.Offset
+        });
+        return Ok(new CollectionModel<TransactionModel>
+        {
+            Items = paginatedResults.Items.Select(transactionMapper.ToModel).ToList(),
+            TotalCount = paginatedResults.TotalCount
+        });
     }
 
     /// <summary>

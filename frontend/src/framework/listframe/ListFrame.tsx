@@ -8,6 +8,7 @@ import {
   TableCell,
   TableContainer,
   TableHead,
+  TablePagination,
   TableRow,
   Typography,
 } from "@mui/material";
@@ -17,8 +18,8 @@ import type { JSX } from "react";
 /** Height of each row in the list frame. */
 const listFrameRowHeight = 50;
 
-/** Minimum number of rows to display in the list frame. */
-const rowsPerPage = 10;
+/** Options for the number of rows per page in the list frame. */
+const rowsPerPageOptions = [5, 10, 25];
 
 /** Default width for a column in the list frame. */
 const defaultColumnWidth = 100;
@@ -31,8 +32,13 @@ interface ListFrameProps<T> {
   readonly columns: ColumnDefinition<T>[];
   readonly getId: (item: T) => string;
   readonly data: T[] | null;
+  readonly totalCount: number | null;
   readonly isLoading: boolean;
   readonly isError: boolean;
+  readonly page: number;
+  readonly setPage: (page: number) => void;
+  readonly rowsPerPage: number;
+  readonly setRowsPerPage: (rowsPerPage: number) => void;
   readonly children: React.ReactNode;
 }
 
@@ -47,8 +53,13 @@ const ListFrame = function <T>({
   columns,
   getId,
   data,
+  totalCount,
   isLoading,
   isError,
+  page,
+  setPage,
+  rowsPerPage,
+  setRowsPerPage,
   children,
 }: ListFrameProps<T>): JSX.Element {
   return (
@@ -125,6 +136,19 @@ const ListFrame = function <T>({
             </TableBody>
           </Table>
         </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={rowsPerPageOptions}
+          component="div"
+          count={totalCount ?? 0}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={(_, newPage) => {
+            setPage(newPage);
+          }}
+          onRowsPerPageChange={(event) => {
+            setRowsPerPage(parseInt(event.target.value, 10));
+          }}
+        />
       </Paper>
       {children}
     </Box>

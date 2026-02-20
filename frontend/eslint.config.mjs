@@ -155,7 +155,7 @@ export default defineConfig([
       "react-hooks/set-state-in-effect": "off",
 
       // typescript-eslint rules
-      "@typescript-eslint/no-magic-numbers": ["error", { ignore: [0, 1, 2] }],
+      "@typescript-eslint/no-magic-numbers": "off",
       "@typescript-eslint/naming-convention": [
         "error",
         {

@@ -35,11 +35,11 @@ internal sealed class AccountingPeriodTransactionFilterer(DatabaseContext databa
         {
             transactionsWithAccounts = transactionsWithAccounts.Where(pair => request.Locations.Contains(pair.transaction.Location));
         }
-        if (request.Account != null && request.Account.Count > 0)
+        if (request.Accounts != null && request.Accounts.Count > 0)
         {
             transactionsWithAccounts = transactionsWithAccounts.Where(pair =>
-                request.Account.Contains(pair.debitAccount.Id) ||
-                request.Account.Contains(pair.creditAccount.Id));
+                request.Accounts.Contains(pair.debitAccount.Id) ||
+                request.Accounts.Contains(pair.creditAccount.Id));
         }
         return transactionsWithAccounts.ToList().Select(pair => new AccountingPeriodTransactionSortModel
         {

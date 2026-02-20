@@ -28,7 +28,10 @@ const FundEntryField = function ({
   setValue = null,
   filter = null,
 }: FundEntryFieldProps): JSX.Element {
-  const { funds, isLoading, error } = useGetAllFunds();
+  const { funds, isLoading, error } = useGetAllFunds({
+    page: null,
+    rowsPerPage: null,
+  });
   return (
     <ComboBoxEntryField<FundIdentifier>
       label={label}

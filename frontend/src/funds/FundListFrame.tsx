@@ -20,7 +20,12 @@ import useGetAllFunds from "@funds/useGetAllFunds";
 const FundListFrame = function (): JSX.Element {
   const [dialog, setDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const { funds, isLoading, error, refetch } = useGetAllFunds();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const { funds, totalCount, isLoading, error, refetch } = useGetAllFunds({
+    page,
+    rowsPerPage,
+  });
 
   const columns: ColumnDefinition<Fund>[] = [
     {
@@ -94,8 +99,13 @@ const FundListFrame = function (): JSX.Element {
       columns={columns}
       getId={(fund: Fund) => fund.id}
       data={funds}
+      totalCount={totalCount}
       isLoading={isLoading}
       isError={error !== null}
+      page={page}
+      setPage={setPage}
+      rowsPerPage={rowsPerPage}
+      setRowsPerPage={setRowsPerPage}
     >
       {dialog}
       <SuccessAlert message={message} />

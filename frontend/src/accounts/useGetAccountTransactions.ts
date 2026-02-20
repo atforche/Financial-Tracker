@@ -9,7 +9,9 @@ import useQuery from "@data/useQuery";
  * Arguments for the useGetAccountTransactions hook.
  */
 interface UseGetAccountTransactionsArgs {
-  account: Account;
+  readonly account: Account;
+  readonly page: number;
+  readonly rowsPerPage: number;
 }
 
 /**
@@ -19,14 +21,17 @@ interface UseGetAccountTransactionsArgs {
  */
 const useGetAccountTransactions = function ({
   account,
+  page,
+  rowsPerPage,
 }: UseGetAccountTransactionsArgs): {
   transactions: Transaction[] | null;
+  totalCount: number | null;
   isLoading: boolean;
   error: ApiError | null;
   refetch: () => void;
 } {
   const getAllTransactionsCallback = useCallback<
-    () => Promise<Transaction[] | ApiError>
+    () => Promise<{ items: Transaction[]; totalCount: number } | ApiError>
   >(async () => {
     const client = getApiClient();
     const { data, error } = await client.GET(
@@ -36,6 +41,10 @@ const useGetAccountTransactions = function ({
           path: {
             accountId: account.id,
           },
+          query: {
+            Limit: rowsPerPage,
+            Offset: page * rowsPerPage,
+          },
         },
       },
     );
@@ -43,13 +52,17 @@ const useGetAccountTransactions = function ({
       return error;
     }
     return data;
-  }, [account.id]);
+  }, [account.id, page, rowsPerPage]);
 
-  const { data, isLoading, error, refetch } = useQuery<Transaction[]>({
+  const { data, isLoading, error, refetch } = useQuery<{
+    items: Transaction[];
+    totalCount: number;
+  }>({
     queryFunction: getAllTransactionsCallback,
   });
   return {
-    transactions: data,
+    transactions: data?.items ?? null,
+    totalCount: data?.totalCount ?? null,
     isLoading,
     error,
     refetch,

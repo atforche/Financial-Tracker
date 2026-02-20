@@ -22,7 +22,10 @@ const AccountEntryField = function ({
   value,
   setValue = null,
 }: AccountEntryFieldProps): JSX.Element {
-  const { accounts, isLoading, error } = useGetAllAccounts();
+  const { accounts, isLoading, error } = useGetAllAccounts({
+    page: null,
+    rowsPerPage: null,
+  });
   return (
     <ComboBoxEntryField<AccountIdentifier>
       label={label}

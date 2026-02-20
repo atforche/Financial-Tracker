@@ -34,7 +34,7 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
     }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> GetAllOpenPeriods() => GetMany(new GetAccountingPeriodsRequest { IsOpen = true });
+    public IReadOnlyCollection<AccountingPeriod> GetAllOpenPeriods() => GetMany(new GetAccountingPeriodsRequest { IsOpen = true }).Items;
 
     /// <inheritdoc/>
     public void Add(AccountingPeriod accountingPeriod) => databaseContext.Add(accountingPeriod);
@@ -47,11 +47,15 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
     /// <summary>
     /// Gets the Accounting Periods that match the specified criteria
     /// </summary>
-    public IReadOnlyCollection<AccountingPeriod> GetMany(GetAccountingPeriodsRequest request)
+    public PaginatedCollection<AccountingPeriod> GetMany(GetAccountingPeriodsRequest request)
     {
         List<AccountingPeriodSortModel> filteredAccountingPeriods = new AccountingPeriodFilterer(databaseContext).Get(request);
         filteredAccountingPeriods.Sort(new AccountingPeriodComparer(request.SortBy));
-        return GetPagedAccountingPeriods(filteredAccountingPeriods.Select(model => model.AccountingPeriod).ToList(), request.Limit, request.Offset);
+        return new PaginatedCollection<AccountingPeriod>
+        {
+            Items = GetPagedAccountingPeriods(filteredAccountingPeriods.Select(model => model.AccountingPeriod).ToList(), request.Limit, request.Offset),
+            TotalCount = filteredAccountingPeriods.Count,
+        };
     }
 
     /// <summary>

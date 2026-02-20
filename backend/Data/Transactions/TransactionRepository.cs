@@ -31,7 +31,7 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
-        GetManyByAccountingPeriod(accountingPeriodId, new GetAccountingPeriodTransactionsRequest());
+        GetManyByAccountingPeriod(accountingPeriodId, new GetAccountingPeriodTransactionsRequest()).Items;
 
     /// <inheritdoc/>
     public bool DoAnyTransactionsExistForFund(FundId fundId) =>
@@ -53,31 +53,43 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     /// <summary>
     /// Gets the Transactions within the specified Accounting Period that match the specified criteria
     /// </summary>
-    public IReadOnlyCollection<Transaction> GetManyByAccountingPeriod(AccountingPeriodId accountingPeriodId, GetAccountingPeriodTransactionsRequest request)
+    public PaginatedCollection<Transaction> GetManyByAccountingPeriod(AccountingPeriodId accountingPeriodId, GetAccountingPeriodTransactionsRequest request)
     {
         List<AccountingPeriodTransactionSortModel> filteredTransactions = new AccountingPeriodTransactionFilterer(databaseContext).Get(accountingPeriodId, request);
         filteredTransactions.Sort(new AccountingPeriodTransactionComparer(request.SortBy));
-        return GetPagedTransactions(filteredTransactions.Select(t => t.Transaction).ToList(), request.Limit, request.Offset);
+        return new PaginatedCollection<Transaction>
+        {
+            Items = GetPagedTransactions(filteredTransactions.Select(t => t.Transaction).ToList(), request.Limit, request.Offset),
+            TotalCount = filteredTransactions.Count,
+        };
     }
 
     /// <summary>
     /// Gets the Transactions within the specified Account that match the specified criteria
     /// </summary>
-    public IReadOnlyCollection<Transaction> GetManyByAccount(AccountId accountId, GetAccountTransactionsRequest request)
+    public PaginatedCollection<Transaction> GetManyByAccount(AccountId accountId, GetAccountTransactionsRequest request)
     {
         List<AccountTransactionSortModel> filteredTransactions = new AccountTransactionFilterer(databaseContext).Get(accountId, request);
         filteredTransactions.Sort(new AccountTransactionComparer(request.SortBy));
-        return GetPagedTransactions(filteredTransactions.Select(t => t.Transaction).ToList(), request.Limit, request.Offset);
+        return new PaginatedCollection<Transaction>
+        {
+            Items = GetPagedTransactions(filteredTransactions.Select(t => t.Transaction).ToList(), request.Limit, request.Offset),
+            TotalCount = filteredTransactions.Count,
+        };
     }
 
     /// <summary>
     /// Gets the Transactions within the specified Fund that match the specified criteria
     /// </summary>
-    public IReadOnlyCollection<Transaction> GetManyByFund(FundId fundId, GetFundTransactionsRequest request)
+    public PaginatedCollection<Transaction> GetManyByFund(FundId fundId, GetFundTransactionsRequest request)
     {
         List<FundTransactionSortModel> filteredTransactions = new FundTransactionFilterer(databaseContext).Get(fundId, request);
         filteredTransactions.Sort(new FundTransactionComparer(request.SortBy));
-        return GetPagedTransactions(filteredTransactions.Select(t => t.Transaction).ToList(), request.Limit, request.Offset);
+        return new PaginatedCollection<Transaction>
+        {
+            Items = GetPagedTransactions(filteredTransactions.Select(t => t.Transaction).ToList(), request.Limit, request.Offset),
+            TotalCount = filteredTransactions.Count,
+        };
     }
 
     /// <summary>

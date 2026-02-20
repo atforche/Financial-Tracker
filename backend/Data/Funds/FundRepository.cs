@@ -31,11 +31,15 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
     /// <summary>
     /// Gets the Funds that match the specified criteria
     /// </summary>
-    public IReadOnlyCollection<Fund> GetMany(GetFundsRequest request)
+    public PaginatedCollection<Fund> GetMany(GetFundsRequest request)
     {
         List<FundSortModel> filteredFunds = new FundFilterer(databaseContext).Get(request);
         filteredFunds.Sort(new FundComparer(request.SortBy));
-        return GetPagedFunds(filteredFunds.Select(f => f.Fund).ToList(), request.Limit, request.Offset);
+        return new PaginatedCollection<Fund>
+        {
+            Items = GetPagedFunds(filteredFunds.Select(f => f.Fund).ToList(), request.Limit, request.Offset),
+            TotalCount = filteredFunds.Count,
+        };
     }
 
     /// <summary>

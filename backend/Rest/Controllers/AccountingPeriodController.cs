@@ -1,8 +1,11 @@
 using Data;
 using Data.AccountingPeriods;
+using Data.Transactions;
 using Domain.AccountingPeriods;
+using Domain.Accounts;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
+using Models;
 using Models.AccountingPeriods;
 using Models.Errors;
 using Models.Transactions;
@@ -17,8 +20,9 @@ namespace Rest.Controllers;
 [Route("/accounting-periods")]
 public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountingPeriodRepository accountingPeriodRepository,
-    ITransactionRepository transactionRepository,
+    TransactionRepository transactionRepository,
     AccountingPeriodService accountingPeriodService,
+    AccountMapper accountMapper,
     AccountingPeriodMapper accountingPeriodMapper,
     TransactionMapper transactionMapper) : ControllerBase
 {
@@ -26,7 +30,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     /// Retrieves the Accounting Periods that match the specified criteria
     /// </summary>
     [HttpGet("")]
-    [ProducesResponseType(typeof(IReadOnlyCollection<AccountingPeriodModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CollectionModel<AccountingPeriodModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public IActionResult GetAll([FromQuery] AccountingPeriodQueryParameterModel queryParameters)
     {
@@ -35,7 +39,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         {
             return errorResult;
         }
-        return Ok(accountingPeriodRepository.GetMany(new GetAccountingPeriodsRequest
+        PaginatedCollection<AccountingPeriod> paginatedAccountingPeriods = accountingPeriodRepository.GetMany(new GetAccountingPeriodsRequest
         {
             SortBy = accountingPeriodSortOrder,
             Years = queryParameters.Years,
@@ -43,7 +47,12 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
             IsOpen = queryParameters.IsOpen,
             Limit = queryParameters.Limit,
             Offset = queryParameters.Offset,
-        }).Select(AccountingPeriodMapper.ToModel).ToList());
+        });
+        return Ok(new CollectionModel<AccountingPeriodModel>()
+        {
+            Items = paginatedAccountingPeriods.Items.Select(AccountingPeriodMapper.ToModel).ToList(),
+            TotalCount = paginatedAccountingPeriods.TotalCount
+        });
     }
 
     /// <summary>
@@ -59,15 +68,46 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     /// Retrieves the Transactions for the Accounting Period that matches the provided ID
     /// </summary>
     [HttpGet("{accountingPeriodId}/transactions")]
-    [ProducesResponseType(typeof(IReadOnlyCollection<TransactionModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetTransactions(Guid accountingPeriodId)
+    public IActionResult GetTransactions(Guid accountingPeriodId, [FromQuery] AccountingPeriodTransactionQueryParameterModel queryParameters)
     {
         if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod, out IActionResult? errorResult))
         {
             return errorResult;
         }
-        return Ok(transactionRepository.GetAllByAccountingPeriod(accountingPeriod.Id).Select(transactionMapper.ToModel).ToList());
+        AccountingPeriodTransactionSortOrder? sortBy = null;
+        if (queryParameters.SortBy != null && !AccountingPeriodTransactionSortOrderMapper.TryToData(queryParameters.SortBy.Value, out sortBy, out errorResult))
+        {
+            return errorResult;
+        }
+        IEnumerable<Account> accounts = [];
+        if (queryParameters.Accounts != null)
+        {
+            foreach (Guid accountId in queryParameters.Accounts)
+            {
+                if (!accountMapper.TryToDomain(accountId, out Account? account, out errorResult))
+                {
+                    return errorResult;
+                }
+                accounts = accounts.Append(account);
+            }
+        }
+        PaginatedCollection<Transaction> paginatedResults = transactionRepository.GetManyByAccountingPeriod(accountingPeriod.Id, new GetAccountingPeriodTransactionsRequest
+        {
+            SortBy = sortBy,
+            MinDate = queryParameters.MinDate,
+            MaxDate = queryParameters.MaxDate,
+            Locations = queryParameters.Locations,
+            Accounts = accounts.Any() ? accounts.Select(account => account.Id).ToList() : null,
+            Limit = queryParameters.Limit,
+            Offset = queryParameters.Offset
+        });
+        return Ok(new CollectionModel<TransactionModel>
+        {
+            Items = paginatedResults.Items.Select(transactionMapper.ToModel).ToList(),
+            TotalCount = paginatedResults.TotalCount
+        });
     }
 
     /// <summary>

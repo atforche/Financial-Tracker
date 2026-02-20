@@ -20,8 +20,10 @@ import useGetAllAccountingPeriods from "@accounting-periods/useGetAllAccountingP
 const AccountingPeriodListFrame = function (): JSX.Element {
   const [dialog, setDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const { accountingPeriods, isLoading, error, refetch } =
-    useGetAllAccountingPeriods();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const { accountingPeriods, totalCount, isLoading, error, refetch } =
+    useGetAllAccountingPeriods({ page, rowsPerPage });
 
   const columns: ColumnDefinition<AccountingPeriod>[] = [
     {
@@ -90,8 +92,13 @@ const AccountingPeriodListFrame = function (): JSX.Element {
       columns={columns}
       getId={(accountingPeriod: AccountingPeriod) => accountingPeriod.id}
       data={accountingPeriods}
+      totalCount={totalCount}
       isLoading={isLoading}
       isError={error !== null}
+      page={page}
+      setPage={setPage}
+      rowsPerPage={rowsPerPage}
+      setRowsPerPage={setRowsPerPage}
     >
       {dialog}
       <SuccessAlert message={message} />

@@ -1,16 +1,14 @@
-using Domain.Accounts;
-
-namespace Data.Transactions;
+namespace Models.Transactions;
 
 /// <summary>
-/// Request to retrieve the Transactions within an Accounting Period that match the specified criteria
+/// Model representing the query parameters that can be provided when retrieving Transactions for an Accounting Period
 /// </summary>
-public record GetAccountingPeriodTransactionsRequest
+public class AccountingPeriodTransactionQueryParameterModel
 {
     /// <summary>
     /// Sort order to apply to the results
     /// </summary>
-    public AccountingPeriodTransactionSortOrder? SortBy { get; init; }
+    public AccountingPeriodTransactionSortOrderModel? SortBy { get; init; }
 
     /// <summary>
     /// Minimum date to include in the results
@@ -30,7 +28,7 @@ public record GetAccountingPeriodTransactionsRequest
     /// <summary>
     /// Accounts to include in the results (either as debit or credit accounts)
     /// </summary>
-    public IReadOnlyCollection<AccountId>? Accounts { get; init; }
+    public IReadOnlyCollection<Guid>? Accounts { get; init; }
 
     /// <summary>
     /// Maximum number of results to return

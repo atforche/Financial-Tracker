@@ -6,6 +6,7 @@ using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
+using Models;
 using Models.Accounts;
 using Models.Errors;
 using Models.Funds;
@@ -34,7 +35,7 @@ public sealed class AccountController(
     /// </summary>
     /// <returns>The collection of all Accounts</returns>
     [HttpGet("")]
-    [ProducesResponseType(typeof(IReadOnlyCollection<AccountModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CollectionModel<AccountModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
     public IActionResult GetAll([FromQuery] AccountQueryParameterModel queryParameters)
     {
@@ -59,14 +60,15 @@ public sealed class AccountController(
             }
         }
 
-        foreach (Account account in accountRepository.GetMany(new GetAccountsRequest
+        PaginatedCollection<Account> paginatedResults = accountRepository.GetMany(new GetAccountsRequest
         {
             SortBy = accountSortOrder,
             Names = queryParameters.Names,
             Types = accountTypes.Any() ? accountTypes.ToList() : null,
             Limit = queryParameters.Limit,
             Offset = queryParameters.Offset,
-        }))
+        });
+        foreach (Account account in paginatedResults.Items)
         {
             if (!accountMapper.TryToModel(account, out AccountModel? accountModel, out errorResult))
             {
@@ -74,22 +76,57 @@ public sealed class AccountController(
             }
             results.Add(accountModel);
         }
-        return Ok(results);
+        return Ok(new CollectionModel<AccountModel>
+        {
+            Items = results,
+            TotalCount = paginatedResults.TotalCount
+        });
     }
 
     /// <summary>
     /// Retrieves the Transactions for the Account that matches the provided ID
     /// </summary>
     [HttpGet("{accountId}/transactions")]
-    [ProducesResponseType(typeof(IReadOnlyCollection<TransactionModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetTransactions(Guid accountId)
+    public IActionResult GetTransactions(Guid accountId, [FromQuery] AccountTransactionQueryParameterModel queryParameters)
     {
         if (!accountMapper.TryToDomain(accountId, out Account? account, out IActionResult? errorResult))
         {
             return errorResult;
         }
-        return Ok(transactionRepository.GetManyByAccount(account.Id, new()).Select(transactionMapper.ToModel).ToList());
+        AccountTransactionSortOrder? accountTransactionSortOrder = null;
+        if (queryParameters.SortBy != null && !AccountTransactionSortOrderMapper.TryToData(queryParameters.SortBy.Value, out accountTransactionSortOrder, out errorResult))
+        {
+            return errorResult;
+        }
+        IEnumerable<TransactionType> transactionTypes = [];
+        if (queryParameters.Types != null)
+        {
+            foreach (TransactionTypeModel transactionTypeModel in queryParameters.Types)
+            {
+                if (!TransactionTypeMapper.TryToData(transactionTypeModel, out TransactionType? transactionType, out errorResult))
+                {
+                    return errorResult;
+                }
+                transactionTypes = transactionTypes.Append(transactionType.Value);
+            }
+        }
+        PaginatedCollection<Transaction> paginatedResults = transactionRepository.GetManyByAccount(account.Id, new GetAccountTransactionsRequest
+        {
+            SortBy = accountTransactionSortOrder,
+            MinDate = queryParameters.MinDate,
+            MaxDate = queryParameters.MaxDate,
+            Locations = queryParameters.Locations,
+            Types = transactionTypes.Any() ? transactionTypes.ToList() : null,
+            Limit = queryParameters.Limit,
+            Offset = queryParameters.Offset
+        });
+        return Ok(new CollectionModel<TransactionModel>
+        {
+            Items = paginatedResults.Items.Select(transactionMapper.ToModel).ToList(),
+            TotalCount = paginatedResults.TotalCount
+        });
     }
 
     /// <summary>

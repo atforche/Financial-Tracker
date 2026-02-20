@@ -32,9 +32,13 @@ const AccountingPeriodTransactionListFrame = function ({
 }: AccountingPeriodTransactionListFrameProps): JSX.Element {
   const [childDialog, setChildDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const { transactions, isLoading, error, refetch } =
     useGetAccountingPeriodTransactions({
       accountingPeriod,
+      page,
+      rowsPerPage,
     });
 
   const columns: ColumnDefinition<Transaction>[] = [
@@ -120,8 +124,13 @@ const AccountingPeriodTransactionListFrame = function ({
       columns={columns}
       getId={(transaction: Transaction) => transaction.id}
       data={transactions}
+      totalCount={transactions ? transactions.length : null}
       isLoading={isLoading}
       isError={error !== null}
+      page={page}
+      setPage={setPage}
+      rowsPerPage={rowsPerPage}
+      setRowsPerPage={setRowsPerPage}
     >
       {childDialog}
       <SuccessAlert message={message} />

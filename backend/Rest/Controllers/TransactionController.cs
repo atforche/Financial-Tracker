@@ -26,19 +26,6 @@ public sealed class TransactionController(
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
-    /// Retrieves the Transaction that matches the provided ID
-    /// </summary>
-    [HttpGet("{transactionId}")]
-    public IActionResult Get(Guid transactionId)
-    {
-        if (!transactionMapper.TryToDomain(transactionId, out Transaction? transaction, out IActionResult? errorResult))
-        {
-            return errorResult;
-        }
-        return Ok(transactionMapper.ToModel(transaction));
-    }
-
-    /// <summary>
     /// Creates a new Transaction with the provided properties
     /// </summary>
     [HttpPost("")]

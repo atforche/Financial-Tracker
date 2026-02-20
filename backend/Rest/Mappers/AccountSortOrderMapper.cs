@@ -33,7 +33,7 @@ internal sealed class AccountSortOrderMapper
         };
         if (accountSortOrder == null)
         {
-            errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Unrecognized Account Sort Order Model: {accountSortOrderModel}", []));
+            errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Unrecognized Account Sort Order: {accountSortOrderModel}", []));
             return false;
         }
         return true;

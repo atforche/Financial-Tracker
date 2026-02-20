@@ -31,11 +31,15 @@ public class AccountRepository(DatabaseContext databaseContext) : IAccountReposi
     /// <summary>
     /// Gets the Accounts that match the specified criteria
     /// </summary>
-    public IReadOnlyCollection<Account> GetMany(GetAccountsRequest request)
+    public PaginatedCollection<Account> GetMany(GetAccountsRequest request)
     {
         List<AccountSortModel> filteredAccounts = new AccountFilterer(databaseContext).Get(request);
         filteredAccounts.Sort(new AccountComparer(request.SortBy));
-        return GetPagedAccounts(filteredAccounts.Select(model => model.Account).ToList(), request.Limit, request.Offset);
+        return new PaginatedCollection<Account>
+        {
+            Items = GetPagedAccounts(filteredAccounts.Select(model => model.Account).ToList(), request.Limit, request.Offset),
+            TotalCount = filteredAccounts.Count,
+        };
     }
 
     /// <summary>

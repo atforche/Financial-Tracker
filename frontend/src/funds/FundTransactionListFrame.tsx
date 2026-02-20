@@ -61,9 +61,14 @@ const FundTransactionListFrame = function ({
 }: FundTransactionListFrameProps): JSX.Element {
   const [childDialog, setChildDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const { transactions, isLoading, error, refetch } = useGetFundTransactions({
-    fund,
-  });
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const { transactions, totalCount, isLoading, error, refetch } =
+    useGetFundTransactions({
+      fund,
+      page,
+      rowsPerPage,
+    });
 
   const columns: ColumnDefinition<Transaction>[] = [
     {
@@ -144,8 +149,13 @@ const FundTransactionListFrame = function ({
       columns={columns}
       getId={(transaction: Transaction) => transaction.id}
       data={transactions}
+      totalCount={totalCount}
       isLoading={isLoading}
       isError={error !== null}
+      page={page}
+      setPage={setPage}
+      rowsPerPage={rowsPerPage}
+      setRowsPerPage={setRowsPerPage}
     >
       {childDialog}
       <SuccessAlert message={message} />
