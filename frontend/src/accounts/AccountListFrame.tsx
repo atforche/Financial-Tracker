@@ -95,6 +95,7 @@ const AccountListFrame = function (): JSX.Element {
           }}
         />
       ),
+      alignment: "right",
     },
   ];
 

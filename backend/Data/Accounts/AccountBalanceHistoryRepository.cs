@@ -23,6 +23,11 @@ public class AccountBalanceHistoryRepository(DatabaseContext databaseContext) : 
             .Where(history => history.AccountId == accountId)
             .OrderByDescending(history => history.Date)
             .ThenByDescending(history => history.Sequence)
+            .FirstOrDefault()
+        ?? databaseContext.AccountBalanceHistories.Local
+            .Where(history => history.AccountId == accountId)
+            .OrderByDescending(history => history.Date)
+            .ThenByDescending(history => history.Sequence)
             .First();
 
     /// <inheritdoc/>
