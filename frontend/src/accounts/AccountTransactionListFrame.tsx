@@ -1,9 +1,10 @@
+import { type Account, AccountTransactionSortOrder } from "@accounts/ApiTypes";
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type JSX, useState } from "react";
-import type { Account } from "@accounts/ApiTypes";
 import ColumnButton from "@framework/listframe/ColumnButton";
 import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
 import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
+import ColumnSortType from "@framework/listframe/ColumnSortType";
 import CreateTransactionDialog from "@transactions/CreateTransactionDialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import ListFrame from "@framework/listframe/ListFrame";
@@ -51,11 +52,15 @@ const AccountTransactionListFrame = function ({
 }: AccountTransactionListFrameProps): JSX.Element {
   const [childDialog, setChildDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<AccountTransactionSortOrder | null>(
+    null,
+  );
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const { transactions, totalCount, isLoading, error, refetch } =
     useGetAccountTransactions({
       account,
+      sortBy,
       page,
       rowsPerPage,
     });
@@ -68,23 +73,83 @@ const AccountTransactionListFrame = function ({
         transaction.debitAccount?.accountId === account.id
           ? (transaction.debitAccount.postedDate ?? "Pending")
           : (transaction.creditAccount?.postedDate ?? "Pending"),
+      sortType:
+        sortBy === AccountTransactionSortOrder.Date
+          ? ColumnSortType.Ascending
+          : sortBy === AccountTransactionSortOrder.DateDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(AccountTransactionSortOrder.Date);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(AccountTransactionSortOrder.DateDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
     },
     {
       name: "location",
       headerContent: "Location",
       getBodyContent: (transaction: Transaction) => transaction.location,
+      sortType:
+        sortBy === AccountTransactionSortOrder.Location
+          ? ColumnSortType.Ascending
+          : sortBy === AccountTransactionSortOrder.LocationDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(AccountTransactionSortOrder.Location);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(AccountTransactionSortOrder.LocationDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
     },
     {
       name: "type",
       headerContent: "Type",
       getBodyContent: (transaction: Transaction) =>
         getTransactionType(transaction, account.id),
+      sortType:
+        sortBy === AccountTransactionSortOrder.Type
+          ? ColumnSortType.Ascending
+          : sortBy === AccountTransactionSortOrder.TypeDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(AccountTransactionSortOrder.Type);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(AccountTransactionSortOrder.TypeDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
     },
     {
       name: "amount",
       headerContent: "Amount",
       getBodyContent: (transaction: Transaction) =>
         formatCurrency(transaction.amount),
+      sortType:
+        sortBy === AccountTransactionSortOrder.Amount
+          ? ColumnSortType.Ascending
+          : sortBy === AccountTransactionSortOrder.AmountDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(AccountTransactionSortOrder.Amount);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(AccountTransactionSortOrder.AmountDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
     },
     {
       name: "actions",

@@ -1,9 +1,13 @@
+import {
+  type AccountingPeriod,
+  AccountingPeriodTransactionSortOrder,
+} from "@accounting-periods/ApiTypes";
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type JSX, useState } from "react";
-import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
 import ColumnButton from "@framework/listframe/ColumnButton";
 import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
 import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
+import ColumnSortType from "@framework/listframe/ColumnSortType";
 import CreateTransactionDialog from "@transactions/CreateTransactionDialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import ListFrame from "@framework/listframe/ListFrame";
@@ -32,11 +36,14 @@ const AccountingPeriodTransactionListFrame = function ({
 }: AccountingPeriodTransactionListFrameProps): JSX.Element {
   const [childDialog, setChildDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [sortBy, setSortBy] =
+    useState<AccountingPeriodTransactionSortOrder | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const { transactions, isLoading, error, refetch } =
     useGetAccountingPeriodTransactions({
       accountingPeriod,
+      sortBy,
       page,
       rowsPerPage,
     });
@@ -46,29 +53,110 @@ const AccountingPeriodTransactionListFrame = function ({
       name: "date",
       headerContent: "Date",
       getBodyContent: (transaction: Transaction) => transaction.date,
+      sortType:
+        sortBy === AccountingPeriodTransactionSortOrder.Date
+          ? ColumnSortType.Ascending
+          : sortBy === AccountingPeriodTransactionSortOrder.DateDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(AccountingPeriodTransactionSortOrder.Date);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(AccountingPeriodTransactionSortOrder.DateDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
     },
     {
       name: "location",
       headerContent: "Location",
       getBodyContent: (transaction: Transaction) => transaction.location,
+      sortType:
+        sortBy === AccountingPeriodTransactionSortOrder.Location
+          ? ColumnSortType.Ascending
+          : sortBy === AccountingPeriodTransactionSortOrder.LocationDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(AccountingPeriodTransactionSortOrder.Location);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(AccountingPeriodTransactionSortOrder.LocationDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
     },
     {
       name: "debitAccount",
       headerContent: "Debit Account",
       getBodyContent: (transaction: Transaction) =>
         transaction.debitAccount?.accountName ?? "",
+      sortType:
+        sortBy === AccountingPeriodTransactionSortOrder.DebitAccount
+          ? ColumnSortType.Ascending
+          : sortBy ===
+              AccountingPeriodTransactionSortOrder.DebitAccountDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(AccountingPeriodTransactionSortOrder.DebitAccount);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(
+            AccountingPeriodTransactionSortOrder.DebitAccountDescending,
+          );
+        } else {
+          setSortBy(null);
+        }
+      },
     },
     {
       name: "creditAccount",
       headerContent: "Credit Account",
       getBodyContent: (transaction: Transaction) =>
         transaction.creditAccount?.accountName ?? "",
+      sortType:
+        sortBy === AccountingPeriodTransactionSortOrder.CreditAccount
+          ? ColumnSortType.Ascending
+          : sortBy ===
+              AccountingPeriodTransactionSortOrder.CreditAccountDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(AccountingPeriodTransactionSortOrder.CreditAccount);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(
+            AccountingPeriodTransactionSortOrder.CreditAccountDescending,
+          );
+        } else {
+          setSortBy(null);
+        }
+      },
     },
     {
       name: "amount",
       headerContent: "Amount",
       getBodyContent: (transaction: Transaction) =>
         formatCurrency(transaction.amount),
+      sortType:
+        sortBy === AccountingPeriodTransactionSortOrder.Amount
+          ? ColumnSortType.Ascending
+          : sortBy === AccountingPeriodTransactionSortOrder.AmountDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(AccountingPeriodTransactionSortOrder.Amount);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(AccountingPeriodTransactionSortOrder.AmountDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
     },
     {
       name: "actions",

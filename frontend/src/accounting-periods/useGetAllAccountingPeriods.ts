@@ -1,4 +1,7 @@
-import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
+import type {
+  AccountingPeriod,
+  AccountingPeriodSortOrder,
+} from "@accounting-periods/ApiTypes";
 import type { ApiError } from "@data/ApiError";
 import getApiClient from "@data/getApiClient";
 import { useCallback } from "react";
@@ -8,6 +11,7 @@ import useQuery from "@data/useQuery";
  * Arguments for the useGetAllAccountingPeriods hook.
  */
 interface UseGetAllAccountingPeriodsArgs {
+  readonly sortBy: AccountingPeriodSortOrder | null;
   readonly page: number;
   readonly rowsPerPage: number;
 }
@@ -18,6 +22,7 @@ interface UseGetAllAccountingPeriodsArgs {
  * @returns Retrieved Accounting Periods, loading state, current error, and function to refetch the Accounting Periods.
  */
 const useGetAllAccountingPeriods = function ({
+  sortBy,
   page,
   rowsPerPage,
 }: UseGetAllAccountingPeriodsArgs): {
@@ -34,6 +39,7 @@ const useGetAllAccountingPeriods = function ({
     const { data, error } = await client.GET("/accounting-periods", {
       params: {
         query: {
+          SortBy: sortBy,
           Limit: rowsPerPage,
           Offset: page * rowsPerPage,
         },
@@ -43,7 +49,7 @@ const useGetAllAccountingPeriods = function ({
       return error;
     }
     return data;
-  }, [page, rowsPerPage]);
+  }, [sortBy, page, rowsPerPage]);
 
   const { data, isLoading, error, refetch } = useQuery<{
     items: AccountingPeriod[];

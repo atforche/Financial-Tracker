@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
+import ColumnHeader from "@framework/listframe/ColumnHeader";
 import type { JSX } from "react";
 
 /** Height of each row in the list frame. */
@@ -20,9 +21,6 @@ const listFrameRowHeight = 50;
 
 /** Options for the number of rows per page in the list frame. */
 const rowsPerPageOptions = [5, 10, 25];
-
-/** Default width for a column in the list frame. */
-const defaultColumnWidth = 100;
 
 /**
  * Props for the ListFrame component.
@@ -77,17 +75,7 @@ const ListFrame = function <T>({
             <TableHead>
               <TableRow>
                 {columns.map((column) => (
-                  <TableCell
-                    key={column.name}
-                    align={column.alignment ?? "left"}
-                    sx={{
-                      maxWidth: column.maxWidth ?? defaultColumnWidth,
-                      backgroundColor: "primary.main",
-                      color: "white",
-                    }}
-                  >
-                    {column.headerContent}
-                  </TableCell>
+                  <ColumnHeader key={column.name} column={column} />
                 ))}
               </TableRow>
             </TableHead>

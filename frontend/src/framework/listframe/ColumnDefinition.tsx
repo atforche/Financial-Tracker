@@ -1,3 +1,4 @@
+import type ColumnSortType from "@framework/listframe/ColumnSortType";
 import type { JSX } from "react";
 
 /**
@@ -8,6 +9,8 @@ interface ColumnDefinition<T> {
   readonly name: string;
   readonly headerContent: string | JSX.Element;
   readonly getBodyContent: (item: T) => string | JSX.Element;
+  readonly sortType?: ColumnSortType | null;
+  readonly onSort?: ((sortType: ColumnSortType | null) => void) | null;
   readonly alignment?: "center" | "left" | "right";
   readonly maxWidth?: number;
 }

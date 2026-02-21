@@ -1,10 +1,11 @@
+import { type Account, AccountSortOrder } from "@accounts/ApiTypes";
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type JSX, useState } from "react";
-import type { Account } from "@accounts/ApiTypes";
 import AccountDialog from "@accounts/AccountDialog";
 import ColumnButton from "@framework/listframe/ColumnButton";
 import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
 import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
+import ColumnSortType from "@framework/listframe/ColumnSortType";
 import CreateAccountDialog from "@accounts/CreateAccountDialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import ListFrame from "@framework/listframe/ListFrame";
@@ -20,10 +21,11 @@ import useGetAllAccounts from "@accounts/useGetAllAccounts";
 const AccountListFrame = function (): JSX.Element {
   const [dialog, setDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<AccountSortOrder | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const { accounts, totalCount, isLoading, error, refetch } = useGetAllAccounts(
-    { page, rowsPerPage },
+    { sortBy, page, rowsPerPage },
   );
 
   const columns: ColumnDefinition<Account>[] = [
@@ -31,17 +33,62 @@ const AccountListFrame = function (): JSX.Element {
       name: "name",
       headerContent: "Name",
       getBodyContent: (account: Account) => account.name,
+      sortType:
+        sortBy === AccountSortOrder.Name
+          ? ColumnSortType.Ascending
+          : sortBy === AccountSortOrder.NameDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(AccountSortOrder.Name);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(AccountSortOrder.NameDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
     },
     {
       name: "type",
       headerContent: "Type",
       getBodyContent: (account: Account) => account.type,
+      sortType:
+        sortBy === AccountSortOrder.Type
+          ? ColumnSortType.Ascending
+          : sortBy === AccountSortOrder.TypeDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(AccountSortOrder.Type);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(AccountSortOrder.TypeDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
     },
     {
       name: "balance",
       headerContent: "Posted Balance",
       getBodyContent: (account: Account) =>
         formatCurrency(account.currentBalance.postedBalance),
+      sortType:
+        sortBy === AccountSortOrder.PostedBalance
+          ? ColumnSortType.Ascending
+          : sortBy === AccountSortOrder.PostedBalanceDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(AccountSortOrder.PostedBalance);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(AccountSortOrder.PostedBalanceDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
     },
     {
       name: "available",
@@ -51,6 +98,21 @@ const AccountListFrame = function (): JSX.Element {
           account.currentBalance.postedBalance -
             account.currentBalance.pendingDebitAmount,
         ),
+      sortType:
+        sortBy === AccountSortOrder.AvailableToSpend
+          ? ColumnSortType.Ascending
+          : sortBy === AccountSortOrder.AvailableToSpendDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(AccountSortOrder.AvailableToSpend);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(AccountSortOrder.AvailableToSpendDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
     },
     {
       name: "actions",

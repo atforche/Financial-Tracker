@@ -29,6 +29,7 @@ const FundEntryField = function ({
   filter = null,
 }: FundEntryFieldProps): JSX.Element {
   const { funds, isLoading, error } = useGetAllFunds({
+    sortBy: null,
     page: null,
     rowsPerPage: null,
   });

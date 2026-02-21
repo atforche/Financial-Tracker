@@ -23,6 +23,7 @@ const AccountEntryField = function ({
   setValue = null,
 }: AccountEntryFieldProps): JSX.Element {
   const { accounts, isLoading, error } = useGetAllAccounts({
+    sortBy: null,
     page: null,
     rowsPerPage: null,
   });

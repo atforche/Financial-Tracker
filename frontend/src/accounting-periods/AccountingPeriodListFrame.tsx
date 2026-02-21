@@ -1,11 +1,15 @@
+import {
+  type AccountingPeriod,
+  AccountingPeriodSortOrder,
+} from "@accounting-periods/ApiTypes";
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type JSX, useState } from "react";
-import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
 import AccountingPeriodDialog from "@accounting-periods/AccountingPeriodDialog";
 import { Checkbox } from "@mui/material";
 import ColumnButton from "@framework/listframe/ColumnButton";
 import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
 import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
+import ColumnSortType from "@framework/listframe/ColumnSortType";
 import CreateAccountingPeriodDialog from "@accounting-periods/CreateAccountingPeriodDialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import ListFrame from "@framework/listframe/ListFrame";
@@ -20,10 +24,11 @@ import useGetAllAccountingPeriods from "@accounting-periods/useGetAllAccountingP
 const AccountingPeriodListFrame = function (): JSX.Element {
   const [dialog, setDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<AccountingPeriodSortOrder | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const { accountingPeriods, totalCount, isLoading, error, refetch } =
-    useGetAllAccountingPeriods({ page, rowsPerPage });
+    useGetAllAccountingPeriods({ sortBy, page, rowsPerPage });
 
   const columns: ColumnDefinition<AccountingPeriod>[] = [
     {
@@ -31,6 +36,21 @@ const AccountingPeriodListFrame = function (): JSX.Element {
       headerContent: "Period",
       getBodyContent: (accountingPeriod: AccountingPeriod) =>
         accountingPeriod.name,
+      sortType:
+        sortBy === AccountingPeriodSortOrder.Date
+          ? ColumnSortType.Ascending
+          : sortBy === AccountingPeriodSortOrder.DateDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(AccountingPeriodSortOrder.Date);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(AccountingPeriodSortOrder.DateDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
     },
     {
       name: "isOpen",
@@ -38,6 +58,21 @@ const AccountingPeriodListFrame = function (): JSX.Element {
       getBodyContent: (accountingPeriod: AccountingPeriod) => (
         <Checkbox checked={accountingPeriod.isOpen} />
       ),
+      sortType:
+        sortBy === AccountingPeriodSortOrder.IsOpen
+          ? ColumnSortType.Ascending
+          : sortBy === AccountingPeriodSortOrder.IsOpenDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(AccountingPeriodSortOrder.IsOpen);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(AccountingPeriodSortOrder.IsOpenDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
     },
     {
       name: "actions",

@@ -1,4 +1,7 @@
-import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
+import type {
+  AccountingPeriod,
+  AccountingPeriodTransactionSortOrder,
+} from "@accounting-periods/ApiTypes";
 import type { ApiError } from "@data/ApiError";
 import type { Transaction } from "@transactions/ApiTypes";
 import getApiClient from "@data/getApiClient";
@@ -10,6 +13,7 @@ import useQuery from "@data/useQuery";
  */
 interface UseGetAccountingPeriodTransactionsArgs {
   readonly accountingPeriod: AccountingPeriod;
+  readonly sortBy: AccountingPeriodTransactionSortOrder | null;
   readonly page: number;
   readonly rowsPerPage: number;
 }
@@ -21,6 +25,7 @@ interface UseGetAccountingPeriodTransactionsArgs {
  */
 const useGetAccountingPeriodTransactions = function ({
   accountingPeriod,
+  sortBy,
   page,
   rowsPerPage,
 }: UseGetAccountingPeriodTransactionsArgs): {
@@ -42,6 +47,7 @@ const useGetAccountingPeriodTransactions = function ({
             accountingPeriodId: accountingPeriod.id,
           },
           query: {
+            SortBy: sortBy,
             Limit: rowsPerPage,
             Offset: page * rowsPerPage,
           },
@@ -52,7 +58,7 @@ const useGetAccountingPeriodTransactions = function ({
       return error;
     }
     return data;
-  }, [accountingPeriod.id, page, rowsPerPage]);
+  }, [accountingPeriod.id, sortBy, page, rowsPerPage]);
 
   const { data, isLoading, error, refetch } = useQuery<{
     items: Transaction[];

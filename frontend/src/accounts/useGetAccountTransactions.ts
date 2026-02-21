@@ -1,4 +1,4 @@
-import type { Account } from "@accounts/ApiTypes";
+import type { Account, AccountTransactionSortOrder } from "@accounts/ApiTypes";
 import type { ApiError } from "@data/ApiError";
 import type { Transaction } from "@transactions/ApiTypes";
 import getApiClient from "@data/getApiClient";
@@ -10,6 +10,7 @@ import useQuery from "@data/useQuery";
  */
 interface UseGetAccountTransactionsArgs {
   readonly account: Account;
+  readonly sortBy: AccountTransactionSortOrder | null;
   readonly page: number;
   readonly rowsPerPage: number;
 }
@@ -21,6 +22,7 @@ interface UseGetAccountTransactionsArgs {
  */
 const useGetAccountTransactions = function ({
   account,
+  sortBy,
   page,
   rowsPerPage,
 }: UseGetAccountTransactionsArgs): {
@@ -42,6 +44,7 @@ const useGetAccountTransactions = function ({
             accountId: account.id,
           },
           query: {
+            SortBy: sortBy,
             Limit: rowsPerPage,
             Offset: page * rowsPerPage,
           },
@@ -52,7 +55,7 @@ const useGetAccountTransactions = function ({
       return error;
     }
     return data;
-  }, [account.id, page, rowsPerPage]);
+  }, [account.id, sortBy, page, rowsPerPage]);
 
   const { data, isLoading, error, refetch } = useQuery<{
     items: Transaction[];

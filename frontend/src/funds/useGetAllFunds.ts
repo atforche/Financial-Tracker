@@ -1,5 +1,5 @@
+import type { Fund, FundSortOrder } from "@funds/ApiTypes";
 import type { ApiError } from "@data/ApiError";
-import type { Fund } from "@funds/ApiTypes";
 import getApiClient from "@data/getApiClient";
 import { useCallback } from "react";
 import useQuery from "@data/useQuery";
@@ -8,6 +8,7 @@ import useQuery from "@data/useQuery";
  * Arguments for the useGetAllFunds hook.
  */
 interface UseGetAllFundsArgs {
+  readonly sortBy: FundSortOrder | null;
   readonly page: number | null;
   readonly rowsPerPage: number | null;
 }
@@ -17,7 +18,11 @@ interface UseGetAllFundsArgs {
  * @param args - The arguments for the useGetAllFunds hook.
  * @returns Retrieved Funds, loading state, current error, and function to refetch the Funds.
  */
-const useGetAllFunds = function ({ page, rowsPerPage }: UseGetAllFundsArgs): {
+const useGetAllFunds = function ({
+  sortBy,
+  page,
+  rowsPerPage,
+}: UseGetAllFundsArgs): {
   funds: Fund[] | null;
   totalCount: number | null;
   isLoading: boolean;
@@ -32,7 +37,7 @@ const useGetAllFunds = function ({ page, rowsPerPage }: UseGetAllFundsArgs): {
       params: {
         query:
           page !== null && rowsPerPage !== null
-            ? { Limit: rowsPerPage, Offset: page * rowsPerPage }
+            ? { SortBy: sortBy, Limit: rowsPerPage, Offset: page * rowsPerPage }
             : {},
       },
     });
@@ -40,7 +45,7 @@ const useGetAllFunds = function ({ page, rowsPerPage }: UseGetAllFundsArgs): {
       return error;
     }
     return data;
-  }, [page, rowsPerPage]);
+  }, [sortBy, page, rowsPerPage]);
 
   const { data, isLoading, error, refetch } = useQuery<{
     items: Fund[];

@@ -1,5 +1,5 @@
+import type { Fund, FundTransactionSortOrder } from "@funds/ApiTypes";
 import type { ApiError } from "@data/ApiError";
-import type { Fund } from "@funds/ApiTypes";
 import type { Transaction } from "@transactions/ApiTypes";
 import getApiClient from "@data/getApiClient";
 import { useCallback } from "react";
@@ -10,6 +10,7 @@ import useQuery from "@data/useQuery";
  */
 interface UseGetFundTransactionsArgs {
   readonly fund: Fund;
+  readonly sortBy: FundTransactionSortOrder | null;
   readonly page: number;
   readonly rowsPerPage: number;
 }
@@ -21,6 +22,7 @@ interface UseGetFundTransactionsArgs {
  */
 const useGetFundTransactions = function ({
   fund,
+  sortBy,
   page,
   rowsPerPage,
 }: UseGetFundTransactionsArgs): {
@@ -40,6 +42,7 @@ const useGetFundTransactions = function ({
           fundId: fund.id,
         },
         query: {
+          SortBy: sortBy,
           Limit: rowsPerPage,
           Offset: page * rowsPerPage,
         },
@@ -49,7 +52,7 @@ const useGetFundTransactions = function ({
       return error;
     }
     return data;
-  }, [fund.id, page, rowsPerPage]);
+  }, [fund.id, sortBy, page, rowsPerPage]);
 
   const { data, isLoading, error, refetch } = useQuery<{
     items: Transaction[];

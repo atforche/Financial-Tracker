@@ -1,4 +1,4 @@
-import type { Account } from "@accounts/ApiTypes";
+import type { Account, AccountSortOrder } from "@accounts/ApiTypes";
 import type { ApiError } from "@data/ApiError";
 import getApiClient from "@data/getApiClient";
 import { useCallback } from "react";
@@ -8,6 +8,7 @@ import useQuery from "@data/useQuery";
  * Arguments for the useGetAllAccounts hook.
  */
 interface UseGetAllAccountsArgs {
+  readonly sortBy: AccountSortOrder | null;
   readonly page: number | null;
   readonly rowsPerPage: number | null;
 }
@@ -18,6 +19,7 @@ interface UseGetAllAccountsArgs {
  * @returns Retrieved Accounts, loading state, current error, and function to refetch the Accounts.
  */
 const useGetAllAccounts = function ({
+  sortBy,
   page,
   rowsPerPage,
 }: UseGetAllAccountsArgs): {
@@ -35,7 +37,7 @@ const useGetAllAccounts = function ({
       params: {
         query:
           page !== null && rowsPerPage !== null
-            ? { Limit: rowsPerPage, Offset: page * rowsPerPage }
+            ? { SortBy: sortBy, Limit: rowsPerPage, Offset: page * rowsPerPage }
             : {},
       },
     });
@@ -43,7 +45,7 @@ const useGetAllAccounts = function ({
       return error;
     }
     return data;
-  }, [page, rowsPerPage]);
+  }, [sortBy, page, rowsPerPage]);
 
   const { data, isLoading, error, refetch } = useQuery<{
     items: Account[];

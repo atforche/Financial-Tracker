@@ -1,4 +1,9 @@
-import { AccountTypeModel, type components } from "@data/api";
+import {
+  AccountSortOrderModel,
+  AccountTransactionSortOrderModel,
+  AccountTypeModel,
+  type components,
+} from "@data/api";
 
 /**
  * Type representing an Account.
@@ -23,4 +28,6 @@ export {
   AccountTypeModel as AccountType,
   type CreateAccountRequest,
   type AccountIdentifier,
+  AccountSortOrderModel as AccountSortOrder,
+  AccountTransactionSortOrderModel as AccountTransactionSortOrder,
 };
