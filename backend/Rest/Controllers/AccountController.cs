@@ -172,7 +172,10 @@ public sealed class AccountController(
             return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to create Account.", exceptions));
         }
         accountRepository.Add(newAccount);
-        transactionRepository.Add(initialTransaction);
+        if (initialTransaction != null)
+        {
+            transactionRepository.Add(initialTransaction);
+        }
         if (!accountMapper.TryToModel(newAccount, out AccountModel? accountModel, out errorResult))
         {
             return errorResult;

@@ -41,6 +41,12 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("InitialAccountingPeriodId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("InitialDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid?>("InitialTransaction")
                         .HasColumnType("TEXT");
 
@@ -140,7 +146,7 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("InitialAccountTransaction")
+                    b.Property<Guid?>("GeneratedByAccountId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Location")

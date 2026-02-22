@@ -47,6 +47,8 @@ namespace Data.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Type = table.Column<string>(type: "TEXT", nullable: false),
+                    InitialAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    InitialDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
                     InitialTransaction = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
@@ -159,7 +161,7 @@ namespace Data.Migrations
                     DebitAccount_PostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     CreditAccount_AccountId = table.Column<Guid>(type: "TEXT", nullable: true),
                     CreditAccount_PostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
-                    InitialAccountTransaction = table.Column<Guid>(type: "TEXT", nullable: true)
+                    GeneratedByAccountId = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {

@@ -15,7 +15,7 @@ public interface IAccountBalanceHistoryRepository
     /// <summary>
     /// Gets the latest Account Balance History entry for the specified Account ID
     /// </summary>
-    AccountBalanceHistory GetLatestForAccount(AccountId accountId);
+    AccountBalanceHistory? GetLatestForAccount(AccountId accountId);
 
     /// <summary>
     /// Gets all Account Balance History entries for the specified Transaction ID

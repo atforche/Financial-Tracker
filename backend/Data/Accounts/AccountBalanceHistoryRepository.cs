@@ -18,7 +18,7 @@ public class AccountBalanceHistoryRepository(DatabaseContext databaseContext) : 
     }
 
     /// <inheritdoc/>
-    public AccountBalanceHistory GetLatestForAccount(AccountId accountId) =>
+    public AccountBalanceHistory? GetLatestForAccount(AccountId accountId) =>
         databaseContext.AccountBalanceHistories
             .Where(history => history.AccountId == accountId)
             .OrderByDescending(history => history.Date)
@@ -28,7 +28,7 @@ public class AccountBalanceHistoryRepository(DatabaseContext databaseContext) : 
             .Where(history => history.AccountId == accountId)
             .OrderByDescending(history => history.Date)
             .ThenByDescending(history => history.Sequence)
-            .First();
+            .FirstOrDefault();
 
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountBalanceHistory> GetAllByTransactionId(TransactionId transactionId) =>

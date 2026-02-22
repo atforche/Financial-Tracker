@@ -11,7 +11,8 @@ public class AccountBalanceService(IAccountBalanceHistoryRepository accountBalan
     /// <summary>
     /// Gets the current balance for the provided Account
     /// </summary>
-    public AccountBalance GetCurrentBalance(AccountId accountId) => accountBalanceHistoryRepository.GetLatestForAccount(accountId).ToAccountBalance();
+    public AccountBalance GetCurrentBalance(AccountId accountId) =>
+        accountBalanceHistoryRepository.GetLatestForAccount(accountId)?.ToAccountBalance() ?? new AccountBalance(accountId, [], [], []);
 
     /// <summary>
     /// Gets the Account Balance prior to the provided Transaction

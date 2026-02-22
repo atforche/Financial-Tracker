@@ -131,8 +131,7 @@ const CreateAccountDialog = function ({
               accountName.trim() === "" ||
               accountType === null ||
               accountingPeriod === null ||
-              addDate === null ||
-              fundAmounts.length === 0
+              addDate === null
             }
             variant="contained"
             sx={{ margin: "15px" }}

@@ -58,9 +58,9 @@ public class Transaction : Entity<TransactionId>
     public TransactionAccount? CreditAccount { get; internal set; }
 
     /// <summary>
-    /// Account ID of the Account that created this transaction when it was created, or null
+    /// Account ID of the Account that generated this transaction when it was created, or null
     /// </summary>
-    public AccountId? InitialAccountTransaction { get; internal set; }
+    public AccountId? GeneratedByAccountId { get; internal set; }
 
     /// <summary>
     /// Attempts to apply this Transaction to the provided existing Account Balance as of the specified date
@@ -135,7 +135,7 @@ public class Transaction : Entity<TransactionId>
         Description = request.Description;
         DebitAccount = request.DebitAccount != null ? new TransactionAccount(this, request.DebitAccount.Account.Id, request.DebitAccount.FundAmounts) : null;
         CreditAccount = request.CreditAccount != null ? new TransactionAccount(this, request.CreditAccount.Account.Id, request.CreditAccount.FundAmounts) : null;
-        InitialAccountTransaction = request.IsInitialTransactionForCreditAccount ? CreditAccount?.AccountId : null;
+        GeneratedByAccountId = request.IsInitialTransactionForAccount ? CreditAccount?.AccountId : null;
     }
 
     /// <summary>

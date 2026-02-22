@@ -161,7 +161,7 @@ public class TransactionService(
     {
         exceptions = [];
 
-        if (accountBeingDeleted != transaction.InitialAccountTransaction && !ValidateNotInitialTransactionForAccount(transaction, out IEnumerable<Exception> initialTransactionExceptions))
+        if (accountBeingDeleted != transaction.GeneratedByAccountId && !ValidateNotInitialTransactionForAccount(transaction, out IEnumerable<Exception> initialTransactionExceptions))
         {
             exceptions = exceptions.Concat(initialTransactionExceptions);
         }
@@ -217,19 +217,17 @@ public class TransactionService(
         {
             exceptions = exceptions.Concat(accountingPeriodExceptions);
         }
-        if (request.DebitAccount?.Account.InitialTransaction != null)
+        if (request.DebitAccount != null)
         {
-            Transaction debitAccountInitialTransaction = transactionRepository.GetById(request.DebitAccount.Account.InitialTransaction);
-            AccountingPeriod debitAccountInitialPeriod = accountingPeriodRepository.GetById(debitAccountInitialTransaction.AccountingPeriod);
+            AccountingPeriod debitAccountInitialPeriod = accountingPeriodRepository.GetById(request.DebitAccount.Account.InitialAccountingPeriodId);
             if (accountingPeriod.PeriodStartDate < debitAccountInitialPeriod.PeriodStartDate)
             {
                 exceptions = exceptions.Append(new InvalidAccountingPeriodException("The Debit Account did not exist during the provided Accounting Period."));
             }
         }
-        if (request.CreditAccount?.Account.InitialTransaction != null)
+        if (request.CreditAccount != null)
         {
-            Transaction creditAccountInitialTransaction = transactionRepository.GetById(request.CreditAccount.Account.InitialTransaction);
-            AccountingPeriod creditAccountInitialPeriod = accountingPeriodRepository.GetById(creditAccountInitialTransaction.AccountingPeriod);
+            AccountingPeriod creditAccountInitialPeriod = accountingPeriodRepository.GetById(request.CreditAccount.Account.InitialAccountingPeriodId);
             if (accountingPeriod.PeriodStartDate < creditAccountInitialPeriod.PeriodStartDate)
             {
                 exceptions = exceptions.Append(new InvalidAccountingPeriodException("The Credit Account did not exist during the provided Accounting Period."));
@@ -260,21 +258,13 @@ public class TransactionService(
         {
             exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction Date must be in a month adjacent to the Accounting Period month."));
         }
-        if (debitAccount?.InitialTransaction != null)
+        if (debitAccount != null && date < debitAccount.InitialDate)
         {
-            Transaction debitAccountInitialTransaction = transactionRepository.GetById(debitAccount.InitialTransaction);
-            if (date < debitAccountInitialTransaction.Date)
-            {
-                exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction Date is before the Debit Account was created."));
-            }
+            exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction Date is before the Debit Account was created."));
         }
-        if (creditAccount?.InitialTransaction != null)
+        if (creditAccount != null && date < creditAccount.InitialDate)
         {
-            Transaction creditAccountInitialTransaction = transactionRepository.GetById(creditAccount.InitialTransaction);
-            if (date < creditAccountInitialTransaction.Date)
-            {
-                exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction Date is before the Credit Account was created."));
-            }
+            exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction Date is before the Credit Account was created."));
         }
         return !exceptions.Any();
     }
@@ -407,7 +397,7 @@ public class TransactionService(
     {
         exceptions = [];
 
-        if (transaction.InitialAccountTransaction != null)
+        if (transaction.GeneratedByAccountId != null)
         {
             exceptions = exceptions.Append(new InvalidAccountException("The Transaction is the initial transaction for an Account."));
             return false;

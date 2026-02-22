@@ -23,6 +23,8 @@ CREATE TABLE "Accounts" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_Accounts" PRIMARY KEY,
     "Name" TEXT NOT NULL,
     "Type" TEXT NOT NULL,
+    "InitialAccountingPeriodId" TEXT NOT NULL,
+    "InitialDate" TEXT NOT NULL,
     "InitialTransaction" TEXT NULL
 );
 
@@ -75,7 +77,7 @@ CREATE TABLE "Transactions" (
     "DebitAccount_PostedDate" TEXT NULL,
     "CreditAccount_AccountId" TEXT NULL,
     "CreditAccount_PostedDate" TEXT NULL,
-    "InitialAccountTransaction" TEXT NULL,
+    "GeneratedByAccountId" TEXT NULL,
     CONSTRAINT "FK_Transactions_Accounts_CreditAccount_AccountId" FOREIGN KEY ("CreditAccount_AccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
     CONSTRAINT "FK_Transactions_Accounts_DebitAccount_AccountId" FOREIGN KEY ("DebitAccount_AccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE
 );
@@ -145,7 +147,7 @@ CREATE INDEX "IX_Transactions_CreditAccount_AccountId" ON "Transactions" ("Credi
 CREATE INDEX "IX_Transactions_DebitAccount_AccountId" ON "Transactions" ("DebitAccount_AccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260212002508_InitialCreate', '10.0.2');
+VALUES ('20260222011142_InitialCreate', '10.0.2');
 
 COMMIT;
 

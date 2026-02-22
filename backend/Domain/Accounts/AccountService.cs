@@ -18,7 +18,7 @@ public class AccountService(
     public bool TryCreate(
         CreateAccountRequest request,
         [NotNullWhen(true)] out Account? account,
-        [NotNullWhen(true)] out Transaction? initialTransaction,
+        out Transaction? initialTransaction,
         out IEnumerable<Exception> exceptions)
     {
         account = null;
@@ -28,33 +28,36 @@ public class AccountService(
         {
             return false;
         }
-        account = new Account(request.Name, request.Type);
-        if (!transactionService.TryCreate(new CreateTransactionRequest
+        account = new Account(request.Name, request.Type, request.AccountingPeriodId, request.AddDate);
+        if (request.InitialFundAmounts.Any())
         {
-            AccountingPeriod = request.AccountingPeriodId,
-            Date = request.AddDate,
-            Location = "Initial",
-            Description = "Initial Balance",
-            DebitAccount = null,
-            CreditAccount = new CreateTransactionAccountRequest
+            if (!transactionService.TryCreate(new CreateTransactionRequest
             {
-                Account = account,
-                FundAmounts = request.InitialFundAmounts
-            },
-            IsInitialTransactionForCreditAccount = true
-        }, out initialTransaction, out IEnumerable<Exception> transactionExceptions))
-        {
-            exceptions = exceptions.Concat(transactionExceptions);
-            account = null;
-            return false;
+                AccountingPeriod = request.AccountingPeriodId,
+                Date = request.AddDate,
+                Location = "Initial",
+                Description = "Initial Balance",
+                DebitAccount = null,
+                CreditAccount = new CreateTransactionAccountRequest
+                {
+                    Account = account,
+                    FundAmounts = request.InitialFundAmounts
+                },
+                IsInitialTransactionForAccount = true
+            }, out initialTransaction, out IEnumerable<Exception> transactionExceptions))
+            {
+                exceptions = exceptions.Concat(transactionExceptions);
+                account = null;
+                return false;
+            }
+            if (!transactionService.TryPost(initialTransaction, account.Id, request.AddDate, out IEnumerable<Exception> postingExceptions))
+            {
+                exceptions = exceptions.Concat(postingExceptions);
+                account = null;
+                return false;
+            }
+            account.InitialTransaction = initialTransaction.Id;
         }
-        if (!transactionService.TryPost(initialTransaction, account.Id, request.AddDate, out IEnumerable<Exception> postingExceptions))
-        {
-            exceptions = exceptions.Concat(postingExceptions);
-            account = null;
-            return false;
-        }
-        account.InitialTransaction = initialTransaction.Id;
         return true;
     }
 

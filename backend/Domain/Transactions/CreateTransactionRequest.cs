@@ -40,9 +40,9 @@ public record CreateTransactionRequest
     public CreateTransactionAccountRequest? CreditAccount { get; init; }
 
     /// <summary>
-    /// True if this transaction is the initial transaction for the credit account, false otherwise
+    /// True if this transaction is the initial transaction for the account, false otherwise
     /// </summary>
-    public bool IsInitialTransactionForCreditAccount { get; init; }
+    public bool IsInitialTransactionForAccount { get; init; }
 }
 
 /// <summary>

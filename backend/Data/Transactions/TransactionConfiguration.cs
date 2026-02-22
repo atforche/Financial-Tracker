@@ -61,7 +61,7 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
         });
         builder.Navigation(transaction => transaction.CreditAccount).AutoInclude();
 
-        builder.Property(transaction => transaction.InitialAccountTransaction)
+        builder.Property(transaction => transaction.GeneratedByAccountId)
             .HasConversion(accountingPeriodId => accountingPeriodId == null ? (Guid?)null : accountingPeriodId.Value,
                 value => value == null ? null : new AccountId(value.Value));
     }
