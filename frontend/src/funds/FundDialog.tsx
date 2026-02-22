@@ -78,15 +78,17 @@ const FundDialog = function ({
               value={formatCurrency(fund.currentBalance.postedBalance)}
             />
           </CaptionedFrame>
-          <CaptionedFrame caption="Posted Balance By Account">
-            {fund.currentBalance.accountBalances.map((accountAmount) => (
-              <CaptionedValue
-                key={accountAmount.accountName}
-                caption={accountAmount.accountName}
-                value={formatCurrency(accountAmount.amount)}
-              />
-            ))}
-          </CaptionedFrame>
+          {fund.currentBalance.accountBalances.length > 0 && (
+            <CaptionedFrame caption="Posted Balance By Account">
+              {fund.currentBalance.accountBalances.map((accountAmount) => (
+                <CaptionedValue
+                  key={accountAmount.accountName}
+                  caption={accountAmount.accountName}
+                  value={formatCurrency(accountAmount.amount)}
+                />
+              ))}
+            </CaptionedFrame>
+          )}
           <FundTransactionListFrame fund={fund} />
           {childDialog}
         </>
