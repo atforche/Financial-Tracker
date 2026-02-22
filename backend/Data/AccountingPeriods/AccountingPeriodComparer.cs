@@ -18,7 +18,7 @@ internal sealed class AccountingPeriodComparer(AccountingPeriodSortOrder? sortBy
             return sortBy == AccountingPeriodSortOrder.IsOpen ? isOpenResult : -isOpenResult;
         }
         int dateResult = CompareByDate(x, y);
-        return sortBy == AccountingPeriodSortOrder.DateDescending ? -dateResult : dateResult;
+        return sortBy == AccountingPeriodSortOrder.Date ? dateResult : -dateResult;
     }
 
     /// <summary>
