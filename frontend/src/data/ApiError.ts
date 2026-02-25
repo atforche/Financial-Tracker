@@ -3,12 +3,12 @@ import type { components } from "@data/api";
 /**
  * Type representing an API error response.
  */
-type ApiError = components["schemas"]["ErrorModel"];
+type ApiError = components["schemas"]["ValidationProblemDetails"];
 
 /**
  * Type representing the details of an API error.
  */
-type ApiErrorDetail = components["schemas"]["ErrorDetailModel"];
+type ApiErrorDetail = string[];
 
 /**
  * Checks if the given object is an ApiError.
@@ -20,7 +20,12 @@ const isApiError = function (obj: unknown): obj is ApiError {
     return false;
   }
   return (
-    "message" in obj && typeof obj.message === "string" && "details" in obj
+    "title" in obj &&
+    typeof obj.title === "string" &&
+    "status" in obj &&
+    typeof obj.status === "number" &&
+    "errors" in obj &&
+    typeof obj.errors === "object"
   );
 };
 

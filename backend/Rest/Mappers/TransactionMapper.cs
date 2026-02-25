@@ -5,7 +5,6 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
-using Microsoft.AspNetCore.Mvc;
 using Models.Transactions;
 
 namespace Rest.Mappers;
@@ -29,8 +28,8 @@ public sealed class TransactionMapper(
     public TransactionModel ToModel(Transaction transaction) => new()
     {
         Id = transaction.Id.Value,
-        AccountingPeriodId = transaction.AccountingPeriod.Value,
-        AccountingPeriodName = accountingPeriodRepository.GetById(transaction.AccountingPeriod).PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
+        AccountingPeriodId = transaction.AccountingPeriodId.Value,
+        AccountingPeriodName = accountingPeriodRepository.GetById(transaction.AccountingPeriodId).PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
         Date = transaction.Date,
         Location = transaction.Location,
         Description = transaction.Description,
@@ -48,19 +47,8 @@ public sealed class TransactionMapper(
     /// <summary>
     /// Attempts to map the provided ID to a Transaction
     /// </summary>
-    public bool TryToDomain(
-        Guid transactionId,
-        [NotNullWhen(true)] out Transaction? transaction,
-        [NotNullWhen(false)] out IActionResult? errorResult)
-    {
-        errorResult = null;
-        if (!transactionRepository.TryGetById(transactionId, out transaction))
-        {
-            errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Transaction with ID {transactionId} was not found.", []));
-            return false;
-        }
-        return true;
-    }
+    public bool TryToDomain(Guid transactionId, [NotNullWhen(true)] out Transaction? transaction) =>
+        transactionRepository.TryGetById(transactionId, out transaction);
 
     /// <summary>
     /// Maps the provided Transaction Account to a Transaction Account Model

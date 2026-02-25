@@ -1,14 +1,14 @@
-namespace Domain.Accounts.Exceptions;
+namespace Domain.Transactions.Exceptions;
 
 /// <summary>
-/// Exception thrown when an Account is added with an invalid Fund amount
+/// Exception thrown when a Transaction has an invalid debit Account
 /// </summary>
-public class InvalidFundAmountException : Exception
+public class InvalidDebitAccountException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public InvalidFundAmountException() : base("The provided Fund amount is invalid.")
+    public InvalidDebitAccountException() : base("The Transaction has an invalid debit Account.")
     {
     }
 
@@ -16,7 +16,7 @@ public class InvalidFundAmountException : Exception
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="message">Message for this Exception</param>
-    public InvalidFundAmountException(string message) : base(message)
+    public InvalidDebitAccountException(string message) : base(message)
     {
     }
 
@@ -25,7 +25,7 @@ public class InvalidFundAmountException : Exception
     /// </summary>
     /// <param name="message">Message for this Exception</param>
     /// <param name="innerException">Inner Exception</param>
-    public InvalidFundAmountException(string message, Exception innerException) : base(message, innerException)
+    public InvalidDebitAccountException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

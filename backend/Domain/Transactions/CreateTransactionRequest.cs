@@ -12,7 +12,7 @@ public record CreateTransactionRequest
     /// <summary>
     /// Accounting Period for the Transaction
     /// </summary>
-    public required AccountingPeriodId AccountingPeriod { get; init; }
+    public required AccountingPeriod AccountingPeriod { get; init; }
 
     /// <summary>
     /// Date for the Transaction

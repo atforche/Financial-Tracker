@@ -49,9 +49,20 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -91,9 +102,20 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -155,9 +177,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -216,9 +238,20 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -242,9 +275,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -301,9 +334,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -343,9 +376,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -445,9 +478,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -499,9 +532,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -541,9 +574,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -596,9 +629,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -638,9 +671,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -702,9 +735,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -763,9 +796,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -789,9 +822,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -843,9 +876,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -900,9 +933,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -925,9 +958,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -981,9 +1014,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -1212,25 +1245,6 @@ export interface components {
             debitAccount: null | components["schemas"]["CreateTransactionAccountModel"];
             creditAccount: null | components["schemas"]["CreateTransactionAccountModel"];
         };
-        /**
-         * @description Enum representing the different error codes that the API can return
-         * @enum {unknown}
-         */
-        ErrorCode: ErrorCode;
-        /** @description Model representing a piece of detailed information about an error */
-        ErrorDetailModel: {
-            /** @description Error Code for this Error Detail */
-            errorCode: components["schemas"]["ErrorCode"];
-            /** @description Description for this Error Detail */
-            description: string;
-        };
-        /** @description Model representing an error returned by the API */
-        ErrorModel: {
-            /** @description Message for this Error */
-            message: string;
-            /** @description Details for this Error */
-            details: components["schemas"]["ErrorDetailModel"][];
-        };
         /** @description Model representing an amount associated with a particular Fund */
         FundAmountModel: {
             /**
@@ -1305,6 +1319,14 @@ export interface components {
              * @description Date for the Transaction
              */
             date: string;
+        };
+        ProblemDetails: {
+            type?: null | string;
+            title?: null | string;
+            /** Format: int32 */
+            status?: null | number;
+            detail?: null | string;
+            instance?: null | string;
         };
         /** @description Model representing a Transaction Account */
         TransactionAccountModel: {
@@ -1391,6 +1413,17 @@ export interface components {
             debitAccount: null | components["schemas"]["UpdateTransactionAccountModel"];
             creditAccount: null | components["schemas"]["UpdateTransactionAccountModel"];
         };
+        ValidationProblemDetails: {
+            type?: null | string;
+            title?: null | string;
+            /** Format: int32 */
+            status?: null | number;
+            detail?: null | string;
+            instance?: null | string;
+            errors?: {
+                [key: string]: string[];
+            };
+        };
     };
     responses: never;
     parameters: never;
@@ -1440,15 +1473,6 @@ export enum AccountTransactionSortOrderModel {
 export enum AccountTypeModel {
     Standard = "Standard",
     Debt = "Debt"
-}
-export enum ErrorCode {
-    Generic = "Generic",
-    InvalidFundName = "InvalidFundName",
-    InvalidAccountingPeriodYear = "InvalidAccountingPeriodYear",
-    InvalidAccountingPeriodMonth = "InvalidAccountingPeriodMonth",
-    InvalidAccountName = "InvalidAccountName",
-    InvalidAccountingPeriod = "InvalidAccountingPeriod",
-    InvalidEventDate = "InvalidEventDate"
 }
 export enum FundSortOrderModel {
     Name = "Name",

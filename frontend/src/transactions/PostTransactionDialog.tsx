@@ -5,6 +5,7 @@ import {
 import { type JSX, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountIdentifier } from "@accounts/ApiTypes";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import { Button } from "@mui/material";
 import DateEntryField from "@framework/dialog/DateEntryField";
 import Dialog from "@framework/dialog/Dialog";
@@ -82,6 +83,7 @@ const PostTransactionDialog = function ({
     onClose(true);
   }
 
+  const errorHandler = error === null ? null : new ApiErrorHandler(error);
   return (
     <Dialog
       title="Post Transaction"
@@ -110,7 +112,7 @@ const PostTransactionDialog = function ({
               .add(2, "month")
               .subtract(1, "day")}
           />
-          <ErrorAlert error={error} />
+          <ErrorAlert errorHandler={errorHandler} />
         </>
       }
       actions={

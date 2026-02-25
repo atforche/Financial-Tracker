@@ -1,14 +1,14 @@
-namespace Domain.AccountingPeriods.Exceptions;
+namespace Domain.Transactions.Exceptions;
 
 /// <summary>
-/// Exception thrown when we're unable to delete an Accounting Period
+/// Exception thrown when a Transaction cannot be updated
 /// </summary>
-public class UnableToDeleteAccountingPeriodException : Exception
+public class UnableToUpdateException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public UnableToDeleteAccountingPeriodException() : base("Unable to delete this Accounting Period.")
+    public UnableToUpdateException() : base("The Transaction cannot be updated.")
     {
     }
 
@@ -16,7 +16,7 @@ public class UnableToDeleteAccountingPeriodException : Exception
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="message">Message for this Exception</param>
-    public UnableToDeleteAccountingPeriodException(string message) : base(message)
+    public UnableToUpdateException(string message) : base(message)
     {
     }
 
@@ -25,7 +25,7 @@ public class UnableToDeleteAccountingPeriodException : Exception
     /// </summary>
     /// <param name="message">Message for this Exception</param>
     /// <param name="innerException">Inner Exception</param>
-    public UnableToDeleteAccountingPeriodException(string message, Exception innerException) : base(message, innerException)
+    public UnableToUpdateException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

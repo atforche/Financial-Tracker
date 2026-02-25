@@ -1,3 +1,4 @@
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import { ComboBoxEntryField } from "@framework/dialog/ComboBoxEntryField";
 import type { FundIdentifier } from "@funds/ApiTypes";
 import type { JSX } from "react";
@@ -33,6 +34,7 @@ const FundEntryField = function ({
     page: null,
     rowsPerPage: null,
   });
+  const errorHandler = error === null ? null : new ApiErrorHandler(error);
   return (
     <ComboBoxEntryField<FundIdentifier>
       label={label}
@@ -57,7 +59,7 @@ const FundEntryField = function ({
           : null
       }
       loading={isLoading}
-      error={error}
+      errorHandler={errorHandler}
     />
   );
 };

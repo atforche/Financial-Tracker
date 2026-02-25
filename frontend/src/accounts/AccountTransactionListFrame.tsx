@@ -1,6 +1,7 @@
 import { type Account, AccountTransactionSortOrder } from "@accounts/ApiTypes";
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type JSX, useState } from "react";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import ColumnButton from "@framework/listframe/ColumnButton";
 import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
 import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
@@ -199,6 +200,7 @@ const AccountTransactionListFrame = function ({
     },
   ];
 
+  const errorHandler = error ? new ApiErrorHandler(error) : null;
   return (
     <ListFrame<Transaction>
       name="Transactions"
@@ -215,7 +217,7 @@ const AccountTransactionListFrame = function ({
     >
       {childDialog}
       <SuccessAlert message={message} />
-      <ErrorAlert error={error} />
+      <ErrorAlert errorHandler={errorHandler} />
     </ListFrame>
   );
 };

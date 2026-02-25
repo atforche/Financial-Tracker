@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Data.Accounts;
 using Domain.Accounts;
-using Microsoft.AspNetCore.Mvc;
 using Models.Accounts;
 
 namespace Rest.Mappers;
@@ -14,13 +13,10 @@ public sealed class AccountMapper(AccountBalanceService accountBalanceService, A
     /// <summary>
     /// Maps the provided Account to an Account Model
     /// </summary>
-    public bool TryToModel(
-        Account account,
-        [NotNullWhen(true)] out AccountModel? accountModel,
-        [NotNullWhen(false)] out IActionResult? errorResult)
+    public bool TryToModel(Account account, [NotNullWhen(true)] out AccountModel? accountModel)
     {
         accountModel = null;
-        if (!AccountTypeMapper.TryToModel(account.Type, out AccountTypeModel? accountTypeModel, out errorResult))
+        if (!AccountTypeMapper.TryToModel(account.Type, out AccountTypeModel? accountTypeModel))
         {
             return false;
         }
@@ -37,17 +33,5 @@ public sealed class AccountMapper(AccountBalanceService accountBalanceService, A
     /// <summary>
     /// Attempts to map the provided ID to an Account
     /// </summary>
-    public bool TryToDomain(
-        Guid accountId,
-        [NotNullWhen(true)] out Account? account,
-        [NotNullWhen(false)] out IActionResult? errorResult)
-    {
-        errorResult = null;
-        if (!accountRepository.TryGetById(accountId, out account))
-        {
-            errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Account with ID {accountId} was not found.", []));
-            return false;
-        }
-        return true;
-    }
+    public bool TryToDomain(Guid accountId, [NotNullWhen(true)] out Account? account) => accountRepository.TryGetById(accountId, out account);
 }

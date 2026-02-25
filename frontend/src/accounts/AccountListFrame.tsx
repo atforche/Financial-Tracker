@@ -2,6 +2,7 @@ import { type Account, AccountSortOrder } from "@accounts/ApiTypes";
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type JSX, useState } from "react";
 import AccountDialog from "@accounts/AccountDialog";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import ColumnButton from "@framework/listframe/ColumnButton";
 import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
 import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
@@ -161,6 +162,7 @@ const AccountListFrame = function (): JSX.Element {
     },
   ];
 
+  const errorHandler = error ? new ApiErrorHandler(error) : null;
   return (
     <ListFrame<Account>
       name="Accounts"
@@ -177,7 +179,7 @@ const AccountListFrame = function (): JSX.Element {
     >
       {dialog}
       <SuccessAlert message={message} />
-      <ErrorAlert error={error} />
+      <ErrorAlert errorHandler={errorHandler} />
     </ListFrame>
   );
 };

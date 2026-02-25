@@ -3,8 +3,8 @@ import AccountEntryField from "@accounts/AccountEntryField";
 import type { AccountIdentifier } from "@accounts/ApiTypes";
 import type { AccountingPeriodIdentifier } from "@accounting-periods/ApiTypes";
 import DateEntryField from "@framework/dialog/DateEntryField";
-import type { FundAmount } from "@funds/ApiTypes";
 import FundAmountCollectionEntryFrame from "@funds/FundAmountCollectionEntryFrame";
+import type FundAmountEntryModel from "@funds/FundAmountEntryModel";
 import type { JSX } from "react";
 import OpenAccountingPeriodEntryField from "@accounting-periods/OpenAccountingPeriodEntryField";
 import { Stack } from "@mui/material";
@@ -28,17 +28,17 @@ interface CreateOrUpdateTransactionFrameProps {
   readonly setDebitAccount:
     | ((newDebitAccount: AccountIdentifier | null) => void)
     | null;
-  readonly debitFundAmounts: FundAmount[];
+  readonly debitFundAmounts: FundAmountEntryModel[];
   readonly setDebitFundAmounts:
-    | ((newDebitFundAmounts: FundAmount[]) => void)
+    | ((newDebitFundAmounts: FundAmountEntryModel[]) => void)
     | null;
   readonly creditAccount: AccountIdentifier | null;
   readonly setCreditAccount:
     | ((newCreditAccount: AccountIdentifier | null) => void)
     | null;
-  readonly creditFundAmounts: FundAmount[];
+  readonly creditFundAmounts: FundAmountEntryModel[];
   readonly setCreditFundAmounts:
-    | ((newCreditFundAmounts: FundAmount[]) => void)
+    | ((newCreditFundAmounts: FundAmountEntryModel[]) => void)
     | null;
 }
 

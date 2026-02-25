@@ -44,8 +44,7 @@ const useQuery = function <T>({ queryFunction }: UseQueryArgs<T>): {
       })
       .catch((err: unknown) => {
         setError({
-          message: `An unknown error occurred: ${String(err)}`,
-          details: [],
+          detail: `An unknown error occurred: ${String(err)}`,
         });
         setData(null);
       })

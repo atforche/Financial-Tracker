@@ -1,4 +1,5 @@
 import type { AccountIdentifier } from "@accounts/ApiTypes";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import { ComboBoxEntryField } from "@framework/dialog/ComboBoxEntryField";
 import type { JSX } from "react";
 import useGetAllAccounts from "@accounts/useGetAllAccounts";
@@ -27,6 +28,7 @@ const AccountEntryField = function ({
     page: null,
     rowsPerPage: null,
   });
+  const errorHandler = error === null ? null : new ApiErrorHandler(error);
   return (
     <ComboBoxEntryField<AccountIdentifier>
       label={label}
@@ -49,7 +51,7 @@ const AccountEntryField = function ({
           : null
       }
       loading={isLoading}
-      error={error}
+      errorHandler={errorHandler}
     />
   );
 };

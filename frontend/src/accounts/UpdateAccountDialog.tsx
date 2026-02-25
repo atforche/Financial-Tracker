@@ -1,10 +1,11 @@
+import type { Account, UpdateAccountRequest } from "@accounts/ApiTypes";
 import { type JSX, useState } from "react";
-import type { Account } from "@accounts/ApiTypes";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import { Button } from "@mui/material";
 import Dialog from "@framework/dialog/Dialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
-import { ErrorCode } from "@data/api";
 import StringEntryField from "@framework/dialog/StringEntryField";
+import nameof from "@data/nameof";
 import useUpdateAccount from "@accounts/useUpdateAccount";
 
 /**
@@ -38,6 +39,7 @@ const UpdateAccountDialog = function ({
     }
     onClose(true);
   }
+  const errorHandler = error ? new ApiErrorHandler(error) : null;
   return (
     <Dialog
       title="Edit Account"
@@ -47,18 +49,10 @@ const UpdateAccountDialog = function ({
             label="Name"
             value={accountName}
             setValue={setAccountName}
-            error={
-              error?.details.find(
-                (detail) => detail.errorCode === ErrorCode.InvalidFundName,
-              ) ?? null
-            }
+            errorHandler={errorHandler}
+            errorKey={nameof<UpdateAccountRequest>("name")}
           />
-          <ErrorAlert
-            error={error}
-            detailFilter={(detail) =>
-              detail.errorCode !== ErrorCode.InvalidFundName
-            }
-          />
+          <ErrorAlert errorHandler={errorHandler} />
         </>
       }
       actions={

@@ -1,5 +1,6 @@
 import { Button, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import Dialog from "@framework/dialog/Dialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import type { JSX } from "react/jsx-runtime";
@@ -37,6 +38,7 @@ const CloseAccountingPeriodDialog = function ({
     }
     onClose(true);
   }
+  const errorHandler = error ? new ApiErrorHandler(error) : null;
   return (
     <Dialog
       title="Close Accounting Period"
@@ -46,7 +48,7 @@ const CloseAccountingPeriodDialog = function ({
             Are you sure you want to close the accounting period &quot;
             {accountingPeriod.name}&quot;?
           </Typography>
-          <ErrorAlert error={error} />
+          <ErrorAlert errorHandler={errorHandler} />
         </>
       }
       actions={

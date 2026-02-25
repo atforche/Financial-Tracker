@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using Data.AccountingPeriods;
-using Microsoft.AspNetCore.Mvc;
 using Models.AccountingPeriods;
 
 namespace Rest.Mappers;
@@ -15,10 +14,8 @@ internal sealed class AccountingPeriodSortOrderMapper
     /// </summary>
     public static bool TryToData(
         AccountingPeriodSortOrderModel accountingPeriodSortOrderModel,
-        [NotNullWhen(true)] out AccountingPeriodSortOrder? accountingPeriodSortOrder,
-        [NotNullWhen(false)] out IActionResult? errorResult)
+        [NotNullWhen(true)] out AccountingPeriodSortOrder? accountingPeriodSortOrder)
     {
-        errorResult = null;
         accountingPeriodSortOrder = accountingPeriodSortOrderModel switch
         {
             AccountingPeriodSortOrderModel.Date => AccountingPeriodSortOrder.Date,
@@ -27,11 +24,6 @@ internal sealed class AccountingPeriodSortOrderMapper
             AccountingPeriodSortOrderModel.IsOpenDescending => AccountingPeriodSortOrder.IsOpenDescending,
             _ => null
         };
-        if (accountingPeriodSortOrder == null)
-        {
-            errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Unrecognized Accounting Period Sort Order Model: {accountingPeriodSortOrderModel}", []));
-            return false;
-        }
-        return true;
+        return accountingPeriodSortOrder != null;
     }
 }

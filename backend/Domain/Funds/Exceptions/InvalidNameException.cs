@@ -1,14 +1,14 @@
-namespace Domain.Transactions.Exceptions;
+namespace Domain.Funds.Exceptions;
 
 /// <summary>
-/// Exception thrown when a Transaction has an invalid Fund
+/// Exception thrown when a Fund name is invalid
 /// </summary>
-public class InvalidFundException : Exception
+public class InvalidNameException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public InvalidFundException() : base("The Transaction has an invalid Fund.")
+    public InvalidNameException() : base("The provided Fund name is invalid.")
     {
     }
 
@@ -16,7 +16,7 @@ public class InvalidFundException : Exception
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="message">Message for this Exception</param>
-    public InvalidFundException(string message) : base(message)
+    public InvalidNameException(string message) : base(message)
     {
     }
 
@@ -25,7 +25,7 @@ public class InvalidFundException : Exception
     /// </summary>
     /// <param name="message">Message for this Exception</param>
     /// <param name="innerException">Inner Exception</param>
-    public InvalidFundException(string message, Exception innerException) : base(message, innerException)
+    public InvalidNameException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

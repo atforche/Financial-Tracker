@@ -17,7 +17,7 @@ public class Transaction : Entity<TransactionId>
     /// <summary>
     /// Accounting Period for this Transaction
     /// </summary>
-    public AccountingPeriodId AccountingPeriod { get; private set; }
+    public AccountingPeriodId AccountingPeriodId { get; private set; }
 
     /// <summary>
     /// Date for this Transaction
@@ -82,7 +82,8 @@ public class Transaction : Entity<TransactionId>
         {
             return TryApplyToAccountBalancePrivate(CreditAccount, TransactionAccountType.Credit, existingAccountBalance, date, out newAccountBalance, out exceptions);
         }
-        exceptions = exceptions.Append(new InvalidAccountException("Transaction does not involve the account for the provided balance."));
+        exceptions = exceptions.Append(new InvalidDebitAccountException("Transaction does not involve the account for the provided balance."));
+        exceptions = exceptions.Append(new InvalidCreditAccountException("Transaction does not involve the account for the provided balance."));
         return false;
     }
 
@@ -116,7 +117,6 @@ public class Transaction : Entity<TransactionId>
         }
         if (newFundBalance == null)
         {
-            exceptions = exceptions.Append(new InvalidFundException("Transaction does not involve the fund for the provided balance."));
             return false;
         }
         return true;
@@ -128,7 +128,7 @@ public class Transaction : Entity<TransactionId>
     internal Transaction(CreateTransactionRequest request, int sequence)
         : base(new TransactionId(Guid.NewGuid()))
     {
-        AccountingPeriod = request.AccountingPeriod;
+        AccountingPeriodId = request.AccountingPeriod.Id;
         Date = request.Date;
         Sequence = sequence;
         Location = request.Location;
@@ -143,7 +143,7 @@ public class Transaction : Entity<TransactionId>
     /// </summary>
     private Transaction() : base()
     {
-        AccountingPeriod = null!;
+        AccountingPeriodId = null!;
         Location = null!;
         Description = null!;
         DebitAccount = null;

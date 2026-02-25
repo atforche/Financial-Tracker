@@ -71,7 +71,7 @@ public class FundService(IFundRepository fundRepository, ITransactionRepository 
 
         if (transactionRepository.DoAnyTransactionsExistForFund(fund.Id))
         {
-            exceptions = [new UnableToDeleteFundException("Cannot delete a Fund that has Transactions.")];
+            exceptions = [new UnableToDeleteException("Cannot delete a Fund that has Transactions.")];
             return false;
         }
         fundRepository.Delete(fund);
@@ -91,11 +91,11 @@ public class FundService(IFundRepository fundRepository, ITransactionRepository 
 
         if (string.IsNullOrEmpty(name))
         {
-            exceptions = exceptions.Append(new InvalidFundNameException("Fund name cannot be empty"));
+            exceptions = exceptions.Append(new InvalidNameException("Fund name cannot be empty"));
         }
         if (fundRepository.TryGetByName(name, out Fund? existingFundWithName) && existingFundWithName != existingFund)
         {
-            exceptions = exceptions.Append(new InvalidFundNameException("Fund name must be unique"));
+            exceptions = exceptions.Append(new InvalidNameException("Fund name must be unique"));
         }
         return !exceptions.Any();
     }

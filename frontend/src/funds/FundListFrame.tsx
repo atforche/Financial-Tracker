@@ -1,6 +1,7 @@
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type Fund, FundSortOrder } from "@funds/ApiTypes";
 import { type JSX, useState } from "react";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import ColumnButton from "@framework/listframe/ColumnButton";
 import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
 import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
@@ -141,6 +142,7 @@ const FundListFrame = function (): JSX.Element {
     },
   ];
 
+  const errorHandler = error === null ? null : new ApiErrorHandler(error);
   return (
     <ListFrame<Fund>
       name="Funds"
@@ -157,7 +159,7 @@ const FundListFrame = function (): JSX.Element {
     >
       {dialog}
       <SuccessAlert message={message} />
-      <ErrorAlert error={error} />
+      <ErrorAlert errorHandler={errorHandler} />
     </ListFrame>
   );
 };

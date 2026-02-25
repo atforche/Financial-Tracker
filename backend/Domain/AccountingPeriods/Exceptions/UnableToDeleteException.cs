@@ -1,14 +1,14 @@
-namespace Domain.Funds.Exceptions;
+namespace Domain.AccountingPeriods.Exceptions;
 
 /// <summary>
-/// Exception thrown when a Fund cannot be deleted
+/// Exception thrown when we're unable to delete an Accounting Period
 /// </summary>
-public class UnableToDeleteFundException : Exception
+public class UnableToDeleteException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public UnableToDeleteFundException() : base("Unable to delete this Fund.")
+    public UnableToDeleteException() : base("Unable to delete this Accounting Period.")
     {
     }
 
@@ -16,7 +16,7 @@ public class UnableToDeleteFundException : Exception
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="message">Message for this Exception</param>
-    public UnableToDeleteFundException(string message) : base(message)
+    public UnableToDeleteException(string message) : base(message)
     {
     }
 
@@ -25,7 +25,7 @@ public class UnableToDeleteFundException : Exception
     /// </summary>
     /// <param name="message">Message for this Exception</param>
     /// <param name="innerException">Inner Exception</param>
-    public UnableToDeleteFundException(string message, Exception innerException) : base(message, innerException)
+    public UnableToDeleteException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

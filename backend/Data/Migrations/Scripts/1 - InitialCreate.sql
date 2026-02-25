@@ -68,7 +68,7 @@ CREATE TABLE "AccountBalanceHistoryPendingDebits" (
 
 CREATE TABLE "Transactions" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_Transactions" PRIMARY KEY,
-    "AccountingPeriod" TEXT NOT NULL,
+    "AccountingPeriodId" TEXT NOT NULL,
     "Date" TEXT NOT NULL,
     "Sequence" INTEGER NOT NULL,
     "Location" TEXT NOT NULL,
@@ -147,7 +147,7 @@ CREATE INDEX "IX_Transactions_CreditAccount_AccountId" ON "Transactions" ("Credi
 CREATE INDEX "IX_Transactions_DebitAccount_AccountId" ON "Transactions" ("DebitAccount_AccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260222011142_InitialCreate', '10.0.2');
+VALUES ('20260224232222_InitialCreate', '10.0.2');
 
 COMMIT;
 

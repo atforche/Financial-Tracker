@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Data.AccountingPeriods;
 using Domain.AccountingPeriods;
-using Microsoft.AspNetCore.Mvc;
 using Models.AccountingPeriods;
 
 namespace Rest.Mappers;
@@ -27,17 +26,6 @@ public sealed class AccountingPeriodMapper(AccountingPeriodRepository accounting
     /// <summary>
     /// Attempts to map the provided ID to an Accounting Period
     /// </summary>
-    public bool TryToDomain(
-        Guid accountingPeriodId,
-        [NotNullWhen(true)] out AccountingPeriod? accountingPeriod,
-        [NotNullWhen(false)] out IActionResult? errorResult)
-    {
-        errorResult = null;
-        if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out accountingPeriod))
-        {
-            errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Accounting Period with ID {accountingPeriodId} was not found.", []));
-            return false;
-        }
-        return true;
-    }
+    public bool TryToDomain(Guid accountingPeriodId, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod) =>
+        accountingPeriodRepository.TryGetById(accountingPeriodId, out accountingPeriod);
 }

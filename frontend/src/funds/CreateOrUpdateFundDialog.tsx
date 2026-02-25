@@ -1,10 +1,11 @@
+import type { CreateOrUpdateFundRequest, Fund } from "@funds/ApiTypes";
 import { type JSX, useState } from "react";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import { Button } from "@mui/material";
 import Dialog from "@framework/dialog/Dialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
-import { ErrorCode } from "@data/api";
-import type { Fund } from "@funds/ApiTypes";
 import StringEntryField from "@framework/dialog/StringEntryField";
+import nameof from "@data/nameof";
 import useCreateOrUpdateFund from "@funds/useCreateOrUpdateFund";
 
 /**
@@ -42,6 +43,7 @@ const CreateOrUpdateFundDialog = function ({
     }
     onClose(true);
   }
+  const errorHandler = error ? new ApiErrorHandler(error) : null;
   return (
     <Dialog
       title={fund === null ? "Add Fund" : "Edit Fund"}
@@ -51,23 +53,15 @@ const CreateOrUpdateFundDialog = function ({
             label="Name"
             value={fundName}
             setValue={setFundName}
-            error={
-              error?.details.find(
-                (detail) => detail.errorCode === ErrorCode.InvalidFundName,
-              ) ?? null
-            }
+            errorHandler={errorHandler}
+            errorKey={nameof<CreateOrUpdateFundRequest>("name")}
           />
           <StringEntryField
             label="Description"
             value={fundDescription}
             setValue={setFundDescription}
           />
-          <ErrorAlert
-            error={error}
-            detailFilter={(detail) =>
-              detail.errorCode !== ErrorCode.InvalidFundName
-            }
-          />
+          <ErrorAlert errorHandler={errorHandler} />
         </>
       }
       actions={

@@ -23,6 +23,11 @@ interface AccountIdentifier {
  */
 type CreateAccountRequest = components["schemas"]["CreateAccountModel"];
 
+/**
+ * Type representing a request to update an Account.
+ */
+type UpdateAccountRequest = components["schemas"]["UpdateAccountModel"];
+
 export {
   type Account,
   AccountTypeModel as AccountType,
@@ -30,4 +35,5 @@ export {
   type AccountIdentifier,
   AccountSortOrderModel as AccountSortOrder,
   AccountTransactionSortOrderModel as AccountTransactionSortOrder,
+  type UpdateAccountRequest,
 };

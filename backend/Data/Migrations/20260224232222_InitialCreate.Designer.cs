@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20260222011142_InitialCreate")]
+    [Migration("20260224232222_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -139,7 +139,7 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("AccountingPeriod")
+                    b.Property<Guid>("AccountingPeriodId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateOnly>("Date")

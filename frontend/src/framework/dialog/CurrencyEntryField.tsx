@@ -1,18 +1,17 @@
 import { InputAdornment, TextField } from "@mui/material";
 import { type JSX, useState } from "react";
-import type { ApiErrorDetail } from "@data/ApiError";
+import type ApiErrorHandler from "@data/ApiErrorHandler";
+import ErrorHelperText from "./ErrorHelperText";
 
 /**
  * Props for the CurrencyEntryField component.
- * @param label - Label for this Currency Entry Field.
- * @param setValue - Callback to update the value in this Currency Entry Field. If null, this field is read-only.
- * @param value - Current value for this Currency Entry Field.
  */
 interface CurrencyEntryFieldProps {
   readonly label: string;
   readonly value: number | null;
   readonly setValue?: ((newValue: number) => void) | null;
-  readonly error?: ApiErrorDetail | null;
+  readonly errorHandler?: ApiErrorHandler | null;
+  readonly errorKey?: string | null;
 }
 
 /**
@@ -24,7 +23,8 @@ const CurrencyEntryField = function ({
   label,
   value,
   setValue = null,
-  error = null,
+  errorHandler = null,
+  errorKey = null,
 }: CurrencyEntryFieldProps): JSX.Element {
   const [stringValue, setStringValue] = useState<string>(
     value === null
@@ -80,8 +80,8 @@ const CurrencyEntryField = function ({
           );
         }
       }}
-      error={error !== null}
-      helperText={error?.description ?? ""}
+      error={(errorHandler?.handleError(errorKey) ?? null) !== null}
+      helperText={<ErrorHelperText errorHandler={errorHandler} errorKey={errorKey} />}
     />
   );
 };

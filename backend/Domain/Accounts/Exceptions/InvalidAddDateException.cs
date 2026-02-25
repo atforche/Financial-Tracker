@@ -1,14 +1,14 @@
-namespace Domain.AccountingPeriods.Exceptions;
+namespace Domain.Accounts.Exceptions;
 
 /// <summary>
-/// Exception thrown when we're unable to close an Accounting Period
+/// Exception thrown when an Account's add date is invalid
 /// </summary>
-public class UnableToCloseAccountingPeriodException : Exception
+public class InvalidAddDateException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public UnableToCloseAccountingPeriodException() : base("Unable to close this Accounting Period.")
+    public InvalidAddDateException() : base("The provided add date is invalid for the Account.")
     {
     }
 
@@ -16,7 +16,7 @@ public class UnableToCloseAccountingPeriodException : Exception
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="message">Message for this Exception</param>
-    public UnableToCloseAccountingPeriodException(string message) : base(message)
+    public InvalidAddDateException(string message) : base(message)
     {
     }
 
@@ -25,7 +25,7 @@ public class UnableToCloseAccountingPeriodException : Exception
     /// </summary>
     /// <param name="message">Message for this Exception</param>
     /// <param name="innerException">Inner Exception</param>
-    public UnableToCloseAccountingPeriodException(string message, Exception innerException) : base(message, innerException)
+    public InvalidAddDateException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

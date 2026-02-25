@@ -1,6 +1,8 @@
-import type { ApiError, ApiErrorDetail } from "@data/ApiError";
 import { Autocomplete, CircularProgress, TextField } from "@mui/material";
+import type ApiErrorHandler from "@data/ApiErrorHandler";
+import ErrorHelperText from "@framework/dialog/ErrorHelperText";
 import type { JSX } from "react";
+
 
 /**
  * Interface representing a Combo Box option.
@@ -14,13 +16,6 @@ interface ComboBoxOption<T> {
 
 /**
  * Props for the ComboBoxEntryField component.
- * @param label - Label for this Combo Box Entry Field.
- * @param options - Options to present in this Combo Box Entry Field.
- * @param getOptionLabel - Function to retrieve the label for a given option.
- * @param value - Current value for this Combo Box Entry Field.
- * @param setValue - Callback to update the value in this Combo Box Entry Field. If null, this field is read-only.
- * @param loading - Whether or not this Combo Box Entry Field is in a loading state.
- * @param error - Optional error to display for this Combo Box Entry Field.
  */
 interface ComboBoxEntryFieldProps<T> {
   readonly label: string;
@@ -28,7 +23,8 @@ interface ComboBoxEntryFieldProps<T> {
   readonly value: ComboBoxOption<T>;
   readonly setValue?: ((newValue: ComboBoxOption<T>) => void) | null;
   readonly loading?: boolean;
-  readonly error?: ApiError | ApiErrorDetail | null;
+  readonly errorHandler?: ApiErrorHandler | null;
+  readonly errorKey?: string | null;
 }
 
 /**
@@ -42,17 +38,9 @@ const ComboBoxEntryField = function <T>({
   value,
   setValue = null,
   loading = false,
-  error = null,
+  errorHandler = null,
+  errorKey = null,
 }: ComboBoxEntryFieldProps<T>): JSX.Element {
-  let errorMessage = "";
-  if (error !== null) {
-    if ("message" in error) {
-      errorMessage = error.message;
-    } else {
-      errorMessage = error.description;
-    }
-  }
-
   return (
     <Autocomplete
       className="combo-box-entry-field"
@@ -65,8 +53,8 @@ const ComboBoxEntryField = function <T>({
         <TextField
           {...params}
           label={label}
-          error={error !== null}
-          helperText={errorMessage}
+          error={(errorHandler?.handleError(errorKey) ?? null) !== null}
+          helperText={<ErrorHelperText errorHandler={errorHandler} errorKey={errorKey} />}
           slotProps={{
             input: {
               ...params.InputProps,

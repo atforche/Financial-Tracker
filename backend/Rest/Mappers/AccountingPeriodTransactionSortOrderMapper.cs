@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using Data.Transactions;
-using Microsoft.AspNetCore.Mvc;
 using Models.Transactions;
 
 namespace Rest.Mappers;
@@ -15,10 +14,8 @@ internal sealed class AccountingPeriodTransactionSortOrderMapper
     /// </summary>
     public static bool TryToData(
         AccountingPeriodTransactionSortOrderModel accountingPeriodTransactionSortOrderModel,
-        [NotNullWhen(true)] out AccountingPeriodTransactionSortOrder? accountingPeriodTransactionSortOrder,
-        [NotNullWhen(false)] out IActionResult? errorResult)
+        [NotNullWhen(true)] out AccountingPeriodTransactionSortOrder? accountingPeriodTransactionSortOrder)
     {
-        errorResult = null;
         accountingPeriodTransactionSortOrder = accountingPeriodTransactionSortOrderModel switch
         {
             AccountingPeriodTransactionSortOrderModel.Date => AccountingPeriodTransactionSortOrder.Date,
@@ -33,11 +30,6 @@ internal sealed class AccountingPeriodTransactionSortOrderMapper
             AccountingPeriodTransactionSortOrderModel.AmountDescending => AccountingPeriodTransactionSortOrder.AmountDescending,
             _ => null
         };
-        if (accountingPeriodTransactionSortOrder == null)
-        {
-            errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Unrecognized Accounting Period Transaction Sort Order: {accountingPeriodTransactionSortOrderModel}", []));
-            return false;
-        }
-        return true;
+        return accountingPeriodTransactionSortOrder != null;
     }
 }

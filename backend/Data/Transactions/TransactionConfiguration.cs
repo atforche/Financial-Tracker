@@ -18,7 +18,7 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
         builder.HasKey(transaction => transaction.Id);
         builder.Property(transaction => transaction.Id).HasConversion(transactionId => transactionId.Value, value => new TransactionId(value));
 
-        builder.Property(transaction => transaction.AccountingPeriod)
+        builder.Property(transaction => transaction.AccountingPeriodId)
             .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
 
         builder.OwnsOne(transaction => transaction.DebitAccount, builder =>

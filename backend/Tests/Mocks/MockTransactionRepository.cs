@@ -31,7 +31,7 @@ internal sealed class MockTransactionRepository : ITransactionRepository
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
-        _transactions.Values.Where(transaction => transaction.AccountingPeriod == accountingPeriodId)
+        _transactions.Values.Where(transaction => transaction.AccountingPeriodId == accountingPeriodId)
             .OrderBy(transaction => transaction.Date)
             .ThenBy(transaction => transaction.Sequence)
             .ToList();

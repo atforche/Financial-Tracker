@@ -1,23 +1,20 @@
 import "@funds/FundAmountCollectionEntryFrame.css";
 import { AddCircleOutline, Delete } from "@mui/icons-material";
-import { type JSX, useState } from "react";
-import { Stack, Typography } from "@mui/material";
+import { Button, Stack, Tooltip, Typography } from "@mui/material";
 import CaptionedFrame from "@framework/dialog/CaptionedFrame";
 import ColumnButton from "@framework/listframe/ColumnButton";
-import type { FundAmount } from "@funds/ApiTypes";
 import FundAmountEntryFrame from "@funds/FundAmountEntryFrame";
+import type FundAmountEntryModel from "@funds/FundAmountEntryModel";
+import type { JSX } from "react";
 import formatCurrency from "@framework/formatCurrency";
 
 /**
  * Props for the FundAmountCollectionEntryFrame component.
- * @param label - Label for this Fund Amount Collection Entry Frame.
- * @param value - Current value for this Fund Amount Collection Entry Frame.
- * @param setValue - Callback to update the value in this Fund Amount Collection Entry Frame. If null, this field is read-only.
  */
 interface FundAmountCollectionEntryFrameProps {
   readonly label: string;
-  readonly value: FundAmount[];
-  readonly setValue?: ((newValue: FundAmount[]) => void) | null;
+  readonly value: FundAmountEntryModel[];
+  readonly setValue: (newValue: FundAmountEntryModel[]) => void;
 }
 
 /**
@@ -28,64 +25,77 @@ interface FundAmountCollectionEntryFrameProps {
 const FundAmountCollectionEntryFrame = function ({
   label,
   value,
-  setValue = null,
+  setValue,
 }: FundAmountCollectionEntryFrameProps): JSX.Element {
-  const [newFundAmount, setNewFundAmount] = useState<FundAmount | null>(null);
   return (
     <div className="fund-amount-collection-entry-frame">
       <CaptionedFrame caption={label}>
-        <Stack direction="row" spacing={2} alignItems="center">
-          <FundAmountEntryFrame
-            value={newFundAmount}
-            setValue={setNewFundAmount}
-            filter={(fund) =>
-              !value.some((fundAmount) => fundAmount.fundId === fund.id)
-            }
-          />
-          <ColumnButton
-            label="Add Fund Amount"
-            icon={<AddCircleOutline />}
-            onClick={
-              newFundAmount === null ||
-              newFundAmount.fundId === "" ||
-              newFundAmount.amount === 0
-                ? null
-                : (): void => {
-                    if (setValue !== null) {
-                      const newFundAmounts = [...value, newFundAmount];
-                      setValue(newFundAmounts);
-                      setNewFundAmount(null);
-                    }
-                  }
-            }
-          />
-        </Stack>
-        {value.map((fundAmount, index) => (
-          <Stack
-            key={fundAmount.fundId}
-            direction="row"
-            spacing={2}
-            alignItems="center"
-          >
-            <FundAmountEntryFrame value={fundAmount} />
-            <ColumnButton
-              label="Delete"
-              icon={<Delete />}
-              onClick={() => {
-                if (setValue !== null) {
+        <Stack spacing={2} sx={{ marginTop: "16px" }}>
+          {value.map((fundAmount, index) => (
+            <Stack
+              key={index}
+              direction="row"
+              spacing={2}
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <FundAmountEntryFrame
+                value={fundAmount}
+                setValue={(newValue): void => {
+                  const newFundAmounts = [...value];
+                  newFundAmounts[index] = newValue;
+                  setValue(newFundAmounts);
+                }}
+                filter={(fund) =>
+                  value[index]?.fundId === fund.id ||
+                  !value.some(
+                    (existingFundAmount) =>
+                      existingFundAmount.fundId === fund.id,
+                  )
+                }
+              />
+              <ColumnButton
+                label="Delete"
+                icon={<Delete />}
+                onClick={() => {
                   const newFundAmounts = value.filter((_, i) => i !== index);
                   setValue(newFundAmounts);
-                }
+                }}
+              />
+            </Stack>
+          ))}
+
+          <Tooltip title="Add Fund Amount">
+            <Button
+              variant="contained"
+              startIcon={<AddCircleOutline />}
+              disableElevation
+              sx={{
+                backgroundColor: "primary",
+                border: 1,
+                borderColor: "white",
               }}
-            />
-          </Stack>
-        ))}
-        <Typography variant="body2">
-          Total:{" "}
-          {formatCurrency(
-            value.reduce((acc, fundAmount) => acc + fundAmount.amount, 0),
-          )}
-        </Typography>
+              onClick={(): void => {
+                const newFundAmounts = [
+                  ...value,
+                  { fundId: null, fundName: null, amount: null },
+                ];
+                setValue(newFundAmounts);
+              }}
+            >
+              Add Fund Amount
+            </Button>
+          </Tooltip>
+          <Typography variant="body2">
+            Total:{" "}
+            {formatCurrency(
+              value.reduce(
+                (acc, fundAmount) => acc + (fundAmount.amount ?? 0),
+                0,
+              ),
+            )}
+          </Typography>
+        </Stack>
       </CaptionedFrame>
     </div>
   );

@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using Data.Transactions;
-using Microsoft.AspNetCore.Mvc;
 using Models.Transactions;
 
 namespace Rest.Mappers;
@@ -15,10 +14,8 @@ internal sealed class FundTransactionSortOrderMapper
     /// </summary>
     public static bool TryToData(
         FundTransactionSortOrderModel fundTransactionSortOrderModel,
-        [NotNullWhen(true)] out FundTransactionSortOrder? fundTransactionSortOrder,
-        [NotNullWhen(false)] out IActionResult? errorResult)
+        [NotNullWhen(true)] out FundTransactionSortOrder? fundTransactionSortOrder)
     {
-        errorResult = null;
         fundTransactionSortOrder = fundTransactionSortOrderModel switch
         {
             FundTransactionSortOrderModel.Date => FundTransactionSortOrder.Date,
@@ -31,11 +28,6 @@ internal sealed class FundTransactionSortOrderMapper
             FundTransactionSortOrderModel.AmountDescending => FundTransactionSortOrder.AmountDescending,
             _ => null
         };
-        if (fundTransactionSortOrder == null)
-        {
-            errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Unrecognized Fund Transaction Sort Order: {fundTransactionSortOrderModel}", []));
-            return false;
-        }
-        return true;
+        return fundTransactionSortOrder != null;
     }
 }

@@ -21,7 +21,7 @@ internal sealed class AccountingPeriodTransactionFilterer(DatabaseContext databa
                 pair => pair.transaction.CreditAccount != null ? pair.transaction.CreditAccount.AccountId : null,
                 account => account.Id,
                 (pair, account) => new { pair.transaction, debitAccount = pair.account, creditAccount = account })
-            .Where(pair => pair.transaction.AccountingPeriod == accountingPeriodId)
+            .Where(pair => pair.transaction.AccountingPeriodId == accountingPeriodId)
             .AsQueryable();
         if (request.MinDate != null)
         {

@@ -34,6 +34,15 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
     public bool IsOpen { get; internal set; }
 
     /// <summary>
+    /// Determines if the provided date falls within the Accounting Period
+    /// </summary>
+    public bool IsDateInPeriod(DateOnly date)
+    {
+        int monthDifference = Math.Abs(((Year - date.Year) * 12) + Month - date.Month);
+        return monthDifference <= 1;
+    }
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="year">Year for this Accounting Period</param>

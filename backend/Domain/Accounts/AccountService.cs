@@ -23,17 +23,30 @@ public class AccountService(
     {
         account = null;
         initialTransaction = null;
+        exceptions = [];
 
-        if (!ValidateAccountName(request.Name, out exceptions))
+        if (!ValidateAccountName(request.Name, out IEnumerable<Exception> nameExceptions))
+        {
+            exceptions = exceptions.Concat(nameExceptions);
+        }
+        if (!request.AccountingPeriod.IsOpen)
+        {
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException());
+        }
+        if (!request.AccountingPeriod.IsDateInPeriod(request.AddDate))
+        {
+            exceptions = exceptions.Append(new InvalidAddDateException());
+        }
+        if (exceptions.Any())
         {
             return false;
         }
-        account = new Account(request.Name, request.Type, request.AccountingPeriodId, request.AddDate);
+        account = new Account(request.Name, request.Type, request.AccountingPeriod.Id, request.AddDate);
         if (request.InitialFundAmounts.Any())
         {
             if (!transactionService.TryCreate(new CreateTransactionRequest
             {
-                AccountingPeriod = request.AccountingPeriodId,
+                AccountingPeriod = request.AccountingPeriod,
                 Date = request.AddDate,
                 Location = "Initial",
                 Description = "Initial Balance",
@@ -93,7 +106,7 @@ public class AccountService(
 
         if (transactionRepository.DoAnyTransactionsExistForAccount(account))
         {
-            exceptions = [new UnableToDeleteAccountException("Cannot delete an Account that has Transactions.")];
+            exceptions = [new UnableToDeleteException("Cannot delete an Account that has Transactions.")];
             return false;
         }
         if (account.InitialTransaction != null)
@@ -121,11 +134,11 @@ public class AccountService(
 
         if (string.IsNullOrEmpty(name))
         {
-            exceptions = exceptions.Append(new InvalidAccountNameException("Account name cannot be empty"));
+            exceptions = exceptions.Append(new InvalidNameException("Account name cannot be empty"));
         }
         if (accountRepository.TryGetByName(name, out _))
         {
-            exceptions = exceptions.Append(new InvalidAccountNameException("Account name must be unique"));
+            exceptions = exceptions.Append(new InvalidNameException("Account name must be unique"));
         }
         return !exceptions.Any();
     }

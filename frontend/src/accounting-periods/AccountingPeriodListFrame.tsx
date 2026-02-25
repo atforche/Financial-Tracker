@@ -5,6 +5,7 @@ import {
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type JSX, useState } from "react";
 import AccountingPeriodDialog from "@accounting-periods/AccountingPeriodDialog";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import { Checkbox } from "@mui/material";
 import ColumnButton from "@framework/listframe/ColumnButton";
 import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
@@ -121,6 +122,7 @@ const AccountingPeriodListFrame = function (): JSX.Element {
     },
   ];
 
+  const errorHandler = error ? new ApiErrorHandler(error) : null;
   return (
     <ListFrame<AccountingPeriod>
       name="Accounting Periods"
@@ -137,7 +139,7 @@ const AccountingPeriodListFrame = function (): JSX.Element {
     >
       {dialog}
       <SuccessAlert message={message} />
-      <ErrorAlert error={error} />
+      <ErrorAlert errorHandler={errorHandler} />
     </ListFrame>
   );
 };

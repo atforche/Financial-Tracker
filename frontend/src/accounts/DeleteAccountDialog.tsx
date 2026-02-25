@@ -1,5 +1,6 @@
 import { Button, Typography } from "@mui/material";
 import type { Account } from "@accounts/ApiTypes";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import Dialog from "@framework/dialog/Dialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import type { JSX } from "react/jsx-runtime";
@@ -30,6 +31,7 @@ const DeleteAccountDialog = function ({
   if (isSuccess) {
     onClose(true);
   }
+  const errorHandler = error ? new ApiErrorHandler(error) : null;
   return (
     <Dialog
       title="Delete Account"
@@ -39,7 +41,7 @@ const DeleteAccountDialog = function ({
             Are you sure you want to delete the account &quot;
             {account.name}&quot;?
           </Typography>
-          <ErrorAlert error={error} />
+          <ErrorAlert errorHandler={errorHandler} />
         </>
       }
       actions={

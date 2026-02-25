@@ -4,7 +4,8 @@ import {
   FormControlLabel,
   FormHelperText,
 } from "@mui/material";
-import type { ApiErrorDetail } from "@data/ApiError";
+import type ApiErrorHandler from "@data/ApiErrorHandler";
+import ErrorHelperText from "@framework/dialog/ErrorHelperText";
 import type { JSX } from "react";
 
 /**
@@ -17,7 +18,8 @@ interface BooleanEntryFieldProps {
   readonly label: string;
   readonly value: boolean;
   readonly setValue?: ((newValue: boolean) => void) | null;
-  readonly error?: ApiErrorDetail | null;
+  readonly errorHandler?: ApiErrorHandler | null;
+  readonly errorKey?: string | null;
 }
 
 /**
@@ -29,10 +31,11 @@ const BooleanEntryField = function ({
   label,
   value,
   setValue = null,
-  error = null,
+  errorHandler = null,
+  errorKey = null,
 }: BooleanEntryFieldProps): JSX.Element {
   return (
-    <FormControl error={error !== null}>
+    <FormControl error={(errorHandler?.handleError(errorKey) ?? null) !== null}>
       <FormControlLabel
         control={
           <Checkbox
@@ -46,7 +49,9 @@ const BooleanEntryField = function ({
         labelPlacement="start"
         sx={{ justifyContent: "left" }}
       />
-      <FormHelperText>{error?.description ?? ""}</FormHelperText>
+      <FormHelperText>
+        <ErrorHelperText errorHandler={errorHandler} errorKey={errorKey} />
+      </FormHelperText>
     </FormControl>
   );
 };

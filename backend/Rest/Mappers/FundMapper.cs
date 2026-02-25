@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Data.Funds;
 using Domain.Funds;
-using Microsoft.AspNetCore.Mvc;
 using Models.Funds;
 
 namespace Rest.Mappers;
@@ -25,17 +24,5 @@ public sealed class FundMapper(FundBalanceService fundBalanceService, FundBalanc
     /// <summary>
     /// Attempts to map the provided ID to a Fund
     /// </summary>
-    public bool TryToDomain(
-        Guid fundId,
-        [NotNullWhen(true)] out Fund? fund,
-        [NotNullWhen(false)] out IActionResult? errorResult)
-    {
-        errorResult = null;
-        if (!fundRepository.TryGetById(fundId, out fund))
-        {
-            errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Fund with ID {fundId} was not found.", []));
-            return false;
-        }
-        return true;
-    }
+    public bool TryToDomain(Guid fundId, [NotNullWhen(true)] out Fund? fund) => fundRepository.TryGetById(fundId, out fund);
 }

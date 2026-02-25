@@ -1,14 +1,14 @@
-namespace Domain.Accounts.Exceptions;
+namespace Domain.Funds.Exceptions;
 
 /// <summary>
-/// Exception thrown when an Account cannot be deleted
+/// Exception thrown when a Fund cannot be deleted
 /// </summary>
-public class UnableToDeleteAccountException : Exception
+public class UnableToDeleteException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public UnableToDeleteAccountException() : base("Unable to delete this Account.")
+    public UnableToDeleteException() : base("Unable to delete this Fund.")
     {
     }
 
@@ -16,7 +16,7 @@ public class UnableToDeleteAccountException : Exception
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="message">Message for this Exception</param>
-    public UnableToDeleteAccountException(string message) : base(message)
+    public UnableToDeleteException(string message) : base(message)
     {
     }
 
@@ -25,7 +25,7 @@ public class UnableToDeleteAccountException : Exception
     /// </summary>
     /// <param name="message">Message for this Exception</param>
     /// <param name="innerException">Inner Exception</param>
-    public UnableToDeleteAccountException(string message, Exception innerException) : base(message, innerException)
+    public UnableToDeleteException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

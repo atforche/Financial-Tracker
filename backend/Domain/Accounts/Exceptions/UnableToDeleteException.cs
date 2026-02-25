@@ -1,14 +1,14 @@
-namespace Domain.Funds.Exceptions;
+namespace Domain.Accounts.Exceptions;
 
 /// <summary>
-/// Exception thrown when a Fund name is invalid
+/// Exception thrown when an Account cannot be deleted
 /// </summary>
-public class InvalidFundNameException : Exception
+public class UnableToDeleteException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public InvalidFundNameException() : base("The provided Fund name is invalid.")
+    public UnableToDeleteException() : base("Unable to delete this Account.")
     {
     }
 
@@ -16,7 +16,7 @@ public class InvalidFundNameException : Exception
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="message">Message for this Exception</param>
-    public InvalidFundNameException(string message) : base(message)
+    public UnableToDeleteException(string message) : base(message)
     {
     }
 
@@ -25,7 +25,7 @@ public class InvalidFundNameException : Exception
     /// </summary>
     /// <param name="message">Message for this Exception</param>
     /// <param name="innerException">Inner Exception</param>
-    public InvalidFundNameException(string message, Exception innerException) : base(message, innerException)
+    public UnableToDeleteException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

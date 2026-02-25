@@ -4,6 +4,7 @@ import {
 } from "@accounting-periods/ApiTypes";
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type JSX, useState } from "react";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import ColumnButton from "@framework/listframe/ColumnButton";
 import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
 import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
@@ -206,6 +207,7 @@ const AccountingPeriodTransactionListFrame = function ({
     },
   ];
 
+  const errorHandler = error ? new ApiErrorHandler(error) : null;
   return (
     <ListFrame<Transaction>
       name="Transactions"
@@ -222,7 +224,7 @@ const AccountingPeriodTransactionListFrame = function ({
     >
       {childDialog}
       <SuccessAlert message={message} />
-      <ErrorAlert error={error} />
+      <ErrorAlert errorHandler={errorHandler} />
     </ListFrame>
   );
 };

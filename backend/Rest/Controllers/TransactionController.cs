@@ -1,11 +1,10 @@
-using System.Diagnostics.CodeAnalysis;
 using Data;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
+using Domain.Transactions.Exceptions;
 using Microsoft.AspNetCore.Mvc;
-using Models.Errors;
 using Models.Funds;
 using Models.Transactions;
 using Rest.Mappers;
@@ -30,25 +29,41 @@ public sealed class TransactionController(
     /// </summary>
     [HttpPost("")]
     [ProducesResponseType(typeof(TransactionModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> CreateAsync(CreateTransactionModel createTransactionModel)
     {
-        if (!accountingPeriodMapper.TryToDomain(createTransactionModel.AccountingPeriodId, out AccountingPeriod? accountingPeriod, out IActionResult? errorResult))
+        Dictionary<string, string[]> errors = [];
+        if (!accountingPeriodMapper.TryToDomain(createTransactionModel.AccountingPeriodId, out AccountingPeriod? accountingPeriod))
         {
-            return errorResult;
+            errors.Add(nameof(createTransactionModel.AccountingPeriodId), [$"Accounting Period with ID {createTransactionModel.AccountingPeriodId} was not found."]);
         }
-        if (!TryBuildCreateTransactionAccountRequest(createTransactionModel.DebitAccount, out CreateTransactionAccountRequest? debitAccountRequest, out errorResult))
+        if (!TryBuildCreateTransactionAccountRequest(createTransactionModel.DebitAccount, out CreateTransactionAccountRequest? debitAccountRequest, out Dictionary<string, string[]> debitAccountErrors))
         {
-            return errorResult;
+            foreach (KeyValuePair<string, string[]> error in debitAccountErrors)
+            {
+                errors.Add($"{nameof(createTransactionModel.DebitAccount)}.{error.Key}", error.Value);
+            }
         }
-        if (!TryBuildCreateTransactionAccountRequest(createTransactionModel.CreditAccount, out CreateTransactionAccountRequest? creditAccountRequest, out errorResult))
+        if (!TryBuildCreateTransactionAccountRequest(createTransactionModel.CreditAccount, out CreateTransactionAccountRequest? creditAccountRequest, out Dictionary<string, string[]> creditAccountErrors))
         {
-            return errorResult;
+            foreach (KeyValuePair<string, string[]> error in creditAccountErrors)
+            {
+                errors.Add($"{nameof(createTransactionModel.CreditAccount)}.{error.Key}", error.Value);
+            }
+        }
+        if (errors.Count > 0 || accountingPeriod == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to create Transaction.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         if (!transactionService.TryCreate(
             new CreateTransactionRequest
             {
-                AccountingPeriod = accountingPeriod.Id,
+                AccountingPeriod = accountingPeriod,
                 Date = createTransactionModel.Date,
                 Location = createTransactionModel.Location,
                 Description = createTransactionModel.Description,
@@ -58,7 +73,20 @@ public sealed class TransactionController(
             out Transaction? newTransaction,
             out IEnumerable<Exception> exceptions))
         {
-            return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to create Transaction.", exceptions));
+            errors = exceptions.GroupBy(exception => exception switch
+            {
+                InvalidAccountingPeriodException => nameof(createTransactionModel.AccountingPeriodId),
+                InvalidTransactionDateException => nameof(createTransactionModel.Date),
+                InvalidDebitAccountException => nameof(createTransactionModel.DebitAccount),
+                InvalidCreditAccountException => nameof(createTransactionModel.CreditAccount),
+                _ => string.Empty
+            }).ToDictionary(group => group.Key, group => group.Select(exception => exception.Message).ToArray());
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to create Transaction.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         await unitOfWork.SaveChangesAsync();
         return Ok(transactionMapper.ToModel(newTransaction));
@@ -69,20 +97,36 @@ public sealed class TransactionController(
     /// </summary>
     [HttpPost("{transactionId}")]
     [ProducesResponseType(typeof(TransactionModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UpdateAsync(Guid transactionId, UpdateTransactionModel updateTransactionModel)
     {
-        if (!transactionMapper.TryToDomain(transactionId, out Transaction? transaction, out IActionResult? errorResult))
+        Dictionary<string, string[]> errors = [];
+        if (!transactionMapper.TryToDomain(transactionId, out Transaction? transaction))
         {
-            return errorResult;
+            errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
         }
-        if (!TryBuildUpdateTransactionAccountRequest(updateTransactionModel.DebitAccount, out UpdateTransactionAccountRequest? debitAccountRequest, out errorResult))
+        if (!TryBuildUpdateTransactionAccountRequest(updateTransactionModel.DebitAccount, out UpdateTransactionAccountRequest? debitAccountRequest, out Dictionary<string, string[]> debitAccountErrors))
         {
-            return errorResult;
+            foreach (KeyValuePair<string, string[]> error in debitAccountErrors)
+            {
+                errors.Add($"{nameof(updateTransactionModel.DebitAccount)}.{error.Key}", error.Value);
+            }
         }
-        if (!TryBuildUpdateTransactionAccountRequest(updateTransactionModel.CreditAccount, out UpdateTransactionAccountRequest? creditAccountRequest, out errorResult))
+        if (!TryBuildUpdateTransactionAccountRequest(updateTransactionModel.CreditAccount, out UpdateTransactionAccountRequest? creditAccountRequest, out Dictionary<string, string[]> creditAccountErrors))
         {
-            return errorResult;
+            foreach (KeyValuePair<string, string[]> error in creditAccountErrors)
+            {
+                errors.Add($"{nameof(updateTransactionModel.CreditAccount)}.{error.Key}", error.Value);
+            }
+        }
+        if (errors.Count > 0 || transaction == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to update Transaction.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         if (!transactionService.TryUpdate(
                 transaction,
@@ -96,7 +140,19 @@ public sealed class TransactionController(
                 },
                 out IEnumerable<Exception> exceptions))
         {
-            return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to update Transaction.", exceptions));
+            errors = exceptions.GroupBy(exception => exception switch
+            {
+                InvalidTransactionDateException => nameof(updateTransactionModel.Date),
+                InvalidDebitAccountException => nameof(updateTransactionModel.DebitAccount),
+                InvalidCreditAccountException => nameof(updateTransactionModel.CreditAccount),
+                _ => string.Empty
+            }).ToDictionary(group => group.Key, group => group.Select(exception => exception.Message).ToArray());
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to update Transaction.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         await unitOfWork.SaveChangesAsync();
         return Ok(transactionMapper.ToModel(transaction));
@@ -107,16 +163,26 @@ public sealed class TransactionController(
     /// </summary>
     [HttpPost("{transactionId}/post")]
     [ProducesResponseType(typeof(TransactionModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> PostAsync(Guid transactionId, PostTransactionModel postTransactionModel)
     {
-        if (!transactionMapper.TryToDomain(transactionId, out Transaction? transaction, out IActionResult? errorResult))
+        Dictionary<string, string[]> errors = [];
+        if (!transactionMapper.TryToDomain(transactionId, out Transaction? transaction))
         {
-            return errorResult;
+            errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
         }
-        if (!accountMapper.TryToDomain(postTransactionModel.AccountId, out Account? account, out errorResult))
+        if (!accountMapper.TryToDomain(postTransactionModel.AccountId, out Account? account))
         {
-            return errorResult;
+            errors.Add(nameof(postTransactionModel.AccountId), new[] { $"Account with ID {postTransactionModel.AccountId} was not found." });
+        }
+        if (errors.Count > 0 || transaction == null || account == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to post Transaction.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         if (!transactionService.TryPost(
                 transaction,
@@ -124,7 +190,18 @@ public sealed class TransactionController(
                 postTransactionModel.Date,
                 out IEnumerable<Exception> exceptions))
         {
-            return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to post Transaction.", exceptions));
+            errors = exceptions.GroupBy(exception => exception switch
+            {
+                InvalidTransactionDateException => nameof(postTransactionModel.Date),
+                InvalidDebitAccountException or InvalidCreditAccountException => nameof(postTransactionModel.AccountId),
+                _ => string.Empty
+            }).ToDictionary(group => group.Key, group => group.Select(exception => exception.Message).ToArray());
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to post Transaction.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         await unitOfWork.SaveChangesAsync();
         return Ok(transactionMapper.ToModel(transaction));
@@ -134,16 +211,33 @@ public sealed class TransactionController(
     /// Deletes the Transaction with the provided ID
     /// </summary>
     [HttpDelete("{transactionId}")]
-    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> DeleteAsync(Guid transactionId)
     {
-        if (!transactionMapper.TryToDomain(transactionId, out Transaction? transaction, out IActionResult? errorResult))
+        Dictionary<string, string[]> errors = [];
+        if (!transactionMapper.TryToDomain(transactionId, out Transaction? transaction))
         {
-            return errorResult;
+            errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
+        }
+        if (errors.Count > 0 || transaction == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to delete Transaction.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         if (!transactionService.TryDelete(transaction, null, out IEnumerable<Exception> exceptions))
         {
-            return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to delete Transaction.", exceptions));
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to delete Transaction.",
+                Errors = {
+                    { string.Empty, exceptions.Select(e => e.Message).ToArray() }
+                },
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         await unitOfWork.SaveChangesAsync();
         return NoContent();
@@ -155,27 +249,34 @@ public sealed class TransactionController(
     private bool TryBuildCreateTransactionAccountRequest(
         CreateTransactionAccountModel? model,
         out CreateTransactionAccountRequest? request,
-        [NotNullWhen(false)] out IActionResult? errorResult)
+        out Dictionary<string, string[]> errors)
     {
         request = null;
-        errorResult = null;
+        errors = new Dictionary<string, string[]>();
 
         if (model == null)
         {
             return true;
         }
-        if (!accountMapper.TryToDomain(model.AccountId, out Account? account, out errorResult))
+        if (!accountMapper.TryToDomain(model.AccountId, out Account? account))
         {
-            return false;
+            errors.Add(nameof(model.AccountId), new[] { $"Account with ID {model.AccountId} was not found." });
         }
         List<FundAmount> fundAmounts = [];
-        foreach (CreateFundAmountModel fundAmountModel in model.FundAmounts)
+        foreach ((int index, CreateFundAmountModel fundAmountModel) in model.FundAmounts.Index())
         {
-            if (!fundAmountMapper.TryToDomain(fundAmountModel, out FundAmount? fundAmount, out errorResult))
+            if (!fundAmountMapper.TryToDomain(fundAmountModel, out FundAmount? fundAmount))
             {
-                return false;
+                errors.Add($"{nameof(model.FundAmounts)}[{index}]", new[] { $"Fund with ID {fundAmountModel.FundId} was not found." });
             }
-            fundAmounts.Add(fundAmount);
+            else
+            {
+                fundAmounts.Add(fundAmount);
+            }
+        }
+        if (errors.Count > 0 || account == null)
+        {
+            return false;
         }
         request = new CreateTransactionAccountRequest
         {
@@ -191,23 +292,30 @@ public sealed class TransactionController(
     private bool TryBuildUpdateTransactionAccountRequest(
         UpdateTransactionAccountModel? model,
         out UpdateTransactionAccountRequest? request,
-        [NotNullWhen(false)] out IActionResult? errorResult)
+        out Dictionary<string, string[]> errors)
     {
         request = null;
-        errorResult = null;
+        errors = new Dictionary<string, string[]>();
 
         if (model == null)
         {
             return true;
         }
         List<FundAmount> fundAmounts = [];
-        foreach (CreateFundAmountModel fundAmountModel in model.FundAmounts)
+        foreach ((int index, CreateFundAmountModel fundAmountModel) in model.FundAmounts.Index())
         {
-            if (!fundAmountMapper.TryToDomain(fundAmountModel, out FundAmount? fundAmount, out errorResult))
+            if (!fundAmountMapper.TryToDomain(fundAmountModel, out FundAmount? fundAmount))
             {
-                return false;
+                errors.Add($"{nameof(model.FundAmounts)}[{index}]", new[] { $"Fund with ID {fundAmountModel.FundId} was not found." });
             }
-            fundAmounts.Add(fundAmount);
+            else
+            {
+                fundAmounts.Add(fundAmount);
+            }
+        }
+        if (errors.Count > 0)
+        {
+            return false;
         }
         request = new UpdateTransactionAccountRequest
         {

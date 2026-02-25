@@ -1,18 +1,16 @@
-import type { FundAmount, FundIdentifier } from "@funds/ApiTypes";
 import CurrencyEntryField from "@framework/dialog/CurrencyEntryField";
+import type FundAmountEntryModel from "@funds/FundAmountEntryModel";
 import FundEntryField from "@funds/FundEntryField";
+import type { FundIdentifier } from "@funds/ApiTypes";
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
 
 /**
  * Props for the FundAmountEntryFrame component.
- * @param value - Current value for this Fund Amount Entry Frame.
- * @param setValue - Callback to update the value in this Fund Amount Entry Frame. If null, this field is read-only.
- * @param filter - Function to filter the available funds for selection.
  */
 interface FundAmountEntryFrameProps {
-  readonly value: FundAmount | null;
-  readonly setValue?: ((newValue: FundAmount | null) => void) | null;
+  readonly value: FundAmountEntryModel;
+  readonly setValue?: ((newValue: FundAmountEntryModel) => void) | null;
   readonly filter?: ((fund: FundIdentifier) => boolean) | null;
 }
 
@@ -27,17 +25,26 @@ const FundAmountEntryFrame = function ({
   filter = null,
 }: FundAmountEntryFrameProps): JSX.Element {
   return (
-    <Stack direction="row" spacing={2} alignItems="center">
+    <Stack
+      direction="row"
+      spacing={2}
+      alignItems="center"
+      sx={{ width: "100%" }}
+    >
       <FundEntryField
         label="Fund"
-        value={value ? { id: value.fundId, name: value.fundName } : null}
+        value={
+          value.fundId !== null && value.fundName !== null
+            ? { id: value.fundId, name: value.fundName }
+            : null
+        }
         setValue={
           setValue
             ? (newValue): void => {
                 setValue({
-                  fundId: newValue?.id ?? "",
-                  fundName: newValue?.name ?? "",
-                  amount: value?.amount ?? 0,
+                  fundId: newValue?.id ?? null,
+                  fundName: newValue?.name ?? null,
+                  amount: value.amount ?? null,
                 });
               }
             : null
@@ -46,13 +53,13 @@ const FundAmountEntryFrame = function ({
       />
       <CurrencyEntryField
         label="Amount"
-        value={value ? value.amount : null}
+        value={value.amount}
         setValue={
           setValue
             ? (newAmount): void => {
                 setValue({
-                  fundId: value?.fundId ?? "",
-                  fundName: value?.fundName ?? "",
+                  fundId: value.fundId ?? null,
+                  fundName: value.fundName ?? null,
                   amount: newAmount,
                 });
               }

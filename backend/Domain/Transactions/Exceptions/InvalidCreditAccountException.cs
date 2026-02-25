@@ -1,14 +1,14 @@
 namespace Domain.Transactions.Exceptions;
 
 /// <summary>
-/// Exception thrown when a Transaction has an invalid Account
+/// Exception thrown when a Transaction has an invalid credit Account
 /// </summary>
-public class InvalidAccountException : Exception
+public class InvalidCreditAccountException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public InvalidAccountException() : base("The Transaction has an invalid Account.")
+    public InvalidCreditAccountException() : base("The Transaction has an invalid credit Account.")
     {
     }
 
@@ -16,7 +16,7 @@ public class InvalidAccountException : Exception
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="message">Message for this Exception</param>
-    public InvalidAccountException(string message) : base(message)
+    public InvalidCreditAccountException(string message) : base(message)
     {
     }
 
@@ -25,7 +25,7 @@ public class InvalidAccountException : Exception
     /// </summary>
     /// <param name="message">Message for this Exception</param>
     /// <param name="innerException">Inner Exception</param>
-    public InvalidAccountException(string message, Exception innerException) : base(message, innerException)
+    public InvalidCreditAccountException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

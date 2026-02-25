@@ -1,4 +1,5 @@
 import { Button, Typography } from "@mui/material";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import Dialog from "@framework/dialog/Dialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import type { JSX } from "react/jsx-runtime";
@@ -29,6 +30,7 @@ const DeleteTransactionDialog = function ({
   if (isSuccess) {
     onClose(true);
   }
+  const errorHandler = error === null ? null : new ApiErrorHandler(error);
   return (
     <Dialog
       title="Delete Transaction"
@@ -37,7 +39,7 @@ const DeleteTransactionDialog = function ({
           <Typography>
             Are you sure you want to delete this transaction?
           </Typography>
-          <ErrorAlert error={error} />
+          <ErrorAlert errorHandler={errorHandler} />
         </>
       }
       actions={

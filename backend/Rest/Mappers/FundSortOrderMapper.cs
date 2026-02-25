@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using Data.Funds;
-using Microsoft.AspNetCore.Mvc;
 using Models.Funds;
 
 namespace Rest.Mappers;
@@ -13,12 +12,8 @@ internal sealed class FundSortOrderMapper
     /// <summary>
     /// Attempts to map the provided Fund Sort Order Model to a Fund Sort Order
     /// </summary>
-    public static bool TryToData(
-        FundSortOrderModel fundSortOrderModel,
-        [NotNullWhen(true)] out FundSortOrder? fundSortOrder,
-        [NotNullWhen(false)] out IActionResult? errorResult)
+    public static bool TryToData(FundSortOrderModel fundSortOrderModel, [NotNullWhen(true)] out FundSortOrder? fundSortOrder)
     {
-        errorResult = null;
         fundSortOrder = fundSortOrderModel switch
         {
             FundSortOrderModel.Name => FundSortOrder.Name,
@@ -29,11 +24,6 @@ internal sealed class FundSortOrderMapper
             FundSortOrderModel.BalanceDescending => FundSortOrder.BalanceDescending,
             _ => null
         };
-        if (fundSortOrder == null)
-        {
-            errorResult = new NotFoundObjectResult(ErrorMapper.ToModel($"Unrecognized Fund Sort Order Model: {fundSortOrderModel}", []));
-            return false;
-        }
-        return true;
+        return fundSortOrder != null;
     }
 }

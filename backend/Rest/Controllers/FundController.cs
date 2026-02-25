@@ -2,10 +2,10 @@ using Data;
 using Data.Funds;
 using Data.Transactions;
 using Domain.Funds;
+using Domain.Funds.Exceptions;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Models;
-using Models.Errors;
 using Models.Funds;
 using Models.Transactions;
 using Rest.Mappers;
@@ -30,14 +30,26 @@ public sealed class FundController(
     /// </summary>
     [HttpGet("")]
     [ProducesResponseType(typeof(CollectionModel<FundModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public IActionResult GetAll([FromQuery] FundQueryParameterModel queryParameters)
     {
+        Dictionary<string, string[]> errors = [];
+
         FundSortOrder? fundSortOrder = null;
-        if (queryParameters.SortBy != null && !FundSortOrderMapper.TryToData(queryParameters.SortBy.Value, out fundSortOrder, out IActionResult? errorResult))
+        if (queryParameters.SortBy != null && !FundSortOrderMapper.TryToData(queryParameters.SortBy.Value, out fundSortOrder))
         {
-            return errorResult;
+            errors.Add(nameof(queryParameters.SortBy), new[] { $"Unrecognized Fund Sort Order Model: {queryParameters.SortBy.Value}" });
         }
+        if (errors.Count > 0)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Funds.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+
         PaginatedCollection<Fund> funds = fundRepository.GetMany(new GetFundsRequest
         {
             SortBy = fundSortOrder,
@@ -57,30 +69,44 @@ public sealed class FundController(
     /// </summary>
     [HttpGet("{fundId}/transactions")]
     [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public IActionResult GetTransactions(Guid fundId, [FromQuery] FundTransactionQueryParameterModel queryParameters)
     {
-        if (!fundMapper.TryToDomain(fundId, out Fund? fund, out IActionResult? errorResult))
+        Dictionary<string, string[]> errors = [];
+        if (!fundMapper.TryToDomain(fundId, out Fund? fund))
         {
-            return errorResult;
+            errors.Add(nameof(fundId), new[] { $"Fund with ID {fundId} not found." });
         }
         FundTransactionSortOrder? fundTransactionSortOrder = null;
-        if (queryParameters.SortBy != null && !FundTransactionSortOrderMapper.TryToData(queryParameters.SortBy.Value, out fundTransactionSortOrder, out errorResult))
+        if (queryParameters.SortBy != null && !FundTransactionSortOrderMapper.TryToData(queryParameters.SortBy.Value, out fundTransactionSortOrder))
         {
-            return errorResult;
+            errors.Add(nameof(queryParameters.SortBy), new[] { $"Unrecognized Fund Transaction Sort Order Model: {queryParameters.SortBy.Value}" });
         }
         IEnumerable<TransactionType> transactionTypes = [];
         if (queryParameters.Types != null)
         {
-            foreach (TransactionTypeModel transactionTypeModel in queryParameters.Types)
+            foreach ((int index, TransactionTypeModel transactionTypeModel) in queryParameters.Types.Index())
             {
-                if (!TransactionTypeMapper.TryToData(transactionTypeModel, out TransactionType? transactionType, out errorResult))
+                if (!TransactionTypeMapper.TryToData(transactionTypeModel, out TransactionType? transactionType))
                 {
-                    return errorResult;
+                    errors.Add($"{nameof(queryParameters.Types)}[{index}]", new[] { $"Unrecognized Transaction Type Model: {transactionTypeModel}" });
                 }
-                transactionTypes = transactionTypes.Append(transactionType.Value);
+                else
+                {
+                    transactionTypes = transactionTypes.Append(transactionType.Value);
+                }
             }
         }
+        if (errors.Count > 0 || fund == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Fund Transactions.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+
         PaginatedCollection<Transaction> paginatedResults = transactionRepository.GetManyByFund(fund.Id, new GetFundTransactionsRequest
         {
             SortBy = fundTransactionSortOrder,
@@ -105,12 +131,22 @@ public sealed class FundController(
     /// <returns>The created Fund</returns>
     [HttpPost("")]
     [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> CreateAsync(CreateOrUpdateFundModel createFundModel)
     {
         if (!fundService.TryCreate(createFundModel.Name, createFundModel.Description, out Fund? newFund, out IEnumerable<Exception> exceptions))
         {
-            return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to create Fund.", exceptions));
+            var errors = exceptions.GroupBy(e => e switch
+            {
+                InvalidNameException => nameof(createFundModel.Name),
+                _ => string.Empty
+            }).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray());
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to create Fund.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         fundRepository.Add(newFund);
         await unitOfWork.SaveChangesAsync();
@@ -125,16 +161,33 @@ public sealed class FundController(
     /// <returns>The updated Fund</returns>
     [HttpPost("{fundId}")]
     [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UpdateAsync(Guid fundId, CreateOrUpdateFundModel updateFundModel)
     {
-        if (!fundMapper.TryToDomain(fundId, out Fund? fundToUpdate, out IActionResult? errorResult))
+        Dictionary<string, string[]> errors = [];
+        if (!fundMapper.TryToDomain(fundId, out Fund? fundToUpdate))
         {
-            return errorResult;
+            errors.Add(nameof(fundId), [$"Fund with ID {fundId} was not found."]);
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to update Fund.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         if (!fundService.TryUpdate(fundToUpdate, updateFundModel.Name, updateFundModel.Description, out IEnumerable<Exception> exceptions))
         {
-            return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to update Fund.", exceptions));
+            errors = exceptions.GroupBy(e => e switch
+            {
+                InvalidNameException => nameof(updateFundModel.Name),
+                _ => string.Empty
+            }).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray());
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to update Fund.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         await unitOfWork.SaveChangesAsync();
         return Ok(fundMapper.ToModel(fundToUpdate));
@@ -145,16 +198,30 @@ public sealed class FundController(
     /// </summary>
     /// <param name="fundId">ID of the Fund to delete</param>
     [HttpDelete("{fundId}")]
-    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> DeleteAsync(Guid fundId)
     {
-        if (!fundMapper.TryToDomain(fundId, out Fund? fundToDelete, out IActionResult? errorResult))
+        Dictionary<string, string[]> errors = [];
+        if (!fundMapper.TryToDomain(fundId, out Fund? fundToDelete))
         {
-            return errorResult;
+            errors.Add(nameof(fundId), [$"Fund with ID {fundId} was not found."]);
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to delete Fund.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         if (!fundService.TryDelete(fundToDelete, out IEnumerable<Exception> exceptions))
         {
-            return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to delete Fund.", exceptions));
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to delete Fund.",
+                Errors = {
+                    { string.Empty, exceptions.Select(e => e.Message).ToArray() }
+                },
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         await unitOfWork.SaveChangesAsync();
         return Ok();

@@ -1,14 +1,14 @@
-namespace Domain.Accounts.Exceptions;
+namespace Domain.AccountingPeriods.Exceptions;
 
 /// <summary>
-/// Exception thrown when an Account name is invalid
+/// Exception thrown when we're unable to close an Accounting Period
 /// </summary>
-public class InvalidAccountNameException : Exception
+public class UnableToCloseException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public InvalidAccountNameException() : base("The provided Account name is invalid.")
+    public UnableToCloseException() : base("Unable to close this Accounting Period.")
     {
     }
 
@@ -16,7 +16,7 @@ public class InvalidAccountNameException : Exception
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="message">Message for this Exception</param>
-    public InvalidAccountNameException(string message) : base(message)
+    public UnableToCloseException(string message) : base(message)
     {
     }
 
@@ -25,7 +25,7 @@ public class InvalidAccountNameException : Exception
     /// </summary>
     /// <param name="message">Message for this Exception</param>
     /// <param name="innerException">Inner Exception</param>
-    public InvalidAccountNameException(string message, Exception innerException) : base(message, innerException)
+    public UnableToCloseException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

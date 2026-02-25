@@ -1,6 +1,7 @@
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { type Fund, FundTransactionSortOrder } from "@funds/ApiTypes";
 import { type JSX, useState } from "react";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import ColumnButton from "@framework/listframe/ColumnButton";
 import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
 import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
@@ -206,6 +207,7 @@ const FundTransactionListFrame = function ({
     },
   ];
 
+  const errorHandler = error === null ? null : new ApiErrorHandler(error);
   return (
     <ListFrame<Transaction>
       name="Transactions"
@@ -222,7 +224,7 @@ const FundTransactionListFrame = function ({
     >
       {childDialog}
       <SuccessAlert message={message} />
-      <ErrorAlert error={error} />
+      <ErrorAlert errorHandler={errorHandler} />
     </ListFrame>
   );
 };

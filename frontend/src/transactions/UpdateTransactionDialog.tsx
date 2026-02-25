@@ -1,10 +1,11 @@
 import { type JSX, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import { Button } from "@mui/material";
 import CreateOrUpdateTransactionFrame from "@transactions/CreateOrUpdateTransactionFrame";
 import Dialog from "@framework/dialog/Dialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
-import type { FundAmount } from "@funds/ApiTypes";
+import type FundAmountEntryModel from "@funds/FundAmountEntryModel";
 import type { Transaction } from "@transactions/ApiTypes";
 import useUpdateTransaction from "@transactions/useUpdateTransaction";
 
@@ -34,20 +35,28 @@ const UpdateTransactionDialog = function ({
   const [description, setDescription] = useState<string>(
     transaction.description,
   );
-  const [debitFundAmounts, setDebitFundAmounts] = useState<FundAmount[]>(
-    transaction.debitAccount ? transaction.debitAccount.fundAmounts : [],
-  );
-  const [creditFundAmounts, setCreditFundAmounts] = useState<FundAmount[]>(
-    transaction.creditAccount ? transaction.creditAccount.fundAmounts : [],
-  );
+  const [debitFundAmounts, setDebitFundAmounts] = useState<
+    FundAmountEntryModel[]
+  >(transaction.debitAccount ? transaction.debitAccount.fundAmounts : []);
+  const [creditFundAmounts, setCreditFundAmounts] = useState<
+    FundAmountEntryModel[]
+  >(transaction.creditAccount ? transaction.creditAccount.fundAmounts : []);
   const { isRunning, isSuccess, updatedTransaction, error, updateTransaction } =
     useUpdateTransaction({
       transaction,
       date,
       location,
       description,
-      debitFundAmounts,
-      creditFundAmounts,
+      debitFundAmounts: debitFundAmounts.map((entryModel) => ({
+        fundId: entryModel.fundId ?? "",
+        fundName: entryModel.fundName ?? "",
+        amount: entryModel.amount ?? 0,
+      })),
+      creditFundAmounts: creditFundAmounts.map((entryModel) => ({
+        fundId: entryModel.fundId ?? "",
+        fundName: entryModel.fundName ?? "",
+        amount: entryModel.amount ?? 0,
+      })),
     });
   if (isSuccess) {
     if (updatedTransaction) {
@@ -55,6 +64,7 @@ const UpdateTransactionDialog = function ({
     }
     onClose(true);
   }
+  const errorHandler = error === null ? null : new ApiErrorHandler(error);
   return (
     <Dialog
       title="Update Transaction"
@@ -99,7 +109,7 @@ const UpdateTransactionDialog = function ({
               transaction.creditAccount ? setCreditFundAmounts : null
             }
           />
-          <ErrorAlert error={error} />
+          <ErrorAlert errorHandler={errorHandler} />
         </>
       }
       actions={

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.Funds;
+using Domain.Transactions.Exceptions;
 
 namespace Domain.Accounts;
 
@@ -82,7 +83,7 @@ public class AccountBalance
         if (fundBalances.Sum(balance => balance.Amount) < 0 ||
             fundBalances.Sum(balance => balance.Amount) - pendingDebits.Sum(balance => balance.Amount) < 0)
         {
-            exceptions = exceptions.Append(new InvalidOperationException("Account balance cannot be negative."));
+            exceptions = exceptions.Append(new InvalidDebitAccountException("Account balance cannot be negative."));
             return false;
         }
         accountBalance = new AccountBalance(accountId, fundBalances, pendingDebits, pendingCredits);
