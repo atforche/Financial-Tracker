@@ -34,7 +34,8 @@ const OpenAccountingPeriodEntryField = function ({
     isLoading,
     error: fetchError,
   } = useGetAllOpenAccountingPeriods();
-  const dualErrorHandler = errorHandler ?? (fetchError ? new ApiErrorHandler(fetchError) : null);
+  const dualErrorHandler =
+    errorHandler ?? (fetchError ? new ApiErrorHandler(fetchError) : null);
   return (
     <ComboBoxEntryField<AccountingPeriodIdentifier>
       label={label}

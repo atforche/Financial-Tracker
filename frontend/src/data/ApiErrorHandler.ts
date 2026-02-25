@@ -1,17 +1,16 @@
 import type { ApiError, ApiErrorDetail } from "@data/ApiError";
 
-
 /**
  * Capitalizes the first letter of the given string.
  * @param str - The string to capitalize.
  * @returns The input string with the first letter capitalized.
  */
-const uppercaseFirstLetter = function(str: string): string {
+const uppercaseFirstLetter = function (str: string): string {
   if (str.length === 0) {
     return str;
   }
   return str.charAt(0).toUpperCase() + str.slice(1);
-}
+};
 
 /**
  * Wraps an ApiError and provides access to individual error details by key,

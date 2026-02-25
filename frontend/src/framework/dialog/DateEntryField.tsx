@@ -55,9 +55,14 @@ const DateEntryField = function ({
         }}
         slotProps={{
           textField: {
-            error: (errorHandler?.handleError(errorKey) ?? null) !== null || internalErrorMessage !== null,
+            error:
+              (errorHandler?.handleError(errorKey) ?? null) !== null ||
+              internalErrorMessage !== null,
             helperText: internalErrorMessage ?? (
-              <ErrorHelperText errorHandler={errorHandler} errorKey={errorKey} />
+              <ErrorHelperText
+                errorHandler={errorHandler}
+                errorKey={errorKey}
+              />
             ),
           },
         }}

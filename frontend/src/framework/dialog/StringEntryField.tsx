@@ -41,7 +41,9 @@ const StringEntryField = function ({
       }}
       onChange={(event) => setValue?.(event.target.value)}
       error={(errorHandler?.handleError(errorKey) ?? null) !== null}
-      helperText={<ErrorHelperText errorHandler={errorHandler} errorKey={errorKey} />}
+      helperText={
+        <ErrorHelperText errorHandler={errorHandler} errorKey={errorKey} />
+      }
     />
   );
 };

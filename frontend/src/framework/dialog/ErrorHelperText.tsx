@@ -19,7 +19,6 @@ const ErrorHelperText = function ({
   errorHandler,
   errorKey = null,
 }: ErrorHelperTextProps): JSX.Element | null {
-
   const error = errorHandler?.handleError(errorKey) ?? null;
   if (error === null) {
     return null;

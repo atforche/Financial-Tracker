@@ -81,7 +81,9 @@ const CurrencyEntryField = function ({
         }
       }}
       error={(errorHandler?.handleError(errorKey) ?? null) !== null}
-      helperText={<ErrorHelperText errorHandler={errorHandler} errorKey={errorKey} />}
+      helperText={
+        <ErrorHelperText errorHandler={errorHandler} errorKey={errorKey} />
+      }
     />
   );
 };

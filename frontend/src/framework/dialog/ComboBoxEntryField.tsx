@@ -3,7 +3,6 @@ import type ApiErrorHandler from "@data/ApiErrorHandler";
 import ErrorHelperText from "@framework/dialog/ErrorHelperText";
 import type { JSX } from "react";
 
-
 /**
  * Interface representing a Combo Box option.
  * @param label - Label for this option.
@@ -54,7 +53,9 @@ const ComboBoxEntryField = function <T>({
           {...params}
           label={label}
           error={(errorHandler?.handleError(errorKey) ?? null) !== null}
-          helperText={<ErrorHelperText errorHandler={errorHandler} errorKey={errorKey} />}
+          helperText={
+            <ErrorHelperText errorHandler={errorHandler} errorKey={errorKey} />
+          }
           slotProps={{
             input: {
               ...params.InputProps,
