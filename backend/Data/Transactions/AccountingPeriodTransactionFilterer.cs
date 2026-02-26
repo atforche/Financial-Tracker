@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data.Transactions;
 
@@ -12,40 +13,49 @@ internal sealed class AccountingPeriodTransactionFilterer(DatabaseContext databa
     /// </summary>
     public List<AccountingPeriodTransactionSortModel> Get(AccountingPeriodId accountingPeriodId, GetAccountingPeriodTransactionsRequest request)
     {
-        var transactionsWithAccounts = databaseContext.Transactions
+        var debitTransactionAccounts = databaseContext.Transactions
+            .Where(transaction => transaction.DebitAccount != null && transaction.AccountingPeriodId == accountingPeriodId)
             .Join(databaseContext.Accounts,
-                transaction => transaction.DebitAccount != null ? transaction.DebitAccount.AccountId : null,
+                transaction => transaction.DebitAccount!.AccountId,
                 account => account.Id,
-                (transaction, account) => new { transaction, account })
+                (transaction, account) => new { Type = "debit", TransactionAccount = transaction.DebitAccount, Account = account })
+            .AsNoTracking()
+            .AsQueryable();
+        var creditTransactionAccounts = databaseContext.Transactions
+            .Where(transaction => transaction.CreditAccount != null && transaction.AccountingPeriodId == accountingPeriodId)
             .Join(databaseContext.Accounts,
-                pair => pair.transaction.CreditAccount != null ? pair.transaction.CreditAccount.AccountId : null,
+                transaction => transaction.CreditAccount!.AccountId,
                 account => account.Id,
-                (pair, account) => new { pair.transaction, debitAccount = pair.account, creditAccount = account })
-            .Where(pair => pair.transaction.AccountingPeriodId == accountingPeriodId)
+                (transaction, account) => new { Type = "credit", TransactionAccount = transaction.CreditAccount, Account = account })
+            .AsNoTracking()
             .AsQueryable();
         if (request.MinDate != null)
         {
-            transactionsWithAccounts = transactionsWithAccounts.Where(pair => pair.transaction.Date >= request.MinDate);
+            debitTransactionAccounts = debitTransactionAccounts.Where(pair => pair.TransactionAccount!.Transaction.Date >= request.MinDate);
+            creditTransactionAccounts = creditTransactionAccounts.Where(pair => pair.TransactionAccount!.Transaction.Date >= request.MinDate);
         }
         if (request.MaxDate != null)
         {
-            transactionsWithAccounts = transactionsWithAccounts.Where(pair => pair.transaction.Date <= request.MaxDate);
+            debitTransactionAccounts = debitTransactionAccounts.Where(pair => pair.TransactionAccount!.Transaction.Date <= request.MaxDate);
+            creditTransactionAccounts = creditTransactionAccounts.Where(pair => pair.TransactionAccount!.Transaction.Date <= request.MaxDate);
         }
         if (request.Locations != null && request.Locations.Count > 0)
         {
-            transactionsWithAccounts = transactionsWithAccounts.Where(pair => request.Locations.Contains(pair.transaction.Location));
+            debitTransactionAccounts = debitTransactionAccounts.Where(pair => request.Locations.Contains(pair.TransactionAccount!.Transaction.Location));
+            creditTransactionAccounts = creditTransactionAccounts.Where(pair => request.Locations.Contains(pair.TransactionAccount!.Transaction.Location));
         }
         if (request.Accounts != null && request.Accounts.Count > 0)
         {
-            transactionsWithAccounts = transactionsWithAccounts.Where(pair =>
-                request.Accounts.Contains(pair.debitAccount.Id) ||
-                request.Accounts.Contains(pair.creditAccount.Id));
+            debitTransactionAccounts = debitTransactionAccounts.Where(pair => request.Accounts.Contains(pair.TransactionAccount!.AccountId));
+            creditTransactionAccounts = creditTransactionAccounts.Where(pair => request.Accounts.Contains(pair.TransactionAccount!.AccountId));
         }
-        return transactionsWithAccounts.ToList().Select(pair => new AccountingPeriodTransactionSortModel
-        {
-            Transaction = pair.transaction,
-            DebitAccountName = pair.debitAccount.Name,
-            CreditAccountName = pair.creditAccount.Name
-        }).ToList();
+        return debitTransactionAccounts.ToList().Concat(creditTransactionAccounts.ToList())
+            .GroupBy(pair => pair.TransactionAccount!.Transaction.Id)
+            .Select(pair => new AccountingPeriodTransactionSortModel
+            {
+                Transaction = pair.First().TransactionAccount!.Transaction,
+                DebitAccountName = pair.FirstOrDefault(account => account.Type == "debit")?.Account.Name,
+                CreditAccountName = pair.FirstOrDefault(account => account.Type == "credit")?.Account.Name
+            }).ToList();
     }
 }

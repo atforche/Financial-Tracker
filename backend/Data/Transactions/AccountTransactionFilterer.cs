@@ -13,8 +13,8 @@ internal sealed class AccountTransactionFilterer(DatabaseContext databaseContext
     public List<AccountTransactionSortModel> Get(AccountId accountId, GetAccountTransactionsRequest request)
     {
         var transfers = databaseContext.Transactions
-            .Where(transaction => (transaction.DebitAccount != null && transaction.DebitAccount.AccountId == accountId) ||
-                                  (transaction.CreditAccount != null && transaction.CreditAccount.AccountId == accountId))
+            .Where(transaction => transaction.DebitAccount != null && transaction.DebitAccount.AccountId == accountId &&
+                                  transaction.CreditAccount != null && transaction.CreditAccount.AccountId == accountId)
             .LeftJoin(databaseContext.AccountBalanceHistories,
                 transaction => new { transactionId = transaction.Id, date = transaction.DebitAccount!.PostedDate },
                 history => new { transactionId = history.TransactionId, date = (DateOnly?)history.Date },

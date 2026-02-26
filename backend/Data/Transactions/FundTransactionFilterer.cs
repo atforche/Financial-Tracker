@@ -14,8 +14,8 @@ internal sealed class FundTransactionFilterer(DatabaseContext databaseContext)
     public List<FundTransactionSortModel> Get(FundId fundId, GetFundTransactionsRequest request)
     {
         IQueryable<Transaction> transfers = databaseContext.Transactions
-            .Where(transaction => (transaction.DebitAccount != null && transaction.DebitAccount.FundAmounts.Any(amount => amount.FundId == fundId)) ||
-                                  (transaction.CreditAccount != null && transaction.CreditAccount.FundAmounts.Any(amount => amount.FundId == fundId)))
+            .Where(transaction => transaction.DebitAccount != null && transaction.DebitAccount.FundAmounts.Any(amount => amount.FundId == fundId) &&
+                                  transaction.CreditAccount != null && transaction.CreditAccount.FundAmounts.Any(amount => amount.FundId == fundId))
             .AsQueryable();
         IQueryable<Transaction> debits = databaseContext.Transactions
             .Where(transaction => transaction.DebitAccount != null && transaction.DebitAccount.FundAmounts.Any(amount => amount.FundId == fundId) &&
