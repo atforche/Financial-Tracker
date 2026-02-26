@@ -95,10 +95,9 @@ const AccountListFrame = function (): JSX.Element {
       name: "available",
       headerContent: "Available to Spend",
       getBodyContent: (account: Account) =>
-        formatCurrency(
-          account.currentBalance.postedBalance -
-            account.currentBalance.pendingDebitAmount,
-        ),
+        account.currentBalance.availableToSpend === null
+          ? ""
+          : formatCurrency(account.currentBalance.availableToSpend),
       sortType:
         sortBy === AccountSortOrder.AvailableToSpend
           ? ColumnSortType.Ascending

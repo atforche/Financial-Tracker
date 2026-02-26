@@ -25,7 +25,7 @@ public sealed class AccountMapper(AccountBalanceService accountBalanceService, A
             Id = account.Id.Value,
             Name = account.Name,
             Type = accountTypeModel.Value,
-            CurrentBalance = accountBalanceMapper.ToModel(accountBalanceService.GetCurrentBalance(account.Id))
+            CurrentBalance = accountBalanceMapper.ToModel(accountBalanceService.GetCurrentBalance(account))
         };
         return true;
     }

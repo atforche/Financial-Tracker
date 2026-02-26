@@ -227,7 +227,6 @@ public sealed class AccountController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        accountRepository.Add(newAccount);
         if (initialTransaction != null)
         {
             transactionRepository.Add(initialTransaction);

@@ -17,8 +17,8 @@ internal sealed class AccountBalanceHistoryConfiguration : IEntityTypeConfigurat
         builder.HasKey(accountBalanceHistory => accountBalanceHistory.Id);
         builder.Property(accountBalanceHistory => accountBalanceHistory.Id).HasConversion(accountBalanceHistoryId => accountBalanceHistoryId.Value, value => new AccountBalanceHistoryId(value));
 
-        builder.Property(accountBalanceHistory => accountBalanceHistory.AccountId)
-            .HasConversion(accountId => accountId.Value, value => new AccountId(value));
+        builder.HasOne(accountBalanceHistory => accountBalanceHistory.Account).WithMany();
+        builder.Navigation(accountBalanceHistory => accountBalanceHistory.Account).AutoInclude();
 
         builder.Property(accountBalanceHistory => accountBalanceHistory.TransactionId)
             .HasConversion(transactionId => transactionId.Value, value => new TransactionId(value));

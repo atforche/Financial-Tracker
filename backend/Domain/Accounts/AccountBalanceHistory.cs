@@ -13,9 +13,9 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     private List<FundAmount> _pendingCredits = [];
 
     /// <summary>
-    /// Account ID for this Account Balance History
+    /// Account for this Account Balance History
     /// </summary>
-    public AccountId AccountId { get; init; }
+    public Account Account { get; init; }
 
     /// <summary>
     /// Transaction ID for this Account Balance History
@@ -66,12 +66,12 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     /// Converts this Account Balance History to an Account Balance
     /// </summary>
     /// <returns></returns>
-    public AccountBalance ToAccountBalance() => new(AccountId, FundBalances, PendingDebits, PendingCredits);
+    public AccountBalance ToAccountBalance() => new(Account, FundBalances, PendingDebits, PendingCredits);
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal AccountBalanceHistory(AccountId accountId,
+    internal AccountBalanceHistory(Account account,
         TransactionId transactionId,
         DateOnly date,
         int sequence,
@@ -80,7 +80,7 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
         IEnumerable<FundAmount> pendingCredits)
         : base(new AccountBalanceHistoryId(Guid.NewGuid()))
     {
-        AccountId = accountId;
+        Account = account;
         TransactionId = transactionId;
         Date = date;
         Sequence = sequence;
@@ -94,7 +94,7 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     /// </summary>
     private AccountBalanceHistory()
     {
-        AccountId = null!;
+        Account = null!;
         TransactionId = null!;
     }
 }

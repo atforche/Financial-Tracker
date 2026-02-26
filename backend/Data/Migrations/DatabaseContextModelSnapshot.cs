@@ -85,6 +85,8 @@ namespace Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AccountId");
+
                     b.ToTable("AccountBalanceHistories");
                 });
 
@@ -163,6 +165,12 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Domain.Accounts.AccountBalanceHistory", b =>
                 {
+                    b.HasOne("Domain.Accounts.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.OwnsMany("Domain.Funds.FundAmount", "FundBalances", b1 =>
                         {
                             b1.Property<int>("Id")
@@ -237,6 +245,8 @@ namespace Data.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("AccountBalanceHistoryId");
                         });
+
+                    b.Navigation("Account");
 
                     b.Navigation("FundBalances");
 

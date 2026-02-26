@@ -12,7 +12,7 @@ internal sealed class AccountFilterer(DatabaseContext databaseContext)
     {
         var accountsWithBalance = databaseContext.Accounts.GroupJoin(databaseContext.AccountBalanceHistories,
             account => account.Id,
-            history => history.AccountId,
+            history => history.Account.Id,
             (account, histories) => new
             {
                 account,

@@ -13,8 +13,9 @@ public sealed class AccountBalanceMapper(FundAmountMapper fundAmountMapper)
     /// </summary>
     public AccountBalanceModel ToModel(AccountBalance accountBalance) => new()
     {
-        AccountId = accountBalance.AccountId.Value,
+        AccountId = accountBalance.Account.Id.Value,
         PostedBalance = accountBalance.PostedBalance,
+        AvailableToSpend = accountBalance.AvailableToSpend,
         FundBalances = accountBalance.FundBalances.Select(fundAmountMapper.ToModel).ToList(),
         PendingDebitAmount = accountBalance.PendingDebits.Sum(fundAmount => fundAmount.Amount),
         PendingDebits = accountBalance.PendingDebits.Select(fundAmountMapper.ToModel).ToList(),

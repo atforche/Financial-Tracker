@@ -11,7 +11,8 @@ public class AccountRepository(DatabaseContext databaseContext) : IAccountReposi
     #region IAccountRepository
 
     /// <inheritdoc/>
-    public Account GetById(AccountId id) => databaseContext.Accounts.Single(account => account.Id == id);
+    public Account GetById(AccountId id) => databaseContext.Accounts.SingleOrDefault(account => account.Id == id)
+        ?? databaseContext.Accounts.Local.Single(account => account.Id == id);
 
     /// <inheritdoc/>
     public bool TryGetByName(string name, [NotNullWhen(true)] out Account? account)

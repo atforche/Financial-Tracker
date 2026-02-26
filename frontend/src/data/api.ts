@@ -1058,6 +1058,11 @@ export interface components {
              * @description Posted Balance for the Account Balance
              */
             postedBalance: number;
+            /**
+             * Format: double
+             * @description Available to Spend Balance for the Account Balance
+             */
+            availableToSpend: null | number;
             /** @description Fund Balances for the Account Balance */
             fundBalances: components["schemas"]["FundAmountModel"][];
             /**

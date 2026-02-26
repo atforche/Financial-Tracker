@@ -42,6 +42,7 @@ public class AccountService(
             return false;
         }
         account = new Account(request.Name, request.Type, request.AccountingPeriod.Id, request.AddDate);
+        accountRepository.Add(account);
         if (request.InitialFundAmounts.Any())
         {
             if (!transactionService.TryCreate(new CreateTransactionRequest
@@ -50,12 +51,20 @@ public class AccountService(
                 Date = request.AddDate,
                 Location = "Initial",
                 Description = "Initial Balance",
-                DebitAccount = null,
-                CreditAccount = new CreateTransactionAccountRequest
-                {
-                    Account = account,
-                    FundAmounts = request.InitialFundAmounts
-                },
+                DebitAccount = request.Type == AccountType.Debt
+                    ? new CreateTransactionAccountRequest
+                    {
+                        Account = account,
+                        FundAmounts = request.InitialFundAmounts
+                    }
+                    : null,
+                CreditAccount = request.Type == AccountType.Standard
+                    ? new CreateTransactionAccountRequest
+                    {
+                        Account = account,
+                        FundAmounts = request.InitialFundAmounts
+                    }
+                    : null,
                 IsInitialTransactionForAccount = true
             }, out initialTransaction, out IEnumerable<Exception> transactionExceptions))
             {
