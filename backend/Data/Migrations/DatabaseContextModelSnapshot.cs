@@ -41,6 +41,12 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("InitialAccountingPeriodId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("InitialDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid?>("InitialTransaction")
                         .HasColumnType("TEXT");
 
@@ -78,6 +84,8 @@ namespace Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
 
                     b.ToTable("AccountBalanceHistories");
                 });
@@ -130,7 +138,7 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("AccountingPeriod")
+                    b.Property<Guid>("AccountingPeriodId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateOnly>("Date")
@@ -140,12 +148,15 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("InitialAccountTransaction")
+                    b.Property<Guid?>("GeneratedByAccountId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("Sequence")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -154,6 +165,12 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Domain.Accounts.AccountBalanceHistory", b =>
                 {
+                    b.HasOne("Domain.Accounts.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.OwnsMany("Domain.Funds.FundAmount", "FundBalances", b1 =>
                         {
                             b1.Property<int>("Id")
@@ -228,6 +245,8 @@ namespace Data.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("AccountBalanceHistoryId");
                         });
+
+                    b.Navigation("Account");
 
                     b.Navigation("FundBalances");
 

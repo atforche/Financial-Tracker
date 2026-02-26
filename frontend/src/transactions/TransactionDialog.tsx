@@ -18,7 +18,7 @@ import UpdateTransactionDialog from "@transactions/UpdateTransactionDialog";
  * Props for the TransactionDialog component.
  */
 interface TransactionDialogProps {
-  readonly transaction: Transaction;
+  readonly inputTransaction: Transaction;
   readonly setMessage: (message: string | null) => void;
   readonly onClose: (needsRefetch: boolean) => void;
 }
@@ -29,20 +29,19 @@ interface TransactionDialogProps {
  * @returns JSX element representing the TransactionDialog.
  */
 const TransactionDialog = function ({
-  transaction,
+  inputTransaction,
   setMessage,
   onClose,
 }: TransactionDialogProps): JSX.Element {
-  const [existingTransaction, setExistingTransaction] =
-    useState<Transaction>(transaction);
+  const [transaction, setTransaction] = useState<Transaction>(inputTransaction);
   const [needsRefetch, setNeedsRefetch] = useState<boolean>(false);
   const [childDialog, setChildDialog] = useState<JSX.Element | null>(null);
 
   const onEdit = function (): void {
     setChildDialog(
       <UpdateTransactionDialog
-        existingTransaction={existingTransaction}
-        setExistingTransaction={setExistingTransaction}
+        transaction={transaction}
+        setTransaction={setTransaction}
         onClose={(success) => {
           setChildDialog(null);
           if (success) {
@@ -57,8 +56,8 @@ const TransactionDialog = function ({
   const onPost = function (): void {
     setChildDialog(
       <PostTransactionDialog
-        transaction={existingTransaction}
-        setTransaction={setExistingTransaction}
+        transaction={transaction}
+        setTransaction={setTransaction}
         onClose={(success) => {
           setChildDialog(null);
           if (success) {
@@ -73,7 +72,7 @@ const TransactionDialog = function ({
   const onDelete = function (): void {
     setChildDialog(
       <DeleteTransactionDialog
-        transaction={existingTransaction}
+        transaction={transaction}
         onClose={(success) => {
           setChildDialog(null);
           if (success) {
@@ -91,22 +90,22 @@ const TransactionDialog = function ({
       title="Transaction Details"
       content={
         <>
-          <TransactionDetailsFrame transaction={existingTransaction} />
+          <TransactionDetailsFrame transaction={transaction} />
           <Stack direction="row" spacing={2}>
-            {existingTransaction.debitAccount ? (
+            {transaction.debitAccount ? (
               <TransactionAccountFrame
-                transactionAccount={existingTransaction.debitAccount}
+                transactionAccount={transaction.debitAccount}
                 transactionAccountType={TransactionAccountType.Debit}
               />
             ) : null}
-            {existingTransaction.creditAccount ? (
+            {transaction.creditAccount ? (
               <TransactionAccountFrame
-                transactionAccount={existingTransaction.creditAccount}
+                transactionAccount={transaction.creditAccount}
                 transactionAccountType={TransactionAccountType.Credit}
               />
             ) : null}
           </Stack>
-          <TransactionFundFrame transaction={existingTransaction} />
+          <TransactionFundFrame transaction={transaction} />
           {childDialog}
         </>
       }

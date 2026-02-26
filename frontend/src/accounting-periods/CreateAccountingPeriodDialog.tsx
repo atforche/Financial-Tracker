@@ -1,9 +1,11 @@
 import { type JSX, useState } from "react";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import { Button } from "@mui/material";
+import type { CreateAccountingPeriodRequest } from "@accounting-periods/ApiTypes";
 import Dialog from "@framework/dialog/Dialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
-import { ErrorCode } from "@data/api";
 import IntegerEntryField from "@framework/dialog/IntegerEntryField";
+import nameof from "@data/nameof";
 import useCreateAccountingPeriod from "@accounting-periods/useCreateAccountingPeriod";
 
 /**
@@ -32,6 +34,7 @@ const CreateAccountingPeriodDialog = function ({
   if (isSuccess) {
     onClose(true);
   }
+  const errorHandler = error ? new ApiErrorHandler(error) : null;
   return (
     <Dialog
       title="Add Accounting Period"
@@ -41,31 +44,17 @@ const CreateAccountingPeriodDialog = function ({
             label="Year"
             value={year}
             setValue={setYear}
-            error={
-              error?.details.find(
-                (detail) =>
-                  detail.errorCode === ErrorCode.InvalidAccountingPeriodYear,
-              ) ?? null
-            }
+            errorHandler={errorHandler}
+            errorKey={nameof<CreateAccountingPeriodRequest>("year")}
           />
           <IntegerEntryField
             label="Month"
             value={month}
             setValue={setMonth}
-            error={
-              error?.details.find(
-                (detail) =>
-                  detail.errorCode === ErrorCode.InvalidAccountingPeriodMonth,
-              ) ?? null
-            }
+            errorHandler={errorHandler}
+            errorKey={nameof<CreateAccountingPeriodRequest>("month")}
           />
-          <ErrorAlert
-            error={error}
-            detailFilter={(detail) =>
-              detail.errorCode !== ErrorCode.InvalidAccountingPeriodYear &&
-              detail.errorCode !== ErrorCode.InvalidAccountingPeriodMonth
-            }
-          />
+          <ErrorAlert errorHandler={errorHandler} />
         </>
       }
       actions={

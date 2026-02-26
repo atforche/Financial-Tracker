@@ -15,7 +15,7 @@ public interface IAccountBalanceHistoryRepository
     /// <summary>
     /// Gets the latest Account Balance History entry for the specified Account ID
     /// </summary>
-    AccountBalanceHistory FindLatestForAccount(AccountId accountId);
+    AccountBalanceHistory? GetLatestForAccount(AccountId accountId);
 
     /// <summary>
     /// Gets all Account Balance History entries for the specified Transaction ID
@@ -23,19 +23,19 @@ public interface IAccountBalanceHistoryRepository
     IReadOnlyCollection<AccountBalanceHistory> GetAllByTransactionId(TransactionId transactionId);
 
     /// <summary>
-    /// Finds the earliest Account Balance History entry for the specified Transaction ID
+    /// Gets the earliest Account Balance History entry for the specified Transaction ID
     /// </summary>
-    AccountBalanceHistory FindEarliestByTransactionId(AccountId accountId, TransactionId transactionId);
+    AccountBalanceHistory GetEarliestByTransactionId(AccountId accountId, TransactionId transactionId);
 
     /// <summary>
-    /// Finds the latest Account Balance History entry earlier than the specified date and sequence number
+    /// Gets the latest Account Balance History entry earlier than the specified date and sequence number
     /// </summary>
-    AccountBalanceHistory? FindLatestHistoryEarlierThan(AccountId accountId, DateOnly historyDate, int sequenceNumber);
+    AccountBalanceHistory? GetLatestHistoryEarlierThan(AccountId accountId, DateOnly historyDate, int sequenceNumber);
 
     /// <summary>
     /// Gets all Account Balance History entries later than the specified date and sequence number
     /// </summary>
-    IReadOnlyCollection<(AccountBalanceHistory History, Transaction Transaction)> FindAllHistoriesLaterThan(AccountId accountId, DateOnly historyDate, int sequence);
+    IReadOnlyCollection<(AccountBalanceHistory History, Transaction Transaction)> GetAllHistoriesLaterThan(AccountId accountId, DateOnly historyDate, int sequence);
 
     /// <summary>
     /// Adds the provided Account Balance History to the repository

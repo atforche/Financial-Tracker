@@ -8,7 +8,6 @@ import { useCallback, useEffect, useState } from "react";
  */
 interface UseQueryArgs<T> {
   queryFunction: () => Promise<T | ApiError>;
-  initialData: T;
 }
 
 /**
@@ -16,16 +15,13 @@ interface UseQueryArgs<T> {
  * @param args - Arguments to use to query the data.
  * @returns Data that was retrieved, the loading state, and the current error.
  */
-const useQuery = function <T>({
-  queryFunction,
-  initialData,
-}: UseQueryArgs<T>): {
-  data: T;
+const useQuery = function <T>({ queryFunction }: UseQueryArgs<T>): {
+  data: T | null;
   isLoading: boolean;
   error: ApiError | null;
   refetch: () => void;
 } {
-  const [data, setData] = useState<T>(initialData);
+  const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [refetchIndex, setRefetchIndex] = useState(0);
@@ -41,15 +37,16 @@ const useQuery = function <T>({
       .then((result) => {
         if (isApiError(result)) {
           setError(result);
+          setData(null);
         } else {
           setData(result);
         }
       })
       .catch((err: unknown) => {
         setError({
-          message: `An unknown error occurred: ${String(err)}`,
-          details: [],
+          detail: `An unknown error occurred: ${String(err)}`,
         });
+        setData(null);
       })
       .finally(() => {
         setIsLoading(false);

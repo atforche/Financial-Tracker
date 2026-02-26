@@ -14,22 +14,55 @@ export interface paths {
         /** Retrieves all the Accounts from the database */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Sort order to apply to the results */
+                    SortBy?: components["schemas"]["AccountSortOrderModel"];
+                    /** @description Account names to include in the results */
+                    Names?: string[];
+                    /** @description Account types to include in the results */
+                    Types?: components["schemas"]["AccountTypeModel"][];
+                    /** @description Maximum number of results to return */
+                    Limit?: number;
+                    /** @description Number of results to skip */
+                    Offset?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description The collection of all Accounts */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["AccountModel"][];
-                        "application/json": components["schemas"]["AccountModel"][];
-                        "text/json": components["schemas"]["AccountModel"][];
+                        "text/plain": components["schemas"]["CollectionModelOfAccountModel"];
+                        "application/json": components["schemas"]["CollectionModelOfAccountModel"];
+                        "text/json": components["schemas"]["CollectionModelOfAccountModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -69,13 +102,90 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/{accountId}/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves the Transactions for the Account that matches the provided ID */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Sort order to apply to the results */
+                    SortBy?: components["schemas"]["AccountTransactionSortOrderModel"];
+                    /** @description Minimum date to include in the results */
+                    MinDate?: string;
+                    /** @description Maximum date to include in the results */
+                    MaxDate?: string;
+                    /** @description Locations to include in the results */
+                    Locations?: string[];
+                    /** @description Types to include in the results */
+                    Types?: components["schemas"]["TransactionTypeModel"][];
+                    /** @description Maximum number of results to return */
+                    Limit?: number;
+                    /** @description Number of results to skip */
+                    Offset?: number;
+                };
+                header?: never;
+                path: {
+                    accountId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfTransactionModel"];
+                        "application/json": components["schemas"]["CollectionModelOfTransactionModel"];
+                        "text/json": components["schemas"]["CollectionModelOfTransactionModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -89,28 +199,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Retrieves the Account that matches the provided ID */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID of the Account to retrieve */
-                    accountId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description The Account that matches the provided ID */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get?: never;
         put?: never;
         /** Updates the provided Account with the provided properties */
         post: {
@@ -149,9 +238,20 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -175,9 +275,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -194,25 +294,49 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Retrieves all the Accounting Periods from the database */
+        /** Retrieves the Accounting Periods that match the specified criteria */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Sort order to apply to the results */
+                    SortBy?: components["schemas"]["AccountingPeriodSortOrderModel"];
+                    /** @description Years to include in the results */
+                    Years?: number[];
+                    /** @description Months to include in the results */
+                    Months?: number[];
+                    /** @description True to include only open Accounting Periods in the results, false to include only closed Accounting Periods, null to include all Accounting Periods */
+                    IsOpen?: boolean;
+                    /** @description Maximum number of results to return */
+                    Limit?: number;
+                    /** @description Number of results to skip */
+                    Offset?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description The collection of all Accounting Periods */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["AccountingPeriodModel"][];
-                        "application/json": components["schemas"]["AccountingPeriodModel"][];
-                        "text/json": components["schemas"]["AccountingPeriodModel"][];
+                        "text/plain": components["schemas"]["CollectionModelOfAccountingPeriodModel"];
+                        "application/json": components["schemas"]["CollectionModelOfAccountingPeriodModel"];
+                        "text/json": components["schemas"]["CollectionModelOfAccountingPeriodModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -252,9 +376,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -303,63 +427,67 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/accounting-periods/{accountingPeriodId}": {
+    "/accounting-periods/{accountingPeriodId}/transactions": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Retrieves the Accounting Period that matches the provided ID */
+        /** Retrieves the Transactions for the Accounting Period that matches the provided ID */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Sort order to apply to the results */
+                    SortBy?: components["schemas"]["AccountingPeriodTransactionSortOrderModel"];
+                    /** @description Minimum date to include in the results */
+                    MinDate?: string;
+                    /** @description Maximum date to include in the results */
+                    MaxDate?: string;
+                    /** @description Locations to include in the results */
+                    Locations?: string[];
+                    /** @description Accounts to include in the results (either as debit or credit accounts) */
+                    Accounts?: string[];
+                    /** @description Maximum number of results to return */
+                    Limit?: number;
+                    /** @description Number of results to skip */
+                    Offset?: number;
+                };
                 header?: never;
                 path: {
-                    /** @description ID of the Accounting Period to retrieve */
                     accountingPeriodId: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description The Accounting Period that matches the provided ID */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfTransactionModel"];
+                        "application/json": components["schemas"]["CollectionModelOfTransactionModel"];
+                        "text/json": components["schemas"]["CollectionModelOfTransactionModel"];
+                    };
                 };
-            };
-        };
-        put?: never;
-        post?: never;
-        /** Deletes the Accounting Period with the provided ID */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID of the Accounting Period to delete */
-                    accountingPeriodId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
                 /** @description Unprocessable Entity */
                 422: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
         };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -404,14 +532,55 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
         };
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounting-periods/{accountingPeriodId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Deletes the Accounting Period with the provided ID */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description ID of the Accounting Period to delete */
+                    accountingPeriodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -424,25 +593,45 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Retrieves all the Funds from the database */
+        /** Retrieves the Funds that match the specified criteria */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Sort order to apply to the results */
+                    SortBy?: components["schemas"]["FundSortOrderModel"];
+                    /** @description Fund names to include in the results */
+                    Names?: string[];
+                    /** @description Maximum number of results to return */
+                    Limit?: number;
+                    /** @description Number of results to skip */
+                    Offset?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description The collection of all Funds */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["FundModel"][];
-                        "application/json": components["schemas"]["FundModel"][];
-                        "text/json": components["schemas"]["FundModel"][];
+                        "text/plain": components["schemas"]["CollectionModelOfFundModel"];
+                        "application/json": components["schemas"]["CollectionModelOfFundModel"];
+                        "text/json": components["schemas"]["CollectionModelOfFundModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -482,13 +671,79 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/funds/{fundId}/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves the Transactions for the Fund that matches the provided ID */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Sort order to apply to the results */
+                    SortBy?: components["schemas"]["FundTransactionSortOrderModel"];
+                    /** @description Minimum date to include in the results */
+                    MinDate?: string;
+                    /** @description Maximum date to include in the results */
+                    MaxDate?: string;
+                    /** @description Locations to include in the results */
+                    Locations?: string[];
+                    /** @description Types to include in the results */
+                    Types?: components["schemas"]["TransactionTypeModel"][];
+                    /** @description Maximum number of results to return */
+                    Limit?: number;
+                    /** @description Number of results to skip */
+                    Offset?: number;
+                };
+                header?: never;
+                path: {
+                    fundId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfTransactionModel"];
+                        "application/json": components["schemas"]["CollectionModelOfTransactionModel"];
+                        "text/json": components["schemas"]["CollectionModelOfTransactionModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -502,28 +757,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Retrieves the Fund that matches the provided ID */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID of the Fund to retrieve */
-                    fundId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description The Fund that matches the provided ID */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get?: never;
         put?: never;
         /** Updates the provided Fund with the provided properties */
         post: {
@@ -562,9 +796,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -588,9 +822,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -607,29 +841,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Retrieves all the Transactions from the database */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["TransactionModel"][];
-                        "application/json": components["schemas"]["TransactionModel"][];
-                        "text/json": components["schemas"]["TransactionModel"][];
-                    };
-                };
-            };
-        };
+        get?: never;
         put?: never;
         /** Creates a new Transaction with the provided properties */
         post: {
@@ -664,9 +876,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -684,27 +896,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Retrieves the Transaction that matches the provided ID */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    transactionId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get?: never;
         put?: never;
         /** Updates the provided Transaction with the provided properties */
         post: {
@@ -741,9 +933,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -766,9 +958,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -822,9 +1014,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ErrorModel"];
-                        "application/json": components["schemas"]["ErrorModel"];
-                        "text/json": components["schemas"]["ErrorModel"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -863,9 +1055,14 @@ export interface components {
             accountId: string;
             /**
              * Format: double
-             * @description Balance for the Account Balance
+             * @description Posted Balance for the Account Balance
              */
-            balance: number;
+            postedBalance: number;
+            /**
+             * Format: double
+             * @description Available to Spend Balance for the Account Balance
+             */
+            availableToSpend: null | number;
             /** @description Fund Balances for the Account Balance */
             fundBalances: components["schemas"]["FundAmountModel"][];
             /**
@@ -905,6 +1102,10 @@ export interface components {
             /** @description True if the Accounting Period is open, false otherwise */
             isOpen: boolean;
         };
+        /** @enum {unknown} */
+        AccountingPeriodSortOrderModel: AccountingPeriodSortOrderModel | null;
+        /** @enum {unknown} */
+        AccountingPeriodTransactionSortOrderModel: AccountingPeriodTransactionSortOrderModel | null;
         /** @description Model representing an Account */
         AccountModel: {
             /**
@@ -919,11 +1120,55 @@ export interface components {
             /** @description Current Balance for the Account */
             currentBalance: components["schemas"]["AccountBalanceModel"];
         };
+        /** @enum {unknown} */
+        AccountSortOrderModel: AccountSortOrderModel | null;
+        /** @enum {unknown} */
+        AccountTransactionSortOrderModel: AccountTransactionSortOrderModel | null;
         /**
          * @description Enum representing the different Account types
          * @enum {unknown}
          */
         AccountTypeModel: AccountTypeModel;
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfAccountingPeriodModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["AccountingPeriodModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfAccountModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["AccountModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfFundModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["FundModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfTransactionModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["TransactionModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
         /** @description Model representing a request to create an Accounting Period */
         CreateAccountingPeriodModel: {
             /**
@@ -1005,25 +1250,6 @@ export interface components {
             debitAccount: null | components["schemas"]["CreateTransactionAccountModel"];
             creditAccount: null | components["schemas"]["CreateTransactionAccountModel"];
         };
-        /**
-         * @description Enum representing the different error codes that the API can return
-         * @enum {unknown}
-         */
-        ErrorCode: ErrorCode;
-        /** @description Model representing a piece of detailed information about an error */
-        ErrorDetailModel: {
-            /** @description Error Code for this Error Detail */
-            errorCode: components["schemas"]["ErrorCode"];
-            /** @description Description for this Error Detail */
-            description: string;
-        };
-        /** @description Model representing an error returned by the API */
-        ErrorModel: {
-            /** @description Message for this Error */
-            message: string;
-            /** @description Details for this Error */
-            details: components["schemas"]["ErrorDetailModel"][];
-        };
         /** @description Model representing an amount associated with a particular Fund */
         FundAmountModel: {
             /**
@@ -1048,9 +1274,9 @@ export interface components {
             fundId: string;
             /**
              * Format: double
-             * @description Balance for the Fund Balance
+             * @description Posted Balance for the Fund Balance
              */
-            balance: number;
+            postedBalance: number;
             /** @description Account Balances for the Fund Balance */
             accountBalances: components["schemas"]["AccountAmountModel"][];
             /**
@@ -1082,6 +1308,10 @@ export interface components {
             /** @description Current Balance for the Fund */
             currentBalance: components["schemas"]["FundBalanceModel"];
         };
+        /** @enum {unknown} */
+        FundSortOrderModel: FundSortOrderModel | null;
+        /** @enum {unknown} */
+        FundTransactionSortOrderModel: FundTransactionSortOrderModel | null;
         /** @description Model representing a request to post a Transaction */
         PostTransactionModel: {
             /**
@@ -1094,6 +1324,14 @@ export interface components {
              * @description Date for the Transaction
              */
             date: string;
+        };
+        ProblemDetails: {
+            type?: null | string;
+            title?: null | string;
+            /** Format: int32 */
+            status?: null | number;
+            detail?: null | string;
+            instance?: null | string;
         };
         /** @description Model representing a Transaction Account */
         TransactionAccountModel: {
@@ -1151,6 +1389,11 @@ export interface components {
             /** @description New Fund Balances for the Transaction */
             newFundBalances: components["schemas"]["FundBalanceModel"][];
         };
+        /**
+         * @description Enum representing the different types of Transactions
+         * @enum {unknown}
+         */
+        TransactionTypeModel: TransactionTypeModel;
         /** @description Model representing a request to update an Account */
         UpdateAccountModel: {
             /** @description Name for the Account */
@@ -1175,6 +1418,17 @@ export interface components {
             debitAccount: null | components["schemas"]["UpdateTransactionAccountModel"];
             creditAccount: null | components["schemas"]["UpdateTransactionAccountModel"];
         };
+        ValidationProblemDetails: {
+            type?: null | string;
+            title?: null | string;
+            /** Format: int32 */
+            status?: null | number;
+            detail?: null | string;
+            instance?: null | string;
+            errors?: {
+                [key: string]: string[];
+            };
+        };
     };
     responses: never;
     parameters: never;
@@ -1183,17 +1437,69 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
+export enum AccountingPeriodSortOrderModel {
+    Date = "Date",
+    DateDescending = "DateDescending",
+    IsOpen = "IsOpen",
+    IsOpenDescending = "IsOpenDescending"
+}
+export enum AccountingPeriodTransactionSortOrderModel {
+    Date = "Date",
+    DateDescending = "DateDescending",
+    Location = "Location",
+    LocationDescending = "LocationDescending",
+    DebitAccount = "DebitAccount",
+    DebitAccountDescending = "DebitAccountDescending",
+    CreditAccount = "CreditAccount",
+    CreditAccountDescending = "CreditAccountDescending",
+    Amount = "Amount",
+    AmountDescending = "AmountDescending"
+}
+export enum AccountSortOrderModel {
+    Name = "Name",
+    NameDescending = "NameDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    PostedBalance = "PostedBalance",
+    PostedBalanceDescending = "PostedBalanceDescending",
+    AvailableToSpend = "AvailableToSpend",
+    AvailableToSpendDescending = "AvailableToSpendDescending"
+}
+export enum AccountTransactionSortOrderModel {
+    Date = "Date",
+    DateDescending = "DateDescending",
+    Location = "Location",
+    LocationDescending = "LocationDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    Amount = "Amount",
+    AmountDescending = "AmountDescending"
+}
 export enum AccountTypeModel {
     Standard = "Standard",
     Debt = "Debt"
 }
-export enum ErrorCode {
-    Generic = "Generic",
-    InvalidFundName = "InvalidFundName",
-    InvalidAccountingPeriodYear = "InvalidAccountingPeriodYear",
-    InvalidAccountingPeriodMonth = "InvalidAccountingPeriodMonth",
-    InvalidAccountName = "InvalidAccountName",
-    InvalidAccountingPeriod = "InvalidAccountingPeriod",
-    InvalidEventDate = "InvalidEventDate"
+export enum FundSortOrderModel {
+    Name = "Name",
+    NameDescending = "NameDescending",
+    Description = "Description",
+    DescriptionDescending = "DescriptionDescending",
+    Balance = "Balance",
+    BalanceDescending = "BalanceDescending"
+}
+export enum FundTransactionSortOrderModel {
+    Date = "Date",
+    DateDescending = "DateDescending",
+    Location = "Location",
+    LocationDescending = "LocationDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    Amount = "Amount",
+    AmountDescending = "AmountDescending"
+}
+export enum TransactionTypeModel {
+    Debit = "Debit",
+    Credit = "Credit",
+    Transfer = "Transfer"
 }
 export type operations = Record<string, never>;

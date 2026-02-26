@@ -1,52 +1,61 @@
-import { type Account, AccountType } from "@accounts/ApiTypes";
+import type { Account, AccountSortOrder } from "@accounts/ApiTypes";
 import type { ApiError } from "@data/ApiError";
 import getApiClient from "@data/getApiClient";
 import { useCallback } from "react";
 import useQuery from "@data/useQuery";
 
 /**
+ * Arguments for the useGetAllAccounts hook.
+ */
+interface UseGetAllAccountsArgs {
+  readonly sortBy: AccountSortOrder | null;
+  readonly page: number | null;
+  readonly rowsPerPage: number | null;
+}
+
+/**
  * Hook used to retrieve all Accounts via the API.
+ * @param args - The arguments for the useGetAllAccounts hook.
  * @returns Retrieved Accounts, loading state, current error, and function to refetch the Accounts.
  */
-const useGetAllAccounts = function (): {
-  accounts: Account[];
+const useGetAllAccounts = function ({
+  sortBy,
+  page,
+  rowsPerPage,
+}: UseGetAllAccountsArgs): {
+  accounts: Account[] | null;
+  totalCount: number | null;
   isLoading: boolean;
   error: ApiError | null;
   refetch: () => void;
 } {
   const getAllAccountsCallback = useCallback<
-    () => Promise<Account[] | ApiError>
+    () => Promise<{ items: Account[]; totalCount: number } | ApiError>
   >(async () => {
     const client = getApiClient();
-    const { data, error } = await client.GET("/accounts");
+    const { data, error } = await client.GET("/accounts", {
+      params: {
+        query:
+          page !== null && rowsPerPage !== null
+            ? { SortBy: sortBy, Limit: rowsPerPage, Offset: page * rowsPerPage }
+            : {},
+      },
+    });
     if (typeof error !== "undefined") {
       return error;
     }
     return data;
-  }, []);
+  }, [sortBy, page, rowsPerPage]);
 
-  const loadingRowCount = 10;
-  const { data, isLoading, error, refetch } = useQuery<Account[]>({
+  const { data, isLoading, error, refetch } = useQuery<{
+    items: Account[];
+    totalCount: number;
+  }>({
     queryFunction: getAllAccountsCallback,
-    initialData: Array(loadingRowCount)
-      .fill(null)
-      .map((_, index) => ({
-        id: index.toString(),
-        name: "",
-        type: AccountType.Standard,
-        currentBalance: {
-          accountId: "",
-          balance: 0,
-          fundBalances: [],
-          pendingDebitAmount: 0,
-          pendingDebits: [],
-          pendingCreditAmount: 0,
-          pendingCredits: [],
-        },
-      })),
   });
   return {
-    accounts: data,
+    accounts: data?.items ?? null,
+    totalCount: data?.totalCount ?? null,
     isLoading,
     error,
     refetch,

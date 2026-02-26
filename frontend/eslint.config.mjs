@@ -60,6 +60,7 @@ export default defineConfig([
       "one-var": ["error", "never"],
       "prefer-named-capture-group": "off",
       "sort-keys": ["off"],
+      "no-nested-ternary": "off",
 
       // import rules
       "import/no-deprecated": "error",
@@ -147,12 +148,14 @@ export default defineConfig([
       "react/no-multi-comp": "off",
       "react/react-in-jsx-scope": "off",
       "react/require-default-props": "off",
+      "react/no-array-index-key": "off",
+      "react/no-unstable-nested-components": "off",
 
       // react-hooks rules
       "react-hooks/set-state-in-effect": "off",
 
       // typescript-eslint rules
-      "@typescript-eslint/no-magic-numbers": ["error", { ignore: [0, 1, 2] }],
+      "@typescript-eslint/no-magic-numbers": "off",
       "@typescript-eslint/naming-convention": [
         "error",
         {

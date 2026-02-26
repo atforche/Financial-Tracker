@@ -3,6 +3,7 @@ import {
   NavigationContent,
   type NavigationPage,
 } from "@navigation/NavigationPage";
+import { Box } from "@mui/material";
 import Navigation from "@navigation/Navigation";
 import Stack from "@mui/material/Stack";
 import useMobile from "@framework/useMobile";
@@ -19,7 +20,9 @@ const App = function (): JSX.Element {
   return (
     <Stack direction={isMobile ? "column" : "row"}>
       <Navigation initialPage={currentPage} onNavigation={setCurrentPage} />
-      {NavigationContent[currentPage]}
+      <Box sx={{ padding: "25px", width: "100%" }}>
+        {NavigationContent[currentPage]}
+      </Box>
     </Stack>
   );
 };

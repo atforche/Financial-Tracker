@@ -1,4 +1,8 @@
-import type { components } from "@data/api";
+import {
+  FundSortOrderModel,
+  FundTransactionSortOrderModel,
+  type components,
+} from "@data/api";
 
 /**
  * Type representing a Fund.
@@ -29,4 +33,6 @@ export {
   type FundIdentifier,
   type CreateOrUpdateFundRequest,
   type FundAmount,
+  FundSortOrderModel as FundSortOrder,
+  FundTransactionSortOrderModel as FundTransactionSortOrder,
 };

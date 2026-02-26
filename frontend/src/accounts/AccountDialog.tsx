@@ -1,17 +1,23 @@
+import { Button, Stack } from "@mui/material";
+import { Delete, Edit } from "@mui/icons-material";
+import { type JSX, useState } from "react";
 import type { Account } from "@accounts/ApiTypes";
-import { Button } from "@mui/material";
+import AccountTransactionListFrame from "@accounts/AccountTransactionListFrame";
+import CaptionedFrame from "@framework/dialog/CaptionedFrame";
+import CaptionedValue from "@framework/dialog/CaptionedValue";
+import DeleteAccountDialog from "@accounts/DeleteAccountDialog";
 import Dialog from "@framework/dialog/Dialog";
-import type { JSX } from "react";
-import StringEntryField from "@framework/dialog/StringEntryField";
+import DialogHeaderButton from "@framework/dialog/DialogHeaderButton";
+import UpdateAccountDialog from "@accounts/UpdateAccountDialog";
+import formatCurrency from "@framework/formatCurrency";
 
 /**
  * Props for the AccountDialog component.
- * @param account - Account to display in this dialog.
- * @param onClose - Callback to perform when this dialog is closed.
  */
 interface AccountDialogProps {
-  readonly account: Account;
-  readonly onClose: () => void;
+  readonly inputAccount: Account;
+  readonly setMessage: (message: string | null) => void;
+  readonly onClose: (needsRefetch: boolean) => void;
 }
 
 /**
@@ -20,19 +26,99 @@ interface AccountDialogProps {
  * @returns JSX element representing the AccountDialog.
  */
 const AccountDialog = function ({
-  account,
+  inputAccount,
+  setMessage,
   onClose,
 }: AccountDialogProps): JSX.Element {
+  const [account, setAccount] = useState<Account>(inputAccount);
+  const [needsRefetch, setNeedsRefetch] = useState<boolean>(false);
+  const [childDialog, setChildDialog] = useState<JSX.Element | null>(null);
+
+  const onEdit = function (): void {
+    setChildDialog(
+      <UpdateAccountDialog
+        account={account}
+        setAccount={setAccount}
+        onClose={(success) => {
+          setChildDialog(null);
+          if (success) {
+            setMessage("Account updated successfully.");
+            setNeedsRefetch(true);
+          }
+        }}
+      />,
+    );
+  };
+
+  const onDelete = function (): void {
+    setChildDialog(
+      <DeleteAccountDialog
+        account={account}
+        onClose={(success) => {
+          setChildDialog(null);
+          if (success) {
+            setMessage("Account deleted successfully.");
+            onClose(true);
+          }
+        }}
+      />,
+    );
+  };
+
   return (
     <Dialog
-      title="View Account"
+      title="Account Details"
       content={
         <>
-          <StringEntryField label="Name" value={account.name} />
-          <StringEntryField label="Type" value={account.type} />
+          <CaptionedFrame caption="Details">
+            <CaptionedValue caption="Name" value={account.name} />
+            <CaptionedValue caption="Type" value={account.type} />
+            <CaptionedValue
+              caption="Posted Balance"
+              value={formatCurrency(account.currentBalance.postedBalance)}
+            />
+            <CaptionedValue
+              caption="Available to Spend"
+              value={formatCurrency(
+                account.currentBalance.postedBalance -
+                  account.currentBalance.pendingDebitAmount,
+              )}
+            />
+          </CaptionedFrame>
+          {account.currentBalance.fundBalances.length > 0 && (
+            <CaptionedFrame caption="Posted Balance By Fund">
+              {account.currentBalance.fundBalances.map((fundAmount) => (
+                <CaptionedValue
+                  key={fundAmount.fundName}
+                  caption={fundAmount.fundName}
+                  value={formatCurrency(fundAmount.amount)}
+                />
+              ))}
+            </CaptionedFrame>
+          )}
+          <AccountTransactionListFrame account={account} />
+          {childDialog}
         </>
       }
-      actions={<Button onClick={onClose}>Close</Button>}
+      actions={
+        <Button
+          onClick={() => {
+            onClose(needsRefetch);
+          }}
+        >
+          Close
+        </Button>
+      }
+      headerActions={
+        <Stack direction="row" spacing={2}>
+          <DialogHeaderButton label="Edit" icon={<Edit />} onClick={onEdit} />
+          <DialogHeaderButton
+            label="Delete"
+            icon={<Delete />}
+            onClick={onDelete}
+          />
+        </Stack>
+      }
     />
   );
 };

@@ -1,3 +1,4 @@
+using Domain.AccountingPeriods;
 using Domain.Transactions;
 
 namespace Domain.Accounts;
@@ -21,51 +22,38 @@ public class Account : Entity<AccountId>
     public AccountType Type { get; private set; }
 
     /// <summary>
-    /// Initial Transaction for this Account
+    /// Accounting Period that this Account was added in
     /// </summary>
-    /// <remarks>This will only be null when we're creating a new Account and the initial Transaction has not yet been created.</remarks>
+    public AccountingPeriodId InitialAccountingPeriodId { get; private set; }
+
+    /// <summary>
+    /// Date that this Account was added
+    /// </summary>
+    public DateOnly InitialDate { get; private set; }
+
+    /// <summary>
+    /// Initial Transaction for this Account (if this account was created with an initial balance)
+    /// </summary>
     public TransactionId? InitialTransaction { get; internal set; }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="name">Name for this Account</param>
-    /// <param name="type">Type for this Account</param>
-    internal Account(string name, AccountType type)
+    internal Account(string name, AccountType type, AccountingPeriodId initialAccountingPeriodId, DateOnly initialDate)
         : base(new AccountId(Guid.NewGuid()))
     {
         Name = name;
         Type = type;
+        InitialAccountingPeriodId = initialAccountingPeriodId;
+        InitialDate = initialDate;
     }
 
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private Account() : base() => Name = "";
-}
-
-/// <summary>
-/// Enum representing the different Account types
-/// </summary>
-public enum AccountType
-{
-    /// <summary>
-    /// Standard Account
-    /// </summary>
-    /// <remarks>
-    /// A Standard Account represents a standard checking or savings account.
-    /// Debiting a Standard Account will decrease its balance and crediting a
-    /// Standard Account will increase its balance.
-    /// </remarks>
-    Standard,
-
-    /// <summary>
-    /// Debt Account
-    /// </summary>
-    /// <remarks>
-    /// A Debt Account represents a credit card or loan account.
-    /// Debiting a Debt Account will increase its balance and crediting a 
-    /// Debt Account will decrease its balance.
-    /// </remarks>
-    Debt,
+    private Account() : base()
+    {
+        Name = "";
+        InitialAccountingPeriodId = null!;
+    }
 }

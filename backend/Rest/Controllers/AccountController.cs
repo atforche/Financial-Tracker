@@ -1,12 +1,16 @@
 using Data;
+using Data.Accounts;
+using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.Accounts.Exceptions;
 using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
+using Models;
 using Models.Accounts;
-using Models.Errors;
 using Models.Funds;
+using Models.Transactions;
 using Rest.Mappers;
 
 namespace Rest.Controllers;
@@ -18,33 +22,140 @@ namespace Rest.Controllers;
 [Route("/accounts")]
 public sealed class AccountController(
     UnitOfWork unitOfWork,
-    IAccountRepository accountRepository,
-    ITransactionRepository transactionRepository,
+    AccountRepository accountRepository,
+    TransactionRepository transactionRepository,
     AccountService accountService,
     AccountingPeriodMapper accountingPeriodMapper,
     AccountMapper accountMapper,
-    FundAmountMapper fundAmountMapper) : ControllerBase
+    FundAmountMapper fundAmountMapper,
+    TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
     /// Retrieves all the Accounts from the database
     /// </summary>
     /// <returns>The collection of all Accounts</returns>
     [HttpGet("")]
-    public IReadOnlyCollection<AccountModel> GetAll() => accountRepository.FindAll().Select(accountMapper.ToModel).ToList();
+    [ProducesResponseType(typeof(CollectionModel<AccountModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public IActionResult GetAll([FromQuery] AccountQueryParameterModel queryParameters)
+    {
+        Dictionary<string, string[]> errors = [];
+
+        AccountSortOrder? accountSortOrder = null;
+        if (queryParameters.SortBy != null && !AccountSortOrderMapper.TryToData(queryParameters.SortBy.Value, out accountSortOrder))
+        {
+            errors.Add(nameof(queryParameters.SortBy), [$"Unrecognized Sort Order: {queryParameters.SortBy.Value}"]);
+        }
+        IEnumerable<AccountType> accountTypes = [];
+        if (queryParameters.Types != null)
+        {
+            accountTypes = [];
+            foreach ((int index, AccountTypeModel accountTypeModel) in queryParameters.Types.Index())
+            {
+                if (!AccountTypeMapper.TryToDomain(accountTypeModel, out AccountType? accountType))
+                {
+                    errors.Add($"{nameof(queryParameters.Types)}[{index}]", [$"Unrecognized Account Type: {accountTypeModel}"]);
+                }
+                else
+                {
+                    accountTypes = accountTypes.Append(accountType.Value);
+                }
+            }
+        }
+        if (errors.Count > 0)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Accounts.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        List<AccountModel> results = [];
+        PaginatedCollection<Account> paginatedResults = accountRepository.GetMany(new GetAccountsRequest
+        {
+            SortBy = accountSortOrder,
+            Names = queryParameters.Names,
+            Types = accountTypes.Any() ? accountTypes.ToList() : null,
+            Limit = queryParameters.Limit,
+            Offset = queryParameters.Offset,
+        });
+        foreach (Account account in paginatedResults.Items)
+        {
+            if (!accountMapper.TryToModel(account, out AccountModel? accountModel))
+            {
+                return Problem(title: $"Failed to map Account with ID {account.Id} to Account Model.",
+                    statusCode: StatusCodes.Status500InternalServerError);
+            }
+            results.Add(accountModel);
+        }
+        return Ok(new CollectionModel<AccountModel>
+        {
+            Items = results,
+            TotalCount = paginatedResults.TotalCount
+        });
+    }
 
     /// <summary>
-    /// Retrieves the Account that matches the provided ID
+    /// Retrieves the Transactions for the Account that matches the provided ID
     /// </summary>
-    /// <param name="accountId">ID of the Account to retrieve</param>
-    /// <returns>The Account that matches the provided ID</returns>
-    [HttpGet("{accountId}")]
-    public IActionResult Get(Guid accountId)
+    [HttpGet("{accountId}/transactions")]
+    [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetTransactions(Guid accountId, [FromQuery] AccountTransactionQueryParameterModel queryParameters)
     {
-        if (!accountMapper.TryToDomain(accountId, out Account? account, out IActionResult? errorResult))
+        Dictionary<string, string[]> errors = [];
+        if (!accountMapper.TryToDomain(accountId, out Account? account))
         {
-            return errorResult;
+            errors.Add(nameof(accountId), [$"Account with ID {accountId} was not found."]);
         }
-        return Ok(accountMapper.ToModel(account));
+        AccountTransactionSortOrder? accountTransactionSortOrder = null;
+        if (queryParameters.SortBy != null && !AccountTransactionSortOrderMapper.TryToData(queryParameters.SortBy.Value, out accountTransactionSortOrder))
+        {
+            errors.Add(nameof(queryParameters.SortBy), [$"Unrecognized Sort Order: {queryParameters.SortBy.Value}"]);
+        }
+        IEnumerable<TransactionType> transactionTypes = [];
+        if (queryParameters.Types != null)
+        {
+            foreach ((int index, TransactionTypeModel transactionTypeModel) in queryParameters.Types.Index())
+            {
+                if (!TransactionTypeMapper.TryToData(transactionTypeModel, out TransactionType? transactionType))
+                {
+                    errors.Add($"{nameof(queryParameters.Types)}[{index}]", [$"Unrecognized Transaction Type: {transactionTypeModel}"]);
+                }
+                else
+                {
+                    transactionTypes = transactionTypes.Append(transactionType.Value);
+                }
+            }
+        }
+        if (errors.Count > 0 || account == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Account Transactions.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+
+        PaginatedCollection<Transaction> paginatedResults = transactionRepository.GetManyByAccount(account.Id, new GetAccountTransactionsRequest
+        {
+            SortBy = accountTransactionSortOrder,
+            MinDate = queryParameters.MinDate,
+            MaxDate = queryParameters.MaxDate,
+            Locations = queryParameters.Locations,
+            Types = transactionTypes.Any() ? transactionTypes.ToList() : null,
+            Limit = queryParameters.Limit,
+            Offset = queryParameters.Offset
+        });
+        return Ok(new CollectionModel<TransactionModel>
+        {
+            Items = paginatedResults.Items.Select(transactionMapper.ToModel).ToList(),
+            TotalCount = paginatedResults.TotalCount
+        });
     }
 
     /// <summary>
@@ -54,28 +165,47 @@ public sealed class AccountController(
     /// <returns>The created Account</returns>
     [HttpPost("")]
     [ProducesResponseType(typeof(AccountModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateAsync(CreateAccountModel createAccountModel)
     {
-        if (!accountingPeriodMapper.TryToDomain(createAccountModel.AccountingPeriodId, out AccountingPeriod? accountingPeriod, out IActionResult? errorResult))
+        Dictionary<string, string[]> errors = [];
+        if (!accountingPeriodMapper.TryToDomain(createAccountModel.AccountingPeriodId, out AccountingPeriod? accountingPeriod))
         {
-            return errorResult;
+            errors.Add(nameof(createAccountModel.AccountingPeriodId), [$"Accounting Period with ID {createAccountModel.AccountingPeriodId} was not found."]);
+        }
+        if (!AccountTypeMapper.TryToDomain(createAccountModel.Type, out AccountType? accountType))
+        {
+            errors.Add(nameof(createAccountModel.Type), [$"Unrecognized Account Type: {createAccountModel.Type}"]);
         }
         List<FundAmount> fundAmounts = [];
-        foreach (CreateFundAmountModel fundAmountModel in createAccountModel.InitialFundAmounts)
+        foreach ((int index, CreateFundAmountModel fundAmountModel) in createAccountModel.InitialFundAmounts.Index())
         {
-            if (!fundAmountMapper.TryToDomain(fundAmountModel, out FundAmount? fundAmount, out errorResult))
+            if (!fundAmountMapper.TryToDomain(fundAmountModel, out FundAmount? fundAmount))
             {
-                return errorResult;
+                errors.Add($"{nameof(createAccountModel.InitialFundAmounts)}[{index}]", [$"Fund with ID {fundAmountModel.FundId} was not found."]);
             }
-            fundAmounts.Add(fundAmount);
+            else
+            {
+                fundAmounts.Add(fundAmount);
+            }
         }
+        if (errors.Count > 0 || accountingPeriod == null || accountType == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to create Account.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+
         if (!accountService.TryCreate(
             new CreateAccountRequest
             {
                 Name = createAccountModel.Name,
-                Type = AccountTypeMapper.ToDomain(createAccountModel.Type),
-                AccountingPeriodId = accountingPeriod.Id,
+                Type = accountType.Value,
+                AccountingPeriod = accountingPeriod,
                 AddDate = createAccountModel.AddDate,
                 InitialFundAmounts = fundAmounts
             },
@@ -83,12 +213,31 @@ public sealed class AccountController(
             out Transaction? initialTransaction,
             out IEnumerable<Exception> exceptions))
         {
-            return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to create Account.", exceptions));
+            errors = exceptions.GroupBy(e => e switch
+            {
+                InvalidNameException => nameof(createAccountModel.Name),
+                InvalidAccountingPeriodException => nameof(createAccountModel.AccountingPeriodId),
+                InvalidAddDateException => nameof(createAccountModel.AddDate),
+                _ => string.Empty
+            }).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray());
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to create Account.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
-        accountRepository.Add(newAccount);
-        transactionRepository.Add(initialTransaction);
+        if (initialTransaction != null)
+        {
+            transactionRepository.Add(initialTransaction);
+        }
+        if (!accountMapper.TryToModel(newAccount, out AccountModel? accountModel))
+        {
+            return Problem(title: $"Failed to map Account with ID {newAccount.Id} to Account Model.",
+                statusCode: StatusCodes.Status500InternalServerError);
+        }
         await unitOfWork.SaveChangesAsync();
-        return Ok(accountMapper.ToModel(newAccount));
+        return Ok(accountModel);
     }
 
     /// <summary>
@@ -99,19 +248,42 @@ public sealed class AccountController(
     /// <returns>The updated Account</returns>
     [HttpPost("{accountId}")]
     [ProducesResponseType(typeof(AccountModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateAsync(Guid accountId, UpdateAccountModel updateAccountModel)
     {
-        if (!accountMapper.TryToDomain(accountId, out Account? accountToUpdate, out IActionResult? errorResult))
+        if (!accountMapper.TryToDomain(accountId, out Account? accountToUpdate))
         {
-            return errorResult;
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to update Account.",
+                Errors = {
+                    { nameof(accountId), [$"Account with ID {accountId} was not found."]}
+                },
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         if (!accountService.TryUpdate(accountToUpdate, updateAccountModel.Name, out IEnumerable<Exception> exceptions))
         {
-            return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to update Account.", exceptions));
+            var errors = exceptions.GroupBy(e => e switch
+            {
+                InvalidNameException => nameof(updateAccountModel.Name),
+                _ => string.Empty
+            }).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray());
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to update Account.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        if (!accountMapper.TryToModel(accountToUpdate, out AccountModel? accountModel))
+        {
+            return Problem(title: $"Failed to map Account with ID {accountToUpdate.Id} to Account Model.",
+                statusCode: StatusCodes.Status500InternalServerError);
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(accountMapper.ToModel(accountToUpdate));
+        return Ok(accountModel);
     }
 
     /// <summary>
@@ -119,16 +291,30 @@ public sealed class AccountController(
     /// </summary>
     /// <param name="accountId">ID of the Account to delete</param>
     [HttpDelete("{accountId}")]
-    [ProducesResponseType(typeof(ErrorModel), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> DeleteAsync(Guid accountId)
     {
-        if (!accountMapper.TryToDomain(accountId, out Account? accountToDelete, out IActionResult? errorResult))
+        if (!accountMapper.TryToDomain(accountId, out Account? accountToDelete))
         {
-            return errorResult;
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to delete Account.",
+                Errors = {
+                    { nameof(accountId), [$"Account with ID {accountId} was not found."]}
+                },
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         if (!accountService.TryDelete(accountToDelete, out IEnumerable<Exception> exceptions))
         {
-            return new UnprocessableEntityObjectResult(ErrorMapper.ToModel("Failed to delete Account.", exceptions));
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to delete Account.",
+                Errors = {
+                    { string.Empty, exceptions.Select(e => e.Message).ToArray() }
+                },
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
         }
         await unitOfWork.SaveChangesAsync();
         return Ok();

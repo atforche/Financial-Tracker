@@ -12,7 +12,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
     /// Gets the current balance for the provided Account
     /// </summary>
     public FundBalance GetCurrentBalance(FundId fundId) =>
-        fundBalanceHistoryRepository.FindLatestForFund(fundId)?.ToFundBalance() ?? new FundBalance(fundId, [], [], []);
+        fundBalanceHistoryRepository.GetLatestForFund(fundId)?.ToFundBalance() ?? new FundBalance(fundId, [], [], []);
 
     /// <summary>
     /// Gets the Fund Balances prior to the provided Transaction
@@ -85,7 +85,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
 
         foreach (FundId fund in GetAllAffectedFunds(transaction))
         {
-            FundBalanceHistory existingHistory = fundBalanceHistoryRepository.FindEarliestByTransactionId(fund, transaction.Id);
+            FundBalanceHistory existingHistory = fundBalanceHistoryRepository.GetEarliestByTransactionId(fund, transaction.Id);
             FundBalance previousBalance = GetExistingFundBalanceAsOf(fund, existingHistory.Date, existingHistory.Sequence);
             if (!transaction.TryApplyToFundBalance(previousBalance, existingHistory.Date, out FundBalance? updatedDebitBalance, out IEnumerable<Exception> balanceExceptions))
             {
@@ -120,7 +120,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
         {
             foreach (FundAmount fundAmount in transactionAccount.FundAmounts)
             {
-                FundBalanceHistory existingHistory = fundBalanceHistoryRepository.FindEarliestByTransactionId(fundAmount.FundId, transaction.Id);
+                FundBalanceHistory existingHistory = fundBalanceHistoryRepository.GetEarliestByTransactionId(fundAmount.FundId, transaction.Id);
                 FundBalance previousBalance = GetExistingFundBalanceAsOf(fundAmount.FundId, existingHistory.Date, existingHistory.Sequence);
                 if (!transaction.TryApplyToFundBalance(previousBalance, transaction.Date, out FundBalance? updatedBalance, out IEnumerable<Exception> updatedBalanceExceptions))
                 {
@@ -191,7 +191,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
 
         var existingBalance = newBalanceHistory.ToFundBalance();
         foreach ((FundBalanceHistory history, Transaction transaction) in fundBalanceHistoryRepository
-            .FindAllHistoriesLaterThan(newBalanceHistory.FundId, newBalanceHistory.Date, newBalanceHistory.Sequence))
+            .GetAllHistoriesLaterThan(newBalanceHistory.FundId, newBalanceHistory.Date, newBalanceHistory.Sequence))
         {
             if (history.Date == newBalanceHistory.Date)
             {
@@ -220,7 +220,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
 
         var existingBalance = updatedBalanceHistory.ToFundBalance();
         foreach ((FundBalanceHistory history, Transaction transaction) in fundBalanceHistoryRepository
-            .FindAllHistoriesLaterThan(updatedBalanceHistory.FundId, updatedBalanceHistory.Date, updatedBalanceHistory.Sequence))
+            .GetAllHistoriesLaterThan(updatedBalanceHistory.FundId, updatedBalanceHistory.Date, updatedBalanceHistory.Sequence))
         {
             if (!transaction.TryApplyToFundBalance(existingBalance, history.Date, out FundBalance? updatedBalance, out IEnumerable<Exception> updateExceptions))
             {
@@ -244,7 +244,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
 
         FundBalance existingBalance = GetExistingFundBalanceAsOf(deletedBalanceHistory.FundId, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence);
         foreach ((FundBalanceHistory history, Transaction transaction) in fundBalanceHistoryRepository
-            .FindAllHistoriesLaterThan(deletedBalanceHistory.FundId, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence + 1))
+            .GetAllHistoriesLaterThan(deletedBalanceHistory.FundId, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence + 1))
         {
             if (history.Date == deletedBalanceHistory.Date)
             {
@@ -285,7 +285,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
     /// </summary>
     private FundBalance GetExistingFundBalanceAsOf(FundId fundId, DateOnly asOfDate, int asOfSequence)
     {
-        FundBalanceHistory? existingHistory = fundBalanceHistoryRepository.FindLatestHistoryEarlierThan(fundId, asOfDate, asOfSequence);
+        FundBalanceHistory? existingHistory = fundBalanceHistoryRepository.GetLatestHistoryEarlierThan(fundId, asOfDate, asOfSequence);
         if (existingHistory != null)
         {
             return existingHistory.ToFundBalance();

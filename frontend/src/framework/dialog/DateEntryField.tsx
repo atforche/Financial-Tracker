@@ -1,25 +1,21 @@
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import type { ApiErrorDetail } from "@data/ApiError";
+import type ApiErrorHandler from "@data/ApiErrorHandler";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import type { Dayjs } from "dayjs";
+import ErrorHelperText from "@framework/dialog/ErrorHelperText";
 import type { JSX } from "react/jsx-runtime";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { useState } from "react";
 
 /**
  * Props for the DateEntryField component.
- * @param label - Label for this Date Entry Field.
- * @param value - Current value for this Date Entry Field.
- * @param setValue - Callback to update the value in this Date Entry Field. If null, this field is read-only.
- * @param error - Error detail to display for this Date Entry Field, if any.
- * @param minDate - Minimum selectable date for this Date Entry Field, if any.
- * @param maxDate - Maximum selectable date for this Date Entry Field, if any.
  */
 interface DateEntryFieldProps {
   readonly label: string;
   readonly value: Dayjs | null;
   readonly setValue?: ((newValue: Dayjs | null) => void) | null;
-  readonly error?: ApiErrorDetail | null;
+  readonly errorHandler?: ApiErrorHandler | null;
+  readonly errorKey?: string | null;
   readonly minDate?: Dayjs | null;
   readonly maxDate?: Dayjs | null;
 }
@@ -33,7 +29,8 @@ const DateEntryField = function ({
   label,
   value,
   setValue = null,
-  error = null,
+  errorHandler = null,
+  errorKey = null,
   minDate = null,
   maxDate = null,
 }: DateEntryFieldProps): JSX.Element {
@@ -58,8 +55,15 @@ const DateEntryField = function ({
         }}
         slotProps={{
           textField: {
-            error: error !== null || internalErrorMessage !== null,
-            helperText: internalErrorMessage ?? error?.description,
+            error:
+              (errorHandler?.handleError(errorKey) ?? null) !== null ||
+              internalErrorMessage !== null,
+            helperText: internalErrorMessage ?? (
+              <ErrorHelperText
+                errorHandler={errorHandler}
+                errorKey={errorKey}
+              />
+            ),
           },
         }}
       />

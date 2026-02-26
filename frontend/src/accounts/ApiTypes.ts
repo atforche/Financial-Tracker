@@ -1,4 +1,9 @@
-import { AccountTypeModel, type components } from "@data/api";
+import {
+  AccountSortOrderModel,
+  AccountTransactionSortOrderModel,
+  AccountTypeModel,
+  type components,
+} from "@data/api";
 
 /**
  * Type representing an Account.
@@ -18,9 +23,17 @@ interface AccountIdentifier {
  */
 type CreateAccountRequest = components["schemas"]["CreateAccountModel"];
 
+/**
+ * Type representing a request to update an Account.
+ */
+type UpdateAccountRequest = components["schemas"]["UpdateAccountModel"];
+
 export {
   type Account,
   AccountTypeModel as AccountType,
   type CreateAccountRequest,
   type AccountIdentifier,
+  AccountSortOrderModel as AccountSortOrder,
+  AccountTransactionSortOrderModel as AccountTransactionSortOrder,
+  type UpdateAccountRequest,
 };

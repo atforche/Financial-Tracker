@@ -1,5 +1,6 @@
 import { Button, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import Dialog from "@framework/dialog/Dialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import type { JSX } from "react/jsx-runtime";
@@ -29,6 +30,7 @@ const DeleteAccountingPeriodDialog = function ({
   if (isSuccess) {
     onClose(true);
   }
+  const errorHandler = error ? new ApiErrorHandler(error) : null;
   return (
     <Dialog
       title="Delete Accounting Period"
@@ -36,9 +38,9 @@ const DeleteAccountingPeriodDialog = function ({
         <>
           <Typography>
             Are you sure you want to delete the accounting period &quot;
-            {accountingPeriod.year}-{accountingPeriod.month}&quot;?
+            {accountingPeriod.name}&quot;?
           </Typography>
-          <ErrorAlert error={error} />
+          <ErrorAlert errorHandler={errorHandler} />
         </>
       }
       actions={

@@ -51,8 +51,7 @@ const useApiRequest = function <T>({
       })
       .catch((err: unknown) => {
         setError({
-          message: `An unknown error occurred: ${String(err)}`,
-          details: [],
+          detail: `An unknown error occurred: ${String(err)}`,
         });
       })
       .finally(() => {

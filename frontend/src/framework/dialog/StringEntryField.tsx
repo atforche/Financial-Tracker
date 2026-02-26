@@ -1,4 +1,5 @@
-import type { ApiErrorDetail } from "@data/ApiError";
+import type ApiErrorHandler from "@data/ApiErrorHandler";
+import ErrorHelperText from "@framework/dialog/ErrorHelperText";
 import type { JSX } from "react";
 import { TextField } from "@mui/material";
 
@@ -12,7 +13,8 @@ interface StringEntryFieldProps {
   readonly label: string;
   readonly value: string;
   readonly setValue?: ((newValue: string) => void) | null;
-  readonly error?: ApiErrorDetail | null;
+  readonly errorHandler?: ApiErrorHandler | null;
+  readonly errorKey?: string | null;
 }
 
 /**
@@ -24,7 +26,8 @@ const StringEntryField = function ({
   label,
   value,
   setValue = null,
-  error = null,
+  errorHandler = null,
+  errorKey = null,
 }: StringEntryFieldProps): JSX.Element {
   return (
     <TextField
@@ -37,8 +40,10 @@ const StringEntryField = function ({
         },
       }}
       onChange={(event) => setValue?.(event.target.value)}
-      error={error !== null}
-      helperText={error?.description ?? ""}
+      error={(errorHandler?.handleError(errorKey) ?? null) !== null}
+      helperText={
+        <ErrorHelperText errorHandler={errorHandler} errorKey={errorKey} />
+      }
     />
   );
 };

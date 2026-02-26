@@ -1,18 +1,22 @@
+import { Balance, Delete } from "@mui/icons-material";
+import { Button, Stack } from "@mui/material";
+import { type JSX, useState } from "react";
 import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
-import BooleanEntryField from "@framework/dialog/BooleanEntryField";
-import { Button } from "@mui/material";
+import AccountingPeriodTransactionListFrame from "@accounting-periods/AccountingPeriodTransactionListFrame";
+import CaptionedFrame from "@framework/dialog/CaptionedFrame";
+import CaptionedValue from "@framework/dialog/CaptionedValue";
+import CloseAccountingPeriodDialog from "@accounting-periods/CloseAccountingPeriodDialog";
+import DeleteAccountingPeriodDialog from "@accounting-periods/DeleteAccountingPeriodDialog";
 import Dialog from "@framework/dialog/Dialog";
-import IntegerEntryField from "@framework/dialog/IntegerEntryField";
-import type { JSX } from "react";
+import DialogHeaderButton from "@framework/dialog/DialogHeaderButton";
 
 /**
  * Props for the AccountingPeriodDialog component.
- * @param accountingPeriod - Accounting Period to display in this dialog.
- * @param onClose - Callback to perform when this dialog is closed.
  */
 interface AccountingPeriodDialogProps {
-  readonly accountingPeriod: AccountingPeriod;
-  readonly onClose: () => void;
+  readonly inputAccountingPeriod: AccountingPeriod;
+  readonly setMessage: (message: string | null) => void;
+  readonly onClose: (needsRefetch: boolean) => void;
 }
 
 /**
@@ -21,20 +25,88 @@ interface AccountingPeriodDialogProps {
  * @returns JSX element representing the AccountingPeriodDialog.
  */
 const AccountingPeriodDialog = function ({
-  accountingPeriod,
+  inputAccountingPeriod,
+  setMessage,
   onClose,
 }: AccountingPeriodDialogProps): JSX.Element {
+  const [accountingPeriod, setAccountingPeriod] = useState<AccountingPeriod>(
+    inputAccountingPeriod,
+  );
+  const [needsRefetch, setNeedsRefetch] = useState<boolean>(false);
+  const [childDialog, setChildDialog] = useState<JSX.Element | null>(null);
+
+  const closeAccountingPeriod = function (): void {
+    setChildDialog(
+      <CloseAccountingPeriodDialog
+        accountingPeriod={accountingPeriod}
+        setAccountingPeriod={setAccountingPeriod}
+        onClose={(success) => {
+          setChildDialog(null);
+          if (success) {
+            setMessage("Accounting Period closed successfully.");
+            setNeedsRefetch(true);
+          }
+        }}
+      />,
+    );
+  };
+
+  const onDelete = function (): void {
+    setChildDialog(
+      <DeleteAccountingPeriodDialog
+        accountingPeriod={accountingPeriod}
+        onClose={(success) => {
+          setChildDialog(null);
+          if (success) {
+            setMessage("Accounting Period deleted successfully.");
+            onClose(true);
+          }
+        }}
+      />,
+    );
+  };
+
   return (
     <Dialog
-      title="View Accounting Period"
+      title="Accounting Period Details"
       content={
         <>
-          <IntegerEntryField label="Year" value={accountingPeriod.year} />
-          <IntegerEntryField label="Month" value={accountingPeriod.month} />
-          <BooleanEntryField label="Is Open" value={accountingPeriod.isOpen} />
+          <CaptionedFrame caption="Details">
+            <CaptionedValue caption="Name" value={accountingPeriod.name} />
+            <CaptionedValue
+              caption="Is Open"
+              value={accountingPeriod.isOpen ? "Yes" : "No"}
+            />
+          </CaptionedFrame>
+          <AccountingPeriodTransactionListFrame
+            accountingPeriod={accountingPeriod}
+          />
+          {childDialog}
         </>
       }
-      actions={<Button onClick={onClose}>Close</Button>}
+      actions={
+        <Button
+          onClick={() => {
+            onClose(needsRefetch);
+          }}
+        >
+          Close
+        </Button>
+      }
+      headerActions={
+        <Stack direction="row" spacing={2}>
+          <DialogHeaderButton
+            label="Close"
+            icon={<Balance />}
+            onClick={closeAccountingPeriod}
+          />
+          <DialogHeaderButton
+            label="Delete"
+            icon={<Delete />}
+            onClick={onDelete}
+          />
+        </Stack>
+      }
     />
   );
 };

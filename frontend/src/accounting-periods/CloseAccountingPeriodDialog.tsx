@@ -1,5 +1,6 @@
 import { Button, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@accounting-periods/ApiTypes";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import Dialog from "@framework/dialog/Dialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import type { JSX } from "react/jsx-runtime";
@@ -7,11 +8,10 @@ import useCloseAccountingPeriod from "@accounting-periods/useCloseAccountingPeri
 
 /**
  * Props for the CloseAccountingPeriodDialog component.
- * @param accountingPeriod - Accounting Period to close.
- * @param onClose - Callback to perform when this dialog is closed.
  */
 interface CloseAccountingPeriodDialogProps {
   readonly accountingPeriod: AccountingPeriod;
+  readonly setAccountingPeriod: (accountingPeriod: AccountingPeriod) => void;
   readonly onClose: (success: boolean) => void;
 }
 
@@ -22,13 +22,23 @@ interface CloseAccountingPeriodDialogProps {
  */
 const CloseAccountingPeriodDialog = function ({
   accountingPeriod,
+  setAccountingPeriod,
   onClose,
 }: CloseAccountingPeriodDialogProps): JSX.Element {
-  const { isRunning, isSuccess, error, closeAccountingPeriod } =
-    useCloseAccountingPeriod({ accountingPeriod });
+  const {
+    isRunning,
+    isSuccess,
+    error,
+    updatedAccountingPeriod,
+    closeAccountingPeriod,
+  } = useCloseAccountingPeriod({ accountingPeriod });
   if (isSuccess) {
+    if (updatedAccountingPeriod) {
+      setAccountingPeriod(updatedAccountingPeriod);
+    }
     onClose(true);
   }
+  const errorHandler = error ? new ApiErrorHandler(error) : null;
   return (
     <Dialog
       title="Close Accounting Period"
@@ -36,9 +46,9 @@ const CloseAccountingPeriodDialog = function ({
         <>
           <Typography>
             Are you sure you want to close the accounting period &quot;
-            {accountingPeriod.year}-{accountingPeriod.month}&quot;?
+            {accountingPeriod.name}&quot;?
           </Typography>
-          <ErrorAlert error={error} />
+          <ErrorAlert errorHandler={errorHandler} />
         </>
       }
       actions={

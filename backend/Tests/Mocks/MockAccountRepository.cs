@@ -16,20 +16,10 @@ internal sealed class MockAccountRepository : IAccountRepository
     public MockAccountRepository() => _accounts = [];
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Account> FindAll() => _accounts.Values;
+    public Account GetById(AccountId id) => _accounts[id.Value];
 
     /// <inheritdoc/>
-    public Account FindById(AccountId id) => _accounts[id.Value];
-
-    /// <inheritdoc/>
-    public bool TryFindById(Guid id, [NotNullWhen(true)] out Account? account)
-    {
-        account = _accounts.GetValueOrDefault(id);
-        return account != null;
-    }
-
-    /// <inheritdoc/>
-    public bool TryFindByName(string name, [NotNullWhen(true)] out Account? account)
+    public bool TryGetByName(string name, [NotNullWhen(true)] out Account? account)
     {
         account = _accounts.Values.SingleOrDefault(account => account.Name == name);
         return account != null;

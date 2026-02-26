@@ -1,19 +1,19 @@
+import type { Account, UpdateAccountRequest } from "@accounts/ApiTypes";
 import { type JSX, useState } from "react";
-import type { Account } from "@accounts/ApiTypes";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import { Button } from "@mui/material";
 import Dialog from "@framework/dialog/Dialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
-import { ErrorCode } from "@data/api";
 import StringEntryField from "@framework/dialog/StringEntryField";
+import nameof from "@data/nameof";
 import useUpdateAccount from "@accounts/useUpdateAccount";
 
 /**
  * Props for the UpdateAccountDialog component.
- * @param account - Account to display in this dialog.
- * @param onClose - Callback to perform when this dialog is closed.
  */
 interface UpdateAccountDialogProps {
   readonly account: Account;
+  readonly setAccount: (account: Account) => void;
   readonly onClose: (success: boolean) => void;
 }
 
@@ -24,16 +24,22 @@ interface UpdateAccountDialogProps {
  */
 const UpdateAccountDialog = function ({
   account,
+  setAccount,
   onClose,
 }: UpdateAccountDialogProps): JSX.Element {
   const [accountName, setAccountName] = useState<string>(account.name);
-  const { isRunning, isSuccess, error, updateAccount } = useUpdateAccount({
-    account,
-    name: accountName,
-  });
+  const { isRunning, isSuccess, updatedAccount, error, updateAccount } =
+    useUpdateAccount({
+      account,
+      name: accountName,
+    });
   if (isSuccess) {
+    if (updatedAccount) {
+      setAccount(updatedAccount);
+    }
     onClose(true);
   }
+  const errorHandler = error ? new ApiErrorHandler(error) : null;
   return (
     <Dialog
       title="Edit Account"
@@ -43,19 +49,10 @@ const UpdateAccountDialog = function ({
             label="Name"
             value={accountName}
             setValue={setAccountName}
-            error={
-              error?.details.find(
-                (detail) => detail.errorCode === ErrorCode.InvalidFundName,
-              ) ?? null
-            }
+            errorHandler={errorHandler}
+            errorKey={nameof<UpdateAccountRequest>("name")}
           />
-          <StringEntryField label="Type" value={account.type} />
-          <ErrorAlert
-            error={error}
-            detailFilter={(detail) =>
-              detail.errorCode !== ErrorCode.InvalidFundName
-            }
-          />
+          <ErrorAlert errorHandler={errorHandler} />
         </>
       }
       actions={

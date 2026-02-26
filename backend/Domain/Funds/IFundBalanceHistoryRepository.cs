@@ -15,7 +15,7 @@ public interface IFundBalanceHistoryRepository
     /// <summary>
     /// Gets the latest Fund Balance History entry for the specified Fund ID
     /// </summary>
-    FundBalanceHistory? FindLatestForFund(FundId fundId);
+    FundBalanceHistory? GetLatestForFund(FundId fundId);
 
     /// <summary>
     /// Gets all Fund Balance History entries for the specified Transaction ID
@@ -23,19 +23,19 @@ public interface IFundBalanceHistoryRepository
     IReadOnlyCollection<FundBalanceHistory> GetAllByTransactionId(TransactionId transactionId);
 
     /// <summary>
-    /// Finds the earliest Fund Balance History entry for the specified Transaction ID
+    /// Gets the earliest Fund Balance History entry for the specified Transaction ID
     /// </summary>
-    FundBalanceHistory FindEarliestByTransactionId(FundId fundId, TransactionId transactionId);
+    FundBalanceHistory GetEarliestByTransactionId(FundId fundId, TransactionId transactionId);
 
     /// <summary>
-    /// Finds the latest Fund Balance History entry earlier than the specified date and sequence number
+    /// Gets the latest Fund Balance History entry earlier than the specified date and sequence number
     /// </summary>
-    FundBalanceHistory? FindLatestHistoryEarlierThan(FundId fundId, DateOnly historyDate, int sequenceNumber);
+    FundBalanceHistory? GetLatestHistoryEarlierThan(FundId fundId, DateOnly historyDate, int sequenceNumber);
 
     /// <summary>
     /// Gets all Fund Balance History entries later than the specified date and sequence number
     /// </summary>
-    IReadOnlyCollection<(FundBalanceHistory History, Transaction Transaction)> FindAllHistoriesLaterThan(FundId fundId, DateOnly historyDate, int sequence);
+    IReadOnlyCollection<(FundBalanceHistory History, Transaction Transaction)> GetAllHistoriesLaterThan(FundId fundId, DateOnly historyDate, int sequence);
 
     /// <summary>
     /// Adds the provided Fund Balance History to the repository

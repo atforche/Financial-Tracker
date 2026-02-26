@@ -1,39 +1,57 @@
+import { TableCell, TableSortLabel } from "@mui/material";
+import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
+import ColumnSortType from "@framework/listframe/ColumnSortType";
 import type { JSX } from "react";
-import TableCell from "@mui/material/TableCell";
+
+/** Default width for a column in the list frame. */
+const defaultColumnWidth = 100;
 
 /**
  * Props for the ColumnHeader component.
- * @param key - Key that uniquely identifies this Column Header.
- * @param content - Content for this Column Header.
- * @param align - Alignment for this Column Header.
- * @param width - Width for this Column Header.
  */
-interface ColumnHeaderProps {
-  readonly key: string;
-  readonly content: string | JSX.Element;
-  readonly align: "center" | "left" | "right";
-  readonly minWidth: number;
+interface ColumnHeaderProps<T> {
+  readonly column: ColumnDefinition<T>;
 }
 
 /**
- * Component for rendering a column header in a list frame.
+ * Component that presents the header of a column in the list frame.
  * @param props - Props for the ColumnHeader component.
- * @returns The column header element.
+ * @returns JSX element representing the ColumnHeader.
  */
-const ColumnHeader = function ({
-  key,
-  content,
-  align,
-  minWidth,
-}: ColumnHeaderProps): JSX.Element {
+const ColumnHeader = function <T>({
+  column,
+}: ColumnHeaderProps<T>): JSX.Element {
   return (
     <TableCell
-      key={key}
-      align={align}
-      style={{ minWidth }}
-      sx={{ backgroundColor: "primary.main", color: "white" }}
+      key={column.name}
+      align={column.alignment ?? "left"}
+      sx={{
+        maxWidth: column.maxWidth ?? defaultColumnWidth,
+        backgroundColor: "primary.main",
+        color: "white",
+      }}
     >
-      {content}
+      {(column.sortType ?? null) !== null || column.onSort ? (
+        <TableSortLabel
+          active={(column.sortType ?? null) !== null}
+          direction={
+            column.sortType === ColumnSortType.Ascending ? "asc" : "desc"
+          }
+          onClick={(): void => {
+            if (column.sortType === null) {
+              column.onSort?.(ColumnSortType.Ascending);
+            } else if (column.sortType === ColumnSortType.Ascending) {
+              column.onSort?.(ColumnSortType.Descending);
+            } else {
+              column.onSort?.(null);
+            }
+          }}
+        >
+          <div style={{ color: "white" }}>{column.headerContent}</div>
+        </TableSortLabel>
+      ) : (
+        column.headerContent
+      )}
     </TableCell>
   );
 };

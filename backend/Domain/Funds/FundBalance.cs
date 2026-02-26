@@ -28,24 +28,45 @@ public class FundBalance
     public IReadOnlyCollection<AccountAmount> PendingCredits { get; }
 
     /// <summary>
-    /// Balance for this Fund Balance
+    /// Posted Balance for this Fund Balance
     /// </summary>
-    public decimal Balance => AccountBalances.Sum(balance => balance.Amount);
+    public decimal PostedBalance => AccountBalances.Sum(balance => balance.Amount);
 
     /// <summary>
-    /// Attempts to add the provided Account Amount to the current Fund Balance
+    /// Adds the provided pending debit to the current pending Fund Balance
     /// </summary>
-    internal FundBalance AddNewAmount(AccountAmount accountAmount) => new(FundId, AccountBalances.Append(accountAmount), PendingDebits, PendingCredits);
+    internal FundBalance AddNewPendingDebit(AccountAmount pendingDebit) => new(FundId, AccountBalances, PendingDebits.Append(pendingDebit), PendingCredits);
 
     /// <summary>
-    /// Attempts to add the provided pending debits to the current pending Fund Balance
+    /// Posts the provided pending debit to the current posted Fund Balance
     /// </summary>
-    internal FundBalance AddNewPendingDebits(AccountAmount accountAmount) => new(FundId, AccountBalances, PendingDebits.Append(accountAmount), PendingCredits);
+    internal FundBalance PostPendingDebit(AccountAmount pendingDebit)
+    {
+        var negativePendingDebit = new AccountAmount
+        {
+            AccountId = pendingDebit.AccountId,
+            Amount = -pendingDebit.Amount
+        };
+        return new FundBalance(FundId, AccountBalances.Append(negativePendingDebit), PendingDebits.Append(negativePendingDebit), PendingCredits);
+    }
 
     /// <summary>
-    /// Attempts to add the provided pending credits to the current pending Fund Balance
+    /// Adds the provided pending credit to the current pending Fund Balance
     /// </summary>
-    internal FundBalance AddNewPendingCredits(AccountAmount accountAmount) => new(FundId, AccountBalances, PendingDebits, PendingCredits.Append(accountAmount));
+    internal FundBalance AddNewPendingCredit(AccountAmount pendingCredit) => new(FundId, AccountBalances, PendingDebits, PendingCredits.Append(pendingCredit));
+
+    /// <summary>
+    /// Posts the provided pending credit to the current posted Fund Balance
+    /// </summary>
+    internal FundBalance PostPendingCredit(AccountAmount pendingCredit)
+    {
+        var negativePendingCredit = new AccountAmount
+        {
+            AccountId = pendingCredit.AccountId,
+            Amount = -pendingCredit.Amount
+        };
+        return new FundBalance(FundId, AccountBalances.Append(pendingCredit), PendingDebits, PendingCredits.Append(negativePendingCredit));
+    }
 
     /// <summary>
     /// Constructs a new instance of this class

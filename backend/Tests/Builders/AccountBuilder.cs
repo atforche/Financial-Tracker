@@ -13,12 +13,11 @@ public sealed class AccountBuilder(
     AccountService accountService,
     IAccountRepository accountRepository,
     IAccountingPeriodRepository accountingPeriodRepository,
-    IFundRepository fundRepository,
     TestUnitOfWork testUnitOfWork)
 {
     private string? _name;
     private AccountType _type = AccountType.Standard;
-    private AccountingPeriodId? _accountingPeriodId;
+    private AccountingPeriod? _accountingPeriod;
     private DateOnly _addedDate = new(2025, 1, 1);
     private List<FundAmount>? _addedFundAmounts;
 
@@ -33,7 +32,7 @@ public sealed class AccountBuilder(
             {
                 Name = _name ?? Guid.NewGuid().ToString(),
                 Type = _type,
-                AccountingPeriodId = DetermineAccountingPeriod(),
+                AccountingPeriod = DetermineAccountingPeriod(),
                 AddDate = _addedDate,
                 InitialFundAmounts = DetermineFundAmounts()
             },
@@ -69,9 +68,9 @@ public sealed class AccountBuilder(
     /// <summary>
     /// Sets the Accounting Period ID for this Account Builder
     /// </summary>
-    public AccountBuilder WithAccountingPeriodId(AccountingPeriodId accountingPeriodId)
+    public AccountBuilder WithAccountingPeriod(AccountingPeriod accountingPeriod)
     {
-        _accountingPeriodId = accountingPeriodId;
+        _accountingPeriod = accountingPeriod;
         return this;
     }
 
@@ -96,14 +95,13 @@ public sealed class AccountBuilder(
     /// <summary>
     /// Determines the Accounting Period to use for this Account
     /// </summary>
-    private AccountingPeriodId DetermineAccountingPeriod()
+    private AccountingPeriod DetermineAccountingPeriod()
     {
-        if (_accountingPeriodId != null)
+        if (_accountingPeriod != null)
         {
-            return _accountingPeriodId;
+            return _accountingPeriod;
         }
-        return accountingPeriodRepository.FindAll()
-            .Single(accountingPeriod => accountingPeriod.Year == _addedDate.Year && accountingPeriod.Month == _addedDate.Month).Id;
+        return accountingPeriodRepository.GetByYearAndMonth(_addedDate.Year, _addedDate.Month) ?? throw new InvalidOperationException();
     }
 
     /// <summary>
@@ -114,18 +112,6 @@ public sealed class AccountBuilder(
         if (_addedFundAmounts != null)
         {
             return _addedFundAmounts;
-        }
-        var funds = fundRepository.FindAll().ToList();
-        if (funds.Count == 1)
-        {
-            return
-            [
-                new FundAmount
-                {
-                    FundId = funds.First().Id,
-                    Amount = 2500.00m
-                }
-            ];
         }
         return [];
     }

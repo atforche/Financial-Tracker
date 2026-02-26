@@ -5,7 +5,7 @@ import { Button } from "@mui/material";
 import CreateOrUpdateTransactionFrame from "@transactions/CreateOrUpdateTransactionFrame";
 import type { Dayjs } from "dayjs";
 import Dialog from "@framework/dialog/Dialog";
-import type { FundAmount } from "@funds/ApiTypes";
+import type FundAmountEntryModel from "@funds/FundAmountEntryModel";
 import useCreateTransaction from "@transactions/useCreateTransaction";
 
 /**
@@ -31,20 +31,32 @@ const CreateTransactionDialog = function ({
   const [debitAccount, setDebitAccount] = useState<AccountIdentifier | null>(
     null,
   );
-  const [debitFundAmounts, setDebitFundAmounts] = useState<FundAmount[]>([]);
+  const [debitFundAmounts, setDebitFundAmounts] = useState<
+    FundAmountEntryModel[]
+  >([]);
   const [creditAccount, setCreditAccount] = useState<AccountIdentifier | null>(
     null,
   );
-  const [creditFundAmounts, setCreditFundAmounts] = useState<FundAmount[]>([]);
+  const [creditFundAmounts, setCreditFundAmounts] = useState<
+    FundAmountEntryModel[]
+  >([]);
   const { isRunning, isSuccess, createTransaction } = useCreateTransaction({
     accountingPeriod,
     date,
     location,
     description,
     debitAccount,
-    debitFundAmounts,
+    debitFundAmounts: debitFundAmounts.map((entryModel) => ({
+      fundId: entryModel.fundId ?? "",
+      fundName: entryModel.fundName ?? "",
+      amount: entryModel.amount ?? 0,
+    })),
     creditAccount,
-    creditFundAmounts,
+    creditFundAmounts: creditFundAmounts.map((entryModel) => ({
+      fundId: entryModel.fundId ?? "",
+      fundName: entryModel.fundName ?? "",
+      amount: entryModel.amount ?? 0,
+    })),
   });
   if (isSuccess) {
     onClose(true);

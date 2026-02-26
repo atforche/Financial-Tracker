@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.Funds;
-using Microsoft.AspNetCore.Mvc;
 using Models.Funds;
 
 namespace Rest.Mappers;
@@ -16,18 +15,18 @@ public sealed class FundAmountMapper(FundMapper fundMapper, IFundRepository fund
     public FundAmountModel ToModel(FundAmount fundAmount) => new()
     {
         FundId = fundAmount.FundId.Value,
-        FundName = fundRepository.FindById(fundAmount.FundId).Name,
+        FundName = fundRepository.GetById(fundAmount.FundId).Name,
         Amount = fundAmount.Amount
     };
 
     /// <summary>
     /// Attempts to map the provided Fund Amount Model to a Fund Amount
     /// </summary>
-    public bool TryToDomain(CreateFundAmountModel fundAmountModel, [NotNullWhen(true)] out FundAmount? fundAmount, [NotNullWhen(false)] out IActionResult? errorResult)
+    public bool TryToDomain(CreateFundAmountModel fundAmountModel, [NotNullWhen(true)] out FundAmount? fundAmount)
     {
         fundAmount = null;
 
-        if (!fundMapper.TryToDomain(fundAmountModel.FundId, out Fund? fund, out errorResult))
+        if (!fundMapper.TryToDomain(fundAmountModel.FundId, out Fund? fund))
         {
             return false;
         }

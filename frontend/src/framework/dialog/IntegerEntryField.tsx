@@ -1,4 +1,5 @@
-import type { ApiErrorDetail } from "@data/ApiError";
+import type ApiErrorHandler from "@data/ApiErrorHandler";
+import ErrorHelperText from "@framework/dialog/ErrorHelperText";
 import type { JSX } from "react";
 import { TextField } from "@mui/material";
 
@@ -12,7 +13,8 @@ interface IntegerEntryFieldProps {
   readonly label: string;
   readonly value: number | null;
   readonly setValue?: ((newValue: number | null) => void) | null;
-  readonly error?: ApiErrorDetail | null;
+  readonly errorHandler?: ApiErrorHandler | null;
+  readonly errorKey?: string | null;
 }
 
 /**
@@ -24,7 +26,8 @@ const IntegerEntryField = function ({
   label,
   value,
   setValue = null,
-  error = null,
+  errorHandler = null,
+  errorKey = null,
 }: IntegerEntryFieldProps): JSX.Element {
   return (
     <TextField
@@ -45,8 +48,10 @@ const IntegerEntryField = function ({
           event.target.value === "" ? null : Number(event.target.value),
         )
       }
-      error={error !== null}
-      helperText={error?.description ?? ""}
+      error={(errorHandler?.handleError(errorKey) ?? null) !== null}
+      helperText={
+        <ErrorHelperText errorHandler={errorHandler} errorKey={errorKey} />
+      }
     />
   );
 };

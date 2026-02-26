@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
@@ -19,30 +18,31 @@ internal sealed class MockTransactionRepository : ITransactionRepository
     public MockTransactionRepository() => _transactions = new Dictionary<Guid, Transaction>();
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> GetAll() => _transactions.Values;
+    public int GetNextSequenceForDate(DateOnly transactionDate)
+    {
+        var transactionsOnDate = _transactions.Values.Where(transaction => transaction.Date == transactionDate).ToList();
+        return transactionsOnDate.Count == 0 ? 1 : transactionsOnDate.Max(transaction => transaction.Sequence) + 1;
+    }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> FindAllByAccount(AccountId accountId) => _transactions.Values.Where(transaction =>
-        (transaction.DebitAccount != null && transaction.DebitAccount.AccountId == accountId) ||
-        (transaction.CreditAccount != null && transaction.CreditAccount.AccountId == accountId)).ToList();
+    public bool DoAnyTransactionsExistForAccount(Account account) =>
+        _transactions.Values.Any(transaction => (transaction.DebitAccount?.AccountId == account.Id || transaction.CreditAccount?.AccountId == account.Id) &&
+        transaction.Id != account.InitialTransaction);
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> FindAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
-        _transactions.Values.Where(transaction => transaction.AccountingPeriod == accountingPeriodId).ToList();
+    public IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
+        _transactions.Values.Where(transaction => transaction.AccountingPeriodId == accountingPeriodId)
+            .OrderBy(transaction => transaction.Date)
+            .ThenBy(transaction => transaction.Sequence)
+            .ToList();
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> FindAllByFund(FundId fundId) => _transactions.Values.Where(transaction =>
-        (transaction.DebitAccount != null && transaction.DebitAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId)) ||
-        (transaction.CreditAccount != null && transaction.CreditAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId))).ToList();
+    public bool DoAnyTransactionsExistForFund(FundId fundId) =>
+        _transactions.Values.Any(transaction => (transaction.DebitAccount?.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId) ?? false) ||
+                                (transaction.CreditAccount?.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId) ?? false));
 
     /// <inheritdoc/>
-    public Transaction FindById(TransactionId id) => _transactions[id.Value];
-
-    /// <inheritdoc/>
-    public bool TryFindById(Guid id, [NotNullWhen(true)] out Transaction? transaction) => _transactions.TryGetValue(id, out transaction);
-
-    /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> FindAll() => _transactions.Values;
+    public Transaction GetById(TransactionId id) => _transactions[id.Value];
 
     /// <inheritdoc/>
     public void Add(Transaction transaction) => _transactions.Add(transaction.Id.Value, transaction);

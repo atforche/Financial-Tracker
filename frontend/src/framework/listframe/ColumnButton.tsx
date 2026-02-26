@@ -31,6 +31,7 @@ const ColumnButton = function ({
           onClick?.();
         }}
         disabled={onClick === null}
+        size="small"
       >
         {icon}
       </IconButton>

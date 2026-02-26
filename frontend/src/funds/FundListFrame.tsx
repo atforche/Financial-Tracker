@@ -1,10 +1,14 @@
+import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
+import { type Fund, FundSortOrder } from "@funds/ApiTypes";
 import { type JSX, useState } from "react";
-import ColumnCell from "@framework/listframe/ColumnCell";
-import ColumnHeader from "@framework/listframe/ColumnHeader";
+import ApiErrorHandler from "@data/ApiErrorHandler";
+import ColumnButton from "@framework/listframe/ColumnButton";
+import type ColumnDefinition from "@framework/listframe/ColumnDefinition";
+import ColumnHeaderButton from "@framework/listframe/ColumnHeaderButton";
+import ColumnSortType from "@framework/listframe/ColumnSortType";
+import CreateOrUpdateFundDialog from "@funds/CreateOrUpdateFundDialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
-import type { Fund } from "@funds/ApiTypes";
-import FundListFrameActionColumn from "@funds/FundListFrameActionColumn";
-import FundListFrameActionColumnHeader from "@funds/FundListFrameActionColumnHeader";
+import FundDialog from "@funds/FundDialog";
 import ListFrame from "@framework/listframe/ListFrame";
 import SuccessAlert from "@framework/alerts/SuccessAlert";
 import formatCurrency from "@framework/formatCurrency";
@@ -18,85 +22,144 @@ import useGetAllFunds from "@funds/useGetAllFunds";
 const FundListFrame = function (): JSX.Element {
   const [dialog, setDialog] = useState<JSX.Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const { funds, isLoading, error, refetch } = useGetAllFunds();
+  const [sortBy, setSortBy] = useState<FundSortOrder | null>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const { funds, totalCount, isLoading, error, refetch } = useGetAllFunds({
+    sortBy,
+    page,
+    rowsPerPage,
+  });
+
+  const columns: ColumnDefinition<Fund>[] = [
+    {
+      name: "name",
+      headerContent: "Name",
+      getBodyContent: (fund: Fund) => fund.name,
+      sortType:
+        sortBy === FundSortOrder.Name
+          ? ColumnSortType.Ascending
+          : sortBy === FundSortOrder.NameDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(FundSortOrder.Name);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(FundSortOrder.NameDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
+    },
+    {
+      name: "description",
+      headerContent: "Description",
+      getBodyContent: (fund: Fund) => fund.description,
+      sortType:
+        sortBy === FundSortOrder.Description
+          ? ColumnSortType.Ascending
+          : sortBy === FundSortOrder.DescriptionDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(FundSortOrder.Description);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(FundSortOrder.DescriptionDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
+    },
+    {
+      name: "balance",
+      headerContent: "Posted Balance",
+      getBodyContent: (fund: Fund) =>
+        formatCurrency(fund.currentBalance.postedBalance),
+      sortType:
+        sortBy === FundSortOrder.Balance
+          ? ColumnSortType.Ascending
+          : sortBy === FundSortOrder.BalanceDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSortBy(FundSortOrder.Balance);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSortBy(FundSortOrder.BalanceDescending);
+        } else {
+          setSortBy(null);
+        }
+      },
+    },
+    {
+      name: "actions",
+      headerContent: (
+        <ColumnHeaderButton
+          label="Add"
+          icon={<AddCircleOutline />}
+          onClick={() => {
+            setDialog(
+              <CreateOrUpdateFundDialog
+                fund={null}
+                setFund={null}
+                onClose={(success) => {
+                  setDialog(null);
+                  if (success) {
+                    setMessage("Fund added successfully.");
+                  }
+                  refetch();
+                }}
+              />,
+            );
+            setMessage(null);
+          }}
+        />
+      ),
+      getBodyContent: (fund: Fund) => (
+        <ColumnButton
+          label="View"
+          icon={<ArrowForwardIos />}
+          onClick={() => {
+            setDialog(
+              <FundDialog
+                inputFund={fund}
+                setMessage={setMessage}
+                onClose={(needsRefetch) => {
+                  setDialog(null);
+                  if (needsRefetch) {
+                    refetch();
+                  }
+                }}
+              />,
+            );
+            setMessage(null);
+          }}
+        />
+      ),
+      alignment: "right",
+    },
+  ];
+
+  const errorHandler = error === null ? null : new ApiErrorHandler(error);
   return (
     <ListFrame<Fund>
       name="Funds"
-      headers={[
-        <ColumnHeader key="name" content="Name" minWidth={170} align="left" />,
-        <ColumnHeader
-          key="description"
-          content="Description"
-          minWidth={170}
-          align="left"
-        />,
-        <ColumnHeader
-          key="balance"
-          content="Current Balance"
-          minWidth={170}
-          align="left"
-        />,
-        <ColumnHeader
-          key="available"
-          content="Available to Spend"
-          minWidth={170}
-          align="left"
-        />,
-        <FundListFrameActionColumnHeader
-          key="actions"
-          setDialog={setDialog}
-          setMessage={setMessage}
-          refetch={refetch}
-        />,
-      ]}
-      columns={(fund: Fund) => [
-        <ColumnCell
-          key="name"
-          content={fund.name}
-          align="left"
-          isLoading={isLoading}
-          isError={error !== null}
-        />,
-        <ColumnCell
-          key="description"
-          content={fund.description}
-          align="left"
-          isLoading={isLoading}
-          isError={error !== null}
-        />,
-        <ColumnCell
-          key="balance"
-          content={formatCurrency(fund.currentBalance.balance)}
-          align="left"
-          isLoading={isLoading}
-          isError={error !== null}
-        />,
-        <ColumnCell
-          key="available"
-          content={formatCurrency(
-            fund.currentBalance.balance -
-              fund.currentBalance.pendingDebitAmount,
-          )}
-          align="left"
-          isLoading={isLoading}
-          isError={error !== null}
-        />,
-        <FundListFrameActionColumn
-          key="actions"
-          fund={fund}
-          isLoading={isLoading}
-          error={error}
-          setDialog={setDialog}
-          setMessage={setMessage}
-          refetch={refetch}
-        />,
-      ]}
+      columns={columns}
       getId={(fund: Fund) => fund.id}
       data={funds}
+      totalCount={totalCount}
+      isLoading={isLoading}
+      isError={error !== null}
+      page={page}
+      setPage={setPage}
+      rowsPerPage={rowsPerPage}
+      setRowsPerPage={setRowsPerPage}
     >
       {dialog}
       <SuccessAlert message={message} />
-      <ErrorAlert error={error} />
+      <ErrorAlert errorHandler={errorHandler} />
     </ListFrame>
   );
 };

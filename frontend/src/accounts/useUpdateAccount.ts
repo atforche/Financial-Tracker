@@ -25,14 +25,15 @@ const useUpdateAccount = function ({
 }: UseCloseAccountingPeriodArgs): {
   isRunning: boolean;
   isSuccess: boolean;
+  updatedAccount: Account | null;
   error: ApiError | null;
   updateAccount: () => void;
 } {
   const updateAccountCallback = useCallback<
-    () => Promise<ApiError | null>
+    () => Promise<Account | ApiError | null>
   >(async () => {
     const client = getApiClient();
-    const { error } = await client.POST("/accounts/{accountId}", {
+    const { data, error } = await client.POST("/accounts/{accountId}", {
       params: {
         path: {
           accountId: account.id,
@@ -40,15 +41,22 @@ const useUpdateAccount = function ({
       },
       body: { name },
     });
-    return typeof error === "undefined" ? null : error;
+    return typeof error === "undefined" ? data : error;
   }, [account, name]);
 
-  const { isRunning, isSuccess, error, execute } = useApiRequest({
+  const {
+    isRunning,
+    isSuccess,
+    response: updatedAccount,
+    error,
+    execute,
+  } = useApiRequest<Account>({
     apiRequestFunction: updateAccountCallback,
   });
   return {
     isRunning,
     isSuccess,
+    updatedAccount,
     error,
     updateAccount: execute,
   };

@@ -18,43 +18,68 @@ public class AccountService(
     public bool TryCreate(
         CreateAccountRequest request,
         [NotNullWhen(true)] out Account? account,
-        [NotNullWhen(true)] out Transaction? initialTransaction,
+        out Transaction? initialTransaction,
         out IEnumerable<Exception> exceptions)
     {
         account = null;
         initialTransaction = null;
+        exceptions = [];
 
-        if (!ValidateAccountName(request.Name, out exceptions))
+        if (!ValidateAccountName(request.Name, out IEnumerable<Exception> nameExceptions))
+        {
+            exceptions = exceptions.Concat(nameExceptions);
+        }
+        if (!request.AccountingPeriod.IsOpen)
+        {
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException());
+        }
+        if (!request.AccountingPeriod.IsDateInPeriod(request.AddDate))
+        {
+            exceptions = exceptions.Append(new InvalidAddDateException());
+        }
+        if (exceptions.Any())
         {
             return false;
         }
-        account = new Account(request.Name, request.Type);
-        if (!transactionService.TryCreate(new CreateTransactionRequest
+        account = new Account(request.Name, request.Type, request.AccountingPeriod.Id, request.AddDate);
+        accountRepository.Add(account);
+        if (request.InitialFundAmounts.Any())
         {
-            AccountingPeriod = request.AccountingPeriodId,
-            Date = request.AddDate,
-            Location = "Initial",
-            Description = "Initial Balance",
-            DebitAccount = null,
-            CreditAccount = new CreateTransactionAccountRequest
+            if (!transactionService.TryCreate(new CreateTransactionRequest
             {
-                Account = account,
-                FundAmounts = request.InitialFundAmounts
-            },
-            IsInitialTransactionForCreditAccount = true
-        }, out initialTransaction, out IEnumerable<Exception> transactionExceptions))
-        {
-            exceptions = exceptions.Concat(transactionExceptions);
-            account = null;
-            return false;
+                AccountingPeriod = request.AccountingPeriod,
+                Date = request.AddDate,
+                Location = "Initial",
+                Description = "Initial Balance",
+                DebitAccount = request.Type == AccountType.Debt
+                    ? new CreateTransactionAccountRequest
+                    {
+                        Account = account,
+                        FundAmounts = request.InitialFundAmounts
+                    }
+                    : null,
+                CreditAccount = request.Type == AccountType.Standard
+                    ? new CreateTransactionAccountRequest
+                    {
+                        Account = account,
+                        FundAmounts = request.InitialFundAmounts
+                    }
+                    : null,
+                IsInitialTransactionForAccount = true
+            }, out initialTransaction, out IEnumerable<Exception> transactionExceptions))
+            {
+                exceptions = exceptions.Concat(transactionExceptions);
+                account = null;
+                return false;
+            }
+            if (!transactionService.TryPost(initialTransaction, account.Id, request.AddDate, out IEnumerable<Exception> postingExceptions))
+            {
+                exceptions = exceptions.Concat(postingExceptions);
+                account = null;
+                return false;
+            }
+            account.InitialTransaction = initialTransaction.Id;
         }
-        if (!transactionService.TryPost(initialTransaction, account.Id, request.AddDate, out IEnumerable<Exception> postingExceptions))
-        {
-            exceptions = exceptions.Concat(postingExceptions);
-            account = null;
-            return false;
-        }
-        account.InitialTransaction = initialTransaction.Id;
         return true;
     }
 
@@ -88,14 +113,14 @@ public class AccountService(
     {
         exceptions = [];
 
-        if (transactionRepository.FindAllByAccount(account.Id).Any(transaction => transaction.Id != account.InitialTransaction))
+        if (transactionRepository.DoAnyTransactionsExistForAccount(account))
         {
-            exceptions = [new UnableToDeleteAccountException("Cannot delete an Account that has Transactions.")];
+            exceptions = [new UnableToDeleteException("Cannot delete an Account that has Transactions.")];
             return false;
         }
         if (account.InitialTransaction != null)
         {
-            Transaction initialTransaction = transactionRepository.FindById(account.InitialTransaction);
+            Transaction initialTransaction = transactionRepository.GetById(account.InitialTransaction);
             if (!transactionService.TryDelete(initialTransaction, account.Id, out IEnumerable<Exception> transactionExceptions))
             {
                 exceptions = exceptions.Concat(transactionExceptions);
@@ -118,11 +143,11 @@ public class AccountService(
 
         if (string.IsNullOrEmpty(name))
         {
-            exceptions = exceptions.Append(new InvalidAccountNameException("Account name cannot be empty"));
+            exceptions = exceptions.Append(new InvalidNameException("Account name cannot be empty"));
         }
-        if (accountRepository.TryFindByName(name, out _))
+        if (accountRepository.TryGetByName(name, out _))
         {
-            exceptions = exceptions.Append(new InvalidAccountNameException("Account name must be unique"));
+            exceptions = exceptions.Append(new InvalidNameException("Account name must be unique"));
         }
         return !exceptions.Any();
     }

@@ -21,7 +21,7 @@ public record CreateAccountRequest
     /// <summary>
     /// Accounting Period that the Account is being added to
     /// </summary>
-    public required AccountingPeriodId AccountingPeriodId { get; init; }
+    public required AccountingPeriod AccountingPeriod { get; init; }
 
     /// <summary>
     /// Date the Account is being added

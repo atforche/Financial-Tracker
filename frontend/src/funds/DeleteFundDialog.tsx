@@ -1,4 +1,5 @@
 import { Button, Typography } from "@mui/material";
+import ApiErrorHandler from "@data/ApiErrorHandler";
 import Dialog from "@framework/dialog/Dialog";
 import ErrorAlert from "@framework/alerts/ErrorAlert";
 import type { Fund } from "@funds/ApiTypes";
@@ -30,6 +31,7 @@ const DeleteFundDialog = function ({
   if (isSuccess) {
     onClose(true);
   }
+  const errorHandler = error === null ? null : new ApiErrorHandler(error);
   return (
     <Dialog
       title="Delete Fund"
@@ -38,7 +40,7 @@ const DeleteFundDialog = function ({
           <Typography>
             Are you sure you want to delete the fund &quot;{fund.name}&quot;?
           </Typography>
-          <ErrorAlert error={error} />
+          <ErrorAlert errorHandler={errorHandler} />
         </>
       }
       actions={
