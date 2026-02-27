@@ -81,9 +81,12 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
                 UpdateExistingBalanceHistory(transaction, fundAmount.FundId);
             }
         }
-        foreach (FundAmount fundAmount in transactionAccount.FundAmounts)
+        else
         {
-            AddNewBalanceHistory(transaction, fundAmount.FundId, transactionAccount.PostedDate.Value);
+            foreach (FundAmount fundAmount in transactionAccount.FundAmounts)
+            {
+                AddNewBalanceHistory(transaction, fundAmount.FundId, transactionAccount.PostedDate.Value);
+            }
         }
     }
 
