@@ -1,5 +1,4 @@
 using Domain.Transactions;
-using Domain.Transactions.Exceptions;
 
 namespace Domain.Accounts;
 
@@ -51,255 +50,132 @@ public class AccountBalanceService(
     }
 
     /// <summary>
-    /// Attempts to update the Account Balances for a newly added Transaction
+    /// Updates the Account Balances for a newly added Transaction
     /// </summary>
-    internal bool TryAddTransaction(Transaction newTransaction, out IEnumerable<Exception> exceptions)
+    internal void AddTransaction(Transaction newTransaction)
     {
-        exceptions = [];
-
         if (newTransaction.DebitAccount != null)
         {
-            int debitSequence = accountBalanceHistoryRepository.GetNextSequenceForAccountAndDate(newTransaction.DebitAccount.AccountId, newTransaction.Date);
-            AccountBalance existingDebitBalance = GetExistingAccountBalanceAsOf(
-                accountRepository.GetById(newTransaction.DebitAccount.AccountId),
-                newTransaction.Date,
-                debitSequence);
-            if (!newTransaction.TryApplyToAccountBalance(existingDebitBalance, newTransaction.Date, out AccountBalance? newDebitBalance, out IEnumerable<Exception> debitExceptions))
-            {
-                exceptions = exceptions.Concat(debitExceptions);
-                return false;
-            }
-            var newDebitBalanceHistory = new AccountBalanceHistory(newDebitBalance.Account,
-                newTransaction.Id,
-                newTransaction.Date,
-                debitSequence,
-                newDebitBalance.FundBalances,
-                newDebitBalance.PendingDebits,
-                newDebitBalance.PendingCredits);
-            if (!TryAddNewBalanceHistory(newDebitBalanceHistory, out IEnumerable<Exception> balanceHistoryExceptions))
-            {
-                exceptions = exceptions.Concat(balanceHistoryExceptions);
-                return false;
-            }
+            AddNewBalanceHistory(newTransaction, newTransaction.DebitAccount, newTransaction.Date);
         }
         if (newTransaction.CreditAccount != null)
         {
-            int creditSequence = accountBalanceHistoryRepository.GetNextSequenceForAccountAndDate(newTransaction.CreditAccount.AccountId, newTransaction.Date);
-            AccountBalance existingCreditBalance = GetExistingAccountBalanceAsOf(
-                accountRepository.GetById(newTransaction.CreditAccount.AccountId),
-                newTransaction.Date,
-                creditSequence);
-            if (!newTransaction.TryApplyToAccountBalance(existingCreditBalance, newTransaction.Date, out AccountBalance? newCreditBalance, out IEnumerable<Exception> creditExceptions))
-            {
-                exceptions = exceptions.Concat(creditExceptions);
-                return false;
-            }
-            var newCreditBalanceHistory = new AccountBalanceHistory(newCreditBalance.Account,
-                newTransaction.Id,
-                newTransaction.Date,
-                creditSequence,
-                newCreditBalance.FundBalances,
-                newCreditBalance.PendingDebits,
-                newCreditBalance.PendingCredits);
-            if (!TryAddNewBalanceHistory(newCreditBalanceHistory, out IEnumerable<Exception> balanceHistoryExceptions))
-            {
-                exceptions = exceptions.Concat(balanceHistoryExceptions);
-                return false;
-            }
+            AddNewBalanceHistory(newTransaction, newTransaction.CreditAccount, newTransaction.Date);
         }
-        return true;
     }
 
     /// <summary>
-    /// Attempts to update the Account Balances for an updated Transaction
+    /// Updates the Account Balances for an updated Transaction
     /// </summary>
-    internal bool TryUpdateTransaction(Transaction transaction, out IEnumerable<Exception> exceptions)
+    internal void UpdateTransaction(Transaction transaction)
     {
-        exceptions = [];
-
         if (transaction.DebitAccount != null)
         {
-            AccountBalanceHistory existingDebitHistory = accountBalanceHistoryRepository.GetEarliestByTransactionId(transaction.DebitAccount.AccountId, transaction.Id);
-            AccountBalance previousBalance = GetExistingAccountBalanceAsOf(
-                accountRepository.GetById(transaction.DebitAccount.AccountId),
-                existingDebitHistory.Date,
-                existingDebitHistory.Sequence);
-            if (!transaction.TryApplyToAccountBalance(previousBalance, existingDebitHistory.Date, out AccountBalance? updatedDebitBalance, out IEnumerable<Exception> debitExceptions))
-            {
-                exceptions = exceptions.Concat(debitExceptions);
-                return false;
-            }
-            existingDebitHistory.FundBalances = updatedDebitBalance.FundBalances;
-            existingDebitHistory.PendingDebits = updatedDebitBalance.PendingDebits;
-            existingDebitHistory.PendingCredits = updatedDebitBalance.PendingCredits;
-            if (!TryUpdateExistingBalanceHistory(existingDebitHistory, out IEnumerable<Exception> updateExceptions))
-            {
-                exceptions = exceptions.Concat(updateExceptions);
-                return false;
-            }
+            UpdateExistingBalanceHistory(transaction, transaction.DebitAccount);
         }
         if (transaction.CreditAccount != null)
         {
-            AccountBalanceHistory existingCreditHistory = accountBalanceHistoryRepository.GetEarliestByTransactionId(transaction.CreditAccount.AccountId, transaction.Id);
-            AccountBalance previousBalance = GetExistingAccountBalanceAsOf(
-                accountRepository.GetById(transaction.CreditAccount.AccountId),
-                existingCreditHistory.Date,
-                existingCreditHistory.Sequence);
-            if (!transaction.TryApplyToAccountBalance(previousBalance, existingCreditHistory.Date, out AccountBalance? updatedCreditBalance, out IEnumerable<Exception> creditExceptions))
-            {
-                exceptions = exceptions.Concat(creditExceptions);
-                return false;
-            }
-            existingCreditHistory.FundBalances = updatedCreditBalance.FundBalances;
-            existingCreditHistory.PendingDebits = updatedCreditBalance.PendingDebits;
-            existingCreditHistory.PendingCredits = updatedCreditBalance.PendingCredits;
-            if (!TryUpdateExistingBalanceHistory(existingCreditHistory, out IEnumerable<Exception> updateExceptions))
-            {
-                exceptions = exceptions.Concat(updateExceptions);
-                return false;
-            }
+            UpdateExistingBalanceHistory(transaction, transaction.CreditAccount);
         }
-        return true;
     }
 
     /// <summary>
-    /// Attempts to update the Account Balances for a newly posted Transaction
+    /// Updates the Account Balances for a newly posted Transaction
     /// </summary>
-    internal bool TryPostTransaction(Transaction transaction, TransactionAccount transactionAccount, out IEnumerable<Exception> exceptions)
+    internal void PostTransaction(Transaction transaction, TransactionAccount transactionAccount)
     {
-        exceptions = [];
-
         if (transactionAccount.PostedDate == null)
         {
-            exceptions = exceptions.Append(new InvalidTransactionDateException("Transaction Account must have a Posted Date to post a transaction."));
-            return false;
+            return;
         }
         if (transactionAccount.PostedDate == transaction.Date)
         {
-            AccountBalanceHistory existingHistory = accountBalanceHistoryRepository.GetEarliestByTransactionId(transactionAccount.AccountId, transaction.Id);
-            AccountBalance previousBalance = GetExistingAccountBalanceAsOf(
-                accountRepository.GetById(transactionAccount.AccountId),
-                existingHistory.Date,
-                existingHistory.Sequence);
-            if (!transaction.TryApplyToAccountBalance(previousBalance, transaction.Date, out AccountBalance? updatedBalance, out IEnumerable<Exception> updatedBalanceExceptions))
-            {
-                exceptions = exceptions.Concat(updatedBalanceExceptions);
-                return false;
-            }
-            existingHistory.FundBalances = updatedBalance.FundBalances;
-            existingHistory.PendingDebits = updatedBalance.PendingDebits;
-            existingHistory.PendingCredits = updatedBalance.PendingCredits;
-            if (!TryUpdateExistingBalanceHistory(existingHistory, out IEnumerable<Exception> updateExceptions))
-            {
-                exceptions = exceptions.Concat(updateExceptions);
-                return false;
-            }
-            return true;
+            UpdateExistingBalanceHistory(transaction, transactionAccount);
         }
-        int newSequence = accountBalanceHistoryRepository.GetNextSequenceForAccountAndDate(transactionAccount.AccountId, transactionAccount.PostedDate.Value);
+        else
+        {
+            AddNewBalanceHistory(transaction, transactionAccount, transactionAccount.PostedDate.Value);
+        }
+    }
+
+    /// <summary>
+    /// Updates the Account Balances for a deleted Transaction
+    /// </summary>
+    internal void DeleteTransaction(Transaction transaction)
+    {
+        foreach (AccountBalanceHistory balanceHistory in accountBalanceHistoryRepository.GetAllByTransactionId(transaction.Id))
+        {
+            DeleteExistingBalanceHistory(balanceHistory);
+            accountBalanceHistoryRepository.Delete(balanceHistory);
+        }
+    }
+
+    /// <summary>
+    /// Adds a new Account Balance History entry
+    /// </summary>
+    private void AddNewBalanceHistory(Transaction transaction, TransactionAccount transactionAccount, DateOnly date)
+    {
+        int sequence = accountBalanceHistoryRepository.GetNextSequenceForAccountAndDate(transactionAccount.AccountId, date);
         AccountBalance existingBalance = GetExistingAccountBalanceAsOf(
             accountRepository.GetById(transactionAccount.AccountId),
-            transactionAccount.PostedDate.Value,
-            newSequence);
-        if (!transaction.TryApplyToAccountBalance(existingBalance, transactionAccount.PostedDate.Value, out AccountBalance? newBalance, out IEnumerable<Exception> balanceExceptions))
-        {
-            exceptions = exceptions.Concat(balanceExceptions);
-            return false;
-        }
+            date,
+            sequence);
+        AccountBalance newBalance = transaction.ApplyToAccountBalance(existingBalance, date);
         var newBalanceHistory = new AccountBalanceHistory(newBalance.Account,
             transaction.Id,
-            transactionAccount.PostedDate.Value,
-            newSequence,
+            date,
+            sequence,
             newBalance.FundBalances,
             newBalance.PendingDebits,
             newBalance.PendingCredits);
-        if (!TryAddNewBalanceHistory(newBalanceHistory, out IEnumerable<Exception> balanceHistoryExceptions))
-        {
-            exceptions = exceptions.Concat(balanceHistoryExceptions);
-            return false;
-        }
-        return true;
-    }
 
-    /// <summary>
-    /// Attempts to update the Account Balances for a deleted Transaction
-    /// </summary>
-    internal bool TryDeleteTransaction(Transaction transaction, out IEnumerable<Exception> exceptions)
-    {
-        exceptions = [];
-
-        foreach (AccountBalanceHistory balanceHistory in accountBalanceHistoryRepository.GetAllByTransactionId(transaction.Id))
-        {
-            if (!TryDeleteExistingBalanceHistory(balanceHistory, out IEnumerable<Exception> deleteExceptions))
-            {
-                exceptions = exceptions.Concat(deleteExceptions);
-                return false;
-            }
-            accountBalanceHistoryRepository.Delete(balanceHistory);
-        }
-        return true;
-    }
-
-    /// <summary>
-    /// Attempts to add a new Account Balance History entry
-    /// </summary>
-    private bool TryAddNewBalanceHistory(AccountBalanceHistory newBalanceHistory, out IEnumerable<Exception> exceptions)
-    {
-        exceptions = [];
-
-        var existingBalance = newBalanceHistory.ToAccountBalance();
-        foreach ((AccountBalanceHistory history, Transaction transaction) in accountBalanceHistoryRepository
+        foreach ((AccountBalanceHistory history, Transaction existingTransaction) in accountBalanceHistoryRepository
             .GetAllHistoriesLaterThan(newBalanceHistory.Account.Id, newBalanceHistory.Date, newBalanceHistory.Sequence))
         {
             if (history.Date == newBalanceHistory.Date)
             {
                 history.Sequence += 1;
             }
-            if (!transaction.TryApplyToAccountBalance(existingBalance, history.Date, out AccountBalance? updatedBalance, out IEnumerable<Exception> updateExceptions))
-            {
-                exceptions = exceptions.Concat(updateExceptions);
-                return false;
-            }
+            AccountBalance updatedBalance = existingTransaction.ApplyToAccountBalance(newBalance, history.Date);
             history.FundBalances = updatedBalance.FundBalances;
             history.PendingDebits = updatedBalance.PendingDebits;
             history.PendingCredits = updatedBalance.PendingCredits;
-            existingBalance = updatedBalance;
+            newBalance = updatedBalance;
         }
         accountBalanceHistoryRepository.Add(newBalanceHistory);
-        return true;
     }
 
     /// <summary>
-    /// Attempts to update an existing Account Balance History entry
+    /// Updates an existing Account Balance History entry
     /// </summary>
-    private bool TryUpdateExistingBalanceHistory(AccountBalanceHistory updatedBalanceHistory, out IEnumerable<Exception> exceptions)
+    private void UpdateExistingBalanceHistory(Transaction transaction, TransactionAccount transactionAccount)
     {
-        exceptions = [];
+        AccountBalanceHistory existingHistory = accountBalanceHistoryRepository.GetEarliestByTransactionId(transactionAccount.AccountId, transaction.Id);
+        AccountBalance existingBalance = GetExistingAccountBalanceAsOf(
+            accountRepository.GetById(transactionAccount.AccountId),
+            existingHistory.Date,
+            existingHistory.Sequence);
+        AccountBalance newBalance = transaction.ApplyToAccountBalance(existingBalance, existingHistory.Date);
+        existingHistory.FundBalances = newBalance.FundBalances;
+        existingHistory.PendingDebits = newBalance.PendingDebits;
+        existingHistory.PendingCredits = newBalance.PendingCredits;
 
-        var existingBalance = updatedBalanceHistory.ToAccountBalance();
-        foreach ((AccountBalanceHistory history, Transaction transaction) in accountBalanceHistoryRepository
-            .GetAllHistoriesLaterThan(updatedBalanceHistory.Account.Id, updatedBalanceHistory.Date, updatedBalanceHistory.Sequence))
+        foreach ((AccountBalanceHistory history, Transaction existingTransaction) in accountBalanceHistoryRepository
+            .GetAllHistoriesLaterThan(existingHistory.Account.Id, existingHistory.Date, existingHistory.Sequence))
         {
-            if (!transaction.TryApplyToAccountBalance(existingBalance, history.Date, out AccountBalance? updatedBalance, out IEnumerable<Exception> updateExceptions))
-            {
-                exceptions = exceptions.Concat(updateExceptions);
-                return false;
-            }
+            AccountBalance updatedBalance = existingTransaction.ApplyToAccountBalance(newBalance, history.Date);
             history.FundBalances = updatedBalance.FundBalances;
             history.PendingDebits = updatedBalance.PendingDebits;
             history.PendingCredits = updatedBalance.PendingCredits;
-            existingBalance = updatedBalance;
+            newBalance = updatedBalance;
         }
-        return true;
     }
 
     /// <summary>
-    /// Attempts to delete an existing Account Balance History entry
+    /// Deletes an existing Account Balance History entry
     /// </summary>
-    private bool TryDeleteExistingBalanceHistory(AccountBalanceHistory deletedBalanceHistory, out IEnumerable<Exception> exceptions)
+    private void DeleteExistingBalanceHistory(AccountBalanceHistory deletedBalanceHistory)
     {
-        exceptions = [];
-
         AccountBalance existingBalance = GetExistingAccountBalanceAsOf(deletedBalanceHistory.Account, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence);
         foreach ((AccountBalanceHistory history, Transaction transaction) in accountBalanceHistoryRepository
             .GetAllHistoriesLaterThan(deletedBalanceHistory.Account.Id, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence + 1))
@@ -308,17 +184,12 @@ public class AccountBalanceService(
             {
                 history.Sequence -= 1;
             }
-            if (!transaction.TryApplyToAccountBalance(existingBalance, history.Date, out AccountBalance? updatedBalance, out IEnumerable<Exception> updateExceptions))
-            {
-                exceptions = exceptions.Concat(updateExceptions);
-                return false;
-            }
+            AccountBalance updatedBalance = transaction.ApplyToAccountBalance(existingBalance, history.Date);
             history.FundBalances = updatedBalance.FundBalances;
             history.PendingDebits = updatedBalance.PendingDebits;
             history.PendingCredits = updatedBalance.PendingCredits;
             existingBalance = updatedBalance;
         }
-        return true;
     }
 
     /// <summary>

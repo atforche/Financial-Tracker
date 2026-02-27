@@ -1,6 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.Funds;
-using Domain.Transactions.Exceptions;
 
 namespace Domain.Accounts;
 
@@ -40,15 +38,14 @@ public class AccountBalance
     public decimal? AvailableToSpend => Account.Type == AccountType.Debt ? null : PostedBalance - PendingDebits.Sum(debit => debit.Amount);
 
     /// <summary>
-    /// Attempts to add the provided pending debits to the current pending Account Balance
+    /// Adds the provided pending debits to the current pending Account Balance
     /// </summary>
-    internal bool TryAddNewPendingDebits(IEnumerable<FundAmount> pendingDebits, [NotNullWhen(true)] out AccountBalance? newAccountBalance, out IEnumerable<Exception> exceptions) =>
-        TryCreate(Account, FundBalances, PendingDebits.Concat(pendingDebits), PendingCredits, out newAccountBalance, out exceptions);
+    internal AccountBalance AddNewPendingDebits(IEnumerable<FundAmount> pendingDebits) => new(Account, FundBalances, PendingDebits.Concat(pendingDebits), PendingCredits);
 
     /// <summary>
-    /// Attempts to post the provided pending debits to the current Account Balance
+    /// Posts the provided pending debits to the current Account Balance
     /// </summary>
-    internal bool TryPostPendingDebits(IEnumerable<FundAmount> pendingDebits, [NotNullWhen(true)] out AccountBalance? newAccountBalance, out IEnumerable<Exception> exceptions)
+    internal AccountBalance PostPendingDebits(IEnumerable<FundAmount> pendingDebits)
     {
         IEnumerable<FundAmount> negativePendingDebits = pendingDebits.Select(fundAmount => new FundAmount
         {
@@ -57,31 +54,30 @@ public class AccountBalance
         });
         if (Account.Type == AccountType.Debt)
         {
-            return TryCreate(Account,
+            return new AccountBalance(
+                Account,
                 FundBalances.Concat(pendingDebits),
                 PendingDebits.Concat(negativePendingDebits),
-                PendingCredits,
-                out newAccountBalance,
-                out exceptions);
+                PendingCredits
+            );
         }
-        return TryCreate(Account,
+        return new AccountBalance(
+            Account,
             FundBalances.Concat(negativePendingDebits),
             PendingDebits.Concat(negativePendingDebits),
-            PendingCredits,
-            out newAccountBalance,
-            out exceptions);
+            PendingCredits
+        );
     }
 
     /// <summary>
-    /// Attempts to add the provided pending credits to the current pending Account Balance
+    /// Adds the provided pending credits to the current pending Account Balance
     /// </summary>
-    internal bool TryAddNewPendingCredits(IEnumerable<FundAmount> pendingCredits, [NotNullWhen(true)] out AccountBalance? newAccountBalance, out IEnumerable<Exception> exceptions) =>
-        TryCreate(Account, FundBalances, PendingDebits, PendingCredits.Concat(pendingCredits), out newAccountBalance, out exceptions);
+    internal AccountBalance AddNewPendingCredits(IEnumerable<FundAmount> pendingCredits) => new(Account, FundBalances, PendingDebits, PendingCredits.Concat(pendingCredits));
 
     /// <summary>
-    /// Attempts to post the provided pending credits to the current Account Balance
+    /// Posts the provided pending credits to the current Account Balance
     /// </summary>
-    internal bool TryPostPendingCredits(IEnumerable<FundAmount> pendingCredits, [NotNullWhen(true)] out AccountBalance? newAccountBalance, out IEnumerable<Exception> exceptions)
+    internal AccountBalance PostPendingCredits(IEnumerable<FundAmount> pendingCredits)
     {
         IEnumerable<FundAmount> negativePendingCredits = pendingCredits.Select(fundAmount => new FundAmount
         {
@@ -90,70 +86,19 @@ public class AccountBalance
         });
         if (Account.Type == AccountType.Debt)
         {
-            return TryCreate(Account,
+            return new AccountBalance(
+                Account,
                 FundBalances.Concat(negativePendingCredits),
                 PendingDebits,
-                PendingCredits.Concat(negativePendingCredits),
-                out newAccountBalance,
-                out exceptions);
+                PendingCredits.Concat(negativePendingCredits)
+            );
         }
-        return TryCreate(Account,
+        return new AccountBalance(
+            Account,
             FundBalances.Concat(pendingCredits),
             PendingDebits,
-            PendingCredits.Concat(negativePendingCredits),
-            out newAccountBalance,
-            out exceptions);
-    }
-
-    /// <summary>
-    /// Attempts to construct a new instance of this class
-    /// </summary>
-    internal static bool TryCreate(
-        Account account,
-        IEnumerable<FundAmount> fundBalances,
-        IEnumerable<FundAmount> pendingDebits,
-        IEnumerable<FundAmount> pendingCredits,
-        out AccountBalance? accountBalance,
-        out IEnumerable<Exception> exceptions)
-    {
-        accountBalance = null;
-        exceptions = [];
-
-        fundBalances = fundBalances
-            .GroupBy(fundAmount => fundAmount.FundId)
-            .Select(group => new FundAmount
-            {
-                FundId = group.Key,
-                Amount = group.Sum(fundAmount => fundAmount.Amount)
-            })
-            .Where(amount => amount.Amount != 0.00m)
-            .ToList();
-        pendingDebits = pendingDebits
-            .GroupBy(fundAmount => fundAmount.FundId)
-            .Select(group => new FundAmount
-            {
-                FundId = group.Key,
-                Amount = group.Sum(fundAmount => fundAmount.Amount)
-            })
-            .Where(amount => amount.Amount != 0.00m)
-            .ToList();
-        pendingCredits = pendingCredits
-            .GroupBy(fundAmount => fundAmount.FundId)
-            .Select(group => new FundAmount
-            {
-                FundId = group.Key,
-                Amount = group.Sum(fundAmount => fundAmount.Amount)
-            })
-            .Where(amount => amount.Amount != 0.00m)
-            .ToList();
-        accountBalance = new AccountBalance(account, fundBalances, pendingDebits, pendingCredits);
-        if (accountBalance.PostedBalance < 0 || accountBalance.AvailableToSpend < 0)
-        {
-            accountBalance = null;
-            exceptions = exceptions.Append(new InvalidDebitAccountException("Account balance cannot be negative."));
-            return false;
-        }
-        return true;
+            PendingCredits.Concat(negativePendingCredits)
+        );
     }
 
     /// <summary>
@@ -162,8 +107,32 @@ public class AccountBalance
     internal AccountBalance(Account account, IEnumerable<FundAmount> fundBalances, IEnumerable<FundAmount> pendingDebits, IEnumerable<FundAmount> pendingCredits)
     {
         Account = account;
-        FundBalances = fundBalances.ToList();
-        PendingDebits = pendingDebits.ToList();
-        PendingCredits = pendingCredits.ToList();
+        FundBalances = fundBalances
+            .GroupBy(fundAmount => fundAmount.FundId)
+            .Select(group => new FundAmount
+            {
+                FundId = group.Key,
+                Amount = group.Sum(fundAmount => fundAmount.Amount)
+            })
+            .Where(amount => amount.Amount != 0.00m)
+            .ToList();
+        PendingDebits = pendingDebits
+            .GroupBy(fundAmount => fundAmount.FundId)
+            .Select(group => new FundAmount
+            {
+                FundId = group.Key,
+                Amount = group.Sum(fundAmount => fundAmount.Amount)
+            })
+            .Where(amount => amount.Amount != 0.00m)
+            .ToList();
+        PendingCredits = pendingCredits
+            .GroupBy(fundAmount => fundAmount.FundId)
+            .Select(group => new FundAmount
+            {
+                FundId = group.Key,
+                Amount = group.Sum(fundAmount => fundAmount.Amount)
+            })
+            .Where(amount => amount.Amount != 0.00m)
+            .ToList();
     }
 }
