@@ -120,7 +120,15 @@ public class TransactionService(
             exceptions = exceptions.Concat(postingExceptions);
             return false;
         }
-        transactionAccount.PostedDate = postedDate;
+        if (transaction.DebitAccount != null && transaction.CreditAccount != null && transaction.DebitAccount.AccountId == transaction.CreditAccount.AccountId)
+        {
+            transaction.DebitAccount.PostedDate = postedDate;
+            transaction.CreditAccount.PostedDate = postedDate;
+        }
+        else
+        {
+            transactionAccount.PostedDate = postedDate;
+        }
         accountBalanceService.PostTransaction(transaction, transactionAccount);
         fundBalanceService.PostTransaction(transaction, transactionAccount);
         return true;
@@ -339,19 +347,21 @@ public class TransactionService(
         if (transactionAccount.PostedDate != null)
         {
             exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction has already been posted to this Account."));
+            return !exceptions.Any();
         }
-        else if (postedDate < transaction.Date)
+        if (postedDate < transaction.Date)
         {
             exceptions = exceptions.Append(new InvalidTransactionDateException("The posted date is before the Transaction date."));
         }
-        else
+        if (transaction.DebitAccount?.AccountId == transaction.CreditAccount?.AccountId && postedDate != transaction.Date)
         {
-            AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(transaction.AccountingPeriodId);
-            int monthDifference = Math.Abs(((accountingPeriod.Year - postedDate.Year) * 12) + accountingPeriod.Month - postedDate.Month);
-            if (monthDifference > 1)
-            {
-                exceptions = exceptions.Append(new InvalidTransactionDateException("The posted date must be in a month adjacent to the Accounting Period month."));
-            }
+            exceptions = exceptions.Append(new InvalidTransactionDateException("A Transaction crediting and debiting the same Account must be posted on the same day it was added."));
+        }
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(transaction.AccountingPeriodId);
+        int monthDifference = Math.Abs(((accountingPeriod.Year - postedDate.Year) * 12) + accountingPeriod.Month - postedDate.Month);
+        if (monthDifference > 1)
+        {
+            exceptions = exceptions.Append(new InvalidTransactionDateException("The posted date must be in a month adjacent to the Accounting Period month."));
         }
         return !exceptions.Any();
     }

@@ -68,11 +68,11 @@ public class Transaction : Entity<TransactionId>
         AccountBalance newAccountBalance = existingAccountBalance;
         if (DebitAccount?.AccountId == existingAccountBalance.Account.Id)
         {
-            newAccountBalance = ApplyToAccountBalancePrivate(DebitAccount, TransactionAccountType.Debit, existingAccountBalance, date);
+            newAccountBalance = ApplyToAccountBalancePrivate(DebitAccount, TransactionAccountType.Debit, newAccountBalance, date);
         }
         if (CreditAccount?.AccountId == existingAccountBalance.Account.Id)
         {
-            newAccountBalance = ApplyToAccountBalancePrivate(CreditAccount, TransactionAccountType.Credit, existingAccountBalance, date);
+            newAccountBalance = ApplyToAccountBalancePrivate(CreditAccount, TransactionAccountType.Credit, newAccountBalance, date);
         }
         return newAccountBalance;
     }

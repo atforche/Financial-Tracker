@@ -54,6 +54,11 @@ public class AccountBalanceService(
     /// </summary>
     internal void AddTransaction(Transaction newTransaction)
     {
+        if (newTransaction.DebitAccount != null && newTransaction.CreditAccount != null && newTransaction.DebitAccount.AccountId == newTransaction.CreditAccount.AccountId)
+        {
+            AddNewBalanceHistory(newTransaction, newTransaction.DebitAccount, newTransaction.Date);
+            return;
+        }
         if (newTransaction.DebitAccount != null)
         {
             AddNewBalanceHistory(newTransaction, newTransaction.DebitAccount, newTransaction.Date);
@@ -69,6 +74,11 @@ public class AccountBalanceService(
     /// </summary>
     internal void UpdateTransaction(Transaction transaction)
     {
+        if (transaction.DebitAccount != null && transaction.CreditAccount != null && transaction.DebitAccount.AccountId == transaction.CreditAccount.AccountId)
+        {
+            UpdateExistingBalanceHistory(transaction, transaction.DebitAccount);
+            return;
+        }
         if (transaction.DebitAccount != null)
         {
             UpdateExistingBalanceHistory(transaction, transaction.DebitAccount);

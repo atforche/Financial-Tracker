@@ -40,7 +40,10 @@ const getAccountOptions = function (
       },
     });
   }
-  if (transaction.creditAccount) {
+  if (
+    transaction.creditAccount &&
+    transaction.creditAccount.accountId !== transaction.debitAccount?.accountId
+  ) {
     options.push({
       label: transaction.creditAccount.accountName,
       value: {

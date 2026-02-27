@@ -74,18 +74,21 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
         {
             return;
         }
+        IEnumerable<FundId> affectedFunds = transaction.DebitAccount != null && transaction.CreditAccount != null && transaction.DebitAccount.AccountId == transaction.CreditAccount.AccountId
+            ? GetAllAffectedFunds(transaction)
+            : transactionAccount.FundAmounts.Select(fundAmount => fundAmount.FundId);
         if (transactionAccount.PostedDate == transaction.Date)
         {
-            foreach (FundAmount fundAmount in transactionAccount.FundAmounts)
+            foreach (FundId fund in affectedFunds)
             {
-                UpdateExistingBalanceHistory(transaction, fundAmount.FundId);
+                UpdateExistingBalanceHistory(transaction, fund);
             }
         }
         else
         {
-            foreach (FundAmount fundAmount in transactionAccount.FundAmounts)
+            foreach (FundId fund in affectedFunds)
             {
-                AddNewBalanceHistory(transaction, fundAmount.FundId, transactionAccount.PostedDate.Value);
+                AddNewBalanceHistory(transaction, fund, transactionAccount.PostedDate.Value);
             }
         }
     }
