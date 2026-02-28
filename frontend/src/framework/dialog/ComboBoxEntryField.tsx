@@ -30,6 +30,7 @@ interface ComboBoxEntryFieldProps<T> {
   readonly loading?: boolean;
   readonly errorHandler?: ApiErrorHandler | null;
   readonly errorKey?: string | null;
+  readonly autoFocus?: boolean;
 }
 
 /**
@@ -45,9 +46,10 @@ const ComboBoxEntryField = function <T>({
   loading = false,
   errorHandler = null,
   errorKey = null,
+  autoFocus = false,
 }: ComboBoxEntryFieldProps<T>): JSX.Element {
   const hint = useRef("");
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState(value.label);
   return (
     <Autocomplete
       className="combo-box-entry-field"
@@ -76,6 +78,7 @@ const ComboBoxEntryField = function <T>({
             {...params}
             label={label}
             error={(errorHandler?.handleError(errorKey) ?? null) !== null}
+            autoFocus={autoFocus}
             helperText={
               <ErrorHelperText
                 errorHandler={errorHandler}

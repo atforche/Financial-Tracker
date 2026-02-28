@@ -77,7 +77,7 @@ const PostTransactionDialog = function ({
     usePostTransaction({
       transaction,
       account,
-      date,
+      date: date ?? defaultDate,
     });
 
   if (isSuccess) {

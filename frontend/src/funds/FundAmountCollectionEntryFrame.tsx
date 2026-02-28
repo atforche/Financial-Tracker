@@ -1,11 +1,11 @@
 import "@funds/FundAmountCollectionEntryFrame.css";
 import { AddCircleOutline, Delete } from "@mui/icons-material";
 import { Button, Stack, Tooltip, Typography } from "@mui/material";
+import { type JSX, useState } from "react";
 import CaptionedFrame from "@framework/dialog/CaptionedFrame";
 import ColumnButton from "@framework/listframe/ColumnButton";
 import FundAmountEntryFrame from "@funds/FundAmountEntryFrame";
 import type FundAmountEntryModel from "@funds/FundAmountEntryModel";
-import type { JSX } from "react";
 import formatCurrency from "@framework/formatCurrency";
 
 /**
@@ -27,6 +27,7 @@ const FundAmountCollectionEntryFrame = function ({
   value,
   setValue,
 }: FundAmountCollectionEntryFrameProps): JSX.Element {
+  const [focusIndex, setFocusIndex] = useState<number | null>(null);
   return (
     <div className="fund-amount-collection-entry-frame">
       <CaptionedFrame caption={label}>
@@ -53,6 +54,7 @@ const FundAmountCollectionEntryFrame = function ({
                       existingFundAmount.fundId === fund.id,
                   )
                 }
+                autoFocus={focusIndex === index}
               />
               <ColumnButton
                 label="Delete"
@@ -81,6 +83,7 @@ const FundAmountCollectionEntryFrame = function ({
                   { fundId: null, fundName: null, amount: null },
                 ];
                 setValue(newFundAmounts);
+                setFocusIndex(newFundAmounts.length - 1);
               }}
             >
               Add Fund Amount
