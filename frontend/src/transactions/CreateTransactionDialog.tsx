@@ -1,9 +1,9 @@
 import { type JSX, useState } from "react";
+import dayjs, { type Dayjs } from "dayjs";
 import type { AccountIdentifier } from "@accounts/ApiTypes";
 import type { AccountingPeriodIdentifier } from "@accounting-periods/ApiTypes";
 import { Button } from "@mui/material";
 import CreateOrUpdateTransactionFrame from "@transactions/CreateOrUpdateTransactionFrame";
-import type { Dayjs } from "dayjs";
 import Dialog from "@framework/dialog/Dialog";
 import type FundAmountEntryModel from "@funds/FundAmountEntryModel";
 import useCreateTransaction from "@transactions/useCreateTransaction";
@@ -26,6 +26,9 @@ const CreateTransactionDialog = function ({
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriodIdentifier | null>(null);
   const [date, setDate] = useState<Dayjs | null>(null);
+  const defaultDate = accountingPeriod
+    ? dayjs(accountingPeriod.name, "MMMM YYYY")
+    : null;
   const [location, setLocation] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [debitAccount, setDebitAccount] = useState<AccountIdentifier | null>(
@@ -42,7 +45,7 @@ const CreateTransactionDialog = function ({
   >([]);
   const { isRunning, isSuccess, createTransaction } = useCreateTransaction({
     accountingPeriod,
-    date,
+    date: date ?? defaultDate,
     location,
     description,
     debitAccount,
@@ -68,7 +71,7 @@ const CreateTransactionDialog = function ({
         <CreateOrUpdateTransactionFrame
           accountingPeriod={accountingPeriod}
           setAccountingPeriod={setAccountingPeriod}
-          date={date}
+          date={date ?? defaultDate}
           setDate={setDate}
           location={location}
           setLocation={setLocation}
@@ -99,7 +102,7 @@ const CreateTransactionDialog = function ({
             disabled={
               isRunning ||
               accountingPeriod === null ||
-              date === null ||
+              (date === null && defaultDate === null) ||
               location.trim() === "" ||
               description.trim() === "" ||
               ((debitAccount === null || debitFundAmounts.length === 0) &&

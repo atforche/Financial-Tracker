@@ -36,12 +36,15 @@ const CreateAccountDialog = function ({
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriodIdentifier | null>(null);
   const [addDate, setAddDate] = useState<Dayjs | null>(null);
+  const defaultAddDate = accountingPeriod
+    ? dayjs(accountingPeriod.name, "MMMM YYYY")
+    : null;
   const [fundAmounts, setFundAmounts] = useState<FundAmountEntryModel[]>([]);
   const { isRunning, isSuccess, error, createAccount } = useCreateAccount({
     name: accountName,
     type: accountType,
     accountingPeriod,
-    addDate,
+    addDate: addDate ?? defaultAddDate,
     initialFundAmounts: fundAmounts.map((entryModel) => ({
       fundId: entryModel.fundId ?? "",
       fundName: entryModel.fundName ?? "",
@@ -78,7 +81,7 @@ const CreateAccountDialog = function ({
           />
           <DateEntryField
             label="Date Opened"
-            value={addDate}
+            value={addDate ?? defaultAddDate}
             setValue={setAddDate}
             errorHandler={errorHandler}
             errorKey={nameof<CreateAccountRequest>("addDate")}
@@ -120,7 +123,7 @@ const CreateAccountDialog = function ({
               accountName.trim() === "" ||
               accountType === null ||
               accountingPeriod === null ||
-              addDate === null
+              (addDate === null && defaultAddDate === null)
             }
             variant="contained"
             sx={{ margin: "15px" }}
