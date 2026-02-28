@@ -115,6 +115,9 @@ const CreateTransactionDialog = function ({
           </Button>
         </>
       }
+      onClose={() => {
+        onClose(false);
+      }}
     />
   );
 };

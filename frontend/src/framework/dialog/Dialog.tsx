@@ -14,6 +14,7 @@ interface DialogProps {
   readonly title: string;
   readonly content: JSX.Element;
   readonly actions: JSX.Element;
+  readonly onClose: () => void;
   readonly headerActions?: JSX.Element | null;
 }
 
@@ -26,10 +27,11 @@ const Dialog = function ({
   title,
   content,
   actions,
+  onClose,
   headerActions = null,
 }: DialogProps): JSX.Element {
   return (
-    <MuiDialog open maxWidth="lg">
+    <MuiDialog open maxWidth="lg" onClose={onClose}>
       <DialogTitle
         sx={{
           backgroundColor: "primary.main",

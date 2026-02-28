@@ -139,6 +139,9 @@ const PostTransactionDialog = function ({
           </Button>
         </>
       }
+      onClose={() => {
+        onClose(false);
+      }}
     />
   );
 };

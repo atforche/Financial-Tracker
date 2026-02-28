@@ -173,8 +173,8 @@ const AccountingPeriodTransactionListFrame = function ({
                     setChildDialog(null);
                     if (success) {
                       setMessage("Transaction added successfully.");
+                      refetch();
                     }
-                    refetch();
                   }}
                 />,
               );

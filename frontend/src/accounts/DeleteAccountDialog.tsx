@@ -59,6 +59,9 @@ const DeleteAccountDialog = function ({
           </Button>
         </>
       }
+      onClose={() => {
+        onClose(false);
+      }}
     />
   );
 };

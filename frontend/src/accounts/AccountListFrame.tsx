@@ -127,8 +127,8 @@ const AccountListFrame = function (): JSX.Element {
                   setDialog(null);
                   if (success) {
                     setMessage("Account added successfully.");
+                    refetch();
                   }
-                  refetch();
                 }}
               />,
             );

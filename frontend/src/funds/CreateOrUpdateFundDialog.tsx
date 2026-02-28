@@ -79,6 +79,9 @@ const CreateOrUpdateFundDialog = function ({
           </Button>
         </>
       }
+      onClose={() => {
+        onClose(false);
+      }}
     />
   );
 };

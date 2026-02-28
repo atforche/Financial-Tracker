@@ -88,8 +88,8 @@ const AccountingPeriodListFrame = function (): JSX.Element {
                   setDialog(null);
                   if (success) {
                     setMessage("Accounting Period added successfully.");
+                    refetch();
                   }
-                  refetch();
                 }}
               />,
             );

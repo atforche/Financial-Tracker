@@ -171,8 +171,8 @@ const FundTransactionListFrame = function ({
                     setChildDialog(null);
                     if (success) {
                       setMessage("Transaction added successfully.");
+                      refetch();
                     }
-                    refetch();
                   }}
                 />,
               );

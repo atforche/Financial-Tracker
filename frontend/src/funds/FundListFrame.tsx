@@ -108,8 +108,8 @@ const FundListFrame = function (): JSX.Element {
                   setDialog(null);
                   if (success) {
                     setMessage("Fund added successfully.");
+                    refetch();
                   }
-                  refetch();
                 }}
               />,
             );

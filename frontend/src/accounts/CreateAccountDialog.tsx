@@ -132,6 +132,9 @@ const CreateAccountDialog = function ({
           </Button>
         </>
       }
+      onClose={() => {
+        onClose(false);
+      }}
     />
   );
 };
