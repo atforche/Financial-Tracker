@@ -92,6 +92,7 @@ const FundListFrame = function (): JSX.Element {
           setSortBy(null);
         }
       },
+      alignment: "right",
     },
     {
       name: "actions",

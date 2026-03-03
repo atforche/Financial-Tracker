@@ -90,6 +90,7 @@ const AccountListFrame = function (): JSX.Element {
           setSortBy(null);
         }
       },
+      alignment: "right",
     },
     {
       name: "available",
@@ -113,6 +114,7 @@ const AccountListFrame = function (): JSX.Element {
           setSortBy(null);
         }
       },
+      alignment: "right",
     },
     {
       name: "actions",

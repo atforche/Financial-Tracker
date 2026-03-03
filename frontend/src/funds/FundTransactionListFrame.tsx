@@ -156,6 +156,7 @@ const FundTransactionListFrame = function ({
           setSortBy(null);
         }
       },
+      alignment: "right",
     },
     {
       name: "actions",

@@ -151,6 +151,7 @@ const AccountTransactionListFrame = function ({
           setSortBy(null);
         }
       },
+      alignment: "right",
     },
     {
       name: "actions",

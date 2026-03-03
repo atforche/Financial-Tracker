@@ -11,7 +11,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Retrieves all the Accounts from the database */
+        /** Gets the Accounts that match the specified criteria */
         get: {
             parameters: {
                 query?: {

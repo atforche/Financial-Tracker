@@ -158,6 +158,7 @@ const AccountingPeriodTransactionListFrame = function ({
           setSortBy(null);
         }
       },
+      alignment: "right",
     },
     {
       name: "actions",
