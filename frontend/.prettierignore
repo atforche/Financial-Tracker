@@ -1,6 +1,0 @@
-dist
-.devcontainer
-tsconfig.json
-vite.config.ts
-.vscode
-api.ts
