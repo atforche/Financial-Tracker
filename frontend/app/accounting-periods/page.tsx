@@ -1,11 +1,14 @@
 import type { JSX } from "react";
 
-const AccountingPeriodPage = function (): JSX.Element {
+/**
+ * Component that displays the Accounting Period view.
+ */
+const AccountingPeriodView = function (): JSX.Element {
   return (
     <div>
-      <p>This is the accounting period page</p>
+      <p>This is the accounting period view</p>
     </div>
   );
 };
 
-export default AccountingPeriodPage;
+export default AccountingPeriodView;

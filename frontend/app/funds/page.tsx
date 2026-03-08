@@ -1,11 +1,14 @@
 import type { JSX } from "react";
 
-const FundPage = function (): JSX.Element {
+/**
+ * Component that displays the Fund view.
+ */
+const FundView = function (): JSX.Element {
   return (
     <div>
-      <p>This is the fund page</p>
+      <p>This is the fund view</p>
     </div>
   );
 };
 
-export default FundPage;
+export default FundView;

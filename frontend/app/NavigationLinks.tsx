@@ -43,8 +43,7 @@ const links: NavigationLink[] = [
 ];
 
 /**
- * Components displaying the navigation links for the application
- * @returns: JSX.Element representing the Navigation Links
+ * Components displaying the navigation links for the application.
  */
 const NavigationLinks = function (): JSX.Element {
   const pathname = usePathname();

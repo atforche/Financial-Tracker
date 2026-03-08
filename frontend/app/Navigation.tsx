@@ -1,8 +1,11 @@
 import { Drawer, Toolbar, Typography } from "@mui/material";
-import type { JSX } from "react";
 import Image from "next/image";
+import type { JSX } from "react";
 import NavigationLinks from "@/app/NavigationLinks";
 
+/**
+ * Component that displays a navigation sidebar.
+ */
 const Navigation = function (): JSX.Element {
   const drawerWidth = 260;
   return (

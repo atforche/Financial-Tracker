@@ -1,11 +1,14 @@
 import type { JSX } from "react";
 
-const AccountPage = function (): JSX.Element {
+/**
+ * Component that displays the Account view.
+ */
+const AccountView = function (): JSX.Element {
   return (
     <div>
-      <p>This is the account page</p>
+      <p>This is the account view</p>
     </div>
   );
 };
 
-export default AccountPage;
+export default AccountView;

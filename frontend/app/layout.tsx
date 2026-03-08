@@ -1,18 +1,24 @@
-import type { Metadata } from "next";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import type { JSX } from "react";
+import type { Metadata } from "next";
 import Navigation from "@/app/Navigation";
 import Stack from "@mui/material/Stack";
 
-export const metadata: Metadata = {
+/**
+ * Metadata for the application, including title and description.
+ */
+const metadata: Metadata = {
   title: "Financial Tracker",
   description: "A comprehensive financial tracking application",
 };
 
-export default function RootLayout({
-  children,
+/**
+ * Component that displays the main layout for the application.
+ */
+const RootLayout = function({children
 }: Readonly<{
-  children: React.ReactNode;
-}>) {
+  children: JSX.Element;
+}>): JSX.Element {
   return (
     <html lang="en">
       <body>
@@ -25,4 +31,7 @@ export default function RootLayout({
       </body>
     </html>
   );
-}
+};
+
+export default RootLayout;
+export { metadata };
