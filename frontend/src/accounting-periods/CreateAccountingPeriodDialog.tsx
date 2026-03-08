@@ -72,6 +72,9 @@ const CreateAccountingPeriodDialog = function ({
           </Button>
         </>
       }
+      onClose={() => {
+        onClose(false);
+      }}
     />
   );
 };

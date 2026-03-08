@@ -31,14 +31,13 @@ public sealed class AccountController(
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
-    /// Retrieves all the Accounts from the database
+    /// Gets the Accounts that match the specified criteria
     /// </summary>
-    /// <returns>The collection of all Accounts</returns>
     [HttpGet("")]
     [ProducesResponseType(typeof(CollectionModel<AccountModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public IActionResult GetAll([FromQuery] AccountQueryParameterModel queryParameters)
+    public IActionResult GetMany([FromQuery] AccountQueryParameterModel queryParameters)
     {
         Dictionary<string, string[]> errors = [];
 

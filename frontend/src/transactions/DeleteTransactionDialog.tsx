@@ -57,6 +57,9 @@ const DeleteTransactionDialog = function ({
           </Button>
         </>
       }
+      onClose={() => {
+        onClose(false);
+      }}
     />
   );
 };

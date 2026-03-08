@@ -141,6 +141,9 @@ const UpdateTransactionDialog = function ({
           </Button>
         </>
       }
+      onClose={() => {
+        onClose(false);
+      }}
     />
   );
 };

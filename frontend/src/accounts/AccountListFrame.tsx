@@ -90,6 +90,7 @@ const AccountListFrame = function (): JSX.Element {
           setSortBy(null);
         }
       },
+      alignment: "right",
     },
     {
       name: "available",
@@ -113,6 +114,7 @@ const AccountListFrame = function (): JSX.Element {
           setSortBy(null);
         }
       },
+      alignment: "right",
     },
     {
       name: "actions",
@@ -127,8 +129,8 @@ const AccountListFrame = function (): JSX.Element {
                   setDialog(null);
                   if (success) {
                     setMessage("Account added successfully.");
+                    refetch();
                   }
-                  refetch();
                 }}
               />,
             );

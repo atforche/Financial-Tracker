@@ -102,6 +102,9 @@ const FundDialog = function ({
           Close
         </Button>
       }
+      onClose={() => {
+        onClose(needsRefetch);
+      }}
       headerActions={
         <Stack direction="row" spacing={2}>
           <DialogHeaderButton label="Edit" icon={<Edit />} onClick={onEdit} />

@@ -158,6 +158,7 @@ const AccountingPeriodTransactionListFrame = function ({
           setSortBy(null);
         }
       },
+      alignment: "right",
     },
     {
       name: "actions",
@@ -173,8 +174,8 @@ const AccountingPeriodTransactionListFrame = function ({
                     setChildDialog(null);
                     if (success) {
                       setMessage("Transaction added successfully.");
+                      refetch();
                     }
-                    refetch();
                   }}
                 />,
               );

@@ -98,7 +98,7 @@ export default defineConfig([
       "jsdoc/check-template-names": "error",
       "jsdoc/informative-docs": "error",
       "jsdoc/lines-before-block": "error",
-      "jsdoc/no-bad-blocks": "error",
+      "jsdoc/no-bad-blocks": "off",
       "jsdoc/no-blank-block-descriptions": "error",
       "jsdoc/no-blank-blocks": "error",
       "jsdoc/require-asterisk-prefix": "error",

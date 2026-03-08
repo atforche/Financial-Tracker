@@ -70,6 +70,9 @@ const UpdateAccountDialog = function ({
           </Button>
         </>
       }
+      onClose={() => {
+        onClose(false);
+      }}
     />
   );
 };

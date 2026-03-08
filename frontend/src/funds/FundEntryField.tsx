@@ -16,6 +16,7 @@ interface FundEntryFieldProps {
   readonly value: FundIdentifier | null;
   readonly setValue?: ((newValue: FundIdentifier | null) => void) | null;
   readonly filter: ((fund: FundIdentifier) => boolean) | null;
+  readonly autoFocus?: boolean;
 }
 
 /**
@@ -28,6 +29,7 @@ const FundEntryField = function ({
   value,
   setValue = null,
   filter = null,
+  autoFocus = false,
 }: FundEntryFieldProps): JSX.Element {
   const { funds, isLoading, error } = useGetAllFunds({
     sortBy: null,
@@ -60,6 +62,7 @@ const FundEntryField = function ({
       }
       loading={isLoading}
       errorHandler={errorHandler}
+      autoFocus={autoFocus}
     />
   );
 };

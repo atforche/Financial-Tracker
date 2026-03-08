@@ -93,6 +93,9 @@ const AccountingPeriodDialog = function ({
           Close
         </Button>
       }
+      onClose={() => {
+        onClose(needsRefetch);
+      }}
       headerActions={
         <Stack direction="row" spacing={2}>
           <DialogHeaderButton

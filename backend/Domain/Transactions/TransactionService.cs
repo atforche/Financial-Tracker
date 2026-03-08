@@ -50,18 +50,8 @@ public class TransactionService(
             return false;
         }
         transaction = new Transaction(request, transactionRepository.GetNextSequenceForDate(request.Date));
-        if (!accountBalanceService.TryAddTransaction(transaction, out IEnumerable<Exception> balanceExceptions))
-        {
-            exceptions = exceptions.Concat(balanceExceptions);
-            transaction = null;
-            return false;
-        }
-        if (!fundBalanceService.TryAddTransaction(transaction, out IEnumerable<Exception> fundBalanceExceptions))
-        {
-            exceptions = exceptions.Concat(fundBalanceExceptions);
-            transaction = null;
-            return false;
-        }
+        accountBalanceService.AddTransaction(transaction);
+        fundBalanceService.AddTransaction(transaction);
         transactionRepository.Add(transaction);
         return true;
     }
@@ -113,16 +103,8 @@ public class TransactionService(
         {
             transaction.CreditAccount = new TransactionAccount(transaction, transaction.CreditAccount.AccountId, request.CreditAccount.FundAmounts);
         }
-        if (!accountBalanceService.TryUpdateTransaction(transaction, out IEnumerable<Exception> balanceExceptions))
-        {
-            exceptions = exceptions.Concat(balanceExceptions);
-            return false;
-        }
-        if (!fundBalanceService.TryUpdateTransaction(transaction, out IEnumerable<Exception> fundBalanceExceptions))
-        {
-            exceptions = exceptions.Concat(fundBalanceExceptions);
-            return false;
-        }
+        accountBalanceService.UpdateTransaction(transaction);
+        fundBalanceService.UpdateTransaction(transaction);
         return true;
     }
 
@@ -138,18 +120,17 @@ public class TransactionService(
             exceptions = exceptions.Concat(postingExceptions);
             return false;
         }
-        transactionAccount.PostedDate = postedDate;
-        if (!accountBalanceService.TryPostTransaction(transaction, transactionAccount, out IEnumerable<Exception> balanceExceptions))
+        if (transaction.DebitAccount != null && transaction.CreditAccount != null && transaction.DebitAccount.AccountId == transaction.CreditAccount.AccountId)
         {
-            exceptions = exceptions.Concat(balanceExceptions);
-            transactionAccount.PostedDate = null;
-            return false;
+            transaction.DebitAccount.PostedDate = postedDate;
+            transaction.CreditAccount.PostedDate = postedDate;
         }
-        if (!fundBalanceService.TryPostTransaction(transaction, transactionAccount, out IEnumerable<Exception> fundBalanceExceptions))
+        else
         {
-            exceptions = exceptions.Concat(fundBalanceExceptions);
-            transactionAccount.PostedDate = null;
+            transactionAccount.PostedDate = postedDate;
         }
+        accountBalanceService.PostTransaction(transaction, transactionAccount);
+        fundBalanceService.PostTransaction(transaction, transactionAccount);
         return true;
     }
 
@@ -172,18 +153,12 @@ public class TransactionService(
         {
             exceptions = exceptions.Concat(notPostedExceptions);
         }
-        if (!accountBalanceService.TryDeleteTransaction(transaction, out IEnumerable<Exception> balanceExceptions))
-        {
-            exceptions = exceptions.Concat(balanceExceptions);
-        }
-        if (!fundBalanceService.TryDeleteTransaction(transaction, out IEnumerable<Exception> fundBalanceExceptions))
-        {
-            exceptions = exceptions.Concat(fundBalanceExceptions);
-        }
         if (exceptions.Any())
         {
             return false;
         }
+        accountBalanceService.DeleteTransaction(transaction);
+        fundBalanceService.DeleteTransaction(transaction);
         transactionRepository.Delete(transaction);
         return true;
     }
@@ -372,19 +347,21 @@ public class TransactionService(
         if (transactionAccount.PostedDate != null)
         {
             exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction has already been posted to this Account."));
+            return !exceptions.Any();
         }
-        else if (postedDate < transaction.Date)
+        if (postedDate < transaction.Date)
         {
             exceptions = exceptions.Append(new InvalidTransactionDateException("The posted date is before the Transaction date."));
         }
-        else
+        if (transaction.DebitAccount?.AccountId == transaction.CreditAccount?.AccountId && postedDate != transaction.Date)
         {
-            AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(transaction.AccountingPeriodId);
-            int monthDifference = Math.Abs(((accountingPeriod.Year - postedDate.Year) * 12) + accountingPeriod.Month - postedDate.Month);
-            if (monthDifference > 1)
-            {
-                exceptions = exceptions.Append(new InvalidTransactionDateException("The posted date must be in a month adjacent to the Accounting Period month."));
-            }
+            exceptions = exceptions.Append(new InvalidTransactionDateException("A Transaction crediting and debiting the same Account must be posted on the same day it was added."));
+        }
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(transaction.AccountingPeriodId);
+        int monthDifference = Math.Abs(((accountingPeriod.Year - postedDate.Year) * 12) + accountingPeriod.Month - postedDate.Month);
+        if (monthDifference > 1)
+        {
+            exceptions = exceptions.Append(new InvalidTransactionDateException("The posted date must be in a month adjacent to the Accounting Period month."));
         }
         return !exceptions.Any();
     }

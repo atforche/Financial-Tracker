@@ -12,6 +12,7 @@ interface FundAmountEntryFrameProps {
   readonly value: FundAmountEntryModel;
   readonly setValue?: ((newValue: FundAmountEntryModel) => void) | null;
   readonly filter?: ((fund: FundIdentifier) => boolean) | null;
+  readonly autoFocus?: boolean;
 }
 
 /**
@@ -23,6 +24,7 @@ const FundAmountEntryFrame = function ({
   value,
   setValue = null,
   filter = null,
+  autoFocus = false,
 }: FundAmountEntryFrameProps): JSX.Element {
   return (
     <Stack
@@ -50,6 +52,7 @@ const FundAmountEntryFrame = function ({
             : null
         }
         filter={filter}
+        autoFocus={autoFocus}
       />
       <CurrencyEntryField
         label="Amount"

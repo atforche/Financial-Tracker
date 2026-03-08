@@ -40,7 +40,10 @@ const getAccountOptions = function (
       },
     });
   }
-  if (transaction.creditAccount) {
+  if (
+    transaction.creditAccount &&
+    transaction.creditAccount.accountId !== transaction.debitAccount?.accountId
+  ) {
     options.push({
       label: transaction.creditAccount.accountName,
       value: {
@@ -68,12 +71,13 @@ const PostTransactionDialog = function ({
       : null,
   );
   const [date, setDate] = useState<Dayjs | null>(null);
+  const defaultDate = dayjs(transaction.accountingPeriodName, "MMMM YYYY");
 
   const { isRunning, isSuccess, updatedTransaction, error, postTransaction } =
     usePostTransaction({
       transaction,
       account,
-      date,
+      date: date ?? defaultDate,
     });
 
   if (isSuccess) {
@@ -103,7 +107,7 @@ const PostTransactionDialog = function ({
           />
           <DateEntryField
             label="Posted Date"
-            value={date}
+            value={date ?? defaultDate}
             setValue={setDate}
             minDate={dayjs(transaction.accountingPeriodName, "MMMM YYYY")
               .subtract(1, "month")
@@ -127,7 +131,7 @@ const PostTransactionDialog = function ({
           </Button>
           <Button
             onClick={postTransaction}
-            disabled={isRunning || account === null || date === null}
+            disabled={isRunning || account === null}
             variant="contained"
             sx={{ margin: "15px" }}
           >
@@ -135,6 +139,9 @@ const PostTransactionDialog = function ({
           </Button>
         </>
       }
+      onClose={() => {
+        onClose(false);
+      }}
     />
   );
 };

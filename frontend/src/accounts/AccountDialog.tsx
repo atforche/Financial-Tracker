@@ -77,13 +77,12 @@ const AccountDialog = function ({
               caption="Posted Balance"
               value={formatCurrency(account.currentBalance.postedBalance)}
             />
-            <CaptionedValue
-              caption="Available to Spend"
-              value={formatCurrency(
-                account.currentBalance.postedBalance -
-                  account.currentBalance.pendingDebitAmount,
-              )}
-            />
+            {account.currentBalance.availableToSpend !== null && (
+              <CaptionedValue
+                caption="Available to Spend"
+                value={formatCurrency(account.currentBalance.availableToSpend)}
+              />
+            )}
           </CaptionedFrame>
           {account.currentBalance.fundBalances.length > 0 && (
             <CaptionedFrame caption="Posted Balance By Fund">
@@ -109,6 +108,9 @@ const AccountDialog = function ({
           Close
         </Button>
       }
+      onClose={() => {
+        onClose(needsRefetch);
+      }}
       headerActions={
         <Stack direction="row" spacing={2}>
           <DialogHeaderButton label="Edit" icon={<Edit />} onClick={onEdit} />

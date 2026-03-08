@@ -58,6 +58,9 @@ const DeleteAccountingPeriodDialog = function ({
           </Button>
         </>
       }
+      onClose={() => {
+        onClose(false);
+      }}
     />
   );
 };

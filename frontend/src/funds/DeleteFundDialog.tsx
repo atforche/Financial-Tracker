@@ -58,6 +58,9 @@ const DeleteFundDialog = function ({
           </Button>
         </>
       }
+      onClose={() => {
+        onClose(false);
+      }}
     />
   );
 };
