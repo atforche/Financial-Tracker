@@ -1,0 +1,11 @@
+.list-frame-table-cell {
+  overflow: hidden;
+}
+
+.list-frame-table-cell * {
+  /*
+        Every list frame row should have an identical height of 50px. There's 8px of padding on the top and the bottom
+        of each cell, so ensure the cell contents have a height of 34px.
+    */
+  height: 34px;
+}

@@ -1,3 +1,4 @@
+import AccountingPeriodListFrame from "@/app/accounting-periods/AccountingPeriodListFrame";
 import type { JSX } from "react";
 
 /**
@@ -6,7 +7,7 @@ import type { JSX } from "react";
 const AccountingPeriodView = function (): JSX.Element {
   return (
     <div>
-      <p>This is the accounting period view</p>
+      <AccountingPeriodListFrame />
     </div>
   );
 };

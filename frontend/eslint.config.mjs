@@ -12,7 +12,7 @@ import tseslint from "typescript-eslint";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-   {
+  {
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -202,6 +202,7 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "**/eslint.config.mjs",
+    "data/api.ts",
   ]),
 ]);
 

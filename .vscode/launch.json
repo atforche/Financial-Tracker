@@ -2,12 +2,24 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "UI",
+      "name": "UI (server-side)",
+      "type": "node-terminal",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/frontend",
+      "command": "npx next dev --port 3001 --inspect",
+      "env": {
+        "API_URL": "http://localhost:8081"
+      },
+      "preLaunchTask": "debug-frontend-server-side",
+      "postDebugTask": "end-debug-session",
+    },
+    {
+      "name": "UI (client-side)",
       "request": "launch",
       "type": "chrome", // Launches Chrome at the specified URL for debugging
       "url": "http://localhost:3001",
       "webRoot": "${workspaceFolder}/frontend",
-      "preLaunchTask": "debug-frontend",
+      "preLaunchTask": "debug-frontend-client-side",
       "postDebugTask": "end-debug-session",
     },
     {

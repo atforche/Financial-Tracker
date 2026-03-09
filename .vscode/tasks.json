@@ -2,7 +2,11 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "debug-frontend",
+      "label": "debug-frontend-server-side",
+      "dependsOn": ["create-debug-environment", "run-backend"]
+    },
+    {
+      "label": "debug-frontend-client-side",
       "dependsOn": ["create-debug-environment", "run-backend", "run-frontend"]
     },
     {

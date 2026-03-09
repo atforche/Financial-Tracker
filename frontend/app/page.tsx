@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 
 /**
- * Component that displays the Overview view. 
+ * Component that displays the Overview view.
  */
 const OverviewView = function (): JSX.Element {
   return (
