@@ -57,21 +57,21 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
         {
             query += $" where Year like '%{request.QueryString}%' or Month like '%{request.QueryString}%' or Name like '%{request.QueryString}%'";
         }
-        if (request.SortBy is null or AccountingPeriodSortOrder.Date)
-        {
-            query += $" order by Year asc, Month asc";
-        }
-        else if (request.SortBy == AccountingPeriodSortOrder.DateDescending)
+        if (request.SortBy is null or AccountingPeriodSortOrder.DateDescending)
         {
             query += $" order by Year desc, Month desc";
         }
+        else if (request.SortBy == AccountingPeriodSortOrder.Date)
+        {
+            query += $" order by Year asc, Month asc";
+        }
         else if (request.SortBy == AccountingPeriodSortOrder.IsOpen)
         {
-            query += $" order by IsOpen asc, Year asc, Month asc";
+            query += $" order by IsOpen asc, Year desc, Month desc";
         }
         else if (request.SortBy == AccountingPeriodSortOrder.IsOpenDescending)
         {
-            query += $" order by IsOpen desc, Year asc, Month asc";
+            query += $" order by IsOpen desc, Year desc, Month desc";
         }
 
         var accountingPeriods = databaseContext.AccountingPeriods.FromSqlRaw(query).ToList();

@@ -1099,9 +1099,9 @@ export interface components {
             isOpen: boolean;
         };
         /** @enum {unknown} */
-        AccountingPeriodSortOrderModel: "Date" | "DateDescending" | "IsOpen" | "IsOpenDescending" | null;
+        AccountingPeriodSortOrderModel: AccountingPeriodSortOrderModel | null;
         /** @enum {unknown} */
-        AccountingPeriodTransactionSortOrderModel: "Date" | "DateDescending" | "Location" | "LocationDescending" | "DebitAccount" | "DebitAccountDescending" | "CreditAccount" | "CreditAccountDescending" | "Amount" | "AmountDescending" | null;
+        AccountingPeriodTransactionSortOrderModel: AccountingPeriodTransactionSortOrderModel | null;
         /** @description Model representing an Account */
         AccountModel: {
             /**
@@ -1117,9 +1117,9 @@ export interface components {
             currentBalance: components["schemas"]["AccountBalanceModel"];
         };
         /** @enum {unknown} */
-        AccountSortOrderModel: "Name" | "NameDescending" | "Type" | "TypeDescending" | "PostedBalance" | "PostedBalanceDescending" | "AvailableToSpend" | "AvailableToSpendDescending" | null;
+        AccountSortOrderModel: AccountSortOrderModel | null;
         /** @enum {unknown} */
-        AccountTransactionSortOrderModel: "Date" | "DateDescending" | "Location" | "LocationDescending" | "Type" | "TypeDescending" | "Amount" | "AmountDescending" | null;
+        AccountTransactionSortOrderModel: AccountTransactionSortOrderModel | null;
         /**
          * @description Enum representing the different Account types
          * @enum {unknown}
@@ -1305,9 +1305,9 @@ export interface components {
             currentBalance: components["schemas"]["FundBalanceModel"];
         };
         /** @enum {unknown} */
-        FundSortOrderModel: "Name" | "NameDescending" | "Description" | "DescriptionDescending" | "Balance" | "BalanceDescending" | null;
+        FundSortOrderModel: FundSortOrderModel | null;
         /** @enum {unknown} */
-        FundTransactionSortOrderModel: "Date" | "DateDescending" | "Location" | "LocationDescending" | "Type" | "TypeDescending" | "Amount" | "AmountDescending" | null;
+        FundTransactionSortOrderModel: FundTransactionSortOrderModel | null;
         /** @description Model representing a request to post a Transaction */
         PostTransactionModel: {
             /**
@@ -1433,9 +1433,65 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
+export enum AccountingPeriodSortOrderModel {
+    Date = "Date",
+    DateDescending = "DateDescending",
+    IsOpen = "IsOpen",
+    IsOpenDescending = "IsOpenDescending"
+}
+export enum AccountingPeriodTransactionSortOrderModel {
+    Date = "Date",
+    DateDescending = "DateDescending",
+    Location = "Location",
+    LocationDescending = "LocationDescending",
+    DebitAccount = "DebitAccount",
+    DebitAccountDescending = "DebitAccountDescending",
+    CreditAccount = "CreditAccount",
+    CreditAccountDescending = "CreditAccountDescending",
+    Amount = "Amount",
+    AmountDescending = "AmountDescending"
+}
+export enum AccountSortOrderModel {
+    Name = "Name",
+    NameDescending = "NameDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    PostedBalance = "PostedBalance",
+    PostedBalanceDescending = "PostedBalanceDescending",
+    AvailableToSpend = "AvailableToSpend",
+    AvailableToSpendDescending = "AvailableToSpendDescending"
+}
+export enum AccountTransactionSortOrderModel {
+    Date = "Date",
+    DateDescending = "DateDescending",
+    Location = "Location",
+    LocationDescending = "LocationDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    Amount = "Amount",
+    AmountDescending = "AmountDescending"
+}
 export enum AccountTypeModel {
     Standard = "Standard",
     Debt = "Debt"
+}
+export enum FundSortOrderModel {
+    Name = "Name",
+    NameDescending = "NameDescending",
+    Description = "Description",
+    DescriptionDescending = "DescriptionDescending",
+    Balance = "Balance",
+    BalanceDescending = "BalanceDescending"
+}
+export enum FundTransactionSortOrderModel {
+    Date = "Date",
+    DateDescending = "DateDescending",
+    Location = "Location",
+    LocationDescending = "LocationDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    Amount = "Amount",
+    AmountDescending = "AmountDescending"
 }
 export enum TransactionTypeModel {
     Debit = "Debit",

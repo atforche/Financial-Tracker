@@ -1,4 +1,4 @@
-import type { components } from "@/data/api";
+import { AccountingPeriodSortOrderModel, type components } from "@/data/api";
 
 /**
  * Type representing an Accounting Period.
@@ -23,4 +23,5 @@ export {
   type AccountingPeriod,
   type CreateAccountingPeriodRequest,
   type AccountingPeriodIdentifier,
+  AccountingPeriodSortOrderModel as AccountingPeriodSortOrder,
 };

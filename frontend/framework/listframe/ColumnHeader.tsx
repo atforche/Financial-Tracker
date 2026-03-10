@@ -1,6 +1,7 @@
+import { TableCell, TableSortLabel } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
+import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
-import { TableCell } from "@mui/material";
 
 /** Default width for a column in the list frame. */
 const defaultColumnWidth = 100;
@@ -30,7 +31,7 @@ const ColumnHeader = function <T>({
         color: "white",
       }}
     >
-      {/* {(column.sortType ?? null) !== null || column.onSort ? (
+      {(column.sortType ?? null) !== null || column.onSort ? (
         <TableSortLabel
           active={(column.sortType ?? null) !== null}
           direction={
@@ -50,8 +51,7 @@ const ColumnHeader = function <T>({
         </TableSortLabel>
       ) : (
         column.headerContent
-      )} */}
-      {column.headerContent}
+      )}
     </TableCell>
   );
 };
