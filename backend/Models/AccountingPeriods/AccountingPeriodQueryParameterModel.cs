@@ -6,24 +6,14 @@ namespace Models.AccountingPeriods;
 public class AccountingPeriodQueryParameterModel
 {
     /// <summary>
+    /// Query string to apply to the results
+    /// </summary>
+    public string? QueryString { get; init; }
+
+    /// <summary>
     /// Sort order to apply to the results
     /// </summary>
     public AccountingPeriodSortOrderModel? SortBy { get; init; }
-
-    /// <summary>
-    /// Years to include in the results
-    /// </summary>
-    public IReadOnlyCollection<int>? Years { get; init; }
-
-    /// <summary>
-    /// Months to include in the results
-    /// </summary>
-    public IReadOnlyCollection<int>? Months { get; init; }
-
-    /// <summary>
-    /// True to include only open Accounting Periods in the results, false to include only closed Accounting Periods, null to include all Accounting Periods
-    /// </summary>
-    public bool? IsOpen { get; init; }
 
     /// <summary>
     /// Maximum number of results to return

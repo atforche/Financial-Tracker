@@ -10,12 +10,7 @@ namespace Tests.Mocks;
 /// </summary>
 internal sealed class MockTransactionRepository : ITransactionRepository
 {
-    private readonly Dictionary<Guid, Transaction> _transactions;
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    public MockTransactionRepository() => _transactions = new Dictionary<Guid, Transaction>();
+    private readonly Dictionary<Guid, Transaction> _transactions = [];
 
     /// <inheritdoc/>
     public int GetNextSequenceForDate(DateOnly transactionDate)

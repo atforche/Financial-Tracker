@@ -298,14 +298,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    /** @description Query string to apply to the results */
+                    QueryString?: string;
                     /** @description Sort order to apply to the results */
                     SortBy?: components["schemas"]["AccountingPeriodSortOrderModel"];
-                    /** @description Years to include in the results */
-                    Years?: number[];
-                    /** @description Months to include in the results */
-                    Months?: number[];
-                    /** @description True to include only open Accounting Periods in the results, false to include only closed Accounting Periods, null to include all Accounting Periods */
-                    IsOpen?: boolean;
                     /** @description Maximum number of results to return */
                     Limit?: number;
                     /** @description Number of results to skip */

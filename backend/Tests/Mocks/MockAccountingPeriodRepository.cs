@@ -7,12 +7,7 @@ namespace Tests.Mocks;
 /// </summary>
 internal sealed class MockAccountingPeriodRepository : IAccountingPeriodRepository
 {
-    private readonly Dictionary<Guid, AccountingPeriod> _accountingPeriods;
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    public MockAccountingPeriodRepository() => _accountingPeriods = [];
+    private readonly Dictionary<Guid, AccountingPeriod> _accountingPeriods = [];
 
     /// <inheritdoc/>
     public AccountingPeriod GetById(AccountingPeriodId id) => _accountingPeriods[id.Value];

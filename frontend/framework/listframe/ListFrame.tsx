@@ -8,7 +8,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
 } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnHeader from "@/framework/listframe/ColumnHeader";
@@ -24,7 +23,6 @@ const rowsPerPage = 10;
  * Props for the ListFrame component.
  */
 interface ListFrameProps<T> {
-  readonly name: string;
   readonly columns: ColumnDefinition<T>[];
   readonly getId: (item: T) => string;
   readonly data: T[] | null;
@@ -34,16 +32,12 @@ interface ListFrameProps<T> {
  * Component that presents a generic list frame with a table structure.
  */
 const ListFrame = function <T>({
-  name,
   columns,
   getId,
   data,
 }: ListFrameProps<T>): JSX.Element {
   return (
     <Box>
-      <Typography variant="h6" sx={{ paddingBottom: "25px" }}>
-        {name}
-      </Typography>
       <Paper
         sx={{
           width: "100%",

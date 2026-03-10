@@ -8,6 +8,7 @@ CREATE TABLE "AccountingPeriods" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_AccountingPeriods" PRIMARY KEY,
     "Year" INTEGER NOT NULL,
     "Month" INTEGER NOT NULL,
+    "Name" TEXT NOT NULL,
     "IsOpen" INTEGER NOT NULL
 );
 
@@ -131,6 +132,8 @@ CREATE INDEX "IX_AccountBalanceHistoryPendingCredits_AccountBalanceHistoryId" ON
 
 CREATE INDEX "IX_AccountBalanceHistoryPendingDebits_AccountBalanceHistoryId" ON "AccountBalanceHistoryPendingDebits" ("AccountBalanceHistoryId");
 
+CREATE INDEX "IX_AccountingPeriods_Name" ON "AccountingPeriods" ("Name");
+
 CREATE UNIQUE INDEX "IX_Accounts_Name" ON "Accounts" ("Name");
 
 CREATE INDEX "IX_FundBalanceHistoryAccountBalances_FundBalanceHistoryId" ON "FundBalanceHistoryAccountBalances" ("FundBalanceHistoryId");
@@ -150,7 +153,7 @@ CREATE INDEX "IX_Transactions_CreditAccount_AccountId" ON "Transactions" ("Credi
 CREATE INDEX "IX_Transactions_DebitAccount_AccountId" ON "Transactions" ("DebitAccount_AccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260225235228_InitialCreate', '10.0.2');
+VALUES ('20260310164946_InitialCreate', '10.0.2');
 
 COMMIT;
 

@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Domain.AccountingPeriods;
 
 /// <summary>
@@ -17,6 +19,11 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
     /// Month for this Accounting Period
     /// </summary>
     public int Month { get; private set; }
+
+    /// <summary>
+    /// Name for this Accounting Period, in the format of "MMMM yyyy" (e.g. "February 2026")
+    /// </summary>
+    public string Name { get; private set; }
 
     /// <summary>
     /// Gets the Period Start Date for this Accounting Period
@@ -52,6 +59,7 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
     {
         Year = year;
         Month = month;
+        Name = PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture);
         IsOpen = true;
     }
 
@@ -60,5 +68,6 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
     /// </summary>
     private AccountingPeriod() : base()
     {
+        Name = null!;
     }
 }

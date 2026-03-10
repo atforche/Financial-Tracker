@@ -18,6 +18,7 @@ namespace Data.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Year = table.Column<int>(type: "INTEGER", nullable: false),
                     Month = table.Column<int>(type: "INTEGER", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
                     IsOpen = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
@@ -310,6 +311,11 @@ namespace Data.Migrations
                 name: "IX_AccountBalanceHistoryPendingDebits_AccountBalanceHistoryId",
                 table: "AccountBalanceHistoryPendingDebits",
                 column: "AccountBalanceHistoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AccountingPeriods_Name",
+                table: "AccountingPeriods",
+                column: "Name");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Accounts_Name",

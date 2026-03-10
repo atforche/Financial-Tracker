@@ -9,13 +9,28 @@ import ListFrame from "@/framework/listframe/ListFrame";
 import getApiClient from "@/data/getApiClient";
 
 /**
+ * Props for the AccountingPeriodListFrame component.
+ */
+interface AccountingPeriodListFrameProps {
+  readonly queryString: string;
+}
+
+/**
  * Component that provides a list of Accounting Period and makes the basic create, read, update, and delete
  * operations available on them.
  * @returns JSX element representing a list of Accounting Period with various action buttons.
  */
-const AccountingPeriodListFrame = async function (): Promise<JSX.Element> {
+const AccountingPeriodListFrame = async function ({
+  queryString,
+}: AccountingPeriodListFrameProps): Promise<JSX.Element> {
   const client = getApiClient();
-  const { data } = await client.GET("/accounting-periods");
+  const { data } = await client.GET("/accounting-periods", {
+    params: {
+      query: {
+        QueryString: queryString,
+      }
+    }
+  });
 
   const columns: ColumnDefinition<AccountingPeriod>[] = [
     {
@@ -53,7 +68,6 @@ const AccountingPeriodListFrame = async function (): Promise<JSX.Element> {
 
   return (
     <ListFrame<AccountingPeriod>
-      name="Accounting Periods"
       columns={columns}
       getId={(accountingPeriod: AccountingPeriod) => accountingPeriod.id}
       data={data?.items ?? null}

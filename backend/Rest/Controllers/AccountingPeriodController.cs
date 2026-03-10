@@ -32,7 +32,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     [HttpGet("")]
     [ProducesResponseType(typeof(CollectionModel<AccountingPeriodModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetAll([FromQuery] AccountingPeriodQueryParameterModel queryParameters)
+    public IActionResult GetMany([FromQuery] AccountingPeriodQueryParameterModel queryParameters)
     {
         Dictionary<string, string[]> errors = [];
 
@@ -52,10 +52,8 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         }
         PaginatedCollection<AccountingPeriod> paginatedAccountingPeriods = accountingPeriodRepository.GetMany(new GetAccountingPeriodsRequest
         {
+            QueryString = queryParameters.QueryString,
             SortBy = accountingPeriodSortOrder,
-            Years = queryParameters.Years,
-            Months = queryParameters.Months,
-            IsOpen = queryParameters.IsOpen,
             Limit = queryParameters.Limit,
             Offset = queryParameters.Offset,
         });

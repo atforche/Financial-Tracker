@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data.AccountingPeriods;
 
@@ -34,7 +35,9 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
     }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> GetAllOpenPeriods() => GetMany(new GetAccountingPeriodsRequest { IsOpen = true }).Items;
+    public IReadOnlyCollection<AccountingPeriod> GetAllOpenPeriods() => databaseContext.AccountingPeriods
+        .Where(accountingPeriod => accountingPeriod.IsOpen)
+        .ToList();
 
     /// <inheritdoc/>
     public void Add(AccountingPeriod accountingPeriod) => databaseContext.Add(accountingPeriod);
@@ -49,12 +52,33 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
     /// </summary>
     public PaginatedCollection<AccountingPeriod> GetMany(GetAccountingPeriodsRequest request)
     {
-        List<AccountingPeriodSortModel> filteredAccountingPeriods = new AccountingPeriodFilterer(databaseContext).Get(request);
-        filteredAccountingPeriods.Sort(new AccountingPeriodComparer(request.SortBy));
+        string query = $"select * from AccountingPeriods";
+        if (request.QueryString != null)
+        {
+            query += $" where Year like '%{request.QueryString}%' or Month like '%{request.QueryString}%' or Name like '%{request.QueryString}%'";
+        }
+        if (request.SortBy is null or AccountingPeriodSortOrder.Date)
+        {
+            query += $" order by Year asc, Month asc";
+        }
+        else if (request.SortBy == AccountingPeriodSortOrder.DateDescending)
+        {
+            query += $" order by Year desc, Month desc";
+        }
+        else if (request.SortBy == AccountingPeriodSortOrder.IsOpen)
+        {
+            query += $" order by IsOpen asc, Year asc, Month asc";
+        }
+        else if (request.SortBy == AccountingPeriodSortOrder.IsOpenDescending)
+        {
+            query += $" order by IsOpen desc, Year asc, Month asc";
+        }
+
+        var accountingPeriods = databaseContext.AccountingPeriods.FromSqlRaw(query).ToList();
         return new PaginatedCollection<AccountingPeriod>
         {
-            Items = GetPagedAccountingPeriods(filteredAccountingPeriods.Select(model => model.AccountingPeriod).ToList(), request.Limit, request.Offset),
-            TotalCount = filteredAccountingPeriods.Count,
+            Items = GetPagedAccountingPeriods(accountingPeriods, request.Limit, request.Offset),
+            TotalCount = accountingPeriods.Count,
         };
     }
 

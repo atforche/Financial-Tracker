@@ -8,12 +8,7 @@ namespace Tests.Mocks;
 /// </summary>
 internal sealed class MockFundRepository : IFundRepository
 {
-    private readonly Dictionary<Guid, Fund> _funds;
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    public MockFundRepository() => _funds = [];
+    private readonly Dictionary<Guid, Fund> _funds = [];
 
     /// <inheritdoc/>
     public Fund GetById(FundId id) => _funds[id.Value];
