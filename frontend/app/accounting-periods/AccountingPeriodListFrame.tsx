@@ -98,7 +98,9 @@ const AccountingPeriodListFrame = function ({
         <ColumnHeaderButton
           label="Add"
           icon={<AddCircleOutline />}
-          onClick={() => {}}
+          onClick={() => {
+            router.push("/accounting-periods/create");
+          }}
         />
       ),
       getBodyContent: (accountingPeriod: AccountingPeriod) => (

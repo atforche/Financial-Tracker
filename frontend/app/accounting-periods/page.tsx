@@ -1,6 +1,7 @@
 import { Stack, Typography } from "@mui/material";
 import AccountingPeriodListFrame from "@/app/accounting-periods/AccountingPeriodListFrame";
 import type { AccountingPeriodSortOrder } from "@/data/accountingPeriodTypes";
+import Breadcrumbs from "@/framework/breadcrumbs";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import getApiClient from "@/data/getApiClient";
@@ -35,7 +36,11 @@ const AccountingPeriodView = async function ({
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h6">Accounting Periods</Typography>
+      <Breadcrumbs
+        breadcrumbs={[
+          { label: "Accounting Periods", href: "/accounting-periods" },
+        ]}
+      />
       <SearchBar paramName="query" />
       <AccountingPeriodListFrame data={data?.items ?? null} />
     </Stack>
