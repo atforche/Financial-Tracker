@@ -20,6 +20,7 @@ import tryParseEnum from "@/data/tryParseEnum";
  */
 interface AccountingPeriodListFrameProps {
   readonly data: AccountingPeriod[] | null;
+  readonly totalCount: number | null;
 }
 
 /**
@@ -29,6 +30,7 @@ interface AccountingPeriodListFrameProps {
  */
 const AccountingPeriodListFrame = function ({
   data,
+  totalCount,
 }: AccountingPeriodListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -119,6 +121,7 @@ const AccountingPeriodListFrame = function ({
       columns={columns}
       getId={(accountingPeriod: AccountingPeriod) => accountingPeriod.id}
       data={data ?? null}
+      totalCount={totalCount ?? null}
     />
   );
 };

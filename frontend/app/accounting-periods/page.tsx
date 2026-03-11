@@ -1,10 +1,11 @@
-import { Stack, Typography } from "@mui/material";
 import AccountingPeriodListFrame from "@/app/accounting-periods/AccountingPeriodListFrame";
 import type { AccountingPeriodSortOrder } from "@/data/accountingPeriodTypes";
 import Breadcrumbs from "@/framework/breadcrumbs";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
+import { Stack } from "@mui/material";
 import getApiClient from "@/data/getApiClient";
+import { rowsPerPage } from "@/framework/listframe/Constants";
 
 /**
  * Props for the AccountingPeriodView component.
@@ -13,7 +14,7 @@ interface AccountingPeriodViewProps {
   readonly searchParams?: Promise<{
     query?: string;
     sort?: AccountingPeriodSortOrder;
-    page?: string;
+    page?: number;
   }>;
 }
 
@@ -30,6 +31,8 @@ const AccountingPeriodView = async function ({
       query: {
         QueryString: searchParams?.query ?? "",
         SortBy: searchParams?.sort ?? null,
+        Limit: rowsPerPage,
+        Offset: ((searchParams?.page ?? 1) - 1) * rowsPerPage,
       },
     },
   });
@@ -42,7 +45,10 @@ const AccountingPeriodView = async function ({
         ]}
       />
       <SearchBar paramName="query" />
-      <AccountingPeriodListFrame data={data?.items ?? null} />
+      <AccountingPeriodListFrame
+        data={data?.items ?? null}
+        totalCount={data?.totalCount ?? null}
+      />
     </Stack>
   );
 };

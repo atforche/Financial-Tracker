@@ -1,3 +1,5 @@
+"use client";
+
 import "@/framework/listframe/ListFrame.css";
 import {
   Box,
@@ -7,17 +9,17 @@ import {
   TableCell,
   TableContainer,
   TableHead,
+  TablePagination,
   TableRow,
 } from "@mui/material";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnHeader from "@/framework/listframe/ColumnHeader";
 import type { JSX } from "react";
+import { rowsPerPage } from "@/framework/listframe/Constants";
 
 /** Height of each row in the list frame. */
 const listFrameRowHeight = 50;
-
-/** Number of rows per page in the list frame. */
-const rowsPerPage = 10;
 
 /**
  * Props for the ListFrame component.
@@ -26,6 +28,7 @@ interface ListFrameProps<T> {
   readonly columns: ColumnDefinition<T>[];
   readonly getId: (item: T) => string;
   readonly data: T[] | null;
+  readonly totalCount: number | null;
 }
 
 /**
@@ -35,7 +38,13 @@ const ListFrame = function <T>({
   columns,
   getId,
   data,
+  totalCount,
 }: ListFrameProps<T>): JSX.Element {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  const currentPage = searchParams.get("page");
+
   return (
     <Box>
       <Paper
@@ -91,9 +100,22 @@ const ListFrame = function <T>({
             </TableBody>
           </Table>
         </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={[rowsPerPage]}
+          component="div"
+          count={totalCount ?? 0}
+          rowsPerPage={rowsPerPage}
+          page={currentPage === null ? 0 : parseInt(currentPage, 10) - 1}
+          onPageChange={(_, newPage) => {
+            const params = new URLSearchParams(searchParams.toString());
+            params.set("page", newPage.toString());
+            router.replace(`${pathname}?${params.toString()}`);
+          }}
+        />
       </Paper>
     </Box>
   );
 };
 
 export default ListFrame;
+export { rowsPerPage };
