@@ -151,6 +151,7 @@ const eslintConfig = defineConfig([
       "react/require-default-props": "off",
       "react/no-array-index-key": "off",
       "react/no-unstable-nested-components": "off",
+      "react/destructuring-assignment": "off",
 
       // react-hooks rules
       "react-hooks/set-state-in-effect": "off",

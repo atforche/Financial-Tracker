@@ -11,7 +11,7 @@ import { rowsPerPage } from "@/framework/listframe/Constants";
  * Props for the AccountingPeriodView component.
  */
 interface AccountingPeriodViewProps {
-  readonly searchParams?: Promise<{
+  readonly searchParamsPromise?: Promise<{
     query?: string;
     sort?: AccountingPeriodSortOrder;
     page?: number;
@@ -22,7 +22,7 @@ interface AccountingPeriodViewProps {
  * Component that displays the Accounting Period view.
  */
 const AccountingPeriodView = async function ({
-  searchParams: searchParamsPromise,
+  searchParamsPromise,
 }: AccountingPeriodViewProps): Promise<JSX.Element> {
   const searchParams = await searchParamsPromise;
   const client = getApiClient();

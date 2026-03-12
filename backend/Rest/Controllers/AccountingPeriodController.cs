@@ -27,6 +27,26 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
+    /// Retrieves a single Accounting Period that matches the provided ID
+    /// </summary>
+    [HttpGet("{accountingPeriodId}")]
+    [ProducesResponseType(typeof(AccountingPeriodModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult Get(Guid accountingPeriodId)
+    {
+        if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Accounting Period.",
+                Errors = { [nameof(accountingPeriodId)] = new[] { $"Accounting Period with ID {accountingPeriodId} not found." } },
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        return Ok(AccountingPeriodMapper.ToModel(accountingPeriod));
+    }
+
+    /// <summary>
     /// Retrieves the Accounting Periods that match the specified criteria
     /// </summary>
     [HttpGet("")]

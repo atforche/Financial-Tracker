@@ -109,7 +109,9 @@ const AccountingPeriodListFrame = function ({
         <ColumnButton
           label="View"
           icon={<ArrowForwardIos />}
-          onClick={() => {}}
+          onClick={() => {
+            router.push(`/accounting-periods/${accountingPeriod.id}`);
+          }}
         />
       ),
       alignment: "right",
