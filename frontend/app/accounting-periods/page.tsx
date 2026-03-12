@@ -1,6 +1,6 @@
 import AccountingPeriodListFrame from "@/app/accounting-periods/AccountingPeriodListFrame";
 import type { AccountingPeriodSortOrder } from "@/data/accountingPeriodTypes";
-import Breadcrumbs from "@/framework/breadcrumbs";
+import Breadcrumbs from "@/framework/Breadcrumbs";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import { Stack } from "@mui/material";

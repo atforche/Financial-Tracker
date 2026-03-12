@@ -1,11 +1,21 @@
-import Breadcrumbs from "@/framework/breadcrumbs";
-import type { JSX } from "react";
-import { Stack } from "@mui/material";
+"use client";
+
+import { Button, DialogActions, Stack } from "@mui/material";
+import { type JSX, useActionState } from "react";
+import Breadcrumbs from "@/framework/Breadcrumbs";
+import type { CreateAccountingPeriodRequest } from "@/data/accountingPeriodTypes";
+import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import IntegerEntryField from "@/framework/forms/IntegerEntryField";
+import Link from "next/link";
+import createAccountingPeriod from "@/app/accounting-periods/create/createAccountingPeriod";
+import nameof from "@/data/nameof";
 
 /**
  * Component that displays the create Accounting Period page.
  */
 const CreateAccountingPeriod = function (): JSX.Element {
+  const [state, action, pending] = useActionState(createAccountingPeriod, {});
+
   return (
     <Stack spacing={2}>
       <Breadcrumbs
@@ -14,7 +24,31 @@ const CreateAccountingPeriod = function (): JSX.Element {
           { label: "Create", href: "/accounting-periods/create" },
         ]}
       />
-      <p>This is the create accounting period page</p>
+      <form action={action}>
+        <Stack spacing={2} sx={{ maxWidth: "500px" }}>
+          <IntegerEntryField
+            name={nameof<CreateAccountingPeriodRequest>("year")}
+            label="Year"
+            defaultValue={state.year ?? null}
+            errorMessage={state.yearErrorMessage ?? null}
+          />
+          <IntegerEntryField
+            name={nameof<CreateAccountingPeriodRequest>("month")}
+            label="Month"
+            defaultValue={state.month ?? null}
+            errorMessage={state.monthErrorMessage ?? null}
+          />
+          <DialogActions>
+            <Link href="/accounting-periods">
+              <Button variant="outlined">Cancel</Button>
+            </Link>
+            <Button type="submit" variant="contained" loading={pending}>
+              Create
+            </Button>
+          </DialogActions>
+          <ErrorAlert errorMessage={state.overallErrorMessage ?? null} />
+        </Stack>
+      </form>
     </Stack>
   );
 };
