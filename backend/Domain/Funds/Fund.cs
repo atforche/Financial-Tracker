@@ -42,3 +42,17 @@ public class Fund : Entity<FundId>
         Description = "";
     }
 }
+
+/// <summary>
+/// Value object class representing the ID of an <see cref="Fund"/>
+/// </summary>
+public record FundId : EntityId
+{
+    /// <summary>
+    /// Constructs a new instance of this class. 
+    /// </summary>
+    internal FundId(Guid value)
+        : base(value)
+    {
+    }
+}

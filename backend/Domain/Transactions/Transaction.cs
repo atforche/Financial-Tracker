@@ -189,3 +189,17 @@ public class Transaction : Entity<TransactionId>
         Credit
     }
 }
+
+/// <summary>
+/// Value object class representing the ID of a <see cref="Transaction"/>
+/// </summary>
+public record TransactionId : EntityId
+{
+    /// <summary>
+    /// Constructs a new instance of this class. 
+    /// </summary>
+    internal TransactionId(Guid value)
+        : base(value)
+    {
+    }
+}

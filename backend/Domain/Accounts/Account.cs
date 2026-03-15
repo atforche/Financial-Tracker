@@ -57,3 +57,17 @@ public class Account : Entity<AccountId>
         InitialAccountingPeriodId = null!;
     }
 }
+
+/// <summary>
+/// Value object class representing the ID of an <see cref="Account"/>
+/// </summary>
+public record AccountId : EntityId
+{
+    /// <summary>
+    /// Constructs a new instance of this class. 
+    /// </summary>
+    internal AccountId(Guid value)
+        : base(value)
+    {
+    }
+}

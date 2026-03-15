@@ -98,3 +98,17 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
         TransactionId = null!;
     }
 }
+
+/// <summary>
+/// Value object class representing the ID of an <see cref="AccountBalanceHistory"/>
+/// </summary>
+public record AccountBalanceHistoryId : EntityId
+{
+    /// <summary>
+    /// Constructs a new instance of this class. 
+    /// </summary>
+    internal AccountBalanceHistoryId(Guid value)
+        : base(value)
+    {
+    }
+}

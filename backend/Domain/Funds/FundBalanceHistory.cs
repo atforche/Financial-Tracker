@@ -98,3 +98,17 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
         TransactionId = null!;
     }
 }
+
+/// <summary>
+/// Value object class representing the ID of an <see cref="FundBalanceHistory"/>
+/// </summary>
+public record FundBalanceHistoryId : EntityId
+{
+    /// <summary>
+    /// Constructs a new instance of this class. 
+    /// </summary>
+    internal FundBalanceHistoryId(Guid value)
+        : base(value)
+    {
+    }
+}

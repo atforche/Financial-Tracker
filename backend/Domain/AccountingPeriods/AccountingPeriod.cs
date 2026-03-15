@@ -71,3 +71,17 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
         Name = null!;
     }
 }
+
+/// <summary>
+/// Value object class representing the ID of an <see cref="AccountingPeriod"/>
+/// </summary>
+public record AccountingPeriodId : EntityId
+{
+    /// <summary>
+    /// Constructs a new instance of this class. 
+    /// </summary>
+    internal AccountingPeriodId(Guid value)
+        : base(value)
+    {
+    }
+}
