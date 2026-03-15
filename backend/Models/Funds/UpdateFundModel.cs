@@ -1,9 +1,9 @@
 namespace Models.Funds;
 
 /// <summary>
-/// Model representing a request to create or update a Fund
+/// Model representing a request to update a Fund
 /// </summary>
-public class CreateOrUpdateFundModel
+public class UpdateFundModel
 {
     /// <summary>
     /// Name for the Fund

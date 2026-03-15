@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20260310164946_InitialCreate")]
+    [Migration("20260315191505_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -50,10 +50,10 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("InitialAccountingPeriodId")
+                    b.Property<Guid>("AddAccountingPeriodId")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateOnly>("InitialDate")
+                    b.Property<DateOnly>("AddDate")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("InitialTransaction")
@@ -102,6 +102,12 @@ namespace Data.Migrations
             modelBuilder.Entity("Domain.Funds.Fund", b =>
                 {
                     b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AddAccountingPeriodId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("AddDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")

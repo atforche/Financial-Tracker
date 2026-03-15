@@ -12,25 +12,32 @@ public class FundService(IFundRepository fundRepository, ITransactionRepository 
     /// <summary>
     /// Attempts to create a new Fund
     /// </summary>
-    /// <param name="name">Name for the Fund</param>
-    /// <param name="description">Description for the Fund</param>
+    /// <param name="request">Request to create a Fund</param>
     /// <param name="fund">The created Fund, or null if creation failed</param>
     /// <param name="exceptions">List of exceptions encountered during creation</param>
     /// <returns>True if the Fund was created successfully, false otherwise</returns>
-    public bool TryCreate(string name, string description, [NotNullWhen(true)] out Fund? fund, out IEnumerable<Exception> exceptions)
+    public bool TryCreate(CreateFundRequest request, [NotNullWhen(true)] out Fund? fund, out IEnumerable<Exception> exceptions)
     {
         fund = null;
         exceptions = [];
 
-        if (!ValidateName(name, null, out IEnumerable<Exception> nameExceptions))
+        if (!ValidateName(request.Name, null, out IEnumerable<Exception> nameExceptions))
         {
             exceptions = exceptions.Concat(nameExceptions);
+        }
+        if (!request.AccountingPeriod.IsOpen)
+        {
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
+        }
+        if (!request.AccountingPeriod.IsDateInPeriod(request.AddDate))
+        {
+            exceptions = exceptions.Append(new InvalidDateException("The provided add date is not within the provided accounting period."));
         }
         if (exceptions.Any())
         {
             return false;
         }
-        fund = new Fund(name, description);
+        fund = new Fund(request.Name, request.Description, request.AccountingPeriod.Id, request.AddDate);
         return true;
     }
 

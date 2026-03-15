@@ -33,8 +33,8 @@ namespace Data.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Type = table.Column<string>(type: "TEXT", nullable: false),
-                    InitialAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    InitialDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    AddAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AddDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
                     InitialTransaction = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
@@ -63,7 +63,9 @@ namespace Data.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false)
+                    Description = table.Column<string>(type: "TEXT", nullable: false),
+                    AddAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AddDate = table.Column<DateOnly>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {

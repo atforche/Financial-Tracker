@@ -174,7 +174,7 @@ public class TransactionService(
         }
         if (request.DebitAccount != null)
         {
-            AccountingPeriod debitAccountInitialPeriod = accountingPeriodRepository.GetById(request.DebitAccount.Account.InitialAccountingPeriodId);
+            AccountingPeriod debitAccountInitialPeriod = accountingPeriodRepository.GetById(request.DebitAccount.Account.AddAccountingPeriodId);
             if (request.AccountingPeriod.PeriodStartDate < debitAccountInitialPeriod.PeriodStartDate)
             {
                 exceptions = exceptions.Append(new InvalidAccountingPeriodException("The Debit Account did not exist during the provided Accounting Period."));
@@ -182,7 +182,7 @@ public class TransactionService(
         }
         if (request.CreditAccount != null)
         {
-            AccountingPeriod creditAccountInitialPeriod = accountingPeriodRepository.GetById(request.CreditAccount.Account.InitialAccountingPeriodId);
+            AccountingPeriod creditAccountInitialPeriod = accountingPeriodRepository.GetById(request.CreditAccount.Account.AddAccountingPeriodId);
             if (request.AccountingPeriod.PeriodStartDate < creditAccountInitialPeriod.PeriodStartDate)
             {
                 exceptions = exceptions.Append(new InvalidAccountingPeriodException("The Credit Account did not exist during the provided Accounting Period."));
@@ -211,11 +211,11 @@ public class TransactionService(
         {
             exceptions = exceptions.Append(new InvalidDateException("The provided date is not within the transaction's accounting period."));
         }
-        if (debitAccount != null && date < debitAccount.InitialDate)
+        if (debitAccount != null && date < debitAccount.AddDate)
         {
             exceptions = exceptions.Append(new InvalidDateException("The provided date is before the debit account was created."));
         }
-        if (creditAccount != null && date < creditAccount.InitialDate)
+        if (creditAccount != null && date < creditAccount.AddDate)
         {
             exceptions = exceptions.Append(new InvalidDateException("The provided date is before the credit account was created."));
         }

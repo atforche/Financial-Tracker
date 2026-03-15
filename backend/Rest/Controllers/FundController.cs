@@ -1,6 +1,7 @@
 using Data;
 using Data.Funds;
 using Data.Transactions;
+using Domain.AccountingPeriods;
 using Domain.Funds;
 using Domain.Exceptions;
 using Domain.Transactions;
@@ -22,6 +23,7 @@ public sealed class FundController(
     FundRepository fundRepository,
     TransactionRepository transactionRepository,
     FundService fundService,
+    AccountingPeriodMapper accountingPeriodMapper,
     FundMapper fundMapper,
     TransactionMapper transactionMapper) : ControllerBase
 {
@@ -132,13 +134,39 @@ public sealed class FundController(
     [HttpPost("")]
     [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> CreateAsync(CreateOrUpdateFundModel createFundModel)
+    public async Task<IActionResult> CreateAsync(CreateFundModel createFundModel)
     {
-        if (!fundService.TryCreate(createFundModel.Name, createFundModel.Description, out Fund? newFund, out IEnumerable<Exception> exceptions))
+        Dictionary<string, string[]> errors = [];
+        if (!accountingPeriodMapper.TryToDomain(createFundModel.AccountingPeriodId, out AccountingPeriod? accountingPeriod))
         {
-            var errors = exceptions.GroupBy(e => e switch
+            errors.Add(nameof(createFundModel.AccountingPeriodId), [$"Accounting Period with ID {createFundModel.AccountingPeriodId} was not found."]);
+        }
+        if (errors.Count > 0 || accountingPeriod == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to create Fund.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+
+        if (!fundService.TryCreate(
+            new CreateFundRequest
+            {
+                Name = createFundModel.Name,
+                Description = createFundModel.Description,
+                AccountingPeriod = accountingPeriod,
+                AddDate = createFundModel.AddDate,
+            },
+            out Fund? newFund,
+            out IEnumerable<Exception> exceptions))
+        {
+            errors = exceptions.GroupBy(e => e switch
             {
                 InvalidNameException => nameof(createFundModel.Name),
+                InvalidAccountingPeriodException => nameof(createFundModel.AccountingPeriodId),
+                InvalidDateException => nameof(createFundModel.AddDate),
                 _ => string.Empty
             }).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray());
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
@@ -162,7 +190,7 @@ public sealed class FundController(
     [HttpPost("{fundId}")]
     [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> UpdateAsync(Guid fundId, CreateOrUpdateFundModel updateFundModel)
+    public async Task<IActionResult> UpdateAsync(Guid fundId, UpdateFundModel updateFundModel)
     {
         Dictionary<string, string[]> errors = [];
         if (!fundMapper.TryToDomain(fundId, out Fund? fundToUpdate))

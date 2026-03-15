@@ -1,3 +1,5 @@
+using Domain.AccountingPeriods;
+
 namespace Domain.Funds;
 
 /// <summary>
@@ -21,15 +23,25 @@ public class Fund : Entity<FundId>
     public string Description { get; internal set; }
 
     /// <summary>
+    /// Accounting Period that this Fund was added in
+    /// </summary>
+    public AccountingPeriodId AddAccountingPeriodId { get; private set; }
+
+    /// <summary>
+    /// Date that this Fund was added
+    /// </summary>
+    public DateOnly AddDate { get; private set; }
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="name">Name for this Fund</param>
-    /// <param name="description">Description for this Fund</param>
-    internal Fund(string name, string description)
+    internal Fund(string name, string description, AccountingPeriodId addAccountingPeriodId, DateOnly addDate)
         : base(new FundId(Guid.NewGuid()))
     {
         Name = name;
         Description = description;
+        AddAccountingPeriodId = addAccountingPeriodId;
+        AddDate = addDate;
     }
 
     /// <summary>
@@ -40,6 +52,7 @@ public class Fund : Entity<FundId>
     {
         Name = "";
         Description = "";
+        AddAccountingPeriodId = null!;
     }
 }
 
