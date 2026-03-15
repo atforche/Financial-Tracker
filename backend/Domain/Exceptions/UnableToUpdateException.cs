@@ -1,21 +1,20 @@
-namespace Domain.Transactions.Exceptions;
+namespace Domain.Exceptions;
 
 /// <summary>
-/// Exception thrown when a Transaction cannot be updated
+/// Exception thrown when the provided entity cannot be updated.
 /// </summary>
 public class UnableToUpdateException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public UnableToUpdateException() : base("The Transaction cannot be updated.")
+    public UnableToUpdateException() : base("The provided entity cannot be updated.")
     {
     }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="message">Message for this Exception</param>
     public UnableToUpdateException(string message) : base(message)
     {
     }
@@ -23,8 +22,6 @@ public class UnableToUpdateException : Exception
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="message">Message for this Exception</param>
-    /// <param name="innerException">Inner Exception</param>
     public UnableToUpdateException(string message, Exception innerException) : base(message, innerException)
     {
     }

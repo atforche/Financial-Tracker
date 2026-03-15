@@ -1,21 +1,20 @@
-namespace Domain.AccountingPeriods.Exceptions;
+namespace Domain.Exceptions;
 
 /// <summary>
-/// Exception thrown when an invalid year is provided for an Accounting Period
+/// Exception thrown when the provided year is invalid.
 /// </summary>
 public class InvalidYearException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public InvalidYearException() : base("The year provided is invalid.")
+    public InvalidYearException() : base("The provided year is invalid.")
     {
     }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="message">Message for this Exception</param>
     public InvalidYearException(string message) : base(message)
     {
     }
@@ -23,8 +22,6 @@ public class InvalidYearException : Exception
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="message">Message for this Exception</param>
-    /// <param name="innerException">Inner Exception</param>
     public InvalidYearException(string message, Exception innerException) : base(message, innerException)
     {
     }

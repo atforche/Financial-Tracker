@@ -1,21 +1,20 @@
-namespace Domain.AccountingPeriods.Exceptions;
+namespace Domain.Exceptions;
 
 /// <summary>
-/// Exception thrown when we're unable to close an Accounting Period
+/// Exception thrown when the provided accounting period cannot be closed.
 /// </summary>
 public class UnableToCloseException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public UnableToCloseException() : base("Unable to close this Accounting Period.")
+    public UnableToCloseException() : base("The provided accounting period cannot be closed.")
     {
     }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="message">Message for this Exception</param>
     public UnableToCloseException(string message) : base(message)
     {
     }
@@ -23,8 +22,6 @@ public class UnableToCloseException : Exception
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="message">Message for this Exception</param>
-    /// <param name="innerException">Inner Exception</param>
     public UnableToCloseException(string message, Exception innerException) : base(message, innerException)
     {
     }

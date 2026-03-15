@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.AccountingPeriods.Exceptions;
+using Domain.Exceptions;
 using Domain.Transactions;
 
 namespace Domain.AccountingPeriods;
@@ -72,13 +72,13 @@ public class AccountingPeriodService(IAccountingPeriodRepository accountingPerio
     {
         exceptions = [];
 
-        if (year is < 2020 or > 2050)
+        if (year is < 2000 or > 2100)
         {
-            exceptions = exceptions.Append(new InvalidYearException());
+            exceptions = exceptions.Append(new InvalidYearException("The provided year must be between 2000 and 2100."));
         }
         if (month is <= 0 or > 12)
         {
-            exceptions = exceptions.Append(new InvalidMonthException());
+            exceptions = exceptions.Append(new InvalidMonthException("The provided month must be between 1 and 12."));
         }
         if (exceptions.Any())
         {
@@ -88,13 +88,15 @@ public class AccountingPeriodService(IAccountingPeriodRepository accountingPerio
         // Validate that there are no duplicate accounting periods
         if (accountingPeriodRepository.GetByYearAndMonth(year, month) != null)
         {
-            exceptions = exceptions.Append(new InvalidMonthException("This Accounting Period already exists."));
+            exceptions = exceptions.Append(new InvalidMonthException("An Accounting Period already exists for this year and month."));
+            exceptions = exceptions.Append(new InvalidYearException("An Accounting Period already exists for this year and month."));
         }
         // Validate that accounting periods can only be added after existing accounting periods
         AccountingPeriod? latestAccountingPeriod = accountingPeriodRepository.GetLatestAccountingPeriod();
         if (latestAccountingPeriod != null && latestAccountingPeriod.PeriodStartDate != new DateOnly(year, month, 1).AddMonths(-1))
         {
             exceptions = exceptions.Append(new InvalidMonthException("New Accounting Period must directly follow the most recent existing Accounting Period."));
+            exceptions = exceptions.Append(new InvalidYearException("New Accounting Period must directly follow the most recent existing Accounting Period."));
         }
         return !exceptions.Any();
     }

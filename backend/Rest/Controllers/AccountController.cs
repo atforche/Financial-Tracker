@@ -3,7 +3,7 @@ using Data.Accounts;
 using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Accounts.Exceptions;
+using Domain.Exceptions;
 using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
@@ -216,7 +216,7 @@ public sealed class AccountController(
             {
                 InvalidNameException => nameof(createAccountModel.Name),
                 InvalidAccountingPeriodException => nameof(createAccountModel.AccountingPeriodId),
-                InvalidAddDateException => nameof(createAccountModel.AddDate),
+                InvalidDateException => nameof(createAccountModel.AddDate),
                 _ => string.Empty
             }).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray());
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails

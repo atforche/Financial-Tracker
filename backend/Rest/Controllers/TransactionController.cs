@@ -2,8 +2,8 @@ using Data;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Exceptions;
 using Domain.Transactions;
-using Domain.Transactions.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Models.Funds;
 using Models.Transactions;
@@ -73,14 +73,16 @@ public sealed class TransactionController(
             out Transaction? newTransaction,
             out IEnumerable<Exception> exceptions))
         {
-            errors = exceptions.GroupBy(exception => exception switch
-            {
-                InvalidAccountingPeriodException => nameof(createTransactionModel.AccountingPeriodId),
-                InvalidTransactionDateException => nameof(createTransactionModel.Date),
-                InvalidDebitAccountException => nameof(createTransactionModel.DebitAccount),
-                InvalidCreditAccountException => nameof(createTransactionModel.CreditAccount),
-                _ => string.Empty
-            }).ToDictionary(group => group.Key, group => group.Select(exception => exception.Message).ToArray());
+            errors.Add(nameof(CreateTransactionModel.AccountingPeriodId), exceptions.OfType<InvalidAccountingPeriodException>().Select(e => e.Message).ToArray());
+            errors.Add(nameof(CreateTransactionModel.Date), exceptions.OfType<InvalidDateException>().Select(e => e.Message).ToArray());
+            errors.Add($"{nameof(CreateTransactionModel.DebitAccount)}.{nameof(CreateTransactionAccountModel.AccountId)}",
+                exceptions.OfType<InvalidAccountException>().Where(e => e.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase)).Select(e => e.Message).ToArray());
+            errors.Add($"{nameof(CreateTransactionModel.DebitAccount)}.{nameof(CreateTransactionAccountModel.FundAmounts)}",
+                exceptions.OfType<InvalidFundAmountException>().Where(e => e.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase)).Select(e => e.Message).ToArray());
+            errors.Add($"{nameof(CreateTransactionModel.CreditAccount)}.{nameof(CreateTransactionAccountModel.AccountId)}",
+                exceptions.OfType<InvalidAccountException>().Where(e => e.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase)).Select(e => e.Message).ToArray());
+            errors.Add($"{nameof(CreateTransactionModel.CreditAccount)}.{nameof(CreateTransactionAccountModel.FundAmounts)}",
+                exceptions.OfType<InvalidFundAmountException>().Where(e => e.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase)).Select(e => e.Message).ToArray());
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to create Transaction.",
@@ -140,13 +142,11 @@ public sealed class TransactionController(
                 },
                 out IEnumerable<Exception> exceptions))
         {
-            errors = exceptions.GroupBy(exception => exception switch
-            {
-                InvalidTransactionDateException => nameof(updateTransactionModel.Date),
-                InvalidDebitAccountException => nameof(updateTransactionModel.DebitAccount),
-                InvalidCreditAccountException => nameof(updateTransactionModel.CreditAccount),
-                _ => string.Empty
-            }).ToDictionary(group => group.Key, group => group.Select(exception => exception.Message).ToArray());
+            errors.Add(nameof(UpdateTransactionModel.Date), exceptions.OfType<InvalidDateException>().Select(e => e.Message).ToArray());
+            errors.Add($"{nameof(UpdateTransactionModel.DebitAccount)}.{nameof(UpdateTransactionAccountModel.FundAmounts)}",
+                exceptions.OfType<InvalidFundAmountException>().Where(e => e.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase)).Select(e => e.Message).ToArray());
+            errors.Add($"{nameof(UpdateTransactionModel.CreditAccount)}.{nameof(UpdateTransactionAccountModel.FundAmounts)}",
+                exceptions.OfType<InvalidFundAmountException>().Where(e => e.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase)).Select(e => e.Message).ToArray());
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to update Transaction.",
@@ -192,8 +192,8 @@ public sealed class TransactionController(
         {
             errors = exceptions.GroupBy(exception => exception switch
             {
-                InvalidTransactionDateException => nameof(postTransactionModel.Date),
-                InvalidDebitAccountException or InvalidCreditAccountException => nameof(postTransactionModel.AccountId),
+                InvalidDateException => nameof(postTransactionModel.Date),
+                InvalidAccountException => nameof(postTransactionModel.AccountId),
                 _ => string.Empty
             }).ToDictionary(group => group.Key, group => group.Select(exception => exception.Message).ToArray());
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails

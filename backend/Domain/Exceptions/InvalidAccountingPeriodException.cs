@@ -1,21 +1,20 @@
-namespace Domain.Transactions.Exceptions;
+namespace Domain.Exceptions;
 
 /// <summary>
-/// Exception thrown when a Transaction has an invalid Accounting Period
+/// Exception thrown when the provided accounting period is invalid.
 /// </summary>
 public class InvalidAccountingPeriodException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public InvalidAccountingPeriodException() : base("The Transaction has an invalid Accounting Period.")
+    public InvalidAccountingPeriodException() : base("The provided accounting period is invalid.")
     {
     }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="message">Message for this Exception</param>
     public InvalidAccountingPeriodException(string message) : base(message)
     {
     }
@@ -23,8 +22,6 @@ public class InvalidAccountingPeriodException : Exception
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="message">Message for this Exception</param>
-    /// <param name="innerException">Inner Exception</param>
     public InvalidAccountingPeriodException(string message, Exception innerException) : base(message, innerException)
     {
     }

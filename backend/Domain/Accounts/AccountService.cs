@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.Accounts.Exceptions;
+using Domain.Exceptions;
 using Domain.Transactions;
 
 namespace Domain.Accounts;
@@ -31,11 +31,11 @@ public class AccountService(
         }
         if (!request.AccountingPeriod.IsOpen)
         {
-            exceptions = exceptions.Append(new InvalidAccountingPeriodException());
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
         }
         if (!request.AccountingPeriod.IsDateInPeriod(request.AddDate))
         {
-            exceptions = exceptions.Append(new InvalidAddDateException());
+            exceptions = exceptions.Append(new InvalidDateException("The provided add date is not within the provided accounting period."));
         }
         if (exceptions.Any())
         {

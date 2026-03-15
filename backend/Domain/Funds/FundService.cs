@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.Funds.Exceptions;
+using Domain.Exceptions;
 using Domain.Transactions;
 
 namespace Domain.Funds;

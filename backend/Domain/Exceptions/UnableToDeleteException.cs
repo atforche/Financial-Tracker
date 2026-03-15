@@ -1,21 +1,20 @@
-namespace Domain.Accounts.Exceptions;
+namespace Domain.Exceptions;
 
 /// <summary>
-/// Exception thrown when an Account cannot be deleted
+/// Exception thrown when the provided entity cannot be deleted.
 /// </summary>
 public class UnableToDeleteException : Exception
 {
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public UnableToDeleteException() : base("Unable to delete this Account.")
+    public UnableToDeleteException() : base("The provided entity cannot be deleted.")
     {
     }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="message">Message for this Exception</param>
     public UnableToDeleteException(string message) : base(message)
     {
     }
@@ -23,8 +22,6 @@ public class UnableToDeleteException : Exception
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="message">Message for this Exception</param>
-    /// <param name="innerException">Inner Exception</param>
     public UnableToDeleteException(string message, Exception innerException) : base(message, innerException)
     {
     }

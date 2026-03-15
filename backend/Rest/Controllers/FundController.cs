@@ -2,7 +2,7 @@ using Data;
 using Data.Funds;
 using Data.Transactions;
 using Domain.Funds;
-using Domain.Funds.Exceptions;
+using Domain.Exceptions;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Models;
