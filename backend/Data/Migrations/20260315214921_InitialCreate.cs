@@ -50,7 +50,8 @@ namespace Data.Migrations
                     FundId = table.Column<Guid>(type: "TEXT", nullable: false),
                     TransactionId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Date = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    Sequence = table.Column<int>(type: "INTEGER", nullable: false)
+                    Sequence = table.Column<int>(type: "INTEGER", nullable: false),
+                    PostedBalance = table.Column<decimal>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -80,7 +81,9 @@ namespace Data.Migrations
                     AccountId = table.Column<Guid>(type: "TEXT", nullable: false),
                     TransactionId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Date = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    Sequence = table.Column<int>(type: "INTEGER", nullable: false)
+                    Sequence = table.Column<int>(type: "INTEGER", nullable: false),
+                    PostedBalance = table.Column<decimal>(type: "TEXT", nullable: false),
+                    AvailableToSpend = table.Column<decimal>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {

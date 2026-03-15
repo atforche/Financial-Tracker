@@ -20,8 +20,10 @@ internal sealed class FundBalanceHistoryConfiguration : IEntityTypeConfiguration
         builder.Property(fundBalanceHistory => fundBalanceHistory.FundId)
             .HasConversion(fundId => fundId.Value, value => new FundId(value));
 
-        builder.Property(accountBalanceHistory => accountBalanceHistory.TransactionId)
+        builder.Property(fundBalanceHistory => fundBalanceHistory.TransactionId)
             .HasConversion(transactionId => transactionId.Value, value => new TransactionId(value));
+
+        builder.Property(fundBalanceHistory => fundBalanceHistory.PostedBalance).UsePropertyAccessMode(PropertyAccessMode.Property);
 
         builder.OwnsMany(fundBalanceHistory => fundBalanceHistory.AccountBalances, accountAmount =>
         {

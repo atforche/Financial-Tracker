@@ -6,14 +6,14 @@ namespace Data.AccountingPeriods;
 public record GetAccountingPeriodsRequest
 {
     /// <summary>
-    /// Query string to apply to the results
+    /// Search to apply to the results
     /// </summary>
-    public string? QueryString { get; init; }
+    public string? Search { get; init; }
 
     /// <summary>
-    /// Sort order to apply to the results
+    /// Sort to apply to the results
     /// </summary>
-    public AccountingPeriodSortOrder? SortBy { get; init; }
+    public AccountingPeriodSortOrder? Sort { get; init; }
 
     /// <summary>
     /// Maximum number of results to return

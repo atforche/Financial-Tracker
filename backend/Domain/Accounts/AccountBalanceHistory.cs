@@ -36,6 +36,16 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     public int Sequence { get; internal set; }
 
     /// <summary>
+    /// Posted Balance for this Account Balance History
+    /// </summary>
+    public decimal PostedBalance { get => ToAccountBalance().PostedBalance; internal set { } }
+
+    /// <summary>
+    /// Available to Spend for this Account Balance History
+    /// </summary>
+    public decimal? AvailableToSpend { get => ToAccountBalance().AvailableToSpend; internal set { } }
+
+    /// <summary>
     /// Fund Balances for this Account Balance History
     /// </summary>
     public IReadOnlyCollection<FundAmount> FundBalances

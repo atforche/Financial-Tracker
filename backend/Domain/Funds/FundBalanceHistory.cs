@@ -36,6 +36,11 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     public int Sequence { get; internal set; }
 
     /// <summary>
+    /// Posted Balance for this Fund Balance History
+    /// </summary>
+    public decimal PostedBalance { get => ToFundBalance().PostedBalance; internal set { } }
+
+    /// <summary>
     /// Fund Balances for this Fund Balance History
     /// </summary>
     public IReadOnlyCollection<AccountAmount> AccountBalances
@@ -63,7 +68,7 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     }
 
     /// <summary>
-    /// Converts this Account Balance History to an Account Balance
+    /// Converts this Fund Balance History to a Fund Balance
     /// </summary>
     /// <returns></returns>
     public FundBalance ToFundBalance() => new(FundId, AccountBalances, PendingDebits, PendingCredits);

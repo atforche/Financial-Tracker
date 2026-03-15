@@ -1,13 +1,18 @@
 using Data;
 using Data.AccountingPeriods;
+using Data.Accounts;
+using Data.Funds;
 using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Exceptions;
+using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Models;
+using Models.Accounts;
 using Models.AccountingPeriods;
+using Models.Funds;
 using Models.Transactions;
 using Rest.Mappers;
 
@@ -20,10 +25,13 @@ namespace Rest.Controllers;
 [Route("/accounting-periods")]
 public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountingPeriodRepository accountingPeriodRepository,
+    AccountRepository accountRepository,
+    FundRepository fundRepository,
     TransactionRepository transactionRepository,
     AccountingPeriodService accountingPeriodService,
-    AccountMapper accountMapper,
     AccountingPeriodMapper accountingPeriodMapper,
+    AccountMapper accountMapper,
+    FundMapper fundMapper,
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
@@ -57,9 +65,9 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         Dictionary<string, string[]> errors = [];
 
         AccountingPeriodSortOrder? accountingPeriodSortOrder = null;
-        if (queryParameters.SortBy != null && !AccountingPeriodSortOrderMapper.TryToData(queryParameters.SortBy.Value, out accountingPeriodSortOrder))
+        if (queryParameters.Sort != null && !AccountingPeriodSortOrderMapper.TryToData(queryParameters.Sort.Value, out accountingPeriodSortOrder))
         {
-            errors.Add(nameof(queryParameters.SortBy), new[] { $"Unrecognized Accounting Period Sort Order: {queryParameters.SortBy.Value}" });
+            errors.Add(nameof(queryParameters.Sort), new[] { $"Unrecognized Accounting Period Sort Order: {queryParameters.Sort.Value}" });
         }
         if (errors.Count > 0)
         {
@@ -72,8 +80,8 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         }
         PaginatedCollection<AccountingPeriod> paginatedAccountingPeriods = accountingPeriodRepository.GetMany(new GetAccountingPeriodsRequest
         {
-            QueryString = queryParameters.QueryString,
-            SortBy = accountingPeriodSortOrder,
+            Search = queryParameters.Search,
+            Sort = accountingPeriodSortOrder,
             Limit = queryParameters.Limit,
             Offset = queryParameters.Offset,
         });
@@ -94,6 +102,90 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         .Select(AccountingPeriodMapper.ToModel).ToList();
 
     /// <summary>
+    /// Retrieves the Funds for the Accounting Period that matches the provided ID
+    /// </summary>
+    [HttpGet("{accountingPeriodId}/funds")]
+    [ProducesResponseType(typeof(CollectionModel<FundModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetFunds(Guid accountingPeriodId, [FromQuery] AccountingPeriodFundQueryParameterModel queryParameters)
+    {
+        Dictionary<string, string[]> errors = [];
+        if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
+        {
+            errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
+        }
+        AccountingPeriodFundSortOrder? sort = null;
+        if (queryParameters.Sort != null && !AccountingPeriodFundSortOrderMapper.TryToData(queryParameters.Sort.Value, out sort))
+        {
+            errors.Add(nameof(queryParameters.Sort), new[] { $"Unrecognized Accounting Period Fund Sort Order: {queryParameters.Sort.Value}" });
+        }
+        if (errors.Count > 0 || accountingPeriod == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Accounting Period Funds.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+
+        PaginatedCollection<Fund> paginatedResults = fundRepository.GetManyByAccountingPeriod(accountingPeriod.Id, new GetAccountingPeriodFundsRequest
+        {
+            Search = queryParameters.Search,
+            Sort = sort,
+            Limit = queryParameters.Limit,
+            Offset = queryParameters.Offset
+        });
+        return Ok(new CollectionModel<FundModel>
+        {
+            Items = paginatedResults.Items.Select(fundMapper.ToModel).ToList(),
+            TotalCount = paginatedResults.TotalCount
+        });
+    }
+
+    /// <summary>
+    /// Retrieves the Accounts for the Accounting Period that matches the provided ID
+    /// </summary>
+    [HttpGet("{accountingPeriodId}/accounts")]
+    [ProducesResponseType(typeof(CollectionModel<AccountModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetAccounts(Guid accountingPeriodId, [FromQuery] AccountingPeriodAccountQueryParameterModel queryParameters)
+    {
+        Dictionary<string, string[]> errors = [];
+        if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
+        {
+            errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
+        }
+        AccountingPeriodAccountSortOrder? sort = null;
+        if (queryParameters.Sort != null && !AccountingPeriodAccountSortOrderMapper.TryToData(queryParameters.Sort.Value, out sort))
+        {
+            errors.Add(nameof(queryParameters.Sort), new[] { $"Unrecognized Accounting Period Account Sort Order: {queryParameters.Sort.Value}" });
+        }
+        if (errors.Count > 0 || accountingPeriod == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Accounting Period Accounts.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+
+        PaginatedCollection<Account> paginatedResults = accountRepository.GetManyByAccountingPeriod(accountingPeriod.Id, new GetAccountingPeriodAccountsRequest
+        {
+            Search = queryParameters.Search,
+            Sort = sort,
+            Limit = queryParameters.Limit,
+            Offset = queryParameters.Offset
+        });
+        return Ok(new CollectionModel<AccountModel>
+        {
+            Items = paginatedResults.Items.Select(accountMapper.ToModel).ToList(),
+            TotalCount = paginatedResults.TotalCount
+        });
+    }
+
+    /// <summary>
     /// Retrieves the Transactions for the Accounting Period that matches the provided ID
     /// </summary>
     [HttpGet("{accountingPeriodId}/transactions")]
@@ -106,25 +198,10 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         {
             errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
         }
-        AccountingPeriodTransactionSortOrder? sortBy = null;
-        if (queryParameters.SortBy != null && !AccountingPeriodTransactionSortOrderMapper.TryToData(queryParameters.SortBy.Value, out sortBy))
+        AccountingPeriodTransactionSortOrder? sort = null;
+        if (queryParameters.Sort != null && !AccountingPeriodTransactionSortOrderMapper.TryToData(queryParameters.Sort.Value, out sort))
         {
-            errors.Add(nameof(queryParameters.SortBy), new[] { $"Unrecognized Accounting Period Transaction Sort Order: {queryParameters.SortBy.Value}" });
-        }
-        IEnumerable<Account> accounts = [];
-        if (queryParameters.Accounts != null)
-        {
-            foreach ((int index, Guid accountId) in queryParameters.Accounts.Index())
-            {
-                if (!accountMapper.TryToDomain(accountId, out Account? account))
-                {
-                    errors.Add($"{nameof(queryParameters.Accounts)}[{index}]", new[] { $"Account with ID {accountId} not found." });
-                }
-                else
-                {
-                    accounts = accounts.Append(account);
-                }
-            }
+            errors.Add(nameof(queryParameters.Sort), new[] { $"Unrecognized Accounting Period Transaction Sort Order: {queryParameters.Sort.Value}" });
         }
         if (errors.Count > 0 || accountingPeriod == null)
         {
@@ -137,11 +214,8 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         }
         PaginatedCollection<Transaction> paginatedResults = transactionRepository.GetManyByAccountingPeriod(accountingPeriod.Id, new GetAccountingPeriodTransactionsRequest
         {
-            SortBy = sortBy,
-            MinDate = queryParameters.MinDate,
-            MaxDate = queryParameters.MaxDate,
-            Locations = queryParameters.Locations,
-            Accounts = accounts.Any() ? accounts.Select(account => account.Id).ToList() : null,
+            Search = queryParameters.Search,
+            Sort = sort,
             Limit = queryParameters.Limit,
             Offset = queryParameters.Offset
         });

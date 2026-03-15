@@ -52,24 +52,24 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
     /// </summary>
     public PaginatedCollection<AccountingPeriod> GetMany(GetAccountingPeriodsRequest request)
     {
-        string query = $"select * from AccountingPeriods";
-        if (request.QueryString != null)
+        string query = "select * from AccountingPeriods";
+        if (request.Search != null)
         {
-            query += $" where Year like '%{request.QueryString}%' or Month like '%{request.QueryString}%' or Name like '%{request.QueryString}%'";
+            query += $" where Year like '%{request.Search}%' or Month like '%{request.Search}%' or Name like '%{request.Search}%'";
         }
-        if (request.SortBy is null or AccountingPeriodSortOrder.DateDescending)
+        if (request.Sort is null or AccountingPeriodSortOrder.DateDescending)
         {
             query += $" order by Year desc, Month desc";
         }
-        else if (request.SortBy == AccountingPeriodSortOrder.Date)
+        else if (request.Sort == AccountingPeriodSortOrder.Date)
         {
             query += $" order by Year asc, Month asc";
         }
-        else if (request.SortBy == AccountingPeriodSortOrder.IsOpen)
+        else if (request.Sort == AccountingPeriodSortOrder.IsOpen)
         {
             query += $" order by IsOpen asc, Year desc, Month desc";
         }
-        else if (request.SortBy == AccountingPeriodSortOrder.IsOpenDescending)
+        else if (request.Sort == AccountingPeriodSortOrder.IsOpenDescending)
         {
             query += $" order by IsOpen desc, Year desc, Month desc";
         }

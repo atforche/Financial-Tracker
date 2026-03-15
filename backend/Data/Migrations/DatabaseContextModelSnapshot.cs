@@ -80,7 +80,13 @@ namespace Data.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal?>("AvailableToSpend")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateOnly>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PostedBalance")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Sequence")
@@ -132,6 +138,9 @@ namespace Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("FundId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PostedBalance")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Sequence")

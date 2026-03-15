@@ -15,12 +15,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description Sort order to apply to the results */
-                    SortBy?: components["schemas"]["AccountSortOrderModel"];
-                    /** @description Account names to include in the results */
-                    Names?: string[];
-                    /** @description Account types to include in the results */
-                    Types?: components["schemas"]["AccountTypeModel"][];
+                    /** @description Search to apply to the results */
+                    Search?: string;
+                    /** @description Sort to apply to the results */
+                    Sort?: components["schemas"]["AccountSortOrderModel"];
                     /** @description Maximum number of results to return */
                     Limit?: number;
                     /** @description Number of results to skip */
@@ -137,16 +135,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description Sort order to apply to the results */
-                    SortBy?: components["schemas"]["AccountTransactionSortOrderModel"];
-                    /** @description Minimum date to include in the results */
-                    MinDate?: string;
-                    /** @description Maximum date to include in the results */
-                    MaxDate?: string;
-                    /** @description Locations to include in the results */
-                    Locations?: string[];
-                    /** @description Types to include in the results */
-                    Types?: components["schemas"]["TransactionTypeModel"][];
+                    /** @description Search to apply to the results */
+                    Search?: string;
+                    /** @description Sort to apply to the results */
+                    Sort?: components["schemas"]["AccountTransactionSortOrderModel"];
                     /** @description Maximum number of results to return */
                     Limit?: number;
                     /** @description Number of results to skip */
@@ -374,10 +366,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description Query string to apply to the results */
-                    QueryString?: string;
-                    /** @description Sort order to apply to the results */
-                    SortBy?: components["schemas"]["AccountingPeriodSortOrderModel"];
+                    /** @description Search string to apply to the results */
+                    Search?: string;
+                    /** @description Sort to apply to the results */
+                    Sort?: components["schemas"]["AccountingPeriodSortOrderModel"];
                     /** @description Maximum number of results to return */
                     Limit?: number;
                     /** @description Number of results to skip */
@@ -499,6 +491,126 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/accounting-periods/{accountingPeriodId}/funds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves the Funds for the Accounting Period that matches the provided ID */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Search string to apply to the results */
+                    Search?: string;
+                    /** @description Sort to apply to the results */
+                    Sort?: components["schemas"]["AccountingPeriodFundSortOrderModel"];
+                    /** @description Maximum number of results to return */
+                    Limit?: number;
+                    /** @description Number of results to skip */
+                    Offset?: number;
+                };
+                header?: never;
+                path: {
+                    accountingPeriodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfFundModel"];
+                        "application/json": components["schemas"]["CollectionModelOfFundModel"];
+                        "text/json": components["schemas"]["CollectionModelOfFundModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounting-periods/{accountingPeriodId}/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves the Accounts for the Accounting Period that matches the provided ID */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Search string to apply to the results */
+                    Search?: string;
+                    /** @description Sort to apply to the results */
+                    Sort?: components["schemas"]["AccountingPeriodAccountSortOrderModel"];
+                    /** @description Maximum number of results to return */
+                    Limit?: number;
+                    /** @description Number of results to skip */
+                    Offset?: number;
+                };
+                header?: never;
+                path: {
+                    accountingPeriodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfAccountModel"];
+                        "application/json": components["schemas"]["CollectionModelOfAccountModel"];
+                        "text/json": components["schemas"]["CollectionModelOfAccountModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/accounting-periods/{accountingPeriodId}/transactions": {
         parameters: {
             query?: never;
@@ -510,16 +622,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description Sort order to apply to the results */
-                    SortBy?: components["schemas"]["AccountingPeriodTransactionSortOrderModel"];
-                    /** @description Minimum date to include in the results */
-                    MinDate?: string;
-                    /** @description Maximum date to include in the results */
-                    MaxDate?: string;
-                    /** @description Locations to include in the results */
-                    Locations?: string[];
-                    /** @description Accounts to include in the results (either as debit or credit accounts) */
-                    Accounts?: string[];
+                    /** @description Search string to apply to the results */
+                    Search?: string;
+                    /** @description Sort to apply to the results */
+                    Sort?: components["schemas"]["AccountingPeriodTransactionSortOrderModel"];
                     /** @description Maximum number of results to return */
                     Limit?: number;
                     /** @description Number of results to skip */
@@ -628,10 +734,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description Sort order to apply to the results */
-                    SortBy?: components["schemas"]["FundSortOrderModel"];
-                    /** @description Fund names to include in the results */
-                    Names?: string[];
+                    /** @description Search to apply to the results */
+                    Search?: string;
+                    /** @description Sort to apply to the results */
+                    Sort?: components["schemas"]["FundSortOrderModel"];
                     /** @description Maximum number of results to return */
                     Limit?: number;
                     /** @description Number of results to skip */
@@ -679,9 +785,9 @@ export interface paths {
             /** @description Request to create a Fund */
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["CreateOrUpdateFundModel"];
-                    "text/json": components["schemas"]["CreateOrUpdateFundModel"];
-                    "application/*+json": components["schemas"]["CreateOrUpdateFundModel"];
+                    "application/json": components["schemas"]["CreateFundModel"];
+                    "text/json": components["schemas"]["CreateFundModel"];
+                    "application/*+json": components["schemas"]["CreateFundModel"];
                 };
             };
             responses: {
@@ -726,16 +832,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description Sort order to apply to the results */
-                    SortBy?: components["schemas"]["FundTransactionSortOrderModel"];
-                    /** @description Minimum date to include in the results */
-                    MinDate?: string;
-                    /** @description Maximum date to include in the results */
-                    MaxDate?: string;
-                    /** @description Locations to include in the results */
-                    Locations?: string[];
-                    /** @description Types to include in the results */
-                    Types?: components["schemas"]["TransactionTypeModel"][];
+                    /** @description Search to apply to the results */
+                    Search?: string;
+                    /** @description Sort to apply to the results */
+                    Sort?: components["schemas"]["FundTransactionSortOrderModel"];
                     /** @description Maximum number of results to return */
                     Limit?: number;
                     /** @description Number of results to skip */
@@ -804,9 +904,9 @@ export interface paths {
             /** @description Request to update a Fund */
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["CreateOrUpdateFundModel"];
-                    "text/json": components["schemas"]["CreateOrUpdateFundModel"];
-                    "application/*+json": components["schemas"]["CreateOrUpdateFundModel"];
+                    "application/json": components["schemas"]["UpdateFundModel"];
+                    "text/json": components["schemas"]["UpdateFundModel"];
+                    "application/*+json": components["schemas"]["UpdateFundModel"];
                 };
             };
             responses: {
@@ -1111,6 +1211,10 @@ export interface components {
             /** @description Pending Credits for the Account Balance */
             pendingCredits: components["schemas"]["FundAmountModel"][];
         };
+        /** @enum {unknown} */
+        AccountingPeriodAccountSortOrderModel: AccountingPeriodAccountSortOrderModel | null;
+        /** @enum {unknown} */
+        AccountingPeriodFundSortOrderModel: AccountingPeriodFundSortOrderModel | null;
         /** @description Model representing an Accounting Period */
         AccountingPeriodModel: {
             /**
@@ -1245,12 +1349,22 @@ export interface components {
              */
             amount: number;
         };
-        /** @description Model representing a request to create or update a Fund */
-        CreateOrUpdateFundModel: {
+        /** @description Model representing a request to create a Fund */
+        CreateFundModel: {
             /** @description Name for the Fund */
             name: string;
             /** @description Description for the Fund */
             description: string;
+            /**
+             * Format: uuid
+             * @description Accounting Period that the Fund is being added to
+             */
+            accountingPeriodId: string;
+            /**
+             * Format: date
+             * @description Date the Fund is being added
+             */
+            addDate: string;
         };
         /** @description Model representing a request to create a Transaction Account. */
         CreateTransactionAccountModel: {
@@ -1420,15 +1534,17 @@ export interface components {
             /** @description New Fund Balances for the Transaction */
             newFundBalances: components["schemas"]["FundBalanceModel"][];
         };
-        /**
-         * @description Enum representing the different types of Transactions
-         * @enum {unknown}
-         */
-        TransactionTypeModel: TransactionTypeModel;
         /** @description Model representing a request to update an Account */
         UpdateAccountModel: {
             /** @description Name for the Account */
             name: string;
+        };
+        /** @description Model representing a request to update a Fund */
+        UpdateFundModel: {
+            /** @description Name for the Fund */
+            name: string;
+            /** @description Description for the Fund */
+            description: string;
         };
         /** @description Model representing a request to update a Transaction Account. */
         UpdateTransactionAccountModel: {
@@ -1468,6 +1584,26 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
+export enum AccountingPeriodAccountSortOrderModel {
+    Name = "Name",
+    NameDescending = "NameDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    OpeningBalance = "OpeningBalance",
+    OpeningBalanceDescending = "OpeningBalanceDescending",
+    ClosingBalance = "ClosingBalance",
+    ClosingBalanceDescending = "ClosingBalanceDescending"
+}
+export enum AccountingPeriodFundSortOrderModel {
+    Name = "Name",
+    NameDescending = "NameDescending",
+    Description = "Description",
+    DescriptionDescending = "DescriptionDescending",
+    OpeningBalance = "OpeningBalance",
+    OpeningBalanceDescending = "OpeningBalanceDescending",
+    ClosingBalance = "ClosingBalance",
+    ClosingBalanceDescending = "ClosingBalanceDescending"
+}
 export enum AccountingPeriodSortOrderModel {
     Date = "Date",
     DateDescending = "DateDescending",
@@ -1527,10 +1663,5 @@ export enum FundTransactionSortOrderModel {
     TypeDescending = "TypeDescending",
     Amount = "Amount",
     AmountDescending = "AmountDescending"
-}
-export enum TransactionTypeModel {
-    Debit = "Debit",
-    Credit = "Credit",
-    Transfer = "Transfer"
 }
 export type operations = Record<string, never>;

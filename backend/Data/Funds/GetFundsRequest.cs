@@ -6,14 +6,14 @@ namespace Data.Funds;
 public record GetFundsRequest
 {
     /// <summary>
-    /// Sort order to apply to the results
+    /// Search to apply to the results
     /// </summary>
-    public FundSortOrder? SortBy { get; init; }
+    public string? Search { get; init; }
 
     /// <summary>
-    /// Fund names to include in the results
+    /// Sort to apply to the results
     /// </summary>
-    public IReadOnlyCollection<string>? Names { get; init; }
+    public FundSortOrder? Sort { get; init; }
 
     /// <summary>
     /// Maximum number of results to return

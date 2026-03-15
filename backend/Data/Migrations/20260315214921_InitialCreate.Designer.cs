@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20260315191505_InitialCreate")]
+    [Migration("20260315214921_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -83,7 +83,13 @@ namespace Data.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal?>("AvailableToSpend")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateOnly>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PostedBalance")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Sequence")
@@ -135,6 +141,9 @@ namespace Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("FundId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PostedBalance")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Sequence")

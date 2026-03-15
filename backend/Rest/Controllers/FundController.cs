@@ -38,9 +38,9 @@ public sealed class FundController(
         Dictionary<string, string[]> errors = [];
 
         FundSortOrder? fundSortOrder = null;
-        if (queryParameters.SortBy != null && !FundSortOrderMapper.TryToData(queryParameters.SortBy.Value, out fundSortOrder))
+        if (queryParameters.Sort != null && !FundSortOrderMapper.TryToData(queryParameters.Sort.Value, out fundSortOrder))
         {
-            errors.Add(nameof(queryParameters.SortBy), new[] { $"Unrecognized Fund Sort Order Model: {queryParameters.SortBy.Value}" });
+            errors.Add(nameof(queryParameters.Sort), new[] { $"Unrecognized Fund Sort Order Model: {queryParameters.Sort.Value}" });
         }
         if (errors.Count > 0)
         {
@@ -54,8 +54,8 @@ public sealed class FundController(
 
         PaginatedCollection<Fund> funds = fundRepository.GetMany(new GetFundsRequest
         {
-            SortBy = fundSortOrder,
-            Names = queryParameters.Names,
+            Search = queryParameters.Search,
+            Sort = fundSortOrder,
             Limit = queryParameters.Limit,
             Offset = queryParameters.Offset,
         });
@@ -80,24 +80,9 @@ public sealed class FundController(
             errors.Add(nameof(fundId), new[] { $"Fund with ID {fundId} not found." });
         }
         FundTransactionSortOrder? fundTransactionSortOrder = null;
-        if (queryParameters.SortBy != null && !FundTransactionSortOrderMapper.TryToData(queryParameters.SortBy.Value, out fundTransactionSortOrder))
+        if (queryParameters.Sort != null && !FundTransactionSortOrderMapper.TryToData(queryParameters.Sort.Value, out fundTransactionSortOrder))
         {
-            errors.Add(nameof(queryParameters.SortBy), new[] { $"Unrecognized Fund Transaction Sort Order Model: {queryParameters.SortBy.Value}" });
-        }
-        IEnumerable<TransactionType> transactionTypes = [];
-        if (queryParameters.Types != null)
-        {
-            foreach ((int index, TransactionTypeModel transactionTypeModel) in queryParameters.Types.Index())
-            {
-                if (!TransactionTypeMapper.TryToData(transactionTypeModel, out TransactionType? transactionType))
-                {
-                    errors.Add($"{nameof(queryParameters.Types)}[{index}]", new[] { $"Unrecognized Transaction Type Model: {transactionTypeModel}" });
-                }
-                else
-                {
-                    transactionTypes = transactionTypes.Append(transactionType.Value);
-                }
-            }
+            errors.Add(nameof(queryParameters.Sort), new[] { $"Unrecognized Fund Transaction Sort Order Model: {queryParameters.Sort.Value}" });
         }
         if (errors.Count > 0 || fund == null)
         {
@@ -111,11 +96,8 @@ public sealed class FundController(
 
         PaginatedCollection<Transaction> paginatedResults = transactionRepository.GetManyByFund(fund.Id, new GetFundTransactionsRequest
         {
-            SortBy = fundTransactionSortOrder,
-            MinDate = queryParameters.MinDate,
-            MaxDate = queryParameters.MaxDate,
-            Locations = queryParameters.Locations,
-            Types = transactionTypes.Any() ? transactionTypes.ToList() : null,
+            Search = queryParameters.Search,
+            Sort = fundTransactionSortOrder,
             Limit = queryParameters.Limit,
             Offset = queryParameters.Offset
         });

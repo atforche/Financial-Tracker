@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Data.Transactions;
-using Models.Transactions;
+using Models.AccountingPeriods;
 
 namespace Rest.Mappers;
 

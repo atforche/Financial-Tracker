@@ -1,4 +1,4 @@
-namespace Models.Transactions;
+namespace Models.AccountingPeriods;
 
 /// <summary>
 /// Model representing the different ways Transactions within an Accounting Period can be sorted

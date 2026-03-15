@@ -1,5 +1,3 @@
-using Domain.Accounts;
-
 namespace Data.Accounts;
 
 /// <summary>
@@ -8,19 +6,14 @@ namespace Data.Accounts;
 public record GetAccountsRequest
 {
     /// <summary>
-    /// Sort order to apply to the results
+    /// Search to apply to the results
     /// </summary>
-    public AccountSortOrder? SortBy { get; init; }
+    public string? Search { get; init; }
 
     /// <summary>
-    /// Account names to include in the results
+    /// Sort to apply to the results
     /// </summary>
-    public IReadOnlyCollection<string>? Names { get; init; }
-
-    /// <summary>
-    /// Account types to include in the results
-    /// </summary>
-    public IReadOnlyCollection<AccountType>? Types { get; init; }
+    public AccountSortOrder? Sort { get; init; }
 
     /// <summary>
     /// Maximum number of results to return

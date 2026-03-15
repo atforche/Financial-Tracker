@@ -10,20 +10,14 @@ namespace Rest.Mappers;
 internal sealed class AccountTypeMapper
 {
     /// <summary>
-    /// Attempts to map the provided Account Type to an Account Type Model
+    /// Maps the provided Account Type to an Account Type Model
     /// </summary>
-    public static bool TryToModel(
-        AccountType accountType,
-        [NotNullWhen(true)] out AccountTypeModel? accountTypeModel)
+    public static AccountTypeModel ToModel(AccountType accountType) => accountType switch
     {
-        accountTypeModel = accountType switch
-        {
-            AccountType.Standard => AccountTypeModel.Standard,
-            AccountType.Debt => AccountTypeModel.Debt,
-            _ => null
-        };
-        return accountTypeModel != null;
-    }
+        AccountType.Standard => AccountTypeModel.Standard,
+        AccountType.Debt => AccountTypeModel.Debt,
+        _ => throw new InvalidOperationException($"Unrecognized Account Type: {accountType}")
+    };
 
     /// <summary>
     /// Attempts to map the provided Account Type Model to an Account Type

@@ -42,25 +42,9 @@ public sealed class AccountController(
         Dictionary<string, string[]> errors = [];
 
         AccountSortOrder? accountSortOrder = null;
-        if (queryParameters.SortBy != null && !AccountSortOrderMapper.TryToData(queryParameters.SortBy.Value, out accountSortOrder))
+        if (queryParameters.Sort != null && !AccountSortOrderMapper.TryToData(queryParameters.Sort.Value, out accountSortOrder))
         {
-            errors.Add(nameof(queryParameters.SortBy), [$"Unrecognized Sort Order: {queryParameters.SortBy.Value}"]);
-        }
-        IEnumerable<AccountType> accountTypes = [];
-        if (queryParameters.Types != null)
-        {
-            accountTypes = [];
-            foreach ((int index, AccountTypeModel accountTypeModel) in queryParameters.Types.Index())
-            {
-                if (!AccountTypeMapper.TryToDomain(accountTypeModel, out AccountType? accountType))
-                {
-                    errors.Add($"{nameof(queryParameters.Types)}[{index}]", [$"Unrecognized Account Type: {accountTypeModel}"]);
-                }
-                else
-                {
-                    accountTypes = accountTypes.Append(accountType.Value);
-                }
-            }
+            errors.Add(nameof(queryParameters.Sort), [$"Unrecognized Sort Order: {queryParameters.Sort.Value}"]);
         }
         if (errors.Count > 0)
         {
@@ -75,24 +59,14 @@ public sealed class AccountController(
         List<AccountModel> results = [];
         PaginatedCollection<Account> paginatedResults = accountRepository.GetMany(new GetAccountsRequest
         {
-            SortBy = accountSortOrder,
-            Names = queryParameters.Names,
-            Types = accountTypes.Any() ? accountTypes.ToList() : null,
+            Search = queryParameters.Search,
+            Sort = accountSortOrder,
             Limit = queryParameters.Limit,
             Offset = queryParameters.Offset,
         });
-        foreach (Account account in paginatedResults.Items)
-        {
-            if (!accountMapper.TryToModel(account, out AccountModel? accountModel))
-            {
-                return Problem(title: $"Failed to map Account with ID {account.Id} to Account Model.",
-                    statusCode: StatusCodes.Status500InternalServerError);
-            }
-            results.Add(accountModel);
-        }
         return Ok(new CollectionModel<AccountModel>
         {
-            Items = results,
+            Items = paginatedResults.Items.Select(accountMapper.ToModel).ToList(),
             TotalCount = paginatedResults.TotalCount
         });
     }
@@ -111,24 +85,9 @@ public sealed class AccountController(
             errors.Add(nameof(accountId), [$"Account with ID {accountId} was not found."]);
         }
         AccountTransactionSortOrder? accountTransactionSortOrder = null;
-        if (queryParameters.SortBy != null && !AccountTransactionSortOrderMapper.TryToData(queryParameters.SortBy.Value, out accountTransactionSortOrder))
+        if (queryParameters.Sort != null && !AccountTransactionSortOrderMapper.TryToData(queryParameters.Sort.Value, out accountTransactionSortOrder))
         {
-            errors.Add(nameof(queryParameters.SortBy), [$"Unrecognized Sort Order: {queryParameters.SortBy.Value}"]);
-        }
-        IEnumerable<TransactionType> transactionTypes = [];
-        if (queryParameters.Types != null)
-        {
-            foreach ((int index, TransactionTypeModel transactionTypeModel) in queryParameters.Types.Index())
-            {
-                if (!TransactionTypeMapper.TryToData(transactionTypeModel, out TransactionType? transactionType))
-                {
-                    errors.Add($"{nameof(queryParameters.Types)}[{index}]", [$"Unrecognized Transaction Type: {transactionTypeModel}"]);
-                }
-                else
-                {
-                    transactionTypes = transactionTypes.Append(transactionType.Value);
-                }
-            }
+            errors.Add(nameof(queryParameters.Sort), [$"Unrecognized Sort Order: {queryParameters.Sort.Value}"]);
         }
         if (errors.Count > 0 || account == null)
         {
@@ -142,11 +101,8 @@ public sealed class AccountController(
 
         PaginatedCollection<Transaction> paginatedResults = transactionRepository.GetManyByAccount(account.Id, new GetAccountTransactionsRequest
         {
-            SortBy = accountTransactionSortOrder,
-            MinDate = queryParameters.MinDate,
-            MaxDate = queryParameters.MaxDate,
-            Locations = queryParameters.Locations,
-            Types = transactionTypes.Any() ? transactionTypes.ToList() : null,
+            Search = queryParameters.Search,
+            Sort = accountTransactionSortOrder,
             Limit = queryParameters.Limit,
             Offset = queryParameters.Offset
         });
@@ -230,13 +186,8 @@ public sealed class AccountController(
         {
             transactionRepository.Add(initialTransaction);
         }
-        if (!accountMapper.TryToModel(newAccount, out AccountModel? accountModel))
-        {
-            return Problem(title: $"Failed to map Account with ID {newAccount.Id} to Account Model.",
-                statusCode: StatusCodes.Status500InternalServerError);
-        }
         await unitOfWork.SaveChangesAsync();
-        return Ok(accountModel);
+        return Ok(accountMapper.ToModel(newAccount));
     }
 
     /// <summary>
@@ -276,13 +227,8 @@ public sealed class AccountController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!accountMapper.TryToModel(accountToUpdate, out AccountModel? accountModel))
-        {
-            return Problem(title: $"Failed to map Account with ID {accountToUpdate.Id} to Account Model.",
-                statusCode: StatusCodes.Status500InternalServerError);
-        }
         await unitOfWork.SaveChangesAsync();
-        return Ok(accountModel);
+        return Ok(accountMapper.ToModel(accountToUpdate));
     }
 
     /// <summary>

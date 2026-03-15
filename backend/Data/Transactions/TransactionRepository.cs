@@ -3,6 +3,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data.Transactions;
 
@@ -55,12 +56,71 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     /// </summary>
     public PaginatedCollection<Transaction> GetManyByAccountingPeriod(AccountingPeriodId accountingPeriodId, GetAccountingPeriodTransactionsRequest request)
     {
-        List<AccountingPeriodTransactionSortModel> filteredTransactions = new AccountingPeriodTransactionFilterer(databaseContext).Get(accountingPeriodId, request);
-        filteredTransactions.Sort(new AccountingPeriodTransactionComparer(request.SortBy));
+        string query = $"""
+                        select Transactions.* from Transactions
+                        left join TransactionAccounts as DebitAccounts on Transactions.DebitAccountId = DebitAccounts.Id
+                        left join Accounts as DebitAccount on DebitAccounts.AccountId = DebitAccount.Id
+                        left join TransactionAccounts as CreditAccounts on Transactions.CreditAccountId = CreditAccounts.Id
+                        left join Accounts as CreditAccount on CreditAccounts.AccountId = CreditAccount.Id
+                        where Transactions.AccountingPeriodId = {accountingPeriodId}
+                        """;
+        if (request.Search != null)
+        {
+            query += $"""
+                        and (Transaction.Date like '%{request.Search}%' or
+                            Transactions.Description like '%{request.Search}%' or 
+                            Transactions.Location like '%{request.Search}%' or
+                            DebitAccount.Name like '%{request.Search}%' or 
+                            CreditAccount.Name like '%{request.Search}%' or 
+                            Transactions.Amount like '%{request.Search}%')";
+                        """;
+        }
+        if (request.Sort is null or AccountingPeriodTransactionSortOrder.DateDescending)
+        {
+            query += $" order by Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == AccountingPeriodTransactionSortOrder.Date)
+        {
+            query += $" order by Transactions.Date asc, Transactions.Sequence asc";
+        }
+        else if (request.Sort == AccountingPeriodTransactionSortOrder.Location)
+        {
+            query += $" order by Transactions.Location asc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == AccountingPeriodTransactionSortOrder.LocationDescending)
+        {
+            query += $" order by Transactions.Location desc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == AccountingPeriodTransactionSortOrder.DebitAccount)
+        {
+            query += $" order by DebitAccount.Name asc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == AccountingPeriodTransactionSortOrder.DebitAccountDescending)
+        {
+            query += $" order by DebitAccount.Name desc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == AccountingPeriodTransactionSortOrder.CreditAccount)
+        {
+            query += $" order by CreditAccount.Name asc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == AccountingPeriodTransactionSortOrder.CreditAccountDescending)
+        {
+            query += $" order by CreditAccount.Name desc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == AccountingPeriodTransactionSortOrder.Amount)
+        {
+            query += $" order by Transactions.Amount asc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == AccountingPeriodTransactionSortOrder.AmountDescending)
+        {
+            query += $" order by Transactions.Amount desc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+
+        var transactions = databaseContext.Transactions.FromSqlRaw(query).ToList();
         return new PaginatedCollection<Transaction>
         {
-            Items = GetPagedTransactions(filteredTransactions.Select(t => t.Transaction).ToList(), request.Limit, request.Offset),
-            TotalCount = filteredTransactions.Count,
+            Items = GetPagedTransactions(transactions, request.Limit, request.Offset),
+            TotalCount = transactions.Count,
         };
     }
 
@@ -69,12 +129,61 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     /// </summary>
     public PaginatedCollection<Transaction> GetManyByAccount(AccountId accountId, GetAccountTransactionsRequest request)
     {
-        List<AccountTransactionSortModel> filteredTransactions = new AccountTransactionFilterer(databaseContext).Get(accountId, request);
-        filteredTransactions.Sort(new AccountTransactionComparer(request.SortBy));
+        string query = $"""
+                        select Transactions.* from Transactions
+                        left join TransactionAccounts as DebitAccounts on Transactions.DebitAccountId = DebitAccounts.Id
+                        left join Accounts as DebitAccount on DebitAccounts.AccountId = DebitAccount.Id
+                        left join TransactionAccounts as CreditAccounts on Transactions.CreditAccountId = CreditAccounts.Id
+                        left join Accounts as CreditAccount on CreditAccounts.AccountId = CreditAccount.Id
+                        where (DebitAccount.Id = {accountId} or CreditAccount.Id = {accountId})
+                        """;
+        if (request.Search != null)
+        {
+            query += $"""
+                        and (Transaction.Date like '%{request.Search}%' or
+                            Transactions.Description like '%{request.Search}%' or 
+                            Transactions.Location like '%{request.Search}%' or
+                            Transactions.Amount like '%{request.Search}%')";
+                        """;
+        }
+        if (request.Sort is null or AccountTransactionSortOrder.DateDescending)
+        {
+            query += $" order by Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == AccountTransactionSortOrder.Date)
+        {
+            query += $" order by Transactions.Date asc, Transactions.Sequence asc";
+        }
+        else if (request.Sort == AccountTransactionSortOrder.Location)
+        {
+            query += $" order by Transactions.Location asc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == AccountTransactionSortOrder.LocationDescending)
+        {
+            query += $" order by Transactions.Location desc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == AccountTransactionSortOrder.Type)
+        {
+            query += $" order by case when DebitAccount.Id = {accountId} then DebitAccount.Name else CreditAccount.Name end asc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == AccountTransactionSortOrder.TypeDescending)
+        {
+            query += $" order by case when DebitAccount.Id = {accountId} then DebitAccount.Name else CreditAccount.Name end desc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == AccountTransactionSortOrder.Amount)
+        {
+            query += $" order by Transactions.Amount asc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == AccountTransactionSortOrder.AmountDescending)
+        {
+            query += $" order by Transactions.Amount desc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+
+        var transactions = databaseContext.Transactions.FromSqlRaw(query).ToList();
         return new PaginatedCollection<Transaction>
         {
-            Items = GetPagedTransactions(filteredTransactions.Select(t => t.Transaction).ToList(), request.Limit, request.Offset),
-            TotalCount = filteredTransactions.Count,
+            Items = GetPagedTransactions(transactions, request.Limit, request.Offset),
+            TotalCount = transactions.Count,
         };
     }
 
@@ -83,12 +192,61 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     /// </summary>
     public PaginatedCollection<Transaction> GetManyByFund(FundId fundId, GetFundTransactionsRequest request)
     {
-        List<FundTransactionSortModel> filteredTransactions = new FundTransactionFilterer(databaseContext).Get(fundId, request);
-        filteredTransactions.Sort(new FundTransactionComparer(request.SortBy));
+        string query = $"""
+                        select Transactions.* from Transactions
+                        left join TransactionAccounts as DebitAccounts on Transactions.DebitAccountId = DebitAccounts.Id
+                        left join TransactionAccountFundAmounts as DebitFundAmounts on DebitAccounts.Id = DebitFundAmounts.TransactionAccountId
+                        left join TransactionAccounts as CreditAccounts on Transactions.CreditAccountId = CreditAccounts.Id
+                        left join TransactionAccountFundAmounts as CreditFundAmounts on CreditAccounts.Id = CreditFundAmounts.TransactionAccountId
+                        where (DebitFundAmounts.FundId = {fundId} or CreditFundAmounts.FundId = {fundId})
+                        """;
+        if (request.Search != null)
+        {
+            query += $"""
+                        and (Transactions.Date like '%{request.Search}%' or
+                            Transactions.Description like '%{request.Search}%' or 
+                            Transactions.Location like '%{request.Search}%' or
+                            Transactions.Amount like '%{request.Search}%')";
+                        """;
+        }
+        if (request.Sort is null or FundTransactionSortOrder.DateDescending)
+        {
+            query += $" order by Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == FundTransactionSortOrder.Date)
+        {
+            query += $" order by Transactions.Date asc, Transactions.Sequence asc";
+        }
+        else if (request.Sort == FundTransactionSortOrder.Location)
+        {
+            query += $" order by Transactions.Location asc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == FundTransactionSortOrder.LocationDescending)
+        {
+            query += $" order by Transactions.Location desc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == FundTransactionSortOrder.Type)
+        {
+            query += $" order by case when DebitFundAmounts.FundId = {fundId} then 0 else 1 end asc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == FundTransactionSortOrder.TypeDescending)
+        {
+            query += $" order by case when DebitFundAmounts.FundId = {fundId} then 0 else 1 end desc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == FundTransactionSortOrder.Amount)
+        {
+            query += $" order by Transactions.Amount asc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+        else if (request.Sort == FundTransactionSortOrder.AmountDescending)
+        {
+            query += $" order by Transactions.Amount desc, Transactions.Date desc, Transactions.Sequence desc";
+        }
+
+        var transactions = databaseContext.Transactions.FromSqlRaw(query).ToList();
         return new PaginatedCollection<Transaction>
         {
-            Items = GetPagedTransactions(filteredTransactions.Select(t => t.Transaction).ToList(), request.Limit, request.Offset),
-            TotalCount = filteredTransactions.Count,
+            Items = GetPagedTransactions(transactions, request.Limit, request.Offset),
+            TotalCount = transactions.Count,
         };
     }
 

@@ -1,9 +1,9 @@
-namespace Models.Transactions;
+namespace Data.Funds;
 
 /// <summary>
-/// Model representing the query parameters that can be provided when retrieving Transactions for a Fund 
+/// Request to retrieve the Funds within an Accounting Period that match the specified criteria
 /// </summary>
-public class FundTransactionQueryParameterModel
+public record GetAccountingPeriodFundsRequest
 {
     /// <summary>
     /// Search to apply to the results
@@ -13,7 +13,7 @@ public class FundTransactionQueryParameterModel
     /// <summary>
     /// Sort to apply to the results
     /// </summary>
-    public FundTransactionSortOrderModel? Sort { get; init; }
+    public AccountingPeriodFundSortOrder? Sort { get; init; }
 
     /// <summary>
     /// Maximum number of results to return

@@ -1,5 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.AccountingPeriods;
 using Domain.Funds;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data.Funds;
 
@@ -33,12 +35,81 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
     /// </summary>
     public PaginatedCollection<Fund> GetMany(GetFundsRequest request)
     {
-        List<FundSortModel> filteredFunds = new FundFilterer(databaseContext).Get(request);
-        filteredFunds.Sort(new FundComparer(request.SortBy));
+        string query = """
+                        select Funds.* from Funds 
+                        left join FundBalanceHistory on Funds.Id = FundBalanceHistory.FundId 
+                            and FundBalanceHistory.Date = (select max(Date) from FundBalanceHistory where FundBalanceHistory.FundId = Funds.Id)
+                            and FundBalanceHistory.Sequence = (select max(Sequence) from FundBalanceHistory where FundBalanceHistory.FundId = Funds.Id and FundBalanceHistory.Date = (select max(Date) from FundBalanceHistory where FundBalanceHistory.FundId = Funds.Id))";
+                        """;
+        if (request.Search != null)
+        {
+            query += $" where Funds.Name like '%{request.Search}%' or Funds.Description like '%{request.Search}%' or FundBalanceHistory.PostedBalance like '%{request.Search}%'";
+        }
+        if (request.Sort is null or FundSortOrder.Name)
+        {
+            query += $" order by Funds.Name asc";
+        }
+        else if (request.Sort == FundSortOrder.NameDescending)
+        {
+            query += $" order by Funds.Name desc";
+        }
+        else if (request.Sort == FundSortOrder.Description)
+        {
+            query += $" order by Funds.Description asc, Funds.Name asc";
+        }
+        else if (request.Sort == FundSortOrder.DescriptionDescending)
+        {
+            query += $" order by Funds.Description desc, Funds.Name asc";
+        }
+        else if (request.Sort == FundSortOrder.Balance)
+        {
+            query += $" order by FundBalanceHistory.PostedBalance asc, Funds.Name asc";
+        }
+        else if (request.Sort == FundSortOrder.BalanceDescending)
+        {
+            query += $" order by FundBalanceHistory.PostedBalance desc, Funds.Name asc";
+        }
+
+        var funds = databaseContext.Funds.FromSqlRaw(query).ToList();
         return new PaginatedCollection<Fund>
         {
-            Items = GetPagedFunds(filteredFunds.Select(f => f.Fund).ToList(), request.Limit, request.Offset),
-            TotalCount = filteredFunds.Count,
+            Items = GetPagedFunds(funds, request.Limit, request.Offset),
+            TotalCount = funds.Count,
+        };
+    }
+
+    /// <summary>
+    /// Gets the Funds within the specified Accounting Period that match the specified criteria
+    /// </summary>
+    public PaginatedCollection<Fund> GetManyByAccountingPeriod(AccountingPeriodId _, GetAccountingPeriodFundsRequest request)
+    {
+        string query = "select * from Funds";
+        if (request.Search != null)
+        {
+            query += $" where Name like '%{request.Search}%' or Description like '%{request.Search}%'";
+        }
+        if (request.Sort is null or AccountingPeriodFundSortOrder.Name)
+        {
+            query += $" order by Name asc";
+        }
+        else if (request.Sort == AccountingPeriodFundSortOrder.NameDescending)
+        {
+            query += $" order by Name desc";
+        }
+        else if (request.Sort == AccountingPeriodFundSortOrder.Description)
+        {
+            query += $" order by Description asc, Name asc";
+        }
+        else if (request.Sort == AccountingPeriodFundSortOrder.DescriptionDescending)
+        {
+            query += $" order by Description desc, Name asc";
+        }
+
+        var funds = databaseContext.Funds.FromSqlRaw(query).ToList();
+        return new PaginatedCollection<Fund>
+        {
+            Items = GetPagedFunds(funds, request.Limit, request.Offset),
+            TotalCount = funds.Count,
         };
     }
 

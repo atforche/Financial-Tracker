@@ -26,7 +26,8 @@ CREATE TABLE "FundBalanceHistories" (
     "FundId" TEXT NOT NULL,
     "TransactionId" TEXT NOT NULL,
     "Date" TEXT NOT NULL,
-    "Sequence" INTEGER NOT NULL
+    "Sequence" INTEGER NOT NULL,
+    "PostedBalance" TEXT NOT NULL
 );
 
 CREATE TABLE "Funds" (
@@ -43,6 +44,8 @@ CREATE TABLE "AccountBalanceHistories" (
     "TransactionId" TEXT NOT NULL,
     "Date" TEXT NOT NULL,
     "Sequence" INTEGER NOT NULL,
+    "PostedBalance" TEXT NOT NULL,
+    "AvailableToSpend" TEXT NULL,
     CONSTRAINT "FK_AccountBalanceHistories_Accounts_AccountId" FOREIGN KEY ("AccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE
 );
 
@@ -155,7 +158,7 @@ CREATE INDEX "IX_Transactions_CreditAccount_AccountId" ON "Transactions" ("Credi
 CREATE INDEX "IX_Transactions_DebitAccount_AccountId" ON "Transactions" ("DebitAccount_AccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260315191505_InitialCreate', '10.0.2');
+VALUES ('20260315214921_InitialCreate', '10.0.2');
 
 COMMIT;
 

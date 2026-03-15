@@ -1,5 +1,3 @@
-using Domain.Accounts;
-
 namespace Data.Transactions;
 
 /// <summary>
@@ -8,29 +6,14 @@ namespace Data.Transactions;
 public record GetAccountingPeriodTransactionsRequest
 {
     /// <summary>
-    /// Sort order to apply to the results
+    /// Search to apply to the results
     /// </summary>
-    public AccountingPeriodTransactionSortOrder? SortBy { get; init; }
+    public string? Search { get; init; }
 
     /// <summary>
-    /// Minimum date to include in the results
+    /// Sort to apply to the results
     /// </summary>
-    public DateOnly? MinDate { get; init; }
-
-    /// <summary>
-    /// Maximum date to include in the results
-    /// </summary>
-    public DateOnly? MaxDate { get; init; }
-
-    /// <summary>
-    /// Locations to include in the results
-    /// </summary>
-    public IReadOnlyCollection<string>? Locations { get; init; }
-
-    /// <summary>
-    /// Accounts to include in the results (either as debit or credit accounts)
-    /// </summary>
-    public IReadOnlyCollection<AccountId>? Accounts { get; init; }
+    public AccountingPeriodTransactionSortOrder? Sort { get; init; }
 
     /// <summary>
     /// Maximum number of results to return
