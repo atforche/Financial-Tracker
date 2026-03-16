@@ -94,7 +94,7 @@ class BuildFrontend(Command):
 
         os.chdir("../frontend")
         self.run_subprocess("npx tsc")
-        self.run_subprocess("npx vite build")
+        self.run_subprocess("npx next build")
 
 class RunFrontend(Command):
     """Command class that runs the frontend"""
@@ -109,7 +109,7 @@ class RunFrontend(Command):
         """Runs the frontend"""
 
         os.chdir("../frontend")
-        self.run_subprocess("npx vite")
+        self.run_subprocess("npx next dev")
 
 class RefreshFrontendModels(Command):
     """Command class that refreshes the API models used by the frontend"""

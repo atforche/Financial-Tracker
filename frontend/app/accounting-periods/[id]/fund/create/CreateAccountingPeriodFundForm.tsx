@@ -48,24 +48,24 @@ const CreateAccountingPeriodFundForm = function ({
           <TextField
             name={nameof<CreateFundRequest>("name")}
             label="Name"
-            defaultValue={state.name ?? null}
+            defaultValue={state.name?.value ?? null}
             variant="outlined"
-            error={(state.nameErrorMessage ?? null) !== null}
-            helperText={state.nameErrorMessage ?? null}
+            error={(state.name?.errorMessage ?? null) !== null}
+            helperText={state.name?.errorMessage ?? null}
           />
           <TextField
             name={nameof<CreateFundRequest>("description")}
             label="Description"
-            defaultValue={state.description ?? null}
+            defaultValue={state.description?.value ?? null}
             variant="outlined"
-            error={(state.descriptionErrorMessage ?? null) !== null}
-            helperText={state.descriptionErrorMessage ?? null}
+            error={(state.description?.errorMessage ?? null) !== null}
+            helperText={state.description?.errorMessage ?? null}
           />
           <DateEntryField
             name={nameof<CreateFundRequest>("addDate")}
             label="Add Date"
-            defaultValue={state.date ?? null}
-            errorMessage={state.dateErrorMessage ?? null}
+            defaultValue={state.date?.value ?? null}
+            errorMessage={state.date?.errorMessage ?? null}
           />
           <DialogActions>
             <Link href={`/accounting-periods/${accountingPeriod.id}`}>
@@ -75,7 +75,10 @@ const CreateAccountingPeriodFundForm = function ({
               Create
             </Button>
           </DialogActions>
-          <ErrorAlert errorMessage={state.overallErrorMessage ?? null} />
+          <ErrorAlert
+            errorMessage={state.errorTitle ?? null}
+            unmappedErrors={state.unmappedErrors ?? null}
+          />
         </Stack>
       </form>
     </Stack>

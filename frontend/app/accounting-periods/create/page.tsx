@@ -29,14 +29,14 @@ const CreateAccountingPeriod = function (): JSX.Element {
           <IntegerEntryField
             name={nameof<CreateAccountingPeriodRequest>("year")}
             label="Year"
-            defaultValue={state.year ?? null}
-            errorMessage={state.yearErrorMessage ?? null}
+            defaultValue={state.year?.value ?? null}
+            errorMessage={state.year?.errorMessage ?? null}
           />
           <IntegerEntryField
             name={nameof<CreateAccountingPeriodRequest>("month")}
             label="Month"
-            defaultValue={state.month ?? null}
-            errorMessage={state.monthErrorMessage ?? null}
+            defaultValue={state.month?.value ?? null}
+            errorMessage={state.month?.errorMessage ?? null}
           />
           <DialogActions>
             <Link href="/accounting-periods">
@@ -46,7 +46,10 @@ const CreateAccountingPeriod = function (): JSX.Element {
               Create
             </Button>
           </DialogActions>
-          <ErrorAlert errorMessage={state.overallErrorMessage ?? null} />
+          <ErrorAlert
+            errorMessage={state.errorTitle ?? null}
+            unmappedErrors={state.unmappedErrors ?? null}
+          />
         </Stack>
       </form>
     </Stack>

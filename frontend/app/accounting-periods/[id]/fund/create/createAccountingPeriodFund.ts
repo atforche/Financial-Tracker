@@ -2,44 +2,59 @@
 
 import dayjs, { type Dayjs } from "dayjs";
 import type { CreateFundRequest } from "@/data/fundTypes";
+import type StateElement from "@/framework/forms/StateElement";
+import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/data/getApiClient";
 import { isApiError } from "@/data/apiError";
 import nameof from "@/data/nameof";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
 /**
- * Interface representing the state of creating a fund within an accounting period.
+ * Interface representing the state of creating a fund in a particular accounting period.
  */
-interface CreateAccountingPeriodFundState {
+interface ActionState {
   readonly accountingPeriodId: string;
-  readonly overallErrorMessage?: string | null;
-  readonly name?: string | null;
-  readonly nameErrorMessage?: string | null;
-  readonly description?: string | null;
-  readonly descriptionErrorMessage?: string | null;
-  readonly date?: Dayjs | null;
-  readonly dateErrorMessage?: string | null;
+  readonly errorTitle?: string | null;
+  readonly unmappedErrors?: string | null;
+  readonly name?: StateElement<string | null>;
+  readonly description?: StateElement<string | null>;
+  readonly date?: StateElement<Dayjs | null>;
 }
 
 /**
- * Server action that creates a new fund with a given accounting period.
+ * Schema for validating the form data when creating a new fund in a particular accounting period.
+ */
+const FormSchema = z.object({
+  name: z.string().min(1, "Name is required."),
+  description: z.string().optional(),
+  addDate: z.string().refine((value) => {
+    const date = dayjs(value, "YYYY-MM-DD", true);
+    return date.isValid();
+  }, "A valid date is required."),
+});
+
+/**
+ * Server action that creates a new fund in a particular accounting period.
  */
 const createAccountingPeriodFund = async function (
-  { accountingPeriodId }: CreateAccountingPeriodFundState,
+  { accountingPeriodId }: ActionState,
   formData: FormData,
-): Promise<CreateAccountingPeriodFundState> {
-  const name = formData.get(nameof<CreateFundRequest>("name"));
-  const description = formData.get(nameof<CreateFundRequest>("description"));
-  const date = formData.get(nameof<CreateFundRequest>("addDate"));
+): Promise<ActionState> {
+  const { name, description, addDate } = FormSchema.parse({
+    name: formData.get("name"),
+    description: formData.get("description"),
+    addDate: formData.get("addDate"),
+  });
 
   const client = getApiClient();
   const { error } = await client.POST("/funds", {
     body: {
-      name: typeof name === "string" ? name : "",
-      description: typeof description === "string" ? description : "",
+      name,
+      description: description ?? "",
       accountingPeriodId,
-      addDate: typeof date === "string" ? dayjs(date).format("YYYY-MM-DD") : "",
+      addDate,
     },
   });
   if (error) {
@@ -47,41 +62,58 @@ const createAccountingPeriodFund = async function (
       let nameErrorMessage = null;
       let descriptionErrorMessage = null;
       let dateErrorMessage = null;
+      const unmappedErrors: (string | null)[] = [];
       for (const key of Object.keys(error.errors ?? {})) {
         if (
           key.toUpperCase() === nameof<CreateFundRequest>("name").toUpperCase()
         ) {
-          nameErrorMessage = error.errors?.[key]?.[0] ?? null;
-        }
-        if (
+          nameErrorMessage = formatErrors(error.errors?.[key] ?? null);
+        } else if (
           key.toUpperCase() ===
           nameof<CreateFundRequest>("description").toUpperCase()
         ) {
-          descriptionErrorMessage = error.errors?.[key]?.[0] ?? null;
-        }
-        if (
+          descriptionErrorMessage = formatErrors(error.errors?.[key] ?? null);
+        } else if (
           key.toUpperCase() ===
           nameof<CreateFundRequest>("addDate").toUpperCase()
         ) {
-          dateErrorMessage = error.errors?.[key]?.[0] ?? null;
+          dateErrorMessage = formatErrors(error.errors?.[key] ?? null);
+        } else {
+          unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
         }
       }
       return {
         accountingPeriodId,
-        overallErrorMessage: error.title ?? null,
-        name: typeof name === "string" ? name : "",
-        nameErrorMessage,
-        description: typeof description === "string" ? description : "",
-        descriptionErrorMessage,
-        date: typeof date === "string" ? dayjs(date) : null,
-        dateErrorMessage,
+        errorTitle: error.title ?? null,
+        unmappedErrors: formatErrors(
+          unmappedErrors.filter((e): e is string => e !== null),
+        ),
+        name: {
+          value: name,
+          errorMessage: nameErrorMessage,
+        },
+        description: {
+          value: description ?? null,
+          errorMessage: descriptionErrorMessage,
+        },
+        date: {
+          value: dayjs(addDate),
+          errorMessage: dateErrorMessage,
+        },
       };
     }
     return {
-      overallErrorMessage: "An unexpected error occurred.",
-      name: typeof name === "string" ? name : "",
-      description: typeof description === "string" ? description : "",
       accountingPeriodId,
+      errorTitle: "An unexpected error occurred.",
+      name: {
+        value: name,
+      },
+      description: {
+        value: description ?? null,
+      },
+      date: {
+        value: dayjs(addDate),
+      },
     };
   }
 

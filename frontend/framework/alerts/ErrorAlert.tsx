@@ -7,15 +7,24 @@ import { Typography } from "@mui/material";
  */
 interface ErrorAlertProps {
   readonly errorMessage: string | null;
+  readonly unmappedErrors: string | null;
 }
 
 /**
  * Component that displays an error alert for the given API error.
  */
-const ErrorAlert = function ({ errorMessage }: ErrorAlertProps): JSX.Element {
+const ErrorAlert = function ({
+  errorMessage,
+  unmappedErrors,
+}: ErrorAlertProps): JSX.Element {
   let content: JSX.Element | null = null;
   if (errorMessage !== null) {
-    content = <Typography variant="body2">{errorMessage}</Typography>;
+    content = (
+      <>
+        <Typography variant="body2">{errorMessage}</Typography>
+        <Typography variant="caption">{unmappedErrors}</Typography>
+      </>
+    );
   }
   return (
     <Toast severity="error" autoHideDuration={null}>
