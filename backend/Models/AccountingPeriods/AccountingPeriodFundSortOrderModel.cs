@@ -16,16 +16,6 @@ public enum AccountingPeriodFundSortOrderModel
     NameDescending,
 
     /// <summary>
-    /// Funds are sorted by description in ascending order
-    /// </summary>
-    Description,
-
-    /// <summary>
-    /// Funds are sorted by description in descending order
-    /// </summary>
-    DescriptionDescending,
-
-    /// <summary>
     /// Funds are sorted by opening balance in ascending order
     /// </summary>
     OpeningBalance,

@@ -58,11 +58,9 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     {
         string query = $"""
                         select Transactions.* from Transactions
-                        left join TransactionAccounts as DebitAccounts on Transactions.DebitAccountId = DebitAccounts.Id
-                        left join Accounts as DebitAccount on DebitAccounts.AccountId = DebitAccount.Id
-                        left join TransactionAccounts as CreditAccounts on Transactions.CreditAccountId = CreditAccounts.Id
-                        left join Accounts as CreditAccount on CreditAccounts.AccountId = CreditAccount.Id
-                        where Transactions.AccountingPeriodId = {accountingPeriodId}
+                        left join Accounts as DebitAccount on Transactions.DebitAccount_AccountId = DebitAccount.Id
+                        left join Accounts as CreditAccount on Transactions.CreditAccount_AccountId = CreditAccount.Id
+                        where Transactions.AccountingPeriodId = '{accountingPeriodId.Value}'
                         """;
         if (request.Search != null)
         {
@@ -131,16 +129,14 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     {
         string query = $"""
                         select Transactions.* from Transactions
-                        left join TransactionAccounts as DebitAccounts on Transactions.DebitAccountId = DebitAccounts.Id
-                        left join Accounts as DebitAccount on DebitAccounts.AccountId = DebitAccount.Id
-                        left join TransactionAccounts as CreditAccounts on Transactions.CreditAccountId = CreditAccounts.Id
-                        left join Accounts as CreditAccount on CreditAccounts.AccountId = CreditAccount.Id
-                        where (DebitAccount.Id = {accountId} or CreditAccount.Id = {accountId})
+                        left join Accounts as DebitAccount on Transactions.DebitAccount_AccountId = DebitAccount.Id
+                        left join Accounts as CreditAccount on Transactions.CreditAccount_AccountId = CreditAccount.Id
+                        where (DebitAccount.Id = '{accountId.Value}' or CreditAccount.Id = '{accountId.Value}')
                         """;
         if (request.Search != null)
         {
             query += $"""
-                        and (Transaction.Date like '%{request.Search}%' or
+                        and (Transactions.Date like '%{request.Search}%' or
                             Transactions.Description like '%{request.Search}%' or 
                             Transactions.Location like '%{request.Search}%' or
                             Transactions.Amount like '%{request.Search}%')";
@@ -194,11 +190,9 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     {
         string query = $"""
                         select Transactions.* from Transactions
-                        left join TransactionAccounts as DebitAccounts on Transactions.DebitAccountId = DebitAccounts.Id
-                        left join TransactionAccountFundAmounts as DebitFundAmounts on DebitAccounts.Id = DebitFundAmounts.TransactionAccountId
-                        left join TransactionAccounts as CreditAccounts on Transactions.CreditAccountId = CreditAccounts.Id
-                        left join TransactionAccountFundAmounts as CreditFundAmounts on CreditAccounts.Id = CreditFundAmounts.TransactionAccountId
-                        where (DebitFundAmounts.FundId = {fundId} or CreditFundAmounts.FundId = {fundId})
+                        left join Accounts as DebitAccount on Transactions.DebitAccount_AccountId = DebitAccount.Id
+                        left join Accounts as CreditAccount on Transactions.CreditAccount_AccountId = CreditAccount.Id
+                        where (DebitFundAmounts.FundId = '{fundId.Value}' or CreditFundAmounts.FundId = '{fundId.Value}')
                         """;
         if (request.Search != null)
         {

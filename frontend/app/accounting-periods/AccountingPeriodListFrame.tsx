@@ -101,7 +101,7 @@ const AccountingPeriodListFrame = function ({
           label="Add"
           icon={<AddCircleOutline />}
           onClick={() => {
-            router.push("/accounting-periods/create");
+            router.push(`${pathname}/create`);
           }}
         />
       ),
@@ -110,7 +110,7 @@ const AccountingPeriodListFrame = function ({
           label="View"
           icon={<ArrowForwardIos />}
           onClick={() => {
-            router.push(`/accounting-periods/${accountingPeriod.id}`);
+            router.push(`${pathname}/${accountingPeriod.id}`);
           }}
         />
       ),

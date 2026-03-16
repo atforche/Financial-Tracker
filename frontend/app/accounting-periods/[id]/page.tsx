@@ -1,8 +1,12 @@
+import { Stack, Typography } from "@mui/material";
+import AccountListFrame from "@/app/accounting-periods/[id]/AccountListFrame";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
+import FundListFrame from "@/app/accounting-periods/[id]/FundListFrame";
 import type { JSX } from "react";
-import { Stack } from "@mui/material";
+import SearchBar from "@/framework/listframe/SearchBar";
+import TransactionListFrame from "@/app/accounting-periods/[id]/TransactionListFrame";
 import getApiClient from "@/data/getApiClient";
 
 /**
@@ -14,7 +18,7 @@ const AccountingPeriodView = async function (props: {
   const { id } = await props.params;
 
   const apiClient = getApiClient();
-  const { data, error } = await apiClient.GET(
+  const accountingPeriodPromise = apiClient.GET(
     "/accounting-periods/{accountingPeriodId}",
     {
       params: {
@@ -24,9 +28,55 @@ const AccountingPeriodView = async function (props: {
       },
     },
   );
-  if (typeof data === "undefined") {
+  const fundPromise = apiClient.GET(
+    "/accounting-periods/{accountingPeriodId}/funds",
+    {
+      params: {
+        path: {
+          accountingPeriodId: id,
+        },
+      },
+    },
+  );
+  const accountPromise = apiClient.GET(
+    "/accounting-periods/{accountingPeriodId}/accounts",
+    {
+      params: {
+        path: {
+          accountingPeriodId: id,
+        },
+      },
+    },
+  );
+  const transactionPromise = apiClient.GET(
+    "/accounting-periods/{accountingPeriodId}/transactions",
+    {
+      params: {
+        path: {
+          accountingPeriodId: id,
+        },
+      },
+    },
+  );
+  const [
+    { data, error },
+    { data: fundData, error: fundError },
+    { data: accountData, error: accountError },
+    { data: transactionData, error: transactionError },
+  ] = await Promise.all([
+    accountingPeriodPromise,
+    fundPromise,
+    accountPromise,
+    transactionPromise,
+  ]);
+  if (
+    typeof data === "undefined" ||
+    typeof fundData === "undefined" ||
+    typeof accountData === "undefined" ||
+    typeof transactionData === "undefined"
+  ) {
     throw new Error(
-      `Failed to fetch accounting period with ID ${id}: ${error.detail}`,
+      `Failed to fetch accounting period with ID ${id}: ${error?.detail ?? fundError?.detail ?? accountError?.detail ?? transactionError?.detail}`,
     );
   }
 
@@ -44,6 +94,32 @@ const AccountingPeriodView = async function (props: {
         <CaptionedValue caption="Opening Balance" value="TBD" />
         <CaptionedValue caption="Closing Balance" value="TBD" />
       </CaptionedFrame>
+      <Stack direction="row" spacing={10}>
+        <Stack spacing={2} sx={{ width: "100%" }}>
+          <Typography variant="h6">Funds</Typography>
+          <SearchBar paramName="fundSearch" />
+          <FundListFrame
+            data={fundData.items}
+            totalCount={fundData.totalCount}
+          />
+        </Stack>
+        <Stack spacing={2} sx={{ width: "100%" }}>
+          <Typography variant="h6">Accounts</Typography>
+          <SearchBar paramName="accountSearch" />
+          <AccountListFrame
+            data={accountData.items}
+            totalCount={accountData.totalCount}
+          />
+        </Stack>
+        <Stack spacing={2} sx={{ width: "100%" }}>
+          <Typography variant="h6">Transactions</Typography>
+          <SearchBar paramName="transactionSearch" />
+          <TransactionListFrame
+            data={transactionData.items}
+            totalCount={transactionData.totalCount}
+          />
+        </Stack>
+      </Stack>
     </Stack>
   );
 };

@@ -96,14 +96,6 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
         {
             query += $" order by Name desc";
         }
-        else if (request.Sort == AccountingPeriodFundSortOrder.Description)
-        {
-            query += $" order by Description asc, Name asc";
-        }
-        else if (request.Sort == AccountingPeriodFundSortOrder.DescriptionDescending)
-        {
-            query += $" order by Description desc, Name asc";
-        }
 
         var funds = databaseContext.Funds.FromSqlRaw(query).ToList();
         return new PaginatedCollection<Fund>
