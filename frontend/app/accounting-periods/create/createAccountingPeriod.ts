@@ -1,51 +1,33 @@
 "use server";
 
 import type { CreateAccountingPeriodRequest } from "@/data/accountingPeriodTypes";
-import type StateElement from "@/framework/forms/StateElement";
 import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/data/getApiClient";
 import { isApiError } from "@/data/apiError";
 import nameof from "@/data/nameof";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 
 /**
  * Interface representing the state of creating an accounting period.
  */
 interface ActionState {
   readonly errorTitle?: string | null;
+  readonly yearErrors?: string | null;
+  readonly monthErrors?: string | null;
   readonly unmappedErrors?: string | null;
-  readonly year?: StateElement<number | null>;
-  readonly month?: StateElement<number | null>;
 }
-
-/**
- * Schema for validation of the form data when creating a new accounting period.
- */
-const FormSchema = z.object({
-  year: z.number(),
-  month: z.number(),
-});
 
 /**
  * Server action that creates a new accounting period.
  */
 const createAccountingPeriod = async function (
   _: ActionState,
-  formData: FormData,
+  request: CreateAccountingPeriodRequest,
 ): Promise<ActionState> {
-  const { year, month } = FormSchema.parse({
-    year: Number(formData.get("year")),
-    month: Number(formData.get("month")),
-  });
-
   const client = getApiClient();
   const { error } = await client.POST("/accounting-periods", {
-    body: {
-      year,
-      month,
-    },
+    body: request,
   });
   if (error) {
     if (isApiError(error)) {
@@ -72,14 +54,8 @@ const createAccountingPeriod = async function (
         unmappedErrors: formatErrors(
           unmappedErrors.filter((e): e is string => e !== null),
         ),
-        year: {
-          value: year,
-          errorMessage: yearErrorMessage,
-        },
-        month: {
-          value: month,
-          errorMessage: monthErrorMessage,
-        },
+        yearErrors: yearErrorMessage,
+        monthErrors: monthErrorMessage,
       };
     }
     throw new Error("An unexpected error occurred", { cause: error });

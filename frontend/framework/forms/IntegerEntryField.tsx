@@ -5,9 +5,9 @@ import { TextField } from "@mui/material";
  * Props for the IntegerEntryField component.
  */
 interface IntegerEntryFieldProps {
-  readonly name: string;
   readonly label: string;
-  readonly defaultValue: number | null;
+  readonly value: number | null;
+  readonly setValue: (value: number | null) => void;
   readonly errorMessage?: string | null;
 }
 
@@ -15,17 +15,16 @@ interface IntegerEntryFieldProps {
  * Component the presents the user with an entry field where they can enter integer values.
  */
 const IntegerEntryField = function ({
-  name,
   label,
-  defaultValue,
+  value,
+  setValue,
   errorMessage,
 }: IntegerEntryFieldProps): JSX.Element {
   return (
     <TextField
-      name={name}
       label={label}
       variant="outlined"
-      defaultValue={defaultValue}
+      value={value ?? ""}
       error={(errorMessage ?? null) !== null}
       helperText={errorMessage}
       slotProps={{
@@ -35,6 +34,11 @@ const IntegerEntryField = function ({
         htmlInput: {
           pattern: "[0-9]*",
         },
+      }}
+      onChange={(e) => {
+        const newValue =
+          e.target.value === "" ? null : parseInt(e.target.value, 10);
+        setValue(newValue);
       }}
     />
   );
