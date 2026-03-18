@@ -9,9 +9,9 @@ import { useState } from "react";
  * Props for the DateEntryField component.
  */
 interface DateEntryFieldProps {
-  readonly name: string;
   readonly label: string;
-  readonly defaultValue: Dayjs | null;
+  readonly value: Dayjs | null;
+  readonly setValue?: ((newValue: Dayjs | null) => void) | null;
   readonly errorMessage?: string | null;
   readonly minDate?: Dayjs | null;
   readonly maxDate?: Dayjs | null;
@@ -21,9 +21,9 @@ interface DateEntryFieldProps {
  * Component that presents the user with an entry field where they can enter date values.
  */
 const DateEntryField = function ({
-  name,
   label,
-  defaultValue,
+  value,
+  setValue = null,
   errorMessage = null,
   minDate = null,
   maxDate = null,
@@ -34,11 +34,12 @@ const DateEntryField = function ({
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <DatePicker
-        name={name}
         label={label}
-        defaultValue={defaultValue}
+        value={value}
+        readOnly={setValue === null}
+        onChange={(newValue: Dayjs | null) => setValue?.(newValue)}
         minDate={minDate ?? dayjs("1900-01-01")}
-        maxDate={maxDate ?? dayjs("9999-12-31")}
+        maxDate={maxDate ?? dayjs("2100-12-31")}
         onError={(internalError) => {
           setInternalErrorMessage(
             internalError === "maxDate" || internalError === "minDate"
