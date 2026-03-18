@@ -1,6 +1,6 @@
 "use server";
 
-import type { CreateFundRequest } from "@/data/fundTypes";
+import type { CreateAccountRequest } from "@/data/accountTypes";
 import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/data/getApiClient";
 import { isApiError } from "@/data/apiError";
@@ -9,48 +9,56 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
- * Interface representing the state of creating a fund.
+ * Interface representing the state of creating an account.
  */
 interface ActionState {
   readonly errorTitle?: string | null;
   readonly nameErrors?: string | null;
-  readonly descriptionErrors?: string | null;
+  readonly typeErrors?: string | null;
   readonly dateErrors?: string | null;
+  readonly amountErrors?: string | null;
   readonly unmappedErrors?: string | null;
 }
 
 /**
- * Server action that creates a new fund.
+ * Server action that creates a new account.
  */
-const createFund = async function (
+const createAccount = async function (
   _: ActionState,
-  request: CreateFundRequest,
+  request: CreateAccountRequest,
 ): Promise<ActionState> {
   const client = getApiClient();
-  const { error } = await client.POST("/funds", {
+  const { error } = await client.POST("/accounts", {
     body: request,
   });
   if (error) {
     if (isApiError(error)) {
       let nameErrorMessage = null;
-      let descriptionErrorMessage = null;
+      let typeErrorMessage = null;
       let dateErrorMessage = null;
+      let amountErrorMessage = null;
       const unmappedErrors: (string | null)[] = [];
       for (const key of Object.keys(error.errors ?? {})) {
         if (
-          key.toUpperCase() === nameof<CreateFundRequest>("name").toUpperCase()
+          key.toUpperCase() ===
+          nameof<CreateAccountRequest>("name").toUpperCase()
         ) {
           nameErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else if (
           key.toUpperCase() ===
-          nameof<CreateFundRequest>("description").toUpperCase()
+          nameof<CreateAccountRequest>("type").toUpperCase()
         ) {
-          descriptionErrorMessage = formatErrors(error.errors?.[key] ?? null);
+          typeErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else if (
           key.toUpperCase() ===
-          nameof<CreateFundRequest>("addDate").toUpperCase()
+          nameof<CreateAccountRequest>("addDate").toUpperCase()
         ) {
           dateErrorMessage = formatErrors(error.errors?.[key] ?? null);
+        } else if (
+          key.toUpperCase() ===
+          nameof<CreateAccountRequest>("initialFundAmounts").toUpperCase()
+        ) {
+          amountErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else {
           unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
         }
@@ -58,11 +66,10 @@ const createFund = async function (
       return {
         errorTitle: error.title ?? null,
         nameErrors: nameErrorMessage,
-        descriptionErrors: descriptionErrorMessage,
+        typeErrors: typeErrorMessage,
         dateErrors: dateErrorMessage,
-        unmappedErrors: formatErrors(
-          unmappedErrors.filter((e): e is string => e !== null),
-        ),
+        amountErrors: amountErrorMessage,
+        unmappedErrors: unmappedErrors.join(", ") || null,
       };
     }
     throw new Error("An unexpected error occurred", { cause: error });
@@ -72,4 +79,4 @@ const createFund = async function (
   redirect(`/accounting-periods/${request.accountingPeriodId}`);
 };
 
-export default createFund;
+export default createAccount;

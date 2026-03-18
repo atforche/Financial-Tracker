@@ -37,13 +37,13 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
     {
         string query = """
                         select Funds.* from Funds 
-                        left join FundBalanceHistory on Funds.Id = FundBalanceHistory.FundId 
-                            and FundBalanceHistory.Date = (select max(Date) from FundBalanceHistory where FundBalanceHistory.FundId = Funds.Id)
-                            and FundBalanceHistory.Sequence = (select max(Sequence) from FundBalanceHistory where FundBalanceHistory.FundId = Funds.Id and FundBalanceHistory.Date = (select max(Date) from FundBalanceHistory where FundBalanceHistory.FundId = Funds.Id))";
+                        left join FundBalanceHistories on Funds.Id = FundBalanceHistories.FundId 
+                            and FundBalanceHistories.Date = (select max(Date) from FundBalanceHistories where FundBalanceHistories.FundId = Funds.Id)
+                            and FundBalanceHistories.Sequence = (select max(Sequence) from FundBalanceHistories where FundBalanceHistories.FundId = Funds.Id and FundBalanceHistories.Date = (select max(Date) from FundBalanceHistories where FundBalanceHistories.FundId = Funds.Id))
                         """;
         if (request.Search != null)
         {
-            query += $" where Funds.Name like '%{request.Search}%' or Funds.Description like '%{request.Search}%' or FundBalanceHistory.PostedBalance like '%{request.Search}%'";
+            query += $" where Funds.Name like '%{request.Search}%' or Funds.Description like '%{request.Search}%' or FundBalanceHistories.PostedBalance like '%{request.Search}%'";
         }
         if (request.Sort is null or FundSortOrder.Name)
         {
@@ -63,11 +63,11 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
         }
         else if (request.Sort == FundSortOrder.Balance)
         {
-            query += $" order by FundBalanceHistory.PostedBalance asc, Funds.Name asc";
+            query += $" order by FundBalanceHistories.PostedBalance asc, Funds.Name asc";
         }
         else if (request.Sort == FundSortOrder.BalanceDescending)
         {
-            query += $" order by FundBalanceHistory.PostedBalance desc, Funds.Name asc";
+            query += $" order by FundBalanceHistories.PostedBalance desc, Funds.Name asc";
         }
 
         var funds = databaseContext.Funds.FromSqlRaw(query).ToList();

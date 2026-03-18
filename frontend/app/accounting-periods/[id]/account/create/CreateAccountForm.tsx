@@ -6,32 +6,42 @@ import {
   getMinimumDate,
 } from "@/data/accountingPeriodTypes";
 import { Button, DialogActions, Stack } from "@mui/material";
+import type { FundAmount, FundIdentifier } from "@/data/fundTypes";
 import { type JSX, startTransition, useActionState, useState } from "react";
+import dayjs, { type Dayjs } from "dayjs";
+import { AccountType } from "@/data/accountTypes";
+import AccountTypeEntryField from "@/framework/forms/AccountTypeEntryField";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import DateEntryField from "@/framework/forms/DateEntryField";
-import type { Dayjs } from "dayjs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import FundAmountCollectionEntryFrame from "@/framework/forms/FundAmountCollectionEntryFrame";
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import createFund from "@/app/accounting-periods/[id]/fund/create/createFund";
+import createAccount from "@/app/accounting-periods/[id]/account/create/createAccount";
 
 /**
- * Props for the CreateFundForm component.
+ * Props for the CreateAccountForm component.
  */
-interface CreateFundFormProps {
+interface CreateAccountFormProps {
   readonly accountingPeriod: AccountingPeriod;
+  readonly funds: FundIdentifier[];
 }
 
 /**
- * Component that displays the form for creating a fund.
+ * Component that displays the form for creating an account.
  */
-const CreateFundForm = function ({
+const CreateAccountForm = function ({
   accountingPeriod,
-}: CreateFundFormProps): JSX.Element {
+  funds,
+}: CreateAccountFormProps): JSX.Element {
   const [name, setName] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
+  const [type, setType] = useState<AccountType | null>(null);
   const [addDate, setAddDate] = useState<Dayjs | null>(null);
-  const [state, action, pending] = useActionState(createFund, {});
+  const [fundAmounts, setFundAmounts] = useState<FundAmount[]>([]);
+
+  const [state, action, pending] = useActionState(createAccount, {});
+
+  const defaultAddDate = dayjs(accountingPeriod.name, "MMMM YYYY");
 
   return (
     <Stack spacing={2}>
@@ -43,8 +53,8 @@ const CreateFundForm = function ({
             href: `/accounting-periods/${accountingPeriod.id}`,
           },
           {
-            label: "Create Fund",
-            href: `/accounting-periods/${accountingPeriod.id}/fund/create`,
+            label: "Create Account",
+            href: `/accounting-periods/${accountingPeriod.id}/account/create`,
           },
         ]}
       />
@@ -55,19 +65,20 @@ const CreateFundForm = function ({
           setValue={setName}
           errorMessage={state.nameErrors ?? null}
         />
-        <StringEntryField
-          label="Description"
-          value={description}
-          setValue={setDescription}
-          errorMessage={state.descriptionErrors ?? null}
-        />
+        <AccountTypeEntryField label="Type" value={type} setValue={setType} />
         <DateEntryField
-          label="Add Date"
-          value={addDate}
+          label="Date Opened"
+          value={addDate ?? defaultAddDate}
           setValue={setAddDate}
           errorMessage={state.dateErrors ?? null}
           minDate={getMinimumDate(accountingPeriod)}
           maxDate={getMaximumDate(accountingPeriod)}
+        />
+        <FundAmountCollectionEntryFrame
+          label="Opening Balance"
+          funds={funds}
+          value={fundAmounts}
+          setValue={setFundAmounts}
         />
         <DialogActions>
           <Link href={`/accounting-periods/${accountingPeriod.id}`}>
@@ -76,14 +87,17 @@ const CreateFundForm = function ({
           <Button
             variant="contained"
             loading={pending}
-            disabled={name === "" || description === "" || addDate === null}
+            disabled={name === "" || type === null}
             onClick={() => {
               startTransition(() => {
                 action({
                   name,
-                  description,
-                  addDate: addDate?.format("YYYY-MM-DD") ?? "",
+                  type: type ?? AccountType.Standard,
                   accountingPeriodId: accountingPeriod.id,
+                  addDate:
+                    addDate?.format("YYYY-MM-DD") ??
+                    defaultAddDate.format("YYYY-MM-DD"),
+                  initialFundAmounts: fundAmounts,
                 });
               });
             }}
@@ -100,4 +114,4 @@ const CreateFundForm = function ({
   );
 };
 
-export default CreateFundForm;
+export default CreateAccountForm;

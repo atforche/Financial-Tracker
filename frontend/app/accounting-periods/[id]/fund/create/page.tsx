@@ -1,4 +1,4 @@
-import CreateAccountingPeriodFundForm from "@/app/accounting-periods/[id]/fund/create/CreateFundForm";
+import CreateFundForm from "@/app/accounting-periods/[id]/fund/create/CreateFundForm";
 import type { JSX } from "react";
 import getApiClient from "@/data/getApiClient";
 
@@ -26,7 +26,7 @@ const Page = async function (props: {
     );
   }
 
-  return <CreateAccountingPeriodFundForm accountingPeriod={data} />;
+  return <CreateFundForm accountingPeriod={data} />;
 };
 
 export default Page;
