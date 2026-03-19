@@ -70,7 +70,10 @@ const CreateFundForm = function ({
           maxDate={getMaximumDate(accountingPeriod)}
         />
         <DialogActions>
-          <Link href={`/accounting-periods/${accountingPeriod.id}`}>
+          <Link
+            href={`/accounting-periods/${accountingPeriod.id}`}
+            tabIndex={-1}
+          >
             <Button variant="outlined">Cancel</Button>
           </Link>
           <Button

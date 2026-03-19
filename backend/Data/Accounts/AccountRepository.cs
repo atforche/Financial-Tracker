@@ -38,13 +38,13 @@ public class AccountRepository(DatabaseContext databaseContext) : IAccountReposi
     {
         string query = """
                         select Accounts.* from Accounts 
-                        left join AccountBalanceHistory on Accounts.Id = AccountBalanceHistory.AccountId 
-                            and AccountBalanceHistory.Date = (select max(Date) from AccountBalanceHistory where AccountBalanceHistory.AccountId = Accounts.Id)
-                            and AccountBalanceHistory.Sequence = (select max(Sequence) from AccountBalanceHistory where AccountBalanceHistory.AccountId = Accounts.Id and AccountBalanceHistory.Date = (select max(Date) from AccountBalanceHistory where AccountBalanceHistory.AccountId = Accounts.Id))";
+                        left join AccountBalanceHistories on Accounts.Id = AccountBalanceHistories.AccountId 
+                            and AccountBalanceHistories.Date = (select max(Date) from AccountBalanceHistories where AccountBalanceHistories.AccountId = Accounts.Id)
+                            and AccountBalanceHistories.Sequence = (select max(Sequence) from AccountBalanceHistories where AccountBalanceHistories.AccountId = Accounts.Id and AccountBalanceHistories.Date = (select max(Date) from AccountBalanceHistories where AccountBalanceHistories.AccountId = Accounts.Id))
                         """;
         if (request.Search != null)
         {
-            query += $" where Accounts.Name like '%{request.Search}%' or Accounts.Type like '%{request.Search}%' or AccountBalanceHistory.PostedBalance like '%{request.Search}%' or AccountBalanceHistory.AvailableToSpend like '%{request.Search}%'";
+            query += $" where Accounts.Name like '%{request.Search}%' or Accounts.Type like '%{request.Search}%' or AccountBalanceHistories.PostedBalance like '%{request.Search}%' or AccountBalanceHistories.AvailableToSpend like '%{request.Search}%'";
         }
         if (request.Sort is null or AccountSortOrder.Name)
         {
@@ -64,19 +64,19 @@ public class AccountRepository(DatabaseContext databaseContext) : IAccountReposi
         }
         else if (request.Sort == AccountSortOrder.PostedBalance)
         {
-            query += $" order by AccountBalanceHistory.PostedBalance asc, Accounts.Name asc";
+            query += $" order by AccountBalanceHistories.PostedBalance asc, Accounts.Name asc";
         }
         else if (request.Sort == AccountSortOrder.PostedBalanceDescending)
         {
-            query += $" order by AccountBalanceHistory.PostedBalance desc, Accounts.Name asc";
+            query += $" order by AccountBalanceHistories.PostedBalance desc, Accounts.Name asc";
         }
         else if (request.Sort == AccountSortOrder.AvailableToSpend)
         {
-            query += $" order by AccountBalanceHistory.AvailableToSpend asc, Accounts.Name asc";
+            query += $" order by AccountBalanceHistories.AvailableToSpend asc, Accounts.Name asc";
         }
         else if (request.Sort == AccountSortOrder.AvailableToSpendDescending)
         {
-            query += $" order by AccountBalanceHistory.AvailableToSpend desc, Accounts.Name asc";
+            query += $" order by AccountBalanceHistories.AvailableToSpend desc, Accounts.Name asc";
         }
 
         var accounts = databaseContext.Accounts.FromSqlRaw(query).ToList();

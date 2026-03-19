@@ -72,6 +72,7 @@ const TransactionListFrame = function ({
           setSort(null);
         }
       },
+      minWidth: 125,
     },
     {
       name: "location",

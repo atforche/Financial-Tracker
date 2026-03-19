@@ -27,6 +27,7 @@ const ColumnHeader = function <T>({
       align={column.alignment ?? "left"}
       sx={{
         maxWidth: column.maxWidth ?? defaultColumnWidth,
+        minWidth: column.minWidth,
         backgroundColor: "primary.main",
         color: "white",
       }}

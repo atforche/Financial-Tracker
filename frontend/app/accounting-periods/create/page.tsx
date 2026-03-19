@@ -38,7 +38,7 @@ const Page = function (): JSX.Element {
           errorMessage={state.monthErrors ?? null}
         />
         <DialogActions>
-          <Link href="/accounting-periods">
+          <Link href="/accounting-periods" tabIndex={-1}>
             <Button variant="outlined">Cancel</Button>
           </Link>
           <Button

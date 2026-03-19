@@ -13,6 +13,7 @@ interface ColumnDefinition<T> {
   readonly onSort?: (sort: ColumnSortType | null) => void;
   readonly alignment?: "center" | "left" | "right";
   readonly maxWidth?: number;
+  readonly minWidth?: number;
 }
 
 export default ColumnDefinition;

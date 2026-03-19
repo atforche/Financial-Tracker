@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
@@ -60,7 +61,7 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
                         select Transactions.* from Transactions
                         left join Accounts as DebitAccount on Transactions.DebitAccount_AccountId = DebitAccount.Id
                         left join Accounts as CreditAccount on Transactions.CreditAccount_AccountId = CreditAccount.Id
-                        where Transactions.AccountingPeriodId = '{accountingPeriodId.Value}'
+                        where Transactions.AccountingPeriodId = '{accountingPeriodId.Value.ToString().ToUpper(CultureInfo.InvariantCulture)}'
                         """;
         if (request.Search != null)
         {

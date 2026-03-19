@@ -81,7 +81,10 @@ const CreateAccountForm = function ({
           setValue={setFundAmounts}
         />
         <DialogActions>
-          <Link href={`/accounting-periods/${accountingPeriod.id}`}>
+          <Link
+            href={`/accounting-periods/${accountingPeriod.id}`}
+            tabIndex={-1}
+          >
             <Button variant="outlined">Cancel</Button>
           </Link>
           <Button
