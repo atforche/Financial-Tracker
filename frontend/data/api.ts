@@ -1597,8 +1597,6 @@ export enum AccountingPeriodAccountSortOrderModel {
 export enum AccountingPeriodFundSortOrderModel {
     Name = "Name",
     NameDescending = "NameDescending",
-    Description = "Description",
-    DescriptionDescending = "DescriptionDescending",
     OpeningBalance = "OpeningBalance",
     OpeningBalanceDescending = "OpeningBalanceDescending",
     ClosingBalance = "ClosingBalance",

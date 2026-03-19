@@ -40,10 +40,15 @@ public class Transaction : Entity<TransactionId>
     /// </summary>
     public string Description { get; internal set; }
 
+    // TODO: denormalize this property into the Transactions table in the database to make searching and sorting by amount more efficient
     /// <summary>
     /// Amount for this Transaction
     /// </summary>
-    public decimal Amount => DebitAccount?.FundAmounts.Sum(fundAmount => fundAmount.Amount) ?? CreditAccount?.FundAmounts.Sum(fundAmount => fundAmount.Amount) ?? 0m;
+    public decimal Amount
+    {
+        get => DebitAccount?.FundAmounts.Sum(fundAmount => fundAmount.Amount) ?? CreditAccount?.FundAmounts.Sum(fundAmount => fundAmount.Amount) ?? 0m;
+        internal set { }
+    }
 
     /// <summary>
     /// Debit Account for this Transaction

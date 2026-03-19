@@ -1,8 +1,8 @@
 using Data;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Funds;
 using Domain.Exceptions;
+using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Models.Funds;

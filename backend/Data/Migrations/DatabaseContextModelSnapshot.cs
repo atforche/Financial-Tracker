@@ -162,6 +162,9 @@ namespace Data.Migrations
                     b.Property<Guid>("AccountingPeriodId")
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateOnly>("Date")
                         .HasColumnType("TEXT");
 

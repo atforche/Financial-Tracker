@@ -10,12 +10,28 @@ import TransactionListFrame from "@/app/accounting-periods/[id]/TransactionListF
 import getApiClient from "@/data/getApiClient";
 
 /**
+ * Props for the Page component.
+ */
+interface PageProps {
+  readonly params: Promise<{
+    id: string;
+  }>;
+  readonly searchParams: Promise<{
+    fundSearch?: string;
+    accountSearch?: string;
+    transactionSearch?: string;
+  }>;
+}
+
+/**
  * Component that displays the view for a single accounting period.
  */
-const AccountingPeriodView = async function (props: {
-  readonly params: Promise<{ id: string }>;
-}): Promise<JSX.Element> {
-  const { id } = await props.params;
+const Page = async function ({
+  params,
+  searchParams,
+}: PageProps): Promise<JSX.Element> {
+  const { id } = await params;
+  const { fundSearch, accountSearch, transactionSearch } = await searchParams;
 
   const apiClient = getApiClient();
   const accountingPeriodPromise = apiClient.GET(
@@ -35,6 +51,9 @@ const AccountingPeriodView = async function (props: {
         path: {
           accountingPeriodId: id,
         },
+        query: {
+          Search: fundSearch ?? "",
+        },
       },
     },
   );
@@ -45,6 +64,9 @@ const AccountingPeriodView = async function (props: {
         path: {
           accountingPeriodId: id,
         },
+        query: {
+          Search: accountSearch ?? "",
+        },
       },
     },
   );
@@ -54,6 +76,9 @@ const AccountingPeriodView = async function (props: {
       params: {
         path: {
           accountingPeriodId: id,
+        },
+        query: {
+          Search: transactionSearch ?? "",
         },
       },
     },
@@ -124,4 +149,4 @@ const AccountingPeriodView = async function (props: {
   );
 };
 
-export default AccountingPeriodView;
+export default Page;

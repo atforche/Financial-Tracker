@@ -63,15 +63,15 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
                         left join Accounts as CreditAccount on Transactions.CreditAccount_AccountId = CreditAccount.Id
                         where Transactions.AccountingPeriodId = '{accountingPeriodId.Value.ToString().ToUpper(CultureInfo.InvariantCulture)}'
                         """;
-        if (request.Search != null)
+        if (request.Search is not null and not "")
         {
             query += $"""
-                        and (Transaction.Date like '%{request.Search}%' or
+                        and (Transactions.Date like '%{request.Search}%' or
                             Transactions.Description like '%{request.Search}%' or 
                             Transactions.Location like '%{request.Search}%' or
                             DebitAccount.Name like '%{request.Search}%' or 
                             CreditAccount.Name like '%{request.Search}%' or 
-                            Transactions.Amount like '%{request.Search}%')";
+                            Transactions.Amount like '%{request.Search}%')
                         """;
         }
         if (request.Sort is null or AccountingPeriodTransactionSortOrder.DateDescending)

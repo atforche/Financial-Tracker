@@ -56,6 +56,7 @@ CREATE TABLE "Transactions" (
     "Sequence" INTEGER NOT NULL,
     "Location" TEXT NOT NULL,
     "Description" TEXT NOT NULL,
+    "Amount" TEXT NOT NULL,
     "DebitAccount_AccountId" TEXT NULL,
     "DebitAccount_PostedDate" TEXT NULL,
     "CreditAccount_AccountId" TEXT NULL,
@@ -158,7 +159,7 @@ CREATE INDEX "IX_Transactions_CreditAccount_AccountId" ON "Transactions" ("Credi
 CREATE INDEX "IX_Transactions_DebitAccount_AccountId" ON "Transactions" ("DebitAccount_AccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260315214921_InitialCreate', '10.0.2');
+VALUES ('20260319215034_InitialCreate', '10.0.2');
 
 COMMIT;
 

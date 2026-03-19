@@ -106,6 +106,7 @@ namespace Data.Migrations
                     Sequence = table.Column<int>(type: "INTEGER", nullable: false),
                     Location = table.Column<string>(type: "TEXT", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
+                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
                     DebitAccount_AccountId = table.Column<Guid>(type: "TEXT", nullable: true),
                     DebitAccount_PostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     CreditAccount_AccountId = table.Column<Guid>(type: "TEXT", nullable: true),
