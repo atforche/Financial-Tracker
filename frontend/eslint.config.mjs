@@ -61,6 +61,7 @@ const eslintConfig = defineConfig([
       "prefer-named-capture-group": "off",
       "sort-keys": ["off"],
       "no-nested-ternary": "off",
+      "no-negated-condition": "off",
 
       // import rules
       "import/no-deprecated": "error",

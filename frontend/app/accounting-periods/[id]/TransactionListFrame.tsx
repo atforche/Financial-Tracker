@@ -97,9 +97,13 @@ const TransactionListFrame = function ({
     },
     {
       name: "debitAccount",
-      headerContent: "Debit Account",
+      headerContent: "Debit From",
       getBodyContent: (transaction: Transaction) =>
-        transaction.debitAccount?.accountName ?? "",
+        transaction.debitAccount ? (
+          <span style={{ color: "red" }}>
+            {transaction.debitAccount.accountName}
+          </span>
+        ) : null,
       sortType:
         currentSort === AccountingPeriodTransactionSortOrder.DebitAccount
           ? ColumnSortType.Ascending
@@ -116,13 +120,17 @@ const TransactionListFrame = function ({
           setSort(null);
         }
       },
-      maxWidth: 125,
+      minWidth: 125,
     },
     {
       name: "creditAccount",
-      headerContent: "Credit Account",
+      headerContent: "Credit To",
       getBodyContent: (transaction: Transaction) =>
-        transaction.creditAccount?.accountName ?? "",
+        transaction.creditAccount ? (
+          <span style={{ color: "green" }}>
+            {transaction.creditAccount.accountName}
+          </span>
+        ) : null,
       sortType:
         currentSort === AccountingPeriodTransactionSortOrder.CreditAccount
           ? ColumnSortType.Ascending
@@ -139,7 +147,7 @@ const TransactionListFrame = function ({
           setSort(null);
         }
       },
-      maxWidth: 125,
+      minWidth: 125,
     },
     {
       name: "amount",
