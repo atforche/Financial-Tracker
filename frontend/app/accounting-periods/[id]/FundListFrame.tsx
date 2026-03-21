@@ -34,16 +34,16 @@ const FundListFrame = function ({
   const setSort = function (sort: AccountingPeriodFundSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete("sort");
+      params.delete("fundSort");
     } else {
-      params.set("sort", sort);
+      params.set("fundSort", sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     AccountingPeriodFundSortOrder,
-    searchParams.get("sort") ?? "",
+    searchParams.get("fundSort") ?? "",
   );
 
   const columns: ColumnDefinition<Fund>[] = [

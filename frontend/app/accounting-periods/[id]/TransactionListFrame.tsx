@@ -40,16 +40,16 @@ const TransactionListFrame = function ({
   ): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete("sort");
+      params.delete("transactionSort");
     } else {
-      params.set("sort", sort);
+      params.set("transactionSort", sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     AccountingPeriodTransactionSortOrder,
-    searchParams.get("sort") ?? "",
+    searchParams.get("transactionSort") ?? "",
   );
 
   const columns: ColumnDefinition<Transaction>[] = [

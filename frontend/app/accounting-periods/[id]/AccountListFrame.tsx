@@ -39,16 +39,16 @@ const AccountListFrame = function ({
   ): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete("sort");
+      params.delete("accountSort");
     } else {
-      params.set("sort", sort);
+      params.set("accountSort", sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     AccountingPeriodAccountSortOrder,
-    searchParams.get("sort") ?? "",
+    searchParams.get("accountSort") ?? "",
   );
 
   const columns: ColumnDefinition<Account>[] = [

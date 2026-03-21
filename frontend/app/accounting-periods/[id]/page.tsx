@@ -1,5 +1,8 @@
 import { Stack, Typography } from "@mui/material";
 import AccountListFrame from "@/app/accounting-periods/[id]/AccountListFrame";
+import type { AccountingPeriodAccountSortOrder } from "@/data/accountTypes";
+import type { AccountingPeriodFundSortOrder } from "@/data/fundTypes";
+import type { AccountingPeriodTransactionSortOrder } from "@/data/transactionTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
@@ -18,8 +21,11 @@ interface PageProps {
   }>;
   readonly searchParams: Promise<{
     fundSearch?: string;
+    fundSort?: AccountingPeriodFundSortOrder;
     accountSearch?: string;
+    accountSort?: AccountingPeriodAccountSortOrder;
     transactionSearch?: string;
+    transactionSort?: AccountingPeriodTransactionSortOrder;
   }>;
 }
 
@@ -31,7 +37,14 @@ const Page = async function ({
   searchParams,
 }: PageProps): Promise<JSX.Element> {
   const { id } = await params;
-  const { fundSearch, accountSearch, transactionSearch } = await searchParams;
+  const {
+    fundSearch,
+    fundSort,
+    accountSearch,
+    accountSort,
+    transactionSearch,
+    transactionSort,
+  } = await searchParams;
 
   const apiClient = getApiClient();
   const accountingPeriodPromise = apiClient.GET(
@@ -53,6 +66,7 @@ const Page = async function ({
         },
         query: {
           Search: fundSearch ?? "",
+          Sort: fundSort ?? null,
         },
       },
     },
@@ -66,6 +80,7 @@ const Page = async function ({
         },
         query: {
           Search: accountSearch ?? "",
+          Sort: accountSort ?? null,
         },
       },
     },
@@ -79,6 +94,7 @@ const Page = async function ({
         },
         query: {
           Search: transactionSearch ?? "",
+          Sort: transactionSort ?? null,
         },
       },
     },
