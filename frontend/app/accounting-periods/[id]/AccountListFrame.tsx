@@ -5,6 +5,7 @@ import {
   AccountingPeriodAccountSortOrder,
 } from "@/data/accountTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -19,6 +20,7 @@ import tryParseEnum from "@/data/tryParseEnum";
  * Props for the AccountListFrame component.
  */
 interface AccountListFrameProps {
+  readonly accountingPeriod: AccountingPeriod;
   readonly data: Account[] | null;
   readonly totalCount: number | null;
 }
@@ -27,6 +29,7 @@ interface AccountListFrameProps {
  * Component that displays the list of accounts associated with an accounting period.
  */
 const AccountListFrame = function ({
+  accountingPeriod,
   data,
   totalCount,
 }: AccountListFrameProps): JSX.Element {
@@ -143,6 +146,7 @@ const AccountListFrame = function ({
           onClick={() => {
             router.push(`${pathname}/account/create`);
           }}
+          disabled={!accountingPeriod.isOpen}
         />
       ),
       getBodyContent: (account: Account) => (

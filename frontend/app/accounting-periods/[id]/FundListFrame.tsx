@@ -2,6 +2,7 @@
 
 import { AccountingPeriodFundSortOrder, type Fund } from "@/data/fundTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -16,6 +17,7 @@ import tryParseEnum from "@/data/tryParseEnum";
  * Props for the FundListFrame component.
  */
 interface FundListFrameProps {
+  readonly accountingPeriod: AccountingPeriod;
   readonly data: Fund[] | null;
   readonly totalCount: number | null;
 }
@@ -24,6 +26,7 @@ interface FundListFrameProps {
  * Component that displays the list of funds associated with an accounting period.
  */
 const FundListFrame = function ({
+  accountingPeriod,
   data,
   totalCount,
 }: FundListFrameProps): JSX.Element {
@@ -118,6 +121,7 @@ const FundListFrame = function ({
           onClick={() => {
             router.push(`${pathname}/fund/create`);
           }}
+          disabled={!accountingPeriod.isOpen}
         />
       ),
       getBodyContent: (fund: Fund) => (

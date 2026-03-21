@@ -8,17 +8,17 @@ interface ColumnHeaderButtonProps {
   readonly label: string;
   readonly icon: JSX.Element;
   readonly onClick: () => void;
+  readonly disabled?: boolean;
 }
 
 /**
  * Component that renders a button to be used in a column header.
- * @param props - Props for the ColumnHeaderButton component.
- * @returns JSX element representing the ColumnHeaderButton.
  */
 const ColumnHeaderButton = function ({
   label,
   icon,
   onClick,
+  disabled = false,
 }: ColumnHeaderButtonProps): JSX.Element {
   return (
     <Tooltip title={label}>
@@ -27,6 +27,7 @@ const ColumnHeaderButton = function ({
           color: "white",
         }}
         onClick={onClick}
+        disabled={disabled}
       >
         {icon}
       </IconButton>

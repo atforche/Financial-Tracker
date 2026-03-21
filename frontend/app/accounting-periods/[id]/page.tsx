@@ -140,6 +140,7 @@ const Page = async function ({
           <Typography variant="h6">Funds</Typography>
           <SearchBar paramName="fundSearch" />
           <FundListFrame
+            accountingPeriod={data}
             data={fundData.items}
             totalCount={fundData.totalCount}
           />
@@ -148,6 +149,7 @@ const Page = async function ({
           <Typography variant="h6">Accounts</Typography>
           <SearchBar paramName="accountSearch" />
           <AccountListFrame
+            accountingPeriod={data}
             data={accountData.items}
             totalCount={accountData.totalCount}
           />
@@ -156,6 +158,7 @@ const Page = async function ({
           <Typography variant="h6">Transactions</Typography>
           <SearchBar paramName="transactionSearch" />
           <TransactionListFrame
+            accountingPeriod={data}
             data={transactionData.items}
             totalCount={transactionData.totalCount}
           />

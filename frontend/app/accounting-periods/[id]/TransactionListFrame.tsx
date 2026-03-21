@@ -5,6 +5,7 @@ import {
   type Transaction,
 } from "@/data/transactionTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -20,6 +21,7 @@ import tryParseEnum from "@/data/tryParseEnum";
  * Props for the TransactionListFrame component.
  */
 interface TransactionListFrameProps {
+  readonly accountingPeriod: AccountingPeriod;
   readonly data: Transaction[] | null;
   readonly totalCount: number | null;
 }
@@ -28,6 +30,7 @@ interface TransactionListFrameProps {
  * Component that displays the list of transactions associated with an accounting period.
  */
 const TransactionListFrame = function ({
+  accountingPeriod,
   data,
   totalCount,
 }: TransactionListFrameProps): JSX.Element {
@@ -180,6 +183,7 @@ const TransactionListFrame = function ({
           onClick={() => {
             router.push(`${pathname}/transaction/create`);
           }}
+          disabled={!accountingPeriod.isOpen}
         />
       ),
       getBodyContent: (transaction: Transaction) => (
