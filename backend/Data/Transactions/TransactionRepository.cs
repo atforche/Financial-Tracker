@@ -74,48 +74,58 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
                             Transactions.Amount like '%{request.Search}%')
                         """;
         }
+
+        var transactionsQuery = databaseContext.Transactions.FromSqlRaw(query)
+            .LeftJoin(databaseContext.Accounts,
+                transaction => transaction.DebitAccount != null ? transaction.DebitAccount.AccountId : null,
+                account => account.Id,
+                (transaction, debitAccount) => new { Transaction = transaction, DebitAccountName = debitAccount != null ? debitAccount.Name : null })
+            .LeftJoin(databaseContext.Accounts,
+                transaction => transaction.Transaction.CreditAccount != null ? transaction.Transaction.CreditAccount.AccountId : null,
+                account => account.Id,
+                (transaction, creditAccount) => new { transaction.Transaction, transaction.DebitAccountName, CreditAccountName = creditAccount != null ? creditAccount.Name : null });
         if (request.Sort is null or AccountingPeriodTransactionSortOrder.DateDescending)
         {
-            query += $" order by Transactions.Date desc, Transactions.Sequence desc";
+            transactionsQuery = transactionsQuery.OrderByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
         }
         else if (request.Sort == AccountingPeriodTransactionSortOrder.Date)
         {
-            query += $" order by Transactions.Date asc, Transactions.Sequence asc";
+            transactionsQuery = transactionsQuery.OrderBy(t => t.Transaction.Date).ThenBy(t => t.Transaction.Sequence);
         }
         else if (request.Sort == AccountingPeriodTransactionSortOrder.Location)
         {
-            query += $" order by Transactions.Location asc, Transactions.Date desc, Transactions.Sequence desc";
+            transactionsQuery = transactionsQuery.OrderBy(t => t.Transaction.Location).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
         }
         else if (request.Sort == AccountingPeriodTransactionSortOrder.LocationDescending)
         {
-            query += $" order by Transactions.Location desc, Transactions.Date desc, Transactions.Sequence desc";
+            transactionsQuery = transactionsQuery.OrderByDescending(t => t.Transaction.Location).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
         }
         else if (request.Sort == AccountingPeriodTransactionSortOrder.DebitAccount)
         {
-            query += $" order by DebitAccount.Name asc, Transactions.Date desc, Transactions.Sequence desc";
+            transactionsQuery = transactionsQuery.OrderBy(t => t.DebitAccountName).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
         }
         else if (request.Sort == AccountingPeriodTransactionSortOrder.DebitAccountDescending)
         {
-            query += $" order by DebitAccount.Name desc, Transactions.Date desc, Transactions.Sequence desc";
+            transactionsQuery = transactionsQuery.OrderByDescending(t => t.DebitAccountName).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
         }
         else if (request.Sort == AccountingPeriodTransactionSortOrder.CreditAccount)
         {
-            query += $" order by CreditAccount.Name asc, Transactions.Date desc, Transactions.Sequence desc";
+            transactionsQuery = transactionsQuery.OrderBy(t => t.CreditAccountName).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
         }
         else if (request.Sort == AccountingPeriodTransactionSortOrder.CreditAccountDescending)
         {
-            query += $" order by CreditAccount.Name desc, Transactions.Date desc, Transactions.Sequence desc";
+            transactionsQuery = transactionsQuery.OrderByDescending(t => t.CreditAccountName).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
         }
         else if (request.Sort == AccountingPeriodTransactionSortOrder.Amount)
         {
-            query += $" order by Transactions.Amount asc, Transactions.Date desc, Transactions.Sequence desc";
+            transactionsQuery = transactionsQuery.OrderBy(t => t.Transaction.Amount).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
         }
         else if (request.Sort == AccountingPeriodTransactionSortOrder.AmountDescending)
         {
-            query += $" order by Transactions.Amount desc, Transactions.Date desc, Transactions.Sequence desc";
+            transactionsQuery = transactionsQuery.OrderByDescending(t => t.Transaction.Amount).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
         }
 
-        var transactions = databaseContext.Transactions.FromSqlRaw(query).ToList();
+        var transactions = transactionsQuery.ToList().Select(transaction => transaction.Transaction).ToList();
         return new PaginatedCollection<Transaction>
         {
             Items = GetPagedTransactions(transactions, request.Limit, request.Offset),
