@@ -8,7 +8,7 @@ import type { JSX } from "react";
 interface AccountTypeEntryFieldProps {
   readonly label: string;
   readonly value: AccountType | null;
-  readonly setValue?: ((newValue: AccountType | null) => void) | null;
+  readonly setValue: (newValue: AccountType | null) => void;
 }
 
 /**
@@ -17,7 +17,7 @@ interface AccountTypeEntryFieldProps {
 const AccountTypeEntryField = function ({
   label,
   value,
-  setValue = null,
+  setValue,
 }: AccountTypeEntryFieldProps): JSX.Element {
   return (
     <ComboBoxEntryField<AccountType>
@@ -29,13 +29,9 @@ const AccountTypeEntryField = function ({
       value={
         value === null ? { label: "", value: null } : { label: value, value }
       }
-      setValue={
-        setValue
-          ? (newValue): void => {
-              setValue(newValue.value);
-            }
-          : null
-      }
+      setValue={(newValue): void => {
+        setValue(newValue.value);
+      }}
     />
   );
 };

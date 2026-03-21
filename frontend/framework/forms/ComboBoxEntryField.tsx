@@ -1,10 +1,4 @@
-import {
-  Autocomplete,
-  Box,
-  CircularProgress,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Autocomplete, Box, TextField, Typography } from "@mui/material";
 import { type JSX, useRef, useState } from "react";
 
 /**
@@ -24,8 +18,7 @@ interface ComboBoxEntryFieldProps<T> {
   readonly label: string;
   readonly options: ComboBoxOption<T>[];
   readonly value: ComboBoxOption<T>;
-  readonly setValue?: ((newValue: ComboBoxOption<T>) => void) | null;
-  readonly loading?: boolean;
+  readonly setValue: (newValue: ComboBoxOption<T>) => void;
   readonly errorMessage?: string | null;
   readonly autoFocus?: boolean;
 }
@@ -39,17 +32,16 @@ const ComboBoxEntryField = function <T>({
   label,
   options,
   value,
-  setValue = null,
-  loading = false,
+  setValue,
   errorMessage = null,
   autoFocus = false,
 }: ComboBoxEntryFieldProps<T>): JSX.Element {
   const hint = useRef("");
+  const justSelected = useRef(false);
   const [inputValue, setInputValue] = useState(value.label);
   return (
     <Autocomplete
       className="combo-box-entry-field"
-      disabled={setValue === null}
       disableClearable
       options={options}
       inputValue={inputValue}
@@ -78,14 +70,6 @@ const ComboBoxEntryField = function <T>({
             slotProps={{
               input: {
                 ...params.InputProps,
-                endAdornment: (
-                  <>
-                    {loading ? (
-                      <CircularProgress color="inherit" size={20} />
-                    ) : null}
-                    {params.InputProps.endAdornment}
-                  </>
-                ),
               },
             }}
             onChange={(event) => {
@@ -104,9 +88,10 @@ const ComboBoxEntryField = function <T>({
           />
         </Box>
       )}
-      loading={loading}
       onChange={(_, newValue) => {
-        setValue?.(newValue);
+        justSelected.current = true;
+        setInputValue(newValue.label);
+        setValue(newValue);
       }}
       onKeyDown={(event) => {
         if (event.key === "Tab") {
@@ -116,14 +101,18 @@ const ComboBoxEntryField = function <T>({
             );
             if (matchingOption) {
               setInputValue(matchingOption.label);
-              setValue?.(matchingOption);
+              setValue(matchingOption);
             }
           }
         }
       }}
       onClose={() => {
         hint.current = "";
-        setInputValue(value.label);
+        if (justSelected.current) {
+          justSelected.current = false;
+        } else {
+          setInputValue(value.label);
+        }
       }}
     />
   );
