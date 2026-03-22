@@ -117,6 +117,7 @@ const AccountListFrame = function ({
           setSort(null);
         }
       },
+      minWidth: 125,
     },
     {
       name: "closingBalance",
@@ -139,6 +140,7 @@ const AccountListFrame = function ({
           setSort(null);
         }
       },
+      minWidth: 125,
     },
     {
       name: "actions",

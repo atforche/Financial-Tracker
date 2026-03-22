@@ -203,7 +203,8 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
                         select Transactions.* from Transactions
                         left join Accounts as DebitAccount on Transactions.DebitAccount_AccountId = DebitAccount.Id
                         left join Accounts as CreditAccount on Transactions.CreditAccount_AccountId = CreditAccount.Id
-                        where (DebitFundAmounts.FundId = '{fundId.Value}' or CreditFundAmounts.FundId = '{fundId.Value}')
+                        where (DebitFundAmounts.FundId = '{fundId.Value}' or CreditFundAmounts.FundId = '{fundId.Value}') 
+                            and Transactions.AccountingPeriodId = '{request.AccountingPeriodId?.Value.ToString().ToUpper(CultureInfo.InvariantCulture)}'
                         """;
         if (request.Search != null)
         {

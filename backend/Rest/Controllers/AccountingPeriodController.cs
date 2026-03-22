@@ -96,12 +96,12 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         .Select(accountingPeriodMapper.ToModel).ToList();
 
     /// <summary>
-    /// Retrieves the Funds for the Accounting Period that matches the provided ID
+    /// Retrieves the Funds for the Accounting Period that match the specified criteria
     /// </summary>
     [HttpGet("{accountingPeriodId}/funds")]
     [ProducesResponseType(typeof(CollectionModel<AccountingPeriodFundModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetFunds(Guid accountingPeriodId, [FromQuery] AccountingPeriodFundQueryParameterModel queryParameters)
+    public IActionResult GetManyFunds(Guid accountingPeriodId, [FromQuery] AccountingPeriodFundQueryParameterModel queryParameters)
     {
         Dictionary<string, string[]> errors = [];
         if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
@@ -138,12 +138,12 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     }
 
     /// <summary>
-    /// Retrieves the Accounts for the Accounting Period that matches the provided ID
+    /// Retrieves the Accounts for the Accounting Period that match the specified criteria
     /// </summary>
     [HttpGet("{accountingPeriodId}/accounts")]
     [ProducesResponseType(typeof(CollectionModel<AccountingPeriodAccountModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetAccounts(Guid accountingPeriodId, [FromQuery] AccountingPeriodAccountQueryParameterModel queryParameters)
+    public IActionResult GetManyAccounts(Guid accountingPeriodId, [FromQuery] AccountingPeriodAccountQueryParameterModel queryParameters)
     {
         Dictionary<string, string[]> errors = [];
         if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
@@ -180,12 +180,12 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     }
 
     /// <summary>
-    /// Retrieves the Transactions for the Accounting Period that matches the provided ID
+    /// Retrieves the Transactions for the Accounting Period that match the specified criteria
     /// </summary>
     [HttpGet("{accountingPeriodId}/transactions")]
     [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetTransactions(Guid accountingPeriodId, [FromQuery] AccountingPeriodTransactionQueryParameterModel queryParameters)
+    public IActionResult GetManyTransactions(Guid accountingPeriodId, [FromQuery] AccountingPeriodTransactionQueryParameterModel queryParameters)
     {
         Dictionary<string, string[]> errors = [];
         if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))

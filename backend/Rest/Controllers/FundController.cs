@@ -1,4 +1,5 @@
 using Data;
+using Data.AccountingPeriods;
 using Data.Funds;
 using Data.Transactions;
 using Domain.AccountingPeriods;
@@ -21,10 +22,12 @@ namespace Rest.Controllers;
 public sealed class FundController(
     UnitOfWork unitOfWork,
     FundRepository fundRepository,
+    AccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
     TransactionRepository transactionRepository,
     FundService fundService,
     AccountingPeriodMapper accountingPeriodMapper,
     FundMapper fundMapper,
+    AccountingPeriodFundMapper accountingPeriodFundMapper,
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
@@ -67,17 +70,65 @@ public sealed class FundController(
     }
 
     /// <summary>
-    /// Retrieves the Transactions for the Fund that matches the provided ID
+    /// Retrieves the Fund as it appeared in the provided Accounting Period
+    /// </summary>
+    [HttpGet("{fundId}/{accountingPeriodId}")]
+    [ProducesResponseType(typeof(AccountingPeriodFundModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetAccountingPeriodFund(Guid fundId, Guid accountingPeriodId)
+    {
+        Dictionary<string, string[]> errors = [];
+        if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
+        {
+            errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
+        }
+        if (!fundMapper.TryToDomain(fundId, out Fund? fund))
+        {
+            errors.Add(nameof(fundId), new[] { $"Fund with ID {fundId} not found." });
+        }
+        if (errors.Count > 0 || accountingPeriod == null || fund == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Accounting Period Fund.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        AccountingPeriodBalanceHistory? accountingPeriodBalanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
+        FundAccountingPeriodBalanceHistory? fundBalanceHistory = accountingPeriodBalanceHistory?.FundBalances.FirstOrDefault(fundHistory => fundHistory.Fund.Id == fund.Id);
+        if (fundBalanceHistory == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Accounting Period Fund.",
+                Errors = new Dictionary<string, string[]>
+                {
+                    { nameof(fundId), new[] { $"Fund with ID {fundId} not found for Accounting Period with ID {accountingPeriodId}." } }
+                },
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        return Ok(accountingPeriodFundMapper.ToModel(fundBalanceHistory));
+    }
+
+    /// <summary>
+    /// Retrieves the Transactions for the Fund that match the specified criteria
     /// </summary>
     [HttpGet("{fundId}/transactions")]
     [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetTransactions(Guid fundId, [FromQuery] FundTransactionQueryParameterModel queryParameters)
+    public IActionResult GetManyTransactions(Guid fundId, [FromQuery] FundTransactionQueryParameterModel queryParameters)
     {
         Dictionary<string, string[]> errors = [];
         if (!fundMapper.TryToDomain(fundId, out Fund? fund))
         {
             errors.Add(nameof(fundId), new[] { $"Fund with ID {fundId} not found." });
+        }
+        AccountingPeriodId? accountingPeriodId = null;
+        if (queryParameters.AccountingPeriodId != null && !accountingPeriodMapper.TryToDomain(queryParameters.AccountingPeriodId.Value, out AccountingPeriod? accountingPeriod))
+        {
+            errors.Add(nameof(queryParameters.AccountingPeriodId), new[] { $"Accounting Period with ID {queryParameters.AccountingPeriodId.Value} not found." });
         }
         FundTransactionSortOrder? fundTransactionSortOrder = null;
         if (queryParameters.Sort != null && !FundTransactionSortOrderMapper.TryToData(queryParameters.Sort.Value, out fundTransactionSortOrder))
@@ -96,6 +147,7 @@ public sealed class FundController(
 
         PaginatedCollection<Transaction> paginatedResults = transactionRepository.GetManyByFund(fund.Id, new GetFundTransactionsRequest
         {
+            AccountingPeriodId = accountingPeriodId,
             Search = queryParameters.Search,
             Sort = fundTransactionSortOrder,
             Limit = queryParameters.Limit,

@@ -1,3 +1,5 @@
+using Domain.AccountingPeriods;
+
 namespace Data.Transactions;
 
 /// <summary>
@@ -5,6 +7,11 @@ namespace Data.Transactions;
 /// </summary>
 public record GetFundTransactionsRequest
 {
+    /// <summary>
+    /// Accounting Period ID to filter the results by.
+    /// </summary>
+    public AccountingPeriodId? AccountingPeriodId { get; init; }
+
     /// <summary>
     /// Search to apply to the results
     /// </summary>
