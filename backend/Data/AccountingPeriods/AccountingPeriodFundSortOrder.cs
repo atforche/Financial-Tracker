@@ -1,4 +1,4 @@
-namespace Data.Funds;
+namespace Data.AccountingPeriods;
 
 /// <summary>
 /// Enum representing the different ways Funds within an Accounting Period can be sorted

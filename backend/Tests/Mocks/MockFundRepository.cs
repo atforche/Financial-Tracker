@@ -11,6 +11,9 @@ internal sealed class MockFundRepository : IFundRepository
     private readonly Dictionary<Guid, Fund> _funds = [];
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<Fund> GetAll() => _funds.Values.ToList();
+
+    /// <inheritdoc/>
     public Fund GetById(FundId id) => _funds[id.Value];
 
     /// <inheritdoc/>

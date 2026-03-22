@@ -9,6 +9,11 @@ import {
 type Fund = components["schemas"]["FundModel"];
 
 /**
+ * Type representing a Fund in the context of an Accounting Period.
+ */
+type AccountingPeriodFund = components["schemas"]["AccountingPeriodFundModel"];
+
+/**
  * Interface representing a Fund identifier with its ID and name.
  */
 interface FundIdentifier {
@@ -28,6 +33,7 @@ type FundAmount = components["schemas"]["FundAmountModel"];
 
 export {
   type Fund,
+  type AccountingPeriodFund,
   type FundIdentifier,
   type CreateFundRequest,
   type FundAmount,

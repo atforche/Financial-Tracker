@@ -7,9 +7,9 @@ import {
 } from "@/data/accountingPeriodTypes";
 import { Button, DialogActions, Stack } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
+import dayjs, { type Dayjs } from "dayjs";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import DateEntryField from "@/framework/forms/DateEntryField";
-import type { Dayjs } from "dayjs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
@@ -32,6 +32,8 @@ const CreateFundForm = function ({
   const [description, setDescription] = useState<string>("");
   const [addDate, setAddDate] = useState<Dayjs | null>(null);
   const [state, action, pending] = useActionState(createFund, {});
+
+  const defaultDate = dayjs(accountingPeriod.name, "MMMM YYYY");
 
   return (
     <Stack spacing={2}>
@@ -63,7 +65,7 @@ const CreateFundForm = function ({
         />
         <DateEntryField
           label="Add Date"
-          value={addDate}
+          value={addDate ?? defaultDate}
           setValue={setAddDate}
           errorMessage={state.dateErrors ?? null}
           minDate={getMinimumDate(accountingPeriod)}
@@ -79,13 +81,15 @@ const CreateFundForm = function ({
           <Button
             variant="contained"
             loading={pending}
-            disabled={name === "" || description === "" || addDate === null}
+            disabled={name === "" || description === ""}
             onClick={() => {
               startTransition(() => {
                 action({
                   name,
                   description,
-                  addDate: addDate?.format("YYYY-MM-DD") ?? "",
+                  addDate:
+                    addDate?.format("YYYY-MM-DD") ??
+                    defaultDate.format("YYYY-MM-DD"),
                   accountingPeriodId: accountingPeriod.id,
                 });
               });

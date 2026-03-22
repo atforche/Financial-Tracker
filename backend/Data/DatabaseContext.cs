@@ -27,6 +27,11 @@ public class DatabaseContext : DbContext
     internal DbSet<AccountingPeriod> AccountingPeriods { get; set; } = default!;
 
     /// <summary>
+    /// Collection of Accounting Period Balance Histories in the database
+    /// </summary>
+    internal DbSet<AccountingPeriodBalanceHistory> AccountingPeriodBalanceHistories { get; set; } = default!;
+
+    /// <summary>
     /// Collection of Funds in the database
     /// </summary>
     internal DbSet<Fund> Funds { get; set; } = default!;

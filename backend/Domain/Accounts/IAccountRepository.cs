@@ -8,6 +8,11 @@ namespace Domain.Accounts;
 public interface IAccountRepository
 {
     /// <summary>
+    /// Gets all Accounts in the repository.
+    /// </summary>
+    IReadOnlyCollection<Account> GetAll();
+
+    /// <summary>
     /// Gets the Account with the specified ID.
     /// </summary>
     Account GetById(AccountId id);

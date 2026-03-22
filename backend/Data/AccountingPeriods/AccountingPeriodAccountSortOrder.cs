@@ -1,4 +1,4 @@
-namespace Data.Accounts;
+namespace Data.AccountingPeriods;
 
 /// <summary>
 /// Enum representing the different ways Accounts within an Accounting Period can be sorted

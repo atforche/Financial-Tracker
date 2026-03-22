@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Data.Accounts;
+using Data.AccountingPeriods;
 using Models.AccountingPeriods;
 
 namespace Rest.Mappers;

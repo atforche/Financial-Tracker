@@ -10,6 +10,7 @@ import FundListFrame from "@/app/accounting-periods/[id]/FundListFrame";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import TransactionListFrame from "@/app/accounting-periods/[id]/TransactionListFrame";
+import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/data/getApiClient";
 
 /**
@@ -132,8 +133,14 @@ const Page = async function ({
       <CaptionedFrame caption="Details">
         <CaptionedValue caption="Name" value={data.name} />
         <CaptionedValue caption="Is Open" value={data.isOpen ? "Yes" : "No"} />
-        <CaptionedValue caption="Opening Balance" value="TBD" />
-        <CaptionedValue caption="Closing Balance" value="TBD" />
+        <CaptionedValue
+          caption="Opening Balance"
+          value={formatCurrency(data.openingBalance)}
+        />
+        <CaptionedValue
+          caption="Closing Balance"
+          value={formatCurrency(data.closingBalance)}
+        />
       </CaptionedFrame>
       <Stack direction="row" spacing={10}>
         <Stack spacing={2} sx={{ width: "100%" }}>

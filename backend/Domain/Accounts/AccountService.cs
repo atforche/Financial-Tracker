@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.AccountingPeriods;
 using Domain.Exceptions;
 using Domain.Transactions;
 
@@ -10,7 +11,8 @@ namespace Domain.Accounts;
 public class AccountService(
     IAccountRepository accountRepository,
     ITransactionRepository transactionRepository,
-    TransactionService transactionService)
+    TransactionService transactionService,
+    AccountingPeriodBalanceService accountingPeriodBalanceService)
 {
     /// <summary>
     /// Attempts to create a new Account
@@ -43,6 +45,7 @@ public class AccountService(
         }
         account = new Account(request.Name, request.Type, request.AccountingPeriod.Id, request.AddDate);
         accountRepository.Add(account);
+        accountingPeriodBalanceService.AddAccount(account);
         if (request.InitialFundAmounts.Any())
         {
             if (!transactionService.TryCreate(new CreateTransactionRequest
@@ -127,6 +130,7 @@ public class AccountService(
                 return false;
             }
         }
+        accountingPeriodBalanceService.DeleteAccount(account);
         accountRepository.Delete(account);
         return true;
     }

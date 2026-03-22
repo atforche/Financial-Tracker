@@ -7,7 +7,10 @@ namespace Domain.AccountingPeriods;
 /// <summary>
 /// Service for managing Accounting Periods
 /// </summary>
-public class AccountingPeriodService(IAccountingPeriodRepository accountingPeriodRepository, ITransactionRepository transactionRepository)
+public class AccountingPeriodService(
+    IAccountingPeriodRepository accountingPeriodRepository,
+    ITransactionRepository transactionRepository,
+    AccountingPeriodBalanceService accountingPeriodBalanceService)
 {
     /// <summary>
     /// Attempts to create a new Accounting Period
@@ -26,6 +29,7 @@ public class AccountingPeriodService(IAccountingPeriodRepository accountingPerio
             return false;
         }
         accountingPeriod = new AccountingPeriod(year, month);
+        accountingPeriodBalanceService.AddAccountingPeriod(accountingPeriod);
         return true;
     }
 
@@ -57,6 +61,7 @@ public class AccountingPeriodService(IAccountingPeriodRepository accountingPerio
         {
             return false;
         }
+        accountingPeriodBalanceService.DeleteAccountingPeriod(accountingPeriod);
         accountingPeriodRepository.Delete(accountingPeriod);
         return true;
     }

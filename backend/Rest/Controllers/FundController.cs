@@ -33,7 +33,7 @@ public sealed class FundController(
     [HttpGet("")]
     [ProducesResponseType(typeof(CollectionModel<FundModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetAll([FromQuery] FundQueryParameterModel queryParameters)
+    public IActionResult GetMany([FromQuery] FundQueryParameterModel queryParameters)
     {
         Dictionary<string, string[]> errors = [];
 
@@ -111,8 +111,6 @@ public sealed class FundController(
     /// <summary>
     /// Creates a new Fund with the provided properties
     /// </summary>
-    /// <param name="createFundModel">Request to create a Fund</param>
-    /// <returns>The created Fund</returns>
     [HttpPost("")]
     [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
@@ -166,9 +164,6 @@ public sealed class FundController(
     /// <summary>
     /// Updates the provided Fund with the provided properties
     /// </summary>
-    /// <param name="fundId">ID of the Fund to update</param>
-    /// <param name="updateFundModel">Request to update a Fund</param>
-    /// <returns>The updated Fund</returns>
     [HttpPost("{fundId}")]
     [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
@@ -206,7 +201,6 @@ public sealed class FundController(
     /// <summary>
     /// Deletes the Fund with the provided ID
     /// </summary>
-    /// <param name="fundId">ID of the Fund to delete</param>
     [HttpDelete("{fundId}")]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> DeleteAsync(Guid fundId)

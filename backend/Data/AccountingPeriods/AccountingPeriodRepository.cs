@@ -52,7 +52,10 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
     /// </summary>
     public PaginatedCollection<AccountingPeriod> GetMany(GetAccountingPeriodsRequest request)
     {
-        string query = "select * from AccountingPeriods";
+        string query = """
+                        select AccountingPeriods.* from AccountingPeriods
+                        left join AccountingPeriodBalanceHistories on AccountingPeriods.Id = AccountingPeriodBalanceHistories.AccountingPeriodId
+                        """;
         if (request.Search != null)
         {
             query += $" where Year like '%{request.Search}%' or Month like '%{request.Search}%' or Name like '%{request.Search}%'";
@@ -72,6 +75,22 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
         else if (request.Sort == AccountingPeriodSortOrder.IsOpenDescending)
         {
             query += $" order by IsOpen desc, Year desc, Month desc";
+        }
+        else if (request.Sort == AccountingPeriodSortOrder.OpeningBalance)
+        {
+            query += $" order by AccountingPeriodBalanceHistories.OpeningBalance asc, Year desc, Month desc";
+        }
+        else if (request.Sort == AccountingPeriodSortOrder.OpeningBalanceDescending)
+        {
+            query += $" order by AccountingPeriodBalanceHistories.OpeningBalance desc, Year desc, Month desc";
+        }
+        else if (request.Sort == AccountingPeriodSortOrder.ClosingBalance)
+        {
+            query += $" order by AccountingPeriodBalanceHistories.ClosingBalance asc, Year desc, Month desc";
+        }
+        else if (request.Sort == AccountingPeriodSortOrder.ClosingBalanceDescending)
+        {
+            query += $" order by AccountingPeriodBalanceHistories.ClosingBalance desc, Year desc, Month desc";
         }
 
         var accountingPeriods = databaseContext.AccountingPeriods.FromSqlRaw(query).ToList();

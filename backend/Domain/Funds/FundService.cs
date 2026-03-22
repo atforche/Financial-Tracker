@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.AccountingPeriods;
 using Domain.Exceptions;
 using Domain.Transactions;
 
@@ -7,7 +8,10 @@ namespace Domain.Funds;
 /// <summary>
 /// Service for managing Funds
 /// </summary>
-public class FundService(IFundRepository fundRepository, ITransactionRepository transactionRepository)
+public class FundService(
+    IFundRepository fundRepository,
+    ITransactionRepository transactionRepository,
+    AccountingPeriodBalanceService accountingPeriodBalanceService)
 {
     /// <summary>
     /// Attempts to create a new Fund
@@ -38,6 +42,7 @@ public class FundService(IFundRepository fundRepository, ITransactionRepository 
             return false;
         }
         fund = new Fund(request.Name, request.Description, request.AccountingPeriod.Id, request.AddDate);
+        accountingPeriodBalanceService.AddFund(fund);
         return true;
     }
 
@@ -81,6 +86,7 @@ public class FundService(IFundRepository fundRepository, ITransactionRepository 
             exceptions = [new UnableToDeleteException("Cannot delete a Fund that has Transactions.")];
             return false;
         }
+        accountingPeriodBalanceService.DeleteFund(fund);
         fundRepository.Delete(fund);
         return true;
     }

@@ -74,7 +74,6 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            /** @description Request to create an Account */
             requestBody: {
                 content: {
                     "application/json": components["schemas"]["CreateAccountModel"];
@@ -199,12 +198,10 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description ID of the Account to update */
                     accountId: string;
                 };
                 cookie?: never;
             };
-            /** @description Request to update an Account */
             requestBody: {
                 content: {
                     "application/json": components["schemas"]["UpdateAccountModel"];
@@ -254,7 +251,6 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description ID of the Account to delete */
                     accountId: string;
                 };
                 cookie?: never;
@@ -286,7 +282,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Retrieves a single Accounting Period that matches the provided ID */
+        /** Retrieves the Accounting Period that matches the provided ID */
         get: {
             parameters: {
                 query?: never;
@@ -470,7 +466,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description The collection of all open Accounting Periods */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -525,9 +521,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["CollectionModelOfFundModel"];
-                        "application/json": components["schemas"]["CollectionModelOfFundModel"];
-                        "text/json": components["schemas"]["CollectionModelOfFundModel"];
+                        "text/plain": components["schemas"]["CollectionModelOfAccountingPeriodFundModel"];
+                        "application/json": components["schemas"]["CollectionModelOfAccountingPeriodFundModel"];
+                        "text/json": components["schemas"]["CollectionModelOfAccountingPeriodFundModel"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -585,9 +581,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["CollectionModelOfAccountModel"];
-                        "application/json": components["schemas"]["CollectionModelOfAccountModel"];
-                        "text/json": components["schemas"]["CollectionModelOfAccountModel"];
+                        "text/plain": components["schemas"]["CollectionModelOfAccountingPeriodAccountModel"];
+                        "application/json": components["schemas"]["CollectionModelOfAccountingPeriodAccountModel"];
+                        "text/json": components["schemas"]["CollectionModelOfAccountingPeriodAccountModel"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -782,7 +778,6 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            /** @description Request to create a Fund */
             requestBody: {
                 content: {
                     "application/json": components["schemas"]["CreateFundModel"];
@@ -896,12 +891,10 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description ID of the Fund to update */
                     fundId: string;
                 };
                 cookie?: never;
             };
-            /** @description Request to update a Fund */
             requestBody: {
                 content: {
                     "application/json": components["schemas"]["UpdateFundModel"];
@@ -940,7 +933,6 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description ID of the Fund to delete */
                     fundId: string;
                 };
                 cookie?: never;
@@ -1211,8 +1203,40 @@ export interface components {
             /** @description Pending Credits for the Account Balance */
             pendingCredits: components["schemas"]["FundAmountModel"][];
         };
+        /** @description Model representing an Account in the context of a specific Accounting Period */
+        AccountingPeriodAccountModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Account
+             */
+            id: string;
+            /** @description Name for the Account */
+            name: string;
+            /** @description Type for the Account */
+            type: components["schemas"]["AccountTypeModel"];
+            /** @description Opening balance for the Account */
+            openingBalance: components["schemas"]["AccountBalanceModel"];
+            /** @description Closing balance for the Account */
+            closingBalance: components["schemas"]["AccountBalanceModel"];
+        };
         /** @enum {unknown} */
         AccountingPeriodAccountSortOrderModel: AccountingPeriodAccountSortOrderModel | null;
+        /** @description Model representing a Fund in the context of a specific Accounting Period */
+        AccountingPeriodFundModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Fund
+             */
+            id: string;
+            /** @description Name for the Fund */
+            name: string;
+            /** @description Description for the Fund */
+            description: string;
+            /** @description Opening balance for the Fund */
+            openingBalance: components["schemas"]["FundBalanceModel"];
+            /** @description Closing balance for the Fund */
+            closingBalance: components["schemas"]["FundBalanceModel"];
+        };
         /** @enum {unknown} */
         AccountingPeriodFundSortOrderModel: AccountingPeriodFundSortOrderModel | null;
         /** @description Model representing an Accounting Period */
@@ -1236,6 +1260,16 @@ export interface components {
             month: number;
             /** @description True if the Accounting Period is open, false otherwise */
             isOpen: boolean;
+            /**
+             * Format: double
+             * @description Opening balance for the Accounting Period
+             */
+            openingBalance: number;
+            /**
+             * Format: double
+             * @description Closing balance for the Accounting Period
+             */
+            closingBalance: number;
         };
         /** @enum {unknown} */
         AccountingPeriodSortOrderModel: AccountingPeriodSortOrderModel | null;
@@ -1264,6 +1298,26 @@ export interface components {
          * @enum {unknown}
          */
         AccountTypeModel: AccountTypeModel;
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfAccountingPeriodAccountModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["AccountingPeriodAccountModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfAccountingPeriodFundModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["AccountingPeriodFundModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfAccountingPeriodModel: {
             /** @description The collection of items. */
@@ -1606,7 +1660,11 @@ export enum AccountingPeriodSortOrderModel {
     Date = "Date",
     DateDescending = "DateDescending",
     IsOpen = "IsOpen",
-    IsOpenDescending = "IsOpenDescending"
+    IsOpenDescending = "IsOpenDescending",
+    OpeningBalance = "OpeningBalance",
+    OpeningBalanceDescending = "OpeningBalanceDescending",
+    ClosingBalance = "ClosingBalance",
+    ClosingBalanceDescending = "ClosingBalanceDescending"
 }
 export enum AccountingPeriodTransactionSortOrderModel {
     Date = "Date",

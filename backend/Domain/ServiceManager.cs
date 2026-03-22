@@ -18,6 +18,7 @@ public static class ServiceManager
     public static void Register(IServiceCollection serviceCollection)
     {
         _ = serviceCollection.AddScoped<AccountingPeriodService>();
+        _ = serviceCollection.AddScoped<AccountingPeriodBalanceService>();
         _ = serviceCollection.AddScoped<AccountService>();
         _ = serviceCollection.AddScoped<AccountBalanceService>();
         _ = serviceCollection.AddScoped<FundService>();

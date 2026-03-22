@@ -116,8 +116,6 @@ public sealed class AccountController(
     /// <summary>
     /// Creates a new Account with the provided properties
     /// </summary>
-    /// <param name="createAccountModel">Request to create an Account</param>
-    /// <returns>The created Account</returns>
     [HttpPost("")]
     [ProducesResponseType(typeof(AccountModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
@@ -193,9 +191,6 @@ public sealed class AccountController(
     /// <summary>
     /// Updates the provided Account with the provided properties
     /// </summary>
-    /// <param name="accountId">ID of the Account to update</param>
-    /// <param name="updateAccountModel">Request to update an Account</param>
-    /// <returns>The updated Account</returns>
     [HttpPost("{accountId}")]
     [ProducesResponseType(typeof(AccountModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
@@ -234,7 +229,6 @@ public sealed class AccountController(
     /// <summary>
     /// Deletes the Account with the provided ID
     /// </summary>
-    /// <param name="accountId">ID of the Account to delete</param>
     [HttpDelete("{accountId}")]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> DeleteAsync(Guid accountId)

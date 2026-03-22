@@ -13,6 +13,7 @@ import ColumnHeaderButton from "@/framework/listframe/ColumnHeaderButton";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import formatCurrency from "@/framework/formatCurrency";
 import tryParseEnum from "@/data/tryParseEnum";
 
 /**
@@ -89,6 +90,48 @@ const AccountingPeriodListFrame = function ({
           setSort(AccountingPeriodSortOrder.IsOpen);
         } else if (sortType === ColumnSortType.Descending) {
           setSort(AccountingPeriodSortOrder.IsOpenDescending);
+        } else {
+          setSort(null);
+        }
+      },
+    },
+    {
+      name: "openingBalance",
+      headerContent: "Opening Balance",
+      getBodyContent: (accountingPeriod: AccountingPeriod) =>
+        formatCurrency(accountingPeriod.openingBalance),
+      sortType:
+        currentSort === AccountingPeriodSortOrder.OpeningBalance
+          ? ColumnSortType.Ascending
+          : currentSort === AccountingPeriodSortOrder.OpeningBalanceDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSort(AccountingPeriodSortOrder.OpeningBalance);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSort(AccountingPeriodSortOrder.OpeningBalanceDescending);
+        } else {
+          setSort(null);
+        }
+      },
+    },
+    {
+      name: "closingBalance",
+      headerContent: "Closing Balance",
+      getBodyContent: (accountingPeriod: AccountingPeriod) =>
+        formatCurrency(accountingPeriod.closingBalance),
+      sortType:
+        currentSort === AccountingPeriodSortOrder.ClosingBalance
+          ? ColumnSortType.Ascending
+          : currentSort === AccountingPeriodSortOrder.ClosingBalanceDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSort(AccountingPeriodSortOrder.ClosingBalance);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSort(AccountingPeriodSortOrder.ClosingBalanceDescending);
         } else {
           setSort(null);
         }

@@ -8,6 +8,11 @@ namespace Domain.Funds;
 public interface IFundRepository
 {
     /// <summary>
+    /// Gets all Funds in the repository.
+    /// </summary>
+    IReadOnlyCollection<Fund> GetAll();
+
+    /// <summary>
     /// Gets the Fund with the specified ID.
     /// </summary>
     Fund GetById(FundId id);

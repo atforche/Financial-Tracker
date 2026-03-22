@@ -42,6 +42,27 @@ namespace Data.Migrations
                     b.ToTable("AccountingPeriods");
                 });
 
+            modelBuilder.Entity("Domain.AccountingPeriods.AccountingPeriodBalanceHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AccountingPeriodId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("ClosingBalance")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("OpeningBalance")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountingPeriodId");
+
+                    b.ToTable("AccountingPeriodBalanceHistories");
+                });
+
             modelBuilder.Entity("Domain.Accounts.Account", b =>
                 {
                     b.Property<Guid>("Id")
@@ -185,6 +206,229 @@ namespace Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Transactions");
+                });
+
+            modelBuilder.Entity("Domain.AccountingPeriods.AccountingPeriodBalanceHistory", b =>
+                {
+                    b.HasOne("Domain.AccountingPeriods.AccountingPeriod", "AccountingPeriod")
+                        .WithMany()
+                        .HasForeignKey("AccountingPeriodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsMany("Domain.AccountingPeriods.AccountAccountingPeriodBalanceHistory", "AccountBalances", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("AccountId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("AccountingPeriodBalanceHistoryId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("AccountingPeriodId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<decimal>("ClosingBalance")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<decimal>("OpeningBalance")
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("AccountId");
+
+                            b1.HasIndex("AccountingPeriodBalanceHistoryId");
+
+                            b1.HasIndex("AccountingPeriodId");
+
+                            b1.ToTable("AccountAccountingPeriodBalanceHistory");
+
+                            b1.HasOne("Domain.Accounts.Account", "Account")
+                                .WithMany()
+                                .HasForeignKey("AccountId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
+
+                            b1.WithOwner()
+                                .HasForeignKey("AccountingPeriodBalanceHistoryId");
+
+                            b1.HasOne("Domain.AccountingPeriods.AccountingPeriod", "AccountingPeriod")
+                                .WithMany()
+                                .HasForeignKey("AccountingPeriodId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
+
+                            b1.OwnsMany("Domain.Funds.FundAmount", "ClosingFundBalances", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("INTEGER");
+
+                                    b2.Property<Guid>("AccountAccountingPeriodBalanceHistoryId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<decimal>("Amount")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<Guid>("FundId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("AccountAccountingPeriodBalanceHistoryId");
+
+                                    b2.ToTable("AccountAccountingPeriodBalanceHistoryClosingFundBalances", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("AccountAccountingPeriodBalanceHistoryId");
+                                });
+
+                            b1.OwnsMany("Domain.Funds.FundAmount", "OpeningFundBalances", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("INTEGER");
+
+                                    b2.Property<Guid>("AccountAccountingPeriodBalanceHistoryId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<decimal>("Amount")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<Guid>("FundId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("AccountAccountingPeriodBalanceHistoryId");
+
+                                    b2.ToTable("AccountAccountingPeriodBalanceHistoryOpeningFundBalances", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("AccountAccountingPeriodBalanceHistoryId");
+                                });
+
+                            b1.Navigation("Account");
+
+                            b1.Navigation("AccountingPeriod");
+
+                            b1.Navigation("ClosingFundBalances");
+
+                            b1.Navigation("OpeningFundBalances");
+                        });
+
+                    b.OwnsMany("Domain.AccountingPeriods.FundAccountingPeriodBalanceHistory", "FundBalances", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("AccountingPeriodBalanceHistoryId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("AccountingPeriodId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<decimal>("ClosingBalance")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("FundId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<decimal>("OpeningBalance")
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("AccountingPeriodBalanceHistoryId");
+
+                            b1.HasIndex("AccountingPeriodId");
+
+                            b1.HasIndex("FundId");
+
+                            b1.ToTable("FundAccountingPeriodBalanceHistory");
+
+                            b1.WithOwner()
+                                .HasForeignKey("AccountingPeriodBalanceHistoryId");
+
+                            b1.HasOne("Domain.AccountingPeriods.AccountingPeriod", "AccountingPeriod")
+                                .WithMany()
+                                .HasForeignKey("AccountingPeriodId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
+
+                            b1.HasOne("Domain.Funds.Fund", "Fund")
+                                .WithMany()
+                                .HasForeignKey("FundId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
+
+                            b1.OwnsMany("Domain.Accounts.AccountAmount", "ClosingAccountBalances", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("INTEGER");
+
+                                    b2.Property<Guid>("AccountId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<decimal>("Amount")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<Guid>("FundAccountingPeriodBalanceHistoryId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("FundAccountingPeriodBalanceHistoryId");
+
+                                    b2.ToTable("FundAccountingPeriodBalanceHistoryClosingAccountBalances", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("FundAccountingPeriodBalanceHistoryId");
+                                });
+
+                            b1.OwnsMany("Domain.Accounts.AccountAmount", "OpeningAccountBalances", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("INTEGER");
+
+                                    b2.Property<Guid>("AccountId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<decimal>("Amount")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<Guid>("FundAccountingPeriodBalanceHistoryId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("FundAccountingPeriodBalanceHistoryId");
+
+                                    b2.ToTable("FundAccountingPeriodBalanceHistoryOpeningAccountBalances", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("FundAccountingPeriodBalanceHistoryId");
+                                });
+
+                            b1.Navigation("AccountingPeriod");
+
+                            b1.Navigation("ClosingAccountBalances");
+
+                            b1.Navigation("Fund");
+
+                            b1.Navigation("OpeningAccountBalances");
+                        });
+
+                    b.Navigation("AccountBalances");
+
+                    b.Navigation("AccountingPeriod");
+
+                    b.Navigation("FundBalances");
                 });
 
             modelBuilder.Entity("Domain.Accounts.AccountBalanceHistory", b =>
@@ -376,6 +620,9 @@ namespace Data.Migrations
                             b1.Property<DateOnly?>("PostedDate")
                                 .HasColumnType("TEXT");
 
+                            b1.Property<int>("Type")
+                                .HasColumnType("INTEGER");
+
                             b1.HasKey("TransactionId");
 
                             b1.HasIndex("AccountId");
@@ -431,6 +678,9 @@ namespace Data.Migrations
 
                             b1.Property<DateOnly?>("PostedDate")
                                 .HasColumnType("TEXT");
+
+                            b1.Property<int>("Type")
+                                .HasColumnType("INTEGER");
 
                             b1.HasKey("TransactionId");
 

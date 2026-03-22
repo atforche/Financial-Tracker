@@ -10,6 +10,12 @@ import {
 type Account = components["schemas"]["AccountModel"];
 
 /**
+ * Type representing an Account in the context of an Accounting Period.
+ */
+type AccountingPeriodAccount =
+  components["schemas"]["AccountingPeriodAccountModel"];
+
+/**
  * Interface representing an identifier for an Account.
  */
 interface AccountIdentifier {
@@ -24,6 +30,7 @@ type CreateAccountRequest = components["schemas"]["CreateAccountModel"];
 
 export {
   type Account,
+  type AccountingPeriodAccount,
   type AccountIdentifier,
   type CreateAccountRequest,
   AccountingPeriodAccountSortOrderModel as AccountingPeriodAccountSortOrder,

@@ -11,6 +11,7 @@ namespace Domain.Transactions;
 /// </summary>
 public class TransactionService(
     AccountBalanceService accountBalanceService,
+    AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
@@ -95,11 +96,11 @@ public class TransactionService(
         transaction.Description = request.Description;
         if (transaction.DebitAccount != null && request.DebitAccount != null)
         {
-            transaction.DebitAccount = new TransactionAccount(transaction, transaction.DebitAccount.AccountId, request.DebitAccount.FundAmounts);
+            transaction.DebitAccount = new TransactionAccount(transaction, transaction.DebitAccount.AccountId, TransactionAccountType.Debit, request.DebitAccount.FundAmounts);
         }
         if (transaction.CreditAccount != null && request.CreditAccount != null)
         {
-            transaction.CreditAccount = new TransactionAccount(transaction, transaction.CreditAccount.AccountId, request.CreditAccount.FundAmounts);
+            transaction.CreditAccount = new TransactionAccount(transaction, transaction.CreditAccount.AccountId, TransactionAccountType.Credit, request.CreditAccount.FundAmounts);
         }
         accountBalanceService.UpdateTransaction(transaction);
         fundBalanceService.UpdateTransaction(transaction);
@@ -122,10 +123,13 @@ public class TransactionService(
         {
             transaction.DebitAccount.PostedDate = postedDate;
             transaction.CreditAccount.PostedDate = postedDate;
+            accountingPeriodBalanceService.PostTransaction(transaction.DebitAccount);
+            accountingPeriodBalanceService.PostTransaction(transaction.CreditAccount);
         }
         else
         {
             transactionAccount.PostedDate = postedDate;
+            accountingPeriodBalanceService.PostTransaction(transactionAccount);
         }
         accountBalanceService.PostTransaction(transaction, transactionAccount);
         fundBalanceService.PostTransaction(transaction, transactionAccount);

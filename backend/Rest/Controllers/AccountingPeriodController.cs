@@ -1,12 +1,8 @@
 using Data;
 using Data.AccountingPeriods;
-using Data.Accounts;
-using Data.Funds;
 using Data.Transactions;
 using Domain.AccountingPeriods;
-using Domain.Accounts;
 using Domain.Exceptions;
-using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Models;
@@ -25,17 +21,16 @@ namespace Rest.Controllers;
 [Route("/accounting-periods")]
 public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountingPeriodRepository accountingPeriodRepository,
-    AccountRepository accountRepository,
-    FundRepository fundRepository,
+    AccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
     TransactionRepository transactionRepository,
     AccountingPeriodService accountingPeriodService,
     AccountingPeriodMapper accountingPeriodMapper,
-    AccountMapper accountMapper,
-    FundMapper fundMapper,
+    AccountingPeriodAccountMapper accountingPeriodAccountMapper,
+    AccountingPeriodFundMapper accountingPeriodFundMapper,
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
-    /// Retrieves a single Accounting Period that matches the provided ID
+    /// Retrieves the Accounting Period that matches the provided ID
     /// </summary>
     [HttpGet("{accountingPeriodId}")]
     [ProducesResponseType(typeof(AccountingPeriodModel), StatusCodes.Status200OK)]
@@ -51,7 +46,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
-        return Ok(AccountingPeriodMapper.ToModel(accountingPeriod));
+        return Ok(accountingPeriodMapper.ToModel(accountingPeriod));
     }
 
     /// <summary>
@@ -87,7 +82,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         });
         return Ok(new CollectionModel<AccountingPeriodModel>()
         {
-            Items = paginatedAccountingPeriods.Items.Select(AccountingPeriodMapper.ToModel).ToList(),
+            Items = paginatedAccountingPeriods.Items.Select(accountingPeriodMapper.ToModel).ToList(),
             TotalCount = paginatedAccountingPeriods.TotalCount
         });
     }
@@ -95,17 +90,16 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     /// <summary>
     /// Retrieves all the open Accounting Periods from the database
     /// </summary>
-    /// <returns>The collection of all open Accounting Periods</returns>
     [HttpGet("open")]
     public IReadOnlyCollection<AccountingPeriodModel> GetAllOpen() => accountingPeriodRepository.GetAllOpenPeriods()
         .OrderByDescending(accountingPeriod => accountingPeriod.PeriodStartDate)
-        .Select(AccountingPeriodMapper.ToModel).ToList();
+        .Select(accountingPeriodMapper.ToModel).ToList();
 
     /// <summary>
     /// Retrieves the Funds for the Accounting Period that matches the provided ID
     /// </summary>
     [HttpGet("{accountingPeriodId}/funds")]
-    [ProducesResponseType(typeof(CollectionModel<FundModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CollectionModel<AccountingPeriodFundModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public IActionResult GetFunds(Guid accountingPeriodId, [FromQuery] AccountingPeriodFundQueryParameterModel queryParameters)
     {
@@ -129,16 +123,16 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
             });
         }
 
-        PaginatedCollection<Fund> paginatedResults = fundRepository.GetManyByAccountingPeriod(accountingPeriod.Id, new GetAccountingPeriodFundsRequest
+        PaginatedCollection<FundAccountingPeriodBalanceHistory> paginatedResults = accountingPeriodBalanceHistoryRepository.GetManyFunds(accountingPeriod.Id, new GetAccountingPeriodFundsRequest
         {
             Search = queryParameters.Search,
             Sort = sort,
             Limit = queryParameters.Limit,
             Offset = queryParameters.Offset
         });
-        return Ok(new CollectionModel<FundModel>
+        return Ok(new CollectionModel<AccountingPeriodFundModel>
         {
-            Items = paginatedResults.Items.Select(fundMapper.ToModel).ToList(),
+            Items = paginatedResults.Items.Select(accountingPeriodFundMapper.ToModel).ToList(),
             TotalCount = paginatedResults.TotalCount
         });
     }
@@ -147,7 +141,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     /// Retrieves the Accounts for the Accounting Period that matches the provided ID
     /// </summary>
     [HttpGet("{accountingPeriodId}/accounts")]
-    [ProducesResponseType(typeof(CollectionModel<AccountModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CollectionModel<AccountingPeriodAccountModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public IActionResult GetAccounts(Guid accountingPeriodId, [FromQuery] AccountingPeriodAccountQueryParameterModel queryParameters)
     {
@@ -171,16 +165,16 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
             });
         }
 
-        PaginatedCollection<Account> paginatedResults = accountRepository.GetManyByAccountingPeriod(accountingPeriod.Id, new GetAccountingPeriodAccountsRequest
+        PaginatedCollection<AccountAccountingPeriodBalanceHistory> paginatedResults = accountingPeriodBalanceHistoryRepository.GetManyAccounts(accountingPeriod.Id, new GetAccountingPeriodAccountsRequest
         {
             Search = queryParameters.Search,
             Sort = sort,
             Limit = queryParameters.Limit,
             Offset = queryParameters.Offset
         });
-        return Ok(new CollectionModel<AccountModel>
+        return Ok(new CollectionModel<AccountingPeriodAccountModel>
         {
-            Items = paginatedResults.Items.Select(accountMapper.ToModel).ToList(),
+            Items = paginatedResults.Items.Select(accountingPeriodAccountMapper.ToModel).ToList(),
             TotalCount = paginatedResults.TotalCount
         });
     }
@@ -253,7 +247,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         }
         accountingPeriodRepository.Add(newAccountingPeriod);
         await unitOfWork.SaveChangesAsync();
-        return Ok(AccountingPeriodMapper.ToModel(newAccountingPeriod));
+        return Ok(accountingPeriodMapper.ToModel(newAccountingPeriod));
     }
 
     /// <summary>
@@ -293,7 +287,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(AccountingPeriodMapper.ToModel(accountingPeriod));
+        return Ok(accountingPeriodMapper.ToModel(accountingPeriod));
     }
 
     /// <summary>

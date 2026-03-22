@@ -11,6 +11,9 @@ internal sealed class MockAccountRepository : IAccountRepository
     private readonly Dictionary<Guid, Account> _accounts = [];
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<Account> GetAll() => _accounts.Values.ToList();
+
+    /// <inheritdoc/>
     public Account GetById(AccountId id) => _accounts[id.Value];
 
     /// <inheritdoc/>

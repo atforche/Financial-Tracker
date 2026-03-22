@@ -1,6 +1,9 @@
 "use client";
 
-import { AccountingPeriodFundSortOrder, type Fund } from "@/data/fundTypes";
+import {
+  type AccountingPeriodFund,
+  AccountingPeriodFundSortOrder,
+} from "@/data/fundTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
@@ -11,6 +14,7 @@ import ColumnHeaderButton from "@/framework/listframe/ColumnHeaderButton";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import formatCurrency from "@/framework/formatCurrency";
 import tryParseEnum from "@/data/tryParseEnum";
 
 /**
@@ -18,7 +22,7 @@ import tryParseEnum from "@/data/tryParseEnum";
  */
 interface FundListFrameProps {
   readonly accountingPeriod: AccountingPeriod;
-  readonly data: Fund[] | null;
+  readonly data: AccountingPeriodFund[] | null;
   readonly totalCount: number | null;
 }
 
@@ -49,11 +53,11 @@ const FundListFrame = function ({
     searchParams.get("fundSort") ?? "",
   );
 
-  const columns: ColumnDefinition<Fund>[] = [
+  const columns: ColumnDefinition<AccountingPeriodFund>[] = [
     {
       name: "name",
       headerContent: "Name",
-      getBodyContent: (fund: Fund) => fund.name,
+      getBodyContent: (fund: AccountingPeriodFund) => fund.name,
       sortType:
         currentSort === AccountingPeriodFundSortOrder.Name
           ? ColumnSortType.Ascending
@@ -73,7 +77,8 @@ const FundListFrame = function ({
     {
       name: "openingBalance",
       headerContent: "Opening Balance",
-      getBodyContent: () => "TBD",
+      getBodyContent: (fund: AccountingPeriodFund) =>
+        formatCurrency(fund.openingBalance.postedBalance),
       sortType:
         currentSort === AccountingPeriodFundSortOrder.OpeningBalance
           ? ColumnSortType.Ascending
@@ -94,7 +99,8 @@ const FundListFrame = function ({
     {
       name: "closingBalance",
       headerContent: "Closing Balance",
-      getBodyContent: () => "TBD",
+      getBodyContent: (fund: AccountingPeriodFund) =>
+        formatCurrency(fund.closingBalance.postedBalance),
       sortType:
         currentSort === AccountingPeriodFundSortOrder.ClosingBalance
           ? ColumnSortType.Ascending
@@ -124,7 +130,7 @@ const FundListFrame = function ({
           disabled={!accountingPeriod.isOpen}
         />
       ),
-      getBodyContent: (fund: Fund) => (
+      getBodyContent: (fund: AccountingPeriodFund) => (
         <ColumnButton
           label="View"
           icon={<ArrowForwardIos />}
@@ -138,7 +144,7 @@ const FundListFrame = function ({
   ];
 
   return (
-    <ListFrame<Fund>
+    <ListFrame<AccountingPeriodFund>
       columns={columns}
       getId={(fund) => fund.id}
       data={data ?? null}

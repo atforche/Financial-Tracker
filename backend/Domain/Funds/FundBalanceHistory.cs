@@ -4,7 +4,7 @@ using Domain.Transactions;
 namespace Domain.Funds;
 
 /// <summary>
-/// Value object class representing the balance of an Account at some point in time.
+/// Entity class representing the balance of a Fund at some point in time.
 /// </summary>
 public class FundBalanceHistory : Entity<FundBalanceHistoryId>
 {

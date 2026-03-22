@@ -1,9 +1,9 @@
-namespace Data.Funds;
+namespace Data.AccountingPeriods;
 
 /// <summary>
-/// Request to retrieve the Funds within an Accounting Period that match the specified criteria
+/// Request to retrieve the Accounts within an Accounting Period that match the specified criteria
 /// </summary>
-public record GetAccountingPeriodFundsRequest
+public record GetAccountingPeriodAccountsRequest
 {
     /// <summary>
     /// Search to apply to the results
@@ -13,7 +13,7 @@ public record GetAccountingPeriodFundsRequest
     /// <summary>
     /// Sort to apply to the results
     /// </summary>
-    public AccountingPeriodFundSortOrder? Sort { get; init; }
+    public AccountingPeriodAccountSortOrder? Sort { get; init; }
 
     /// <summary>
     /// Maximum number of results to return

@@ -74,6 +74,26 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AccountingPeriodBalanceHistories",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    OpeningBalance = table.Column<decimal>(type: "TEXT", nullable: false),
+                    ClosingBalance = table.Column<decimal>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AccountingPeriodBalanceHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AccountingPeriodBalanceHistories_AccountingPeriods_AccountingPeriodId",
+                        column: x => x.AccountingPeriodId,
+                        principalTable: "AccountingPeriods",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AccountBalanceHistories",
                 columns: table => new
                 {
@@ -108,8 +128,10 @@ namespace Data.Migrations
                     Description = table.Column<string>(type: "TEXT", nullable: false),
                     Amount = table.Column<decimal>(type: "TEXT", nullable: false),
                     DebitAccount_AccountId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    DebitAccount_Type = table.Column<int>(type: "INTEGER", nullable: true),
                     DebitAccount_PostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     CreditAccount_AccountId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    CreditAccount_Type = table.Column<int>(type: "INTEGER", nullable: true),
                     CreditAccount_PostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     GeneratedByAccountId = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
@@ -189,6 +211,74 @@ namespace Data.Migrations
                         name: "FK_FundBalanceHistoryPendingDebits_FundBalanceHistories_FundBalanceHistoryId",
                         column: x => x.FundBalanceHistoryId,
                         principalTable: "FundBalanceHistories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AccountAccountingPeriodBalanceHistory",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AccountId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    OpeningBalance = table.Column<decimal>(type: "TEXT", nullable: false),
+                    ClosingBalance = table.Column<decimal>(type: "TEXT", nullable: false),
+                    AccountingPeriodBalanceHistoryId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AccountAccountingPeriodBalanceHistory", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AccountAccountingPeriodBalanceHistory_AccountingPeriodBalanceHistories_AccountingPeriodBalanceHistoryId",
+                        column: x => x.AccountingPeriodBalanceHistoryId,
+                        principalTable: "AccountingPeriodBalanceHistories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AccountAccountingPeriodBalanceHistory_AccountingPeriods_AccountingPeriodId",
+                        column: x => x.AccountingPeriodId,
+                        principalTable: "AccountingPeriods",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AccountAccountingPeriodBalanceHistory_Accounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FundAccountingPeriodBalanceHistory",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    FundId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    OpeningBalance = table.Column<decimal>(type: "TEXT", nullable: false),
+                    ClosingBalance = table.Column<decimal>(type: "TEXT", nullable: false),
+                    AccountingPeriodBalanceHistoryId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FundAccountingPeriodBalanceHistory", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FundAccountingPeriodBalanceHistory_AccountingPeriodBalanceHistories_AccountingPeriodBalanceHistoryId",
+                        column: x => x.AccountingPeriodBalanceHistoryId,
+                        principalTable: "AccountingPeriodBalanceHistories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FundAccountingPeriodBalanceHistory_AccountingPeriods_AccountingPeriodId",
+                        column: x => x.AccountingPeriodId,
+                        principalTable: "AccountingPeriods",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FundAccountingPeriodBalanceHistory_Funds_FundId",
+                        column: x => x.FundId,
+                        principalTable: "Funds",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -298,6 +388,115 @@ namespace Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "AccountAccountingPeriodBalanceHistoryClosingFundBalances",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    FundId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    AccountAccountingPeriodBalanceHistoryId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AccountAccountingPeriodBalanceHistoryClosingFundBalances", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AccountAccountingPeriodBalanceHistoryClosingFundBalances_AccountAccountingPeriodBalanceHistory_AccountAccountingPeriodBalanceHistoryId",
+                        column: x => x.AccountAccountingPeriodBalanceHistoryId,
+                        principalTable: "AccountAccountingPeriodBalanceHistory",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AccountAccountingPeriodBalanceHistoryOpeningFundBalances",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    FundId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    AccountAccountingPeriodBalanceHistoryId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AccountAccountingPeriodBalanceHistoryOpeningFundBalances", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AccountAccountingPeriodBalanceHistoryOpeningFundBalances_AccountAccountingPeriodBalanceHistory_AccountAccountingPeriodBalanceHistoryId",
+                        column: x => x.AccountAccountingPeriodBalanceHistoryId,
+                        principalTable: "AccountAccountingPeriodBalanceHistory",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FundAccountingPeriodBalanceHistoryClosingAccountBalances",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    AccountId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    FundAccountingPeriodBalanceHistoryId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FundAccountingPeriodBalanceHistoryClosingAccountBalances", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FundAccountingPeriodBalanceHistoryClosingAccountBalances_FundAccountingPeriodBalanceHistory_FundAccountingPeriodBalanceHistoryId",
+                        column: x => x.FundAccountingPeriodBalanceHistoryId,
+                        principalTable: "FundAccountingPeriodBalanceHistory",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FundAccountingPeriodBalanceHistoryOpeningAccountBalances",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    AccountId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    FundAccountingPeriodBalanceHistoryId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FundAccountingPeriodBalanceHistoryOpeningAccountBalances", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FundAccountingPeriodBalanceHistoryOpeningAccountBalances_FundAccountingPeriodBalanceHistory_FundAccountingPeriodBalanceHistoryId",
+                        column: x => x.FundAccountingPeriodBalanceHistoryId,
+                        principalTable: "FundAccountingPeriodBalanceHistory",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AccountAccountingPeriodBalanceHistory_AccountId",
+                table: "AccountAccountingPeriodBalanceHistory",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AccountAccountingPeriodBalanceHistory_AccountingPeriodBalanceHistoryId",
+                table: "AccountAccountingPeriodBalanceHistory",
+                column: "AccountingPeriodBalanceHistoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AccountAccountingPeriodBalanceHistory_AccountingPeriodId",
+                table: "AccountAccountingPeriodBalanceHistory",
+                column: "AccountingPeriodId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AccountAccountingPeriodBalanceHistoryClosingFundBalances_AccountAccountingPeriodBalanceHistoryId",
+                table: "AccountAccountingPeriodBalanceHistoryClosingFundBalances",
+                column: "AccountAccountingPeriodBalanceHistoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AccountAccountingPeriodBalanceHistoryOpeningFundBalances_AccountAccountingPeriodBalanceHistoryId",
+                table: "AccountAccountingPeriodBalanceHistoryOpeningFundBalances",
+                column: "AccountAccountingPeriodBalanceHistoryId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_AccountBalanceHistories_AccountId",
                 table: "AccountBalanceHistories",
@@ -319,6 +518,11 @@ namespace Data.Migrations
                 column: "AccountBalanceHistoryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AccountingPeriodBalanceHistories_AccountingPeriodId",
+                table: "AccountingPeriodBalanceHistories",
+                column: "AccountingPeriodId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AccountingPeriods_Name",
                 table: "AccountingPeriods",
                 column: "Name");
@@ -328,6 +532,31 @@ namespace Data.Migrations
                 table: "Accounts",
                 column: "Name",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FundAccountingPeriodBalanceHistory_AccountingPeriodBalanceHistoryId",
+                table: "FundAccountingPeriodBalanceHistory",
+                column: "AccountingPeriodBalanceHistoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FundAccountingPeriodBalanceHistory_AccountingPeriodId",
+                table: "FundAccountingPeriodBalanceHistory",
+                column: "AccountingPeriodId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FundAccountingPeriodBalanceHistory_FundId",
+                table: "FundAccountingPeriodBalanceHistory",
+                column: "FundId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FundAccountingPeriodBalanceHistoryClosingAccountBalances_FundAccountingPeriodBalanceHistoryId",
+                table: "FundAccountingPeriodBalanceHistoryClosingAccountBalances",
+                column: "FundAccountingPeriodBalanceHistoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FundAccountingPeriodBalanceHistoryOpeningAccountBalances_FundAccountingPeriodBalanceHistoryId",
+                table: "FundAccountingPeriodBalanceHistoryOpeningAccountBalances",
+                column: "FundAccountingPeriodBalanceHistoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FundBalanceHistoryAccountBalances_FundBalanceHistoryId",
@@ -375,6 +604,12 @@ namespace Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AccountAccountingPeriodBalanceHistoryClosingFundBalances");
+
+            migrationBuilder.DropTable(
+                name: "AccountAccountingPeriodBalanceHistoryOpeningFundBalances");
+
+            migrationBuilder.DropTable(
                 name: "AccountBalanceHistoryFundBalances");
 
             migrationBuilder.DropTable(
@@ -384,7 +619,10 @@ namespace Data.Migrations
                 name: "AccountBalanceHistoryPendingDebits");
 
             migrationBuilder.DropTable(
-                name: "AccountingPeriods");
+                name: "FundAccountingPeriodBalanceHistoryClosingAccountBalances");
+
+            migrationBuilder.DropTable(
+                name: "FundAccountingPeriodBalanceHistoryOpeningAccountBalances");
 
             migrationBuilder.DropTable(
                 name: "FundBalanceHistoryAccountBalances");
@@ -396,16 +634,19 @@ namespace Data.Migrations
                 name: "FundBalanceHistoryPendingDebits");
 
             migrationBuilder.DropTable(
-                name: "Funds");
-
-            migrationBuilder.DropTable(
                 name: "TransactionCreditAccountFundAmounts");
 
             migrationBuilder.DropTable(
                 name: "TransactionDebitAccountFundAmounts");
 
             migrationBuilder.DropTable(
+                name: "AccountAccountingPeriodBalanceHistory");
+
+            migrationBuilder.DropTable(
                 name: "AccountBalanceHistories");
+
+            migrationBuilder.DropTable(
+                name: "FundAccountingPeriodBalanceHistory");
 
             migrationBuilder.DropTable(
                 name: "FundBalanceHistories");
@@ -414,7 +655,16 @@ namespace Data.Migrations
                 name: "Transactions");
 
             migrationBuilder.DropTable(
+                name: "AccountingPeriodBalanceHistories");
+
+            migrationBuilder.DropTable(
+                name: "Funds");
+
+            migrationBuilder.DropTable(
                 name: "Accounts");
+
+            migrationBuilder.DropTable(
+                name: "AccountingPeriods");
         }
     }
 }

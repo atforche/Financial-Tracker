@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  type Account,
+  type AccountingPeriodAccount,
   AccountingPeriodAccountSortOrder,
 } from "@/data/accountTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -14,6 +14,7 @@ import ColumnHeaderButton from "@/framework/listframe/ColumnHeaderButton";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import formatCurrency from "@/framework/formatCurrency";
 import tryParseEnum from "@/data/tryParseEnum";
 
 /**
@@ -21,7 +22,7 @@ import tryParseEnum from "@/data/tryParseEnum";
  */
 interface AccountListFrameProps {
   readonly accountingPeriod: AccountingPeriod;
-  readonly data: Account[] | null;
+  readonly data: AccountingPeriodAccount[] | null;
   readonly totalCount: number | null;
 }
 
@@ -54,11 +55,11 @@ const AccountListFrame = function ({
     searchParams.get("accountSort") ?? "",
   );
 
-  const columns: ColumnDefinition<Account>[] = [
+  const columns: ColumnDefinition<AccountingPeriodAccount>[] = [
     {
       name: "name",
       headerContent: "Name",
-      getBodyContent: (account: Account) => account.name,
+      getBodyContent: (account: AccountingPeriodAccount) => account.name,
       sortType:
         currentSort === AccountingPeriodAccountSortOrder.Name
           ? ColumnSortType.Ascending
@@ -78,7 +79,7 @@ const AccountListFrame = function ({
     {
       name: "type",
       headerContent: "Type",
-      getBodyContent: (account: Account) => account.type,
+      getBodyContent: (account: AccountingPeriodAccount) => account.type,
       sortType:
         currentSort === AccountingPeriodAccountSortOrder.Type
           ? ColumnSortType.Ascending
@@ -98,7 +99,8 @@ const AccountListFrame = function ({
     {
       name: "openingBalance",
       headerContent: "Opening Balance",
-      getBodyContent: () => "TBD",
+      getBodyContent: (account: AccountingPeriodAccount) =>
+        formatCurrency(account.openingBalance.postedBalance),
       sortType:
         currentSort === AccountingPeriodAccountSortOrder.OpeningBalance
           ? ColumnSortType.Ascending
@@ -119,7 +121,8 @@ const AccountListFrame = function ({
     {
       name: "closingBalance",
       headerContent: "Closing Balance",
-      getBodyContent: () => "TBD",
+      getBodyContent: (account: AccountingPeriodAccount) =>
+        formatCurrency(account.closingBalance.postedBalance),
       sortType:
         currentSort === AccountingPeriodAccountSortOrder.ClosingBalance
           ? ColumnSortType.Ascending
@@ -149,7 +152,7 @@ const AccountListFrame = function ({
           disabled={!accountingPeriod.isOpen}
         />
       ),
-      getBodyContent: (account: Account) => (
+      getBodyContent: (account: AccountingPeriodAccount) => (
         <ColumnButton
           label="View"
           icon={<ArrowForwardIos />}
@@ -163,7 +166,7 @@ const AccountListFrame = function ({
   ];
 
   return (
-    <ListFrame<Account>
+    <ListFrame<AccountingPeriodAccount>
       columns={columns}
       getId={(account) => account.id}
       data={data ?? null}

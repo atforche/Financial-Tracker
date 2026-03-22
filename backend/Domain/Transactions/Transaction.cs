@@ -40,7 +40,6 @@ public class Transaction : Entity<TransactionId>
     /// </summary>
     public string Description { get; internal set; }
 
-    // TODO: denormalize this property into the Transactions table in the database to make searching and sorting by amount more efficient
     /// <summary>
     /// Amount for this Transaction
     /// </summary>
@@ -68,36 +67,22 @@ public class Transaction : Entity<TransactionId>
     /// <summary>
     /// Applies this Transaction to the provided existing Account Balance as of the specified date
     /// </summary>
-    public AccountBalance ApplyToAccountBalance(AccountBalance existingAccountBalance, DateOnly date)
+    internal AccountBalance ApplyToAccountBalance(AccountBalance existingAccountBalance, DateOnly date)
     {
         AccountBalance newAccountBalance = existingAccountBalance;
-        if (DebitAccount?.AccountId == existingAccountBalance.Account.Id)
-        {
-            newAccountBalance = ApplyToAccountBalancePrivate(DebitAccount, TransactionAccountType.Debit, newAccountBalance, date);
-        }
-        if (CreditAccount?.AccountId == existingAccountBalance.Account.Id)
-        {
-            newAccountBalance = ApplyToAccountBalancePrivate(CreditAccount, TransactionAccountType.Credit, newAccountBalance, date);
-        }
+        newAccountBalance = DebitAccount != null ? DebitAccount.ApplyToAccountBalance(newAccountBalance, date) : newAccountBalance;
+        newAccountBalance = CreditAccount != null ? CreditAccount.ApplyToAccountBalance(newAccountBalance, date) : newAccountBalance;
         return newAccountBalance;
     }
 
     /// <summary>
     /// Applies this Transaction to the provided existing Fund Balance as of the specified date
     /// </summary>
-    public FundBalance ApplyToFundBalance(FundBalance existingFundBalance, DateOnly date)
+    internal FundBalance ApplyToFundBalance(FundBalance existingFundBalance, DateOnly date)
     {
         FundBalance newFundBalance = existingFundBalance;
-        FundAmount? debitFundAmount = DebitAccount?.FundAmounts.SingleOrDefault(fundAmount => fundAmount.FundId == existingFundBalance.FundId);
-        if (DebitAccount != null && debitFundAmount != null)
-        {
-            newFundBalance = ApplyToFundBalancePrivate(DebitAccount, debitFundAmount, TransactionAccountType.Debit, newFundBalance, date);
-        }
-        FundAmount? creditFundAmount = CreditAccount?.FundAmounts.SingleOrDefault(fundAmount => fundAmount.FundId == existingFundBalance.FundId);
-        if (CreditAccount != null && creditFundAmount != null)
-        {
-            newFundBalance = ApplyToFundBalancePrivate(CreditAccount, creditFundAmount, TransactionAccountType.Credit, newFundBalance, date);
-        }
+        newFundBalance = DebitAccount != null ? DebitAccount.ApplyToFundBalance(newFundBalance, date) : newFundBalance;
+        newFundBalance = CreditAccount != null ? CreditAccount.ApplyToFundBalance(newFundBalance, date) : newFundBalance;
         return newFundBalance;
     }
 
@@ -112,8 +97,12 @@ public class Transaction : Entity<TransactionId>
         Sequence = sequence;
         Location = request.Location;
         Description = request.Description;
-        DebitAccount = request.DebitAccount != null ? new TransactionAccount(this, request.DebitAccount.Account.Id, request.DebitAccount.FundAmounts) : null;
-        CreditAccount = request.CreditAccount != null ? new TransactionAccount(this, request.CreditAccount.Account.Id, request.CreditAccount.FundAmounts) : null;
+        DebitAccount = request.DebitAccount != null
+            ? new TransactionAccount(this, request.DebitAccount.Account.Id, TransactionAccountType.Debit, request.DebitAccount.FundAmounts)
+            : null;
+        CreditAccount = request.CreditAccount != null
+            ? new TransactionAccount(this, request.CreditAccount.Account.Id, TransactionAccountType.Credit, request.CreditAccount.FundAmounts)
+            : null;
         GeneratedByAccountId = request.IsInitialTransactionForAccount ? CreditAccount?.AccountId : null;
     }
 
@@ -127,71 +116,6 @@ public class Transaction : Entity<TransactionId>
         Description = null!;
         DebitAccount = null;
         CreditAccount = null;
-    }
-
-    /// <summary>
-    /// Applies this Transaction to the provided existing Account Balance as of the specified date
-    /// </summary>
-    private AccountBalance ApplyToAccountBalancePrivate(
-        TransactionAccount transactionAccount,
-        TransactionAccountType transactionAccountType,
-        AccountBalance existingAccountBalance,
-        DateOnly date)
-    {
-        AccountBalance newAccountBalance = existingAccountBalance;
-        if (Date == date)
-        {
-            newAccountBalance = transactionAccountType == TransactionAccountType.Debit
-                ? newAccountBalance.AddNewPendingDebits(transactionAccount.FundAmounts)
-                : newAccountBalance.AddNewPendingCredits(transactionAccount.FundAmounts);
-        }
-        if (transactionAccount.PostedDate == date)
-        {
-            newAccountBalance = transactionAccountType == TransactionAccountType.Debit
-                ? newAccountBalance.PostPendingDebits(transactionAccount.FundAmounts)
-                : newAccountBalance.PostPendingCredits(transactionAccount.FundAmounts);
-        }
-        return newAccountBalance;
-    }
-
-    /// <summary>
-    /// Applies this Transaction to the provided existing Fund Balance as of the specified date
-    /// </summary>
-    private FundBalance ApplyToFundBalancePrivate(
-        TransactionAccount transactionAccount,
-        FundAmount fundAmount,
-        TransactionAccountType transactionAccountType,
-        FundBalance existingFundBalance,
-        DateOnly date)
-    {
-        var accountAmount = new AccountAmount
-        {
-            AccountId = transactionAccount.AccountId,
-            Amount = fundAmount.Amount
-        };
-        FundBalance newFundBalance = existingFundBalance;
-        if (Date == date)
-        {
-            newFundBalance = transactionAccountType == TransactionAccountType.Debit
-                ? newFundBalance.AddNewPendingDebit(accountAmount)
-                : newFundBalance.AddNewPendingCredit(accountAmount);
-        }
-        if (transactionAccount.PostedDate == date)
-        {
-            newFundBalance = transactionAccountType == TransactionAccountType.Debit
-                ? newFundBalance.PostPendingDebit(accountAmount)
-                : newFundBalance.PostPendingCredit(accountAmount);
-        }
-        return newFundBalance;
-    }
-
-    /// <summary>
-    /// Enum representing the types of Transaction Accounts
-    /// </summary>
-    private enum TransactionAccountType
-    {
-        Debit,
-        Credit
     }
 }
 

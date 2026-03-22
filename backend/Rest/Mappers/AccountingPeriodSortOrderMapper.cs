@@ -22,6 +22,10 @@ internal sealed class AccountingPeriodSortOrderMapper
             AccountingPeriodSortOrderModel.DateDescending => AccountingPeriodSortOrder.DateDescending,
             AccountingPeriodSortOrderModel.IsOpen => AccountingPeriodSortOrder.IsOpen,
             AccountingPeriodSortOrderModel.IsOpenDescending => AccountingPeriodSortOrder.IsOpenDescending,
+            AccountingPeriodSortOrderModel.OpeningBalance => AccountingPeriodSortOrder.OpeningBalance,
+            AccountingPeriodSortOrderModel.OpeningBalanceDescending => AccountingPeriodSortOrder.OpeningBalanceDescending,
+            AccountingPeriodSortOrderModel.ClosingBalance => AccountingPeriodSortOrder.ClosingBalance,
+            AccountingPeriodSortOrderModel.ClosingBalanceDescending => AccountingPeriodSortOrder.ClosingBalanceDescending,
             _ => null
         };
         return accountingPeriodSortOrder != null;
