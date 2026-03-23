@@ -22,10 +22,8 @@ internal sealed class AccountTransactionSortOrderMapper
             AccountTransactionSortOrderModel.DateDescending => AccountTransactionSortOrder.DateDescending,
             AccountTransactionSortOrderModel.Location => AccountTransactionSortOrder.Location,
             AccountTransactionSortOrderModel.LocationDescending => AccountTransactionSortOrder.LocationDescending,
-            AccountTransactionSortOrderModel.Type => AccountTransactionSortOrder.Type,
-            AccountTransactionSortOrderModel.TypeDescending => AccountTransactionSortOrder.TypeDescending,
-            AccountTransactionSortOrderModel.Amount => AccountTransactionSortOrder.Amount,
-            AccountTransactionSortOrderModel.AmountDescending => AccountTransactionSortOrder.AmountDescending,
+            AccountTransactionSortOrderModel.ChangeInBalance => AccountTransactionSortOrder.ChangeInBalance,
+            AccountTransactionSortOrderModel.ChangeInBalanceDescending => AccountTransactionSortOrder.ChangeInBalanceDescending,
             _ => null
         };
         return accountTransactionSortOrder != null;

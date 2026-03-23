@@ -95,6 +95,7 @@ const FundListFrame = function ({
           setSort(null);
         }
       },
+      alignment: "right",
     },
     {
       name: "closingBalance",
@@ -117,6 +118,7 @@ const FundListFrame = function ({
           setSort(null);
         }
       },
+      alignment: "right",
     },
     {
       name: "actions",

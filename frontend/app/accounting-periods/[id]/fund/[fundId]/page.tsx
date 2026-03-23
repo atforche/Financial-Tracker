@@ -1,9 +1,12 @@
+import { Stack, Typography } from "@mui/material";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
 import FundBalanceFrame from "@/app/accounting-periods/[id]/fund/[fundId]/FundBalanceFrame";
+import type { FundTransactionSortOrder } from "@/data/fundTypes";
 import type { JSX } from "react";
-import Stack from "@mui/material/Stack";
+import SearchBar from "@/framework/listframe/SearchBar";
+import TransactionListFrame from "@/app/accounting-periods/[id]/fund/[fundId]/TransactionListFrame";
 import getApiClient from "@/data/getApiClient";
 
 /**
@@ -14,13 +17,21 @@ interface PageProps {
     id: string;
     fundId: string;
   }>;
+  readonly searchParams: Promise<{
+    transactionSearch?: string;
+    transactionSort?: FundTransactionSortOrder;
+  }>;
 }
 
 /**
  * Component that views the view for a single fund in the context of an accounting period.
  */
-const Page = async function ({ params }: PageProps): Promise<JSX.Element> {
+const Page = async function ({
+  params,
+  searchParams,
+}: PageProps): Promise<JSX.Element> {
   const { id, fundId } = await params;
+  const { transactionSearch, transactionSort } = await searchParams;
 
   const apiClient = getApiClient();
   const accountingPeriodPromise = apiClient.GET(
@@ -50,7 +61,9 @@ const Page = async function ({ params }: PageProps): Promise<JSX.Element> {
         },
         query: {
           AccountingPeriodId: id,
-        }
+          Search: transactionSearch ?? "",
+          Sort: transactionSort ?? null,
+        },
       },
     },
   );
@@ -58,7 +71,11 @@ const Page = async function ({ params }: PageProps): Promise<JSX.Element> {
     { data: accountingPeriodData, error: accountingPeriodError },
     { data: fundData, error: fundError },
     { data: fundTransactionsData, error: fundTransactionsError },
-  ] = await Promise.all([accountingPeriodPromise, fundPromise, fundTransactionsPromise]);
+  ] = await Promise.all([
+    accountingPeriodPromise,
+    fundPromise,
+    fundTransactionsPromise,
+  ]);
 
   if (
     typeof accountingPeriodData === "undefined" ||
@@ -90,6 +107,16 @@ const Page = async function ({ params }: PageProps): Promise<JSX.Element> {
         <CaptionedValue caption="Description" value={fundData.description} />
       </CaptionedFrame>
       <FundBalanceFrame fund={fundData} />
+      <Stack spacing={2} style={{ maxWidth: 1000 }}>
+        <Typography variant="h6">Transactions</Typography>
+        <SearchBar paramName="transactionSearch" />
+        <TransactionListFrame
+          accountingPeriod={accountingPeriodData}
+          fund={fundData}
+          data={fundTransactionsData.items}
+          totalCount={fundTransactionsData.totalCount}
+        />
+      </Stack>
     </Stack>
   );
 };

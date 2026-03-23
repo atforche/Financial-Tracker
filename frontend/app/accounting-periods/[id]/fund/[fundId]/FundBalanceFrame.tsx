@@ -73,7 +73,7 @@ const FundBalanceFrame = function ({
         <CaptionedValue
           caption="Total"
           value={
-            fund.closingBalance.postedBalance >
+            fund.closingBalance.postedBalance >=
             fund.openingBalance.postedBalance ? (
               <span style={{ color: "green" }}>
                 +{" "}
@@ -86,8 +86,10 @@ const FundBalanceFrame = function ({
               <span style={{ color: "red" }}>
                 -{" "}
                 {formatCurrency(
-                  fund.closingBalance.postedBalance -
-                    fund.openingBalance.postedBalance,
+                  Math.abs(
+                    fund.closingBalance.postedBalance -
+                      fund.openingBalance.postedBalance,
+                  ),
                 )}
               </span>
             )
@@ -102,13 +104,13 @@ const FundBalanceFrame = function ({
                   key={accountName}
                   caption={accountName}
                   value={
-                    amount > 0 ? (
+                    amount >= 0 ? (
                       <span style={{ color: "green" }}>
                         + {formatCurrency(amount)}
                       </span>
                     ) : (
                       <span style={{ color: "red" }}>
-                        - {formatCurrency(amount)}
+                        - {formatCurrency(Math.abs(amount))}
                       </span>
                     )
                   }

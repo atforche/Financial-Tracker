@@ -1,5 +1,6 @@
 import {
   AccountingPeriodFundSortOrderModel,
+  FundTransactionSortOrderModel,
   type components,
 } from "@/data/api";
 
@@ -38,4 +39,5 @@ export {
   type CreateFundRequest,
   type FundAmount,
   AccountingPeriodFundSortOrderModel as AccountingPeriodFundSortOrder,
+  FundTransactionSortOrderModel as FundTransactionSortOrder,
 };

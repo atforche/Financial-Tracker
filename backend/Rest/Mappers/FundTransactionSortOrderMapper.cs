@@ -22,10 +22,8 @@ internal sealed class FundTransactionSortOrderMapper
             FundTransactionSortOrderModel.DateDescending => FundTransactionSortOrder.DateDescending,
             FundTransactionSortOrderModel.Location => FundTransactionSortOrder.Location,
             FundTransactionSortOrderModel.LocationDescending => FundTransactionSortOrder.LocationDescending,
-            FundTransactionSortOrderModel.Type => FundTransactionSortOrder.Type,
-            FundTransactionSortOrderModel.TypeDescending => FundTransactionSortOrder.TypeDescending,
-            FundTransactionSortOrderModel.Amount => FundTransactionSortOrder.Amount,
-            FundTransactionSortOrderModel.AmountDescending => FundTransactionSortOrder.AmountDescending,
+            FundTransactionSortOrderModel.ChangeInBalance => FundTransactionSortOrder.ChangeInBalance,
+            FundTransactionSortOrderModel.ChangeInBalanceDescending => FundTransactionSortOrder.ChangeInBalanceDescending,
             _ => null
         };
         return fundTransactionSortOrder != null;

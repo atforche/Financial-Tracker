@@ -99,7 +99,7 @@ public sealed class AccountController(
             });
         }
 
-        PaginatedCollection<Transaction> paginatedResults = transactionRepository.GetManyByAccount(account.Id, new GetAccountTransactionsRequest
+        PaginatedCollection<Transaction> paginatedResults = transactionRepository.GetManyByAccount(account, new GetAccountTransactionsRequest
         {
             Search = queryParameters.Search,
             Sort = accountTransactionSortOrder,

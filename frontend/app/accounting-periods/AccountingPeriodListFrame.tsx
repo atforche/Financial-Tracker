@@ -115,6 +115,7 @@ const AccountingPeriodListFrame = function ({
           setSort(null);
         }
       },
+      alignment: "right",
     },
     {
       name: "closingBalance",
@@ -136,6 +137,7 @@ const AccountingPeriodListFrame = function ({
           setSort(null);
         }
       },
+      alignment: "right",
     },
     {
       name: "actions",

@@ -26,22 +26,12 @@ public enum AccountTransactionSortOrder
     LocationDescending,
 
     /// <summary>
-    /// Transactions are sorted by type in ascending order
+    /// Transactions are sorted by change in balance in ascending order
     /// </summary>
-    Type,
+    ChangeInBalance,
 
     /// <summary>
-    /// Transactions are sorted by type in descending order
+    /// Transactions are sorted by change in balance in descending order
     /// </summary>
-    TypeDescending,
-
-    /// <summary>
-    /// Transactions are sorted by amount in ascending order
-    /// </summary>
-    Amount,
-
-    /// <summary>
-    /// Transactions are sorted by amount in descending order
-    /// </summary>
-    AmountDescending,
+    ChangeInBalanceDescending,
 }

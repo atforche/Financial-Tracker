@@ -1747,10 +1747,8 @@ export enum AccountTransactionSortOrderModel {
     DateDescending = "DateDescending",
     Location = "Location",
     LocationDescending = "LocationDescending",
-    Type = "Type",
-    TypeDescending = "TypeDescending",
-    Amount = "Amount",
-    AmountDescending = "AmountDescending"
+    ChangeInBalance = "ChangeInBalance",
+    ChangeInBalanceDescending = "ChangeInBalanceDescending"
 }
 export enum AccountTypeModel {
     Standard = "Standard",
@@ -1769,9 +1767,7 @@ export enum FundTransactionSortOrderModel {
     DateDescending = "DateDescending",
     Location = "Location",
     LocationDescending = "LocationDescending",
-    Type = "Type",
-    TypeDescending = "TypeDescending",
-    Amount = "Amount",
-    AmountDescending = "AmountDescending"
+    ChangeInBalance = "ChangeInBalance",
+    ChangeInBalanceDescending = "ChangeInBalanceDescending"
 }
 export type operations = Record<string, never>;

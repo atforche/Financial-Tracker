@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
@@ -61,7 +60,7 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
                         select Transactions.* from Transactions
                         left join Accounts as DebitAccount on Transactions.DebitAccount_AccountId = DebitAccount.Id
                         left join Accounts as CreditAccount on Transactions.CreditAccount_AccountId = CreditAccount.Id
-                        where Transactions.AccountingPeriodId = '{accountingPeriodId.Value.ToString().ToUpper(CultureInfo.InvariantCulture)}'
+                        where Transactions.AccountingPeriodId = '{accountingPeriodId.Value.ToString().ToUpperInvariant()}'
                         """;
         if (request.Search is not null and not "")
         {
@@ -136,62 +135,68 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     /// <summary>
     /// Gets the Transactions within the specified Account that match the specified criteria
     /// </summary>
-    public PaginatedCollection<Transaction> GetManyByAccount(AccountId accountId, GetAccountTransactionsRequest request)
+    public PaginatedCollection<Transaction> GetManyByAccount(Account account, GetAccountTransactionsRequest request)
     {
         string query = $"""
                         select Transactions.* from Transactions
-                        left join Accounts as DebitAccount on Transactions.DebitAccount_AccountId = DebitAccount.Id
-                        left join Accounts as CreditAccount on Transactions.CreditAccount_AccountId = CreditAccount.Id
-                        where (DebitAccount.Id = '{accountId.Value}' or CreditAccount.Id = '{accountId.Value}')
+                        where (Transactions.DebitAccount_AccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or Transactions.CreditAccount_AccountId = '{account.Id.Value.ToString().ToUpperInvariant()}') 
                         """;
+        if (request.AccountingPeriodId != null)
+        {
+            query += $" and Transactions.AccountingPeriodId = '{request.AccountingPeriodId.Value.ToString().ToUpperInvariant()}'";
+        }
         if (request.Search != null)
         {
             query += $"""
                         and (Transactions.Date like '%{request.Search}%' or
                             Transactions.Description like '%{request.Search}%' or 
-                            Transactions.Location like '%{request.Search}%' or
-                            Transactions.Amount like '%{request.Search}%')";
+                            Transactions.Location like '%{request.Search}%')
                         """;
-        }
-        if (request.Sort is null or AccountTransactionSortOrder.DateDescending)
-        {
-            query += $" order by Transactions.Date desc, Transactions.Sequence desc";
-        }
-        else if (request.Sort == AccountTransactionSortOrder.Date)
-        {
-            query += $" order by Transactions.Date asc, Transactions.Sequence asc";
-        }
-        else if (request.Sort == AccountTransactionSortOrder.Location)
-        {
-            query += $" order by Transactions.Location asc, Transactions.Date desc, Transactions.Sequence desc";
-        }
-        else if (request.Sort == AccountTransactionSortOrder.LocationDescending)
-        {
-            query += $" order by Transactions.Location desc, Transactions.Date desc, Transactions.Sequence desc";
-        }
-        else if (request.Sort == AccountTransactionSortOrder.Type)
-        {
-            query += $" order by case when DebitAccount.Id = {accountId} then DebitAccount.Name else CreditAccount.Name end asc, Transactions.Date desc, Transactions.Sequence desc";
-        }
-        else if (request.Sort == AccountTransactionSortOrder.TypeDescending)
-        {
-            query += $" order by case when DebitAccount.Id = {accountId} then DebitAccount.Name else CreditAccount.Name end desc, Transactions.Date desc, Transactions.Sequence desc";
-        }
-        else if (request.Sort == AccountTransactionSortOrder.Amount)
-        {
-            query += $" order by Transactions.Amount asc, Transactions.Date desc, Transactions.Sequence desc";
-        }
-        else if (request.Sort == AccountTransactionSortOrder.AmountDescending)
-        {
-            query += $" order by Transactions.Amount desc, Transactions.Date desc, Transactions.Sequence desc";
         }
 
         var transactions = databaseContext.Transactions.FromSqlRaw(query).ToList();
+        if (request.Sort is null or AccountTransactionSortOrder.DateDescending)
+        {
+            transactions = transactions.OrderByDescending(t => t.Date).ThenByDescending(t => t.Sequence).ToList();
+        }
+        else if (request.Sort == AccountTransactionSortOrder.Date)
+        {
+            transactions = transactions.OrderBy(t => t.Date).ThenBy(t => t.Sequence).ToList();
+        }
+        else if (request.Sort == AccountTransactionSortOrder.Location)
+        {
+            transactions = transactions.OrderBy(t => t.Location).ThenByDescending(t => t.Date).ThenByDescending(t => t.Sequence).ToList();
+        }
+        else if (request.Sort == AccountTransactionSortOrder.LocationDescending)
+        {
+            transactions = transactions.OrderByDescending(t => t.Location).ThenByDescending(t => t.Date).ThenByDescending(t => t.Sequence).ToList();
+        }
+        else if (request.Sort == AccountTransactionSortOrder.ChangeInBalance)
+        {
+            transactions = transactions.OrderBy(GetChangeInBalance).ThenByDescending(t => t.Date).ThenByDescending(t => t.Sequence).ToList();
+        }
+        else if (request.Sort == AccountTransactionSortOrder.ChangeInBalanceDescending)
+        {
+            transactions = transactions.OrderByDescending(GetChangeInBalance).ThenByDescending(t => t.Date).ThenByDescending(t => t.Sequence).ToList();
+        }
         return new PaginatedCollection<Transaction>
         {
             Items = GetPagedTransactions(transactions, request.Limit, request.Offset),
             TotalCount = transactions.Count,
         };
+
+        decimal GetChangeInBalance(Transaction transaction)
+        {
+            if (transaction.DebitAccount?.AccountId == account.Id && transaction.CreditAccount?.AccountId == account.Id)
+            {
+                return 0;
+            }
+            if (transaction.DebitAccount?.AccountId == account.Id)
+            {
+                return account.Type == AccountType.Debt ? transaction.Amount : -transaction.Amount;
+            }
+            return account.Type == AccountType.Debt ? -transaction.Amount : transaction.Amount;
+        }
     }
 
     /// <summary>
@@ -201,59 +206,59 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     {
         string query = $"""
                         select Transactions.* from Transactions
-                        left join Accounts as DebitAccount on Transactions.DebitAccount_AccountId = DebitAccount.Id
-                        left join Accounts as CreditAccount on Transactions.CreditAccount_AccountId = CreditAccount.Id
-                        where (DebitFundAmounts.FundId = '{fundId.Value}' or CreditFundAmounts.FundId = '{fundId.Value}') 
-                            and Transactions.AccountingPeriodId = '{request.AccountingPeriodId?.Value.ToString().ToUpper(CultureInfo.InvariantCulture)}'
+                        where (exists (select 1 from TransactionDebitAccountFundAmounts where TransactionDebitAccountFundAmounts.TransactionAccountTransactionId = Transactions.Id and TransactionDebitAccountFundAmounts.FundId = '{fundId.Value.ToString().ToUpperInvariant()}')
+                            or exists (select 1 from TransactionCreditAccountFundAmounts where TransactionCreditAccountFundAmounts.TransactionAccountTransactionId = Transactions.Id and TransactionCreditAccountFundAmounts.FundId = '{fundId.Value.ToString().ToUpperInvariant()}'))
                         """;
+        if (request.AccountingPeriodId != null)
+        {
+            query += $" and Transactions.AccountingPeriodId = '{request.AccountingPeriodId.Value.ToString().ToUpperInvariant()}'";
+        }
         if (request.Search != null)
         {
             query += $"""
                         and (Transactions.Date like '%{request.Search}%' or
                             Transactions.Description like '%{request.Search}%' or 
-                            Transactions.Location like '%{request.Search}%' or
-                            Transactions.Amount like '%{request.Search}%')";
+                            Transactions.Location like '%{request.Search}%')
                         """;
-        }
-        if (request.Sort is null or FundTransactionSortOrder.DateDescending)
-        {
-            query += $" order by Transactions.Date desc, Transactions.Sequence desc";
-        }
-        else if (request.Sort == FundTransactionSortOrder.Date)
-        {
-            query += $" order by Transactions.Date asc, Transactions.Sequence asc";
-        }
-        else if (request.Sort == FundTransactionSortOrder.Location)
-        {
-            query += $" order by Transactions.Location asc, Transactions.Date desc, Transactions.Sequence desc";
-        }
-        else if (request.Sort == FundTransactionSortOrder.LocationDescending)
-        {
-            query += $" order by Transactions.Location desc, Transactions.Date desc, Transactions.Sequence desc";
-        }
-        else if (request.Sort == FundTransactionSortOrder.Type)
-        {
-            query += $" order by case when DebitFundAmounts.FundId = {fundId} then 0 else 1 end asc, Transactions.Date desc, Transactions.Sequence desc";
-        }
-        else if (request.Sort == FundTransactionSortOrder.TypeDescending)
-        {
-            query += $" order by case when DebitFundAmounts.FundId = {fundId} then 0 else 1 end desc, Transactions.Date desc, Transactions.Sequence desc";
-        }
-        else if (request.Sort == FundTransactionSortOrder.Amount)
-        {
-            query += $" order by Transactions.Amount asc, Transactions.Date desc, Transactions.Sequence desc";
-        }
-        else if (request.Sort == FundTransactionSortOrder.AmountDescending)
-        {
-            query += $" order by Transactions.Amount desc, Transactions.Date desc, Transactions.Sequence desc";
         }
 
         var transactions = databaseContext.Transactions.FromSqlRaw(query).ToList();
+        if (request.Sort is null or FundTransactionSortOrder.DateDescending)
+        {
+            transactions = transactions.OrderByDescending(t => t.Date).ThenByDescending(t => t.Sequence).ToList();
+        }
+        else if (request.Sort == FundTransactionSortOrder.Date)
+        {
+            transactions = transactions.OrderBy(t => t.Date).ThenBy(t => t.Sequence).ToList();
+        }
+        else if (request.Sort == FundTransactionSortOrder.Location)
+        {
+            transactions = transactions.OrderBy(t => t.Location).ThenByDescending(t => t.Date).ThenByDescending(t => t.Sequence).ToList();
+        }
+        else if (request.Sort == FundTransactionSortOrder.LocationDescending)
+        {
+            transactions = transactions.OrderByDescending(t => t.Location).ThenByDescending(t => t.Date).ThenByDescending(t => t.Sequence).ToList();
+        }
+        else if (request.Sort == FundTransactionSortOrder.ChangeInBalance)
+        {
+            transactions = transactions.OrderBy(GetChangeInBalance).ThenByDescending(t => t.Date).ThenByDescending(t => t.Sequence).ToList();
+        }
+        else if (request.Sort == FundTransactionSortOrder.ChangeInBalanceDescending)
+        {
+            transactions = transactions.OrderByDescending(GetChangeInBalance).ThenByDescending(t => t.Date).ThenByDescending(t => t.Sequence).ToList();
+        }
         return new PaginatedCollection<Transaction>
         {
             Items = GetPagedTransactions(transactions, request.Limit, request.Offset),
             TotalCount = transactions.Count,
         };
+
+        decimal GetChangeInBalance(Transaction transaction)
+        {
+            decimal debitFundAmount = transaction.DebitAccount?.FundAmounts.FirstOrDefault(fundAmount => fundAmount.FundId == fundId)?.Amount ?? 0;
+            decimal creditFundAmount = transaction.CreditAccount?.FundAmounts.FirstOrDefault(fundAmount => fundAmount.FundId == fundId)?.Amount ?? 0;
+            return creditFundAmount - debitFundAmount;
+        }
     }
 
     /// <summary>

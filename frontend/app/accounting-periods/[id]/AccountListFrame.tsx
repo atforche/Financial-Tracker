@@ -118,6 +118,7 @@ const AccountListFrame = function ({
         }
       },
       minWidth: 125,
+      alignment: "right",
     },
     {
       name: "closingBalance",
@@ -141,6 +142,7 @@ const AccountListFrame = function ({
         }
       },
       minWidth: 125,
+      alignment: "right",
     },
     {
       name: "actions",

@@ -173,6 +173,7 @@ const TransactionListFrame = function ({
           setSort(null);
         }
       },
+      alignment: "right",
     },
     {
       name: "actions",
