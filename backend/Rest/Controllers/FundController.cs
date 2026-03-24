@@ -78,15 +78,15 @@ public sealed class FundController(
     public IActionResult GetAccountingPeriodFund(Guid fundId, Guid accountingPeriodId)
     {
         Dictionary<string, string[]> errors = [];
-        if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
-        {
-            errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
-        }
         if (!fundMapper.TryToDomain(fundId, out Fund? fund))
         {
             errors.Add(nameof(fundId), new[] { $"Fund with ID {fundId} not found." });
         }
-        if (errors.Count > 0 || accountingPeriod == null || fund == null)
+        if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
+        {
+            errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
+        }
+        if (errors.Count > 0 || fund == null || accountingPeriod == null)
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {

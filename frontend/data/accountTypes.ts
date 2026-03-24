@@ -1,4 +1,5 @@
 import {
+  AccountTransactionSortOrderModel,
   AccountTypeModel,
   AccountingPeriodAccountSortOrderModel,
   type components,
@@ -28,11 +29,26 @@ interface AccountIdentifier {
  */
 type CreateAccountRequest = components["schemas"]["CreateAccountModel"];
 
+/**
+ * Determines if the provided change in balance is "positive" based on the provided account type.
+ */
+const isPositiveChangeInBalance = function (
+  accountType: AccountTypeModel,
+  changeInBalance: number,
+): boolean {
+  if (accountType === AccountTypeModel.Debt) {
+    return changeInBalance <= 0;
+  }
+  return changeInBalance >= 0;
+};
+
 export {
   type Account,
   type AccountingPeriodAccount,
   type AccountIdentifier,
   type CreateAccountRequest,
   AccountingPeriodAccountSortOrderModel as AccountingPeriodAccountSortOrder,
+  AccountTransactionSortOrderModel as AccountTransactionSortOrder,
   AccountTypeModel as AccountType,
+  isPositiveChangeInBalance,
 };

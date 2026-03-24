@@ -1,4 +1,5 @@
 using Data;
+using Data.AccountingPeriods;
 using Data.Accounts;
 using Data.Transactions;
 using Domain.AccountingPeriods;
@@ -22,10 +23,12 @@ namespace Rest.Controllers;
 [Route("/accounts")]
 public sealed class AccountController(
     UnitOfWork unitOfWork,
+    AccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
     AccountRepository accountRepository,
     TransactionRepository transactionRepository,
     AccountService accountService,
     AccountingPeriodMapper accountingPeriodMapper,
+    AccountingPeriodAccountMapper accountingPeriodAccountMapper,
     AccountMapper accountMapper,
     FundAmountMapper fundAmountMapper,
     TransactionMapper transactionMapper) : ControllerBase
@@ -69,6 +72,50 @@ public sealed class AccountController(
             Items = paginatedResults.Items.Select(accountMapper.ToModel).ToList(),
             TotalCount = paginatedResults.TotalCount
         });
+    }
+
+    /// <summary>
+    /// Retrieves the Account as it appeared in the provided Accounting Period
+    /// </summary>
+    [HttpGet("{accountId}/{accountingPeriodId}")]
+    [ProducesResponseType(typeof(AccountingPeriodAccountModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetAccountingPeriodAccount(Guid accountId, Guid accountingPeriodId)
+    {
+        Dictionary<string, string[]> errors = [];
+        if (!accountMapper.TryToDomain(accountId, out Account? account))
+        {
+            errors.Add(nameof(accountId), new[] { $"Account with ID {accountId} not found." });
+        }
+        if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
+        {
+            errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
+        }
+        if (errors.Count > 0 || account == null || accountingPeriod == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Accounting Period Fund.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        AccountingPeriodBalanceHistory? accountingPeriodBalanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
+        AccountAccountingPeriodBalanceHistory? accountBalanceHistory = accountingPeriodBalanceHistory?.AccountBalances
+            .FirstOrDefault(accountHistory => accountHistory.Account.Id == account.Id);
+        if (accountBalanceHistory == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Accounting Period Fund.",
+                Errors = new Dictionary<string, string[]>
+                {
+                    { nameof(accountId), new[] { $"Account with ID {accountId} not found for Accounting Period with ID {accountingPeriodId}." } }
+                },
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        return Ok(accountingPeriodAccountMapper.ToModel(accountBalanceHistory));
     }
 
     /// <summary>
