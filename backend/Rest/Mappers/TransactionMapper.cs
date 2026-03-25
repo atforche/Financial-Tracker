@@ -59,14 +59,27 @@ public sealed class TransactionMapper(
         {
             return null;
         }
+        Account account = accountRepository.GetById(transactionAccount.AccountId);
         return new TransactionAccountModel
         {
             AccountId = transactionAccount.AccountId.Value,
-            AccountName = accountRepository.GetById(transactionAccount.AccountId).Name,
+            AccountName = account.Name,
+            AccountType = AccountTypeMapper.ToModel(account.Type),
+            Type = ToModel(transactionAccount.Type),
             PostedDate = transactionAccount.PostedDate,
             FundAmounts = transactionAccount.FundAmounts.Select(fundAmountMapper.ToModel).ToList(),
             PreviousAccountBalance = accountBalanceMapper.ToModel(accountBalanceService.GetPreviousBalanceForTransaction(transactionAccount)),
             NewAccountBalance = accountBalanceMapper.ToModel(accountBalanceService.GetNewBalanceForTransaction(transactionAccount)),
         };
     }
+
+    /// <summary>
+    /// Maps the provided Transaction Account Type to a Transaction Account Type Model
+    /// </summary>
+    private static TransactionAccountTypeModel ToModel(TransactionAccountType transactionAccountType) => transactionAccountType switch
+    {
+        TransactionAccountType.Debit => TransactionAccountTypeModel.Debit,
+        TransactionAccountType.Credit => TransactionAccountTypeModel.Credit,
+        _ => throw new InvalidOperationException($"Unrecognized Transaction Account Type: {transactionAccountType}")
+    };
 }

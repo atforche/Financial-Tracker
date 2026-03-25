@@ -2,6 +2,8 @@ import { Stack, Typography } from "@mui/material";
 import Caption from "@/framework/view/Caption";
 import type { JSX } from "react";
 
+const defaultMaxWidth = 500;
+
 /**
  * Props for the CaptionedValue component.
  */
@@ -12,15 +14,17 @@ interface CaptionedValueProps {
 
 /**
  * Component that presents the user with a caption and its corresponding value.
- * @param props - Props for the CaptionedValue component.
- * @returns JSX element representing the CaptionedValue component.
  */
 const CaptionedValue = function ({
   caption,
   value,
 }: CaptionedValueProps): JSX.Element {
   return (
-    <Stack direction="row" justifyContent="space-between">
+    <Stack
+      direction="row"
+      justifyContent="space-between"
+      sx={{ maxWidth: defaultMaxWidth }}
+    >
       <Caption caption={caption} />
       <Typography variant="subtitle1">{value}</Typography>
     </Stack>

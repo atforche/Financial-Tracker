@@ -1063,30 +1063,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/transactions": {
+    "/transactions/{transactionId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        /** Creates a new Transaction with the provided properties */
-        post: {
+        /** Retrieves the Transaction with the provided ID */
+        get: {
             parameters: {
                 query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    transactionId: string;
+                };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateTransactionModel"];
-                    "text/json": components["schemas"]["CreateTransactionModel"];
-                    "application/*+json": components["schemas"]["CreateTransactionModel"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 /** @description OK */
                 200: {
@@ -1112,20 +1106,6 @@ export interface paths {
                 };
             };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/transactions/{transactionId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
         put?: never;
         /** Updates the provided Transaction with the provided properties */
         post: {
@@ -1194,6 +1174,61 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Creates a new Transaction with the provided properties */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateTransactionModel"];
+                    "text/json": components["schemas"]["CreateTransactionModel"];
+                    "application/*+json": components["schemas"]["CreateTransactionModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionModel"];
+                        "application/json": components["schemas"]["TransactionModel"];
+                        "text/json": components["schemas"]["TransactionModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1577,6 +1612,8 @@ export interface components {
              * @description Fund ID for the Fund Balance
              */
             fundId: string;
+            /** @description Fund Name for the Fund Balance */
+            fundName: string;
             /**
              * Format: double
              * @description Posted Balance for the Fund Balance
@@ -1647,6 +1684,10 @@ export interface components {
             accountId: string;
             /** @description Account Name for the Transaction Account */
             accountName: string;
+            /** @description Account Type for the Transaction Account */
+            accountType: components["schemas"]["AccountTypeModel"];
+            /** @description Type for the Transaction Account */
+            type: components["schemas"]["TransactionAccountTypeModel"];
             /**
              * Format: date
              * @description Posted Date for the Transaction Account
@@ -1659,6 +1700,11 @@ export interface components {
             /** @description New Account Balance for the Transaction Account */
             newAccountBalance: components["schemas"]["AccountBalanceModel"];
         };
+        /**
+         * @description Enum representing the types of Transaction Accounts
+         * @enum {unknown}
+         */
+        TransactionAccountTypeModel: TransactionAccountTypeModel;
         /** @description Model representing a Transaction */
         TransactionModel: {
             /**
@@ -1821,5 +1867,9 @@ export enum FundTransactionSortOrderModel {
     LocationDescending = "LocationDescending",
     ChangeInBalance = "ChangeInBalance",
     ChangeInBalanceDescending = "ChangeInBalanceDescending"
+}
+export enum TransactionAccountTypeModel {
+    Debit = "Debit",
+    Credit = "Credit"
 }
 export type operations = Record<string, never>;

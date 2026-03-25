@@ -10,7 +10,7 @@ const defaultMaxWidth = 500;
 interface CaptionedFrameProps {
   readonly caption: string;
   readonly minWidth?: number;
-  readonly maxWidth?: number;
+  readonly maxWidth?: number | null;
   readonly children: React.ReactNode;
 }
 
@@ -32,7 +32,7 @@ const CaptionedFrame = function ({
         borderRadius: "5px",
         padding: "0px 15px 15px 15px",
         minWidth,
-        maxWidth,
+        maxWidth: maxWidth ?? "none",
       }}
     >
       <legend>

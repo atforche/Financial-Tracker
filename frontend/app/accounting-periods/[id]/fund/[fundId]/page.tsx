@@ -24,7 +24,7 @@ interface PageProps {
 }
 
 /**
- * Component that views the view for a single fund in the context of an accounting period.
+ * Component that displays the view for a single fund in the context of an accounting period.
  */
 const Page = async function ({
   params,

@@ -25,6 +25,28 @@ public sealed class TransactionController(
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
+    /// Retrieves the Transaction with the provided ID
+    /// </summary>
+    [HttpGet("{transactionId}")]
+    [ProducesResponseType(typeof(TransactionModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult Get(Guid transactionId)
+    {
+        if (!transactionMapper.TryToDomain(transactionId, out Transaction? transaction))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Transaction.",
+                Errors = {
+                    { nameof(transactionId), new[] { $"Transaction with ID {transactionId} was not found." } }
+                },
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        return Ok(transactionMapper.ToModel(transaction));
+    }
+
+    /// <summary>
     /// Creates a new Transaction with the provided properties
     /// </summary>
     [HttpPost("")]

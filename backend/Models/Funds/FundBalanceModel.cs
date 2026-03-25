@@ -13,6 +13,11 @@ public class FundBalanceModel
     public required Guid FundId { get; init; }
 
     /// <summary>
+    /// Fund Name for the Fund Balance
+    /// </summary>
+    public required string FundName { get; init; }
+
+    /// <summary>
     /// Posted Balance for the Fund Balance
     /// </summary>
     public required decimal PostedBalance { get; init; }

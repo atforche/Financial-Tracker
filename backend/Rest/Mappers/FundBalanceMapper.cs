@@ -6,7 +6,7 @@ namespace Rest.Mappers;
 /// <summary>
 /// Mapper class that handles mapping Fund Balances to Fund Balance Models
 /// </summary>
-public sealed class FundBalanceMapper(AccountAmountMapper accountAmountMapper)
+public sealed class FundBalanceMapper(IFundRepository fundRepository, AccountAmountMapper accountAmountMapper)
 {
     /// <summary>
     /// Maps the provided Fund Balance to a Fund Balance Model
@@ -14,6 +14,7 @@ public sealed class FundBalanceMapper(AccountAmountMapper accountAmountMapper)
     public FundBalanceModel ToModel(FundBalance fundBalance) => new()
     {
         FundId = fundBalance.FundId.Value,
+        FundName = fundRepository.GetById(fundBalance.FundId).Name,
         PostedBalance = fundBalance.PostedBalance,
         AccountBalances = fundBalance.AccountBalances.Select(accountAmountMapper.ToModel).ToList(),
         PendingDebitAmount = fundBalance.PendingDebits.Sum(accountAmount => accountAmount.Amount),
