@@ -18,7 +18,7 @@ interface ComboBoxEntryFieldProps<T> {
   readonly label: string;
   readonly options: ComboBoxOption<T>[];
   readonly value: ComboBoxOption<T>;
-  readonly setValue: (newValue: ComboBoxOption<T>) => void;
+  readonly setValue?: ((newValue: ComboBoxOption<T>) => void) | null;
   readonly errorMessage?: string | null;
   readonly autoFocus?: boolean;
 }
@@ -32,7 +32,7 @@ const ComboBoxEntryField = function <T>({
   label,
   options,
   value,
-  setValue,
+  setValue = null,
   errorMessage = null,
   autoFocus = false,
 }: ComboBoxEntryFieldProps<T>): JSX.Element {
@@ -46,6 +46,7 @@ const ComboBoxEntryField = function <T>({
       options={options}
       inputValue={inputValue}
       value={value}
+      disabled={setValue === null}
       renderInput={(params) => (
         <Box sx={{ position: "relative" }}>
           <Typography
@@ -91,7 +92,7 @@ const ComboBoxEntryField = function <T>({
       onChange={(_, newValue) => {
         justSelected.current = true;
         setInputValue(newValue.label);
-        setValue(newValue);
+        setValue?.(newValue);
       }}
       onKeyDown={(event) => {
         if (event.key === "Tab") {
@@ -101,7 +102,7 @@ const ComboBoxEntryField = function <T>({
             );
             if (matchingOption) {
               setInputValue(matchingOption.label);
-              setValue(matchingOption);
+              setValue?.(matchingOption);
             }
           }
         }

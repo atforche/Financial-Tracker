@@ -12,9 +12,11 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of creating an account.
  */
 interface ActionState {
+  readonly redirectUrl: string;
   readonly errorTitle?: string | null;
   readonly nameErrors?: string | null;
   readonly typeErrors?: string | null;
+  readonly accountingPeriodErrors?: string | null;
   readonly dateErrors?: string | null;
   readonly amountErrors?: string | null;
   readonly unmappedErrors?: string | null;
@@ -24,7 +26,7 @@ interface ActionState {
  * Server action that creates a new account.
  */
 const createAccount = async function (
-  _: ActionState,
+  { redirectUrl }: ActionState,
   request: CreateAccountRequest,
 ): Promise<ActionState> {
   const client = getApiClient();
@@ -35,6 +37,7 @@ const createAccount = async function (
     if (isApiError(error)) {
       let nameErrorMessage = null;
       let typeErrorMessage = null;
+      let accountingPeriodErrorMessage = null;
       let dateErrorMessage = null;
       let amountErrorMessage = null;
       const unmappedErrors: (string | null)[] = [];
@@ -51,6 +54,13 @@ const createAccount = async function (
           typeErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else if (
           key.toUpperCase() ===
+          nameof<CreateAccountRequest>("accountingPeriodId").toUpperCase()
+        ) {
+          accountingPeriodErrorMessage = formatErrors(
+            error.errors?.[key] ?? null,
+          );
+        } else if (
+          key.toUpperCase() ===
           nameof<CreateAccountRequest>("addDate").toUpperCase()
         ) {
           dateErrorMessage = formatErrors(error.errors?.[key] ?? null);
@@ -64,9 +74,11 @@ const createAccount = async function (
         }
       }
       return {
+        redirectUrl,
         errorTitle: error.title ?? null,
         nameErrors: nameErrorMessage,
         typeErrors: typeErrorMessage,
+        accountingPeriodErrors: accountingPeriodErrorMessage,
         dateErrors: dateErrorMessage,
         amountErrors: amountErrorMessage,
         unmappedErrors: unmappedErrors.join(", ") || null,
@@ -75,8 +87,8 @@ const createAccount = async function (
     throw new Error("An unexpected error occurred", { cause: error });
   }
 
-  revalidatePath(`/accounting-periods/${request.accountingPeriodId}`);
-  redirect(`/accounting-periods/${request.accountingPeriodId}`);
+  revalidatePath(redirectUrl);
+  redirect(redirectUrl);
 };
 
 export default createAccount;

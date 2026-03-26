@@ -151,7 +151,9 @@ const AccountListFrame = function ({
           label="Add"
           icon={<AddCircleOutline />}
           onClick={() => {
-            router.push(`${pathname}/account/create`);
+            router.push(
+              `/accounts/create?accountingPeriodId=${accountingPeriod.id}`,
+            );
           }}
           disabled={!accountingPeriod.isOpen}
         />
