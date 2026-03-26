@@ -1,4 +1,5 @@
 import {
+  AccountSortOrderModel,
   AccountTransactionSortOrderModel,
   AccountTypeModel,
   AccountingPeriodAccountSortOrderModel,
@@ -47,6 +48,7 @@ export {
   type AccountingPeriodAccount,
   type AccountIdentifier,
   type CreateAccountRequest,
+  AccountSortOrderModel as AccountSortOrder,
   AccountingPeriodAccountSortOrderModel as AccountingPeriodAccountSortOrder,
   AccountTransactionSortOrderModel as AccountTransactionSortOrder,
   AccountTypeModel as AccountType,
