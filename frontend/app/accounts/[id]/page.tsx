@@ -84,13 +84,22 @@ const Page = async function ({
             { label: accountData.name, href: `/accounts/${id}` },
           ]}
         />
-        <Button
-          variant="contained"
-          color="primary"
-          href={`/accounts/${id}/update`}
-        >
-          Edit
-        </Button>
+        <Stack direction="row" spacing={1}>
+          <Button
+            variant="contained"
+            color="primary"
+            href={`/accounts/${id}/update`}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            href={`/accounts/${id}/delete`}
+          >
+            Delete
+          </Button>
+        </Stack>
       </Stack>
       <CaptionedFrame caption="Details">
         <CaptionedValue caption="Name" value={accountData.name} />

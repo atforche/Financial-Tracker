@@ -111,13 +111,22 @@ const Page = async function ({
             },
           ]}
         />
-        <Button
-          variant="contained"
-          color="primary"
-          href={`/accounts/${accountId}/update?accountingPeriodId=${id}`}
-        >
-          Edit
-        </Button>
+        <Stack direction="row" spacing={1}>
+          <Button
+            variant="contained"
+            color="primary"
+            href={`/accounts/${accountId}/update?accountingPeriodId=${id}`}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            href={`/accounts/${accountId}/delete?accountingPeriodId=${id}`}
+          >
+            Delete
+          </Button>
+        </Stack>
       </Stack>
       <CaptionedFrame caption="Details">
         <CaptionedValue caption="Name" value={accountData.name} />
