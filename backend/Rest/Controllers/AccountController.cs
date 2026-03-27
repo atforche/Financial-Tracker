@@ -34,6 +34,26 @@ public sealed class AccountController(
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
+    /// Retrieves the Account that matches the provided ID
+    /// </summary>
+    [HttpGet("{accountId}")]
+    [ProducesResponseType(typeof(AccountModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult Get(Guid accountId)
+    {
+        if (!accountMapper.TryToDomain(accountId, out Account? account))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Account.",
+                Errors = { [nameof(accountId)] = new[] { $"Account with ID {accountId} not found." } },
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        return Ok(accountMapper.ToModel(account));
+    }
+
+    /// <summary>
     /// Gets the Accounts that match the specified criteria
     /// </summary>
     [HttpGet("")]

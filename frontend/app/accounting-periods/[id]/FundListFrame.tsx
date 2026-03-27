@@ -127,7 +127,7 @@ const FundListFrame = function ({
           label="Add"
           icon={<AddCircleOutline />}
           onClick={() => {
-            router.push(`${pathname}/fund/create`);
+            router.push(`${pathname}/funds/create`);
           }}
           disabled={!accountingPeriod.isOpen}
         />
@@ -137,7 +137,7 @@ const FundListFrame = function ({
           label="View"
           icon={<ArrowForwardIos />}
           onClick={() => {
-            router.push(`${pathname}/fund/${fund.id}`);
+            router.push(`${pathname}/funds/${fund.id}`);
           }}
         />
       ),

@@ -62,6 +62,8 @@ const eslintConfig = defineConfig([
       "sort-keys": ["off"],
       "no-nested-ternary": "off",
       "no-negated-condition": "off",
+      "max-lines": "off",
+      complexity: "off",
 
       // import rules
       "import/no-deprecated": "error",

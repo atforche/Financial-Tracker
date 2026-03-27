@@ -13,7 +13,7 @@ import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import createFund from "@/app/accounting-periods/[id]/fund/create/createFund";
+import createFund from "@/app/accounting-periods/[id]/funds/create/createFund";
 
 /**
  * Props for the CreateFundForm component.

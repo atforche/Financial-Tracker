@@ -11,7 +11,9 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of creating a transaction.
  */
 interface ActionState {
+  readonly redirectUrl: string;
   readonly errorTitle?: string | null;
+  readonly accountingPeriodErrors?: string | null;
   readonly dateErrors?: string | null;
   readonly debitAccountErrors?: string | null;
   readonly creditAccountErrors?: string | null;
@@ -22,7 +24,7 @@ interface ActionState {
  * Server action that creates a new transaction.
  */
 const createTransaction = async function (
-  _: ActionState,
+  { redirectUrl }: ActionState,
   request: CreateTransactionRequest,
 ): Promise<ActionState> {
   const client = getApiClient();
@@ -31,12 +33,18 @@ const createTransaction = async function (
   });
   if (error) {
     if (isApiError(error)) {
+      let accountingPeriodErrorMessage = null;
       let dateErrorMessage = null;
       let debitAccountErrorMessage = null;
       let creditAccountErrorMessage = null;
       const unmappedErrors: (string | null)[] = [];
       for (const key of Object.keys(error.errors ?? {})) {
         if (
+          key.toUpperCase() ===
+          nameof<CreateTransactionRequest>("accountingPeriodId").toUpperCase()
+        ) {
+          accountingPeriodErrorMessage = error.errors?.[key]?.join(" ") ?? null;
+        } else if (
           key.toUpperCase() ===
           nameof<CreateTransactionRequest>("date").toUpperCase()
         ) {
@@ -56,7 +64,9 @@ const createTransaction = async function (
         }
       }
       return {
+        redirectUrl,
         errorTitle: error.title ?? null,
+        accountingPeriodErrors: accountingPeriodErrorMessage,
         dateErrors: dateErrorMessage,
         debitAccountErrors: debitAccountErrorMessage,
         creditAccountErrors: creditAccountErrorMessage,
@@ -66,8 +76,8 @@ const createTransaction = async function (
     throw new Error("An unexpected error occurred", { cause: error });
   }
 
-  revalidatePath(`/accounting-periods/${request.accountingPeriodId}`);
-  redirect(`/accounting-periods/${request.accountingPeriodId}`);
+  revalidatePath(redirectUrl);
+  redirect(redirectUrl);
 };
 
 export default createTransaction;

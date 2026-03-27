@@ -163,7 +163,7 @@ const AccountListFrame = function ({
           label="View"
           icon={<ArrowForwardIos />}
           onClick={() => {
-            router.push(`${pathname}/account/${account.id}`);
+            router.push(`${pathname}/accounts/${account.id}`);
           }}
         />
       ),

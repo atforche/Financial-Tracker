@@ -9,7 +9,7 @@ interface AccountEntryFieldProps {
   readonly label: string;
   readonly options: AccountIdentifier[];
   readonly value: AccountIdentifier | null;
-  readonly setValue: (newValue: AccountIdentifier | null) => void;
+  readonly setValue: ((newValue: AccountIdentifier | null) => void) | null;
   readonly errorMessage?: string | null;
 }
 
@@ -35,9 +35,13 @@ const AccountEntryField = function ({
           ? { label: "", value: null }
           : { label: value.name, value }
       }
-      setValue={(newValue): void => {
-        setValue(newValue.value);
-      }}
+      setValue={
+        setValue === null
+          ? null
+          : (newValue): void => {
+              setValue(newValue.value);
+            }
+      }
       errorMessage={errorMessage}
     />
   );

@@ -182,7 +182,9 @@ const TransactionListFrame = function ({
           label="Add"
           icon={<AddCircleOutline />}
           onClick={() => {
-            router.push(`${pathname}/transaction/create`);
+            router.push(
+              `/transactions/create?accountingPeriodId=${accountingPeriod.id}`,
+            );
           }}
           disabled={!accountingPeriod.isOpen}
         />
@@ -192,7 +194,9 @@ const TransactionListFrame = function ({
           label="View"
           icon={<ArrowForwardIos />}
           onClick={() => {
-            router.push(`${pathname}/transaction/${transaction.id}`);
+            router.push(
+              `/transactions/${transaction.id}?accountingPeriodId=${accountingPeriod.id}`,
+            );
           }}
         />
       ),

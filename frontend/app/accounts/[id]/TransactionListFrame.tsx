@@ -2,7 +2,7 @@
 
 import {
   AccountTransactionSortOrder,
-  type AccountingPeriodAccount,
+  type AccountType,
   isPositiveChangeInBalance,
 } from "@/data/accountTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -18,20 +18,28 @@ import formatCurrency from "@/framework/formatCurrency";
 import tryParseEnum from "@/data/tryParseEnum";
 
 /**
+ * Interface representing an account for the purpose of displaying transactions.
+ */
+interface Account {
+  id: string;
+  type: AccountType;
+}
+
+/**
  * Props for the TransactionListFrame component.
  */
 interface TransactionListFrameProps {
-  readonly accountingPeriod: AccountingPeriod;
-  readonly account: AccountingPeriodAccount;
+  readonly account: Account;
   readonly data: Transaction[] | null;
   readonly totalCount: number | null;
+  readonly accountingPeriod?: AccountingPeriod | null;
 }
 
 /**
  * Calculate the change in balance for the given account and transaction.
  */
 const getChangeInBalance = function (
-  account: AccountingPeriodAccount,
+  account: Account,
   transaction: Transaction,
 ): number {
   if (
@@ -47,13 +55,27 @@ const getChangeInBalance = function (
 };
 
 /**
- * Component that displays the list of transactions associated with an account within an accounting period.
+ * Gets the URL to view a transaction, including appropriate query parameters to maintain context of the account and accounting period if applicable.
+ */
+const getViewTransactionUrl = function (
+  transaction: Transaction,
+  account: Account,
+  accountingPeriod: AccountingPeriod | null,
+): string {
+  if (accountingPeriod !== null) {
+    return `/transactions/${transaction.id}?accountingPeriodId=${accountingPeriod.id}&accountId=${account.id}`;
+  }
+  return `/transactions/${transaction.id}?accountId=${account.id}`;
+};
+
+/**
+ * Component that displays the list of transactions for an account.
  */
 const TransactionListFrame = function ({
-  accountingPeriod,
   account,
   data,
   totalCount,
+  accountingPeriod,
 }: TransactionListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -159,7 +181,11 @@ const TransactionListFrame = function ({
           icon={<ArrowForwardIos />}
           onClick={() => {
             router.push(
-              `/accounting-periods/${accountingPeriod.id}/transaction/${transaction.id}`,
+              getViewTransactionUrl(
+                transaction,
+                account,
+                accountingPeriod ?? null,
+              ),
             );
           }}
         />

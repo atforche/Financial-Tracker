@@ -1,12 +1,12 @@
 import { Stack, Typography } from "@mui/material";
+import AccountBalanceFrame from "@/app/accounting-periods/[id]/accounts/[accountId]/AccountBalanceFrame";
+import type { AccountTransactionSortOrder } from "@/data/accountTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
-import FundBalanceFrame from "@/app/accounting-periods/[id]/fund/[fundId]/FundBalanceFrame";
-import type { FundTransactionSortOrder } from "@/data/fundTypes";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
-import TransactionListFrame from "@/app/accounting-periods/[id]/fund/[fundId]/TransactionListFrame";
+import TransactionListFrame from "@/app/accounts/[id]/TransactionListFrame";
 import getApiClient from "@/data/getApiClient";
 
 /**
@@ -15,22 +15,22 @@ import getApiClient from "@/data/getApiClient";
 interface PageProps {
   readonly params: Promise<{
     id: string;
-    fundId: string;
+    accountId: string;
   }>;
   readonly searchParams: Promise<{
     transactionSearch?: string;
-    transactionSort?: FundTransactionSortOrder;
+    transactionSort?: AccountTransactionSortOrder;
   }>;
 }
 
 /**
- * Component that displays the view for a single fund in the context of an accounting period.
+ * Component that displays the view for a single account in the context of an accounting period.
  */
 const Page = async function ({
   params,
   searchParams,
 }: PageProps): Promise<JSX.Element> {
-  const { id, fundId } = await params;
+  const { id, accountId } = await params;
   const { transactionSearch, transactionSort } = await searchParams;
 
   const apiClient = getApiClient();
@@ -44,20 +44,23 @@ const Page = async function ({
       },
     },
   );
-  const fundPromise = apiClient.GET("/funds/{fundId}/{accountingPeriodId}", {
-    params: {
-      path: {
-        fundId,
-        accountingPeriodId: id,
-      },
-    },
-  });
-  const fundTransactionsPromise = apiClient.GET(
-    "/funds/{fundId}/transactions",
+  const accountPromise = apiClient.GET(
+    "/accounts/{accountId}/{accountingPeriodId}",
     {
       params: {
         path: {
-          fundId,
+          accountId,
+          accountingPeriodId: id,
+        },
+      },
+    },
+  );
+  const accountTransactionsPromise = apiClient.GET(
+    "/accounts/{accountId}/transactions",
+    {
+      params: {
+        path: {
+          accountId,
         },
         query: {
           AccountingPeriodId: id,
@@ -69,21 +72,21 @@ const Page = async function ({
   );
   const [
     { data: accountingPeriodData, error: accountingPeriodError },
-    { data: fundData, error: fundError },
-    { data: fundTransactionsData, error: fundTransactionsError },
+    { data: accountData, error: accountError },
+    { data: accountTransactionsData, error: accountTransactionsError },
   ] = await Promise.all([
     accountingPeriodPromise,
-    fundPromise,
-    fundTransactionsPromise,
+    accountPromise,
+    accountTransactionsPromise,
   ]);
 
   if (
     typeof accountingPeriodData === "undefined" ||
-    typeof fundData === "undefined" ||
-    typeof fundTransactionsData === "undefined"
+    typeof accountData === "undefined" ||
+    typeof accountTransactionsData === "undefined"
   ) {
     throw new Error(
-      `Failed to fetch fund with ID ${fundId} for accounting period with ID ${id}: ${accountingPeriodError?.detail ?? fundError?.detail ?? fundTransactionsError?.detail ?? "Unknown error"}`,
+      `Failed to fetch account with ID ${accountId} for accounting period with ID ${id}: ${accountingPeriodError?.detail ?? accountError?.detail ?? accountTransactionsError?.detail ?? "Unknown error"}`,
     );
   }
 
@@ -97,24 +100,24 @@ const Page = async function ({
             href: `/accounting-periods/${id}`,
           },
           {
-            label: fundData.name,
-            href: `/accounting-periods/${id}/fund/${fundId}`,
+            label: accountData.name,
+            href: `/accounting-periods/${id}/account/${accountId}`,
           },
         ]}
       />
       <CaptionedFrame caption="Details">
-        <CaptionedValue caption="Name" value={fundData.name} />
-        <CaptionedValue caption="Description" value={fundData.description} />
+        <CaptionedValue caption="Name" value={accountData.name} />
+        <CaptionedValue caption="Type" value={accountData.type.toString()} />
       </CaptionedFrame>
-      <FundBalanceFrame fund={fundData} />
+      <AccountBalanceFrame account={accountData} />
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
         <Typography variant="h6">Transactions</Typography>
         <SearchBar paramName="transactionSearch" />
         <TransactionListFrame
           accountingPeriod={accountingPeriodData}
-          fund={fundData}
-          data={fundTransactionsData.items}
-          totalCount={fundTransactionsData.totalCount}
+          account={accountData}
+          data={accountTransactionsData.items}
+          totalCount={accountTransactionsData.totalCount}
         />
       </Stack>
     </Stack>

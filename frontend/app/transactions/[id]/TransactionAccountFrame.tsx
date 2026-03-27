@@ -6,7 +6,7 @@ import Caption from "@/framework/view/Caption";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
 import type { JSX } from "react";
-import TransactionAccountBalanceFrame from "@/app/accounting-periods/[id]/transaction/[transactionId]/TransactionAccountBalanceFrame";
+import TransactionAccountBalanceFrame from "@/app/transactions/[id]/TransactionAccountBalanceFrame";
 import dayjs from "dayjs";
 
 /**
