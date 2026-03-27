@@ -31,6 +31,11 @@ interface AccountIdentifier {
 type CreateAccountRequest = components["schemas"]["CreateAccountModel"];
 
 /**
+ * Type representing a request to update an account.
+ */
+type UpdateAccountRequest = components["schemas"]["UpdateAccountModel"];
+
+/**
  * Determines if the provided change in balance is "positive" based on the provided account type.
  */
 const isPositiveChangeInBalance = function (
@@ -48,6 +53,7 @@ export {
   type AccountingPeriodAccount,
   type AccountIdentifier,
   type CreateAccountRequest,
+  type UpdateAccountRequest,
   AccountSortOrderModel as AccountSortOrder,
   AccountingPeriodAccountSortOrderModel as AccountingPeriodAccountSortOrder,
   AccountTransactionSortOrderModel as AccountTransactionSortOrder,

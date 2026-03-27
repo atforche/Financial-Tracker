@@ -1,4 +1,4 @@
-import { Stack, Typography } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import AccountBalanceFrame from "@/app/accounting-periods/[id]/accounts/[accountId]/AccountBalanceFrame";
 import type { AccountTransactionSortOrder } from "@/data/accountTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
@@ -92,19 +92,33 @@ const Page = async function ({
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs
-        breadcrumbs={[
-          { label: "Accounting Periods", href: "/accounting-periods" },
-          {
-            label: accountingPeriodData.name,
-            href: `/accounting-periods/${id}`,
-          },
-          {
-            label: accountData.name,
-            href: `/accounting-periods/${id}/account/${accountId}`,
-          },
-        ]}
-      />
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        maxWidth={1000}
+      >
+        <Breadcrumbs
+          breadcrumbs={[
+            { label: "Accounting Periods", href: "/accounting-periods" },
+            {
+              label: accountingPeriodData.name,
+              href: `/accounting-periods/${id}`,
+            },
+            {
+              label: accountData.name,
+              href: `/accounting-periods/${id}/account/${accountId}`,
+            },
+          ]}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          href={`/accounts/${accountId}/update?accountingPeriodId=${id}`}
+        >
+          Edit
+        </Button>
+      </Stack>
       <CaptionedFrame caption="Details">
         <CaptionedValue caption="Name" value={accountData.name} />
         <CaptionedValue caption="Type" value={accountData.type.toString()} />
