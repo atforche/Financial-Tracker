@@ -31,6 +31,26 @@ public sealed class FundController(
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
+    /// Retrieves the Fund that matches the provided ID
+    /// </summary>
+    [HttpGet("{fundId}")]
+    [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult Get(Guid fundId)
+    {
+        if (!fundMapper.TryToDomain(fundId, out Fund? fund))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Fund.",
+                Errors = { [nameof(fundId)] = new[] { $"Fund with ID {fundId} not found." } },
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        return Ok(fundMapper.ToModel(fund));
+    }
+
+    /// <summary>
     /// Retrieves the Funds that match the specified criteria
     /// </summary>
     [HttpGet("")]

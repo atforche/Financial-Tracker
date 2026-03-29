@@ -1,15 +1,12 @@
 "use client";
 
-import {
-  type AccountingPeriodFund,
-  FundTransactionSortOrder,
-} from "@/data/fundTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import { FundTransactionSortOrder } from "@/data/fundTypes";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import type { Transaction } from "@/data/transactionTypes";
@@ -17,41 +14,60 @@ import formatCurrency from "@/framework/formatCurrency";
 import tryParseEnum from "@/data/tryParseEnum";
 
 /**
- * Props for the TransactionListFrame component.
+ * Interface representing a fund for the purpose of displaying transactions.
  */
-interface TransactionListFrameProps {
-  readonly accountingPeriod: AccountingPeriod;
-  readonly fund: AccountingPeriodFund;
-  readonly data: Transaction[] | null;
-  readonly totalCount: number | null;
+interface Fund {
+  id: string;
 }
 
 /**
- * Calculate the change in balance for the given fund and transaction.
+ * Props for the TransactionListFrame component.
+ */
+interface TransactionListFrameProps {
+  readonly fund: Fund;
+  readonly data: Transaction[] | null;
+  readonly totalCount: number | null;
+  readonly accountingPeriod?: AccountingPeriod | null;
+}
+
+/**
+ * Gets the change in balance for a fund from a transaction.
  */
 const getChangeInBalance = function (
-  fund: AccountingPeriodFund,
+  fund: Fund,
   transaction: Transaction,
 ): number {
-  const debitFundAmount =
-    transaction.debitAccount?.fundAmounts.find(
-      (fundAmount) => fundAmount.fundId === fund.id,
-    )?.amount ?? 0;
-  const creditFundAmount =
-    transaction.creditAccount?.fundAmounts.find(
-      (fundAmount) => fundAmount.fundId === fund.id,
-    )?.amount ?? 0;
-  return creditFundAmount - debitFundAmount;
+  const previousBalance =
+    transaction.previousFundBalances.find((fb) => fb.fundId === fund.id)
+      ?.postedBalance ?? 0;
+  const newBalance =
+    transaction.newFundBalances.find((fb) => fb.fundId === fund.id)
+      ?.postedBalance ?? 0;
+  return newBalance - previousBalance;
 };
 
 /**
- * Component that displays the list of transactions associated with a fund within an accounting period.
+ * Gets the URL to view a transaction, including appropriate query parameters to maintain context of the fund.
+ */
+const getViewTransactionUrl = function (
+  transaction: Transaction,
+  fund: Fund,
+  accountingPeriod: AccountingPeriod | null,
+): string {
+  if (accountingPeriod !== null) {
+    return `/transactions/${transaction.id}?accountingPeriodId=${accountingPeriod.id}&fundId=${fund.id}`;
+  }
+  return `/transactions/${transaction.id}?fundId=${fund.id}`;
+};
+
+/**
+ * Component that displays the list of transactions for a fund.
  */
 const TransactionListFrame = function ({
-  accountingPeriod,
   fund,
   data,
   totalCount,
+  accountingPeriod,
 }: TransactionListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -117,16 +133,18 @@ const TransactionListFrame = function ({
     {
       name: "changeInBalance",
       headerContent: "Change in Balance",
-      getBodyContent: (transaction: Transaction) =>
-        getChangeInBalance(fund, transaction) >= 0 ? (
+      getBodyContent: (transaction: Transaction): JSX.Element => {
+        const change = getChangeInBalance(fund, transaction);
+        return change >= 0 ? (
           <span style={{ color: "green" }}>
-            {`+ ${formatCurrency(getChangeInBalance(fund, transaction))}`}
+            {`+ ${formatCurrency(change)}`}
           </span>
         ) : (
           <span style={{ color: "red" }}>
-            {`- ${formatCurrency(Math.abs(getChangeInBalance(fund, transaction)))}`}
+            {`- ${formatCurrency(Math.abs(change))}`}
           </span>
-        ),
+        );
+      },
       sortType:
         currentSort === FundTransactionSortOrder.ChangeInBalance
           ? ColumnSortType.Ascending
@@ -153,7 +171,11 @@ const TransactionListFrame = function ({
           icon={<ArrowForwardIos />}
           onClick={() => {
             router.push(
-              `/accounting-periods/${accountingPeriod.id}/transaction/${transaction.id}`,
+              getViewTransactionUrl(
+                transaction,
+                fund,
+                accountingPeriod ?? null,
+              ),
             );
           }}
         />

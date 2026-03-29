@@ -200,6 +200,7 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/prefer-readonly-parameter-types": "off",
       "@typescript-eslint/no-unnecessary-type-parameters": "off",
       "@typescript-eslint/consistent-return": "off",
+      "@typescript-eslint/max-params": "off",
     },
   },
   globalIgnores([

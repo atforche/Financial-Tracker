@@ -1,14 +1,56 @@
+import Breadcrumbs from "@/framework/Breadcrumbs";
+import FundListFrame from "@/app/funds/FundListFrame";
+import type { FundSortOrder } from "@/data/fundTypes";
 import type { JSX } from "react";
+import SearchBar from "@/framework/listframe/SearchBar";
+import { Stack } from "@mui/material";
+import getApiClient from "@/data/getApiClient";
 
 /**
- * Component that displays the Fund view.
+ * Props for the Page component.
  */
-const FundView = function (): JSX.Element {
+interface PageProps {
+  readonly searchParams: Promise<{
+    fundSearch?: string;
+    fundSort?: FundSortOrder;
+  }>;
+}
+
+/**
+ * Component that displays the Funds view.
+ */
+const Page = async function ({
+  searchParams,
+}: PageProps): Promise<JSX.Element> {
+  const { fundSearch, fundSort } = await searchParams;
+
+  const apiClient = getApiClient();
+  const { data, error } = await apiClient.GET("/funds", {
+    params: {
+      query: {
+        Search: fundSearch ?? "",
+        Sort: fundSort ?? null,
+      },
+    },
+  });
+  if (typeof data === "undefined") {
+    throw new Error(`Failed to fetch funds: ${error.detail}`);
+  }
+
   return (
-    <div>
-      <p>This is the fund view</p>
-    </div>
+    <Stack spacing={2}>
+      <Breadcrumbs
+        breadcrumbs={[
+          {
+            label: "Funds",
+            href: "/funds",
+          },
+        ]}
+      />
+      <SearchBar paramName="search" />
+      <FundListFrame data={data.items} totalCount={data.totalCount} />
+    </Stack>
   );
 };
 
-export default FundView;
+export default Page;

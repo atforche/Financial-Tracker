@@ -1,5 +1,6 @@
 import {
   AccountingPeriodFundSortOrderModel,
+  FundSortOrderModel,
   FundTransactionSortOrderModel,
   type components,
 } from "@/data/api";
@@ -28,6 +29,11 @@ interface FundIdentifier {
 type CreateFundRequest = components["schemas"]["CreateFundModel"];
 
 /**
+ * Type representing a request to update a Fund.
+ */
+type UpdateFundRequest = components["schemas"]["UpdateFundModel"];
+
+/**
  * Type representing a Fund Amount.
  */
 type FundAmount = components["schemas"]["FundAmountModel"];
@@ -37,7 +43,9 @@ export {
   type AccountingPeriodFund,
   type FundIdentifier,
   type CreateFundRequest,
+  type UpdateFundRequest,
   type FundAmount,
   AccountingPeriodFundSortOrderModel as AccountingPeriodFundSortOrder,
+  FundSortOrderModel as FundSortOrder,
   FundTransactionSortOrderModel as FundTransactionSortOrder,
 };

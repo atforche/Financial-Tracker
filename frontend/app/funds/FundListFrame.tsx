@@ -1,11 +1,7 @@
 "use client";
 
-import {
-  type AccountingPeriodFund,
-  AccountingPeriodFundSortOrder,
-} from "@/data/fundTypes";
+import { type Fund, FundSortOrder } from "@/data/fundTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -21,16 +17,14 @@ import tryParseEnum from "@/data/tryParseEnum";
  * Props for the FundListFrame component.
  */
 interface FundListFrameProps {
-  readonly accountingPeriod: AccountingPeriod;
-  readonly data: AccountingPeriodFund[] | null;
+  readonly data: Fund[] | null;
   readonly totalCount: number | null;
 }
 
 /**
- * Component that displays the list of funds associated with an accounting period.
+ * Component that displays the list of funds.
  */
 const FundListFrame = function ({
-  accountingPeriod,
   data,
   totalCount,
 }: FundListFrameProps): JSX.Element {
@@ -38,86 +32,83 @@ const FundListFrame = function ({
   const pathname = usePathname();
   const router = useRouter();
 
-  const setSort = function (sort: AccountingPeriodFundSortOrder | null): void {
+  const setSort = function (sort: FundSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete("fundSort");
+      params.delete("sort");
     } else {
-      params.set("fundSort", sort);
+      params.set("sort", sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
-    AccountingPeriodFundSortOrder,
-    searchParams.get("fundSort") ?? "",
+    FundSortOrder,
+    searchParams.get("sort") ?? "",
   );
 
-  const columns: ColumnDefinition<AccountingPeriodFund>[] = [
+  const columns: ColumnDefinition<Fund>[] = [
     {
       name: "name",
       headerContent: "Name",
-      getBodyContent: (fund: AccountingPeriodFund) => fund.name,
+      getBodyContent: (fund: Fund) => fund.name,
       sortType:
-        currentSort === AccountingPeriodFundSortOrder.Name
+        currentSort === FundSortOrder.Name
           ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodFundSortOrder.NameDescending
+          : currentSort === FundSortOrder.NameDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodFundSortOrder.Name);
+          setSort(FundSortOrder.Name);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodFundSortOrder.NameDescending);
+          setSort(FundSortOrder.NameDescending);
         } else {
           setSort(null);
         }
       },
     },
     {
-      name: "openingBalance",
-      headerContent: "Opening Balance",
-      getBodyContent: (fund: AccountingPeriodFund) =>
-        formatCurrency(fund.openingBalance.postedBalance),
+      name: "description",
+      headerContent: "Description",
+      getBodyContent: (fund: Fund) => fund.description,
       sortType:
-        currentSort === AccountingPeriodFundSortOrder.OpeningBalance
+        currentSort === FundSortOrder.Description
           ? ColumnSortType.Ascending
-          : currentSort ===
-              AccountingPeriodFundSortOrder.OpeningBalanceDescending
+          : currentSort === FundSortOrder.DescriptionDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodFundSortOrder.OpeningBalance);
+          setSort(FundSortOrder.Description);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodFundSortOrder.OpeningBalanceDescending);
+          setSort(FundSortOrder.DescriptionDescending);
         } else {
           setSort(null);
         }
       },
-      alignment: "right",
     },
     {
-      name: "closingBalance",
-      headerContent: "Closing Balance",
-      getBodyContent: (fund: AccountingPeriodFund) =>
-        formatCurrency(fund.closingBalance.postedBalance),
+      name: "balance",
+      headerContent: "Balance",
+      getBodyContent: (fund: Fund) =>
+        formatCurrency(fund.currentBalance.postedBalance),
       sortType:
-        currentSort === AccountingPeriodFundSortOrder.ClosingBalance
+        currentSort === FundSortOrder.Balance
           ? ColumnSortType.Ascending
-          : currentSort ===
-              AccountingPeriodFundSortOrder.ClosingBalanceDescending
+          : currentSort === FundSortOrder.BalanceDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodFundSortOrder.ClosingBalance);
+          setSort(FundSortOrder.Balance);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodFundSortOrder.ClosingBalanceDescending);
+          setSort(FundSortOrder.BalanceDescending);
         } else {
           setSort(null);
         }
       },
+      minWidth: 125,
       alignment: "right",
     },
     {
@@ -127,19 +118,16 @@ const FundListFrame = function ({
           label="Add"
           icon={<AddCircleOutline />}
           onClick={() => {
-            router.push(
-              `/funds/create?accountingPeriodId=${accountingPeriod.id}`,
-            );
+            router.push(`${pathname}/create`);
           }}
-          disabled={!accountingPeriod.isOpen}
         />
       ),
-      getBodyContent: (fund: AccountingPeriodFund) => (
+      getBodyContent: (fund: Fund) => (
         <ColumnButton
           label="View"
           icon={<ArrowForwardIos />}
           onClick={() => {
-            router.push(`${pathname}/funds/${fund.id}`);
+            router.push(`${pathname}/${fund.id}`);
           }}
         />
       ),
@@ -148,7 +136,7 @@ const FundListFrame = function ({
   ];
 
   return (
-    <ListFrame<AccountingPeriodFund>
+    <ListFrame<Fund>
       columns={columns}
       getId={(fund) => fund.id}
       data={data ?? null}

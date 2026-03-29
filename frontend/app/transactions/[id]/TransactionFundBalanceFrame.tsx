@@ -75,7 +75,13 @@ const TransactionFundBalanceFrame = function ({
                 key={fundName}
                 caption={fundName}
                 value={
-                  <span style={{ color: "red" }}>{formatCurrency(amount)}</span>
+                  amount === 0 ? (
+                    formatCurrency(amount)
+                  ) : (
+                    <span style={{ color: "red" }}>
+                      {formatCurrency(amount)}
+                    </span>
+                  )
                 }
               />
             ),
@@ -88,9 +94,13 @@ const TransactionFundBalanceFrame = function ({
                 key={fundName}
                 caption={fundName}
                 value={
-                  <span style={{ color: "green" }}>
-                    {formatCurrency(amount)}
-                  </span>
+                  amount === 0 ? (
+                    formatCurrency(amount)
+                  ) : (
+                    <span style={{ color: "green" }}>
+                      {formatCurrency(amount)}
+                    </span>
+                  )
                 }
               />
             ),

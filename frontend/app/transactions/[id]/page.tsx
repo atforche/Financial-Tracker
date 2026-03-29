@@ -3,6 +3,7 @@ import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
+import type { Fund } from "@/data/fundTypes";
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
 import type { Transaction } from "@/data/transactionTypes";
@@ -22,6 +23,7 @@ interface PageProps {
   readonly searchParams: Promise<{
     accountingPeriodId?: string;
     accountId?: string;
+    fundId?: string;
   }>;
 }
 
@@ -32,6 +34,7 @@ const getBreadcrumbs = function (
   transaction: Transaction,
   accountingPeriod: AccountingPeriod | null,
   account: Account | null,
+  fund: Fund | null,
 ): JSX.Element {
   if (accountingPeriod !== null && account !== null) {
     return (
@@ -48,6 +51,30 @@ const getBreadcrumbs = function (
           {
             label: account.name,
             href: `/accounting-periods/${accountingPeriod.id}/accounts/${account.id}`,
+          },
+          {
+            label: `Transaction`,
+            href: `/transactions/${transaction.id}`,
+          },
+        ]}
+      />
+    );
+  }
+  if (accountingPeriod !== null && fund !== null) {
+    return (
+      <Breadcrumbs
+        breadcrumbs={[
+          {
+            label: "Accounting Periods",
+            href: "/accounting-periods",
+          },
+          {
+            label: accountingPeriod.name,
+            href: `/accounting-periods/${accountingPeriod.id}`,
+          },
+          {
+            label: fund.name,
+            href: `/accounting-periods/${accountingPeriod.id}/funds/${fund.id}`,
           },
           {
             label: `Transaction`,
@@ -97,8 +124,28 @@ const getBreadcrumbs = function (
       />
     );
   }
+  if (fund !== null) {
+    return (
+      <Breadcrumbs
+        breadcrumbs={[
+          {
+            label: "Funds",
+            href: "/funds",
+          },
+          {
+            label: fund.name,
+            href: `/funds/${fund.id}`,
+          },
+          {
+            label: `Transaction`,
+            href: `/transactions/${transaction.id}`,
+          },
+        ]}
+      />
+    );
+  }
   throw new Error(
-    "Invalid state: Transaction details page must have either an associated accounting period or account",
+    "Invalid state: Transaction details page must have either an associated accounting period, account, or fund",
   );
 };
 
@@ -110,7 +157,7 @@ const Page = async function ({
   searchParams,
 }: PageProps): Promise<JSX.Element> {
   const { id } = await params;
-  const { accountingPeriodId, accountId } = await searchParams;
+  const { accountingPeriodId, accountId, fundId } = await searchParams;
 
   const apiClient = getApiClient();
   const transactionPromise = apiClient.GET("/transactions/{transactionId}", {
@@ -140,29 +187,47 @@ const Page = async function ({
           },
         })
       : Promise.resolve({ data: null, error: null });
+  const fundPromise =
+    typeof fundId !== "undefined"
+      ? apiClient.GET("/funds/{fundId}", {
+          params: {
+            path: {
+              fundId,
+            },
+          },
+        })
+      : Promise.resolve({ data: null, error: null });
 
   const [
     { data: transactionData, error: transactionError },
     { data: accountingPeriodData, error: accountingPeriodError },
     { data: accountData, error: accountError },
+    { data: fundData, error: fundError },
   ] = await Promise.all([
     transactionPromise,
     accountingPeriodPromise,
     accountPromise,
+    fundPromise,
   ]);
   if (
     typeof transactionData === "undefined" ||
     typeof accountingPeriodData === "undefined" ||
-    typeof accountData === "undefined"
+    typeof accountData === "undefined" ||
+    typeof fundData === "undefined"
   ) {
     throw new Error(
-      `Failed to load data for transaction details page: ${transactionError?.detail ?? accountingPeriodError?.detail ?? accountError?.detail ?? "Unknown error"}`,
+      `Failed to load data for transaction details page: ${transactionError?.detail ?? accountingPeriodError?.detail ?? accountError?.detail ?? fundError?.detail ?? "Unknown error"}`,
     );
   }
 
   return (
     <Stack spacing={2}>
-      {getBreadcrumbs(transactionData, accountingPeriodData, accountData)}
+      {getBreadcrumbs(
+        transactionData,
+        accountingPeriodData,
+        accountData,
+        fundData,
+      )}
       <CaptionedFrame caption="Details">
         <CaptionedValue
           caption="Date"
