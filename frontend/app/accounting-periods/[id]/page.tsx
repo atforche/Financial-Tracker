@@ -1,4 +1,4 @@
-import { Stack, Typography } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import AccountListFrame from "@/app/accounting-periods/[id]/AccountListFrame";
 import type { AccountingPeriodAccountSortOrder } from "@/data/accountTypes";
 import type { AccountingPeriodFundSortOrder } from "@/data/fundTypes";
@@ -124,12 +124,35 @@ const Page = async function ({
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs
-        breadcrumbs={[
-          { label: "Accounting Periods", href: "/accounting-periods" },
-          { label: data.name, href: `/accounting-periods/${id}` },
-        ]}
-      />
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        maxWidth={1000}
+      >
+        <Breadcrumbs
+          breadcrumbs={[
+            { label: "Accounting Periods", href: "/accounting-periods" },
+            { label: data.name, href: `/accounting-periods/${id}` },
+          ]}
+        />
+        <Stack direction="row" spacing={1}>
+          <Button
+            variant="contained"
+            color="primary"
+            href={`/accounting-periods/${id}/close`}
+          >
+            Close
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            href={`/accounting-periods/${id}/delete`}
+          >
+            Delete
+          </Button>
+        </Stack>
+      </Stack>
       <CaptionedFrame caption="Details">
         <CaptionedValue caption="Name" value={data.name} />
         <CaptionedValue caption="Is Open" value={data.isOpen ? "Yes" : "No"} />

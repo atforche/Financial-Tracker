@@ -39,7 +39,7 @@ const getBreadcrumbs = function (
             href: `/accounting-periods/${providedAccountingPeriod.id}/funds/${fund.id}`,
           },
           {
-            label: "Update Fund",
+            label: "Update",
             href: `/funds/${fund.id}/update`,
           },
         ]}

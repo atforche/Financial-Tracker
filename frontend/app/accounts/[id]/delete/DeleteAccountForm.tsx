@@ -45,7 +45,7 @@ const getBreadcrumbs = function (
             href: `/accounting-periods/${accountingPeriod.id}/accounts/${account.id}`,
           },
           {
-            label: "Delete Account",
+            label: "Delete",
             href: `/accounts/${account.id}/delete`,
           },
         ]}
@@ -64,7 +64,7 @@ const getBreadcrumbs = function (
           href: `/accounts/${account.id}`,
         },
         {
-          label: "Delete Account",
+          label: "Delete",
           href: `/accounts/${account.id}/delete`,
         },
       ]}
