@@ -137,13 +137,23 @@ const Page = async function ({
           ]}
         />
         <Stack direction="row" spacing={1}>
-          <Button
-            variant="contained"
-            color="primary"
-            href={`/accounting-periods/${id}/close`}
-          >
-            Close
-          </Button>
+          {data.isOpen ? (
+            <Button
+              variant="contained"
+              color="primary"
+              href={`/accounting-periods/${id}/close`}
+            >
+              Close
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              color="primary"
+              href={`/accounting-periods/${id}/reopen`}
+            >
+              Reopen
+            </Button>
+          )}
           <Button
             variant="contained"
             color="error"

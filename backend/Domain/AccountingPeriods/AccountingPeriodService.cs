@@ -15,11 +15,6 @@ public class AccountingPeriodService(
     /// <summary>
     /// Attempts to create a new Accounting Period
     /// </summary>
-    /// <param name="year">Year for the Accounting Period</param>
-    /// <param name="month">Month for the Accounting Period</param>
-    /// <param name="accountingPeriod">The created Accounting Period, or null if creation failed</param>
-    /// <param name="exceptions">List of exceptions encountered during creation</param>
-    /// <returns>True if the Accounting Period was created successfully, false otherwise</returns>
     public bool TryCreate(int year, int month, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod, out IEnumerable<Exception> exceptions)
     {
         accountingPeriod = null;
@@ -36,9 +31,6 @@ public class AccountingPeriodService(
     /// <summary>
     /// Attempts to close an existing Accounting Period
     /// </summary>
-    /// <param name="accountingPeriod">Accounting Period to close</param>
-    /// <param name="exceptions">List of exceptions encountered during closing</param>
-    /// <returns>True if the Accounting Period was closed successfully, false otherwise</returns>
     public bool TryClose(AccountingPeriod accountingPeriod, out IEnumerable<Exception> exceptions)
     {
         if (!ValidateClose(accountingPeriod, out exceptions))
@@ -50,11 +42,21 @@ public class AccountingPeriodService(
     }
 
     /// <summary>
+    /// Attempts to reopen a closed Accounting Period
+    /// </summary>
+    public bool TryReopen(AccountingPeriod accountingPeriod, out IEnumerable<Exception> exceptions)
+    {
+        if (!ValidateReopen(accountingPeriod, out exceptions))
+        {
+            return false;
+        }
+        accountingPeriod.IsOpen = true;
+        return true;
+    }
+
+    /// <summary>
     /// Attempts to delete an existing Accounting Period
     /// </summary>
-    /// <param name="accountingPeriod">Accounting Period to delete</param>
-    /// <param name="exceptions">List of exceptions encountered during deletion</param>
-    /// <returns>True if the Accounting Period was deleted successfully, false otherwise</returns>
     public bool TryDelete(AccountingPeriod accountingPeriod, out IEnumerable<Exception> exceptions)
     {
         if (!ValidateDelete(accountingPeriod, out exceptions))
@@ -69,10 +71,6 @@ public class AccountingPeriodService(
     /// <summary>
     /// Validates creating a new Accounting Period
     /// </summary>
-    /// <param name="year">Year for the Accounting Period</param>
-    /// <param name="month">Month for the Accounting Period</param>
-    /// <param name="exceptions">Exceptions encountered during validation</param>
-    /// <returns>True if the Accounting Period can be created, false otherwise</returns>
     private bool ValidateCreate(int year, int month, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
@@ -109,9 +107,6 @@ public class AccountingPeriodService(
     /// <summary>
     /// Validates closing an existing Accounting Period
     /// </summary>
-    /// <param name="accountingPeriod">Accounting Period to close</param>
-    /// <param name="exceptions">Exceptions encountered during validation</param>
-    /// <returns>True if the Accounting Period can be closed, false otherwise</returns>
     private bool ValidateClose(AccountingPeriod accountingPeriod, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
@@ -134,11 +129,27 @@ public class AccountingPeriodService(
     }
 
     /// <summary>
+    /// Validates reopening an existing Accounting Period
+    /// </summary>
+    private bool ValidateReopen(AccountingPeriod accountingPeriod, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (accountingPeriod.IsOpen)
+        {
+            exceptions = exceptions.Append(new UnableToReopenException("This Accounting Period is already open."));
+        }
+        AccountingPeriod? nextPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
+        if (nextPeriod != null && !nextPeriod.IsOpen)
+        {
+            exceptions = exceptions.Append(new UnableToReopenException("A later Accounting Period is still closed."));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
     /// Validates deleting an existing Accounting Period
     /// </summary>
-    /// <param name="accountingPeriod">Accounting Period to delete</param>
-    /// <param name="exceptions">List of exceptions encountered during deletion</param>
-    /// <returns>True if the Accounting Period can be deleted, false otherwise</returns>
     private bool ValidateDelete(AccountingPeriod accountingPeriod, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];

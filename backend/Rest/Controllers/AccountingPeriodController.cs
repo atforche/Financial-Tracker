@@ -291,6 +291,44 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     }
 
     /// <summary>
+    /// Reopens the Accounting Period with the provided ID
+    /// </summary>
+    [HttpPost("{accountingPeriodId}/reopen")]
+    [ProducesResponseType(typeof(AccountingPeriodModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> ReopenAsync(Guid accountingPeriodId)
+    {
+        Dictionary<string, string[]> errors = [];
+        if (!accountingPeriodMapper.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
+        {
+            errors.Add(nameof(accountingPeriodId), [$"Accounting Period with ID {accountingPeriodId} not found."]);
+        }
+        if (errors.Count > 0 || accountingPeriod == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to reopen Accounting Period.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        if (!accountingPeriodService.TryReopen(accountingPeriod, out IEnumerable<Exception> exceptions))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to reopen Accounting Period.",
+                Errors = new Dictionary<string, string[]>
+                {
+                    { string.Empty, exceptions.Select(exception => exception.Message).ToArray() }
+                },
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        await unitOfWork.SaveChangesAsync();
+        return Ok(accountingPeriodMapper.ToModel(accountingPeriod));
+    }
+
+    /// <summary>
     /// Deletes the Accounting Period with the provided ID
     /// </summary>
     /// <param name="accountingPeriodId">ID of the Accounting Period to delete</param>
