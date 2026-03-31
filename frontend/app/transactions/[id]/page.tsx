@@ -1,3 +1,4 @@
+import { Button, Stack } from "@mui/material";
 import type { Account } from "@/data/accountTypes";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
@@ -5,7 +6,6 @@ import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
 import type { Fund } from "@/data/fundTypes";
 import type { JSX } from "react";
-import { Stack } from "@mui/material";
 import type { Transaction } from "@/data/transactionTypes";
 import TransactionAccountFrame from "@/app/transactions/[id]/TransactionAccountFrame";
 import TransactionFundBalanceFrame from "@/app/transactions/[id]/TransactionFundBalanceFrame";
@@ -220,14 +220,47 @@ const Page = async function ({
     );
   }
 
+  const updateParams = new URLSearchParams();
+  if (typeof accountingPeriodId !== "undefined") {
+    updateParams.set("accountingPeriodId", accountingPeriodId);
+  }
+  if (typeof accountId !== "undefined") {
+    updateParams.set("accountId", accountId);
+  }
+  if (typeof fundId !== "undefined") {
+    updateParams.set("fundId", fundId);
+  }
+  const updateQueryString = updateParams.toString();
+  const updateHref = `/transactions/${id}/update${updateQueryString ? `?${updateQueryString}` : ""}`;
+
   return (
     <Stack spacing={2}>
-      {getBreadcrumbs(
-        transactionData,
-        accountingPeriodData,
-        accountData,
-        fundData,
-      )}
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        maxWidth={1000}
+      >
+        {getBreadcrumbs(
+          transactionData,
+          accountingPeriodData,
+          accountData,
+          fundData,
+        )}
+        <Button
+          variant="contained"
+          color="primary"
+          href={updateHref}
+          disabled={
+            (transactionData.debitAccount === null ||
+              transactionData.debitAccount?.postedDate !== null) &&
+            (transactionData.creditAccount === null ||
+              transactionData.creditAccount?.postedDate !== null)
+          }
+        >
+          Edit
+        </Button>
+      </Stack>
       <CaptionedFrame caption="Details">
         <CaptionedValue
           caption="Date"

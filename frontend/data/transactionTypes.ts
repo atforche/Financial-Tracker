@@ -19,10 +19,16 @@ type TransactionAccount = components["schemas"]["TransactionAccountModel"];
  */
 type CreateTransactionRequest = components["schemas"]["CreateTransactionModel"];
 
+/**
+ * Type representing the request to update a transaction.
+ */
+type UpdateTransactionRequest = components["schemas"]["UpdateTransactionModel"];
+
 export {
   type Transaction,
   type TransactionAccount,
   type CreateTransactionRequest,
+  type UpdateTransactionRequest,
   AccountingPeriodTransactionSortOrderModel as AccountingPeriodTransactionSortOrder,
   TransactionAccountTypeModel as TransactionAccountType,
 };
