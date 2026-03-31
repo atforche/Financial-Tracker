@@ -7,7 +7,7 @@ import {
   getMinimumDate,
 } from "@/data/accountingPeriodTypes";
 import { Button, DialogActions, Stack } from "@mui/material";
-import type { FundAmount, FundIdentifier } from "@/data/fundTypes";
+import type { Fund, FundAmount, FundIdentifier } from "@/data/fundTypes";
 import { type JSX, startTransition, useActionState, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import AccountEntryField from "@/framework/forms/AccountEntryField";
@@ -30,6 +30,8 @@ interface CreateTransactionFormProps {
   readonly providedAccountingPeriod?: AccountingPeriod | null;
   readonly providedDebitAccount?: Account | null;
   readonly providedCreditAccount?: Account | null;
+  readonly providedDebitFund?: Fund | null;
+  readonly providedCreditFund?: Fund | null;
 }
 
 /**
@@ -39,8 +41,11 @@ const getBreadcrumbs = function (
   accountingPeriod: AccountingPeriod | null,
   debitAccount: Account | null,
   creditAccount: Account | null,
+  debitFund: Fund | null,
+  creditFund: Fund | null,
 ): JSX.Element {
   const account = debitAccount ?? creditAccount;
+  const fund = debitFund ?? creditFund;
   if (accountingPeriod !== null && account !== null) {
     return (
       <Breadcrumbs
@@ -56,6 +61,30 @@ const getBreadcrumbs = function (
           {
             label: account.name,
             href: `/accounting-periods/${accountingPeriod.id}/accounts/${account.id}`,
+          },
+          {
+            label: "Create Transaction",
+            href: `/transactions/create`,
+          },
+        ]}
+      />
+    );
+  }
+  if (accountingPeriod !== null && fund !== null) {
+    return (
+      <Breadcrumbs
+        breadcrumbs={[
+          {
+            label: "Accounting Periods",
+            href: "/accounting-periods",
+          },
+          {
+            label: accountingPeriod.name,
+            href: `/accounting-periods/${accountingPeriod.id}`,
+          },
+          {
+            label: fund.name,
+            href: `/accounting-periods/${accountingPeriod.id}/funds/${fund.id}`,
           },
           {
             label: "Create Transaction",
@@ -105,8 +134,28 @@ const getBreadcrumbs = function (
       />
     );
   }
+  if (fund !== null) {
+    return (
+      <Breadcrumbs
+        breadcrumbs={[
+          {
+            label: "Funds",
+            href: "/funds",
+          },
+          {
+            label: fund.name,
+            href: `/funds/${fund.id}`,
+          },
+          {
+            label: "Create Transaction",
+            href: `/transactions/create`,
+          },
+        ]}
+      />
+    );
+  }
   throw new Error(
-    "Invalid state: Create Transaction page must have either an associated accounting period or account",
+    "Invalid state: Create Transaction page must have either an associated accounting period, account, or fund",
   );
 };
 
@@ -117,10 +166,16 @@ const getRedirectUrl = function (
   accountingPeriod: AccountingPeriod | null,
   debitAccount: Account | null,
   creditAccount: Account | null,
+  debitFund: Fund | null,
+  creditFund: Fund | null,
 ): string {
   const account = debitAccount ?? creditAccount;
+  const fund = debitFund ?? creditFund;
   if (accountingPeriod !== null && account !== null) {
     return `/accounting-periods/${accountingPeriod.id}/accounts/${account.id}`;
+  }
+  if (accountingPeriod !== null && fund !== null) {
+    return `/accounting-periods/${accountingPeriod.id}/funds/${fund.id}`;
   }
   if (accountingPeriod !== null) {
     return `/accounting-periods/${accountingPeriod.id}`;
@@ -128,8 +183,11 @@ const getRedirectUrl = function (
   if (account !== null) {
     return `/accounts/${account.id}`;
   }
+  if (fund !== null) {
+    return `/funds/${fund.id}`;
+  }
   throw new Error(
-    "Invalid state: Create Transaction page must have either an associated accounting period or account",
+    "Invalid state: Create Transaction page must have either an associated accounting period, account, or fund",
   );
 };
 
@@ -143,6 +201,8 @@ const CreateTransactionForm = function ({
   providedAccountingPeriod,
   providedDebitAccount,
   providedCreditAccount,
+  providedDebitFund,
+  providedCreditFund,
 }: CreateTransactionFormProps): JSX.Element {
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(providedAccountingPeriod ?? null);
@@ -152,16 +212,38 @@ const CreateTransactionForm = function ({
   const [debitAccount, setDebitAccount] = useState<AccountIdentifier | null>(
     providedDebitAccount ?? null,
   );
-  const [debitFundAmounts, setDebitFundAmounts] = useState<FundAmount[]>([]);
+  const [debitFundAmounts, setDebitFundAmounts] = useState<FundAmount[]>(
+    typeof providedDebitFund !== "undefined" && providedDebitFund !== null
+      ? [
+          {
+            fundId: providedDebitFund.id,
+            fundName: providedDebitFund.name,
+            amount: 0,
+          },
+        ]
+      : [],
+  );
   const [creditAccount, setCreditAccount] = useState<AccountIdentifier | null>(
     providedCreditAccount ?? null,
   );
-  const [creditFundAmounts, setCreditFundAmounts] = useState<FundAmount[]>([]);
+  const [creditFundAmounts, setCreditFundAmounts] = useState<FundAmount[]>(
+    typeof providedCreditFund !== "undefined" && providedCreditFund !== null
+      ? [
+          {
+            fundId: providedCreditFund.id,
+            fundName: providedCreditFund.name,
+            amount: 0,
+          },
+        ]
+      : [],
+  );
   const [state, action, pending] = useActionState(createTransaction, {
     redirectUrl: getRedirectUrl(
       providedAccountingPeriod ?? null,
       providedDebitAccount ?? null,
       providedCreditAccount ?? null,
+      providedDebitFund ?? null,
+      providedCreditFund ?? null,
     ),
   });
 
@@ -176,6 +258,8 @@ const CreateTransactionForm = function ({
         providedAccountingPeriod ?? null,
         providedDebitAccount ?? null,
         providedCreditAccount ?? null,
+        providedDebitFund ?? null,
+        providedCreditFund ?? null,
       )}
       <Stack spacing={2} sx={{ maxWidth: "800px" }}>
         <AccountingPeriodEntryField
@@ -228,6 +312,12 @@ const CreateTransactionForm = function ({
               funds={funds}
               value={debitFundAmounts}
               setValue={setDebitFundAmounts}
+              lockedFundIds={
+                typeof providedDebitFund !== "undefined" &&
+                providedDebitFund !== null
+                  ? [providedDebitFund.id]
+                  : []
+              }
             />
           </Stack>
           <Stack spacing={2} sx={{ minWidth: 400 }}>
@@ -247,6 +337,12 @@ const CreateTransactionForm = function ({
               funds={funds}
               value={creditFundAmounts}
               setValue={setCreditFundAmounts}
+              lockedFundIds={
+                typeof providedCreditFund !== "undefined" &&
+                providedCreditFund !== null
+                  ? [providedCreditFund.id]
+                  : []
+              }
             />
           </Stack>
         </Stack>
@@ -256,6 +352,8 @@ const CreateTransactionForm = function ({
               providedAccountingPeriod ?? null,
               providedDebitAccount ?? null,
               providedCreditAccount ?? null,
+              providedDebitFund ?? null,
+              providedCreditFund ?? null,
             )}
             tabIndex={-1}
           >

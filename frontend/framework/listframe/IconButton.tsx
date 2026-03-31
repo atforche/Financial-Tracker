@@ -1,10 +1,10 @@
-import { IconButton, Tooltip } from "@mui/material";
+import { IconButton as MuiIconButton, Tooltip } from "@mui/material";
 import type { JSX } from "react/jsx-runtime";
 
 /**
- * Props for the ColumnHeaderButton component.
+ * Props for the IconButton component.
  */
-interface ColumnHeaderButtonProps {
+interface IconButtonProps {
   readonly label: string;
   readonly icon: JSX.Element;
   readonly onClick: () => void;
@@ -12,17 +12,17 @@ interface ColumnHeaderButtonProps {
 }
 
 /**
- * Component that renders a button to be used in a column header.
+ * Component that renders an icon button.
  */
-const ColumnHeaderButton = function ({
+const IconButton = function ({
   label,
   icon,
   onClick,
   disabled = false,
-}: ColumnHeaderButtonProps): JSX.Element {
+}: IconButtonProps): JSX.Element {
   return (
     <Tooltip title={label}>
-      <IconButton
+      <MuiIconButton
         sx={{
           color: "white",
         }}
@@ -30,9 +30,9 @@ const ColumnHeaderButton = function ({
         disabled={disabled}
       >
         {icon}
-      </IconButton>
+      </MuiIconButton>
     </Tooltip>
   );
 };
 
-export default ColumnHeaderButton;
+export default IconButton;

@@ -10,6 +10,8 @@ interface PageProps {
     accountingPeriodId?: string;
     debitAccountId?: string;
     creditAccountId?: string;
+    debitFundId?: string;
+    creditFundId?: string;
   }>;
 }
 
@@ -17,8 +19,13 @@ interface PageProps {
  * Component that displays the create transaction view.
  */
 const Page = async function (props: PageProps): Promise<JSX.Element> {
-  const { accountingPeriodId, debitAccountId, creditAccountId } =
-    await props.searchParams;
+  const {
+    accountingPeriodId,
+    debitAccountId,
+    creditAccountId,
+    debitFundId,
+    creditFundId,
+  } = await props.searchParams;
   const apiClient = getApiClient();
 
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods/open");
@@ -54,6 +61,26 @@ const Page = async function (props: PageProps): Promise<JSX.Element> {
           },
         })
       : Promise.resolve({ data: null, error: null });
+  const debitFundPromise =
+    typeof debitFundId !== "undefined"
+      ? apiClient.GET("/funds/{fundId}", {
+          params: {
+            path: {
+              fundId: debitFundId,
+            },
+          },
+        })
+      : Promise.resolve({ data: null, error: null });
+  const creditFundPromise =
+    typeof creditFundId !== "undefined"
+      ? apiClient.GET("/funds/{fundId}", {
+          params: {
+            path: {
+              fundId: creditFundId,
+            },
+          },
+        })
+      : Promise.resolve({ data: null, error: null });
 
   const [
     { data: accountingPeriodsData },
@@ -62,6 +89,8 @@ const Page = async function (props: PageProps): Promise<JSX.Element> {
     { data: accountingPeriodData, error: accountingPeriodError },
     { data: debitAccountData, error: debitAccountError },
     { data: creditAccountData, error: creditAccountError },
+    { data: debitFundData, error: debitFundError },
+    { data: creditFundData, error: creditFundError },
   ] = await Promise.all([
     accountingPeriodsPromise,
     fundsPromise,
@@ -69,6 +98,8 @@ const Page = async function (props: PageProps): Promise<JSX.Element> {
     accountingPeriodPromise,
     debitAccountPromise,
     creditAccountPromise,
+    debitFundPromise,
+    creditFundPromise,
   ]);
 
   if (
@@ -77,10 +108,12 @@ const Page = async function (props: PageProps): Promise<JSX.Element> {
     typeof accountsData === "undefined" ||
     typeof accountingPeriodData === "undefined" ||
     typeof debitAccountData === "undefined" ||
-    typeof creditAccountData === "undefined"
+    typeof creditAccountData === "undefined" ||
+    typeof debitFundData === "undefined" ||
+    typeof creditFundData === "undefined"
   ) {
     throw new Error(
-      `Failed to fetch data for create transaction page: ${fundsError?.detail ?? accountsError?.detail ?? accountingPeriodError?.detail ?? debitAccountError?.detail ?? creditAccountError?.detail ?? "Unknown error"}`,
+      `Failed to fetch data for create transaction page: ${fundsError?.detail ?? accountsError?.detail ?? accountingPeriodError?.detail ?? debitAccountError?.detail ?? creditAccountError?.detail ?? debitFundError?.detail ?? creditFundError?.detail ?? "Unknown error"}`,
     );
   }
 
@@ -95,6 +128,8 @@ const Page = async function (props: PageProps): Promise<JSX.Element> {
       providedAccountingPeriod={accountingPeriodData}
       providedDebitAccount={debitAccountData}
       providedCreditAccount={creditAccountData}
+      providedDebitFund={debitFundData}
+      providedCreditFund={creditFundData}
     />
   );
 };

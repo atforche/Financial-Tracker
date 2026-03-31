@@ -9,7 +9,7 @@ interface FundEntryFieldProps {
   readonly label: string;
   readonly options: FundIdentifier[];
   readonly value: FundIdentifier | null;
-  readonly setValue: (newValue: FundIdentifier | null) => void;
+  readonly setValue: ((newValue: FundIdentifier | null) => void) | null;
   readonly filter: ((fund: FundIdentifier) => boolean) | null;
   readonly autoFocus?: boolean;
 }
@@ -39,9 +39,13 @@ const FundEntryField = function ({
           ? { label: "", value: null }
           : { label: value.name, value }
       }
-      setValue={(newValue): void => {
-        setValue(newValue.value);
-      }}
+      setValue={
+        setValue === null
+          ? null
+          : (newValue): void => {
+              setValue(newValue.value);
+            }
+      }
       autoFocus={autoFocus}
     />
   );

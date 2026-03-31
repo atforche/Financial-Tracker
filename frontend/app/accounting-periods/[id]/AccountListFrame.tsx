@@ -10,8 +10,8 @@ import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import ColumnHeaderButton from "@/framework/listframe/ColumnHeaderButton";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
@@ -147,7 +147,7 @@ const AccountListFrame = function ({
     {
       name: "actions",
       headerContent: (
-        <ColumnHeaderButton
+        <IconButton
           label="Add"
           icon={<AddCircleOutline />}
           onClick={() => {

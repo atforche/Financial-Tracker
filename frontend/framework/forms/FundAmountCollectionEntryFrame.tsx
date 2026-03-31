@@ -16,6 +16,7 @@ interface FundAmountCollectionEntryFrameProps {
   readonly funds: FundIdentifier[];
   readonly value: FundAmount[];
   readonly setValue: (newValue: FundAmount[]) => void;
+  readonly lockedFundIds?: string[] | null;
 }
 
 /**
@@ -28,6 +29,7 @@ const FundAmountCollectionEntryFrame = function ({
   funds,
   value,
   setValue,
+  lockedFundIds = null,
 }: FundAmountCollectionEntryFrameProps): JSX.Element {
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
   return (
@@ -58,15 +60,18 @@ const FundAmountCollectionEntryFrame = function ({
                   )
                 }
                 autoFocus={focusIndex === index}
+                lockFund={lockedFundIds?.includes(fundAmount.fundId) ?? false}
               />
-              <ColumnButton
-                label="Delete"
-                icon={<Delete />}
-                onClick={() => {
-                  const newFundAmounts = value.filter((_, i) => i !== index);
-                  setValue(newFundAmounts);
-                }}
-              />
+              {!(lockedFundIds?.includes(fundAmount.fundId) ?? false) && (
+                <ColumnButton
+                  label="Delete"
+                  icon={<Delete />}
+                  onClick={() => {
+                    const newFundAmounts = value.filter((_, i) => i !== index);
+                    setValue(newFundAmounts);
+                  }}
+                />
+              )}
             </Stack>
           ))}
 

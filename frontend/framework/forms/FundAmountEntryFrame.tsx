@@ -13,6 +13,7 @@ interface FundAmountEntryFrameProps {
   readonly setValue: (newValue: FundAmount) => void;
   readonly filter?: ((fund: FundIdentifier) => boolean) | null;
   readonly autoFocus?: boolean;
+  readonly lockFund?: boolean;
 }
 
 /**
@@ -24,6 +25,7 @@ const FundAmountEntryFrame = function ({
   setValue,
   filter = null,
   autoFocus = false,
+  lockFund = false,
 }: FundAmountEntryFrameProps): JSX.Element {
   return (
     <Stack
@@ -40,13 +42,17 @@ const FundAmountEntryFrame = function ({
             ? { id: value.fundId, name: value.fundName }
             : null
         }
-        setValue={(newValue): void => {
-          setValue({
-            fundId: newValue?.id ?? "",
-            fundName: newValue?.name ?? "",
-            amount: value.amount,
-          });
-        }}
+        setValue={
+          lockFund
+            ? null
+            : (newValue): void => {
+                setValue({
+                  fundId: newValue?.id ?? "",
+                  fundName: newValue?.name ?? "",
+                  amount: value.amount,
+                });
+              }
+        }
         filter={filter}
         autoFocus={autoFocus}
       />

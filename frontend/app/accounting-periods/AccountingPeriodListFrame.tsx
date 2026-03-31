@@ -9,8 +9,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Checkbox } from "@mui/material";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import ColumnHeaderButton from "@/framework/listframe/ColumnHeaderButton";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
@@ -142,7 +142,7 @@ const AccountingPeriodListFrame = function ({
     {
       name: "actions",
       headerContent: (
-        <ColumnHeaderButton
+        <IconButton
           label="Add"
           icon={<AddCircleOutline />}
           onClick={() => {
