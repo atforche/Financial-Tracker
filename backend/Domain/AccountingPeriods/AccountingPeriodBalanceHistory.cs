@@ -16,12 +16,12 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
     /// <summary>
     /// Opening Balance for this Accounting Period Balance History
     /// </summary>
-    public decimal OpeningBalance { get => FundBalances.Sum(f => f.OpeningBalance); internal set { } }
+    public decimal OpeningBalance { get; private set; }
 
     /// <summary>
     /// Closing Balance for this Accounting Period Balance History
     /// </summary>
-    public decimal ClosingBalance { get => FundBalances.Sum(f => f.ClosingBalance); internal set { } }
+    public decimal ClosingBalance { get; private set; }
 
     /// <summary>
     /// Account Balances for this Accounting Period Balance History
@@ -38,7 +38,12 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
     public IReadOnlyCollection<FundAccountingPeriodBalanceHistory> FundBalances
     {
         get => _fundBalances;
-        internal set => _fundBalances = value.ToList();
+        internal set
+        {
+            _fundBalances = value.ToList();
+            OpeningBalance = _fundBalances.Sum(f => f.OpeningBalance);
+            ClosingBalance = _fundBalances.Sum(f => f.ClosingBalance);
+        }
     }
 
     /// <summary>

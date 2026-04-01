@@ -43,21 +43,39 @@ public class Transaction : Entity<TransactionId>
     /// <summary>
     /// Amount for this Transaction
     /// </summary>
-    public decimal Amount
-    {
-        get => DebitAccount?.FundAmounts.Sum(fundAmount => fundAmount.Amount) ?? CreditAccount?.FundAmounts.Sum(fundAmount => fundAmount.Amount) ?? 0m;
-        internal set { }
-    }
+    public decimal Amount { get; private set; }
 
     /// <summary>
     /// Debit Account for this Transaction
     /// </summary>
-    public TransactionAccount? DebitAccount { get; internal set; }
+    public TransactionAccount? DebitAccount
+    {
+        get;
+        internal set
+        {
+            field = value;
+            if (value != null)
+            {
+                Amount = value.FundAmounts.Sum(fundAmount => fundAmount.Amount);
+            }
+        }
+    }
 
     /// <summary>
     /// Credit Account for this Transaction
     /// </summary>
-    public TransactionAccount? CreditAccount { get; internal set; }
+    public TransactionAccount? CreditAccount
+    {
+        get;
+        internal set
+        {
+            field = value;
+            if (value != null)
+            {
+                Amount = value.FundAmounts.Sum(fundAmount => fundAmount.Amount);
+            }
+        }
+    }
 
     /// <summary>
     /// Account ID of the Account that generated this transaction when it was created, or null

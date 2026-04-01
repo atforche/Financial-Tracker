@@ -21,12 +21,6 @@ internal sealed class AccountingPeriodBalanceHistoryConfiguration : IEntityTypeC
         builder.HasOne(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.AccountingPeriod).WithMany();
         builder.Navigation(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.AccountingPeriod).AutoInclude();
 
-        builder.Property(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.OpeningBalance)
-            .UsePropertyAccessMode(PropertyAccessMode.Property);
-
-        builder.Property(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.ClosingBalance)
-            .UsePropertyAccessMode(PropertyAccessMode.Property);
-
         builder.OwnsMany(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.AccountBalances, builder =>
         {
             builder.WithOwner().HasForeignKey("AccountingPeriodBalanceHistoryId");
@@ -41,8 +35,6 @@ internal sealed class AccountingPeriodBalanceHistoryConfiguration : IEntityTypeC
             builder.HasOne(accountBalance => accountBalance.AccountingPeriod).WithMany();
             builder.Navigation(accountBalance => accountBalance.AccountingPeriod).AutoInclude();
 
-            builder.Property(accountBalance => accountBalance.OpeningBalance).UsePropertyAccessMode(PropertyAccessMode.Property);
-
             builder.OwnsMany(accountBalance => accountBalance.OpeningFundBalances, fundAmount =>
             {
                 fundAmount.ToTable("AccountAccountingPeriodBalanceHistoryOpeningFundBalances");
@@ -53,8 +45,6 @@ internal sealed class AccountingPeriodBalanceHistoryConfiguration : IEntityTypeC
                     .HasConversion(fundId => fundId.Value, value => new FundId(value));
             });
             builder.Navigation(accountBalance => accountBalance.OpeningFundBalances).AutoInclude();
-
-            builder.Property(accountBalance => accountBalance.ClosingBalance).UsePropertyAccessMode(PropertyAccessMode.Property);
 
             builder.OwnsMany(accountBalance => accountBalance.ClosingFundBalances, fundAmount =>
             {
@@ -82,10 +72,6 @@ internal sealed class AccountingPeriodBalanceHistoryConfiguration : IEntityTypeC
 
             builder.HasOne(fundBalance => fundBalance.AccountingPeriod).WithMany();
             builder.Navigation(fundBalance => fundBalance.AccountingPeriod).AutoInclude();
-
-            builder.Property(fundBalance => fundBalance.OpeningBalance).UsePropertyAccessMode(PropertyAccessMode.Property);
-
-            builder.Property(fundBalance => fundBalance.ClosingBalance).UsePropertyAccessMode(PropertyAccessMode.Property);
 
             builder.OwnsMany(fundBalance => fundBalance.OpeningAccountBalances, accountBalance =>
             {

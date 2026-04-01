@@ -147,9 +147,7 @@ public class AccountBalanceService(
                 history.Sequence += 1;
             }
             AccountBalance updatedBalance = existingTransaction.ApplyToAccountBalance(newBalance, history.Date);
-            history.FundBalances = updatedBalance.FundBalances;
-            history.PendingDebits = updatedBalance.PendingDebits;
-            history.PendingCredits = updatedBalance.PendingCredits;
+            history.Update(updatedBalance);
             newBalance = updatedBalance;
         }
         accountBalanceHistoryRepository.Add(newBalanceHistory);
@@ -166,17 +164,13 @@ public class AccountBalanceService(
             existingHistory.Date,
             existingHistory.Sequence);
         AccountBalance newBalance = transaction.ApplyToAccountBalance(existingBalance, existingHistory.Date);
-        existingHistory.FundBalances = newBalance.FundBalances;
-        existingHistory.PendingDebits = newBalance.PendingDebits;
-        existingHistory.PendingCredits = newBalance.PendingCredits;
+        existingHistory.Update(newBalance);
 
         foreach ((AccountBalanceHistory history, Transaction existingTransaction) in accountBalanceHistoryRepository
             .GetAllHistoriesLaterThan(existingHistory.Account.Id, existingHistory.Date, existingHistory.Sequence))
         {
             AccountBalance updatedBalance = existingTransaction.ApplyToAccountBalance(newBalance, history.Date);
-            history.FundBalances = updatedBalance.FundBalances;
-            history.PendingDebits = updatedBalance.PendingDebits;
-            history.PendingCredits = updatedBalance.PendingCredits;
+            history.Update(updatedBalance);
             newBalance = updatedBalance;
         }
     }
@@ -195,9 +189,7 @@ public class AccountBalanceService(
                 history.Sequence -= 1;
             }
             AccountBalance updatedBalance = transaction.ApplyToAccountBalance(existingBalance, history.Date);
-            history.FundBalances = updatedBalance.FundBalances;
-            history.PendingDebits = updatedBalance.PendingDebits;
-            history.PendingCredits = updatedBalance.PendingCredits;
+            history.Update(updatedBalance);
             existingBalance = updatedBalance;
         }
     }

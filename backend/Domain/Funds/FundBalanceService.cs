@@ -129,9 +129,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
                 history.Sequence += 1;
             }
             FundBalance updatedBalance = existingTransaction.ApplyToFundBalance(newBalance, history.Date);
-            history.AccountBalances = updatedBalance.AccountBalances;
-            history.PendingDebits = updatedBalance.PendingDebits;
-            history.PendingCredits = updatedBalance.PendingCredits;
+            history.Update(updatedBalance);
             newBalance = updatedBalance;
         }
         fundBalanceHistoryRepository.Add(newBalanceHistory);
@@ -145,17 +143,13 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
         FundBalanceHistory existingHistory = fundBalanceHistoryRepository.GetEarliestByTransactionId(fund, transaction.Id);
         FundBalance existingBalance = GetExistingFundBalanceAsOf(fund, existingHistory.Date, existingHistory.Sequence);
         FundBalance newBalance = transaction.ApplyToFundBalance(existingBalance, existingHistory.Date);
-        existingHistory.AccountBalances = newBalance.AccountBalances;
-        existingHistory.PendingDebits = newBalance.PendingDebits;
-        existingHistory.PendingCredits = newBalance.PendingCredits;
+        existingHistory.Update(newBalance);
 
         foreach ((FundBalanceHistory history, Transaction existingTransaction) in fundBalanceHistoryRepository
             .GetAllHistoriesLaterThan(existingHistory.FundId, existingHistory.Date, existingHistory.Sequence))
         {
             FundBalance updatedBalance = existingTransaction.ApplyToFundBalance(newBalance, history.Date);
-            history.AccountBalances = updatedBalance.AccountBalances;
-            history.PendingDebits = updatedBalance.PendingDebits;
-            history.PendingCredits = updatedBalance.PendingCredits;
+            history.Update(updatedBalance);
             newBalance = updatedBalance;
         }
     }
@@ -174,9 +168,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
                 history.Sequence -= 1;
             }
             FundBalance updatedBalance = transaction.ApplyToFundBalance(existingBalance, history.Date);
-            history.AccountBalances = updatedBalance.AccountBalances;
-            history.PendingDebits = updatedBalance.PendingDebits;
-            history.PendingCredits = updatedBalance.PendingCredits;
+            history.Update(updatedBalance);
             existingBalance = updatedBalance;
         }
     }

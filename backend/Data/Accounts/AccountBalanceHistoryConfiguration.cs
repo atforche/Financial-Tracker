@@ -23,8 +23,6 @@ internal sealed class AccountBalanceHistoryConfiguration : IEntityTypeConfigurat
         builder.Property(accountBalanceHistory => accountBalanceHistory.TransactionId)
             .HasConversion(transactionId => transactionId.Value, value => new TransactionId(value));
 
-        builder.Property(accountBalanceHistory => accountBalanceHistory.PostedBalance).UsePropertyAccessMode(PropertyAccessMode.Property);
-
         builder.OwnsMany(accountBalanceHistory => accountBalanceHistory.FundBalances, fundAmount =>
         {
             fundAmount.ToTable("AccountBalanceHistoryFundBalances");

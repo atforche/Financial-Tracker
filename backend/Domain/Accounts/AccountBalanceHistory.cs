@@ -38,12 +38,12 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     /// <summary>
     /// Posted Balance for this Account Balance History
     /// </summary>
-    public decimal PostedBalance { get => ToAccountBalance().PostedBalance; internal set { } }
+    public decimal PostedBalance { get; private set; }
 
     /// <summary>
     /// Available to Spend for this Account Balance History
     /// </summary>
-    public decimal? AvailableToSpend { get => ToAccountBalance().AvailableToSpend; internal set { } }
+    public decimal? AvailableToSpend { get; private set; }
 
     /// <summary>
     /// Fund Balances for this Account Balance History
@@ -51,7 +51,7 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     public IReadOnlyCollection<FundAmount> FundBalances
     {
         get => _fundBalances;
-        internal set => _fundBalances = value.ToList();
+        private set => _fundBalances = value.ToList();
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     public IReadOnlyCollection<FundAmount> PendingDebits
     {
         get => _pendingDebits;
-        internal set => _pendingDebits = value.ToList();
+        private set => _pendingDebits = value.ToList();
     }
 
     /// <summary>
@@ -69,7 +69,23 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     public IReadOnlyCollection<FundAmount> PendingCredits
     {
         get => _pendingCredits;
-        internal set => _pendingCredits = value.ToList();
+        private set => _pendingCredits = value.ToList();
+    }
+
+    /// <summary>
+    /// Updates this Account Balance History with a new Account Balance.
+    /// </summary>
+    public void Update(AccountBalance newBalance)
+    {
+        if (newBalance.Account.Id != Account.Id)
+        {
+            throw new ArgumentException("New balance must be for the same account", nameof(newBalance));
+        }
+        PostedBalance = newBalance.PostedBalance;
+        AvailableToSpend = newBalance.AvailableToSpend;
+        _fundBalances = newBalance.FundBalances.ToList();
+        _pendingDebits = newBalance.PendingDebits.ToList();
+        _pendingCredits = newBalance.PendingCredits.ToList();
     }
 
     /// <summary>
