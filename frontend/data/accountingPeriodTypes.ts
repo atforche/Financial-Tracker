@@ -36,11 +36,24 @@ const getMaximumDate = function (accountingPeriod: AccountingPeriod): Dayjs {
     .subtract(1, "day");
 };
 
+/**
+ * Gets the default date associated with the provided accounting period.
+ */
+const getDefaultDate = function (
+  accountingPeriod: AccountingPeriod | null,
+): Dayjs | null {
+  if (accountingPeriod === null) {
+    return null;
+  }
+  return dayjs(accountingPeriod.name, "MMMM YYYY");
+};
+
 export {
   type AccountingPeriod,
   type CreateAccountingPeriodRequest,
   type AccountingPeriodIdentifier,
   getMinimumDate,
   getMaximumDate,
+  getDefaultDate,
   AccountingPeriodSortOrderModel as AccountingPeriodSortOrder,
 };

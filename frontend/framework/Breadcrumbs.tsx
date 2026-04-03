@@ -42,3 +42,4 @@ const Breadcrumbs = function ({
 };
 
 export default Breadcrumbs;
+export type { Breadcrumb };

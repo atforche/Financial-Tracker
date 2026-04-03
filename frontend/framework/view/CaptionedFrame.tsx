@@ -32,7 +32,7 @@ const CaptionedFrame = function ({
         borderRadius: "5px",
         padding: "0px 15px 15px 15px",
         minWidth,
-        maxWidth: maxWidth ?? "none",
+        maxWidth: maxWidth ?? "fit-content",
       }}
     >
       <legend>
