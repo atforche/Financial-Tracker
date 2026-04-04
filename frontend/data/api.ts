@@ -1691,6 +1691,11 @@ export interface components {
             accountId: string;
             /** @description Fund Amounts for the Transaction Account */
             fundAmounts: components["schemas"]["CreateFundAmountModel"][];
+            /**
+             * Format: date
+             * @description Posted Date for the Transaction Account, if it should be posted immediately
+             */
+            postedDate?: null | string;
         };
         /** @description Model representing a request to create a Transaction. */
         CreateTransactionModel: {
@@ -1877,6 +1882,11 @@ export interface components {
         UpdateTransactionAccountModel: {
             /** @description Fund Amounts for the Transaction Account */
             fundAmounts: components["schemas"]["CreateFundAmountModel"][];
+            /**
+             * Format: date
+             * @description Posted Date for the Transaction Account, if it should be posted immediately
+             */
+            postedDate?: null | string;
         };
         /** @description Model representing a request to update a Transaction. */
         UpdateTransactionModel: {

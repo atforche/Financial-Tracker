@@ -1,6 +1,10 @@
 "use client";
 
 import {
+  type AccountingPeriod,
+  getDefaultDate,
+} from "@/data/accountingPeriodTypes";
+import {
   type CreateTransactionFormSearchParams,
   getDefaultAccountingPeriod,
   getDefaultCreditAccount,
@@ -12,7 +16,6 @@ import {
 import type { FundAmount, FundIdentifier } from "@/data/fundTypes";
 import { type JSX, useState } from "react";
 import type { AccountIdentifier } from "@/data/accountTypes";
-import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CreateTransactionAccountFrame from "@/app/transactions/create/CreateTransactionAccountFrame";
 import CreateTransactionActionsFrame from "@/app/transactions/create/CreateTransactionActionsFrame";
@@ -54,12 +57,14 @@ const CreateTransactionForm = function ({
   const [debitFundAmounts, setDebitFundAmounts] = useState<FundAmount[]>(
     getDefaultDebitFundAmount(funds, searchParams),
   );
+  const [debitPostedDate, setDebitPostedDate] = useState<Dayjs | null>(null);
   const [creditAccount, setCreditAccount] = useState<AccountIdentifier | null>(
     getDefaultCreditAccount(accounts, searchParams),
   );
   const [creditFundAmounts, setCreditFundAmounts] = useState<FundAmount[]>(
     getDefaultCreditFundAmount(funds, searchParams),
   );
+  const [creditPostedDate, setCreditPostedDate] = useState<Dayjs | null>(null);
   const [toggleState, setToggleState] = useState<ToggleState>(
     getInitialToggleState(searchParams),
   );
@@ -101,6 +106,11 @@ const CreateTransactionForm = function ({
         setCreditAccount={setCreditAccount}
         creditFundAmounts={creditFundAmounts}
         setCreditFundAmounts={setCreditFundAmounts}
+        date={date ?? getDefaultDate(accountingPeriod)}
+        debitPostedDate={debitPostedDate}
+        setDebitPostedDate={setDebitPostedDate}
+        creditPostedDate={creditPostedDate}
+        setCreditPostedDate={setCreditPostedDate}
       />
       <CreateTransactionActionsFrame
         redirectUrl={redirectUrl}
@@ -113,6 +123,8 @@ const CreateTransactionForm = function ({
         debitFundAmounts={debitFundAmounts}
         creditAccount={creditAccount}
         creditFundAmounts={creditFundAmounts}
+        debitPostedDate={debitPostedDate}
+        creditPostedDate={creditPostedDate}
       />
     </Stack>
   );

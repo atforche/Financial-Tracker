@@ -20,6 +20,8 @@ interface UpdateTransactionActionsFrameProps {
   readonly description: string;
   readonly debitFundAmounts: FundAmount[];
   readonly creditFundAmounts: FundAmount[];
+  readonly debitPostedDate: Dayjs | null;
+  readonly creditPostedDate: Dayjs | null;
 }
 
 /**
@@ -33,6 +35,8 @@ const UpdateTransactionActionsFrame = function ({
   description,
   debitFundAmounts,
   creditFundAmounts,
+  debitPostedDate,
+  creditPostedDate,
 }: UpdateTransactionActionsFrameProps): JSX.Element {
   const [state, action, pending] = useActionState(updateTransaction, {
     transactionId: transaction.id,
@@ -98,6 +102,8 @@ const UpdateTransactionActionsFrame = function ({
                     ? null
                     : {
                         fundAmounts: debitFundAmounts,
+                        postedDate:
+                          debitPostedDate?.format("YYYY-MM-DD") ?? null,
                       },
                 creditAccount:
                   transaction.creditAccount === null ||
@@ -105,6 +111,8 @@ const UpdateTransactionActionsFrame = function ({
                     ? null
                     : {
                         fundAmounts: creditFundAmounts,
+                        postedDate:
+                          creditPostedDate?.format("YYYY-MM-DD") ?? null,
                       },
               });
             });

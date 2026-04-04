@@ -48,6 +48,7 @@ const UpdateTransactionForm = function ({
       amount: fa.amount,
     })) ?? [],
   );
+  const [debitPostedDate, setDebitPostedDate] = useState<Dayjs | null>(null);
   const [creditFundAmounts, setCreditFundAmounts] = useState<FundAmount[]>(
     transaction.creditAccount?.fundAmounts.map((fa) => ({
       fundId: fa.fundId,
@@ -55,6 +56,7 @@ const UpdateTransactionForm = function ({
       amount: fa.amount,
     })) ?? [],
   );
+  const [creditPostedDate, setCreditPostedDate] = useState<Dayjs | null>(null);
 
   const breadcrumbs = getBreadcrumbs(
     transaction,
@@ -90,6 +92,10 @@ const UpdateTransactionForm = function ({
         setDebitFundAmounts={setDebitFundAmounts}
         creditFundAmounts={creditFundAmounts}
         setCreditFundAmounts={setCreditFundAmounts}
+        debitPostedDate={debitPostedDate}
+        setDebitPostedDate={setDebitPostedDate}
+        creditPostedDate={creditPostedDate}
+        setCreditPostedDate={setCreditPostedDate}
       />
       <UpdateTransactionActionsFrame
         redirectUrl={redirectUrl}
@@ -99,6 +105,8 @@ const UpdateTransactionForm = function ({
         description={description}
         debitFundAmounts={debitFundAmounts}
         creditFundAmounts={creditFundAmounts}
+        debitPostedDate={debitPostedDate}
+        creditPostedDate={creditPostedDate}
       />
     </Stack>
   );

@@ -28,6 +28,8 @@ interface CreateTransactionActionsFrameProps {
   readonly debitFundAmounts: FundAmount[];
   readonly creditAccount: AccountIdentifier | null;
   readonly creditFundAmounts: FundAmount[];
+  readonly debitPostedDate: Dayjs | null;
+  readonly creditPostedDate: Dayjs | null;
 }
 
 /**
@@ -44,6 +46,8 @@ const CreateTransactionActionsFrame = function ({
   debitFundAmounts,
   creditAccount,
   creditFundAmounts,
+  debitPostedDate,
+  creditPostedDate,
 }: CreateTransactionActionsFrameProps): JSX.Element {
   const [state, action, pending] = useActionState(createTransaction, {
     redirectUrl,
@@ -122,6 +126,8 @@ const CreateTransactionActionsFrame = function ({
                     : {
                         accountId: debitAccount.id,
                         fundAmounts: debitFundAmounts,
+                        postedDate:
+                          debitPostedDate?.format("YYYY-MM-DD") ?? null,
                       },
                 creditAccount:
                   creditAccount === null
@@ -129,6 +135,8 @@ const CreateTransactionActionsFrame = function ({
                     : {
                         accountId: creditAccount.id,
                         fundAmounts: creditFundAmounts,
+                        postedDate:
+                          creditPostedDate?.format("YYYY-MM-DD") ?? null,
                       },
               });
             });

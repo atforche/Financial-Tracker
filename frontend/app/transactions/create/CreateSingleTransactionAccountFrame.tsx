@@ -1,3 +1,4 @@
+import { Checkbox, FormControlLabel, Stack } from "@mui/material";
 import {
   type CreateTransactionFormSearchParams,
   getDefaultCreditAccount,
@@ -6,11 +7,12 @@ import {
   getDefaultDebitFundAmount,
 } from "@/app/transactions/create/createTransactionFormSearchParams";
 import type { FundAmount, FundIdentifier } from "@/data/fundTypes";
+import { type JSX, useState } from "react";
 import AccountEntryField from "@/framework/forms/AccountEntryField";
 import type { AccountIdentifier } from "@/data/accountTypes";
+import DateEntryField from "@/framework/forms/DateEntryField";
+import type { Dayjs } from "dayjs";
 import FundAmountCollectionEntryFrame from "@/framework/forms/FundAmountCollectionEntryFrame";
-import type { JSX } from "react";
-import { Stack } from "@mui/material";
 
 /**
  * Props for the CreateSingleTransactionAccountFrame component.
@@ -24,6 +26,9 @@ interface CreateSingleTransactionAccountFrameProps {
   readonly setAccount: (account: AccountIdentifier | null) => void;
   readonly fundAmounts: FundAmount[];
   readonly setFundAmounts: (fundAmounts: FundAmount[]) => void;
+  readonly date?: Dayjs | null;
+  readonly postedDate?: Dayjs | null;
+  readonly setPostedDate?: ((date: Dayjs | null) => void) | null;
 }
 
 /**
@@ -38,7 +43,12 @@ const CreateSingleTransactionAccountFrame = function ({
   setAccount,
   fundAmounts,
   setFundAmounts,
+  date = null,
+  postedDate = null,
+  setPostedDate = null,
 }: CreateSingleTransactionAccountFrameProps): JSX.Element {
+  const [postImmediately, setPostImmediately] = useState(false);
+
   const requiredAccount = isDebit
     ? getDefaultDebitAccount(accounts, searchParams)
     : getDefaultCreditAccount(accounts, searchParams);
@@ -71,6 +81,29 @@ const CreateSingleTransactionAccountFrame = function ({
           typeof requiredFund !== "undefined" ? [requiredFund.fundId] : []
         }
       />
+      {setPostedDate !== null && (
+        <Stack direction="row">
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={postImmediately}
+                onChange={(e): void => {
+                  const { checked } = e.target;
+                  setPostImmediately(checked);
+                  setPostedDate(checked ? date : null);
+                }}
+              />
+            }
+            label="Post Immediately"
+          />
+          <DateEntryField
+            label="Posted Date"
+            value={postImmediately ? (postedDate ?? date) : null}
+            setValue={setPostedDate}
+            disabled={!postImmediately}
+          />
+        </Stack>
+      )}
     </Stack>
   );
 };

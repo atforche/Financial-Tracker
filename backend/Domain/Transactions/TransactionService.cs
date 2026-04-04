@@ -53,6 +53,18 @@ public class TransactionService(
         accountBalanceService.AddTransaction(transaction);
         fundBalanceService.AddTransaction(transaction);
         transactionRepository.Add(transaction);
+        if (request.DebitAccount?.PostedDate != null && !TryPost(transaction, request.DebitAccount.Account.Id, request.DebitAccount.PostedDate.Value, out IEnumerable<Exception> debitPostingExceptions))
+        {
+            exceptions = exceptions.Concat(debitPostingExceptions);
+        }
+        if (request.CreditAccount?.PostedDate != null && !TryPost(transaction, request.CreditAccount.Account.Id, request.CreditAccount.PostedDate.Value, out IEnumerable<Exception> creditPostingExceptions))
+        {
+            exceptions = exceptions.Concat(creditPostingExceptions);
+        }
+        if (exceptions.Any())
+        {
+            return false;
+        }
         return true;
     }
 
@@ -104,6 +116,22 @@ public class TransactionService(
         }
         accountBalanceService.UpdateTransaction(transaction);
         fundBalanceService.UpdateTransaction(transaction);
+        if (request.DebitAccount?.PostedDate != null &&
+            transaction.DebitAccount != null &&
+            !TryPost(transaction, transaction.DebitAccount.AccountId, request.DebitAccount.PostedDate.Value, out IEnumerable<Exception> debitPostingExceptions))
+        {
+            exceptions = exceptions.Concat(debitPostingExceptions);
+        }
+        if (request.CreditAccount?.PostedDate != null &&
+            transaction.CreditAccount != null &&
+            !TryPost(transaction, transaction.CreditAccount.AccountId, request.CreditAccount.PostedDate.Value, out IEnumerable<Exception> creditPostingExceptions))
+        {
+            exceptions = exceptions.Concat(creditPostingExceptions);
+        }
+        if (exceptions.Any())
+        {
+            return false;
+        }
         return true;
     }
 

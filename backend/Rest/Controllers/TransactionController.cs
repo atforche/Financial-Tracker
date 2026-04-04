@@ -303,7 +303,8 @@ public sealed class TransactionController(
         request = new CreateTransactionAccountRequest
         {
             Account = account,
-            FundAmounts = fundAmounts
+            FundAmounts = fundAmounts,
+            PostedDate = model.PostedDate
         };
         return true;
     }
@@ -341,7 +342,8 @@ public sealed class TransactionController(
         }
         request = new UpdateTransactionAccountRequest
         {
-            FundAmounts = fundAmounts
+            FundAmounts = fundAmounts,
+            PostedDate = model.PostedDate
         };
         return true;
     }

@@ -42,4 +42,9 @@ public class UpdateTransactionAccountModel
     /// Fund Amounts for the Transaction Account
     /// </summary>
     public required IEnumerable<CreateFundAmountModel> FundAmounts { get; init; }
+
+    /// <summary>
+    /// Posted Date for the Transaction Account, if it should be posted immediately
+    /// </summary>
+    public DateOnly? PostedDate { get; init; }
 }

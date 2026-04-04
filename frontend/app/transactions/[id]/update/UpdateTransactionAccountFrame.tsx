@@ -1,4 +1,5 @@
 import type { FundAmount, FundIdentifier } from "@/data/fundTypes";
+import type { Dayjs } from "dayjs";
 import type { JSX } from "react";
 import type { Transaction } from "@/data/transactionTypes";
 import UpdateSingleTransactionAccountFrame from "@/app/transactions/[id]/update/UpdateSingleTransactionAccountFrame";
@@ -14,6 +15,10 @@ interface UpdateTransactionAccountFrameProps {
   readonly setDebitFundAmounts: (fundAmounts: FundAmount[]) => void;
   readonly creditFundAmounts: FundAmount[];
   readonly setCreditFundAmounts: (fundAmounts: FundAmount[]) => void;
+  readonly debitPostedDate: Dayjs | null;
+  readonly setDebitPostedDate: (date: Dayjs | null) => void;
+  readonly creditPostedDate: Dayjs | null;
+  readonly setCreditPostedDate: (date: Dayjs | null) => void;
 }
 
 /**
@@ -26,6 +31,10 @@ const UpdateTransactionAccountFrame = function ({
   setDebitFundAmounts,
   creditFundAmounts,
   setCreditFundAmounts,
+  debitPostedDate,
+  setDebitPostedDate,
+  creditPostedDate,
+  setCreditPostedDate,
 }: UpdateTransactionAccountFrameProps): JSX.Element {
   const debitAccount =
     transaction.debitAccount !== null &&
@@ -65,6 +74,9 @@ const UpdateTransactionAccountFrame = function ({
         funds={funds}
         fundAmounts={debitFundAmounts}
         setFundAmounts={setDebitFundAmounts}
+        transactionDate={transaction.date}
+        postedDate={debitPostedDate}
+        setPostedDate={setDebitPostedDate}
       />
     );
   }
@@ -76,6 +88,9 @@ const UpdateTransactionAccountFrame = function ({
         funds={funds}
         fundAmounts={creditFundAmounts}
         setFundAmounts={setCreditFundAmounts}
+        transactionDate={transaction.date}
+        postedDate={creditPostedDate}
+        setPostedDate={setCreditPostedDate}
       />
     );
   }

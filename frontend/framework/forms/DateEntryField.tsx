@@ -15,6 +15,7 @@ interface DateEntryFieldProps {
   readonly errorMessage?: string | null;
   readonly minDate?: Dayjs | null;
   readonly maxDate?: Dayjs | null;
+  readonly disabled?: boolean;
 }
 
 /**
@@ -27,6 +28,7 @@ const DateEntryField = function ({
   errorMessage = null,
   minDate = null,
   maxDate = null,
+  disabled = false,
 }: DateEntryFieldProps): JSX.Element {
   const [internalErrorMessage, setInternalErrorMessage] = useState<
     string | null
@@ -36,6 +38,7 @@ const DateEntryField = function ({
       <DatePicker
         label={label}
         value={value}
+        disabled={disabled}
         readOnly={setValue === null}
         onChange={(newValue: Dayjs | null) => setValue?.(newValue)}
         minDate={minDate ?? dayjs("1900-01-01")}

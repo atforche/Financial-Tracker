@@ -10,6 +10,7 @@ import { Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import type { AccountIdentifier } from "@/data/accountTypes";
 import CreateSingleTransactionAccountFrame from "@/app/transactions/create/CreateSingleTransactionAccountFrame";
 import CreateTransferTransactionAccountFrame from "@/app/transactions/create/CreateTransferTransactionAccountFrame";
+import type { Dayjs } from "dayjs";
 import type { JSX } from "react";
 import ToggleState from "@/app/transactions/create/toggleState";
 import tryParseEnum from "@/data/tryParseEnum";
@@ -31,6 +32,11 @@ interface CreateTransactionAccountFrameProps {
   readonly setCreditAccount: (account: AccountIdentifier | null) => void;
   readonly creditFundAmounts: FundAmount[];
   readonly setCreditFundAmounts: (fundAmounts: FundAmount[]) => void;
+  readonly date: Dayjs | null;
+  readonly debitPostedDate: Dayjs | null;
+  readonly setDebitPostedDate: (date: Dayjs | null) => void;
+  readonly creditPostedDate: Dayjs | null;
+  readonly setCreditPostedDate: (date: Dayjs | null) => void;
 }
 
 /**
@@ -50,12 +56,19 @@ const CreateTransactionAccountFrame = function ({
   setCreditAccount,
   creditFundAmounts,
   setCreditFundAmounts,
+  date,
+  debitPostedDate,
+  setDebitPostedDate,
+  creditPostedDate,
+  setCreditPostedDate,
 }: CreateTransactionAccountFrameProps): JSX.Element {
   const resetToInitialState = function (): void {
     setDebitAccount(getDefaultDebitAccount(accounts, searchParams));
     setDebitFundAmounts(getDefaultDebitFundAmount(funds, searchParams));
     setCreditAccount(getDefaultCreditAccount(accounts, searchParams));
     setCreditFundAmounts(getDefaultCreditFundAmount(funds, searchParams));
+    setDebitPostedDate(null);
+    setCreditPostedDate(null);
   };
 
   return (
@@ -104,6 +117,9 @@ const CreateTransactionAccountFrame = function ({
           setAccount={setDebitAccount}
           fundAmounts={debitFundAmounts}
           setFundAmounts={setDebitFundAmounts}
+          date={date}
+          postedDate={debitPostedDate}
+          setPostedDate={setDebitPostedDate}
         />
       )}
       {toggleState === ToggleState.Credit && (
@@ -116,6 +132,9 @@ const CreateTransactionAccountFrame = function ({
           setAccount={setCreditAccount}
           fundAmounts={creditFundAmounts}
           setFundAmounts={setCreditFundAmounts}
+          date={date}
+          postedDate={creditPostedDate}
+          setPostedDate={setCreditPostedDate}
         />
       )}
       {toggleState === ToggleState.Transfer && (

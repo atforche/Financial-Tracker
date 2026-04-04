@@ -1,9 +1,11 @@
+import { Checkbox, FormControlLabel, Stack } from "@mui/material";
 import type { FundAmount, FundIdentifier } from "@/data/fundTypes";
+import { type JSX, useState } from "react";
+import dayjs, { type Dayjs } from "dayjs";
 import AccountEntryField from "@/framework/forms/AccountEntryField";
 import type { AccountIdentifier } from "@/data/accountTypes";
+import DateEntryField from "@/framework/forms/DateEntryField";
 import FundAmountCollectionEntryFrame from "@/framework/forms/FundAmountCollectionEntryFrame";
-import type { JSX } from "react";
-import { Stack } from "@mui/material";
 
 /**
  * Props for the UpdateSingleTransactionAccountFrame component.
@@ -14,6 +16,9 @@ interface UpdateSingleTransactionAccountFrameProps {
   readonly funds: FundIdentifier[];
   readonly fundAmounts: FundAmount[];
   readonly setFundAmounts: (fundAmounts: FundAmount[]) => void;
+  readonly transactionDate?: string | null;
+  readonly postedDate?: Dayjs | null;
+  readonly setPostedDate?: ((date: Dayjs | null) => void) | null;
 }
 
 /**
@@ -25,7 +30,13 @@ const UpdateSingleTransactionAccountFrame = function ({
   funds,
   fundAmounts,
   setFundAmounts,
+  transactionDate = null,
+  postedDate = null,
+  setPostedDate = null,
 }: UpdateSingleTransactionAccountFrameProps): JSX.Element {
+  const [postImmediately, setPostImmediately] = useState(false);
+  const defaultDate = dayjs(transactionDate);
+
   return (
     <Stack spacing={2} sx={{ maxWidth: 500, minWidth: 500 }}>
       <AccountEntryField
@@ -43,6 +54,29 @@ const UpdateSingleTransactionAccountFrame = function ({
         }}
         lockedFundIds={[]}
       />
+      {setPostedDate !== null && (
+        <Stack direction="row">
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={postImmediately}
+                onChange={(e): void => {
+                  const { checked } = e.target;
+                  setPostImmediately(checked);
+                  setPostedDate(checked ? defaultDate : null);
+                }}
+              />
+            }
+            label="Post Immediately"
+          />
+          <DateEntryField
+            label="Posted Date"
+            value={postedDate}
+            setValue={setPostedDate}
+            disabled={!postImmediately}
+          />
+        </Stack>
+      )}
     </Stack>
   );
 };
