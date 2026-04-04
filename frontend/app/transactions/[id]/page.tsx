@@ -107,18 +107,19 @@ const Page = async function ({
     isAccountingPeriodOpen = fetchedAccountingPeriod?.isOpen ?? true;
   }
 
-  const updateParams = new URLSearchParams();
+  const contextParams = new URLSearchParams();
   if (typeof accountingPeriodId !== "undefined") {
-    updateParams.set("accountingPeriodId", accountingPeriodId);
+    contextParams.set("accountingPeriodId", accountingPeriodId);
   }
   if (typeof accountId !== "undefined") {
-    updateParams.set("accountId", accountId);
+    contextParams.set("accountId", accountId);
   }
   if (typeof fundId !== "undefined") {
-    updateParams.set("fundId", fundId);
+    contextParams.set("fundId", fundId);
   }
-  const updateQueryString = updateParams.toString();
-  const updateHref = `/transactions/${id}/update${updateQueryString ? `?${updateQueryString}` : ""}`;
+  const contextQueryString = contextParams.toString();
+  const updateHref = `/transactions/${id}/update${contextQueryString ? `?${contextQueryString}` : ""}`;
+  const deleteHref = `/transactions/${id}/delete${contextQueryString ? `?${contextQueryString}` : ""}`;
 
   return (
     <Stack spacing={2}>
@@ -136,19 +137,34 @@ const Page = async function ({
             fundData,
           )}
         />
-        <Button
-          variant="contained"
-          color="primary"
-          href={updateHref}
-          disabled={
-            (transactionData.debitAccount === null ||
-              transactionData.debitAccount?.postedDate !== null) &&
-            (transactionData.creditAccount === null ||
-              transactionData.creditAccount?.postedDate !== null)
-          }
-        >
-          Edit
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <Button
+            variant="contained"
+            color="primary"
+            href={updateHref}
+            disabled={
+              (transactionData.debitAccount === null ||
+                transactionData.debitAccount?.postedDate !== null) &&
+              (transactionData.creditAccount === null ||
+                transactionData.creditAccount?.postedDate !== null)
+            }
+          >
+            Edit
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            href={deleteHref}
+            disabled={
+              (transactionData.debitAccount === null ||
+                transactionData.debitAccount?.postedDate !== null) &&
+              (transactionData.creditAccount === null ||
+                transactionData.creditAccount?.postedDate !== null)
+            }
+          >
+            Delete
+          </Button>
+        </Stack>
       </Stack>
       <CaptionedFrame caption="Details">
         <CaptionedValue
