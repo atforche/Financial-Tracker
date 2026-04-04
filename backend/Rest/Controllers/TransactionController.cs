@@ -230,6 +230,42 @@ public sealed class TransactionController(
     }
 
     /// <summary>
+    /// Unposts the provided Transaction
+    /// </summary>
+    [HttpPost("{transactionId}/unpost")]
+    [ProducesResponseType(typeof(TransactionModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> UnpostAsync(Guid transactionId)
+    {
+        Dictionary<string, string[]> errors = [];
+        if (!transactionMapper.TryToDomain(transactionId, out Transaction? transaction))
+        {
+            errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
+        }
+        if (errors.Count > 0 || transaction == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to unpost Transaction.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        if (!transactionService.TryUnpost(transaction, out IEnumerable<Exception> exceptions))
+        {
+            errors.Add("", exceptions.Select(exception => exception.Message).ToArray());
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to unpost Transaction.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        await unitOfWork.SaveChangesAsync();
+        return Ok(transactionMapper.ToModel(transaction));
+    }
+
+    /// <summary>
     /// Deletes the Transaction with the provided ID
     /// </summary>
     [HttpDelete("{transactionId}")]

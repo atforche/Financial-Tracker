@@ -22,7 +22,7 @@ interface PageProps {
 }
 
 /**
- * Component that displays the view for a single transaction in an accounting period.
+ * Component that displays the view for a single transaction.
  */
 const Page = async function ({
   params,
@@ -92,6 +92,21 @@ const Page = async function ({
     );
   }
 
+  let isAccountingPeriodOpen = accountingPeriodData?.isOpen ?? true;
+  if (accountingPeriodData === null) {
+    const { data: fetchedAccountingPeriod } = await apiClient.GET(
+      "/accounting-periods/{accountingPeriodId}",
+      {
+        params: {
+          path: {
+            accountingPeriodId: transactionData.accountingPeriodId,
+          },
+        },
+      },
+    );
+    isAccountingPeriodOpen = fetchedAccountingPeriod?.isOpen ?? true;
+  }
+
   const updateParams = new URLSearchParams();
   if (typeof accountingPeriodId !== "undefined") {
     updateParams.set("accountingPeriodId", accountingPeriodId);
@@ -156,6 +171,7 @@ const Page = async function ({
             transaction={transactionData}
             transactionAccount={transactionData.debitAccount}
             searchParams={await searchParams}
+            isAccountingPeriodOpen={isAccountingPeriodOpen}
           />
         ) : null}
         {transactionData.creditAccount ? (
@@ -163,6 +179,7 @@ const Page = async function ({
             transaction={transactionData}
             transactionAccount={transactionData.creditAccount}
             searchParams={await searchParams}
+            isAccountingPeriodOpen={isAccountingPeriodOpen}
           />
         ) : null}
       </Stack>

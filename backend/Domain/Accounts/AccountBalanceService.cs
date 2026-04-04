@@ -109,6 +109,25 @@ public class AccountBalanceService(
     }
 
     /// <summary>
+    /// Updates the Account Balances for an unposted Transaction
+    /// </summary>
+    internal void UnpostTransaction(Transaction transaction, TransactionAccount transactionAccount)
+    {
+        AccountBalanceHistory? oldPostedHistory = accountBalanceHistoryRepository
+            .GetAllByTransactionId(transaction.Id)
+            .SingleOrDefault(bh => bh.Date != transaction.Date);
+        if (oldPostedHistory == null)
+        {
+            UpdateExistingBalanceHistory(transaction, transactionAccount);
+        }
+        else
+        {
+            DeleteExistingBalanceHistory(oldPostedHistory);
+            accountBalanceHistoryRepository.Delete(oldPostedHistory);
+        }
+    }
+
+    /// <summary>
     /// Updates the Account Balances for a deleted Transaction
     /// </summary>
     internal void DeleteTransaction(Transaction transaction)

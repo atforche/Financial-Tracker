@@ -19,6 +19,7 @@ interface TransactionAccountFrameProps {
   readonly transaction: Transaction;
   readonly transactionAccount: TransactionAccount;
   readonly searchParams: TransactionSearchParams;
+  readonly isAccountingPeriodOpen: boolean;
 }
 
 /**
@@ -28,8 +29,11 @@ const TransactionAccountFrame = function ({
   transaction,
   transactionAccount,
   searchParams,
+  isAccountingPeriodOpen,
 }: TransactionAccountFrameProps): JSX.Element {
   const postParams = new URLSearchParams();
+  const unpostParams = new URLSearchParams();
+
   postParams.set(
     "account",
     transactionAccount.type === TransactionAccountType.Debit
@@ -37,15 +41,19 @@ const TransactionAccountFrame = function ({
       : "credit",
   );
   if (typeof searchParams.accountingPeriodId !== "undefined") {
+    unpostParams.set("accountingPeriodId", searchParams.accountingPeriodId);
     postParams.set("accountingPeriodId", searchParams.accountingPeriodId);
   }
   if (typeof searchParams.accountId !== "undefined") {
+    unpostParams.set("accountId", searchParams.accountId);
     postParams.set("accountId", searchParams.accountId);
   }
   if (typeof searchParams.fundId !== "undefined") {
+    unpostParams.set("fundId", searchParams.fundId);
     postParams.set("fundId", searchParams.fundId);
   }
   const postHref = `/transactions/${transaction.id}/post?${postParams.toString()}`;
+  const unpostHref = `/transactions/${transaction.id}/unpost?${unpostParams.toString()}`;
 
   return (
     <CaptionedFrame
@@ -63,14 +71,25 @@ const TransactionAccountFrame = function ({
           value={transactionAccount.accountName}
           minWidth={500}
         />
-        <Button
-          variant="contained"
-          color="primary"
-          href={postHref}
-          disabled={transactionAccount.postedDate !== null}
-        >
-          Post
-        </Button>
+        {transactionAccount.postedDate === null ? (
+          <Button
+            variant="contained"
+            color="primary"
+            href={postHref}
+            disabled={!isAccountingPeriodOpen}
+          >
+            Post
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            color="primary"
+            href={unpostHref}
+            disabled={!isAccountingPeriodOpen}
+          >
+            Unpost
+          </Button>
+        )}
       </Stack>
       <CaptionedValue
         caption="Posted On"

@@ -38,58 +38,34 @@ public class TransactionAccount
     /// <summary>
     /// Applies this Transaction Account to the provided existing Account Balance as of the specified date
     /// </summary>
-    internal AccountBalance ApplyToAccountBalance(AccountBalance existingAccountBalance, DateOnly date)
-    {
-        if (existingAccountBalance.Account.Id != AccountId)
+    internal AccountBalance ApplyToAccountBalance(AccountBalance existingAccountBalance, DateOnly date) =>
+        ApplyFundAmountsToAccountBalance(existingAccountBalance, date, FundAmounts);
+
+    /// <summary>
+    /// Reverses this Transaction Account from the provided existing Account Balance as of the specified date
+    /// </summary>
+    internal AccountBalance ReverseFromAccountBalance(AccountBalance existingAccountBalance, DateOnly date) =>
+        ApplyFundAmountsToAccountBalance(existingAccountBalance, date, FundAmounts.Select(f => new FundAmount
         {
-            return existingAccountBalance;
-        }
-        AccountBalance newAccountBalance = existingAccountBalance;
-        if (Transaction.Date == date)
-        {
-            newAccountBalance = Type == TransactionAccountType.Debit
-                ? newAccountBalance.AddNewPendingDebits(FundAmounts)
-                : newAccountBalance.AddNewPendingCredits(FundAmounts);
-        }
-        if (PostedDate == date)
-        {
-            newAccountBalance = Type == TransactionAccountType.Debit
-                ? newAccountBalance.PostPendingDebits(FundAmounts)
-                : newAccountBalance.PostPendingCredits(FundAmounts);
-        }
-        return newAccountBalance;
-    }
+            FundId = f.FundId,
+            Amount = -f.Amount
+        }).ToList());
 
     /// <summary>
     /// Applies this Transaction Account to the provided existing Fund Balance as of the specified date
     /// </summary>
-    internal FundBalance ApplyToFundBalance(FundBalance existingFundBalance, DateOnly date)
-    {
-        FundAmount? fundAmount = FundAmounts.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
-        if (fundAmount == null)
+    internal FundBalance ApplyToFundBalance(FundBalance existingFundBalance, DateOnly date) =>
+        ApplyFundAmountsToFundBalance(existingFundBalance, date, FundAmounts);
+
+    /// <summary>
+    /// Reverses this Transaction Account from the provided existing Fund Balance as of the specified date
+    /// </summary>
+    internal FundBalance ReverseFromFundBalance(FundBalance existingFundBalance, DateOnly date) =>
+        ApplyFundAmountsToFundBalance(existingFundBalance, date, FundAmounts.Select(f => new FundAmount
         {
-            return existingFundBalance;
-        }
-        var accountAmount = new AccountAmount
-        {
-            AccountId = AccountId,
-            Amount = fundAmount.Amount
-        };
-        FundBalance newFundBalance = existingFundBalance;
-        if (Transaction.Date == date)
-        {
-            newFundBalance = Type == TransactionAccountType.Debit
-                ? newFundBalance.AddNewPendingDebit(accountAmount)
-                : newFundBalance.AddNewPendingCredit(accountAmount);
-        }
-        if (PostedDate == date)
-        {
-            newFundBalance = Type == TransactionAccountType.Debit
-                ? newFundBalance.PostPendingDebit(accountAmount)
-                : newFundBalance.PostPendingCredit(accountAmount);
-        }
-        return newFundBalance;
-    }
+            FundId = f.FundId,
+            Amount = -f.Amount
+        }).ToList());
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -113,5 +89,61 @@ public class TransactionAccount
     {
         Transaction = null!;
         AccountId = null!;
+    }
+
+    /// <summary>
+    /// Applies the provided Fund Amounts to the provided existing Account Balance as of the specified date
+    /// </summary>
+    private AccountBalance ApplyFundAmountsToAccountBalance(AccountBalance existingAccountBalance, DateOnly date, IReadOnlyCollection<FundAmount> fundAmounts)
+    {
+        if (existingAccountBalance.Account.Id != AccountId)
+        {
+            return existingAccountBalance;
+        }
+        AccountBalance newAccountBalance = existingAccountBalance;
+        if (Transaction.Date == date)
+        {
+            newAccountBalance = Type == TransactionAccountType.Debit
+                ? newAccountBalance.AddNewPendingDebits(fundAmounts)
+                : newAccountBalance.AddNewPendingCredits(fundAmounts);
+        }
+        if (PostedDate == date)
+        {
+            newAccountBalance = Type == TransactionAccountType.Debit
+                ? newAccountBalance.PostPendingDebits(fundAmounts)
+                : newAccountBalance.PostPendingCredits(fundAmounts);
+        }
+        return newAccountBalance;
+    }
+
+    /// <summary>
+    /// Applies the provided Fund Amounts to the provided existing Fund Balance as of the specified date
+    /// </summary>
+    private FundBalance ApplyFundAmountsToFundBalance(FundBalance existingFundBalance, DateOnly date, IReadOnlyCollection<FundAmount> fundAmounts)
+    {
+        FundAmount? fundAmount = fundAmounts.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
+        if (fundAmount == null)
+        {
+            return existingFundBalance;
+        }
+        var accountAmount = new AccountAmount
+        {
+            AccountId = AccountId,
+            Amount = fundAmount.Amount
+        };
+        FundBalance newFundBalance = existingFundBalance;
+        if (Transaction.Date == date)
+        {
+            newFundBalance = Type == TransactionAccountType.Debit
+                ? newFundBalance.AddNewPendingDebit(accountAmount)
+                : newFundBalance.AddNewPendingCredit(accountAmount);
+        }
+        if (PostedDate == date)
+        {
+            newFundBalance = Type == TransactionAccountType.Debit
+                ? newFundBalance.PostPendingDebit(accountAmount)
+                : newFundBalance.PostPendingCredit(accountAmount);
+        }
+        return newFundBalance;
     }
 }

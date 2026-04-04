@@ -94,6 +94,31 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
     }
 
     /// <summary>
+    /// Updates the Fund Balances for an unposted Transaction
+    /// </summary>
+    internal void UnpostTransaction(Transaction transaction, TransactionAccount transactionAccount)
+    {
+        IEnumerable<FundId> affectedFunds = transaction.DebitAccount != null && transaction.CreditAccount != null && transaction.DebitAccount.AccountId == transaction.CreditAccount.AccountId
+            ? GetAllAffectedFunds(transaction)
+            : transactionAccount.FundAmounts.Select(fundAmount => fundAmount.FundId);
+        foreach (FundId fund in affectedFunds)
+        {
+            FundBalanceHistory? oldPostedHistory = fundBalanceHistoryRepository
+                .GetAllByTransactionId(transaction.Id)
+                .SingleOrDefault(bh => bh.FundId == fund && bh.Date != transaction.Date);
+            if (oldPostedHistory == null)
+            {
+                UpdateExistingBalanceHistory(transaction, fund);
+            }
+            else
+            {
+                DeleteExistingBalanceHistory(oldPostedHistory);
+                fundBalanceHistoryRepository.Delete(oldPostedHistory);
+            }
+        }
+    }
+
+    /// <summary>
     /// Updates the Fund Balances for a deleted Transaction
     /// </summary>
     internal void DeleteTransaction(Transaction transaction)

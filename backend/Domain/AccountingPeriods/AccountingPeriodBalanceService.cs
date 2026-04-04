@@ -129,7 +129,7 @@ public class AccountingPeriodBalanceService(
     }
 
     /// <summary>
-    /// Updates the Accounting Period Balances for a newly postedTransaction
+    /// Updates the Accounting Period Balances for a newly posted Transaction
     /// </summary>
     internal void PostTransaction(TransactionAccount transactionAccount)
     {
@@ -162,6 +162,45 @@ public class AccountingPeriodBalanceService(
             {
                 FundBalance closingFundBalance = fundBalanceHistory.GetClosingFundBalance();
                 fundBalanceHistory.ClosingAccountBalances = transactionAccount.ApplyToFundBalance(closingFundBalance, transactionAccount.PostedDate.Value).AccountBalances;
+            }
+            accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
+        }
+    }
+
+    /// <summary>
+    /// Updates the Accounting Period Balances for a newly unposted Transaction
+    /// </summary>
+    internal void UnpostTransaction(TransactionAccount transactionAccount)
+    {
+        if (transactionAccount.PostedDate == null)
+        {
+            return;
+        }
+        AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(transactionAccount.Transaction.AccountingPeriodId);
+        while (accountingPeriod != null)
+        {
+            AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
+            AccountAccountingPeriodBalanceHistory accountBalanceHistory =
+                balanceHistory.AccountBalances.Single(a => a.Account.Id == transactionAccount.AccountId);
+            var fundBalanceHistories = balanceHistory.FundBalances
+                .Where(f => transactionAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == f.Fund.Id)).ToList();
+
+            if (transactionAccount.Transaction.AccountingPeriodId != accountingPeriod.Id)
+            {
+                AccountBalance openingBalance = accountBalanceHistory.GetOpeningAccountBalance();
+                accountBalanceHistory.OpeningFundBalances = transactionAccount.ReverseFromAccountBalance(openingBalance, transactionAccount.PostedDate.Value).FundBalances;
+                foreach (FundAccountingPeriodBalanceHistory fundBalanceHistory in fundBalanceHistories)
+                {
+                    FundBalance openingFundBalance = fundBalanceHistory.GetOpeningFundBalance();
+                    fundBalanceHistory.OpeningAccountBalances = transactionAccount.ReverseFromFundBalance(openingFundBalance, transactionAccount.PostedDate.Value).AccountBalances;
+                }
+            }
+            AccountBalance closingBalance = accountBalanceHistory.GetClosingAccountBalance();
+            accountBalanceHistory.ClosingFundBalances = transactionAccount.ReverseFromAccountBalance(closingBalance, transactionAccount.PostedDate.Value).FundBalances;
+            foreach (FundAccountingPeriodBalanceHistory fundBalanceHistory in fundBalanceHistories)
+            {
+                FundBalance closingFundBalance = fundBalanceHistory.GetClosingFundBalance();
+                fundBalanceHistory.ClosingAccountBalances = transactionAccount.ReverseFromFundBalance(closingFundBalance, transactionAccount.PostedDate.Value).AccountBalances;
             }
             accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
         }
