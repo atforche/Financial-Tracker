@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import UpdateTransactionForm from "@/app/transactions/[id]/update/UpdateTransactionForm";
+import type { UpdateTransactionFormSearchParams } from "@/app/transactions/[id]/update/updateTransactionFormSearchParams";
 import getApiClient from "@/data/getApiClient";
 
 /**
@@ -9,11 +10,7 @@ interface PageProps {
   readonly params: Promise<{
     id: string;
   }>;
-  readonly searchParams: Promise<{
-    accountingPeriodId?: string;
-    accountId?: string;
-    fundId?: string;
-  }>;
+  readonly searchParams: Promise<UpdateTransactionFormSearchParams>;
 }
 
 /**

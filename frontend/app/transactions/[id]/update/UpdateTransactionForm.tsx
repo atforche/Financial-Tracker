@@ -1,25 +1,17 @@
 "use client";
 
-import {
-  type AccountingPeriod,
-  getMaximumDate,
-  getMinimumDate,
-} from "@/data/accountingPeriodTypes";
-import { Button, DialogActions, Stack } from "@mui/material";
 import type { Fund, FundAmount, FundIdentifier } from "@/data/fundTypes";
-import { type JSX, startTransition, useActionState, useState } from "react";
+import { type JSX, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import type { Account } from "@/data/accountTypes";
-import AccountEntryField from "@/framework/forms/AccountEntryField";
-import AccountingPeriodEntryField from "@/framework/forms/AccountingPeriodEntryField";
+import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
-import DateEntryField from "@/framework/forms/DateEntryField";
-import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import FundAmountCollectionEntryFrame from "@/framework/forms/FundAmountCollectionEntryFrame";
-import Link from "next/link";
-import StringEntryField from "@/framework/forms/StringEntryField";
+import { Stack } from "@mui/material";
 import type { Transaction } from "@/data/transactionTypes";
-import updateTransaction from "@/app/transactions/[id]/update/updateTransaction";
+import UpdateTransactionAccountFrame from "@/app/transactions/[id]/update/UpdateTransactionAccountFrame";
+import UpdateTransactionActionsFrame from "@/app/transactions/[id]/update/UpdateTransactionActionsFrame";
+import UpdateTransactionDetailsFrame from "@/app/transactions/[id]/update/UpdateTransactionDetailsFrame";
+import getBreadcrumbs from "@/app/transactions/[id]/update/getBreadcrumbs";
 
 /**
  * Props for the UpdateTransactionForm component.
@@ -32,171 +24,6 @@ interface UpdateTransactionFormProps {
   readonly providedAccount?: Account | null;
   readonly providedFund?: Fund | null;
 }
-
-/**
- * Gets the breadcrumbs to be displayed at the top of the form.
- */
-const getBreadcrumbs = function (
-  transaction: Transaction,
-  accountingPeriod: AccountingPeriod | null,
-  account: Account | null,
-  fund: Fund | null,
-): JSX.Element {
-  if (accountingPeriod !== null && account !== null) {
-    return (
-      <Breadcrumbs
-        breadcrumbs={[
-          {
-            label: "Accounting Periods",
-            href: "/accounting-periods",
-          },
-          {
-            label: accountingPeriod.name,
-            href: `/accounting-periods/${accountingPeriod.id}`,
-          },
-          {
-            label: account.name,
-            href: `/accounting-periods/${accountingPeriod.id}/accounts/${account.id}`,
-          },
-          {
-            label: "Transaction",
-            href: `/transactions/${transaction.id}`,
-          },
-          {
-            label: "Update",
-            href: `/transactions/${transaction.id}/update`,
-          },
-        ]}
-      />
-    );
-  }
-  if (accountingPeriod !== null && fund !== null) {
-    return (
-      <Breadcrumbs
-        breadcrumbs={[
-          {
-            label: "Accounting Periods",
-            href: "/accounting-periods",
-          },
-          {
-            label: accountingPeriod.name,
-            href: `/accounting-periods/${accountingPeriod.id}`,
-          },
-          {
-            label: fund.name,
-            href: `/accounting-periods/${accountingPeriod.id}/funds/${fund.id}`,
-          },
-          {
-            label: "Transaction",
-            href: `/transactions/${transaction.id}`,
-          },
-          {
-            label: "Update",
-            href: `/transactions/${transaction.id}/update`,
-          },
-        ]}
-      />
-    );
-  }
-  if (accountingPeriod !== null) {
-    return (
-      <Breadcrumbs
-        breadcrumbs={[
-          {
-            label: "Accounting Periods",
-            href: "/accounting-periods",
-          },
-          {
-            label: accountingPeriod.name,
-            href: `/accounting-periods/${accountingPeriod.id}`,
-          },
-          {
-            label: "Transaction",
-            href: `/transactions/${transaction.id}`,
-          },
-          {
-            label: "Update",
-            href: `/transactions/${transaction.id}/update`,
-          },
-        ]}
-      />
-    );
-  }
-  if (account !== null) {
-    return (
-      <Breadcrumbs
-        breadcrumbs={[
-          {
-            label: "Accounts",
-            href: "/accounts",
-          },
-          {
-            label: account.name,
-            href: `/accounts/${account.id}`,
-          },
-          {
-            label: "Transaction",
-            href: `/transactions/${transaction.id}`,
-          },
-          {
-            label: "Update",
-            href: `/transactions/${transaction.id}/update`,
-          },
-        ]}
-      />
-    );
-  }
-  if (fund !== null) {
-    return (
-      <Breadcrumbs
-        breadcrumbs={[
-          {
-            label: "Funds",
-            href: "/funds",
-          },
-          {
-            label: fund.name,
-            href: `/funds/${fund.id}`,
-          },
-          {
-            label: "Transaction",
-            href: `/transactions/${transaction.id}`,
-          },
-          {
-            label: "Update",
-            href: `/transactions/${transaction.id}/update`,
-          },
-        ]}
-      />
-    );
-  }
-  throw new Error(
-    "Invalid state: Update Transaction page must have either an associated accounting period, account, or fund",
-  );
-};
-
-/**
- * Gets the URL to redirect the user to after successfully updating a transaction.
- */
-const getRedirectUrl = function (
-  transaction: Transaction,
-  accountingPeriod: AccountingPeriod | null,
-  account: Account | null,
-  fund: Fund | null,
-): string {
-  const params = new URLSearchParams();
-  if (accountingPeriod !== null) {
-    params.set("accountingPeriodId", accountingPeriod.id);
-  }
-  if (account !== null) {
-    params.set("accountId", account.id);
-  }
-  if (fund !== null) {
-    params.set("fundId", fund.id);
-  }
-  const queryString = params.toString();
-  return `/transactions/${transaction.id}${queryString ? `?${queryString}` : ""}`;
-};
 
 /**
  * Component that displays the form for updating a transaction.
@@ -228,167 +55,51 @@ const UpdateTransactionForm = function ({
       amount: fa.amount,
     })) ?? [],
   );
-  const [state, action, pending] = useActionState(updateTransaction, {
-    transactionId: transaction.id,
-    redirectUrl: getRedirectUrl(
-      transaction,
-      providedAccountingPeriod,
-      providedAccount,
-      providedFund,
-    ),
-  });
+
+  const breadcrumbs = getBreadcrumbs(
+    transaction,
+    providedAccountingPeriod,
+    providedAccount,
+    providedFund,
+  );
+  const redirectUrl = breadcrumbs[breadcrumbs.length - 2]?.href ?? "/";
 
   return (
     <Stack spacing={2}>
-      {getBreadcrumbs(
-        transaction,
-        providedAccountingPeriod,
-        providedAccount,
-        providedFund,
-      )}
-      <Stack spacing={2} sx={{ maxWidth: "800px" }}>
-        <AccountingPeriodEntryField
-          label="Accounting Period"
-          options={[accountingPeriod]}
-          value={accountingPeriod}
-        />
-        <DateEntryField
-          label="Date"
-          value={date}
-          setValue={setDate}
-          minDate={getMinimumDate(accountingPeriod)}
-          maxDate={getMaximumDate(accountingPeriod)}
-          errorMessage={state.dateErrors ?? null}
-        />
-        <StringEntryField
-          label="Location"
-          value={location}
-          setValue={setLocation}
-        />
-        <StringEntryField
-          label="Description"
-          value={description}
-          setValue={setDescription}
-        />
-        <Stack direction="row" spacing={2}>
-          {transaction.debitAccount !== null &&
-          typeof transaction.debitAccount !== "undefined" ? (
-            <Stack spacing={2} sx={{ minWidth: 400 }}>
-              <AccountEntryField
-                label="Debit Account"
-                options={[
-                  {
-                    id: transaction.debitAccount.accountId,
-                    name: transaction.debitAccount.accountName,
-                  },
-                ]}
-                value={{
-                  id: transaction.debitAccount.accountId,
-                  name: transaction.debitAccount.accountName,
-                }}
-                setValue={null}
-              />
-              <FundAmountCollectionEntryFrame
-                label="Debit Fund Amounts"
-                funds={funds}
-                value={debitFundAmounts}
-                setValue={setDebitFundAmounts}
-                lockedFundIds={[]}
-              />
-            </Stack>
-          ) : null}
-          {transaction.creditAccount !== null &&
-          typeof transaction.creditAccount !== "undefined" ? (
-            <Stack spacing={2} sx={{ minWidth: 400 }}>
-              <AccountEntryField
-                label="Credit Account"
-                options={[
-                  {
-                    id: transaction.creditAccount.accountId,
-                    name: transaction.creditAccount.accountName,
-                  },
-                ]}
-                value={{
-                  id: transaction.creditAccount.accountId,
-                  name: transaction.creditAccount.accountName,
-                }}
-                setValue={null}
-              />
-              <FundAmountCollectionEntryFrame
-                label="Credit Fund Amounts"
-                funds={funds}
-                value={creditFundAmounts}
-                setValue={setCreditFundAmounts}
-                lockedFundIds={[]}
-              />
-            </Stack>
-          ) : null}
-        </Stack>
-        <DialogActions>
-          <Link
-            href={getRedirectUrl(
-              transaction,
-              providedAccountingPeriod,
-              providedAccount,
-              providedFund,
-            )}
-            tabIndex={-1}
-          >
-            <Button variant="outlined">Cancel</Button>
-          </Link>
-          <Button
-            variant="contained"
-            loading={pending}
-            disabled={
-              date === null ||
-              location.trim() === "" ||
-              description.trim() === "" ||
-              (transaction.debitAccount !== null &&
-                typeof transaction.debitAccount !== "undefined" &&
-                debitFundAmounts.length === 0) ||
-              (transaction.creditAccount !== null &&
-                typeof transaction.creditAccount !== "undefined" &&
-                creditFundAmounts.length === 0)
-            }
-            onClick={() => {
-              if (
-                date === null ||
-                location.trim() === "" ||
-                description.trim() === ""
-              ) {
-                return;
-              }
-              startTransition(() => {
-                action({
-                  date: date.format("YYYY-MM-DD"),
-                  location: location.trim(),
-                  description: description.trim(),
-                  debitAccount:
-                    transaction.debitAccount === null ||
-                    typeof transaction.debitAccount === "undefined"
-                      ? null
-                      : {
-                          fundAmounts: debitFundAmounts,
-                        },
-                  creditAccount:
-                    transaction.creditAccount === null ||
-                    typeof transaction.creditAccount === "undefined"
-                      ? null
-                      : {
-                          fundAmounts: creditFundAmounts,
-                        },
-                });
-              });
-            }}
-          >
-            Update
-          </Button>
-        </DialogActions>
-        <ErrorAlert
-          errorMessage={state.errorTitle ?? null}
-          unmappedErrors={state.unmappedErrors ?? null}
-        />
-      </Stack>
+      <Breadcrumbs
+        breadcrumbs={getBreadcrumbs(
+          transaction,
+          providedAccountingPeriod,
+          providedAccount,
+          providedFund,
+        )}
+      />
+      <UpdateTransactionDetailsFrame
+        accountingPeriod={accountingPeriod}
+        date={date}
+        setDate={setDate}
+        location={location}
+        setLocation={setLocation}
+        description={description}
+        setDescription={setDescription}
+      />
+      <UpdateTransactionAccountFrame
+        transaction={transaction}
+        funds={funds}
+        debitFundAmounts={debitFundAmounts}
+        setDebitFundAmounts={setDebitFundAmounts}
+        creditFundAmounts={creditFundAmounts}
+        setCreditFundAmounts={setCreditFundAmounts}
+      />
+      <UpdateTransactionActionsFrame
+        redirectUrl={redirectUrl}
+        transaction={transaction}
+        date={date}
+        location={location}
+        description={description}
+        debitFundAmounts={debitFundAmounts}
+        creditFundAmounts={creditFundAmounts}
+      />
     </Stack>
   );
 };

@@ -1,9 +1,8 @@
 import type { FundAmount, FundIdentifier } from "@/data/fundTypes";
-import AccountEntryField from "@/framework/forms/AccountEntryField";
 import type { AccountIdentifier } from "@/data/accountTypes";
 import { ArrowRightAlt } from "@mui/icons-material";
+import CreateSingleTransactionAccountFrame from "@/app/transactions/create/CreateSingleTransactionAccountFrame";
 import type { CreateTransactionFormSearchParams } from "@/app/transactions/create/createTransactionFormSearchParams";
-import FundAmountCollectionEntryFrame from "@/framework/forms/FundAmountCollectionEntryFrame";
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
 
@@ -42,63 +41,29 @@ const CreateTransferTransactionAccountFrame = function ({
 }: CreateTransferTransactionAccountFrameProps): JSX.Element {
   return (
     <Stack direction="row" spacing={2}>
-      <Stack spacing={2} sx={{ minWidth: 500 }}>
-        <AccountEntryField
-          label="Debit From"
-          options={accounts}
-          value={debitAccount}
-          setValue={
-            typeof searchParams.debitAccountId !== "undefined"
-              ? null
-              : (value): void => {
-                  setDebitAccount(value);
-                }
-          }
-        />
-        <FundAmountCollectionEntryFrame
-          label="Funds to Debit"
-          funds={funds}
-          value={debitFundAmounts}
-          setValue={(value): void => {
-            setDebitFundAmounts(value);
-          }}
-          lockedFundIds={
-            typeof searchParams.debitFundId !== "undefined"
-              ? [searchParams.debitFundId]
-              : []
-          }
-        />
-      </Stack>
+      <CreateSingleTransactionAccountFrame
+        isDebit
+        searchParams={searchParams}
+        accounts={accounts}
+        funds={funds}
+        account={debitAccount}
+        setAccount={setDebitAccount}
+        fundAmounts={debitFundAmounts}
+        setFundAmounts={setDebitFundAmounts}
+      />
       <ArrowRightAlt
         sx={{ alignSelf: "center", color: "rgba(0, 0, 0, 0.6)", fontSize: 40 }}
       />
-      <Stack spacing={2} sx={{ minWidth: 500 }}>
-        <AccountEntryField
-          label="Credit To"
-          options={accounts}
-          value={creditAccount}
-          setValue={
-            typeof searchParams.creditAccountId !== "undefined"
-              ? null
-              : (value): void => {
-                  setCreditAccount(value);
-                }
-          }
-        />
-        <FundAmountCollectionEntryFrame
-          label="Funds to Credit"
-          funds={funds}
-          value={creditFundAmounts}
-          setValue={(value): void => {
-            setCreditFundAmounts(value);
-          }}
-          lockedFundIds={
-            typeof searchParams.creditFundId !== "undefined"
-              ? [searchParams.creditFundId]
-              : []
-          }
-        />
-      </Stack>
+      <CreateSingleTransactionAccountFrame
+        isDebit={false}
+        searchParams={searchParams}
+        accounts={accounts}
+        funds={funds}
+        account={creditAccount}
+        setAccount={setCreditAccount}
+        fundAmounts={creditFundAmounts}
+        setFundAmounts={setCreditFundAmounts}
+      />
     </Stack>
   );
 };

@@ -47,7 +47,7 @@ const CreateSingleTransactionAccountFrame = function ({
     : getDefaultCreditFundAmount(funds, searchParams).at(0);
 
   return (
-    <Stack spacing={2} sx={{ maxWidth: 500 }}>
+    <Stack spacing={2} sx={{ maxWidth: 500, minWidth: 500 }}>
       <AccountEntryField
         label={isDebit ? "Debit From" : "Credit To"}
         options={accounts}
