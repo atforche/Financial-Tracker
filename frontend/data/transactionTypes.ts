@@ -24,11 +24,17 @@ type CreateTransactionRequest = components["schemas"]["CreateTransactionModel"];
  */
 type UpdateTransactionRequest = components["schemas"]["UpdateTransactionModel"];
 
+/**
+ * Type representing the request to post a transaction to an account.
+ */
+type PostTransactionRequest = components["schemas"]["PostTransactionModel"];
+
 export {
   type Transaction,
   type TransactionAccount,
   type CreateTransactionRequest,
   type UpdateTransactionRequest,
+  type PostTransactionRequest,
   AccountingPeriodTransactionSortOrderModel as AccountingPeriodTransactionSortOrder,
   TransactionAccountTypeModel as TransactionAccountType,
 };

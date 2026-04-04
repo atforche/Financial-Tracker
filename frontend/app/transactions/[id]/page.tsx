@@ -1,17 +1,15 @@
 import { Button, Stack } from "@mui/material";
-import type { Account } from "@/data/accountTypes";
-import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
-import type { Fund } from "@/data/fundTypes";
 import type { JSX } from "react";
-import type { Transaction } from "@/data/transactionTypes";
 import TransactionAccountFrame from "@/app/transactions/[id]/TransactionAccountFrame";
 import TransactionFundBalanceFrame from "@/app/transactions/[id]/TransactionFundBalanceFrame";
+import type TransactionSearchParams from "@/app/transactions/[id]/transactionSearchParams";
 import dayjs from "dayjs";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/data/getApiClient";
+import getBreadcrumbs from "@/app/transactions/[id]/getBreadcrumbs";
 
 /**
  * Props for the Page Component.
@@ -20,134 +18,8 @@ interface PageProps {
   readonly params: Promise<{
     id: string;
   }>;
-  readonly searchParams: Promise<{
-    accountingPeriodId?: string;
-    accountId?: string;
-    fundId?: string;
-  }>;
+  readonly searchParams: Promise<TransactionSearchParams>;
 }
-
-/**
- * Gets the breadcrumbs to be displayed at the top of the page.
- */
-const getBreadcrumbs = function (
-  transaction: Transaction,
-  accountingPeriod: AccountingPeriod | null,
-  account: Account | null,
-  fund: Fund | null,
-): JSX.Element {
-  if (accountingPeriod !== null && account !== null) {
-    return (
-      <Breadcrumbs
-        breadcrumbs={[
-          {
-            label: "Accounting Periods",
-            href: "/accounting-periods",
-          },
-          {
-            label: accountingPeriod.name,
-            href: `/accounting-periods/${accountingPeriod.id}`,
-          },
-          {
-            label: account.name,
-            href: `/accounting-periods/${accountingPeriod.id}/accounts/${account.id}`,
-          },
-          {
-            label: `Transaction`,
-            href: `/transactions/${transaction.id}`,
-          },
-        ]}
-      />
-    );
-  }
-  if (accountingPeriod !== null && fund !== null) {
-    return (
-      <Breadcrumbs
-        breadcrumbs={[
-          {
-            label: "Accounting Periods",
-            href: "/accounting-periods",
-          },
-          {
-            label: accountingPeriod.name,
-            href: `/accounting-periods/${accountingPeriod.id}`,
-          },
-          {
-            label: fund.name,
-            href: `/accounting-periods/${accountingPeriod.id}/funds/${fund.id}`,
-          },
-          {
-            label: `Transaction`,
-            href: `/transactions/${transaction.id}`,
-          },
-        ]}
-      />
-    );
-  }
-  if (accountingPeriod !== null) {
-    return (
-      <Breadcrumbs
-        breadcrumbs={[
-          {
-            label: "Accounting Periods",
-            href: "/accounting-periods",
-          },
-          {
-            label: accountingPeriod.name,
-            href: `/accounting-periods/${accountingPeriod.id}`,
-          },
-          {
-            label: `Transaction`,
-            href: `/transactions/${transaction.id}`,
-          },
-        ]}
-      />
-    );
-  }
-  if (account !== null) {
-    return (
-      <Breadcrumbs
-        breadcrumbs={[
-          {
-            label: "Accounts",
-            href: "/accounts",
-          },
-          {
-            label: account.name,
-            href: `/accounts/${account.id}`,
-          },
-          {
-            label: `Transaction`,
-            href: `/transactions/${transaction.id}`,
-          },
-        ]}
-      />
-    );
-  }
-  if (fund !== null) {
-    return (
-      <Breadcrumbs
-        breadcrumbs={[
-          {
-            label: "Funds",
-            href: "/funds",
-          },
-          {
-            label: fund.name,
-            href: `/funds/${fund.id}`,
-          },
-          {
-            label: `Transaction`,
-            href: `/transactions/${transaction.id}`,
-          },
-        ]}
-      />
-    );
-  }
-  throw new Error(
-    "Invalid state: Transaction details page must have either an associated accounting period, account, or fund",
-  );
-};
 
 /**
  * Component that displays the view for a single transaction in an accounting period.
@@ -241,12 +113,14 @@ const Page = async function ({
         alignItems="center"
         maxWidth={1000}
       >
-        {getBreadcrumbs(
-          transactionData,
-          accountingPeriodData,
-          accountData,
-          fundData,
-        )}
+        <Breadcrumbs
+          breadcrumbs={getBreadcrumbs(
+            transactionData,
+            accountingPeriodData,
+            accountData,
+            fundData,
+          )}
+        />
         <Button
           variant="contained"
           color="primary"
@@ -279,12 +153,16 @@ const Page = async function ({
       <Stack direction="row" spacing={2}>
         {transactionData.debitAccount ? (
           <TransactionAccountFrame
+            transaction={transactionData}
             transactionAccount={transactionData.debitAccount}
+            searchParams={await searchParams}
           />
         ) : null}
         {transactionData.creditAccount ? (
           <TransactionAccountFrame
+            transaction={transactionData}
             transactionAccount={transactionData.creditAccount}
+            searchParams={await searchParams}
           />
         ) : null}
       </Stack>

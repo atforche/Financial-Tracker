@@ -10,6 +10,7 @@ const defaultMaxWidth = 500;
 interface CaptionedValueProps {
   readonly caption: string;
   readonly value: string | JSX.Element;
+  readonly minWidth?: number | null;
 }
 
 /**
@@ -18,12 +19,13 @@ interface CaptionedValueProps {
 const CaptionedValue = function ({
   caption,
   value,
+  minWidth = null,
 }: CaptionedValueProps): JSX.Element {
   return (
     <Stack
       direction="row"
       justifyContent="space-between"
-      sx={{ maxWidth: defaultMaxWidth }}
+      sx={{ maxWidth: defaultMaxWidth, minWidth }}
     >
       <Caption caption={caption} />
       <Typography variant="subtitle1">{value}</Typography>
