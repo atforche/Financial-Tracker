@@ -56,7 +56,7 @@ public class Transaction : Entity<TransactionId>
             field = value;
             if (value != null)
             {
-                Amount = value.FundAmounts.Sum(fundAmount => fundAmount.Amount);
+                Amount = value.FundAmounts.Sum(fundAmount => fundAmount.Amount) + value.BudgetAmounts.Sum(budgetAmount => budgetAmount.Amount);
             }
         }
     }
@@ -72,7 +72,7 @@ public class Transaction : Entity<TransactionId>
             field = value;
             if (value != null)
             {
-                Amount = value.FundAmounts.Sum(fundAmount => fundAmount.Amount);
+                Amount = value.FundAmounts.Sum(fundAmount => fundAmount.Amount) + value.BudgetAmounts.Sum(budgetAmount => budgetAmount.Amount);
             }
         }
     }
@@ -116,10 +116,12 @@ public class Transaction : Entity<TransactionId>
         Location = request.Location;
         Description = request.Description;
         DebitAccount = request.DebitAccount != null
-            ? new TransactionAccount(this, request.DebitAccount.Account.Id, TransactionAccountType.Debit, request.DebitAccount.FundAmounts)
+            ? new TransactionAccount(this, request.DebitAccount.Account.Id, TransactionAccountType.Debit,
+                request.DebitAccount.FundAmounts, request.DebitAccount.BudgetAmounts)
             : null;
         CreditAccount = request.CreditAccount != null
-            ? new TransactionAccount(this, request.CreditAccount.Account.Id, TransactionAccountType.Credit, request.CreditAccount.FundAmounts)
+            ? new TransactionAccount(this, request.CreditAccount.Account.Id, TransactionAccountType.Credit,
+                request.CreditAccount.FundAmounts, request.CreditAccount.BudgetAmounts)
             : null;
         GeneratedByAccountId = request.IsInitialTransactionForAccount ? CreditAccount?.AccountId : null;
     }

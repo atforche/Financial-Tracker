@@ -1,5 +1,6 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.Budgets;
 using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +39,19 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
                     .HasConversion(fundId => fundId.Value, value => new FundId(value));
             });
             builder.Navigation(transactionAccount => transactionAccount.FundAmounts).AutoInclude();
+
+            builder.OwnsMany(transactionAccount => transactionAccount.BudgetAmounts, budgetAmount =>
+            {
+                budgetAmount.ToTable("TransactionDebitAccountBudgetAmounts");
+                budgetAmount.Property<int>("Id");
+                budgetAmount.HasKey("Id");
+
+                budgetAmount.Property(budgetAmount => budgetAmount.BudgetId)
+                    .HasConversion(budgetId => budgetId.Value, value => new BudgetId(value));
+                budgetAmount.Property(budgetAmount => budgetAmount.FundId)
+                    .HasConversion(fundId => fundId.Value, value => new FundId(value));
+            });
+            builder.Navigation(transactionAccount => transactionAccount.BudgetAmounts).AutoInclude();
         });
         builder.Navigation(transaction => transaction.DebitAccount).AutoInclude();
 
@@ -58,6 +72,19 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
                     .HasConversion(fundId => fundId.Value, value => new FundId(value));
             });
             builder.Navigation(transactionAccount => transactionAccount.FundAmounts).AutoInclude();
+
+            builder.OwnsMany(transactionAccount => transactionAccount.BudgetAmounts, budgetAmount =>
+            {
+                budgetAmount.ToTable("TransactionCreditAccountBudgetAmounts");
+                budgetAmount.Property<int>("Id");
+                budgetAmount.HasKey("Id");
+
+                budgetAmount.Property(budgetAmount => budgetAmount.BudgetId)
+                    .HasConversion(budgetId => budgetId.Value, value => new BudgetId(value));
+                budgetAmount.Property(budgetAmount => budgetAmount.FundId)
+                    .HasConversion(fundId => fundId.Value, value => new FundId(value));
+            });
+            builder.Navigation(transactionAccount => transactionAccount.BudgetAmounts).AutoInclude();
         });
         builder.Navigation(transaction => transaction.CreditAccount).AutoInclude();
 

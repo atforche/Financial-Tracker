@@ -2,6 +2,7 @@ using Data;
 using Data.AccountingPeriods;
 using Data.Transactions;
 using Domain.AccountingPeriods;
+using Domain.Budgets;
 using Domain.Exceptions;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +28,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountingPeriodMapper accountingPeriodMapper,
     AccountingPeriodAccountMapper accountingPeriodAccountMapper,
     AccountingPeriodFundMapper accountingPeriodFundMapper,
+    BudgetMapper budgetMapper,
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
@@ -230,9 +232,30 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> CreateAsync(CreateAccountingPeriodModel createAccountingPeriodModel)
     {
-        if (!accountingPeriodService.TryCreate(createAccountingPeriodModel.Year, createAccountingPeriodModel.Month, out AccountingPeriod? newAccountingPeriod, out IEnumerable<Exception> exceptions))
+        Dictionary<string, string[]> errors = [];
+        List<CreateAccountingPeriodBudgetGoalRequest> budgetGoalRequests = [];
+        foreach (CreateAccountingPeriodBudgetGoalModel budgetGoalModel in createAccountingPeriodModel.BudgetGoals)
         {
-            var errors = exceptions.GroupBy(exception => exception switch
+            if (!budgetMapper.TryToDomain(budgetGoalModel.BudgetId, out Budget? budget))
+            {
+                errors.Add(nameof(budgetGoalModel.BudgetId), [$"Budget with ID {budgetGoalModel.BudgetId} not found."]);
+                continue;
+            }
+            budgetGoalRequests.Add(new CreateAccountingPeriodBudgetGoalRequest { Budget = budget, GoalAmount = budgetGoalModel.GoalAmount });
+        }
+        if (errors.Count > 0)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to create Accounting Period.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        if (!accountingPeriodService.TryCreate(createAccountingPeriodModel.Year, createAccountingPeriodModel.Month, budgetGoalRequests,
+                out AccountingPeriod? newAccountingPeriod, out IEnumerable<Exception> exceptions))
+        {
+            var serviceErrors = exceptions.GroupBy(exception => exception switch
             {
                 InvalidYearException => nameof(createAccountingPeriodModel.Year),
                 InvalidMonthException => nameof(createAccountingPeriodModel.Month),
@@ -241,7 +264,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to create Accounting Period.",
-                Errors = errors,
+                Errors = serviceErrors,
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }

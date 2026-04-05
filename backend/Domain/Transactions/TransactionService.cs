@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.Budgets;
 using Domain.Exceptions;
 using Domain.Funds;
 
@@ -37,10 +38,12 @@ public class TransactionService(
         {
             exceptions = exceptions.Concat(dateExceptions);
         }
-        if (!ValidateAccountFundAmounts(request.DebitAccount?.Account.Id,
+        if (!ValidateAccountAmounts(request.DebitAccount?.Account.Id,
                 request.DebitAccount?.FundAmounts.ToList(),
+                request.DebitAccount?.BudgetAmounts.ToList(),
                 request.CreditAccount?.Account.Id,
                 request.CreditAccount?.FundAmounts.ToList(),
+                request.CreditAccount?.BudgetAmounts.ToList(),
                 out IEnumerable<Exception> accountExceptions))
         {
             exceptions = exceptions.Concat(accountExceptions);
@@ -91,10 +94,12 @@ public class TransactionService(
         {
             exceptions = exceptions.Concat(dateExceptions);
         }
-        if (!ValidateAccountFundAmounts(transaction.DebitAccount?.AccountId,
+        if (!ValidateAccountAmounts(transaction.DebitAccount?.AccountId,
                 request.DebitAccount?.FundAmounts.ToList(),
+                request.DebitAccount?.BudgetAmounts.ToList(),
                 transaction.CreditAccount?.AccountId,
                 request.CreditAccount?.FundAmounts.ToList(),
+                request.CreditAccount?.BudgetAmounts.ToList(),
                 out IEnumerable<Exception> accountExceptions))
         {
             exceptions = exceptions.Concat(accountExceptions);
@@ -108,11 +113,13 @@ public class TransactionService(
         transaction.Description = request.Description;
         if (transaction.DebitAccount != null && request.DebitAccount != null)
         {
-            transaction.DebitAccount = new TransactionAccount(transaction, transaction.DebitAccount.AccountId, TransactionAccountType.Debit, request.DebitAccount.FundAmounts);
+            transaction.DebitAccount = new TransactionAccount(transaction, transaction.DebitAccount.AccountId, TransactionAccountType.Debit,
+                request.DebitAccount.FundAmounts, request.DebitAccount.BudgetAmounts);
         }
         if (transaction.CreditAccount != null && request.CreditAccount != null)
         {
-            transaction.CreditAccount = new TransactionAccount(transaction, transaction.CreditAccount.AccountId, TransactionAccountType.Credit, request.CreditAccount.FundAmounts);
+            transaction.CreditAccount = new TransactionAccount(transaction, transaction.CreditAccount.AccountId, TransactionAccountType.Credit,
+                request.CreditAccount.FundAmounts, request.CreditAccount.BudgetAmounts);
         }
         accountBalanceService.UpdateTransaction(transaction);
         fundBalanceService.UpdateTransaction(transaction);
@@ -284,41 +291,48 @@ public class TransactionService(
     }
 
     /// <summary>
-    /// Validates the fund amounts for each Account for this Transaction
+    /// Validates the amounts for each Account for this Transaction
     /// </summary>
-    private static bool ValidateAccountFundAmounts(
+    private static bool ValidateAccountAmounts(
         AccountId? debitAccount,
         List<FundAmount>? debitFundAmounts,
+        List<BudgetAmount>? debitBudgetAmounts,
         AccountId? creditAccount,
         List<FundAmount>? creditFundAmounts,
+        List<BudgetAmount>? creditBudgetAmounts,
         out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
-        if (debitFundAmounts == null && creditFundAmounts == null)
+        if (debitFundAmounts == null && debitBudgetAmounts == null && creditFundAmounts == null && creditBudgetAmounts == null)
         {
-            exceptions = exceptions.Append(new InvalidFundAmountException("No fund amounts were provided"));
+            exceptions = exceptions.Append(new InvalidFundAmountException("No amounts were provided"));
         }
-        if (debitAccount != null && debitFundAmounts == null)
+        if (debitAccount != null && debitFundAmounts == null && debitBudgetAmounts == null)
         {
-            exceptions = exceptions.Append(new InvalidFundAmountException("No fund amounts were provided for the debit account."));
+            exceptions = exceptions.Append(new InvalidFundAmountException("No amounts were provided for the debit account."));
         }
-        if (debitAccount == null && debitFundAmounts != null)
+        if (debitAccount == null && (debitFundAmounts != null || debitBudgetAmounts != null))
         {
-            exceptions = exceptions.Append(new InvalidFundAmountException("Debit fund amounts were provided but no debit account exists."));
+            exceptions = exceptions.Append(new InvalidFundAmountException("Debit amounts were provided but no debit account exists."));
         }
-        if (creditAccount != null && creditFundAmounts == null)
+        if (creditAccount != null && creditFundAmounts == null && creditBudgetAmounts == null)
         {
-            exceptions = exceptions.Append(new InvalidFundAmountException("No fund amounts were provided for the credit account."));
+            exceptions = exceptions.Append(new InvalidFundAmountException("No amounts were provided for the credit account."));
         }
-        if (creditAccount == null && creditFundAmounts != null)
+        if (creditAccount == null && (creditFundAmounts != null || creditBudgetAmounts != null))
         {
-            exceptions = exceptions.Append(new InvalidFundAmountException("Credit fund amounts were provided but no credit account exists."));
+            exceptions = exceptions.Append(new InvalidFundAmountException("Credit amounts were provided but no credit account exists."));
         }
         if (debitAccount == creditAccount && debitFundAmounts != null && creditFundAmounts != null &&
             debitFundAmounts.Any(debitFund => creditFundAmounts.Select(fundAmount => fundAmount.FundId).Contains(debitFund.FundId)))
         {
             exceptions = exceptions.Append(new InvalidFundAmountException("The same fund cannot be both debited and credited for a transaction within a single account."));
+        }
+        if (debitAccount == creditAccount && debitBudgetAmounts != null && creditBudgetAmounts != null &&
+            debitBudgetAmounts.Any(debitBudget => creditBudgetAmounts.Select(budgetAmount => budgetAmount.Budget.Id).Contains(debitBudget.Budget.Id)))
+        {
+            exceptions = exceptions.Append(new InvalidFundAmountException("The same budget cannot be both debited and credited for a transaction within a single account."));
         }
         if (debitFundAmounts != null)
         {
@@ -329,6 +343,17 @@ public class TransactionService(
             if (debitFundAmounts.Any(fundAmount => fundAmount.Amount <= 0))
             {
                 exceptions = exceptions.Append(new InvalidFundAmountException("The provided debit fund amounts must be greater than zero."));
+            }
+        }
+        if (debitBudgetAmounts != null)
+        {
+            if (debitBudgetAmounts.Count == 0)
+            {
+                exceptions = exceptions.Append(new InvalidFundAmountException("The provided list of debit budget amounts is empty."));
+            }
+            if (debitBudgetAmounts.Any(budgetAmount => budgetAmount.Amount <= 0))
+            {
+                exceptions = exceptions.Append(new InvalidFundAmountException("The provided debit budget amounts must be greater than zero."));
             }
         }
         if (creditFundAmounts != null)
@@ -342,13 +367,24 @@ public class TransactionService(
                 exceptions = exceptions.Append(new InvalidFundAmountException("The provided credit fund amounts must be greater than zero."));
             }
         }
-        if (debitFundAmounts != null && creditFundAmounts != null)
+        if (creditBudgetAmounts != null)
         {
-            decimal totalDebit = debitFundAmounts.Sum(fundAmount => fundAmount.Amount);
-            decimal totalCredit = creditFundAmounts.Sum(fundAmount => fundAmount.Amount);
+            if (creditBudgetAmounts.Count == 0)
+            {
+                exceptions = exceptions.Append(new InvalidFundAmountException("The provided list of credit budget amounts is empty."));
+            }
+            if (creditBudgetAmounts.Any(budgetAmount => budgetAmount.Amount <= 0))
+            {
+                exceptions = exceptions.Append(new InvalidFundAmountException("The provided credit budget amounts must be greater than zero."));
+            }
+        }
+        if ((debitFundAmounts != null || debitBudgetAmounts != null) && (creditFundAmounts != null || creditBudgetAmounts != null))
+        {
+            decimal totalDebit = (debitFundAmounts?.Sum(fundAmount => fundAmount.Amount) ?? 0) + (debitBudgetAmounts?.Sum(budgetAmount => budgetAmount.Amount) ?? 0);
+            decimal totalCredit = (creditFundAmounts?.Sum(fundAmount => fundAmount.Amount) ?? 0) + (creditBudgetAmounts?.Sum(budgetAmount => budgetAmount.Amount) ?? 0);
             if (totalDebit != totalCredit)
             {
-                exceptions = exceptions.Append(new InvalidFundAmountException("The provided debit and credit funds amounts sum to different totals."));
+                exceptions = exceptions.Append(new InvalidFundAmountException("The provided debit and credit amounts sum to different totals."));
             }
         }
         return !exceptions.Any();

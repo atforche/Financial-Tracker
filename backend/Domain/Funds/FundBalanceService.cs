@@ -207,10 +207,12 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
         if (transaction.DebitAccount != null)
         {
             funds.UnionWith(transaction.DebitAccount.FundAmounts.Select(fundAmount => fundAmount.FundId));
+            funds.UnionWith(transaction.DebitAccount.BudgetAmounts.Select(budgetAmount => budgetAmount.Budget.FundId));
         }
         if (transaction.CreditAccount != null)
         {
             funds.UnionWith(transaction.CreditAccount.FundAmounts.Select(fundAmount => fundAmount.FundId));
+            funds.UnionWith(transaction.CreditAccount.BudgetAmounts.Select(budgetAmount => budgetAmount.Budget.FundId));
         }
         return funds;
     }

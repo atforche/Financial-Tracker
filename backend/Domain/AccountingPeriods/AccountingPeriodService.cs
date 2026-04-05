@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.Budgets;
 using Domain.Exceptions;
 using Domain.Transactions;
 
@@ -10,12 +11,18 @@ namespace Domain.AccountingPeriods;
 public class AccountingPeriodService(
     IAccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository,
-    AccountingPeriodBalanceService accountingPeriodBalanceService)
+    AccountingPeriodBalanceService accountingPeriodBalanceService,
+    BudgetService budgetService)
 {
     /// <summary>
     /// Attempts to create a new Accounting Period
     /// </summary>
-    public bool TryCreate(int year, int month, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod, out IEnumerable<Exception> exceptions)
+    public bool TryCreate(
+        int year,
+        int month,
+        IEnumerable<CreateAccountingPeriodBudgetGoalRequest> budgetGoalRequests,
+        [NotNullWhen(true)] out AccountingPeriod? accountingPeriod,
+        out IEnumerable<Exception> exceptions)
     {
         accountingPeriod = null;
 
@@ -25,6 +32,16 @@ public class AccountingPeriodService(
         }
         accountingPeriod = new AccountingPeriod(year, month);
         accountingPeriodBalanceService.AddAccountingPeriod(accountingPeriod);
+        foreach (CreateAccountingPeriodBudgetGoalRequest request in budgetGoalRequests)
+        {
+            if (!budgetService.TryCreateGoal(
+                    new CreateBudgetGoalRequest { Budget = request.Budget, AccountingPeriod = accountingPeriod, GoalAmount = request.GoalAmount },
+                    out _, out IEnumerable<Exception> goalExceptions))
+            {
+                exceptions = exceptions.Concat(goalExceptions);
+                return false;
+            }
+        }
         return true;
     }
 

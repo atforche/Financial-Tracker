@@ -1,3 +1,4 @@
+using Domain.Budgets;
 using Domain.Funds;
 
 namespace Domain.Transactions;
@@ -42,6 +43,11 @@ public record UpdateTransactionAccountRequest
     /// Fund Amounts for the Transaction Account
     /// </summary>
     public required IEnumerable<FundAmount> FundAmounts { get; init; }
+
+    /// <summary>
+    /// Budget Amounts for the Transaction Account
+    /// </summary>
+    public IEnumerable<BudgetAmount> BudgetAmounts { get; init; } = [];
 
     /// <summary>
     /// Posted Date for the Transaction Account, if it should be posted immediately
