@@ -10,9 +10,9 @@ public class BudgetGoal : Entity<BudgetGoalId>
     private List<BudgetBalanceHistory> _budgetBalanceHistories = [];
 
     /// <summary>
-    /// Budget ID that this goal belongs to
+    /// Budget that this goal belongs to
     /// </summary>
-    public BudgetId BudgetId { get; private set; }
+    public Budget Budget { get; private set; }
 
     /// <summary>
     /// Accounting Period ID that this goal belongs to
@@ -41,10 +41,10 @@ public class BudgetGoal : Entity<BudgetGoalId>
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal BudgetGoal(BudgetId budgetId, AccountingPeriodId accountingPeriodId, decimal goalAmount)
+    internal BudgetGoal(Budget budget, AccountingPeriodId accountingPeriodId, decimal goalAmount)
         : base(new BudgetGoalId(Guid.NewGuid()))
     {
-        BudgetId = budgetId;
+        Budget = budget;
         AccountingPeriodId = accountingPeriodId;
         GoalAmount = goalAmount;
         IsGoalMet = false;
@@ -56,7 +56,7 @@ public class BudgetGoal : Entity<BudgetGoalId>
     private BudgetGoal()
         : base()
     {
-        BudgetId = null!;
+        Budget = null!;
         AccountingPeriodId = null!;
         _budgetBalanceHistories = null!;
     }

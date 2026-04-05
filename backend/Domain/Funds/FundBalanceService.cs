@@ -77,16 +77,13 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
         IEnumerable<FundId> affectedFunds = transaction.DebitAccount != null && transaction.CreditAccount != null && transaction.DebitAccount.AccountId == transaction.CreditAccount.AccountId
             ? GetAllAffectedFunds(transaction)
             : transactionAccount.FundAmounts.Select(fundAmount => fundAmount.FundId);
-        if (transactionAccount.PostedDate == transaction.Date)
+        foreach (FundId fund in affectedFunds)
         {
-            foreach (FundId fund in affectedFunds)
+            if (transactionAccount.PostedDate == transaction.Date)
             {
                 UpdateExistingBalanceHistory(transaction, fund);
             }
-        }
-        else
-        {
-            foreach (FundId fund in affectedFunds)
+            else
             {
                 AddNewBalanceHistory(transaction, fund, transactionAccount.PostedDate.Value);
             }

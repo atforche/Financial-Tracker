@@ -1,5 +1,6 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.Budgets;
 using Domain.Funds;
 
 namespace Domain.Transactions;
@@ -102,6 +103,17 @@ public class Transaction : Entity<TransactionId>
         newFundBalance = DebitAccount != null ? DebitAccount.ApplyToFundBalance(newFundBalance, date) : newFundBalance;
         newFundBalance = CreditAccount != null ? CreditAccount.ApplyToFundBalance(newFundBalance, date) : newFundBalance;
         return newFundBalance;
+    }
+
+    /// <summary>
+    /// Applies this Transaction to the provided existing Budget Balance as of the specified date
+    /// </summary>
+    internal BudgetBalance ApplyToBudgetBalance(BudgetBalance existingBudgetBalance, DateOnly date)
+    {
+        BudgetBalance newBudgetBalance = existingBudgetBalance;
+        newBudgetBalance = DebitAccount != null ? DebitAccount.ApplyToBudgetBalance(newBudgetBalance, date) : newBudgetBalance;
+        newBudgetBalance = CreditAccount != null ? CreditAccount.ApplyToBudgetBalance(newBudgetBalance, date) : newBudgetBalance;
+        return newBudgetBalance;
     }
 
     /// <summary>

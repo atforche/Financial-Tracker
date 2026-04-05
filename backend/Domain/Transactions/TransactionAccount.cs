@@ -89,6 +89,23 @@ public class TransactionAccount
             }).ToList());
 
     /// <summary>
+    /// Applies this Transaction Account to the provided existing Budget Balance as of the specified date
+    /// </summary>
+    internal BudgetBalance ApplyToBudgetBalance(BudgetBalance existingBudgetBalance, DateOnly date) =>
+        ApplyBudgetAmountsToBudgetBalance(existingBudgetBalance, date, BudgetAmounts);
+
+    /// <summary>
+    /// Reverses this Transaction Account from the provided existing Budget Balance as of the specified date
+    /// </summary>
+    internal BudgetBalance ReverseFromBudgetBalance(BudgetBalance existingBudgetBalance, DateOnly date) =>
+        ApplyBudgetAmountsToBudgetBalance(existingBudgetBalance, date,
+            BudgetAmounts.Select(b => new BudgetAmount
+            {
+                Budget = b.Budget,
+                Amount = -b.Amount
+            }).ToList());
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     internal TransactionAccount(
@@ -174,5 +191,33 @@ public class TransactionAccount
                 : newFundBalance.PostPendingCredit(accountAmount);
         }
         return newFundBalance;
+    }
+
+    /// <summary>>
+    /// Applies the provided Budget Amounts to the provided existing Budget Balance as of the specified date
+    /// </summary>
+    private BudgetBalance ApplyBudgetAmountsToBudgetBalance(BudgetBalance existingBudgetBalance, DateOnly date, IReadOnlyCollection<BudgetAmount> budgetAmounts)
+    {
+        decimal totalAmount = budgetAmounts
+            .Where(b => b.Budget.Id == existingBudgetBalance.BudgetGoal.Budget.Id)
+            .Sum(b => b.Amount);
+        if (totalAmount == 0)
+        {
+            return existingBudgetBalance;
+        }
+        BudgetBalance newBudgetBalance = existingBudgetBalance;
+        if (Transaction.Date == date)
+        {
+            newBudgetBalance = Type == TransactionAccountType.Debit
+                ? newBudgetBalance.AddNewPendingAmount(-1 * totalAmount)
+                : newBudgetBalance.AddNewPendingAmount(totalAmount);
+        }
+        if (PostedDate == date)
+        {
+            newBudgetBalance = Type == TransactionAccountType.Debit
+                ? newBudgetBalance.PostPendingAmount(-1 * totalAmount)
+                : newBudgetBalance.PostPendingAmount(totalAmount);
+        }
+        return newBudgetBalance;
     }
 }

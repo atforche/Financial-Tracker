@@ -15,12 +15,12 @@ public class BudgetGoalRepository(DatabaseContext databaseContext) : IBudgetGoal
 
     /// <inheritdoc/>
     public IReadOnlyCollection<BudgetGoal> GetAllByBudget(BudgetId budgetId) =>
-        databaseContext.BudgetGoals.Where(budgetGoal => budgetGoal.BudgetId == budgetId).ToList();
+        databaseContext.BudgetGoals.Where(budgetGoal => budgetGoal.Budget.Id == budgetId).ToList();
 
     /// <inheritdoc/>
     public BudgetGoal? GetByBudgetAndAccountingPeriod(BudgetId budgetId, AccountingPeriodId accountingPeriodId) =>
         databaseContext.BudgetGoals.FirstOrDefault(budgetGoal =>
-            budgetGoal.BudgetId == budgetId && budgetGoal.AccountingPeriodId == accountingPeriodId);
+            budgetGoal.Budget.Id == budgetId && budgetGoal.AccountingPeriodId == accountingPeriodId);
 
     /// <inheritdoc/>
     public void Add(BudgetGoal budgetGoal) => databaseContext.Add(budgetGoal);

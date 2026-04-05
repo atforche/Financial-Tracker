@@ -16,8 +16,8 @@ internal sealed class BudgetGoalConfiguration : IEntityTypeConfiguration<BudgetG
         builder.HasKey(budgetGoal => budgetGoal.Id);
         builder.Property(budgetGoal => budgetGoal.Id).HasConversion(budgetGoalId => budgetGoalId.Value, value => new BudgetGoalId(value));
 
-        builder.Property(budgetGoal => budgetGoal.BudgetId)
-            .HasConversion(budgetId => budgetId.Value, value => new BudgetId(value));
+        builder.HasOne(budgetGoal => budgetGoal.Budget).WithMany().HasForeignKey("BudgetId");
+        builder.Navigation(budgetGoal => budgetGoal.Budget).AutoInclude();
 
         builder.Property(budgetGoal => budgetGoal.AccountingPeriodId)
             .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));

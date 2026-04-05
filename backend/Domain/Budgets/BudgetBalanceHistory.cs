@@ -30,12 +30,21 @@ public class BudgetBalanceHistory : Entity<BudgetBalanceHistoryId>
     /// <summary>
     /// Posted balance at this point in time
     /// </summary>
-    public decimal PostedBalance { get; init; }
+    public decimal PostedBalance { get; internal set; }
 
     /// <summary>
     /// Available to spend at this point in time, or null if not applicable for this budget type
     /// </summary>
-    public decimal? AvailableToSpend { get; init; }
+    public decimal? AvailableToSpend { get; internal set; }
+
+    /// <summary>
+    /// Updates this Budget Balance History with a new Budget Balance
+    /// </summary>
+    internal void Update(BudgetBalance balance)
+    {
+        PostedBalance = balance.PostedBalance;
+        AvailableToSpend = balance.AvailableToSpend;
+    }
 
     /// <summary>
     /// Constructs a new instance of this class

@@ -1,6 +1,5 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Budgets;
 using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
@@ -46,10 +45,10 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
                 budgetAmount.Property<int>("Id");
                 budgetAmount.HasKey("Id");
 
-                budgetAmount.Property(budgetAmount => budgetAmount.BudgetId)
-                    .HasConversion(budgetId => budgetId.Value, value => new BudgetId(value));
-                budgetAmount.Property(budgetAmount => budgetAmount.FundId)
-                    .HasConversion(fundId => fundId.Value, value => new FundId(value));
+                budgetAmount.HasOne(ba => ba.Budget).WithMany()
+                    .HasForeignKey("BudgetId");
+                budgetAmount.Property<Guid>("BudgetId");
+                budgetAmount.Navigation(ba => ba.Budget).AutoInclude();
             });
             builder.Navigation(transactionAccount => transactionAccount.BudgetAmounts).AutoInclude();
         });
@@ -79,10 +78,10 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
                 budgetAmount.Property<int>("Id");
                 budgetAmount.HasKey("Id");
 
-                budgetAmount.Property(budgetAmount => budgetAmount.BudgetId)
-                    .HasConversion(budgetId => budgetId.Value, value => new BudgetId(value));
-                budgetAmount.Property(budgetAmount => budgetAmount.FundId)
-                    .HasConversion(fundId => fundId.Value, value => new FundId(value));
+                budgetAmount.HasOne(ba => ba.Budget).WithMany()
+                    .HasForeignKey("BudgetId");
+                budgetAmount.Property<Guid>("BudgetId");
+                budgetAmount.Navigation(ba => ba.Budget).AutoInclude();
             });
             builder.Navigation(transactionAccount => transactionAccount.BudgetAmounts).AutoInclude();
         });

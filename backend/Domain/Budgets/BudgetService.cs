@@ -43,7 +43,7 @@ public class BudgetService(
             exceptions = exceptions.Concat(createGoalExceptions);
             return false;
         }
-        budgetGoal = new BudgetGoal(request.Budget.Id, request.AccountingPeriod.Id, request.GoalAmount);
+        budgetGoal = new BudgetGoal(request.Budget, request.AccountingPeriod.Id, request.GoalAmount);
         budgetGoalRepository.Add(budgetGoal);
         return true;
     }

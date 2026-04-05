@@ -13,6 +13,7 @@ namespace Domain.Transactions;
 public class TransactionService(
     AccountBalanceService accountBalanceService,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
+    BudgetBalanceService budgetBalanceService,
     FundBalanceService fundBalanceService,
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
@@ -55,6 +56,7 @@ public class TransactionService(
         transaction = new Transaction(request, transactionRepository.GetNextSequenceForDate(request.Date));
         accountBalanceService.AddTransaction(transaction);
         fundBalanceService.AddTransaction(transaction);
+        budgetBalanceService.AddTransaction(transaction);
         transactionRepository.Add(transaction);
         if (request.DebitAccount?.PostedDate != null && !TryPost(transaction, request.DebitAccount.Account.Id, request.DebitAccount.PostedDate.Value, out IEnumerable<Exception> debitPostingExceptions))
         {
@@ -123,6 +125,7 @@ public class TransactionService(
         }
         accountBalanceService.UpdateTransaction(transaction);
         fundBalanceService.UpdateTransaction(transaction);
+        budgetBalanceService.UpdateTransaction(transaction);
         if (request.DebitAccount?.PostedDate != null &&
             transaction.DebitAccount != null &&
             !TryPost(transaction, transaction.DebitAccount.AccountId, request.DebitAccount.PostedDate.Value, out IEnumerable<Exception> debitPostingExceptions))
@@ -168,6 +171,7 @@ public class TransactionService(
         }
         accountBalanceService.PostTransaction(transaction, transactionAccount);
         fundBalanceService.PostTransaction(transaction, transactionAccount);
+        budgetBalanceService.PostTransaction(transaction, transactionAccount);
         return true;
     }
 
@@ -189,6 +193,7 @@ public class TransactionService(
             transaction.DebitAccount.PostedDate = null;
             accountBalanceService.UnpostTransaction(transaction, transaction.DebitAccount);
             fundBalanceService.UnpostTransaction(transaction, transaction.DebitAccount);
+            budgetBalanceService.UnpostTransaction(transaction, transaction.DebitAccount);
         }
         if (transaction.CreditAccount != null)
         {
@@ -196,6 +201,7 @@ public class TransactionService(
             transaction.CreditAccount.PostedDate = null;
             accountBalanceService.UnpostTransaction(transaction, transaction.CreditAccount);
             fundBalanceService.UnpostTransaction(transaction, transaction.CreditAccount);
+            budgetBalanceService.UnpostTransaction(transaction, transaction.CreditAccount);
         }
         return true;
     }
@@ -225,6 +231,7 @@ public class TransactionService(
         }
         accountBalanceService.DeleteTransaction(transaction);
         fundBalanceService.DeleteTransaction(transaction);
+        budgetBalanceService.DeleteTransaction(transaction);
         transactionRepository.Delete(transaction);
         return true;
     }

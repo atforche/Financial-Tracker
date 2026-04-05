@@ -46,9 +46,13 @@ This feature introduces the concept of budgets to the application. A budget is a
 
 7. Implement a budget balance service
 
-    This budget balance service should look similar to the existing FundBalanceService or AccountBalanceService. It should expose methods that other services use to keep budget balances in sync.
+    This budget balance service should look similar to the existing FundBalanceService, AccountBalanceService, and AccountingPeriodBalanceService. It should expose methods that other services use to keep budget balances in sync.
 
-    The 
+    Create a new budget balance value object. This object should be simpler than the existing account balance and fund balance value objects because a budget balance should only store the posted amount and a nullable available to spend amount. The available to spend amount should always be null for budgets of type savings or debt.
+
+    Add new ApplyToBudgetBalance and ReverseFromBudgetBalance methods to the Transaction account. Also add a new ApplyToBudgetBalance method to the Transaction.
+
+    Similar to the FundBalanceService, a debit will always decrease the balance of a budget and a credit will always increase it.
 
 8. Update the fund balance service to consider budget amounts on a transaction
 
