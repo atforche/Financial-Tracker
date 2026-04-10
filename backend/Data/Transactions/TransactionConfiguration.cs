@@ -24,7 +24,7 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
             .HasValue<SpendingTransferTransaction>(TransactionType.SpendingTransfer)
             .HasValue<IncomeTransaction>(TransactionType.Income)
             .HasValue<IncomeTransferTransaction>(TransactionType.IncomeTransfer)
-            .HasValue<TransferTransaction>(TransactionType.Transfer)
-            .HasValue<RefundTransaction>(TransactionType.Refund);
+            .HasValue<TransferTransaction>(TransactionType.Transfer);
+        // .HasValue<RefundTransaction>(TransactionType.Refund);
     }
 }

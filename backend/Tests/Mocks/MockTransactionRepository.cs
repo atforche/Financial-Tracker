@@ -51,14 +51,14 @@ internal sealed class MockTransactionRepository : ITransactionRepository
         IncomeTransferTransaction it => [it.DebitAccountId, it.AccountId],
         IncomeTransaction i => [i.AccountId],
         TransferTransaction t => [t.DebitAccountId, t.CreditAccountId],
-        RefundTransaction r => GetAccountIds(r.Transaction),
+        // RefundTransaction r => GetAccountIds(r.Transaction),
         _ => [],
     };
 
     private static IEnumerable<FundId> GetFundIds(Transaction transaction) => transaction switch
     {
         SpendingTransaction s => s.FundAmounts.Select(fa => fa.FundId),
-        RefundTransaction r => GetFundIds(r.Transaction),
+        // RefundTransaction r => GetFundIds(r.Transaction),
         _ => [],
     };
 }

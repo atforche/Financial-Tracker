@@ -14,8 +14,8 @@ internal sealed class TransactionSubtypeConfiguration :
     IEntityTypeConfiguration<SpendingTransferTransaction>,
     IEntityTypeConfiguration<IncomeTransaction>,
     IEntityTypeConfiguration<IncomeTransferTransaction>,
-    IEntityTypeConfiguration<TransferTransaction>,
-    IEntityTypeConfiguration<RefundTransaction>
+    IEntityTypeConfiguration<TransferTransaction>
+// IEntityTypeConfiguration<RefundTransaction>
 {
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<SpendingTransaction> builder)
@@ -76,10 +76,10 @@ internal sealed class TransactionSubtypeConfiguration :
         builder.HasOne<Account>().WithMany().HasForeignKey(t => t.CreditAccountId);
     }
 
-    /// <inheritdoc/>
-    public void Configure(EntityTypeBuilder<RefundTransaction> builder)
-    {
-        builder.HasOne(t => t.Transaction).WithMany().HasForeignKey("RefundTransactionId");
-        builder.Navigation(t => t.Transaction).AutoInclude();
-    }
+    // /// <inheritdoc/>
+    // public void Configure(EntityTypeBuilder<RefundTransaction> builder)
+    // {
+    //     builder.HasOne(t => t.Transaction).WithMany().HasForeignKey("RefundTransactionId");
+    //     builder.Navigation(t => t.Transaction).AutoInclude();
+    // }
 }

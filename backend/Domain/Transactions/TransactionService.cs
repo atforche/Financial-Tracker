@@ -52,7 +52,7 @@ public class TransactionService(
             CreateIncomeTransferTransactionRequest r => new IncomeTransferTransaction(r, sequence),
             CreateIncomeTransactionRequest r => new IncomeTransaction(r, sequence),
             CreateTransferTransactionRequest r => new TransferTransaction(r, sequence),
-            CreateRefundTransactionRequest r => new RefundTransaction(r, sequence),
+            // CreateRefundTransactionRequest r => new RefundTransaction(r, sequence),
             _ => throw new InvalidOperationException("Unknown transaction request type")
         };
         accountBalanceService.AddTransaction(transaction);
@@ -320,18 +320,18 @@ public class TransactionService(
                     postings.Add((transfer.CreditAccountId, r.CreditPostedDate.Value));
                 }
                 break;
-            case UpdateRefundTransactionRequest r when transaction is RefundTransaction refund:
-                AccountId? debitAccountId = refund.GetAllAffectedAccountIds().FirstOrDefault();
-                AccountId? creditAccountId = refund.GetAllAffectedAccountIds().Skip(1).FirstOrDefault();
-                if (r.DebitPostedDate != null && debitAccountId != null)
-                {
-                    postings.Add((debitAccountId, r.DebitPostedDate.Value));
-                }
-                if (r.CreditPostedDate != null && creditAccountId != null)
-                {
-                    postings.Add((creditAccountId, r.CreditPostedDate.Value));
-                }
-                break;
+            // case UpdateRefundTransactionRequest r when transaction is RefundTransaction refund:
+            //     AccountId? debitAccountId = refund.GetAllAffectedAccountIds().FirstOrDefault();
+            //     AccountId? creditAccountId = refund.GetAllAffectedAccountIds().Skip(1).FirstOrDefault();
+            //     if (r.DebitPostedDate != null && debitAccountId != null)
+            //     {
+            //         postings.Add((debitAccountId, r.DebitPostedDate.Value));
+            //     }
+            //     if (r.CreditPostedDate != null && creditAccountId != null)
+            //     {
+            //         postings.Add((creditAccountId, r.CreditPostedDate.Value));
+            //     }
+            //     break;
             default:
                 break;
         }
@@ -363,17 +363,17 @@ public class TransactionService(
             case TransferTransaction transfer:
                 transfer.CreditPostedDate = postedDate;
                 break;
-            case RefundTransaction refund:
-                AccountId? firstAccountId = refund.GetAllAffectedAccountIds().FirstOrDefault();
-                if (firstAccountId == account)
-                {
-                    refund.DebitPostedDate = postedDate;
-                }
-                else
-                {
-                    refund.CreditPostedDate = postedDate;
-                }
-                break;
+            // case RefundTransaction refund:
+            //     AccountId? firstAccountId = refund.GetAllAffectedAccountIds().FirstOrDefault();
+            //     if (firstAccountId == account)
+            //     {
+            //         refund.DebitPostedDate = postedDate;
+            //     }
+            //     else
+            //     {
+            //         refund.CreditPostedDate = postedDate;
+            //     }
+            //     break;
             default:
                 break;
         }
@@ -404,10 +404,10 @@ public class TransactionService(
             case TransferTransaction transfer:
                 transfer.CreditPostedDate = null;
                 break;
-            case RefundTransaction refund:
-                refund.DebitPostedDate = null;
-                refund.CreditPostedDate = null;
-                break;
+            // case RefundTransaction refund:
+            //     refund.DebitPostedDate = null;
+            //     refund.CreditPostedDate = null;
+            //     break;
             default:
                 break;
         }

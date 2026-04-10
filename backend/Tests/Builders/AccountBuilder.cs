@@ -41,9 +41,9 @@ public sealed class AccountBuilder(
         {
             throw new InvalidOperationException("Failed to create Account.", exceptions.First());
         }
-        accountRepository.Add(account!);
+        accountRepository.Add(account);
         testUnitOfWork.SaveChanges();
-        return account!;
+        return account;
     }
 
     /// <summary>

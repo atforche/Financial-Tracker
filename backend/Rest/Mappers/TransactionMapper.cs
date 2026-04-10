@@ -79,7 +79,7 @@ public sealed class TransactionMapper(
             BuildAccountModel(transaction, transfer.DebitAccountId, transfer.DebitPostedDate, [], TransactionAccountTypeModel.Debit),
             BuildAccountModel(transaction, transfer.CreditAccountId, transfer.CreditPostedDate, [], TransactionAccountTypeModel.Credit)
         ),
-        RefundTransaction refund => BuildAccountModels(refund.Transaction),
+        // RefundTransaction refund => BuildAccountModels(refund.Transaction),
         _ => (null, null),
     };
 
