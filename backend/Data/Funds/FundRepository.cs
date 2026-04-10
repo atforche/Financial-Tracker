@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.AccountingPeriods;
 using Domain.Funds;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +16,14 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
     public IReadOnlyCollection<Fund> GetAll() => databaseContext.Funds.ToList();
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<Fund> GetAllFundsAddedInPeriod(AccountingPeriodId accountingPeriodId) =>
+        databaseContext.Funds.Where(fund => fund.AddAccountingPeriodId == accountingPeriodId).ToList();
+
+    /// <inheritdoc/>
     public Fund GetById(FundId id) => databaseContext.Funds.Single(fund => fund.Id == id);
+
+    /// <inheritdoc/>
+    public Fund? GetUnassignedFund() => databaseContext.Funds.FirstOrDefault(fund => fund.Type == FundType.Unassigned);
 
     /// <inheritdoc/>
     public bool TryGetByName(string name, [NotNullWhen(true)] out Fund? fund)

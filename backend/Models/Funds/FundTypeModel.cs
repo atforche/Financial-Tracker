@@ -6,6 +6,11 @@ namespace Models.Funds;
 public enum FundTypeModel
 {
     /// <summary>
+    /// Unassigned Fund
+    /// </summary>
+    Unassigned,
+
+    /// <summary>
     /// Monthly Fund
     /// </summary>
     Monthly,

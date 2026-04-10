@@ -37,8 +37,7 @@ CREATE TABLE "Funds" (
     "Name" TEXT NOT NULL,
     "Type" TEXT NOT NULL,
     "Description" TEXT NOT NULL,
-    "AddAccountingPeriodId" TEXT NOT NULL,
-    "AddDate" TEXT NOT NULL
+    "AddAccountingPeriodId" TEXT NOT NULL
 );
 
 CREATE TABLE "AccountingPeriodBalanceHistories" (
@@ -172,7 +171,7 @@ CREATE INDEX "IX_Transactions_TransferTransaction_CreditAccountId" ON "Transacti
 CREATE INDEX "IX_Transactions_TransferTransaction_DebitAccountId" ON "Transactions" ("TransferTransaction_DebitAccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260410105543_InitialCreate', '10.0.2');
+VALUES ('20260410130452_InitialCreate', '10.0.2');
 
 COMMIT;
 

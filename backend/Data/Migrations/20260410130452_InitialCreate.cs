@@ -68,8 +68,7 @@ namespace Data.Migrations
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Type = table.Column<string>(type: "TEXT", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
-                    AddAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    AddDate = table.Column<DateOnly>(type: "TEXT", nullable: false)
+                    AddAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {

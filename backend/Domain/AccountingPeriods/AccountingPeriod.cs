@@ -43,11 +43,17 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
     /// <summary>
     /// Determines if the provided date falls within the Accounting Period
     /// </summary>
-    public bool IsDateInPeriod(DateOnly date)
-    {
-        int monthDifference = Math.Abs(((Year - date.Year) * 12) + Month - date.Month);
-        return monthDifference <= 1;
-    }
+    public bool IsDateInPeriod(DateOnly date) => date >= GetMinimumDateInPeriod() && date <= GetMaximumDateInPeriod();
+
+    /// <summary>
+    /// Gets the minimum date that falls within this Accounting Period
+    /// </summary>
+    public DateOnly GetMinimumDateInPeriod() => new DateOnly(Year, Month, 1).AddMonths(-1);
+
+    /// <summary>
+    /// Gets the maximum date that falls within this Accounting Period
+    /// </summary>
+    public DateOnly GetMaximumDateInPeriod() => new DateOnly(Year, Month, 1).AddMonths(1).AddDays(-1);
 
     /// <summary>
     /// Constructs a new instance of this class

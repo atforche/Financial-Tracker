@@ -26,6 +26,11 @@ public interface IAccountingPeriodRepository
     AccountingPeriod? GetNextAccountingPeriod(AccountingPeriodId id);
 
     /// <summary>
+    /// Gets the previous Accounting Period for the Accounting Period with the specified ID
+    /// </summary>
+    AccountingPeriod? GetPreviousAccountingPeriod(AccountingPeriodId id);
+
+    /// <summary>
     /// Gets all the Accounting Periods that are currently open
     /// </summary>
     IReadOnlyCollection<AccountingPeriod> GetAllOpenPeriods();

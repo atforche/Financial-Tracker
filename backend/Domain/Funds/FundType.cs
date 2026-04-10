@@ -6,6 +6,15 @@ namespace Domain.Funds;
 public enum FundType
 {
     /// <summary>
+    /// Unassigned Fund
+    /// </summary>
+    /// <remarks>
+    /// The unassigned fund is a special system defined fund that is used to hold any unassigned money. 
+    /// The unassigned fund is not meant to be used by the user and should not be assigned to any transactions.
+    /// </remarks>
+    Unassigned,
+
+    /// <summary>
     /// Monthly Fund
     /// </summary>
     /// <remarks>

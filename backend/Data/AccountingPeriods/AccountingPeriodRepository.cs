@@ -13,7 +13,8 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
 
     /// <inheritdoc/>
     public AccountingPeriod GetById(AccountingPeriodId id) => databaseContext.AccountingPeriods
-        .Single(accountingPeriod => accountingPeriod.Id == id);
+        .SingleOrDefault(accountingPeriod => accountingPeriod.Id == id)
+        ?? databaseContext.AccountingPeriods.Local.Single(accountingPeriod => accountingPeriod.Id == id);
 
     /// <inheritdoc/>
     public AccountingPeriod? GetByYearAndMonth(int year, int month) => databaseContext.AccountingPeriods
@@ -32,6 +33,15 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
         DateOnly nextMonth = currentAccountingPeriod.PeriodStartDate.AddMonths(1);
         return databaseContext.AccountingPeriods
             .SingleOrDefault(accountingPeriod => accountingPeriod.Year == nextMonth.Year && accountingPeriod.Month == nextMonth.Month);
+    }
+
+    /// <inheritdoc/>
+    public AccountingPeriod? GetPreviousAccountingPeriod(AccountingPeriodId id)
+    {
+        AccountingPeriod currentAccountingPeriod = GetById(id);
+        DateOnly previousMonth = currentAccountingPeriod.PeriodStartDate.AddMonths(-1);
+        return databaseContext.AccountingPeriods
+            .SingleOrDefault(accountingPeriod => accountingPeriod.Year == previousMonth.Year && accountingPeriod.Month == previousMonth.Month);
     }
 
     /// <inheritdoc/>

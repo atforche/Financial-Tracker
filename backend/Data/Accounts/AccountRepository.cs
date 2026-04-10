@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,10 @@ public class AccountRepository(DatabaseContext databaseContext) : IAccountReposi
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Account> GetAll() => databaseContext.Accounts.ToList();
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<Account> GetAllAccountsAddedInPeriod(AccountingPeriodId accountingPeriodId) =>
+        databaseContext.Accounts.Where(account => account.AddAccountingPeriodId == accountingPeriodId).ToList();
 
     /// <inheritdoc/>
     public Account GetById(AccountId id) => databaseContext.Accounts.SingleOrDefault(account => account.Id == id)

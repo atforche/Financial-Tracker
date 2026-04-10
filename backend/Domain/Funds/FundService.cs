@@ -17,32 +17,15 @@ public class FundService(
     /// <summary>
     /// Attempts to create a new Fund
     /// </summary>
-    /// <param name="request">Request to create a Fund</param>
-    /// <param name="fund">The created Fund, or null if creation failed</param>
-    /// <param name="exceptions">List of exceptions encountered during creation</param>
-    /// <returns>True if the Fund was created successfully, false otherwise</returns>
     public bool TryCreate(CreateFundRequest request, [NotNullWhen(true)] out Fund? fund, out IEnumerable<Exception> exceptions)
     {
         fund = null;
-        exceptions = [];
 
-        if (!ValidateName(request.Name, null, out IEnumerable<Exception> nameExceptions))
-        {
-            exceptions = exceptions.Concat(nameExceptions);
-        }
-        if (!request.AccountingPeriod.IsOpen)
-        {
-            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
-        }
-        if (!request.AccountingPeriod.IsDateInPeriod(request.AddDate))
-        {
-            exceptions = exceptions.Append(new InvalidDateException("The provided add date is not within the provided accounting period."));
-        }
-        if (exceptions.Any())
+        if (!ValidateCreate(request, out exceptions))
         {
             return false;
         }
-        fund = new Fund(request.Name, request.Type, request.Description, request.AccountingPeriod.Id, request.AddDate);
+        fund = new Fund(request.Name, request.Type, request.Description, request.AccountingPeriod.Id);
         accountingPeriodBalanceService.AddFund(fund);
         return true;
     }
@@ -53,11 +36,9 @@ public class FundService(
     public bool TryCreateGoal(CreateFundGoalRequest request, [NotNullWhen(true)] out FundGoal? fundGoal, out IEnumerable<Exception> exceptions)
     {
         fundGoal = null;
-        exceptions = [];
 
-        if (!ValidateCreateGoal(request, out IEnumerable<Exception> createGoalExceptions))
+        if (!ValidateCreateGoal(request, out exceptions))
         {
-            exceptions = exceptions.Concat(createGoalExceptions);
             return false;
         }
         fundGoal = new FundGoal(request.Fund, request.AccountingPeriod.Id, request.GoalAmount);
@@ -68,20 +49,9 @@ public class FundService(
     /// <summary>
     /// Attempts to update an existing Fund
     /// </summary>
-    /// <param name="fund">Fund to be updated</param>
-    /// <param name="name">New name for the Fund</param>
-    /// <param name="description">New description for the Fund</param>
-    /// <param name="exceptions">List of exceptions encountered during update</param>
-    /// <returns>True if the Fund was updated successfully, false otherwise</returns>
     public bool TryUpdate(Fund fund, string name, string description, out IEnumerable<Exception> exceptions)
     {
-        exceptions = [];
-
-        if (!ValidateName(name, fund, out IEnumerable<Exception> nameExceptions))
-        {
-            exceptions = exceptions.Concat(nameExceptions);
-        }
-        if (exceptions.Any())
+        if (!ValidateUpdate(fund, name, out exceptions))
         {
             return false;
         }
@@ -109,16 +79,10 @@ public class FundService(
     /// <summary>
     /// Attempts to delete an existing Fund
     /// </summary>
-    /// <param name="fund">Fund to be deleted</param>
-    /// <param name="exceptions">List of exceptions encountered during deletion</param>
-    /// <returns>True if the Fund was deleted successfully, false otherwise</returns>
     public bool TryDelete(Fund fund, out IEnumerable<Exception> exceptions)
     {
-        exceptions = [];
-
-        if (transactionRepository.DoAnyTransactionsExistForFund(fund.Id))
+        if (!ValidateDelete(fund, out exceptions))
         {
-            exceptions = [new UnableToDeleteException("Cannot delete a Fund that has Transactions.")];
             return false;
         }
         accountingPeriodBalanceService.DeleteFund(fund);
@@ -129,10 +93,6 @@ public class FundService(
     /// <summary>
     /// Validates the name for a Fund
     /// </summary>
-    /// <param name="name">Name for the Fund</param>
-    /// <param name="existingFund">The existing Fund being updated, if any</param>
-    /// <param name="exceptions">Exceptions encountered during validation</param>
-    /// <returns>True if this name is valid for a Fund, false otherwise</returns>
     private bool ValidateName(string name, Fund? existingFund, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
@@ -149,12 +109,38 @@ public class FundService(
     }
 
     /// <summary>
+    /// Validates the provided request to create a fund
+    /// </summary>
+    private bool ValidateCreate(CreateFundRequest request, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (!ValidateName(request.Name, null, out IEnumerable<Exception> nameExceptions))
+        {
+            exceptions = exceptions.Concat(nameExceptions);
+        }
+        if (request.Type == FundType.Unassigned && fundRepository.GetUnassignedFund() != null)
+        {
+            exceptions = exceptions.Append(new InvalidFundException("An unassigned fund already exists."));
+        }
+        if (!request.AccountingPeriod.IsOpen)
+        {
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
     /// Validates the provided request to create a fund goal
     /// </summary>
     private bool ValidateCreateGoal(CreateFundGoalRequest request, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
+        if (request.Fund.Type == FundType.Unassigned)
+        {
+            exceptions = exceptions.Append(new InvalidFundException("The unassigned fund cannot have a fund goal."));
+        }
         if (!request.AccountingPeriod.IsOpen)
         {
             exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
@@ -171,6 +157,24 @@ public class FundService(
     }
 
     /// <summary>
+    /// Validates the provided information to update a fund
+    /// </summary>
+    private bool ValidateUpdate(Fund fund, string name, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (!ValidateName(name, fund, out IEnumerable<Exception> nameExceptions))
+        {
+            exceptions = exceptions.Concat(nameExceptions);
+        }
+        if (fund.Type == FundType.Unassigned)
+        {
+            exceptions = exceptions.Append(new UnableToUpdateException("The unassigned fund cannot be updated."));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
     /// Validates the provided information to update a fund goal
     /// </summary>
     private static bool ValidateUpdateGoal(decimal goalAmount, out IEnumerable<Exception> exceptions)
@@ -180,6 +184,24 @@ public class FundService(
         if (goalAmount <= 0)
         {
             exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than zero."));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates whether a fund can be deleted
+    /// </summary>
+    private bool ValidateDelete(Fund fund, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (fund.Type == FundType.Unassigned)
+        {
+            exceptions = exceptions.Append(new UnableToDeleteException("The unassigned fund cannot be deleted."));
+        }
+        if (transactionRepository.DoAnyTransactionsExistForFund(fund.Id))
+        {
+            exceptions = exceptions.Append(new UnableToDeleteException("Cannot delete a Fund that has Transactions."));
         }
         return !exceptions.Any();
     }

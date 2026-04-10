@@ -33,21 +33,15 @@ public class Fund : Entity<FundId>
     public AccountingPeriodId AddAccountingPeriodId { get; private set; }
 
     /// <summary>
-    /// Date that this Fund was added
-    /// </summary>
-    public DateOnly AddDate { get; private set; }
-
-    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal Fund(string name, FundType type, string description, AccountingPeriodId addAccountingPeriodId, DateOnly addDate)
+    internal Fund(string name, FundType type, string description, AccountingPeriodId addAccountingPeriodId)
         : base(new FundId(Guid.NewGuid()))
     {
         Name = name;
         Type = type;
         Description = description;
         AddAccountingPeriodId = addAccountingPeriodId;
-        AddDate = addDate;
     }
 
     /// <summary>

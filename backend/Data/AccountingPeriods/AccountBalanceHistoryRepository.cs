@@ -11,8 +11,11 @@ public class AccountingPeriodBalanceHistoryRepository(DatabaseContext databaseCo
     #region AccountingPeriodBalanceHistoryRepository
 
     /// <inheritdoc/>
-    public AccountingPeriodBalanceHistory GetForAccountingPeriod(AccountingPeriodId accountingPeriodId) => databaseContext.AccountingPeriodBalanceHistories
-        .Single(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.AccountingPeriod.Id == accountingPeriodId);
+    public AccountingPeriodBalanceHistory GetForAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
+        databaseContext.AccountingPeriodBalanceHistories
+            .SingleOrDefault(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.AccountingPeriod.Id == accountingPeriodId)
+        ?? databaseContext.AccountingPeriodBalanceHistories.Local
+            .Single(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.AccountingPeriod.Id == accountingPeriodId);
 
     /// <inheritdoc/>
     public void Add(AccountingPeriodBalanceHistory accountingPeriodBalanceHistory) => databaseContext.Add(accountingPeriodBalanceHistory);

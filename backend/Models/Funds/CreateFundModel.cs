@@ -24,9 +24,4 @@ public class CreateFundModel
     /// Accounting Period that the Fund is being added to
     /// </summary>
     public required Guid AccountingPeriodId { get; init; }
-
-    /// <summary>
-    /// Date the Fund is being added
-    /// </summary>
-    public required DateOnly AddDate { get; init; }
 }

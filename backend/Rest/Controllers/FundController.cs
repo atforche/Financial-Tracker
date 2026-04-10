@@ -214,7 +214,6 @@ public sealed class FundController(
                 Type = fundType.Value,
                 Description = createFundModel.Description,
                 AccountingPeriod = accountingPeriod,
-                AddDate = createFundModel.AddDate,
             },
             out Fund? newFund,
             out IEnumerable<Exception> exceptions))
@@ -223,7 +222,6 @@ public sealed class FundController(
             {
                 InvalidNameException => nameof(createFundModel.Name),
                 InvalidAccountingPeriodException => nameof(createFundModel.AccountingPeriodId),
-                InvalidDateException => nameof(createFundModel.AddDate),
                 _ => string.Empty
             }).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray());
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails

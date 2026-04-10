@@ -137,9 +137,6 @@ namespace Data.Migrations
                     b.Property<Guid>("AddAccountingPeriodId")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateOnly>("AddDate")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");

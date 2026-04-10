@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.AccountingPeriods;
 
 namespace Domain.Funds;
 
@@ -8,14 +9,24 @@ namespace Domain.Funds;
 public interface IFundRepository
 {
     /// <summary>
-    /// Gets all Funds in the repository.
+    /// Gets all the Funds in the repository.
     /// </summary>
     IReadOnlyCollection<Fund> GetAll();
+
+    /// <summary>
+    /// Gets all the Funds that were added in the specified accounting period.
+    /// </summary>
+    IReadOnlyCollection<Fund> GetAllFundsAddedInPeriod(AccountingPeriodId accountingPeriodId);
 
     /// <summary>
     /// Gets the Fund with the specified ID.
     /// </summary>
     Fund GetById(FundId id);
+
+    /// <summary>
+    /// Gets the unassigned Fund
+    /// </summary>
+    Fund? GetUnassignedFund();
 
     /// <summary>
     /// Attempts to get the Fund with the specified name

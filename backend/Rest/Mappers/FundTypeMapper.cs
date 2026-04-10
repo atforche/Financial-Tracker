@@ -14,6 +14,7 @@ internal sealed class FundTypeMapper
     /// </summary>
     public static FundTypeModel ToModel(FundType fundType) => fundType switch
     {
+        FundType.Unassigned => FundTypeModel.Unassigned,
         FundType.Monthly => FundTypeModel.Monthly,
         FundType.Rolling => FundTypeModel.Rolling,
         FundType.Savings => FundTypeModel.Savings,
@@ -28,6 +29,7 @@ internal sealed class FundTypeMapper
     {
         fundType = fundTypeModel switch
         {
+            FundTypeModel.Unassigned => FundType.Unassigned,
             FundTypeModel.Monthly => FundType.Monthly,
             FundTypeModel.Rolling => FundType.Rolling,
             FundTypeModel.Savings => FundType.Savings,

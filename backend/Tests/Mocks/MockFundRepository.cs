@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.AccountingPeriods;
 using Domain.Funds;
 
 namespace Tests.Mocks;
@@ -14,7 +15,14 @@ internal sealed class MockFundRepository : IFundRepository
     public IReadOnlyCollection<Fund> GetAll() => _funds.Values.ToList();
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<Fund> GetAllFundsAddedInPeriod(AccountingPeriodId accountingPeriodId) =>
+        _funds.Values.Where(fund => fund.AddAccountingPeriodId == accountingPeriodId).ToList();
+
+    /// <inheritdoc/>
     public Fund GetById(FundId id) => _funds[id.Value];
+
+    /// <inheritdoc/>
+    public Fund? GetUnassignedFund() => _funds.Values.FirstOrDefault(fund => fund.Type == FundType.Unassigned);
 
     /// <inheritdoc/>
     public bool TryGetByName(string name, [NotNullWhen(true)] out Fund? fund)
