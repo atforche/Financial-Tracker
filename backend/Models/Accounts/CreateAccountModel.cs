@@ -1,3 +1,5 @@
+using Models.Funds;
+
 namespace Models.Accounts;
 
 /// <summary>
@@ -29,4 +31,9 @@ public class CreateAccountModel
     /// Initial balance for the Account
     /// </summary>
     public required decimal InitialBalance { get; init; }
+
+    /// <summary>
+    /// Initial Fund Assignments for the Account
+    /// </summary>
+    public required IReadOnlyCollection<CreateFundAmountModel> InitialFundAssignments { get; init; }
 }

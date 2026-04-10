@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Domain.Funds;
 
 namespace Domain.Accounts;
 
@@ -31,4 +32,9 @@ public record CreateAccountRequest
     /// Initial balance for the Account
     /// </summary>
     public required decimal InitialBalance { get; init; }
+
+    /// <summary>
+    /// Fund assignments for the initial balance of the Account.
+    /// </summary>
+    public required IReadOnlyCollection<FundAmount> InitialFundAssignments { get; init; }
 }

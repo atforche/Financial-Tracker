@@ -21,56 +21,20 @@ public class AccountService(
     public bool TryCreate(
         CreateAccountRequest request,
         [NotNullWhen(true)] out Account? account,
-        out Transaction? initialTransaction,
         out IEnumerable<Exception> exceptions)
     {
         account = null;
-        initialTransaction = null;
-        exceptions = [];
 
-        if (!ValidateAccountName(request.Name, out IEnumerable<Exception> nameExceptions))
-        {
-            exceptions = exceptions.Concat(nameExceptions);
-        }
-        if (!request.AccountingPeriod.IsOpen)
-        {
-            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
-        }
-        if (!request.AccountingPeriod.IsDateInPeriod(request.AddDate))
-        {
-            exceptions = exceptions.Append(new InvalidDateException("The provided add date is not within the provided accounting period."));
-        }
-        if (exceptions.Any())
+        if (!ValidateCreate(request, out exceptions))
         {
             return false;
         }
         account = new Account(request.Name, request.Type, request.AccountingPeriod.Id, request.AddDate);
         accountRepository.Add(account);
         accountingPeriodBalanceService.AddAccount(account);
-        if (request.InitialBalance > 0)
+        if (!AddInitialAccountTransaction(request, account, out exceptions))
         {
-            if (!transactionService.TryCreate(new CreateIncomeTransactionRequest
-            {
-                AccountingPeriodId = request.AccountingPeriod.Id,
-                TransactionDate = request.AddDate,
-                Location = "Initial",
-                Description = "Initial Balance",
-                Account = account,
-                Amount = request.InitialBalance,
-                IsInitialTransactionForAccount = true
-            }, out initialTransaction, out IEnumerable<Exception> transactionExceptions))
-            {
-                exceptions = exceptions.Concat(transactionExceptions);
-                account = null;
-                return false;
-            }
-            if (!transactionService.TryPost(initialTransaction, account.Id, request.AddDate, out IEnumerable<Exception> postingExceptions))
-            {
-                exceptions = exceptions.Concat(postingExceptions);
-                account = null;
-                return false;
-            }
-            account.InitialTransaction = initialTransaction.Id;
+            return false;
         }
         return true;
     }
@@ -125,11 +89,56 @@ public class AccountService(
     }
 
     /// <summary>
+    /// Adds the initial transaction for an Account if the initial balance is greater than 0
+    /// </summary>
+    private bool AddInitialAccountTransaction(CreateAccountRequest request, Account account, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (request.InitialBalance <= 0)
+        {
+            return true;
+        }
+
+        CreateTransactionRequest createTransactionRequest = !account.Type.IsDebt()
+            ? new CreateIncomeTransactionRequest
+            {
+                AccountingPeriodId = request.AccountingPeriod.Id,
+                TransactionDate = request.AddDate,
+                Location = "Initial",
+                Description = "Initial Balance",
+                Account = account,
+                Amount = request.InitialBalance,
+                FundAssignments = request.InitialFundAssignments,
+                IsInitialTransactionForAccount = true
+            }
+            : new CreateSpendingTransactionRequest
+            {
+                AccountingPeriodId = request.AccountingPeriod.Id,
+                TransactionDate = request.AddDate,
+                Location = "Initial",
+                Description = "Initial Balance",
+                Account = account,
+                Amount = request.InitialBalance,
+                FundAssignments = request.InitialFundAssignments,
+                IsInitialTransactionForAccount = true
+            };
+        if (!transactionService.TryCreate(createTransactionRequest, out Transaction? transaction, out exceptions))
+        {
+            return false;
+        }
+        if (!transactionService.TryPost(transaction, account.Id, request.AddDate, out exceptions))
+        {
+            return false;
+        }
+        account.InitialTransaction = transaction.Id;
+        transactionRepository.Add(transaction);
+        return true;
+    }
+
+    /// <summary>
     /// Validates the name for this Account
     /// </summary>
-    /// <param name="name">Name for the Account</param>
-    /// <param name="exceptions">Exceptions encountered during validation</param>
-    /// <returns>True if name is valid for this Account, false otherwise</returns>
     private bool ValidateAccountName(string name, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
@@ -141,6 +150,32 @@ public class AccountService(
         if (accountRepository.TryGetByName(name, out _))
         {
             exceptions = exceptions.Append(new InvalidNameException("Account name must be unique"));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates a request to create an Account
+    /// </summary>
+    private bool ValidateCreate(CreateAccountRequest request, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (!ValidateAccountName(request.Name, out IEnumerable<Exception> nameExceptions))
+        {
+            exceptions = exceptions.Concat(nameExceptions);
+        }
+        if (!request.AccountingPeriod.IsOpen)
+        {
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
+        }
+        if (!request.AccountingPeriod.IsDateInPeriod(request.AddDate))
+        {
+            exceptions = exceptions.Append(new InvalidDateException("The provided add date is not within the provided accounting period."));
+        }
+        if (!request.Type.IsTracked() && request.InitialFundAssignments.Count > 0)
+        {
+            exceptions = exceptions.Append(new InvalidAccountTypeException("Cannot assign funds to an untracked account."));
         }
         return !exceptions.Any();
     }

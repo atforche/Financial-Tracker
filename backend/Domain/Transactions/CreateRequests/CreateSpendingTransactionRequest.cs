@@ -35,7 +35,12 @@ public record CreateSpendingTransactionRequest : CreateTransactionRequest
     public DateOnly? PostedDate { get; init; }
 
     /// <summary>
-    /// Fund Amounts for this Spending Transaction
+    /// Fund Assignments for this Spending Transaction
     /// </summary>
-    public required IReadOnlyCollection<FundAmount> FundAmounts { get; init; }
+    public required IReadOnlyCollection<FundAmount> FundAssignments { get; init; }
+
+    /// <summary>
+    /// True if this transaction is the initial transaction for the account, false otherwise
+    /// </summary>
+    public required bool IsInitialTransactionForAccount { get; init; }
 }

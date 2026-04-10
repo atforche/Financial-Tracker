@@ -5,10 +5,12 @@ using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Exceptions;
+using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Accounts;
+using Models.Funds;
 using Models.Transactions;
 using Rest.Mappers;
 
@@ -28,6 +30,7 @@ public sealed class AccountController(
     AccountingPeriodMapper accountingPeriodMapper,
     AccountingPeriodAccountMapper accountingPeriodAccountMapper,
     AccountMapper accountMapper,
+    FundMapper fundMapper,
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
@@ -195,6 +198,20 @@ public sealed class AccountController(
         {
             errors.Add(nameof(createAccountModel.Type), [$"Unrecognized Account Type: {createAccountModel.Type}"]);
         }
+        List<FundAmount> initialFundAssignments = [];
+        foreach (CreateFundAmountModel fundAmountModel in createAccountModel.InitialFundAssignments)
+        {
+            if (!fundMapper.TryToDomain(fundAmountModel.FundId, out Fund? fund))
+            {
+                errors.Add(nameof(createAccountModel.InitialFundAssignments), [$"Fund with ID {fundAmountModel.FundId} was not found."]);
+                continue;
+            }
+            initialFundAssignments.Add(new FundAmount
+            {
+                FundId = fund.Id,
+                Amount = fundAmountModel.Amount
+            });
+        }
         if (errors.Count > 0 || accountingPeriod == null || accountType == null)
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
@@ -212,10 +229,10 @@ public sealed class AccountController(
                 Type = accountType.Value,
                 AccountingPeriod = accountingPeriod,
                 AddDate = createAccountModel.AddDate,
-                InitialBalance = createAccountModel.InitialBalance
+                InitialBalance = createAccountModel.InitialBalance,
+                InitialFundAssignments = initialFundAssignments
             },
             out Account? newAccount,
-            out Transaction? initialTransaction,
             out IEnumerable<Exception> exceptions))
         {
             errors = exceptions.GroupBy(e => e switch
@@ -231,10 +248,6 @@ public sealed class AccountController(
                 Errors = errors,
                 Status = StatusCodes.Status422UnprocessableEntity
             });
-        }
-        if (initialTransaction != null)
-        {
-            transactionRepository.Add(initialTransaction);
         }
         await unitOfWork.SaveChangesAsync();
         return Ok(accountMapper.ToModel(newAccount));

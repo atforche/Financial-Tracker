@@ -1,5 +1,6 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.Funds;
 
 namespace Domain.Transactions.CreateRequests;
 
@@ -32,6 +33,11 @@ public record CreateIncomeTransactionRequest : CreateTransactionRequest
     /// Posted Date for this Income Transaction
     /// </summary>
     public DateOnly? PostedDate { get; init; }
+
+    /// <summary>
+    /// Fund assignments for the amount of this Income Transaction
+    /// </summary>
+    public required IReadOnlyCollection<FundAmount> FundAssignments { get; init; }
 
     /// <summary>
     /// True if this transaction is the initial transaction for the account, false otherwise

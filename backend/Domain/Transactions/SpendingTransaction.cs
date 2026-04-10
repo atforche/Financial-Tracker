@@ -99,7 +99,7 @@ public class SpendingTransaction : Transaction
     {
         AccountId = request.Account.Id;
         PostedDate = request.PostedDate;
-        _fundAmounts.AddRange(request.FundAmounts);
+        _fundAmounts.AddRange(request.FundAssignments);
     }
 
     /// <summary>

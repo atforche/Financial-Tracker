@@ -105,7 +105,7 @@ public class TransactionService(
         transaction.Description = request.Description;
         if (transaction is SpendingTransaction spendingTransaction && request is UpdateSpendingTransactionRequest spendingRequest)
         {
-            spendingTransaction.UpdateFundAmounts(spendingRequest.FundAmounts);
+            spendingTransaction.UpdateFundAmounts(spendingRequest.FundAssignments);
         }
         accountBalanceService.UpdateTransaction(transaction);
         fundBalanceService.UpdateTransaction(transaction);
@@ -473,11 +473,11 @@ public class TransactionService(
 
         if (request is CreateSpendingTransactionRequest spendingRequest)
         {
-            if (spendingRequest.FundAmounts.Count == 0)
+            if (spendingRequest.FundAssignments.Count == 0)
             {
                 exceptions = exceptions.Append(new InvalidFundAmountException("The provided list of fund amounts is empty."));
             }
-            if (spendingRequest.FundAmounts.Any(fundAmount => fundAmount.Amount <= 0))
+            if (spendingRequest.FundAssignments.Any(fundAmount => fundAmount.Amount <= 0))
             {
                 exceptions = exceptions.Append(new InvalidFundAmountException("The provided fund amounts must be greater than zero."));
             }
@@ -494,11 +494,11 @@ public class TransactionService(
 
         if (request is UpdateSpendingTransactionRequest spendingRequest)
         {
-            if (spendingRequest.FundAmounts.Count == 0)
+            if (spendingRequest.FundAssignments.Count == 0)
             {
                 exceptions = exceptions.Append(new InvalidFundAmountException("The provided list of fund amounts is empty."));
             }
-            if (spendingRequest.FundAmounts.Any(fundAmount => fundAmount.Amount <= 0))
+            if (spendingRequest.FundAssignments.Any(fundAmount => fundAmount.Amount <= 0))
             {
                 exceptions = exceptions.Append(new InvalidFundAmountException("The provided fund amounts must be greater than zero."));
             }

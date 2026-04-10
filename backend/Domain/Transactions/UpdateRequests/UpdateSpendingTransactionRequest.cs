@@ -17,9 +17,9 @@ public record UpdateSpendingTransactionRequest : UpdateTransactionRequest
     public override required string Description { get; init; }
 
     /// <summary>
-    /// Fund Amounts for this Spending Transaction
+    /// Fund Assignments for this Spending Transaction
     /// </summary>
-    public required IReadOnlyCollection<FundAmount> FundAmounts { get; init; }
+    public required IReadOnlyCollection<FundAmount> FundAssignments { get; init; }
 
     /// <summary>
     /// Posted Date for this Spending Transaction

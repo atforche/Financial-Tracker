@@ -372,9 +372,10 @@ public sealed class TransactionController(
                 Amount = model.DebitAccount!.FundAmounts.Sum(fa => fa.Amount),
                 Account = debitAccount!,
                 PostedDate = model.DebitAccount!.PostedDate,
-                FundAmounts = debitFundAmounts,
+                FundAssignments = debitFundAmounts,
                 CreditAccount = creditAccount!,
                 CreditPostedDate = model.CreditAccount!.PostedDate,
+                IsInitialTransactionForAccount = false,
             };
         }
         if (hasDebit && hasCredit && creditHasFunds)
@@ -391,6 +392,7 @@ public sealed class TransactionController(
                 IsInitialTransactionForAccount = false,
                 DebitAccount = debitAccount!,
                 DebitPostedDate = model.DebitAccount!.PostedDate,
+                FundAssignments = debitFundAmounts,
             };
         }
         if (hasDebit && hasCredit)
@@ -419,7 +421,8 @@ public sealed class TransactionController(
                 Amount = debitFundAmounts.Sum(fa => fa.Amount),
                 Account = debitAccount!,
                 PostedDate = model.DebitAccount!.PostedDate,
-                FundAmounts = debitFundAmounts,
+                FundAssignments = debitFundAmounts,
+                IsInitialTransactionForAccount = false,
             };
         }
         return new CreateIncomeTransactionRequest
@@ -431,6 +434,7 @@ public sealed class TransactionController(
             Amount = creditFundAmounts.Sum(fa => fa.Amount),
             Account = creditAccount!,
             PostedDate = model.CreditAccount!.PostedDate,
+            FundAssignments = creditFundAmounts,
             IsInitialTransactionForAccount = false,
         };
     }
@@ -448,7 +452,7 @@ public sealed class TransactionController(
                 TransactionDate = model.Date,
                 Location = model.Location,
                 Description = model.Description,
-                FundAmounts = debitFundAmounts,
+                FundAssignments = debitFundAmounts,
                 PostedDate = model.DebitAccount?.PostedDate,
                 CreditPostedDate = model.CreditAccount?.PostedDate,
             },
@@ -457,7 +461,7 @@ public sealed class TransactionController(
                 TransactionDate = model.Date,
                 Location = model.Location,
                 Description = model.Description,
-                FundAmounts = debitFundAmounts,
+                FundAssignments = debitFundAmounts,
                 PostedDate = model.DebitAccount?.PostedDate,
             },
             IncomeTransferTransaction => new UpdateIncomeTransferTransactionRequest
