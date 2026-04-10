@@ -17,7 +17,6 @@ interface ActionState {
   readonly nameErrors?: string | null;
   readonly descriptionErrors?: string | null;
   readonly accountingPeriodErrors?: string | null;
-  readonly dateErrors?: string | null;
   readonly unmappedErrors?: string | null;
 }
 
@@ -37,7 +36,6 @@ const createFund = async function (
       let nameErrorMessage = null;
       let descriptionErrorMessage = null;
       let accountingPeriodErrorMessage = null;
-      let dateErrorMessage = null;
       const unmappedErrors: (string | null)[] = [];
       for (const key of Object.keys(error.errors ?? {})) {
         if (
@@ -56,11 +54,6 @@ const createFund = async function (
           accountingPeriodErrorMessage = formatErrors(
             error.errors?.[key] ?? null,
           );
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateFundRequest>("addDate").toUpperCase()
-        ) {
-          dateErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else {
           unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
         }
@@ -71,7 +64,6 @@ const createFund = async function (
         nameErrors: nameErrorMessage,
         descriptionErrors: descriptionErrorMessage,
         accountingPeriodErrors: accountingPeriodErrorMessage,
-        dateErrors: dateErrorMessage,
         unmappedErrors: unmappedErrors.join(", ") || null,
       };
     }

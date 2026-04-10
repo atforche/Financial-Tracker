@@ -36,6 +36,7 @@ public class AccountingPeriodBalanceHistoryRepository(DatabaseContext databaseCo
         {
             fundBalanceHistories = fundBalanceHistories.Where(fundBalanceHistory =>
                 fundBalanceHistory.Fund.Name.Contains(request.Search, StringComparison.OrdinalIgnoreCase) ||
+                fundBalanceHistory.Fund.Type.ToString().Contains(request.Search, StringComparison.OrdinalIgnoreCase) ||
                 fundBalanceHistory.Fund.Description.Contains(request.Search, StringComparison.OrdinalIgnoreCase) ||
                 fundBalanceHistory.OpeningBalance.ToString(CultureInfo.InvariantCulture).Contains(request.Search, StringComparison.OrdinalIgnoreCase) ||
                 fundBalanceHistory.ClosingBalance.ToString(CultureInfo.InvariantCulture).Contains(request.Search, StringComparison.OrdinalIgnoreCase))
@@ -48,6 +49,14 @@ public class AccountingPeriodBalanceHistoryRepository(DatabaseContext databaseCo
         else if (request.Sort == AccountingPeriodFundSortOrder.NameDescending)
         {
             fundBalanceHistories = fundBalanceHistories.OrderByDescending(fundBalanceHistory => fundBalanceHistory.Fund.Name).ToList();
+        }
+        else if (request.Sort == AccountingPeriodFundSortOrder.Type)
+        {
+            fundBalanceHistories = fundBalanceHistories.OrderBy(fundBalanceHistory => fundBalanceHistory.Fund.Type).ThenBy(fundBalanceHistory => fundBalanceHistory.Fund.Name).ToList();
+        }
+        else if (request.Sort == AccountingPeriodFundSortOrder.TypeDescending)
+        {
+            fundBalanceHistories = fundBalanceHistories.OrderByDescending(fundBalanceHistory => fundBalanceHistory.Fund.Type).ThenByDescending(fundBalanceHistory => fundBalanceHistory.Fund.Name).ToList();
         }
         else if (request.Sort == AccountingPeriodFundSortOrder.OpeningBalance)
         {

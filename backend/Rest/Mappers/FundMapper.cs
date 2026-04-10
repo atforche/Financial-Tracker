@@ -17,6 +17,7 @@ public sealed class FundMapper(FundBalanceService fundBalanceService, FundBalanc
     {
         Id = fund.Id.Value,
         Name = fund.Name,
+        Type = FundTypeMapper.ToModel(fund.Type),
         Description = fund.Description,
         CurrentBalance = fundBalanceMapper.ToModel(fundBalanceService.GetCurrentBalance(fund.Id))
     };

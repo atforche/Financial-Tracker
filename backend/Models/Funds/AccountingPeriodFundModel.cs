@@ -16,6 +16,11 @@ public class AccountingPeriodFundModel
     public required string Name { get; init; }
 
     /// <summary>
+    /// Type of the Fund
+    /// </summary>
+    public required FundTypeModel Type { get; init; }
+
+    /// <summary>
     /// Description for the Fund
     /// </summary>
     public required string Description { get; init; }

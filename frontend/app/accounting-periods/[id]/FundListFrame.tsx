@@ -75,6 +75,26 @@ const FundListFrame = function ({
       },
     },
     {
+      name: "type",
+      headerContent: "Type",
+      getBodyContent: (fund: AccountingPeriodFund) => fund.type,
+      sortType:
+        currentSort === AccountingPeriodFundSortOrder.Type
+          ? ColumnSortType.Ascending
+          : currentSort === AccountingPeriodFundSortOrder.TypeDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSort(AccountingPeriodFundSortOrder.Type);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSort(AccountingPeriodFundSortOrder.TypeDescending);
+        } else {
+          setSort(null);
+        }
+      },
+    },
+    {
       name: "openingBalance",
       headerContent: "Opening Balance",
       getBodyContent: (fund: AccountingPeriodFund) =>

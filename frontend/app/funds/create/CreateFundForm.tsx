@@ -1,17 +1,13 @@
 "use client";
 
-import {
-  type AccountingPeriod,
-  getMaximumDate,
-  getMinimumDate,
-} from "@/data/accountingPeriodTypes";
 import { Button, DialogActions, Stack } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
-import dayjs, { type Dayjs } from "dayjs";
+import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import AccountingPeriodEntryField from "@/framework/forms/AccountingPeriodEntryField";
 import Breadcrumbs from "@/framework/Breadcrumbs";
-import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import type { FundType } from "@/data/fundTypes";
+import FundTypeEntryField from "@/framework/forms/FundTypeEntryField";
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import createFund from "@/app/funds/create/createFund";
@@ -80,19 +76,14 @@ const CreateFundForm = function ({
   providedAccountingPeriod = null,
 }: CreateFundFormProps): JSX.Element {
   const [name, setName] = useState<string>("");
+  const [type, setType] = useState<FundType | null>(null);
   const [description, setDescription] = useState<string>("");
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(providedAccountingPeriod);
-  const [addDate, setAddDate] = useState<Dayjs | null>(null);
 
   const [state, action, pending] = useActionState(createFund, {
     redirectUrl: getRedirectUrl(providedAccountingPeriod),
   });
-
-  const defaultAddDate =
-    accountingPeriod === null
-      ? null
-      : dayjs(accountingPeriod.name, "MMMM YYYY");
 
   return (
     <Stack spacing={2}>
@@ -103,6 +94,11 @@ const CreateFundForm = function ({
           value={name}
           setValue={setName}
           errorMessage={state.nameErrors ?? null}
+        />
+        <FundTypeEntryField
+          label="Type"
+          value={type}
+          setValue={setType}
         />
         <StringEntryField
           label="Description"
@@ -118,18 +114,6 @@ const CreateFundForm = function ({
             providedAccountingPeriod === null ? setAccountingPeriod : null
           }
         />
-        <DateEntryField
-          label="Date Added"
-          value={addDate ?? defaultAddDate}
-          setValue={setAddDate}
-          errorMessage={state.dateErrors ?? null}
-          minDate={
-            accountingPeriod === null ? null : getMinimumDate(accountingPeriod)
-          }
-          maxDate={
-            accountingPeriod === null ? null : getMaximumDate(accountingPeriod)
-          }
-        />
         <DialogActions>
           <Link href={getRedirectUrl(providedAccountingPeriod)} tabIndex={-1}>
             <Button variant="outlined">Cancel</Button>
@@ -139,26 +123,23 @@ const CreateFundForm = function ({
             loading={pending}
             disabled={
               name === "" ||
-              accountingPeriod === null ||
-              (addDate === null && defaultAddDate === null)
+              type === null ||
+              accountingPeriod === null
             }
             onClick={() => {
               if (
                 name === "" ||
-                accountingPeriod === null ||
-                (addDate === null && defaultAddDate === null)
+                type === null ||
+                accountingPeriod === null
               ) {
                 return;
               }
               startTransition(() => {
                 action({
                   name,
+                  type,
                   description,
                   accountingPeriodId: accountingPeriod.id,
-                  addDate:
-                    addDate?.format("YYYY-MM-DD") ??
-                    defaultAddDate?.format("YYYY-MM-DD") ??
-                    dayjs().format("YYYY-MM-DD"),
                 });
               });
             }}

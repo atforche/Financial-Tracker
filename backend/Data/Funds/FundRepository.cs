@@ -53,7 +53,7 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
                         """;
         if (request.Search != null)
         {
-            query += $" where Funds.Name like '%{request.Search}%' or Funds.Description like '%{request.Search}%' or FundBalanceHistories.PostedBalance like '%{request.Search}%'";
+            query += $" where Funds.Name like '%{request.Search}%' or Funds.Type like '%{request.Search}%' or Funds.Description like '%{request.Search}%' or FundBalanceHistories.PostedBalance like '%{request.Search}%'";
         }
         if (request.Sort is null or FundSortOrder.Name)
         {
@@ -62,6 +62,14 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
         else if (request.Sort == FundSortOrder.NameDescending)
         {
             query += $" order by Funds.Name desc";
+        }
+        else if (request.Sort == FundSortOrder.Type)
+        {
+            query += $" order by Funds.Type asc, Funds.Name asc";
+        }
+        else if (request.Sort == FundSortOrder.TypeDescending)
+        {
+            query += $" order by Funds.Type desc, Funds.Name asc";
         }
         else if (request.Sort == FundSortOrder.Description)
         {

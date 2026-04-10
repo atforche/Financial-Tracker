@@ -20,6 +20,8 @@ internal sealed class AccountingPeriodFundSortOrderMapper
         {
             AccountingPeriodFundSortOrderModel.Name => AccountingPeriodFundSortOrder.Name,
             AccountingPeriodFundSortOrderModel.NameDescending => AccountingPeriodFundSortOrder.NameDescending,
+            AccountingPeriodFundSortOrderModel.Type => AccountingPeriodFundSortOrder.Type,
+            AccountingPeriodFundSortOrderModel.TypeDescending => AccountingPeriodFundSortOrder.TypeDescending,
             AccountingPeriodFundSortOrderModel.OpeningBalance => AccountingPeriodFundSortOrder.OpeningBalance,
             AccountingPeriodFundSortOrderModel.OpeningBalanceDescending => AccountingPeriodFundSortOrder.OpeningBalanceDescending,
             AccountingPeriodFundSortOrderModel.ClosingBalance => AccountingPeriodFundSortOrder.ClosingBalance,

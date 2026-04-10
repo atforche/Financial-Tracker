@@ -15,6 +15,7 @@ public sealed class AccountingPeriodFundMapper(FundBalanceMapper fundBalanceMapp
     {
         Id = fundAccountingPeriodBalanceHistory.Fund.Id.Value,
         Name = fundAccountingPeriodBalanceHistory.Fund.Name,
+        Type = FundTypeMapper.ToModel(fundAccountingPeriodBalanceHistory.Fund.Type),
         Description = fundAccountingPeriodBalanceHistory.Fund.Description,
         OpeningBalance = fundBalanceMapper.ToModel(fundAccountingPeriodBalanceHistory.GetOpeningFundBalance()),
         ClosingBalance = fundBalanceMapper.ToModel(fundAccountingPeriodBalanceHistory.GetClosingFundBalance())

@@ -1467,21 +1467,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** @description Model representing an amount associated with a particular Account */
-        AccountAmountModel: {
-            /**
-             * Format: uuid
-             * @description Account for this Account Amount
-             */
-            accountId: string;
-            /** @description Name of the Account for this Account Amount */
-            accountName: string;
-            /**
-             * Format: double
-             * @description Amount for this Account Amount
-             */
-            amount: number;
-        };
         /** @description Model representing an Account Balance */
         AccountBalanceModel: {
             /**
@@ -1499,22 +1484,16 @@ export interface components {
              * @description Available to Spend Balance for the Account Balance
              */
             availableToSpend: null | number;
-            /** @description Fund Balances for the Account Balance */
-            fundBalances: components["schemas"]["FundAmountModel"][];
             /**
              * Format: double
              * @description Pending Debit Amount for the Account Balance
              */
             pendingDebitAmount: number;
-            /** @description Pending Debits for the Account Balance */
-            pendingDebits: components["schemas"]["FundAmountModel"][];
             /**
              * Format: double
              * @description Pending Credit Amount for the Account Balance
              */
             pendingCreditAmount: number;
-            /** @description Pending Credits for the Account Balance */
-            pendingCredits: components["schemas"]["FundAmountModel"][];
         };
         /** @description Model representing an Account in the context of a specific Accounting Period */
         AccountingPeriodAccountModel: {
@@ -1543,6 +1522,8 @@ export interface components {
             id: string;
             /** @description Name for the Fund */
             name: string;
+            /** @description Type of the Fund */
+            type: components["schemas"]["FundTypeModel"];
             /** @description Description for the Fund */
             description: string;
             /** @description Opening balance for the Fund */
@@ -1700,8 +1681,11 @@ export interface components {
              * @description Date the Account is being added
              */
             addDate: string;
-            /** @description Initial amounts for each Fund associated with the Account */
-            initialFundAmounts: components["schemas"]["CreateFundAmountModel"][];
+            /**
+             * Format: double
+             * @description Initial balance for the Account
+             */
+            initialBalance: number;
         };
         /** @description Model representing a request to create a Fund Amount */
         CreateFundAmountModel: {
@@ -1720,6 +1704,8 @@ export interface components {
         CreateFundModel: {
             /** @description Name for the Fund */
             name: string;
+            /** @description Type for the Fund */
+            type: components["schemas"]["FundTypeModel"];
             /** @description Description for the Fund */
             description: string;
             /**
@@ -1727,11 +1713,6 @@ export interface components {
              * @description Accounting Period that the Fund is being added to
              */
             accountingPeriodId: string;
-            /**
-             * Format: date
-             * @description Date the Fund is being added
-             */
-            addDate: string;
         };
         /** @description Model representing a request to create a Transaction Account. */
         CreateTransactionAccountModel: {
@@ -1796,22 +1777,16 @@ export interface components {
              * @description Posted Balance for the Fund Balance
              */
             postedBalance: number;
-            /** @description Account Balances for the Fund Balance */
-            accountBalances: components["schemas"]["AccountAmountModel"][];
             /**
              * Format: double
              * @description Pending Debit Amount for the Fund Balance
              */
             pendingDebitAmount: number;
-            /** @description Pending Debits for the Fund Balance */
-            pendingDebits: components["schemas"]["AccountAmountModel"][];
             /**
              * Format: double
              * @description Pending Credit Amount for the Fund Balance
              */
             pendingCreditAmount: number;
-            /** @description Pending Credits for the Fund Balance */
-            pendingCredits: components["schemas"]["AccountAmountModel"][];
         };
         /** @description Model representing a Fund */
         FundModel: {
@@ -1822,6 +1797,8 @@ export interface components {
             id: string;
             /** @description Name for the Fund */
             name: string;
+            /** @description Type for the Fund */
+            type: components["schemas"]["FundTypeModel"];
             /** @description Description for the Fund */
             description: string;
             /** @description Current Balance for the Fund */
@@ -1831,6 +1808,11 @@ export interface components {
         FundSortOrderModel: FundSortOrderModel | null;
         /** @enum {unknown} */
         FundTransactionSortOrderModel: FundTransactionSortOrderModel | null;
+        /**
+         * @description Enum representing the different Fund types
+         * @enum {unknown}
+         */
+        FundTypeModel: FundTypeModel;
         /** @description Model representing a request to post a Transaction */
         PostTransactionModel: {
             /**
@@ -1985,6 +1967,8 @@ export enum AccountingPeriodAccountSortOrderModel {
 export enum AccountingPeriodFundSortOrderModel {
     Name = "Name",
     NameDescending = "NameDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
     OpeningBalance = "OpeningBalance",
     OpeningBalanceDescending = "OpeningBalanceDescending",
     ClosingBalance = "ClosingBalance",
@@ -2005,10 +1989,6 @@ export enum AccountingPeriodTransactionSortOrderModel {
     DateDescending = "DateDescending",
     Location = "Location",
     LocationDescending = "LocationDescending",
-    DebitAccount = "DebitAccount",
-    DebitAccountDescending = "DebitAccountDescending",
-    CreditAccount = "CreditAccount",
-    CreditAccountDescending = "CreditAccountDescending",
     Amount = "Amount",
     AmountDescending = "AmountDescending"
 }
@@ -2032,11 +2012,17 @@ export enum AccountTransactionSortOrderModel {
 }
 export enum AccountTypeModel {
     Standard = "Standard",
-    Debt = "Debt"
+    CreditCard = "CreditCard",
+    Investment = "Investment",
+    Debt = "Debt",
+    Retirement = "Retirement",
+    Escrow = "Escrow"
 }
 export enum FundSortOrderModel {
     Name = "Name",
     NameDescending = "NameDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
     Description = "Description",
     DescriptionDescending = "DescriptionDescending",
     Balance = "Balance",
@@ -2049,6 +2035,13 @@ export enum FundTransactionSortOrderModel {
     LocationDescending = "LocationDescending",
     ChangeInBalance = "ChangeInBalance",
     ChangeInBalanceDescending = "ChangeInBalanceDescending"
+}
+export enum FundTypeModel {
+    Unassigned = "Unassigned",
+    Monthly = "Monthly",
+    Rolling = "Rolling",
+    Savings = "Savings",
+    Debt = "Debt"
 }
 export enum TransactionAccountTypeModel {
     Debit = "Debit",
