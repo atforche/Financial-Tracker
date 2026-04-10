@@ -14,9 +14,4 @@ public class CreateAccountingPeriodModel
     /// Month for the Accounting Period
     /// </summary>
     public required int Month { get; init; }
-
-    /// <summary>
-    /// Fund goals to create in the new Accounting Period
-    /// </summary>
-    public IEnumerable<CreateAccountingPeriodFundGoalModel> FundGoals { get; init; } = [];
 }

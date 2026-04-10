@@ -19,6 +19,10 @@ public class FundGoalRepository(DatabaseContext databaseContext) : IFundGoalRepo
         databaseContext.FundGoals.Where(fundGoal => fundGoal.Fund.Id == fundId).ToList();
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<FundGoal> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
+        databaseContext.FundGoals.Where(fundGoal => fundGoal.AccountingPeriodId == accountingPeriodId).ToList();
+
+    /// <inheritdoc/>
     public FundGoal? GetByFundAndAccountingPeriod(FundId fundId, AccountingPeriodId accountingPeriodId) =>
         databaseContext.FundGoals.FirstOrDefault(fundGoal =>
             fundGoal.Fund.Id == fundId &&

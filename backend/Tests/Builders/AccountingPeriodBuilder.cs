@@ -20,7 +20,7 @@ public sealed class AccountingPeriodBuilder(
     /// <returns>The newly constructed Accounting Period</returns>
     public AccountingPeriod Build()
     {
-        if (!accountingPeriodService.TryCreate(_year, _month, [], out AccountingPeriod? accountingPeriod, out IEnumerable<Exception> exceptions))
+        if (!accountingPeriodService.TryCreate(_year, _month, out AccountingPeriod? accountingPeriod, out IEnumerable<Exception> exceptions))
         {
             throw new InvalidOperationException("Failed to create Accounting Period.", exceptions.First());
         }

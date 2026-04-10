@@ -13,6 +13,7 @@ public class AccountingPeriodService(
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
     IFundRepository fundRepository,
+    IFundGoalRepository fundGoalRepository,
     ITransactionRepository transactionRepository,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundService fundService)
@@ -23,7 +24,6 @@ public class AccountingPeriodService(
     public bool TryCreate(
         int year,
         int month,
-        IEnumerable<CreateAccountingPeriodFundGoalRequest> fundGoalRequests,
         [NotNullWhen(true)] out AccountingPeriod? accountingPeriod,
         out IEnumerable<Exception> exceptions)
     {
@@ -35,17 +35,9 @@ public class AccountingPeriodService(
         }
         accountingPeriod = new AccountingPeriod(year, month);
         accountingPeriodBalanceService.AddAccountingPeriod(accountingPeriod);
-        foreach (CreateAccountingPeriodFundGoalRequest request in fundGoalRequests)
-        {
-            if (!fundService.TryCreateGoal(
-                    new CreateFundGoalRequest { Fund = request.Fund, AccountingPeriod = accountingPeriod, GoalAmount = request.GoalAmount },
-                    out _, out IEnumerable<Exception> goalExceptions))
-            {
-                exceptions = exceptions.Concat(goalExceptions);
-                return false;
-            }
-        }
-        if (accountingPeriodRepository.GetPreviousAccountingPeriod(accountingPeriod.Id) == null)
+
+        AccountingPeriod? previousAccountingPeriod = accountingPeriodRepository.GetPreviousAccountingPeriod(accountingPeriod.Id);
+        if (previousAccountingPeriod == null)
         {
             // This is the first accounting period added to the system, so automatically add the unassigned fund
             if (!fundService.TryCreate(new CreateFundRequest
@@ -60,6 +52,25 @@ public class AccountingPeriodService(
                 return false;
             }
             fundRepository.Add(unassignedFund);
+        }
+        else
+        {
+            // Automatically carry over all fund goals from the previous accounting period
+            foreach (FundGoal fundGoal in fundGoalRepository.GetAllByAccountingPeriod(previousAccountingPeriod.Id))
+            {
+                var createFundGoalRequest = new CreateFundGoalRequest
+                {
+                    Fund = fundGoal.Fund,
+                    AccountingPeriod = accountingPeriod,
+                    GoalAmount = fundGoal.GoalAmount,
+                };
+                if (!fundService.TryCreateGoal(createFundGoalRequest, out FundGoal? createdFundGoal, out IEnumerable<Exception> createdFundGoalExceptions))
+                {
+                    exceptions = exceptions.Concat(createdFundGoalExceptions);
+                    return false;
+                }
+                fundGoalRepository.Add(createdFundGoal);
+            }
         }
         return true;
     }

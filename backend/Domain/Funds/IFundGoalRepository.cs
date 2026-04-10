@@ -1,3 +1,5 @@
+using Domain.AccountingPeriods;
+
 namespace Domain.Funds;
 
 /// <summary>
@@ -16,9 +18,14 @@ public interface IFundGoalRepository
     IReadOnlyCollection<FundGoal> GetAllByFund(FundId fundId);
 
     /// <summary>
+    /// Gets all Fund Goals associated with the specified Accounting Period.
+    /// </summary>
+    IReadOnlyCollection<FundGoal> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId);
+
+    /// <summary>
     /// Attempts to get the Fund Goal for the specified Fund and Accounting Period.
     /// </summary>
-    FundGoal? GetByFundAndAccountingPeriod(FundId fundId, AccountingPeriods.AccountingPeriodId accountingPeriodId);
+    FundGoal? GetByFundAndAccountingPeriod(FundId fundId, AccountingPeriodId accountingPeriodId);
 
     /// <summary>
     /// Adds the provided Fund Goal to the repository

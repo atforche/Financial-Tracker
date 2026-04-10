@@ -3,7 +3,6 @@ using Data.AccountingPeriods;
 using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.Exceptions;
-using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Models;
@@ -28,7 +27,6 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountingPeriodMapper accountingPeriodMapper,
     AccountingPeriodAccountMapper accountingPeriodAccountMapper,
     AccountingPeriodFundMapper accountingPeriodFundMapper,
-    FundMapper fundMapper,
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
@@ -232,27 +230,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> CreateAsync(CreateAccountingPeriodModel createAccountingPeriodModel)
     {
-        Dictionary<string, string[]> errors = [];
-        List<CreateAccountingPeriodFundGoalRequest> fundGoalRequests = [];
-        foreach (CreateAccountingPeriodFundGoalModel fundGoalModel in createAccountingPeriodModel.FundGoals)
-        {
-            if (!fundMapper.TryToDomain(fundGoalModel.FundId, out Fund? fund))
-            {
-                errors.Add(nameof(fundGoalModel.FundId), [$"Fund with ID {fundGoalModel.FundId} not found."]);
-                continue;
-            }
-            fundGoalRequests.Add(new CreateAccountingPeriodFundGoalRequest { Fund = fund, GoalAmount = fundGoalModel.GoalAmount });
-        }
-        if (errors.Count > 0)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to create Accounting Period.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        if (!accountingPeriodService.TryCreate(createAccountingPeriodModel.Year, createAccountingPeriodModel.Month, fundGoalRequests,
+        if (!accountingPeriodService.TryCreate(createAccountingPeriodModel.Year, createAccountingPeriodModel.Month,
                 out AccountingPeriod? newAccountingPeriod, out IEnumerable<Exception> exceptions))
         {
             var serviceErrors = exceptions.GroupBy(exception => exception switch
