@@ -28,7 +28,10 @@ const CaptionedValue = function ({
       sx={{ maxWidth: defaultMaxWidth, minWidth }}
     >
       <Caption caption={caption} />
-      <Typography variant="subtitle1">{value}</Typography>
+      <div style={{ minWidth: 25 }} />
+      <Typography variant="subtitle1" sx={{ textAlign: "right" }}>
+        {value}
+      </Typography>
     </Stack>
   );
 };

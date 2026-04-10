@@ -1,9 +1,8 @@
 import { Button, Stack, Typography } from "@mui/material";
+import { type FundTransactionSortOrder, FundType } from "@/data/fundTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
-import Caption from "@/framework/view/Caption";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
-import type { FundTransactionSortOrder } from "@/data/fundTypes";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import TransactionListFrame from "@/app/funds/[id]/TransactionListFrame";
@@ -89,6 +88,7 @@ const Page = async function ({
             variant="contained"
             color="primary"
             href={`/funds/${id}/update`}
+            disabled={fundData.type === FundType.Unassigned}
           >
             Edit
           </Button>
@@ -96,6 +96,7 @@ const Page = async function ({
             variant="contained"
             color="error"
             href={`/funds/${id}/delete`}
+            disabled={fundData.type === FundType.Unassigned}
           >
             Delete
           </Button>
@@ -103,26 +104,10 @@ const Page = async function ({
       </Stack>
       <CaptionedFrame caption="Details">
         <CaptionedValue caption="Name" value={fundData.name} />
+        <CaptionedValue caption="Type" value={fundData.type} />
         <CaptionedValue caption="Description" value={fundData.description} />
-      </CaptionedFrame>
-      <CaptionedFrame caption="Balance">
-        <CaptionedValue
-          caption="Total"
-          value={formatCurrency(fundData.currentBalance.postedBalance)}
-        />
-        {fundData.currentBalance.accountBalances.length > 0 ? (
-          <>
-            <br />
-            <Caption caption="Account Balances" />
-            {fundData.currentBalance.accountBalances.map((accountBalance) => (
-              <CaptionedValue
-                key={accountBalance.accountName}
-                caption={accountBalance.accountName}
-                value={formatCurrency(accountBalance.amount)}
-              />
-            ))}
-          </>
-        ) : null}
+        <br />
+        <CaptionedValue caption="Posted Balance" value={formatCurrency(fundData.currentBalance.postedBalance)} />
       </CaptionedFrame>
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
         <Typography variant="h6">Transactions</Typography>

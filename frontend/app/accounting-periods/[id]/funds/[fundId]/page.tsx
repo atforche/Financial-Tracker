@@ -1,12 +1,12 @@
 import { Button, Stack, Typography } from "@mui/material";
+import { type FundTransactionSortOrder, FundType } from "@/data/fundTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
-import FundBalanceFrame from "@/app/accounting-periods/[id]/funds/[fundId]/FundBalanceFrame";
-import type { FundTransactionSortOrder } from "@/data/fundTypes";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import TransactionListFrame from "@/app/funds/[id]/TransactionListFrame";
+import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/data/getApiClient";
 
 /**
@@ -87,6 +87,10 @@ const Page = async function ({
     );
   }
 
+  const changeInBalance = fundData.closingBalance.postedBalance - fundData.openingBalance.postedBalance;
+  const changeInBalanceColor = changeInBalance >= 0 ? "green" : "red";
+  const changeInBalanceFormatted = formatCurrency(Math.abs(changeInBalance));
+
   return (
     <Stack spacing={2}>
       <Stack
@@ -104,7 +108,7 @@ const Page = async function ({
             },
             {
               label: fundData.name,
-              href: `/accounting-periods/${id}/fund/${fundId}`,
+              href: `/accounting-periods/${id}/funds/${fundId}`,
             },
           ]}
         />
@@ -113,6 +117,7 @@ const Page = async function ({
             variant="contained"
             color="primary"
             href={`/funds/${fundId}/update?accountingPeriodId=${id}`}
+            disabled={fundData.type === FundType.Unassigned}
           >
             Edit
           </Button>
@@ -120,6 +125,7 @@ const Page = async function ({
             variant="contained"
             color="error"
             href={`/funds/${fundId}/delete?accountingPeriodId=${id}`}
+            disabled={fundData.type === FundType.Unassigned}
           >
             Delete
           </Button>
@@ -127,9 +133,26 @@ const Page = async function ({
       </Stack>
       <CaptionedFrame caption="Details">
         <CaptionedValue caption="Name" value={fundData.name} />
+        <CaptionedValue caption="Type" value={fundData.type} />
         <CaptionedValue caption="Description" value={fundData.description} />
+        <br />
+        <CaptionedValue
+          caption="Opening Balance"
+          value={formatCurrency(fundData.openingBalance.postedBalance)}
+        />
+        <CaptionedValue
+          caption="Change in Balance"
+          value={
+            <span style={{ color: changeInBalanceColor }}>
+              {changeInBalance >= 0 ? "+" : "-"} {changeInBalanceFormatted}
+            </span>
+          }
+        />
+        <CaptionedValue
+          caption="Closing Balance"
+          value={formatCurrency(fundData.closingBalance.postedBalance)}
+        />
       </CaptionedFrame>
-      <FundBalanceFrame fund={fundData} />
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
         <Typography variant="h6">Transactions</Typography>
         <SearchBar paramName="transactionSearch" />
