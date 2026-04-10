@@ -2,8 +2,8 @@ using Data;
 using Data.AccountingPeriods;
 using Data.Transactions;
 using Domain.AccountingPeriods;
-using Domain.Budgets;
 using Domain.Exceptions;
+using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Models;
@@ -28,7 +28,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountingPeriodMapper accountingPeriodMapper,
     AccountingPeriodAccountMapper accountingPeriodAccountMapper,
     AccountingPeriodFundMapper accountingPeriodFundMapper,
-    BudgetMapper budgetMapper,
+    FundMapper fundMapper,
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
@@ -233,15 +233,15 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     public async Task<IActionResult> CreateAsync(CreateAccountingPeriodModel createAccountingPeriodModel)
     {
         Dictionary<string, string[]> errors = [];
-        List<CreateAccountingPeriodBudgetGoalRequest> budgetGoalRequests = [];
-        foreach (CreateAccountingPeriodBudgetGoalModel budgetGoalModel in createAccountingPeriodModel.BudgetGoals)
+        List<CreateAccountingPeriodFundGoalRequest> fundGoalRequests = [];
+        foreach (CreateAccountingPeriodFundGoalModel fundGoalModel in createAccountingPeriodModel.FundGoals)
         {
-            if (!budgetMapper.TryToDomain(budgetGoalModel.BudgetId, out Budget? budget))
+            if (!fundMapper.TryToDomain(fundGoalModel.FundId, out Fund? fund))
             {
-                errors.Add(nameof(budgetGoalModel.BudgetId), [$"Budget with ID {budgetGoalModel.BudgetId} not found."]);
+                errors.Add(nameof(fundGoalModel.FundId), [$"Fund with ID {fundGoalModel.FundId} not found."]);
                 continue;
             }
-            budgetGoalRequests.Add(new CreateAccountingPeriodBudgetGoalRequest { Budget = budget, GoalAmount = budgetGoalModel.GoalAmount });
+            fundGoalRequests.Add(new CreateAccountingPeriodFundGoalRequest { Fund = fund, GoalAmount = fundGoalModel.GoalAmount });
         }
         if (errors.Count > 0)
         {
@@ -252,7 +252,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!accountingPeriodService.TryCreate(createAccountingPeriodModel.Year, createAccountingPeriodModel.Month, budgetGoalRequests,
+        if (!accountingPeriodService.TryCreate(createAccountingPeriodModel.Year, createAccountingPeriodModel.Month, fundGoalRequests,
                 out AccountingPeriod? newAccountingPeriod, out IEnumerable<Exception> exceptions))
         {
             var serviceErrors = exceptions.GroupBy(exception => exception switch

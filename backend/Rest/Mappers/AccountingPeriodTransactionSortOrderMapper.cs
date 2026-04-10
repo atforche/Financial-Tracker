@@ -22,10 +22,6 @@ internal sealed class AccountingPeriodTransactionSortOrderMapper
             AccountingPeriodTransactionSortOrderModel.DateDescending => AccountingPeriodTransactionSortOrder.DateDescending,
             AccountingPeriodTransactionSortOrderModel.Location => AccountingPeriodTransactionSortOrder.Location,
             AccountingPeriodTransactionSortOrderModel.LocationDescending => AccountingPeriodTransactionSortOrder.LocationDescending,
-            AccountingPeriodTransactionSortOrderModel.DebitAccount => AccountingPeriodTransactionSortOrder.DebitAccount,
-            AccountingPeriodTransactionSortOrderModel.DebitAccountDescending => AccountingPeriodTransactionSortOrder.DebitAccountDescending,
-            AccountingPeriodTransactionSortOrderModel.CreditAccount => AccountingPeriodTransactionSortOrder.CreditAccount,
-            AccountingPeriodTransactionSortOrderModel.CreditAccountDescending => AccountingPeriodTransactionSortOrder.CreditAccountDescending,
             AccountingPeriodTransactionSortOrderModel.Amount => AccountingPeriodTransactionSortOrder.Amount,
             AccountingPeriodTransactionSortOrderModel.AmountDescending => AccountingPeriodTransactionSortOrder.AmountDescending,
             _ => null

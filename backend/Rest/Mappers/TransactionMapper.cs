@@ -25,24 +25,28 @@ public sealed class TransactionMapper(
     /// <summary>
     /// Maps the provided Transaction to a Transaction Model
     /// </summary>
-    public TransactionModel ToModel(Transaction transaction) => new()
+    public TransactionModel ToModel(Transaction transaction)
     {
-        Id = transaction.Id.Value,
-        AccountingPeriodId = transaction.AccountingPeriodId.Value,
-        AccountingPeriodName = accountingPeriodRepository.GetById(transaction.AccountingPeriodId).PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
-        Date = transaction.Date,
-        Location = transaction.Location,
-        Description = transaction.Description,
-        Amount = transaction.Amount,
-        DebitAccount = ToModel(transaction.DebitAccount),
-        CreditAccount = ToModel(transaction.CreditAccount),
-        PreviousFundBalances = fundBalanceService.GetPreviousBalancesForTransaction(transaction)
-            .Select(fundBalanceMapper.ToModel)
-            .ToList(),
-        NewFundBalances = fundBalanceService.GetNewBalanceForTransaction(transaction)
-            .Select(fundBalanceMapper.ToModel)
-            .ToList(),
-    };
+        (TransactionAccountModel? debitAccount, TransactionAccountModel? creditAccount) = BuildAccountModels(transaction);
+        return new TransactionModel
+        {
+            Id = transaction.Id.Value,
+            AccountingPeriodId = transaction.AccountingPeriodId.Value,
+            AccountingPeriodName = accountingPeriodRepository.GetById(transaction.AccountingPeriodId).PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
+            Date = transaction.Date,
+            Location = transaction.Location,
+            Description = transaction.Description,
+            Amount = transaction.Amount,
+            DebitAccount = debitAccount,
+            CreditAccount = creditAccount,
+            PreviousFundBalances = fundBalanceService.GetPreviousBalancesForTransaction(transaction)
+                .Select(fundBalanceMapper.ToModel)
+                .ToList(),
+            NewFundBalances = fundBalanceService.GetNewBalanceForTransaction(transaction)
+                .Select(fundBalanceMapper.ToModel)
+                .ToList(),
+        };
+    }
 
     /// <summary>
     /// Attempts to map the provided ID to a Transaction
@@ -51,35 +55,55 @@ public sealed class TransactionMapper(
         transactionRepository.TryGetById(transactionId, out transaction);
 
     /// <summary>
-    /// Maps the provided Transaction Account to a Transaction Account Model
+    /// Builds the debit and credit TransactionAccountModels by type-switching on the concrete transaction subtype
     /// </summary>
-    private TransactionAccountModel? ToModel(TransactionAccount? transactionAccount)
+    private (TransactionAccountModel? debit, TransactionAccountModel? credit) BuildAccountModels(Transaction transaction) => transaction switch
     {
-        if (transactionAccount == null)
-        {
-            return null;
-        }
-        Account account = accountRepository.GetById(transactionAccount.AccountId);
-        return new TransactionAccountModel
-        {
-            AccountId = transactionAccount.AccountId.Value,
-            AccountName = account.Name,
-            AccountType = AccountTypeMapper.ToModel(account.Type),
-            Type = ToModel(transactionAccount.Type),
-            PostedDate = transactionAccount.PostedDate,
-            FundAmounts = transactionAccount.FundAmounts.Select(fundAmountMapper.ToModel).ToList(),
-            PreviousAccountBalance = accountBalanceMapper.ToModel(accountBalanceService.GetPreviousBalanceForTransaction(transactionAccount)),
-            NewAccountBalance = accountBalanceMapper.ToModel(accountBalanceService.GetNewBalanceForTransaction(transactionAccount)),
-        };
-    }
+        SpendingTransferTransaction spendingTransfer => (
+            BuildAccountModel(transaction, spendingTransfer.AccountId, spendingTransfer.PostedDate, spendingTransfer.FundAmounts, TransactionAccountTypeModel.Debit),
+            BuildAccountModel(transaction, spendingTransfer.CreditAccountId, spendingTransfer.CreditPostedDate, [], TransactionAccountTypeModel.Credit)
+        ),
+        SpendingTransaction spending => (
+            BuildAccountModel(transaction, spending.AccountId, spending.PostedDate, spending.FundAmounts, TransactionAccountTypeModel.Debit),
+            null
+        ),
+        IncomeTransferTransaction incomeTransfer => (
+            BuildAccountModel(transaction, incomeTransfer.DebitAccountId, incomeTransfer.DebitPostedDate, [], TransactionAccountTypeModel.Debit),
+            BuildAccountModel(transaction, incomeTransfer.AccountId, incomeTransfer.PostedDate, [], TransactionAccountTypeModel.Credit)
+        ),
+        IncomeTransaction income => (
+            null,
+            BuildAccountModel(transaction, income.AccountId, income.PostedDate, [], TransactionAccountTypeModel.Credit)
+        ),
+        TransferTransaction transfer => (
+            BuildAccountModel(transaction, transfer.DebitAccountId, transfer.DebitPostedDate, [], TransactionAccountTypeModel.Debit),
+            BuildAccountModel(transaction, transfer.CreditAccountId, transfer.CreditPostedDate, [], TransactionAccountTypeModel.Credit)
+        ),
+        RefundTransaction refund => BuildAccountModels(refund.Transaction),
+        _ => (null, null),
+    };
 
     /// <summary>
-    /// Maps the provided Transaction Account Type to a Transaction Account Type Model
+    /// Builds a single TransactionAccountModel for the given account on the given transaction
     /// </summary>
-    private static TransactionAccountTypeModel ToModel(TransactionAccountType transactionAccountType) => transactionAccountType switch
+    private TransactionAccountModel BuildAccountModel(
+        Transaction transaction,
+        AccountId accountId,
+        DateOnly? postedDate,
+        IEnumerable<FundAmount> fundAmounts,
+        TransactionAccountTypeModel type)
     {
-        TransactionAccountType.Debit => TransactionAccountTypeModel.Debit,
-        TransactionAccountType.Credit => TransactionAccountTypeModel.Credit,
-        _ => throw new InvalidOperationException($"Unrecognized Transaction Account Type: {transactionAccountType}")
-    };
+        Account account = accountRepository.GetById(accountId);
+        return new TransactionAccountModel
+        {
+            AccountId = accountId.Value,
+            AccountName = account.Name,
+            AccountType = AccountTypeMapper.ToModel(account.Type),
+            Type = type,
+            PostedDate = postedDate,
+            FundAmounts = fundAmounts.Select(fundAmountMapper.ToModel).ToList(),
+            PreviousAccountBalance = accountBalanceMapper.ToModel(accountBalanceService.GetPreviousBalanceForTransaction(transaction, accountId)),
+            NewAccountBalance = accountBalanceMapper.ToModel(accountBalanceService.GetNewBalanceForTransaction(transaction, accountId)),
+        };
+    }
 }

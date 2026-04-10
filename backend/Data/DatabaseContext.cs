@@ -1,6 +1,5 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Budgets;
 using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +37,11 @@ public class DatabaseContext : DbContext
     internal DbSet<Fund> Funds { get; set; } = default!;
 
     /// <summary>
+    /// Collection of Fund Goals in the database
+    /// </summary>
+    internal DbSet<FundGoal> FundGoals { get; set; } = default!;
+
+    /// <summary>
     /// Collection of Fund Balance Histories in the database
     /// </summary>
     internal DbSet<FundBalanceHistory> FundBalanceHistories { get; set; } = default!;
@@ -46,21 +50,6 @@ public class DatabaseContext : DbContext
     /// Collection of Transactions in the database
     /// </summary>
     internal DbSet<Transaction> Transactions { get; set; } = default!;
-
-    /// <summary>
-    /// Collection of Budgets in the database
-    /// </summary>
-    internal DbSet<Budget> Budgets { get; set; } = default!;
-
-    /// <summary>
-    /// Collection of Budget Goals in the database
-    /// </summary>
-    internal DbSet<BudgetGoal> BudgetGoals { get; set; } = default!;
-
-    /// <summary>
-    /// Collection of Budget Balance Histories in the database
-    /// </summary>
-    internal DbSet<BudgetBalanceHistory> BudgetBalanceHistories { get; set; } = default!;
 
     /// <summary>
     /// Gets the database path for this Database Context

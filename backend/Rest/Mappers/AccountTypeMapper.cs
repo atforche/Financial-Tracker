@@ -15,7 +15,11 @@ internal sealed class AccountTypeMapper
     public static AccountTypeModel ToModel(AccountType accountType) => accountType switch
     {
         AccountType.Standard => AccountTypeModel.Standard,
+        AccountType.CreditCard => AccountTypeModel.CreditCard,
+        AccountType.Investment => AccountTypeModel.Investment,
         AccountType.Debt => AccountTypeModel.Debt,
+        AccountType.Retirement => AccountTypeModel.Retirement,
+        AccountType.Escrow => AccountTypeModel.Escrow,
         _ => throw new InvalidOperationException($"Unrecognized Account Type: {accountType}")
     };
 
@@ -27,7 +31,11 @@ internal sealed class AccountTypeMapper
         accountType = accountTypeModel switch
         {
             AccountTypeModel.Standard => AccountType.Standard,
+            AccountTypeModel.CreditCard => AccountType.CreditCard,
+            AccountTypeModel.Investment => AccountType.Investment,
             AccountTypeModel.Debt => AccountType.Debt,
+            AccountTypeModel.Retirement => AccountType.Retirement,
+            AccountTypeModel.Escrow => AccountType.Escrow,
             _ => null
         };
         return accountType != null;

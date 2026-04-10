@@ -10,6 +10,7 @@ namespace Domain.Funds;
 /// </summary>
 public class FundService(
     IFundRepository fundRepository,
+    IFundGoalRepository fundGoalRepository,
     ITransactionRepository transactionRepository,
     AccountingPeriodBalanceService accountingPeriodBalanceService)
 {
@@ -41,8 +42,26 @@ public class FundService(
         {
             return false;
         }
-        fund = new Fund(request.Name, request.Description, request.AccountingPeriod.Id, request.AddDate);
+        fund = new Fund(request.Name, request.Type, request.Description, request.AccountingPeriod.Id, request.AddDate);
         accountingPeriodBalanceService.AddFund(fund);
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to create a new Fund Goal in a particular accounting period
+    /// </summary>
+    public bool TryCreateGoal(CreateFundGoalRequest request, [NotNullWhen(true)] out FundGoal? fundGoal, out IEnumerable<Exception> exceptions)
+    {
+        fundGoal = null;
+        exceptions = [];
+
+        if (!ValidateCreateGoal(request, out IEnumerable<Exception> createGoalExceptions))
+        {
+            exceptions = exceptions.Concat(createGoalExceptions);
+            return false;
+        }
+        fundGoal = new FundGoal(request.Fund, request.AccountingPeriod.Id, request.GoalAmount);
+        fundGoalRepository.Add(fundGoal);
         return true;
     }
 
@@ -68,6 +87,22 @@ public class FundService(
         }
         fund.Name = name;
         fund.Description = description;
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to update an existing Fund Goal
+    /// </summary>
+    public static bool TryUpdateGoal(FundGoal fundGoal, decimal goalAmount, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (!ValidateUpdateGoal(goalAmount, out IEnumerable<Exception> updateGoalExceptions))
+        {
+            exceptions = exceptions.Concat(updateGoalExceptions);
+            return false;
+        }
+        fundGoal.GoalAmount = goalAmount;
         return true;
     }
 
@@ -109,6 +144,42 @@ public class FundService(
         if (fundRepository.TryGetByName(name, out Fund? existingFundWithName) && existingFundWithName != existingFund)
         {
             exceptions = exceptions.Append(new InvalidNameException("Fund name must be unique"));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates the provided request to create a fund goal
+    /// </summary>
+    private bool ValidateCreateGoal(CreateFundGoalRequest request, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (!request.AccountingPeriod.IsOpen)
+        {
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
+        }
+        if (fundGoalRepository.GetByFundAndAccountingPeriod(request.Fund.Id, request.AccountingPeriod.Id) != null)
+        {
+            exceptions = exceptions.Append(new InvalidFundException("A fund goal already exists for this fund and accounting period."));
+        }
+        if (request.GoalAmount <= 0)
+        {
+            exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than zero."));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates the provided information to update a fund goal
+    /// </summary>
+    private static bool ValidateUpdateGoal(decimal goalAmount, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (goalAmount <= 0)
+        {
+            exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than zero."));
         }
         return !exceptions.Any();
     }

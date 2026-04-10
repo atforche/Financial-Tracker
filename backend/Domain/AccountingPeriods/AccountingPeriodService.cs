@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.Budgets;
+using Domain.Funds;
 using Domain.Exceptions;
 using Domain.Transactions;
 
@@ -12,7 +12,7 @@ public class AccountingPeriodService(
     IAccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
-    BudgetService budgetService)
+    FundService fundService)
 {
     /// <summary>
     /// Attempts to create a new Accounting Period
@@ -20,7 +20,7 @@ public class AccountingPeriodService(
     public bool TryCreate(
         int year,
         int month,
-        IEnumerable<CreateAccountingPeriodBudgetGoalRequest> budgetGoalRequests,
+        IEnumerable<CreateAccountingPeriodFundGoalRequest> fundGoalRequests,
         [NotNullWhen(true)] out AccountingPeriod? accountingPeriod,
         out IEnumerable<Exception> exceptions)
     {
@@ -32,10 +32,10 @@ public class AccountingPeriodService(
         }
         accountingPeriod = new AccountingPeriod(year, month);
         accountingPeriodBalanceService.AddAccountingPeriod(accountingPeriod);
-        foreach (CreateAccountingPeriodBudgetGoalRequest request in budgetGoalRequests)
+        foreach (CreateAccountingPeriodFundGoalRequest request in fundGoalRequests)
         {
-            if (!budgetService.TryCreateGoal(
-                    new CreateBudgetGoalRequest { Budget = request.Budget, AccountingPeriod = accountingPeriod, GoalAmount = request.GoalAmount },
+            if (!fundService.TryCreateGoal(
+                    new CreateFundGoalRequest { Fund = request.Fund, AccountingPeriod = accountingPeriod, GoalAmount = request.GoalAmount },
                     out _, out IEnumerable<Exception> goalExceptions))
             {
                 exceptions = exceptions.Concat(goalExceptions);
@@ -133,8 +133,7 @@ public class AccountingPeriodService(
             exceptions = exceptions.Append(new UnableToCloseException("This Accounting Period is already closed."));
         }
         if (transactionRepository.GetAllByAccountingPeriod(accountingPeriod.Id).Any(transaction =>
-            (transaction.DebitAccount != null && transaction.DebitAccount.PostedDate == null) ||
-            (transaction.CreditAccount != null && transaction.CreditAccount.PostedDate == null)))
+            transaction.GetAllAffectedAccountIds().Any(accountId => transaction.GetPostedDateForAccount(accountId) == null)))
         {
             exceptions = exceptions.Append(new UnableToCloseException("There are unposted transactions in this Accounting Period."));
         }

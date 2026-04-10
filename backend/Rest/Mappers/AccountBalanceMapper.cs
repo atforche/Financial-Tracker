@@ -6,7 +6,7 @@ namespace Rest.Mappers;
 /// <summary>
 /// Mapper class that handles mapping Account Balances to Account Balance Models
 /// </summary>
-public sealed class AccountBalanceMapper(FundAmountMapper fundAmountMapper)
+public sealed class AccountBalanceMapper
 {
     /// <summary>
     /// Maps the provided Account Balance to an Account Balance Model
@@ -16,10 +16,7 @@ public sealed class AccountBalanceMapper(FundAmountMapper fundAmountMapper)
         AccountId = accountBalance.Account.Id.Value,
         PostedBalance = accountBalance.PostedBalance,
         AvailableToSpend = accountBalance.AvailableToSpend,
-        FundBalances = accountBalance.FundBalances.Select(fundAmountMapper.ToModel).ToList(),
-        PendingDebitAmount = accountBalance.PendingDebits.Sum(fundAmount => fundAmount.Amount),
-        PendingDebits = accountBalance.PendingDebits.Select(fundAmountMapper.ToModel).ToList(),
-        PendingCreditAmount = accountBalance.PendingCredits.Sum(fundAmount => fundAmount.Amount),
-        PendingCredits = accountBalance.PendingCredits.Select(fundAmountMapper.ToModel).ToList(),
+        PendingDebitAmount = accountBalance.PendingDebitAmount,
+        PendingCreditAmount = accountBalance.PendingCreditAmount,
     };
 }

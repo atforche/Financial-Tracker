@@ -1,6 +1,4 @@
 using Domain.AccountingPeriods;
-using Domain.Accounts;
-using Domain.Funds;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -34,28 +32,6 @@ internal sealed class AccountingPeriodBalanceHistoryConfiguration : IEntityTypeC
 
             builder.HasOne(accountBalance => accountBalance.AccountingPeriod).WithMany();
             builder.Navigation(accountBalance => accountBalance.AccountingPeriod).AutoInclude();
-
-            builder.OwnsMany(accountBalance => accountBalance.OpeningFundBalances, fundAmount =>
-            {
-                fundAmount.ToTable("AccountAccountingPeriodBalanceHistoryOpeningFundBalances");
-                fundAmount.Property<int>("Id");
-                fundAmount.HasKey("Id");
-
-                fundAmount.Property(fundBalance => fundBalance.FundId)
-                    .HasConversion(fundId => fundId.Value, value => new FundId(value));
-            });
-            builder.Navigation(accountBalance => accountBalance.OpeningFundBalances).AutoInclude();
-
-            builder.OwnsMany(accountBalance => accountBalance.ClosingFundBalances, fundAmount =>
-            {
-                fundAmount.ToTable("AccountAccountingPeriodBalanceHistoryClosingFundBalances");
-                fundAmount.Property<int>("Id");
-                fundAmount.HasKey("Id");
-
-                fundAmount.Property(fundBalance => fundBalance.FundId)
-                    .HasConversion(fundId => fundId.Value, value => new FundId(value));
-            });
-            builder.Navigation(accountBalance => accountBalance.ClosingFundBalances).AutoInclude();
         });
         builder.Navigation(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.AccountBalances).AutoInclude();
 
@@ -72,28 +48,6 @@ internal sealed class AccountingPeriodBalanceHistoryConfiguration : IEntityTypeC
 
             builder.HasOne(fundBalance => fundBalance.AccountingPeriod).WithMany();
             builder.Navigation(fundBalance => fundBalance.AccountingPeriod).AutoInclude();
-
-            builder.OwnsMany(fundBalance => fundBalance.OpeningAccountBalances, accountBalance =>
-            {
-                accountBalance.ToTable("FundAccountingPeriodBalanceHistoryOpeningAccountBalances");
-                accountBalance.Property<int>("Id");
-                accountBalance.HasKey("Id");
-
-                accountBalance.Property(accountBalance => accountBalance.AccountId)
-                    .HasConversion(accountId => accountId.Value, value => new AccountId(value));
-            });
-            builder.Navigation(fundBalance => fundBalance.OpeningAccountBalances).AutoInclude();
-
-            builder.OwnsMany(fundBalance => fundBalance.ClosingAccountBalances, accountBalance =>
-            {
-                accountBalance.ToTable("FundAccountingPeriodBalanceHistoryClosingAccountBalances");
-                accountBalance.Property<int>("Id");
-                accountBalance.HasKey("Id");
-
-                accountBalance.Property(accountBalance => accountBalance.AccountId)
-                    .HasConversion(accountId => accountId.Value, value => new AccountId(value));
-            });
-            builder.Navigation(fundBalance => fundBalance.ClosingAccountBalances).AutoInclude();
         });
         builder.Navigation(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.FundBalances).AutoInclude();
     }

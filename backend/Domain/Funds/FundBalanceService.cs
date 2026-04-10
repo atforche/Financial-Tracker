@@ -1,3 +1,4 @@
+using Domain.Accounts;
 using Domain.Transactions;
 
 namespace Domain.Funds;
@@ -11,13 +12,13 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
     /// Gets the current balance for the provided Account
     /// </summary>
     public FundBalance GetCurrentBalance(FundId fundId) =>
-        fundBalanceHistoryRepository.GetLatestForFund(fundId)?.ToFundBalance() ?? new FundBalance(fundId, [], [], []);
+        fundBalanceHistoryRepository.GetLatestForFund(fundId)?.ToFundBalance() ?? new FundBalance(fundId, 0, 0, 0);
 
     /// <summary>
     /// Gets the Fund Balances prior to the provided Transaction
     /// </summary>
     public IEnumerable<FundBalance> GetPreviousBalancesForTransaction(Transaction transaction) =>
-        GetAllAffectedFunds(transaction)
+        transaction.GetAllAffectedFundIds(null)
             .Select(fundId =>
             {
                 FundBalanceHistory latestHistory = fundBalanceHistoryRepository.GetAllByTransactionId(transaction.Id)
@@ -32,7 +33,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
     /// Gets the Fund Balances after the provided Transaction
     /// </summary>
     public IEnumerable<FundBalance> GetNewBalanceForTransaction(Transaction transaction) =>
-        GetAllAffectedFunds(transaction)
+        transaction.GetAllAffectedFundIds(null)
             .Select(fundId =>
             {
                 FundBalanceHistory latestHistory = fundBalanceHistoryRepository.GetAllByTransactionId(transaction.Id)
@@ -48,7 +49,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
     /// </summary>
     internal void AddTransaction(Transaction newTransaction)
     {
-        foreach (FundId fund in GetAllAffectedFunds(newTransaction))
+        foreach (FundId fund in newTransaction.GetAllAffectedFundIds(null))
         {
             AddNewBalanceHistory(newTransaction, fund, newTransaction.Date);
         }
@@ -59,7 +60,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
     /// </summary>
     internal void UpdateTransaction(Transaction transaction)
     {
-        foreach (FundId fund in GetAllAffectedFunds(transaction))
+        foreach (FundId fund in transaction.GetAllAffectedFundIds(null))
         {
             UpdateExistingBalanceHistory(transaction, fund);
         }
@@ -68,24 +69,23 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
     /// <summary>
     /// Updates the Account Balances for a newly posted Transaction
     /// </summary>
-    internal void PostTransaction(Transaction transaction, TransactionAccount transactionAccount)
+    internal void PostTransaction(Transaction transaction, AccountId accountId)
     {
-        if (transactionAccount.PostedDate == null)
+        DateOnly? postedDate = transaction.GetPostedDateForAccount(accountId);
+        if (postedDate == null)
         {
             return;
         }
-        IEnumerable<FundId> affectedFunds = transaction.DebitAccount != null && transaction.CreditAccount != null && transaction.DebitAccount.AccountId == transaction.CreditAccount.AccountId
-            ? GetAllAffectedFunds(transaction)
-            : transactionAccount.FundAmounts.Select(fundAmount => fundAmount.FundId);
+        IEnumerable<FundId> affectedFunds = transaction.GetAllAffectedFundIds(accountId);
         foreach (FundId fund in affectedFunds)
         {
-            if (transactionAccount.PostedDate == transaction.Date)
+            if (postedDate == transaction.Date)
             {
                 UpdateExistingBalanceHistory(transaction, fund);
             }
             else
             {
-                AddNewBalanceHistory(transaction, fund, transactionAccount.PostedDate.Value);
+                AddNewBalanceHistory(transaction, fund, postedDate.Value);
             }
         }
     }
@@ -93,24 +93,25 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
     /// <summary>
     /// Updates the Fund Balances for an unposted Transaction
     /// </summary>
-    internal void UnpostTransaction(Transaction transaction, TransactionAccount transactionAccount)
+    internal void UnpostTransaction(Transaction transaction)
     {
-        IEnumerable<FundId> affectedFunds = transaction.DebitAccount != null && transaction.CreditAccount != null && transaction.DebitAccount.AccountId == transaction.CreditAccount.AccountId
-            ? GetAllAffectedFunds(transaction)
-            : transactionAccount.FundAmounts.Select(fundAmount => fundAmount.FundId);
-        foreach (FundId fund in affectedFunds)
+        foreach (AccountId accountId in transaction.GetAllAffectedAccountIds())
         {
-            FundBalanceHistory? oldPostedHistory = fundBalanceHistoryRepository
-                .GetAllByTransactionId(transaction.Id)
-                .SingleOrDefault(bh => bh.FundId == fund && bh.Date != transaction.Date);
-            if (oldPostedHistory == null)
+            IEnumerable<FundId> affectedFunds = transaction.GetAllAffectedFundIds(accountId);
+            foreach (FundId fund in affectedFunds)
             {
-                UpdateExistingBalanceHistory(transaction, fund);
-            }
-            else
-            {
-                DeleteExistingBalanceHistory(oldPostedHistory);
-                fundBalanceHistoryRepository.Delete(oldPostedHistory);
+                FundBalanceHistory? oldPostedHistory = fundBalanceHistoryRepository
+                    .GetAllByTransactionId(transaction.Id)
+                    .SingleOrDefault(bh => bh.FundId == fund && bh.Date != transaction.Date);
+                if (oldPostedHistory == null)
+                {
+                    UpdateExistingBalanceHistory(transaction, fund);
+                }
+                else
+                {
+                    DeleteExistingBalanceHistory(oldPostedHistory);
+                    fundBalanceHistoryRepository.Delete(oldPostedHistory);
+                }
             }
         }
     }
@@ -139,9 +140,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
             transaction.Id,
             date,
             sequence,
-            newBalance.AccountBalances,
-            newBalance.PendingDebits,
-            newBalance.PendingCredits);
+            newBalance);
 
         foreach ((FundBalanceHistory history, Transaction existingTransaction) in fundBalanceHistoryRepository
             .GetAllHistoriesLaterThan(newBalanceHistory.FundId, newBalanceHistory.Date, newBalanceHistory.Sequence))
@@ -196,25 +195,6 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
     }
 
     /// <summary>
-    /// Gets all Fund IDs affected by the provided Transaction
-    /// </summary>
-    private static HashSet<FundId> GetAllAffectedFunds(Transaction transaction)
-    {
-        HashSet<FundId> funds = [];
-        if (transaction.DebitAccount != null)
-        {
-            funds.UnionWith(transaction.DebitAccount.FundAmounts.Select(fundAmount => fundAmount.FundId));
-            funds.UnionWith(transaction.DebitAccount.BudgetAmounts.Select(budgetAmount => budgetAmount.Budget.FundId));
-        }
-        if (transaction.CreditAccount != null)
-        {
-            funds.UnionWith(transaction.CreditAccount.FundAmounts.Select(fundAmount => fundAmount.FundId));
-            funds.UnionWith(transaction.CreditAccount.BudgetAmounts.Select(budgetAmount => budgetAmount.Budget.FundId));
-        }
-        return funds;
-    }
-
-    /// <summary>
     /// Gets the existing Fund Balance for the specified Fund ID as of the provided date and sequence number
     /// </summary>
     private FundBalance GetExistingFundBalanceAsOf(FundId fundId, DateOnly asOfDate, int asOfSequence)
@@ -224,6 +204,6 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
         {
             return existingHistory.ToFundBalance();
         }
-        return new FundBalance(fundId, [], [], []);
+        return new FundBalance(fundId, 0, 0, 0);
     }
 }

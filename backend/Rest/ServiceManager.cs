@@ -17,9 +17,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<AccountingPeriodAccountMapper>();
         _ = serviceCollection.AddScoped<AccountingPeriodFundMapper>();
         _ = serviceCollection.AddScoped<AccountMapper>();
-        _ = serviceCollection.AddScoped<AccountAmountMapper>();
         _ = serviceCollection.AddScoped<AccountBalanceMapper>();
-        _ = serviceCollection.AddScoped<BudgetMapper>();
         _ = serviceCollection.AddScoped<FundMapper>();
         _ = serviceCollection.AddScoped<FundAmountMapper>();
         _ = serviceCollection.AddScoped<FundBalanceMapper>();

@@ -6,9 +6,9 @@ namespace Domain.Funds;
 /// Entity class representing a Fund
 /// </summary>
 /// <remarks>
-/// A Fund represents a grouping of money that can be spread across multiple Accounts. 
-/// The balance of each Account may be made up of money from multiple Funds. The balance of a Fund
-/// over time can be used to track financial changes in an Account-agnostic way.
+/// A Fund represents a collection of money that the user has allocated for a specific purpose. 
+/// Funds can be used to track savings goals, monthly expenses, or any other financial goal the user may have. 
+/// Each Fund has a type that determines how the assignment target is calculated and how it should be used in the application.
 /// </remarks>
 public class Fund : Entity<FundId>
 {
@@ -18,7 +18,12 @@ public class Fund : Entity<FundId>
     public string Name { get; internal set; }
 
     /// <summary>
-    /// Description for this Funds
+    /// Type for this Fund
+    /// </summary>
+    public FundType Type { get; internal set; }
+
+    /// <summary>
+    /// Description for this Fund
     /// </summary>
     public string Description { get; internal set; }
 
@@ -35,10 +40,11 @@ public class Fund : Entity<FundId>
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal Fund(string name, string description, AccountingPeriodId addAccountingPeriodId, DateOnly addDate)
+    internal Fund(string name, FundType type, string description, AccountingPeriodId addAccountingPeriodId, DateOnly addDate)
         : base(new FundId(Guid.NewGuid()))
     {
         Name = name;
+        Type = type;
         Description = description;
         AddAccountingPeriodId = addAccountingPeriodId;
         AddDate = addDate;

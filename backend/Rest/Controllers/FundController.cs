@@ -193,7 +193,11 @@ public sealed class FundController(
         {
             errors.Add(nameof(createFundModel.AccountingPeriodId), [$"Accounting Period with ID {createFundModel.AccountingPeriodId} was not found."]);
         }
-        if (errors.Count > 0 || accountingPeriod == null)
+        if (!FundTypeMapper.TryToDomain(createFundModel.Type, out FundType? fundType))
+        {
+            errors.Add(nameof(createFundModel.Type), [$"Unrecognized Fund Type: {createFundModel.Type}"]);
+        }
+        if (errors.Count > 0 || accountingPeriod == null || fundType == null)
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
@@ -207,6 +211,7 @@ public sealed class FundController(
             new CreateFundRequest
             {
                 Name = createFundModel.Name,
+                Type = fundType.Value,
                 Description = createFundModel.Description,
                 AccountingPeriod = accountingPeriod,
                 AddDate = createFundModel.AddDate,

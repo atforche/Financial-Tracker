@@ -1,17 +1,17 @@
 namespace Models.AccountingPeriods;
 
 /// <summary>
-/// Model representing a request to create a Budget Goal as part of creating an Accounting Period
+/// Model representing a request to create a Fund Goal as part of creating an Accounting Period
 /// </summary>
-public class CreateAccountingPeriodBudgetGoalModel
+public class CreateAccountingPeriodFundGoalModel
 {
     /// <summary>
-    /// ID of the Budget to create a goal for
+    /// ID of the Fund to create a goal for
     /// </summary>
-    public required Guid BudgetId { get; init; }
+    public required Guid FundId { get; init; }
 
     /// <summary>
-    /// Goal amount for this Budget in the new Accounting Period
+    /// Goal amount for this Fund in the new Accounting Period
     /// </summary>
     public required decimal GoalAmount { get; init; }
 }

@@ -1,4 +1,3 @@
-using Domain.Accounts;
 using Domain.Funds;
 
 namespace Domain.AccountingPeriods;
@@ -8,9 +7,6 @@ namespace Domain.AccountingPeriods;
 /// </summary>
 public class FundAccountingPeriodBalanceHistory : Entity<FundAccountingPeriodBalanceHistoryId>
 {
-    private List<AccountAmount> _openingAccountBalances = [];
-    private List<AccountAmount> _closingAccountBalances = [];
-
     /// <summary>
     /// Fund for this Fund Accounting Period Balance History
     /// </summary>
@@ -24,48 +20,22 @@ public class FundAccountingPeriodBalanceHistory : Entity<FundAccountingPeriodBal
     /// <summary>
     /// Opening Balance for this Fund Accounting Period Balance History
     /// </summary>
-    public decimal OpeningBalance { get; private set; }
-
-    /// <summary>
-    /// Opening Account Balances for this Fund Accounting Period Balance History
-    /// </summary>
-    public IReadOnlyCollection<AccountAmount> OpeningAccountBalances
-    {
-        get => _openingAccountBalances;
-        internal set
-        {
-            _openingAccountBalances = value.ToList();
-            OpeningBalance = _openingAccountBalances.Sum(a => a.Amount);
-        }
-    }
+    public decimal OpeningBalance { get; internal set; }
 
     /// <summary>
     /// Closing Balance for this Fund Accounting Period Balance History
     /// </summary>
-    public decimal ClosingBalance { get; private set; }
-
-    /// <summary>
-    /// Closing Account Balances for this Fund Accounting Period Balance History
-    /// </summary>
-    public IReadOnlyCollection<AccountAmount> ClosingAccountBalances
-    {
-        get => _closingAccountBalances;
-        internal set
-        {
-            _closingAccountBalances = value.ToList();
-            ClosingBalance = _closingAccountBalances.Sum(a => a.Amount);
-        }
-    }
+    public decimal ClosingBalance { get; internal set; }
 
     /// <summary>
     /// Gets the opening Fund Balance for this Fund Accounting Period Balance History
     /// </summary>
-    public FundBalance GetOpeningFundBalance() => new(Fund.Id, OpeningAccountBalances, [], []);
+    public FundBalance GetOpeningFundBalance() => new(Fund.Id, OpeningBalance, 0, 0);
 
     /// <summary>
     /// Gets the closing Fund Balance for this Fund Accounting Period Balance History
     /// </summary>
-    public FundBalance GetClosingFundBalance() => new(Fund.Id, ClosingAccountBalances, [], []);
+    public FundBalance GetClosingFundBalance() => new(Fund.Id, ClosingBalance, 0, 0);
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -73,14 +43,14 @@ public class FundAccountingPeriodBalanceHistory : Entity<FundAccountingPeriodBal
     internal FundAccountingPeriodBalanceHistory(
         Fund fund,
         AccountingPeriod accountingPeriod,
-        IEnumerable<AccountAmount> openingAccountBalances,
-        IEnumerable<AccountAmount> closingAccountBalances)
+        decimal openingBalance,
+        decimal closingBalance)
         : base(new FundAccountingPeriodBalanceHistoryId(Guid.NewGuid()))
     {
         Fund = fund;
         AccountingPeriod = accountingPeriod;
-        _openingAccountBalances = openingAccountBalances.ToList();
-        _closingAccountBalances = closingAccountBalances.ToList();
+        OpeningBalance = openingBalance;
+        ClosingBalance = closingBalance;
     }
 
     /// <summary>

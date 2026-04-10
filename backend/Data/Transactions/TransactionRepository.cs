@@ -24,11 +24,20 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     }
 
     /// <inheritdoc/>
-    public bool DoAnyTransactionsExistForAccount(Account account) =>
-        databaseContext.Transactions.Any(transaction =>
-            transaction.Id != account.InitialTransaction &&
-            ((transaction.DebitAccount != null && transaction.DebitAccount.AccountId == account.Id) ||
-            (transaction.CreditAccount != null && transaction.CreditAccount.AccountId == account.Id)));
+    public bool DoAnyTransactionsExistForAccount(Account account)
+    {
+        AccountId accountId = account.Id;
+        return databaseContext.Transactions.OfType<SpendingTransaction>()
+                   .Any(t => t.AccountId == accountId) ||
+               databaseContext.Transactions.OfType<SpendingTransferTransaction>()
+                   .Any(t => t.CreditAccountId == accountId) ||
+               databaseContext.Transactions.OfType<IncomeTransaction>()
+                   .Any(t => t.AccountId == accountId && t.Id != account.InitialTransaction) ||
+               databaseContext.Transactions.OfType<IncomeTransferTransaction>()
+                   .Any(t => t.DebitAccountId == accountId) ||
+               databaseContext.Transactions.OfType<TransferTransaction>()
+                   .Any(t => t.DebitAccountId == accountId || t.CreditAccountId == accountId);
+    }
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
@@ -36,9 +45,8 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
 
     /// <inheritdoc/>
     public bool DoAnyTransactionsExistForFund(FundId fundId) =>
-        databaseContext.Transactions.Any(transaction =>
-            (transaction.DebitAccount != null && transaction.DebitAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId)) ||
-            (transaction.CreditAccount != null && transaction.CreditAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId)));
+        databaseContext.Transactions.OfType<SpendingTransaction>()
+            .Any(t => t.FundAmounts.Any(f => f.FundId == fundId));
 
     /// <inheritdoc/>
     public Transaction GetById(TransactionId id) => databaseContext.Transactions.Single(transaction => transaction.Id == id);
@@ -58,8 +66,9 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     {
         string query = $"""
                         select Transactions.* from Transactions
-                        left join Accounts as DebitAccount on Transactions.DebitAccount_AccountId = DebitAccount.Id
-                        left join Accounts as CreditAccount on Transactions.CreditAccount_AccountId = CreditAccount.Id
+                        left join Accounts as Account1 on Transactions.AccountId = Account1.Id
+                        left join Accounts as Account2 on Transactions.CreditAccountId = Account2.Id
+                        left join Accounts as Account3 on Transactions.DebitAccountId = Account3.Id
                         where Transactions.AccountingPeriodId = '{accountingPeriodId.Value.ToString().ToUpperInvariant()}'
                         """;
         if (request.Search is not null and not "")
@@ -68,63 +77,40 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
                         and (Transactions.Date like '%{request.Search}%' or
                             Transactions.Description like '%{request.Search}%' or 
                             Transactions.Location like '%{request.Search}%' or
-                            DebitAccount.Name like '%{request.Search}%' or 
-                            CreditAccount.Name like '%{request.Search}%' or 
+                            Account1.Name like '%{request.Search}%' or 
+                            Account2.Name like '%{request.Search}%' or
+                            Account3.Name like '%{request.Search}%' or
                             Transactions.Amount like '%{request.Search}%')
                         """;
         }
 
-        var transactionsQuery = databaseContext.Transactions.FromSqlRaw(query)
-            .LeftJoin(databaseContext.Accounts,
-                transaction => transaction.DebitAccount != null ? transaction.DebitAccount.AccountId : null,
-                account => account.Id,
-                (transaction, debitAccount) => new { Transaction = transaction, DebitAccountName = debitAccount != null ? debitAccount.Name : null })
-            .LeftJoin(databaseContext.Accounts,
-                transaction => transaction.Transaction.CreditAccount != null ? transaction.Transaction.CreditAccount.AccountId : null,
-                account => account.Id,
-                (transaction, creditAccount) => new { transaction.Transaction, transaction.DebitAccountName, CreditAccountName = creditAccount != null ? creditAccount.Name : null });
+        IQueryable<Transaction> transactionsQuery = databaseContext.Transactions.FromSqlRaw(query);
         if (request.Sort is null or AccountingPeriodTransactionSortOrder.DateDescending)
         {
-            transactionsQuery = transactionsQuery.OrderByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
+            transactionsQuery = transactionsQuery.OrderByDescending(t => t.Date).ThenByDescending(t => t.Sequence);
         }
         else if (request.Sort == AccountingPeriodTransactionSortOrder.Date)
         {
-            transactionsQuery = transactionsQuery.OrderBy(t => t.Transaction.Date).ThenBy(t => t.Transaction.Sequence);
+            transactionsQuery = transactionsQuery.OrderBy(t => t.Date).ThenBy(t => t.Sequence);
         }
         else if (request.Sort == AccountingPeriodTransactionSortOrder.Location)
         {
-            transactionsQuery = transactionsQuery.OrderBy(t => t.Transaction.Location).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
+            transactionsQuery = transactionsQuery.OrderBy(t => t.Location).ThenByDescending(t => t.Date).ThenByDescending(t => t.Sequence);
         }
         else if (request.Sort == AccountingPeriodTransactionSortOrder.LocationDescending)
         {
-            transactionsQuery = transactionsQuery.OrderByDescending(t => t.Transaction.Location).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
-        }
-        else if (request.Sort == AccountingPeriodTransactionSortOrder.DebitAccount)
-        {
-            transactionsQuery = transactionsQuery.OrderBy(t => t.DebitAccountName).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
-        }
-        else if (request.Sort == AccountingPeriodTransactionSortOrder.DebitAccountDescending)
-        {
-            transactionsQuery = transactionsQuery.OrderByDescending(t => t.DebitAccountName).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
-        }
-        else if (request.Sort == AccountingPeriodTransactionSortOrder.CreditAccount)
-        {
-            transactionsQuery = transactionsQuery.OrderBy(t => t.CreditAccountName).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
-        }
-        else if (request.Sort == AccountingPeriodTransactionSortOrder.CreditAccountDescending)
-        {
-            transactionsQuery = transactionsQuery.OrderByDescending(t => t.CreditAccountName).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
+            transactionsQuery = transactionsQuery.OrderByDescending(t => t.Location).ThenByDescending(t => t.Date).ThenByDescending(t => t.Sequence);
         }
         else if (request.Sort == AccountingPeriodTransactionSortOrder.Amount)
         {
-            transactionsQuery = transactionsQuery.OrderBy(t => t.Transaction.Amount).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
+            transactionsQuery = transactionsQuery.OrderBy(t => t.Amount).ThenByDescending(t => t.Date).ThenByDescending(t => t.Sequence);
         }
         else if (request.Sort == AccountingPeriodTransactionSortOrder.AmountDescending)
         {
-            transactionsQuery = transactionsQuery.OrderByDescending(t => t.Transaction.Amount).ThenByDescending(t => t.Transaction.Date).ThenByDescending(t => t.Transaction.Sequence);
+            transactionsQuery = transactionsQuery.OrderByDescending(t => t.Amount).ThenByDescending(t => t.Date).ThenByDescending(t => t.Sequence);
         }
 
-        var transactions = transactionsQuery.ToList().Select(transaction => transaction.Transaction).ToList();
+        var transactions = transactionsQuery.ToList();
         return new PaginatedCollection<Transaction>
         {
             Items = GetPagedTransactions(transactions, request.Limit, request.Offset),
@@ -139,7 +125,9 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     {
         string query = $"""
                         select Transactions.* from Transactions
-                        where (Transactions.DebitAccount_AccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or Transactions.CreditAccount_AccountId = '{account.Id.Value.ToString().ToUpperInvariant()}') 
+                        where (Transactions.AccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or
+                               Transactions.CreditAccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or
+                               Transactions.DebitAccountId = '{account.Id.Value.ToString().ToUpperInvariant()}')
                         """;
         if (request.AccountingPeriodId != null)
         {
@@ -187,15 +175,68 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
 
         decimal GetChangeInBalance(Transaction transaction)
         {
-            if (transaction.DebitAccount?.AccountId == account.Id && transaction.CreditAccount?.AccountId == account.Id)
+            bool isDebt = account.Type == AccountType.Debt;
+            AccountId accountId = account.Id;
+            if (transaction is SpendingTransferTransaction stt)
             {
-                return 0;
+                if (stt.AccountId == accountId && stt.CreditAccountId == accountId)
+                {
+                    return 0;
+                }
+                if (stt.AccountId == accountId)
+                {
+                    return isDebt ? transaction.Amount : -transaction.Amount;
+                }
+                if (stt.CreditAccountId == accountId)
+                {
+                    return isDebt ? -transaction.Amount : transaction.Amount;
+                }
             }
-            if (transaction.DebitAccount?.AccountId == account.Id)
+            else if (transaction is SpendingTransaction st)
             {
-                return account.Type == AccountType.Debt ? transaction.Amount : -transaction.Amount;
+                if (st.AccountId == accountId)
+                {
+                    return isDebt ? transaction.Amount : -transaction.Amount;
+                }
             }
-            return account.Type == AccountType.Debt ? -transaction.Amount : transaction.Amount;
+            else if (transaction is IncomeTransferTransaction itt)
+            {
+                if (itt.AccountId == accountId && itt.DebitAccountId == accountId)
+                {
+                    return 0;
+                }
+                if (itt.AccountId == accountId)
+                {
+                    return isDebt ? -transaction.Amount : transaction.Amount;
+                }
+                if (itt.DebitAccountId == accountId)
+                {
+                    return isDebt ? transaction.Amount : -transaction.Amount;
+                }
+            }
+            else if (transaction is IncomeTransaction it)
+            {
+                if (it.AccountId == accountId)
+                {
+                    return isDebt ? -transaction.Amount : transaction.Amount;
+                }
+            }
+            else if (transaction is TransferTransaction trt)
+            {
+                if (trt.DebitAccountId == accountId && trt.CreditAccountId == accountId)
+                {
+                    return 0;
+                }
+                if (trt.DebitAccountId == accountId)
+                {
+                    return isDebt ? transaction.Amount : -transaction.Amount;
+                }
+                if (trt.CreditAccountId == accountId)
+                {
+                    return isDebt ? -transaction.Amount : transaction.Amount;
+                }
+            }
+            return 0;
         }
     }
 
@@ -206,8 +247,10 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     {
         string query = $"""
                         select Transactions.* from Transactions
-                        where (exists (select 1 from TransactionDebitAccountFundAmounts where TransactionDebitAccountFundAmounts.TransactionAccountTransactionId = Transactions.Id and TransactionDebitAccountFundAmounts.FundId = '{fundId.Value.ToString().ToUpperInvariant()}')
-                            or exists (select 1 from TransactionCreditAccountFundAmounts where TransactionCreditAccountFundAmounts.TransactionAccountTransactionId = Transactions.Id and TransactionCreditAccountFundAmounts.FundId = '{fundId.Value.ToString().ToUpperInvariant()}'))
+                        where exists (
+                            select 1 from SpendingTransactionFundAmounts
+                            where SpendingTransactionFundAmounts.SpendingTransactionId = Transactions.Id
+                            and SpendingTransactionFundAmounts.FundId = '{fundId.Value.ToString().ToUpperInvariant()}')
                         """;
         if (request.AccountingPeriodId != null)
         {
@@ -255,9 +298,11 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
 
         decimal GetChangeInBalance(Transaction transaction)
         {
-            decimal debitFundAmount = transaction.DebitAccount?.FundAmounts.FirstOrDefault(fundAmount => fundAmount.FundId == fundId)?.Amount ?? 0;
-            decimal creditFundAmount = transaction.CreditAccount?.FundAmounts.FirstOrDefault(fundAmount => fundAmount.FundId == fundId)?.Amount ?? 0;
-            return creditFundAmount - debitFundAmount;
+            if (transaction is SpendingTransaction st)
+            {
+                return -(st.FundAmounts.FirstOrDefault(f => f.FundId == fundId)?.Amount ?? 0);
+            }
+            return 0;
         }
     }
 

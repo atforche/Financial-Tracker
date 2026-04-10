@@ -1,5 +1,3 @@
-using Models.Funds;
-
 namespace Models.Accounts;
 
 /// <summary>
@@ -23,27 +21,12 @@ public class AccountBalanceModel
     public required decimal? AvailableToSpend { get; init; }
 
     /// <summary>
-    /// Fund Balances for the Account Balance
-    /// </summary>
-    public required IReadOnlyCollection<FundAmountModel> FundBalances { get; init; } = [];
-
-    /// <summary>
     /// Pending Debit Amount for the Account Balance
     /// </summary>
     public required decimal PendingDebitAmount { get; init; }
 
     /// <summary>
-    /// Pending Debits for the Account Balance
-    /// </summary>
-    public required IReadOnlyCollection<FundAmountModel> PendingDebits { get; init; } = [];
-
-    /// <summary>
     /// Pending Credit Amount for the Account Balance
     /// </summary>
     public required decimal PendingCreditAmount { get; init; }
-
-    /// <summary>
-    /// Pending Credits for the Account Balance
-    /// </summary>
-    public required IReadOnlyCollection<FundAmountModel> PendingCredits { get; init; } = [];
 }

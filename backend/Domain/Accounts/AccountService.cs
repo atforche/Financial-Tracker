@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Exceptions;
 using Domain.Transactions;
+using Domain.Transactions.CreateRequests;
 
 namespace Domain.Accounts;
 
@@ -46,28 +47,16 @@ public class AccountService(
         account = new Account(request.Name, request.Type, request.AccountingPeriod.Id, request.AddDate);
         accountRepository.Add(account);
         accountingPeriodBalanceService.AddAccount(account);
-        if (request.InitialFundAmounts.Any())
+        if (request.InitialBalance > 0)
         {
-            if (!transactionService.TryCreate(new CreateTransactionRequest
+            if (!transactionService.TryCreate(new CreateIncomeTransactionRequest
             {
-                AccountingPeriod = request.AccountingPeriod,
-                Date = request.AddDate,
+                AccountingPeriodId = request.AccountingPeriod.Id,
+                TransactionDate = request.AddDate,
                 Location = "Initial",
                 Description = "Initial Balance",
-                DebitAccount = request.Type == AccountType.Debt
-                    ? new CreateTransactionAccountRequest
-                    {
-                        Account = account,
-                        FundAmounts = request.InitialFundAmounts
-                    }
-                    : null,
-                CreditAccount = request.Type == AccountType.Standard
-                    ? new CreateTransactionAccountRequest
-                    {
-                        Account = account,
-                        FundAmounts = request.InitialFundAmounts
-                    }
-                    : null,
+                Account = account,
+                Amount = request.InitialBalance,
                 IsInitialTransactionForAccount = true
             }, out initialTransaction, out IEnumerable<Exception> transactionExceptions))
             {

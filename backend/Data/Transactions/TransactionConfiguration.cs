@@ -1,6 +1,4 @@
 using Domain.AccountingPeriods;
-using Domain.Accounts;
-using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -21,74 +19,12 @@ internal sealed class TransactionConfiguration : IEntityTypeConfiguration<Transa
         builder.Property(transaction => transaction.AccountingPeriodId)
             .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
 
-        builder.OwnsOne(transaction => transaction.DebitAccount, builder =>
-        {
-            builder.WithOwner(transactionAccount => transactionAccount.Transaction);
-            builder.Navigation(transactionAccount => transactionAccount.Transaction).AutoInclude();
-
-            builder.HasOne<Account>().WithMany().HasForeignKey(transactionAccount => transactionAccount.AccountId);
-
-            builder.OwnsMany(transactionAccount => transactionAccount.FundAmounts, fundAmount =>
-            {
-                fundAmount.ToTable("TransactionDebitAccountFundAmounts");
-                fundAmount.Property<int>("Id");
-                fundAmount.HasKey("Id");
-
-                fundAmount.Property(fundAmount => fundAmount.FundId)
-                    .HasConversion(fundId => fundId.Value, value => new FundId(value));
-            });
-            builder.Navigation(transactionAccount => transactionAccount.FundAmounts).AutoInclude();
-
-            builder.OwnsMany(transactionAccount => transactionAccount.BudgetAmounts, budgetAmount =>
-            {
-                budgetAmount.ToTable("TransactionDebitAccountBudgetAmounts");
-                budgetAmount.Property<int>("Id");
-                budgetAmount.HasKey("Id");
-
-                budgetAmount.HasOne(ba => ba.Budget).WithMany()
-                    .HasForeignKey("BudgetId");
-                budgetAmount.Property<Guid>("BudgetId");
-                budgetAmount.Navigation(ba => ba.Budget).AutoInclude();
-            });
-            builder.Navigation(transactionAccount => transactionAccount.BudgetAmounts).AutoInclude();
-        });
-        builder.Navigation(transaction => transaction.DebitAccount).AutoInclude();
-
-        builder.OwnsOne(transaction => transaction.CreditAccount, builder =>
-        {
-            builder.WithOwner(transactionAccount => transactionAccount.Transaction);
-            builder.Navigation(transactionAccount => transactionAccount.Transaction).AutoInclude();
-
-            builder.HasOne<Account>().WithMany().HasForeignKey(transactionAccount => transactionAccount.AccountId);
-
-            builder.OwnsMany(transactionAccount => transactionAccount.FundAmounts, fundAmount =>
-            {
-                fundAmount.ToTable("TransactionCreditAccountFundAmounts");
-                fundAmount.Property<int>("Id");
-                fundAmount.HasKey("Id");
-
-                fundAmount.Property(fundAmount => fundAmount.FundId)
-                    .HasConversion(fundId => fundId.Value, value => new FundId(value));
-            });
-            builder.Navigation(transactionAccount => transactionAccount.FundAmounts).AutoInclude();
-
-            builder.OwnsMany(transactionAccount => transactionAccount.BudgetAmounts, budgetAmount =>
-            {
-                budgetAmount.ToTable("TransactionCreditAccountBudgetAmounts");
-                budgetAmount.Property<int>("Id");
-                budgetAmount.HasKey("Id");
-
-                budgetAmount.HasOne(ba => ba.Budget).WithMany()
-                    .HasForeignKey("BudgetId");
-                budgetAmount.Property<Guid>("BudgetId");
-                budgetAmount.Navigation(ba => ba.Budget).AutoInclude();
-            });
-            builder.Navigation(transactionAccount => transactionAccount.BudgetAmounts).AutoInclude();
-        });
-        builder.Navigation(transaction => transaction.CreditAccount).AutoInclude();
-
-        builder.Property(transaction => transaction.GeneratedByAccountId)
-            .HasConversion(accountingPeriodId => accountingPeriodId == null ? (Guid?)null : accountingPeriodId.Value,
-                value => value == null ? null : new AccountId(value.Value));
+        builder.HasDiscriminator(transaction => transaction.Type)
+            .HasValue<SpendingTransaction>(TransactionType.Spending)
+            .HasValue<SpendingTransferTransaction>(TransactionType.SpendingTransfer)
+            .HasValue<IncomeTransaction>(TransactionType.Income)
+            .HasValue<IncomeTransferTransaction>(TransactionType.IncomeTransfer)
+            .HasValue<TransferTransaction>(TransactionType.Transfer)
+            .HasValue<RefundTransaction>(TransactionType.Refund);
     }
 }

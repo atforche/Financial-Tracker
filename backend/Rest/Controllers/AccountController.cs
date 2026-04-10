@@ -5,12 +5,10 @@ using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Exceptions;
-using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Accounts;
-using Models.Funds;
 using Models.Transactions;
 using Rest.Mappers;
 
@@ -30,7 +28,6 @@ public sealed class AccountController(
     AccountingPeriodMapper accountingPeriodMapper,
     AccountingPeriodAccountMapper accountingPeriodAccountMapper,
     AccountMapper accountMapper,
-    FundAmountMapper fundAmountMapper,
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
@@ -198,18 +195,6 @@ public sealed class AccountController(
         {
             errors.Add(nameof(createAccountModel.Type), [$"Unrecognized Account Type: {createAccountModel.Type}"]);
         }
-        List<FundAmount> fundAmounts = [];
-        foreach ((int index, CreateFundAmountModel fundAmountModel) in createAccountModel.InitialFundAmounts.Index())
-        {
-            if (!fundAmountMapper.TryToDomain(fundAmountModel, out FundAmount? fundAmount))
-            {
-                errors.Add($"{nameof(createAccountModel.InitialFundAmounts)}[{index}]", [$"Fund with ID {fundAmountModel.FundId} was not found."]);
-            }
-            else
-            {
-                fundAmounts.Add(fundAmount);
-            }
-        }
         if (errors.Count > 0 || accountingPeriod == null || accountType == null)
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
@@ -227,7 +212,7 @@ public sealed class AccountController(
                 Type = accountType.Value,
                 AccountingPeriod = accountingPeriod,
                 AddDate = createAccountModel.AddDate,
-                InitialFundAmounts = fundAmounts
+                InitialBalance = createAccountModel.InitialBalance
             },
             out Account? newAccount,
             out Transaction? initialTransaction,
