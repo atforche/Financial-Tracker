@@ -2,9 +2,7 @@ import { Checkbox, FormControlLabel, Stack } from "@mui/material";
 import {
   type CreateTransactionFormSearchParams,
   getDefaultCreditAccount,
-  getDefaultCreditFundAmount,
   getDefaultDebitAccount,
-  getDefaultDebitFundAmount,
 } from "@/app/transactions/create/createTransactionFormSearchParams";
 import type { FundAmount, FundIdentifier } from "@/data/fundTypes";
 import { type JSX, useState } from "react";
@@ -52,9 +50,6 @@ const CreateSingleTransactionAccountFrame = function ({
   const requiredAccount = isDebit
     ? getDefaultDebitAccount(accounts, searchParams)
     : getDefaultCreditAccount(accounts, searchParams);
-  const requiredFund = isDebit
-    ? getDefaultDebitFundAmount(funds, searchParams).at(0)
-    : getDefaultCreditFundAmount(funds, searchParams).at(0);
 
   return (
     <Stack spacing={2} sx={{ maxWidth: 500, minWidth: 500 }}>
@@ -77,9 +72,6 @@ const CreateSingleTransactionAccountFrame = function ({
         setValue={(value): void => {
           setFundAmounts(value);
         }}
-        lockedFundIds={
-          typeof requiredFund !== "undefined" ? [requiredFund.fundId] : []
-        }
       />
       {setPostedDate !== null && (
         <Stack direction="row">

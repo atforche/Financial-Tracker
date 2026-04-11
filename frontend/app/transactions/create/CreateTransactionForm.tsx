@@ -8,9 +8,7 @@ import {
   type CreateTransactionFormSearchParams,
   getDefaultAccountingPeriod,
   getDefaultCreditAccount,
-  getDefaultCreditFundAmount,
   getDefaultDebitAccount,
-  getDefaultDebitFundAmount,
   getInitialToggleState,
 } from "@/app/transactions/create/createTransactionFormSearchParams";
 import type { FundAmount, FundIdentifier } from "@/data/fundTypes";
@@ -54,16 +52,12 @@ const CreateTransactionForm = function ({
   const [debitAccount, setDebitAccount] = useState<AccountIdentifier | null>(
     getDefaultDebitAccount(accounts, searchParams),
   );
-  const [debitFundAmounts, setDebitFundAmounts] = useState<FundAmount[]>(
-    getDefaultDebitFundAmount(funds, searchParams),
-  );
+  const [debitFundAmounts, setDebitFundAmounts] = useState<FundAmount[]>([]);
   const [debitPostedDate, setDebitPostedDate] = useState<Dayjs | null>(null);
   const [creditAccount, setCreditAccount] = useState<AccountIdentifier | null>(
     getDefaultCreditAccount(accounts, searchParams),
   );
-  const [creditFundAmounts, setCreditFundAmounts] = useState<FundAmount[]>(
-    getDefaultCreditFundAmount(funds, searchParams),
-  );
+  const [creditFundAmounts, setCreditFundAmounts] = useState<FundAmount[]>([]);
   const [creditPostedDate, setCreditPostedDate] = useState<Dayjs | null>(null);
   const [toggleState, setToggleState] = useState<ToggleState>(
     getInitialToggleState(searchParams),

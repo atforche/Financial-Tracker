@@ -16,7 +16,6 @@ interface FundAmountCollectionEntryFrameProps {
   readonly funds: FundIdentifier[];
   readonly value: FundAmount[];
   readonly setValue: (newValue: FundAmount[]) => void;
-  readonly lockedFundIds?: string[] | null;
 }
 
 /**
@@ -29,7 +28,6 @@ const FundAmountCollectionEntryFrame = function ({
   funds,
   value,
   setValue,
-  lockedFundIds = null,
 }: FundAmountCollectionEntryFrameProps): JSX.Element {
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
   return (
@@ -47,11 +45,15 @@ const FundAmountCollectionEntryFrame = function ({
               <FundAmountEntryFrame
                 funds={funds}
                 value={fundAmount}
-                setValue={(newValue): void => {
-                  const newFundAmounts = [...value];
-                  newFundAmounts[index] = newValue;
-                  setValue(newFundAmounts);
-                }}
+                setValue={
+                  fundAmount.fundName === "Unassigned"
+                  ? null
+                  : (newValue): void => {
+                      const newFundAmounts = [...value];
+                      newFundAmounts[index] = newValue;
+                      setValue(newFundAmounts);
+                    }
+                }
                 filter={(fund) =>
                   value[index]?.fundId === fund.id ||
                   !value.some(
@@ -60,9 +62,8 @@ const FundAmountCollectionEntryFrame = function ({
                   )
                 }
                 autoFocus={focusIndex === index}
-                lockFund={lockedFundIds?.includes(fundAmount.fundId) ?? false}
               />
-              {!(lockedFundIds?.includes(fundAmount.fundId) ?? false) && (
+              {!(fundAmount.fundName === "Unassigned") && (
                 <ColumnButton
                   label="Delete"
                   icon={<Delete />}

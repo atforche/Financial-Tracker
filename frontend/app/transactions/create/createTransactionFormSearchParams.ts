@@ -1,4 +1,3 @@
-import type { FundAmount, FundIdentifier } from "@/data/fundTypes";
 import type { AccountIdentifier } from "@/data/accountTypes";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import ToggleState from "@/app/transactions/create/toggleState";
@@ -48,30 +47,6 @@ const getDefaultDebitAccount = function (
 };
 
 /**
- * Gets the default debit fund amount for this form.
- */
-const getDefaultDebitFundAmount = function (
-  funds: FundIdentifier[],
-  searchParams: CreateTransactionFormSearchParams,
-): FundAmount[] {
-  if (typeof searchParams.debitFundId !== "undefined") {
-    const defaultFund = funds.find(
-      (fund) => fund.id === searchParams.debitFundId,
-    );
-    if (typeof defaultFund !== "undefined") {
-      return [
-        {
-          fundId: defaultFund.id,
-          fundName: defaultFund.name,
-          amount: 0,
-        },
-      ];
-    }
-  }
-  return [];
-};
-
-/**
  * Gets the default credit account for this form.
  */
 const getDefaultCreditAccount = function (
@@ -85,30 +60,6 @@ const getDefaultCreditAccount = function (
     );
   }
   return null;
-};
-
-/**
- * Gets the default credit fund amount for this form.
- */
-const getDefaultCreditFundAmount = function (
-  funds: FundIdentifier[],
-  searchParams: CreateTransactionFormSearchParams,
-): FundAmount[] {
-  if (typeof searchParams.creditFundId !== "undefined") {
-    const defaultFund = funds.find(
-      (fund) => fund.id === searchParams.creditFundId,
-    );
-    if (typeof defaultFund !== "undefined") {
-      return [
-        {
-          fundId: defaultFund.id,
-          fundName: defaultFund.name,
-          amount: 0,
-        },
-      ];
-    }
-  }
-  return [];
 };
 
 /**
@@ -135,8 +86,6 @@ export {
   type CreateTransactionFormSearchParams,
   getDefaultAccountingPeriod,
   getDefaultDebitAccount,
-  getDefaultDebitFundAmount,
   getDefaultCreditAccount,
-  getDefaultCreditFundAmount,
   getInitialToggleState,
 };

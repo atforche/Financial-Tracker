@@ -1686,6 +1686,8 @@ export interface components {
              * @description Initial balance for the Account
              */
             initialBalance: number;
+            /** @description Initial Fund Assignments for the Account */
+            initialFundAssignments: components["schemas"]["CreateFundAmountModel"][];
         };
         /** @description Model representing a request to create a Fund Amount */
         CreateFundAmountModel: {

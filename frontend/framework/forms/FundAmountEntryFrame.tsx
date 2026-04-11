@@ -10,10 +10,9 @@ import { Stack } from "@mui/material";
 interface FundAmountEntryFrameProps {
   readonly funds: FundIdentifier[];
   readonly value: FundAmount;
-  readonly setValue: (newValue: FundAmount) => void;
+  readonly setValue: ((newValue: FundAmount) => void) | null;
   readonly filter?: ((fund: FundIdentifier) => boolean) | null;
   readonly autoFocus?: boolean;
-  readonly lockFund?: boolean;
 }
 
 /**
@@ -25,7 +24,6 @@ const FundAmountEntryFrame = function ({
   setValue,
   filter = null,
   autoFocus = false,
-  lockFund = false,
 }: FundAmountEntryFrameProps): JSX.Element {
   return (
     <Stack
@@ -43,7 +41,7 @@ const FundAmountEntryFrame = function ({
             : null
         }
         setValue={
-          lockFund
+          setValue === null
             ? null
             : (newValue): void => {
                 setValue({
@@ -59,13 +57,17 @@ const FundAmountEntryFrame = function ({
       <CurrencyEntryField
         label="Amount"
         value={value.amount}
-        setValue={(newAmount): void => {
-          setValue({
-            fundId: value.fundId,
-            fundName: value.fundName,
-            amount: newAmount,
-          });
-        }}
+        setValue={
+          setValue === null
+            ? null
+            : (newAmount): void => {
+                setValue({
+                  fundId: value.fundId,
+                  fundName: value.fundName,
+                  amount: newAmount,
+                });
+              }
+        }
       />
     </Stack>
   );

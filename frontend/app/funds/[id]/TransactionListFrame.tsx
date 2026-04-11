@@ -1,6 +1,5 @@
 "use client";
 
-import { AddCircleOutline, RemoveCircleOutline } from "@mui/icons-material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
@@ -8,7 +7,6 @@ import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import { FundTransactionSortOrder } from "@/data/fundTypes";
-import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import type { Transaction } from "@/data/transactionTypes";
@@ -166,50 +164,7 @@ const TransactionListFrame = function ({
     },
     {
       name: "actions",
-      headerContent: (
-        <>
-          <IconButton
-            label="Add Debit"
-            icon={<RemoveCircleOutline />}
-            onClick={() => {
-              const params = new URLSearchParams();
-              params.set("debitFundId", fund.id);
-              if (
-                typeof accountingPeriod !== "undefined" &&
-                accountingPeriod !== null
-              ) {
-                params.set("accountingPeriodId", accountingPeriod.id);
-              }
-              router.push(`/transactions/create?${params.toString()}`);
-            }}
-            disabled={
-              typeof accountingPeriod !== "undefined" &&
-              accountingPeriod !== null &&
-              !accountingPeriod.isOpen
-            }
-          />
-          <IconButton
-            label="Add Credit"
-            icon={<AddCircleOutline />}
-            onClick={() => {
-              const params = new URLSearchParams();
-              params.set("creditFundId", fund.id);
-              if (
-                typeof accountingPeriod !== "undefined" &&
-                accountingPeriod !== null
-              ) {
-                params.set("accountingPeriodId", accountingPeriod.id);
-              }
-              router.push(`/transactions/create?${params.toString()}`);
-            }}
-            disabled={
-              typeof accountingPeriod !== "undefined" &&
-              accountingPeriod !== null &&
-              !accountingPeriod.isOpen
-            }
-          />
-        </>
-      ),
+      headerContent: "",
       getBodyContent: (transaction: Transaction) => (
         <ColumnButton
           label="View"

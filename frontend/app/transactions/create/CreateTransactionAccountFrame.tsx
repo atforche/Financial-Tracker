@@ -1,9 +1,7 @@
 import {
   type CreateTransactionFormSearchParams,
   getDefaultCreditAccount,
-  getDefaultCreditFundAmount,
   getDefaultDebitAccount,
-  getDefaultDebitFundAmount,
 } from "@/app/transactions/create/createTransactionFormSearchParams";
 import type { FundAmount, FundIdentifier } from "@/data/fundTypes";
 import { Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
@@ -64,9 +62,9 @@ const CreateTransactionAccountFrame = function ({
 }: CreateTransactionAccountFrameProps): JSX.Element {
   const resetToInitialState = function (): void {
     setDebitAccount(getDefaultDebitAccount(accounts, searchParams));
-    setDebitFundAmounts(getDefaultDebitFundAmount(funds, searchParams));
+    setDebitFundAmounts([]);
     setCreditAccount(getDefaultCreditAccount(accounts, searchParams));
-    setCreditFundAmounts(getDefaultCreditFundAmount(funds, searchParams));
+    setCreditFundAmounts([]);
     setDebitPostedDate(null);
     setCreditPostedDate(null);
   };
