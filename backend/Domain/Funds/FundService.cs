@@ -42,7 +42,6 @@ public class FundService(
             return false;
         }
         fundGoal = new FundGoal(request.Fund, request.AccountingPeriod.Id, request.GoalAmount);
-        fundGoalRepository.Add(fundGoal);
         return true;
     }
 
@@ -73,6 +72,16 @@ public class FundService(
             return false;
         }
         fundGoal.GoalAmount = goalAmount;
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to delete an existing Fund Goal
+    /// </summary>
+    public bool TryDeleteGoal(FundGoal fundGoal, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+        fundGoalRepository.Delete(fundGoal);
         return true;
     }
 

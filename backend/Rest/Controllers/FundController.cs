@@ -22,11 +22,13 @@ namespace Rest.Controllers;
 public sealed class FundController(
     UnitOfWork unitOfWork,
     FundRepository fundRepository,
+    FundGoalRepository fundGoalRepository,
     AccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
     TransactionRepository transactionRepository,
     FundService fundService,
     AccountingPeriodMapper accountingPeriodMapper,
     FundMapper fundMapper,
+    FundGoalMapper fundGoalMapper,
     AccountingPeriodFundMapper accountingPeriodFundMapper,
     TransactionMapper transactionMapper) : ControllerBase
 {
@@ -181,6 +183,48 @@ public sealed class FundController(
     }
 
     /// <summary>
+    /// Retrieves the Fund Goals for the Fund that match the specified criteria
+    /// </summary>
+    [HttpGet("{fundId}/goals")]
+    [ProducesResponseType(typeof(CollectionModel<FundGoalModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetManyGoals(Guid fundId, [FromQuery] FundGoalQueryParameterModel queryParameters)
+    {
+        Dictionary<string, string[]> errors = [];
+        if (!fundMapper.TryToDomain(fundId, out Fund? fund))
+        {
+            errors.Add(nameof(fundId), new[] { $"Fund with ID {fundId} not found." });
+        }
+        FundGoalSortOrder? sort = null;
+        if (queryParameters.Sort != null && !FundGoalSortOrderMapper.TryToData(queryParameters.Sort.Value, out sort))
+        {
+            errors.Add(nameof(queryParameters.Sort), new[] { $"Unrecognized Fund Goal Sort Order Model: {queryParameters.Sort.Value}" });
+        }
+        if (errors.Count > 0 || fund == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Fund Goals.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        PaginatedCollection<FundGoal> paginatedResults = fundGoalRepository.GetManyByFund(fund.Id, new GetFundGoalsRequest
+        {
+            Search = queryParameters.Search,
+            Sort = sort,
+            Limit = queryParameters.Limit,
+            Offset = queryParameters.Offset,
+        });
+        return Ok(new CollectionModel<FundGoalModel>
+        {
+            Items = paginatedResults.Items.Select(fundGoalMapper.ToModel).ToList(),
+            TotalCount = paginatedResults.TotalCount,
+        });
+    }
+
+    /// <summary>
     /// Creates a new Fund with the provided properties
     /// </summary>
     [HttpPost("")]
@@ -237,6 +281,60 @@ public sealed class FundController(
     }
 
     /// <summary>
+    /// Creates a new Fund Goal for the provided Fund with the provided properties
+    /// </summary>
+    [HttpPost("{fundId}/goals")]
+    [ProducesResponseType(typeof(FundGoalModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> CreateGoalAsync(Guid fundId, CreateFundGoalModel createFundGoalModel)
+    {
+        Dictionary<string, string[]> errors = [];
+        if (!fundMapper.TryToDomain(fundId, out Fund? fund))
+        {
+            errors.Add(nameof(fundId), [$"Fund with ID {fundId} was not found."]);
+        }
+        if (!accountingPeriodMapper.TryToDomain(createFundGoalModel.AccountingPeriodId, out AccountingPeriod? accountingPeriod))
+        {
+            errors.Add(nameof(createFundGoalModel.AccountingPeriodId), [$"Accounting Period with ID {createFundGoalModel.AccountingPeriodId} was not found."]);
+        }
+        if (errors.Count > 0 || fund == null || accountingPeriod == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to create Fund Goal.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        if (!fundService.TryCreateGoal(
+            new CreateFundGoalRequest
+            {
+                Fund = fund,
+                AccountingPeriod = accountingPeriod,
+                GoalAmount = createFundGoalModel.GoalAmount,
+            },
+            out FundGoal? newFundGoal,
+            out IEnumerable<Exception> exceptions))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to create Fund Goal.",
+                Errors = GetFundGoalErrors(
+                    exceptions,
+                    nameof(fundId),
+                    nameof(createFundGoalModel.AccountingPeriodId),
+                    nameof(createFundGoalModel.GoalAmount)),
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        fundGoalRepository.Add(newFundGoal);
+        await unitOfWork.SaveChangesAsync();
+        return Ok(fundGoalMapper.ToModel(newFundGoal));
+    }
+
+    /// <summary>
     /// Updates the provided Fund with the provided properties
     /// </summary>
     [HttpPost("{fundId}")]
@@ -274,6 +372,59 @@ public sealed class FundController(
     }
 
     /// <summary>
+    /// Updates the provided Fund Goal with the provided properties
+    /// </summary>
+    [HttpPost("{fundId}/goals/{fundGoalId}")]
+    [ProducesResponseType(typeof(FundGoalModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> UpdateGoalAsync(Guid fundId, Guid fundGoalId, UpdateFundGoalModel updateFundGoalModel)
+    {
+        Dictionary<string, string[]> errors = [];
+        if (!fundMapper.TryToDomain(fundId, out Fund? fund))
+        {
+            errors.Add(nameof(fundId), [$"Fund with ID {fundId} was not found."]);
+        }
+        if (!fundGoalMapper.TryToDomain(fundGoalId, out FundGoal? fundGoalToUpdate))
+        {
+            errors.Add(nameof(fundGoalId), [$"Fund Goal with ID {fundGoalId} was not found."]);
+        }
+        if (errors.Count > 0 || fund == null || fundGoalToUpdate == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to update Fund Goal.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        if (fundGoalToUpdate.Fund.Id != fund.Id)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to update Fund Goal.",
+                Errors = { [nameof(fundGoalId)] = new[] { $"Fund Goal with ID {fundGoalId} does not belong to Fund with ID {fundId}." } },
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        if (!FundService.TryUpdateGoal(fundGoalToUpdate, updateFundGoalModel.GoalAmount, out IEnumerable<Exception> exceptions))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to update Fund Goal.",
+                Errors = GetFundGoalErrors(
+                    exceptions,
+                    nameof(fundId),
+                    nameof(fundGoalId),
+                    nameof(updateFundGoalModel.GoalAmount)),
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        await unitOfWork.SaveChangesAsync();
+        return Ok(fundGoalMapper.ToModel(fundGoalToUpdate));
+    }
+
+    /// <summary>
     /// Deletes the Fund with the provided ID
     /// </summary>
     [HttpDelete("{fundId}")]
@@ -305,4 +456,73 @@ public sealed class FundController(
         await unitOfWork.SaveChangesAsync();
         return Ok();
     }
+
+    /// <summary>
+    /// Deletes the Fund Goal with the provided ID for the provided Fund
+    /// </summary>
+    [HttpDelete("{fundId}/goals/{fundGoalId}")]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> DeleteGoalAsync(Guid fundId, Guid fundGoalId)
+    {
+        Dictionary<string, string[]> errors = [];
+        if (!fundMapper.TryToDomain(fundId, out Fund? fund))
+        {
+            errors.Add(nameof(fundId), [$"Fund with ID {fundId} was not found."]);
+        }
+        if (!fundGoalMapper.TryToDomain(fundGoalId, out FundGoal? fundGoalToDelete))
+        {
+            errors.Add(nameof(fundGoalId), [$"Fund Goal with ID {fundGoalId} was not found."]);
+        }
+        if (errors.Count > 0 || fund == null || fundGoalToDelete == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to delete Fund Goal.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        if (fundGoalToDelete.Fund.Id != fund.Id)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to delete Fund Goal.",
+                Errors = { [nameof(fundGoalId)] = new[] { $"Fund Goal with ID {fundGoalId} does not belong to Fund with ID {fundId}." } },
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        if (!fundService.TryDeleteGoal(fundGoalToDelete, out IEnumerable<Exception> exceptions))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to delete Fund Goal.",
+                Errors = {
+                    { string.Empty, exceptions.Select(exception => exception.Message).ToArray() }
+                },
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        await unitOfWork.SaveChangesAsync();
+        return Ok();
+    }
+
+    /// <summary>
+    /// Maps Fund Goal exceptions to validation errors
+    /// </summary>
+    private static Dictionary<string, string[]> GetFundGoalErrors(
+        IEnumerable<Exception> exceptions,
+        string fundKey,
+        string accountingPeriodKey,
+        string goalAmountKey) =>
+        exceptions.GroupBy(exception => exception switch
+        {
+            InvalidAccountingPeriodException => accountingPeriodKey,
+            InvalidFundException invalidFundException
+                when invalidFundException.Message.Contains("goal amount", StringComparison.InvariantCultureIgnoreCase) => goalAmountKey,
+            InvalidFundException invalidFundException
+                when invalidFundException.Message.Contains("already exists", StringComparison.InvariantCultureIgnoreCase) => accountingPeriodKey,
+            InvalidFundException => fundKey,
+            _ => string.Empty,
+        }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray());
 }
