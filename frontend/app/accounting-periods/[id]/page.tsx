@@ -1,15 +1,12 @@
-import { Button, Stack, Typography } from "@mui/material";
-import AccountListFrame from "@/app/accounting-periods/[id]/AccountListFrame";
+import { Button, Stack } from "@mui/material";
 import type { AccountingPeriodAccountSortOrder } from "@/data/accountTypes";
 import type { AccountingPeriodFundSortOrder } from "@/data/fundTypes";
+import AccountingPeriodListFrames from "@/app/accounting-periods/[id]/AccountingPeriodListFrames";
 import type { AccountingPeriodTransactionSortOrder } from "@/data/transactionTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
-import FundListFrame from "@/app/accounting-periods/[id]/FundListFrame";
 import type { JSX } from "react";
-import SearchBar from "@/framework/listframe/SearchBar";
-import TransactionListFrame from "@/app/accounting-periods/[id]/TransactionListFrame";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/data/getApiClient";
 
@@ -175,35 +172,15 @@ const Page = async function ({
           value={formatCurrency(data.closingBalance)}
         />
       </CaptionedFrame>
-      <Stack direction="row" spacing={10}>
-        <Stack spacing={2} sx={{ width: "100%" }}>
-          <Typography variant="h6">Funds</Typography>
-          <SearchBar paramName="fundSearch" />
-          <FundListFrame
-            accountingPeriod={data}
-            data={fundData.items}
-            totalCount={fundData.totalCount}
-          />
-        </Stack>
-        <Stack spacing={2} sx={{ width: "100%" }}>
-          <Typography variant="h6">Accounts</Typography>
-          <SearchBar paramName="accountSearch" />
-          <AccountListFrame
-            accountingPeriod={data}
-            data={accountData.items}
-            totalCount={accountData.totalCount}
-          />
-        </Stack>
-        <Stack spacing={2} sx={{ width: "100%" }}>
-          <Typography variant="h6">Transactions</Typography>
-          <SearchBar paramName="transactionSearch" />
-          <TransactionListFrame
-            accountingPeriod={data}
-            data={transactionData.items}
-            totalCount={transactionData.totalCount}
-          />
-        </Stack>
-      </Stack>
+      <AccountingPeriodListFrames
+        accountingPeriod={data}
+        fundData={fundData.items}
+        fundTotalCount={fundData.totalCount}
+        accountData={accountData.items}
+        accountTotalCount={accountData.totalCount}
+        transactionData={transactionData.items}
+        transactionTotalCount={transactionData.totalCount}
+      />
     </Stack>
   );
 };
