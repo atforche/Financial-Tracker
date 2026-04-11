@@ -31,7 +31,27 @@ public class AccountingPeriodFundModel
     public required FundBalanceModel OpeningBalance { get; init; }
 
     /// <summary>
+    /// Amount assigned to the Fund for the Accounting Period
+    /// </summary>
+    public required decimal AmountAssigned { get; init; }
+
+    /// <summary>
+    /// Amount spent from the Fund during the Accounting Period
+    /// </summary>
+    public required decimal AmountSpent { get; init; }
+
+    /// <summary>
     /// Closing balance for the Fund
     /// </summary>
     public required FundBalanceModel ClosingBalance { get; init; }
+
+    /// <summary>
+    /// Goal amount for the Fund during the Accounting Period
+    /// </summary>
+    public required decimal? GoalAmount { get; init; }
+
+    /// <summary>
+    /// Whether the goal has been met for the Fund during the Accounting Period
+    /// </summary>
+    public required bool? IsGoalMet { get; init; }
 }

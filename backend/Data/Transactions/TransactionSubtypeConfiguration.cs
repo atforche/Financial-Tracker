@@ -50,6 +50,15 @@ internal sealed class TransactionSubtypeConfiguration :
             .HasConversion(id => id.Value, value => new AccountId(value));
         builder.HasOne<Account>().WithMany().HasForeignKey(t => t.AccountId);
 
+        builder.OwnsMany(t => t.FundAmounts, fundAmount =>
+        {
+            fundAmount.ToTable("IncomeTransactionFundAmounts");
+            fundAmount.Property<int>("Id");
+            fundAmount.HasKey("Id");
+            fundAmount.Property(f => f.FundId)
+                .HasConversion(fundId => fundId.Value, value => new FundId(value));
+        });
+
         builder.Property(t => t.GeneratedByAccountId)
             .HasConversion(
                 id => id == null ? (Guid?)null : id.Value,

@@ -116,6 +116,54 @@ const FundListFrame = function ({
         }
       },
       alignment: "right",
+      minWidth: 150,
+    },
+    {
+      name: "amountAssigned",
+      headerContent: "Amount Assigned",
+      getBodyContent: (fund: AccountingPeriodFund) =>
+        formatCurrency(fund.amountAssigned),
+      sortType:
+        currentSort === AccountingPeriodFundSortOrder.AmountAssigned
+          ? ColumnSortType.Ascending
+          : currentSort ===
+              AccountingPeriodFundSortOrder.AmountAssignedDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSort(AccountingPeriodFundSortOrder.AmountAssigned);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSort(AccountingPeriodFundSortOrder.AmountAssignedDescending);
+        } else {
+          setSort(null);
+        }
+      },
+      alignment: "right",
+      minWidth: 150,
+    },
+    {
+      name: "amountSpent",
+      headerContent: "Amount Spent",
+      getBodyContent: (fund: AccountingPeriodFund) =>
+        formatCurrency(fund.amountSpent),
+      sortType:
+        currentSort === AccountingPeriodFundSortOrder.AmountSpent
+          ? ColumnSortType.Ascending
+          : currentSort === AccountingPeriodFundSortOrder.AmountSpentDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSort(AccountingPeriodFundSortOrder.AmountSpent);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSort(AccountingPeriodFundSortOrder.AmountSpentDescending);
+        } else {
+          setSort(null);
+        }
+      },
+      alignment: "right",
+      minWidth: 150,
     },
     {
       name: "closingBalance",
@@ -139,6 +187,23 @@ const FundListFrame = function ({
         }
       },
       alignment: "right",
+      minWidth: 150,
+    },
+    {
+      name: "goalAmount",
+      headerContent: "Goal Amount",
+      getBodyContent: (fund: AccountingPeriodFund) =>
+        fund.goalAmount === null ? "-" : formatCurrency(fund.goalAmount),
+      alignment: "right",
+      minWidth: 130,
+    },
+    {
+      name: "isGoalMet",
+      headerContent: "Goal Met",
+      getBodyContent: (fund: AccountingPeriodFund) =>
+        fund.isGoalMet === null ? "-" : fund.isGoalMet ? "Yes" : "No",
+      alignment: "center",
+      minWidth: 110,
     },
     {
       name: "actions",
@@ -164,6 +229,7 @@ const FundListFrame = function ({
         />
       ),
       alignment: "right",
+      minWidth: 90,
     },
   ];
 

@@ -36,6 +36,26 @@ public enum AccountingPeriodFundSortOrder
     OpeningBalanceDescending,
 
     /// <summary>
+    /// Funds are sorted by amount assigned in ascending order
+    /// </summary>
+    AmountAssigned,
+
+    /// <summary>
+    /// Funds are sorted by amount assigned in descending order
+    /// </summary>
+    AmountAssignedDescending,
+
+    /// <summary>
+    /// Funds are sorted by amount spent in ascending order
+    /// </summary>
+    AmountSpent,
+
+    /// <summary>
+    /// Funds are sorted by amount spent in descending order
+    /// </summary>
+    AmountSpentDescending,
+
+    /// <summary>
     /// Funds are sorted by closing balance in ascending order
     /// </summary>
     ClosingBalance,

@@ -9,10 +9,17 @@ namespace Domain.Transactions;
 /// </summary>
 public class IncomeTransaction : Transaction
 {
+    private readonly List<FundAmount> _fundAmounts = [];
+
     /// <summary>
     /// Account ID for this Income Transaction
     /// </summary>
     public AccountId AccountId { get; private set; }
+
+    /// <summary>
+    /// Fund Amounts for this Income Transaction
+    /// </summary>
+    public IReadOnlyCollection<FundAmount> FundAmounts => _fundAmounts;
 
     /// <summary>
     /// Posted Date for this Income Transaction
@@ -39,6 +46,7 @@ public class IncomeTransaction : Transaction
         AccountId = request.Account.Id;
         PostedDate = request.PostedDate;
         GeneratedByAccountId = request.IsInitialTransactionForAccount ? AccountId : null;
+        _fundAmounts.AddRange(request.FundAssignments);
     }
 
     /// <inheritdoc/>
@@ -69,13 +77,45 @@ public class IncomeTransaction : Transaction
     }
 
     /// <inheritdoc/>
-    internal override IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId) => [];
+    internal override IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId)
+    {
+        if (accountId == null || accountId == AccountId)
+        {
+            return _fundAmounts.Select(f => f.FundId);
+        }
+        return [];
+    }
 
     /// <inheritdoc/>
-    internal override FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse) => existingFundBalance;
+    internal override FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse)
+    {
+        FundAmount? fundAmount = _fundAmounts.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
+        if (fundAmount == null)
+        {
+            return existingFundBalance;
+        }
+        return existingFundBalance.AddNewPendingCreditAmount(reverse ? -fundAmount.Amount : fundAmount.Amount);
+    }
 
     /// <inheritdoc/>
-    internal override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse) => existingFundBalance;
+    internal override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse)
+    {
+        FundAmount? fundAmount = _fundAmounts.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
+        if (fundAmount == null || accountId != AccountId)
+        {
+            return existingFundBalance;
+        }
+        return existingFundBalance.PostPendingCredit(reverse ? -fundAmount.Amount : fundAmount.Amount);
+    }
+
+    /// <summary>
+    /// Updates the fund amounts for this Income Transaction
+    /// </summary>
+    internal void UpdateFundAmounts(IReadOnlyCollection<FundAmount> fundAmounts)
+    {
+        _fundAmounts.Clear();
+        _fundAmounts.AddRange(fundAmounts);
+    }
 
     /// <summary>
     /// Constructs a new default instance of this class

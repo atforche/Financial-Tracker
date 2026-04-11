@@ -23,6 +23,16 @@ public class FundAccountingPeriodBalanceHistory : Entity<FundAccountingPeriodBal
     public decimal OpeningBalance { get; internal set; }
 
     /// <summary>
+    /// Amount assigned to this Fund during the Accounting Period
+    /// </summary>
+    public decimal AmountAssigned { get; internal set; }
+
+    /// <summary>
+    /// Amount spent from this Fund during the Accounting Period
+    /// </summary>
+    public decimal AmountSpent { get; internal set; }
+
+    /// <summary>
     /// Closing Balance for this Fund Accounting Period Balance History
     /// </summary>
     public decimal ClosingBalance { get; internal set; }
@@ -44,12 +54,16 @@ public class FundAccountingPeriodBalanceHistory : Entity<FundAccountingPeriodBal
         Fund fund,
         AccountingPeriod accountingPeriod,
         decimal openingBalance,
+        decimal amountAssigned,
+        decimal amountSpent,
         decimal closingBalance)
         : base(new FundAccountingPeriodBalanceHistoryId(Guid.NewGuid()))
     {
         Fund = fund;
         AccountingPeriod = accountingPeriod;
         OpeningBalance = openingBalance;
+        AmountAssigned = amountAssigned;
+        AmountSpent = amountSpent;
         ClosingBalance = closingBalance;
     }
 

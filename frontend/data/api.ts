@@ -1528,8 +1528,25 @@ export interface components {
             description: string;
             /** @description Opening balance for the Fund */
             openingBalance: components["schemas"]["FundBalanceModel"];
+            /**
+             * Format: double
+             * @description Amount assigned to the Fund for the Accounting Period
+             */
+            amountAssigned: number;
+            /**
+             * Format: double
+             * @description Amount spent from the Fund during the Accounting Period
+             */
+            amountSpent: number;
             /** @description Closing balance for the Fund */
             closingBalance: components["schemas"]["FundBalanceModel"];
+            /**
+             * Format: double
+             * @description Goal amount for the Fund during the Accounting Period
+             */
+            goalAmount: null | number;
+            /** @description Whether the goal has been met for the Fund during the Accounting Period */
+            isGoalMet: null | boolean;
         };
         /** @enum {unknown} */
         AccountingPeriodFundSortOrderModel: AccountingPeriodFundSortOrderModel | null;
@@ -1973,6 +1990,10 @@ export enum AccountingPeriodFundSortOrderModel {
     TypeDescending = "TypeDescending",
     OpeningBalance = "OpeningBalance",
     OpeningBalanceDescending = "OpeningBalanceDescending",
+    AmountAssigned = "AmountAssigned",
+    AmountAssignedDescending = "AmountAssignedDescending",
+    AmountSpent = "AmountSpent",
+    AmountSpentDescending = "AmountSpentDescending",
     ClosingBalance = "ClosingBalance",
     ClosingBalanceDescending = "ClosingBalanceDescending"
 }

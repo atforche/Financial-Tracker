@@ -117,11 +117,21 @@ CREATE TABLE "FundAccountingPeriodBalanceHistory" (
     "FundId" TEXT NOT NULL,
     "AccountingPeriodId" TEXT NOT NULL,
     "OpeningBalance" TEXT NOT NULL,
+    "AmountAssigned" TEXT NOT NULL,
+    "AmountSpent" TEXT NOT NULL,
     "ClosingBalance" TEXT NOT NULL,
     "AccountingPeriodBalanceHistoryId" TEXT NOT NULL,
     CONSTRAINT "FK_FundAccountingPeriodBalanceHistory_AccountingPeriodBalanceHistories_AccountingPeriodBalanceHistoryId" FOREIGN KEY ("AccountingPeriodBalanceHistoryId") REFERENCES "AccountingPeriodBalanceHistories" ("Id") ON DELETE CASCADE,
     CONSTRAINT "FK_FundAccountingPeriodBalanceHistory_AccountingPeriods_AccountingPeriodId" FOREIGN KEY ("AccountingPeriodId") REFERENCES "AccountingPeriods" ("Id") ON DELETE CASCADE,
     CONSTRAINT "FK_FundAccountingPeriodBalanceHistory_Funds_FundId" FOREIGN KEY ("FundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE
+);
+
+CREATE TABLE "IncomeTransactionFundAmounts" (
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_IncomeTransactionFundAmounts" PRIMARY KEY AUTOINCREMENT,
+    "FundId" TEXT NOT NULL,
+    "Amount" TEXT NOT NULL,
+    "IncomeTransactionId" TEXT NOT NULL,
+    CONSTRAINT "FK_IncomeTransactionFundAmounts_Transactions_IncomeTransactionId" FOREIGN KEY ("IncomeTransactionId") REFERENCES "Transactions" ("Id") ON DELETE CASCADE
 );
 
 CREATE TABLE "SpendingTransactionFundAmounts" (
@@ -156,6 +166,8 @@ CREATE INDEX "IX_FundGoals_FundId" ON "FundGoals" ("FundId");
 
 CREATE UNIQUE INDEX "IX_Funds_Name" ON "Funds" ("Name");
 
+CREATE INDEX "IX_IncomeTransactionFundAmounts_IncomeTransactionId" ON "IncomeTransactionFundAmounts" ("IncomeTransactionId");
+
 CREATE INDEX "IX_SpendingTransactionFundAmounts_SpendingTransactionId" ON "SpendingTransactionFundAmounts" ("SpendingTransactionId");
 
 CREATE INDEX "IX_Transactions_AccountId" ON "Transactions" ("AccountId");
@@ -171,7 +183,7 @@ CREATE INDEX "IX_Transactions_TransferTransaction_CreditAccountId" ON "Transacti
 CREATE INDEX "IX_Transactions_TransferTransaction_DebitAccountId" ON "Transactions" ("TransferTransaction_DebitAccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260410130452_InitialCreate', '10.0.2');
+VALUES ('20260411130052_InitialCreate', '10.0.2');
 
 COMMIT;
 

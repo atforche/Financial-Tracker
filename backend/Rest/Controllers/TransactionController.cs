@@ -204,7 +204,7 @@ public sealed class TransactionController(
             });
         }
 
-        UpdateTransactionRequest updateRequest = BuildUpdateRequest(transaction, updateTransactionModel, debitFundAmounts);
+        UpdateTransactionRequest updateRequest = BuildUpdateRequest(transaction, updateTransactionModel, debitFundAmounts, creditFundAmounts);
 
         if (!transactionService.TryUpdate(transaction, updateRequest, out IEnumerable<Exception> exceptions))
         {
@@ -392,7 +392,7 @@ public sealed class TransactionController(
                 IsInitialTransactionForAccount = false,
                 DebitAccount = debitAccount!,
                 DebitPostedDate = model.DebitAccount!.PostedDate,
-                FundAssignments = debitFundAmounts,
+                FundAssignments = creditFundAmounts,
             };
         }
         if (hasDebit && hasCredit)
@@ -445,7 +445,8 @@ public sealed class TransactionController(
     private static UpdateTransactionRequest BuildUpdateRequest(
         Transaction transaction,
         UpdateTransactionModel model,
-        List<FundAmount> debitFundAmounts) => transaction switch
+        List<FundAmount> debitFundAmounts,
+        List<FundAmount> creditFundAmounts) => transaction switch
         {
             SpendingTransferTransaction => new UpdateSpendingTransferTransactionRequest
             {
@@ -469,6 +470,7 @@ public sealed class TransactionController(
                 TransactionDate = model.Date,
                 Location = model.Location,
                 Description = model.Description,
+                FundAssignments = creditFundAmounts,
                 PostedDate = model.CreditAccount?.PostedDate,
                 DebitPostedDate = model.DebitAccount?.PostedDate,
             },
@@ -477,6 +479,7 @@ public sealed class TransactionController(
                 TransactionDate = model.Date,
                 Location = model.Location,
                 Description = model.Description,
+                FundAssignments = creditFundAmounts,
                 PostedDate = model.CreditAccount?.PostedDate,
             },
             TransferTransaction => new UpdateTransferTransactionRequest

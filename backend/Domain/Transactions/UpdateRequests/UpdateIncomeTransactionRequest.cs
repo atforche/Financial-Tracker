@@ -1,3 +1,5 @@
+using Domain.Funds;
+
 namespace Domain.Transactions.UpdateRequests;
 
 /// <summary>
@@ -13,6 +15,11 @@ public record UpdateIncomeTransactionRequest : UpdateTransactionRequest
 
     /// <inheritdoc/>
     public override required string Description { get; init; }
+
+    /// <summary>
+    /// Fund Assignments for this Income Transaction
+    /// </summary>
+    public required IReadOnlyCollection<FundAmount> FundAssignments { get; init; }
 
     /// <summary>
     /// Posted Date for this Income Transaction

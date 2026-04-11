@@ -107,6 +107,10 @@ public class TransactionService(
         {
             spendingTransaction.UpdateFundAmounts(spendingRequest.FundAssignments);
         }
+        else if (transaction is IncomeTransaction incomeTransaction && request is UpdateIncomeTransactionRequest incomeRequest)
+        {
+            incomeTransaction.UpdateFundAmounts(incomeRequest.FundAssignments);
+        }
         accountBalanceService.UpdateTransaction(transaction);
         fundBalanceService.UpdateTransaction(transaction);
         foreach ((AccountId accountId, DateOnly postedDate) in GetUpdatePostings(transaction, request))
@@ -482,6 +486,10 @@ public class TransactionService(
                 exceptions = exceptions.Append(new InvalidFundAmountException("The provided fund amounts must be greater than zero."));
             }
         }
+        else if (request is CreateIncomeTransactionRequest incomeRequest && incomeRequest.FundAssignments.Any(fundAmount => fundAmount.Amount <= 0))
+        {
+            exceptions = exceptions.Append(new InvalidFundAmountException("The provided fund amounts must be greater than zero."));
+        }
         return !exceptions.Any();
     }
 
@@ -502,6 +510,10 @@ public class TransactionService(
             {
                 exceptions = exceptions.Append(new InvalidFundAmountException("The provided fund amounts must be greater than zero."));
             }
+        }
+        else if (request is UpdateIncomeTransactionRequest incomeRequest && incomeRequest.FundAssignments.Any(fundAmount => fundAmount.Amount <= 0))
+        {
+            exceptions = exceptions.Append(new InvalidFundAmountException("The provided fund amounts must be greater than zero."));
         }
         return !exceptions.Any();
     }

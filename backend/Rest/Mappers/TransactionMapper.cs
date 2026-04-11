@@ -69,11 +69,11 @@ public sealed class TransactionMapper(
         ),
         IncomeTransferTransaction incomeTransfer => (
             BuildAccountModel(transaction, incomeTransfer.DebitAccountId, incomeTransfer.DebitPostedDate, [], TransactionAccountTypeModel.Debit),
-            BuildAccountModel(transaction, incomeTransfer.AccountId, incomeTransfer.PostedDate, [], TransactionAccountTypeModel.Credit)
+            BuildAccountModel(transaction, incomeTransfer.AccountId, incomeTransfer.PostedDate, incomeTransfer.FundAmounts, TransactionAccountTypeModel.Credit)
         ),
         IncomeTransaction income => (
             null,
-            BuildAccountModel(transaction, income.AccountId, income.PostedDate, [], TransactionAccountTypeModel.Credit)
+            BuildAccountModel(transaction, income.AccountId, income.PostedDate, income.FundAmounts, TransactionAccountTypeModel.Credit)
         ),
         TransferTransaction transfer => (
             BuildAccountModel(transaction, transfer.DebitAccountId, transfer.DebitPostedDate, [], TransactionAccountTypeModel.Debit),

@@ -437,6 +437,12 @@ namespace Data.Migrations
                             b1.Property<Guid>("AccountingPeriodId")
                                 .HasColumnType("TEXT");
 
+                            b1.Property<decimal>("AmountAssigned")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<decimal>("AmountSpent")
+                                .HasColumnType("TEXT");
+
                             b1.Property<decimal>("ClosingBalance")
                                 .HasColumnType("TEXT");
 
@@ -512,6 +518,33 @@ namespace Data.Migrations
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.OwnsMany("Domain.Funds.FundAmount", "FundAmounts", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<decimal>("Amount")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("FundId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("IncomeTransactionId")
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("IncomeTransactionId");
+
+                            b1.ToTable("IncomeTransactionFundAmounts", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("IncomeTransactionId");
+                        });
+
+                    b.Navigation("FundAmounts");
                 });
 
             modelBuilder.Entity("Domain.Transactions.SpendingTransaction", b =>
