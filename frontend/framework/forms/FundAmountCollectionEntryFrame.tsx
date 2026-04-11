@@ -47,12 +47,12 @@ const FundAmountCollectionEntryFrame = function ({
                 value={fundAmount}
                 setValue={
                   fundAmount.fundName === "Unassigned"
-                  ? null
-                  : (newValue): void => {
-                      const newFundAmounts = [...value];
-                      newFundAmounts[index] = newValue;
-                      setValue(newFundAmounts);
-                    }
+                    ? null
+                    : (newValue): void => {
+                        const newFundAmounts = [...value];
+                        newFundAmounts[index] = newValue;
+                        setValue(newFundAmounts);
+                      }
                 }
                 filter={(fund) =>
                   value[index]?.fundId === fund.id ||

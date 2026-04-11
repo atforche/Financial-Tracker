@@ -1,6 +1,11 @@
 "use client";
 
-import { Stack, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import {
+  Stack,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AccountListFrame from "@/app/accounting-periods/[id]/AccountListFrame";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
@@ -43,7 +48,9 @@ const AccountingPeriodListFrames = function ({
   const pathname = usePathname();
   const router = useRouter();
 
-  const currentDisplay = tryParseEnum(ToggleState, searchParams.get("display") ?? "") ?? ToggleState.Funds;
+  const currentDisplay =
+    tryParseEnum(ToggleState, searchParams.get("display") ?? "") ??
+    ToggleState.Funds;
   return (
     <Stack spacing={2}>
       <ToggleButtonGroup
@@ -63,7 +70,9 @@ const AccountingPeriodListFrames = function ({
       >
         <ToggleButton value={ToggleState.Funds}>Funds</ToggleButton>
         <ToggleButton value={ToggleState.Accounts}>Accounts</ToggleButton>
-        <ToggleButton value={ToggleState.Transactions}>Transactions</ToggleButton>
+        <ToggleButton value={ToggleState.Transactions}>
+          Transactions
+        </ToggleButton>
       </ToggleButtonGroup>
       <Stack direction="row" spacing={10}>
         {currentDisplay === ToggleState.Funds && (

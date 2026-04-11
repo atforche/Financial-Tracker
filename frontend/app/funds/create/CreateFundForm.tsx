@@ -95,11 +95,7 @@ const CreateFundForm = function ({
           setValue={setName}
           errorMessage={state.nameErrors ?? null}
         />
-        <FundTypeEntryField
-          label="Type"
-          value={type}
-          setValue={setType}
-        />
+        <FundTypeEntryField label="Type" value={type} setValue={setType} />
         <StringEntryField
           label="Description"
           value={description}
@@ -121,17 +117,9 @@ const CreateFundForm = function ({
           <Button
             variant="contained"
             loading={pending}
-            disabled={
-              name === "" ||
-              type === null ||
-              accountingPeriod === null
-            }
+            disabled={name === "" || type === null || accountingPeriod === null}
             onClick={() => {
-              if (
-                name === "" ||
-                type === null ||
-                accountingPeriod === null
-              ) {
+              if (name === "" || type === null || accountingPeriod === null) {
                 return;
               }
               startTransition(() => {

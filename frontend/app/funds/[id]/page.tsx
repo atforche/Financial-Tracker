@@ -107,7 +107,10 @@ const Page = async function ({
         <CaptionedValue caption="Type" value={fundData.type} />
         <CaptionedValue caption="Description" value={fundData.description} />
         <br />
-        <CaptionedValue caption="Posted Balance" value={formatCurrency(fundData.currentBalance.postedBalance)} />
+        <CaptionedValue
+          caption="Posted Balance"
+          value={formatCurrency(fundData.currentBalance.postedBalance)}
+        />
       </CaptionedFrame>
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
         <Typography variant="h6">Transactions</Typography>

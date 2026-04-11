@@ -3,6 +3,7 @@ import { type FundTransactionSortOrder, FundType } from "@/data/fundTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
+import CurrentGoalFrame from "@/app/accounting-periods/[id]/funds/[fundId]/CurrentGoalFrame";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import TransactionListFrame from "@/app/funds/[id]/TransactionListFrame";
@@ -87,7 +88,9 @@ const Page = async function ({
     );
   }
 
-  const changeInBalance = fundData.closingBalance.postedBalance - fundData.openingBalance.postedBalance;
+  const changeInBalance =
+    fundData.closingBalance.postedBalance -
+    fundData.openingBalance.postedBalance;
   const changeInBalanceColor = changeInBalance >= 0 ? "green" : "red";
   const changeInBalanceFormatted = formatCurrency(Math.abs(changeInBalance));
 
@@ -135,7 +138,8 @@ const Page = async function ({
         <CaptionedValue caption="Name" value={fundData.name} />
         <CaptionedValue caption="Type" value={fundData.type} />
         <CaptionedValue caption="Description" value={fundData.description} />
-        <br />
+      </CaptionedFrame>
+      <CaptionedFrame caption="Balance">
         <CaptionedValue
           caption="Opening Balance"
           value={formatCurrency(fundData.openingBalance.postedBalance)}
@@ -153,6 +157,7 @@ const Page = async function ({
           value={formatCurrency(fundData.closingBalance.postedBalance)}
         />
       </CaptionedFrame>
+      <CurrentGoalFrame fund={fundData} accountingPeriodId={id} />
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
         <Typography variant="h6">Transactions</Typography>
         <SearchBar paramName="transactionSearch" />

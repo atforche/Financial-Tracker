@@ -86,7 +86,7 @@ const FundListFrame = function ({
         } else {
           setSort(null);
         }
-      }
+      },
     },
     {
       name: "description",

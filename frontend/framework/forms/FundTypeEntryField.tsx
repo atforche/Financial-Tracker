@@ -22,10 +22,12 @@ const FundTypeEntryField = function ({
   return (
     <ComboBoxEntryField<FundType>
       label={label}
-      options={Object.values(FundType).map((type) => ({
-        label: type,
-        value: type,
-      })).filter((option) => option.value !== FundType.Unassigned)}
+      options={Object.values(FundType)
+        .map((type) => ({
+          label: type,
+          value: type,
+        }))
+        .filter((option) => option.value !== FundType.Unassigned)}
       value={
         value === null ? { label: "", value: null } : { label: value, value }
       }
