@@ -159,4 +159,3 @@ public record TransactionId : EntityId
     {
     }
 }
-

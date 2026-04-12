@@ -15,8 +15,6 @@ import FundListFrame from "@/app/accounting-periods/[id]/FundListFrame";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import ToggleState from "@/app/accounting-periods/[id]/toggleState";
-import type { Transaction } from "@/data/transactionTypes";
-import TransactionListFrame from "@/app/accounting-periods/[id]/TransactionListFrame";
 import tryParseEnum from "@/data/tryParseEnum";
 
 /**
@@ -28,8 +26,6 @@ interface AccountingPeriodListFramesProps {
   readonly fundTotalCount: number;
   readonly accountData: AccountingPeriodAccount[];
   readonly accountTotalCount: number;
-  readonly transactionData: Transaction[];
-  readonly transactionTotalCount: number;
 }
 
 /**
@@ -41,8 +37,6 @@ const AccountingPeriodListFrames = function ({
   fundTotalCount,
   accountData,
   accountTotalCount,
-  transactionData,
-  transactionTotalCount,
 }: AccountingPeriodListFramesProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -101,11 +95,6 @@ const AccountingPeriodListFrames = function ({
           <Stack spacing={2} sx={{ width: "100%" }}>
             <Typography variant="h6">Transactions</Typography>
             <SearchBar paramName="transactionSearch" />
-            <TransactionListFrame
-              accountingPeriod={accountingPeriod}
-              data={transactionData}
-              totalCount={transactionTotalCount}
-            />
           </Stack>
         )}
       </Stack>

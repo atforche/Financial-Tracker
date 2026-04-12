@@ -178,8 +178,6 @@ const Page = async function ({
         fundTotalCount={fundData.totalCount}
         accountData={accountData.items}
         accountTotalCount={accountData.totalCount}
-        transactionData={transactionData.items}
-        transactionTotalCount={transactionData.totalCount}
       />
     </Stack>
   );

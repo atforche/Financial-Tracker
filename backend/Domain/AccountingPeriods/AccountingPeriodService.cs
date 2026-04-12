@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.Funds;
-using Domain.Exceptions;
-using Domain.Transactions;
 using Domain.Accounts;
+using Domain.Exceptions;
+using Domain.Funds;
+using Domain.Transactions;
 
 namespace Domain.AccountingPeriods;
 
