@@ -8,6 +8,7 @@ import {
   Stack,
 } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
+import routes, { routeBreadcrumbs } from "@/framework/routes";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import AccountingPeriodEntryField from "@/framework/forms/AccountingPeriodEntryField";
 import Breadcrumbs from "@/framework/Breadcrumbs";
@@ -18,7 +19,6 @@ import FundGoalTypeEntryField from "@/framework/forms/FundGoalTypeEntryField";
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import createFund from "@/app/funds/create/createFund";
-import routes from "@/framework/routes";
 
 /**
  * Props for the CreateFundForm component.
@@ -27,45 +27,6 @@ interface CreateFundFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly providedAccountingPeriod?: AccountingPeriod | null;
 }
-
-/**
- * Gets the breadcrumbs to be displayed at the top of the form.
- */
-const getBreadcrumbs = function (
-  providedAccountingPeriod: AccountingPeriod | null,
-): JSX.Element {
-  if (providedAccountingPeriod !== null) {
-    return (
-      <Breadcrumbs
-        breadcrumbs={[
-          {
-            label: "Accounting Periods",
-            href: routes.accountingPeriods.index,
-          },
-          {
-            label: providedAccountingPeriod.name,
-            href: routes.accountingPeriods.detail(providedAccountingPeriod.id),
-          },
-          {
-            label: "Create Fund",
-            href: routes.funds.create,
-          },
-        ]}
-      />
-    );
-  }
-  return (
-    <Breadcrumbs
-      breadcrumbs={[
-        { label: "Funds", href: routes.funds.index },
-        {
-          label: "Create",
-          href: routes.funds.create,
-        },
-      ]}
-    />
-  );
-};
 
 /**
  * Gets the URL to redirect the user to after successfully creating a fund.
@@ -101,7 +62,9 @@ const CreateFundForm = function ({
 
   return (
     <Stack spacing={2}>
-      {getBreadcrumbs(providedAccountingPeriod)}
+      <Breadcrumbs
+        breadcrumbs={routeBreadcrumbs.funds.create(providedAccountingPeriod)}
+      />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <StringEntryField
           label="Name"

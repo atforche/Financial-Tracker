@@ -2,12 +2,12 @@
 
 import { Button, DialogActions, Stack } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
+import routes, { routeBreadcrumbs } from "@/framework/routes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import IntegerEntryField from "@/framework/forms/IntegerEntryField";
 import Link from "next/link";
 import createAccountingPeriod from "@/app/accounting-periods/create/createAccountingPeriod";
-import routes from "@/framework/routes";
 
 /**
  * Component that displays the create Accounting Period page.
@@ -19,12 +19,7 @@ const Page = function (): JSX.Element {
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs
-        breadcrumbs={[
-          { label: "Accounting Periods", href: routes.accountingPeriods.index },
-          { label: "Create", href: routes.accountingPeriods.create },
-        ]}
-      />
+      <Breadcrumbs breadcrumbs={routeBreadcrumbs.accountingPeriods.create()} />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <IntegerEntryField
           label="Year"

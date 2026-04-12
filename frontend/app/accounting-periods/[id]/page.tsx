@@ -1,4 +1,5 @@
 import { Button, Stack } from "@mui/material";
+import routes, { routeBreadcrumbs } from "@/framework/routes";
 import type { AccountingPeriodAccountSortOrder } from "@/data/accountTypes";
 import type { AccountingPeriodFundSortOrder } from "@/data/fundTypes";
 import AccountingPeriodListFrames from "@/app/accounting-periods/[id]/AccountingPeriodListFrames";
@@ -9,7 +10,6 @@ import CaptionedValue from "@/framework/view/CaptionedValue";
 import type { JSX } from "react";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/data/getApiClient";
-import routes from "@/framework/routes";
 
 /**
  * Props for the Page component.
@@ -129,13 +129,10 @@ const Page = async function ({
         maxWidth={1000}
       >
         <Breadcrumbs
-          breadcrumbs={[
-            {
-              label: "Accounting Periods",
-              href: routes.accountingPeriods.index,
-            },
-            { label: data.name, href: routes.accountingPeriods.detail(id) },
-          ]}
+          breadcrumbs={routeBreadcrumbs.accountingPeriods.detail({
+            id,
+            name: data.name,
+          })}
         />
         <Stack direction="row" spacing={1}>
           {data.isOpen ? (

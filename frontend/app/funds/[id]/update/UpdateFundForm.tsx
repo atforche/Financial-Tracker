@@ -2,13 +2,13 @@
 
 import { Button, DialogActions, Stack } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
+import routes, { routeBreadcrumbs } from "@/framework/routes";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import type { Fund } from "@/data/fundTypes";
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import routes from "@/framework/routes";
 import updateFund from "@/app/funds/[id]/update/updateFund";
 
 /**
@@ -18,54 +18,6 @@ interface UpdateFundFormProps {
   readonly fund: Fund;
   readonly providedAccountingPeriod?: AccountingPeriod | null;
 }
-
-/**
- * Gets the breadcrumbs to be displayed at the top of the form.
- */
-const getBreadcrumbs = function (
-  fund: Fund,
-  providedAccountingPeriod: AccountingPeriod | null,
-): JSX.Element {
-  if (providedAccountingPeriod !== null) {
-    return (
-      <Breadcrumbs
-        breadcrumbs={[
-          {
-            label: "Accounting Periods",
-            href: routes.accountingPeriods.index,
-          },
-          {
-            label: providedAccountingPeriod.name,
-            href: routes.accountingPeriods.detail(providedAccountingPeriod.id),
-          },
-          {
-            label: fund.name,
-            href: routes.accountingPeriods.fundDetail(
-              providedAccountingPeriod.id,
-              fund.id,
-            ),
-          },
-          {
-            label: "Update",
-            href: routes.funds.update(fund.id),
-          },
-        ]}
-      />
-    );
-  }
-  return (
-    <Breadcrumbs
-      breadcrumbs={[
-        { label: "Funds", href: routes.funds.index },
-        { label: fund.name, href: routes.funds.detail(fund.id) },
-        {
-          label: "Update",
-          href: routes.funds.update(fund.id),
-        },
-      ]}
-    />
-  );
-};
 
 /**
  * Gets the URL to redirect the user to after successfully updating a fund.
@@ -100,7 +52,12 @@ const UpdateFundForm = function ({
 
   return (
     <Stack spacing={2}>
-      {getBreadcrumbs(fund, providedAccountingPeriod)}
+      <Breadcrumbs
+        breadcrumbs={routeBreadcrumbs.funds.update(
+          fund,
+          providedAccountingPeriod,
+        )}
+      />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <StringEntryField
           label="Name"

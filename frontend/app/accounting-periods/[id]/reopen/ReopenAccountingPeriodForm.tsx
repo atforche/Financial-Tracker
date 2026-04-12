@@ -2,12 +2,12 @@
 
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState } from "react";
+import routes, { routeBreadcrumbs } from "@/framework/routes";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
 import reopenAccountingPeriod from "@/app/accounting-periods/[id]/reopen/reopenAccountingPeriod";
-import routes from "@/framework/routes";
 
 /**
  * Props for the ReopenAccountingPeriodForm component.
@@ -29,20 +29,9 @@ const ReopenAccountingPeriodForm = function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={[
-          {
-            label: "Accounting Periods",
-            href: routes.accountingPeriods.index,
-          },
-          {
-            label: accountingPeriod.name,
-            href: routes.accountingPeriods.detail(accountingPeriod.id),
-          },
-          {
-            label: "Reopen",
-            href: routes.accountingPeriods.reopen(accountingPeriod.id),
-          },
-        ]}
+        breadcrumbs={routeBreadcrumbs.accountingPeriods.reopen(
+          accountingPeriod,
+        )}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <Typography>

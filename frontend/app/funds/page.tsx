@@ -5,7 +5,7 @@ import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import { Stack } from "@mui/material";
 import getApiClient from "@/data/getApiClient";
-import routes from "@/framework/routes";
+import { routeBreadcrumbs } from "@/framework/routes";
 
 /**
  * Props for the Page component.
@@ -40,14 +40,7 @@ const Page = async function ({
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs
-        breadcrumbs={[
-          {
-            label: "Funds",
-            href: routes.funds.index,
-          },
-        ]}
-      />
+      <Breadcrumbs breadcrumbs={routeBreadcrumbs.funds.index()} />
       <SearchBar paramName="search" />
       <FundListFrame data={data.items} totalCount={data.totalCount} />
     </Stack>

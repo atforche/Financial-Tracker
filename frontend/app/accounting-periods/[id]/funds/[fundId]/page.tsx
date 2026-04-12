@@ -1,5 +1,5 @@
 import { Button, Stack, Typography } from "@mui/material";
-import routes, { withQuery } from "@/framework/routes";
+import routes, { routeBreadcrumbs, withQuery } from "@/framework/routes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
@@ -104,20 +104,16 @@ const Page = async function ({
         maxWidth={1000}
       >
         <Breadcrumbs
-          breadcrumbs={[
+          breadcrumbs={routeBreadcrumbs.accountingPeriods.fundDetail(
             {
-              label: "Accounting Periods",
-              href: routes.accountingPeriods.index,
+              id,
+              name: accountingPeriodData.name,
             },
             {
-              label: accountingPeriodData.name,
-              href: routes.accountingPeriods.detail(id),
+              id: fundId,
+              name: fundData.name,
             },
-            {
-              label: fundData.name,
-              href: routes.accountingPeriods.fundDetail(id, fundId),
-            },
-          ]}
+          )}
         />
         <Stack direction="row" spacing={1}>
           <Button

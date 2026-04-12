@@ -1,4 +1,5 @@
 import { Button, Stack, Typography } from "@mui/material";
+import routes, { routeBreadcrumbs } from "@/framework/routes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
@@ -8,7 +9,6 @@ import SearchBar from "@/framework/listframe/SearchBar";
 import TransactionListFrame from "@/app/funds/[id]/TransactionListFrame";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/data/getApiClient";
-import routes from "@/framework/routes";
 
 /**
  * Props for the Page Component.
@@ -79,10 +79,10 @@ const Page = async function ({
         maxWidth={1000}
       >
         <Breadcrumbs
-          breadcrumbs={[
-            { label: "Funds", href: routes.funds.index },
-            { label: fundData.name, href: routes.funds.detail(id) },
-          ]}
+          breadcrumbs={routeBreadcrumbs.funds.detail({
+            id,
+            name: fundData.name,
+          })}
         />
         <Stack direction="row" spacing={1}>
           <Button

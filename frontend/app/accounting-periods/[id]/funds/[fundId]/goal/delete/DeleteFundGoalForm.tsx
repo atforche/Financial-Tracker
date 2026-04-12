@@ -3,11 +3,11 @@
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import type { Fund, FundGoal } from "@/data/fundTypes";
 import { type JSX, startTransition, useActionState } from "react";
+import routes, { routeBreadcrumbs } from "@/framework/routes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
 import deleteFundGoal from "@/app/accounting-periods/[id]/funds/[fundId]/goal/delete/deleteFundGoal";
-import routes from "@/framework/routes";
 
 /**
  * Props for the DeleteFundGoalForm component.
@@ -37,27 +37,13 @@ const DeleteFundGoalForm = function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={[
+        breadcrumbs={routeBreadcrumbs.accountingPeriods.fundGoalDelete(
           {
-            label: "Accounting Periods",
-            href: routes.accountingPeriods.index,
+            id: fundGoal.accountingPeriodId,
+            name: fundGoal.accountingPeriodName,
           },
-          {
-            label: fundGoal.accountingPeriodName,
-            href: routes.accountingPeriods.detail(fundGoal.accountingPeriodId),
-          },
-          {
-            label: fund.name,
-            href: redirectUrl,
-          },
-          {
-            label: "Delete Goal",
-            href: routes.accountingPeriods.fundGoalDelete(
-              fundGoal.accountingPeriodId,
-              fund.id,
-            ),
-          },
-        ]}
+          fund,
+        )}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <Typography>
