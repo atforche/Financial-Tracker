@@ -7,6 +7,7 @@ import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
 import closeAccountingPeriod from "@/app/accounting-periods/[id]/close/closeAccountingPeriod";
+import routes from "@/framework/routes";
 
 /**
  * Props for the CloseAccountingPeriodForm component.
@@ -31,15 +32,15 @@ const CloseAccountingPeriodForm = function ({
         breadcrumbs={[
           {
             label: "Accounting Periods",
-            href: "/accounting-periods",
+            href: routes.accountingPeriods.index,
           },
           {
             label: accountingPeriod.name,
-            href: `/accounting-periods/${accountingPeriod.id}`,
+            href: routes.accountingPeriods.detail(accountingPeriod.id),
           },
           {
             label: "Close",
-            href: `/accounting-periods/${accountingPeriod.id}/close`,
+            href: routes.accountingPeriods.close(accountingPeriod.id),
           },
         ]}
       />
@@ -50,7 +51,7 @@ const CloseAccountingPeriodForm = function ({
         </Typography>
         <DialogActions>
           <Link
-            href={`/accounting-periods/${accountingPeriod.id}`}
+            href={routes.accountingPeriods.detail(accountingPeriod.id)}
             tabIndex={-1}
           >
             <Button variant="outlined">Cancel</Button>

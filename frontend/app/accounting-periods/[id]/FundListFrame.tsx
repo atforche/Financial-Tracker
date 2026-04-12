@@ -4,6 +4,7 @@ import {
   type AccountingPeriodFund,
   AccountingPeriodFundSortOrder,
 } from "@/data/fundTypes";
+import routes, { withQuery } from "@/framework/routes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
@@ -213,7 +214,9 @@ const FundListFrame = function ({
           icon={<AddCircleOutline />}
           onClick={() => {
             router.push(
-              `/funds/create?accountingPeriodId=${accountingPeriod.id}`,
+              withQuery(routes.funds.create, {
+                accountingPeriodId: accountingPeriod.id,
+              }),
             );
           }}
           disabled={!accountingPeriod.isOpen}
@@ -224,7 +227,9 @@ const FundListFrame = function ({
           label="View"
           icon={<ArrowForwardIos />}
           onClick={() => {
-            router.push(`${pathname}/funds/${fund.id}`);
+            router.push(
+              routes.accountingPeriods.fundDetail(accountingPeriod.id, fund.id),
+            );
           }}
         />
       ),

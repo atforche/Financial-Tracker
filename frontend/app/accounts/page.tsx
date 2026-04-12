@@ -5,6 +5,7 @@ import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import { Stack } from "@mui/material";
 import getApiClient from "@/data/getApiClient";
+import routes from "@/framework/routes";
 
 /**
  * Props for the Page component.
@@ -43,7 +44,7 @@ const Page = async function ({
         breadcrumbs={[
           {
             label: "Accounts",
-            href: "/accounts",
+            href: routes.accounts.index,
           },
         ]}
       />

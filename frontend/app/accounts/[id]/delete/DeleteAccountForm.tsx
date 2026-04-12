@@ -8,6 +8,7 @@ import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
 import deleteAccount from "@/app/accounts/[id]/delete/deleteAccount";
+import routes from "@/framework/routes";
 
 /**
  * Props for the DeleteAccountForm component.
@@ -30,23 +31,15 @@ const getBreadcrumbs = function (
         breadcrumbs={[
           {
             label: "Accounting Periods",
-            href: "/accounting-periods",
+            href: routes.accountingPeriods.index,
           },
           {
             label: accountingPeriod.name,
-            href: `/accounting-periods/${accountingPeriod.id}`,
+            href: routes.accountingPeriods.detail(accountingPeriod.id),
           },
           {
-            label: "Accounts",
-            href: `/accounting-periods/${accountingPeriod.id}/accounts`,
-          },
-          {
-            label: account.name,
-            href: `/accounting-periods/${accountingPeriod.id}/accounts/${account.id}`,
-          },
-          {
-            label: "Delete",
-            href: `/accounts/${account.id}/delete`,
+            label: `Delete ${account.name}`,
+            href: routes.accounts.delete(account.id),
           },
         ]}
       />
@@ -57,15 +50,11 @@ const getBreadcrumbs = function (
       breadcrumbs={[
         {
           label: "Accounts",
-          href: "/accounts",
+          href: routes.accounts.index,
         },
         {
-          label: account.name,
-          href: `/accounts/${account.id}`,
-        },
-        {
-          label: "Delete",
-          href: `/accounts/${account.id}/delete`,
+          label: `Delete ${account.name}`,
+          href: routes.accounts.delete(account.id),
         },
       ]}
     />
@@ -79,9 +68,9 @@ const getRedirectUrl = function (
   accountingPeriod: AccountingPeriod | null,
 ): string {
   if (accountingPeriod !== null) {
-    return `/accounting-periods/${accountingPeriod.id}`;
+    return routes.accountingPeriods.detail(accountingPeriod.id);
   }
-  return "/accounts";
+  return routes.accounts.index;
 };
 
 /**

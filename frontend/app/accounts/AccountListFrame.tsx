@@ -2,12 +2,8 @@
 
 import { type Account, AccountSortOrder } from "@/data/accountTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
-import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
-import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
-import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
@@ -134,28 +130,6 @@ const AccountListFrame = function ({
         }
       },
       minWidth: 125,
-      alignment: "right",
-    },
-    {
-      name: "actions",
-      headerContent: (
-        <IconButton
-          label="Add"
-          icon={<AddCircleOutline />}
-          onClick={() => {
-            router.push(`${pathname}/create`);
-          }}
-        />
-      ),
-      getBodyContent: (account: Account) => (
-        <ColumnButton
-          label="View"
-          icon={<ArrowForwardIos />}
-          onClick={() => {
-            router.push(`${pathname}/${account.id}`);
-          }}
-        />
-      ),
       alignment: "right",
     },
   ];

@@ -17,6 +17,8 @@ import {
 } from "@mui/material";
 import type { JSX } from "react";
 import Link from "next/link";
+import type { Route } from "next";
+import routes from "@/framework/routes";
 import { usePathname } from "next/navigation";
 
 /**
@@ -24,7 +26,7 @@ import { usePathname } from "next/navigation";
  */
 interface NavigationLink {
   name: string;
-  href: string;
+  href: Route;
   icon: JSX.Element;
 }
 
@@ -32,14 +34,14 @@ interface NavigationLink {
  * Collection of links to be displayed in the application's navigation menu.
  */
 const links: NavigationLink[] = [
-  { name: "Overview", href: "/", icon: <GridView /> },
+  { name: "Overview", href: routes.home, icon: <GridView /> },
   {
     name: "Accounting Periods",
-    href: "/accounting-periods",
+    href: routes.accountingPeriods.index,
     icon: <CalendarMonth />,
   },
-  { name: "Accounts", href: "/accounts", icon: <AccountBalance /> },
-  { name: "Funds", href: "/funds", icon: <Assessment /> },
+  { name: "Accounts", href: routes.accounts.index, icon: <AccountBalance /> },
+  { name: "Funds", href: routes.funds.index, icon: <Assessment /> },
 ];
 
 /**

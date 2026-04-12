@@ -7,6 +7,7 @@ import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
 import deleteFundGoal from "@/app/accounting-periods/[id]/funds/[fundId]/goal/delete/deleteFundGoal";
+import routes from "@/framework/routes";
 
 /**
  * Props for the DeleteFundGoalForm component.
@@ -23,7 +24,10 @@ const DeleteFundGoalForm = function ({
   fund,
   fundGoal,
 }: DeleteFundGoalFormProps): JSX.Element {
-  const redirectUrl = `/accounting-periods/${fundGoal.accountingPeriodId}/funds/${fund.id}`;
+  const redirectUrl = routes.accountingPeriods.fundDetail(
+    fundGoal.accountingPeriodId,
+    fund.id,
+  );
   const [state, action, pending] = useActionState(deleteFundGoal, {
     fundId: fund.id,
     accountingPeriodId: fundGoal.accountingPeriodId,
@@ -34,10 +38,13 @@ const DeleteFundGoalForm = function ({
     <Stack spacing={2}>
       <Breadcrumbs
         breadcrumbs={[
-          { label: "Accounting Periods", href: "/accounting-periods" },
+          {
+            label: "Accounting Periods",
+            href: routes.accountingPeriods.index,
+          },
           {
             label: fundGoal.accountingPeriodName,
-            href: `/accounting-periods/${fundGoal.accountingPeriodId}`,
+            href: routes.accountingPeriods.detail(fundGoal.accountingPeriodId),
           },
           {
             label: fund.name,
@@ -45,7 +52,10 @@ const DeleteFundGoalForm = function ({
           },
           {
             label: "Delete Goal",
-            href: `/accounting-periods/${fundGoal.accountingPeriodId}/funds/${fund.id}/goals/delete`,
+            href: routes.accountingPeriods.fundGoalDelete(
+              fundGoal.accountingPeriodId,
+              fund.id,
+            ),
           },
         ]}
       />

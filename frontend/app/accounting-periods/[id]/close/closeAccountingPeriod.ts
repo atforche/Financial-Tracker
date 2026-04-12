@@ -5,6 +5,7 @@ import getApiClient from "@/data/getApiClient";
 import { isApiError } from "@/data/apiError";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import routes from "@/framework/routes";
 
 /**
  * Interface representing the state of closing an accounting period.
@@ -47,7 +48,7 @@ const closeAccountingPeriod = async function ({
     throw new Error("An unexpected error occurred", { cause: error });
   }
 
-  const redirectUrl = `/accounting-periods/${accountingPeriodId}`;
+  const redirectUrl = routes.accountingPeriods.detail(accountingPeriodId);
   revalidatePath(redirectUrl);
   redirect(redirectUrl);
 };

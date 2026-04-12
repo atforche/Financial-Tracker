@@ -5,14 +5,9 @@ import {
   type AccountType,
   isPositiveChangeInBalance,
 } from "@/data/accountTypes";
-import { AddCircleOutline, RemoveCircleOutline } from "@mui/icons-material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
-import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
-import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
-import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import type { Transaction } from "@/data/transactionTypes";
@@ -34,7 +29,6 @@ interface TransactionListFrameProps {
   readonly account: Account;
   readonly data: Transaction[] | null;
   readonly totalCount: number | null;
-  readonly accountingPeriod?: AccountingPeriod | null;
 }
 
 /**
@@ -57,27 +51,12 @@ const getChangeInBalance = function (
 };
 
 /**
- * Gets the URL to view a transaction, including appropriate query parameters to maintain context of the account and accounting period if applicable.
- */
-const getViewTransactionUrl = function (
-  transaction: Transaction,
-  account: Account,
-  accountingPeriod: AccountingPeriod | null,
-): string {
-  if (accountingPeriod !== null) {
-    return `/transactions/${transaction.id}?accountingPeriodId=${accountingPeriod.id}&accountId=${account.id}`;
-  }
-  return `/transactions/${transaction.id}?accountId=${account.id}`;
-};
-
-/**
  * Component that displays the list of transactions for an account.
  */
 const TransactionListFrame = function ({
   account,
   data,
   totalCount,
-  accountingPeriod,
 }: TransactionListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -172,69 +151,6 @@ const TransactionListFrame = function ({
           setSort(null);
         }
       },
-      alignment: "right",
-    },
-    {
-      name: "actions",
-      headerContent: (
-        <>
-          <IconButton
-            label="Add Debit"
-            icon={<RemoveCircleOutline />}
-            onClick={() => {
-              const params = new URLSearchParams();
-              params.set("debitAccountId", account.id);
-              if (
-                typeof accountingPeriod !== "undefined" &&
-                accountingPeriod !== null
-              ) {
-                params.set("accountingPeriodId", accountingPeriod.id);
-              }
-              router.push(`/transactions/create?${params.toString()}`);
-            }}
-            disabled={
-              typeof accountingPeriod !== "undefined" &&
-              accountingPeriod !== null &&
-              !accountingPeriod.isOpen
-            }
-          />
-          <IconButton
-            label="Add Credit"
-            icon={<AddCircleOutline />}
-            onClick={() => {
-              const params = new URLSearchParams();
-              params.set("creditAccountId", account.id);
-              if (
-                typeof accountingPeriod !== "undefined" &&
-                accountingPeriod !== null
-              ) {
-                params.set("accountingPeriodId", accountingPeriod.id);
-              }
-              router.push(`/transactions/create?${params.toString()}`);
-            }}
-            disabled={
-              typeof accountingPeriod !== "undefined" &&
-              accountingPeriod !== null &&
-              !accountingPeriod.isOpen
-            }
-          />
-        </>
-      ),
-      getBodyContent: (transaction: Transaction) => (
-        <ColumnButton
-          label="View"
-          icon={<ArrowForwardIos />}
-          onClick={() => {
-            router.push(
-              getViewTransactionUrl(
-                transaction,
-                account,
-                accountingPeriod ?? null,
-              ),
-            );
-          }}
-        />
-      ),
       alignment: "right",
     },
   ];

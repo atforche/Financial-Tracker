@@ -14,6 +14,7 @@ import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
+import routes from "@/framework/routes";
 import tryParseEnum from "@/data/tryParseEnum";
 
 /**
@@ -146,7 +147,7 @@ const AccountingPeriodListFrame = function ({
           label="Add"
           icon={<AddCircleOutline />}
           onClick={() => {
-            router.push(`${pathname}/create`);
+            router.push(routes.accountingPeriods.create);
           }}
         />
       ),
@@ -155,7 +156,7 @@ const AccountingPeriodListFrame = function ({
           label="View"
           icon={<ArrowForwardIos />}
           onClick={() => {
-            router.push(`${pathname}/${accountingPeriod.id}`);
+            router.push(routes.accountingPeriods.detail(accountingPeriod.id));
           }}
         />
       ),

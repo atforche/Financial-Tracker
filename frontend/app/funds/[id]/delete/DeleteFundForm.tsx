@@ -8,6 +8,7 @@ import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import type { Fund } from "@/data/fundTypes";
 import Link from "next/link";
 import deleteFund from "@/app/funds/[id]/delete/deleteFund";
+import routes from "@/framework/routes";
 
 /**
  * Props for the DeleteFundForm component.
@@ -28,22 +29,24 @@ const getBreadcrumbs = function (
     return (
       <Breadcrumbs
         breadcrumbs={[
-          { label: "Accounting Periods", href: "/accounting-periods" },
           {
-            label: accountingPeriod.name,
-            href: `/accounting-periods/${accountingPeriod.id}`,
+            label: "Accounting Periods",
+            href: routes.accountingPeriods.index,
           },
           {
-            label: "Funds",
-            href: `/accounting-periods/${accountingPeriod.id}/funds`,
+            label: accountingPeriod.name,
+            href: routes.accountingPeriods.detail(accountingPeriod.id),
           },
           {
             label: fund.name,
-            href: `/accounting-periods/${accountingPeriod.id}/funds/${fund.id}`,
+            href: routes.accountingPeriods.fundDetail(
+              accountingPeriod.id,
+              fund.id,
+            ),
           },
           {
             label: "Delete",
-            href: `/funds/${fund.id}/delete`,
+            href: routes.funds.delete(fund.id),
           },
         ]}
       />
@@ -52,11 +55,11 @@ const getBreadcrumbs = function (
   return (
     <Breadcrumbs
       breadcrumbs={[
-        { label: "Funds", href: "/funds" },
-        { label: fund.name, href: `/funds/${fund.id}` },
+        { label: "Funds", href: routes.funds.index },
+        { label: fund.name, href: routes.funds.detail(fund.id) },
         {
           label: "Delete",
-          href: `/funds/${fund.id}/delete`,
+          href: routes.funds.delete(fund.id),
         },
       ]}
     />
@@ -70,9 +73,9 @@ const getRedirectUrl = function (
   accountingPeriod: AccountingPeriod | null,
 ): string {
   if (accountingPeriod !== null) {
-    return `/accounting-periods/${accountingPeriod.id}`;
+    return routes.accountingPeriods.detail(accountingPeriod.id);
   }
-  return "/funds";
+  return routes.funds.index;
 };
 
 /**

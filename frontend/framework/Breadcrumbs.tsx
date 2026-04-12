@@ -1,13 +1,14 @@
 import { Breadcrumbs as MuiBreadcrumbs, Typography } from "@mui/material";
 import type { JSX } from "react";
 import Link from "next/link";
+import type { Route } from "next";
 
 /**
  * Interface representing a breadcrumb item in the application's navigation.
  */
 interface Breadcrumb {
   readonly label: string;
-  readonly href: string;
+  readonly href: Route;
 }
 
 /**

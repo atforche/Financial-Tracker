@@ -8,6 +8,7 @@ import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
+import routes from "@/framework/routes";
 import updateAccount from "@/app/accounts/[id]/update/updateAccount";
 
 /**
@@ -29,18 +30,17 @@ const getBreadcrumbs = function (
     return (
       <Breadcrumbs
         breadcrumbs={[
-          { label: "Accounting Periods", href: "/accounting-periods" },
+          {
+            label: "Accounting Periods",
+            href: routes.accountingPeriods.index,
+          },
           {
             label: providedAccountingPeriod.name,
-            href: `/accounting-periods/${providedAccountingPeriod.id}`,
+            href: routes.accountingPeriods.detail(providedAccountingPeriod.id),
           },
           {
-            label: account.name,
-            href: `/accounting-periods/${providedAccountingPeriod.id}/accounts/${account.id}`,
-          },
-          {
-            label: "Update",
-            href: `/accounts/${account.id}/update`,
+            label: `Update ${account.name}`,
+            href: routes.accounts.update(account.id),
           },
         ]}
       />
@@ -49,11 +49,10 @@ const getBreadcrumbs = function (
   return (
     <Breadcrumbs
       breadcrumbs={[
-        { label: "Accounts", href: "/accounts" },
-        { label: account.name, href: `/accounts/${account.id}` },
+        { label: "Accounts", href: routes.accounts.index },
         {
-          label: "Update",
-          href: `/accounts/${account.id}/update`,
+          label: `Update ${account.name}`,
+          href: routes.accounts.update(account.id),
         },
       ]}
     />
@@ -64,13 +63,12 @@ const getBreadcrumbs = function (
  * Gets the URL to redirect the user to after successfully creating an account.
  */
 const getRedirectUrl = function (
-  account: Account,
   providedAccountingPeriod: AccountingPeriod | null,
 ): string {
   if (providedAccountingPeriod !== null) {
-    return `/accounting-periods/${providedAccountingPeriod.id}/accounts/${account.id}`;
+    return routes.accountingPeriods.detail(providedAccountingPeriod.id);
   }
-  return `/accounts/${account.id}`;
+  return routes.accounts.index;
 };
 
 /**
@@ -84,7 +82,7 @@ const UpdateAccountForm = function ({
 
   const [state, action, pending] = useActionState(updateAccount, {
     accountId: account.id,
-    redirectUrl: getRedirectUrl(account, providedAccountingPeriod),
+    redirectUrl: getRedirectUrl(providedAccountingPeriod),
   });
 
   return (
@@ -98,10 +96,7 @@ const UpdateAccountForm = function ({
           errorMessage={state.nameErrors ?? null}
         />
         <DialogActions>
-          <Link
-            href={getRedirectUrl(account, providedAccountingPeriod)}
-            tabIndex={-1}
-          >
+          <Link href={getRedirectUrl(providedAccountingPeriod)} tabIndex={-1}>
             <Button variant="outlined">Cancel</Button>
           </Link>
           <Button

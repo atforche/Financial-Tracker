@@ -7,6 +7,7 @@ import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import IntegerEntryField from "@/framework/forms/IntegerEntryField";
 import Link from "next/link";
 import createAccountingPeriod from "@/app/accounting-periods/create/createAccountingPeriod";
+import routes from "@/framework/routes";
 
 /**
  * Component that displays the create Accounting Period page.
@@ -20,8 +21,8 @@ const Page = function (): JSX.Element {
     <Stack spacing={2}>
       <Breadcrumbs
         breadcrumbs={[
-          { label: "Accounting Periods", href: "/accounting-periods" },
-          { label: "Create", href: "/accounting-periods/create" },
+          { label: "Accounting Periods", href: routes.accountingPeriods.index },
+          { label: "Create", href: routes.accountingPeriods.create },
         ]}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
@@ -38,7 +39,7 @@ const Page = function (): JSX.Element {
           errorMessage={state.monthErrors ?? null}
         />
         <DialogActions>
-          <Link href="/accounting-periods" tabIndex={-1}>
+          <Link href={routes.accountingPeriods.index} tabIndex={-1}>
             <Button variant="outlined">Cancel</Button>
           </Link>
           <Button

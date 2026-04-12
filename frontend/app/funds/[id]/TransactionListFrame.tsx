@@ -1,9 +1,6 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
-import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
-import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import { FundTransactionSortOrder } from "@/data/fundTypes";
@@ -27,7 +24,6 @@ interface TransactionListFrameProps {
   readonly fund: Fund;
   readonly data: Transaction[] | null;
   readonly totalCount: number | null;
-  readonly accountingPeriod?: AccountingPeriod | null;
 }
 
 /**
@@ -47,27 +43,12 @@ const getChangeInBalance = function (
 };
 
 /**
- * Gets the URL to view a transaction, including appropriate query parameters to maintain context of the fund.
- */
-const getViewTransactionUrl = function (
-  transaction: Transaction,
-  fund: Fund,
-  accountingPeriod: AccountingPeriod | null,
-): string {
-  if (accountingPeriod !== null) {
-    return `/transactions/${transaction.id}?accountingPeriodId=${accountingPeriod.id}&fundId=${fund.id}`;
-  }
-  return `/transactions/${transaction.id}?fundId=${fund.id}`;
-};
-
-/**
  * Component that displays the list of transactions for a fund.
  */
 const TransactionListFrame = function ({
   fund,
   data,
   totalCount,
-  accountingPeriod,
 }: TransactionListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -160,26 +141,6 @@ const TransactionListFrame = function ({
           setSort(null);
         }
       },
-      alignment: "right",
-    },
-    {
-      name: "actions",
-      headerContent: "",
-      getBodyContent: (transaction: Transaction) => (
-        <ColumnButton
-          label="View"
-          icon={<ArrowForwardIos />}
-          onClick={() => {
-            router.push(
-              getViewTransactionUrl(
-                transaction,
-                fund,
-                accountingPeriod ?? null,
-              ),
-            );
-          }}
-        />
-      ),
       alignment: "right",
     },
   ];

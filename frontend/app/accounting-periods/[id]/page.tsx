@@ -9,6 +9,7 @@ import CaptionedValue from "@/framework/view/CaptionedValue";
 import type { JSX } from "react";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/data/getApiClient";
+import routes from "@/framework/routes";
 
 /**
  * Props for the Page component.
@@ -129,8 +130,11 @@ const Page = async function ({
       >
         <Breadcrumbs
           breadcrumbs={[
-            { label: "Accounting Periods", href: "/accounting-periods" },
-            { label: data.name, href: `/accounting-periods/${id}` },
+            {
+              label: "Accounting Periods",
+              href: routes.accountingPeriods.index,
+            },
+            { label: data.name, href: routes.accountingPeriods.detail(id) },
           ]}
         />
         <Stack direction="row" spacing={1}>
@@ -138,7 +142,7 @@ const Page = async function ({
             <Button
               variant="contained"
               color="primary"
-              href={`/accounting-periods/${id}/close`}
+              href={routes.accountingPeriods.close(id)}
             >
               Close
             </Button>
@@ -146,7 +150,7 @@ const Page = async function ({
             <Button
               variant="contained"
               color="primary"
-              href={`/accounting-periods/${id}/reopen`}
+              href={routes.accountingPeriods.reopen(id)}
             >
               Reopen
             </Button>
@@ -154,7 +158,7 @@ const Page = async function ({
           <Button
             variant="contained"
             color="error"
-            href={`/accounting-periods/${id}/delete`}
+            href={routes.accountingPeriods.delete(id)}
           >
             Delete
           </Button>

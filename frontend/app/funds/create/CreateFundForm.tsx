@@ -18,6 +18,7 @@ import FundGoalTypeEntryField from "@/framework/forms/FundGoalTypeEntryField";
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import createFund from "@/app/funds/create/createFund";
+import routes from "@/framework/routes";
 
 /**
  * Props for the CreateFundForm component.
@@ -37,14 +38,17 @@ const getBreadcrumbs = function (
     return (
       <Breadcrumbs
         breadcrumbs={[
-          { label: "Accounting Periods", href: "/accounting-periods" },
+          {
+            label: "Accounting Periods",
+            href: routes.accountingPeriods.index,
+          },
           {
             label: providedAccountingPeriod.name,
-            href: `/accounting-periods/${providedAccountingPeriod.id}`,
+            href: routes.accountingPeriods.detail(providedAccountingPeriod.id),
           },
           {
             label: "Create Fund",
-            href: `/funds/create`,
+            href: routes.funds.create,
           },
         ]}
       />
@@ -53,10 +57,10 @@ const getBreadcrumbs = function (
   return (
     <Breadcrumbs
       breadcrumbs={[
-        { label: "Funds", href: "/funds" },
+        { label: "Funds", href: routes.funds.index },
         {
           label: "Create",
-          href: `/funds/create`,
+          href: routes.funds.create,
         },
       ]}
     />
@@ -70,9 +74,9 @@ const getRedirectUrl = function (
   providedAccountingPeriod: AccountingPeriod | null,
 ): string {
   if (providedAccountingPeriod !== null) {
-    return `/accounting-periods/${providedAccountingPeriod.id}`;
+    return routes.accountingPeriods.detail(providedAccountingPeriod.id);
   }
-  return "/funds";
+  return routes.funds.index;
 };
 
 /**

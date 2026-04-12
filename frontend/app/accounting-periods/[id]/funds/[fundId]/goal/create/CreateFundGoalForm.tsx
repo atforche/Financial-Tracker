@@ -10,6 +10,7 @@ import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FundGoalTypeEntryField from "@/framework/forms/FundGoalTypeEntryField";
 import Link from "next/link";
 import createFundGoal from "@/app/accounting-periods/[id]/funds/[fundId]/goal/create/createFundGoal";
+import routes from "@/framework/routes";
 
 /**
  * Props for the CreateFundGoalForm component.
@@ -29,7 +30,10 @@ const CreateFundGoalForm = function ({
   const [goalType, setGoalType] = useState<FundGoalType | null>(null);
   const [goalAmount, setGoalAmount] = useState<number | null>(null);
 
-  const redirectUrl = `/accounting-periods/${accountingPeriod.id}/funds/${fund.id}`;
+  const redirectUrl = routes.accountingPeriods.fundDetail(
+    accountingPeriod.id,
+    fund.id,
+  );
   const [state, action, pending] = useActionState(createFundGoal, {
     fundId: fund.id,
     redirectUrl,
@@ -39,18 +43,27 @@ const CreateFundGoalForm = function ({
     <Stack spacing={2}>
       <Breadcrumbs
         breadcrumbs={[
-          { label: "Accounting Periods", href: "/accounting-periods" },
+          {
+            label: "Accounting Periods",
+            href: routes.accountingPeriods.index,
+          },
           {
             label: accountingPeriod.name,
-            href: `/accounting-periods/${accountingPeriod.id}`,
+            href: routes.accountingPeriods.detail(accountingPeriod.id),
           },
           {
             label: fund.name,
-            href: `/accounting-periods/${accountingPeriod.id}/funds/${fund.id}`,
+            href: routes.accountingPeriods.fundDetail(
+              accountingPeriod.id,
+              fund.id,
+            ),
           },
           {
             label: "Add Goal",
-            href: `/funds/${fund.id}/goals/create?accountingPeriodId=${accountingPeriod.id}`,
+            href: routes.accountingPeriods.fundGoalCreate(
+              accountingPeriod.id,
+              fund.id,
+            ),
           },
         ]}
       />

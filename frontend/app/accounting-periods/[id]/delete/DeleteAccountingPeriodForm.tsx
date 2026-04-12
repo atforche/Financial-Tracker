@@ -7,6 +7,7 @@ import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
 import deleteAccountingPeriod from "@/app/accounting-periods/[id]/delete/deleteAccountingPeriod";
+import routes from "@/framework/routes";
 
 /**
  * Props for the DeleteAccountingPeriodForm component.
@@ -31,15 +32,15 @@ const DeleteAccountingPeriodForm = function ({
         breadcrumbs={[
           {
             label: "Accounting Periods",
-            href: "/accounting-periods",
+            href: routes.accountingPeriods.index,
           },
           {
             label: accountingPeriod.name,
-            href: `/accounting-periods/${accountingPeriod.id}`,
+            href: routes.accountingPeriods.detail(accountingPeriod.id),
           },
           {
             label: "Delete",
-            href: `/accounting-periods/${accountingPeriod.id}/delete`,
+            href: routes.accountingPeriods.delete(accountingPeriod.id),
           },
         ]}
       />
@@ -50,7 +51,7 @@ const DeleteAccountingPeriodForm = function ({
         </Typography>
         <DialogActions>
           <Link
-            href={`/accounting-periods/${accountingPeriod.id}`}
+            href={routes.accountingPeriods.detail(accountingPeriod.id)}
             tabIndex={-1}
           >
             <Button variant="outlined">Cancel</Button>

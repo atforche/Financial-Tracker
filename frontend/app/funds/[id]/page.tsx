@@ -8,6 +8,7 @@ import SearchBar from "@/framework/listframe/SearchBar";
 import TransactionListFrame from "@/app/funds/[id]/TransactionListFrame";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/data/getApiClient";
+import routes from "@/framework/routes";
 
 /**
  * Props for the Page Component.
@@ -79,15 +80,15 @@ const Page = async function ({
       >
         <Breadcrumbs
           breadcrumbs={[
-            { label: "Funds", href: "/funds" },
-            { label: fundData.name, href: `/funds/${id}` },
+            { label: "Funds", href: routes.funds.index },
+            { label: fundData.name, href: routes.funds.detail(id) },
           ]}
         />
         <Stack direction="row" spacing={1}>
           <Button
             variant="contained"
             color="primary"
-            href={`/funds/${id}/update`}
+            href={routes.funds.update(id)}
             disabled={fundData.isSystemFund}
           >
             Edit
@@ -95,7 +96,7 @@ const Page = async function ({
           <Button
             variant="contained"
             color="error"
-            href={`/funds/${id}/delete`}
+            href={routes.funds.delete(id)}
             disabled={fundData.isSystemFund}
           >
             Delete

@@ -8,6 +8,7 @@ import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FundGoalTypeEntryField from "@/framework/forms/FundGoalTypeEntryField";
 import Link from "next/link";
+import routes from "@/framework/routes";
 import updateFundGoal from "@/app/accounting-periods/[id]/funds/[fundId]/goal/update/updateFundGoal";
 
 /**
@@ -32,7 +33,10 @@ const UpdateFundGoalForm = function ({
     fundGoal.goalAmount,
   );
 
-  const redirectUrl = `/accounting-periods/${fundGoal.accountingPeriodId}/funds/${fund.id}`;
+  const redirectUrl = routes.accountingPeriods.fundDetail(
+    fundGoal.accountingPeriodId,
+    fund.id,
+  );
   const [state, action, pending] = useActionState(updateFundGoal, {
     fundId: fund.id,
     accountingPeriodId: fundGoal.accountingPeriodId,
@@ -43,10 +47,13 @@ const UpdateFundGoalForm = function ({
     <Stack spacing={2}>
       <Breadcrumbs
         breadcrumbs={[
-          { label: "Accounting Periods", href: "/accounting-periods" },
+          {
+            label: "Accounting Periods",
+            href: routes.accountingPeriods.index,
+          },
           {
             label: fundGoal.accountingPeriodName,
-            href: `/accounting-periods/${fundGoal.accountingPeriodId}`,
+            href: routes.accountingPeriods.detail(fundGoal.accountingPeriodId),
           },
           {
             label: fund.name,
@@ -54,7 +61,10 @@ const UpdateFundGoalForm = function ({
           },
           {
             label: "Update Goal",
-            href: `/funds/${fund.id}/goals/${fundGoal.id}/update`,
+            href: routes.accountingPeriods.fundGoalUpdate(
+              fundGoal.accountingPeriodId,
+              fund.id,
+            ),
           },
         ]}
       />

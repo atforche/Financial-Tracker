@@ -1,4 +1,5 @@
 import { Button, Stack, Typography } from "@mui/material";
+import routes, { withQuery } from "@/framework/routes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
@@ -104,14 +105,17 @@ const Page = async function ({
       >
         <Breadcrumbs
           breadcrumbs={[
-            { label: "Accounting Periods", href: "/accounting-periods" },
+            {
+              label: "Accounting Periods",
+              href: routes.accountingPeriods.index,
+            },
             {
               label: accountingPeriodData.name,
-              href: `/accounting-periods/${id}`,
+              href: routes.accountingPeriods.detail(id),
             },
             {
               label: fundData.name,
-              href: `/accounting-periods/${id}/funds/${fundId}`,
+              href: routes.accountingPeriods.fundDetail(id, fundId),
             },
           ]}
         />
@@ -119,7 +123,9 @@ const Page = async function ({
           <Button
             variant="contained"
             color="primary"
-            href={`/funds/${fundId}/update?accountingPeriodId=${id}`}
+            href={withQuery(routes.funds.update(fundId), {
+              accountingPeriodId: id,
+            })}
             disabled={fundData.isSystemFund}
           >
             Edit
@@ -127,7 +133,9 @@ const Page = async function ({
           <Button
             variant="contained"
             color="error"
-            href={`/funds/${fundId}/delete?accountingPeriodId=${id}`}
+            href={withQuery(routes.funds.delete(fundId), {
+              accountingPeriodId: id,
+            })}
             disabled={fundData.isSystemFund}
           >
             Delete
@@ -168,7 +176,6 @@ const Page = async function ({
           fund={fundData}
           data={fundTransactionsData.items}
           totalCount={fundTransactionsData.totalCount}
-          accountingPeriod={accountingPeriodData}
         />
       </Stack>
     </Stack>
