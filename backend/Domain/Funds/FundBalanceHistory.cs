@@ -36,14 +36,14 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     public decimal PostedBalance { get; private set; }
 
     /// <summary>
-    /// Pending Debit Amount for this Fund Balance History
+    /// Pending Amount Spent for this Fund Balance History
     /// </summary>
-    public decimal PendingDebitAmount { get; private set; }
+    public decimal PendingAmountSpent { get; private set; }
 
     /// <summary>
-    /// Pending Credit Amount for this Fund Balance History
+    /// Pending Amount Assigned for this Fund Balance History
     /// </summary>
-    public decimal PendingCreditAmount { get; private set; }
+    public decimal PendingAmountAssigned { get; private set; }
 
     /// <summary>
     /// Updates this Fund Balance History with a new Fund Balance.
@@ -55,15 +55,15 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
             throw new InvalidOperationException("Cannot update Fund Balance History with a Fund Balance for a different Fund");
         }
         PostedBalance = fundBalance.PostedBalance;
-        PendingDebitAmount = fundBalance.PendingDebitAmount;
-        PendingCreditAmount = fundBalance.PendingCreditAmount;
+        PendingAmountSpent = fundBalance.PendingAmountSpent;
+        PendingAmountAssigned = fundBalance.PendingAmountAssigned;
     }
 
     /// <summary>
     /// Converts this Fund Balance History to a Fund Balance
     /// </summary>
     /// <returns></returns>
-    public FundBalance ToFundBalance() => new(FundId, PostedBalance, PendingDebitAmount, PendingCreditAmount);
+    public FundBalance ToFundBalance() => new(FundId, PostedBalance, PendingAmountSpent, PendingAmountAssigned);
 
     /// <summary>
     /// Constructs a new instance of this class

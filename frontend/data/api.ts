@@ -2048,14 +2048,14 @@ export interface components {
             postedBalance: number;
             /**
              * Format: double
-             * @description Pending Debit Amount for the Fund Balance
+             * @description Pending Amount Spent for the Fund Balance
              */
-            pendingDebitAmount: number;
+            pendingAmountSpent: number;
             /**
              * Format: double
-             * @description Pending Credit Amount for the Fund Balance
+             * @description Pending Amount Assigned for the Fund Balance
              */
-            pendingCreditAmount: number;
+            pendingAmountAssigned: number;
         };
         /** @description Model representing a Fund Goal */
         FundGoalModel: {

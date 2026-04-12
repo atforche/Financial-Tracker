@@ -16,7 +16,7 @@ public sealed class FundBalanceMapper(IFundRepository fundRepository)
         FundId = fundBalance.FundId.Value,
         FundName = fundRepository.GetById(fundBalance.FundId).Name,
         PostedBalance = fundBalance.PostedBalance,
-        PendingDebitAmount = fundBalance.PendingDebitAmount,
-        PendingCreditAmount = fundBalance.PendingCreditAmount,
+        PendingAmountSpent = fundBalance.PendingAmountSpent,
+        PendingAmountAssigned = fundBalance.PendingAmountAssigned,
     };
 }

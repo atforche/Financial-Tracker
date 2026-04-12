@@ -71,7 +71,7 @@ public class SpendingTransaction : Transaction
         {
             return existingFundBalance;
         }
-        return existingFundBalance.AddNewPendingDebitAmount(reverse ? -fundAmount.Amount : fundAmount.Amount);
+        return existingFundBalance.AddNewPendingAmountSpent(reverse ? -fundAmount.Amount : fundAmount.Amount);
     }
 
     /// <inheritdoc/>
@@ -82,7 +82,7 @@ public class SpendingTransaction : Transaction
         {
             return existingFundBalance;
         }
-        return existingFundBalance.PostPendingDebit(reverse ? -fundAmount.Amount : fundAmount.Amount);
+        return existingFundBalance.PostPendingAmountSpent(reverse ? -fundAmount.Amount : fundAmount.Amount);
     }
 
     /// <summary>

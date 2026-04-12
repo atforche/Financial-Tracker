@@ -94,7 +94,7 @@ public class IncomeTransaction : Transaction
         {
             return existingFundBalance;
         }
-        return existingFundBalance.AddNewPendingCreditAmount(reverse ? -fundAmount.Amount : fundAmount.Amount);
+        return existingFundBalance.AddNewPendingAmountAssigned(reverse ? -fundAmount.Amount : fundAmount.Amount);
     }
 
     /// <inheritdoc/>
@@ -105,7 +105,7 @@ public class IncomeTransaction : Transaction
         {
             return existingFundBalance;
         }
-        return existingFundBalance.PostPendingCredit(reverse ? -fundAmount.Amount : fundAmount.Amount);
+        return existingFundBalance.PostPendingAmountAssigned(reverse ? -fundAmount.Amount : fundAmount.Amount);
     }
 
     /// <summary>
