@@ -13,8 +13,8 @@ import AccountingPeriodEntryField from "@/framework/forms/AccountingPeriodEntryF
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import type { FundType } from "@/data/fundTypes";
-import FundTypeEntryField from "@/framework/forms/FundTypeEntryField";
+import type { FundGoalType } from "@/data/fundTypes";
+import FundGoalTypeEntryField from "@/framework/forms/FundGoalTypeEntryField";
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import createFund from "@/app/funds/create/createFund";
@@ -83,12 +83,12 @@ const CreateFundForm = function ({
   providedAccountingPeriod = null,
 }: CreateFundFormProps): JSX.Element {
   const [name, setName] = useState<string>("");
-  const [type, setType] = useState<FundType | null>(null);
   const [description, setDescription] = useState<string>("");
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(providedAccountingPeriod);
 
   const [specifyGoalAmount, setSpecifyGoalAmount] = useState<boolean>(false);
+  const [goalType, setGoalType] = useState<FundGoalType | null>(null);
   const [goalAmount, setGoalAmount] = useState<number | null>(null);
 
   const [state, action, pending] = useActionState(createFund, {
@@ -104,12 +104,6 @@ const CreateFundForm = function ({
           value={name}
           setValue={setName}
           errorMessage={state.nameErrors ?? null}
-        />
-        <FundTypeEntryField
-          label="Type"
-          value={type}
-          setValue={setType}
-          errorMessage={state.typeErrors ?? null}
         />
         <StringEntryField
           label="Description"
@@ -132,6 +126,7 @@ const CreateFundForm = function ({
               checked={specifyGoalAmount}
               onChange={(e) => {
                 if (!e.target.checked) {
+                  setGoalType(null);
                   setGoalAmount(null);
                 }
                 setSpecifyGoalAmount(e.target.checked);
@@ -141,12 +136,20 @@ const CreateFundForm = function ({
           label="Set Goal Amount?"
         />
         {specifyGoalAmount ? (
-          <CurrencyEntryField
-            label="Goal Amount"
-            value={goalAmount}
-            setValue={setGoalAmount}
-            errorMessage={state.goalAmountErrors ?? null}
-          />
+          <>
+            <FundGoalTypeEntryField
+              label="Goal Type"
+              value={goalType}
+              setValue={setGoalType}
+              errorMessage={state.goalTypeErrors ?? null}
+            />
+            <CurrencyEntryField
+              label="Goal Amount"
+              value={goalAmount}
+              setValue={setGoalAmount}
+              errorMessage={state.goalAmountErrors ?? null}
+            />
+          </>
         ) : null}
         <DialogActions>
           <Link href={getRedirectUrl(providedAccountingPeriod)} tabIndex={-1}>
@@ -155,17 +158,26 @@ const CreateFundForm = function ({
           <Button
             variant="contained"
             loading={pending}
-            disabled={name === "" || type === null || accountingPeriod === null}
+            disabled={
+              name === "" ||
+              accountingPeriod === null ||
+              (specifyGoalAmount && (goalType === null || goalAmount === null))
+            }
             onClick={() => {
-              if (name === "" || type === null || accountingPeriod === null) {
+              if (
+                name === "" ||
+                accountingPeriod === null ||
+                (specifyGoalAmount &&
+                  (goalType === null || goalAmount === null))
+              ) {
                 return;
               }
               startTransition(() => {
                 action({
                   name,
-                  type,
                   description,
                   goalAmount,
+                  goalType,
                   accountingPeriodId: accountingPeriod.id,
                 });
               });

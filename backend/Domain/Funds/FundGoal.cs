@@ -18,6 +18,11 @@ public class FundGoal : Entity<FundGoalId>
     public AccountingPeriodId AccountingPeriodId { get; private set; }
 
     /// <summary>
+    /// Type for this Fund Goal
+    /// </summary>
+    public FundGoalType GoalType { get; internal set; }
+
+    /// <summary>
     /// Target amount for this Fund Goal
     /// </summary>
     public decimal GoalAmount { get; internal set; }
@@ -30,11 +35,12 @@ public class FundGoal : Entity<FundGoalId>
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal FundGoal(Fund fund, AccountingPeriodId accountingPeriodId, decimal goalAmount)
+    internal FundGoal(Fund fund, AccountingPeriodId accountingPeriodId, FundGoalType goalType, decimal goalAmount)
         : base(new FundGoalId(Guid.NewGuid()))
     {
         Fund = fund;
         AccountingPeriodId = accountingPeriodId;
+        GoalType = goalType;
         GoalAmount = goalAmount;
         IsGoalMet = false;
     }
@@ -47,6 +53,7 @@ public class FundGoal : Entity<FundGoalId>
     {
         Fund = null!;
         AccountingPeriodId = null!;
+        GoalType = default;
     }
 }
 

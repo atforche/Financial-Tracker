@@ -18,8 +18,6 @@ internal sealed class FundSortOrderMapper
         {
             FundSortOrderModel.Name => FundSortOrder.Name,
             FundSortOrderModel.NameDescending => FundSortOrder.NameDescending,
-            FundSortOrderModel.Type => FundSortOrder.Type,
-            FundSortOrderModel.TypeDescending => FundSortOrder.TypeDescending,
             FundSortOrderModel.Description => FundSortOrder.Description,
             FundSortOrderModel.DescriptionDescending => FundSortOrder.DescriptionDescending,
             FundSortOrderModel.Balance => FundSortOrder.Balance,

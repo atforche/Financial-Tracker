@@ -8,7 +8,7 @@ namespace Domain.Funds;
 /// <remarks>
 /// A Fund represents a collection of money that the user has allocated for a specific purpose. 
 /// Funds can be used to track savings goals, monthly expenses, or any other financial goal the user may have. 
-/// Each Fund has a type that determines how the assignment target is calculated and how it should be used in the application.
+/// Each Fund can optionally be marked as a system fund when it is managed by the application rather than by the user.
 /// </remarks>
 public class Fund : Entity<FundId>
 {
@@ -18,9 +18,9 @@ public class Fund : Entity<FundId>
     public string Name { get; internal set; }
 
     /// <summary>
-    /// Type for this Fund
+    /// Whether this Fund is a system-defined fund
     /// </summary>
-    public FundType Type { get; internal set; }
+    public bool IsSystemFund { get; private set; }
 
     /// <summary>
     /// Description for this Fund
@@ -35,11 +35,11 @@ public class Fund : Entity<FundId>
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal Fund(string name, FundType type, string description, AccountingPeriodId addAccountingPeriodId)
+    internal Fund(string name, string description, AccountingPeriodId addAccountingPeriodId, bool isSystemFund)
         : base(new FundId(Guid.NewGuid()))
     {
         Name = name;
-        Type = type;
+        IsSystemFund = isSystemFund;
         Description = description;
         AddAccountingPeriodId = addAccountingPeriodId;
     }
@@ -51,6 +51,7 @@ public class Fund : Entity<FundId>
         : base()
     {
         Name = "";
+        IsSystemFund = false;
         Description = "";
         AddAccountingPeriodId = null!;
     }

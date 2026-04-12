@@ -23,12 +23,13 @@ public sealed class AccountingPeriodFundMapper(
         {
             Id = fundAccountingPeriodBalanceHistory.Fund.Id.Value,
             Name = fundAccountingPeriodBalanceHistory.Fund.Name,
-            Type = FundTypeMapper.ToModel(fundAccountingPeriodBalanceHistory.Fund.Type),
             Description = fundAccountingPeriodBalanceHistory.Fund.Description,
+            IsSystemFund = fundAccountingPeriodBalanceHistory.Fund.IsSystemFund,
             OpeningBalance = fundBalanceMapper.ToModel(fundAccountingPeriodBalanceHistory.GetOpeningFundBalance()),
             AmountAssigned = fundAccountingPeriodBalanceHistory.AmountAssigned,
             AmountSpent = fundAccountingPeriodBalanceHistory.AmountSpent,
             ClosingBalance = fundBalanceMapper.ToModel(fundAccountingPeriodBalanceHistory.GetClosingFundBalance()),
+            GoalType = fundGoal == null ? null : FundGoalTypeMapper.ToModel(fundGoal.GoalType),
             GoalAmount = fundGoal?.GoalAmount,
             IsGoalMet = fundGoal?.IsGoalMet
         };

@@ -39,11 +39,11 @@ public class FundGoalRepository(DatabaseContext databaseContext) : IFundGoalRepo
     #endregion
 
     /// <summary>
-    /// Attempts to get the Fund Goal with the specified ID
+    /// Attempts to get the Fund Goal with the specified Fund ID and Accounting Period ID
     /// </summary>
-    public bool TryGetById(Guid id, [NotNullWhen(true)] out FundGoal? fundGoal)
+    public bool TryGetByFundAndAccountingPeriod(Guid fundId, Guid accountingPeriodId, [NotNullWhen(true)] out FundGoal? fundGoal)
     {
-        fundGoal = databaseContext.FundGoals.FirstOrDefault(goal => ((Guid)(object)goal.Id) == id);
+        fundGoal = databaseContext.FundGoals.FirstOrDefault(goal => ((Guid)(object)goal.Fund.Id) == fundId && ((Guid)(object)goal.AccountingPeriodId) == accountingPeriodId);
         return fundGoal != null;
     }
 
@@ -84,6 +84,7 @@ public class FundGoalRepository(DatabaseContext databaseContext) : IFundGoalRepo
         MatchesSearch(accountingPeriod.Name, search) ||
         MatchesSearch(accountingPeriod.Year.ToString(CultureInfo.InvariantCulture), search) ||
         MatchesSearch(accountingPeriod.Month.ToString(CultureInfo.InvariantCulture), search) ||
+        MatchesSearch(fundGoal.GoalType.ToString(), search) ||
         MatchesSearch(fundGoal.GoalAmount.ToString(CultureInfo.InvariantCulture), search) ||
         MatchesSearch(fundGoal.IsGoalMet.ToString(), search);
 

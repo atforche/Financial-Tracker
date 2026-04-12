@@ -66,7 +66,7 @@ namespace Data.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Type = table.Column<string>(type: "TEXT", nullable: false),
+                    IsSystemFund = table.Column<bool>(type: "INTEGER", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
                     AddAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
@@ -194,6 +194,7 @@ namespace Data.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     FundId = table.Column<Guid>(type: "TEXT", nullable: false),
                     AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    GoalType = table.Column<string>(type: "TEXT", nullable: false),
                     GoalAmount = table.Column<decimal>(type: "TEXT", nullable: false),
                     IsGoalMet = table.Column<bool>(type: "INTEGER", nullable: false)
                 },

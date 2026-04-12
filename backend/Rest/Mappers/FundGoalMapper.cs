@@ -25,6 +25,7 @@ public sealed class FundGoalMapper(
             Id = fundGoal.Id.Value,
             AccountingPeriodId = fundGoal.AccountingPeriodId.Value,
             AccountingPeriodName = accountingPeriod.Name,
+            GoalType = FundGoalTypeMapper.ToModel(fundGoal.GoalType),
             GoalAmount = fundGoal.GoalAmount,
             IsGoalMet = fundGoal.IsGoalMet,
         };
@@ -33,6 +34,6 @@ public sealed class FundGoalMapper(
     /// <summary>
     /// Attempts to map the provided ID to a Fund Goal
     /// </summary>
-    public bool TryToDomain(Guid fundGoalId, [NotNullWhen(true)] out FundGoal? fundGoal) =>
-        fundGoalRepository.TryGetById(fundGoalId, out fundGoal);
+    public bool TryToDomain(Guid fundId, Guid accountingPeriodId, [NotNullWhen(true)] out FundGoal? fundGoal) =>
+        fundGoalRepository.TryGetByFundAndAccountingPeriod(fundId, accountingPeriodId, out fundGoal);
 }

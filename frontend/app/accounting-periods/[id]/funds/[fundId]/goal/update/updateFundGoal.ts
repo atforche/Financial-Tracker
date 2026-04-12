@@ -1,6 +1,6 @@
 "use server";
 
-import type { CreateFundRequest } from "@/data/fundTypes";
+import type { UpdateFundGoalRequest } from "@/data/fundTypes";
 import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/data/getApiClient";
 import { isApiError } from "@/data/apiError";
@@ -9,77 +9,65 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
- * Interface representing the state of creating a fund.
+ * Interface representing the state of updating a fund goal.
  */
 interface ActionState {
+  readonly fundId: string;
+  readonly accountingPeriodId: string;
   readonly redirectUrl: string;
   readonly errorTitle?: string | null;
-  readonly nameErrors?: string | null;
-  readonly descriptionErrors?: string | null;
   readonly goalTypeErrors?: string | null;
   readonly goalAmountErrors?: string | null;
-  readonly accountingPeriodErrors?: string | null;
   readonly unmappedErrors?: string | null;
 }
 
 /**
- * Server action that creates a new fund.
+ * Server action that updates a fund goal.
  */
-const createFund = async function (
-  { redirectUrl }: ActionState,
-  request: CreateFundRequest,
+const updateFundGoal = async function (
+  { fundId, accountingPeriodId, redirectUrl }: ActionState,
+  request: UpdateFundGoalRequest,
 ): Promise<ActionState> {
   const client = getApiClient();
-  const { error } = await client.POST("/funds", {
-    body: request,
-  });
+  const { error } = await client.POST(
+    "/funds/{fundId}/goals/{accountingPeriodId}",
+    {
+      params: {
+        path: {
+          fundId,
+          accountingPeriodId,
+        },
+      },
+      body: request,
+    },
+  );
   if (error) {
     if (isApiError(error)) {
-      let nameErrorMessage = null;
-      let descriptionErrorMessage = null;
       let goalTypeErrorMessage = null;
       let goalAmountErrorMessage = null;
-      let accountingPeriodErrorMessage = null;
       const unmappedErrors: (string | null)[] = [];
       for (const key of Object.keys(error.errors ?? {})) {
         if (
-          key.toUpperCase() === nameof<CreateFundRequest>("name").toUpperCase()
-        ) {
-          nameErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
           key.toUpperCase() ===
-          nameof<CreateFundRequest>("description").toUpperCase()
-        ) {
-          descriptionErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateFundRequest>("goalType").toUpperCase()
+          nameof<UpdateFundGoalRequest>("goalType").toUpperCase()
         ) {
           goalTypeErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else if (
           key.toUpperCase() ===
-          nameof<CreateFundRequest>("goalAmount").toUpperCase()
+          nameof<UpdateFundGoalRequest>("goalAmount").toUpperCase()
         ) {
           goalAmountErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateFundRequest>("accountingPeriodId").toUpperCase()
-        ) {
-          accountingPeriodErrorMessage = formatErrors(
-            error.errors?.[key] ?? null,
-          );
         } else {
           unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
         }
       }
       return {
+        fundId,
+        accountingPeriodId,
         redirectUrl,
         errorTitle: error.title ?? null,
-        nameErrors: nameErrorMessage,
-        descriptionErrors: descriptionErrorMessage,
         goalTypeErrors: goalTypeErrorMessage,
         goalAmountErrors: goalAmountErrorMessage,
-        accountingPeriodErrors: accountingPeriodErrorMessage,
         unmappedErrors: unmappedErrors.join(", ") || null,
       };
     }
@@ -90,4 +78,4 @@ const createFund = async function (
   redirect(redirectUrl);
 };
 
-export default createFund;
+export default updateFundGoal;

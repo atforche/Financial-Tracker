@@ -1,5 +1,5 @@
-import { type AccountingPeriodFund, FundType } from "@/data/fundTypes";
 import { Button, Stack, Typography } from "@mui/material";
+import type { AccountingPeriodFund } from "@/data/fundTypes";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
 import type { JSX } from "react";
@@ -11,6 +11,7 @@ import formatCurrency from "@/framework/formatCurrency";
 interface CurrentGoalFrameProps {
   readonly fund: AccountingPeriodFund;
   readonly accountingPeriodId: string;
+  readonly isAccountingPeriodOpen: boolean;
 }
 
 /**
@@ -19,20 +20,25 @@ interface CurrentGoalFrameProps {
 const CurrentGoalFrame = function ({
   fund,
   accountingPeriodId,
+  isAccountingPeriodOpen,
 }: CurrentGoalFrameProps): JSX.Element {
   return (
-    <CaptionedFrame caption="Current Goal">
+    <CaptionedFrame caption="Current Goal" maxWidth={null}>
       <Stack
         direction="row"
         spacing={2}
         justifyContent="space-between"
         alignItems="center"
+        sx={{ width: 1000 }}
       >
         {fund.goalAmount !== null ? (
-          <CaptionedValue
-            caption="Goal Amount"
-            value={formatCurrency(fund.goalAmount)}
-          />
+          <Stack width={500}>
+            <CaptionedValue caption="Goal Type" value={fund.goalType ?? "-"} />
+            <CaptionedValue
+              caption="Goal Amount"
+              value={formatCurrency(fund.goalAmount)}
+            />
+          </Stack>
         ) : (
           <Typography variant="subtitle1">No current goal.</Typography>
         )}
@@ -41,16 +47,16 @@ const CurrentGoalFrame = function ({
             <Button
               variant="contained"
               color="primary"
-              href={`/funds/${fund.id}/update?accountingPeriodId=${accountingPeriodId}`}
-              disabled={fund.type === FundType.Unassigned}
+              href={`/accounting-periods/${accountingPeriodId}/funds/${fund.id}/goal/update`}
+              disabled={fund.isSystemFund || !isAccountingPeriodOpen}
             >
               Edit
             </Button>
             <Button
               variant="contained"
               color="error"
-              href={`/funds/${fund.id}/delete?accountingPeriodId=${accountingPeriodId}`}
-              disabled={fund.type === FundType.Unassigned}
+              href={`/accounting-periods/${accountingPeriodId}/funds/${fund.id}/goal/delete`}
+              disabled={fund.isSystemFund || !isAccountingPeriodOpen}
             >
               Delete
             </Button>
@@ -59,8 +65,8 @@ const CurrentGoalFrame = function ({
           <Button
             variant="contained"
             color="primary"
-            href={`/funds/${fund.id}/update?accountingPeriodId=${accountingPeriodId}`}
-            disabled={fund.type === FundType.Unassigned}
+            href={`/accounting-periods/${accountingPeriodId}/funds/${fund.id}/goal/create`}
+            disabled={fund.isSystemFund || !isAccountingPeriodOpen}
           >
             Add
           </Button>

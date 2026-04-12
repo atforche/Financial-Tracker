@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20260411130052_InitialCreate")]
+    [Migration("20260412140304_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -144,11 +144,10 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<bool>("IsSystemFund")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<string>("Type")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -203,6 +202,10 @@ namespace Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("GoalAmount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("GoalType")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsGoalMet")

@@ -141,11 +141,10 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<bool>("IsSystemFund")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<string>("Type")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -200,6 +199,10 @@ namespace Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("GoalAmount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("GoalType")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsGoalMet")

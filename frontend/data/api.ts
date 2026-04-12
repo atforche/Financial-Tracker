@@ -1285,14 +1285,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/funds/{fundId}/goals/{fundGoalId}": {
+    "/funds/{fundId}/goals/{accountingPeriodId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Retrieves the Fund Goal that matches the provided ID for the provided Fund */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    fundId: string;
+                    accountingPeriodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["FundGoalModel"];
+                        "application/json": components["schemas"]["FundGoalModel"];
+                        "text/json": components["schemas"]["FundGoalModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
         put?: never;
         /** Updates the provided Fund Goal with the provided properties */
         post: {
@@ -1301,7 +1337,7 @@ export interface paths {
                 header?: never;
                 path: {
                     fundId: string;
-                    fundGoalId: string;
+                    accountingPeriodId: string;
                 };
                 cookie?: never;
             };
@@ -1337,14 +1373,14 @@ export interface paths {
                 };
             };
         };
-        /** Deletes the Fund Goal with the provided ID for the provided Fund */
+        /** Deletes the Fund Goal with the provided Accounting Period ID for the provided Fund */
         delete: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
                     fundId: string;
-                    fundGoalId: string;
+                    accountingPeriodId: string;
                 };
                 cookie?: never;
             };
@@ -1706,10 +1742,10 @@ export interface components {
             id: string;
             /** @description Name for the Fund */
             name: string;
-            /** @description Type of the Fund */
-            type: components["schemas"]["FundTypeModel"];
             /** @description Description for the Fund */
             description: string;
+            /** @description Whether the Fund is a system-defined fund */
+            isSystemFund: boolean;
             /** @description Opening balance for the Fund */
             openingBalance: components["schemas"]["FundBalanceModel"];
             /**
@@ -1724,6 +1760,7 @@ export interface components {
             amountSpent: number;
             /** @description Closing balance for the Fund */
             closingBalance: components["schemas"]["FundBalanceModel"];
+            goalType: null | components["schemas"]["FundGoalTypeModel"];
             /**
              * Format: double
              * @description Goal amount for the Fund during the Accounting Period
@@ -1920,6 +1957,8 @@ export interface components {
              * @description Accounting Period that the Fund Goal is associated with
              */
             accountingPeriodId: string;
+            /** @description Goal type for the Fund Goal */
+            goalType: components["schemas"]["FundGoalTypeModel"];
             /**
              * Format: double
              * @description Goal amount for the Fund Goal
@@ -1930,8 +1969,6 @@ export interface components {
         CreateFundModel: {
             /** @description Name for the Fund */
             name: string;
-            /** @description Type for the Fund */
-            type: components["schemas"]["FundTypeModel"];
             /** @description Description for the Fund */
             description: string;
             /**
@@ -1939,6 +1976,7 @@ export interface components {
              * @description Accounting Period that the Fund is being added to
              */
             accountingPeriodId: string;
+            goalType?: null | components["schemas"]["FundGoalTypeModel"];
             /**
              * Format: double
              * @description Optional goal amount to create for the Fund in the selected Accounting Period
@@ -2033,6 +2071,8 @@ export interface components {
             accountingPeriodId: string;
             /** @description Accounting Period name for the Fund Goal */
             accountingPeriodName: string;
+            /** @description Goal type for the Fund Goal */
+            goalType: components["schemas"]["FundGoalTypeModel"];
             /**
              * Format: double
              * @description Goal amount for the Fund Goal
@@ -2043,6 +2083,8 @@ export interface components {
         };
         /** @enum {unknown} */
         FundGoalSortOrderModel: FundGoalSortOrderModel | null;
+        /** @enum {unknown} */
+        FundGoalTypeModel: FundGoalTypeModel | null;
         /** @description Model representing a Fund */
         FundModel: {
             /**
@@ -2052,10 +2094,10 @@ export interface components {
             id: string;
             /** @description Name for the Fund */
             name: string;
-            /** @description Type for the Fund */
-            type: components["schemas"]["FundTypeModel"];
             /** @description Description for the Fund */
             description: string;
+            /** @description Whether the Fund is a system-defined fund */
+            isSystemFund: boolean;
             /** @description Current Balance for the Fund */
             currentBalance: components["schemas"]["FundBalanceModel"];
         };
@@ -2063,11 +2105,6 @@ export interface components {
         FundSortOrderModel: FundSortOrderModel | null;
         /** @enum {unknown} */
         FundTransactionSortOrderModel: FundTransactionSortOrderModel | null;
-        /**
-         * @description Enum representing the different Fund types
-         * @enum {unknown}
-         */
-        FundTypeModel: FundTypeModel;
         /** @description Model representing a request to post a Transaction */
         PostTransactionModel: {
             /**
@@ -2161,6 +2198,8 @@ export interface components {
         };
         /** @description Model representing a request to update a Fund Goal */
         UpdateFundGoalModel: {
+            /** @description Goal type for the Fund Goal */
+            goalType: components["schemas"]["FundGoalTypeModel"];
             /**
              * Format: double
              * @description Goal amount for the Fund Goal
@@ -2230,8 +2269,8 @@ export enum AccountingPeriodAccountSortOrderModel {
 export enum AccountingPeriodFundSortOrderModel {
     Name = "Name",
     NameDescending = "NameDescending",
-    Type = "Type",
-    TypeDescending = "TypeDescending",
+    GoalType = "GoalType",
+    GoalTypeDescending = "GoalTypeDescending",
     OpeningBalance = "OpeningBalance",
     OpeningBalanceDescending = "OpeningBalanceDescending",
     AmountAssigned = "AmountAssigned",
@@ -2293,11 +2332,15 @@ export enum FundGoalSortOrderModel {
     IsGoalMet = "IsGoalMet",
     IsGoalMetDescending = "IsGoalMetDescending"
 }
+export enum FundGoalTypeModel {
+    Monthly = "Monthly",
+    Rolling = "Rolling",
+    Savings = "Savings",
+    Debt = "Debt"
+}
 export enum FundSortOrderModel {
     Name = "Name",
     NameDescending = "NameDescending",
-    Type = "Type",
-    TypeDescending = "TypeDescending",
     Description = "Description",
     DescriptionDescending = "DescriptionDescending",
     Balance = "Balance",
@@ -2310,13 +2353,6 @@ export enum FundTransactionSortOrderModel {
     LocationDescending = "LocationDescending",
     ChangeInBalance = "ChangeInBalance",
     ChangeInBalanceDescending = "ChangeInBalanceDescending"
-}
-export enum FundTypeModel {
-    Unassigned = "Unassigned",
-    Monthly = "Monthly",
-    Rolling = "Rolling",
-    Savings = "Savings",
-    Debt = "Debt"
 }
 export enum TransactionAccountTypeModel {
     Debit = "Debit",

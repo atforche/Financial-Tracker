@@ -18,6 +18,11 @@ public record CreateFundGoalRequest
     public AccountingPeriod AccountingPeriod { get; init; } = null!;
 
     /// <summary>
+    /// Type for this Fund Goal
+    /// </summary>
+    public required FundGoalType GoalType { get; init; }
+
+    /// <summary>
     /// Target goal amount for the Fund Goal
     /// </summary>
     public required decimal GoalAmount { get; init; }

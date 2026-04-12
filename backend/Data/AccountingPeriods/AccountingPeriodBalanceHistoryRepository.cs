@@ -1,5 +1,6 @@
 using System.Globalization;
 using Domain.AccountingPeriods;
+using Domain.Funds;
 
 namespace Data.AccountingPeriods;
 
@@ -32,11 +33,15 @@ public class AccountingPeriodBalanceHistoryRepository(DatabaseContext databaseCo
     {
         AccountingPeriodBalanceHistory accountingPeriodBalanceHistory = GetForAccountingPeriod(accountingPeriodId);
         var fundBalanceHistories = accountingPeriodBalanceHistory.FundBalances.ToList();
+        var fundGoals = databaseContext.FundGoals
+            .Where(fundGoal => fundGoal.AccountingPeriodId == accountingPeriodId)
+            .ToDictionary(fundGoal => fundGoal.Fund.Id);
         if (request.Search != null)
         {
             fundBalanceHistories = fundBalanceHistories.Where(fundBalanceHistory =>
                 fundBalanceHistory.Fund.Name.Contains(request.Search, StringComparison.OrdinalIgnoreCase) ||
-                fundBalanceHistory.Fund.Type.ToString().Contains(request.Search, StringComparison.OrdinalIgnoreCase) ||
+                (fundGoals.TryGetValue(fundBalanceHistory.Fund.Id, out FundGoal? fundGoal) &&
+                 fundGoal.GoalType.ToString().Contains(request.Search, StringComparison.OrdinalIgnoreCase)) ||
                 fundBalanceHistory.Fund.Description.Contains(request.Search, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
@@ -48,13 +53,19 @@ public class AccountingPeriodBalanceHistoryRepository(DatabaseContext databaseCo
         {
             fundBalanceHistories = fundBalanceHistories.OrderByDescending(fundBalanceHistory => fundBalanceHistory.Fund.Name).ToList();
         }
-        else if (request.Sort == AccountingPeriodFundSortOrder.Type)
+        else if (request.Sort == AccountingPeriodFundSortOrder.GoalType)
         {
-            fundBalanceHistories = fundBalanceHistories.OrderBy(fundBalanceHistory => fundBalanceHistory.Fund.Type).ThenBy(fundBalanceHistory => fundBalanceHistory.Fund.Name).ToList();
+            fundBalanceHistories = fundBalanceHistories
+                .OrderBy(fundBalanceHistory => fundGoals.TryGetValue(fundBalanceHistory.Fund.Id, out FundGoal? fundGoal) ? fundGoal.GoalType : (FundGoalType?)null)
+                .ThenBy(fundBalanceHistory => fundBalanceHistory.Fund.Name)
+                .ToList();
         }
-        else if (request.Sort == AccountingPeriodFundSortOrder.TypeDescending)
+        else if (request.Sort == AccountingPeriodFundSortOrder.GoalTypeDescending)
         {
-            fundBalanceHistories = fundBalanceHistories.OrderByDescending(fundBalanceHistory => fundBalanceHistory.Fund.Type).ThenByDescending(fundBalanceHistory => fundBalanceHistory.Fund.Name).ToList();
+            fundBalanceHistories = fundBalanceHistories
+                .OrderByDescending(fundBalanceHistory => fundGoals.TryGetValue(fundBalanceHistory.Fund.Id, out FundGoal? fundGoal) ? fundGoal.GoalType : (FundGoalType?)null)
+                .ThenByDescending(fundBalanceHistory => fundBalanceHistory.Fund.Name)
+                .ToList();
         }
         else if (request.Sort == AccountingPeriodFundSortOrder.OpeningBalance)
         {

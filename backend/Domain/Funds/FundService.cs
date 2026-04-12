@@ -30,14 +30,15 @@ public class FundService(
         {
             return false;
         }
-        fund = new Fund(request.Name, request.Type, request.Description, request.AccountingPeriod.Id);
+        fund = new Fund(request.Name, request.Description, request.AccountingPeriod.Id, request.IsSystemFund);
         accountingPeriodBalanceService.AddFund(fund);
-        if (request.GoalAmount != null)
+        if (request.GoalType != null && request.GoalAmount != null)
         {
             var createGoalRequest = new CreateFundGoalRequest
             {
                 Fund = fund,
                 AccountingPeriod = request.AccountingPeriod,
+                GoalType = request.GoalType.Value,
                 GoalAmount = request.GoalAmount.Value,
             };
             if (!TryCreateGoal(createGoalRequest, out FundGoal? newFundGoal, out IEnumerable<Exception> goalExceptions))
@@ -61,7 +62,7 @@ public class FundService(
         {
             return false;
         }
-        fundGoal = new FundGoal(request.Fund, request.AccountingPeriod.Id, request.GoalAmount);
+        fundGoal = new FundGoal(request.Fund, request.AccountingPeriod.Id, request.GoalType, request.GoalAmount);
         return true;
     }
 
@@ -82,15 +83,20 @@ public class FundService(
     /// <summary>
     /// Attempts to update an existing Fund Goal
     /// </summary>
-    public static bool TryUpdateGoal(FundGoal fundGoal, decimal goalAmount, out IEnumerable<Exception> exceptions)
+    public static bool TryUpdateGoal(
+        FundGoal fundGoal,
+        FundGoalType goalType,
+        decimal goalAmount,
+        out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
-        if (!ValidateUpdateGoal(goalAmount, out IEnumerable<Exception> updateGoalExceptions))
+        if (!ValidateUpdateGoal(goalType, goalAmount, out IEnumerable<Exception> updateGoalExceptions))
         {
             exceptions = exceptions.Concat(updateGoalExceptions);
             return false;
         }
+        fundGoal.GoalType = goalType;
         fundGoal.GoalAmount = goalAmount;
         return true;
     }
@@ -148,9 +154,17 @@ public class FundService(
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
-        if (request.Type == FundType.Unassigned && fundRepository.GetUnassignedFund() != null)
+        if (request.IsSystemFund && fundRepository.GetSystemFund() != null)
         {
             exceptions = exceptions.Append(new InvalidFundException("An unassigned fund already exists."));
+        }
+        if (request.GoalAmount == null && request.GoalType != null)
+        {
+            exceptions = exceptions.Append(new InvalidFundGoalTypeException("A goal type cannot be provided without a goal amount."));
+        }
+        if (request.GoalAmount != null && request.GoalType == null)
+        {
+            exceptions = exceptions.Append(new InvalidFundGoalTypeException("A goal type must be provided when creating an initial fund goal."));
         }
         if (!request.AccountingPeriod.IsOpen)
         {
@@ -166,7 +180,7 @@ public class FundService(
     {
         exceptions = [];
 
-        if (request.Fund.Type == FundType.Unassigned)
+        if (request.Fund.IsSystemFund)
         {
             exceptions = exceptions.Append(new InvalidFundException("The unassigned fund cannot have a fund goal."));
         }
@@ -196,7 +210,7 @@ public class FundService(
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
-        if (fund.Type == FundType.Unassigned)
+        if (fund.IsSystemFund)
         {
             exceptions = exceptions.Append(new UnableToUpdateException("The unassigned fund cannot be updated."));
         }
@@ -206,10 +220,14 @@ public class FundService(
     /// <summary>
     /// Validates the provided information to update a fund goal
     /// </summary>
-    private static bool ValidateUpdateGoal(decimal goalAmount, out IEnumerable<Exception> exceptions)
+    private static bool ValidateUpdateGoal(FundGoalType goalType, decimal goalAmount, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
+        if (!Enum.IsDefined(goalType))
+        {
+            exceptions = exceptions.Append(new InvalidFundGoalTypeException());
+        }
         if (goalAmount <= 0)
         {
             exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than zero."));
@@ -224,7 +242,7 @@ public class FundService(
     {
         exceptions = [];
 
-        if (fund.Type == FundType.Unassigned)
+        if (fund.IsSystemFund)
         {
             exceptions = exceptions.Append(new UnableToDeleteException("The unassigned fund cannot be deleted."));
         }

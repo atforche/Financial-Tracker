@@ -20,6 +20,8 @@ internal sealed class FundGoalConfiguration : IEntityTypeConfiguration<FundGoal>
         builder.HasOne(fundGoal => fundGoal.Fund).WithMany();
         builder.Navigation(fundGoal => fundGoal.Fund).AutoInclude();
 
+        builder.Property(fundGoal => fundGoal.GoalType).HasConversion<string>();
+
         builder.Property(fundGoal => fundGoal.AccountingPeriodId)
             .HasConversion(id => id.Value, value => new AccountingPeriodId(value));
     }

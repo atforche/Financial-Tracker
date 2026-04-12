@@ -35,7 +35,7 @@ CREATE TABLE "FundBalanceHistories" (
 CREATE TABLE "Funds" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_Funds" PRIMARY KEY,
     "Name" TEXT NOT NULL,
-    "Type" TEXT NOT NULL,
+    "IsSystemFund" INTEGER NOT NULL,
     "Description" TEXT NOT NULL,
     "AddAccountingPeriodId" TEXT NOT NULL
 );
@@ -95,6 +95,7 @@ CREATE TABLE "FundGoals" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_FundGoals" PRIMARY KEY,
     "FundId" TEXT NOT NULL,
     "AccountingPeriodId" TEXT NOT NULL,
+    "GoalType" TEXT NOT NULL,
     "GoalAmount" TEXT NOT NULL,
     "IsGoalMet" INTEGER NOT NULL,
     CONSTRAINT "FK_FundGoals_Funds_FundId" FOREIGN KEY ("FundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE
@@ -183,7 +184,7 @@ CREATE INDEX "IX_Transactions_TransferTransaction_CreditAccountId" ON "Transacti
 CREATE INDEX "IX_Transactions_TransferTransaction_DebitAccountId" ON "Transactions" ("TransferTransaction_DebitAccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260411130052_InitialCreate', '10.0.2');
+VALUES ('20260412140304_InitialCreate', '10.0.2');
 
 COMMIT;
 

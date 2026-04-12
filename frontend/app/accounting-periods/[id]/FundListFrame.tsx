@@ -75,20 +75,20 @@ const FundListFrame = function ({
       },
     },
     {
-      name: "type",
-      headerContent: "Type",
-      getBodyContent: (fund: AccountingPeriodFund) => fund.type,
+      name: "goalType",
+      headerContent: "Goal Type",
+      getBodyContent: (fund: AccountingPeriodFund) => fund.goalType ?? "-",
       sortType:
-        currentSort === AccountingPeriodFundSortOrder.Type
+        currentSort === AccountingPeriodFundSortOrder.GoalType
           ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodFundSortOrder.TypeDescending
+          : currentSort === AccountingPeriodFundSortOrder.GoalTypeDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodFundSortOrder.Type);
+          setSort(AccountingPeriodFundSortOrder.GoalType);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodFundSortOrder.TypeDescending);
+          setSort(AccountingPeriodFundSortOrder.GoalTypeDescending);
         } else {
           setSort(null);
         }

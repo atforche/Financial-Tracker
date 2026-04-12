@@ -13,9 +13,9 @@ public record CreateFundRequest
     public required string Name { get; init; }
 
     /// <summary>
-    /// Type for the Fund
+    /// Whether the Fund is a system-defined fund
     /// </summary>
-    public required FundType Type { get; init; }
+    public bool IsSystemFund { get; init; }
 
     /// <summary>
     /// Description for the Fund
@@ -31,4 +31,9 @@ public record CreateFundRequest
     /// Optional goal amount to create for the Fund in the selected Accounting Period
     /// </summary>
     public decimal? GoalAmount { get; init; }
+
+    /// <summary>
+    /// Optional goal type to create for the Fund in the selected Accounting Period
+    /// </summary>
+    public FundGoalType? GoalType { get; init; }
 }

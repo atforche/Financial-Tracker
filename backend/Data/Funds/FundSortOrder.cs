@@ -16,16 +16,6 @@ public enum FundSortOrder
     NameDescending,
 
     /// <summary>
-    /// Funds are sorted by type in ascending order
-    /// </summary>
-    Type,
-
-    /// <summary>
-    /// Funds are sorted by type in descending order
-    /// </summary>
-    TypeDescending,
-
-    /// <summary>
     /// Funds are sorted by description in ascending order
     /// </summary>
     Description,

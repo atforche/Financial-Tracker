@@ -1,8 +1,8 @@
 import { Button, Stack, Typography } from "@mui/material";
-import { type FundTransactionSortOrder, FundType } from "@/data/fundTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
+import type { FundTransactionSortOrder } from "@/data/fundTypes";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import TransactionListFrame from "@/app/funds/[id]/TransactionListFrame";
@@ -88,7 +88,7 @@ const Page = async function ({
             variant="contained"
             color="primary"
             href={`/funds/${id}/update`}
-            disabled={fundData.type === FundType.Unassigned}
+            disabled={fundData.isSystemFund}
           >
             Edit
           </Button>
@@ -96,7 +96,7 @@ const Page = async function ({
             variant="contained"
             color="error"
             href={`/funds/${id}/delete`}
-            disabled={fundData.type === FundType.Unassigned}
+            disabled={fundData.isSystemFund}
           >
             Delete
           </Button>
@@ -104,7 +104,6 @@ const Page = async function ({
       </Stack>
       <CaptionedFrame caption="Details">
         <CaptionedValue caption="Name" value={fundData.name} />
-        <CaptionedValue caption="Type" value={fundData.type} />
         <CaptionedValue caption="Description" value={fundData.description} />
         <br />
         <CaptionedValue

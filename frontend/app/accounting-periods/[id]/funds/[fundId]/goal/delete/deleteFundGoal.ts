@@ -1,0 +1,61 @@
+"use server";
+
+import formatErrors from "@/framework/forms/formatErrors";
+import getApiClient from "@/data/getApiClient";
+import { isApiError } from "@/data/apiError";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+
+/**
+ * Interface representing the state of deleting a fund goal.
+ */
+interface ActionState {
+  readonly fundId: string;
+  readonly accountingPeriodId: string;
+  readonly redirectUrl: string;
+  readonly errorTitle?: string | null;
+  readonly unmappedErrors?: string | null;
+}
+
+/**
+ * Server action that deletes a fund goal.
+ */
+const deleteFundGoal = async function ({
+  fundId,
+  accountingPeriodId,
+  redirectUrl,
+}: ActionState): Promise<ActionState> {
+  const client = getApiClient();
+  const { error } = await client.DELETE(
+    "/funds/{fundId}/goals/{accountingPeriodId}",
+    {
+      params: {
+        path: {
+          fundId,
+          accountingPeriodId,
+        },
+      },
+    },
+  );
+  if (error) {
+    if (isApiError(error)) {
+      const unmappedErrors: (string | null)[] = [];
+      for (const key of Object.keys(error.errors ?? {})) {
+        unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
+      }
+      return {
+        fundId,
+        accountingPeriodId,
+        redirectUrl,
+        errorTitle: error.title ?? null,
+        unmappedErrors: unmappedErrors.join(", ") || null,
+      };
+    }
+    throw new Error("An unexpected error occurred", { cause: error });
+  }
+
+  revalidatePath(redirectUrl);
+  redirect(redirectUrl);
+};
+
+export default deleteFundGoal;

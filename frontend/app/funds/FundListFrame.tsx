@@ -69,26 +69,6 @@ const FundListFrame = function ({
       },
     },
     {
-      name: "type",
-      headerContent: "Type",
-      getBodyContent: (fund: Fund) => fund.type,
-      sortType:
-        currentSort === FundSortOrder.Type
-          ? ColumnSortType.Ascending
-          : currentSort === FundSortOrder.TypeDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType: ColumnSortType | null): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(FundSortOrder.Type);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(FundSortOrder.TypeDescending);
-        } else {
-          setSort(null);
-        }
-      },
-    },
-    {
       name: "description",
       headerContent: "Description",
       getBodyContent: (fund: Fund) => fund.description,

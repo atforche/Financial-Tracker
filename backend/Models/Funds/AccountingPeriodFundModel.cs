@@ -16,14 +16,14 @@ public class AccountingPeriodFundModel
     public required string Name { get; init; }
 
     /// <summary>
-    /// Type of the Fund
-    /// </summary>
-    public required FundTypeModel Type { get; init; }
-
-    /// <summary>
     /// Description for the Fund
     /// </summary>
     public required string Description { get; init; }
+
+    /// <summary>
+    /// Whether the Fund is a system-defined fund
+    /// </summary>
+    public required bool IsSystemFund { get; init; }
 
     /// <summary>
     /// Opening balance for the Fund
@@ -44,6 +44,11 @@ public class AccountingPeriodFundModel
     /// Closing balance for the Fund
     /// </summary>
     public required FundBalanceModel ClosingBalance { get; init; }
+
+    /// <summary>
+    /// Goal type for the Fund during the Accounting Period
+    /// </summary>
+    public required FundGoalTypeModel? GoalType { get; init; }
 
     /// <summary>
     /// Goal amount for the Fund during the Accounting Period
