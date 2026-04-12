@@ -15,7 +15,9 @@ interface ActionState {
   readonly redirectUrl: string;
   readonly errorTitle?: string | null;
   readonly nameErrors?: string | null;
+  readonly typeErrors?: string | null;
   readonly descriptionErrors?: string | null;
+  readonly goalAmountErrors?: string | null;
   readonly accountingPeriodErrors?: string | null;
   readonly unmappedErrors?: string | null;
 }
@@ -34,7 +36,9 @@ const createFund = async function (
   if (error) {
     if (isApiError(error)) {
       let nameErrorMessage = null;
+      let typeErrorMessage = null;
       let descriptionErrorMessage = null;
+      let goalAmountErrorMessage = null;
       let accountingPeriodErrorMessage = null;
       const unmappedErrors: (string | null)[] = [];
       for (const key of Object.keys(error.errors ?? {})) {
@@ -43,10 +47,19 @@ const createFund = async function (
         ) {
           nameErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else if (
+          key.toUpperCase() === nameof<CreateFundRequest>("type").toUpperCase()
+        ) {
+          typeErrorMessage = formatErrors(error.errors?.[key] ?? null);
+        } else if (
           key.toUpperCase() ===
           nameof<CreateFundRequest>("description").toUpperCase()
         ) {
           descriptionErrorMessage = formatErrors(error.errors?.[key] ?? null);
+        } else if (
+          key.toUpperCase() ===
+          nameof<CreateFundRequest>("goalAmount").toUpperCase()
+        ) {
+          goalAmountErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else if (
           key.toUpperCase() ===
           nameof<CreateFundRequest>("accountingPeriodId").toUpperCase()
@@ -62,7 +75,9 @@ const createFund = async function (
         redirectUrl,
         errorTitle: error.title ?? null,
         nameErrors: nameErrorMessage,
+        typeErrors: typeErrorMessage,
         descriptionErrors: descriptionErrorMessage,
+        goalAmountErrors: goalAmountErrorMessage,
         accountingPeriodErrors: accountingPeriodErrorMessage,
         unmappedErrors: unmappedErrors.join(", ") || null,
       };

@@ -17,9 +17,14 @@ public class FundService(
     /// <summary>
     /// Attempts to create a new Fund
     /// </summary>
-    public bool TryCreate(CreateFundRequest request, [NotNullWhen(true)] out Fund? fund, out IEnumerable<Exception> exceptions)
+    public bool TryCreate(
+        CreateFundRequest request,
+        [NotNullWhen(true)] out Fund? fund,
+        out FundGoal? fundGoal,
+        out IEnumerable<Exception> exceptions)
     {
         fund = null;
+        fundGoal = null;
 
         if (!ValidateCreate(request, out exceptions))
         {
@@ -27,6 +32,21 @@ public class FundService(
         }
         fund = new Fund(request.Name, request.Type, request.Description, request.AccountingPeriod.Id);
         accountingPeriodBalanceService.AddFund(fund);
+        if (request.GoalAmount != null)
+        {
+            var createGoalRequest = new CreateFundGoalRequest
+            {
+                Fund = fund,
+                AccountingPeriod = request.AccountingPeriod,
+                GoalAmount = request.GoalAmount.Value,
+            };
+            if (!TryCreateGoal(createGoalRequest, out FundGoal? newFundGoal, out IEnumerable<Exception> goalExceptions))
+            {
+                exceptions = exceptions.Concat(goalExceptions);
+                return false;
+            }
+            fundGoal = newFundGoal;
+        }
         return true;
     }
 

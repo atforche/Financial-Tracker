@@ -9,6 +9,7 @@ interface FundTypeEntryFieldProps {
   readonly label: string;
   readonly value: FundType | null;
   readonly setValue: (newValue: FundType | null) => void;
+  readonly errorMessage?: string | null;
 }
 
 /**
@@ -18,6 +19,7 @@ const FundTypeEntryField = function ({
   label,
   value,
   setValue,
+  errorMessage = null,
 }: FundTypeEntryFieldProps): JSX.Element {
   return (
     <ComboBoxEntryField<FundType>
@@ -34,6 +36,7 @@ const FundTypeEntryField = function ({
       setValue={(newValue): void => {
         setValue(newValue.value);
       }}
+      errorMessage={errorMessage}
     />
   );
 };

@@ -7,7 +7,7 @@ import { type JSX, useState } from "react";
 interface CurrencyEntryFieldProps {
   readonly label: string;
   readonly value: number | null;
-  readonly setValue?: ((newValue: number) => void) | null;
+  readonly setValue?: ((newValue: number | null) => void) | null;
   readonly errorMessage?: string | null;
 }
 
@@ -53,7 +53,7 @@ const CurrencyEntryField = function ({
       onChange={(event) => {
         if (event.target.value === "") {
           setStringValue("");
-          setValue?.(0);
+          setValue?.(null);
         } else {
           if (event.target.value.includes(".")) {
             const [prefix, suffix] = event.target.value.split(".");

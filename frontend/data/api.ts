@@ -1939,6 +1939,11 @@ export interface components {
              * @description Accounting Period that the Fund is being added to
              */
             accountingPeriodId: string;
+            /**
+             * Format: double
+             * @description Optional goal amount to create for the Fund in the selected Accounting Period
+             */
+            goalAmount?: null | number;
         };
         /** @description Model representing a request to create a Transaction Account. */
         CreateTransactionAccountModel: {

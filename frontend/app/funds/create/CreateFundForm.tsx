@@ -1,10 +1,17 @@
 "use client";
 
-import { Button, DialogActions, Stack } from "@mui/material";
+import {
+  Button,
+  Checkbox,
+  DialogActions,
+  FormControlLabel,
+  Stack,
+} from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import AccountingPeriodEntryField from "@/framework/forms/AccountingPeriodEntryField";
 import Breadcrumbs from "@/framework/Breadcrumbs";
+import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import type { FundType } from "@/data/fundTypes";
 import FundTypeEntryField from "@/framework/forms/FundTypeEntryField";
@@ -81,6 +88,9 @@ const CreateFundForm = function ({
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(providedAccountingPeriod);
 
+  const [specifyGoalAmount, setSpecifyGoalAmount] = useState<boolean>(false);
+  const [goalAmount, setGoalAmount] = useState<number | null>(null);
+
   const [state, action, pending] = useActionState(createFund, {
     redirectUrl: getRedirectUrl(providedAccountingPeriod),
   });
@@ -95,7 +105,12 @@ const CreateFundForm = function ({
           setValue={setName}
           errorMessage={state.nameErrors ?? null}
         />
-        <FundTypeEntryField label="Type" value={type} setValue={setType} />
+        <FundTypeEntryField
+          label="Type"
+          value={type}
+          setValue={setType}
+          errorMessage={state.typeErrors ?? null}
+        />
         <StringEntryField
           label="Description"
           value={description}
@@ -109,7 +124,30 @@ const CreateFundForm = function ({
           setValue={
             providedAccountingPeriod === null ? setAccountingPeriod : null
           }
+          errorMessage={state.accountingPeriodErrors ?? null}
         />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={specifyGoalAmount}
+              onChange={(e) => {
+                if (!e.target.checked) {
+                  setGoalAmount(null);
+                }
+                setSpecifyGoalAmount(e.target.checked);
+              }}
+            />
+          }
+          label="Set Goal Amount?"
+        />
+        {specifyGoalAmount ? (
+          <CurrencyEntryField
+            label="Goal Amount"
+            value={goalAmount}
+            setValue={setGoalAmount}
+            errorMessage={state.goalAmountErrors ?? null}
+          />
+        ) : null}
         <DialogActions>
           <Link href={getRedirectUrl(providedAccountingPeriod)} tabIndex={-1}>
             <Button variant="outlined">Cancel</Button>
@@ -127,6 +165,7 @@ const CreateFundForm = function ({
                   name,
                   type,
                   description,
+                  goalAmount,
                   accountingPeriodId: accountingPeriod.id,
                 });
               });

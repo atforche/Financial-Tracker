@@ -46,7 +46,7 @@ public class AccountingPeriodService(
                 Type = FundType.Unassigned,
                 Description = "Fund that tracks money that has not been assigned to a specific fund",
                 AccountingPeriod = accountingPeriod,
-            }, out Fund? unassignedFund, out IEnumerable<Exception> unassignedFundExceptions))
+            }, out Fund? unassignedFund, out _, out IEnumerable<Exception> unassignedFundExceptions))
             {
                 exceptions = exceptions.Concat(unassignedFundExceptions);
                 return false;

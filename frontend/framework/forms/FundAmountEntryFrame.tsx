@@ -64,7 +64,7 @@ const FundAmountEntryFrame = function ({
                 setValue({
                   fundId: value.fundId,
                   fundName: value.fundName,
-                  amount: newAmount,
+                  amount: newAmount ?? 0,
                 });
               }
         }

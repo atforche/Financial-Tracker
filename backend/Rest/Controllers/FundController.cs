@@ -258,24 +258,29 @@ public sealed class FundController(
                 Type = fundType.Value,
                 Description = createFundModel.Description,
                 AccountingPeriod = accountingPeriod,
+                GoalAmount = createFundModel.GoalAmount,
             },
             out Fund? newFund,
+            out FundGoal? newFundGoal,
             out IEnumerable<Exception> exceptions))
         {
-            errors = exceptions.GroupBy(e => e switch
-            {
-                InvalidNameException => nameof(createFundModel.Name),
-                InvalidAccountingPeriodException => nameof(createFundModel.AccountingPeriodId),
-                _ => string.Empty
-            }).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray());
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to create Fund.",
-                Errors = errors,
+                Errors = GetCreateFundErrors(
+                    exceptions,
+                    nameof(createFundModel.Name),
+                    nameof(createFundModel.Type),
+                    nameof(createFundModel.AccountingPeriodId),
+                    nameof(createFundModel.GoalAmount)),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
         fundRepository.Add(newFund);
+        if (newFundGoal != null)
+        {
+            fundGoalRepository.Add(newFundGoal);
+        }
         await unitOfWork.SaveChangesAsync();
         return Ok(fundMapper.ToModel(newFund));
     }
@@ -506,6 +511,25 @@ public sealed class FundController(
         await unitOfWork.SaveChangesAsync();
         return Ok();
     }
+
+    /// <summary>
+    /// Maps create Fund exceptions to validation errors
+    /// </summary>
+    private static Dictionary<string, string[]> GetCreateFundErrors(
+        IEnumerable<Exception> exceptions,
+        string nameKey,
+        string typeKey,
+        string accountingPeriodKey,
+        string goalAmountKey) =>
+        exceptions.GroupBy(exception => exception switch
+        {
+            InvalidNameException => nameKey,
+            InvalidAccountingPeriodException => accountingPeriodKey,
+            InvalidFundException invalidFundException
+                when invalidFundException.Message.Contains("goal amount", StringComparison.InvariantCultureIgnoreCase) => goalAmountKey,
+            InvalidFundException => typeKey,
+            _ => string.Empty,
+        }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray());
 
     /// <summary>
     /// Maps Fund Goal exceptions to validation errors

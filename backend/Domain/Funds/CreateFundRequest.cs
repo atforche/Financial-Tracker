@@ -26,4 +26,9 @@ public record CreateFundRequest
     /// Accounting Period that the Fund is being added to
     /// </summary>
     public required AccountingPeriod AccountingPeriod { get; init; }
+
+    /// <summary>
+    /// Optional goal amount to create for the Fund in the selected Accounting Period
+    /// </summary>
+    public decimal? GoalAmount { get; init; }
 }
