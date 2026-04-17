@@ -16,7 +16,8 @@ public class AccountingPeriodService(
     IFundGoalRepository fundGoalRepository,
     ITransactionRepository transactionRepository,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
-    FundService fundService)
+    FundService fundService,
+    FundGoalService fundGoalService)
 {
     /// <summary>
     /// Attempts to create a new Accounting Period
@@ -65,7 +66,7 @@ public class AccountingPeriodService(
                     GoalType = fundGoal.GoalType,
                     GoalAmount = fundGoal.GoalAmount,
                 };
-                if (!fundService.TryCreateGoal(createFundGoalRequest, out FundGoal? createdFundGoal, out IEnumerable<Exception> createdFundGoalExceptions))
+                if (!fundGoalService.TryCreate(createFundGoalRequest, out FundGoal? createdFundGoal, out IEnumerable<Exception> createdFundGoalExceptions))
                 {
                     exceptions = exceptions.Concat(createdFundGoalExceptions);
                     return false;

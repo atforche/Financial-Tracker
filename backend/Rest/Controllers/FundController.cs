@@ -26,6 +26,7 @@ public sealed class FundController(
     AccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
     TransactionRepository transactionRepository,
     FundService fundService,
+    FundGoalService fundGoalService,
     AccountingPeriodMapper accountingPeriodMapper,
     FundMapper fundMapper,
     FundGoalMapper fundGoalMapper,
@@ -346,7 +347,7 @@ public sealed class FundController(
             });
         }
 
-        if (!fundService.TryCreateGoal(
+        if (!fundGoalService.TryCreate(
             new CreateFundGoalRequest
             {
                 Fund = fund,
@@ -447,7 +448,7 @@ public sealed class FundController(
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
-        if (!FundService.TryUpdateGoal(fundGoalToUpdate, goalType.Value, updateFundGoalModel.GoalAmount, out IEnumerable<Exception> exceptions))
+        if (!FundGoalService.TryUpdate(fundGoalToUpdate, goalType.Value, updateFundGoalModel.GoalAmount, out IEnumerable<Exception> exceptions))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
@@ -524,7 +525,7 @@ public sealed class FundController(
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
-        if (!fundService.TryDeleteGoal(fundGoalToDelete, out IEnumerable<Exception> exceptions))
+        if (!fundGoalService.TryDelete(fundGoalToDelete, out IEnumerable<Exception> exceptions))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
