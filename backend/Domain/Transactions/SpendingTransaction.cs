@@ -27,34 +27,13 @@ public class SpendingTransaction : Transaction
     public IReadOnlyCollection<FundAmount> FundAmounts => _fundAmounts;
 
     /// <inheritdoc/>
-    internal override IEnumerable<AccountId> GetAllAffectedAccountIds() => [AccountId];
+    public override IEnumerable<AccountId> GetAllAffectedAccountIds() => [AccountId];
 
     /// <inheritdoc/>
-    internal override DateOnly? GetPostedDateForAccount(AccountId accountId) =>
-        accountId == AccountId ? PostedDate : null;
+    public override DateOnly? GetPostedDateForAccount(AccountId accountId) => accountId == AccountId ? PostedDate : null;
 
     /// <inheritdoc/>
-    internal override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
-    {
-        if (existingAccountBalance.Account.Id != AccountId)
-        {
-            return existingAccountBalance;
-        }
-        return existingAccountBalance.AddNewPendingCreditAmount(reverse ? -Amount : Amount);
-    }
-
-    /// <inheritdoc/>
-    internal override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
-    {
-        if (existingAccountBalance.Account.Id != AccountId)
-        {
-            return existingAccountBalance;
-        }
-        return existingAccountBalance.PostPendingCreditAmount(reverse ? -Amount : Amount);
-    }
-
-    /// <inheritdoc/>
-    internal override IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId)
+    public override IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId)
     {
         if (accountId == null || accountId == AccountId)
         {
@@ -63,44 +42,11 @@ public class SpendingTransaction : Transaction
         return [];
     }
 
-    /// <inheritdoc/>
-    internal override FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse)
-    {
-        FundAmount? fundAmount = _fundAmounts.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
-        if (fundAmount == null)
-        {
-            return existingFundBalance;
-        }
-        return existingFundBalance.AddNewPendingAmountSpent(reverse ? -fundAmount.Amount : fundAmount.Amount);
-    }
-
-    /// <inheritdoc/>
-    internal override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse)
-    {
-        FundAmount? fundAmount = _fundAmounts.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
-        if (fundAmount == null || accountId != AccountId)
-        {
-            return existingFundBalance;
-        }
-        return existingFundBalance.PostPendingAmountSpent(reverse ? -fundAmount.Amount : fundAmount.Amount);
-    }
-
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public SpendingTransaction(CreateSpendingTransactionRequest request, int sequence)
+    internal SpendingTransaction(CreateSpendingTransactionRequest request, int sequence)
         : this(request, sequence, TransactionType.Spending) { }
-
-    /// <summary>
-    /// Constructs a new instance of this class with an explicit TransactionType
-    /// </summary>
-    protected SpendingTransaction(CreateSpendingTransactionRequest request, int sequence, TransactionType type)
-        : base(request, sequence, type)
-    {
-        AccountId = request.Account.Id;
-        PostedDate = request.PostedDate;
-        _fundAmounts.AddRange(request.FundAssignments);
-    }
 
     /// <summary>
     /// Updates the fund amounts for this Spending Transaction
@@ -118,5 +64,58 @@ public class SpendingTransaction : Transaction
         : base()
     {
         AccountId = null!;
+    }
+
+    /// <inheritdoc/>
+    protected override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
+    {
+        if (existingAccountBalance.Account.Id != AccountId)
+        {
+            return existingAccountBalance;
+        }
+        return existingAccountBalance.AddNewPendingCreditAmount(reverse ? -Amount : Amount);
+    }
+
+    /// <inheritdoc/>
+    protected override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
+    {
+        if (existingAccountBalance.Account.Id != AccountId)
+        {
+            return existingAccountBalance;
+        }
+        return existingAccountBalance.PostPendingCreditAmount(reverse ? -Amount : Amount);
+    }
+
+    /// <inheritdoc/>
+    protected override FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse)
+    {
+        FundAmount? fundAmount = _fundAmounts.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
+        if (fundAmount == null)
+        {
+            return existingFundBalance;
+        }
+        return existingFundBalance.AddNewPendingAmountSpent(reverse ? -fundAmount.Amount : fundAmount.Amount);
+    }
+
+    /// <inheritdoc/>
+    protected override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse)
+    {
+        FundAmount? fundAmount = _fundAmounts.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
+        if (fundAmount == null || accountId != AccountId)
+        {
+            return existingFundBalance;
+        }
+        return existingFundBalance.PostPendingAmountSpent(reverse ? -fundAmount.Amount : fundAmount.Amount);
+    }
+
+    /// <summary>
+    /// Constructs a new instance of this class with an explicit TransactionType
+    /// </summary>
+    protected SpendingTransaction(CreateSpendingTransactionRequest request, int sequence, TransactionType type)
+        : base(request, sequence, type)
+    {
+        AccountId = request.Account.Id;
+        PostedDate = request.PostedDate;
+        _fundAmounts.AddRange(request.FundAssignments);
     }
 }

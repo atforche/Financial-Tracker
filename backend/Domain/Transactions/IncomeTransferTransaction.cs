@@ -22,6 +22,19 @@ public class IncomeTransferTransaction : IncomeTransaction
     /// </summary>
     public DateOnly? DebitPostedDate { get; internal set; }
 
+    /// <inheritdoc/>
+    public override IEnumerable<AccountId> GetAllAffectedAccountIds() => [DebitAccountId, AccountId];
+
+    /// <inheritdoc/>
+    public override DateOnly? GetPostedDateForAccount(AccountId accountId)
+    {
+        if (accountId == DebitAccountId)
+        {
+            return DebitPostedDate;
+        }
+        return base.GetPostedDateForAccount(accountId);
+    }
+
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
@@ -32,30 +45,8 @@ public class IncomeTransferTransaction : IncomeTransaction
         DebitPostedDate = request.DebitPostedDate;
     }
 
-    /// <summary>
-    /// Constructs a new default instance of this class
-    /// </summary>
-    private IncomeTransferTransaction()
-        : base()
-    {
-        DebitAccountId = null!;
-    }
-
     /// <inheritdoc/>
-    internal override IEnumerable<AccountId> GetAllAffectedAccountIds() => [DebitAccountId, AccountId];
-
-    /// <inheritdoc/>
-    internal override DateOnly? GetPostedDateForAccount(AccountId accountId)
-    {
-        if (accountId == DebitAccountId)
-        {
-            return DebitPostedDate;
-        }
-        return base.GetPostedDateForAccount(accountId);
-    }
-
-    /// <inheritdoc/>
-    internal override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
+    protected override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
         if (existingAccountBalance.Account.Id != DebitAccountId)
         {
@@ -65,12 +56,21 @@ public class IncomeTransferTransaction : IncomeTransaction
     }
 
     /// <inheritdoc/>
-    internal override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
+    protected override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
         if (existingAccountBalance.Account.Id != DebitAccountId)
         {
             return base.PostToAccountBalance(existingAccountBalance, reverse);
         }
         return existingAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
+    }
+
+    /// <summary>
+    /// Constructs a new default instance of this class
+    /// </summary>
+    private IncomeTransferTransaction()
+        : base()
+    {
+        DebitAccountId = null!;
     }
 }

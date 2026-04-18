@@ -31,6 +31,22 @@ public class IncomeTransaction : Transaction
     /// </summary>
     public AccountId? GeneratedByAccountId { get; internal set; }
 
+    /// <inheritdoc/>
+    public override IEnumerable<AccountId> GetAllAffectedAccountIds() => [AccountId];
+
+    /// <inheritdoc/>
+    public override DateOnly? GetPostedDateForAccount(AccountId accountId) => accountId == AccountId ? PostedDate : null;
+
+    /// <inheritdoc/>
+    public override IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId)
+    {
+        if (accountId == null || accountId == AccountId)
+        {
+            return _fundAmounts.Select(f => f.FundId);
+        }
+        return [];
+    }
+
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
@@ -49,15 +65,17 @@ public class IncomeTransaction : Transaction
         _fundAmounts.AddRange(request.FundAssignments);
     }
 
-    /// <inheritdoc/>
-    internal override IEnumerable<AccountId> GetAllAffectedAccountIds() => [AccountId];
+    /// <summary>
+    /// Updates the fund amounts for this Income Transaction
+    /// </summary>
+    internal void UpdateFundAmounts(IReadOnlyCollection<FundAmount> fundAmounts)
+    {
+        _fundAmounts.Clear();
+        _fundAmounts.AddRange(fundAmounts);
+    }
 
     /// <inheritdoc/>
-    internal override DateOnly? GetPostedDateForAccount(AccountId accountId) =>
-        accountId == AccountId ? PostedDate : null;
-
-    /// <inheritdoc/>
-    internal override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
+    protected override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
         if (existingAccountBalance.Account.Id != AccountId)
         {
@@ -67,7 +85,7 @@ public class IncomeTransaction : Transaction
     }
 
     /// <inheritdoc/>
-    internal override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
+    protected override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
         if (existingAccountBalance.Account.Id != AccountId)
         {
@@ -77,17 +95,7 @@ public class IncomeTransaction : Transaction
     }
 
     /// <inheritdoc/>
-    internal override IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId)
-    {
-        if (accountId == null || accountId == AccountId)
-        {
-            return _fundAmounts.Select(f => f.FundId);
-        }
-        return [];
-    }
-
-    /// <inheritdoc/>
-    internal override FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse)
+    protected override FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse)
     {
         FundAmount? fundAmount = _fundAmounts.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
         if (fundAmount == null)
@@ -98,7 +106,7 @@ public class IncomeTransaction : Transaction
     }
 
     /// <inheritdoc/>
-    internal override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse)
+    protected override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse)
     {
         FundAmount? fundAmount = _fundAmounts.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
         if (fundAmount == null || accountId != AccountId)
@@ -106,15 +114,6 @@ public class IncomeTransaction : Transaction
             return existingFundBalance;
         }
         return existingFundBalance.PostPendingAmountAssigned(reverse ? -fundAmount.Amount : fundAmount.Amount);
-    }
-
-    /// <summary>
-    /// Updates the fund amounts for this Income Transaction
-    /// </summary>
-    internal void UpdateFundAmounts(IReadOnlyCollection<FundAmount> fundAmounts)
-    {
-        _fundAmounts.Clear();
-        _fundAmounts.AddRange(fundAmounts);
     }
 
     /// <summary>

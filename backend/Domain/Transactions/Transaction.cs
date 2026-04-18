@@ -49,76 +49,76 @@ public abstract class Transaction : Entity<TransactionId>
     public decimal Amount { get; private set; }
 
     /// <summary>
-    /// Applies this Transaction to the provided existing Account Balance as of the provided date
-    /// </summary>
-    public AccountBalance ApplyToAccountBalance(AccountBalance existingAccountBalance, DateOnly asOfDate)
-    {
-        AccountBalance newBalance = existingAccountBalance;
-        if (Date == asOfDate)
-        {
-            newBalance = AddToAccountBalance(existingAccountBalance, false);
-        }
-        if (GetPostedDateForAccount(existingAccountBalance.Account.Id) == asOfDate)
-        {
-            newBalance = PostToAccountBalance(existingAccountBalance, false);
-        }
-        return newBalance;
-    }
-
-    /// <summary>
-    /// Applies this Transaction to the provided existing Fund Balance as of the provided date
-    /// </summary>
-    public FundBalance ApplyToFundBalance(FundBalance existingFundBalance, DateOnly asOfDate)
-    {
-        FundBalance newBalance = existingFundBalance;
-        if (Date == asOfDate)
-        {
-            newBalance = AddToFundBalance(existingFundBalance, false);
-        }
-        foreach (AccountId accountId in GetAllAffectedAccountIds())
-        {
-            if (GetPostedDateForAccount(accountId) == asOfDate)
-            {
-                newBalance = PostToFundBalance(existingFundBalance, accountId, false);
-            }
-        }
-        return newBalance;
-    }
-
-    /// <summary>
     /// Gets all Account IDs affected by this Transaction
     /// </summary>
-    internal abstract IEnumerable<AccountId> GetAllAffectedAccountIds();
+    public abstract IEnumerable<AccountId> GetAllAffectedAccountIds();
 
     /// <summary>
     /// Gets the posted date for the provided account ID
     /// </summary>
-    internal abstract DateOnly? GetPostedDateForAccount(AccountId accountId);
+    public abstract DateOnly? GetPostedDateForAccount(AccountId accountId);
 
     /// <summary>
-    /// Adds this Transaction to the provided existing Account Balance
+    /// Applies this Transaction to the provided existing Account Balance
     /// </summary>
-    internal abstract AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse);
-
-    /// <summary>
-    /// Posts this Transaction to the provided account balance
-    /// </summary>
-    internal abstract AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse);
+    /// <param name="existingAccountBalance">The existing Account Balance to apply this Transaction to</param>
+    /// <param name="asOfDate">If provided, only applies the portions of this Transaction that occurred on the specified date</param>
+    /// <param name="reverse">If true, reverses the effects of this Transaction</param>
+    public AccountBalance ApplyToAccountBalance(
+        AccountBalance existingAccountBalance,
+        DateOnly? asOfDate = null,
+        bool reverse = false)
+    {
+        AccountBalance newBalance = existingAccountBalance;
+        if (asOfDate == null || Date == asOfDate)
+        {
+            newBalance = AddToAccountBalance(existingAccountBalance, reverse);
+        }
+        DateOnly? postedDate = GetPostedDateForAccount(existingAccountBalance.Account.Id);
+        if (postedDate != null && (asOfDate == null || postedDate == asOfDate))
+        {
+            newBalance = PostToAccountBalance(existingAccountBalance, reverse);
+        }
+        return newBalance;
+    }
 
     /// <summary>
     /// Gets all Fund IDs affected by this Transaction for the provided account ID
     /// </summary>
-    internal abstract IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId);
+    public abstract IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId);
 
     /// <summary>
-    /// Adds this Transaction to the provided existing Fund Balance
+    /// Applies this Transaction to the provided existing Fund Balance
     /// </summary>
-    internal abstract FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse);
-
-    /// <summary>
-    /// Posts this Transaction to the provided fund balance
-    /// </summary>
-    internal abstract FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse);
+    /// <param name="existingFundBalance">The existing Fund Balance to apply this Transaction to</param>
+    /// <param name="asOfDate">If provided, only applies the portions of this Transaction that occurred on the specified date</param>
+    /// <param name="accountId">If provided, only applies the portions of this Transaction that affect the specified account</param>
+    /// <param name="reverse">If true, reverses the effects of this Transaction</param>
+    public FundBalance ApplyToFundBalance(
+        FundBalance existingFundBalance,
+        DateOnly? asOfDate = null,
+        AccountId? accountId = null,
+        bool reverse = false)
+    {
+        FundBalance newBalance = existingFundBalance;
+        if (asOfDate == null || Date == asOfDate)
+        {
+            newBalance = AddToFundBalance(existingFundBalance, reverse);
+        }
+        foreach (AccountId affectedAccountId in GetAllAffectedAccountIds())
+        {
+            if (accountId != null && affectedAccountId != accountId)
+            {
+                continue;
+            }
+            DateOnly? postedDate = GetPostedDateForAccount(affectedAccountId);
+            if (postedDate != null && (asOfDate == null || postedDate == asOfDate))
+            {
+                newBalance = PostToFundBalance(existingFundBalance, affectedAccountId, reverse);
+            }
+        }
+        return newBalance;
+    }
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -144,6 +144,26 @@ public abstract class Transaction : Entity<TransactionId>
         Location = null!;
         Description = null!;
     }
+
+    /// <summary>
+    /// Adds this Transaction to the provided existing Account Balance
+    /// </summary>
+    protected abstract AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse);
+
+    /// <summary>
+    /// Posts this Transaction to the provided account balance
+    /// </summary>
+    protected abstract AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse);
+
+    /// <summary>
+    /// Adds this Transaction to the provided existing Fund Balance
+    /// </summary>
+    protected abstract FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse);
+
+    /// <summary>
+    /// Posts this Transaction to the provided fund balance
+    /// </summary>
+    protected abstract FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse);
 }
 
 /// <summary>

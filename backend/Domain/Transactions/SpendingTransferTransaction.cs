@@ -22,30 +22,11 @@ public class SpendingTransferTransaction : SpendingTransaction
     /// </summary>
     public DateOnly? CreditPostedDate { get; internal set; }
 
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    public SpendingTransferTransaction(CreateSpendingTransferTransactionRequest request, int sequence)
-        : base(request, sequence, TransactionType.SpendingTransfer)
-    {
-        CreditAccountId = request.CreditAccount.Id;
-        CreditPostedDate = request.CreditPostedDate;
-    }
-
-    /// <summary>
-    /// Constructs a new default instance of this class
-    /// </summary>
-    private SpendingTransferTransaction()
-        : base()
-    {
-        CreditAccountId = null!;
-    }
+    /// <inheritdoc/>
+    public override IEnumerable<AccountId> GetAllAffectedAccountIds() => [AccountId, CreditAccountId];
 
     /// <inheritdoc/>
-    internal override IEnumerable<AccountId> GetAllAffectedAccountIds() => [AccountId, CreditAccountId];
-
-    /// <inheritdoc/>
-    internal override DateOnly? GetPostedDateForAccount(AccountId accountId)
+    public override DateOnly? GetPostedDateForAccount(AccountId accountId)
     {
         if (accountId == CreditAccountId)
         {
@@ -54,8 +35,18 @@ public class SpendingTransferTransaction : SpendingTransaction
         return base.GetPostedDateForAccount(accountId);
     }
 
+    /// <summary>
+    /// Constructs a new instance of this class
+    /// </summary>
+    internal SpendingTransferTransaction(CreateSpendingTransferTransactionRequest request, int sequence)
+        : base(request, sequence, TransactionType.SpendingTransfer)
+    {
+        CreditAccountId = request.CreditAccount.Id;
+        CreditPostedDate = request.CreditPostedDate;
+    }
+
     /// <inheritdoc/>
-    internal override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
+    protected override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
         if (existingAccountBalance.Account.Id != AccountId)
         {
@@ -65,12 +56,21 @@ public class SpendingTransferTransaction : SpendingTransaction
     }
 
     /// <inheritdoc/>
-    internal override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
+    protected override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
         if (existingAccountBalance.Account.Id != CreditAccountId)
         {
             return base.PostToAccountBalance(existingAccountBalance, reverse);
         }
         return existingAccountBalance.PostPendingCreditAmount(reverse ? -Amount : Amount);
+    }
+
+    /// <summary>
+    /// Constructs a new default instance of this class
+    /// </summary>
+    private SpendingTransferTransaction()
+        : base()
+    {
+        CreditAccountId = null!;
     }
 }

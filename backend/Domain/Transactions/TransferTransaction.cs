@@ -33,10 +33,10 @@ public class TransferTransaction : Transaction
     public DateOnly? CreditPostedDate { get; internal set; }
 
     /// <inheritdoc/>
-    internal override IEnumerable<AccountId> GetAllAffectedAccountIds() => [DebitAccountId, CreditAccountId];
+    public override IEnumerable<AccountId> GetAllAffectedAccountIds() => [DebitAccountId, CreditAccountId];
 
     /// <inheritdoc/>
-    internal override DateOnly? GetPostedDateForAccount(AccountId accountId)
+    public override DateOnly? GetPostedDateForAccount(AccountId accountId)
     {
         if (accountId == DebitAccountId)
         {
@@ -50,43 +50,7 @@ public class TransferTransaction : Transaction
     }
 
     /// <inheritdoc/>
-    internal override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
-    {
-        AccountBalance newAccountBalance = existingAccountBalance;
-        if (existingAccountBalance.Account.Id == DebitAccountId)
-        {
-            newAccountBalance = newAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
-        }
-        else if (existingAccountBalance.Account.Id == CreditAccountId)
-        {
-            newAccountBalance = newAccountBalance.AddNewPendingCreditAmount(reverse ? -Amount : Amount);
-        }
-        return newAccountBalance;
-    }
-
-    /// <inheritdoc/>
-    internal override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
-    {
-        AccountBalance newAccountBalance = existingAccountBalance;
-        if (existingAccountBalance.Account.Id == DebitAccountId)
-        {
-            newAccountBalance = newAccountBalance.PostPendingDebitAmount(reverse ? -Amount : Amount);
-        }
-        else if (existingAccountBalance.Account.Id == CreditAccountId)
-        {
-            newAccountBalance = newAccountBalance.PostPendingCreditAmount(reverse ? -Amount : Amount);
-        }
-        return newAccountBalance;
-    }
-
-    /// <inheritdoc/>
-    internal override IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId) => [];
-
-    /// <inheritdoc/>
-    internal override FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse) => existingFundBalance;
-
-    /// <inheritdoc/>
-    internal override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse) => existingFundBalance;
+    public override IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId) => [];
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -109,4 +73,40 @@ public class TransferTransaction : Transaction
         DebitAccountId = null!;
         CreditAccountId = null!;
     }
+
+    /// <inheritdoc/>
+    protected override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
+    {
+        AccountBalance newAccountBalance = existingAccountBalance;
+        if (existingAccountBalance.Account.Id == DebitAccountId)
+        {
+            newAccountBalance = newAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
+        }
+        else if (existingAccountBalance.Account.Id == CreditAccountId)
+        {
+            newAccountBalance = newAccountBalance.AddNewPendingCreditAmount(reverse ? -Amount : Amount);
+        }
+        return newAccountBalance;
+    }
+
+    /// <inheritdoc/>
+    protected override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
+    {
+        AccountBalance newAccountBalance = existingAccountBalance;
+        if (existingAccountBalance.Account.Id == DebitAccountId)
+        {
+            newAccountBalance = newAccountBalance.PostPendingDebitAmount(reverse ? -Amount : Amount);
+        }
+        else if (existingAccountBalance.Account.Id == CreditAccountId)
+        {
+            newAccountBalance = newAccountBalance.PostPendingCreditAmount(reverse ? -Amount : Amount);
+        }
+        return newAccountBalance;
+    }
+
+    /// <inheritdoc/>
+    protected override FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse) => existingFundBalance;
+
+    /// <inheritdoc/>
+    protected override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse) => existingFundBalance;
 }
