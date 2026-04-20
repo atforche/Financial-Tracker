@@ -85,6 +85,7 @@ const AccountingPeriodListFrames = function ({
             <Typography variant="h6">Accounts</Typography>
             <SearchBar paramName="accountSearch" />
             <AccountListFrame
+              accountingPeriod={accountingPeriod}
               data={accountData}
               totalCount={accountTotalCount}
             />

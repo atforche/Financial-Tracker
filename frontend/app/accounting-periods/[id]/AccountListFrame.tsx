@@ -4,9 +4,13 @@ import {
   type AccountingPeriodAccount,
   AccountingPeriodAccountSortOrder,
 } from "@/data/accountTypes";
+import routes, { withQuery } from "@/framework/routes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
+import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
@@ -16,6 +20,7 @@ import tryParseEnum from "@/data/tryParseEnum";
  * Props for the AccountListFrame component.
  */
 interface AccountListFrameProps {
+  readonly accountingPeriod: AccountingPeriod;
   readonly data: AccountingPeriodAccount[] | null;
   readonly totalCount: number | null;
 }
@@ -24,6 +29,7 @@ interface AccountListFrameProps {
  * Component that displays the list of accounts associated with an accounting period.
  */
 const AccountListFrame = function ({
+  accountingPeriod,
   data,
   totalCount,
 }: AccountListFrameProps): JSX.Element {
@@ -136,6 +142,26 @@ const AccountListFrame = function ({
       },
       minWidth: 125,
       alignment: "right",
+    },
+    {
+      name: "actions",
+      headerContent: (
+        <IconButton
+          label="Add"
+          icon={<AddCircleOutline />}
+          onClick={() => {
+            router.push(
+              withQuery(routes.accounts.create, {
+                accountingPeriodId: accountingPeriod.id,
+              }),
+            );
+          }}
+          disabled={!accountingPeriod.isOpen}
+        />
+      ),
+      getBodyContent: () => null,
+      alignment: "right",
+      minWidth: 60,
     },
   ];
 

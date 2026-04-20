@@ -29,6 +29,7 @@ const routes = {
   },
   accounts: {
     index: "/accounts" as Route,
+    create: "/accounts/create" as Route,
     update: (accountId: string): Route => `/accounts/${accountId}/update`,
     delete: (accountId: string): Route => `/accounts/${accountId}/delete`,
   },

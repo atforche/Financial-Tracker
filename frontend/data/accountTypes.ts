@@ -36,6 +36,24 @@ type CreateAccountRequest = components["schemas"]["CreateAccountModel"];
 type UpdateAccountRequest = components["schemas"]["UpdateAccountModel"];
 
 /**
+ * Determines if the provided account type supports tracked fund assignments.
+ */
+const isTrackedAccountType = function (accountType: AccountTypeModel): boolean {
+  switch (accountType) {
+    case AccountTypeModel.Standard:
+    case AccountTypeModel.CreditCard:
+    case AccountTypeModel.Investment:
+      return true;
+    case AccountTypeModel.Debt:
+    case AccountTypeModel.Retirement:
+    case AccountTypeModel.Escrow:
+      return false;
+    default:
+      return false;
+  }
+};
+
+/**
  * Determines if the provided change in balance is "positive" based on the provided account type.
  */
 const isPositiveChangeInBalance = function (
@@ -58,5 +76,6 @@ export {
   AccountingPeriodAccountSortOrderModel as AccountingPeriodAccountSortOrder,
   AccountTransactionSortOrderModel as AccountTransactionSortOrder,
   AccountTypeModel as AccountType,
+  isTrackedAccountType,
   isPositiveChangeInBalance,
 };

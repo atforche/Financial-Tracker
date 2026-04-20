@@ -2,11 +2,14 @@
 
 import { type Account, AccountSortOrder } from "@/data/accountTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
+import routes from "@/framework/routes";
 import tryParseEnum from "@/data/tryParseEnum";
 
 /**
@@ -131,6 +134,21 @@ const AccountListFrame = function ({
       },
       minWidth: 125,
       alignment: "right",
+    },
+    {
+      name: "actions",
+      headerContent: (
+        <IconButton
+          label="Add"
+          icon={<AddCircleOutline />}
+          onClick={() => {
+            router.push(routes.accounts.create);
+          }}
+        />
+      ),
+      getBodyContent: () => null,
+      alignment: "right",
+      minWidth: 60,
     },
   ];
 

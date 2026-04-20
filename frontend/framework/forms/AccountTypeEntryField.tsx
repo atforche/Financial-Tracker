@@ -9,6 +9,7 @@ interface AccountTypeEntryFieldProps {
   readonly label: string;
   readonly value: AccountType | null;
   readonly setValue: (newValue: AccountType | null) => void;
+  readonly errorMessage?: string | null;
 }
 
 /**
@@ -18,6 +19,7 @@ const AccountTypeEntryField = function ({
   label,
   value,
   setValue,
+  errorMessage = null,
 }: AccountTypeEntryFieldProps): JSX.Element {
   return (
     <ComboBoxEntryField<AccountType>
@@ -32,6 +34,7 @@ const AccountTypeEntryField = function ({
       setValue={(newValue): void => {
         setValue(newValue.value);
       }}
+      errorMessage={errorMessage}
     />
   );
 };

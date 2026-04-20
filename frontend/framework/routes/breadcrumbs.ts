@@ -157,6 +157,25 @@ const routeBreadcrumbs = {
   },
   accounts: {
     index: accountsIndex,
+    create(accountingPeriod: NamedEntity | null = null): Breadcrumb[] {
+      if (accountingPeriod !== null) {
+        return [
+          ...accountingPeriodDetail(accountingPeriod),
+          {
+            label: "Create Account",
+            href: routes.accounts.create,
+          },
+        ];
+      }
+
+      return [
+        ...accountsIndex(),
+        {
+          label: "Create",
+          href: routes.accounts.create,
+        },
+      ];
+    },
     update(
       account: NamedEntity,
       accountingPeriod: NamedEntity | null = null,
