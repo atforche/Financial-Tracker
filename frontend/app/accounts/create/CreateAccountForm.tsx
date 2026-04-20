@@ -26,7 +26,6 @@ import FundAmountCollectionEntryFrame from "@/framework/forms/FundAmountCollecti
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import createAccount from "@/app/accounts/create/createAccount";
-import formatCurrency from "@/framework/formatCurrency";
 
 /**
  * Props for the CreateAccountForm component.
@@ -58,6 +57,58 @@ const hasIncompleteFundAssignments = function (
   return initialFundAssignments.some(
     (fundAmount) => fundAmount.fundId === "" || fundAmount.fundName === "",
   );
+};
+
+/**
+ * Gets the Unassigned fund identifier when it is available.
+ */
+const getUnassignedFund = function (
+  funds: FundIdentifier[],
+): FundIdentifier | null {
+  return funds.find((fund) => fund.name === "Unassigned") ?? null;
+};
+
+/**
+ * Determines whether the provided fund amount belongs to the Unassigned fund.
+ */
+const isUnassignedFundAmount = function (
+  fundAmount: FundAmount,
+  unassignedFund: FundIdentifier | null,
+): boolean {
+  return (
+    unassignedFund !== null &&
+    (fundAmount.fundId === unassignedFund.id ||
+      fundAmount.fundName === unassignedFund.name)
+  );
+};
+
+/**
+ * Keeps the Unassigned amount in sync with the initial balance and other fund assignments.
+ */
+const normalizeInitialFundAssignments = function (
+  initialFundAssignments: FundAmount[],
+  initialBalance: number | null,
+  unassignedFund: FundIdentifier | null,
+): FundAmount[] {
+  if (unassignedFund === null) {
+    return initialFundAssignments;
+  }
+
+  const assignedFundAmounts = initialFundAssignments.filter(
+    (fundAmount) => !isUnassignedFundAmount(fundAmount, unassignedFund),
+  );
+  const unassignedAmount =
+    (initialBalance ?? 0) -
+    assignedFundAmounts.reduce((sum, fundAmount) => sum + fundAmount.amount, 0);
+
+  return [
+    {
+      fundId: unassignedFund.id,
+      fundName: unassignedFund.name,
+      amount: unassignedAmount,
+    },
+    ...assignedFundAmounts,
+  ];
 };
 
 /**
@@ -108,12 +159,17 @@ const CreateAccountForm = function ({
     redirectUrl: getRedirectUrl(providedAccountingPeriod),
   });
 
+  const unassignedFund = getUnassignedFund(funds);
   const trackedAccountType =
     accountType !== null && isTrackedAccountType(accountType);
-  const totalAssigned = initialFundAssignments.reduce(
-    (sum, fundAmount) => sum + fundAmount.amount,
-    0,
-  );
+
+  const setNormalizedInitialFundAssignments = function (
+    newValue: FundAmount[],
+  ): void {
+    setInitialFundAssignments(
+      normalizeInitialFundAssignments(newValue, initialBalance, unassignedFund),
+    );
+  };
 
   const handleAccountTypeChange = function (
     newAccountType: AccountType | null,
@@ -121,7 +177,16 @@ const CreateAccountForm = function ({
     setAccountType(newAccountType);
     if (newAccountType === null || !isTrackedAccountType(newAccountType)) {
       setInitialFundAssignments([]);
+      return;
     }
+
+    setInitialFundAssignments((currentValue) =>
+      normalizeInitialFundAssignments(
+        currentValue,
+        initialBalance,
+        unassignedFund,
+      ),
+    );
   };
 
   const handleAccountingPeriodChange = function (
@@ -130,6 +195,23 @@ const CreateAccountForm = function ({
     setAccountingPeriod(newAccountingPeriod);
     setAddDate((currentAddDate) =>
       getNormalizedAddDate(newAccountingPeriod, currentAddDate),
+    );
+  };
+
+  const handleInitialBalanceChange = function (
+    newInitialBalance: number | null,
+  ): void {
+    setInitialBalance(newInitialBalance);
+    if (!trackedAccountType) {
+      return;
+    }
+
+    setInitialFundAssignments((currentValue) =>
+      normalizeInitialFundAssignments(
+        currentValue,
+        newInitialBalance,
+        unassignedFund,
+      ),
     );
   };
 
@@ -187,16 +269,16 @@ const CreateAccountForm = function ({
         <CurrencyEntryField
           label="Initial Balance"
           value={initialBalance}
-          setValue={setInitialBalance}
+          setValue={handleInitialBalanceChange}
           errorMessage={state.initialBalanceErrors ?? null}
         />
         {trackedAccountType ? (
           <>
             <FundAmountCollectionEntryFrame
-              label={`Initial Fund Assignments (Total Assigned: ${formatCurrency(totalAssigned)})`}
+              label="Initial Fund Assignments"
               funds={funds}
               value={initialFundAssignments}
-              setValue={setInitialFundAssignments}
+              setValue={setNormalizedInitialFundAssignments}
             />
             {state.initialFundAssignmentsErrors !== null &&
             typeof state.initialFundAssignmentsErrors !== "undefined" ? (

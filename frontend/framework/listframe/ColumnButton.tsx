@@ -8,6 +8,7 @@ interface ColumnButtonProps {
   readonly label: string;
   readonly icon: JSX.Element;
   readonly onClick: (() => void) | null;
+  readonly hidden?: boolean;
 }
 
 /**
@@ -17,9 +18,14 @@ const ColumnButton = function ({
   label,
   icon,
   onClick,
+  hidden = false,
 }: ColumnButtonProps): JSX.Element {
   return (
-    <Tooltip title={label} className="column-button">
+    <Tooltip
+      title={label}
+      className="column-button"
+      sx={{ visibility: hidden ? "hidden" : "visible" }}
+    >
       <IconButton key={label} size="small" onClick={() => onClick?.()}>
         {icon}
       </IconButton>

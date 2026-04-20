@@ -30,6 +30,16 @@ const FundAmountCollectionEntryFrame = function ({
   setValue,
 }: FundAmountCollectionEntryFrameProps): JSX.Element {
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
+  const unassignedFundId =
+    funds.find((fund) => fund.name === "Unassigned")?.id ?? null;
+
+  const isUnassignedFundAmount = function (fundAmount: FundAmount): boolean {
+    return (
+      fundAmount.fundName === "Unassigned" ||
+      (unassignedFundId !== null && fundAmount.fundId === unassignedFundId)
+    );
+  };
+
   return (
     <div className="fund-amount-collection-entry-frame">
       <CaptionedFrame caption={label}>
@@ -46,7 +56,7 @@ const FundAmountCollectionEntryFrame = function ({
                 funds={funds}
                 value={fundAmount}
                 setValue={
-                  fundAmount.fundName === "Unassigned"
+                  isUnassignedFundAmount(fundAmount)
                     ? null
                     : (newValue): void => {
                         const newFundAmounts = [...value];
@@ -63,16 +73,15 @@ const FundAmountCollectionEntryFrame = function ({
                 }
                 autoFocus={focusIndex === index}
               />
-              {!(fundAmount.fundName === "Unassigned") && (
-                <ColumnButton
-                  label="Delete"
-                  icon={<Delete />}
-                  onClick={() => {
-                    const newFundAmounts = value.filter((_, i) => i !== index);
-                    setValue(newFundAmounts);
-                  }}
-                />
-              )}
+              <ColumnButton
+                label="Delete"
+                icon={<Delete />}
+                onClick={() => {
+                  const newFundAmounts = value.filter((_, i) => i !== index);
+                  setValue(newFundAmounts);
+                }}
+                hidden={isUnassignedFundAmount(fundAmount)}
+              />
             </Stack>
           ))}
 
