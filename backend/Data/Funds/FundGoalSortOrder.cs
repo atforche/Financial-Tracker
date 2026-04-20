@@ -24,14 +24,4 @@ public enum FundGoalSortOrder
     /// Fund Goals are sorted by goal amount in descending order
     /// </summary>
     GoalAmountDescending,
-
-    /// <summary>
-    /// Fund Goals are sorted by goal met status in ascending order
-    /// </summary>
-    IsGoalMet,
-
-    /// <summary>
-    /// Fund Goals are sorted by goal met status in descending order
-    /// </summary>
-    IsGoalMetDescending,
 }

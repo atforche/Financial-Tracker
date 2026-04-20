@@ -56,7 +56,32 @@ public class AccountingPeriodFundModel
     public required decimal? GoalAmount { get; init; }
 
     /// <summary>
-    /// Whether the goal has been met for the Fund during the Accounting Period
+    /// Pending amount assigned for the Fund during the Accounting Period
     /// </summary>
-    public required bool? IsGoalMet { get; init; }
+    public required decimal? PendingAmountAssigned { get; init; }
+
+    /// <summary>
+    /// Remaining amount to assign for the Fund during the Accounting Period
+    /// </summary>
+    public required decimal? RemainingAmountToAssign { get; init; }
+
+    /// <summary>
+    /// Whether the assignment goal has been met for the Fund during the Accounting Period
+    /// </summary>
+    public required bool? IsAssignmentGoalMet { get; init; }
+
+    /// <summary>
+    /// Pending amount spent for the Fund during the Accounting Period
+    /// </summary>
+    public required decimal? PendingAmountSpent { get; init; }
+
+    /// <summary>
+    /// Remaining amount to spend for the Fund during the Accounting Period
+    /// </summary>
+    public required decimal? RemainingAmountToSpend { get; init; }
+
+    /// <summary>
+    /// Whether the spending goal has been met for the Fund during the Accounting Period
+    /// </summary>
+    public required bool? IsSpendingGoalMet { get; init; }
 }

@@ -1766,8 +1766,30 @@ export interface components {
              * @description Goal amount for the Fund during the Accounting Period
              */
             goalAmount: null | number;
-            /** @description Whether the goal has been met for the Fund during the Accounting Period */
-            isGoalMet: null | boolean;
+            /**
+             * Format: double
+             * @description Pending amount assigned for the Fund during the Accounting Period
+             */
+            pendingAmountAssigned: null | number;
+            /**
+             * Format: double
+             * @description Remaining amount to assign for the Fund during the Accounting Period
+             */
+            remainingAmountToAssign: null | number;
+            /** @description Whether the assignment goal has been met for the Fund during the Accounting Period */
+            isAssignmentGoalMet: null | boolean;
+            /**
+             * Format: double
+             * @description Pending amount spent for the Fund during the Accounting Period
+             */
+            pendingAmountSpent: null | number;
+            /**
+             * Format: double
+             * @description Remaining amount to spend for the Fund during the Accounting Period
+             */
+            remainingAmountToSpend: null | number;
+            /** @description Whether the spending goal has been met for the Fund during the Accounting Period */
+            isSpendingGoalMet: null | boolean;
         };
         /** @enum {unknown} */
         AccountingPeriodFundSortOrderModel: AccountingPeriodFundSortOrderModel | null;
@@ -2075,11 +2097,53 @@ export interface components {
             goalType: components["schemas"]["FundGoalTypeModel"];
             /**
              * Format: double
+             * @description Opening balance for the Fund Goal
+             */
+            openingBalance: number;
+            /**
+             * Format: double
              * @description Goal amount for the Fund Goal
              */
             goalAmount: number;
-            /** @description Whether the goal has been met for the Fund Goal */
-            isGoalMet: boolean;
+            /**
+             * Format: double
+             * @description Amount assigned for the Fund Goal
+             */
+            amountAssigned: number;
+            /**
+             * Format: double
+             * @description Pending amount assigned for the Fund Goal
+             */
+            pendingAmountAssigned: number;
+            /**
+             * Format: double
+             * @description Remaining amount to assign for the Fund Goal
+             */
+            remainingAmountToAssign: number;
+            /** @description Whether the assignment goal has been met for the Fund Goal */
+            isAssignmentGoalMet: boolean;
+            /**
+             * Format: double
+             * @description Amount spent for the Fund Goal
+             */
+            amountSpent: number;
+            /**
+             * Format: double
+             * @description Pending amount spent for the Fund Goal
+             */
+            pendingAmountSpent: number;
+            /**
+             * Format: double
+             * @description Remaining amount to spend for the Fund Goal
+             */
+            remainingAmountToSpend: number;
+            /** @description Whether the spending goal has been met for the Fund Goal */
+            isSpendingGoalMet: boolean;
+            /**
+             * Format: double
+             * @description Closing balance for the Fund Goal
+             */
+            closingBalance: number;
         };
         /** @enum {unknown} */
         FundGoalSortOrderModel: FundGoalSortOrderModel | null;
@@ -2328,9 +2392,7 @@ export enum FundGoalSortOrderModel {
     AccountingPeriod = "AccountingPeriod",
     AccountingPeriodDescending = "AccountingPeriodDescending",
     GoalAmount = "GoalAmount",
-    GoalAmountDescending = "GoalAmountDescending",
-    IsGoalMet = "IsGoalMet",
-    IsGoalMetDescending = "IsGoalMetDescending"
+    GoalAmountDescending = "GoalAmountDescending"
 }
 export enum FundGoalTypeModel {
     Monthly = "Monthly",

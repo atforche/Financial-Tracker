@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20260412140304_InitialCreate")]
+    [Migration("20260420111323_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -170,10 +170,10 @@ namespace Data.Migrations
                     b.Property<Guid>("FundId")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("PendingCreditAmount")
+                    b.Property<decimal>("PendingAmountAssigned")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("PendingDebitAmount")
+                    b.Property<decimal>("PendingAmountSpent")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("PostedBalance")
@@ -198,6 +198,15 @@ namespace Data.Migrations
                     b.Property<Guid>("AccountingPeriodId")
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("AmountAssigned")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("AmountSpent")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("ClosingBalance")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("FundId")
                         .HasColumnType("TEXT");
 
@@ -208,8 +217,26 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsGoalMet")
+                    b.Property<bool>("IsAssignmentGoalMet")
                         .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsSpendingGoalMet")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("OpeningBalance")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PendingAmountAssigned")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PendingAmountSpent")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("RemainingAmountToAssign")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("RemainingAmountToSpend")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

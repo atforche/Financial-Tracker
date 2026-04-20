@@ -31,7 +31,12 @@ public sealed class AccountingPeriodFundMapper(
             ClosingBalance = fundBalanceMapper.ToModel(fundAccountingPeriodBalanceHistory.GetClosingFundBalance()),
             GoalType = fundGoal == null ? null : FundGoalTypeMapper.ToModel(fundGoal.GoalType),
             GoalAmount = fundGoal?.GoalAmount,
-            IsGoalMet = fundGoal?.IsGoalMet
+            PendingAmountAssigned = fundGoal?.PendingAmountAssigned,
+            RemainingAmountToAssign = fundGoal?.RemainingAmountToAssign,
+            IsAssignmentGoalMet = fundGoal?.IsAssignmentGoalMet,
+            PendingAmountSpent = fundGoal?.PendingAmountSpent,
+            RemainingAmountToSpend = fundGoal?.RemainingAmountToSpend,
+            IsSpendingGoalMet = fundGoal?.IsSpendingGoalMet,
         };
     }
 }

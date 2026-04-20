@@ -199,14 +199,6 @@ const FundListFrame = function ({
       minWidth: 130,
     },
     {
-      name: "isGoalMet",
-      headerContent: "Goal Met",
-      getBodyContent: (fund: AccountingPeriodFund) =>
-        fund.isGoalMet === null ? "-" : fund.isGoalMet ? "Yes" : "No",
-      alignment: "center",
-      minWidth: 110,
-    },
-    {
       name: "actions",
       headerContent: (
         <IconButton

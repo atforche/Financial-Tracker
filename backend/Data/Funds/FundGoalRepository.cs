@@ -85,8 +85,7 @@ public class FundGoalRepository(DatabaseContext databaseContext) : IFundGoalRepo
         MatchesSearch(accountingPeriod.Year.ToString(CultureInfo.InvariantCulture), search) ||
         MatchesSearch(accountingPeriod.Month.ToString(CultureInfo.InvariantCulture), search) ||
         MatchesSearch(fundGoal.GoalType.ToString(), search) ||
-        MatchesSearch(fundGoal.GoalAmount.ToString(CultureInfo.InvariantCulture), search) ||
-        MatchesSearch(fundGoal.IsGoalMet.ToString(), search);
+        MatchesSearch(fundGoal.GoalAmount.ToString(CultureInfo.InvariantCulture), search);
 
     /// <summary>
     /// Determines whether the provided value matches the provided search text
@@ -120,16 +119,6 @@ public class FundGoalRepository(DatabaseContext databaseContext) : IFundGoalRepo
                 .ToList(),
             FundGoalSortOrder.GoalAmountDescending => fundGoals
                 .OrderByDescending(fundGoal => fundGoal.GoalAmount)
-                .ThenBy(fundGoal => accountingPeriods[fundGoal.AccountingPeriodId].Year)
-                .ThenBy(fundGoal => accountingPeriods[fundGoal.AccountingPeriodId].Month)
-                .ToList(),
-            FundGoalSortOrder.IsGoalMet => fundGoals
-                .OrderBy(fundGoal => fundGoal.IsGoalMet)
-                .ThenBy(fundGoal => accountingPeriods[fundGoal.AccountingPeriodId].Year)
-                .ThenBy(fundGoal => accountingPeriods[fundGoal.AccountingPeriodId].Month)
-                .ToList(),
-            FundGoalSortOrder.IsGoalMetDescending => fundGoals
-                .OrderByDescending(fundGoal => fundGoal.IsGoalMet)
                 .ThenBy(fundGoal => accountingPeriods[fundGoal.AccountingPeriodId].Year)
                 .ThenBy(fundGoal => accountingPeriods[fundGoal.AccountingPeriodId].Month)
                 .ToList(),

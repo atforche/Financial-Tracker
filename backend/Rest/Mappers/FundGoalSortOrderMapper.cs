@@ -22,8 +22,6 @@ internal sealed class FundGoalSortOrderMapper
             FundGoalSortOrderModel.AccountingPeriodDescending => FundGoalSortOrder.AccountingPeriodDescending,
             FundGoalSortOrderModel.GoalAmount => FundGoalSortOrder.GoalAmount,
             FundGoalSortOrderModel.GoalAmountDescending => FundGoalSortOrder.GoalAmountDescending,
-            FundGoalSortOrderModel.IsGoalMet => FundGoalSortOrder.IsGoalMet,
-            FundGoalSortOrderModel.IsGoalMetDescending => FundGoalSortOrder.IsGoalMetDescending,
             _ => null,
         };
         return fundGoalSortOrder != null;

@@ -28,8 +28,8 @@ CREATE TABLE "FundBalanceHistories" (
     "Date" TEXT NOT NULL,
     "Sequence" INTEGER NOT NULL,
     "PostedBalance" TEXT NOT NULL,
-    "PendingDebitAmount" TEXT NOT NULL,
-    "PendingCreditAmount" TEXT NOT NULL
+    "PendingAmountSpent" TEXT NOT NULL,
+    "PendingAmountAssigned" TEXT NOT NULL
 );
 
 CREATE TABLE "Funds" (
@@ -97,7 +97,16 @@ CREATE TABLE "FundGoals" (
     "AccountingPeriodId" TEXT NOT NULL,
     "GoalType" TEXT NOT NULL,
     "GoalAmount" TEXT NOT NULL,
-    "IsGoalMet" INTEGER NOT NULL,
+    "OpeningBalance" TEXT NOT NULL,
+    "AmountAssigned" TEXT NOT NULL,
+    "PendingAmountAssigned" TEXT NOT NULL,
+    "RemainingAmountToAssign" TEXT NOT NULL,
+    "IsAssignmentGoalMet" INTEGER NOT NULL,
+    "AmountSpent" TEXT NOT NULL,
+    "PendingAmountSpent" TEXT NOT NULL,
+    "RemainingAmountToSpend" TEXT NOT NULL,
+    "IsSpendingGoalMet" INTEGER NOT NULL,
+    "ClosingBalance" TEXT NOT NULL,
     CONSTRAINT "FK_FundGoals_Funds_FundId" FOREIGN KEY ("FundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE
 );
 
@@ -184,7 +193,7 @@ CREATE INDEX "IX_Transactions_TransferTransaction_CreditAccountId" ON "Transacti
 CREATE INDEX "IX_Transactions_TransferTransaction_DebitAccountId" ON "Transactions" ("TransferTransaction_DebitAccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260412140304_InitialCreate', '10.0.2');
+VALUES ('20260420111323_InitialCreate', '10.0.2');
 
 COMMIT;
 

@@ -52,8 +52,8 @@ namespace Data.Migrations
                     Date = table.Column<DateOnly>(type: "TEXT", nullable: false),
                     Sequence = table.Column<int>(type: "INTEGER", nullable: false),
                     PostedBalance = table.Column<decimal>(type: "TEXT", nullable: false),
-                    PendingDebitAmount = table.Column<decimal>(type: "TEXT", nullable: false),
-                    PendingCreditAmount = table.Column<decimal>(type: "TEXT", nullable: false)
+                    PendingAmountSpent = table.Column<decimal>(type: "TEXT", nullable: false),
+                    PendingAmountAssigned = table.Column<decimal>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -196,7 +196,16 @@ namespace Data.Migrations
                     AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
                     GoalType = table.Column<string>(type: "TEXT", nullable: false),
                     GoalAmount = table.Column<decimal>(type: "TEXT", nullable: false),
-                    IsGoalMet = table.Column<bool>(type: "INTEGER", nullable: false)
+                    OpeningBalance = table.Column<decimal>(type: "TEXT", nullable: false),
+                    AmountAssigned = table.Column<decimal>(type: "TEXT", nullable: false),
+                    PendingAmountAssigned = table.Column<decimal>(type: "TEXT", nullable: false),
+                    RemainingAmountToAssign = table.Column<decimal>(type: "TEXT", nullable: false),
+                    IsAssignmentGoalMet = table.Column<bool>(type: "INTEGER", nullable: false),
+                    AmountSpent = table.Column<decimal>(type: "TEXT", nullable: false),
+                    PendingAmountSpent = table.Column<decimal>(type: "TEXT", nullable: false),
+                    RemainingAmountToSpend = table.Column<decimal>(type: "TEXT", nullable: false),
+                    IsSpendingGoalMet = table.Column<bool>(type: "INTEGER", nullable: false),
+                    ClosingBalance = table.Column<decimal>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {

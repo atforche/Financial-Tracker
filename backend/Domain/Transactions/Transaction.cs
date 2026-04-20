@@ -85,6 +85,7 @@ public abstract class Transaction : Entity<TransactionId>
     /// <summary>
     /// Gets all Fund IDs affected by this Transaction for the provided account ID
     /// </summary>
+    /// <param name="accountId">If provided, only returns Fund IDs for the specified account</param>
     public abstract IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId);
 
     /// <summary>
