@@ -15,6 +15,7 @@ public class TransactionService(
     AccountBalanceService accountBalanceService,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
+    FundGoalService fundGoalService,
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
     ITransactionRepository transactionRepository)
@@ -57,6 +58,7 @@ public class TransactionService(
         };
         accountBalanceService.AddTransaction(transaction);
         fundBalanceService.AddTransaction(transaction);
+        fundGoalService.AddTransaction(transaction);
         transactionRepository.Add(transaction);
         foreach ((AccountId accountId, DateOnly postedDate) in GetInitialPostings(request))
         {
@@ -113,6 +115,7 @@ public class TransactionService(
         }
         accountBalanceService.UpdateTransaction(transaction);
         fundBalanceService.UpdateTransaction(transaction);
+        fundGoalService.UpdateTransaction(transaction);
         foreach ((AccountId accountId, DateOnly postedDate) in GetUpdatePostings(transaction, request))
         {
             if (!TryPost(transaction, accountId, postedDate, out IEnumerable<Exception> postingExceptions))
@@ -143,6 +146,7 @@ public class TransactionService(
         accountingPeriodBalanceService.PostTransaction(transaction, account);
         accountBalanceService.PostTransaction(transaction, account);
         fundBalanceService.PostTransaction(transaction, account);
+        fundGoalService.PostTransaction(transaction, account);
         return true;
     }
 
@@ -161,6 +165,7 @@ public class TransactionService(
         accountingPeriodBalanceService.UnpostTransaction(transaction);
         accountBalanceService.UnpostTransaction(transaction);
         fundBalanceService.UnpostTransaction(transaction);
+        fundGoalService.UnpostTransaction(transaction);
         foreach (AccountId accountId in transaction.GetAllAffectedAccountIds())
         {
             ClearPostedDate(transaction, accountId);
@@ -194,6 +199,7 @@ public class TransactionService(
         }
         accountBalanceService.DeleteTransaction(transaction);
         fundBalanceService.DeleteTransaction(transaction);
+        fundGoalService.DeleteTransaction(transaction);
         transactionRepository.Delete(transaction);
         return true;
     }

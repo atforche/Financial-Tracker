@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
+using Domain.Accounts;
 using Domain.Exceptions;
 using Domain.Transactions;
 
@@ -9,6 +10,7 @@ namespace Domain.Funds;
 /// Service for managing Fund Goals
 /// </summary>
 public class FundGoalService(
+    IAccountingPeriodRepository accountingPeriodRepository,
     IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
     IFundGoalRepository fundGoalRepository,
     ITransactionRepository transactionRepository)
@@ -24,34 +26,13 @@ public class FundGoalService(
         {
             return false;
         }
-        FundAccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository
-            .GetForAccountingPeriod(request.AccountingPeriod.Id)
-            .FundBalances.Single(f => f.Fund.Id == request.Fund.Id);
-
-        decimal amountAssigned = 0;
-        decimal pendingAmountAssigned = 0;
-        decimal amountSpent = 0;
-        decimal pendingAmountSpent = 0;
-        foreach (Transaction transaction in transactionRepository.GetAllByAccountingPeriod(request.AccountingPeriod.Id)
-            .Where(transaction => transaction.GetAllAffectedFundIds(null).Contains(request.Fund.Id)))
-        {
-            amountAssigned = CalculateNewAmountAssigned(transaction, request.Fund, amountAssigned);
-            pendingAmountAssigned = CalculateNewPendingAmountAssigned(transaction, request.Fund, pendingAmountAssigned);
-            amountSpent = CalculateNewAmountSpent(transaction, request.Fund, amountSpent);
-            pendingAmountSpent = CalculateNewPendingAmountSpent(transaction, request.Fund, pendingAmountSpent);
-        }
-
         fundGoal = new FundGoal(
             request.Fund,
             request.AccountingPeriod.Id,
             request.GoalType,
-            request.GoalAmount,
-            balanceHistory.OpeningBalance,
-            amountAssigned,
-            pendingAmountAssigned,
-            amountSpent,
-            pendingAmountSpent,
-            balanceHistory.ClosingBalance);
+            request.GoalAmount);
+        UpdateFundGoalBalances(fundGoal);
+        RecalculateFundGoalAmounts(fundGoal);
         return true;
     }
 
@@ -84,6 +65,88 @@ public class FundGoalService(
         exceptions = [];
         fundGoalRepository.Delete(fundGoal);
         return true;
+    }
+
+    /// <summary>
+    /// Updates the Fund Goals for a newly added Transaction
+    /// </summary>
+    internal void AddTransaction(Transaction newTransaction)
+    {
+        foreach (FundId fundId in newTransaction.GetAllAffectedFundIds(null))
+        {
+            FundGoal? fundGoal = fundGoalRepository.GetByFundAndAccountingPeriod(fundId, newTransaction.AccountingPeriodId);
+            if (fundGoal == null)
+            {
+                continue;
+            }
+            RecalculateFundGoalAmounts(fundGoal);
+        }
+    }
+
+    /// <summary>
+    /// Updates the Fund Goals for an updated Transaction
+    /// </summary>
+    internal void UpdateTransaction(Transaction transaction)
+    {
+        foreach (FundId fundId in transaction.GetAllAffectedFundIds(null))
+        {
+            FundGoal? fundGoal = fundGoalRepository.GetByFundAndAccountingPeriod(fundId, transaction.AccountingPeriodId);
+            if (fundGoal == null)
+            {
+                continue;
+            }
+            RecalculateFundGoalAmounts(fundGoal);
+        }
+    }
+
+    /// <summary>
+    /// Updates the Fund Goals for a newly posted Transaction
+    /// </summary>
+    internal void PostTransaction(Transaction transaction, AccountId accountId)
+    {
+        foreach (FundId fundId in transaction.GetAllAffectedFundIds(accountId))
+        {
+            FundGoal? fundGoal = fundGoalRepository.GetByFundAndAccountingPeriod(fundId, transaction.AccountingPeriodId);
+            if (fundGoal == null)
+            {
+                continue;
+            }
+            UpdateFundGoalBalances(fundGoal);
+            RecalculateFundGoalAmounts(fundGoal);
+        }
+    }
+
+    /// <summary>
+    /// Updates the Fund Goals for an unposted Transaction
+    /// </summary>
+    internal void UnpostTransaction(Transaction transaction)
+    {
+        foreach (FundId fundId in transaction.GetAllAffectedFundIds(null))
+        {
+            FundGoal? fundGoal = fundGoalRepository.GetByFundAndAccountingPeriod(fundId, transaction.AccountingPeriodId);
+            if (fundGoal == null)
+            {
+                continue;
+            }
+            UpdateFundGoalBalances(fundGoal);
+            RecalculateFundGoalAmounts(fundGoal);
+        }
+    }
+
+    /// <summary>
+    /// Updates the Fund Goals for a deleted Transaction
+    /// </summary>
+    internal void DeleteTransaction(Transaction transaction)
+    {
+        foreach (FundId fundId in transaction.GetAllAffectedFundIds(null))
+        {
+            FundGoal? fundGoal = fundGoalRepository.GetByFundAndAccountingPeriod(fundId, transaction.AccountingPeriodId);
+            if (fundGoal == null)
+            {
+                continue;
+            }
+            RecalculateFundGoalAmounts(fundGoal);
+        }
     }
 
     /// <summary>
@@ -128,6 +191,46 @@ public class FundGoalService(
             exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than zero."));
         }
         return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Updates the balances for a fund goal
+    /// </summary>
+    private void UpdateFundGoalBalances(FundGoal fundGoal)
+    {
+        AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(fundGoal.AccountingPeriodId);
+        while (accountingPeriod != null)
+        {
+            FundAccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository
+                .GetForAccountingPeriod(accountingPeriod.Id)
+                .FundBalances.Single(f => f.Fund.Id == fundGoal.Fund.Id);
+            fundGoal.OpeningBalance = balanceHistory.GetOpeningFundBalance().PostedBalance;
+            fundGoal.ClosingBalance = balanceHistory.GetClosingFundBalance().PostedBalance;
+            accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
+        }
+    }
+
+    /// <summary>
+    /// Recalculates the amounts for a fund goal
+    /// </summary>
+    private void RecalculateFundGoalAmounts(FundGoal fundGoal)
+    {
+        decimal amountAssigned = 0;
+        decimal pendingAmountAssigned = 0;
+        decimal amountSpent = 0;
+        decimal pendingAmountSpent = 0;
+        foreach (Transaction transaction in transactionRepository.GetAllByAccountingPeriod(fundGoal.AccountingPeriodId)
+            .Where(transaction => transaction.GetAllAffectedFundIds(null).Contains(fundGoal.Fund.Id)))
+        {
+            amountAssigned = CalculateNewAmountAssigned(transaction, fundGoal.Fund, amountAssigned);
+            pendingAmountAssigned = CalculateNewPendingAmountAssigned(transaction, fundGoal.Fund, pendingAmountAssigned);
+            amountSpent = CalculateNewAmountSpent(transaction, fundGoal.Fund, amountSpent);
+            pendingAmountSpent = CalculateNewPendingAmountSpent(transaction, fundGoal.Fund, pendingAmountSpent);
+        }
+        fundGoal.AmountAssigned = amountAssigned;
+        fundGoal.PendingAmountAssigned = pendingAmountAssigned;
+        fundGoal.AmountSpent = amountSpent;
+        fundGoal.PendingAmountSpent = pendingAmountSpent;
     }
 
     /// <summary>

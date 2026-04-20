@@ -148,25 +148,19 @@ public class FundGoal : Entity<FundGoalId>
         Fund fund,
         AccountingPeriodId accountingPeriodId,
         FundGoalType goalType,
-        decimal goalAmount,
-        decimal openingBalance,
-        decimal amountAssigned,
-        decimal pendingAmountAssigned,
-        decimal amountSpent,
-        decimal pendingAmountSpent,
-        decimal closingBalance)
+        decimal goalAmount)
         : base(new FundGoalId(Guid.NewGuid()))
     {
         Fund = fund;
         AccountingPeriodId = accountingPeriodId;
         GoalType = goalType;
         GoalAmount = goalAmount;
-        OpeningBalance = openingBalance;
-        AmountAssigned = amountAssigned;
-        PendingAmountAssigned = pendingAmountAssigned;
-        AmountSpent = amountSpent;
-        PendingAmountSpent = pendingAmountSpent;
-        ClosingBalance = closingBalance;
+        OpeningBalance = 0;
+        AmountAssigned = 0;
+        PendingAmountAssigned = 0;
+        AmountSpent = 0;
+        PendingAmountSpent = 0;
+        ClosingBalance = 0;
     }
 
     /// <summary>
