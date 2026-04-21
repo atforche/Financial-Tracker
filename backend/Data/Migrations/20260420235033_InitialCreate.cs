@@ -134,13 +134,13 @@ namespace Data.Migrations
                     Amount = table.Column<decimal>(type: "TEXT", nullable: false),
                     IncomeTransaction_AccountId = table.Column<Guid>(type: "TEXT", nullable: true),
                     IncomeTransaction_PostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
-                    GeneratedByAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    DebitAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    DebitPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
-                    AccountId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    PostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
-                    CreditAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    CreditPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+                    IncomeTransaction_GeneratedByAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    IncomeTransferTransaction_DebitAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    IncomeTransferTransaction_DebitPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+                    SpendingTransaction_AccountId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    SpendingTransaction_PostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+                    SpendingTransferTransaction_CreditAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    SpendingTransferTransaction_CreditPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     TransferTransaction_DebitAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
                     TransferTransaction_DebitPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     TransferTransaction_CreditAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
@@ -150,26 +150,26 @@ namespace Data.Migrations
                 {
                     table.PrimaryKey("PK_Transactions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Transactions_Accounts_AccountId",
-                        column: x => x.AccountId,
-                        principalTable: "Accounts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Transactions_Accounts_CreditAccountId",
-                        column: x => x.CreditAccountId,
-                        principalTable: "Accounts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Transactions_Accounts_DebitAccountId",
-                        column: x => x.DebitAccountId,
-                        principalTable: "Accounts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_Transactions_Accounts_IncomeTransaction_AccountId",
                         column: x => x.IncomeTransaction_AccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Transactions_Accounts_IncomeTransferTransaction_DebitAccountId",
+                        column: x => x.IncomeTransferTransaction_DebitAccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Transactions_Accounts_SpendingTransaction_AccountId",
+                        column: x => x.SpendingTransaction_AccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Transactions_Accounts_SpendingTransferTransaction_CreditAccountId",
+                        column: x => x.SpendingTransferTransaction_CreditAccountId,
                         principalTable: "Accounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -403,24 +403,24 @@ namespace Data.Migrations
                 column: "SpendingTransactionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_AccountId",
-                table: "Transactions",
-                column: "AccountId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Transactions_CreditAccountId",
-                table: "Transactions",
-                column: "CreditAccountId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Transactions_DebitAccountId",
-                table: "Transactions",
-                column: "DebitAccountId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Transactions_IncomeTransaction_AccountId",
                 table: "Transactions",
                 column: "IncomeTransaction_AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_IncomeTransferTransaction_DebitAccountId",
+                table: "Transactions",
+                column: "IncomeTransferTransaction_DebitAccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_SpendingTransaction_AccountId",
+                table: "Transactions",
+                column: "SpendingTransaction_AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_SpendingTransferTransaction_CreditAccountId",
+                table: "Transactions",
+                column: "SpendingTransferTransaction_CreditAccountId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Transactions_TransferTransaction_CreditAccountId",

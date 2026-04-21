@@ -29,9 +29,4 @@ public enum TransactionType
     /// Transfer Transaction
     /// </summary>
     Transfer,
-
-    /// <summary>
-    /// Refund Transaction
-    /// </summary>
-    Refund,
 }

@@ -72,21 +72,21 @@ CREATE TABLE "Transactions" (
     "Amount" TEXT NOT NULL,
     "IncomeTransaction_AccountId" TEXT NULL,
     "IncomeTransaction_PostedDate" TEXT NULL,
-    "GeneratedByAccountId" TEXT NULL,
-    "DebitAccountId" TEXT NULL,
-    "DebitPostedDate" TEXT NULL,
-    "AccountId" TEXT NULL,
-    "PostedDate" TEXT NULL,
-    "CreditAccountId" TEXT NULL,
-    "CreditPostedDate" TEXT NULL,
+    "IncomeTransaction_GeneratedByAccountId" TEXT NULL,
+    "IncomeTransferTransaction_DebitAccountId" TEXT NULL,
+    "IncomeTransferTransaction_DebitPostedDate" TEXT NULL,
+    "SpendingTransaction_AccountId" TEXT NULL,
+    "SpendingTransaction_PostedDate" TEXT NULL,
+    "SpendingTransferTransaction_CreditAccountId" TEXT NULL,
+    "SpendingTransferTransaction_CreditPostedDate" TEXT NULL,
     "TransferTransaction_DebitAccountId" TEXT NULL,
     "TransferTransaction_DebitPostedDate" TEXT NULL,
     "TransferTransaction_CreditAccountId" TEXT NULL,
     "TransferTransaction_CreditPostedDate" TEXT NULL,
-    CONSTRAINT "FK_Transactions_Accounts_AccountId" FOREIGN KEY ("AccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
-    CONSTRAINT "FK_Transactions_Accounts_CreditAccountId" FOREIGN KEY ("CreditAccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
-    CONSTRAINT "FK_Transactions_Accounts_DebitAccountId" FOREIGN KEY ("DebitAccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
     CONSTRAINT "FK_Transactions_Accounts_IncomeTransaction_AccountId" FOREIGN KEY ("IncomeTransaction_AccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
+    CONSTRAINT "FK_Transactions_Accounts_IncomeTransferTransaction_DebitAccountId" FOREIGN KEY ("IncomeTransferTransaction_DebitAccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
+    CONSTRAINT "FK_Transactions_Accounts_SpendingTransaction_AccountId" FOREIGN KEY ("SpendingTransaction_AccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
+    CONSTRAINT "FK_Transactions_Accounts_SpendingTransferTransaction_CreditAccountId" FOREIGN KEY ("SpendingTransferTransaction_CreditAccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
     CONSTRAINT "FK_Transactions_Accounts_TransferTransaction_CreditAccountId" FOREIGN KEY ("TransferTransaction_CreditAccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
     CONSTRAINT "FK_Transactions_Accounts_TransferTransaction_DebitAccountId" FOREIGN KEY ("TransferTransaction_DebitAccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE
 );
@@ -180,20 +180,20 @@ CREATE INDEX "IX_IncomeTransactionFundAmounts_IncomeTransactionId" ON "IncomeTra
 
 CREATE INDEX "IX_SpendingTransactionFundAmounts_SpendingTransactionId" ON "SpendingTransactionFundAmounts" ("SpendingTransactionId");
 
-CREATE INDEX "IX_Transactions_AccountId" ON "Transactions" ("AccountId");
-
-CREATE INDEX "IX_Transactions_CreditAccountId" ON "Transactions" ("CreditAccountId");
-
-CREATE INDEX "IX_Transactions_DebitAccountId" ON "Transactions" ("DebitAccountId");
-
 CREATE INDEX "IX_Transactions_IncomeTransaction_AccountId" ON "Transactions" ("IncomeTransaction_AccountId");
+
+CREATE INDEX "IX_Transactions_IncomeTransferTransaction_DebitAccountId" ON "Transactions" ("IncomeTransferTransaction_DebitAccountId");
+
+CREATE INDEX "IX_Transactions_SpendingTransaction_AccountId" ON "Transactions" ("SpendingTransaction_AccountId");
+
+CREATE INDEX "IX_Transactions_SpendingTransferTransaction_CreditAccountId" ON "Transactions" ("SpendingTransferTransaction_CreditAccountId");
 
 CREATE INDEX "IX_Transactions_TransferTransaction_CreditAccountId" ON "Transactions" ("TransferTransaction_CreditAccountId");
 
 CREATE INDEX "IX_Transactions_TransferTransaction_DebitAccountId" ON "Transactions" ("TransferTransaction_DebitAccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260420111323_InitialCreate', '10.0.2');
+VALUES ('20260420235033_InitialCreate', '10.0.2');
 
 COMMIT;
 

@@ -66,9 +66,9 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     {
         string query = $"""
                         select Transactions.* from Transactions
-                        left join Accounts as Account1 on Transactions.AccountId = Account1.Id
-                        left join Accounts as Account2 on Transactions.CreditAccountId = Account2.Id
-                        left join Accounts as Account3 on Transactions.DebitAccountId = Account3.Id
+                        left join Accounts as Account1 on COALESCE(Transactions.SpendingTransaction_AccountId, Transactions.IncomeTransaction_AccountId) = Account1.Id
+                        left join Accounts as Account2 on COALESCE(Transactions.SpendingTransferTransaction_CreditAccountId, Transactions.TransferTransaction_CreditAccountId) = Account2.Id
+                        left join Accounts as Account3 on COALESCE(Transactions.IncomeTransferTransaction_DebitAccountId, Transactions.TransferTransaction_DebitAccountId) = Account3.Id
                         where Transactions.AccountingPeriodId = '{accountingPeriodId.Value.ToString().ToUpperInvariant()}'
                         """;
         if (request.Search is not null and not "")
@@ -125,9 +125,12 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     {
         string query = $"""
                         select Transactions.* from Transactions
-                        where (Transactions.AccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or
-                               Transactions.CreditAccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or
-                               Transactions.DebitAccountId = '{account.Id.Value.ToString().ToUpperInvariant()}')
+                        where (Transactions.SpendingTransaction_AccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or
+                               Transactions.IncomeTransaction_AccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or
+                               Transactions.SpendingTransferTransaction_CreditAccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or
+                               Transactions.TransferTransaction_CreditAccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or
+                               Transactions.IncomeTransferTransaction_DebitAccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or
+                               Transactions.TransferTransaction_DebitAccountId = '{account.Id.Value.ToString().ToUpperInvariant()}')
                         """;
         if (request.AccountingPeriodId != null)
         {

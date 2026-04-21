@@ -284,24 +284,18 @@ namespace Data.Migrations
                     b.HasBaseType("Domain.Transactions.Transaction");
 
                     b.Property<Guid>("AccountId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("IncomeTransaction_AccountId");
 
                     b.Property<Guid?>("GeneratedByAccountId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("IncomeTransaction_GeneratedByAccountId");
 
                     b.Property<DateOnly?>("PostedDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("IncomeTransaction_PostedDate");
 
                     b.HasIndex("AccountId");
-
-                    b.ToTable("Transactions", t =>
-                        {
-                            t.Property("AccountId")
-                                .HasColumnName("IncomeTransaction_AccountId");
-
-                            t.Property("PostedDate")
-                                .HasColumnName("IncomeTransaction_PostedDate");
-                        });
 
                     b.HasDiscriminator().HasValue(2);
                 });
@@ -311,10 +305,12 @@ namespace Data.Migrations
                     b.HasBaseType("Domain.Transactions.Transaction");
 
                     b.Property<Guid>("AccountId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("SpendingTransaction_AccountId");
 
                     b.Property<DateOnly?>("PostedDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("SpendingTransaction_PostedDate");
 
                     b.HasIndex("AccountId");
 
@@ -326,35 +322,24 @@ namespace Data.Migrations
                     b.HasBaseType("Domain.Transactions.Transaction");
 
                     b.Property<Guid>("CreditAccountId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("TransferTransaction_CreditAccountId");
 
                     b.Property<DateOnly?>("CreditPostedDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("TransferTransaction_CreditPostedDate");
 
                     b.Property<Guid>("DebitAccountId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("TransferTransaction_DebitAccountId");
 
                     b.Property<DateOnly?>("DebitPostedDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("TransferTransaction_DebitPostedDate");
 
                     b.HasIndex("CreditAccountId");
 
                     b.HasIndex("DebitAccountId");
-
-                    b.ToTable("Transactions", t =>
-                        {
-                            t.Property("CreditAccountId")
-                                .HasColumnName("TransferTransaction_CreditAccountId");
-
-                            t.Property("CreditPostedDate")
-                                .HasColumnName("TransferTransaction_CreditPostedDate");
-
-                            t.Property("DebitAccountId")
-                                .HasColumnName("TransferTransaction_DebitAccountId");
-
-                            t.Property("DebitPostedDate")
-                                .HasColumnName("TransferTransaction_DebitPostedDate");
-                        });
 
                     b.HasDiscriminator().HasValue(4);
                 });
@@ -364,21 +349,14 @@ namespace Data.Migrations
                     b.HasBaseType("Domain.Transactions.IncomeTransaction");
 
                     b.Property<Guid>("DebitAccountId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("IncomeTransferTransaction_DebitAccountId");
 
                     b.Property<DateOnly?>("DebitPostedDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("IncomeTransferTransaction_DebitPostedDate");
 
                     b.HasIndex("DebitAccountId");
-
-                    b.ToTable("Transactions", t =>
-                        {
-                            t.Property("AccountId")
-                                .HasColumnName("IncomeTransaction_AccountId");
-
-                            t.Property("PostedDate")
-                                .HasColumnName("IncomeTransaction_PostedDate");
-                        });
 
                     b.HasDiscriminator().HasValue(3);
                 });
@@ -388,10 +366,12 @@ namespace Data.Migrations
                     b.HasBaseType("Domain.Transactions.SpendingTransaction");
 
                     b.Property<Guid>("CreditAccountId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("SpendingTransferTransaction_CreditAccountId");
 
                     b.Property<DateOnly?>("CreditPostedDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("SpendingTransferTransaction_CreditPostedDate");
 
                     b.HasIndex("CreditAccountId");
 
