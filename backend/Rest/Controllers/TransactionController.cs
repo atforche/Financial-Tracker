@@ -490,14 +490,6 @@ public sealed class TransactionController(
                 DebitPostedDate = model.DebitAccount?.PostedDate,
                 CreditPostedDate = model.CreditAccount?.PostedDate,
             },
-            // RefundTransaction => new UpdateRefundTransactionRequest
-            // {
-            //     TransactionDate = model.Date,
-            //     Location = model.Location,
-            //     Description = model.Description,
-            //     DebitPostedDate = model.DebitAccount?.PostedDate,
-            //     CreditPostedDate = model.CreditAccount?.PostedDate,
-            // },
             _ => throw new InvalidOperationException($"Unrecognized transaction type: {transaction.GetType().Name}")
         };
 }
