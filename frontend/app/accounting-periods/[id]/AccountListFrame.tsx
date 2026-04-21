@@ -8,6 +8,8 @@ import routes, { withQuery } from "@/framework/routes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
+import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
+import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import IconButton from "@/framework/listframe/IconButton";
@@ -159,9 +161,22 @@ const AccountListFrame = function ({
           disabled={!accountingPeriod.isOpen}
         />
       ),
-      getBodyContent: () => null,
+      getBodyContent: (account: AccountingPeriodAccount) => (
+        <ColumnButton
+          label="View"
+          icon={<ArrowForwardIos />}
+          onClick={() => {
+            router.push(
+              routes.accountingPeriods.accountDetail(
+                accountingPeriod.id,
+                account.id,
+              ),
+            );
+          }}
+        />
+      ),
       alignment: "right",
-      minWidth: 60,
+      minWidth: 90,
     },
   ];
 

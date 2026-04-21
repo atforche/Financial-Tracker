@@ -3,6 +3,8 @@
 import { type Account, AccountSortOrder } from "@/data/accountTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
+import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
+import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import IconButton from "@/framework/listframe/IconButton";
@@ -146,9 +148,17 @@ const AccountListFrame = function ({
           }}
         />
       ),
-      getBodyContent: () => null,
+      getBodyContent: (account: Account) => (
+        <ColumnButton
+          label="View"
+          icon={<ArrowForwardIos />}
+          onClick={() => {
+            router.push(routes.accounts.detail(account.id));
+          }}
+        />
+      ),
       alignment: "right",
-      minWidth: 60,
+      minWidth: 90,
     },
   ];
 

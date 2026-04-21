@@ -18,6 +18,8 @@ const routes = {
       `/accounting-periods/${accountingPeriodId}/reopen`,
     delete: (accountingPeriodId: string): Route =>
       `/accounting-periods/${accountingPeriodId}/delete`,
+    accountDetail: (accountingPeriodId: string, accountId: string): Route =>
+      `/accounting-periods/${accountingPeriodId}/accounts/${accountId}`,
     fundDetail: (accountingPeriodId: string, fundId: string): Route =>
       `/accounting-periods/${accountingPeriodId}/funds/${fundId}`,
     fundGoalCreate: (accountingPeriodId: string, fundId: string): Route =>
@@ -30,6 +32,7 @@ const routes = {
   accounts: {
     index: "/accounts" as Route,
     create: "/accounts/create" as Route,
+    detail: (accountId: string): Route => `/accounts/${accountId}`,
     update: (accountId: string): Route => `/accounts/${accountId}/update`,
     delete: (accountId: string): Route => `/accounts/${accountId}/delete`,
   },

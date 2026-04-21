@@ -27,6 +27,22 @@ const accountingPeriodDetail = function (
   ];
 };
 
+const accountingPeriodAccountDetail = function (
+  accountingPeriod: NamedEntity,
+  account: NamedEntity,
+): Breadcrumb[] {
+  return [
+    ...accountingPeriodDetail(accountingPeriod),
+    {
+      label: account.name,
+      href: routes.accountingPeriods.accountDetail(
+        accountingPeriod.id,
+        account.id,
+      ),
+    },
+  ];
+};
+
 const accountingPeriodFundDetail = function (
   accountingPeriod: NamedEntity,
   fund: NamedEntity,
@@ -45,6 +61,16 @@ const accountsIndex = function (): Breadcrumb[] {
     {
       label: "Accounts",
       href: routes.accounts.index,
+    },
+  ];
+};
+
+const accountDetail = function (account: NamedEntity): Breadcrumb[] {
+  return [
+    ...accountsIndex(),
+    {
+      label: account.name,
+      href: routes.accounts.detail(account.id),
     },
   ];
 };
@@ -108,6 +134,7 @@ const routeBreadcrumbs = {
         },
       ];
     },
+    accountDetail: accountingPeriodAccountDetail,
     fundDetail: accountingPeriodFundDetail,
     fundGoalCreate(
       accountingPeriod: NamedEntity,
@@ -176,13 +203,14 @@ const routeBreadcrumbs = {
         },
       ];
     },
+    detail: accountDetail,
     update(
       account: NamedEntity,
       accountingPeriod: NamedEntity | null = null,
     ): Breadcrumb[] {
       if (accountingPeriod !== null) {
         return [
-          ...accountingPeriodDetail(accountingPeriod),
+          ...accountingPeriodAccountDetail(accountingPeriod, account),
           {
             label: `Update ${account.name}`,
             href: routes.accounts.update(account.id),
@@ -191,7 +219,7 @@ const routeBreadcrumbs = {
       }
 
       return [
-        ...accountsIndex(),
+        ...accountDetail(account),
         {
           label: `Update ${account.name}`,
           href: routes.accounts.update(account.id),
@@ -204,7 +232,7 @@ const routeBreadcrumbs = {
     ): Breadcrumb[] {
       if (accountingPeriod !== null) {
         return [
-          ...accountingPeriodDetail(accountingPeriod),
+          ...accountingPeriodAccountDetail(accountingPeriod, account),
           {
             label: `Delete ${account.name}`,
             href: routes.accounts.delete(account.id),
@@ -213,7 +241,7 @@ const routeBreadcrumbs = {
       }
 
       return [
-        ...accountsIndex(),
+        ...accountDetail(account),
         {
           label: `Delete ${account.name}`,
           href: routes.accounts.delete(account.id),
