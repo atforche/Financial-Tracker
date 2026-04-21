@@ -7,9 +7,13 @@ namespace Domain.Transactions;
 /// <summary>
 /// Entity class representing a spending transaction.
 /// </summary>
+/// <remarks>
+/// A spending transaction represents money going out of a tracked account to some external destination. 
+/// The debit from the tracked account must be assigned to some combination of funds.
+/// </remarks>
 public class SpendingTransaction : Transaction
 {
-    private readonly List<FundAmount> _fundAmounts = [];
+    private readonly List<FundAmount> _fundAssignments = [];
 
     /// <summary>
     /// Account ID for this Spending Transaction
@@ -22,9 +26,9 @@ public class SpendingTransaction : Transaction
     public DateOnly? PostedDate { get; internal set; }
 
     /// <summary>
-    /// Fund Amounts for this Spending Transaction
+    /// Fund assignments for this Spending Transaction
     /// </summary>
-    public IReadOnlyCollection<FundAmount> FundAmounts => _fundAmounts;
+    public IReadOnlyCollection<FundAmount> FundAssignments => _fundAssignments;
 
     /// <inheritdoc/>
     public override IEnumerable<AccountId> GetAllAffectedAccountIds() => [AccountId];
@@ -37,7 +41,7 @@ public class SpendingTransaction : Transaction
     {
         if (accountId == null || accountId == AccountId)
         {
-            return _fundAmounts.Select(f => f.FundId);
+            return _fundAssignments.Select(f => f.FundId);
         }
         return [];
     }
@@ -49,12 +53,23 @@ public class SpendingTransaction : Transaction
         : this(request, sequence, TransactionType.Spending) { }
 
     /// <summary>
-    /// Updates the fund amounts for this Spending Transaction
+    /// Updates the fund assignments for this Spending Transaction
     /// </summary>
-    internal void UpdateFundAmounts(IReadOnlyCollection<FundAmount> fundAmounts)
+    internal void UpdateFundAssignments(IReadOnlyCollection<FundAmount> fundAssignments)
     {
-        _fundAmounts.Clear();
-        _fundAmounts.AddRange(fundAmounts);
+        _fundAssignments.Clear();
+        _fundAssignments.AddRange(fundAssignments);
+    }
+
+    /// <summary>
+    /// Constructs a new instance of this class with an explicit TransactionType
+    /// </summary>
+    protected SpendingTransaction(CreateSpendingTransactionRequest request, int sequence, TransactionType type)
+        : base(request, sequence, type)
+    {
+        AccountId = request.Account.Id;
+        PostedDate = request.PostedDate;
+        _fundAssignments.AddRange(request.FundAssignments);
     }
 
     /// <summary>
@@ -89,7 +104,7 @@ public class SpendingTransaction : Transaction
     /// <inheritdoc/>
     protected override FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse)
     {
-        FundAmount? fundAmount = _fundAmounts.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
+        FundAmount? fundAmount = _fundAssignments.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
         if (fundAmount == null)
         {
             return existingFundBalance;
@@ -100,22 +115,11 @@ public class SpendingTransaction : Transaction
     /// <inheritdoc/>
     protected override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse)
     {
-        FundAmount? fundAmount = _fundAmounts.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
+        FundAmount? fundAmount = _fundAssignments.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
         if (fundAmount == null || accountId != AccountId)
         {
             return existingFundBalance;
         }
         return existingFundBalance.PostPendingAmountSpent(reverse ? -fundAmount.Amount : fundAmount.Amount);
-    }
-
-    /// <summary>
-    /// Constructs a new instance of this class with an explicit TransactionType
-    /// </summary>
-    protected SpendingTransaction(CreateSpendingTransactionRequest request, int sequence, TransactionType type)
-        : base(request, sequence, type)
-    {
-        AccountId = request.Account.Id;
-        PostedDate = request.PostedDate;
-        _fundAmounts.AddRange(request.FundAssignments);
     }
 }

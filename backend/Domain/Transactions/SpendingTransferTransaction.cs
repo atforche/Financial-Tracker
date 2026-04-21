@@ -7,8 +7,8 @@ namespace Domain.Transactions;
 /// Entity class representing a spending transfer transaction.
 /// </summary>
 /// <remarks>
-/// A spending transfer transaction is limited to moving money from a tracked account to an untracked account.
-/// The debit from the tracked account will affect funds, but the credit to the untracked account will not. 
+/// A spending transfer transaction represents money going out of a tracked account to an untracked account.
+/// The debit from the tracked account must be assigned to some combination of funds, but the credit to the untracked account can not affect funds.
 /// </remarks>
 public class SpendingTransferTransaction : SpendingTransaction
 {

@@ -7,8 +7,8 @@ namespace Domain.Transactions;
 /// Entity class representing an income transfer transaction.
 /// </summary>
 /// <remarks>
-/// An income transaction transaction is limited to money money from an untracked account to a tracked account.
-/// The credit to the tracked account will affect funds, but the debit from the untracked account will not.
+/// An income transfer transaction represents money coming into a tracked account from an untracked account.
+/// The credit to the tracked account can affect funds, but the debit from the untracked account can not.
 /// </remarks>
 public class IncomeTransferTransaction : IncomeTransaction
 {
@@ -23,7 +23,7 @@ public class IncomeTransferTransaction : IncomeTransaction
     public DateOnly? DebitPostedDate { get; internal set; }
 
     /// <inheritdoc/>
-    public override IEnumerable<AccountId> GetAllAffectedAccountIds() => [DebitAccountId, AccountId];
+    public override IEnumerable<AccountId> GetAllAffectedAccountIds() => base.GetAllAffectedAccountIds().Append(DebitAccountId);
 
     /// <inheritdoc/>
     public override DateOnly? GetPostedDateForAccount(AccountId accountId)
@@ -48,21 +48,21 @@ public class IncomeTransferTransaction : IncomeTransaction
     /// <inheritdoc/>
     protected override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
-        if (existingAccountBalance.Account.Id != DebitAccountId)
+        if (existingAccountBalance.Account.Id == DebitAccountId)
         {
-            return base.AddToAccountBalance(existingAccountBalance, reverse);
+            return existingAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
         }
-        return existingAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
+        return base.AddToAccountBalance(existingAccountBalance, reverse);
     }
 
     /// <inheritdoc/>
     protected override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
-        if (existingAccountBalance.Account.Id != DebitAccountId)
+        if (existingAccountBalance.Account.Id == DebitAccountId)
         {
-            return base.PostToAccountBalance(existingAccountBalance, reverse);
+            return existingAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
         }
-        return existingAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
+        return base.PostToAccountBalance(existingAccountBalance, reverse);
     }
 
     /// <summary>

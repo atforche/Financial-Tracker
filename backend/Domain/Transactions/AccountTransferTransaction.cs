@@ -5,30 +5,30 @@ using Domain.Transactions.CreateRequests;
 namespace Domain.Transactions;
 
 /// <summary>
-/// Entity class representing a transfer transaction.
+/// Entity class representing an account transfer transaction.
 /// </summary>
 /// <remarks>
-/// A transfer transaction is limited to only moving money between tracked accounts, and it will not affect funds.
+/// An account transfer transaction represents money moving between two tracked accounts. It can not affect funds.
 /// </remarks>
-public class TransferTransaction : Transaction
+public class AccountTransferTransaction : Transaction
 {
     /// <summary>
-    /// Debit Account ID for this Transfer Transaction
+    /// Debit Account ID for this Account Transfer Transaction
     /// </summary>
     public AccountId DebitAccountId { get; private set; }
 
     /// <summary>
-    /// Posted Date for the Debit Account of this Transfer Transaction
+    /// Posted Date for the Debit Account of this Account Transfer Transaction
     /// </summary>
     public DateOnly? DebitPostedDate { get; internal set; }
 
     /// <summary>
-    /// Credit Account ID for this Transfer Transaction
+    /// Credit Account ID for this Account Transfer Transaction
     /// </summary>
     public AccountId CreditAccountId { get; private set; }
 
     /// <summary>
-    /// Posted Date for the Credit Account of this Transfer Transaction
+    /// Posted Date for the Credit Account of this Account Transfer Transaction
     /// </summary>
     public DateOnly? CreditPostedDate { get; internal set; }
 
@@ -55,7 +55,7 @@ public class TransferTransaction : Transaction
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal TransferTransaction(CreateTransferTransactionRequest request, int sequence)
+    internal AccountTransferTransaction(CreateTransferTransactionRequest request, int sequence)
         : base(request, sequence, TransactionType.Transfer)
     {
         DebitAccountId = request.DebitAccount.Id;
@@ -67,7 +67,7 @@ public class TransferTransaction : Transaction
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    protected TransferTransaction()
+    protected AccountTransferTransaction()
         : base()
     {
         DebitAccountId = null!;
