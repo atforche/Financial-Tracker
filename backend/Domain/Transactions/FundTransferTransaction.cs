@@ -41,8 +41,8 @@ public class FundTransferTransaction : Transaction
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal FundTransferTransaction(CreateTransferTransactionRequest request, int sequence)
-        : base(request, sequence, TransactionType.Transfer)
+    internal FundTransferTransaction(CreateFundTransferTransactionRequest request, int sequence)
+        : base(request, sequence, TransactionType.FundTransfer)
     {
         DebitFundId = request.DebitFund.Id;
         CreditFundId = request.CreditFund.Id;

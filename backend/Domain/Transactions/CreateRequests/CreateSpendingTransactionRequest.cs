@@ -1,4 +1,3 @@
-using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 
@@ -9,21 +8,6 @@ namespace Domain.Transactions.CreateRequests;
 /// </summary>
 public record CreateSpendingTransactionRequest : CreateTransactionRequest
 {
-    /// <inheritdoc/>
-    public override required AccountingPeriodId AccountingPeriodId { get; init; }
-
-    /// <inheritdoc/>
-    public override required DateOnly TransactionDate { get; init; }
-
-    /// <inheritdoc/>
-    public override required string Location { get; init; }
-
-    /// <inheritdoc/>
-    public override required string Description { get; init; }
-
-    /// <inheritdoc/>
-    public override required decimal Amount { get; init; }
-
     /// <summary>
     /// Account for this Spending Transaction
     /// </summary>

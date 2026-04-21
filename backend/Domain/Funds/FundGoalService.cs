@@ -242,7 +242,7 @@ public class FundGoalService(
         {
             return existingAmountAssigned;
         }
-        return existingAmountAssigned + incomeTransaction.FundAmounts.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
+        return existingAmountAssigned + incomeTransaction.FundAssignments.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
     }
 
     /// <summary>
@@ -254,7 +254,7 @@ public class FundGoalService(
         {
             return existingPendingAmountAssigned;
         }
-        return existingPendingAmountAssigned + incomeTransaction.FundAmounts.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
+        return existingPendingAmountAssigned + incomeTransaction.FundAssignments.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
     }
 
     /// <summary>
@@ -266,7 +266,7 @@ public class FundGoalService(
         {
             return existingAmountSpent;
         }
-        return existingAmountSpent + spendingTransaction.FundAmounts.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
+        return existingAmountSpent + spendingTransaction.FundAssignments.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
     }
 
     /// <summary>
@@ -278,6 +278,6 @@ public class FundGoalService(
         {
             return existingPendingAmountSpent;
         }
-        return existingPendingAmountSpent + spendingTransaction.FundAmounts.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
+        return existingPendingAmountSpent + spendingTransaction.FundAssignments.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
     }
 }

@@ -35,7 +35,7 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
                    .Any(t => t.AccountId == accountId && t.Id != account.InitialTransaction) ||
                databaseContext.Transactions.OfType<IncomeTransferTransaction>()
                    .Any(t => t.DebitAccountId == accountId) ||
-               databaseContext.Transactions.OfType<TransferTransaction>()
+               databaseContext.Transactions.OfType<AccountTransferTransaction>()
                    .Any(t => t.DebitAccountId == accountId || t.CreditAccountId == accountId);
     }
 
@@ -46,7 +46,7 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     /// <inheritdoc/>
     public bool DoAnyTransactionsExistForFund(FundId fundId) =>
         databaseContext.Transactions.OfType<SpendingTransaction>()
-            .Any(t => t.FundAmounts.Any(f => f.FundId == fundId));
+            .Any(t => t.FundAssignments.Any(f => f.FundId == fundId));
 
     /// <inheritdoc/>
     public Transaction GetById(TransactionId id) => databaseContext.Transactions.Single(transaction => transaction.Id == id);
@@ -224,7 +224,7 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
                     return isDebt ? -transaction.Amount : transaction.Amount;
                 }
             }
-            else if (transaction is TransferTransaction trt)
+            else if (transaction is AccountTransferTransaction trt)
             {
                 if (trt.DebitAccountId == accountId && trt.CreditAccountId == accountId)
                 {
@@ -303,7 +303,7 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
         {
             if (transaction is SpendingTransaction st)
             {
-                return -(st.FundAmounts.FirstOrDefault(f => f.FundId == fundId)?.Amount ?? 0);
+                return -(st.FundAssignments.FirstOrDefault(f => f.FundId == fundId)?.Amount ?? 0);
             }
             return 0;
         }

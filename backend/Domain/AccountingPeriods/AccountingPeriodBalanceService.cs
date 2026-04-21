@@ -230,13 +230,13 @@ public class AccountingPeriodBalanceService(
         {
             if (transaction is IncomeTransaction income && accountId == income.AccountId)
             {
-                fundBalanceHistory.AmountAssigned += direction * income.FundAmounts
+                fundBalanceHistory.AmountAssigned += direction * income.FundAssignments
                     .Where(fundAmount => fundAmount.FundId == fundBalanceHistory.Fund.Id)
                     .Sum(fundAmount => fundAmount.Amount);
             }
             else if (transaction is SpendingTransaction spending && accountId == spending.AccountId)
             {
-                fundBalanceHistory.AmountSpent += direction * spending.FundAmounts
+                fundBalanceHistory.AmountSpent += direction * spending.FundAssignments
                     .Where(fundAmount => fundAmount.FundId == fundBalanceHistory.Fund.Id)
                     .Sum(fundAmount => fundAmount.Amount);
             }

@@ -28,5 +28,10 @@ public enum TransactionType
     /// <summary>
     /// Transfer Transaction
     /// </summary>
-    Transfer,
+    AccountTransfer,
+
+    /// <summary>
+    /// Fund Transfer Transaction
+    /// </summary>
+    FundTransfer,
 }

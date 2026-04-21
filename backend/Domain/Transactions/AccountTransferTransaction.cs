@@ -55,8 +55,8 @@ public class AccountTransferTransaction : Transaction
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal AccountTransferTransaction(CreateTransferTransactionRequest request, int sequence)
-        : base(request, sequence, TransactionType.Transfer)
+    internal AccountTransferTransaction(CreateAccountTransferTransactionRequest request, int sequence)
+        : base(request, sequence, TransactionType.AccountTransfer)
     {
         DebitAccountId = request.DebitAccount.Id;
         DebitPostedDate = request.DebitPostedDate;

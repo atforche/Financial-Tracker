@@ -52,8 +52,8 @@ public class TransactionService(
             CreateSpendingTransactionRequest r => new SpendingTransaction(r, sequence),
             CreateIncomeTransferTransactionRequest r => new IncomeTransferTransaction(r, sequence),
             CreateIncomeTransactionRequest r => new IncomeTransaction(r, sequence),
-            CreateTransferTransactionRequest r => new TransferTransaction(r, sequence),
-            // CreateRefundTransactionRequest r => new RefundTransaction(r, sequence),
+            CreateAccountTransferTransactionRequest r => new AccountTransferTransaction(r, sequence),
+            CreateFundTransferTransactionRequest r => new FundTransferTransaction(r, sequence),
             _ => throw new InvalidOperationException("Unknown transaction request type")
         };
         accountBalanceService.AddTransaction(transaction);
@@ -107,11 +107,11 @@ public class TransactionService(
         transaction.Description = request.Description;
         if (transaction is SpendingTransaction spendingTransaction && request is UpdateSpendingTransactionRequest spendingRequest)
         {
-            spendingTransaction.UpdateFundAmounts(spendingRequest.FundAssignments);
+            spendingTransaction.UpdateFundAssignments(spendingRequest.FundAssignments);
         }
         else if (transaction is IncomeTransaction incomeTransaction && request is UpdateIncomeTransactionRequest incomeRequest)
         {
-            incomeTransaction.UpdateFundAmounts(incomeRequest.FundAssignments);
+            incomeTransaction.UpdateFundAssignments(incomeRequest.FundAssignments);
         }
         accountBalanceService.UpdateTransaction(transaction);
         fundBalanceService.UpdateTransaction(transaction);
@@ -216,11 +216,11 @@ public class TransactionService(
     private static Account[] GetRequestAccounts(CreateTransactionRequest request) =>
         request switch
         {
-            CreateSpendingTransferTransactionRequest r => new Account[] { r.Account, r.CreditAccount },
-            CreateSpendingTransactionRequest r => new Account[] { r.Account },
-            CreateIncomeTransferTransactionRequest r => new Account[] { r.Account, r.DebitAccount },
-            CreateIncomeTransactionRequest r => new Account[] { r.Account },
-            CreateTransferTransactionRequest r => new Account[] { r.DebitAccount, r.CreditAccount },
+            CreateSpendingTransferTransactionRequest r => [r.Account, r.CreditAccount],
+            CreateSpendingTransactionRequest r => [r.Account],
+            CreateIncomeTransferTransactionRequest r => [r.Account, r.DebitAccount],
+            CreateIncomeTransactionRequest r => [r.Account],
+            CreateAccountTransferTransactionRequest r => [r.DebitAccount, r.CreditAccount],
             _ => []
         };
 
@@ -264,7 +264,7 @@ public class TransactionService(
                     postings.Add((r.Account.Id, r.PostedDate.Value));
                 }
                 break;
-            case CreateTransferTransactionRequest r:
+            case CreateAccountTransferTransactionRequest r:
                 if (r.DebitPostedDate != null)
                 {
                     postings.Add((r.DebitAccount.Id, r.DebitPostedDate.Value));
@@ -320,7 +320,7 @@ public class TransactionService(
                     postings.Add((income.AccountId, r.PostedDate.Value));
                 }
                 break;
-            case UpdateTransferTransactionRequest r when transaction is TransferTransaction transfer:
+            case UpdateAccountTransferTransactionRequest r when transaction is AccountTransferTransaction transfer:
                 if (r.DebitPostedDate != null)
                 {
                     postings.Add((transfer.DebitAccountId, r.DebitPostedDate.Value));
@@ -330,18 +330,6 @@ public class TransactionService(
                     postings.Add((transfer.CreditAccountId, r.CreditPostedDate.Value));
                 }
                 break;
-            // case UpdateRefundTransactionRequest r when transaction is RefundTransaction refund:
-            //     AccountId? debitAccountId = refund.GetAllAffectedAccountIds().FirstOrDefault();
-            //     AccountId? creditAccountId = refund.GetAllAffectedAccountIds().Skip(1).FirstOrDefault();
-            //     if (r.DebitPostedDate != null && debitAccountId != null)
-            //     {
-            //         postings.Add((debitAccountId, r.DebitPostedDate.Value));
-            //     }
-            //     if (r.CreditPostedDate != null && creditAccountId != null)
-            //     {
-            //         postings.Add((creditAccountId, r.CreditPostedDate.Value));
-            //     }
-            //     break;
             default:
                 break;
         }
@@ -367,23 +355,12 @@ public class TransactionService(
             case IncomeTransaction income:
                 income.PostedDate = postedDate;
                 break;
-            case TransferTransaction transfer when transfer.DebitAccountId == account:
+            case AccountTransferTransaction transfer when transfer.DebitAccountId == account:
                 transfer.DebitPostedDate = postedDate;
                 break;
-            case TransferTransaction transfer:
+            case AccountTransferTransaction transfer:
                 transfer.CreditPostedDate = postedDate;
                 break;
-            // case RefundTransaction refund:
-            //     AccountId? firstAccountId = refund.GetAllAffectedAccountIds().FirstOrDefault();
-            //     if (firstAccountId == account)
-            //     {
-            //         refund.DebitPostedDate = postedDate;
-            //     }
-            //     else
-            //     {
-            //         refund.CreditPostedDate = postedDate;
-            //     }
-            //     break;
             default:
                 break;
         }
@@ -408,16 +385,12 @@ public class TransactionService(
             case IncomeTransaction income:
                 income.PostedDate = null;
                 break;
-            case TransferTransaction transfer when transfer.DebitAccountId == account:
+            case AccountTransferTransaction transfer when transfer.DebitAccountId == account:
                 transfer.DebitPostedDate = null;
                 break;
-            case TransferTransaction transfer:
+            case AccountTransferTransaction transfer:
                 transfer.CreditPostedDate = null;
                 break;
-            // case RefundTransaction refund:
-            //     refund.DebitPostedDate = null;
-            //     refund.CreditPostedDate = null;
-            //     break;
             default:
                 break;
         }

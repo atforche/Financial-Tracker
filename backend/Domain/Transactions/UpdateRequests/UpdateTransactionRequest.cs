@@ -8,15 +8,20 @@ public abstract record UpdateTransactionRequest
     /// <summary>
     /// Date for the Transaction
     /// </summary>
-    public abstract DateOnly TransactionDate { get; init; }
+    public required DateOnly TransactionDate { get; init; }
 
     /// <summary>
     /// Location for the Transaction
     /// </summary>
-    public abstract string Location { get; init; }
+    public required string Location { get; init; }
 
     /// <summary>
     /// Description for the Transaction
     /// </summary>
-    public abstract string Description { get; init; }
+    public required string Description { get; init; }
+
+    /// <summary>
+    /// Amount for the Transaction
+    /// </summary>
+    public required decimal Amount { get; init; }
 }
