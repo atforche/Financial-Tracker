@@ -1,8 +1,7 @@
 using Domain.Accounts;
 using Domain.Funds;
-using Domain.Transactions.CreateRequests;
 
-namespace Domain.Transactions;
+namespace Domain.Transactions.AccountTransfer;
 
 /// <summary>
 /// Entity class representing an account transfer transaction.

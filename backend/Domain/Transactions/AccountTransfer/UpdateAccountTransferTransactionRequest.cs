@@ -1,4 +1,4 @@
-namespace Domain.Transactions.UpdateRequests;
+namespace Domain.Transactions.AccountTransfer;
 
 /// <summary>
 /// Record representing a request to update a <see cref="AccountTransferTransaction"/>

@@ -1,6 +1,6 @@
 using Domain.Funds;
 
-namespace Domain.Transactions.UpdateRequests;
+namespace Domain.Transactions.Income;
 
 /// <summary>
 /// Record representing a request to update an <see cref="IncomeTransaction"/>

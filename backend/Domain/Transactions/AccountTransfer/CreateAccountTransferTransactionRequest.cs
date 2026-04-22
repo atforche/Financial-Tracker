@@ -1,6 +1,6 @@
 using Domain.Accounts;
 
-namespace Domain.Transactions.CreateRequests;
+namespace Domain.Transactions.AccountTransfer;
 
 /// <summary>
 /// Record representing a request to create an <see cref="AccountTransferTransaction"/>

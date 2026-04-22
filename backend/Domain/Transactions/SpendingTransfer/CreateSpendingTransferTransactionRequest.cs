@@ -1,6 +1,7 @@
 using Domain.Accounts;
+using Domain.Transactions.Spending;
 
-namespace Domain.Transactions.CreateRequests;
+namespace Domain.Transactions.SpendingTransfer;
 
 /// <summary>
 /// Record representing a request to create a <see cref="SpendingTransferTransaction"/>

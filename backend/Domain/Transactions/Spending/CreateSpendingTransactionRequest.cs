@@ -1,25 +1,25 @@
 using Domain.Accounts;
 using Domain.Funds;
 
-namespace Domain.Transactions.CreateRequests;
+namespace Domain.Transactions.Spending;
 
 /// <summary>
-/// Record representing a request to create an <see cref="IncomeTransaction"/>
+/// Record representing a request to create a <see cref="SpendingTransaction"/>
 /// </summary>
-public record CreateIncomeTransactionRequest : CreateTransactionRequest
+public record CreateSpendingTransactionRequest : CreateTransactionRequest
 {
     /// <summary>
-    /// Account for this Income Transaction
+    /// Account for this Spending Transaction
     /// </summary>
     public required Account Account { get; init; }
 
     /// <summary>
-    /// Posted Date for this Income Transaction
+    /// Posted Date for this Spending Transaction
     /// </summary>
     public DateOnly? PostedDate { get; init; }
 
     /// <summary>
-    /// Fund assignments for the amount of this Income Transaction
+    /// Fund Assignments for this Spending Transaction
     /// </summary>
     public required IReadOnlyCollection<FundAmount> FundAssignments { get; init; }
 

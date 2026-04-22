@@ -1,4 +1,6 @@
-namespace Domain.Transactions.UpdateRequests;
+using Domain.Transactions.Spending;
+
+namespace Domain.Transactions.SpendingTransfer;
 
 /// <summary>
 /// Record representing a request to update a <see cref="SpendingTransferTransaction"/>

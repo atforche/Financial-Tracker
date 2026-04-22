@@ -1,6 +1,7 @@
 using Domain.Accounts;
+using Domain.Transactions.Income;
 
-namespace Domain.Transactions.CreateRequests;
+namespace Domain.Transactions.IncomeTransfer;
 
 /// <summary>
 /// Record representing a request to create an <see cref="IncomeTransferTransaction"/>

@@ -1,39 +1,33 @@
 using Domain.Accounts;
 using Domain.Funds;
-using Domain.Transactions.CreateRequests;
 
-namespace Domain.Transactions;
+namespace Domain.Transactions.Spending;
 
 /// <summary>
-/// Entity class representing an income transaction.
+/// Entity class representing a spending transaction.
 /// </summary>
 /// <remarks>
-/// An income transaction represents money coming into a tracked account from some external source. 
-/// The credit to the tracked account can optionally be directly assigned to funds.
+/// A spending transaction represents money going out of a tracked account to some external destination. 
+/// The debit from the tracked account must be assigned to some combination of funds.
 /// </remarks>
-public class IncomeTransaction : Transaction
+public class SpendingTransaction : Transaction
 {
     private readonly List<FundAmount> _fundAssignments = [];
 
     /// <summary>
-    /// Account ID for this Income Transaction
+    /// Account ID for this Spending Transaction
     /// </summary>
     public AccountId AccountId { get; private set; }
 
     /// <summary>
-    /// Posted Date for this Income Transaction
+    /// Posted Date for this Spending Transaction
     /// </summary>
     public DateOnly? PostedDate { get; internal set; }
 
     /// <summary>
-    /// Fund assignments for this Income Transaction
+    /// Fund assignments for this Spending Transaction
     /// </summary>
     public IReadOnlyCollection<FundAmount> FundAssignments => _fundAssignments;
-
-    /// <summary>
-    /// Account ID of the Account that generated this transaction when it was created, or null
-    /// </summary>
-    public AccountId? GeneratedByAccountId { get; internal set; }
 
     /// <inheritdoc/>
     public override IEnumerable<AccountId> GetAllAffectedAccountIds() => [AccountId];
@@ -54,11 +48,11 @@ public class IncomeTransaction : Transaction
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal IncomeTransaction(CreateIncomeTransactionRequest request, int sequence)
-        : this(request, sequence, TransactionType.Income) { }
+    internal SpendingTransaction(CreateSpendingTransactionRequest request, int sequence)
+        : this(request, sequence, TransactionType.Spending) { }
 
     /// <summary>
-    /// Updates the fund assignments for this Income Transaction
+    /// Updates the fund assignments for this Spending Transaction
     /// </summary>
     internal void UpdateFundAssignments(IReadOnlyCollection<FundAmount> fundAssignments)
     {
@@ -69,19 +63,18 @@ public class IncomeTransaction : Transaction
     /// <summary>
     /// Constructs a new instance of this class with an explicit TransactionType
     /// </summary>
-    protected IncomeTransaction(CreateIncomeTransactionRequest request, int sequence, TransactionType type)
+    protected SpendingTransaction(CreateSpendingTransactionRequest request, int sequence, TransactionType type)
         : base(request, sequence, type)
     {
         AccountId = request.Account.Id;
         PostedDate = request.PostedDate;
-        GeneratedByAccountId = request.IsInitialTransactionForAccount ? AccountId : null;
         _fundAssignments.AddRange(request.FundAssignments);
     }
 
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    protected IncomeTransaction()
+    protected SpendingTransaction()
         : base()
     {
         AccountId = null!;
@@ -94,7 +87,7 @@ public class IncomeTransaction : Transaction
         {
             return existingAccountBalance;
         }
-        return existingAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
+        return existingAccountBalance.AddNewPendingCreditAmount(reverse ? -Amount : Amount);
     }
 
     /// <inheritdoc/>
@@ -104,7 +97,7 @@ public class IncomeTransaction : Transaction
         {
             return existingAccountBalance;
         }
-        return existingAccountBalance.PostPendingDebitAmount(reverse ? -Amount : Amount);
+        return existingAccountBalance.PostPendingCreditAmount(reverse ? -Amount : Amount);
     }
 
     /// <inheritdoc/>
@@ -115,7 +108,7 @@ public class IncomeTransaction : Transaction
         {
             return existingFundBalance;
         }
-        return existingFundBalance.AddNewPendingAmountAssigned(reverse ? -fundAmount.Amount : fundAmount.Amount);
+        return existingFundBalance.AddNewPendingAmountSpent(reverse ? -fundAmount.Amount : fundAmount.Amount);
     }
 
     /// <inheritdoc/>
@@ -126,6 +119,6 @@ public class IncomeTransaction : Transaction
         {
             return existingFundBalance;
         }
-        return existingFundBalance.PostPendingAmountAssigned(reverse ? -fundAmount.Amount : fundAmount.Amount);
+        return existingFundBalance.PostPendingAmountSpent(reverse ? -fundAmount.Amount : fundAmount.Amount);
     }
 }

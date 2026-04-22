@@ -1,6 +1,6 @@
 using Domain.AccountingPeriods;
 
-namespace Domain.Transactions.CreateRequests;
+namespace Domain.Transactions;
 
 /// <summary>
 /// Abstract record representing a request to create a <see cref="Transaction"/>

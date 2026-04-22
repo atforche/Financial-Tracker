@@ -1,4 +1,6 @@
-namespace Domain.Transactions.UpdateRequests;
+using Domain.Transactions.Income;
+
+namespace Domain.Transactions.IncomeTransfer;
 
 /// <summary>
 /// Record representing a request to update an <see cref="IncomeTransferTransaction"/>

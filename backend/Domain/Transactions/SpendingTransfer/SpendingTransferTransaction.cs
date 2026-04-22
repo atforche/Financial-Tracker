@@ -1,7 +1,7 @@
 using Domain.Accounts;
-using Domain.Transactions.CreateRequests;
+using Domain.Transactions.Spending;
 
-namespace Domain.Transactions;
+namespace Domain.Transactions.SpendingTransfer;
 
 /// <summary>
 /// Entity class representing a spending transfer transaction.

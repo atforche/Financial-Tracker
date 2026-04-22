@@ -1,7 +1,7 @@
 using Domain.Accounts;
-using Domain.Transactions.CreateRequests;
+using Domain.Transactions.Income;
 
-namespace Domain.Transactions;
+namespace Domain.Transactions.IncomeTransfer;
 
 /// <summary>
 /// Entity class representing an income transfer transaction.

@@ -1,6 +1,6 @@
 using Domain.Funds;
 
-namespace Domain.Transactions.CreateRequests;
+namespace Domain.Transactions.FundTransfer;
 
 /// <summary>
 /// Record representing a request to create an <see cref="FundTransferTransaction"/>

@@ -1,4 +1,4 @@
-namespace Domain.Transactions.UpdateRequests;
+namespace Domain.Transactions;
 
 /// <summary>
 /// Abstract record representing a request to update a <see cref="Transaction"/>
