@@ -119,6 +119,21 @@ public class AccountTransferTransactionService(
     }
 
     /// <summary>
+    /// Attempts to unpost an existing Account Transfer Transaction
+    /// </summary>
+    public bool TryUnpost(AccountTransferTransaction transaction, out IEnumerable<Exception> exceptions)
+    {
+        if (!ValidateUnposting(transaction, out exceptions))
+        {
+            return false;
+        }
+        transaction.DebitPostedDate = null;
+        transaction.CreditPostedDate = null;
+        UnpostTransaction(transaction);
+        return true;
+    }
+
+    /// <summary>
     /// Validates a request to create a new Account Transfer Transaction
     /// </summary>
     private bool ValidateCreate(CreateAccountTransferTransactionRequest request, out IEnumerable<Exception> exceptions)

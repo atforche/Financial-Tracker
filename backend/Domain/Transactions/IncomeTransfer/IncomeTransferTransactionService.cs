@@ -121,6 +121,21 @@ public class IncomeTransferTransactionService(
     }
 
     /// <summary>
+    /// Attempts to unpost an existing Income Transfer Transaction
+    /// </summary>
+    public bool TryUnpost(IncomeTransferTransaction transaction, out IEnumerable<Exception> exceptions)
+    {
+        if (!ValidateUnposting(transaction, out exceptions))
+        {
+            return false;
+        }
+        transaction.PostedDate = null;
+        transaction.DebitPostedDate = null;
+        UnpostTransaction(transaction);
+        return true;
+    }
+
+    /// <summary>
     /// Validates a request to create a new Income Transfer Transaction
     /// </summary>
     private bool ValidateCreate(CreateIncomeTransferTransactionRequest request, out IEnumerable<Exception> exceptions)

@@ -125,6 +125,21 @@ public class SpendingTransferTransactionService(
     }
 
     /// <summary>
+    /// Attempts to unpost an existing Spending Transfer Transaction
+    /// </summary>
+    public bool TryUnpost(SpendingTransferTransaction transaction, out IEnumerable<Exception> exceptions)
+    {
+        if (!ValidateUnposting(transaction, out exceptions))
+        {
+            return false;
+        }
+        transaction.PostedDate = null;
+        transaction.CreditPostedDate = null;
+        UnpostTransaction(transaction);
+        return true;
+    }
+
+    /// <summary>
     /// Validates a request to create a new Spending Transfer Transaction
     /// </summary>
     private bool ValidateCreate(CreateSpendingTransferTransactionRequest request, out IEnumerable<Exception> exceptions)
