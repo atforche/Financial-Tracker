@@ -8,9 +8,14 @@ namespace Domain.Transactions.Income;
 public record UpdateIncomeTransactionRequest : UpdateTransactionRequest
 {
     /// <summary>
-    /// Posted Date for this Income Transaction
+    /// Credit Posted Date for this Income Transaction
     /// </summary>
-    public DateOnly? PostedDate { get; init; }
+    public DateOnly? CreditPostedDate { get; init; }
+
+    /// <summary>
+    /// Debit Posted Date for this Income Transaction
+    /// </summary>
+    public DateOnly? DebitPostedDate { get; init; }
 
     /// <summary>
     /// Fund Assignments for this Income Transaction

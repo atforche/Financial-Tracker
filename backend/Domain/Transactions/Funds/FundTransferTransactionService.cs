@@ -4,12 +4,12 @@ using Domain.Accounts;
 using Domain.Exceptions;
 using Domain.Funds;
 
-namespace Domain.Transactions.FundTransfer;
+namespace Domain.Transactions.Funds;
 
 /// <summary>
-/// Service for managing Fund Transfer Transactions
+/// Service for managing Fund Transactions
 /// </summary>
-public class FundTransferTransactionService(
+public class FundTransactionService(
     AccountBalanceService accountBalanceService,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
@@ -28,8 +28,8 @@ public class FundTransferTransactionService(
     /// Attempts to create a new Fund Transfer Transaction
     /// </summary>
     public bool TryCreate(
-        CreateFundTransferTransactionRequest request,
-        [NotNullWhen(true)] out FundTransferTransaction? transaction,
+        CreateFundTransactionRequest request,
+        [NotNullWhen(true)] out FundTransaction? transaction,
         out IEnumerable<Exception> exceptions)
     {
         transaction = null;
@@ -38,18 +38,18 @@ public class FundTransferTransactionService(
         {
             return false;
         }
-        int sequence = transactionRepository.GetNextSequenceForDate(request.TransactionDate);
-        transaction = new FundTransferTransaction(request, sequence);
+        int sequence = TransactionRepository.GetNextSequenceForDate(request.TransactionDate);
+        transaction = new FundTransaction(request, sequence);
         AddTransaction(transaction);
         return true;
     }
 
     /// <summary>
-    /// Attempts to update an existing Fund Transfer Transaction
+    /// Attempts to update an existing Fund Transaction
     /// </summary>
     public bool TryUpdate(
-        FundTransferTransaction transaction,
-        UpdateFundTransferTransactionRequest request,
+        FundTransaction transaction,
+        UpdateFundTransactionRequest request,
         out IEnumerable<Exception> exceptions)
     {
         if (!ValidateUpdate(transaction, request, [], out exceptions))
@@ -61,9 +61,9 @@ public class FundTransferTransactionService(
     }
 
     /// <summary>
-    /// Attempts to delete an existing Fund Transfer Transaction
+    /// Attempts to delete an existing Fund Transaction
     /// </summary>
-    public bool TryDelete(FundTransferTransaction transaction, out IEnumerable<Exception> exceptions)
+    public bool TryDelete(FundTransaction transaction, out IEnumerable<Exception> exceptions)
     {
         if (!ValidateDelete(transaction, out exceptions))
         {
@@ -74,9 +74,9 @@ public class FundTransferTransactionService(
     }
 
     /// <summary>
-    /// Validates a request to create a new Fund Transfer Transaction
+    /// Validates a request to create a new Fund Transaction
     /// </summary>
-    private bool ValidateCreate(CreateFundTransferTransactionRequest request, out IEnumerable<Exception> exceptions)
+    private bool ValidateCreate(CreateFundTransactionRequest request, out IEnumerable<Exception> exceptions)
     {
         _ = ValidateCreate(request, [], [request.DebitFund, request.CreditFund], out exceptions);
         if (request.DebitFund == request.CreditFund)

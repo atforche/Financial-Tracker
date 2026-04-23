@@ -1,23 +1,23 @@
 using Domain.Accounts;
 using Domain.Funds;
 
-namespace Domain.Transactions.FundTransfer;
+namespace Domain.Transactions.Funds;
 
 /// <summary>
-/// Entity class representing a fund transfer transaction.
+/// Entity class representing a fund transaction.
 /// </summary>
 /// <remarks>
-/// A fund transfer transaction represents money moving between two funds. It can not affect accounts.
+/// A fund transaction represents money moving between two funds. It can not affect accounts.
 /// </remarks>
-public class FundTransferTransaction : Transaction
+public class FundTransaction : Transaction
 {
     /// <summary>
-    /// Debit Fund ID for this Fund Transfer Transaction
+    /// Debit Fund ID for this Fund Transaction
     /// </summary>
     public FundId DebitFundId { get; private set; }
 
     /// <summary>
-    /// Credit Fund ID for this Fund Transfer Transaction
+    /// Credit Fund ID for this Fund Transaction
     /// </summary>
     public FundId CreditFundId { get; private set; }
 
@@ -40,8 +40,8 @@ public class FundTransferTransaction : Transaction
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal FundTransferTransaction(CreateFundTransferTransactionRequest request, int sequence)
-        : base(request, sequence, TransactionType.FundTransfer)
+    internal FundTransaction(CreateFundTransactionRequest request, int sequence)
+        : base(request, sequence, TransactionType.Fund)
     {
         DebitFundId = request.DebitFund.Id;
         CreditFundId = request.CreditFund.Id;
@@ -50,7 +50,7 @@ public class FundTransferTransaction : Transaction
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    protected FundTransferTransaction()
+    protected FundTransaction()
         : base()
     {
         DebitFundId = null!;

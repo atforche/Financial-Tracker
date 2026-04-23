@@ -15,14 +15,24 @@ public class IncomeTransaction : Transaction
     private readonly List<FundAmount> _fundAssignments = [];
 
     /// <summary>
-    /// Account ID for this Income Transaction
+    /// Credit Account ID for this Income Transaction
     /// </summary>
-    public AccountId AccountId { get; private set; }
+    public AccountId CreditAccountId { get; private set; }
 
     /// <summary>
-    /// Posted Date for this Income Transaction
+    /// Posted Date for the Credit Account of this Income Transaction
     /// </summary>
-    public DateOnly? PostedDate { get; internal set; }
+    public DateOnly? CreditPostedDate { get; internal set; }
+
+    /// <summary>
+    /// Debit Account ID for this Income Transaction
+    /// </summary>
+    public AccountId? DebitAccountId { get; private set; }
+
+    /// <summary>
+    /// Posted Date for the Debit Account of this Income Transaction
+    /// </summary>
+    public DateOnly? DebitPostedDate { get; internal set; }
 
     /// <summary>
     /// Fund assignments for this Income Transaction
@@ -35,15 +45,33 @@ public class IncomeTransaction : Transaction
     public AccountId? GeneratedByAccountId { get; internal set; }
 
     /// <inheritdoc/>
-    public override IEnumerable<AccountId> GetAllAffectedAccountIds() => [AccountId];
+    public override IEnumerable<AccountId> GetAllAffectedAccountIds()
+    {
+        if (DebitAccountId != null)
+        {
+            yield return DebitAccountId;
+        }
+        yield return CreditAccountId;
+    }
 
     /// <inheritdoc/>
-    public override DateOnly? GetPostedDateForAccount(AccountId accountId) => accountId == AccountId ? PostedDate : null;
+    public override DateOnly? GetPostedDateForAccount(AccountId accountId)
+    {
+        if (accountId == DebitAccountId)
+        {
+            return DebitPostedDate;
+        }
+        else if (accountId == CreditAccountId)
+        {
+            return CreditPostedDate;
+        }
+        return null;
+    }
 
     /// <inheritdoc/>
     public override IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId)
     {
-        if (accountId == null || accountId == AccountId)
+        if (accountId == null || accountId == CreditAccountId)
         {
             return _fundAssignments.Select(f => f.FundId);
         }
@@ -71,9 +99,11 @@ public class IncomeTransaction : Transaction
     protected IncomeTransaction(CreateIncomeTransactionRequest request, int sequence, TransactionType type)
         : base(request, sequence, type)
     {
-        AccountId = request.Account.Id;
-        PostedDate = request.PostedDate;
-        GeneratedByAccountId = request.IsInitialTransactionForAccount ? AccountId : null;
+        CreditAccountId = request.CreditAccount.Id;
+        CreditPostedDate = request.CreditPostedDate;
+        DebitAccountId = request.DebitAccount?.Id;
+        DebitPostedDate = request.DebitPostedDate;
+        GeneratedByAccountId = request.IsInitialTransactionForAccount ? CreditAccountId : null;
         _fundAssignments.AddRange(request.FundAssignments);
     }
 
@@ -83,7 +113,7 @@ public class IncomeTransaction : Transaction
     protected IncomeTransaction()
         : base()
     {
-        AccountId = null!;
+        CreditAccountId = null!;
     }
 
     /// <inheritdoc/>

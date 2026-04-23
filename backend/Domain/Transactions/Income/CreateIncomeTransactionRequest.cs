@@ -9,14 +9,24 @@ namespace Domain.Transactions.Income;
 public record CreateIncomeTransactionRequest : CreateTransactionRequest
 {
     /// <summary>
-    /// Account for this Income Transaction
+    /// Credit Account for this Income Transaction
     /// </summary>
-    public required Account Account { get; init; }
+    public required Account CreditAccount { get; init; }
 
     /// <summary>
-    /// Posted Date for this Income Transaction
+    /// Posted Date for the Credit Account of this Income Transaction
     /// </summary>
-    public DateOnly? PostedDate { get; init; }
+    public DateOnly? CreditPostedDate { get; init; }
+
+    /// <summary>
+    /// Debit Account for this Income Transaction
+    /// </summary>
+    public required Account? DebitAccount { get; init; }
+
+    /// <summary>
+    /// Posted Date for the Debit Account of this Income Transaction
+    /// </summary>
+    public DateOnly? DebitPostedDate { get; init; }
 
     /// <summary>
     /// Fund assignments for the amount of this Income Transaction

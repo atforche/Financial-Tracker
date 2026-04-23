@@ -26,12 +26,12 @@ public enum TransactionType
     IncomeTransfer,
 
     /// <summary>
-    /// Transfer Transaction
+    /// Account Transaction
     /// </summary>
-    AccountTransfer,
+    Account,
 
     /// <summary>
-    /// Fund Transfer Transaction
+    /// Fund Transaction
     /// </summary>
-    FundTransfer,
+    Fund,
 }

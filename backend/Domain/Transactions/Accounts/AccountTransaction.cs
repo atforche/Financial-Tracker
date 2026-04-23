@@ -1,38 +1,52 @@
 using Domain.Accounts;
 using Domain.Funds;
 
-namespace Domain.Transactions.AccountTransfer;
+namespace Domain.Transactions.Accounts;
 
 /// <summary>
-/// Entity class representing an account transfer transaction.
+/// Entity class representing an account transaction.
 /// </summary>
 /// <remarks>
-/// An account transfer transaction represents money moving between two tracked accounts. It can not affect funds.
+/// An account transaction represents one of the following scenarios:
+///     1. A transaction that only debits an untracked account
+///     2. A transaction that only credits an untracked account
+///     3. A transaction that moves money between two untracked accounts
+///     4. A transaction that moves money between two tracked accounts
 /// </remarks>
-public class AccountTransferTransaction : Transaction
+public class AccountTransaction : Transaction
 {
     /// <summary>
-    /// Debit Account ID for this Account Transfer Transaction
+    /// Debit Account ID for this Account Transaction
     /// </summary>
-    public AccountId DebitAccountId { get; private set; }
+    public AccountId? DebitAccountId { get; private set; }
 
     /// <summary>
-    /// Posted Date for the Debit Account of this Account Transfer Transaction
+    /// Posted Date for the Debit Account of this Account Transaction
     /// </summary>
     public DateOnly? DebitPostedDate { get; internal set; }
 
     /// <summary>
-    /// Credit Account ID for this Account Transfer Transaction
+    /// Credit Account ID for this Account Transaction
     /// </summary>
-    public AccountId CreditAccountId { get; private set; }
+    public AccountId? CreditAccountId { get; private set; }
 
     /// <summary>
-    /// Posted Date for the Credit Account of this Account Transfer Transaction
+    /// Posted Date for the Credit Account of this Account Transaction
     /// </summary>
     public DateOnly? CreditPostedDate { get; internal set; }
 
     /// <inheritdoc/>
-    public override IEnumerable<AccountId> GetAllAffectedAccountIds() => [DebitAccountId, CreditAccountId];
+    public override IEnumerable<AccountId> GetAllAffectedAccountIds()
+    {
+        if (DebitAccountId != null)
+        {
+            yield return DebitAccountId;
+        }
+        if (CreditAccountId != null)
+        {
+            yield return CreditAccountId;
+        }
+    }
 
     /// <inheritdoc/>
     public override DateOnly? GetPostedDateForAccount(AccountId accountId)
@@ -54,23 +68,21 @@ public class AccountTransferTransaction : Transaction
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal AccountTransferTransaction(CreateAccountTransferTransactionRequest request, int sequence)
-        : base(request, sequence, TransactionType.AccountTransfer)
+    internal AccountTransaction(CreateAccountTransactionRequest request, int sequence)
+        : base(request, sequence, TransactionType.Account)
     {
-        DebitAccountId = request.DebitAccount.Id;
+        DebitAccountId = request.DebitAccount?.Id;
         DebitPostedDate = request.DebitPostedDate;
-        CreditAccountId = request.CreditAccount.Id;
+        CreditAccountId = request.CreditAccount?.Id;
         CreditPostedDate = request.CreditPostedDate;
     }
 
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    protected AccountTransferTransaction()
+    protected AccountTransaction()
         : base()
     {
-        DebitAccountId = null!;
-        CreditAccountId = null!;
     }
 
     /// <inheritdoc/>
