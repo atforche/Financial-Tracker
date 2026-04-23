@@ -66,8 +66,8 @@ public class IncomeTransactionService(
         {
             return false;
         }
-        UpdateTransaction(transaction, request);
         transaction.UpdateFundAssignments(request.FundAssignments);
+        UpdateTransaction(transaction, request);
         if (request.PostedDate.HasValue)
         {
             if (!TryPost(transaction, transaction.AccountId, request.PostedDate.Value, out exceptions))

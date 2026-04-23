@@ -44,6 +44,17 @@ public abstract class TransactionService(
     }
 
     /// <summary>
+    /// Adds a Transaction to the appropriate services and repositories
+    /// </summary>
+    protected void AddTransaction(Transaction transaction)
+    {
+        accountBalanceService.AddTransaction(transaction);
+        fundBalanceService.AddTransaction(transaction);
+        fundGoalService.AddTransaction(transaction);
+        transactionRepository.Add(transaction);
+    }
+
+    /// <summary>
     /// Validates a request to update an existing Transaction
     /// </summary>
     protected bool ValidateUpdate(
@@ -75,6 +86,10 @@ public abstract class TransactionService(
         transaction.Location = request.Location;
         transaction.Description = request.Description;
         transaction.Amount = request.Amount;
+
+        accountBalanceService.UpdateTransaction(transaction);
+        fundBalanceService.UpdateTransaction(transaction);
+        fundGoalService.UpdateTransaction(transaction);
     }
 
     /// <summary>
@@ -132,17 +147,6 @@ public abstract class TransactionService(
             exceptions = exceptions.Append(new InvalidAccountException("Initial transaction for account already exists"));
         }
         return !exceptions.Any();
-    }
-
-    /// <summary>
-    /// Adds a Transaction to the appropriate services and repositories
-    /// </summary>
-    protected void AddTransaction(Transaction transaction)
-    {
-        accountBalanceService.AddTransaction(transaction);
-        fundBalanceService.AddTransaction(transaction);
-        fundGoalService.AddTransaction(transaction);
-        transactionRepository.Add(transaction);
     }
 
     /// <summary>
