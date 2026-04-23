@@ -29,6 +29,11 @@ public class SpendingTransaction : Transaction
     /// </summary>
     public IReadOnlyCollection<FundAmount> FundAssignments => _fundAssignments;
 
+    /// <summary>
+    /// Account ID of the Account that generated this transaction when it was created, or null
+    /// </summary>
+    public AccountId? GeneratedByAccountId { get; internal set; }
+
     /// <inheritdoc/>
     public override IEnumerable<AccountId> GetAllAffectedAccountIds() => [AccountId];
 
@@ -68,6 +73,7 @@ public class SpendingTransaction : Transaction
     {
         AccountId = request.Account.Id;
         PostedDate = request.PostedDate;
+        GeneratedByAccountId = request.IsInitialTransactionForAccount ? request.Account.Id : null;
         _fundAssignments.AddRange(request.FundAssignments);
     }
 

@@ -1,7 +1,6 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
-using Domain.Transactions.CreateRequests;
 
 namespace Domain.Transactions;
 
@@ -46,7 +45,7 @@ public abstract class Transaction : Entity<TransactionId>
     /// <summary>
     /// Amount for this Transaction
     /// </summary>
-    public decimal Amount { get; private set; }
+    public decimal Amount { get; internal set; }
 
     /// <summary>
     /// Gets all Account IDs affected by this Transaction

@@ -43,6 +43,22 @@ public class FundTransferTransactionService(
     }
 
     /// <summary>
+    /// Attempts to update an existing Fund Transfer Transaction
+    /// </summary>
+    public bool TryUpdate(
+        FundTransferTransaction transaction,
+         UpdateFundTransferTransactionRequest request,
+         out IEnumerable<Exception> exceptions)
+    {
+        if (!ValidateUpdate(transaction, request, [], out exceptions))
+        {
+            return false;
+        }
+        UpdateTransaction(transaction, request);
+        return true;
+    }
+
+    /// <summary>
     /// Validates a request to create a new Fund Transfer Transaction
     /// </summary>
     private bool ValidateCreate(CreateFundTransferTransactionRequest request, out IEnumerable<Exception> exceptions)

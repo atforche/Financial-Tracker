@@ -15,6 +15,7 @@ public class SpendingTransferTransactionService(
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
     FundGoalService fundGoalService,
+    IAccountRepository accountRepository,
     IAccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository) :
     SpendingTransactionService(
@@ -64,6 +65,41 @@ public class SpendingTransferTransactionService(
     }
 
     /// <summary>
+    /// Attempts to update an existing Spending Transfer Transaction
+    /// </summary>
+    public bool TryUpdate(
+        SpendingTransferTransaction transaction,
+        UpdateSpendingTransferTransactionRequest request,
+        out IEnumerable<Exception> exceptions)
+    {
+        if (!ValidateUpdate(transaction, request, out exceptions))
+        {
+            return false;
+        }
+        UpdateTransaction(transaction, request);
+        transaction.UpdateFundAssignments(request.FundAssignments);
+        if (request.PostedDate.HasValue)
+        {
+            if (!TryPost(transaction, transaction.AccountId, request.PostedDate.Value, out IEnumerable<Exception> postingExceptions))
+            {
+                exceptions = exceptions.Concat(postingExceptions);
+            }
+        }
+        if (request.CreditPostedDate.HasValue)
+        {
+            if (!TryPost(transaction, transaction.CreditAccountId, request.CreditPostedDate.Value, out IEnumerable<Exception> postingExceptions))
+            {
+                exceptions = exceptions.Concat(postingExceptions);
+            }
+        }
+        if (exceptions.Any())
+        {
+            return false;
+        }
+        return true;
+    }
+
+    /// <summary>
     /// Validates a request to create a new Spending Transfer Transaction
     /// </summary>
     private bool ValidateCreate(CreateSpendingTransferTransactionRequest request, out IEnumerable<Exception> exceptions)
@@ -74,9 +110,31 @@ public class SpendingTransferTransactionService(
         {
             exceptions = exceptions.Concat(creditAccountExceptions);
         }
-        if (!ValidateCreditPostedDate(request, out IEnumerable<Exception> creditPostedDateExceptions))
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(request.AccountingPeriodId);
+        if (!ValidatePostedDate(accountingPeriod, request.CreditAccount, request.CreditPostedDate, out IEnumerable<Exception> creditPostedDateExceptions))
         {
             exceptions = exceptions.Concat(creditPostedDateExceptions);
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates a request to update an existing Spending Transfer Transaction
+    /// </summary>
+    private bool ValidateUpdate(SpendingTransferTransaction transaction, UpdateSpendingTransferTransactionRequest request, out IEnumerable<Exception> exceptions)
+    {
+        Account account = accountRepository.GetById(transaction.AccountId);
+        Account creditAccount = accountRepository.GetById(transaction.CreditAccountId);
+        _ = ValidateUpdate(transaction, request, [account, creditAccount], out exceptions);
+
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(transaction.AccountingPeriodId);
+        if (!ValidatePostedDate(accountingPeriod, creditAccount, request.CreditPostedDate, out IEnumerable<Exception> creditPostedDateExceptions))
+        {
+            exceptions = exceptions.Concat(creditPostedDateExceptions);
+        }
+        if (transaction.CreditPostedDate.HasValue)
+        {
+            exceptions = exceptions.Append(new UnableToUpdateException("Transaction has already been posted and cannot be updated"));
         }
         return !exceptions.Any();
     }
@@ -95,23 +153,6 @@ public class SpendingTransferTransactionService(
         if (request.CreditAccount.Type.IsTracked())
         {
             exceptions = exceptions.Append(new InvalidAccountException("Credit Account must be an untracked account"));
-        }
-        return !exceptions.Any();
-    }
-
-    /// <summary>
-    /// Validates the Credit Posted Date for this Spending Transfer Transaction
-    /// </summary>
-    private bool ValidateCreditPostedDate(CreateSpendingTransferTransactionRequest request, out IEnumerable<Exception> exceptions)
-    {
-        exceptions = [];
-
-        if (request.CreditPostedDate.HasValue)
-        {
-            if (!ValidatePostedDate(request, request.CreditAccount, request.CreditPostedDate.Value, out IEnumerable<Exception> creditPostedDateExceptions))
-            {
-                exceptions = exceptions.Concat(creditPostedDateExceptions);
-            }
         }
         return !exceptions.Any();
     }

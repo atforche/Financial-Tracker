@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Exceptions;
@@ -15,7 +14,6 @@ public abstract class TransactionService(
     FundBalanceService fundBalanceService,
     FundGoalService fundGoalService,
     IAccountingPeriodRepository accountingPeriodRepository,
-    IAccountRepository accountRepository,
     ITransactionRepository transactionRepository)
 {
     /// <summary>
@@ -38,7 +36,7 @@ public abstract class TransactionService(
         {
             exceptions = exceptions.Concat(dateExceptions);
         }
-        if (!ValidateAmount(request, out IEnumerable<Exception> amountExceptions))
+        if (!ValidateAmount(request.Amount, out IEnumerable<Exception> amountExceptions))
         {
             exceptions = exceptions.Concat(amountExceptions);
         }
@@ -46,20 +44,56 @@ public abstract class TransactionService(
     }
 
     /// <summary>
-    /// Validates the posted date for the provided accounting period, account, and date
+    /// Validates a request to update an existing Transaction
     /// </summary>
-    protected bool ValidatePostedDate(CreateTransactionRequest request, Account account, DateOnly postedDate, out IEnumerable<Exception> exceptions)
+    protected bool ValidateUpdate(
+        Transaction transaction,
+        UpdateTransactionRequest request,
+        IReadOnlyCollection<Account> accounts,
+        out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(request.AccountingPeriodId);
-        if (!accountingPeriod.IsDateInPeriod(postedDate))
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(transaction.AccountingPeriodId);
+        if (!ValidateDate(accountingPeriod, accounts, request.TransactionDate, out IEnumerable<Exception> dateExceptions))
         {
-            exceptions = exceptions.Append(new InvalidDateException("Debit Posted Date must be within the Accounting Period"));
+            exceptions = exceptions.Concat(dateExceptions);
         }
-        if (account.AddDate < postedDate)
+        if (!ValidateAmount(request.Amount, out IEnumerable<Exception> amountExceptions))
         {
-            exceptions = exceptions.Append(new InvalidDateException("Debit Posted Date cannot be before the Transaction was added"));
+            exceptions = exceptions.Concat(amountExceptions);
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Updates the properties of an existing Transaction based on an UpdateTransactionRequest
+    /// </summary>
+    protected static void UpdateTransaction(Transaction transaction, UpdateTransactionRequest request)
+    {
+        transaction.Date = request.TransactionDate;
+        transaction.Location = request.Location;
+        transaction.Description = request.Description;
+        transaction.Amount = request.Amount;
+    }
+
+    /// <summary>
+    /// Validates the posted date for the provided accounting period, account, and date
+    /// </summary>
+    protected static bool ValidatePostedDate(AccountingPeriod accountingPeriod, Account account, DateOnly? postedDate, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (postedDate.HasValue)
+        {
+            if (!accountingPeriod.IsDateInPeriod(postedDate.Value))
+            {
+                exceptions = exceptions.Append(new InvalidDateException("Debit Posted Date must be within the Accounting Period"));
+            }
+            if (account.AddDate < postedDate)
+            {
+                exceptions = exceptions.Append(new InvalidDateException("Debit Posted Date cannot be before the Transaction was added"));
+            }
         }
         return !exceptions.Any();
     }
@@ -67,7 +101,7 @@ public abstract class TransactionService(
     /// <summary>
     /// Validates the fund assignments for a Transaction
     /// </summary>
-    protected static bool ValidateFundAssignments(CreateTransactionRequest request, IReadOnlyCollection<FundAmount> fundAssignments, out IEnumerable<Exception> exceptions)
+    protected virtual bool ValidateFundAssignments(decimal amount, IReadOnlyCollection<FundAmount> fundAssignments, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
@@ -79,7 +113,7 @@ public abstract class TransactionService(
         {
             exceptions = exceptions.Append(new InvalidFundAmountException("Duplicate Funds are not allowed in fund assignments"));
         }
-        if (fundAssignments.Sum(fundAmount => fundAmount.Amount) > request.Amount)
+        if (fundAssignments.Sum(fundAmount => fundAmount.Amount) > amount)
         {
             exceptions = exceptions.Append(new InvalidFundAmountException("Sum of fund assignment amounts cannot exceed total transaction amount"));
         }
@@ -173,71 +207,15 @@ public abstract class TransactionService(
     /// <summary>
     /// Validates the Amount for this Transaction
     /// </summary>
-    private static bool ValidateAmount(CreateTransactionRequest request, out IEnumerable<Exception> exceptions)
+    private static bool ValidateAmount(decimal amount, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
-        if (request.Amount <= 0)
+        if (amount <= 0)
         {
             exceptions = exceptions.Append(new InvalidAmountException("The provided amount must be greater than zero."));
         }
         return !exceptions.Any();
-    }
-
-    /// <summary>
-    /// Attempts to update an existing Transaction
-    /// </summary>
-    public bool TryUpdate(Transaction transaction, UpdateTransactionRequest request, out IEnumerable<Exception> exceptions)
-    {
-        exceptions = [];
-
-        if (GetGeneratedByAccountId(transaction) != null)
-        {
-            exceptions = exceptions.Append(new UnableToUpdateException("The provided transaction was auto-generated by an account and cannot be updated."));
-        }
-        if (!ValidateNotPosted(transaction, null))
-        {
-            exceptions = exceptions.Append(new UnableToUpdateException("The provided transaction has already been posted to an account."));
-        }
-        IEnumerable<Account> accounts = transaction.GetAllAffectedAccountIds().Select(accountRepository.GetById);
-        if (!ValidateDate(accountingPeriodRepository.GetById(transaction.AccountingPeriodId), accounts, request.TransactionDate, out IEnumerable<Exception> dateExceptions))
-        {
-            exceptions = exceptions.Concat(dateExceptions);
-        }
-        if (!ValidateFundAmountsForUpdate(request, out IEnumerable<Exception> fundAmountExceptions))
-        {
-            exceptions = exceptions.Concat(fundAmountExceptions);
-        }
-        if (exceptions.Any())
-        {
-            return false;
-        }
-        transaction.Date = request.TransactionDate;
-        transaction.Location = request.Location;
-        transaction.Description = request.Description;
-        if (transaction is SpendingTransaction spendingTransaction && request is UpdateSpendingTransactionRequest spendingRequest)
-        {
-            spendingTransaction.UpdateFundAssignments(spendingRequest.FundAssignments);
-        }
-        else if (transaction is IncomeTransaction incomeTransaction && request is UpdateIncomeTransactionRequest incomeRequest)
-        {
-            incomeTransaction.UpdateFundAssignments(incomeRequest.FundAssignments);
-        }
-        accountBalanceService.UpdateTransaction(transaction);
-        fundBalanceService.UpdateTransaction(transaction);
-        fundGoalService.UpdateTransaction(transaction);
-        foreach ((AccountId accountId, DateOnly postedDate) in GetUpdatePostings(transaction, request))
-        {
-            if (!TryPost(transaction, accountId, postedDate, out IEnumerable<Exception> postingExceptions))
-            {
-                exceptions = exceptions.Concat(postingExceptions);
-            }
-        }
-        if (exceptions.Any())
-        {
-            return false;
-        }
-        return true;
     }
 
     /// <summary>
@@ -312,97 +290,6 @@ public abstract class TransactionService(
         fundGoalService.DeleteTransaction(transaction);
         transactionRepository.Delete(transaction);
         return true;
-    }
-
-    /// <summary>
-    /// Gets the AccountId that generated this transaction, or null if not auto-generated
-    /// </summary>
-    private static AccountId? GetGeneratedByAccountId(Transaction transaction) =>
-        transaction is IncomeTransaction income ? income.GeneratedByAccountId : null;
-
-    /// <summary>
-    /// Sets the posted date on the appropriate property of the transaction
-    /// </summary>
-    private static void SetPostedDate(Transaction transaction, AccountId account, DateOnly postedDate)
-    {
-        switch (transaction)
-        {
-            case SpendingTransferTransaction spendingTransfer when spendingTransfer.CreditAccountId == account:
-                spendingTransfer.CreditPostedDate = postedDate;
-                break;
-            case SpendingTransaction spending:
-                spending.PostedDate = postedDate;
-                break;
-            case IncomeTransferTransaction incomeTransfer when incomeTransfer.DebitAccountId == account:
-                incomeTransfer.DebitPostedDate = postedDate;
-                break;
-            case IncomeTransaction income:
-                income.PostedDate = postedDate;
-                break;
-            case AccountTransferTransaction transfer when transfer.DebitAccountId == account:
-                transfer.DebitPostedDate = postedDate;
-                break;
-            case AccountTransferTransaction transfer:
-                transfer.CreditPostedDate = postedDate;
-                break;
-            default:
-                break;
-        }
-    }
-
-    /// <summary>
-    /// Clears the posted date on the appropriate property of the transaction
-    /// </summary>
-    private static void ClearPostedDate(Transaction transaction, AccountId account)
-    {
-        switch (transaction)
-        {
-            case SpendingTransferTransaction spendingTransfer when spendingTransfer.CreditAccountId == account:
-                spendingTransfer.CreditPostedDate = null;
-                break;
-            case SpendingTransaction spending:
-                spending.PostedDate = null;
-                break;
-            case IncomeTransferTransaction incomeTransfer when incomeTransfer.DebitAccountId == account:
-                incomeTransfer.DebitPostedDate = null;
-                break;
-            case IncomeTransaction income:
-                income.PostedDate = null;
-                break;
-            case AccountTransferTransaction transfer when transfer.DebitAccountId == account:
-                transfer.DebitPostedDate = null;
-                break;
-            case AccountTransferTransaction transfer:
-                transfer.CreditPostedDate = null;
-                break;
-            default:
-                break;
-        }
-    }
-
-    /// <summary>
-    /// Validates the fund amounts for an updated Transaction
-    /// </summary>
-    private static bool ValidateFundAmountsForUpdate(UpdateTransactionRequest request, out IEnumerable<Exception> exceptions)
-    {
-        exceptions = [];
-
-        if (request is UpdateSpendingTransactionRequest spendingRequest)
-        {
-            if (spendingRequest.FundAssignments.Count == 0)
-            {
-                exceptions = exceptions.Append(new InvalidFundAmountException("The provided list of fund amounts is empty."));
-            }
-            if (spendingRequest.FundAssignments.Any(fundAmount => fundAmount.Amount <= 0))
-            {
-                exceptions = exceptions.Append(new InvalidFundAmountException("The provided fund amounts must be greater than zero."));
-            }
-        }
-        else if (request is UpdateIncomeTransactionRequest incomeRequest && incomeRequest.FundAssignments.Any(fundAmount => fundAmount.Amount <= 0))
-        {
-            exceptions = exceptions.Append(new InvalidFundAmountException("The provided fund amounts must be greater than zero."));
-        }
-        return !exceptions.Any();
     }
 
     /// <summary>
