@@ -14,12 +14,14 @@ public class FundTransferTransactionService(
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
     FundGoalService fundGoalService,
+    IAccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository) :
     TransactionService(
-        accountBalanceService, 
-        accountingPeriodBalanceService, 
-        fundBalanceService, 
+        accountBalanceService,
+        accountingPeriodBalanceService,
+        fundBalanceService,
         fundGoalService,
+        accountingPeriodRepository,
         transactionRepository)
 {
     /// <summary>
@@ -47,14 +49,27 @@ public class FundTransferTransactionService(
     /// </summary>
     public bool TryUpdate(
         FundTransferTransaction transaction,
-         UpdateFundTransferTransactionRequest request,
-         out IEnumerable<Exception> exceptions)
+        UpdateFundTransferTransactionRequest request,
+        out IEnumerable<Exception> exceptions)
     {
         if (!ValidateUpdate(transaction, request, [], out exceptions))
         {
             return false;
         }
         UpdateTransaction(transaction, request);
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to delete an existing Fund Transfer Transaction
+    /// </summary>
+    public bool TryDelete(FundTransferTransaction transaction, out IEnumerable<Exception> exceptions)
+    {
+        if (!ValidateDelete(transaction, out exceptions))
+        {
+            return false;
+        }
+        DeleteTransaction(transaction);
         return true;
     }
 

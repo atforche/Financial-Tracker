@@ -18,10 +18,11 @@ public class AccountTransferTransactionService(
     IAccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository) :
     TransactionService(
-        accountBalanceService, 
-        accountingPeriodBalanceService, 
-        fundBalanceService, 
+        accountBalanceService,
+        accountingPeriodBalanceService,
+        fundBalanceService,
         fundGoalService,
+        accountingPeriodRepository,
         transactionRepository)
 {
     /// <summary>
@@ -130,6 +131,19 @@ public class AccountTransferTransactionService(
         transaction.DebitPostedDate = null;
         transaction.CreditPostedDate = null;
         UnpostTransaction(transaction);
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to delete an existing Account Transfer Transaction
+    /// </summary>
+    public bool TryDelete(AccountTransferTransaction transaction, out IEnumerable<Exception> exceptions)
+    {
+        if (!ValidateDelete(transaction, out exceptions))
+        {
+            return false;
+        }
+        DeleteTransaction(transaction);
         return true;
     }
 

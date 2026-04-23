@@ -136,6 +136,19 @@ public class IncomeTransferTransactionService(
     }
 
     /// <summary>
+    /// Attempts to delete an existing Income Transfer Transaction
+    /// </summary>
+    public bool TryDelete(IncomeTransferTransaction transaction, out IEnumerable<Exception> exceptions)
+    {
+        if (!ValidateDelete(transaction, out exceptions))
+        {
+            return false;
+        }
+        DeleteTransaction(transaction);
+        return true;
+    }
+
+    /// <summary>
     /// Validates a request to create a new Income Transfer Transaction
     /// </summary>
     private bool ValidateCreate(CreateIncomeTransferTransactionRequest request, out IEnumerable<Exception> exceptions)

@@ -140,6 +140,19 @@ public class SpendingTransferTransactionService(
     }
 
     /// <summary>
+    /// Attempts to delete an existing Spending Transfer Transaction
+    /// </summary>
+    public bool TryDelete(SpendingTransferTransaction transaction, out IEnumerable<Exception> exceptions)
+    {
+        if (!ValidateDelete(transaction, out exceptions))
+        {
+            return false;
+        }
+        DeleteTransaction(transaction);
+        return true;
+    }
+
+    /// <summary>
     /// Validates a request to create a new Spending Transfer Transaction
     /// </summary>
     private bool ValidateCreate(CreateSpendingTransferTransactionRequest request, out IEnumerable<Exception> exceptions)
