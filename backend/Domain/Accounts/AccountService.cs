@@ -2,6 +2,9 @@ using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Exceptions;
 using Domain.Transactions;
+using Domain.Transactions.Accounts;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 
 namespace Domain.Accounts;
 
@@ -11,8 +14,10 @@ namespace Domain.Accounts;
 public class AccountService(
     IAccountRepository accountRepository,
     ITransactionRepository transactionRepository,
-    TransactionService transactionService,
-    AccountingPeriodBalanceService accountingPeriodBalanceService)
+    AccountingPeriodBalanceService accountingPeriodBalanceService,
+    AccountTransactionService accountTransactionService,
+    IncomeTransactionService incomeTransactionService,
+    SpendingTransactionService spendingTransactionService)
 {
     /// <summary>
     /// Attempts to create a new Account
@@ -76,10 +81,29 @@ public class AccountService(
         if (account.InitialTransaction != null)
         {
             Transaction initialTransaction = transactionRepository.GetById(account.InitialTransaction);
-            if (!transactionService.TryDelete(initialTransaction, account.Id, out IEnumerable<Exception> transactionExceptions))
+            if (initialTransaction is AccountTransaction accountTransaction)
             {
-                exceptions = exceptions.Concat(transactionExceptions);
-                return false;
+                if (!accountTransactionService.TryDelete(accountTransaction, account.Id, out IEnumerable<Exception> transactionExceptions))
+                {
+                    exceptions = exceptions.Concat(transactionExceptions);
+                    return false;
+                }
+            }
+            else if (initialTransaction is IncomeTransaction incomeTransaction)
+            {
+                if (!incomeTransactionService.TryDelete(incomeTransaction, account.Id, out IEnumerable<Exception> transactionExceptions))
+                {
+                    exceptions = exceptions.Concat(transactionExceptions);
+                    return false;
+                }
+            }
+            else if (initialTransaction is SpendingTransaction spendingTransaction)
+            {
+                if (!spendingTransactionService.TryDelete(spendingTransaction, account.Id, out IEnumerable<Exception> transactionExceptions))
+                {
+                    exceptions = exceptions.Concat(transactionExceptions);
+                    return false;
+                }
             }
         }
         accountingPeriodBalanceService.DeleteAccount(account);
@@ -99,39 +123,74 @@ public class AccountService(
             return true;
         }
 
-        CreateTransactionRequest createTransactionRequest = !account.Type.IsDebt()
-            ? new CreateIncomeTransactionRequest
+        Transaction? transaction;
+        if (!account.Type.IsTracked())
+        {
+            if (!accountTransactionService.TryCreate(new CreateAccountTransactionRequest
             {
                 AccountingPeriodId = request.AccountingPeriod.Id,
                 TransactionDate = request.AddDate,
                 Location = "Initial",
                 Description = "Initial Balance",
-                Account = account,
                 Amount = request.InitialBalance,
-                FundAssignments = request.InitialFundAssignments,
-                IsInitialTransactionForAccount = true
+                DebitAccount = account.Type.IsDebt() ? account : null,
+                DebitPostedDate = account.Type.IsDebt() ? request.AddDate : null,
+                CreditAccount = account.Type.IsDebt() ? null : account,
+                CreditPostedDate = account.Type.IsDebt() ? null : request.AddDate,
+                GeneratedByAccountId = account.Id
+            }, out AccountTransaction? accountTransaction, out exceptions))
+            {
+                return false;
             }
-            : new CreateSpendingTransactionRequest
+            transaction = accountTransaction;
+        }
+        else if (account.Type.IsDebt())
+        {
+            if (!spendingTransactionService.TryCreate(new CreateSpendingTransactionRequest
             {
                 AccountingPeriodId = request.AccountingPeriod.Id,
                 TransactionDate = request.AddDate,
                 Location = "Initial",
                 Description = "Initial Balance",
-                Account = account,
                 Amount = request.InitialBalance,
+                DebitAccount = account,
+                DebitPostedDate = request.AddDate,
+                CreditAccount = null,
+                CreditPostedDate = null,
                 FundAssignments = request.InitialFundAssignments,
                 IsInitialTransactionForAccount = true
-            };
-        if (!transactionService.TryCreate(createTransactionRequest, out Transaction? transaction, out exceptions))
-        {
-            return false;
+            }, out SpendingTransaction? spendingTransaction, out exceptions))
+            {
+                return false;
+            }
+            transaction = spendingTransaction;
         }
-        if (!transactionService.TryPost(transaction, account.Id, request.AddDate, out exceptions))
+        else
         {
-            return false;
+            if (!incomeTransactionService.TryCreate(new CreateIncomeTransactionRequest
+            {
+                AccountingPeriodId = request.AccountingPeriod.Id,
+                TransactionDate = request.AddDate,
+                Location = "Initial",
+                Description = "Initial Balance",
+                Amount = request.InitialBalance,
+                CreditAccount = account,
+                CreditPostedDate = request.AddDate,
+                DebitAccount = null,
+                DebitPostedDate = null,
+                FundAssignments = request.InitialFundAssignments,
+                IsInitialTransactionForAccount = true
+            }, out IncomeTransaction? incomeTransaction, out exceptions))
+            {
+                return false;
+            }
+            transaction = incomeTransaction;
         }
-        account.InitialTransaction = transaction.Id;
-        transactionRepository.Add(transaction);
+        account.InitialTransaction = transaction?.Id;
+        if (transaction != null)
+        {
+            transactionRepository.Add(transaction);
+        }
         return true;
     }
 

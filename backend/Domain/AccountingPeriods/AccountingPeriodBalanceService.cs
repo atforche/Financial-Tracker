@@ -1,6 +1,8 @@
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 
 namespace Domain.AccountingPeriods;
 
@@ -228,13 +230,13 @@ public class AccountingPeriodBalanceService(
         decimal direction = reverse ? -1 : 1;
         foreach (FundAccountingPeriodBalanceHistory fundBalanceHistory in fundBalanceHistories)
         {
-            if (transaction is IncomeTransaction income && accountId == income.AccountId)
+            if (transaction is IncomeTransaction income && accountId == income.CreditAccountId)
             {
                 fundBalanceHistory.AmountAssigned += direction * income.FundAssignments
                     .Where(fundAmount => fundAmount.FundId == fundBalanceHistory.Fund.Id)
                     .Sum(fundAmount => fundAmount.Amount);
             }
-            else if (transaction is SpendingTransaction spending && accountId == spending.AccountId)
+            else if (transaction is SpendingTransaction spending && accountId == spending.DebitAccountId)
             {
                 fundBalanceHistory.AmountSpent += direction * spending.FundAssignments
                     .Where(fundAmount => fundAmount.FundId == fundBalanceHistory.Fund.Id)

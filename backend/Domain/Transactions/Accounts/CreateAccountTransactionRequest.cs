@@ -26,4 +26,9 @@ public record CreateAccountTransactionRequest : CreateTransactionRequest
     /// Posted Date for the Credit Account of this Account Transaction
     /// </summary>
     public DateOnly? CreditPostedDate { get; init; }
+
+    /// <summary>
+    /// Account ID of the Account that generated this transaction when it was created, or null
+    /// </summary>
+    public AccountId? GeneratedByAccountId { get; init; }
 }

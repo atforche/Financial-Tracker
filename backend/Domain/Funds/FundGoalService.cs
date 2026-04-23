@@ -3,6 +3,8 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Exceptions;
 using Domain.Transactions;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 
 namespace Domain.Funds;
 
@@ -238,11 +240,11 @@ public class FundGoalService(
     /// </summary>
     private static decimal CalculateNewAmountAssigned(Transaction transaction, Fund fund, decimal existingAmountAssigned)
     {
-        if (transaction is not IncomeTransaction incomeTransaction || incomeTransaction.PostedDate == null)
+        if (transaction is IncomeTransaction { CreditPostedDate: { } } incomeTransaction)
         {
-            return existingAmountAssigned;
+            return existingAmountAssigned + incomeTransaction.FundAssignments.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
         }
-        return existingAmountAssigned + incomeTransaction.FundAssignments.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
+        return existingAmountAssigned;
     }
 
     /// <summary>
@@ -250,11 +252,11 @@ public class FundGoalService(
     /// </summary>
     private static decimal CalculateNewPendingAmountAssigned(Transaction transaction, Fund fund, decimal existingPendingAmountAssigned)
     {
-        if (transaction is not IncomeTransaction incomeTransaction || incomeTransaction.PostedDate != null)
+        if (transaction is IncomeTransaction { CreditPostedDate: null } incomeTransaction)
         {
-            return existingPendingAmountAssigned;
+            return existingPendingAmountAssigned + incomeTransaction.FundAssignments.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
         }
-        return existingPendingAmountAssigned + incomeTransaction.FundAssignments.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
+        return existingPendingAmountAssigned;
     }
 
     /// <summary>
@@ -262,11 +264,11 @@ public class FundGoalService(
     /// </summary>
     private static decimal CalculateNewAmountSpent(Transaction transaction, Fund fund, decimal existingAmountSpent)
     {
-        if (transaction is not SpendingTransaction spendingTransaction || spendingTransaction.PostedDate == null)
+        if (transaction is SpendingTransaction { DebitPostedDate: { } } spendingTransaction)
         {
-            return existingAmountSpent;
+            return existingAmountSpent + spendingTransaction.FundAssignments.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
         }
-        return existingAmountSpent + spendingTransaction.FundAssignments.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
+        return existingAmountSpent;
     }
 
     /// <summary>
@@ -274,10 +276,10 @@ public class FundGoalService(
     /// </summary>
     private static decimal CalculateNewPendingAmountSpent(Transaction transaction, Fund fund, decimal existingPendingAmountSpent)
     {
-        if (transaction is not SpendingTransaction spendingTransaction || spendingTransaction.PostedDate != null)
+        if (transaction is SpendingTransaction { DebitPostedDate: null } spendingTransaction)
         {
-            return existingPendingAmountSpent;
+            return existingPendingAmountSpent + spendingTransaction.FundAssignments.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
         }
-        return existingPendingAmountSpent + spendingTransaction.FundAssignments.Where(fundAmount => fundAmount.FundId == fund.Id).Sum(fundAmount => fundAmount.Amount);
+        return existingPendingAmountSpent;
     }
 }
