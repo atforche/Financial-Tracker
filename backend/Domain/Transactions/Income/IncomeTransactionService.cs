@@ -79,6 +79,24 @@ public class IncomeTransactionService(
     }
 
     /// <summary>
+    /// Attempts to post an existing Income Transaction to a specific Account
+    /// </summary>
+    public bool TryPost(
+        IncomeTransaction transaction,
+        AccountId accountId,
+        DateOnly postedDate,
+        out IEnumerable<Exception> exceptions)
+    {
+        if (!ValidatePosting(transaction, accountId, postedDate, out exceptions))
+        {
+            return false;
+        }
+        transaction.PostedDate = postedDate;
+        PostTransaction(transaction, accountId);
+        return true;
+    }
+
+    /// <summary>
     /// Validates a request to create a new Income Transaction
     /// </summary>
     protected bool ValidateCreate(

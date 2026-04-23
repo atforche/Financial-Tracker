@@ -94,6 +94,31 @@ public class AccountTransferTransactionService(
     }
 
     /// <summary>
+    /// Attempts to post an existing Account Transfer Transaction to a specific Account
+    /// </summary>
+    public bool TryPost(
+        AccountTransferTransaction transaction,
+        AccountId accountId,
+        DateOnly postedDate,
+        out IEnumerable<Exception> exceptions)
+    {
+        if (!ValidatePosting(transaction, accountId, postedDate, out exceptions))
+        {
+            return false;
+        }
+        if (accountId == transaction.DebitAccountId)
+        {
+            transaction.DebitPostedDate = postedDate;
+        }
+        else if (accountId == transaction.CreditAccountId)
+        {
+            transaction.CreditPostedDate = postedDate;
+        }
+        PostTransaction(transaction, accountId);
+        return true;
+    }
+
+    /// <summary>
     /// Validates a request to create a new Account Transfer Transaction
     /// </summary>
     private bool ValidateCreate(CreateAccountTransferTransactionRequest request, out IEnumerable<Exception> exceptions)

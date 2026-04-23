@@ -100,6 +100,31 @@ public class SpendingTransferTransactionService(
     }
 
     /// <summary>
+    /// Attempts to post an existing Spending Transfer Transaction to a specific Account
+    /// </summary>
+    public bool TryPost(
+        SpendingTransferTransaction transaction,
+        AccountId accountId,
+        DateOnly postedDate,
+        out IEnumerable<Exception> exceptions)
+    {
+        if (!ValidatePosting(transaction, accountId, postedDate, out exceptions))
+        {
+            return false;
+        }
+        if (accountId == transaction.AccountId)
+        {
+            transaction.PostedDate = postedDate;
+        }
+        else if (accountId == transaction.CreditAccountId)
+        {
+            transaction.CreditPostedDate = postedDate;
+        }
+        PostTransaction(transaction, accountId);
+        return true;
+    }
+
+    /// <summary>
     /// Validates a request to create a new Spending Transfer Transaction
     /// </summary>
     private bool ValidateCreate(CreateSpendingTransferTransactionRequest request, out IEnumerable<Exception> exceptions)

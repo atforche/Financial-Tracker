@@ -96,6 +96,31 @@ public class IncomeTransferTransactionService(
     }
 
     /// <summary>
+    /// Attempts to post an existing Income Transfer Transaction to a specific Account
+    /// </summary>
+    public bool TryPost(
+        IncomeTransferTransaction transaction,
+        AccountId accountId,
+        DateOnly postedDate,
+        out IEnumerable<Exception> exceptions)
+    {
+        if (!ValidatePosting(transaction, accountId, postedDate, out exceptions))
+        {
+            return false;
+        }
+        if (accountId == transaction.AccountId)
+        {
+            transaction.PostedDate = postedDate;
+        }
+        else if (accountId == transaction.DebitAccountId)
+        {
+            transaction.DebitPostedDate = postedDate;
+        }
+        PostTransaction(transaction, accountId);
+        return true;
+    }
+
+    /// <summary>
     /// Validates a request to create a new Income Transfer Transaction
     /// </summary>
     private bool ValidateCreate(CreateIncomeTransferTransactionRequest request, out IEnumerable<Exception> exceptions)

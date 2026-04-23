@@ -80,7 +80,7 @@ public abstract class TransactionService(
     /// <summary>
     /// Updates the properties of an existing Transaction based on an UpdateTransactionRequest
     /// </summary>
-    protected static void UpdateTransaction(Transaction transaction, UpdateTransactionRequest request)
+    protected void UpdateTransaction(Transaction transaction, UpdateTransactionRequest request)
     {
         transaction.Date = request.TransactionDate;
         transaction.Location = request.Location;
@@ -90,6 +90,51 @@ public abstract class TransactionService(
         accountBalanceService.UpdateTransaction(transaction);
         fundBalanceService.UpdateTransaction(transaction);
         fundGoalService.UpdateTransaction(transaction);
+    }
+
+    /// <summary>
+    /// Validates the posting of this Transaction within an Account
+    /// </summary>
+    protected bool ValidatePosting(
+        Transaction transaction,
+        AccountId accountId,
+        DateOnly postedDate,
+        out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (!transaction.GetAllAffectedAccountIds().Contains(accountId))
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("The provided account is not associated with this transaction."));
+            return false;
+        }
+        if (transaction.GetPostedDateForAccount(accountId) != null)
+        {
+            exceptions = exceptions.Append(new UnableToPostException("The Transaction has already been posted to this Account."));
+            return !exceptions.Any();
+        }
+        if (postedDate < transaction.Date)
+        {
+            exceptions = exceptions.Append(new InvalidDateException("The provided date is earlier than the transaction date."));
+        }
+        AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(transaction.AccountingPeriodId);
+        int monthDifference = Math.Abs(((accountingPeriod.Year - postedDate.Year) * 12) + accountingPeriod.Month - postedDate.Month);
+        if (monthDifference > 1)
+        {
+            exceptions = exceptions.Append(new InvalidDateException("The provided date is not within the transaction's accounting period."));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Posts a Transaction to an Account
+    /// </summary>
+    protected void PostTransaction(Transaction transaction, AccountId accountId)
+    {
+        accountingPeriodBalanceService.PostTransaction(transaction, accountId);
+        accountBalanceService.PostTransaction(transaction, accountId);
+        fundBalanceService.PostTransaction(transaction, accountId);
+        fundGoalService.PostTransaction(transaction, accountId);
     }
 
     /// <summary>
@@ -223,26 +268,6 @@ public abstract class TransactionService(
     }
 
     /// <summary>
-    /// Attempts to post an existing Transaction within an Account
-    /// </summary>
-    public bool TryPost(Transaction transaction, AccountId account, DateOnly postedDate, out IEnumerable<Exception> exceptions)
-    {
-        exceptions = [];
-
-        if (!ValidatePosting(transaction, account, postedDate, out IEnumerable<Exception> postingExceptions))
-        {
-            exceptions = exceptions.Concat(postingExceptions);
-            return false;
-        }
-        SetPostedDate(transaction, account, postedDate);
-        accountingPeriodBalanceService.PostTransaction(transaction, account);
-        accountBalanceService.PostTransaction(transaction, account);
-        fundBalanceService.PostTransaction(transaction, account);
-        fundGoalService.PostTransaction(transaction, account);
-        return true;
-    }
-
-    /// <summary>
     /// Attempts to unpost an existing Transaction within an Account
     /// </summary>
     public bool TryUnpost(Transaction transaction, out IEnumerable<Exception> exceptions)
@@ -294,40 +319,6 @@ public abstract class TransactionService(
         fundGoalService.DeleteTransaction(transaction);
         transactionRepository.Delete(transaction);
         return true;
-    }
-
-    /// <summary>
-    /// Validates the posting of this Transaction within an Account
-    /// </summary>
-    private bool ValidatePosting(
-        Transaction transaction,
-        AccountId account,
-        DateOnly postedDate,
-        out IEnumerable<Exception> exceptions)
-    {
-        exceptions = [];
-
-        if (!transaction.GetAllAffectedAccountIds().Contains(account))
-        {
-            exceptions = exceptions.Append(new InvalidAccountException("The provided account is not associated with this transaction."));
-            return false;
-        }
-        if (transaction.GetPostedDateForAccount(account) != null)
-        {
-            exceptions = exceptions.Append(new UnableToPostException("The Transaction has already been posted to this Account."));
-            return !exceptions.Any();
-        }
-        if (postedDate < transaction.Date)
-        {
-            exceptions = exceptions.Append(new InvalidDateException("The provided date is earlier than the transaction date."));
-        }
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(transaction.AccountingPeriodId);
-        int monthDifference = Math.Abs(((accountingPeriod.Year - postedDate.Year) * 12) + accountingPeriod.Month - postedDate.Month);
-        if (monthDifference > 1)
-        {
-            exceptions = exceptions.Append(new InvalidDateException("The provided date is not within the transaction's accounting period."));
-        }
-        return !exceptions.Any();
     }
 
     /// <summary>
