@@ -15,14 +15,24 @@ public class SpendingTransaction : Transaction
     private readonly List<FundAmount> _fundAssignments = [];
 
     /// <summary>
-    /// Account ID for this Spending Transaction
+    /// Debit Account ID for this Spending Transaction
     /// </summary>
-    public AccountId AccountId { get; private set; }
+    public AccountId DebitAccountId { get; private set; }
 
     /// <summary>
-    /// Posted Date for this Spending Transaction
+    /// Posted Date for the Debit Account of this Spending Transaction
     /// </summary>
-    public DateOnly? PostedDate { get; internal set; }
+    public DateOnly? DebitPostedDate { get; internal set; }
+
+    /// <summary>
+    /// Credit Account ID for this Spending Transaction
+    /// </summary>
+    public AccountId? CreditAccountId { get; private set; }
+
+    /// <summary>
+    /// Posted Date for the Credit Account of this Spending Transaction
+    /// </summary>
+    public DateOnly? CreditPostedDate { get; internal set; }
 
     /// <summary>
     /// Fund assignments for this Spending Transaction
@@ -35,15 +45,33 @@ public class SpendingTransaction : Transaction
     public AccountId? GeneratedByAccountId { get; internal set; }
 
     /// <inheritdoc/>
-    public override IEnumerable<AccountId> GetAllAffectedAccountIds() => [AccountId];
+    public override IEnumerable<AccountId> GetAllAffectedAccountIds()
+    {
+        yield return DebitAccountId;
+        if (CreditAccountId != null)
+        {
+            yield return CreditAccountId;
+        }
+    }
 
     /// <inheritdoc/>
-    public override DateOnly? GetPostedDateForAccount(AccountId accountId) => accountId == AccountId ? PostedDate : null;
+    public override DateOnly? GetPostedDateForAccount(AccountId accountId)
+    {
+        if (accountId == DebitAccountId)
+        {
+            return DebitPostedDate;
+        }
+        if (accountId == CreditAccountId)
+        {
+            return CreditPostedDate;
+        }
+        return null;
+    }
 
     /// <inheritdoc/>
     public override IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId)
     {
-        if (accountId == null || accountId == AccountId)
+        if (accountId == null || accountId == DebitAccountId)
         {
             return _fundAssignments.Select(f => f.FundId);
         }
@@ -71,9 +99,11 @@ public class SpendingTransaction : Transaction
     protected SpendingTransaction(CreateSpendingTransactionRequest request, int sequence, TransactionType type)
         : base(request, sequence, type)
     {
-        AccountId = request.Account.Id;
-        PostedDate = request.PostedDate;
-        GeneratedByAccountId = request.IsInitialTransactionForAccount ? request.Account.Id : null;
+        DebitAccountId = request.DebitAccount.Id;
+        DebitPostedDate = request.DebitPostedDate;
+        CreditAccountId = request.CreditAccount?.Id;
+        CreditPostedDate = request.CreditPostedDate;
+        GeneratedByAccountId = request.IsInitialTransactionForAccount ? request.DebitAccount.Id : null;
         _fundAssignments.AddRange(request.FundAssignments);
     }
 
@@ -83,27 +113,35 @@ public class SpendingTransaction : Transaction
     protected SpendingTransaction()
         : base()
     {
-        AccountId = null!;
+        DebitAccountId = null!;
     }
 
     /// <inheritdoc/>
     protected override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
-        if (existingAccountBalance.Account.Id != AccountId)
+        if (existingAccountBalance.Account.Id == DebitAccountId)
         {
-            return existingAccountBalance;
+            return existingAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
         }
-        return existingAccountBalance.AddNewPendingCreditAmount(reverse ? -Amount : Amount);
+        if (existingAccountBalance.Account.Id == CreditAccountId)
+        {
+            return existingAccountBalance.AddNewPendingCreditAmount(reverse ? -Amount : Amount);
+        }
+        return existingAccountBalance;
     }
 
     /// <inheritdoc/>
     protected override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
-        if (existingAccountBalance.Account.Id != AccountId)
+        if (existingAccountBalance.Account.Id == DebitAccountId)
         {
-            return existingAccountBalance;
+            return existingAccountBalance.PostPendingDebitAmount(reverse ? -Amount : Amount);
         }
-        return existingAccountBalance.PostPendingCreditAmount(reverse ? -Amount : Amount);
+        if (existingAccountBalance.Account.Id == CreditAccountId)
+        {
+            return existingAccountBalance.PostPendingCreditAmount(reverse ? -Amount : Amount);
+        }
+        return existingAccountBalance;
     }
 
     /// <inheritdoc/>
@@ -121,7 +159,7 @@ public class SpendingTransaction : Transaction
     protected override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse)
     {
         FundAmount? fundAmount = _fundAssignments.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
-        if (fundAmount == null || accountId != AccountId)
+        if (fundAmount == null || accountId != DebitAccountId)
         {
             return existingFundBalance;
         }

@@ -119,21 +119,29 @@ public class IncomeTransaction : Transaction
     /// <inheritdoc/>
     protected override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
-        if (existingAccountBalance.Account.Id != AccountId)
+        if (existingAccountBalance.Account.Id == CreditAccountId)
         {
-            return existingAccountBalance;
+            return existingAccountBalance.AddNewPendingCreditAmount(reverse ? -Amount : Amount);
         }
-        return existingAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
+        if (existingAccountBalance.Account.Id == DebitAccountId)
+        {
+            return existingAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
+        }
+        return existingAccountBalance;
     }
 
     /// <inheritdoc/>
     protected override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
-        if (existingAccountBalance.Account.Id != AccountId)
+        if (existingAccountBalance.Account.Id == CreditAccountId)
         {
-            return existingAccountBalance;
+            return existingAccountBalance.PostPendingCreditAmount(reverse ? -Amount : Amount);
         }
-        return existingAccountBalance.PostPendingDebitAmount(reverse ? -Amount : Amount);
+        if (existingAccountBalance.Account.Id == DebitAccountId)
+        {
+            return existingAccountBalance.PostPendingDebitAmount(reverse ? -Amount : Amount);
+        }
+        return existingAccountBalance;
     }
 
     /// <inheritdoc/>
@@ -151,7 +159,7 @@ public class IncomeTransaction : Transaction
     protected override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse)
     {
         FundAmount? fundAmount = _fundAssignments.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
-        if (fundAmount == null || accountId != AccountId)
+        if (fundAmount == null || accountId != CreditAccountId)
         {
             return existingFundBalance;
         }

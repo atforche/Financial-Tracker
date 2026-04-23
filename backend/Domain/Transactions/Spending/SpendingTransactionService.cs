@@ -19,10 +19,11 @@ public class SpendingTransactionService(
     IFundRepository fundRepository,
     ITransactionRepository transactionRepository) :
     TransactionService(
-        accountBalanceService, 
-        accountingPeriodBalanceService, 
-        fundBalanceService, 
+        accountBalanceService,
+        accountingPeriodBalanceService,
+        fundBalanceService,
         fundGoalService,
+        accountingPeriodRepository,
         transactionRepository)
 {
     /// <summary>
@@ -35,16 +36,27 @@ public class SpendingTransactionService(
     {
         transaction = null;
 
-        if (!ValidateCreate(request, [request.Account], out exceptions))
+        if (!ValidateCreate(
+                request,
+                new List<Account?> { request.DebitAccount, request.CreditAccount }.OfType<Account>().ToList(),
+                out exceptions))
         {
             return false;
         }
-        int sequence = transactionRepository.GetNextSequenceForDate(request.TransactionDate);
+        int sequence = TransactionRepository.GetNextSequenceForDate(request.TransactionDate);
         transaction = new SpendingTransaction(request, sequence);
         AddTransaction(transaction);
-        if (request.PostedDate.HasValue)
+        if (request.DebitPostedDate.HasValue)
         {
-            if (!TryPost(transaction, transaction.AccountId, request.PostedDate.Value, out exceptions))
+            if (!TryPost(transaction, transaction.DebitAccountId, request.DebitPostedDate.Value, out exceptions))
+            {
+                transaction = null;
+                return false;
+            }
+        }
+        if (request.CreditPostedDate.HasValue && transaction.CreditAccountId != null)
+        {
+            if (!TryPost(transaction, transaction.CreditAccountId, request.CreditPostedDate.Value, out exceptions))
             {
                 transaction = null;
                 return false;
@@ -61,16 +73,28 @@ public class SpendingTransactionService(
         UpdateSpendingTransactionRequest request,
         out IEnumerable<Exception> exceptions)
     {
-        Account account = accountRepository.GetById(transaction.AccountId);
-        if (!ValidateUpdate(transaction, request, [account], out exceptions))
+        Account debitAccount = accountRepository.GetById(transaction.DebitAccountId);
+        Account? creditAccount = transaction.CreditAccountId != null ? accountRepository.GetById(transaction.CreditAccountId) : null;
+        if (!ValidateUpdate(
+                transaction,
+                request,
+                new List<Account?> { debitAccount, creditAccount }.OfType<Account>().ToList(),
+                out exceptions))
         {
             return false;
         }
         transaction.UpdateFundAssignments(request.FundAssignments);
         UpdateTransaction(transaction, request);
-        if (request.PostedDate.HasValue)
+        if (request.DebitPostedDate.HasValue)
         {
-            if (!TryPost(transaction, transaction.AccountId, request.PostedDate.Value, out exceptions))
+            if (!TryPost(transaction, transaction.DebitAccountId, request.DebitPostedDate.Value, out exceptions))
+            {
+                return false;
+            }
+        }
+        if (request.CreditPostedDate.HasValue && transaction.CreditAccountId != null)
+        {
+            if (!TryPost(transaction, transaction.CreditAccountId, request.CreditPostedDate.Value, out exceptions))
             {
                 return false;
             }
@@ -91,7 +115,14 @@ public class SpendingTransactionService(
         {
             return false;
         }
-        transaction.PostedDate = postedDate;
+        if (accountId == transaction.DebitAccountId)
+        {
+            transaction.DebitPostedDate = postedDate;
+        }
+        else if (accountId == transaction.CreditAccountId)
+        {
+            transaction.CreditPostedDate = postedDate;
+        }
         PostTransaction(transaction, accountId);
         return true;
     }
@@ -105,7 +136,8 @@ public class SpendingTransactionService(
         {
             return false;
         }
-        transaction.PostedDate = null;
+        transaction.DebitPostedDate = null;
+        transaction.CreditPostedDate = null;
         UnpostTransaction(transaction);
         return true;
     }
@@ -141,8 +173,14 @@ public class SpendingTransactionService(
         {
             exceptions = exceptions.Concat(accountExceptions);
         }
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(request.AccountingPeriodId);
-        if (!ValidatePostedDate(accountingPeriod, request.Account, request.PostedDate, out IEnumerable<Exception> postedDateExceptions))
+        AccountingPeriod accountingPeriod = AccountingPeriodRepository.GetById(request.AccountingPeriodId);
+        if (!ValidatePostedDates(
+                accountingPeriod,
+                request.DebitAccount,
+                request.DebitPostedDate,
+                request.CreditAccount,
+                request.CreditPostedDate,
+                out IEnumerable<Exception> postedDateExceptions))
         {
             exceptions = exceptions.Concat(postedDateExceptions);
         }
@@ -150,7 +188,7 @@ public class SpendingTransactionService(
         {
             exceptions = exceptions.Concat(fundAssignmentExceptions);
         }
-        if (!ValidateInitialTransactionForAccount(request.IsInitialTransactionForAccount, request.Account, out IEnumerable<Exception> initialTransactionForAccountExceptions))
+        if (!ValidateInitialTransactionForAccount(request.IsInitialTransactionForAccount, request.DebitAccount, out IEnumerable<Exception> initialTransactionForAccountExceptions))
         {
             exceptions = exceptions.Concat(initialTransactionForAccountExceptions);
         }
@@ -168,17 +206,24 @@ public class SpendingTransactionService(
     {
         _ = ValidateUpdate(transaction, request, accounts, out exceptions);
 
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(transaction.AccountingPeriodId);
-        Account account = accountRepository.GetById(transaction.AccountId);
+        AccountingPeriod accountingPeriod = AccountingPeriodRepository.GetById(transaction.AccountingPeriodId);
+        Account debitAccount = accountRepository.GetById(transaction.DebitAccountId);
+        Account? creditAccount = transaction.CreditAccountId != null ? accountRepository.GetById(transaction.CreditAccountId) : null;
         if (transaction.GeneratedByAccountId != null)
         {
             exceptions = exceptions.Append(new UnableToUpdateException("Transaction was auto-generated by an account and cannot be updated directly"));
         }
-        if (!ValidatePostedDate(accountingPeriod, account, transaction.PostedDate, out IEnumerable<Exception> postedDateExceptions))
+        if (!ValidatePostedDates(
+                accountingPeriod,
+                debitAccount,
+                request.DebitPostedDate ?? transaction.DebitPostedDate,
+                creditAccount,
+                request.CreditPostedDate ?? transaction.CreditPostedDate,
+                out IEnumerable<Exception> postedDateExceptions))
         {
             exceptions = exceptions.Concat(postedDateExceptions);
         }
-        if (transaction.PostedDate.HasValue)
+        if (transaction.DebitPostedDate.HasValue || transaction.CreditPostedDate.HasValue)
         {
             exceptions = exceptions.Append(new UnableToUpdateException("Transaction has already been posted and cannot be updated"));
         }
@@ -245,9 +290,49 @@ public class SpendingTransactionService(
     private static bool ValidateAccount(CreateSpendingTransactionRequest request, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
-        if (!request.Account.Type.IsTracked())
+
+        if (!request.DebitAccount.Type.IsTracked())
         {
             exceptions = exceptions.Append(new InvalidAccountException("Spending Transactions must debit a tracked account"));
+        }
+        if (request.CreditAccount?.Id == request.DebitAccount.Id)
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("Debit and Credit Accounts cannot be the same"));
+        }
+        if (request.CreditAccount != null && request.CreditAccount.Type.IsTracked())
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("Spending Transactions cannot credit a tracked account"));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates the posted dates for this Spending Transaction
+    /// </summary>
+    private static bool ValidatePostedDates(
+        AccountingPeriod accountingPeriod,
+        Account debitAccount,
+        DateOnly? debitPostedDate,
+        Account? creditAccount,
+        DateOnly? creditPostedDate,
+        out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (!ValidatePostedDate(accountingPeriod, debitAccount, debitPostedDate, out IEnumerable<Exception> postedDateExceptions))
+        {
+            exceptions = exceptions.Concat(postedDateExceptions);
+        }
+        if (creditAccount != null)
+        {
+            if (!ValidatePostedDate(accountingPeriod, creditAccount, creditPostedDate, out IEnumerable<Exception> creditPostedDateExceptions))
+            {
+                exceptions = exceptions.Concat(creditPostedDateExceptions);
+            }
+        }
+        else if (creditPostedDate.HasValue)
+        {
+            exceptions = exceptions.Append(new InvalidDateException("A posted date cannot be provided for the credit account if no credit account is provided"));
         }
         return !exceptions.Any();
     }

@@ -8,9 +8,14 @@ namespace Domain.Transactions.Spending;
 public record UpdateSpendingTransactionRequest : UpdateTransactionRequest
 {
     /// <summary>
-    /// Posted Date for this Spending Transaction
+    /// Posted Date for the Debit Account of this Spending Transaction
     /// </summary>
-    public DateOnly? PostedDate { get; init; }
+    public DateOnly? DebitPostedDate { get; init; }
+
+    /// <summary>
+    /// Posted Date for the Credit Account of this Spending Transaction
+    /// </summary>
+    public DateOnly? CreditPostedDate { get; init; }
 
     /// <summary>
     /// Fund Assignments for this Spending Transaction
