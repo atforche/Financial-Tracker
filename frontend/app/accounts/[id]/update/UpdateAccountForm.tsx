@@ -2,7 +2,7 @@
 
 import { Button, DialogActions, Stack } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
-import routes, { routeBreadcrumbs } from "@/framework/routes";
+import routes, { routeBreadcrumbs, withQuery } from "@/framework/routes";
 import type { Account } from "@/data/accountTypes";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
@@ -20,13 +20,15 @@ interface UpdateAccountFormProps {
 }
 
 /**
- * Gets the URL to redirect the user to after successfully creating an account.
+ * Gets the URL to redirect the user to after successfully updating an account.
  */
 const getRedirectUrl = function (
   providedAccountingPeriod: AccountingPeriod | null,
 ): string {
   if (providedAccountingPeriod !== null) {
-    return routes.accountingPeriods.detail(providedAccountingPeriod.id);
+    return withQuery(routes.accountingPeriods.detail(providedAccountingPeriod.id), {
+      display: "accounts",
+    });
   }
   return routes.accounts.index;
 };

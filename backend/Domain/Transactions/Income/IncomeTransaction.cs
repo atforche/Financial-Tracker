@@ -100,9 +100,7 @@ public class IncomeTransaction : Transaction
         : base(request, sequence, type)
     {
         CreditAccountId = request.CreditAccount.Id;
-        CreditPostedDate = request.CreditPostedDate;
         DebitAccountId = request.DebitAccount?.Id;
-        DebitPostedDate = request.DebitPostedDate;
         GeneratedByAccountId = request.IsInitialTransactionForAccount ? CreditAccountId : null;
         _fundAssignments.AddRange(request.FundAssignments);
     }

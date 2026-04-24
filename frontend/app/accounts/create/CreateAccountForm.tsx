@@ -14,7 +14,7 @@ import {
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import type { FundAmount, FundIdentifier } from "@/data/fundTypes";
 import { type JSX, startTransition, useActionState, useState } from "react";
-import routes, { routeBreadcrumbs } from "@/framework/routes";
+import routes, { routeBreadcrumbs, withQuery } from "@/framework/routes";
 import AccountTypeEntryField from "@/framework/forms/AccountTypeEntryField";
 import AccountingPeriodEntryField from "@/framework/forms/AccountingPeriodEntryField";
 import Breadcrumbs from "@/framework/Breadcrumbs";
@@ -43,7 +43,9 @@ const getRedirectUrl = function (
   providedAccountingPeriod: AccountingPeriod | null,
 ): string {
   if (providedAccountingPeriod !== null) {
-    return routes.accountingPeriods.detail(providedAccountingPeriod.id);
+    return withQuery(routes.accountingPeriods.detail(providedAccountingPeriod.id), {
+      display: "accounts",
+    });
   }
   return routes.accounts.index;
 };

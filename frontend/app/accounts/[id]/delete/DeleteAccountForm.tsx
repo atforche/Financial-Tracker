@@ -2,7 +2,7 @@
 
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState } from "react";
-import routes, { routeBreadcrumbs } from "@/framework/routes";
+import routes, { routeBreadcrumbs, withQuery } from "@/framework/routes";
 import type { Account } from "@/data/accountTypes";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
@@ -25,7 +25,9 @@ const getRedirectUrl = function (
   accountingPeriod: AccountingPeriod | null,
 ): string {
   if (accountingPeriod !== null) {
-    return routes.accountingPeriods.detail(accountingPeriod.id);
+    return withQuery(routes.accountingPeriods.detail(accountingPeriod.id), {
+      display: "accounts",
+    });
   }
   return routes.accounts.index;
 };

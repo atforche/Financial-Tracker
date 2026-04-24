@@ -77,9 +77,7 @@ public class AccountTransaction : Transaction
         : base(request, sequence, TransactionType.Account)
     {
         DebitAccountId = request.DebitAccount?.Id;
-        DebitPostedDate = request.DebitPostedDate;
         CreditAccountId = request.CreditAccount?.Id;
-        CreditPostedDate = request.CreditPostedDate;
     }
 
     /// <summary>

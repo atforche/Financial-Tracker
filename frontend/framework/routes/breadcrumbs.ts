@@ -1,5 +1,5 @@
+import routes, { withQuery } from "./routes";
 import type { Breadcrumb } from "@/framework/Breadcrumbs";
-import routes from "./routes";
 
 interface NamedEntity {
   readonly id: string;
@@ -17,12 +17,15 @@ const accountingPeriodsIndex = function (): Breadcrumb[] {
 
 const accountingPeriodDetail = function (
   accountingPeriod: NamedEntity,
+  display?: "accounts" | "funds" | "transactions",
 ): Breadcrumb[] {
   return [
     ...accountingPeriodsIndex(),
     {
       label: accountingPeriod.name,
-      href: routes.accountingPeriods.detail(accountingPeriod.id),
+      href: withQuery(routes.accountingPeriods.detail(accountingPeriod.id), {
+        display,
+      }),
     },
   ];
 };
@@ -32,7 +35,7 @@ const accountingPeriodAccountDetail = function (
   account: NamedEntity,
 ): Breadcrumb[] {
   return [
-    ...accountingPeriodDetail(accountingPeriod),
+    ...accountingPeriodDetail(accountingPeriod, "accounts"),
     {
       label: account.name,
       href: routes.accountingPeriods.accountDetail(
@@ -48,7 +51,7 @@ const accountingPeriodFundDetail = function (
   fund: NamedEntity,
 ): Breadcrumb[] {
   return [
-    ...accountingPeriodDetail(accountingPeriod),
+    ...accountingPeriodDetail(accountingPeriod, "funds"),
     {
       label: fund.name,
       href: routes.accountingPeriods.fundDetail(accountingPeriod.id, fund.id),
