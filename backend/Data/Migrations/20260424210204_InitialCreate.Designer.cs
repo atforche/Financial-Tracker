@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20260420235033_InitialCreate")]
+    [Migration("20260424210204_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -282,103 +282,116 @@ namespace Data.Migrations
                     b.UseTphMappingStrategy();
                 });
 
-            modelBuilder.Entity("Domain.Transactions.IncomeTransaction", b =>
+            modelBuilder.Entity("Domain.Transactions.Accounts.AccountTransaction", b =>
                 {
                     b.HasBaseType("Domain.Transactions.Transaction");
 
-                    b.Property<Guid>("AccountId")
+                    b.Property<Guid?>("CreditAccountId")
                         .HasColumnType("TEXT")
-                        .HasColumnName("IncomeTransaction_AccountId");
+                        .HasColumnName("AccountTransaction_CreditAccountId");
+
+                    b.Property<DateOnly?>("CreditPostedDate")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("AccountTransaction_CreditPostedDate");
+
+                    b.Property<Guid?>("DebitAccountId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("AccountTransaction_DebitAccountId");
+
+                    b.Property<DateOnly?>("DebitPostedDate")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("AccountTransaction_DebitPostedDate");
+
+                    b.Property<Guid?>("GeneratedByAccountId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("AccountTransaction_GeneratedByAccountId");
+
+                    b.HasIndex("CreditAccountId");
+
+                    b.HasIndex("DebitAccountId");
+
+                    b.HasDiscriminator().HasValue(2);
+                });
+
+            modelBuilder.Entity("Domain.Transactions.Funds.FundTransaction", b =>
+                {
+                    b.HasBaseType("Domain.Transactions.Transaction");
+
+                    b.Property<Guid>("CreditFundId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("FundTransaction_CreditFundId");
+
+                    b.Property<Guid>("DebitFundId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("FundTransaction_DebitFundId");
+
+                    b.HasIndex("CreditFundId");
+
+                    b.HasIndex("DebitFundId");
+
+                    b.HasDiscriminator().HasValue(3);
+                });
+
+            modelBuilder.Entity("Domain.Transactions.Income.IncomeTransaction", b =>
+                {
+                    b.HasBaseType("Domain.Transactions.Transaction");
+
+                    b.Property<Guid>("CreditAccountId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("IncomeTransaction_CreditAccountId");
+
+                    b.Property<DateOnly?>("CreditPostedDate")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("IncomeTransaction_CreditPostedDate");
+
+                    b.Property<Guid?>("DebitAccountId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("IncomeTransaction_DebitAccountId");
+
+                    b.Property<DateOnly?>("DebitPostedDate")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("IncomeTransaction_DebitPostedDate");
 
                     b.Property<Guid?>("GeneratedByAccountId")
                         .HasColumnType("TEXT")
                         .HasColumnName("IncomeTransaction_GeneratedByAccountId");
 
-                    b.Property<DateOnly?>("PostedDate")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("IncomeTransaction_PostedDate");
-
-                    b.HasIndex("AccountId");
-
-                    b.HasDiscriminator().HasValue(2);
-                });
-
-            modelBuilder.Entity("Domain.Transactions.SpendingTransaction", b =>
-                {
-                    b.HasBaseType("Domain.Transactions.Transaction");
-
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("SpendingTransaction_AccountId");
-
-                    b.Property<DateOnly?>("PostedDate")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("SpendingTransaction_PostedDate");
-
-                    b.HasIndex("AccountId");
-
-                    b.HasDiscriminator().HasValue(0);
-                });
-
-            modelBuilder.Entity("Domain.Transactions.TransferTransaction", b =>
-                {
-                    b.HasBaseType("Domain.Transactions.Transaction");
-
-                    b.Property<Guid>("CreditAccountId")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("TransferTransaction_CreditAccountId");
-
-                    b.Property<DateOnly?>("CreditPostedDate")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("TransferTransaction_CreditPostedDate");
-
-                    b.Property<Guid>("DebitAccountId")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("TransferTransaction_DebitAccountId");
-
-                    b.Property<DateOnly?>("DebitPostedDate")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("TransferTransaction_DebitPostedDate");
-
                     b.HasIndex("CreditAccountId");
 
                     b.HasIndex("DebitAccountId");
-
-                    b.HasDiscriminator().HasValue(4);
-                });
-
-            modelBuilder.Entity("Domain.Transactions.IncomeTransferTransaction", b =>
-                {
-                    b.HasBaseType("Domain.Transactions.IncomeTransaction");
-
-                    b.Property<Guid>("DebitAccountId")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("IncomeTransferTransaction_DebitAccountId");
-
-                    b.Property<DateOnly?>("DebitPostedDate")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("IncomeTransferTransaction_DebitPostedDate");
-
-                    b.HasIndex("DebitAccountId");
-
-                    b.HasDiscriminator().HasValue(3);
-                });
-
-            modelBuilder.Entity("Domain.Transactions.SpendingTransferTransaction", b =>
-                {
-                    b.HasBaseType("Domain.Transactions.SpendingTransaction");
-
-                    b.Property<Guid>("CreditAccountId")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("SpendingTransferTransaction_CreditAccountId");
-
-                    b.Property<DateOnly?>("CreditPostedDate")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("SpendingTransferTransaction_CreditPostedDate");
-
-                    b.HasIndex("CreditAccountId");
 
                     b.HasDiscriminator().HasValue(1);
+                });
+
+            modelBuilder.Entity("Domain.Transactions.Spending.SpendingTransaction", b =>
+                {
+                    b.HasBaseType("Domain.Transactions.Transaction");
+
+                    b.Property<Guid?>("CreditAccountId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("SpendingTransaction_CreditAccountId");
+
+                    b.Property<DateOnly?>("CreditPostedDate")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("SpendingTransaction_CreditPostedDate");
+
+                    b.Property<Guid>("DebitAccountId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("SpendingTransaction_DebitAccountId");
+
+                    b.Property<DateOnly?>("DebitPostedDate")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("SpendingTransaction_DebitPostedDate");
+
+                    b.Property<Guid?>("GeneratedByAccountId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("SpendingTransaction_GeneratedByAccountId");
+
+                    b.HasIndex("CreditAccountId");
+
+                    b.HasIndex("DebitAccountId");
+
+                    b.HasDiscriminator().HasValue(0);
                 });
 
             modelBuilder.Entity("Domain.AccountingPeriods.AccountingPeriodBalanceHistory", b =>
@@ -524,15 +537,45 @@ namespace Data.Migrations
                     b.Navigation("Fund");
                 });
 
-            modelBuilder.Entity("Domain.Transactions.IncomeTransaction", b =>
+            modelBuilder.Entity("Domain.Transactions.Accounts.AccountTransaction", b =>
                 {
                     b.HasOne("Domain.Accounts.Account", null)
                         .WithMany()
-                        .HasForeignKey("AccountId")
+                        .HasForeignKey("CreditAccountId");
+
+                    b.HasOne("Domain.Accounts.Account", null)
+                        .WithMany()
+                        .HasForeignKey("DebitAccountId");
+                });
+
+            modelBuilder.Entity("Domain.Transactions.Funds.FundTransaction", b =>
+                {
+                    b.HasOne("Domain.Funds.Fund", null)
+                        .WithMany()
+                        .HasForeignKey("CreditFundId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsMany("Domain.Funds.FundAmount", "FundAmounts", b1 =>
+                    b.HasOne("Domain.Funds.Fund", null)
+                        .WithMany()
+                        .HasForeignKey("DebitFundId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Transactions.Income.IncomeTransaction", b =>
+                {
+                    b.HasOne("Domain.Accounts.Account", null)
+                        .WithMany()
+                        .HasForeignKey("CreditAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Accounts.Account", null)
+                        .WithMany()
+                        .HasForeignKey("DebitAccountId");
+
+                    b.OwnsMany("Domain.Funds.FundAmount", "FundAssignments", b1 =>
                         {
                             b1.Property<int>("Id")
                                 .ValueGeneratedOnAdd()
@@ -551,24 +594,28 @@ namespace Data.Migrations
 
                             b1.HasIndex("IncomeTransactionId");
 
-                            b1.ToTable("IncomeTransactionFundAmounts", (string)null);
+                            b1.ToTable("IncomeTransactionFundAssignments", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("IncomeTransactionId");
                         });
 
-                    b.Navigation("FundAmounts");
+                    b.Navigation("FundAssignments");
                 });
 
-            modelBuilder.Entity("Domain.Transactions.SpendingTransaction", b =>
+            modelBuilder.Entity("Domain.Transactions.Spending.SpendingTransaction", b =>
                 {
                     b.HasOne("Domain.Accounts.Account", null)
                         .WithMany()
-                        .HasForeignKey("AccountId")
+                        .HasForeignKey("CreditAccountId");
+
+                    b.HasOne("Domain.Accounts.Account", null)
+                        .WithMany()
+                        .HasForeignKey("DebitAccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsMany("Domain.Funds.FundAmount", "FundAmounts", b1 =>
+                    b.OwnsMany("Domain.Funds.FundAmount", "FundAssignments", b1 =>
                         {
                             b1.Property<int>("Id")
                                 .ValueGeneratedOnAdd()
@@ -587,46 +634,13 @@ namespace Data.Migrations
 
                             b1.HasIndex("SpendingTransactionId");
 
-                            b1.ToTable("SpendingTransactionFundAmounts", (string)null);
+                            b1.ToTable("SpendingTransactionFundAssignments", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("SpendingTransactionId");
                         });
 
-                    b.Navigation("FundAmounts");
-                });
-
-            modelBuilder.Entity("Domain.Transactions.TransferTransaction", b =>
-                {
-                    b.HasOne("Domain.Accounts.Account", null)
-                        .WithMany()
-                        .HasForeignKey("CreditAccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Accounts.Account", null)
-                        .WithMany()
-                        .HasForeignKey("DebitAccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Domain.Transactions.IncomeTransferTransaction", b =>
-                {
-                    b.HasOne("Domain.Accounts.Account", null)
-                        .WithMany()
-                        .HasForeignKey("DebitAccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Domain.Transactions.SpendingTransferTransaction", b =>
-                {
-                    b.HasOne("Domain.Accounts.Account", null)
-                        .WithMany()
-                        .HasForeignKey("CreditAccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("FundAssignments");
                 });
 #pragma warning restore 612, 618
         }

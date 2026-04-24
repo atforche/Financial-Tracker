@@ -65,6 +65,12 @@ internal sealed class TransactionConfiguration :
                 .HasConversion(fundId => fundId.Value, value => new FundId(value));
         });
         builder.Navigation(t => t.FundAssignments).AutoInclude();
+
+        builder.Property(t => t.GeneratedByAccountId)
+            .HasColumnName("SpendingTransaction_GeneratedByAccountId")
+            .HasConversion(
+                id => id == null ? (Guid?)null : id.Value,
+                value => value == null ? null : new AccountId(value.Value));
     }
 
     /// <inheritdoc/>
@@ -106,32 +112,38 @@ internal sealed class TransactionConfiguration :
     public void Configure(EntityTypeBuilder<AccountTransaction> builder)
     {
         builder.Property(t => t.DebitAccountId)
-            .HasColumnName("AccountTransferTransaction_DebitAccountId")
+            .HasColumnName("AccountTransaction_DebitAccountId")
             .HasConversion(id => id == null ? (Guid?)null : id.Value, value => value == null ? null : new AccountId(value.Value));
         builder.HasOne<Account>().WithMany().HasForeignKey(t => t.DebitAccountId);
 
         builder.Property(t => t.DebitPostedDate)
-            .HasColumnName("AccountTransferTransaction_DebitPostedDate");
+            .HasColumnName("AccountTransaction_DebitPostedDate");
 
         builder.Property(t => t.CreditAccountId)
-            .HasColumnName("AccountTransferTransaction_CreditAccountId")
+            .HasColumnName("AccountTransaction_CreditAccountId")
             .HasConversion(id => id == null ? (Guid?)null : id.Value, value => value == null ? null : new AccountId(value.Value));
         builder.HasOne<Account>().WithMany().HasForeignKey(t => t.CreditAccountId);
 
         builder.Property(t => t.CreditPostedDate)
-            .HasColumnName("AccountTransferTransaction_CreditPostedDate");
+            .HasColumnName("AccountTransaction_CreditPostedDate");
+
+        builder.Property(t => t.GeneratedByAccountId)
+            .HasColumnName("AccountTransaction_GeneratedByAccountId")
+            .HasConversion(
+                id => id == null ? (Guid?)null : id.Value,
+                value => value == null ? null : new AccountId(value.Value));
     }
 
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<FundTransaction> builder)
     {
         builder.Property(t => t.DebitFundId)
-            .HasColumnName("FundTransferTransaction_DebitFundId")
+            .HasColumnName("FundTransaction_DebitFundId")
             .HasConversion(id => id.Value, value => new FundId(value));
         builder.HasOne<Fund>().WithMany().HasForeignKey(t => t.DebitFundId);
 
         builder.Property(t => t.CreditFundId)
-            .HasColumnName("FundTransferTransaction_CreditFundId")
+            .HasColumnName("FundTransaction_CreditFundId")
             .HasConversion(id => id.Value, value => new FundId(value));
         builder.HasOne<Fund>().WithMany().HasForeignKey(t => t.CreditFundId);
     }
