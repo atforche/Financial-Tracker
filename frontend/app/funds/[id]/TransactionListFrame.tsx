@@ -1,6 +1,9 @@
 "use client";
 
+import routes, { withQuery } from "@/framework/routes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
+import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import { FundTransactionSortOrder } from "@/data/fundTypes";
@@ -17,11 +20,22 @@ interface Fund {
   id: string;
 }
 
+interface FundBalanceLike {
+  readonly fundId: string;
+  readonly postedBalance: number;
+}
+
+type TransactionWithFundBalances = Transaction & {
+  readonly previousFundBalances?: FundBalanceLike[];
+  readonly newFundBalances?: FundBalanceLike[];
+};
+
 /**
  * Props for the TransactionListFrame component.
  */
 interface TransactionListFrameProps {
   readonly fund: Fund;
+  readonly accountingPeriodId?: string | null;
   readonly data: Transaction[] | null;
   readonly totalCount: number | null;
 }
@@ -33,11 +47,16 @@ const getChangeInBalance = function (
   fund: Fund,
   transaction: Transaction,
 ): number {
+  const transactionWithFundBalances = transaction as TransactionWithFundBalances;
   const previousBalance =
-    transaction.previousFundBalances.find((fb) => fb.fundId === fund.id)
+    transactionWithFundBalances.previousFundBalances?.find(
+      (fundBalance) => fundBalance.fundId === fund.id,
+    )
       ?.postedBalance ?? 0;
   const newBalance =
-    transaction.newFundBalances.find((fb) => fb.fundId === fund.id)
+    transactionWithFundBalances.newFundBalances?.find(
+      (fundBalance) => fundBalance.fundId === fund.id,
+    )
       ?.postedBalance ?? 0;
   return newBalance - previousBalance;
 };
@@ -47,6 +66,7 @@ const getChangeInBalance = function (
  */
 const TransactionListFrame = function ({
   fund,
+  accountingPeriodId = null,
   data,
   totalCount,
 }: TransactionListFrameProps): JSX.Element {
@@ -142,6 +162,26 @@ const TransactionListFrame = function ({
         }
       },
       alignment: "right",
+    },
+    {
+      name: "actions",
+      headerContent: "",
+      getBodyContent: (transaction: Transaction) => (
+        <ColumnButton
+          label="View"
+          icon={<ArrowForwardIos />}
+          onClick={() => {
+            router.push(
+              withQuery(routes.transactions.detail(transaction.id), {
+                accountingPeriodId,
+                fundId: fund.id,
+              }),
+            );
+          }}
+        />
+      ),
+      alignment: "right",
+      minWidth: 90,
     },
   ];
 

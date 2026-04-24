@@ -5,7 +5,10 @@ import {
   type AccountType,
   isPositiveChangeInBalance,
 } from "@/data/accountTypes";
+import routes, { withQuery } from "@/framework/routes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
+import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
@@ -21,6 +24,18 @@ interface Account {
   id: string;
   type: AccountType;
 }
+
+const getDebitAccountId = function (transaction: Transaction): string | null {
+  return "debitAccount" in transaction && transaction.debitAccount !== null
+    ? transaction.debitAccount.accountId
+    : null;
+};
+
+const getCreditAccountId = function (transaction: Transaction): string | null {
+  return "creditAccount" in transaction && transaction.creditAccount !== null
+    ? transaction.creditAccount.accountId
+    : null;
+};
 
 /**
  * Props for the TransactionListFrame component.
@@ -38,13 +53,13 @@ const getChangeInBalance = function (
   account: Account,
   transaction: Transaction,
 ): number {
-  if (
-    transaction.debitAccount?.accountId === account.id &&
-    transaction.creditAccount?.accountId === account.id
-  ) {
+  const debitAccountId = getDebitAccountId(transaction);
+  const creditAccountId = getCreditAccountId(transaction);
+
+  if (debitAccountId === account.id && creditAccountId === account.id) {
     return 0;
   }
-  if (transaction.debitAccount?.accountId === account.id) {
+  if (debitAccountId === account.id) {
     return -1 * transaction.amount;
   }
   return transaction.amount;
@@ -152,6 +167,25 @@ const TransactionListFrame = function ({
         }
       },
       alignment: "right",
+    },
+    {
+      name: "actions",
+      headerContent: "",
+      getBodyContent: (transaction: Transaction) => (
+        <ColumnButton
+          label="View"
+          icon={<ArrowForwardIos />}
+          onClick={() => {
+            router.push(
+              withQuery(routes.transactions.detail(transaction.id), {
+                accountId: account.id,
+              }),
+            );
+          }}
+        />
+      ),
+      alignment: "right",
+      minWidth: 90,
     },
   ];
 

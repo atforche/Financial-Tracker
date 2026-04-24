@@ -4,7 +4,10 @@ import {
   AccountingPeriodTransactionSortOrder,
   type Transaction,
 } from "@/data/transactionTypes";
+import routes, { withQuery } from "@/framework/routes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
+import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
@@ -16,6 +19,7 @@ import tryParseEnum from "@/data/tryParseEnum";
  * Props for the TransactionListFrame component.
  */
 interface TransactionListFrameProps {
+  readonly accountingPeriodId: string;
   readonly data: Transaction[] | null;
   readonly totalCount: number | null;
 }
@@ -24,6 +28,7 @@ interface TransactionListFrameProps {
  * Component that displays the list of transactions for an accounting period.
  */
 const TransactionListFrame = function ({
+  accountingPeriodId,
   data,
   totalCount,
 }: TransactionListFrameProps): JSX.Element {
@@ -114,6 +119,25 @@ const TransactionListFrame = function ({
       },
       alignment: "right",
       minWidth: 150,
+    },
+    {
+      name: "actions",
+      headerContent: "",
+      getBodyContent: (transaction: Transaction) => (
+        <ColumnButton
+          label="View"
+          icon={<ArrowForwardIos />}
+          onClick={() => {
+            router.push(
+              withQuery(routes.transactions.detail(transaction.id), {
+                accountingPeriodId,
+              }),
+            );
+          }}
+        />
+      ),
+      alignment: "right",
+      minWidth: 90,
     },
   ];
 

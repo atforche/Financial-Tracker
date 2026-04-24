@@ -6,6 +6,12 @@ interface NamedEntity {
   readonly name: string;
 }
 
+interface TransactionNavigationContext {
+  readonly accountingPeriod?: NamedEntity | null;
+  readonly account?: NamedEntity | null;
+  readonly fund?: NamedEntity | null;
+}
+
 const accountingPeriodsIndex = function (): Breadcrumb[] {
   return [
     {
@@ -93,6 +99,74 @@ const fundDetail = function (fund: NamedEntity): Breadcrumb[] {
     {
       label: fund.name,
       href: routes.funds.detail(fund.id),
+    },
+  ];
+};
+
+const transactionDetail = function (
+  transactionId: string,
+  context: TransactionNavigationContext = {},
+): Breadcrumb[] {
+  const href = withQuery(routes.transactions.detail(transactionId), {
+    accountingPeriodId: context.accountingPeriod?.id,
+    accountId: context.account?.id,
+    fundId: context.fund?.id,
+  });
+
+  if (context.accountingPeriod && context.fund) {
+    return [
+      ...accountingPeriodFundDetail(context.accountingPeriod, context.fund),
+      {
+        label: "Transaction",
+        href,
+      },
+    ];
+  }
+
+  if (context.accountingPeriod && context.account) {
+    return [
+      ...accountingPeriodAccountDetail(context.accountingPeriod, context.account),
+      {
+        label: "Transaction",
+        href,
+      },
+    ];
+  }
+
+  if (context.account) {
+    return [
+      ...accountDetail(context.account),
+      {
+        label: "Transaction",
+        href,
+      },
+    ];
+  }
+
+  if (context.fund) {
+    return [
+      ...fundDetail(context.fund),
+      {
+        label: "Transaction",
+        href,
+      },
+    ];
+  }
+
+  if (context.accountingPeriod) {
+    return [
+      ...accountingPeriodDetail(context.accountingPeriod, "transactions"),
+      {
+        label: "Transaction",
+        href,
+      },
+    ];
+  }
+
+  return [
+    {
+      label: "Transaction",
+      href,
     },
   ];
 };
@@ -318,6 +392,9 @@ const routeBreadcrumbs = {
         },
       ];
     },
+  },
+  transactions: {
+    detail: transactionDetail,
   },
 } as const;
 

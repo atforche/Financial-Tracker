@@ -43,6 +43,9 @@ const routes = {
     update: (fundId: string): Route => `/funds/${fundId}/update`,
     delete: (fundId: string): Route => `/funds/${fundId}/delete`,
   },
+  transactions: {
+    detail: (transactionId: string): Route => `/transactions/${transactionId}`,
+  },
 } as const;
 
 /**

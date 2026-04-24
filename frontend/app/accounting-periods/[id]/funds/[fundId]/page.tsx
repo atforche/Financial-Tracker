@@ -170,6 +170,7 @@ const Page = async function ({
         <SearchBar paramName="transactionSearch" />
         <TransactionListFrame
           fund={fundData}
+          accountingPeriodId={id}
           data={fundTransactionsData.items}
           totalCount={fundTransactionsData.totalCount}
         />
