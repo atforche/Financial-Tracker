@@ -2,6 +2,10 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
+using Domain.Transactions.Accounts;
+using Domain.Transactions.Funds;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 
 namespace Tests.Mocks;
 
@@ -46,18 +50,19 @@ internal sealed class MockTransactionRepository : ITransactionRepository
 
     private static IEnumerable<AccountId> GetAccountIds(Transaction transaction) => transaction switch
     {
-        SpendingTransferTransaction st => [st.AccountId, st.CreditAccountId],
-        SpendingTransaction s => [s.AccountId],
-        IncomeTransferTransaction it => [it.DebitAccountId, it.AccountId],
-        IncomeTransaction i => [i.AccountId],
-        TransferTransaction t => [t.DebitAccountId, t.CreditAccountId],
+        SpendingTransaction spendingTransaction => spendingTransaction.GetAllAffectedAccountIds(),
+        IncomeTransaction incomeTransaction => incomeTransaction.GetAllAffectedAccountIds(),
+        AccountTransaction accountTransaction => accountTransaction.GetAllAffectedAccountIds(),
+        FundTransaction => [],
         // RefundTransaction r => GetAccountIds(r.Transaction),
         _ => [],
     };
 
     private static IEnumerable<FundId> GetFundIds(Transaction transaction) => transaction switch
     {
-        SpendingTransaction s => s.FundAmounts.Select(fa => fa.FundId),
+        SpendingTransaction spendingTransaction => spendingTransaction.FundAssignments.Select(fundAmount => fundAmount.FundId),
+        IncomeTransaction incomeTransaction => incomeTransaction.FundAssignments.Select(fundAmount => fundAmount.FundId),
+        FundTransaction fundTransaction => [fundTransaction.DebitFundId, fundTransaction.CreditFundId],
         // RefundTransaction r => GetFundIds(r.Transaction),
         _ => [],
     };

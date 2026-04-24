@@ -2,6 +2,10 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
+using Domain.Transactions.Accounts;
+using Domain.Transactions.Funds;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Domain;
@@ -23,6 +27,10 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<FundGoalService>();
         _ = serviceCollection.AddScoped<FundService>();
         _ = serviceCollection.AddScoped<FundBalanceService>();
-        _ = serviceCollection.AddScoped<TransactionService>();
+        _ = serviceCollection.AddScoped<SpendingTransactionService>();
+        _ = serviceCollection.AddScoped<IncomeTransactionService>();
+        _ = serviceCollection.AddScoped<AccountTransactionService>();
+        _ = serviceCollection.AddScoped<FundTransactionService>();
+        _ = serviceCollection.AddScoped<TransactionDispatcherService>();
     }
 }

@@ -2,12 +2,8 @@ using Data;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Exceptions;
-using Domain.Funds;
 using Domain.Transactions;
-using Domain.Transactions.CreateRequests;
-using Domain.Transactions.UpdateRequests;
 using Microsoft.AspNetCore.Mvc;
-using Models.Funds;
 using Models.Transactions;
 using Rest.Mappers;
 
@@ -20,10 +16,10 @@ namespace Rest.Controllers;
 [Route("/transactions")]
 public sealed class TransactionController(
     UnitOfWork unitOfWork,
-    TransactionService transactionService,
+    TransactionDispatcherService transactionDispatcherService,
     AccountingPeriodMapper accountingPeriodMapper,
     AccountMapper accountMapper,
-    FundAmountMapper fundAmountMapper,
+    TransactionRequestMapper transactionRequestMapper,
     TransactionMapper transactionMapper) : ControllerBase
 {
     /// <summary>
@@ -61,55 +57,6 @@ public sealed class TransactionController(
         {
             errors.Add(nameof(createTransactionModel.AccountingPeriodId), [$"Accounting Period with ID {createTransactionModel.AccountingPeriodId} was not found."]);
         }
-
-        Account? debitAccount = null;
-        if (createTransactionModel.DebitAccount != null && !accountMapper.TryToDomain(createTransactionModel.DebitAccount.AccountId, out debitAccount))
-        {
-            errors.Add($"{nameof(createTransactionModel.DebitAccount)}.{nameof(createTransactionModel.DebitAccount.AccountId)}",
-                [$"Account with ID {createTransactionModel.DebitAccount.AccountId} was not found."]);
-        }
-
-        Account? creditAccount = null;
-        if (createTransactionModel.CreditAccount != null && !accountMapper.TryToDomain(createTransactionModel.CreditAccount.AccountId, out creditAccount))
-        {
-            errors.Add($"{nameof(createTransactionModel.CreditAccount)}.{nameof(createTransactionModel.CreditAccount.AccountId)}",
-                [$"Account with ID {createTransactionModel.CreditAccount.AccountId} was not found."]);
-        }
-
-        List<FundAmount> debitFundAmounts = [];
-        if (createTransactionModel.DebitAccount != null)
-        {
-            foreach ((int index, CreateFundAmountModel fundAmountModel) in createTransactionModel.DebitAccount.FundAmounts.Index())
-            {
-                if (!fundAmountMapper.TryToDomain(fundAmountModel, out FundAmount? fundAmount))
-                {
-                    errors.Add($"{nameof(createTransactionModel.DebitAccount)}.{nameof(createTransactionModel.DebitAccount.FundAmounts)}[{index}]",
-                        [$"Fund with ID {fundAmountModel.FundId} was not found."]);
-                }
-                else
-                {
-                    debitFundAmounts.Add(fundAmount);
-                }
-            }
-        }
-
-        List<FundAmount> creditFundAmounts = [];
-        if (createTransactionModel.CreditAccount != null)
-        {
-            foreach ((int index, CreateFundAmountModel fundAmountModel) in createTransactionModel.CreditAccount.FundAmounts.Index())
-            {
-                if (!fundAmountMapper.TryToDomain(fundAmountModel, out FundAmount? fundAmount))
-                {
-                    errors.Add($"{nameof(createTransactionModel.CreditAccount)}.{nameof(createTransactionModel.CreditAccount.FundAmounts)}[{index}]",
-                        [$"Fund with ID {fundAmountModel.FundId} was not found."]);
-                }
-                else
-                {
-                    creditFundAmounts.Add(fundAmount);
-                }
-            }
-        }
-
         if (errors.Count > 0 || accountingPeriod == null)
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
@@ -119,22 +66,19 @@ public sealed class TransactionController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-
-        CreateTransactionRequest createRequest = BuildCreateRequest(
-            accountingPeriod, createTransactionModel, debitAccount, debitFundAmounts, creditAccount, creditFundAmounts);
-
-        if (!transactionService.TryCreate(createRequest, out Transaction? newTransaction, out IEnumerable<Exception> exceptions))
+        if (!transactionRequestMapper.TryToCreateRequest(accountingPeriod, createTransactionModel, out CreateTransactionRequest? createRequest, out Dictionary<string, string[]> mappingErrors))
         {
-            errors.Add(nameof(CreateTransactionModel.AccountingPeriodId), exceptions.OfType<InvalidAccountingPeriodException>().Select(e => e.Message).ToArray());
-            errors.Add(nameof(CreateTransactionModel.Date), exceptions.OfType<InvalidDateException>().Select(e => e.Message).ToArray());
-            errors.Add($"{nameof(CreateTransactionModel.DebitAccount)}.{nameof(CreateTransactionAccountModel.AccountId)}",
-                exceptions.OfType<InvalidAccountException>().Where(e => e.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase)).Select(e => e.Message).ToArray());
-            errors.Add($"{nameof(CreateTransactionModel.DebitAccount)}.{nameof(CreateTransactionAccountModel.FundAmounts)}",
-                exceptions.OfType<InvalidFundAmountException>().Where(e => e.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase)).Select(e => e.Message).ToArray());
-            errors.Add($"{nameof(CreateTransactionModel.CreditAccount)}.{nameof(CreateTransactionAccountModel.AccountId)}",
-                exceptions.OfType<InvalidAccountException>().Where(e => e.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase)).Select(e => e.Message).ToArray());
-            errors.Add($"{nameof(CreateTransactionModel.CreditAccount)}.{nameof(CreateTransactionAccountModel.FundAmounts)}",
-                exceptions.OfType<InvalidFundAmountException>().Where(e => e.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase)).Select(e => e.Message).ToArray());
+            MergeErrors(errors, mappingErrors);
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to create Transaction.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        if (!transactionDispatcherService.TryCreate(createRequest, out Transaction? newTransaction, out IEnumerable<Exception> exceptions))
+        {
+            MergeErrors(errors, GroupCreateExceptions(createTransactionModel, exceptions));
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to create Transaction.",
@@ -159,41 +103,6 @@ public sealed class TransactionController(
         {
             errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
         }
-
-        List<FundAmount> debitFundAmounts = [];
-        if (updateTransactionModel.DebitAccount != null)
-        {
-            foreach ((int index, CreateFundAmountModel fundAmountModel) in updateTransactionModel.DebitAccount.FundAmounts.Index())
-            {
-                if (!fundAmountMapper.TryToDomain(fundAmountModel, out FundAmount? fundAmount))
-                {
-                    errors.Add($"{nameof(updateTransactionModel.DebitAccount)}.{nameof(updateTransactionModel.DebitAccount.FundAmounts)}[{index}]",
-                        [$"Fund with ID {fundAmountModel.FundId} was not found."]);
-                }
-                else
-                {
-                    debitFundAmounts.Add(fundAmount);
-                }
-            }
-        }
-
-        List<FundAmount> creditFundAmounts = [];
-        if (updateTransactionModel.CreditAccount != null)
-        {
-            foreach ((int index, CreateFundAmountModel fundAmountModel) in updateTransactionModel.CreditAccount.FundAmounts.Index())
-            {
-                if (!fundAmountMapper.TryToDomain(fundAmountModel, out FundAmount? fundAmount))
-                {
-                    errors.Add($"{nameof(updateTransactionModel.CreditAccount)}.{nameof(updateTransactionModel.CreditAccount.FundAmounts)}[{index}]",
-                        [$"Fund with ID {fundAmountModel.FundId} was not found."]);
-                }
-                else
-                {
-                    creditFundAmounts.Add(fundAmount);
-                }
-            }
-        }
-
         if (errors.Count > 0 || transaction == null)
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
@@ -203,16 +112,19 @@ public sealed class TransactionController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-
-        UpdateTransactionRequest updateRequest = BuildUpdateRequest(transaction, updateTransactionModel, debitFundAmounts, creditFundAmounts);
-
-        if (!transactionService.TryUpdate(transaction, updateRequest, out IEnumerable<Exception> exceptions))
+        if (!transactionRequestMapper.TryToUpdateRequest(transaction, updateTransactionModel, out UpdateTransactionRequest? updateRequest, out Dictionary<string, string[]> mappingErrors))
         {
-            errors.Add(nameof(UpdateTransactionModel.Date), exceptions.OfType<InvalidDateException>().Select(e => e.Message).ToArray());
-            errors.Add($"{nameof(UpdateTransactionModel.DebitAccount)}.{nameof(UpdateTransactionAccountModel.FundAmounts)}",
-                exceptions.OfType<InvalidFundAmountException>().Where(e => e.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase)).Select(e => e.Message).ToArray());
-            errors.Add($"{nameof(UpdateTransactionModel.CreditAccount)}.{nameof(UpdateTransactionAccountModel.FundAmounts)}",
-                exceptions.OfType<InvalidFundAmountException>().Where(e => e.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase)).Select(e => e.Message).ToArray());
+            MergeErrors(errors, mappingErrors);
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to update Transaction.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        if (!transactionDispatcherService.TryUpdate(transaction, updateRequest, out IEnumerable<Exception> exceptions))
+        {
+            MergeErrors(errors, GroupUpdateExceptions(updateTransactionModel, exceptions));
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to update Transaction.",
@@ -250,7 +162,7 @@ public sealed class TransactionController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!transactionService.TryPost(
+        if (!transactionDispatcherService.TryPost(
                 transaction,
                 account.Id,
                 postTransactionModel.Date,
@@ -295,7 +207,7 @@ public sealed class TransactionController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!transactionService.TryUnpost(transaction, out IEnumerable<Exception> exceptions))
+        if (!transactionDispatcherService.TryUnpost(transaction, out IEnumerable<Exception> exceptions))
         {
             errors.Add("", exceptions.Select(exception => exception.Message).ToArray());
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
@@ -330,7 +242,7 @@ public sealed class TransactionController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!transactionService.TryDelete(transaction, null, out IEnumerable<Exception> exceptions))
+        if (!transactionDispatcherService.TryDelete(transaction, null, out IEnumerable<Exception> exceptions))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
@@ -345,151 +257,58 @@ public sealed class TransactionController(
         return NoContent();
     }
 
-    /// <summary>
-    /// Builds the appropriate concrete CreateTransactionRequest subtype based on the provided model
-    /// </summary>
-    private static CreateTransactionRequest BuildCreateRequest(
-        AccountingPeriod accountingPeriod,
-        CreateTransactionModel model,
-        Account? debitAccount,
-        List<FundAmount> debitFundAmounts,
-        Account? creditAccount,
-        List<FundAmount> creditFundAmounts)
+    private static Dictionary<string, string[]> GroupCreateExceptions(CreateTransactionModel model, IEnumerable<Exception> exceptions) =>
+        GroupExceptions(exceptions, exception => exception switch
+        {
+            InvalidAccountingPeriodException => nameof(CreateTransactionModel.AccountingPeriodId),
+            InvalidDateException => nameof(CreateTransactionModel.Date),
+            InvalidAmountException => nameof(CreateTransactionModel.Amount),
+            InvalidFundAmountException => model switch
+            {
+                CreateSpendingTransactionModel => nameof(CreateSpendingTransactionModel.FundAssignments),
+                CreateIncomeTransactionModel => nameof(CreateIncomeTransactionModel.FundAssignments),
+                _ => string.Empty
+            },
+            InvalidFundException invalidFundException when invalidFundException.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase) => nameof(CreateFundTransactionModel.DebitFundId),
+            InvalidFundException invalidFundException when invalidFundException.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase) => nameof(CreateFundTransactionModel.CreditFundId),
+            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase) => "DebitAccount",
+            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase) => "CreditAccount",
+            _ => string.Empty
+        });
+
+    private static Dictionary<string, string[]> GroupUpdateExceptions(UpdateTransactionModel model, IEnumerable<Exception> exceptions) =>
+        GroupExceptions(exceptions, exception => exception switch
+        {
+            InvalidDateException => nameof(UpdateTransactionModel.Date),
+            InvalidAmountException => nameof(UpdateTransactionModel.Amount),
+            InvalidFundAmountException => model switch
+            {
+                UpdateSpendingTransactionModel => nameof(UpdateSpendingTransactionModel.FundAssignments),
+                UpdateIncomeTransactionModel => nameof(UpdateIncomeTransactionModel.FundAssignments),
+                _ => string.Empty
+            },
+            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase) => "DebitAccount",
+            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase) => "CreditAccount",
+            _ => string.Empty
+        });
+
+    private static Dictionary<string, string[]> GroupExceptions(IEnumerable<Exception> exceptions, Func<Exception, string> keySelector) =>
+        exceptions
+            .GroupBy(keySelector)
+            .ToDictionary(group => group.Key, group => group.Select(exception => exception.Message).ToArray());
+
+    private static void MergeErrors(Dictionary<string, string[]> target, Dictionary<string, string[]> source)
     {
-        bool hasDebit = debitAccount != null;
-        bool hasCredit = creditAccount != null;
-        bool debitHasFunds = debitFundAmounts.Count > 0;
-        bool creditHasFunds = creditFundAmounts.Count > 0;
-
-        if (hasDebit && hasCredit && debitHasFunds)
+        foreach ((string key, string[] value) in source)
         {
-            return new CreateSpendingTransferTransactionRequest
+            if (target.TryGetValue(key, out string[]? existing))
             {
-                AccountingPeriodId = accountingPeriod.Id,
-                TransactionDate = model.Date,
-                Location = model.Location,
-                Description = model.Description,
-                Amount = model.DebitAccount!.FundAmounts.Sum(fa => fa.Amount),
-                Account = debitAccount!,
-                PostedDate = model.DebitAccount!.PostedDate,
-                FundAssignments = debitFundAmounts,
-                CreditAccount = creditAccount!,
-                CreditPostedDate = model.CreditAccount!.PostedDate,
-                IsInitialTransactionForAccount = false,
-            };
-        }
-        if (hasDebit && hasCredit && creditHasFunds)
-        {
-            return new CreateIncomeTransferTransactionRequest
+                target[key] = existing.Concat(value).ToArray();
+            }
+            else
             {
-                AccountingPeriodId = accountingPeriod.Id,
-                TransactionDate = model.Date,
-                Location = model.Location,
-                Description = model.Description,
-                Amount = model.CreditAccount!.FundAmounts.Sum(fa => fa.Amount),
-                Account = creditAccount!,
-                PostedDate = model.CreditAccount!.PostedDate,
-                IsInitialTransactionForAccount = false,
-                DebitAccount = debitAccount!,
-                DebitPostedDate = model.DebitAccount!.PostedDate,
-                FundAssignments = creditFundAmounts,
-            };
+                target.Add(key, value);
+            }
         }
-        if (hasDebit && hasCredit)
-        {
-            return new CreateTransferTransactionRequest
-            {
-                AccountingPeriodId = accountingPeriod.Id,
-                TransactionDate = model.Date,
-                Location = model.Location,
-                Description = model.Description,
-                Amount = 0,
-                DebitAccount = debitAccount!,
-                DebitPostedDate = model.DebitAccount!.PostedDate,
-                CreditAccount = creditAccount!,
-                CreditPostedDate = model.CreditAccount!.PostedDate,
-            };
-        }
-        if (hasDebit)
-        {
-            return new CreateSpendingTransactionRequest
-            {
-                AccountingPeriodId = accountingPeriod.Id,
-                TransactionDate = model.Date,
-                Location = model.Location,
-                Description = model.Description,
-                Amount = debitFundAmounts.Sum(fa => fa.Amount),
-                Account = debitAccount!,
-                PostedDate = model.DebitAccount!.PostedDate,
-                FundAssignments = debitFundAmounts,
-                IsInitialTransactionForAccount = false,
-            };
-        }
-        return new CreateIncomeTransactionRequest
-        {
-            AccountingPeriodId = accountingPeriod.Id,
-            TransactionDate = model.Date,
-            Location = model.Location,
-            Description = model.Description,
-            Amount = creditFundAmounts.Sum(fa => fa.Amount),
-            Account = creditAccount!,
-            PostedDate = model.CreditAccount!.PostedDate,
-            FundAssignments = creditFundAmounts,
-            IsInitialTransactionForAccount = false,
-        };
     }
-
-    /// <summary>
-    /// Builds the appropriate concrete UpdateTransactionRequest subtype based on the existing transaction type
-    /// </summary>
-    private static UpdateTransactionRequest BuildUpdateRequest(
-        Transaction transaction,
-        UpdateTransactionModel model,
-        List<FundAmount> debitFundAmounts,
-        List<FundAmount> creditFundAmounts) => transaction switch
-        {
-            SpendingTransferTransaction => new UpdateSpendingTransferTransactionRequest
-            {
-                TransactionDate = model.Date,
-                Location = model.Location,
-                Description = model.Description,
-                FundAssignments = debitFundAmounts,
-                PostedDate = model.DebitAccount?.PostedDate,
-                CreditPostedDate = model.CreditAccount?.PostedDate,
-            },
-            SpendingTransaction => new UpdateSpendingTransactionRequest
-            {
-                TransactionDate = model.Date,
-                Location = model.Location,
-                Description = model.Description,
-                FundAssignments = debitFundAmounts,
-                PostedDate = model.DebitAccount?.PostedDate,
-            },
-            IncomeTransferTransaction => new UpdateIncomeTransferTransactionRequest
-            {
-                TransactionDate = model.Date,
-                Location = model.Location,
-                Description = model.Description,
-                FundAssignments = creditFundAmounts,
-                PostedDate = model.CreditAccount?.PostedDate,
-                DebitPostedDate = model.DebitAccount?.PostedDate,
-            },
-            IncomeTransaction => new UpdateIncomeTransactionRequest
-            {
-                TransactionDate = model.Date,
-                Location = model.Location,
-                Description = model.Description,
-                FundAssignments = creditFundAmounts,
-                PostedDate = model.CreditAccount?.PostedDate,
-            },
-            TransferTransaction => new UpdateTransferTransactionRequest
-            {
-                TransactionDate = model.Date,
-                Location = model.Location,
-                Description = model.Description,
-                DebitPostedDate = model.DebitAccount?.PostedDate,
-                CreditPostedDate = model.CreditAccount?.PostedDate,
-            },
-            _ => throw new InvalidOperationException($"Unrecognized transaction type: {transaction.GetType().Name}")
-        };
 }

@@ -22,6 +22,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<FundGoalMapper>();
         _ = serviceCollection.AddScoped<FundAmountMapper>();
         _ = serviceCollection.AddScoped<FundBalanceMapper>();
+        _ = serviceCollection.AddScoped<TransactionRequestMapper>();
         _ = serviceCollection.AddScoped<TransactionMapper>();
     }
 }
