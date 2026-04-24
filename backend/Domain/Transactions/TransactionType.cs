@@ -11,19 +11,9 @@ public enum TransactionType
     Spending,
 
     /// <summary>
-    /// Spending Transfer Transaction
-    /// </summary>
-    SpendingTransfer,
-
-    /// <summary>
     /// Income Transaction
     /// </summary>
     Income,
-
-    /// <summary>
-    /// Income Transfer Transaction
-    /// </summary>
-    IncomeTransfer,
 
     /// <summary>
     /// Account Transaction

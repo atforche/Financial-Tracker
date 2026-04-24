@@ -2,6 +2,10 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
+using Domain.Transactions.Accounts;
+using Domain.Transactions.Funds;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -13,11 +17,9 @@ namespace Data.Transactions;
 internal sealed class TransactionConfiguration :
     IEntityTypeConfiguration<Transaction>,
     IEntityTypeConfiguration<SpendingTransaction>,
-    IEntityTypeConfiguration<SpendingTransferTransaction>,
     IEntityTypeConfiguration<IncomeTransaction>,
-    IEntityTypeConfiguration<IncomeTransferTransaction>,
-    IEntityTypeConfiguration<AccountTransferTransaction>,
-    IEntityTypeConfiguration<FundTransferTransaction>
+    IEntityTypeConfiguration<AccountTransaction>,
+    IEntityTypeConfiguration<FundTransaction>
 {
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<Transaction> builder)
@@ -30,23 +32,29 @@ internal sealed class TransactionConfiguration :
 
         builder.HasDiscriminator(transaction => transaction.Type)
             .HasValue<SpendingTransaction>(TransactionType.Spending)
-            .HasValue<SpendingTransferTransaction>(TransactionType.SpendingTransfer)
             .HasValue<IncomeTransaction>(TransactionType.Income)
-            .HasValue<IncomeTransferTransaction>(TransactionType.IncomeTransfer)
-            .HasValue<AccountTransferTransaction>(TransactionType.AccountTransfer)
-            .HasValue<FundTransferTransaction>(TransactionType.FundTransfer);
+            .HasValue<AccountTransaction>(TransactionType.Account)
+            .HasValue<FundTransaction>(TransactionType.Fund);
     }
 
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<SpendingTransaction> builder)
     {
-        builder.Property(t => t.AccountId)
-            .HasColumnName("SpendingTransaction_AccountId")
+        builder.Property(t => t.DebitAccountId)
+            .HasColumnName("SpendingTransaction_DebitAccountId")
             .HasConversion(id => id.Value, value => new AccountId(value));
-        builder.HasOne<Account>().WithMany().HasForeignKey(t => t.AccountId);
+        builder.HasOne<Account>().WithMany().HasForeignKey(t => t.DebitAccountId);
 
-        builder.Property(t => t.PostedDate)
-            .HasColumnName("SpendingTransaction_PostedDate");
+        builder.Property(t => t.DebitPostedDate)
+            .HasColumnName("SpendingTransaction_DebitPostedDate");
+
+        builder.Property(t => t.CreditAccountId)
+            .HasColumnName("SpendingTransaction_CreditAccountId")
+            .HasConversion(id => id == null ? (Guid?)null : id.Value, value => value == null ? null : new AccountId(value.Value));
+        builder.HasOne<Account>().WithMany().HasForeignKey(t => t.CreditAccountId);
+
+        builder.Property(t => t.CreditPostedDate)
+            .HasColumnName("SpendingTransaction_CreditPostedDate");
 
         builder.OwnsMany(t => t.FundAssignments, fundAssignment =>
         {
@@ -60,27 +68,23 @@ internal sealed class TransactionConfiguration :
     }
 
     /// <inheritdoc/>
-    public void Configure(EntityTypeBuilder<SpendingTransferTransaction> builder)
+    public void Configure(EntityTypeBuilder<IncomeTransaction> builder)
     {
         builder.Property(t => t.CreditAccountId)
-            .HasColumnName("SpendingTransferTransaction_CreditAccountId")
+            .HasColumnName("IncomeTransaction_CreditAccountId")
             .HasConversion(id => id.Value, value => new AccountId(value));
         builder.HasOne<Account>().WithMany().HasForeignKey(t => t.CreditAccountId);
 
         builder.Property(t => t.CreditPostedDate)
-            .HasColumnName("SpendingTransferTransaction_CreditPostedDate");
-    }
+            .HasColumnName("IncomeTransaction_CreditPostedDate");
 
-    /// <inheritdoc/>
-    public void Configure(EntityTypeBuilder<IncomeTransaction> builder)
-    {
-        builder.Property(t => t.AccountId)
-            .HasColumnName("IncomeTransaction_AccountId")
-            .HasConversion(id => id.Value, value => new AccountId(value));
-        builder.HasOne<Account>().WithMany().HasForeignKey(t => t.AccountId);
+        builder.Property(t => t.DebitAccountId)
+            .HasColumnName("IncomeTransaction_DebitAccountId")
+            .HasConversion(id => id == null ? (Guid?)null : id.Value, value => value == null ? null : new AccountId(value.Value));
+        builder.HasOne<Account>().WithMany().HasForeignKey(t => t.DebitAccountId);
 
-        builder.Property(t => t.PostedDate)
-            .HasColumnName("IncomeTransaction_PostedDate");
+        builder.Property(t => t.DebitPostedDate)
+            .HasColumnName("IncomeTransaction_DebitPostedDate");
 
         builder.OwnsMany(t => t.FundAssignments, fundAssignment =>
         {
@@ -99,23 +103,11 @@ internal sealed class TransactionConfiguration :
     }
 
     /// <inheritdoc/>
-    public void Configure(EntityTypeBuilder<IncomeTransferTransaction> builder)
-    {
-        builder.Property(t => t.DebitAccountId)
-            .HasColumnName("IncomeTransferTransaction_DebitAccountId")
-            .HasConversion(id => id.Value, value => new AccountId(value));
-        builder.HasOne<Account>().WithMany().HasForeignKey(t => t.DebitAccountId);
-
-        builder.Property(t => t.DebitPostedDate)
-            .HasColumnName("IncomeTransferTransaction_DebitPostedDate");
-    }
-
-    /// <inheritdoc/>
-    public void Configure(EntityTypeBuilder<AccountTransferTransaction> builder)
+    public void Configure(EntityTypeBuilder<AccountTransaction> builder)
     {
         builder.Property(t => t.DebitAccountId)
             .HasColumnName("AccountTransferTransaction_DebitAccountId")
-            .HasConversion(id => id.Value, value => new AccountId(value));
+            .HasConversion(id => id == null ? (Guid?)null : id.Value, value => value == null ? null : new AccountId(value.Value));
         builder.HasOne<Account>().WithMany().HasForeignKey(t => t.DebitAccountId);
 
         builder.Property(t => t.DebitPostedDate)
@@ -123,7 +115,7 @@ internal sealed class TransactionConfiguration :
 
         builder.Property(t => t.CreditAccountId)
             .HasColumnName("AccountTransferTransaction_CreditAccountId")
-            .HasConversion(id => id.Value, value => new AccountId(value));
+            .HasConversion(id => id == null ? (Guid?)null : id.Value, value => value == null ? null : new AccountId(value.Value));
         builder.HasOne<Account>().WithMany().HasForeignKey(t => t.CreditAccountId);
 
         builder.Property(t => t.CreditPostedDate)
@@ -131,7 +123,7 @@ internal sealed class TransactionConfiguration :
     }
 
     /// <inheritdoc/>
-    public void Configure(EntityTypeBuilder<FundTransferTransaction> builder)
+    public void Configure(EntityTypeBuilder<FundTransaction> builder)
     {
         builder.Property(t => t.DebitFundId)
             .HasColumnName("FundTransferTransaction_DebitFundId")

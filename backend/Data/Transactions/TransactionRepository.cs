@@ -3,6 +3,10 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
+using Domain.Transactions.Accounts;
+using Domain.Transactions.Funds;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data.Transactions;
@@ -24,20 +28,13 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     }
 
     /// <inheritdoc/>
-    public bool DoAnyTransactionsExistForAccount(Account account)
-    {
-        AccountId accountId = account.Id;
-        return databaseContext.Transactions.OfType<SpendingTransaction>()
-                   .Any(t => t.AccountId == accountId) ||
-               databaseContext.Transactions.OfType<SpendingTransferTransaction>()
-                   .Any(t => t.CreditAccountId == accountId) ||
-               databaseContext.Transactions.OfType<IncomeTransaction>()
-                   .Any(t => t.AccountId == accountId && t.Id != account.InitialTransaction) ||
-               databaseContext.Transactions.OfType<IncomeTransferTransaction>()
-                   .Any(t => t.DebitAccountId == accountId) ||
-               databaseContext.Transactions.OfType<AccountTransferTransaction>()
-                   .Any(t => t.DebitAccountId == accountId || t.CreditAccountId == accountId);
-    }
+    public bool DoAnyTransactionsExistForAccount(Account account) =>
+        databaseContext.Transactions.OfType<SpendingTransaction>()
+            .Any(t => t.DebitAccountId == account.Id || t.CreditAccountId == account.Id) ||
+        databaseContext.Transactions.OfType<IncomeTransaction>()
+            .Any(t => t.DebitAccountId == account.Id || t.CreditAccountId == account.Id) ||
+        databaseContext.Transactions.OfType<AccountTransaction>()
+            .Any(t => t.DebitAccountId == account.Id || t.CreditAccountId == account.Id);
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
@@ -46,7 +43,11 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     /// <inheritdoc/>
     public bool DoAnyTransactionsExistForFund(FundId fundId) =>
         databaseContext.Transactions.OfType<SpendingTransaction>()
-            .Any(t => t.FundAssignments.Any(f => f.FundId == fundId));
+            .Any(t => t.FundAssignments.Any(f => f.FundId == fundId)) ||
+        databaseContext.Transactions.OfType<IncomeTransaction>()
+            .Any(t => t.FundAssignments.Any(f => f.FundId == fundId)) ||
+        databaseContext.Transactions.OfType<FundTransaction>()
+            .Any(t => (t.DebitFundId == fundId) || (t.CreditFundId == fundId));
 
     /// <inheritdoc/>
     public Transaction GetById(TransactionId id) => databaseContext.Transactions.Single(transaction => transaction.Id == id);
@@ -66,9 +67,8 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     {
         string query = $"""
                         select Transactions.* from Transactions
-                        left join Accounts as Account1 on COALESCE(Transactions.SpendingTransaction_AccountId, Transactions.IncomeTransaction_AccountId) = Account1.Id
-                        left join Accounts as Account2 on COALESCE(Transactions.SpendingTransferTransaction_CreditAccountId, Transactions.TransferTransaction_CreditAccountId) = Account2.Id
-                        left join Accounts as Account3 on COALESCE(Transactions.IncomeTransferTransaction_DebitAccountId, Transactions.TransferTransaction_DebitAccountId) = Account3.Id
+                        left join Accounts as DebitAccount on COALESCE(Transactions.SpendingTransaction_DebitAccountId, Transactions.IncomeTransaction_DebitAccountId, Transactions.AccountTransaction_DebitAccountId) = DebitAccount.Id
+                        left join Accounts as CreditAccount on COALESCE(Transactions.SpendingTransaction_CreditAccountId, Transactions.IncomeTransaction_CreditAccountId, Transactions.AccountTransaction_CreditAccountId) = CreditAccount.Id
                         where Transactions.AccountingPeriodId = '{accountingPeriodId.Value.ToString().ToUpperInvariant()}'
                         """;
         if (request.Search is not null and not "")
@@ -77,10 +77,8 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
                         and (Transactions.Date like '%{request.Search}%' or
                             Transactions.Description like '%{request.Search}%' or 
                             Transactions.Location like '%{request.Search}%' or
-                            Account1.Name like '%{request.Search}%' or 
-                            Account2.Name like '%{request.Search}%' or
-                            Account3.Name like '%{request.Search}%' or
-                            Transactions.Amount like '%{request.Search}%')
+                            DebitAccount.Name like '%{request.Search}%' or 
+                            CreditAccount.Name like '%{request.Search}%')
                         """;
         }
 
@@ -125,12 +123,10 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     {
         string query = $"""
                         select Transactions.* from Transactions
-                        where (Transactions.SpendingTransaction_AccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or
-                               Transactions.IncomeTransaction_AccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or
-                               Transactions.SpendingTransferTransaction_CreditAccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or
-                               Transactions.TransferTransaction_CreditAccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or
-                               Transactions.IncomeTransferTransaction_DebitAccountId = '{account.Id.Value.ToString().ToUpperInvariant()}' or
-                               Transactions.TransferTransaction_DebitAccountId = '{account.Id.Value.ToString().ToUpperInvariant()}')
+                        where (
+                            COALESCE(Transactions.SpendingTransaction_DebitAccountId, Transactions.IncomeTransaction_DebitAccountId, Transactions.AccountTransaction_DebitAccountId) = '{account.Id.Value.ToString().ToUpperInvariant()}' or
+                            COALESCE(Transactions.SpendingTransaction_CreditAccountId, Transactions.IncomeTransaction_CreditAccountId, Transactions.AccountTransaction_CreditAccountId) = '{account.Id.Value.ToString().ToUpperInvariant()}'
+                        )
                         """;
         if (request.AccountingPeriodId != null)
         {
@@ -178,68 +174,9 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
 
         decimal GetChangeInBalance(Transaction transaction)
         {
-            bool isDebt = account.Type == AccountType.Debt;
-            AccountId accountId = account.Id;
-            if (transaction is SpendingTransferTransaction stt)
-            {
-                if (stt.AccountId == accountId && stt.CreditAccountId == accountId)
-                {
-                    return 0;
-                }
-                if (stt.AccountId == accountId)
-                {
-                    return isDebt ? transaction.Amount : -transaction.Amount;
-                }
-                if (stt.CreditAccountId == accountId)
-                {
-                    return isDebt ? -transaction.Amount : transaction.Amount;
-                }
-            }
-            else if (transaction is SpendingTransaction st)
-            {
-                if (st.AccountId == accountId)
-                {
-                    return isDebt ? transaction.Amount : -transaction.Amount;
-                }
-            }
-            else if (transaction is IncomeTransferTransaction itt)
-            {
-                if (itt.AccountId == accountId && itt.DebitAccountId == accountId)
-                {
-                    return 0;
-                }
-                if (itt.AccountId == accountId)
-                {
-                    return isDebt ? -transaction.Amount : transaction.Amount;
-                }
-                if (itt.DebitAccountId == accountId)
-                {
-                    return isDebt ? transaction.Amount : -transaction.Amount;
-                }
-            }
-            else if (transaction is IncomeTransaction it)
-            {
-                if (it.AccountId == accountId)
-                {
-                    return isDebt ? -transaction.Amount : transaction.Amount;
-                }
-            }
-            else if (transaction is AccountTransferTransaction trt)
-            {
-                if (trt.DebitAccountId == accountId && trt.CreditAccountId == accountId)
-                {
-                    return 0;
-                }
-                if (trt.DebitAccountId == accountId)
-                {
-                    return isDebt ? transaction.Amount : -transaction.Amount;
-                }
-                if (trt.CreditAccountId == accountId)
-                {
-                    return isDebt ? -transaction.Amount : transaction.Amount;
-                }
-            }
-            return 0;
+            var oldAccountBalance = new AccountBalance(account, 0, 0, 0);
+            AccountBalance newAccountBalance = transaction.ApplyToAccountBalance(oldAccountBalance);
+            return newAccountBalance.PostedBalance - oldAccountBalance.PostedBalance;
         }
     }
 
@@ -250,10 +187,18 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     {
         string query = $"""
                         select Transactions.* from Transactions
-                        where exists (
-                            select 1 from SpendingTransactionFundAmounts
-                            where SpendingTransactionFundAmounts.SpendingTransactionId = Transactions.Id
-                            and SpendingTransactionFundAmounts.FundId = '{fundId.Value.ToString().ToUpperInvariant()}')
+                        where 
+                            exists (
+                                select 1 from SpendingTransactionFundAmounts
+                                where SpendingTransactionFundAmounts.SpendingTransactionId = Transactions.Id
+                                and SpendingTransactionFundAmounts.FundId = '{fundId.Value.ToString().ToUpperInvariant()}')
+                            or exists (
+                                select 1 from IncomeTransactionFundAmounts
+                                where IncomeTransactionFundAmounts.IncomeTransactionId = Transactions.Id
+                                and IncomeTransactionFundAmounts.FundId = '{fundId.Value.ToString().ToUpperInvariant()}')
+                            or Transactions.FundTransaction_DebitFundId = '{fundId.Value.ToString().ToUpperInvariant()}'
+                            or Transactions.FundTransaction_CreditFundId = '{fundId.Value.ToString().ToUpperInvariant()}'
+                        )
                         """;
         if (request.AccountingPeriodId != null)
         {
@@ -301,11 +246,9 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
 
         decimal GetChangeInBalance(Transaction transaction)
         {
-            if (transaction is SpendingTransaction st)
-            {
-                return -(st.FundAssignments.FirstOrDefault(f => f.FundId == fundId)?.Amount ?? 0);
-            }
-            return 0;
+            var oldFundBalance = new FundBalance(fundId, 0, 0, 0);
+            FundBalance newFundBalance = transaction.ApplyToFundBalance(oldFundBalance);
+            return newFundBalance.PostedBalance - oldFundBalance.PostedBalance;
         }
     }
 
