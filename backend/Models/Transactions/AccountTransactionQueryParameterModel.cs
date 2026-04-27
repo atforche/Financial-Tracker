@@ -6,6 +6,11 @@ namespace Models.Transactions;
 public class AccountTransactionQueryParameterModel
 {
     /// <summary>
+    /// Accounting Period ID to filter the Transactions by
+    /// </summary>
+    public Guid? AccountingPeriodId { get; init; }
+
+    /// <summary>
     /// Search to apply to the results
     /// </summary>
     public string? Search { get; init; }

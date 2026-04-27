@@ -20,67 +20,12 @@ public class FundGoal : Entity<FundGoalId>
     /// <summary>
     /// Type for this Fund Goal
     /// </summary>
-    public FundGoalType GoalType
-    {
-        get;
-        internal set
-        {
-            field = value;
-            EvaluateGoal();
-        }
-    }
+    public FundGoalType GoalType { get; private set; }
 
     /// <summary>
     /// Target amount for this Fund Goal
     /// </summary>
-    public decimal GoalAmount
-    {
-        get;
-        internal set
-        {
-            field = value;
-            EvaluateGoal();
-        }
-    }
-
-    /// <summary>
-    /// Opening balance for this Fund Goal
-    /// </summary>
-    public decimal OpeningBalance
-    {
-        get;
-        internal set
-        {
-            field = value;
-            EvaluateGoal();
-        }
-    }
-
-    /// <summary>
-    /// Amount assigned for this Fund Goal
-    /// </summary>
-    public decimal AmountAssigned
-    {
-        get;
-        internal set
-        {
-            field = value;
-            EvaluateGoal();
-        }
-    }
-
-    /// <summary>
-    /// Pending amount assigned for this Fund Goal
-    /// </summary>
-    public decimal PendingAmountAssigned
-    {
-        get;
-        internal set
-        {
-            field = value;
-            EvaluateGoal();
-        }
-    }
+    public decimal GoalAmount { get; private set; }
 
     /// <summary>
     /// Remaining amount to assign for this Fund Goal
@@ -88,35 +33,19 @@ public class FundGoal : Entity<FundGoalId>
     public decimal RemainingAmountToAssign { get; private set; }
 
     /// <summary>
+    /// Remaining amount to assign for this Fund Goal including pending assigned amounts
+    /// </summary>
+    public decimal RemainingAmountToAssignIncludingPending { get; private set; }
+
+    /// <summary>
     /// Indicates whether the assignment goal has been met for this Fund Goal
     /// </summary>
     public bool IsAssignmentGoalMet { get; private set; }
 
     /// <summary>
-    /// Amount spent for this Fund Goal
+    /// Indicates whether the assignment goal has been met for this Fund Goal including pending assigned amounts
     /// </summary>
-    public decimal AmountSpent
-    {
-        get;
-        internal set
-        {
-            field = value;
-            EvaluateGoal();
-        }
-    }
-
-    /// <summary>
-    /// Pending amount spent for this Fund Goal
-    /// </summary>
-    public decimal PendingAmountSpent
-    {
-        get;
-        internal set
-        {
-            field = value;
-            EvaluateGoal();
-        }
-    }
+    public bool IsAssignmentGoalMetIncludingPending { get; private set; }
 
     /// <summary>
     /// Remaining amount to spend for this Fund Goal
@@ -124,22 +53,19 @@ public class FundGoal : Entity<FundGoalId>
     public decimal RemainingAmountToSpend { get; private set; }
 
     /// <summary>
+    /// Remaining amount to spend for this Fund Goal including pending spent amounts
+    /// </summary>
+    public decimal RemainingAmountToSpendIncludingPending { get; private set; }
+
+    /// <summary>
     /// Indicates whether the spending goal has been met for this Fund Goal
     /// </summary>
     public bool IsSpendingGoalMet { get; private set; }
 
     /// <summary>
-    /// Closing balance for this Fund Goal
+    /// Indicates whether the spending goal has been met for this Fund Goal including pending spent amounts
     /// </summary>
-    public decimal ClosingBalance
-    {
-        get;
-        internal set
-        {
-            field = value;
-            EvaluateGoal();
-        }
-    }
+    public bool IsSpendingGoalMetIncludingPending { get; private set; }
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -155,12 +81,50 @@ public class FundGoal : Entity<FundGoalId>
         AccountingPeriodId = accountingPeriodId;
         GoalType = goalType;
         GoalAmount = goalAmount;
-        OpeningBalance = 0;
-        AmountAssigned = 0;
-        PendingAmountAssigned = 0;
-        AmountSpent = 0;
-        PendingAmountSpent = 0;
-        ClosingBalance = 0;
+    }
+
+    /// <summary>
+    /// Updates this Fund Goal
+    /// </summary>
+    internal void UpdateGoal(FundGoalType fundGoalType, decimal goalAmount, AccountingPeriodFundBalanceHistory balanceHistory)
+    {
+        GoalType = fundGoalType;
+        GoalAmount = goalAmount;
+        EvaluateGoal(balanceHistory);
+    }
+
+    /// <summary>
+    /// Evaluates progress towards the goal
+    /// </summary>
+    internal void EvaluateGoal(AccountingPeriodFundBalanceHistory balanceHistory)
+    {
+        if (GoalType == FundGoalType.Monthly)
+        {
+            RemainingAmountToAssign = GoalAmount - balanceHistory.OpeningBalance - balanceHistory.AmountAssigned;
+            RemainingAmountToSpend = -1 * balanceHistory.ClosingBalance;
+        }
+        else if (GoalType == FundGoalType.Rolling)
+        {
+            RemainingAmountToAssign = GoalAmount - balanceHistory.AmountAssigned;
+            RemainingAmountToSpend = -1 * balanceHistory.ClosingBalance;
+        }
+        else if (GoalType == FundGoalType.Savings)
+        {
+            RemainingAmountToAssign = GoalAmount - balanceHistory.AmountAssigned;
+            RemainingAmountToSpend = 0;
+        }
+        else if (GoalType == FundGoalType.Debt)
+        {
+            RemainingAmountToAssign = GoalAmount - balanceHistory.AmountAssigned;
+            RemainingAmountToSpend = balanceHistory.ClosingBalance;
+        }
+        RemainingAmountToAssignIncludingPending = RemainingAmountToAssign - balanceHistory.PendingAmountAssigned;
+        RemainingAmountToSpendIncludingPending = RemainingAmountToSpend + balanceHistory.PendingAmountSpent;
+
+        IsAssignmentGoalMet = RemainingAmountToAssign >= 0;
+        IsAssignmentGoalMetIncludingPending = RemainingAmountToAssignIncludingPending >= 0;
+        IsSpendingGoalMet = RemainingAmountToSpend <= 0;
+        IsSpendingGoalMetIncludingPending = RemainingAmountToSpendIncludingPending <= 0;
     }
 
     /// <summary>
@@ -172,35 +136,6 @@ public class FundGoal : Entity<FundGoalId>
         Fund = null!;
         AccountingPeriodId = null!;
         GoalType = default;
-    }
-
-    /// <summary>
-    /// Evaluates progress towards the goal
-    /// </summary>
-    private void EvaluateGoal()
-    {
-        if (GoalType == FundGoalType.Monthly)
-        {
-            RemainingAmountToAssign = GoalAmount - OpeningBalance - AmountAssigned;
-            RemainingAmountToSpend = -1 * ClosingBalance;
-        }
-        else if (GoalType == FundGoalType.Rolling)
-        {
-            RemainingAmountToAssign = GoalAmount - AmountAssigned;
-            RemainingAmountToSpend = -1 * ClosingBalance;
-        }
-        else if (GoalType == FundGoalType.Savings)
-        {
-            RemainingAmountToAssign = GoalAmount - AmountAssigned;
-            RemainingAmountToSpend = 0;
-        }
-        else if (GoalType == FundGoalType.Debt)
-        {
-            RemainingAmountToAssign = GoalAmount - AmountAssigned;
-            RemainingAmountToSpend = ClosingBalance;
-        }
-        IsAssignmentGoalMet = RemainingAmountToAssign >= 0;
-        IsSpendingGoalMet = RemainingAmountToSpend <= 0;
     }
 }
 

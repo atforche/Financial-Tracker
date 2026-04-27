@@ -9,10 +9,11 @@ namespace Domain.Funds;
 /// Service for managing Funds
 /// </summary>
 public class FundService(
+    IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
     IFundRepository fundRepository,
+    IFundGoalRepository fundGoalRepository,
     ITransactionRepository transactionRepository,
-    AccountingPeriodBalanceService accountingPeriodBalanceService,
-    FundGoalService fundGoalService)
+    AccountingPeriodBalanceService accountingPeriodBalanceService)
 {
     /// <summary>
     /// Attempts to create a new Fund
@@ -41,13 +42,33 @@ public class FundService(
                 GoalType = request.GoalType.Value,
                 GoalAmount = request.GoalAmount.Value,
             };
-            if (!fundGoalService.TryCreate(createGoalRequest, out FundGoal? newFundGoal, out IEnumerable<Exception> goalExceptions))
+            if (!TryCreateGoal(createGoalRequest, out FundGoal? newFundGoal, out IEnumerable<Exception> goalExceptions))
             {
                 exceptions = exceptions.Concat(goalExceptions);
                 return false;
             }
             fundGoal = newFundGoal;
         }
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to create a new Fund Goal in a particular accounting period
+    /// </summary>
+    public bool TryCreateGoal(CreateFundGoalRequest request, [NotNullWhen(true)] out FundGoal? fundGoal, out IEnumerable<Exception> exceptions)
+    {
+        fundGoal = null;
+
+        if (!ValidateCreateGoal(request, out exceptions))
+        {
+            return false;
+        }
+        fundGoal = new FundGoal(
+            request.Fund,
+            request.AccountingPeriod.Id,
+            request.GoalType,
+            request.GoalAmount);
+        fundGoal.EvaluateGoal(GetAccountingPeriodBalanceHistory(fundGoal));
         return true;
     }
 
@@ -66,6 +87,26 @@ public class FundService(
     }
 
     /// <summary>
+    /// Attempts to update an existing Fund Goal
+    /// </summary>
+    public bool TryUpdateGoal(
+        FundGoal fundGoal,
+        FundGoalType goalType,
+        decimal goalAmount,
+        out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (!ValidateUpdateGoal(goalType, goalAmount, out IEnumerable<Exception> updateExceptions))
+        {
+            exceptions = exceptions.Concat(updateExceptions);
+            return false;
+        }
+        fundGoal.UpdateGoal(goalType, goalAmount, GetAccountingPeriodBalanceHistory(fundGoal));
+        return true;
+    }
+
+    /// <summary>
     /// Attempts to delete an existing Fund
     /// </summary>
     public bool TryDelete(Fund fund, out IEnumerable<Exception> exceptions)
@@ -76,6 +117,16 @@ public class FundService(
         }
         accountingPeriodBalanceService.DeleteFund(fund);
         fundRepository.Delete(fund);
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to delete an existing Fund Goal
+    /// </summary>
+    public bool TryDeleteGoal(FundGoal fundGoal, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+        fundGoalRepository.Delete(fundGoal);
         return true;
     }
 
@@ -128,6 +179,32 @@ public class FundService(
     }
 
     /// <summary>
+    /// Validates the provided request to create a fund goal
+    /// </summary>
+    private bool ValidateCreateGoal(CreateFundGoalRequest request, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (request.Fund.IsSystemFund)
+        {
+            exceptions = exceptions.Append(new InvalidFundException("The unassigned fund cannot have a fund goal."));
+        }
+        if (!request.AccountingPeriod.IsOpen)
+        {
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
+        }
+        if (fundGoalRepository.GetByFundAndAccountingPeriod(request.Fund.Id, request.AccountingPeriod.Id) != null)
+        {
+            exceptions = exceptions.Append(new InvalidFundException("A fund goal already exists for this fund and accounting period."));
+        }
+        if (request.GoalAmount <= 0)
+        {
+            exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than zero."));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
     /// Validates the provided information to update a fund
     /// </summary>
     private bool ValidateUpdate(Fund fund, string name, out IEnumerable<Exception> exceptions)
@@ -141,6 +218,24 @@ public class FundService(
         if (fund.IsSystemFund)
         {
             exceptions = exceptions.Append(new UnableToUpdateException("The unassigned fund cannot be updated."));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates the provided information to update a fund goal
+    /// </summary>
+    private static bool ValidateUpdateGoal(FundGoalType goalType, decimal goalAmount, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (!Enum.IsDefined(goalType))
+        {
+            exceptions = exceptions.Append(new InvalidFundGoalTypeException());
+        }
+        if (goalAmount <= 0)
+        {
+            exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than zero."));
         }
         return !exceptions.Any();
     }
@@ -162,4 +257,11 @@ public class FundService(
         }
         return !exceptions.Any();
     }
+
+    /// <summary>
+    /// Gets the Accounting Period Balance History for a given Fund Goal
+    /// </summary>
+    private AccountingPeriodFundBalanceHistory GetAccountingPeriodBalanceHistory(FundGoal fundGoal) =>
+        accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(fundGoal.AccountingPeriodId)
+                .FundBalances.Single(fund => fund.Id == fundGoal.Fund.Id);
 }

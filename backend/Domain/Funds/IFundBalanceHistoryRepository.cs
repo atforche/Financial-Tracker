@@ -35,7 +35,7 @@ public interface IFundBalanceHistoryRepository
     /// <summary>
     /// Gets all Fund Balance History entries later than the specified date and sequence number
     /// </summary>
-    IReadOnlyCollection<(FundBalanceHistory History, Transaction Transaction)> GetAllHistoriesLaterThan(FundId fundId, DateOnly historyDate, int sequence);
+    IReadOnlyCollection<FundBalanceHistory> GetAllHistoriesLaterThan(FundId fundId, DateOnly historyDate, int sequence);
 
     /// <summary>
     /// Adds the provided Fund Balance History to the repository

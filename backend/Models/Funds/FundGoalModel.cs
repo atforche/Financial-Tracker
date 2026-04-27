@@ -26,24 +26,9 @@ public class FundGoalModel
     public required FundGoalTypeModel GoalType { get; init; }
 
     /// <summary>
-    /// Opening balance for the Fund Goal
-    /// </summary>
-    public required decimal OpeningBalance { get; init; }
-
-    /// <summary>
     /// Goal amount for the Fund Goal
     /// </summary>
     public required decimal GoalAmount { get; init; }
-
-    /// <summary>
-    /// Amount assigned for the Fund Goal
-    /// </summary>
-    public required decimal AmountAssigned { get; init; }
-
-    /// <summary>
-    /// Pending amount assigned for the Fund Goal
-    /// </summary>
-    public required decimal PendingAmountAssigned { get; init; }
 
     /// <summary>
     /// Remaining amount to assign for the Fund Goal
@@ -51,19 +36,19 @@ public class FundGoalModel
     public required decimal RemainingAmountToAssign { get; init; }
 
     /// <summary>
+    /// Remaining amount to assign for the Fund Goal including pending assigned amounts
+    /// </summary>
+    public required decimal RemainingAmountToAssignIncludingPending { get; init; }
+
+    /// <summary>
     /// Whether the assignment goal has been met for the Fund Goal
     /// </summary>
     public required bool IsAssignmentGoalMet { get; init; }
 
     /// <summary>
-    /// Amount spent for the Fund Goal
+    /// Whether the assignment goal has been met for the Fund Goal including pending assigned amounts
     /// </summary>
-    public required decimal AmountSpent { get; init; }
-
-    /// <summary>
-    /// Pending amount spent for the Fund Goal
-    /// </summary>
-    public required decimal PendingAmountSpent { get; init; }
+    public required bool IsAssignmentGoalMetIncludingPending { get; init; }
 
     /// <summary>
     /// Remaining amount to spend for the Fund Goal
@@ -71,12 +56,17 @@ public class FundGoalModel
     public required decimal RemainingAmountToSpend { get; init; }
 
     /// <summary>
+    /// Remaining amount to spend for the Fund Goal including pending spent amounts
+    /// </summary>
+    public required decimal RemainingAmountToSpendIncludingPending { get; init; }
+
+    /// <summary>
     /// Whether the spending goal has been met for the Fund Goal
     /// </summary>
     public required bool IsSpendingGoalMet { get; init; }
 
     /// <summary>
-    /// Closing balance for the Fund Goal
+    /// Whether the spending goal has been met for the Fund Goal including pending spent amounts
     /// </summary>
-    public required decimal ClosingBalance { get; init; }
+    public required bool IsSpendingGoalMetIncludingPending { get; init; }
 }

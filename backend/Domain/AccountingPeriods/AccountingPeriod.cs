@@ -6,7 +6,7 @@ namespace Domain.AccountingPeriods;
 /// Entity class representing an Accounting Period
 /// </summary>
 /// <remarks>
-/// An Accounting Period represents a month-long period used to organize transactions and track balances and budgets.
+/// An Accounting Period represents a month-long period used to organize transactions and track balances and funds.
 /// </remarks>
 public class AccountingPeriod : Entity<AccountingPeriodId>
 {
@@ -34,7 +34,7 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
     /// Is Open flag for this Accounting Period
     /// </summary>
     /// <remarks>
-    /// Once an Accounting Period has been closed, no changes can be made to anything thats fall within 
+    /// Once an Accounting Period has been closed, no changes can be made to anything that falls within 
     /// that Accounting Period. Multiple Accounting Periods can be open at the same time, assuming all 
     /// the open periods represent a contiguous period of time. Only the earliest open period can be closed.
     /// </remarks>

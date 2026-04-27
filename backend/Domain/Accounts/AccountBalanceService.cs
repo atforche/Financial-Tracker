@@ -109,7 +109,7 @@ public class AccountBalanceService(
             }
             else
             {
-                DeleteExistingBalanceHistory(oldPostedHistory);
+                DeleteExistingBalanceHistory(transaction, oldPostedHistory);
                 accountBalanceHistoryRepository.Delete(oldPostedHistory);
             }
         }
@@ -122,7 +122,7 @@ public class AccountBalanceService(
     {
         foreach (AccountBalanceHistory balanceHistory in accountBalanceHistoryRepository.GetAllByTransactionId(transaction.Id))
         {
-            DeleteExistingBalanceHistory(balanceHistory);
+            DeleteExistingBalanceHistory(transaction, balanceHistory);
             accountBalanceHistoryRepository.Delete(balanceHistory);
         }
     }
@@ -133,27 +133,24 @@ public class AccountBalanceService(
     private void AddNewBalanceHistory(Transaction transaction, AccountId accountId, DateOnly date)
     {
         int sequence = accountBalanceHistoryRepository.GetNextSequenceForAccountAndDate(accountId, date);
-        AccountBalance existingBalance = GetExistingAccountBalanceAsOf(
-            accountRepository.GetById(accountId),
-            date,
-            sequence);
-        AccountBalance newBalance = transaction.ApplyToAccountBalance(existingBalance, date);
-        var newBalanceHistory = new AccountBalanceHistory(newBalance.Account,
+        Account account = accountRepository.GetById(accountId);
+        AccountBalance existingBalance = GetExistingAccountBalanceAsOf(account, date, sequence);
+        var newBalanceHistory = new AccountBalanceHistory(
+            account,
             transaction.Id,
             date,
             sequence,
-            newBalance);
+            transaction.ApplyToAccountBalance(existingBalance, date));
 
-        foreach ((AccountBalanceHistory history, Transaction existingTransaction) in accountBalanceHistoryRepository
+        foreach (AccountBalanceHistory history in accountBalanceHistoryRepository
             .GetAllHistoriesLaterThan(newBalanceHistory.Account.Id, newBalanceHistory.Date, newBalanceHistory.Sequence))
         {
             if (history.Date == newBalanceHistory.Date)
             {
                 history.Sequence += 1;
             }
-            AccountBalance updatedBalance = existingTransaction.ApplyToAccountBalance(newBalance, history.Date);
+            AccountBalance updatedBalance = transaction.ApplyToAccountBalance(history.ToAccountBalance(), date);
             history.Update(updatedBalance);
-            newBalance = updatedBalance;
         }
         accountBalanceHistoryRepository.Add(newBalanceHistory);
     }
@@ -165,37 +162,33 @@ public class AccountBalanceService(
     {
         AccountBalanceHistory existingHistory = accountBalanceHistoryRepository.GetEarliestByTransactionId(accountId, transaction.Id);
         AccountBalance existingBalance = GetExistingAccountBalanceAsOf(
-            accountRepository.GetById(accountId),
+            existingHistory.Account,
             existingHistory.Date,
             existingHistory.Sequence);
-        AccountBalance newBalance = transaction.ApplyToAccountBalance(existingBalance, existingHistory.Date);
-        existingHistory.Update(newBalance);
+        existingHistory.Update(transaction.ApplyToAccountBalance(existingBalance, existingHistory.Date));
 
-        foreach ((AccountBalanceHistory history, Transaction existingTransaction) in accountBalanceHistoryRepository
+        foreach (AccountBalanceHistory history in accountBalanceHistoryRepository
             .GetAllHistoriesLaterThan(existingHistory.Account.Id, existingHistory.Date, existingHistory.Sequence))
         {
-            AccountBalance updatedBalance = existingTransaction.ApplyToAccountBalance(newBalance, history.Date);
+            AccountBalance updatedBalance = transaction.ApplyToAccountBalance(history.ToAccountBalance(), history.Date);
             history.Update(updatedBalance);
-            newBalance = updatedBalance;
         }
     }
 
     /// <summary>
     /// Deletes an existing Account Balance History entry
     /// </summary>
-    private void DeleteExistingBalanceHistory(AccountBalanceHistory deletedBalanceHistory)
+    private void DeleteExistingBalanceHistory(Transaction transaction, AccountBalanceHistory deletedBalanceHistory)
     {
-        AccountBalance existingBalance = GetExistingAccountBalanceAsOf(deletedBalanceHistory.Account, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence);
-        foreach ((AccountBalanceHistory history, Transaction transaction) in accountBalanceHistoryRepository
+        foreach (AccountBalanceHistory history in accountBalanceHistoryRepository
             .GetAllHistoriesLaterThan(deletedBalanceHistory.Account.Id, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence + 1))
         {
             if (history.Date == deletedBalanceHistory.Date)
             {
                 history.Sequence -= 1;
             }
-            AccountBalance updatedBalance = transaction.ApplyToAccountBalance(existingBalance, history.Date);
+            AccountBalance updatedBalance = transaction.ApplyToAccountBalance(history.ToAccountBalance(), deletedBalanceHistory.Date, reverse: true);
             history.Update(updatedBalance);
-            existingBalance = updatedBalance;
         }
     }
 

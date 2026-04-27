@@ -1,4 +1,7 @@
-using Rest.Mappers;
+using Rest.AccountingPeriods;
+using Rest.Accounts;
+using Rest.Funds;
+using Rest.Transactions;
 
 namespace Rest;
 
@@ -13,16 +16,16 @@ public static class ServiceManager
     /// <param name="serviceCollection">Service Collection</param>
     public static void Register(IServiceCollection serviceCollection)
     {
-        _ = serviceCollection.AddScoped<AccountingPeriodMapper>();
-        _ = serviceCollection.AddScoped<AccountingPeriodAccountMapper>();
-        _ = serviceCollection.AddScoped<AccountingPeriodFundMapper>();
-        _ = serviceCollection.AddScoped<AccountMapper>();
-        _ = serviceCollection.AddScoped<AccountBalanceMapper>();
-        _ = serviceCollection.AddScoped<FundMapper>();
-        _ = serviceCollection.AddScoped<FundGoalMapper>();
-        _ = serviceCollection.AddScoped<FundAmountMapper>();
-        _ = serviceCollection.AddScoped<FundBalanceMapper>();
-        _ = serviceCollection.AddScoped<TransactionRequestMapper>();
-        _ = serviceCollection.AddScoped<TransactionMapper>();
+        _ = serviceCollection.AddScoped<AccountingPeriodConverter>();
+        _ = serviceCollection.AddScoped<AccountingPeriodAccountConverter>();
+        _ = serviceCollection.AddScoped<AccountingPeriodFundConverter>();
+        _ = serviceCollection.AddScoped<AccountConverter>();
+        _ = serviceCollection.AddScoped<AccountBalanceConverter>();
+        _ = serviceCollection.AddScoped<FundConverter>();
+        _ = serviceCollection.AddScoped<FundGoalConverter>();
+        _ = serviceCollection.AddScoped<FundAmountConverter>();
+        _ = serviceCollection.AddScoped<FundBalanceConverter>();
+        _ = serviceCollection.AddScoped<TransactionRequestConverter>();
+        _ = serviceCollection.AddScoped<TransactionConverter>();
     }
 }

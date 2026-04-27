@@ -6,6 +6,16 @@ namespace Domain.AccountingPeriods;
 public interface IAccountingPeriodRepository
 {
     /// <summary>
+    /// Gets all Accounting Periods in the repository.
+    /// </summary>
+    IReadOnlyCollection<AccountingPeriod> GetAll();
+
+    /// <summary>
+    /// Gets all the Accounting Periods that are currently open
+    /// </summary>
+    IReadOnlyCollection<AccountingPeriod> GetAllOpenPeriods();
+
+    /// <summary>
     /// Gets the Accounting Period with the specified ID.
     /// </summary>
     AccountingPeriod GetById(AccountingPeriodId id);
@@ -29,11 +39,6 @@ public interface IAccountingPeriodRepository
     /// Gets the previous Accounting Period for the Accounting Period with the specified ID
     /// </summary>
     AccountingPeriod? GetPreviousAccountingPeriod(AccountingPeriodId id);
-
-    /// <summary>
-    /// Gets all the Accounting Periods that are currently open
-    /// </summary>
-    IReadOnlyCollection<AccountingPeriod> GetAllOpenPeriods();
 
     /// <summary>
     /// Adds the provided Accounting Period to the repository

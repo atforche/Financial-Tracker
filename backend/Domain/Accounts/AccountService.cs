@@ -15,9 +15,7 @@ public class AccountService(
     IAccountRepository accountRepository,
     ITransactionRepository transactionRepository,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
-    AccountTransactionService accountTransactionService,
-    IncomeTransactionService incomeTransactionService,
-    SpendingTransactionService spendingTransactionService)
+    TransactionDispatcherService transactionDispatcherService)
 {
     /// <summary>
     /// Attempts to create a new Account
@@ -81,29 +79,10 @@ public class AccountService(
         if (account.InitialTransaction != null)
         {
             Transaction initialTransaction = transactionRepository.GetById(account.InitialTransaction);
-            if (initialTransaction is AccountTransaction accountTransaction)
+            if (!transactionDispatcherService.TryDelete(initialTransaction, account.Id, out IEnumerable<Exception> transactionExceptions))
             {
-                if (!accountTransactionService.TryDelete(accountTransaction, account.Id, out IEnumerable<Exception> transactionExceptions))
-                {
-                    exceptions = exceptions.Concat(transactionExceptions);
-                    return false;
-                }
-            }
-            else if (initialTransaction is IncomeTransaction incomeTransaction)
-            {
-                if (!incomeTransactionService.TryDelete(incomeTransaction, account.Id, out IEnumerable<Exception> transactionExceptions))
-                {
-                    exceptions = exceptions.Concat(transactionExceptions);
-                    return false;
-                }
-            }
-            else if (initialTransaction is SpendingTransaction spendingTransaction)
-            {
-                if (!spendingTransactionService.TryDelete(spendingTransaction, account.Id, out IEnumerable<Exception> transactionExceptions))
-                {
-                    exceptions = exceptions.Concat(transactionExceptions);
-                    return false;
-                }
+                exceptions = exceptions.Concat(transactionExceptions);
+                return false;
             }
         }
         accountingPeriodBalanceService.DeleteAccount(account);
@@ -123,10 +102,8 @@ public class AccountService(
             return true;
         }
 
-        Transaction? transaction;
-        if (!account.Type.IsTracked())
-        {
-            if (!accountTransactionService.TryCreate(new CreateAccountTransactionRequest
+        CreateTransactionRequest createRequest = !account.Type.IsTracked()
+            ? new CreateAccountTransactionRequest
             {
                 AccountingPeriodId = request.AccountingPeriod.Id,
                 TransactionDate = request.AddDate,
@@ -138,15 +115,9 @@ public class AccountService(
                 CreditAccount = account.Type.IsDebt() ? null : account,
                 CreditPostedDate = account.Type.IsDebt() ? null : request.AddDate,
                 GeneratedByAccountId = account.Id
-            }, out AccountTransaction? accountTransaction, out exceptions))
-            {
-                return false;
             }
-            transaction = accountTransaction;
-        }
-        else if (account.Type.IsDebt())
-        {
-            if (!spendingTransactionService.TryCreate(new CreateSpendingTransactionRequest
+            : account.Type.IsDebt()
+            ? new CreateSpendingTransactionRequest
             {
                 AccountingPeriodId = request.AccountingPeriod.Id,
                 TransactionDate = request.AddDate,
@@ -159,15 +130,8 @@ public class AccountService(
                 CreditPostedDate = null,
                 FundAssignments = request.InitialFundAssignments,
                 IsInitialTransactionForAccount = true
-            }, out SpendingTransaction? spendingTransaction, out exceptions))
-            {
-                return false;
             }
-            transaction = spendingTransaction;
-        }
-        else
-        {
-            if (!incomeTransactionService.TryCreate(new CreateIncomeTransactionRequest
+            : new CreateIncomeTransactionRequest
             {
                 AccountingPeriodId = request.AccountingPeriod.Id,
                 TransactionDate = request.AddDate,
@@ -180,17 +144,13 @@ public class AccountService(
                 DebitPostedDate = null,
                 FundAssignments = request.InitialFundAssignments,
                 IsInitialTransactionForAccount = true
-            }, out IncomeTransaction? incomeTransaction, out exceptions))
-            {
-                return false;
-            }
-            transaction = incomeTransaction;
-        }
-        account.InitialTransaction = transaction?.Id;
-        if (transaction != null)
+            };
+        if (!transactionDispatcherService.TryCreate(createRequest, out Transaction? transaction, out exceptions))
         {
-            transactionRepository.Add(transaction);
+            return false;
         }
+        account.InitialTransaction = transaction.Id;
+        transactionRepository.Add(transaction);
         return true;
     }
 

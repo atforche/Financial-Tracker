@@ -21,11 +21,6 @@ public class FundModel
     public required string Description { get; init; }
 
     /// <summary>
-    /// Whether the Fund is a system-defined fund
-    /// </summary>
-    public required bool IsSystemFund { get; init; }
-
-    /// <summary>
     /// Current Balance for the Fund
     /// </summary>
     public required FundBalanceModel CurrentBalance { get; init; }

@@ -25,7 +25,7 @@ internal sealed class AccountingPeriodBalanceHistoryConfiguration : IEntityTypeC
 
             builder.HasKey(accountBalance => accountBalance.Id);
             builder.Property(accountBalance => accountBalance.Id)
-                .HasConversion(accountBalanceId => accountBalanceId.Value, value => new AccountAccountingPeriodBalanceHistoryId(value));
+                .HasConversion(accountBalanceId => accountBalanceId.Value, value => new AccountingPeriodAccountBalanceHistoryId(value));
 
             builder.HasOne(accountBalance => accountBalance.Account).WithMany();
             builder.Navigation(accountBalance => accountBalance.Account).AutoInclude();
@@ -41,7 +41,7 @@ internal sealed class AccountingPeriodBalanceHistoryConfiguration : IEntityTypeC
 
             builder.HasKey(fundBalance => fundBalance.Id);
             builder.Property(fundBalance => fundBalance.Id)
-                .HasConversion(fundBalanceId => fundBalanceId.Value, value => new FundAccountingPeriodBalanceHistoryId(value));
+                .HasConversion(fundBalanceId => fundBalanceId.Value, value => new AccountingPeriodFundBalanceHistoryId(value));
 
             builder.HasOne(fundBalance => fundBalance.Fund).WithMany();
             builder.Navigation(fundBalance => fundBalance.Fund).AutoInclude();

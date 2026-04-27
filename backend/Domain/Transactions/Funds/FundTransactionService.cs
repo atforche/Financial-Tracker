@@ -13,14 +13,12 @@ public class FundTransactionService(
     AccountBalanceService accountBalanceService,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
-    FundGoalService fundGoalService,
     IAccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository) :
     TransactionService(
         accountBalanceService,
         accountingPeriodBalanceService,
         fundBalanceService,
-        fundGoalService,
         accountingPeriodRepository,
         transactionRepository)
 {

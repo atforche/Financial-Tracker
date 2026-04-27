@@ -48,10 +48,10 @@ public static class AccountTypeExtensions
     {
         AccountType.Standard => true,
         AccountType.CreditCard => true,
-        AccountType.Investment => true,
         AccountType.Debt => false,
-        AccountType.Retirement => false,
         AccountType.Escrow => false,
+        AccountType.Investment => false,
+        AccountType.Retirement => false,
         _ => throw new ArgumentOutOfRangeException(nameof(accountType), $"Not expected account type value: {accountType}"),
     };
 

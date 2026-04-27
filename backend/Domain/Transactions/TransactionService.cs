@@ -12,7 +12,6 @@ public abstract class TransactionService(
     AccountBalanceService accountBalanceService,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
-    FundGoalService fundGoalService,
     IAccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository)
 {
@@ -58,9 +57,9 @@ public abstract class TransactionService(
     /// </summary>
     protected void AddTransaction(Transaction transaction)
     {
+        accountingPeriodBalanceService.AddTransaction(transaction);
         accountBalanceService.AddTransaction(transaction);
         fundBalanceService.AddTransaction(transaction);
-        fundGoalService.AddTransaction(transaction);
         transactionRepository.Add(transaction);
     }
 
@@ -97,9 +96,9 @@ public abstract class TransactionService(
         transaction.Description = request.Description;
         transaction.Amount = request.Amount;
 
+        accountingPeriodBalanceService.UpdateTransaction(transaction);
         accountBalanceService.UpdateTransaction(transaction);
         fundBalanceService.UpdateTransaction(transaction);
-        fundGoalService.UpdateTransaction(transaction);
     }
 
     /// <summary>
@@ -144,7 +143,6 @@ public abstract class TransactionService(
         accountingPeriodBalanceService.PostTransaction(transaction, accountId);
         accountBalanceService.PostTransaction(transaction, accountId);
         fundBalanceService.PostTransaction(transaction, accountId);
-        fundGoalService.PostTransaction(transaction, accountId);
     }
 
     /// <summary>
@@ -173,7 +171,6 @@ public abstract class TransactionService(
         accountingPeriodBalanceService.UnpostTransaction(transaction);
         accountBalanceService.UnpostTransaction(transaction);
         fundBalanceService.UnpostTransaction(transaction);
-        fundGoalService.UnpostTransaction(transaction);
     }
 
     /// <summary>
@@ -199,9 +196,9 @@ public abstract class TransactionService(
     /// </summary>
     protected void DeleteTransaction(Transaction transaction)
     {
+        accountingPeriodBalanceService.DeleteTransaction(transaction);
         accountBalanceService.DeleteTransaction(transaction);
         fundBalanceService.DeleteTransaction(transaction);
-        fundGoalService.DeleteTransaction(transaction);
         TransactionRepository.Delete(transaction);
     }
 

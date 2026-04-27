@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using Domain.AccountingPeriods;
 using Domain.Funds;
 
@@ -45,99 +44,5 @@ public class FundGoalRepository(DatabaseContext databaseContext) : IFundGoalRepo
     {
         fundGoal = databaseContext.FundGoals.FirstOrDefault(goal => ((Guid)(object)goal.Fund.Id) == fundId && ((Guid)(object)goal.AccountingPeriodId) == accountingPeriodId);
         return fundGoal != null;
-    }
-
-    /// <summary>
-    /// Gets the Fund Goals for the provided Fund that match the specified criteria
-    /// </summary>
-    public PaginatedCollection<FundGoal> GetManyByFund(FundId fundId, GetFundGoalsRequest request)
-    {
-        var fundGoals = databaseContext.FundGoals
-            .Where(fundGoal => fundGoal.Fund.Id == fundId)
-            .ToList();
-
-        var accountingPeriods = databaseContext.AccountingPeriods
-            .Where(accountingPeriod => fundGoals.Select(fundGoal => fundGoal.AccountingPeriodId).Contains(accountingPeriod.Id))
-            .ToDictionary(accountingPeriod => accountingPeriod.Id);
-
-        if (!string.IsNullOrWhiteSpace(request.Search))
-        {
-            string search = request.Search.Trim();
-            fundGoals = fundGoals
-                .Where(fundGoal => DoesFundGoalMatchSearch(fundGoal, accountingPeriods[fundGoal.AccountingPeriodId], search))
-                .ToList();
-        }
-
-        fundGoals = SortFundGoals(fundGoals, accountingPeriods, request.Sort);
-
-        return new PaginatedCollection<FundGoal>
-        {
-            Items = GetPagedFundGoals(fundGoals, request.Limit, request.Offset),
-            TotalCount = fundGoals.Count,
-        };
-    }
-
-    /// <summary>
-    /// Determines whether the provided Fund Goal matches the provided search text
-    /// </summary>
-    private static bool DoesFundGoalMatchSearch(FundGoal fundGoal, AccountingPeriod accountingPeriod, string search) =>
-        MatchesSearch(accountingPeriod.Name, search) ||
-        MatchesSearch(accountingPeriod.Year.ToString(CultureInfo.InvariantCulture), search) ||
-        MatchesSearch(accountingPeriod.Month.ToString(CultureInfo.InvariantCulture), search) ||
-        MatchesSearch(fundGoal.GoalType.ToString(), search) ||
-        MatchesSearch(fundGoal.GoalAmount.ToString(CultureInfo.InvariantCulture), search);
-
-    /// <summary>
-    /// Determines whether the provided value matches the provided search text
-    /// </summary>
-    private static bool MatchesSearch(string value, string search) =>
-        value.Contains(search, StringComparison.InvariantCultureIgnoreCase);
-
-    /// <summary>
-    /// Sorts the provided Fund Goals according to the provided sort order
-    /// </summary>
-    private static List<FundGoal> SortFundGoals(
-        List<FundGoal> fundGoals,
-        Dictionary<AccountingPeriodId, AccountingPeriod> accountingPeriods,
-        FundGoalSortOrder? sort) =>
-        sort switch
-        {
-            null or FundGoalSortOrder.AccountingPeriod => fundGoals
-                .OrderBy(fundGoal => accountingPeriods[fundGoal.AccountingPeriodId].Year)
-                .ThenBy(fundGoal => accountingPeriods[fundGoal.AccountingPeriodId].Month)
-                .ThenBy(fundGoal => fundGoal.Id.Value)
-                .ToList(),
-            FundGoalSortOrder.AccountingPeriodDescending => fundGoals
-                .OrderByDescending(fundGoal => accountingPeriods[fundGoal.AccountingPeriodId].Year)
-                .ThenByDescending(fundGoal => accountingPeriods[fundGoal.AccountingPeriodId].Month)
-                .ThenBy(fundGoal => fundGoal.Id.Value)
-                .ToList(),
-            FundGoalSortOrder.GoalAmount => fundGoals
-                .OrderBy(fundGoal => fundGoal.GoalAmount)
-                .ThenBy(fundGoal => accountingPeriods[fundGoal.AccountingPeriodId].Year)
-                .ThenBy(fundGoal => accountingPeriods[fundGoal.AccountingPeriodId].Month)
-                .ToList(),
-            FundGoalSortOrder.GoalAmountDescending => fundGoals
-                .OrderByDescending(fundGoal => fundGoal.GoalAmount)
-                .ThenBy(fundGoal => accountingPeriods[fundGoal.AccountingPeriodId].Year)
-                .ThenBy(fundGoal => accountingPeriods[fundGoal.AccountingPeriodId].Month)
-                .ToList(),
-            _ => throw new ArgumentOutOfRangeException(nameof(sort), sort, null),
-        };
-
-    /// <summary>
-    /// Gets the paged collection of Fund Goals based on the provided request
-    /// </summary>
-    private static List<FundGoal> GetPagedFundGoals(List<FundGoal> sortedFundGoals, int? limit, int? offset)
-    {
-        if (offset != null)
-        {
-            sortedFundGoals = sortedFundGoals.Skip(offset.Value).ToList();
-        }
-        if (limit != null)
-        {
-            sortedFundGoals = sortedFundGoals.Take(limit.Value).ToList();
-        }
-        return sortedFundGoals;
     }
 }

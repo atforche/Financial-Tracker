@@ -6,13 +6,13 @@ namespace Domain.Funds;
 /// <summary>
 /// Service for managing Fund Balances
 /// </summary>
-public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistoryRepository)
+public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistoryRepository, ITransactionRepository transactionRepository)
 {
     /// <summary>
     /// Gets the current balance for the provided Account
     /// </summary>
     public FundBalance GetCurrentBalance(FundId fundId) =>
-        fundBalanceHistoryRepository.GetLatestForFund(fundId)?.ToFundBalance() ?? new FundBalance(fundId, 0, 0, 0);
+        fundBalanceHistoryRepository.GetLatestForFund(fundId)?.ToFundBalance() ?? new FundBalance(fundId, 0, 0, 0, 0, 0);
 
     /// <summary>
     /// Gets the Fund Balances prior to the provided Transaction
@@ -109,7 +109,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
                 }
                 else
                 {
-                    DeleteExistingBalanceHistory(oldPostedHistory);
+                    DeleteExistingBalanceHistory(transaction, oldPostedHistory);
                     fundBalanceHistoryRepository.Delete(oldPostedHistory);
                 }
             }
@@ -123,7 +123,7 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
     {
         foreach (FundBalanceHistory balanceHistory in fundBalanceHistoryRepository.GetAllByTransactionId(transaction.Id))
         {
-            DeleteExistingBalanceHistory(balanceHistory);
+            DeleteExistingBalanceHistory(transaction, balanceHistory);
             fundBalanceHistoryRepository.Delete(balanceHistory);
         }
     }
@@ -135,23 +135,33 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
     {
         int sequence = fundBalanceHistoryRepository.GetNextSequenceForFundAndDate(fund, date);
         FundBalance existingBalance = GetExistingFundBalanceAsOf(fund, date, sequence);
-        FundBalance newBalance = transaction.ApplyToFundBalance(existingBalance, date);
-        var newBalanceHistory = new FundBalanceHistory(newBalance.FundId,
+        var newBalanceHistory = new FundBalanceHistory(
+            fund,
             transaction.Id,
             date,
             sequence,
-            newBalance);
+            transaction.ApplyToFundBalance(existingBalance, date));
 
-        foreach ((FundBalanceHistory history, Transaction existingTransaction) in fundBalanceHistoryRepository
+        foreach (FundBalanceHistory history in fundBalanceHistoryRepository
             .GetAllHistoriesLaterThan(newBalanceHistory.FundId, newBalanceHistory.Date, newBalanceHistory.Sequence))
         {
             if (history.Date == newBalanceHistory.Date)
             {
                 history.Sequence += 1;
             }
-            FundBalance updatedBalance = existingTransaction.ApplyToFundBalance(newBalance, history.Date);
+            existingBalance = history.ToFundBalance();
+            FundBalance updatedBalance = transaction.ApplyToFundBalance(existingBalance, date);
+            if (transactionRepository.GetById(history.TransactionId).AccountingPeriodId != transaction.AccountingPeriodId)
+            {
+                updatedBalance = new FundBalance(
+                    history.FundId,
+                    updatedBalance.PostedBalance,
+                    existingBalance.AmountAssigned,
+                    existingBalance.PendingAmountAssigned,
+                    existingBalance.AmountSpent,
+                    existingBalance.PendingAmountSpent);
+            }
             history.Update(updatedBalance);
-            newBalance = updatedBalance;
         }
         fundBalanceHistoryRepository.Add(newBalanceHistory);
     }
@@ -163,32 +173,41 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
     {
         FundBalanceHistory existingHistory = fundBalanceHistoryRepository.GetEarliestByTransactionId(fund, transaction.Id);
         FundBalance existingBalance = GetExistingFundBalanceAsOf(fund, existingHistory.Date, existingHistory.Sequence);
-        FundBalance newBalance = transaction.ApplyToFundBalance(existingBalance, existingHistory.Date);
-        existingHistory.Update(newBalance);
+        existingHistory.Update(transaction.ApplyToFundBalance(existingBalance, existingHistory.Date));
 
-        foreach ((FundBalanceHistory history, Transaction existingTransaction) in fundBalanceHistoryRepository
+        foreach (FundBalanceHistory history in fundBalanceHistoryRepository
             .GetAllHistoriesLaterThan(existingHistory.FundId, existingHistory.Date, existingHistory.Sequence))
         {
-            FundBalance updatedBalance = existingTransaction.ApplyToFundBalance(newBalance, history.Date);
+            existingBalance = history.ToFundBalance();
+            FundBalance updatedBalance = transaction.ApplyToFundBalance(existingBalance, existingHistory.Date);
+            if (transactionRepository.GetById(history.TransactionId).AccountingPeriodId != transaction.AccountingPeriodId)
+            {
+                updatedBalance = new FundBalance(
+                    history.FundId,
+                    updatedBalance.PostedBalance,
+                    existingBalance.AmountAssigned,
+                    existingBalance.PendingAmountAssigned,
+                    existingBalance.AmountSpent,
+                    existingBalance.PendingAmountSpent);
+            }
             history.Update(updatedBalance);
-            newBalance = updatedBalance;
         }
     }
 
     /// <summary>
     /// Deletes an existing Fund Balance History entry
     /// </summary>
-    private void DeleteExistingBalanceHistory(FundBalanceHistory deletedBalanceHistory)
+    private void DeleteExistingBalanceHistory(Transaction transaction, FundBalanceHistory deletedBalanceHistory)
     {
         FundBalance existingBalance = GetExistingFundBalanceAsOf(deletedBalanceHistory.FundId, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence);
-        foreach ((FundBalanceHistory history, Transaction transaction) in fundBalanceHistoryRepository
+        foreach (FundBalanceHistory history in fundBalanceHistoryRepository
             .GetAllHistoriesLaterThan(deletedBalanceHistory.FundId, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence + 1))
         {
             if (history.Date == deletedBalanceHistory.Date)
             {
                 history.Sequence -= 1;
             }
-            FundBalance updatedBalance = transaction.ApplyToFundBalance(existingBalance, history.Date);
+            FundBalance updatedBalance = transaction.ApplyToFundBalance(existingBalance, deletedBalanceHistory.Date, reverse: true);
             history.Update(updatedBalance);
             existingBalance = updatedBalance;
         }
@@ -204,6 +223,6 @@ public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistory
         {
             return existingHistory.ToFundBalance();
         }
-        return new FundBalance(fundId, 0, 0, 0);
+        return new FundBalance(fundId, 0, 0, 0, 0, 0);
     }
 }

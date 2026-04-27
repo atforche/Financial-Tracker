@@ -21,12 +21,22 @@ public class FundBalanceModel
     public required decimal PostedBalance { get; init; }
 
     /// <summary>
-    /// Pending Amount Spent for the Fund Balance
+    /// Amount Assigned for the Fund Balance
     /// </summary>
-    public required decimal PendingAmountSpent { get; init; }
+    public required decimal AmountAssigned { get; init; }
 
     /// <summary>
     /// Pending Amount Assigned for the Fund Balance
     /// </summary>
     public required decimal PendingAmountAssigned { get; init; }
+
+    /// <summary>
+    /// Amount Spent for the Fund Balance
+    /// </summary>
+    public required decimal AmountSpent { get; init; }
+
+    /// <summary>
+    /// Pending Amount Spent for the Fund Balance
+    /// </summary>
+    public required decimal PendingAmountSpent { get; init; }
 }

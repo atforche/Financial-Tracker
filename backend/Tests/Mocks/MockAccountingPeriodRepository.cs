@@ -10,6 +10,9 @@ internal sealed class MockAccountingPeriodRepository : IAccountingPeriodReposito
     private readonly Dictionary<Guid, AccountingPeriod> _accountingPeriods = [];
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<AccountingPeriod> GetAll() => _accountingPeriods.Values.ToList();
+
+    /// <inheritdoc/>
     public AccountingPeriod GetById(AccountingPeriodId id) => _accountingPeriods[id.Value];
 
     /// <inheritdoc/>

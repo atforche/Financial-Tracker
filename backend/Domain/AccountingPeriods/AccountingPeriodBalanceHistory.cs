@@ -5,8 +5,8 @@ namespace Domain.AccountingPeriods;
 /// </summary>
 public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHistoryId>
 {
-    private List<AccountAccountingPeriodBalanceHistory> _accountBalances = [];
-    private List<FundAccountingPeriodBalanceHistory> _fundBalances = [];
+    private List<AccountingPeriodAccountBalanceHistory> _accountBalances = [];
+    private List<AccountingPeriodFundBalanceHistory> _fundBalances = [];
 
     /// <summary>
     /// Accounting Period for this Accounting Period Balance History
@@ -26,7 +26,7 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
     /// <summary>
     /// Account Balances for this Accounting Period Balance History
     /// </summary>
-    public IReadOnlyCollection<AccountAccountingPeriodBalanceHistory> AccountBalances
+    public IReadOnlyCollection<AccountingPeriodAccountBalanceHistory> AccountBalances
     {
         get => _accountBalances;
         internal set => _accountBalances = value.ToList();
@@ -35,7 +35,7 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
     /// <summary>
     /// Fund Balances for this Accounting Period Balance History
     /// </summary>
-    public IReadOnlyCollection<FundAccountingPeriodBalanceHistory> FundBalances
+    public IReadOnlyCollection<AccountingPeriodFundBalanceHistory> FundBalances
     {
         get => _fundBalances;
         internal set
@@ -51,8 +51,8 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
     /// </summary>
     internal AccountingPeriodBalanceHistory(
         AccountingPeriod accountingPeriod,
-        IEnumerable<AccountAccountingPeriodBalanceHistory> accountBalances,
-        IEnumerable<FundAccountingPeriodBalanceHistory> fundBalances)
+        IEnumerable<AccountingPeriodAccountBalanceHistory> accountBalances,
+        IEnumerable<AccountingPeriodFundBalanceHistory> fundBalances)
         : base(new AccountingPeriodBalanceHistoryId(Guid.NewGuid()))
     {
         AccountingPeriod = accountingPeriod;
