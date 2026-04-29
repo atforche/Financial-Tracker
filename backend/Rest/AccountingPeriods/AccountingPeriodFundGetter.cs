@@ -7,9 +7,7 @@ namespace Rest.AccountingPeriods;
 /// <summary>
 /// Class that handles retrieving Funds for an Accounting Period based on specified criteria
 /// </summary>
-public class AccountingPeriodFundGetter(
-    IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
-    AccountingPeriodFundConverter accountingPeriodFundConverter)
+public class AccountingPeriodFundGetter(IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository)
 {
     /// <summary>
     /// Gets the Funds within the specified Accounting Period that match the specified criteria
@@ -19,13 +17,12 @@ public class AccountingPeriodFundGetter(
         AccountingPeriodFundQueryParameterModel request)
     {
         AccountingPeriodBalanceHistory accountingPeriodBalanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriodId);
-        var results = accountingPeriodBalanceHistory.FundBalances.Select(accountingPeriodFundConverter.ToModel).ToList();
+        var results = accountingPeriodBalanceHistory.FundBalances.Select(AccountingPeriodFundConverter.ToModel).ToList();
 
         if (request.Search != null)
         {
             results = results.Where(fund =>
                 fund.Name.Contains(request.Search, StringComparison.OrdinalIgnoreCase) ||
-                (fund.Goal != null && fund.Goal.GoalType.ToString().Contains(request.Search, StringComparison.OrdinalIgnoreCase)) ||
                 fund.Description.Contains(request.Search, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
@@ -36,20 +33,6 @@ public class AccountingPeriodFundGetter(
         else if (request.Sort == AccountingPeriodFundSortOrderModel.NameDescending)
         {
             results = results.OrderByDescending(fund => fund.Name).ToList();
-        }
-        else if (request.Sort == AccountingPeriodFundSortOrderModel.GoalType)
-        {
-            results = results
-                .OrderBy(fund => fund.Goal?.GoalType)
-                .ThenBy(fund => fund.Name)
-                .ToList();
-        }
-        else if (request.Sort == AccountingPeriodFundSortOrderModel.GoalTypeDescending)
-        {
-            results = results
-                .OrderByDescending(fund => fund.Goal?.GoalType)
-                .ThenByDescending(fund => fund.Name)
-                .ToList();
         }
         else if (request.Sort == AccountingPeriodFundSortOrderModel.OpeningBalance)
         {

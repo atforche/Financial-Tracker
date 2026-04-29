@@ -16,16 +16,6 @@ public enum AccountingPeriodFundSortOrderModel
     NameDescending,
 
     /// <summary>
-    /// Funds are sorted by goal type in ascending order
-    /// </summary>
-    GoalType,
-
-    /// <summary>
-    /// Funds are sorted by goal type in descending order
-    /// </summary>
-    GoalTypeDescending,
-
-    /// <summary>
     /// Funds are sorted by opening balance in ascending order
     /// </summary>
     OpeningBalance,

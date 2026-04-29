@@ -3,6 +3,7 @@
  */
 enum ToggleState {
   Funds = "funds",
+  Goals = "goals",
   Accounts = "accounts",
   Transactions = "transactions",
 }

@@ -26,7 +26,7 @@ const Page = async function ({
   const { fundSearch, fundSort } = await searchParams;
 
   const apiClient = getApiClient();
-  const { data, error } = await apiClient.GET("/funds", {
+  const { data } = await apiClient.GET("/funds", {
     params: {
       query: {
         Search: fundSearch ?? "",
@@ -35,7 +35,7 @@ const Page = async function ({
     },
   });
   if (typeof data === "undefined") {
-    throw new Error(`Failed to fetch funds: ${error.detail}`);
+    throw new Error(`Failed to fetch funds`);
   }
 
   return (

@@ -18,10 +18,6 @@ interface PageProps {
   }>;
 }
 
-const formatAmount = function (value: number | null): string {
-  return value === null ? "-" : formatCurrency(value);
-};
-
 /**
  * Component that displays the view for a single account in the context of an accounting period.
  */
@@ -40,7 +36,7 @@ const Page = async function ({ params }: PageProps): Promise<JSX.Element> {
     },
   );
   const accountPromise = apiClient.GET(
-    "/accounts/{accountId}/{accountingPeriodId}",
+    "/accounting-periods/{accountingPeriodId}/accounts/{accountId}",
     {
       params: {
         path: {
@@ -66,8 +62,7 @@ const Page = async function ({ params }: PageProps): Promise<JSX.Element> {
   }
 
   const changeInPostedBalance =
-    accountData.closingBalance.postedBalance -
-    accountData.openingBalance.postedBalance;
+    accountData.closingBalance - accountData.openingBalance;
   const isPositiveChange = isPositiveChangeInBalance(
     accountData.type,
     changeInPostedBalance,
@@ -121,37 +116,13 @@ const Page = async function ({ params }: PageProps): Promise<JSX.Element> {
       <CaptionedFrame caption="Opening Balance">
         <CaptionedValue
           caption="Posted Balance"
-          value={formatCurrency(accountData.openingBalance.postedBalance)}
-        />
-        <CaptionedValue
-          caption="Available to Spend"
-          value={formatAmount(accountData.openingBalance.availableToSpend)}
-        />
-        <CaptionedValue
-          caption="Pending Debit"
-          value={formatCurrency(accountData.openingBalance.pendingDebitAmount)}
-        />
-        <CaptionedValue
-          caption="Pending Credit"
-          value={formatCurrency(accountData.openingBalance.pendingCreditAmount)}
+          value={formatCurrency(accountData.openingBalance)}
         />
       </CaptionedFrame>
       <CaptionedFrame caption="Closing Balance">
         <CaptionedValue
           caption="Posted Balance"
-          value={formatCurrency(accountData.closingBalance.postedBalance)}
-        />
-        <CaptionedValue
-          caption="Available to Spend"
-          value={formatAmount(accountData.closingBalance.availableToSpend)}
-        />
-        <CaptionedValue
-          caption="Pending Debit"
-          value={formatCurrency(accountData.closingBalance.pendingDebitAmount)}
-        />
-        <CaptionedValue
-          caption="Pending Credit"
-          value={formatCurrency(accountData.closingBalance.pendingCreditAmount)}
+          value={formatCurrency(accountData.closingBalance)}
         />
         <CaptionedValue
           caption="Change in Posted Balance"

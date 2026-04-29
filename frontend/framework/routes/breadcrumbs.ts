@@ -125,7 +125,10 @@ const transactionDetail = function (
 
   if (context.accountingPeriod && context.account) {
     return [
-      ...accountingPeriodAccountDetail(context.accountingPeriod, context.account),
+      ...accountingPeriodAccountDetail(
+        context.accountingPeriod,
+        context.account,
+      ),
       {
         label: "Transaction",
         href,

@@ -47,17 +47,16 @@ const getChangeInBalance = function (
   fund: Fund,
   transaction: Transaction,
 ): number {
-  const transactionWithFundBalances = transaction as TransactionWithFundBalances;
+  const transactionWithFundBalances =
+    transaction as TransactionWithFundBalances;
   const previousBalance =
     transactionWithFundBalances.previousFundBalances?.find(
       (fundBalance) => fundBalance.fundId === fund.id,
-    )
-      ?.postedBalance ?? 0;
+    )?.postedBalance ?? 0;
   const newBalance =
     transactionWithFundBalances.newFundBalances?.find(
       (fundBalance) => fundBalance.fundId === fund.id,
-    )
-      ?.postedBalance ?? 0;
+    )?.postedBalance ?? 0;
   return newBalance - previousBalance;
 };
 

@@ -11,6 +11,16 @@ public class FundGoalModel
     public required Guid Id { get; init; }
 
     /// <summary>
+    /// Fund ID for the Fund Goal
+    /// </summary>
+    public required Guid FundId { get; init; }
+
+    /// <summary>
+    /// Fund name for the Fund Goal
+    /// </summary>
+    public required string FundName { get; init; }
+
+    /// <summary>
     /// Accounting Period ID for the Fund Goal
     /// </summary>
     public required Guid AccountingPeriodId { get; init; }

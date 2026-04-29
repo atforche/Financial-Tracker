@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json.Serialization;
+using Microsoft.OpenApi;
 using Models;
 using Serilog;
 
@@ -42,7 +43,25 @@ if (Rest.EnvironmentManager.ShouldLaunchAPI())
 }
 
 // Configure OpenAPI document generation
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    // Manually add the FundAmountModel schema to the OpenAPI document since it's not directly used as a request or response model
+    _ = options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Components?.Schemas?.Add("FundAmountModel", new OpenApiSchema
+        {
+            Type = JsonSchemaType.Object,
+            Properties = new Dictionary<string, IOpenApiSchema>
+            {
+                ["fundId"] = new OpenApiSchema { Type = JsonSchemaType.String, Format = "uuid" },
+                ["fundName"] = new OpenApiSchema { Type = JsonSchemaType.String },
+                ["amount"] = new OpenApiSchema { Type = JsonSchemaType.Number, Format = "decimal" }
+            },
+            Required = new HashSet<string> { "fundId", "fundName", "amount" }
+        });
+        return Task.CompletedTask;
+    });
+});
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
 {
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());

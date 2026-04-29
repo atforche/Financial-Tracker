@@ -101,7 +101,7 @@ const AccountListFrame = function ({
       name: "openingBalance",
       headerContent: "Opening Balance",
       getBodyContent: (account: AccountingPeriodAccount) =>
-        formatCurrency(account.openingBalance.postedBalance),
+        formatCurrency(account.openingBalance),
       sortType:
         currentSort === AccountingPeriodAccountSortOrder.OpeningBalance
           ? ColumnSortType.Ascending
@@ -125,7 +125,7 @@ const AccountListFrame = function ({
       name: "closingBalance",
       headerContent: "Closing Balance",
       getBodyContent: (account: AccountingPeriodAccount) =>
-        formatCurrency(account.closingBalance.postedBalance),
+        formatCurrency(account.closingBalance),
       sortType:
         currentSort === AccountingPeriodAccountSortOrder.ClosingBalance
           ? ColumnSortType.Ascending

@@ -26,9 +26,12 @@ const getRedirectUrl = function (
   providedAccountingPeriod: AccountingPeriod | null,
 ): string {
   if (providedAccountingPeriod !== null) {
-    return withQuery(routes.accountingPeriods.detail(providedAccountingPeriod.id), {
-      display: "accounts",
-    });
+    return withQuery(
+      routes.accountingPeriods.detail(providedAccountingPeriod.id),
+      {
+        display: "accounts",
+      },
+    );
   }
   return routes.accounts.index;
 };

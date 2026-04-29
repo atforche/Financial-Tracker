@@ -46,14 +46,28 @@ const Page = async function ({
       },
     },
   );
-  const fundPromise = apiClient.GET("/funds/{fundId}/{accountingPeriodId}", {
-    params: {
-      path: {
-        fundId,
-        accountingPeriodId: id,
+  const fundPromise = apiClient.GET(
+    "/accounting-periods/{accountingPeriodId}/funds/{fundId}",
+    {
+      params: {
+        path: {
+          fundId,
+          accountingPeriodId: id,
+        },
       },
     },
-  });
+  );
+  const fundGoalPromise = apiClient.GET(
+    "/accounting-periods/{accountingPeriodId}/fund-goals/{fundId}",
+    {
+      params: {
+        path: {
+          accountingPeriodId: id,
+          fundId,
+        },
+      },
+    },
+  );
   const fundTransactionsPromise = apiClient.GET(
     "/funds/{fundId}/transactions",
     {
@@ -72,29 +86,27 @@ const Page = async function ({
   const [
     { data: accountingPeriodData, error: accountingPeriodError },
     { data: fundData, error: fundError },
+    { data: fundGoalData, error: fundGoalError },
     { data: fundTransactionsData, error: fundTransactionsError },
   ] = await Promise.all([
     accountingPeriodPromise,
     fundPromise,
+    fundGoalPromise,
     fundTransactionsPromise,
   ]);
 
   if (
     typeof accountingPeriodData === "undefined" ||
     typeof fundData === "undefined" ||
+    typeof fundGoalData === "undefined" ||
     typeof fundTransactionsData === "undefined"
   ) {
     throw new Error(
-      `Failed to fetch fund with ID ${fundId} for accounting period with ID ${id}: ${accountingPeriodError?.detail ?? fundError?.detail ?? fundTransactionsError?.detail ?? "Unknown error"}`,
+      `Failed to fetch fund with ID ${fundId} for accounting period with ID ${id}: ${accountingPeriodError?.detail ?? fundError?.detail ?? fundGoalError?.detail ?? fundTransactionsError?.detail ?? "Unknown error"}`,
     );
   }
 
-  const changeInBalance =
-    fundData.closingBalance.postedBalance -
-    fundData.openingBalance.postedBalance;
-  const changeInBalanceColor = changeInBalance >= 0 ? "green" : "red";
-  const changeInBalanceFormatted = formatCurrency(Math.abs(changeInBalance));
-
+  const isSystemFund = fundData.name === "Unassigned";
   return (
     <Stack spacing={2}>
       <Stack
@@ -122,7 +134,7 @@ const Page = async function ({
             href={withQuery(routes.funds.update(fundId), {
               accountingPeriodId: id,
             })}
-            disabled={fundData.isSystemFund}
+            disabled={isSystemFund}
           >
             Edit
           </Button>
@@ -132,7 +144,7 @@ const Page = async function ({
             href={withQuery(routes.funds.delete(fundId), {
               accountingPeriodId: id,
             })}
-            disabled={fundData.isSystemFund}
+            disabled={isSystemFund}
           >
             Delete
           </Button>
@@ -145,25 +157,35 @@ const Page = async function ({
       <CaptionedFrame caption="Balance">
         <CaptionedValue
           caption="Opening Balance"
-          value={formatCurrency(fundData.openingBalance.postedBalance)}
+          value={formatCurrency(fundData.openingBalance)}
         />
         <CaptionedValue
-          caption="Change in Balance"
+          caption="Amount Assigned"
           value={
-            <span style={{ color: changeInBalanceColor }}>
-              {changeInBalance >= 0 ? "+" : "-"} {changeInBalanceFormatted}
+            <span style={{ color: "green" }}>
+              + {formatCurrency(fundData.amountAssigned)}
+            </span>
+          }
+        />
+        <CaptionedValue
+          caption="Amount Spent"
+          value={
+            <span style={{ color: "red" }}>
+              - {formatCurrency(fundData.amountSpent)}
             </span>
           }
         />
         <CaptionedValue
           caption="Closing Balance"
-          value={formatCurrency(fundData.closingBalance.postedBalance)}
+          value={formatCurrency(fundData.closingBalance)}
         />
       </CaptionedFrame>
       <CurrentGoalFrame
-        fund={fundData}
+        fundId={fundData.id}
+        fundGoal={fundGoalData}
         accountingPeriodId={id}
         isAccountingPeriodOpen={accountingPeriodData.isOpen}
+        isSystemFund={isSystemFund}
       />
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
         <Typography variant="h6">Transactions</Typography>

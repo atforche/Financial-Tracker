@@ -76,30 +76,10 @@ const FundListFrame = function ({
       },
     },
     {
-      name: "goalType",
-      headerContent: "Goal Type",
-      getBodyContent: (fund: AccountingPeriodFund) => fund.goalType ?? "-",
-      sortType:
-        currentSort === AccountingPeriodFundSortOrder.GoalType
-          ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodFundSortOrder.GoalTypeDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType: ColumnSortType | null): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodFundSortOrder.GoalType);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodFundSortOrder.GoalTypeDescending);
-        } else {
-          setSort(null);
-        }
-      },
-    },
-    {
       name: "openingBalance",
       headerContent: "Opening Balance",
       getBodyContent: (fund: AccountingPeriodFund) =>
-        formatCurrency(fund.openingBalance.postedBalance),
+        formatCurrency(fund.openingBalance),
       sortType:
         currentSort === AccountingPeriodFundSortOrder.OpeningBalance
           ? ColumnSortType.Ascending
@@ -170,7 +150,7 @@ const FundListFrame = function ({
       name: "closingBalance",
       headerContent: "Closing Balance",
       getBodyContent: (fund: AccountingPeriodFund) =>
-        formatCurrency(fund.closingBalance.postedBalance),
+        formatCurrency(fund.closingBalance),
       sortType:
         currentSort === AccountingPeriodFundSortOrder.ClosingBalance
           ? ColumnSortType.Ascending
@@ -189,14 +169,6 @@ const FundListFrame = function ({
       },
       alignment: "right",
       minWidth: 150,
-    },
-    {
-      name: "goalAmount",
-      headerContent: "Goal Amount",
-      getBodyContent: (fund: AccountingPeriodFund) =>
-        fund.goalAmount === null ? "-" : formatCurrency(fund.goalAmount),
-      alignment: "right",
-      minWidth: 130,
     },
     {
       name: "actions",

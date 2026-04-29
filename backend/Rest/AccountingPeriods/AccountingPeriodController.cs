@@ -7,6 +7,7 @@ using Domain.Funds;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.AccountingPeriods;
+using Models.Funds;
 using Models.Transactions;
 using Rest.Accounts;
 using Rest.Funds;
@@ -23,12 +24,13 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountingPeriodRepository accountingPeriodRepository,
     AccountingPeriodAccountGetter accountingPeriodAccountGetter,
     AccountingPeriodConverter accountingPeriodConverter,
-    AccountingPeriodFundConverter accountingPeriodFundConverter,
     AccountingPeriodFundGetter accountingPeriodFundGetter,
+    AccountingPeriodFundGoalGetter accountingPeriodFundGoalGetter,
     AccountingPeriodGetter accountingPeriodGetter,
     AccountingPeriodService accountingPeriodService,
     AccountingPeriodTransactionGetter accountingPeriodTransactionGetter,
     FundConverter fundConverter,
+    IFundGoalRepository fundGoalRepository,
     IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository) : ControllerBase
 {
     /// <summary>
@@ -132,7 +134,61 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        return Ok(accountingPeriodFundConverter.ToModel(fundBalanceHistory));
+        return Ok(AccountingPeriodFundConverter.ToModel(fundBalanceHistory));
+    }
+
+    /// <summary>
+    /// Retrieves the Fund Goals for the Accounting Period that match the specified criteria
+    /// </summary>
+    [HttpGet("{accountingPeriodId}/fund-goals")]
+    [ProducesResponseType(typeof(CollectionModel<FundGoalModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetManyFundGoals(Guid accountingPeriodId, [FromQuery] AccountingPeriodFundGoalQueryParameterModel queryParameters)
+    {
+        Dictionary<string, string[]> errors = [];
+        if (!accountingPeriodConverter.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
+        {
+            errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
+        }
+        if (errors.Count > 0 || accountingPeriod == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Accounting Period Fund Goals.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        return Ok(accountingPeriodFundGoalGetter.Get(accountingPeriod.Id, queryParameters));
+    }
+
+    /// <summary>
+    /// Retrieves the Fund Goal for the Accounting Period that matches the provided Fund ID
+    /// </summary>
+    [HttpGet("{accountingPeriodId}/fund-goals/{fundId}")]
+    [ProducesResponseType(typeof(FundGoalModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetFundGoal(Guid accountingPeriodId, Guid fundId)
+    {
+        Dictionary<string, string[]> errors = [];
+        if (!fundConverter.TryToDomain(fundId, out Fund? fund))
+        {
+            errors.Add(nameof(fundId), [$"Fund with ID {fundId} not found."]);
+        }
+        if (!accountingPeriodConverter.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
+        {
+            errors.Add(nameof(accountingPeriodId), [$"Accounting Period with ID {accountingPeriodId} not found."]);
+        }
+        if (errors.Count > 0 || fund == null || accountingPeriod == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Accounting Period Fund Goal.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        return Ok(fundGoalRepository.GetByFundAndAccountingPeriod(fund.Id, accountingPeriod.Id));
     }
 
     /// <summary>

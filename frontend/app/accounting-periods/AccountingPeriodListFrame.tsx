@@ -28,7 +28,6 @@ interface AccountingPeriodListFrameProps {
 /**
  * Component that provides a list of Accounting Period and makes the basic create, read, update, and delete
  * operations available on them.
- * @returns JSX element representing a list of Accounting Period with various action buttons.
  */
 const AccountingPeriodListFrame = function ({
   data,

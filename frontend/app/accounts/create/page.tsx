@@ -18,7 +18,7 @@ interface PageProps {
  */
 const getFundIdentifiers = async function (): Promise<FundIdentifier[]> {
   const apiClient = getApiClient();
-  const { data, error } = await apiClient.GET("/funds", {
+  const { data } = await apiClient.GET("/funds", {
     params: {
       query: {
         Search: "",
@@ -27,26 +27,23 @@ const getFundIdentifiers = async function (): Promise<FundIdentifier[]> {
     },
   });
   if (typeof data === "undefined") {
-    throw new Error(`Failed to fetch funds: ${error.detail}`);
+    throw new Error(`Failed to fetch funds`);
   }
 
   let funds = data.items;
   if (data.totalCount > data.items.length) {
-    const { data: allFunds, error: allFundsError } = await apiClient.GET(
-      "/funds",
-      {
-        params: {
-          query: {
-            Search: "",
-            Sort: null,
-            Limit: data.totalCount,
-            Offset: 0,
-          },
+    const { data: allFunds } = await apiClient.GET("/funds", {
+      params: {
+        query: {
+          Search: "",
+          Sort: null,
+          Limit: data.totalCount,
+          Offset: 0,
         },
       },
-    );
+    });
     if (typeof allFunds === "undefined") {
-      throw new Error(`Failed to fetch all funds: ${allFundsError.detail}`);
+      throw new Error(`Failed to fetch all funds`);
     }
     funds = allFunds.items;
   }

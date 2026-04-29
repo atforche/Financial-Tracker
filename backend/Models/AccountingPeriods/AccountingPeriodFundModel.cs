@@ -1,5 +1,3 @@
-using Models.Funds;
-
 namespace Models.AccountingPeriods;
 
 /// <summary>
@@ -41,9 +39,4 @@ public class AccountingPeriodFundModel
     /// Closing balance for the Fund
     /// </summary>
     public required decimal ClosingBalance { get; init; }
-
-    /// <summary>
-    /// Goal for the Fund for the Accounting Period
-    /// </summary>
-    public required FundGoalModel? Goal { get; init; }
 }

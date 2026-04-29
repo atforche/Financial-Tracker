@@ -1,4 +1,5 @@
 import {
+  AccountingPeriodFundGoalSortOrderModel,
   AccountingPeriodFundSortOrderModel,
   FundGoalSortOrderModel,
   FundGoalTypeModel,
@@ -66,6 +67,7 @@ export {
   type UpdateFundGoalRequest,
   type FundAmount,
   AccountingPeriodFundSortOrderModel as AccountingPeriodFundSortOrder,
+  AccountingPeriodFundGoalSortOrderModel as AccountingPeriodFundGoalSortOrder,
   FundGoalSortOrderModel as FundGoalSortOrder,
   FundGoalTypeModel as FundGoalType,
   FundSortOrderModel as FundSortOrder,

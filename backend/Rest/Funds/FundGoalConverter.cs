@@ -22,6 +22,8 @@ public sealed class FundGoalConverter(
         return new FundGoalModel
         {
             Id = fundGoal.Id.Value,
+            FundId = fundGoal.Fund.Id.Value,
+            FundName = fundGoal.Fund.Name,
             AccountingPeriodId = fundGoal.AccountingPeriodId.Value,
             AccountingPeriodName = accountingPeriod.Name,
             GoalType = FundGoalTypeConverter.ToModel(fundGoal.GoalType),

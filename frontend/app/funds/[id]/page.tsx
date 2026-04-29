@@ -70,6 +70,7 @@ const Page = async function ({
     );
   }
 
+  const isSystemFund = fundData.name === "Unassigned";
   return (
     <Stack spacing={2}>
       <Stack
@@ -89,7 +90,7 @@ const Page = async function ({
             variant="contained"
             color="primary"
             href={routes.funds.update(id)}
-            disabled={fundData.isSystemFund}
+            disabled={isSystemFund}
           >
             Edit
           </Button>
@@ -97,7 +98,7 @@ const Page = async function ({
             variant="contained"
             color="error"
             href={routes.funds.delete(id)}
-            disabled={fundData.isSystemFund}
+            disabled={isSystemFund}
           >
             Delete
           </Button>
