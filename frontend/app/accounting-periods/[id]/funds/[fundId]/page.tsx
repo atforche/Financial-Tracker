@@ -98,7 +98,6 @@ const Page = async function ({
   if (
     typeof accountingPeriodData === "undefined" ||
     typeof fundData === "undefined" ||
-    typeof fundGoalData === "undefined" ||
     typeof fundTransactionsData === "undefined"
   ) {
     throw new Error(
@@ -182,7 +181,7 @@ const Page = async function ({
       </CaptionedFrame>
       <CurrentGoalFrame
         fundId={fundData.id}
-        fundGoal={fundGoalData}
+        fundGoal={fundGoalData ?? null}
         accountingPeriodId={id}
         isAccountingPeriodOpen={accountingPeriodData.isOpen}
         isSystemFund={isSystemFund}

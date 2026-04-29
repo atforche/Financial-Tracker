@@ -121,10 +121,10 @@ public class FundGoal : Entity<FundGoalId>
         RemainingAmountToAssignIncludingPending = RemainingAmountToAssign - balanceHistory.PendingAmountAssigned;
         RemainingAmountToSpendIncludingPending = RemainingAmountToSpend + balanceHistory.PendingAmountSpent;
 
-        IsAssignmentGoalMet = RemainingAmountToAssign >= 0;
-        IsAssignmentGoalMetIncludingPending = RemainingAmountToAssignIncludingPending >= 0;
-        IsSpendingGoalMet = RemainingAmountToSpend <= 0;
-        IsSpendingGoalMetIncludingPending = RemainingAmountToSpendIncludingPending <= 0;
+        IsAssignmentGoalMet = RemainingAmountToAssign <= 0;
+        IsAssignmentGoalMetIncludingPending = RemainingAmountToAssignIncludingPending <= 0;
+        IsSpendingGoalMet = RemainingAmountToSpend >= 0;
+        IsSpendingGoalMetIncludingPending = RemainingAmountToSpendIncludingPending >= 0;
     }
 
     /// <summary>

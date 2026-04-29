@@ -57,7 +57,7 @@ const CurrentGoalFrame = function ({
               color="primary"
               href={routes.accountingPeriods.fundGoalUpdate(
                 accountingPeriodId,
-                fundGoal.id,
+                fundGoal.fundId,
               )}
               disabled={isSystemFund || !isAccountingPeriodOpen}
             >
@@ -68,7 +68,7 @@ const CurrentGoalFrame = function ({
               color="error"
               href={routes.accountingPeriods.fundGoalDelete(
                 accountingPeriodId,
-                fundGoal.id,
+                fundGoal.fundId,
               )}
               disabled={isSystemFund || !isAccountingPeriodOpen}
             >
@@ -91,10 +91,6 @@ const CurrentGoalFrame = function ({
       </Stack>
       {fundGoal !== null && (
         <>
-          <CaptionedValue
-            caption="Goal Amount"
-            value={formatCurrency(fundGoal.goalAmount)}
-          />
           <CaptionedValue
             caption="Remaining Amount to Assign"
             value={formatCurrency(fundGoal.remainingAmountToAssign)}

@@ -30,6 +30,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountingPeriodService accountingPeriodService,
     AccountingPeriodTransactionGetter accountingPeriodTransactionGetter,
     FundConverter fundConverter,
+    FundGoalConverter fundGoalConverter,
     IFundGoalRepository fundGoalRepository,
     IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository) : ControllerBase
 {
@@ -188,7 +189,10 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
-        return Ok(fundGoalRepository.GetByFundAndAccountingPeriod(fund.Id, accountingPeriod.Id));
+        FundGoal? fundGoal = fundGoalRepository.GetByFundAndAccountingPeriod(fund.Id, accountingPeriod.Id);
+        return fundGoal != null
+            ? Ok(fundGoalConverter.ToModel(fundGoal))
+            : Ok(null);
     }
 
     /// <summary>
