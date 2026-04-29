@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20260424210204_InitialCreate")]
+    [Migration("20260429164001_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -164,6 +164,12 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("AmountAssigned")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("AmountSpent")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateOnly>("Date")
                         .HasColumnType("TEXT");
 
@@ -198,15 +204,6 @@ namespace Data.Migrations
                     b.Property<Guid>("AccountingPeriodId")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("AmountAssigned")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("AmountSpent")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("ClosingBalance")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid>("FundId")
                         .HasColumnType("TEXT");
 
@@ -220,22 +217,25 @@ namespace Data.Migrations
                     b.Property<bool>("IsAssignmentGoalMet")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsAssignmentGoalMetIncludingPending")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsSpendingGoalMet")
                         .HasColumnType("INTEGER");
 
-                    b.Property<decimal>("OpeningBalance")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("PendingAmountAssigned")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("PendingAmountSpent")
-                        .HasColumnType("TEXT");
+                    b.Property<bool>("IsSpendingGoalMetIncludingPending")
+                        .HasColumnType("INTEGER");
 
                     b.Property<decimal>("RemainingAmountToAssign")
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("RemainingAmountToAssignIncludingPending")
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("RemainingAmountToSpend")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("RemainingAmountToSpendIncludingPending")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -402,7 +402,7 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsMany("Domain.AccountingPeriods.AccountAccountingPeriodBalanceHistory", "AccountBalances", b1 =>
+                    b.OwnsMany("Domain.AccountingPeriods.AccountingPeriodAccountBalanceHistory", "AccountBalances", b1 =>
                         {
                             b1.Property<Guid>("Id")
                                 .HasColumnType("TEXT");
@@ -430,7 +430,7 @@ namespace Data.Migrations
 
                             b1.HasIndex("AccountingPeriodId");
 
-                            b1.ToTable("AccountAccountingPeriodBalanceHistory");
+                            b1.ToTable("AccountingPeriodAccountBalanceHistory");
 
                             b1.HasOne("Domain.Accounts.Account", "Account")
                                 .WithMany()
@@ -452,7 +452,7 @@ namespace Data.Migrations
                             b1.Navigation("AccountingPeriod");
                         });
 
-                    b.OwnsMany("Domain.AccountingPeriods.FundAccountingPeriodBalanceHistory", "FundBalances", b1 =>
+                    b.OwnsMany("Domain.AccountingPeriods.AccountingPeriodFundBalanceHistory", "FundBalances", b1 =>
                         {
                             b1.Property<Guid>("Id")
                                 .HasColumnType("TEXT");
@@ -478,6 +478,12 @@ namespace Data.Migrations
                             b1.Property<decimal>("OpeningBalance")
                                 .HasColumnType("TEXT");
 
+                            b1.Property<decimal>("PendingAmountAssigned")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<decimal>("PendingAmountSpent")
+                                .HasColumnType("TEXT");
+
                             b1.HasKey("Id");
 
                             b1.HasIndex("AccountingPeriodBalanceHistoryId");
@@ -486,7 +492,7 @@ namespace Data.Migrations
 
                             b1.HasIndex("FundId");
 
-                            b1.ToTable("FundAccountingPeriodBalanceHistory");
+                            b1.ToTable("AccountingPeriodFundBalanceHistory");
 
                             b1.WithOwner()
                                 .HasForeignKey("AccountingPeriodBalanceHistoryId");

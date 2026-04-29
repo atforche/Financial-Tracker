@@ -20,7 +20,6 @@ namespace Rest.Transactions;
 /// </summary>
 public sealed class TransactionConverter(
     AccountBalanceService accountBalanceService,
-    AccountBalanceConverter accountBalanceConverter,
     FundBalanceService fundBalanceService,
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
@@ -129,8 +128,8 @@ public sealed class TransactionConverter(
             AccountType = AccountTypeConverter.ToModel(account.Type),
             Type = type,
             PostedDate = postedDate,
-            PreviousAccountBalance = accountBalanceConverter.ToModel(accountBalanceService.GetPreviousBalanceForTransaction(transaction, accountId)),
-            NewAccountBalance = accountBalanceConverter.ToModel(accountBalanceService.GetNewBalanceForTransaction(transaction, accountId)),
+            PreviousAccountBalance = AccountBalanceConverter.ToModel(accountBalanceService.GetPreviousBalanceForTransaction(transaction, accountId)),
+            NewAccountBalance = AccountBalanceConverter.ToModel(accountBalanceService.GetNewBalanceForTransaction(transaction, accountId)),
         };
     }
 

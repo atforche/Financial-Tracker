@@ -74,7 +74,7 @@ const AccountingPeriodListFrames = function ({
         }}
       >
         <ToggleButton value={ToggleState.Funds}>Funds</ToggleButton>
-        <ToggleButton value={ToggleState.Goals}>Fund Goals</ToggleButton>
+        <ToggleButton value={ToggleState.Goals}>Goals</ToggleButton>
         <ToggleButton value={ToggleState.Accounts}>Accounts</ToggleButton>
         <ToggleButton value={ToggleState.Transactions}>
           Transactions

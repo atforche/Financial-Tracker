@@ -11,7 +11,7 @@ public sealed class AccountBalanceConverter
     /// <summary>
     /// Converts the provided Account Balance to an Account Balance Model
     /// </summary>
-    public AccountBalanceModel ToModel(AccountBalance accountBalance) => new()
+    public static AccountBalanceModel ToModel(AccountBalance accountBalance) => new()
     {
         AccountId = accountBalance.Account.Id.Value,
         PostedBalance = accountBalance.PostedBalance,

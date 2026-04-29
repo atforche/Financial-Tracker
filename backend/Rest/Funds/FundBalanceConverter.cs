@@ -6,7 +6,7 @@ namespace Rest.Funds;
 /// <summary>
 /// Converter class that handles converting Fund Balances to Fund Balance Models
 /// </summary>
-public sealed class FundBalanceConverter()
+public sealed class FundBalanceConverter
 {
     /// <summary>
     /// Converts the provided Fund Balance to a Fund Balance Model
