@@ -263,5 +263,5 @@ public class FundService(
     /// </summary>
     private AccountingPeriodFundBalanceHistory GetAccountingPeriodBalanceHistory(FundGoal fundGoal) =>
         accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(fundGoal.AccountingPeriodId)
-                .FundBalances.Single(fund => fund.Id == fundGoal.Fund.Id);
+            .FundBalances.Single(fund => fund.Fund.Id == fundGoal.Fund.Id);
 }
