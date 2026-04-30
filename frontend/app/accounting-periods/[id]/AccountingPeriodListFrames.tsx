@@ -1,6 +1,5 @@
 "use client";
 
-import type { AccountingPeriodFund, FundGoal } from "@/data/fundTypes";
 import {
   Stack,
   ToggleButton,
@@ -11,8 +10,10 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AccountListFrame from "@/app/accounting-periods/[id]/AccountListFrame";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import type { AccountingPeriodAccount } from "@/data/accountTypes";
-import FundGoalListFrame from "@/app/accounting-periods/[id]/FundGoalListFrame";
+import type { AccountingPeriodFund } from "@/data/fundTypes";
 import FundListFrame from "@/app/accounting-periods/[id]/FundListFrame";
+import type { Goal } from "@/data/goalTypes";
+import GoalListFrame from "@/app/accounting-periods/[id]/GoalListFrame";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import ToggleState from "@/app/accounting-periods/[id]/toggleState";
@@ -27,8 +28,8 @@ interface AccountingPeriodListFramesProps {
   readonly accountingPeriod: AccountingPeriod;
   readonly fundData: AccountingPeriodFund[];
   readonly fundTotalCount: number;
-  readonly fundGoalData: FundGoal[];
-  readonly fundGoalTotalCount: number;
+  readonly goalData: Goal[];
+  readonly goalTotalCount: number;
   readonly accountData: AccountingPeriodAccount[];
   readonly accountTotalCount: number;
   readonly transactionData: Transaction[];
@@ -42,8 +43,8 @@ const AccountingPeriodListFrames = function ({
   accountingPeriod,
   fundData,
   fundTotalCount,
-  fundGoalData,
-  fundGoalTotalCount,
+  goalData,
+  goalTotalCount,
   accountData,
   accountTotalCount,
   transactionData,
@@ -94,12 +95,12 @@ const AccountingPeriodListFrames = function ({
         )}
         {currentDisplay === ToggleState.Goals && (
           <Stack spacing={2} sx={{ width: "100%" }}>
-            <Typography variant="h6">Fund Goals</Typography>
+            <Typography variant="h6">Goals</Typography>
             <SearchBar paramName="goalSearch" />
-            <FundGoalListFrame
+            <GoalListFrame
               accountingPeriod={accountingPeriod}
-              data={fundGoalData}
-              totalCount={fundGoalTotalCount}
+              data={goalData}
+              totalCount={goalTotalCount}
             />
           </Stack>
         )}

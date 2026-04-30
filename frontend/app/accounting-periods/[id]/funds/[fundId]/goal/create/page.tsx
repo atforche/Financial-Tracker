@@ -1,4 +1,4 @@
-import CreateFundGoalForm from "@/app/accounting-periods/[id]/funds/[fundId]/goal/create/CreateFundGoalForm";
+import CreateGoalForm from "@/app/accounting-periods/[id]/funds/[fundId]/goal/create/CreateGoalForm";
 import type { JSX } from "react";
 import getApiClient from "@/data/getApiClient";
 
@@ -13,7 +13,7 @@ interface PageProps {
 }
 
 /**
- * Component that displays the create fund goal view.
+ * Component that displays the create goal view.
  */
 const Page = async function ({ params }: PageProps): Promise<JSX.Element> {
   const { id, fundId } = await params;
@@ -47,10 +47,7 @@ const Page = async function ({ params }: PageProps): Promise<JSX.Element> {
   }
 
   return (
-    <CreateFundGoalForm
-      fund={fundData}
-      accountingPeriod={accountingPeriodData}
-    />
+    <CreateGoalForm fund={fundData} accountingPeriod={accountingPeriodData} />
   );
 };
 

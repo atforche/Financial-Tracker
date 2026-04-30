@@ -1,6 +1,6 @@
 "use server";
 
-import type { UpdateFundGoalRequest } from "@/data/fundTypes";
+import type { UpdateGoalRequest } from "@/data/goalTypes";
 import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/data/getApiClient";
 import { isApiError } from "@/data/apiError";
@@ -9,11 +9,10 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
- * Interface representing the state of updating a fund goal.
+ * Interface representing the state of updating a goal.
  */
 interface ActionState {
-  readonly fundId: string;
-  readonly accountingPeriodId: string;
+  readonly goalId: string;
   readonly redirectUrl: string;
   readonly errorTitle?: string | null;
   readonly goalTypeErrors?: string | null;
@@ -22,25 +21,21 @@ interface ActionState {
 }
 
 /**
- * Server action that updates a fund goal.
+ * Server action that updates a goal.
  */
-const updateFundGoal = async function (
-  { fundId, accountingPeriodId, redirectUrl }: ActionState,
-  request: UpdateFundGoalRequest,
+const updateGoal = async function (
+  { goalId, redirectUrl }: ActionState,
+  request: UpdateGoalRequest,
 ): Promise<ActionState> {
   const client = getApiClient();
-  const { error } = await client.POST(
-    "/funds/{fundId}/goals/{accountingPeriodId}",
-    {
-      params: {
-        path: {
-          fundId,
-          accountingPeriodId,
-        },
+  const { error } = await client.POST("/goals/{goalId}", {
+    params: {
+      path: {
+        goalId,
       },
-      body: request,
     },
-  );
+    body: request,
+  });
   if (error) {
     if (isApiError(error)) {
       let goalTypeErrorMessage = null;
@@ -49,12 +44,12 @@ const updateFundGoal = async function (
       for (const key of Object.keys(error.errors ?? {})) {
         if (
           key.toUpperCase() ===
-          nameof<UpdateFundGoalRequest>("goalType").toUpperCase()
+          nameof<UpdateGoalRequest>("goalType").toUpperCase()
         ) {
           goalTypeErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else if (
           key.toUpperCase() ===
-          nameof<UpdateFundGoalRequest>("goalAmount").toUpperCase()
+          nameof<UpdateGoalRequest>("goalAmount").toUpperCase()
         ) {
           goalAmountErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else {
@@ -62,8 +57,7 @@ const updateFundGoal = async function (
         }
       }
       return {
-        fundId,
-        accountingPeriodId,
+        goalId,
         redirectUrl,
         errorTitle: error.title ?? null,
         goalTypeErrors: goalTypeErrorMessage,
@@ -78,4 +72,4 @@ const updateFundGoal = async function (
   redirect(redirectUrl);
 };
 
-export default updateFundGoal;
+export default updateGoal;

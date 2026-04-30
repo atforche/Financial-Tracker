@@ -1,6 +1,6 @@
 "use server";
 
-import type { CreateFundGoalRequest } from "@/data/fundTypes";
+import type { CreateGoalRequest } from "@/data/goalTypes";
 import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/data/getApiClient";
 import { isApiError } from "@/data/apiError";
@@ -9,7 +9,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
- * Interface representing the state of creating a fund goal.
+ * Interface representing the state of creating a goal.
  */
 interface ActionState {
   readonly fundId: string;
@@ -22,19 +22,14 @@ interface ActionState {
 }
 
 /**
- * Server action that creates a fund goal.
+ * Server action that creates a goal.
  */
-const createFundGoal = async function (
+const createGoal = async function (
   { fundId, redirectUrl }: ActionState,
-  request: CreateFundGoalRequest,
+  request: CreateGoalRequest,
 ): Promise<ActionState> {
   const client = getApiClient();
-  const { error } = await client.POST("/funds/{fundId}/goals", {
-    params: {
-      path: {
-        fundId,
-      },
-    },
+  const { error } = await client.POST("/goals", {
     body: request,
   });
   if (error) {
@@ -46,19 +41,19 @@ const createFundGoal = async function (
       for (const key of Object.keys(error.errors ?? {})) {
         if (
           key.toUpperCase() ===
-          nameof<CreateFundGoalRequest>("accountingPeriodId").toUpperCase()
+          nameof<CreateGoalRequest>("accountingPeriodId").toUpperCase()
         ) {
           accountingPeriodErrorMessage = formatErrors(
             error.errors?.[key] ?? null,
           );
         } else if (
           key.toUpperCase() ===
-          nameof<CreateFundGoalRequest>("goalType").toUpperCase()
+          nameof<CreateGoalRequest>("goalType").toUpperCase()
         ) {
           goalTypeErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else if (
           key.toUpperCase() ===
-          nameof<CreateFundGoalRequest>("goalAmount").toUpperCase()
+          nameof<CreateGoalRequest>("goalAmount").toUpperCase()
         ) {
           goalAmountErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else {
@@ -82,4 +77,4 @@ const createFundGoal = async function (
   redirect(redirectUrl);
 };
 
-export default createFundGoal;
+export default createGoal;

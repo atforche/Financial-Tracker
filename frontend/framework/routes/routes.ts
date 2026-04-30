@@ -22,11 +22,11 @@ const routes = {
       `/accounting-periods/${accountingPeriodId}/accounts/${accountId}`,
     fundDetail: (accountingPeriodId: string, fundId: string): Route =>
       `/accounting-periods/${accountingPeriodId}/funds/${fundId}`,
-    fundGoalCreate: (accountingPeriodId: string, fundId: string): Route =>
+    goalCreate: (accountingPeriodId: string, fundId: string): Route =>
       `/accounting-periods/${accountingPeriodId}/funds/${fundId}/goal/create`,
-    fundGoalUpdate: (accountingPeriodId: string, fundId: string): Route =>
+    goalUpdate: (accountingPeriodId: string, fundId: string): Route =>
       `/accounting-periods/${accountingPeriodId}/funds/${fundId}/goal/update`,
-    fundGoalDelete: (accountingPeriodId: string, fundId: string): Route =>
+    goalDelete: (accountingPeriodId: string, fundId: string): Route =>
       `/accounting-periods/${accountingPeriodId}/funds/${fundId}/goal/delete`,
   },
   accounts: {

@@ -1,46 +1,46 @@
 "use client";
 
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
-import type { Fund, FundGoal } from "@/data/fundTypes";
 import { type JSX, startTransition, useActionState } from "react";
 import routes, { routeBreadcrumbs } from "@/framework/routes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import type { Fund } from "@/data/fundTypes";
+import type { Goal } from "@/data/goalTypes";
 import Link from "next/link";
-import deleteFundGoal from "@/app/accounting-periods/[id]/funds/[fundId]/goal/delete/deleteFundGoal";
+import deleteGoal from "@/app/accounting-periods/[id]/funds/[fundId]/goal/delete/deleteGoal";
 
 /**
- * Props for the DeleteFundGoalForm component.
+ * Props for the DeleteGoalForm component.
  */
-interface DeleteFundGoalFormProps {
+interface DeleteGoalFormProps {
   readonly fund: Fund;
-  readonly fundGoal: FundGoal;
+  readonly goal: Goal;
 }
 
 /**
- * Component that displays the form for deleting a fund goal.
+ * Component that displays the form for deleting a goal.
  */
-const DeleteFundGoalForm = function ({
+const DeleteGoalForm = function ({
   fund,
-  fundGoal,
-}: DeleteFundGoalFormProps): JSX.Element {
+  goal,
+}: DeleteGoalFormProps): JSX.Element {
   const redirectUrl = routes.accountingPeriods.fundDetail(
-    fundGoal.accountingPeriodId,
+    goal.accountingPeriodId,
     fund.id,
   );
-  const [state, action, pending] = useActionState(deleteFundGoal, {
-    fundId: fund.id,
-    accountingPeriodId: fundGoal.accountingPeriodId,
+  const [state, action, pending] = useActionState(deleteGoal, {
+    goalId: goal.id,
     redirectUrl,
   });
 
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={routeBreadcrumbs.accountingPeriods.fundGoalDelete(
+        breadcrumbs={routeBreadcrumbs.accountingPeriods.goalDelete(
           {
-            id: fundGoal.accountingPeriodId,
-            name: fundGoal.accountingPeriodName,
+            id: goal.accountingPeriodId,
+            name: goal.accountingPeriodName,
           },
           fund,
         )}
@@ -48,7 +48,7 @@ const DeleteFundGoalForm = function ({
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <Typography>
           Are you sure you want to delete the goal for{" "}
-          {fundGoal.accountingPeriodName}?
+          {goal.accountingPeriodName}?
         </Typography>
         <DialogActions>
           <Link href={redirectUrl} tabIndex={-1}>
@@ -75,4 +75,4 @@ const DeleteFundGoalForm = function ({
   );
 };
 
-export default DeleteFundGoalForm;
+export default DeleteGoalForm;

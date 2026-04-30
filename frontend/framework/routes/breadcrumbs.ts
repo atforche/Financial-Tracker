@@ -216,45 +216,36 @@ const routeBreadcrumbs = {
     },
     accountDetail: accountingPeriodAccountDetail,
     fundDetail: accountingPeriodFundDetail,
-    fundGoalCreate(
-      accountingPeriod: NamedEntity,
-      fund: NamedEntity,
-    ): Breadcrumb[] {
+    goalCreate(accountingPeriod: NamedEntity, fund: NamedEntity): Breadcrumb[] {
       return [
         ...accountingPeriodFundDetail(accountingPeriod, fund),
         {
           label: "Add Goal",
-          href: routes.accountingPeriods.fundGoalCreate(
+          href: routes.accountingPeriods.goalCreate(
             accountingPeriod.id,
             fund.id,
           ),
         },
       ];
     },
-    fundGoalUpdate(
-      accountingPeriod: NamedEntity,
-      fund: NamedEntity,
-    ): Breadcrumb[] {
+    goalUpdate(accountingPeriod: NamedEntity, fund: NamedEntity): Breadcrumb[] {
       return [
         ...accountingPeriodFundDetail(accountingPeriod, fund),
         {
           label: "Update Goal",
-          href: routes.accountingPeriods.fundGoalUpdate(
+          href: routes.accountingPeriods.goalUpdate(
             accountingPeriod.id,
             fund.id,
           ),
         },
       ];
     },
-    fundGoalDelete(
-      accountingPeriod: NamedEntity,
-      fund: NamedEntity,
-    ): Breadcrumb[] {
+    goalDelete(accountingPeriod: NamedEntity, fund: NamedEntity): Breadcrumb[] {
       return [
         ...accountingPeriodFundDetail(accountingPeriod, fund),
         {
           label: "Delete Goal",
-          href: routes.accountingPeriods.fundGoalDelete(
+          href: routes.accountingPeriods.goalDelete(
             accountingPeriod.id,
             fund.id,
           ),

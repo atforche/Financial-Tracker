@@ -7,36 +7,30 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
- * Interface representing the state of deleting a fund goal.
+ * Interface representing the state of deleting a goal.
  */
 interface ActionState {
-  readonly fundId: string;
-  readonly accountingPeriodId: string;
+  readonly goalId: string;
   readonly redirectUrl: string;
   readonly errorTitle?: string | null;
   readonly unmappedErrors?: string | null;
 }
 
 /**
- * Server action that deletes a fund goal.
+ * Server action that deletes a goal.
  */
-const deleteFundGoal = async function ({
-  fundId,
-  accountingPeriodId,
+const deleteGoal = async function ({
+  goalId,
   redirectUrl,
 }: ActionState): Promise<ActionState> {
   const client = getApiClient();
-  const { error } = await client.DELETE(
-    "/funds/{fundId}/goals/{accountingPeriodId}",
-    {
-      params: {
-        path: {
-          fundId,
-          accountingPeriodId,
-        },
+  const { error } = await client.DELETE("/goals/{goalId}", {
+    params: {
+      path: {
+        goalId,
       },
     },
-  );
+  });
   if (error) {
     if (isApiError(error)) {
       const unmappedErrors: (string | null)[] = [];
@@ -44,8 +38,7 @@ const deleteFundGoal = async function ({
         unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
       }
       return {
-        fundId,
-        accountingPeriodId,
+        goalId,
         redirectUrl,
         errorTitle: error.title ?? null,
         unmappedErrors: unmappedErrors.join(", ") || null,
@@ -58,4 +51,4 @@ const deleteFundGoal = async function ({
   redirect(redirectUrl);
 };
 
-export default deleteFundGoal;
+export default deleteGoal;

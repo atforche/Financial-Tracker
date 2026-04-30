@@ -1,32 +1,32 @@
 "use client";
 
 import { ComboBoxEntryField } from "@/framework/forms/ComboBoxEntryField";
-import { FundGoalType } from "@/data/fundTypes";
+import { GoalType } from "@/data/goalTypes";
 import type { JSX } from "react";
 
 /**
- * Props for the FundGoalTypeEntryField component.
+ * Props for the GoalTypeEntryField component.
  */
-interface FundGoalTypeEntryFieldProps {
+interface GoalTypeEntryFieldProps {
   readonly label: string;
-  readonly value: FundGoalType | null;
-  readonly setValue: (newValue: FundGoalType | null) => void;
+  readonly value: GoalType | null;
+  readonly setValue: (newValue: GoalType | null) => void;
   readonly errorMessage?: string | null;
 }
 
 /**
- * Component that presents the user with an entry field where they can select a Fund Goal Type.
+ * Component that presents the user with an entry field where they can select a Goal Type.
  */
-const FundGoalTypeEntryField = function ({
+const GoalTypeEntryField = function ({
   label,
   value,
   setValue,
   errorMessage = null,
-}: FundGoalTypeEntryFieldProps): JSX.Element {
+}: GoalTypeEntryFieldProps): JSX.Element {
   return (
-    <ComboBoxEntryField<FundGoalType>
+    <ComboBoxEntryField<GoalType>
       label={label}
-      options={Object.values(FundGoalType).map((goalType) => ({
+      options={Object.values(GoalType).map((goalType) => ({
         label: goalType,
         value: goalType,
       }))}
@@ -41,4 +41,4 @@ const FundGoalTypeEntryField = function ({
   );
 };
 
-export default FundGoalTypeEntryField;
+export default GoalTypeEntryField;

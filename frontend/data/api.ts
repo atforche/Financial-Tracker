@@ -283,6 +283,181 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/goals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves the Goal that matches the provided accounting period for the provided Fund */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["GetGoalModel"];
+                    "text/json": components["schemas"]["GetGoalModel"];
+                    "application/*+json": components["schemas"]["GetGoalModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GoalModel"];
+                        "application/json": components["schemas"]["GoalModel"];
+                        "text/json": components["schemas"]["GoalModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Creates a new Goal for the provided Fund with the provided properties */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateGoalModel"];
+                    "text/json": components["schemas"]["CreateGoalModel"];
+                    "application/*+json": components["schemas"]["CreateGoalModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GoalModel"];
+                        "application/json": components["schemas"]["GoalModel"];
+                        "text/json": components["schemas"]["GoalModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/goals/{goalId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Updates the provided Goal with the provided properties */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    goalId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateGoalModel"];
+                    "text/json": components["schemas"]["UpdateGoalModel"];
+                    "application/*+json": components["schemas"]["UpdateGoalModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GoalModel"];
+                        "application/json": components["schemas"]["GoalModel"];
+                        "text/json": components["schemas"]["GoalModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        /** Deletes the Goal with the provided Accounting Period ID for the provided Fund */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    goalId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/funds/{fundId}": {
         parameters: {
             query?: never;
@@ -542,226 +717,6 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/funds/{fundId}/goals": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves the Fund Goals for the Fund that match the specified criteria */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Search to apply to the results */
-                    Search?: string;
-                    /** @description Sort to apply to the results */
-                    Sort?: components["schemas"]["FundGoalSortOrderModel"];
-                    /** @description Maximum number of results to return */
-                    Limit?: number;
-                    /** @description Number of results to skip */
-                    Offset?: number;
-                };
-                header?: never;
-                path: {
-                    fundId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CollectionModelOfFundGoalModel"];
-                        "application/json": components["schemas"]["CollectionModelOfFundGoalModel"];
-                        "text/json": components["schemas"]["CollectionModelOfFundGoalModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Creates a new Fund Goal for the provided Fund with the provided properties */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    fundId: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateFundGoalModel"];
-                    "text/json": components["schemas"]["CreateFundGoalModel"];
-                    "application/*+json": components["schemas"]["CreateFundGoalModel"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["FundGoalModel"];
-                        "application/json": components["schemas"]["FundGoalModel"];
-                        "text/json": components["schemas"]["FundGoalModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/funds/{fundId}/goals/{accountingPeriodId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves the Fund Goal that matches the provided ID for the provided Fund */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    fundId: string;
-                    accountingPeriodId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["FundGoalModel"];
-                        "application/json": components["schemas"]["FundGoalModel"];
-                        "text/json": components["schemas"]["FundGoalModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Updates the provided Fund Goal with the provided properties */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    fundId: string;
-                    accountingPeriodId: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateFundGoalModel"];
-                    "text/json": components["schemas"]["UpdateFundGoalModel"];
-                    "application/*+json": components["schemas"]["UpdateFundGoalModel"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["FundGoalModel"];
-                        "application/json": components["schemas"]["FundGoalModel"];
-                        "text/json": components["schemas"]["FundGoalModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        /** Deletes the Fund Goal with the provided Accounting Period ID for the provided Fund */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    fundId: string;
-                    accountingPeriodId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
         options?: never;
         head?: never;
         patch?: never;
@@ -1377,21 +1332,21 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/accounting-periods/{accountingPeriodId}/fund-goals": {
+    "/accounting-periods/{accountingPeriodId}/goals": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Retrieves the Fund Goals for the Accounting Period that match the specified criteria */
+        /** Retrieves the Goals for the Accounting Period that match the specified criteria */
         get: {
             parameters: {
                 query?: {
                     /** @description Search string to apply to the results */
                     Search?: string;
                     /** @description Sort to apply to the results */
-                    Sort?: components["schemas"]["AccountingPeriodFundGoalSortOrderModel"];
+                    Sort?: components["schemas"]["AccountingPeriodGoalSortOrderModel"];
                     /** @description Maximum number of results to return */
                     Limit?: number;
                     /** @description Number of results to skip */
@@ -1411,9 +1366,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["CollectionModelOfFundGoalModel"];
-                        "application/json": components["schemas"]["CollectionModelOfFundGoalModel"];
-                        "text/json": components["schemas"]["CollectionModelOfFundGoalModel"];
+                        "text/plain": components["schemas"]["CollectionModelOfGoalModel"];
+                        "application/json": components["schemas"]["CollectionModelOfGoalModel"];
+                        "text/json": components["schemas"]["CollectionModelOfGoalModel"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -1437,14 +1392,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/accounting-periods/{accountingPeriodId}/fund-goals/{fundId}": {
+    "/accounting-periods/{accountingPeriodId}/goals/{fundId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Retrieves the Fund Goal for the Accounting Period that matches the provided Fund ID */
+        /** Retrieves the Goal for the Accounting Period that matches the provided Fund ID */
         get: {
             parameters: {
                 query?: never;
@@ -1463,9 +1418,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["FundGoalModel"];
-                        "application/json": components["schemas"]["FundGoalModel"];
-                        "text/json": components["schemas"]["FundGoalModel"];
+                        "text/plain": components["schemas"]["GoalModel"];
+                        "application/json": components["schemas"]["GoalModel"];
+                        "text/json": components["schemas"]["GoalModel"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -1820,8 +1775,6 @@ export interface components {
         };
         /** @enum {unknown} */
         AccountingPeriodAccountSortOrderModel: AccountingPeriodAccountSortOrderModel | null;
-        /** @enum {unknown} */
-        AccountingPeriodFundGoalSortOrderModel: AccountingPeriodFundGoalSortOrderModel | null;
         /** @description Model representing a Fund in the context of a specific Accounting Period */
         AccountingPeriodFundModel: {
             /**
@@ -1856,6 +1809,8 @@ export interface components {
         };
         /** @enum {unknown} */
         AccountingPeriodFundSortOrderModel: AccountingPeriodFundSortOrderModel | null;
+        /** @enum {unknown} */
+        AccountingPeriodGoalSortOrderModel: AccountingPeriodGoalSortOrderModel | null;
         /** @description Model representing an Accounting Period */
         AccountingPeriodModel: {
             /**
@@ -1956,9 +1911,9 @@ export interface components {
             totalCount: number;
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
-        CollectionModelOfFundGoalModel: {
+        CollectionModelOfFundModel: {
             /** @description The collection of items. */
-            items: components["schemas"]["FundGoalModel"][];
+            items: components["schemas"]["FundModel"][];
             /**
              * Format: int32
              * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
@@ -1966,9 +1921,9 @@ export interface components {
             totalCount: number;
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
-        CollectionModelOfFundModel: {
+        CollectionModelOfGoalModel: {
             /** @description The collection of items. */
-            items: components["schemas"]["FundModel"][];
+            items: components["schemas"]["GoalModel"][];
             /**
              * Format: int32
              * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
@@ -2035,21 +1990,6 @@ export interface components {
              */
             amount: number;
         };
-        /** @description Model representing a request to create a Fund Goal */
-        CreateFundGoalModel: {
-            /**
-             * Format: uuid
-             * @description Accounting Period that the Fund Goal is associated with
-             */
-            accountingPeriodId: string;
-            /** @description Goal type for the Fund Goal */
-            goalType: components["schemas"]["FundGoalTypeModel"];
-            /**
-             * Format: double
-             * @description Goal amount for the Fund Goal
-             */
-            goalAmount: number;
-        };
         /** @description Model representing a request to create a Fund */
         CreateFundModel: {
             /** @description Name for the Fund */
@@ -2061,12 +2001,26 @@ export interface components {
              * @description Accounting Period that the Fund is being added to
              */
             accountingPeriodId: string;
-            goalType?: null | components["schemas"]["FundGoalTypeModel"];
+        };
+        /** @description Model representing a request to create a Goal */
+        CreateGoalModel: {
+            /**
+             * Format: uuid
+             * @description Fund ID that the Goal is associated with
+             */
+            fundId: string;
+            /**
+             * Format: uuid
+             * @description Accounting Period that the Goal is associated with
+             */
+            accountingPeriodId: string;
+            /** @description Goal type for the Goal */
+            goalType: components["schemas"]["GoalTypeModel"];
             /**
              * Format: double
-             * @description Optional goal amount to create for the Fund in the selected Accounting Period
+             * @description Goal amount for the Goal
              */
-            goalAmount?: null | number;
+            goalAmount: number;
         };
         /** @description Model representing an account selection for create transaction requests. */
         CreateTransactionAccountModel: {
@@ -2243,67 +2197,6 @@ export interface components {
              */
             pendingAmountSpent: number;
         };
-        /** @description Model representing a Fund Goal */
-        FundGoalModel: {
-            /**
-             * Format: uuid
-             * @description ID for the Fund Goal
-             */
-            id: string;
-            /**
-             * Format: uuid
-             * @description Fund ID for the Fund Goal
-             */
-            fundId: string;
-            /** @description Fund name for the Fund Goal */
-            fundName: string;
-            /**
-             * Format: uuid
-             * @description Accounting Period ID for the Fund Goal
-             */
-            accountingPeriodId: string;
-            /** @description Accounting Period name for the Fund Goal */
-            accountingPeriodName: string;
-            /** @description Goal type for the Fund Goal */
-            goalType: components["schemas"]["FundGoalTypeModel"];
-            /**
-             * Format: double
-             * @description Goal amount for the Fund Goal
-             */
-            goalAmount: number;
-            /**
-             * Format: double
-             * @description Remaining amount to assign for the Fund Goal
-             */
-            remainingAmountToAssign: number;
-            /**
-             * Format: double
-             * @description Remaining amount to assign for the Fund Goal including pending assigned amounts
-             */
-            remainingAmountToAssignIncludingPending: number;
-            /** @description Whether the assignment goal has been met for the Fund Goal */
-            isAssignmentGoalMet: boolean;
-            /** @description Whether the assignment goal has been met for the Fund Goal including pending assigned amounts */
-            isAssignmentGoalMetIncludingPending: boolean;
-            /**
-             * Format: double
-             * @description Remaining amount to spend for the Fund Goal
-             */
-            remainingAmountToSpend: number;
-            /**
-             * Format: double
-             * @description Remaining amount to spend for the Fund Goal including pending spent amounts
-             */
-            remainingAmountToSpendIncludingPending: number;
-            /** @description Whether the spending goal has been met for the Fund Goal */
-            isSpendingGoalMet: boolean;
-            /** @description Whether the spending goal has been met for the Fund Goal including pending spent amounts */
-            isSpendingGoalMetIncludingPending: boolean;
-        };
-        /** @enum {unknown} */
-        FundGoalSortOrderModel: FundGoalSortOrderModel | null;
-        /** @enum {unknown} */
-        FundGoalTypeModel: FundGoalTypeModel | null;
         /** @description Model representing a Fund */
         FundModel: {
             /**
@@ -2322,6 +2215,81 @@ export interface components {
         FundSortOrderModel: FundSortOrderModel | null;
         /** @enum {unknown} */
         FundTransactionSortOrderModel: FundTransactionSortOrderModel | null;
+        /** @description Model representing a request to retrieve a specific Goal */
+        GetGoalModel: {
+            /**
+             * Format: uuid
+             * @description Fund ID for the Goal
+             */
+            fundId: string;
+            /**
+             * Format: uuid
+             * @description Accounting Period ID for the Goal
+             */
+            accountingPeriodId: string;
+        };
+        /** @description Model representing a Goal */
+        GoalModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Goal
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description Fund ID for the Goal
+             */
+            fundId: string;
+            /** @description Fund name for the Goal */
+            fundName: string;
+            /**
+             * Format: uuid
+             * @description Accounting Period ID for the Goal
+             */
+            accountingPeriodId: string;
+            /** @description Accounting Period name for the Goal */
+            accountingPeriodName: string;
+            /** @description Goal type for the Goal */
+            goalType: components["schemas"]["GoalTypeModel"];
+            /**
+             * Format: double
+             * @description Goal amount for the Goal
+             */
+            goalAmount: number;
+            /**
+             * Format: double
+             * @description Remaining amount to assign for the Goal
+             */
+            remainingAmountToAssign: number;
+            /**
+             * Format: double
+             * @description Remaining amount to assign for the Goal including pending assigned amounts
+             */
+            remainingAmountToAssignIncludingPending: number;
+            /** @description Whether the assignment goal has been met for the Goal */
+            isAssignmentGoalMet: boolean;
+            /** @description Whether the assignment goal has been met for the Goal including pending assigned amounts */
+            isAssignmentGoalMetIncludingPending: boolean;
+            /**
+             * Format: double
+             * @description Remaining amount to spend for the Goal
+             */
+            remainingAmountToSpend: number;
+            /**
+             * Format: double
+             * @description Remaining amount to spend for the Goal including pending spent amounts
+             */
+            remainingAmountToSpendIncludingPending: number;
+            /** @description Whether the spending goal has been met for the Goal */
+            isSpendingGoalMet: boolean;
+            /** @description Whether the spending goal has been met for the Goal including pending spent amounts */
+            isSpendingGoalMetIncludingPending: boolean;
+        };
+        /**
+         * @description Enum representing the different monthly Goal types
+         * @enum {unknown}
+         */
+        GoalTypeModel: GoalTypeModel;
         /** @description Model representing a request to post a Transaction */
         PostTransactionModel: {
             /**
@@ -2557,22 +2525,22 @@ export interface components {
             /** @description Name for the Account */
             name: string;
         };
-        /** @description Model representing a request to update a Fund Goal */
-        UpdateFundGoalModel: {
-            /** @description Goal type for the Fund Goal */
-            goalType: components["schemas"]["FundGoalTypeModel"];
-            /**
-             * Format: double
-             * @description Goal amount for the Fund Goal
-             */
-            goalAmount: number;
-        };
         /** @description Model representing a request to update a Fund */
         UpdateFundModel: {
             /** @description Name for the Fund */
             name: string;
             /** @description Description for the Fund */
             description: string;
+        };
+        /** @description Model representing a request to update a Goal */
+        UpdateGoalModel: {
+            /** @description Goal type for the Goal */
+            goalType: components["schemas"]["GoalTypeModel"];
+            /**
+             * Format: double
+             * @description Goal amount for the Goal
+             */
+            goalAmount: number;
         };
         /** @description Model representing an account posting update for a transaction. */
         UpdateTransactionAccountModel: {
@@ -2699,7 +2667,19 @@ export enum AccountingPeriodAccountSortOrderModel {
     ClosingBalance = "ClosingBalance",
     ClosingBalanceDescending = "ClosingBalanceDescending"
 }
-export enum AccountingPeriodFundGoalSortOrderModel {
+export enum AccountingPeriodFundSortOrderModel {
+    Name = "Name",
+    NameDescending = "NameDescending",
+    OpeningBalance = "OpeningBalance",
+    OpeningBalanceDescending = "OpeningBalanceDescending",
+    AmountAssigned = "AmountAssigned",
+    AmountAssignedDescending = "AmountAssignedDescending",
+    AmountSpent = "AmountSpent",
+    AmountSpentDescending = "AmountSpentDescending",
+    ClosingBalance = "ClosingBalance",
+    ClosingBalanceDescending = "ClosingBalanceDescending"
+}
+export enum AccountingPeriodGoalSortOrderModel {
     Name = "Name",
     NameDescending = "NameDescending",
     Type = "Type",
@@ -2714,18 +2694,6 @@ export enum AccountingPeriodFundGoalSortOrderModel {
     RemainingAmountToSpendDescending = "RemainingAmountToSpendDescending",
     IsSpendingGoalMet = "IsSpendingGoalMet",
     IsSpendingGoalMetDescending = "IsSpendingGoalMetDescending"
-}
-export enum AccountingPeriodFundSortOrderModel {
-    Name = "Name",
-    NameDescending = "NameDescending",
-    OpeningBalance = "OpeningBalance",
-    OpeningBalanceDescending = "OpeningBalanceDescending",
-    AmountAssigned = "AmountAssigned",
-    AmountAssignedDescending = "AmountAssignedDescending",
-    AmountSpent = "AmountSpent",
-    AmountSpentDescending = "AmountSpentDescending",
-    ClosingBalance = "ClosingBalance",
-    ClosingBalanceDescending = "ClosingBalanceDescending"
 }
 export enum AccountingPeriodSortOrderModel {
     Date = "Date",
@@ -2783,18 +2751,6 @@ export enum CreateTransactionModelCreateIncomeTransactionModelType {
 export enum CreateTransactionModelCreateSpendingTransactionModelType {
     Spending = "Spending"
 }
-export enum FundGoalSortOrderModel {
-    AccountingPeriod = "AccountingPeriod",
-    AccountingPeriodDescending = "AccountingPeriodDescending",
-    GoalAmount = "GoalAmount",
-    GoalAmountDescending = "GoalAmountDescending"
-}
-export enum FundGoalTypeModel {
-    Monthly = "Monthly",
-    Rolling = "Rolling",
-    Savings = "Savings",
-    Debt = "Debt"
-}
 export enum FundSortOrderModel {
     Name = "Name",
     NameDescending = "NameDescending",
@@ -2810,6 +2766,12 @@ export enum FundTransactionSortOrderModel {
     LocationDescending = "LocationDescending",
     ChangeInBalance = "ChangeInBalance",
     ChangeInBalanceDescending = "ChangeInBalanceDescending"
+}
+export enum GoalTypeModel {
+    Monthly = "Monthly",
+    Rolling = "Rolling",
+    Savings = "Savings",
+    Debt = "Debt"
 }
 export enum TransactionAccountTypeModel {
     Debit = "Debit",

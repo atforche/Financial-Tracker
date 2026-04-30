@@ -1,7 +1,7 @@
 import { Button, Stack, Typography } from "@mui/material";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
-import type { FundGoal } from "@/data/fundTypes";
+import type { Goal } from "@/data/goalTypes";
 import type { JSX } from "react";
 import formatCurrency from "@/framework/formatCurrency";
 import routes from "@/framework/routes";
@@ -11,7 +11,7 @@ import routes from "@/framework/routes";
  */
 interface CurrentGoalFrameProps {
   readonly fundId: string;
-  readonly fundGoal: FundGoal | null;
+  readonly goal: Goal | null;
   readonly accountingPeriodId: string;
   readonly isAccountingPeriodOpen: boolean;
   readonly isSystemFund: boolean;
@@ -22,7 +22,7 @@ interface CurrentGoalFrameProps {
  */
 const CurrentGoalFrame = function ({
   fundId,
-  fundGoal,
+  goal,
   accountingPeriodId,
   isAccountingPeriodOpen,
   isSystemFund,
@@ -36,28 +36,25 @@ const CurrentGoalFrame = function ({
         alignItems="center"
         sx={{ width: 1000 }}
       >
-        {fundGoal !== null ? (
+        {goal !== null ? (
           <Stack width={500}>
-            <CaptionedValue
-              caption="Goal Type"
-              value={fundGoal.goalType ?? "-"}
-            />
+            <CaptionedValue caption="Goal Type" value={goal.goalType} />
             <CaptionedValue
               caption="Goal Amount"
-              value={formatCurrency(fundGoal.goalAmount)}
+              value={formatCurrency(goal.goalAmount)}
             />
           </Stack>
         ) : (
           <Typography variant="subtitle1">No current goal.</Typography>
         )}
-        {fundGoal !== null ? (
+        {goal !== null ? (
           <Stack direction="row" spacing={1}>
             <Button
               variant="contained"
               color="primary"
-              href={routes.accountingPeriods.fundGoalUpdate(
+              href={routes.accountingPeriods.goalUpdate(
                 accountingPeriodId,
-                fundGoal.fundId,
+                goal.fundId,
               )}
               disabled={isSystemFund || !isAccountingPeriodOpen}
             >
@@ -66,9 +63,9 @@ const CurrentGoalFrame = function ({
             <Button
               variant="contained"
               color="error"
-              href={routes.accountingPeriods.fundGoalDelete(
+              href={routes.accountingPeriods.goalDelete(
                 accountingPeriodId,
-                fundGoal.fundId,
+                goal.fundId,
               )}
               disabled={isSystemFund || !isAccountingPeriodOpen}
             >
@@ -79,7 +76,7 @@ const CurrentGoalFrame = function ({
           <Button
             variant="contained"
             color="primary"
-            href={routes.accountingPeriods.fundGoalCreate(
+            href={routes.accountingPeriods.goalCreate(
               accountingPeriodId,
               fundId,
             )}
@@ -89,23 +86,23 @@ const CurrentGoalFrame = function ({
           </Button>
         )}
       </Stack>
-      {fundGoal !== null && (
+      {goal !== null && (
         <>
           <CaptionedValue
             caption="Remaining Amount to Assign"
-            value={formatCurrency(fundGoal.remainingAmountToAssign)}
+            value={formatCurrency(goal.remainingAmountToAssign)}
           />
           <CaptionedValue
             caption="Is Assignment Goal Met"
-            value={fundGoal.isAssignmentGoalMet ? "Yes" : "No"}
+            value={goal.isAssignmentGoalMet ? "Yes" : "No"}
           />
           <CaptionedValue
             caption="Remaining Amount to Spend"
-            value={formatCurrency(fundGoal.remainingAmountToSpend)}
+            value={formatCurrency(goal.remainingAmountToSpend)}
           />
           <CaptionedValue
             caption="Is Spending Goal Met"
-            value={fundGoal.isSpendingGoalMet ? "Yes" : "No"}
+            value={goal.isSpendingGoalMet ? "Yes" : "No"}
           />
         </>
       )}

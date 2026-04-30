@@ -1,21 +1,12 @@
 "use client";
 
-import {
-  Button,
-  Checkbox,
-  DialogActions,
-  FormControlLabel,
-  Stack,
-} from "@mui/material";
+import { Button, DialogActions, Stack } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
 import routes, { routeBreadcrumbs } from "@/framework/routes";
 import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import AccountingPeriodEntryField from "@/framework/forms/AccountingPeriodEntryField";
 import Breadcrumbs from "@/framework/Breadcrumbs";
-import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import type { FundGoalType } from "@/data/fundTypes";
-import FundGoalTypeEntryField from "@/framework/forms/FundGoalTypeEntryField";
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import createFund from "@/app/funds/create/createFund";
@@ -52,10 +43,6 @@ const CreateFundForm = function ({
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(providedAccountingPeriod);
 
-  const [specifyGoalAmount, setSpecifyGoalAmount] = useState<boolean>(false);
-  const [goalType, setGoalType] = useState<FundGoalType | null>(null);
-  const [goalAmount, setGoalAmount] = useState<number | null>(null);
-
   const [state, action, pending] = useActionState(createFund, {
     redirectUrl: getRedirectUrl(providedAccountingPeriod),
   });
@@ -87,37 +74,6 @@ const CreateFundForm = function ({
           }
           errorMessage={state.accountingPeriodErrors ?? null}
         />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={specifyGoalAmount}
-              onChange={(e) => {
-                if (!e.target.checked) {
-                  setGoalType(null);
-                  setGoalAmount(null);
-                }
-                setSpecifyGoalAmount(e.target.checked);
-              }}
-            />
-          }
-          label="Set Goal Amount?"
-        />
-        {specifyGoalAmount ? (
-          <>
-            <FundGoalTypeEntryField
-              label="Goal Type"
-              value={goalType}
-              setValue={setGoalType}
-              errorMessage={state.goalTypeErrors ?? null}
-            />
-            <CurrencyEntryField
-              label="Goal Amount"
-              value={goalAmount}
-              setValue={setGoalAmount}
-              errorMessage={state.goalAmountErrors ?? null}
-            />
-          </>
-        ) : null}
         <DialogActions>
           <Link href={getRedirectUrl(providedAccountingPeriod)} tabIndex={-1}>
             <Button variant="outlined">Cancel</Button>
@@ -125,26 +81,15 @@ const CreateFundForm = function ({
           <Button
             variant="contained"
             loading={pending}
-            disabled={
-              name === "" ||
-              accountingPeriod === null ||
-              (specifyGoalAmount && (goalType === null || goalAmount === null))
-            }
+            disabled={name === "" || accountingPeriod === null}
             onClick={() => {
-              if (
-                name === "" ||
-                accountingPeriod === null ||
-                (specifyGoalAmount &&
-                  (goalType === null || goalAmount === null))
-              ) {
+              if (name === "" || accountingPeriod === null) {
                 return;
               }
               startTransition(() => {
                 action({
                   name,
                   description,
-                  goalAmount,
-                  goalType,
                   accountingPeriodId: accountingPeriod.id,
                 });
               });

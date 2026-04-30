@@ -57,17 +57,12 @@ const Page = async function ({
       },
     },
   );
-  const fundGoalPromise = apiClient.GET(
-    "/accounting-periods/{accountingPeriodId}/fund-goals/{fundId}",
-    {
-      params: {
-        path: {
-          accountingPeriodId: id,
-          fundId,
-        },
-      },
+  const goalPromise = apiClient.GET("/goals", {
+    body: {
+      accountingPeriodId: id,
+      fundId,
     },
-  );
+  });
   const fundTransactionsPromise = apiClient.GET(
     "/funds/{fundId}/transactions",
     {
@@ -86,12 +81,12 @@ const Page = async function ({
   const [
     { data: accountingPeriodData, error: accountingPeriodError },
     { data: fundData, error: fundError },
-    { data: fundGoalData, error: fundGoalError },
+    { data: goalData },
     { data: fundTransactionsData, error: fundTransactionsError },
   ] = await Promise.all([
     accountingPeriodPromise,
     fundPromise,
-    fundGoalPromise,
+    goalPromise,
     fundTransactionsPromise,
   ]);
 
@@ -101,7 +96,7 @@ const Page = async function ({
     typeof fundTransactionsData === "undefined"
   ) {
     throw new Error(
-      `Failed to fetch fund with ID ${fundId} for accounting period with ID ${id}: ${accountingPeriodError?.detail ?? fundError?.detail ?? fundGoalError?.detail ?? fundTransactionsError?.detail ?? "Unknown error"}`,
+      `Failed to fetch fund with ID ${fundId} for accounting period with ID ${id}: ${accountingPeriodError?.detail ?? fundError?.detail ?? fundTransactionsError?.detail ?? "Unknown error"}`,
     );
   }
 
@@ -181,7 +176,7 @@ const Page = async function ({
       </CaptionedFrame>
       <CurrentGoalFrame
         fundId={fundData.id}
-        fundGoal={fundGoalData ?? null}
+        goal={goalData ?? null}
         accountingPeriodId={id}
         isAccountingPeriodOpen={accountingPeriodData.isOpen}
         isSystemFund={isSystemFund}

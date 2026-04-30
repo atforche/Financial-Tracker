@@ -1,10 +1,8 @@
-import type {
-  AccountingPeriodFundGoalSortOrder,
-  AccountingPeriodFundSortOrder,
-} from "@/data/fundTypes";
 import { Button, Stack } from "@mui/material";
 import routes, { routeBreadcrumbs } from "@/framework/routes";
 import type { AccountingPeriodAccountSortOrder } from "@/data/accountTypes";
+import type { AccountingPeriodFundSortOrder } from "@/data/fundTypes";
+import type { AccountingPeriodGoalSortOrder } from "@/data/goalTypes";
 import AccountingPeriodListFrames from "@/app/accounting-periods/[id]/AccountingPeriodListFrames";
 import type { AccountingPeriodTransactionSortOrder } from "@/data/transactionTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
@@ -24,8 +22,8 @@ interface PageProps {
   readonly searchParams: Promise<{
     fundSearch?: string;
     fundSort?: AccountingPeriodFundSortOrder;
-    fundGoalSearch?: string;
-    fundGoalSort?: AccountingPeriodFundGoalSortOrder;
+    goalSearch?: string;
+    goalSort?: AccountingPeriodGoalSortOrder;
     accountSearch?: string;
     accountSort?: AccountingPeriodAccountSortOrder;
     transactionSearch?: string;
@@ -44,8 +42,8 @@ const Page = async function ({
   const {
     fundSearch,
     fundSort,
-    fundGoalSearch,
-    fundGoalSort,
+    goalSearch,
+    goalSort,
     accountSearch,
     accountSort,
     transactionSearch,
@@ -77,16 +75,16 @@ const Page = async function ({
       },
     },
   );
-  const fundGoalPromise = apiClient.GET(
-    "/accounting-periods/{accountingPeriodId}/fund-goals",
+  const goalPromise = apiClient.GET(
+    "/accounting-periods/{accountingPeriodId}/goals",
     {
       params: {
         path: {
           accountingPeriodId: id,
         },
         query: {
-          Search: fundGoalSearch ?? "",
-          Sort: fundGoalSort ?? null,
+          Search: goalSearch ?? "",
+          Sort: goalSort ?? null,
         },
       },
     },
@@ -122,25 +120,25 @@ const Page = async function ({
   const [
     { data, error },
     { data: fundData, error: fundError },
-    { data: fundGoalData, error: fundGoalError },
+    { data: goalData, error: goalError },
     { data: accountData, error: accountError },
     { data: transactionData, error: transactionError },
   ] = await Promise.all([
     accountingPeriodPromise,
     fundPromise,
-    fundGoalPromise,
+    goalPromise,
     accountPromise,
     transactionPromise,
   ]);
   if (
     typeof data === "undefined" ||
     typeof fundData === "undefined" ||
-    typeof fundGoalData === "undefined" ||
+    typeof goalData === "undefined" ||
     typeof accountData === "undefined" ||
     typeof transactionData === "undefined"
   ) {
     throw new Error(
-      `Failed to fetch accounting period with ID ${id}: ${error?.detail ?? fundError?.detail ?? fundGoalError?.detail ?? accountError?.detail ?? transactionError?.detail}`,
+      `Failed to fetch accounting period with ID ${id}: ${error?.detail ?? fundError?.detail ?? goalError?.detail ?? accountError?.detail ?? transactionError?.detail}`,
     );
   }
 
@@ -201,8 +199,8 @@ const Page = async function ({
         accountingPeriod={data}
         fundData={fundData.items}
         fundTotalCount={fundData.totalCount}
-        fundGoalData={fundGoalData.items}
-        fundGoalTotalCount={fundGoalData.totalCount}
+        goalData={goalData.items}
+        goalTotalCount={goalData.totalCount}
         accountData={accountData.items}
         accountTotalCount={accountData.totalCount}
         transactionData={transactionData.items}

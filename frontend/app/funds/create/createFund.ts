@@ -16,8 +16,6 @@ interface ActionState {
   readonly errorTitle?: string | null;
   readonly nameErrors?: string | null;
   readonly descriptionErrors?: string | null;
-  readonly goalTypeErrors?: string | null;
-  readonly goalAmountErrors?: string | null;
   readonly accountingPeriodErrors?: string | null;
   readonly unmappedErrors?: string | null;
 }
@@ -37,8 +35,6 @@ const createFund = async function (
     if (isApiError(error)) {
       let nameErrorMessage = null;
       let descriptionErrorMessage = null;
-      let goalTypeErrorMessage = null;
-      let goalAmountErrorMessage = null;
       let accountingPeriodErrorMessage = null;
       const unmappedErrors: (string | null)[] = [];
       for (const key of Object.keys(error.errors ?? {})) {
@@ -51,16 +47,6 @@ const createFund = async function (
           nameof<CreateFundRequest>("description").toUpperCase()
         ) {
           descriptionErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateFundRequest>("goalType").toUpperCase()
-        ) {
-          goalTypeErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateFundRequest>("goalAmount").toUpperCase()
-        ) {
-          goalAmountErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else if (
           key.toUpperCase() ===
           nameof<CreateFundRequest>("accountingPeriodId").toUpperCase()
@@ -77,8 +63,6 @@ const createFund = async function (
         errorTitle: error.title ?? null,
         nameErrors: nameErrorMessage,
         descriptionErrors: descriptionErrorMessage,
-        goalTypeErrors: goalTypeErrorMessage,
-        goalAmountErrors: goalAmountErrorMessage,
         accountingPeriodErrors: accountingPeriodErrorMessage,
         unmappedErrors: unmappedErrors.join(", ") || null,
       };

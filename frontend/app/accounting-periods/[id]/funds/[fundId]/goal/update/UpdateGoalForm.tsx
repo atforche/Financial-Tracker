@@ -1,54 +1,57 @@
 "use client";
 
 import { Button, DialogActions, Stack } from "@mui/material";
-import type { Fund, FundGoalType } from "@/data/fundTypes";
+import type { Goal, GoalType } from "@/data/goalTypes";
 import { type JSX, startTransition, useActionState, useState } from "react";
 import routes, { routeBreadcrumbs } from "@/framework/routes";
-import type { AccountingPeriod } from "@/data/accountingPeriodTypes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import FundGoalTypeEntryField from "@/framework/forms/FundGoalTypeEntryField";
+import type { Fund } from "@/data/fundTypes";
+import GoalTypeEntryField from "@/framework/forms/GoalTypeEntryField";
 import Link from "next/link";
-import createFundGoal from "@/app/accounting-periods/[id]/funds/[fundId]/goal/create/createFundGoal";
+import updateGoal from "@/app/accounting-periods/[id]/funds/[fundId]/goal/update/updateGoal";
 
 /**
- * Props for the CreateFundGoalForm component.
+ * Props for the GoalForm component.
  */
-interface CreateFundGoalFormProps {
+interface UpdateGoalFormProps {
   readonly fund: Fund;
-  readonly accountingPeriod: AccountingPeriod;
+  readonly goal: Goal;
 }
 
 /**
- * Component that displays the form for creating a fund goal.
+ * Component that displays the form for updating a goal.
  */
-const CreateFundGoalForm = function ({
+const UpdateGoalForm = function ({
   fund,
-  accountingPeriod,
-}: CreateFundGoalFormProps): JSX.Element {
-  const [goalType, setGoalType] = useState<FundGoalType | null>(null);
-  const [goalAmount, setGoalAmount] = useState<number | null>(null);
+  goal,
+}: UpdateGoalFormProps): JSX.Element {
+  const [goalType, setGoalType] = useState<GoalType | null>(goal.goalType);
+  const [goalAmount, setGoalAmount] = useState<number | null>(goal.goalAmount);
 
   const redirectUrl = routes.accountingPeriods.fundDetail(
-    accountingPeriod.id,
+    goal.accountingPeriodId,
     fund.id,
   );
-  const [state, action, pending] = useActionState(createFundGoal, {
-    fundId: fund.id,
+  const [state, action, pending] = useActionState(updateGoal, {
+    goalId: goal.id,
     redirectUrl,
   });
 
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={routeBreadcrumbs.accountingPeriods.fundGoalCreate(
-          accountingPeriod,
+        breadcrumbs={routeBreadcrumbs.accountingPeriods.goalUpdate(
+          {
+            id: goal.accountingPeriodId,
+            name: goal.accountingPeriodName,
+          },
           fund,
         )}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
-        <FundGoalTypeEntryField
+        <GoalTypeEntryField
           label="Goal Type"
           value={goalType}
           setValue={setGoalType}
@@ -74,14 +77,13 @@ const CreateFundGoalForm = function ({
               }
               startTransition(() => {
                 action({
-                  accountingPeriodId: accountingPeriod.id,
                   goalType,
                   goalAmount,
                 });
               });
             }}
           >
-            Create
+            Update
           </Button>
         </DialogActions>
         <ErrorAlert
@@ -93,4 +95,4 @@ const CreateFundGoalForm = function ({
   );
 };
 
-export default CreateFundGoalForm;
+export default UpdateGoalForm;
