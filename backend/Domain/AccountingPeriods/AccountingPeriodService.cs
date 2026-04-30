@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Domain.Accounts;
 using Domain.Exceptions;
 using Domain.Funds;
+using Domain.Goals;
 using Domain.Transactions;
 
 namespace Domain.AccountingPeriods;
@@ -13,10 +14,11 @@ public class AccountingPeriodService(
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
     IFundRepository fundRepository,
-    IFundGoalRepository fundGoalRepository,
+    IGoalRepository goalRepository,
     ITransactionRepository transactionRepository,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
-    FundService fundService)
+    FundService fundService,
+    GoalService goalService)
 {
     /// <summary>
     /// Attempts to create a new Accounting Period
@@ -46,7 +48,7 @@ public class AccountingPeriodService(
                 Description = "Fund that tracks money that has not been assigned to a specific fund",
                 AccountingPeriod = accountingPeriod,
                 IsSystemFund = true,
-            }, out Fund? unassignedFund, out _, out IEnumerable<Exception> unassignedFundExceptions))
+            }, out Fund? unassignedFund, out IEnumerable<Exception> unassignedFundExceptions))
             {
                 exceptions = exceptions.Concat(unassignedFundExceptions);
                 return false;
@@ -56,21 +58,21 @@ public class AccountingPeriodService(
         else
         {
             // Automatically carry over all fund goals from the previous accounting period
-            foreach (FundGoal fundGoal in fundGoalRepository.GetAllByAccountingPeriod(previousAccountingPeriod.Id))
+            foreach (Goal goal in goalRepository.GetAllByAccountingPeriod(previousAccountingPeriod.Id))
             {
-                var createFundGoalRequest = new CreateFundGoalRequest
+                var createGoalRequest = new CreateGoalRequest
                 {
-                    Fund = fundGoal.Fund,
+                    Fund = goal.Fund,
                     AccountingPeriod = accountingPeriod,
-                    GoalType = fundGoal.GoalType,
-                    GoalAmount = fundGoal.GoalAmount,
+                    GoalType = goal.GoalType,
+                    GoalAmount = goal.GoalAmount,
                 };
-                if (!fundService.TryCreateGoal(createFundGoalRequest, out FundGoal? createdFundGoal, out IEnumerable<Exception> createdFundGoalExceptions))
+                if (!goalService.TryCreate(createGoalRequest, out Goal? createdGoal, out IEnumerable<Exception> createdGoalExceptions))
                 {
-                    exceptions = exceptions.Concat(createdFundGoalExceptions);
+                    exceptions = exceptions.Concat(createdGoalExceptions);
                     return false;
                 }
-                fundGoalRepository.Add(createdFundGoal);
+                goalRepository.Add(createdGoal);
             }
         }
         return true;

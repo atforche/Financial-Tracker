@@ -1,29 +1,30 @@
 using Domain.AccountingPeriods;
+using Domain.Funds;
 
-namespace Domain.Funds;
+namespace Domain.Goals;
 
 /// <summary>
-/// Record representing a request to create a <see cref="FundGoal"/>
+/// Record representing a request to create a <see cref="Goal"/>
 /// </summary>
-public record CreateFundGoalRequest
+public record CreateGoalRequest
 {
     /// <summary>
-    /// Fund for this Fund Goal
+    /// Fund for this Goal
     /// </summary>
     public Fund Fund { get; init; } = null!;
 
     /// <summary>
-    /// Accounting Period for this Fund Goal
+    /// Accounting Period for this Goal
     /// </summary>
     public AccountingPeriod AccountingPeriod { get; init; } = null!;
 
     /// <summary>
-    /// Type for this Fund Goal
+    /// Type for this Goal
     /// </summary>
-    public required FundGoalType GoalType { get; init; }
+    public required GoalType GoalType { get; init; }
 
     /// <summary>
-    /// Target goal amount for the Fund Goal
+    /// Target goal amount for this Goal
     /// </summary>
     public required decimal GoalAmount { get; init; }
 }

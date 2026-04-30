@@ -4,13 +4,15 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Exceptions;
 using Domain.Funds;
+using Domain.Goals;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.AccountingPeriods;
-using Models.Funds;
+using Models.Goals;
 using Models.Transactions;
 using Rest.Accounts;
 using Rest.Funds;
+using Rest.Goals;
 
 namespace Rest.AccountingPeriods;
 
@@ -25,14 +27,14 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountingPeriodAccountGetter accountingPeriodAccountGetter,
     AccountingPeriodConverter accountingPeriodConverter,
     AccountingPeriodFundGetter accountingPeriodFundGetter,
-    AccountingPeriodFundGoalGetter accountingPeriodFundGoalGetter,
+    AccountingPeriodGoalGetter accountingPeriodGoalGetter,
     AccountingPeriodGetter accountingPeriodGetter,
     AccountingPeriodService accountingPeriodService,
     AccountingPeriodTransactionGetter accountingPeriodTransactionGetter,
     FundConverter fundConverter,
-    FundGoalConverter fundGoalConverter,
-    IFundGoalRepository fundGoalRepository,
-    IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository) : ControllerBase
+    GoalConverter goalConverter,
+    IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
+    IGoalRepository goalRepository) : ControllerBase
 {
     /// <summary>
     /// Retrieves the Accounting Period that matches the provided ID
@@ -139,12 +141,12 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     }
 
     /// <summary>
-    /// Retrieves the Fund Goals for the Accounting Period that match the specified criteria
+    /// Retrieves the Goals for the Accounting Period that match the specified criteria
     /// </summary>
-    [HttpGet("{accountingPeriodId}/fund-goals")]
-    [ProducesResponseType(typeof(CollectionModel<FundGoalModel>), StatusCodes.Status200OK)]
+    [HttpGet("{accountingPeriodId}/goals")]
+    [ProducesResponseType(typeof(CollectionModel<GoalModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetManyFundGoals(Guid accountingPeriodId, [FromQuery] AccountingPeriodFundGoalQueryParameterModel queryParameters)
+    public IActionResult GetManyGoals(Guid accountingPeriodId, [FromQuery] AccountingPeriodGoalQueryParameterModel queryParameters)
     {
         Dictionary<string, string[]> errors = [];
         if (!accountingPeriodConverter.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
@@ -155,21 +157,21 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
-                Title = "Unable to retrieve Accounting Period Fund Goals.",
+                Title = "Unable to retrieve Accounting Period Goals.",
                 Errors = errors,
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        return Ok(accountingPeriodFundGoalGetter.Get(accountingPeriod.Id, queryParameters));
+        return Ok(accountingPeriodGoalGetter.Get(accountingPeriod.Id, queryParameters));
     }
 
     /// <summary>
-    /// Retrieves the Fund Goal for the Accounting Period that matches the provided Fund ID
+    /// Retrieves the Goal for the Accounting Period that matches the provided Fund ID
     /// </summary>
-    [HttpGet("{accountingPeriodId}/fund-goals/{fundId}")]
-    [ProducesResponseType(typeof(FundGoalModel), StatusCodes.Status200OK)]
+    [HttpGet("{accountingPeriodId}/goals/{fundId}")]
+    [ProducesResponseType(typeof(GoalModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetFundGoal(Guid accountingPeriodId, Guid fundId)
+    public IActionResult GetGoal(Guid accountingPeriodId, Guid fundId)
     {
         Dictionary<string, string[]> errors = [];
         if (!fundConverter.TryToDomain(fundId, out Fund? fund))
@@ -184,15 +186,14 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
-                Title = "Unable to retrieve Accounting Period Fund Goal.",
+                Title = "Unable to retrieve Accounting Period Goal.",
                 Errors = errors,
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
-        FundGoal? fundGoal = fundGoalRepository.GetByFundAndAccountingPeriod(fund.Id, accountingPeriod.Id);
-        return fundGoal != null
-            ? Ok(fundGoalConverter.ToModel(fundGoal))
-            : Ok(null);
+
+        Goal? goal = goalRepository.GetByFundAndAccountingPeriod(fund.Id, accountingPeriod.Id);
+        return goal != null ? Ok(goalConverter.ToModel(goal)) : Ok(null);
     }
 
     /// <summary>

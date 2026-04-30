@@ -1,4 +1,5 @@
 using Domain.Funds;
+using Domain.Goals;
 
 namespace Domain.AccountingPeriods;
 
@@ -81,7 +82,7 @@ public class AccountingPeriodFundBalanceHistory : Entity<AccountingPeriodFundBal
     /// <summary>
     /// Updates this Fund Accounting Period Balance History
     /// </summary>
-    internal void Update(FundBalance openingBalance, FundBalance closingBalance, FundGoal? fundGoal)
+    internal void Update(FundBalance openingBalance, FundBalance closingBalance, Goal? goal)
     {
         OpeningBalance = openingBalance.PostedBalance;
         AmountAssigned = closingBalance.AmountAssigned;
@@ -89,7 +90,7 @@ public class AccountingPeriodFundBalanceHistory : Entity<AccountingPeriodFundBal
         AmountSpent = closingBalance.AmountSpent;
         PendingAmountSpent = closingBalance.PendingAmountSpent;
         ClosingBalance = closingBalance.PostedBalance;
-        fundGoal?.EvaluateGoal(this);
+        goal?.EvaluateGoal(this);
     }
 
     /// <summary>

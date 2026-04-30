@@ -1,27 +1,27 @@
-namespace Models.Funds;
+namespace Models.Goals;
 
 /// <summary>
-/// Enum representing the different monthly Fund Goal types
+/// Enum representing the different monthly Goal types
 /// </summary>
-public enum FundGoalTypeModel
+public enum GoalTypeModel
 {
     /// <summary>
-    /// Monthly Fund Goal
+    /// Monthly Goal
     /// </summary>
     Monthly,
 
     /// <summary>
-    /// Rolling Fund Goal
+    /// Rolling Goal
     /// </summary>
     Rolling,
 
     /// <summary>
-    /// Savings Fund Goal
+    /// Savings Goal
     /// </summary>
     Savings,
 
     /// <summary>
-    /// Debt Fund Goal
+    /// Debt Goal
     /// </summary>
     Debt,
 }

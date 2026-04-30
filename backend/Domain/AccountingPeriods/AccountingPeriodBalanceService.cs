@@ -1,5 +1,6 @@
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Goals;
 using Domain.Transactions;
 
 namespace Domain.AccountingPeriods;
@@ -12,7 +13,7 @@ public class AccountingPeriodBalanceService(
     IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
     IAccountRepository accountRepository,
     IFundRepository fundRepository,
-    IFundGoalRepository fundGoalRepository,
+    IGoalRepository goalRepository,
     ITransactionRepository transactionRepository,
     AccountBalanceService accountBalanceService,
     FundBalanceService fundBalanceService)
@@ -124,7 +125,7 @@ public class AccountingPeriodBalanceService(
         {
             FundBalance openingBalance = fundBalanceHistory.GetOpeningFundBalance();
             FundBalance closingBalance = transaction.ApplyToFundBalance(fundBalanceHistory.GetClosingFundBalance());
-            fundBalanceHistory.Update(openingBalance, closingBalance, fundGoalRepository.GetByFundAndAccountingPeriod(fundBalanceHistory.Fund.Id, fundBalanceHistory.AccountingPeriod.Id));
+            fundBalanceHistory.Update(openingBalance, closingBalance, goalRepository.GetByFundAndAccountingPeriod(fundBalanceHistory.Fund.Id, fundBalanceHistory.AccountingPeriod.Id));
         }
     }
 
@@ -149,7 +150,7 @@ public class AccountingPeriodBalanceService(
             fundBalanceHistory.Update(
                 openingBalance,
                 closingBalance,
-                fundGoalRepository.GetByFundAndAccountingPeriod(fundBalanceHistory.Fund.Id, fundBalanceHistory.AccountingPeriod.Id));
+                goalRepository.GetByFundAndAccountingPeriod(fundBalanceHistory.Fund.Id, fundBalanceHistory.AccountingPeriod.Id));
         }
     }
 
@@ -204,7 +205,7 @@ public class AccountingPeriodBalanceService(
                 fundBalanceHistory.Update(
                     openingFundBalance,
                     closingFundBalance,
-                    fundGoalRepository.GetByFundAndAccountingPeriod(fundBalanceHistory.Fund.Id, fundBalanceHistory.AccountingPeriod.Id));
+                    goalRepository.GetByFundAndAccountingPeriod(fundBalanceHistory.Fund.Id, fundBalanceHistory.AccountingPeriod.Id));
             }
             accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
         }
@@ -263,7 +264,7 @@ public class AccountingPeriodBalanceService(
                     fundBalanceHistory.Update(
                         openingFundBalance,
                         closingFundBalance,
-                        fundGoalRepository.GetByFundAndAccountingPeriod(fundBalanceHistory.Fund.Id, fundBalanceHistory.AccountingPeriod.Id));
+                        goalRepository.GetByFundAndAccountingPeriod(fundBalanceHistory.Fund.Id, fundBalanceHistory.AccountingPeriod.Id));
                 }
                 accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
             }
@@ -280,7 +281,7 @@ public class AccountingPeriodBalanceService(
         {
             FundBalance openingBalance = fundBalanceHistory.GetOpeningFundBalance();
             FundBalance closingBalance = transaction.ApplyToFundBalance(fundBalanceHistory.GetClosingFundBalance(), reverse: true);
-            fundBalanceHistory.Update(openingBalance, closingBalance, fundGoalRepository.GetByFundAndAccountingPeriod(fundBalanceHistory.Fund.Id, fundBalanceHistory.AccountingPeriod.Id));
+            fundBalanceHistory.Update(openingBalance, closingBalance, goalRepository.GetByFundAndAccountingPeriod(fundBalanceHistory.Fund.Id, fundBalanceHistory.AccountingPeriod.Id));
         }
     }
 

@@ -1,9 +1,9 @@
-namespace Domain.Funds;
+namespace Domain.Goals;
 
 /// <summary>
-/// Enum representing the different monthly Fund Goal types.
+/// Enum representing the different monthly Goal types.
 /// </summary>
-public enum FundGoalType
+public enum GoalType
 {
     /// <summary>
     /// A monthly fund has a target monthly balance.

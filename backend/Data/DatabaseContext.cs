@@ -1,6 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Goals;
 using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,14 +38,14 @@ public class DatabaseContext : DbContext
     internal DbSet<Fund> Funds { get; set; } = default!;
 
     /// <summary>
-    /// Collection of Fund Goals in the database
-    /// </summary>
-    internal DbSet<FundGoal> FundGoals { get; set; } = default!;
-
-    /// <summary>
     /// Collection of Fund Balance Histories in the database
     /// </summary>
     internal DbSet<FundBalanceHistory> FundBalanceHistories { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of Goals in the database
+    /// </summary>
+    internal DbSet<Goal> Goals { get; set; } = default!;
 
     /// <summary>
     /// Collection of Transactions in the database

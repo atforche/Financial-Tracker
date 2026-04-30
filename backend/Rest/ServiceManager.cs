@@ -1,6 +1,7 @@
 using Rest.AccountingPeriods;
 using Rest.Accounts;
 using Rest.Funds;
+using Rest.Goals;
 using Rest.Transactions;
 
 namespace Rest;
@@ -19,7 +20,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<AccountingPeriodAccountGetter>();
         _ = serviceCollection.AddScoped<AccountingPeriodConverter>();
         _ = serviceCollection.AddScoped<AccountingPeriodFundGetter>();
-        _ = serviceCollection.AddScoped<AccountingPeriodFundGoalGetter>();
+        _ = serviceCollection.AddScoped<AccountingPeriodGoalGetter>();
         _ = serviceCollection.AddScoped<AccountingPeriodGetter>();
         _ = serviceCollection.AddScoped<AccountingPeriodTransactionGetter>();
 
@@ -30,9 +31,10 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<FundAmountConverter>();
         _ = serviceCollection.AddScoped<FundConverter>();
         _ = serviceCollection.AddScoped<FundGetter>();
-        _ = serviceCollection.AddScoped<FundGoalConverter>();
-        _ = serviceCollection.AddScoped<FundGoalGetter>();
         _ = serviceCollection.AddScoped<FundTransactionGetter>();
+
+        _ = serviceCollection.AddScoped<GoalConverter>();
+        _ = serviceCollection.AddScoped<GoalGetter>();
 
         _ = serviceCollection.AddScoped<TransactionConverter>();
         _ = serviceCollection.AddScoped<TransactionRequestConverter>();

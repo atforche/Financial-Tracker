@@ -1,19 +1,19 @@
-namespace Models.Funds;
+namespace Models.AccountingPeriods;
 
 /// <summary>
-/// Model representing the query parameters that can be provided when retrieving Fund Goals for a Fund
+/// Model representing the query parameters that can be provided when retrieving Goals for an Accounting Period
 /// </summary>
-public class FundGoalQueryParameterModel
+public class AccountingPeriodGoalQueryParameterModel
 {
     /// <summary>
-    /// Search to apply to the results
+    /// Search string to apply to the results
     /// </summary>
     public string? Search { get; init; }
 
     /// <summary>
     /// Sort to apply to the results
     /// </summary>
-    public FundGoalSortOrderModel? Sort { get; init; }
+    public AccountingPeriodGoalSortOrderModel? Sort { get; init; }
 
     /// <summary>
     /// Maximum number of results to return

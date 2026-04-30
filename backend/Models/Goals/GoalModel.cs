@@ -1,82 +1,82 @@
-namespace Models.Funds;
+namespace Models.Goals;
 
 /// <summary>
-/// Model representing a Fund Goal
+/// Model representing a Goal
 /// </summary>
-public class FundGoalModel
+public class GoalModel
 {
     /// <summary>
-    /// ID for the Fund Goal
+    /// ID for the Goal
     /// </summary>
     public required Guid Id { get; init; }
 
     /// <summary>
-    /// Fund ID for the Fund Goal
+    /// Fund ID for the Goal
     /// </summary>
     public required Guid FundId { get; init; }
 
     /// <summary>
-    /// Fund name for the Fund Goal
+    /// Fund name for the Goal
     /// </summary>
     public required string FundName { get; init; }
 
     /// <summary>
-    /// Accounting Period ID for the Fund Goal
+    /// Accounting Period ID for the Goal
     /// </summary>
     public required Guid AccountingPeriodId { get; init; }
 
     /// <summary>
-    /// Accounting Period name for the Fund Goal
+    /// Accounting Period name for the Goal
     /// </summary>
     public required string AccountingPeriodName { get; init; }
 
     /// <summary>
-    /// Goal type for the Fund Goal
+    /// Goal type for the Goal
     /// </summary>
-    public required FundGoalTypeModel GoalType { get; init; }
+    public required GoalTypeModel GoalType { get; init; }
 
     /// <summary>
-    /// Goal amount for the Fund Goal
+    /// Goal amount for the Goal
     /// </summary>
     public required decimal GoalAmount { get; init; }
 
     /// <summary>
-    /// Remaining amount to assign for the Fund Goal
+    /// Remaining amount to assign for the Goal
     /// </summary>
     public required decimal RemainingAmountToAssign { get; init; }
 
     /// <summary>
-    /// Remaining amount to assign for the Fund Goal including pending assigned amounts
+    /// Remaining amount to assign for the Goal including pending assigned amounts
     /// </summary>
     public required decimal RemainingAmountToAssignIncludingPending { get; init; }
 
     /// <summary>
-    /// Whether the assignment goal has been met for the Fund Goal
+    /// Whether the assignment goal has been met for the Goal
     /// </summary>
     public required bool IsAssignmentGoalMet { get; init; }
 
     /// <summary>
-    /// Whether the assignment goal has been met for the Fund Goal including pending assigned amounts
+    /// Whether the assignment goal has been met for the Goal including pending assigned amounts
     /// </summary>
     public required bool IsAssignmentGoalMetIncludingPending { get; init; }
 
     /// <summary>
-    /// Remaining amount to spend for the Fund Goal
+    /// Remaining amount to spend for the Goal
     /// </summary>
     public required decimal RemainingAmountToSpend { get; init; }
 
     /// <summary>
-    /// Remaining amount to spend for the Fund Goal including pending spent amounts
+    /// Remaining amount to spend for the Goal including pending spent amounts
     /// </summary>
     public required decimal RemainingAmountToSpendIncludingPending { get; init; }
 
     /// <summary>
-    /// Whether the spending goal has been met for the Fund Goal
+    /// Whether the spending goal has been met for the Goal
     /// </summary>
     public required bool IsSpendingGoalMet { get; init; }
 
     /// <summary>
-    /// Whether the spending goal has been met for the Fund Goal including pending spent amounts
+    /// Whether the spending goal has been met for the Goal including pending spent amounts
     /// </summary>
     public required bool IsSpendingGoalMetIncludingPending { get; init; }
 }

@@ -1,10 +1,12 @@
 using Data.AccountingPeriods;
 using Data.Accounts;
 using Data.Funds;
+using Data.Goals;
 using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Goals;
 using Domain.Transactions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -39,11 +41,11 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<IFundRepository, FundRepository>();
         _ = serviceCollection.AddScoped<FundRepository>();
 
-        _ = serviceCollection.AddScoped<IFundGoalRepository, FundGoalRepository>();
-        _ = serviceCollection.AddScoped<FundGoalRepository>();
-
         _ = serviceCollection.AddScoped<IFundBalanceHistoryRepository, FundBalanceHistoryRepository>();
         _ = serviceCollection.AddScoped<FundBalanceHistoryRepository>();
+
+        _ = serviceCollection.AddScoped<IGoalRepository, GoalRepository>();
+        _ = serviceCollection.AddScoped<GoalRepository>();
 
         _ = serviceCollection.AddScoped<ITransactionRepository, TransactionRepository>();
         _ = serviceCollection.AddScoped<TransactionRepository>();
