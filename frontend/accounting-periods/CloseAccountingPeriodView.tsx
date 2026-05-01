@@ -3,12 +3,17 @@ import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
+ * Parameters for the CloseAccountingPeriodView component.
+ */
+interface CloseAccountingPeriodViewParams {
+  id: string;
+}
+
+/**
  * Props for the CloseAccountingPeriodView component.
  */
 interface CloseAccountingPeriodViewProps {
-  readonly params: Promise<{
-    id: string;
-  }>;
+  readonly params: Promise<CloseAccountingPeriodViewParams>;
 }
 
 /**
@@ -38,4 +43,5 @@ const CloseAccountingPeriodView = async function ({
   return <CloseAccountingPeriodForm accountingPeriod={data} />;
 };
 
+export type { CloseAccountingPeriodViewParams };
 export default CloseAccountingPeriodView;

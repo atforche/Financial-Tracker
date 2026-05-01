@@ -15,22 +15,32 @@ import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
+ * Parameters for the AccountingPeriodView component.
+ */
+interface AccountingPeriodViewParams {
+  id: string;
+}
+
+/**
+ * Search parameters for the AccountingPeriodView component.
+ */
+interface AccountingPeriodViewSearchParams {
+  fundSearch?: string;
+  fundSort?: AccountingPeriodFundSortOrder;
+  goalSearch?: string;
+  goalSort?: AccountingPeriodGoalSortOrder;
+  accountSearch?: string;
+  accountSort?: AccountingPeriodAccountSortOrder;
+  transactionSearch?: string;
+  transactionSort?: AccountingPeriodTransactionSortOrder;
+}
+
+/**
  * Props for the AccountingPeriodView component.
  */
 interface AccountingPeriodViewProps {
-  readonly params: Promise<{
-    id: string;
-  }>;
-  readonly searchParams: Promise<{
-    fundSearch?: string;
-    fundSort?: AccountingPeriodFundSortOrder;
-    goalSearch?: string;
-    goalSort?: AccountingPeriodGoalSortOrder;
-    accountSearch?: string;
-    accountSort?: AccountingPeriodAccountSortOrder;
-    transactionSearch?: string;
-    transactionSort?: AccountingPeriodTransactionSortOrder;
-  }>;
+  readonly params: Promise<AccountingPeriodViewParams>;
+  readonly searchParams: Promise<AccountingPeriodViewSearchParams>;
 }
 
 /**
@@ -212,4 +222,5 @@ const AccountingPeriodView = async function ({
   );
 };
 
+export type { AccountingPeriodViewParams, AccountingPeriodViewSearchParams };
 export default AccountingPeriodView;

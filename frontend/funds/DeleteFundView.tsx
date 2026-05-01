@@ -3,15 +3,25 @@ import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
- * Props for the DeleteFundView Component.
+ * Parameters for the DeleteFundView component.
+ */
+interface DeleteFundViewParams {
+  id: string;
+}
+
+/**
+ * Search parameters for the DeleteFundView component.
+ */
+interface DeleteFundViewSearchParams {
+  accountingPeriodId?: string | null;
+}
+
+/**
+ * Props for the DeleteFundView component.
  */
 interface DeleteFundViewProps {
-  readonly params: Promise<{
-    id: string;
-  }>;
-  readonly searchParams: Promise<{
-    accountingPeriodId?: string | null;
-  }>;
+  readonly params: Promise<DeleteFundViewParams>;
+  readonly searchParams: Promise<DeleteFundViewSearchParams>;
 }
 
 /**
@@ -55,4 +65,5 @@ const DeleteFundView = async function ({
   );
 };
 
+export type { DeleteFundViewParams, DeleteFundViewSearchParams };
 export default DeleteFundView;

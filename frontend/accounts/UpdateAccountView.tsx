@@ -3,15 +3,25 @@ import UpdateAccountForm from "@/accounts/UpdateAccountForm";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
+ * Parameters for the UpdateAccountView component.
+ */
+interface UpdateAccountViewParams {
+  id: string;
+}
+
+/**
+ * Search parameters for the UpdateAccountView component.
+ */
+interface UpdateAccountViewSearchParams {
+  accountingPeriodId?: string | null;
+}
+
+/**
  * Props for the UpdateAccountView component.
  */
 interface UpdateAccountViewProps {
-  readonly params: Promise<{
-    id: string;
-  }>;
-  readonly searchParams: Promise<{
-    accountingPeriodId?: string | null;
-  }>;
+  readonly params: Promise<UpdateAccountViewParams>;
+  readonly searchParams: Promise<UpdateAccountViewSearchParams>;
 }
 
 /**
@@ -59,4 +69,5 @@ const UpdateAccountView = async function ({
   );
 };
 
+export type { UpdateAccountViewParams, UpdateAccountViewSearchParams };
 export default UpdateAccountView;

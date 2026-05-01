@@ -8,13 +8,18 @@ import getApiClient from "@/framework/data/getApiClient";
 import { routeBreadcrumbs } from "@/framework/routes";
 
 /**
+ * Search parameters for the AccountsView component.
+ */
+interface AccountsViewSearchParams {
+  accountSearch?: string;
+  accountSort?: AccountSortOrder;
+}
+
+/**
  * Props for the AccountsView component.
  */
 interface AccountsViewProps {
-  readonly searchParams: Promise<{
-    accountSearch?: string;
-    accountSort?: AccountSortOrder;
-  }>;
+  readonly searchParams: Promise<AccountsViewSearchParams>;
 }
 
 /**
@@ -47,4 +52,5 @@ const AccountsView = async function ({
   );
 };
 
+export type { AccountsViewSearchParams };
 export default AccountsView;

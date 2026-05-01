@@ -3,13 +3,18 @@ import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
+ * Parameters for the CreateGoalView component.
+ */
+interface CreateGoalViewParams {
+  id: string;
+  fundId: string;
+}
+
+/**
  * Props for the CreateGoalView component.
  */
 interface CreateGoalViewProps {
-  readonly params: Promise<{
-    id: string;
-    fundId: string;
-  }>;
+  readonly params: Promise<CreateGoalViewParams>;
 }
 
 /**
@@ -53,4 +58,5 @@ const CreateGoalView = async function ({
   );
 };
 
+export type { CreateGoalViewParams };
 export default CreateGoalView;

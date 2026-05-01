@@ -8,13 +8,18 @@ import getApiClient from "@/framework/data/getApiClient";
 import { routeBreadcrumbs } from "@/framework/routes";
 
 /**
+ * Search parameters for the FundsView component.
+ */
+interface FundsViewSearchParams {
+  fundSearch?: string;
+  fundSort?: FundSortOrder;
+}
+
+/**
  * Props for the FundsView component.
  */
 interface FundsViewProps {
-  readonly searchParams: Promise<{
-    fundSearch?: string;
-    fundSort?: FundSortOrder;
-  }>;
+  readonly searchParams: Promise<FundsViewSearchParams>;
 }
 
 /**
@@ -47,4 +52,5 @@ const FundsView = async function ({
   );
 };
 
+export type { FundsViewSearchParams };
 export default FundsView;

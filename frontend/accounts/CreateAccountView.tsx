@@ -5,12 +5,17 @@ import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
+ * Search parameters for the CreateAccountView component.
+ */
+interface CreateAccountViewSearchParams {
+  accountingPeriodId?: string | null;
+}
+
+/**
  * Props for the CreateAccountView component.
  */
 interface CreateAccountViewProps {
-  readonly searchParams: Promise<{
-    accountingPeriodId?: string | null;
-  }>;
+  readonly searchParams: Promise<CreateAccountViewSearchParams>;
 }
 
 /**
@@ -89,4 +94,5 @@ const CreateAccountView = async function ({
   );
 };
 
+export type { CreateAccountViewSearchParams };
 export default CreateAccountView;

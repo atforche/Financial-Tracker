@@ -3,15 +3,25 @@ import UpdateFundForm from "@/funds/UpdateFundForm";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
- * Props for the UpdateFundView Component.
+ * Parameters for the UpdateFundView component.
+ */
+interface UpdateFundViewParams {
+  id: string;
+}
+
+/**
+ * Search parameters for the UpdateFundView component.
+ */
+interface UpdateFundViewSearchParams {
+  accountingPeriodId?: string | null;
+}
+
+/**
+ * Props for the UpdateFundView component.
  */
 interface UpdateFundViewProps {
-  readonly params: Promise<{
-    id: string;
-  }>;
-  readonly searchParams: Promise<{
-    accountingPeriodId?: string | null;
-  }>;
+  readonly params: Promise<UpdateFundViewParams>;
+  readonly searchParams: Promise<UpdateFundViewSearchParams>;
 }
 
 /**
@@ -59,4 +69,5 @@ const UpdateFundView = async function ({
   );
 };
 
+export type { UpdateFundViewParams, UpdateFundViewSearchParams };
 export default UpdateFundView;

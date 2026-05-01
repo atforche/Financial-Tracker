@@ -4,12 +4,17 @@ import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
+ * Search parameters for the CreateFundView component.
+ */
+interface CreateFundViewSearchParams {
+  accountingPeriodId?: string | null;
+}
+
+/**
  * Props for the CreateFundView component.
  */
 interface CreateFundViewProps {
-  readonly searchParams: Promise<{
-    accountingPeriodId?: string | null;
-  }>;
+  readonly searchParams: Promise<CreateFundViewSearchParams>;
 }
 
 /**
@@ -44,4 +49,5 @@ const CreateFundView = async function ({
   );
 };
 
+export type { CreateFundViewSearchParams };
 export default CreateFundView;

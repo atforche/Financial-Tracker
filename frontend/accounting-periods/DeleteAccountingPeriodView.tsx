@@ -3,12 +3,17 @@ import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
+ * Parameters for the DeleteAccountingPeriodView component.
+ */
+interface DeleteAccountingPeriodViewParams {
+  id: string;
+}
+
+/**
  * Props for the DeleteAccountingPeriodView component.
  */
 interface DeleteAccountingPeriodViewProps {
-  readonly params: Promise<{
-    id: string;
-  }>;
+  readonly params: Promise<DeleteAccountingPeriodViewParams>;
 }
 
 /**
@@ -38,4 +43,5 @@ const DeleteAccountingPeriodView = async function ({
   return <DeleteAccountingPeriodForm accountingPeriod={data} />;
 };
 
+export type { DeleteAccountingPeriodViewParams };
 export default DeleteAccountingPeriodView;

@@ -3,15 +3,25 @@ import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
+ * Parameters for the DeleteAccountView component.
+ */
+interface DeleteAccountViewParams {
+  id: string;
+}
+
+/**
+ * Search parameters for the DeleteAccountView component.
+ */
+interface DeleteAccountViewSearchParams {
+  accountingPeriodId?: string | null;
+}
+
+/**
  * Props for the DeleteAccountView component.
  */
 interface DeleteAccountViewProps {
-  readonly params: Promise<{
-    id: string;
-  }>;
-  readonly searchParams: Promise<{
-    accountingPeriodId?: string | null;
-  }>;
+  readonly params: Promise<DeleteAccountViewParams>;
+  readonly searchParams: Promise<DeleteAccountViewSearchParams>;
 }
 
 /**
@@ -58,4 +68,5 @@ const DeleteAccountView = async function ({
   );
 };
 
+export type { DeleteAccountViewParams, DeleteAccountViewSearchParams };
 export default DeleteAccountView;

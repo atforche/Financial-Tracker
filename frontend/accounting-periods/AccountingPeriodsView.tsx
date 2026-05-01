@@ -9,14 +9,19 @@ import { routeBreadcrumbs } from "@/framework/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
 /**
+ * Search parameters for the AccountingPeriodsView component.
+ */
+interface AccountingPeriodsViewSearchParams {
+  search?: string;
+  sort?: AccountingPeriodSortOrder;
+  page?: number;
+}
+
+/**
  * Props for the AccountingPeriodsView component.
  */
 interface AccountingPeriodsViewProps {
-  readonly searchParams?: Promise<{
-    search?: string;
-    sort?: AccountingPeriodSortOrder;
-    page?: number;
-  }>;
+  readonly searchParams?: Promise<AccountingPeriodsViewSearchParams>;
 }
 
 /**
@@ -50,4 +55,5 @@ const AccountingPeriodsView = async function ({
   );
 };
 
+export type { AccountingPeriodsViewSearchParams };
 export default AccountingPeriodsView;

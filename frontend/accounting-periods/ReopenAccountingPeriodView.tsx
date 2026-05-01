@@ -3,12 +3,17 @@ import ReopenAccountingPeriodForm from "@/accounting-periods/ReopenAccountingPer
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
+ * Parameters for the ReopenAccountingPeriodView component.
+ */
+interface ReopenAccountingPeriodViewParams {
+  id: string;
+}
+
+/**
  * Props for the ReopenAccountingPeriodView component.
  */
 interface ReopenAccountingPeriodViewProps {
-  readonly params: Promise<{
-    id: string;
-  }>;
+  readonly params: Promise<ReopenAccountingPeriodViewParams>;
 }
 
 /**
@@ -38,4 +43,5 @@ const ReopenAccountingPeriodView = async function ({
   return <ReopenAccountingPeriodForm accountingPeriod={data} />;
 };
 
+export type { ReopenAccountingPeriodViewParams };
 export default ReopenAccountingPeriodView;

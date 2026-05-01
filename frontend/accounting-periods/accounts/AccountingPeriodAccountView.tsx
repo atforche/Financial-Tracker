@@ -9,13 +9,18 @@ import getApiClient from "@/framework/data/getApiClient";
 import { isPositiveChangeInBalance } from "@/accounts/types";
 
 /**
+ * Parameters for the AccountingPeriodAccountView component.
+ */
+interface AccountingPeriodAccountViewParams {
+  id: string;
+  accountId: string;
+}
+
+/**
  * Props for the AccountingPeriodAccountView component.
  */
 interface AccountingPeriodAccountViewProps {
-  readonly params: Promise<{
-    id: string;
-    accountId: string;
-  }>;
+  readonly params: Promise<AccountingPeriodAccountViewParams>;
 }
 
 /**
@@ -140,4 +145,5 @@ const AccountingPeriodAccountView = async function ({
   );
 };
 
+export type { AccountingPeriodAccountViewParams };
 export default AccountingPeriodAccountView;

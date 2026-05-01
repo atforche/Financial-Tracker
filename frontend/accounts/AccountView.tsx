@@ -11,16 +11,26 @@ import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
+ * Parameters for the AccountView component.
+ */
+interface AccountViewParams {
+  id: string;
+}
+
+/**
+ * Search parameters for the AccountView component.
+ */
+interface AccountViewSearchParams {
+  transactionSearch?: string;
+  transactionSort?: AccountTransactionSortOrder;
+}
+
+/**
  * Props for the AccountView component.
  */
 interface AccountViewProps {
-  readonly params: Promise<{
-    id: string;
-  }>;
-  readonly searchParams: Promise<{
-    transactionSearch?: string;
-    transactionSort?: AccountTransactionSortOrder;
-  }>;
+  readonly params: Promise<AccountViewParams>;
+  readonly searchParams: Promise<AccountViewSearchParams>;
 }
 
 const formatAmount = function (value: number | null): string {
@@ -140,4 +150,5 @@ const AccountView = async function ({
   );
 };
 
+export type { AccountViewParams, AccountViewSearchParams };
 export default AccountView;

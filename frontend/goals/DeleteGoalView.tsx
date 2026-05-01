@@ -3,13 +3,18 @@ import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
+ * Parameters for the DeleteGoalView component.
+ */
+interface DeleteGoalViewParams {
+  id: string;
+  fundId: string;
+}
+
+/**
  * Props for the DeleteGoalView component.
  */
 interface DeleteGoalViewProps {
-  readonly params: Promise<{
-    id: string;
-    fundId: string;
-  }>;
+  readonly params: Promise<DeleteGoalViewParams>;
 }
 
 /**
@@ -43,4 +48,5 @@ const DeleteGoalView = async function ({
   return <DeleteGoalForm fund={fundData} goal={goalData} />;
 };
 
+export type { DeleteGoalViewParams };
 export default DeleteGoalView;

@@ -3,13 +3,18 @@ import UpdateGoalForm from "@/goals/UpdateGoalForm";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
+ * Parameters for the UpdateGoalView component.
+ */
+interface UpdateGoalViewParams {
+  id: string;
+  fundId: string;
+}
+
+/**
  * Props for the UpdateGoalView component.
  */
 interface UpdateGoalViewProps {
-  readonly params: Promise<{
-    id: string;
-    fundId: string;
-  }>;
+  readonly params: Promise<UpdateGoalViewParams>;
 }
 
 /**
@@ -43,4 +48,5 @@ const UpdateGoalView = async function ({
   return <UpdateGoalForm fund={fundData} goal={goalData} />;
 };
 
+export type { UpdateGoalViewParams };
 export default UpdateGoalView;

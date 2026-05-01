@@ -11,16 +11,26 @@ import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
- * Props for the FundView Component.
+ * Parameters for the FundView component.
+ */
+interface FundViewParams {
+  id: string;
+}
+
+/**
+ * Search parameters for the FundView component.
+ */
+interface FundViewSearchParams {
+  transactionSearch?: string;
+  transactionSort?: FundTransactionSortOrder;
+}
+
+/**
+ * Props for the FundView component.
  */
 interface FundViewProps {
-  readonly params: Promise<{
-    id: string;
-  }>;
-  readonly searchParams: Promise<{
-    transactionSearch?: string;
-    transactionSort?: FundTransactionSortOrder;
-  }>;
+  readonly params: Promise<FundViewParams>;
+  readonly searchParams: Promise<FundViewSearchParams>;
 }
 
 /**
@@ -126,4 +136,5 @@ const FundView = async function ({
   );
 };
 
+export type { FundViewParams, FundViewSearchParams };
 export default FundView;
