@@ -87,7 +87,6 @@ public sealed class AccountController(
     [HttpPost("")]
     [ProducesResponseType(typeof(AccountModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateAsync(CreateAccountModel createAccountModel)
     {
         Dictionary<string, string[]> errors = [];
@@ -160,7 +159,6 @@ public sealed class AccountController(
     [HttpPost("{accountId}")]
     [ProducesResponseType(typeof(AccountModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateAsync(Guid accountId, UpdateAccountModel updateAccountModel)
     {
         if (!accountConverter.TryToDomain(accountId, out Account? accountToUpdate))

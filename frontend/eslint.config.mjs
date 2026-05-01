@@ -209,7 +209,7 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "**/eslint.config.mjs",
-    "data/api.ts",
+    "framework/data/api.ts",
   ]),
 ]);
 
