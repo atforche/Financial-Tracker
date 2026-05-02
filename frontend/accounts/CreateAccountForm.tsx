@@ -14,7 +14,6 @@ import {
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import type { FundAmount, FundIdentifier } from "@/funds/types";
 import { type JSX, startTransition, useActionState, useState } from "react";
-import routes, { routeBreadcrumbs, withQuery } from "@/framework/routes";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
 import Breadcrumbs from "@/framework/Breadcrumbs";
@@ -25,7 +24,11 @@ import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FundAmountCollectionEntryFrame from "@/funds/FundAmountCollectionEntryFrame";
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
+import { ToggleState } from "@/accounting-periods/AccountingPeriodViewListFrames";
+import accountingPeriodRoutes from "@/accounting-periods/routes";
+import breadcrumbs from "@/accounts/breadcrumbs";
 import createAccount from "@/accounts/createAccount";
+import routes from "@/accounts/routes";
 
 /**
  * Props for the CreateAccountForm component.
@@ -43,14 +46,12 @@ const getRedirectUrl = function (
   providedAccountingPeriod: AccountingPeriod | null,
 ): string {
   if (providedAccountingPeriod !== null) {
-    return withQuery(
-      routes.accountingPeriods.detail(providedAccountingPeriod.id),
-      {
-        display: "accounts",
-      },
+    return accountingPeriodRoutes.detail(
+      { id: providedAccountingPeriod.id },
+      { display: ToggleState.Accounts },
     );
   }
-  return routes.accounts.index;
+  return routes.index({});
 };
 
 /**
@@ -231,9 +232,7 @@ const CreateAccountForm = function ({
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs
-        breadcrumbs={routeBreadcrumbs.accounts.create(providedAccountingPeriod)}
-      />
+      <Breadcrumbs breadcrumbs={breadcrumbs.create(providedAccountingPeriod)} />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <StringEntryField
           label="Name"

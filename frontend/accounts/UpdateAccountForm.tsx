@@ -2,13 +2,16 @@
 
 import { Button, DialogActions, Stack } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
-import routes, { routeBreadcrumbs, withQuery } from "@/framework/routes";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
+import { ToggleState } from "@/accounting-periods/AccountingPeriodViewListFrames";
+import accountingPeriodRoutes from "@/accounting-periods/routes";
+import breadcrumbs from "@/accounts/breadcrumbs";
+import routes from "@/accounts/routes";
 import updateAccount from "@/accounts/updateAccount";
 
 /**
@@ -26,14 +29,12 @@ const getRedirectUrl = function (
   providedAccountingPeriod: AccountingPeriod | null,
 ): string {
   if (providedAccountingPeriod !== null) {
-    return withQuery(
-      routes.accountingPeriods.detail(providedAccountingPeriod.id),
-      {
-        display: "accounts",
-      },
+    return accountingPeriodRoutes.detail(
+      { id: providedAccountingPeriod.id },
+      { display: ToggleState.Accounts },
     );
   }
-  return routes.accounts.index;
+  return routes.index({});
 };
 
 /**
@@ -53,10 +54,7 @@ const UpdateAccountForm = function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={routeBreadcrumbs.accounts.update(
-          account,
-          providedAccountingPeriod,
-        )}
+        breadcrumbs={breadcrumbs.update(account, providedAccountingPeriod)}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <StringEntryField

@@ -2,13 +2,16 @@
 
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState } from "react";
-import routes, { routeBreadcrumbs, withQuery } from "@/framework/routes";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
+import { ToggleState } from "@/accounting-periods/AccountingPeriodViewListFrames";
+import accountingPeriodRoutes from "@/accounting-periods/routes";
+import breadcrumbs from "@/accounts/breadcrumbs";
 import deleteAccount from "@/accounts/deleteAccount";
+import routes from "@/accounts/routes";
 
 /**
  * Props for the DeleteAccountForm component.
@@ -25,11 +28,12 @@ const getRedirectUrl = function (
   accountingPeriod: AccountingPeriod | null,
 ): string {
   if (accountingPeriod !== null) {
-    return withQuery(routes.accountingPeriods.detail(accountingPeriod.id), {
-      display: "accounts",
-    });
+    return accountingPeriodRoutes.detail(
+      { id: accountingPeriod.id },
+      { display: ToggleState.Accounts },
+    );
   }
-  return routes.accounts.index;
+  return routes.index({});
 };
 
 /**
@@ -47,10 +51,7 @@ const DeleteAccountForm = function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={routeBreadcrumbs.accounts.delete(
-          account,
-          accountingPeriod,
-        )}
+        breadcrumbs={breadcrumbs.delete(account, accountingPeriod)}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <Typography>

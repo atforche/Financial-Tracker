@@ -5,7 +5,6 @@ import {
   type AccountingPeriodFund,
   AccountingPeriodFundSortOrder,
 } from "@/accounting-periods/types";
-import routes, { withQuery } from "@/framework/routes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
@@ -16,6 +15,8 @@ import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
+import fundRoutes from "@/funds/routes";
+import routes from "@/accounting-periods/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
@@ -178,9 +179,7 @@ const AccountingPeriodFundListFrame = function ({
           icon={<AddCircleOutline />}
           onClick={() => {
             router.push(
-              withQuery(routes.funds.create, {
-                accountingPeriodId: accountingPeriod.id,
-              }),
+              fundRoutes.create({ accountingPeriodId: accountingPeriod.id }),
             );
           }}
           disabled={!accountingPeriod.isOpen}
@@ -192,7 +191,10 @@ const AccountingPeriodFundListFrame = function ({
           icon={<ArrowForwardIos />}
           onClick={() => {
             router.push(
-              routes.accountingPeriods.fundDetail(accountingPeriod.id, fund.id),
+              routes.fundDetail(
+                { id: accountingPeriod.id, fundId: fund.id },
+                {},
+              ),
             );
           }}
         />

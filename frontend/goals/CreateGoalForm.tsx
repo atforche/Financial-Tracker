@@ -2,7 +2,6 @@
 
 import { Button, DialogActions, Stack } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
-import routes, { routeBreadcrumbs } from "@/framework/routes";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
@@ -11,7 +10,9 @@ import type { Fund } from "@/funds/types";
 import type { GoalType } from "@/goals/types";
 import GoalTypeEntryField from "@/goals/GoalTypeEntryField";
 import Link from "next/link";
+import breadcrumbs from "@/accounting-periods/breadcrumbs";
 import createGoal from "@/goals/createGoal";
+import routes from "@/accounting-periods/routes";
 
 /**
  * Props for the CreateGoalForm component.
@@ -31,9 +32,12 @@ const CreateGoalForm = function ({
   const [goalType, setGoalType] = useState<GoalType | null>(null);
   const [goalAmount, setGoalAmount] = useState<number | null>(null);
 
-  const redirectUrl = routes.accountingPeriods.fundDetail(
-    accountingPeriod.id,
-    fund.id,
+  const redirectUrl = routes.fundDetail(
+    {
+      id: accountingPeriod.id,
+      fundId: fund.id,
+    },
+    {},
   );
   const [state, action, pending] = useActionState(createGoal, {
     fundId: fund.id,
@@ -43,10 +47,7 @@ const CreateGoalForm = function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={routeBreadcrumbs.accountingPeriods.goalCreate(
-          accountingPeriod,
-          fund,
-        )}
+        breadcrumbs={breadcrumbs.goalCreate(accountingPeriod, fund)}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <GoalTypeEntryField

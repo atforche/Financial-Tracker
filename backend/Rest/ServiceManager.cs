@@ -17,8 +17,10 @@ public static class ServiceManager
     /// <param name="serviceCollection">Service Collection</param>
     public static void Register(IServiceCollection serviceCollection)
     {
+        _ = serviceCollection.AddScoped<AccountingPeriodAccountConverter>();
         _ = serviceCollection.AddScoped<AccountingPeriodAccountGetter>();
         _ = serviceCollection.AddScoped<AccountingPeriodConverter>();
+        _ = serviceCollection.AddScoped<AccountingPeriodFundConverter>();
         _ = serviceCollection.AddScoped<AccountingPeriodFundGetter>();
         _ = serviceCollection.AddScoped<AccountingPeriodGoalGetter>();
         _ = serviceCollection.AddScoped<AccountingPeriodGetter>();

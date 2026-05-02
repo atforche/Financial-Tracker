@@ -25,27 +25,45 @@ const DeleteGoalView = async function ({
 }: DeleteGoalViewProps): Promise<JSX.Element> {
   const { id, fundId } = await params;
   const apiClient = getApiClient();
-  const [{ data: fundData }, { data: goalData }] = await Promise.all([
-    apiClient.GET("/funds/{fundId}", {
-      params: {
-        path: {
-          fundId,
+  const [{ data: accountingPeriod }, { data: fund }, { data: goal }] =
+    await Promise.all([
+      apiClient.GET("/accounting-periods/{accountingPeriodId}", {
+        params: {
+          path: {
+            accountingPeriodId: id,
+          },
         },
-      },
-    }),
-    apiClient.GET("/goals", {
-      body: {
-        fundId,
-        accountingPeriodId: id,
-      },
-    }),
-  ]);
+      }),
+      apiClient.GET("/funds/{fundId}", {
+        params: {
+          path: {
+            fundId,
+          },
+        },
+      }),
+      apiClient.GET("/goals", {
+        body: {
+          fundId,
+          accountingPeriodId: id,
+        },
+      }),
+    ]);
 
-  if (typeof fundData === "undefined" || typeof goalData === "undefined") {
+  if (
+    typeof accountingPeriod === "undefined" ||
+    typeof fund === "undefined" ||
+    typeof goal === "undefined"
+  ) {
     throw new Error("Failed to fetch goal data");
   }
 
-  return <DeleteGoalForm fund={fundData} goal={goalData} />;
+  return (
+    <DeleteGoalForm
+      accountingPeriod={accountingPeriod}
+      fund={fund}
+      goal={goal}
+    />
+  );
 };
 
 export type { DeleteGoalViewParams };

@@ -2,12 +2,13 @@
 
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState } from "react";
-import routes, { routeBreadcrumbs } from "@/framework/routes";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
+import breadcrumbs from "@/accounting-periods/breadcrumbs";
 import reopenAccountingPeriod from "@/accounting-periods/reopenAccountingPeriod";
+import routes from "@/accounting-periods/routes";
 
 /**
  * Props for the ReopenAccountingPeriodForm component.
@@ -28,11 +29,7 @@ const ReopenAccountingPeriodForm = function ({
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs
-        breadcrumbs={routeBreadcrumbs.accountingPeriods.reopen(
-          accountingPeriod,
-        )}
-      />
+      <Breadcrumbs breadcrumbs={breadcrumbs.reopen(accountingPeriod)} />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <Typography>
           Are you sure you want to reopen the accounting period &quot;
@@ -40,7 +37,7 @@ const ReopenAccountingPeriodForm = function ({
         </Typography>
         <DialogActions>
           <Link
-            href={routes.accountingPeriods.detail(accountingPeriod.id)}
+            href={routes.detail({ id: accountingPeriod.id }, {})}
             tabIndex={-1}
           >
             <Button variant="outlined">Cancel</Button>

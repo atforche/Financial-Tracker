@@ -64,6 +64,7 @@ const eslintConfig = defineConfig([
       "no-negated-condition": "off",
       "max-lines": "off",
       complexity: "off",
+      "no-continue": "off",
 
       // import rules
       "import/no-deprecated": "error",

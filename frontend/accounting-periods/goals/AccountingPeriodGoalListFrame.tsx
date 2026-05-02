@@ -13,7 +13,7 @@ import type { Goal } from "@/goals/types";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
-import routes from "@/framework/routes";
+import routes from "@/accounting-periods/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
@@ -218,9 +218,12 @@ const AccountingPeriodGoalListFrame = function ({
           icon={<ArrowForwardIos />}
           onClick={() => {
             router.push(
-              routes.accountingPeriods.fundDetail(
-                accountingPeriod.id,
-                goal.fundId,
+              routes.fundDetail(
+                {
+                  id: accountingPeriod.id,
+                  fundId: goal.fundId,
+                },
+                {},
               ),
             );
           }}

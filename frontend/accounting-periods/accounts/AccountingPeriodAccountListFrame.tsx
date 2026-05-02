@@ -5,7 +5,6 @@ import {
   type AccountingPeriodAccount,
   AccountingPeriodAccountSortOrder,
 } from "@/accounting-periods/types";
-import routes, { withQuery } from "@/framework/routes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
@@ -15,7 +14,9 @@ import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import accountRoutes from "@/accounts/routes";
 import formatCurrency from "@/framework/formatCurrency";
+import routes from "@/accounting-periods/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
@@ -153,7 +154,7 @@ const AccountingPeriodAccountListFrame = function ({
           icon={<AddCircleOutline />}
           onClick={() => {
             router.push(
-              withQuery(routes.accounts.create, {
+              accountRoutes.create({
                 accountingPeriodId: accountingPeriod.id,
               }),
             );
@@ -167,10 +168,10 @@ const AccountingPeriodAccountListFrame = function ({
           icon={<ArrowForwardIos />}
           onClick={() => {
             router.push(
-              routes.accountingPeriods.accountDetail(
-                accountingPeriod.id,
-                account.id,
-              ),
+              routes.accountDetail({
+                id: accountingPeriod.id,
+                accountId: account.id,
+              }),
             );
           }}
         />

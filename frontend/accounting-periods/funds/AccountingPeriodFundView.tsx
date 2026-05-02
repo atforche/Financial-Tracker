@@ -1,5 +1,4 @@
 import { Button, Stack, Typography } from "@mui/material";
-import routes, { routeBreadcrumbs, withQuery } from "@/framework/routes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
@@ -8,7 +7,9 @@ import type { FundTransactionSortOrder } from "@/funds/types";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import TransactionListFrame from "@/funds/FundTransactionListFrame";
+import breadcrumbs from "@/accounting-periods/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
+import fundRoutes from "@/funds/routes";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
@@ -120,24 +121,13 @@ const AccountingPeriodFundView = async function ({
         maxWidth={1000}
       >
         <Breadcrumbs
-          breadcrumbs={routeBreadcrumbs.accountingPeriods.fundDetail(
-            {
-              id,
-              name: accountingPeriodData.name,
-            },
-            {
-              id: fundId,
-              name: fundData.name,
-            },
-          )}
+          breadcrumbs={breadcrumbs.fundDetail(accountingPeriodData, fundData)}
         />
         <Stack direction="row" spacing={1}>
           <Button
             variant="contained"
             color="primary"
-            href={withQuery(routes.funds.update(fundId), {
-              accountingPeriodId: id,
-            })}
+            href={fundRoutes.update({ id: fundId }, { accountingPeriodId: id })}
             disabled={isSystemFund}
           >
             Edit
@@ -145,9 +135,7 @@ const AccountingPeriodFundView = async function ({
           <Button
             variant="contained"
             color="error"
-            href={withQuery(routes.funds.delete(fundId), {
-              accountingPeriodId: id,
-            })}
+            href={fundRoutes.delete({ id: fundId }, { accountingPeriodId: id })}
             disabled={isSystemFund}
           >
             Delete
@@ -196,7 +184,6 @@ const AccountingPeriodFundView = async function ({
         <SearchBar paramName="transactionSearch" />
         <TransactionListFrame
           fund={fundData}
-          accountingPeriodId={id}
           data={fundTransactionsData.items}
           totalCount={fundTransactionsData.totalCount}
         />

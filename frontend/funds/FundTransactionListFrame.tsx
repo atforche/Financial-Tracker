@@ -1,6 +1,5 @@
 "use client";
 
-import routes, { withQuery } from "@/framework/routes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -35,7 +34,6 @@ type TransactionWithFundBalances = Transaction & {
  */
 interface TransactionListFrameProps {
   readonly fund: Fund;
-  readonly accountingPeriodId?: string | null;
   readonly data: Transaction[] | null;
   readonly totalCount: number | null;
 }
@@ -65,7 +63,6 @@ const getChangeInBalance = function (
  */
 const FundTransactionListFrame = function ({
   fund,
-  accountingPeriodId = null,
   data,
   totalCount,
 }: TransactionListFrameProps): JSX.Element {
@@ -165,19 +162,8 @@ const FundTransactionListFrame = function ({
     {
       name: "actions",
       headerContent: "",
-      getBodyContent: (transaction: Transaction) => (
-        <ColumnButton
-          label="View"
-          icon={<ArrowForwardIos />}
-          onClick={() => {
-            router.push(
-              withQuery(routes.transactions.detail(transaction.id), {
-                accountingPeriodId,
-                fundId: fund.id,
-              }),
-            );
-          }}
-        />
+      getBodyContent: () => (
+        <ColumnButton label="View" icon={<ArrowForwardIos />} onClick={null} />
       ),
       alignment: "right",
       minWidth: 90,

@@ -2,14 +2,16 @@
 
 import { Button, DialogActions, Stack } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
-import routes, { routeBreadcrumbs } from "@/framework/routes";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
+import accountingPeriodRoutes from "@/accounting-periods/routes";
+import breadcrumbs from "@/funds/breadcrumbs";
 import createFund from "@/funds/createFund";
+import routes from "@/funds/routes";
 
 /**
  * Props for the CreateFundForm component.
@@ -26,9 +28,12 @@ const getRedirectUrl = function (
   providedAccountingPeriod: AccountingPeriod | null,
 ): string {
   if (providedAccountingPeriod !== null) {
-    return routes.accountingPeriods.detail(providedAccountingPeriod.id);
+    return accountingPeriodRoutes.detail(
+      { id: providedAccountingPeriod.id },
+      {},
+    );
   }
-  return routes.funds.index;
+  return routes.index({});
 };
 
 /**
@@ -49,9 +54,7 @@ const CreateFundForm = function ({
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs
-        breadcrumbs={routeBreadcrumbs.funds.create(providedAccountingPeriod)}
-      />
+      <Breadcrumbs breadcrumbs={breadcrumbs.create(providedAccountingPeriod)} />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <StringEntryField
           label="Name"

@@ -4,15 +4,18 @@ import type {
   AccountingPeriodGoalSortOrder,
   AccountingPeriodTransactionSortOrder,
 } from "@/accounting-periods/types";
+import AccountingPeriodViewListFrames, {
+  type ToggleState,
+} from "@/accounting-periods/AccountingPeriodViewListFrames";
 import { Button, Stack } from "@mui/material";
-import routes, { routeBreadcrumbs } from "@/framework/routes";
-import AccountingPeriodViewListFrames from "@/accounting-periods/AccountingPeriodViewListFrames";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
 import type { JSX } from "react";
+import breadcrumbs from "@/accounting-periods/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
+import routes from "@/accounting-periods/routes";
 
 /**
  * Parameters for the AccountingPeriodView component.
@@ -33,6 +36,7 @@ interface AccountingPeriodViewSearchParams {
   accountSort?: AccountingPeriodAccountSortOrder;
   transactionSearch?: string;
   transactionSort?: AccountingPeriodTransactionSortOrder;
+  display?: ToggleState;
 }
 
 /**
@@ -162,18 +166,13 @@ const AccountingPeriodView = async function ({
         alignItems="center"
         maxWidth={1000}
       >
-        <Breadcrumbs
-          breadcrumbs={routeBreadcrumbs.accountingPeriods.detail({
-            id,
-            name: data.name,
-          })}
-        />
+        <Breadcrumbs breadcrumbs={breadcrumbs.detail(data)} />
         <Stack direction="row" spacing={1}>
           {data.isOpen ? (
             <Button
               variant="contained"
               color="primary"
-              href={routes.accountingPeriods.close(id)}
+              href={routes.close({ id })}
             >
               Close
             </Button>
@@ -181,7 +180,7 @@ const AccountingPeriodView = async function ({
             <Button
               variant="contained"
               color="primary"
-              href={routes.accountingPeriods.reopen(id)}
+              href={routes.reopen({ id })}
             >
               Reopen
             </Button>
@@ -189,7 +188,7 @@ const AccountingPeriodView = async function ({
           <Button
             variant="contained"
             color="error"
-            href={routes.accountingPeriods.delete(id)}
+            href={routes.delete({ id })}
           >
             Delete
           </Button>

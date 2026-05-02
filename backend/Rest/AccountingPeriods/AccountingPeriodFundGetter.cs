@@ -7,7 +7,9 @@ namespace Rest.AccountingPeriods;
 /// <summary>
 /// Class that handles retrieving Funds for an Accounting Period based on specified criteria
 /// </summary>
-public class AccountingPeriodFundGetter(IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository)
+public class AccountingPeriodFundGetter(
+    AccountingPeriodFundConverter accountingPeriodFundConverter,
+    IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository)
 {
     /// <summary>
     /// Gets the Funds within the specified Accounting Period that match the specified criteria
@@ -17,7 +19,7 @@ public class AccountingPeriodFundGetter(IAccountingPeriodBalanceHistoryRepositor
         AccountingPeriodFundQueryParameterModel request)
     {
         AccountingPeriodBalanceHistory accountingPeriodBalanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriodId);
-        var results = accountingPeriodBalanceHistory.FundBalances.Select(AccountingPeriodFundConverter.ToModel).ToList();
+        var results = accountingPeriodBalanceHistory.FundBalances.Select(accountingPeriodFundConverter.ToModel).ToList();
 
         if (request.Search != null)
         {

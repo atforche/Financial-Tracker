@@ -4,8 +4,8 @@ import Breadcrumbs from "@/framework/Breadcrumbs";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import { Stack } from "@mui/material";
+import breadcrumbs from "@/accounting-periods/breadcrumbs";
 import getApiClient from "@/framework/data/getApiClient";
-import { routeBreadcrumbs } from "@/framework/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
 /**
@@ -45,7 +45,7 @@ const AccountingPeriodsView = async function ({
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs breadcrumbs={routeBreadcrumbs.accountingPeriods.index()} />
+      <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
       <SearchBar paramName="search" />
       <AccountingPeriodListFrame
         data={data?.items ?? null}

@@ -4,8 +4,8 @@ import type { FundSortOrder } from "@/funds/types";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import { Stack } from "@mui/material";
+import breadcrumbs from "@/funds/breadcrumbs";
 import getApiClient from "@/framework/data/getApiClient";
-import { routeBreadcrumbs } from "@/framework/routes";
 
 /**
  * Search parameters for the FundsView component.
@@ -45,7 +45,7 @@ const FundsView = async function ({
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs breadcrumbs={routeBreadcrumbs.funds.index()} />
+      <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
       <SearchBar paramName="search" />
       <FundListFrame data={data.items} totalCount={data.totalCount} />
     </Stack>

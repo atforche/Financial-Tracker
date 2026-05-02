@@ -1732,15 +1732,6 @@ export interface components {
         /** @description Model representing an Account in the context of a specific Accounting Period */
         AccountingPeriodAccountModel: {
             /**
-             * Format: uuid
-             * @description ID for the Account
-             */
-            id: string;
-            /** @description Name for the Account */
-            name: string;
-            /** @description Type for the Account */
-            type: components["schemas"]["AccountTypeModel"];
-            /**
              * Format: double
              * @description Opening balance for the Account
              */
@@ -1750,20 +1741,22 @@ export interface components {
              * @description Closing balance for the Account
              */
             closingBalance: number;
+            /**
+             * Format: uuid
+             * @description ID for the Account
+             */
+            id: string;
+            /** @description Name for the Account */
+            name: string;
+            /** @description Type for the Account */
+            type: components["schemas"]["AccountTypeModel"];
+            /** @description Current Balance for the Account */
+            currentBalance: components["schemas"]["AccountBalanceModel"];
         };
         /** @enum {unknown} */
         AccountingPeriodAccountSortOrderModel: AccountingPeriodAccountSortOrderModel | null;
         /** @description Model representing a Fund in the context of a specific Accounting Period */
         AccountingPeriodFundModel: {
-            /**
-             * Format: uuid
-             * @description ID for the Fund
-             */
-            id: string;
-            /** @description Name for the Fund */
-            name: string;
-            /** @description Description for the Fund */
-            description: string;
             /**
              * Format: double
              * @description Opening balance for the Fund
@@ -1784,6 +1777,17 @@ export interface components {
              * @description Closing balance for the Fund
              */
             closingBalance: number;
+            /**
+             * Format: uuid
+             * @description ID for the Fund
+             */
+            id: string;
+            /** @description Name for the Fund */
+            name: string;
+            /** @description Description for the Fund */
+            description: string;
+            /** @description Current Balance for the Fund */
+            currentBalance: components["schemas"]["FundBalanceModel"];
         };
         /** @enum {unknown} */
         AccountingPeriodFundSortOrderModel: AccountingPeriodFundSortOrderModel | null;

@@ -1,6 +1,5 @@
 "use client";
 
-import routes, { withQuery } from "@/framework/routes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AccountingPeriodTransactionSortOrder } from "@/accounting-periods/types";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
@@ -17,7 +16,6 @@ import tryParseEnum from "@/framework/data/tryParseEnum";
  * Props for the AccountingPeriodTransactionListFrame component.
  */
 interface AccountingPeriodTransactionListFrameProps {
-  readonly accountingPeriodId: string;
   readonly data: Transaction[] | null;
   readonly totalCount: number | null;
 }
@@ -26,7 +24,6 @@ interface AccountingPeriodTransactionListFrameProps {
  * Component that displays the list of transactions for an accounting period.
  */
 const AccountingPeriodTransactionListFrame = function ({
-  accountingPeriodId,
   data,
   totalCount,
 }: AccountingPeriodTransactionListFrameProps): JSX.Element {
@@ -121,18 +118,8 @@ const AccountingPeriodTransactionListFrame = function ({
     {
       name: "actions",
       headerContent: "",
-      getBodyContent: (transaction: Transaction) => (
-        <ColumnButton
-          label="View"
-          icon={<ArrowForwardIos />}
-          onClick={() => {
-            router.push(
-              withQuery(routes.transactions.detail(transaction.id), {
-                accountingPeriodId,
-              }),
-            );
-          }}
-        />
+      getBodyContent: () => (
+        <ColumnButton label="View" icon={<ArrowForwardIos />} onClick={null} />
       ),
       alignment: "right",
       minWidth: 90,

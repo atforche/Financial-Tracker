@@ -7,7 +7,7 @@ import { isApiError } from "@/framework/data/apiError";
 import nameof from "@/framework/data/nameof";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import routes from "@/framework/routes";
+import routes from "@/accounting-periods/routes";
 
 /**
  * Interface representing the state of creating an accounting period.
@@ -62,8 +62,8 @@ const createAccountingPeriod = async function (
     throw new Error("An unexpected error occurred", { cause: error });
   }
 
-  revalidatePath(routes.accountingPeriods.index);
-  redirect(routes.accountingPeriods.index);
+  revalidatePath(routes.index({}));
+  redirect(routes.index({}));
 };
 
 export default createAccountingPeriod;

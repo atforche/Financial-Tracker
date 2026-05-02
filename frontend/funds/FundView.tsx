@@ -1,5 +1,4 @@
 import { Button, Stack, Typography } from "@mui/material";
-import routes, { routeBreadcrumbs } from "@/framework/routes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
@@ -7,8 +6,10 @@ import type { FundTransactionSortOrder } from "@/funds/types";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import TransactionListFrame from "@/funds/FundTransactionListFrame";
+import breadcrumbs from "@/funds/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
+import routes from "@/funds/routes";
 
 /**
  * Parameters for the FundView component.
@@ -89,17 +90,12 @@ const FundView = async function ({
         alignItems="center"
         maxWidth={1000}
       >
-        <Breadcrumbs
-          breadcrumbs={routeBreadcrumbs.funds.detail({
-            id,
-            name: fundData.name,
-          })}
-        />
+        <Breadcrumbs breadcrumbs={breadcrumbs.detail(fundData)} />
         <Stack direction="row" spacing={1}>
           <Button
             variant="contained"
             color="primary"
-            href={routes.funds.update(id)}
+            href={routes.update({ id }, {})}
             disabled={isSystemFund}
           >
             Edit
@@ -107,7 +103,7 @@ const FundView = async function ({
           <Button
             variant="contained"
             color="error"
-            href={routes.funds.delete(id)}
+            href={routes.delete({ id }, {})}
             disabled={isSystemFund}
           >
             Delete

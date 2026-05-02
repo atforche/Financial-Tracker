@@ -2,13 +2,15 @@
 
 import { Button, DialogActions, Stack } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
-import routes, { routeBreadcrumbs } from "@/framework/routes";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import type { Fund } from "@/funds/types";
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
+import accountingPeriodRoutes from "@/accounting-periods/routes";
+import breadcrumbs from "@/funds/breadcrumbs";
+import routes from "@/funds/routes";
 import updateFund from "@/funds/updateFund";
 
 /**
@@ -27,12 +29,15 @@ const getRedirectUrl = function (
   providedAccountingPeriod: AccountingPeriod | null,
 ): string {
   if (providedAccountingPeriod !== null) {
-    return routes.accountingPeriods.fundDetail(
-      providedAccountingPeriod.id,
-      fund.id,
+    return accountingPeriodRoutes.fundDetail(
+      {
+        id: providedAccountingPeriod.id,
+        fundId: fund.id,
+      },
+      {},
     );
   }
-  return routes.funds.detail(fund.id);
+  return routes.detail({ id: fund.id }, {});
 };
 
 /**
@@ -53,10 +58,7 @@ const UpdateFundForm = function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={routeBreadcrumbs.funds.update(
-          fund,
-          providedAccountingPeriod,
-        )}
+        breadcrumbs={breadcrumbs.update(fund, providedAccountingPeriod)}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <StringEntryField

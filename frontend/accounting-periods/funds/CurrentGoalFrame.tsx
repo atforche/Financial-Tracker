@@ -4,7 +4,7 @@ import CaptionedValue from "@/framework/view/CaptionedValue";
 import type { Goal } from "@/goals/types";
 import type { JSX } from "react";
 import formatCurrency from "@/framework/formatCurrency";
-import routes from "@/framework/routes";
+import routes from "@/accounting-periods/routes";
 
 /**
  * Props for the CurrentGoalFrame component.
@@ -52,10 +52,10 @@ const CurrentGoalFrame = function ({
             <Button
               variant="contained"
               color="primary"
-              href={routes.accountingPeriods.goalUpdate(
-                accountingPeriodId,
-                goal.fundId,
-              )}
+              href={routes.goalUpdate({
+                id: accountingPeriodId,
+                fundId: goal.fundId,
+              })}
               disabled={isSystemFund || !isAccountingPeriodOpen}
             >
               Edit
@@ -63,10 +63,10 @@ const CurrentGoalFrame = function ({
             <Button
               variant="contained"
               color="error"
-              href={routes.accountingPeriods.goalDelete(
-                accountingPeriodId,
-                goal.fundId,
-              )}
+              href={routes.goalDelete({
+                id: accountingPeriodId,
+                fundId: goal.fundId,
+              })}
               disabled={isSystemFund || !isAccountingPeriodOpen}
             >
               Delete
@@ -76,10 +76,10 @@ const CurrentGoalFrame = function ({
           <Button
             variant="contained"
             color="primary"
-            href={routes.accountingPeriods.goalCreate(
-              accountingPeriodId,
+            href={routes.goalCreate({
+              id: accountingPeriodId,
               fundId,
-            )}
+            })}
             disabled={isSystemFund || !isAccountingPeriodOpen}
           >
             Add

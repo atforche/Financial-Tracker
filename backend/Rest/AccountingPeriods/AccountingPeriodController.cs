@@ -24,8 +24,10 @@ namespace Rest.AccountingPeriods;
 public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountConverter accountConverter,
     AccountingPeriodRepository accountingPeriodRepository,
+    AccountingPeriodAccountConverter accountingPeriodAccountConverter,
     AccountingPeriodAccountGetter accountingPeriodAccountGetter,
     AccountingPeriodConverter accountingPeriodConverter,
+    AccountingPeriodFundConverter accountingPeriodFundConverter,
     AccountingPeriodFundGetter accountingPeriodFundGetter,
     AccountingPeriodGoalGetter accountingPeriodGoalGetter,
     AccountingPeriodGetter accountingPeriodGetter,
@@ -137,7 +139,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        return Ok(AccountingPeriodFundConverter.ToModel(fundBalanceHistory));
+        return Ok(accountingPeriodFundConverter.ToModel(fundBalanceHistory));
     }
 
     /// <summary>
@@ -262,7 +264,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        return Ok(AccountingPeriodAccountConverter.ToModel(accountBalanceHistory));
+        return Ok(accountingPeriodAccountConverter.ToModel(accountBalanceHistory));
     }
 
     /// <summary>

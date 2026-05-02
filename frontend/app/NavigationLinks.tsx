@@ -18,7 +18,9 @@ import {
 import type { JSX } from "react";
 import Link from "next/link";
 import type { Route } from "next";
-import routes from "@/framework/routes";
+import accountRoutes from "@/accounts/routes";
+import accountingPeriodRoutes from "@/accounting-periods/routes";
+import fundRoutes from "@/funds/routes";
 import { usePathname } from "next/navigation";
 
 /**
@@ -34,14 +36,14 @@ interface NavigationLink {
  * Collection of links to be displayed in the application's navigation menu.
  */
 const links: NavigationLink[] = [
-  { name: "Overview", href: routes.home, icon: <GridView /> },
+  { name: "Overview", href: "/", icon: <GridView /> },
   {
     name: "Accounting Periods",
-    href: routes.accountingPeriods.index,
+    href: accountingPeriodRoutes.index({}),
     icon: <CalendarMonth />,
   },
-  { name: "Accounts", href: routes.accounts.index, icon: <AccountBalance /> },
-  { name: "Funds", href: routes.funds.index, icon: <Assessment /> },
+  { name: "Accounts", href: accountRoutes.index({}), icon: <AccountBalance /> },
+  { name: "Funds", href: fundRoutes.index({}), icon: <Assessment /> },
 ];
 
 /**

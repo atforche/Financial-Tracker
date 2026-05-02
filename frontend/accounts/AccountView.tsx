@@ -1,5 +1,4 @@
 import { Button, Stack, Typography } from "@mui/material";
-import routes, { routeBreadcrumbs } from "@/framework/routes";
 import type { AccountTransactionSortOrder } from "@/accounts/types";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
@@ -7,8 +6,10 @@ import CaptionedValue from "@/framework/view/CaptionedValue";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import TransactionListFrame from "@/accounts/AccountTransactionListFrame";
+import breadcrumbs from "@/accounts/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
+import routes from "@/accounts/routes";
 
 /**
  * Parameters for the AccountView component.
@@ -92,24 +93,19 @@ const AccountView = async function ({
         alignItems="center"
         maxWidth={1000}
       >
-        <Breadcrumbs
-          breadcrumbs={routeBreadcrumbs.accounts.detail({
-            id,
-            name: accountData.name,
-          })}
-        />
+        <Breadcrumbs breadcrumbs={breadcrumbs.detail(accountData)} />
         <Stack direction="row" spacing={1}>
           <Button
             variant="contained"
             color="primary"
-            href={routes.accounts.update(id)}
+            href={routes.update({ id }, {})}
           >
             Edit
           </Button>
           <Button
             variant="contained"
             color="error"
-            href={routes.accounts.delete(id)}
+            href={routes.delete({ id }, {})}
           >
             Delete
           </Button>

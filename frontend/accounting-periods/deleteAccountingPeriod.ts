@@ -5,7 +5,7 @@ import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import routes from "@/framework/routes";
+import routes from "@/accounting-periods/routes";
 
 /**
  * Interface representing the state of deleting an accounting period.
@@ -48,7 +48,7 @@ const deleteAccountingPeriod = async function ({
     throw new Error("An unexpected error occurred", { cause: error });
   }
 
-  const redirectUrl = routes.accountingPeriods.index;
+  const redirectUrl = routes.index({});
   revalidatePath(redirectUrl);
   redirect(redirectUrl);
 };

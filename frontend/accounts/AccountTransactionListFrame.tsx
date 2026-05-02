@@ -5,7 +5,6 @@ import {
   type AccountType,
   isPositiveChangeInBalance,
 } from "@/accounts/types";
-import routes, { withQuery } from "@/framework/routes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -171,18 +170,8 @@ const AccountTransactionListFrame = function ({
     {
       name: "actions",
       headerContent: "",
-      getBodyContent: (transaction: Transaction) => (
-        <ColumnButton
-          label="View"
-          icon={<ArrowForwardIos />}
-          onClick={() => {
-            router.push(
-              withQuery(routes.transactions.detail(transaction.id), {
-                accountId: account.id,
-              }),
-            );
-          }}
-        />
+      getBodyContent: () => (
+        <ColumnButton label="View" icon={<ArrowForwardIos />} onClick={null} />
       ),
       alignment: "right",
       minWidth: 90,

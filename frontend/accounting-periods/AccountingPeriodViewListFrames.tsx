@@ -131,7 +131,6 @@ const AccountingPeriodListFrames = function ({
             <Typography variant="h6">Transactions</Typography>
             <SearchBar paramName="transactionSearch" />
             <TransactionListFrame
-              accountingPeriodId={accountingPeriod.id}
               data={transactionData}
               totalCount={transactionTotalCount}
             />
@@ -143,3 +142,4 @@ const AccountingPeriodListFrames = function ({
 };
 
 export default AccountingPeriodListFrames;
+export { ToggleState };

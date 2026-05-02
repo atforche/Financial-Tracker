@@ -1,9 +1,10 @@
 import { Button, Stack } from "@mui/material";
-import routes, { routeBreadcrumbs, withQuery } from "@/framework/routes";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
 import type { JSX } from "react";
+import accountRoutes from "@/accounts/routes";
+import breadcrumbs from "@/accounting-periods/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
 import { isPositiveChangeInBalance } from "@/accounts/types";
@@ -84,33 +85,33 @@ const AccountingPeriodAccountView = async function ({
         maxWidth={1000}
       >
         <Breadcrumbs
-          breadcrumbs={routeBreadcrumbs.accountingPeriods.accountDetail(
-            {
-              id,
-              name: accountingPeriodData.name,
-            },
-            {
-              id: accountId,
-              name: accountData.name,
-            },
+          breadcrumbs={breadcrumbs.accountDetail(
+            accountingPeriodData,
+            accountData,
           )}
         />
         <Stack direction="row" spacing={1}>
           <Button
             variant="contained"
             color="primary"
-            href={withQuery(routes.accounts.update(accountId), {
-              accountingPeriodId: id,
-            })}
+            href={accountRoutes.update(
+              { id: accountData.id },
+              {
+                accountingPeriodId: id,
+              },
+            )}
           >
             Edit
           </Button>
           <Button
             variant="contained"
             color="error"
-            href={withQuery(routes.accounts.delete(accountId), {
-              accountingPeriodId: id,
-            })}
+            href={accountRoutes.delete(
+              { id: accountData.id },
+              {
+                accountingPeriodId: id,
+              },
+            )}
           >
             Delete
           </Button>

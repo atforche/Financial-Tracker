@@ -4,8 +4,8 @@ import Breadcrumbs from "@/framework/Breadcrumbs";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import { Stack } from "@mui/material";
+import breadcrumbs from "@/accounts/breadcrumbs";
 import getApiClient from "@/framework/data/getApiClient";
-import { routeBreadcrumbs } from "@/framework/routes";
 
 /**
  * Search parameters for the AccountsView component.
@@ -45,7 +45,7 @@ const AccountsView = async function ({
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs breadcrumbs={routeBreadcrumbs.accounts.index()} />
+      <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
       <SearchBar paramName="search" />
       <AccountListFrame data={data.items} totalCount={data.totalCount} />
     </Stack>
