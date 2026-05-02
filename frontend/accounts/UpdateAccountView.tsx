@@ -54,17 +54,19 @@ const UpdateAccountView = async function ({
         })
       : Promise.resolve({ data: null });
 
-  const [{ data: accountData }, { data: accountingPeriodData }] =
-    await Promise.all([accountPromise, accountingPeriodPromise]);
+  const [{ data: account }, { data: accountingPeriod }] = await Promise.all([
+    accountPromise,
+    accountingPeriodPromise,
+  ]);
 
-  if (typeof accountData === "undefined") {
+  if (typeof account === "undefined") {
     throw new Error("Failed to fetch account data");
   }
 
   return (
     <UpdateAccountForm
-      account={accountData}
-      providedAccountingPeriod={accountingPeriodData ?? null}
+      account={account}
+      providedAccountingPeriod={accountingPeriod ?? null}
     />
   );
 };

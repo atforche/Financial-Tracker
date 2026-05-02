@@ -25,7 +25,7 @@ const ReopenAccountingPeriodView = async function ({
   const { id } = await params;
 
   const apiClient = getApiClient();
-  const { data, error } = await apiClient.GET(
+  const { data: accountingPeriod, error } = await apiClient.GET(
     "/accounting-periods/{accountingPeriodId}",
     {
       params: {
@@ -36,11 +36,11 @@ const ReopenAccountingPeriodView = async function ({
     },
   );
 
-  if (typeof data === "undefined") {
+  if (typeof accountingPeriod === "undefined") {
     throw new Error(`Failed to fetch accounting period data: ${error.detail}`);
   }
 
-  return <ReopenAccountingPeriodForm accountingPeriod={data} />;
+  return <ReopenAccountingPeriodForm accountingPeriod={accountingPeriod} />;
 };
 
 export type { ReopenAccountingPeriodViewParams };

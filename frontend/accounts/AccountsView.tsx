@@ -33,7 +33,7 @@ const AccountsView = async function ({
   const { search, sort } = await searchParams;
 
   const apiClient = getApiClient();
-  const { data, error } = await apiClient.GET("/accounts", {
+  const { data: accounts, error } = await apiClient.GET("/accounts", {
     params: {
       query: {
         Search: search ?? "",
@@ -41,7 +41,7 @@ const AccountsView = async function ({
       },
     },
   });
-  if (typeof data === "undefined") {
+  if (typeof accounts === "undefined") {
     throw new Error(`Failed to fetch accounts: ${error.detail}`);
   }
 
@@ -49,7 +49,10 @@ const AccountsView = async function ({
     <Stack spacing={2}>
       <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
       <SearchBar paramName={nameof<AccountsViewSearchParams>("search")} />
-      <AccountListFrame data={data.items} totalCount={data.totalCount} />
+      <AccountListFrame
+        data={accounts.items}
+        totalCount={accounts.totalCount}
+      />
     </Stack>
   );
 };

@@ -25,7 +25,7 @@ const DeleteAccountingPeriodView = async function ({
   const { id } = await params;
 
   const apiClient = getApiClient();
-  const { data, error } = await apiClient.GET(
+  const { data: accountingPeriod, error } = await apiClient.GET(
     "/accounting-periods/{accountingPeriodId}",
     {
       params: {
@@ -36,11 +36,11 @@ const DeleteAccountingPeriodView = async function ({
     },
   );
 
-  if (typeof data === "undefined") {
+  if (typeof accountingPeriod === "undefined") {
     throw new Error(`Failed to fetch accounting period data: ${error.detail}`);
   }
 
-  return <DeleteAccountingPeriodForm accountingPeriod={data} />;
+  return <DeleteAccountingPeriodForm accountingPeriod={accountingPeriod} />;
 };
 
 export type { DeleteAccountingPeriodViewParams };

@@ -33,7 +33,7 @@ const FundsView = async function ({
   const { search, sort } = await searchParams;
 
   const apiClient = getApiClient();
-  const { data } = await apiClient.GET("/funds", {
+  const { data: funds } = await apiClient.GET("/funds", {
     params: {
       query: {
         Search: search ?? "",
@@ -41,7 +41,7 @@ const FundsView = async function ({
       },
     },
   });
-  if (typeof data === "undefined") {
+  if (typeof funds === "undefined") {
     throw new Error(`Failed to fetch funds`);
   }
 
@@ -49,7 +49,7 @@ const FundsView = async function ({
     <Stack spacing={2}>
       <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
       <SearchBar paramName={nameof<FundsViewSearchParams>("search")} />
-      <FundListFrame data={data.items} totalCount={data.totalCount} />
+      <FundListFrame data={funds.items} totalCount={funds.totalCount} />
     </Stack>
   );
 };

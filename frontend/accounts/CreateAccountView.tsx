@@ -23,7 +23,7 @@ interface CreateAccountViewProps {
  */
 const getFundIdentifiers = async function (): Promise<FundIdentifier[]> {
   const apiClient = getApiClient();
-  const { data } = await apiClient.GET("/funds", {
+  const { data: funds } = await apiClient.GET("/funds", {
     params: {
       query: {
         Search: "",
@@ -31,18 +31,18 @@ const getFundIdentifiers = async function (): Promise<FundIdentifier[]> {
       },
     },
   });
-  if (typeof data === "undefined") {
+  if (typeof funds === "undefined") {
     throw new Error(`Failed to fetch funds`);
   }
 
-  let funds = data.items;
-  if (data.totalCount > data.items.length) {
+  let fundIdentifiers = funds.items;
+  if (funds.totalCount > funds.items.length) {
     const { data: allFunds } = await apiClient.GET("/funds", {
       params: {
         query: {
           Search: "",
           Sort: null,
-          Limit: data.totalCount,
+          Limit: funds.totalCount,
           Offset: 0,
         },
       },
@@ -50,10 +50,10 @@ const getFundIdentifiers = async function (): Promise<FundIdentifier[]> {
     if (typeof allFunds === "undefined") {
       throw new Error(`Failed to fetch all funds`);
     }
-    funds = allFunds.items;
+    fundIdentifiers = allFunds.items;
   }
 
-  return funds.map((fund) => ({
+  return fundIdentifiers.map((fund) => ({
     id: fund.id,
     name: fund.name,
   }));
@@ -72,22 +72,22 @@ const CreateAccountView = async function ({
     apiClient.GET("/accounting-periods/open"),
     getFundIdentifiers(),
   ]);
-  const { data: accountingPeriodData } = accountingPeriodsResult;
+  const { data: accountingPeriods } = accountingPeriodsResult;
 
-  if (typeof accountingPeriodData === "undefined") {
+  if (typeof accountingPeriods === "undefined") {
     throw new Error("Failed to fetch accounting periods:");
   }
 
   let providedAccountingPeriod: AccountingPeriod | null = null;
   if (typeof accountingPeriodId === "string") {
     providedAccountingPeriod =
-      accountingPeriodData.find((period) => period.id === accountingPeriodId) ??
+      accountingPeriods.find((period) => period.id === accountingPeriodId) ??
       null;
   }
 
   return (
     <CreateAccountForm
-      accountingPeriods={accountingPeriodData}
+      accountingPeriods={accountingPeriods}
       funds={funds}
       providedAccountingPeriod={providedAccountingPeriod}
     />

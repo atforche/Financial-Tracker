@@ -26,24 +26,24 @@ const CreateFundView = async function ({
   const { accountingPeriodId } = await searchParams;
   const apiClient = getApiClient();
 
-  const { data: accountingPeriodData } = await apiClient.GET(
+  const { data: accountingPeriods } = await apiClient.GET(
     "/accounting-periods/open",
   );
 
-  if (typeof accountingPeriodData === "undefined") {
+  if (typeof accountingPeriods === "undefined") {
     throw new Error("Failed to fetch accounting periods");
   }
 
   let providedAccountingPeriod: AccountingPeriod | null = null;
   if (accountingPeriodId !== null) {
     providedAccountingPeriod =
-      accountingPeriodData.find((period) => period.id === accountingPeriodId) ??
+      accountingPeriods.find((period) => period.id === accountingPeriodId) ??
       null;
   }
 
   return (
     <CreateFundForm
-      accountingPeriods={accountingPeriodData}
+      accountingPeriods={accountingPeriods}
       providedAccountingPeriod={providedAccountingPeriod}
     />
   );

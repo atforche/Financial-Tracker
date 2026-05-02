@@ -39,13 +39,13 @@ enum ToggleState {
  */
 interface AccountingPeriodListFramesProps {
   readonly accountingPeriod: AccountingPeriod;
-  readonly fundData: AccountingPeriodFund[];
+  readonly funds: AccountingPeriodFund[];
   readonly fundTotalCount: number;
-  readonly goalData: Goal[];
+  readonly goals: Goal[];
   readonly goalTotalCount: number;
-  readonly accountData: AccountingPeriodAccount[];
+  readonly accounts: AccountingPeriodAccount[];
   readonly accountTotalCount: number;
-  readonly transactionData: Transaction[];
+  readonly transactions: Transaction[];
   readonly transactionTotalCount: number;
 }
 
@@ -54,13 +54,13 @@ interface AccountingPeriodListFramesProps {
  */
 const AccountingPeriodListFrames = function ({
   accountingPeriod,
-  fundData,
+  funds,
   fundTotalCount,
-  goalData,
+  goals,
   goalTotalCount,
-  accountData,
+  accounts,
   accountTotalCount,
-  transactionData,
+  transactions,
   transactionTotalCount,
 }: AccountingPeriodListFramesProps): JSX.Element {
   const searchParams = useSearchParams();
@@ -105,7 +105,7 @@ const AccountingPeriodListFrames = function ({
             />
             <FundListFrame
               accountingPeriod={accountingPeriod}
-              data={fundData}
+              data={funds}
               totalCount={fundTotalCount}
             />
           </Stack>
@@ -118,7 +118,7 @@ const AccountingPeriodListFrames = function ({
             />
             <GoalListFrame
               accountingPeriod={accountingPeriod}
-              data={goalData}
+              data={goals}
               totalCount={goalTotalCount}
             />
           </Stack>
@@ -131,7 +131,7 @@ const AccountingPeriodListFrames = function ({
             />
             <AccountListFrame
               accountingPeriod={accountingPeriod}
-              data={accountData}
+              data={accounts}
               totalCount={accountTotalCount}
             />
           </Stack>
@@ -143,7 +143,7 @@ const AccountingPeriodListFrames = function ({
               paramName={nameof<AccountingPeriodViewSearchParams>("search")}
             />
             <TransactionListFrame
-              data={transactionData}
+              data={transactions}
               totalCount={transactionTotalCount}
             />
           </Stack>

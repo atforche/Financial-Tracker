@@ -124,11 +124,11 @@ const AccountingPeriodView = async function ({
     },
   );
   const [
-    { data, error },
-    { data: fundData, error: fundError },
-    { data: goalData, error: goalError },
-    { data: accountData, error: accountError },
-    { data: transactionData, error: transactionError },
+    { data: accountingPeriod, error },
+    { data: funds, error: fundError },
+    { data: goals, error: goalError },
+    { data: accounts, error: accountError },
+    { data: transactions, error: transactionError },
   ] = await Promise.all([
     accountingPeriodPromise,
     fundPromise,
@@ -137,11 +137,11 @@ const AccountingPeriodView = async function ({
     transactionPromise,
   ]);
   if (
-    typeof data === "undefined" ||
-    typeof fundData === "undefined" ||
-    typeof goalData === "undefined" ||
-    typeof accountData === "undefined" ||
-    typeof transactionData === "undefined"
+    typeof accountingPeriod === "undefined" ||
+    typeof funds === "undefined" ||
+    typeof goals === "undefined" ||
+    typeof accounts === "undefined" ||
+    typeof transactions === "undefined"
   ) {
     throw new Error(
       `Failed to fetch accounting period with ID ${id}: ${error?.detail ?? fundError?.detail ?? goalError?.detail ?? accountError?.detail ?? transactionError?.detail}`,
@@ -156,9 +156,9 @@ const AccountingPeriodView = async function ({
         alignItems="center"
         maxWidth={1000}
       >
-        <Breadcrumbs breadcrumbs={breadcrumbs.detail(data)} />
+        <Breadcrumbs breadcrumbs={breadcrumbs.detail(accountingPeriod)} />
         <Stack direction="row" spacing={1}>
-          {data.isOpen ? (
+          {accountingPeriod.isOpen ? (
             <Button
               variant="contained"
               color="primary"
@@ -185,27 +185,30 @@ const AccountingPeriodView = async function ({
         </Stack>
       </Stack>
       <CaptionedFrame caption="Details">
-        <CaptionedValue caption="Name" value={data.name} />
-        <CaptionedValue caption="Is Open" value={data.isOpen ? "Yes" : "No"} />
+        <CaptionedValue caption="Name" value={accountingPeriod.name} />
+        <CaptionedValue
+          caption="Is Open"
+          value={accountingPeriod.isOpen ? "Yes" : "No"}
+        />
         <CaptionedValue
           caption="Opening Balance"
-          value={formatCurrency(data.openingBalance)}
+          value={formatCurrency(accountingPeriod.openingBalance)}
         />
         <CaptionedValue
           caption="Closing Balance"
-          value={formatCurrency(data.closingBalance)}
+          value={formatCurrency(accountingPeriod.closingBalance)}
         />
       </CaptionedFrame>
       <AccountingPeriodViewListFrames
-        accountingPeriod={data}
-        fundData={fundData.items}
-        fundTotalCount={fundData.totalCount}
-        goalData={goalData.items}
-        goalTotalCount={goalData.totalCount}
-        accountData={accountData.items}
-        accountTotalCount={accountData.totalCount}
-        transactionData={transactionData.items}
-        transactionTotalCount={transactionData.totalCount}
+        accountingPeriod={accountingPeriod}
+        funds={funds.items}
+        fundTotalCount={funds.totalCount}
+        goals={goals.items}
+        goalTotalCount={goals.totalCount}
+        accounts={accounts.items}
+        accountTotalCount={accounts.totalCount}
+        transactions={transactions.items}
+        transactionTotalCount={transactions.totalCount}
       />
     </Stack>
   );

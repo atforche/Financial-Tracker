@@ -56,23 +56,22 @@ const AccountingPeriodAccountView = async function ({
   );
 
   const [
-    { data: accountingPeriodData, error: accountingPeriodError },
-    { data: accountData, error: accountError },
+    { data: accountingPeriod, error: accountingPeriodError },
+    { data: account, error: accountError },
   ] = await Promise.all([accountingPeriodPromise, accountPromise]);
 
   if (
-    typeof accountingPeriodData === "undefined" ||
-    typeof accountData === "undefined"
+    typeof accountingPeriod === "undefined" ||
+    typeof account === "undefined"
   ) {
     throw new Error(
       `Failed to fetch account with ID ${accountId} for accounting period with ID ${id}: ${accountingPeriodError?.detail ?? accountError?.detail ?? "Unknown error"}`,
     );
   }
 
-  const changeInPostedBalance =
-    accountData.closingBalance - accountData.openingBalance;
+  const changeInPostedBalance = account.closingBalance - account.openingBalance;
   const isPositiveChange = isPositiveChangeInBalance(
-    accountData.type,
+    account.type,
     changeInPostedBalance,
   );
 
@@ -85,17 +84,14 @@ const AccountingPeriodAccountView = async function ({
         maxWidth={1000}
       >
         <Breadcrumbs
-          breadcrumbs={breadcrumbs.accountDetail(
-            accountingPeriodData,
-            accountData,
-          )}
+          breadcrumbs={breadcrumbs.accountDetail(accountingPeriod, account)}
         />
         <Stack direction="row" spacing={1}>
           <Button
             variant="contained"
             color="primary"
             href={accountRoutes.update(
-              { id: accountData.id },
+              { id: account.id },
               {
                 accountingPeriodId: id,
               },
@@ -107,7 +103,7 @@ const AccountingPeriodAccountView = async function ({
             variant="contained"
             color="error"
             href={accountRoutes.delete(
-              { id: accountData.id },
+              { id: account.id },
               {
                 accountingPeriodId: id,
               },
@@ -118,19 +114,19 @@ const AccountingPeriodAccountView = async function ({
         </Stack>
       </Stack>
       <CaptionedFrame caption="Details">
-        <CaptionedValue caption="Name" value={accountData.name} />
-        <CaptionedValue caption="Type" value={accountData.type} />
+        <CaptionedValue caption="Name" value={account.name} />
+        <CaptionedValue caption="Type" value={account.type} />
       </CaptionedFrame>
       <CaptionedFrame caption="Opening Balance">
         <CaptionedValue
           caption="Posted Balance"
-          value={formatCurrency(accountData.openingBalance)}
+          value={formatCurrency(account.openingBalance)}
         />
       </CaptionedFrame>
       <CaptionedFrame caption="Closing Balance">
         <CaptionedValue
           caption="Posted Balance"
-          value={formatCurrency(accountData.closingBalance)}
+          value={formatCurrency(account.closingBalance)}
         />
         <CaptionedValue
           caption="Change in Posted Balance"

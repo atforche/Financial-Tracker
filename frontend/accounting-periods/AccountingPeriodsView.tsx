@@ -33,7 +33,7 @@ const AccountingPeriodsView = async function ({
 }: AccountingPeriodsViewProps): Promise<JSX.Element> {
   const searchParamsValue = await searchParams;
   const client = getApiClient();
-  const { data } = await client.GET("/accounting-periods", {
+  const { data: accountingPeriods } = await client.GET("/accounting-periods", {
     params: {
       query: {
         Search: searchParamsValue?.search ?? "",
@@ -51,8 +51,8 @@ const AccountingPeriodsView = async function ({
         paramName={nameof<AccountingPeriodsViewSearchParams>("search")}
       />
       <AccountingPeriodListFrame
-        data={data?.items ?? null}
-        totalCount={data?.totalCount ?? null}
+        data={accountingPeriods?.items ?? null}
+        totalCount={accountingPeriods?.totalCount ?? null}
       />
     </Stack>
   );

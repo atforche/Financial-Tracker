@@ -91,10 +91,10 @@ const AccountingPeriodFundView = async function ({
     },
   );
   const [
-    { data: accountingPeriodData, error: accountingPeriodError },
-    { data: fundData, error: fundError },
-    { data: goalData },
-    { data: fundTransactionsData, error: fundTransactionsError },
+    { data: accountingPeriod, error: accountingPeriodError },
+    { data: fund, error: fundError },
+    { data: goal },
+    { data: transactions, error: fundTransactionsError },
   ] = await Promise.all([
     accountingPeriodPromise,
     fundPromise,
@@ -103,16 +103,16 @@ const AccountingPeriodFundView = async function ({
   ]);
 
   if (
-    typeof accountingPeriodData === "undefined" ||
-    typeof fundData === "undefined" ||
-    typeof fundTransactionsData === "undefined"
+    typeof accountingPeriod === "undefined" ||
+    typeof fund === "undefined" ||
+    typeof transactions === "undefined"
   ) {
     throw new Error(
       `Failed to fetch fund with ID ${fundId} for accounting period with ID ${id}: ${accountingPeriodError?.detail ?? fundError?.detail ?? fundTransactionsError?.detail ?? "Unknown error"}`,
     );
   }
 
-  const isSystemFund = fundData.name === "Unassigned";
+  const isSystemFund = fund.name === "Unassigned";
   return (
     <Stack spacing={2}>
       <Stack
@@ -122,7 +122,7 @@ const AccountingPeriodFundView = async function ({
         maxWidth={1000}
       >
         <Breadcrumbs
-          breadcrumbs={breadcrumbs.fundDetail(accountingPeriodData, fundData)}
+          breadcrumbs={breadcrumbs.fundDetail(accountingPeriod, fund)}
         />
         <Stack direction="row" spacing={1}>
           <Button
@@ -144,19 +144,19 @@ const AccountingPeriodFundView = async function ({
         </Stack>
       </Stack>
       <CaptionedFrame caption="Details">
-        <CaptionedValue caption="Name" value={fundData.name} />
-        <CaptionedValue caption="Description" value={fundData.description} />
+        <CaptionedValue caption="Name" value={fund.name} />
+        <CaptionedValue caption="Description" value={fund.description} />
       </CaptionedFrame>
       <CaptionedFrame caption="Balance">
         <CaptionedValue
           caption="Opening Balance"
-          value={formatCurrency(fundData.openingBalance)}
+          value={formatCurrency(fund.openingBalance)}
         />
         <CaptionedValue
           caption="Amount Assigned"
           value={
             <span style={{ color: "green" }}>
-              + {formatCurrency(fundData.amountAssigned)}
+              + {formatCurrency(fund.amountAssigned)}
             </span>
           }
         />
@@ -164,20 +164,20 @@ const AccountingPeriodFundView = async function ({
           caption="Amount Spent"
           value={
             <span style={{ color: "red" }}>
-              - {formatCurrency(fundData.amountSpent)}
+              - {formatCurrency(fund.amountSpent)}
             </span>
           }
         />
         <CaptionedValue
           caption="Closing Balance"
-          value={formatCurrency(fundData.closingBalance)}
+          value={formatCurrency(fund.closingBalance)}
         />
       </CaptionedFrame>
       <CurrentGoalFrame
-        fundId={fundData.id}
-        goal={goalData ?? null}
+        fundId={fund.id}
+        goal={goal ?? null}
         accountingPeriodId={id}
-        isAccountingPeriodOpen={accountingPeriodData.isOpen}
+        isAccountingPeriodOpen={accountingPeriod.isOpen}
         isSystemFund={isSystemFund}
       />
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
@@ -186,9 +186,9 @@ const AccountingPeriodFundView = async function ({
           paramName={nameof<AccountingPeriodFundViewSearchParams>("search")}
         />
         <TransactionListFrame
-          fund={fundData}
-          data={fundTransactionsData.items}
-          totalCount={fundTransactionsData.totalCount}
+          fund={fund}
+          data={transactions.items}
+          totalCount={transactions.totalCount}
         />
       </Stack>
     </Stack>

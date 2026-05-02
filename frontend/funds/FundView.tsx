@@ -70,20 +70,17 @@ const FundView = async function ({
   );
 
   const [
-    { data: fundData, error: fundError },
-    { data: fundTransactionsData, error: fundTransactionsError },
+    { data: fund, error: fundError },
+    { data: transactions, error: fundTransactionsError },
   ] = await Promise.all([fundPromise, fundTransactionsPromise]);
 
-  if (
-    typeof fundData === "undefined" ||
-    typeof fundTransactionsData === "undefined"
-  ) {
+  if (typeof fund === "undefined" || typeof transactions === "undefined") {
     throw new Error(
       `Failed to fetch fund with ID ${id}: ${fundError?.detail ?? fundTransactionsError?.detail ?? "Unknown error"}`,
     );
   }
 
-  const isSystemFund = fundData.name === "Unassigned";
+  const isSystemFund = fund.name === "Unassigned";
   return (
     <Stack spacing={2}>
       <Stack
@@ -92,7 +89,7 @@ const FundView = async function ({
         alignItems="center"
         maxWidth={1000}
       >
-        <Breadcrumbs breadcrumbs={breadcrumbs.detail(fundData)} />
+        <Breadcrumbs breadcrumbs={breadcrumbs.detail(fund)} />
         <Stack direction="row" spacing={1}>
           <Button
             variant="contained"
@@ -113,21 +110,21 @@ const FundView = async function ({
         </Stack>
       </Stack>
       <CaptionedFrame caption="Details">
-        <CaptionedValue caption="Name" value={fundData.name} />
-        <CaptionedValue caption="Description" value={fundData.description} />
+        <CaptionedValue caption="Name" value={fund.name} />
+        <CaptionedValue caption="Description" value={fund.description} />
         <br />
         <CaptionedValue
           caption="Posted Balance"
-          value={formatCurrency(fundData.currentBalance.postedBalance)}
+          value={formatCurrency(fund.currentBalance.postedBalance)}
         />
       </CaptionedFrame>
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
         <Typography variant="h6">Transactions</Typography>
         <SearchBar paramName={nameof<FundViewSearchParams>("search")} />
         <TransactionListFrame
-          fund={fundData}
-          data={fundTransactionsData.items}
-          totalCount={fundTransactionsData.totalCount}
+          fund={fund}
+          data={transactions.items}
+          totalCount={transactions.totalCount}
         />
       </Stack>
     </Stack>

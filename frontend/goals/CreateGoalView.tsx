@@ -26,7 +26,7 @@ const CreateGoalView = async function ({
   const { id, fundId } = await params;
 
   const apiClient = getApiClient();
-  const [{ data: fundData, error: fundError }, { data: accountingPeriodData }] =
+  const [{ data: fund, error: fundError }, { data: accountingPeriod }] =
     await Promise.all([
       apiClient.GET("/funds/{fundId}", {
         params: {
@@ -44,18 +44,13 @@ const CreateGoalView = async function ({
       }),
     ]);
 
-  if (
-    typeof fundData === "undefined" ||
-    typeof accountingPeriodData === "undefined"
-  ) {
+  if (typeof fund === "undefined" || typeof accountingPeriod === "undefined") {
     throw new Error(
       `Failed to fetch create goal data: ${fundError?.detail ?? "Unknown error"}`,
     );
   }
 
-  return (
-    <CreateGoalForm fund={fundData} accountingPeriod={accountingPeriodData} />
-  );
+  return <CreateGoalForm fund={fund} accountingPeriod={accountingPeriod} />;
 };
 
 export type { CreateGoalViewParams };

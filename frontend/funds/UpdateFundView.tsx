@@ -54,17 +54,19 @@ const UpdateFundView = async function ({
         })
       : Promise.resolve({ data: null });
 
-  const [{ data: fundData }, { data: accountingPeriodData }] =
-    await Promise.all([fundPromise, accountingPeriodPromise]);
+  const [{ data: fund }, { data: accountingPeriod }] = await Promise.all([
+    fundPromise,
+    accountingPeriodPromise,
+  ]);
 
-  if (typeof fundData === "undefined") {
+  if (typeof fund === "undefined") {
     throw new Error("Failed to fetch fund data");
   }
 
   return (
     <UpdateFundForm
-      fund={fundData}
-      providedAccountingPeriod={accountingPeriodData ?? null}
+      fund={fund}
+      providedAccountingPeriod={accountingPeriod ?? null}
     />
   );
 };

@@ -74,14 +74,11 @@ const AccountView = async function ({
   );
 
   const [
-    { data: accountData, error: accountError },
-    { data: transactionData, error: transactionError },
+    { data: account, error: accountError },
+    { data: transactions, error: transactionError },
   ] = await Promise.all([accountPromise, transactionPromise]);
 
-  if (
-    typeof accountData === "undefined" ||
-    typeof transactionData === "undefined"
-  ) {
+  if (typeof account === "undefined" || typeof transactions === "undefined") {
     throw new Error(
       `Failed to fetch account with ID ${id}: ${accountError?.detail ?? transactionError?.detail ?? "Unknown error"}`,
     );
@@ -95,7 +92,7 @@ const AccountView = async function ({
         alignItems="center"
         maxWidth={1000}
       >
-        <Breadcrumbs breadcrumbs={breadcrumbs.detail(accountData)} />
+        <Breadcrumbs breadcrumbs={breadcrumbs.detail(account)} />
         <Stack direction="row" spacing={1}>
           <Button
             variant="contained"
@@ -114,34 +111,34 @@ const AccountView = async function ({
         </Stack>
       </Stack>
       <CaptionedFrame caption="Details">
-        <CaptionedValue caption="Name" value={accountData.name} />
-        <CaptionedValue caption="Type" value={accountData.type} />
+        <CaptionedValue caption="Name" value={account.name} />
+        <CaptionedValue caption="Type" value={account.type} />
       </CaptionedFrame>
       <CaptionedFrame caption="Balance">
         <CaptionedValue
           caption="Posted Balance"
-          value={formatCurrency(accountData.currentBalance.postedBalance)}
+          value={formatCurrency(account.currentBalance.postedBalance)}
         />
         <CaptionedValue
           caption="Available to Spend"
-          value={formatAmount(accountData.currentBalance.availableToSpend)}
+          value={formatAmount(account.currentBalance.availableToSpend)}
         />
         <CaptionedValue
           caption="Pending Debit"
-          value={formatCurrency(accountData.currentBalance.pendingDebitAmount)}
+          value={formatCurrency(account.currentBalance.pendingDebitAmount)}
         />
         <CaptionedValue
           caption="Pending Credit"
-          value={formatCurrency(accountData.currentBalance.pendingCreditAmount)}
+          value={formatCurrency(account.currentBalance.pendingCreditAmount)}
         />
       </CaptionedFrame>
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
         <Typography variant="h6">Transactions</Typography>
         <SearchBar paramName={nameof<AccountViewSearchParams>("search")} />
         <TransactionListFrame
-          account={accountData}
-          data={transactionData.items}
-          totalCount={transactionData.totalCount}
+          account={account}
+          data={transactions.items}
+          totalCount={transactions.totalCount}
         />
       </Stack>
     </Stack>
