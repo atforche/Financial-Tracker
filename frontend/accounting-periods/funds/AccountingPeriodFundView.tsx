@@ -11,6 +11,7 @@ import breadcrumbs from "@/accounting-periods/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
 import fundRoutes from "@/funds/routes";
 import getApiClient from "@/framework/data/getApiClient";
+import nameof from "@/framework/data/nameof";
 
 /**
  * Parameters for the AccountingPeriodFundView component.
@@ -24,8 +25,8 @@ interface AccountingPeriodFundViewParams {
  * Search parameters for the AccountingPeriodFundView component.
  */
 interface AccountingPeriodFundViewSearchParams {
-  transactionSearch?: string;
-  transactionSort?: FundTransactionSortOrder;
+  search?: string;
+  sort?: FundTransactionSortOrder;
 }
 
 /**
@@ -44,7 +45,7 @@ const AccountingPeriodFundView = async function ({
   searchParams,
 }: AccountingPeriodFundViewProps): Promise<JSX.Element> {
   const { id, fundId } = await params;
-  const { transactionSearch, transactionSort } = await searchParams;
+  const { search, sort } = await searchParams;
 
   const apiClient = getApiClient();
   const accountingPeriodPromise = apiClient.GET(
@@ -83,8 +84,8 @@ const AccountingPeriodFundView = async function ({
         },
         query: {
           AccountingPeriodId: id,
-          Search: transactionSearch ?? "",
-          Sort: transactionSort ?? null,
+          Search: search ?? "",
+          Sort: sort ?? null,
         },
       },
     },
@@ -181,7 +182,9 @@ const AccountingPeriodFundView = async function ({
       />
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
         <Typography variant="h6">Transactions</Typography>
-        <SearchBar paramName="transactionSearch" />
+        <SearchBar
+          paramName={nameof<AccountingPeriodFundViewSearchParams>("search")}
+        />
         <TransactionListFrame
           fund={fundData}
           data={fundTransactionsData.items}

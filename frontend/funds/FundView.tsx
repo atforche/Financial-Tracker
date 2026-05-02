@@ -9,6 +9,7 @@ import TransactionListFrame from "@/funds/FundTransactionListFrame";
 import breadcrumbs from "@/funds/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
+import nameof from "@/framework/data/nameof";
 import routes from "@/funds/routes";
 
 /**
@@ -22,8 +23,9 @@ interface FundViewParams {
  * Search parameters for the FundView component.
  */
 interface FundViewSearchParams {
-  transactionSearch?: string;
-  transactionSort?: FundTransactionSortOrder;
+  search?: string;
+  sort?: FundTransactionSortOrder;
+  page?: number;
 }
 
 /**
@@ -42,7 +44,7 @@ const FundView = async function ({
   searchParams,
 }: FundViewProps): Promise<JSX.Element> {
   const { id } = await params;
-  const { transactionSearch, transactionSort } = await searchParams;
+  const { search, sort } = await searchParams;
 
   const apiClient = getApiClient();
   const fundPromise = apiClient.GET("/funds/{fundId}", {
@@ -60,8 +62,8 @@ const FundView = async function ({
           fundId: id,
         },
         query: {
-          Search: transactionSearch ?? "",
-          Sort: transactionSort ?? null,
+          Search: search ?? "",
+          Sort: sort ?? null,
         },
       },
     },
@@ -121,7 +123,7 @@ const FundView = async function ({
       </CaptionedFrame>
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
         <Typography variant="h6">Transactions</Typography>
-        <SearchBar paramName="transactionSearch" />
+        <SearchBar paramName={nameof<FundViewSearchParams>("search")} />
         <TransactionListFrame
           fund={fundData}
           data={fundTransactionsData.items}

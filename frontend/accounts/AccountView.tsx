@@ -9,6 +9,7 @@ import TransactionListFrame from "@/accounts/AccountTransactionListFrame";
 import breadcrumbs from "@/accounts/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
+import nameof from "@/framework/data/nameof";
 import routes from "@/accounts/routes";
 
 /**
@@ -22,8 +23,9 @@ interface AccountViewParams {
  * Search parameters for the AccountView component.
  */
 interface AccountViewSearchParams {
-  transactionSearch?: string;
-  transactionSort?: AccountTransactionSortOrder;
+  search?: string;
+  sort?: AccountTransactionSortOrder;
+  page?: number;
 }
 
 /**
@@ -46,7 +48,7 @@ const AccountView = async function ({
   searchParams,
 }: AccountViewProps): Promise<JSX.Element> {
   const { id } = await params;
-  const { transactionSearch, transactionSort } = await searchParams;
+  const { search, sort } = await searchParams;
 
   const apiClient = getApiClient();
   const accountPromise = apiClient.GET("/accounts/{accountId}", {
@@ -64,8 +66,8 @@ const AccountView = async function ({
           accountId: id,
         },
         query: {
-          Search: transactionSearch ?? "",
-          Sort: transactionSort ?? null,
+          Search: search ?? "",
+          Sort: sort ?? null,
         },
       },
     },
@@ -135,7 +137,7 @@ const AccountView = async function ({
       </CaptionedFrame>
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
         <Typography variant="h6">Transactions</Typography>
-        <SearchBar paramName="transactionSearch" />
+        <SearchBar paramName={nameof<AccountViewSearchParams>("search")} />
         <TransactionListFrame
           account={accountData}
           data={transactionData.items}

@@ -6,6 +6,7 @@ import {
   AccountingPeriodFundSortOrder,
 } from "@/accounting-periods/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { AccountingPeriodViewSearchParams } from "@/accounting-periods/AccountingPeriodView";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -16,6 +17,7 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
 import fundRoutes from "@/funds/routes";
+import nameof from "@/framework/data/nameof";
 import routes from "@/accounting-periods/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
@@ -39,20 +41,22 @@ const AccountingPeriodFundListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  const sortSearchParamName =
+    nameof<AccountingPeriodViewSearchParams>("fundSort");
 
   const setSort = function (sort: AccountingPeriodFundSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete("fundSort");
+      params.delete(sortSearchParamName);
     } else {
-      params.set("fundSort", sort);
+      params.set(sortSearchParamName, sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     AccountingPeriodFundSortOrder,
-    searchParams.get("fundSort") ?? "",
+    searchParams.get(sortSearchParamName) ?? "",
   );
 
   const columns: ColumnDefinition<AccountingPeriodFund>[] = [
@@ -210,6 +214,7 @@ const AccountingPeriodFundListFrame = function ({
       getId={(fund) => fund.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
+      pageSearchParamName={nameof<AccountingPeriodViewSearchParams>("page")}
     />
   );
 };

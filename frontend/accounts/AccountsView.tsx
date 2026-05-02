@@ -6,13 +6,15 @@ import SearchBar from "@/framework/listframe/SearchBar";
 import { Stack } from "@mui/material";
 import breadcrumbs from "@/accounts/breadcrumbs";
 import getApiClient from "@/framework/data/getApiClient";
+import nameof from "@/framework/data/nameof";
 
 /**
  * Search parameters for the AccountsView component.
  */
 interface AccountsViewSearchParams {
-  accountSearch?: string;
-  accountSort?: AccountSortOrder;
+  search?: string;
+  sort?: AccountSortOrder;
+  page?: number;
 }
 
 /**
@@ -28,14 +30,14 @@ interface AccountsViewProps {
 const AccountsView = async function ({
   searchParams,
 }: AccountsViewProps): Promise<JSX.Element> {
-  const { accountSearch, accountSort } = await searchParams;
+  const { search, sort } = await searchParams;
 
   const apiClient = getApiClient();
   const { data, error } = await apiClient.GET("/accounts", {
     params: {
       query: {
-        Search: accountSearch ?? "",
-        Sort: accountSort ?? null,
+        Search: search ?? "",
+        Sort: sort ?? null,
       },
     },
   });
@@ -46,7 +48,7 @@ const AccountsView = async function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
-      <SearchBar paramName="search" />
+      <SearchBar paramName={nameof<AccountsViewSearchParams>("search")} />
       <AccountListFrame data={data.items} totalCount={data.totalCount} />
     </Stack>
   );

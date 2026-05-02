@@ -2,6 +2,7 @@
 
 import { type Account, AccountSortOrder } from "@/accounts/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { AccountsViewSearchParams } from "@/accounts/AccountsView";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -11,6 +12,7 @@ import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
+import nameof from "@/framework/data/nameof";
 import routes from "@/accounting-periods/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
@@ -32,20 +34,21 @@ const AccountListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  const sortSearchParamName = nameof<AccountsViewSearchParams>("sort");
 
   const setSort = function (sort: AccountSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete("sort");
+      params.delete(sortSearchParamName);
     } else {
-      params.set("sort", sort);
+      params.set(sortSearchParamName, sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     AccountSortOrder,
-    searchParams.get("sort") ?? "",
+    searchParams.get(sortSearchParamName) ?? "",
   );
 
   const columns: ColumnDefinition<Account>[] = [
@@ -168,6 +171,7 @@ const AccountListFrame = function ({
       getId={(account) => account.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
+      pageSearchParamName={nameof<AccountsViewSearchParams>("page")}
     />
   );
 };

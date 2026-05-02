@@ -7,10 +7,12 @@ import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import type { FundsViewSearchParams } from "@/funds/FundsView";
 import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
+import nameof from "@/framework/data/nameof";
 import routes from "@/funds/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
@@ -32,20 +34,21 @@ const FundListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  const sortSearchParamName = nameof<FundsViewSearchParams>("sort");
 
   const setSort = function (sort: FundSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete("sort");
+      params.delete(sortSearchParamName);
     } else {
-      params.set("sort", sort);
+      params.set(sortSearchParamName, sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     FundSortOrder,
-    searchParams.get("sort") ?? "",
+    searchParams.get(sortSearchParamName) ?? "",
   );
 
   const columns: ColumnDefinition<Fund>[] = [
@@ -142,6 +145,7 @@ const FundListFrame = function ({
       getId={(fund) => fund.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
+      pageSearchParamName={nameof<FundsViewSearchParams>("page")}
     />
   );
 };

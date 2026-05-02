@@ -29,6 +29,7 @@ interface ListFrameProps<T> {
   readonly getId: (item: T) => string;
   readonly data: T[] | null;
   readonly totalCount: number | null;
+  readonly pageSearchParamName: string;
 }
 
 /**
@@ -39,11 +40,12 @@ const ListFrame = function <T>({
   getId,
   data,
   totalCount,
+  pageSearchParamName,
 }: ListFrameProps<T>): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const currentPage = searchParams.get("page");
+  const currentPage = searchParams.get(pageSearchParamName);
 
   return (
     <Box>
@@ -108,7 +110,7 @@ const ListFrame = function <T>({
           page={currentPage === null ? 0 : parseInt(currentPage, 10) - 1}
           onPageChange={(_, newPage) => {
             const params = new URLSearchParams(searchParams.toString());
-            params.set("page", newPage.toString());
+            params.set(pageSearchParamName, newPage.toString());
             router.replace(`${pathname}?${params.toString()}`);
           }}
         />

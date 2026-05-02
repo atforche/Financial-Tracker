@@ -28,14 +28,12 @@ interface AccountingPeriodViewParams {
  * Search parameters for the AccountingPeriodView component.
  */
 interface AccountingPeriodViewSearchParams {
-  fundSearch?: string;
+  search?: string;
   fundSort?: AccountingPeriodFundSortOrder;
-  goalSearch?: string;
   goalSort?: AccountingPeriodGoalSortOrder;
-  accountSearch?: string;
   accountSort?: AccountingPeriodAccountSortOrder;
-  transactionSearch?: string;
   transactionSort?: AccountingPeriodTransactionSortOrder;
+  page?: number;
   display?: ToggleState;
 }
 
@@ -55,16 +53,8 @@ const AccountingPeriodView = async function ({
   searchParams,
 }: AccountingPeriodViewProps): Promise<JSX.Element> {
   const { id } = await params;
-  const {
-    fundSearch,
-    fundSort,
-    goalSearch,
-    goalSort,
-    accountSearch,
-    accountSort,
-    transactionSearch,
-    transactionSort,
-  } = await searchParams;
+  const { search, fundSort, goalSort, accountSort, transactionSort } =
+    await searchParams;
 
   const apiClient = getApiClient();
   const accountingPeriodPromise = apiClient.GET(
@@ -85,7 +75,7 @@ const AccountingPeriodView = async function ({
           accountingPeriodId: id,
         },
         query: {
-          Search: fundSearch ?? "",
+          Search: search ?? "",
           Sort: fundSort ?? null,
         },
       },
@@ -99,7 +89,7 @@ const AccountingPeriodView = async function ({
           accountingPeriodId: id,
         },
         query: {
-          Search: goalSearch ?? "",
+          Search: search ?? "",
           Sort: goalSort ?? null,
         },
       },
@@ -113,7 +103,7 @@ const AccountingPeriodView = async function ({
           accountingPeriodId: id,
         },
         query: {
-          Search: accountSearch ?? "",
+          Search: search ?? "",
           Sort: accountSort ?? null,
         },
       },
@@ -127,7 +117,7 @@ const AccountingPeriodView = async function ({
           accountingPeriodId: id,
         },
         query: {
-          Search: transactionSearch ?? "",
+          Search: search ?? "",
           Sort: transactionSort ?? null,
         },
       },

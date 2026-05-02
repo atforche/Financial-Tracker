@@ -6,6 +6,7 @@ import {
   AccountingPeriodAccountSortOrder,
 } from "@/accounting-periods/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { AccountingPeriodViewSearchParams } from "@/accounting-periods/AccountingPeriodView";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -16,6 +17,7 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import accountRoutes from "@/accounts/routes";
 import formatCurrency from "@/framework/formatCurrency";
+import nameof from "@/framework/data/nameof";
 import routes from "@/accounting-periods/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
@@ -39,22 +41,24 @@ const AccountingPeriodAccountListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  const sortSearchParamName =
+    nameof<AccountingPeriodViewSearchParams>("accountSort");
 
   const setSort = function (
     sort: AccountingPeriodAccountSortOrder | null,
   ): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete("accountSort");
+      params.delete(sortSearchParamName);
     } else {
-      params.set("accountSort", sort);
+      params.set(sortSearchParamName, sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     AccountingPeriodAccountSortOrder,
-    searchParams.get("accountSort") ?? "",
+    searchParams.get(sortSearchParamName) ?? "",
   );
 
   const columns: ColumnDefinition<AccountingPeriodAccount>[] = [
@@ -187,6 +191,7 @@ const AccountingPeriodAccountListFrame = function ({
       getId={(account) => account.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
+      pageSearchParamName={nameof<AccountingPeriodViewSearchParams>("page")}
     />
   );
 };

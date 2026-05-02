@@ -6,6 +6,7 @@ import {
 } from "@/accounting-periods/types";
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { AccountingPeriodsViewSearchParams } from "@/accounting-periods/AccountingPeriodsView";
 import { Checkbox } from "@mui/material";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -14,6 +15,7 @@ import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
+import nameof from "@/framework/data/nameof";
 import routes from "@/accounting-periods/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
@@ -36,20 +38,21 @@ const AccountingPeriodListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  const sortSearchParamName = nameof<AccountingPeriodsViewSearchParams>("sort");
 
   const setSort = function (sort: AccountingPeriodSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete("sort");
+      params.delete(sortSearchParamName);
     } else {
-      params.set("sort", sort);
+      params.set(sortSearchParamName, sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     AccountingPeriodSortOrder,
-    searchParams.get("sort") ?? "",
+    searchParams.get(sortSearchParamName) ?? "",
   );
   const columns: ColumnDefinition<AccountingPeriod>[] = [
     {
@@ -169,6 +172,7 @@ const AccountingPeriodListFrame = function ({
       getId={(accountingPeriod: AccountingPeriod) => accountingPeriod.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
+      pageSearchParamName={nameof<AccountingPeriodsViewSearchParams>("page")}
     />
   );
 };

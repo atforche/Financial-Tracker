@@ -5,6 +5,7 @@ import {
   AccountingPeriodGoalSortOrder,
 } from "@/accounting-periods/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { AccountingPeriodViewSearchParams } from "@/accounting-periods/AccountingPeriodView";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -13,6 +14,7 @@ import type { Goal } from "@/goals/types";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
+import nameof from "@/framework/data/nameof";
 import routes from "@/accounting-periods/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
@@ -36,20 +38,22 @@ const AccountingPeriodGoalListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  const sortSearchParamName =
+    nameof<AccountingPeriodViewSearchParams>("goalSort");
 
   const setSort = function (sort: AccountingPeriodGoalSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete("goalSort");
+      params.delete(sortSearchParamName);
     } else {
-      params.set("goalSort", sort);
+      params.set(sortSearchParamName, sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     AccountingPeriodGoalSortOrder,
-    searchParams.get("goalSort") ?? "",
+    searchParams.get(sortSearchParamName) ?? "",
   );
 
   const columns: ColumnDefinition<Goal>[] = [
@@ -240,6 +244,7 @@ const AccountingPeriodGoalListFrame = function ({
       getId={(goal) => goal.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
+      pageSearchParamName={nameof<AccountingPeriodViewSearchParams>("page")}
     />
   );
 };

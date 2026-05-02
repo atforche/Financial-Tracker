@@ -6,13 +6,15 @@ import SearchBar from "@/framework/listframe/SearchBar";
 import { Stack } from "@mui/material";
 import breadcrumbs from "@/funds/breadcrumbs";
 import getApiClient from "@/framework/data/getApiClient";
+import nameof from "@/framework/data/nameof";
 
 /**
  * Search parameters for the FundsView component.
  */
 interface FundsViewSearchParams {
-  fundSearch?: string;
-  fundSort?: FundSortOrder;
+  search?: string;
+  sort?: FundSortOrder;
+  page?: number;
 }
 
 /**
@@ -28,14 +30,14 @@ interface FundsViewProps {
 const FundsView = async function ({
   searchParams,
 }: FundsViewProps): Promise<JSX.Element> {
-  const { fundSearch, fundSort } = await searchParams;
+  const { search, sort } = await searchParams;
 
   const apiClient = getApiClient();
   const { data } = await apiClient.GET("/funds", {
     params: {
       query: {
-        Search: fundSearch ?? "",
-        Sort: fundSort ?? null,
+        Search: search ?? "",
+        Sort: sort ?? null,
       },
     },
   });
@@ -46,7 +48,7 @@ const FundsView = async function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
-      <SearchBar paramName="search" />
+      <SearchBar paramName={nameof<FundsViewSearchParams>("search")} />
       <FundListFrame data={data.items} totalCount={data.totalCount} />
     </Stack>
   );

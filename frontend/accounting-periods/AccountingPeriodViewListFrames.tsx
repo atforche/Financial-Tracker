@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AccountListFrame from "@/accounting-periods/accounts/AccountingPeriodAccountListFrame";
+import type { AccountingPeriodViewSearchParams } from "@/accounting-periods/AccountingPeriodView";
 import FundListFrame from "@/accounting-periods/funds/AccountingPeriodFundListFrame";
 import type { Goal } from "@/goals/types";
 import GoalListFrame from "@/accounting-periods/goals/AccountingPeriodGoalListFrame";
@@ -20,6 +21,7 @@ import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import type { Transaction } from "@/transactions/types";
 import TransactionListFrame from "@/accounting-periods/transactions/AccountingPeriodTransactionListFrame";
+import nameof from "@/framework/data/nameof";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
@@ -64,9 +66,11 @@ const AccountingPeriodListFrames = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  const displaySearchParamName =
+    nameof<AccountingPeriodViewSearchParams>("display");
 
   const currentDisplay =
-    tryParseEnum(ToggleState, searchParams.get("display") ?? "") ??
+    tryParseEnum(ToggleState, searchParams.get(displaySearchParamName) ?? "") ??
     ToggleState.Funds;
   return (
     <Stack spacing={2}>
@@ -80,7 +84,7 @@ const AccountingPeriodListFrames = function ({
           const parsedValue = tryParseEnum(ToggleState, value);
           if (parsedValue !== null) {
             const newSearchParams = new URLSearchParams();
-            newSearchParams.set("display", parsedValue);
+            newSearchParams.set(displaySearchParamName, parsedValue);
             router.replace(`${pathname}?${newSearchParams.toString()}`);
           }
         }}
@@ -96,7 +100,9 @@ const AccountingPeriodListFrames = function ({
         {currentDisplay === ToggleState.Funds && (
           <Stack spacing={2} sx={{ width: "100%" }}>
             <Typography variant="h6">Funds</Typography>
-            <SearchBar paramName="fundSearch" />
+            <SearchBar
+              paramName={nameof<AccountingPeriodViewSearchParams>("search")}
+            />
             <FundListFrame
               accountingPeriod={accountingPeriod}
               data={fundData}
@@ -107,7 +113,9 @@ const AccountingPeriodListFrames = function ({
         {currentDisplay === ToggleState.Goals && (
           <Stack spacing={2} sx={{ width: "100%" }}>
             <Typography variant="h6">Goals</Typography>
-            <SearchBar paramName="goalSearch" />
+            <SearchBar
+              paramName={nameof<AccountingPeriodViewSearchParams>("search")}
+            />
             <GoalListFrame
               accountingPeriod={accountingPeriod}
               data={goalData}
@@ -118,7 +126,9 @@ const AccountingPeriodListFrames = function ({
         {currentDisplay === ToggleState.Accounts && (
           <Stack spacing={2} sx={{ width: "100%" }}>
             <Typography variant="h6">Accounts</Typography>
-            <SearchBar paramName="accountSearch" />
+            <SearchBar
+              paramName={nameof<AccountingPeriodViewSearchParams>("search")}
+            />
             <AccountListFrame
               accountingPeriod={accountingPeriod}
               data={accountData}
@@ -129,7 +139,9 @@ const AccountingPeriodListFrames = function ({
         {currentDisplay === ToggleState.Transactions && (
           <Stack spacing={2} sx={{ width: "100%" }}>
             <Typography variant="h6">Transactions</Typography>
-            <SearchBar paramName="transactionSearch" />
+            <SearchBar
+              paramName={nameof<AccountingPeriodViewSearchParams>("search")}
+            />
             <TransactionListFrame
               data={transactionData}
               totalCount={transactionTotalCount}

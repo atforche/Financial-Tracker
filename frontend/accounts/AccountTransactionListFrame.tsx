@@ -6,6 +6,7 @@ import {
   isPositiveChangeInBalance,
 } from "@/accounts/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { AccountViewSearchParams } from "@/accounts/AccountView";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -14,6 +15,7 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import type { Transaction } from "@/transactions/types";
 import formatCurrency from "@/framework/formatCurrency";
+import nameof from "@/framework/data/nameof";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
@@ -75,20 +77,21 @@ const AccountTransactionListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  const sortSearchParamName = nameof<AccountViewSearchParams>("sort");
 
   const setSort = function (sort: AccountTransactionSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete("transactionSort");
+      params.delete(sortSearchParamName);
     } else {
-      params.set("transactionSort", sort);
+      params.set(sortSearchParamName, sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     AccountTransactionSortOrder,
-    searchParams.get("transactionSort") ?? "",
+    searchParams.get(sortSearchParamName) ?? "",
   );
 
   const columns: ColumnDefinition<Transaction>[] = [
@@ -184,6 +187,7 @@ const AccountTransactionListFrame = function ({
       getId={(transaction) => transaction.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
+      pageSearchParamName={nameof<AccountViewSearchParams>("page")}
     />
   );
 };

@@ -6,6 +6,7 @@ import SearchBar from "@/framework/listframe/SearchBar";
 import { Stack } from "@mui/material";
 import breadcrumbs from "@/accounting-periods/breadcrumbs";
 import getApiClient from "@/framework/data/getApiClient";
+import nameof from "@/framework/data/nameof";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
 /**
@@ -46,7 +47,9 @@ const AccountingPeriodsView = async function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
-      <SearchBar paramName="search" />
+      <SearchBar
+        paramName={nameof<AccountingPeriodsViewSearchParams>("search")}
+      />
       <AccountingPeriodListFrame
         data={data?.items ?? null}
         totalCount={data?.totalCount ?? null}
