@@ -42,9 +42,11 @@ const UpdateGoalView = async function ({
         },
       }),
       apiClient.GET("/goals", {
-        body: {
-          fundId,
-          accountingPeriodId: id,
+        params: {
+          query: {
+            fundId,
+            AccountingPeriodId: id,
+          },
         },
       }),
     ]);

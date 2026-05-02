@@ -63,8 +63,8 @@ CREATE TABLE "AccountBalanceHistories" (
     CONSTRAINT "FK_AccountBalanceHistories_Accounts_AccountId" FOREIGN KEY ("AccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE "FundGoals" (
-    "Id" TEXT NOT NULL CONSTRAINT "PK_FundGoals" PRIMARY KEY,
+CREATE TABLE "Goals" (
+    "Id" TEXT NOT NULL CONSTRAINT "PK_Goals" PRIMARY KEY,
     "FundId" TEXT NOT NULL,
     "AccountingPeriodId" TEXT NOT NULL,
     "GoalType" TEXT NOT NULL,
@@ -77,7 +77,7 @@ CREATE TABLE "FundGoals" (
     "RemainingAmountToSpendIncludingPending" TEXT NOT NULL,
     "IsSpendingGoalMet" INTEGER NOT NULL,
     "IsSpendingGoalMetIncludingPending" INTEGER NOT NULL,
-    CONSTRAINT "FK_FundGoals_Funds_FundId" FOREIGN KEY ("FundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE
+    CONSTRAINT "FK_Goals_Funds_FundId" FOREIGN KEY ("FundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE
 );
 
 CREATE TABLE "Transactions" (
@@ -180,9 +180,9 @@ CREATE INDEX "IX_AccountingPeriods_Name" ON "AccountingPeriods" ("Name");
 
 CREATE UNIQUE INDEX "IX_Accounts_Name" ON "Accounts" ("Name");
 
-CREATE INDEX "IX_FundGoals_FundId" ON "FundGoals" ("FundId");
-
 CREATE UNIQUE INDEX "IX_Funds_Name" ON "Funds" ("Name");
+
+CREATE INDEX "IX_Goals_FundId" ON "Goals" ("FundId");
 
 CREATE INDEX "IX_IncomeTransactionFundAssignments_IncomeTransactionId" ON "IncomeTransactionFundAssignments" ("IncomeTransactionId");
 
@@ -205,7 +205,7 @@ CREATE INDEX "IX_Transactions_SpendingTransaction_CreditAccountId" ON "Transacti
 CREATE INDEX "IX_Transactions_SpendingTransaction_DebitAccountId" ON "Transactions" ("SpendingTransaction_DebitAccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260429164001_InitialCreate', '10.0.2');
+VALUES ('20260502192315_InitialCreate', '10.0.2');
 
 COMMIT;
 

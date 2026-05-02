@@ -30,7 +30,7 @@ public sealed class GoalController(
     [HttpGet("")]
     [ProducesResponseType(typeof(GoalModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult Get(GetGoalModel getGoalModel)
+    public IActionResult Get([FromQuery] GetGoalModel getGoalModel)
     {
         Dictionary<string, string[]> errors = [];
         if (!goalRepository.TryGetByFundAndAccountingPeriod(getGoalModel.FundId, getGoalModel.AccountingPeriodId, out Goal? goal))

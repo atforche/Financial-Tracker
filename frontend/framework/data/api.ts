@@ -293,18 +293,17 @@ export interface paths {
         /** Retrieves the Goal that matches the provided accounting period for the provided Fund */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Fund ID for the Goal */
+                    FundId?: string;
+                    /** @description Accounting Period ID for the Goal */
+                    AccountingPeriodId?: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["GetGoalModel"];
-                    "text/json": components["schemas"]["GetGoalModel"];
-                    "application/*+json": components["schemas"]["GetGoalModel"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 /** @description OK */
                 200: {
@@ -2197,19 +2196,6 @@ export interface components {
         FundSortOrderModel: FundSortOrderModel | null;
         /** @enum {unknown} */
         FundTransactionSortOrderModel: FundTransactionSortOrderModel | null;
-        /** @description Model representing a request to retrieve a specific Goal */
-        GetGoalModel: {
-            /**
-             * Format: uuid
-             * @description Fund ID for the Goal
-             */
-            fundId: string;
-            /**
-             * Format: uuid
-             * @description Accounting Period ID for the Goal
-             */
-            accountingPeriodId: string;
-        };
         /** @description Model representing a Goal */
         GoalModel: {
             /**

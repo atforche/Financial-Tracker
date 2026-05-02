@@ -123,7 +123,7 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "FundGoals",
+                name: "Goals",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -142,9 +142,9 @@ namespace Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_FundGoals", x => x.Id);
+                    table.PrimaryKey("PK_Goals", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_FundGoals_Funds_FundId",
+                        name: "FK_Goals_Funds_FundId",
                         column: x => x.FundId,
                         principalTable: "Funds",
                         principalColumn: "Id",
@@ -396,15 +396,15 @@ namespace Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_FundGoals_FundId",
-                table: "FundGoals",
-                column: "FundId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Funds_Name",
                 table: "Funds",
                 column: "Name",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Goals_FundId",
+                table: "Goals",
+                column: "FundId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_IncomeTransactionFundAssignments_IncomeTransactionId",
@@ -473,7 +473,7 @@ namespace Data.Migrations
                 name: "FundBalanceHistories");
 
             migrationBuilder.DropTable(
-                name: "FundGoals");
+                name: "Goals");
 
             migrationBuilder.DropTable(
                 name: "IncomeTransactionFundAssignments");

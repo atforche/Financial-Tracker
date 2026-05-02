@@ -70,9 +70,11 @@ const AccountingPeriodFundView = async function ({
     },
   );
   const goalPromise = apiClient.GET("/goals", {
-    body: {
-      accountingPeriodId: id,
-      fundId,
+    params: {
+      query: {
+        AccountingPeriodId: id,
+        fundId,
+      },
     },
   });
   const fundTransactionsPromise = apiClient.GET(

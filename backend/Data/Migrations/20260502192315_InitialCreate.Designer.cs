@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20260429164001_InitialCreate")]
+    [Migration("20260502192315_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -196,7 +196,7 @@ namespace Data.Migrations
                     b.ToTable("FundBalanceHistories");
                 });
 
-            modelBuilder.Entity("Domain.Funds.FundGoal", b =>
+            modelBuilder.Entity("Domain.Goals.Goal", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
@@ -242,7 +242,7 @@ namespace Data.Migrations
 
                     b.HasIndex("FundId");
 
-                    b.ToTable("FundGoals");
+                    b.ToTable("Goals");
                 });
 
             modelBuilder.Entity("Domain.Transactions.Transaction", b =>
@@ -532,7 +532,7 @@ namespace Data.Migrations
                     b.Navigation("Account");
                 });
 
-            modelBuilder.Entity("Domain.Funds.FundGoal", b =>
+            modelBuilder.Entity("Domain.Goals.Goal", b =>
                 {
                     b.HasOne("Domain.Funds.Fund", "Fund")
                         .WithMany()
