@@ -9,12 +9,9 @@ import type {
 import type { AccountingPeriodAccountViewParams } from "@/accounting-periods/accounts/AccountingPeriodAccountView";
 import type { AccountingPeriodsViewSearchParams } from "@/accounting-periods/AccountingPeriodsView";
 import type { CloseAccountingPeriodViewParams } from "@/accounting-periods/CloseAccountingPeriodView";
-import type { CreateGoalViewParams } from "@/goals/CreateGoalView";
 import type { DeleteAccountingPeriodViewParams } from "@/accounting-periods/DeleteAccountingPeriodView";
-import type { DeleteGoalViewParams } from "@/goals/DeleteGoalView";
 import type { ReopenAccountingPeriodViewParams } from "@/accounting-periods/ReopenAccountingPeriodView";
 import type { Route } from "next";
-import type { UpdateGoalViewParams } from "@/goals/UpdateGoalView";
 import { objectToSearchParams } from "@/framework/routes";
 
 /**
@@ -42,12 +39,6 @@ const routes = {
     searchParams: AccountingPeriodFundViewSearchParams,
   ): Route =>
     `/accounting-periods/${params.id}/funds/${params.fundId}?${objectToSearchParams(searchParams).toString()}`,
-  goalCreate: (params: CreateGoalViewParams): Route =>
-    `/accounting-periods/${params.id}/funds/${params.fundId}/goal/create`,
-  goalUpdate: (params: UpdateGoalViewParams): Route =>
-    `/accounting-periods/${params.id}/funds/${params.fundId}/goal/update`,
-  goalDelete: (params: DeleteGoalViewParams): Route =>
-    `/accounting-periods/${params.id}/funds/${params.fundId}/goal/delete`,
 };
 
 export default routes;

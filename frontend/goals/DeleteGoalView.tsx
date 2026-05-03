@@ -7,7 +7,13 @@ import getApiClient from "@/framework/data/getApiClient";
  */
 interface DeleteGoalViewParams {
   id: string;
-  fundId: string;
+}
+
+/**
+ * Search parameters for the DeleteGoalView component.
+ */
+interface DeleteGoalViewSearchParams {
+  fundId?: string | null;
 }
 
 /**
@@ -15,6 +21,7 @@ interface DeleteGoalViewParams {
  */
 interface DeleteGoalViewProps {
   readonly params: Promise<DeleteGoalViewParams>;
+  readonly searchParams: Promise<DeleteGoalViewSearchParams>;
 }
 
 /**
@@ -22,51 +29,64 @@ interface DeleteGoalViewProps {
  */
 const DeleteGoalView = async function ({
   params,
+  searchParams,
 }: DeleteGoalViewProps): Promise<JSX.Element> {
-  const { id, fundId } = await params;
-  const apiClient = getApiClient();
-  const [{ data: accountingPeriod }, { data: fund }, { data: goal }] =
-    await Promise.all([
-      apiClient.GET("/accounting-periods/{accountingPeriodId}", {
-        params: {
-          path: {
-            accountingPeriodId: id,
-          },
-        },
-      }),
-      apiClient.GET("/funds/{fundId}", {
-        params: {
-          path: {
-            fundId,
-          },
-        },
-      }),
-      apiClient.GET("/goals", {
-        params: {
-          query: {
-            fundId,
-            AccountingPeriodId: id,
-          },
-        },
-      }),
-    ]);
+  const { id } = await params;
+  const { fundId } = await searchParams;
 
-  if (
-    typeof accountingPeriod === "undefined" ||
-    typeof fund === "undefined" ||
-    typeof goal === "undefined"
-  ) {
+  const apiClient = getApiClient();
+  const goalPromise = apiClient.GET("/goals/{goalId}", {
+    params: {
+      path: {
+        goalId: id,
+      },
+    },
+  });
+  const fundPromise =
+    typeof fundId === "string"
+      ? apiClient.GET("/funds/{fundId}", {
+          params: {
+            path: {
+              fundId,
+            },
+          },
+        })
+      : Promise.resolve({ data: null });
+
+  const [{ data: goal, error: goalError }, { data: fund }] = await Promise.all([
+    goalPromise,
+    fundPromise,
+  ]);
+
+  if (typeof goal === "undefined") {
+    throw new Error(
+      `Failed to fetch goal with ID ${id}: ${goalError.detail ?? "Unknown error"}`,
+    );
+  }
+
+  const { data: accountingPeriod } = await apiClient.GET(
+    "/accounting-periods/{accountingPeriodId}",
+    {
+      params: {
+        path: {
+          accountingPeriodId: goal.accountingPeriodId,
+        },
+      },
+    },
+  );
+
+  if (typeof accountingPeriod === "undefined") {
     throw new Error("Failed to fetch goal data");
   }
 
   return (
     <DeleteGoalForm
       accountingPeriod={accountingPeriod}
-      fund={fund}
       goal={goal}
+      fund={fund ?? null}
     />
   );
 };
 
-export type { DeleteGoalViewParams };
+export type { DeleteGoalViewParams, DeleteGoalViewSearchParams };
 export default DeleteGoalView;

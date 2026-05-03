@@ -1,55 +1,111 @@
 "use client";
 
 import { Button, DialogActions, Stack } from "@mui/material";
+import type { Fund, FundIdentifier } from "@/funds/types";
 import { type JSX, startTransition, useActionState, useState } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import type { Fund } from "@/funds/types";
+import FundEntryField from "@/funds/FundEntryField";
 import type { GoalType } from "@/goals/types";
 import GoalTypeEntryField from "@/goals/GoalTypeEntryField";
 import Link from "next/link";
-import breadcrumbs from "@/accounting-periods/breadcrumbs";
+import { ToggleState } from "@/accounting-periods/AccountingPeriodViewListFrames";
+import accountingPeriodRoutes from "@/accounting-periods/routes";
+import breadcrumbs from "@/goals/breadcrumbs";
 import createGoal from "@/goals/createGoal";
-import routes from "@/accounting-periods/routes";
 
 /**
  * Props for the CreateGoalForm component.
  */
 interface CreateGoalFormProps {
-  readonly fund: Fund;
-  readonly accountingPeriod: AccountingPeriod;
+  readonly accountingPeriods: AccountingPeriod[];
+  readonly funds: Fund[];
+  readonly providedAccountingPeriod?: AccountingPeriod | null;
+  readonly providedFund?: Fund | null;
 }
+
+/**
+ * Gets the URL to return the user to after creating a goal.
+ */
+const getRedirectUrl = function (
+  providedAccountingPeriod: AccountingPeriod | null,
+  providedFund: Fund | null,
+): string {
+  if (providedAccountingPeriod !== null && providedFund !== null) {
+    return accountingPeriodRoutes.fundDetail(
+      {
+        id: providedAccountingPeriod.id,
+        fundId: providedFund.id,
+      },
+      {},
+    );
+  }
+  if (providedAccountingPeriod !== null) {
+    return accountingPeriodRoutes.detail(
+      { id: providedAccountingPeriod.id },
+      { display: ToggleState.Goals },
+    );
+  }
+  return accountingPeriodRoutes.index({});
+};
 
 /**
  * Component that displays the form for creating a goal.
  */
 const CreateGoalForm = function ({
-  fund,
-  accountingPeriod,
+  accountingPeriods,
+  funds,
+  providedAccountingPeriod = null,
+  providedFund = null,
 }: CreateGoalFormProps): JSX.Element {
+  const [accountingPeriod, setAccountingPeriod] =
+    useState<AccountingPeriod | null>(providedAccountingPeriod);
+  const [fund, setFund] = useState<FundIdentifier | null>(
+    providedFund ? { id: providedFund.id, name: providedFund.name } : null,
+  );
   const [goalType, setGoalType] = useState<GoalType | null>(null);
   const [goalAmount, setGoalAmount] = useState<number | null>(null);
 
-  const redirectUrl = routes.fundDetail(
-    {
-      id: accountingPeriod.id,
-      fundId: fund.id,
-    },
-    {},
-  );
+  const redirectUrl = getRedirectUrl(providedAccountingPeriod, providedFund);
   const [state, action, pending] = useActionState(createGoal, {
-    fundId: fund.id,
     redirectUrl,
   });
+
+  const canSubmit =
+    accountingPeriod !== null &&
+    fund !== null &&
+    goalType !== null &&
+    goalAmount !== null;
+  const availableFunds = funds.filter(
+    (fundOption) =>
+      accountingPeriod !== null && fundOption.name !== "Unassigned",
+  );
 
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={breadcrumbs.goalCreate(accountingPeriod, fund)}
+        breadcrumbs={breadcrumbs.create(providedAccountingPeriod, providedFund)}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
+        <AccountingPeriodEntryField
+          label="Accounting Period"
+          options={accountingPeriods}
+          value={accountingPeriod}
+          setValue={
+            providedAccountingPeriod === null ? setAccountingPeriod : null
+          }
+          errorMessage={state.accountingPeriodErrors ?? null}
+        />
+        <FundEntryField
+          label="Fund"
+          options={availableFunds}
+          value={fund}
+          setValue={providedFund === null ? setFund : null}
+          filter={null}
+        />
         <GoalTypeEntryField
           label="Goal Type"
           value={goalType}
@@ -69,9 +125,14 @@ const CreateGoalForm = function ({
           <Button
             variant="contained"
             loading={pending}
-            disabled={goalType === null || goalAmount === null}
+            disabled={!canSubmit}
             onClick={() => {
-              if (goalType === null || goalAmount === null) {
+              if (
+                accountingPeriod === null ||
+                fund === null ||
+                goalType === null ||
+                goalAmount === null
+              ) {
                 return;
               }
               startTransition(() => {
@@ -89,7 +150,11 @@ const CreateGoalForm = function ({
         </DialogActions>
         <ErrorAlert
           errorMessage={state.errorTitle ?? null}
-          unmappedErrors={state.unmappedErrors ?? null}
+          unmappedErrors={
+            [state.fundErrors ?? null, state.unmappedErrors ?? null]
+              .filter((message) => message !== null)
+              .join(", ") || null
+          }
         />
       </Stack>
     </Stack>

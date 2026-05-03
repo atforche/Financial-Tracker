@@ -8,17 +8,19 @@ import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import type { Fund } from "@/funds/types";
 import type { Goal } from "@/goals/types";
 import Link from "next/link";
-import breadcrumbs from "@/accounting-periods/breadcrumbs";
+import { ToggleState } from "@/accounting-periods/AccountingPeriodViewListFrames";
+import accountingPeriodRoutes from "@/accounting-periods/routes";
+import breadcrumbs from "@/goals/breadcrumbs";
 import deleteGoal from "@/goals/deleteGoal";
-import routes from "@/accounting-periods/routes";
+import routes from "@/goals/routes";
 
 /**
  * Props for the DeleteGoalForm component.
  */
 interface DeleteGoalFormProps {
   readonly accountingPeriod: AccountingPeriod;
-  readonly fund: Fund;
   readonly goal: Goal;
+  readonly fund: Fund | null;
 }
 
 /**
@@ -26,16 +28,23 @@ interface DeleteGoalFormProps {
  */
 const DeleteGoalForm = function ({
   accountingPeriod,
-  fund,
   goal,
+  fund,
 }: DeleteGoalFormProps): JSX.Element {
-  const redirectUrl = routes.fundDetail(
-    {
-      id: goal.accountingPeriodId,
-      fundId: fund.id,
-    },
-    {},
-  );
+  const cancelUrl = routes.detail({ id: goal.id }, {});
+  const redirectUrl =
+    fund !== null
+      ? accountingPeriodRoutes.fundDetail(
+          {
+            id: accountingPeriod.id,
+            fundId: fund.id,
+          },
+          {},
+        )
+      : accountingPeriodRoutes.detail(
+          { id: accountingPeriod.id },
+          { display: ToggleState.Goals },
+        );
   const [state, action, pending] = useActionState(deleteGoal, {
     goalId: goal.id,
     redirectUrl,
@@ -44,14 +53,15 @@ const DeleteGoalForm = function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={breadcrumbs.goalDelete(accountingPeriod, fund)}
+        breadcrumbs={breadcrumbs.delete(accountingPeriod, goal, fund)}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <Typography>
-          Are you sure you want to delete the goal for {accountingPeriod.name}?
+          Are you sure you want to delete the goal for {goal.fundName} in{" "}
+          {accountingPeriod.name}?
         </Typography>
         <DialogActions>
-          <Link href={redirectUrl} tabIndex={-1}>
+          <Link href={cancelUrl} tabIndex={-1}>
             <Button variant="outlined">Cancel</Button>
           </Link>
           <Button

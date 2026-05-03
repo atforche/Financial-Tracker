@@ -10,8 +10,9 @@ import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import type { Fund } from "@/funds/types";
 import GoalTypeEntryField from "@/goals/GoalTypeEntryField";
 import Link from "next/link";
-import breadcrumbs from "@/accounting-periods/breadcrumbs";
-import routes from "@/accounting-periods/routes";
+import accountingPeriodRoutes from "@/accounting-periods/routes";
+import breadcrumbs from "@/goals/breadcrumbs";
+import routes from "@/goals/routes";
 import updateGoal from "@/goals/updateGoal";
 
 /**
@@ -19,8 +20,8 @@ import updateGoal from "@/goals/updateGoal";
  */
 interface UpdateGoalFormProps {
   readonly accountingPeriod: AccountingPeriod;
-  readonly fund: Fund;
   readonly goal: Goal;
+  readonly fund: Fund | null;
 }
 
 /**
@@ -28,19 +29,19 @@ interface UpdateGoalFormProps {
  */
 const UpdateGoalForm = function ({
   accountingPeriod,
-  fund,
   goal,
+  fund,
 }: UpdateGoalFormProps): JSX.Element {
   const [goalType, setGoalType] = useState<GoalType | null>(goal.goalType);
   const [goalAmount, setGoalAmount] = useState<number | null>(goal.goalAmount);
 
-  const redirectUrl = routes.fundDetail(
-    {
-      id: goal.accountingPeriodId,
-      fundId: fund.id,
-    },
-    {},
-  );
+  const redirectUrl =
+    fund !== null
+      ? accountingPeriodRoutes.fundDetail(
+          { id: accountingPeriod.id, fundId: fund.id },
+          {},
+        )
+      : routes.detail({ id: goal.id }, {});
   const [state, action, pending] = useActionState(updateGoal, {
     goalId: goal.id,
     redirectUrl,
@@ -49,7 +50,7 @@ const UpdateGoalForm = function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={breadcrumbs.goalUpdate(accountingPeriod, fund)}
+        breadcrumbs={breadcrumbs.update(accountingPeriod, goal, fund)}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <GoalTypeEntryField

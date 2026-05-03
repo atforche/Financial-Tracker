@@ -2,50 +2,67 @@ import AccountingPeriodFundFrame from "@/accounting-periods/funds/AccountingPeri
 import type { FundTransactionSortOrder } from "@/funds/types";
 import { GoalFrameContext } from "@/goals/GoalFrame";
 import type { JSX } from "react";
-import breadcrumbs from "@/accounting-periods/breadcrumbs";
+import breadcrumbs from "@/goals/breadcrumbs";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
- * Parameters for the AccountingPeriodFundView component.
+ * Parameters for the GoalView component.
  */
-interface AccountingPeriodFundViewParams {
+interface GoalViewParams {
   id: string;
-  fundId: string;
 }
 
 /**
- * Search parameters for the AccountingPeriodFundView component.
+ * Search parameters for the GoalView component.
  */
-interface AccountingPeriodFundViewSearchParams {
+interface GoalViewSearchParams {
   search?: string;
   sort?: FundTransactionSortOrder;
 }
 
 /**
- * Props for the AccountingPeriodFundView component.
+ * Props for the GoalView component.
  */
-interface AccountingPeriodFundViewProps {
-  readonly params: Promise<AccountingPeriodFundViewParams>;
-  readonly searchParams: Promise<AccountingPeriodFundViewSearchParams>;
+interface GoalViewProps {
+  readonly params: Promise<GoalViewParams>;
+  readonly searchParams: Promise<GoalViewSearchParams>;
 }
 
 /**
- * Component that displays the view for a single fund in the context of an accounting period.
+ * Component that displays the view for a single goal.
  */
-const AccountingPeriodFundView = async function ({
+const GoalView = async function ({
   params,
   searchParams,
-}: AccountingPeriodFundViewProps): Promise<JSX.Element> {
-  const { id, fundId } = await params;
+}: GoalViewProps): Promise<JSX.Element> {
+  const { id } = await params;
   const { search, sort } = await searchParams;
 
   const apiClient = getApiClient();
+  const { data: goal, error: goalError } = await apiClient.GET(
+    "/goals/{goalId}",
+    {
+      params: {
+        path: {
+          goalId: id,
+        },
+      },
+    },
+  );
+
+  if (typeof goal === "undefined") {
+    throw new Error(
+      `Failed to fetch goal with ID ${id}: ${goalError.detail ?? "Unknown error"}`,
+    );
+  }
+
+  const { accountingPeriodId, fundId } = goal;
   const accountingPeriodPromise = apiClient.GET(
     "/accounting-periods/{accountingPeriodId}",
     {
       params: {
         path: {
-          accountingPeriodId: id,
+          accountingPeriodId,
         },
       },
     },
@@ -55,20 +72,12 @@ const AccountingPeriodFundView = async function ({
     {
       params: {
         path: {
+          accountingPeriodId,
           fundId,
-          accountingPeriodId: id,
         },
       },
     },
   );
-  const goalPromise = apiClient.GET("/goals", {
-    params: {
-      query: {
-        AccountingPeriodId: id,
-        fundId,
-      },
-    },
-  });
   const fundTransactionsPromise = apiClient.GET(
     "/funds/{fundId}/transactions",
     {
@@ -77,22 +86,21 @@ const AccountingPeriodFundView = async function ({
           fundId,
         },
         query: {
-          AccountingPeriodId: id,
+          AccountingPeriodId: accountingPeriodId,
           Search: search ?? "",
           Sort: sort ?? null,
         },
       },
     },
   );
+
   const [
     { data: accountingPeriod, error: accountingPeriodError },
     { data: fund, error: fundError },
-    { data: goal },
-    { data: transactions, error: fundTransactionsError },
+    { data: transactions, error: transactionsError },
   ] = await Promise.all([
     accountingPeriodPromise,
     fundPromise,
-    goalPromise,
     fundTransactionsPromise,
   ]);
 
@@ -102,25 +110,22 @@ const AccountingPeriodFundView = async function ({
     typeof transactions === "undefined"
   ) {
     throw new Error(
-      `Failed to fetch fund with ID ${fundId} for accounting period with ID ${id}: ${accountingPeriodError?.detail ?? fundError?.detail ?? fundTransactionsError?.detail ?? "Unknown error"}`,
+      `Failed to fetch goal view data: ${accountingPeriodError?.detail ?? fundError?.detail ?? transactionsError?.detail ?? "Unknown error"}`,
     );
   }
 
   return (
     <AccountingPeriodFundFrame
-      breadcrumbs={breadcrumbs.fundDetail(accountingPeriod, fund)}
+      breadcrumbs={breadcrumbs.detail(accountingPeriod, goal)}
       accountingPeriod={accountingPeriod}
       fund={fund}
-      goal={goal ?? null}
+      goal={goal}
       transactions={transactions.items}
       transactionsTotalCount={transactions.totalCount}
-      context={GoalFrameContext.FundDetail}
+      context={GoalFrameContext.GoalDetail}
     />
   );
 };
 
-export type {
-  AccountingPeriodFundViewParams,
-  AccountingPeriodFundViewSearchParams,
-};
-export default AccountingPeriodFundView;
+export type { GoalViewParams, GoalViewSearchParams };
+export default GoalView;

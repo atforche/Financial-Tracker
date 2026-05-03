@@ -25,6 +25,27 @@ public sealed class GoalController(
     GoalRepository goalRepository) : ControllerBase
 {
     /// <summary>
+    /// Retrieves the Goal that matches the provided ID
+    /// </summary>
+    [HttpGet("{goalId}")]
+    [ProducesResponseType(typeof(GoalModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult Get(Guid goalId)
+    {
+        if (!goalRepository.TryGetById(goalId, out Goal? goal))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Goal.",
+                Errors = { [nameof(goalId)] = new[] { $"Goal with ID {goalId} not found." } },
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        return Ok(goalConverter.ToModel(goal));
+    }
+
+    /// <summary>
     /// Retrieves the Goal that matches the provided accounting period for the provided Fund
     /// </summary>
     [HttpGet("")]

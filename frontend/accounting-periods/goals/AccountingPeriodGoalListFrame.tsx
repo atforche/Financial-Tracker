@@ -6,16 +6,18 @@ import {
 } from "@/accounting-periods/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriodViewSearchParams } from "@/accounting-periods/AccountingPeriodView";
+import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { Goal } from "@/goals/types";
+import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
+import goalRoutes from "@/goals/routes";
 import nameof from "@/framework/data/nameof";
-import routes from "@/accounting-periods/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
@@ -215,21 +217,24 @@ const AccountingPeriodGoalListFrame = function ({
     },
     {
       name: "actions",
-      headerContent: "",
+      headerContent: (
+        <IconButton
+          label="Add"
+          icon={<AddCircleOutline />}
+          onClick={() => {
+            router.push(
+              goalRoutes.create({ accountingPeriodId: accountingPeriod.id }),
+            );
+          }}
+          disabled={!accountingPeriod.isOpen}
+        />
+      ),
       getBodyContent: (goal: Goal) => (
         <ColumnButton
           label="View"
           icon={<ArrowForwardIos />}
           onClick={() => {
-            router.push(
-              routes.fundDetail(
-                {
-                  id: accountingPeriod.id,
-                  fundId: goal.fundId,
-                },
-                {},
-              ),
-            );
+            router.push(goalRoutes.detail({ id: goal.id }, {}));
           }}
         />
       ),

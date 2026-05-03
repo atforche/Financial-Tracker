@@ -12,9 +12,9 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of creating a goal.
  */
 interface ActionState {
-  readonly fundId: string;
   readonly redirectUrl: string;
   readonly errorTitle?: string | null;
+  readonly fundErrors?: string | null;
   readonly accountingPeriodErrors?: string | null;
   readonly goalTypeErrors?: string | null;
   readonly goalAmountErrors?: string | null;
@@ -25,21 +25,27 @@ interface ActionState {
  * Server action that creates a goal.
  */
 const createGoal = async function (
-  { fundId, redirectUrl }: ActionState,
+  { redirectUrl }: ActionState,
   request: CreateGoalRequest,
 ): Promise<ActionState> {
   const client = getApiClient();
-  const { error } = await client.POST("/goals", {
+  const { data, error } = await client.POST("/goals", {
     body: request,
   });
   if (error) {
     if (isApiError(error)) {
+      let fundErrorMessage = null;
       let accountingPeriodErrorMessage = null;
       let goalTypeErrorMessage = null;
       let goalAmountErrorMessage = null;
       const unmappedErrors: (string | null)[] = [];
       for (const key of Object.keys(error.errors ?? {})) {
         if (
+          key.toUpperCase() ===
+          nameof<CreateGoalRequest>("fundId").toUpperCase()
+        ) {
+          fundErrorMessage = formatErrors(error.errors?.[key] ?? null);
+        } else if (
           key.toUpperCase() ===
           nameof<CreateGoalRequest>("accountingPeriodId").toUpperCase()
         ) {
@@ -61,9 +67,9 @@ const createGoal = async function (
         }
       }
       return {
-        fundId,
         redirectUrl,
         errorTitle: error.title ?? null,
+        fundErrors: fundErrorMessage,
         accountingPeriodErrors: accountingPeriodErrorMessage,
         goalTypeErrors: goalTypeErrorMessage,
         goalAmountErrors: goalAmountErrorMessage,
@@ -71,6 +77,10 @@ const createGoal = async function (
       };
     }
     throw new Error("An unexpected error occurred", { cause: error });
+  }
+
+  if (typeof data === "undefined") {
+    throw new Error("Goal creation did not return a Goal.");
   }
 
   revalidatePath(redirectUrl);

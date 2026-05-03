@@ -72,36 +72,6 @@ const breadcrumbs = {
       href: routes.fundDetail({ id: accountingPeriod.id, fundId: fund.id }, {}),
     },
   ],
-  goalCreate: (
-    accountingPeriod: AccountingPeriod,
-    fund: Fund,
-  ): Breadcrumb[] => [
-    ...breadcrumbs.fundDetail(accountingPeriod, fund),
-    {
-      label: "Create Goal",
-      href: routes.goalCreate({ id: accountingPeriod.id, fundId: fund.id }),
-    },
-  ],
-  goalUpdate: (
-    accountingPeriod: AccountingPeriod,
-    fund: Fund,
-  ): Breadcrumb[] => [
-    ...breadcrumbs.fundDetail(accountingPeriod, fund),
-    {
-      label: "Update Goal",
-      href: routes.goalUpdate({ id: accountingPeriod.id, fundId: fund.id }),
-    },
-  ],
-  goalDelete: (
-    accountingPeriod: AccountingPeriod,
-    fund: Fund,
-  ): Breadcrumb[] => [
-    ...breadcrumbs.fundDetail(accountingPeriod, fund),
-    {
-      label: "Delete Goal",
-      href: routes.goalDelete({ id: accountingPeriod.id, fundId: fund.id }),
-    },
-  ],
 };
 
 export default breadcrumbs;

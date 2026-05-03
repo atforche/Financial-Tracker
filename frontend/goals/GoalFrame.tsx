@@ -4,31 +4,46 @@ import CaptionedValue from "@/framework/view/CaptionedValue";
 import type { Goal } from "@/goals/types";
 import type { JSX } from "react";
 import formatCurrency from "@/framework/formatCurrency";
-import routes from "@/accounting-periods/routes";
+import routes from "@/goals/routes";
 
 /**
- * Props for the CurrentGoalFrame component.
+ * Enumeration representing the context in which the GoalFrame is being used, which can affect its behavior and appearance.
  */
-interface CurrentGoalFrameProps {
-  readonly fundId: string;
+enum GoalFrameContext {
+  FundDetail = "FundDetail",
+  GoalDetail = "GoalDetail",
+}
+
+/**
+ * Props for the GoalFrame component.
+ */
+interface GoalFrameProps {
   readonly goal: Goal | null;
+  readonly fundId: string;
   readonly accountingPeriodId: string;
   readonly isAccountingPeriodOpen: boolean;
   readonly isSystemFund: boolean;
+  readonly context: GoalFrameContext;
 }
 
 /**
  * Component that displays the current goal for a fund and accounting period.
  */
-const CurrentGoalFrame = function ({
+const GoalFrame = function ({
   fundId,
   goal,
   accountingPeriodId,
   isAccountingPeriodOpen,
   isSystemFund,
-}: CurrentGoalFrameProps): JSX.Element {
+  context,
+}: GoalFrameProps): JSX.Element {
   return (
-    <CaptionedFrame caption="Current Goal" maxWidth={null}>
+    <CaptionedFrame
+      caption={
+        context === GoalFrameContext.FundDetail ? "Current Goal" : "Details"
+      }
+      maxWidth={null}
+    >
       <Stack
         direction="row"
         spacing={2}
@@ -52,10 +67,13 @@ const CurrentGoalFrame = function ({
             <Button
               variant="contained"
               color="primary"
-              href={routes.goalUpdate({
-                id: accountingPeriodId,
-                fundId: goal.fundId,
-              })}
+              href={routes.update(
+                { id: goal.id },
+                {
+                  fundId:
+                    context === GoalFrameContext.FundDetail ? fundId : null,
+                },
+              )}
               disabled={isSystemFund || !isAccountingPeriodOpen}
             >
               Edit
@@ -63,10 +81,13 @@ const CurrentGoalFrame = function ({
             <Button
               variant="contained"
               color="error"
-              href={routes.goalDelete({
-                id: accountingPeriodId,
-                fundId: goal.fundId,
-              })}
+              href={routes.delete(
+                { id: goal.id },
+                {
+                  fundId:
+                    context === GoalFrameContext.FundDetail ? fundId : null,
+                },
+              )}
               disabled={isSystemFund || !isAccountingPeriodOpen}
             >
               Delete
@@ -76,9 +97,9 @@ const CurrentGoalFrame = function ({
           <Button
             variant="contained"
             color="primary"
-            href={routes.goalCreate({
-              id: accountingPeriodId,
-              fundId,
+            href={routes.create({
+              accountingPeriodId,
+              fundId: context === GoalFrameContext.FundDetail ? fundId : null,
             })}
             disabled={isSystemFund || !isAccountingPeriodOpen}
           >
@@ -110,4 +131,5 @@ const CurrentGoalFrame = function ({
   );
 };
 
-export default CurrentGoalFrame;
+export { GoalFrameContext };
+export default GoalFrame;
