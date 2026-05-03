@@ -34,7 +34,7 @@ const GoalTypeEntryField = function ({
         value === null ? { label: "", value: null } : { label: value, value }
       }
       setValue={(newValue): void => {
-        setValue(newValue.value);
+        setValue(newValue?.value ?? null);
       }}
       errorMessage={errorMessage}
     />

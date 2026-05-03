@@ -12,6 +12,7 @@ import ListFrame from "@/framework/listframe/ListFrame";
 import type { Transaction } from "@/transactions/types";
 import formatCurrency from "@/framework/formatCurrency";
 import nameof from "@/framework/data/nameof";
+import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
@@ -165,8 +166,14 @@ const FundTransactionListFrame = function ({
     {
       name: "actions",
       headerContent: "",
-      getBodyContent: () => (
-        <ColumnButton label="View" icon={<ArrowForwardIos />} onClick={null} />
+      getBodyContent: (transaction: Transaction) => (
+        <ColumnButton
+          label="View"
+          icon={<ArrowForwardIos />}
+          onClick={() => {
+            router.push(routes.detail({ id: transaction.id }, {}));
+          }}
+        />
       ),
       alignment: "right",
       minWidth: 90,

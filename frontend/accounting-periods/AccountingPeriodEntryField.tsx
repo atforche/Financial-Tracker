@@ -38,7 +38,7 @@ const AccountingPeriodEntryField = function ({
       setValue={
         setValue !== null
           ? (newValue): void => {
-              setValue(newValue.value);
+              setValue(newValue?.value ?? null);
             }
           : null
       }

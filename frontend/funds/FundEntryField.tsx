@@ -43,7 +43,7 @@ const FundEntryField = function ({
         setValue === null
           ? null
           : (newValue): void => {
-              setValue(newValue.value);
+              setValue(newValue?.value ?? null);
             }
       }
       autoFocus={autoFocus}

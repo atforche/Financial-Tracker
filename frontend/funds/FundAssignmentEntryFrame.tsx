@@ -1,7 +1,7 @@
-import "@/funds/FundAmountCollectionEntryFrame.css";
+import "@/funds/FundAssignmentEntryFrame.css";
 import { AddCircleOutline, Delete } from "@mui/icons-material";
 import { Button, Stack, Tooltip, Typography } from "@mui/material";
-import type { FundAmount, FundIdentifier } from "@/funds/types";
+import type { Fund, FundAmount } from "@/funds/types";
 import { type JSX, useState } from "react";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -9,39 +9,89 @@ import FundAmountEntryFrame from "@/funds/FundAmountEntryFrame";
 import formatCurrency from "@/framework/formatCurrency";
 
 /**
- * Props for the FundAmountCollectionEntryFrame component.
+ * Determines whether any fund assignments are incomplete.
  */
-interface FundAmountCollectionEntryFrameProps {
+const hasIncompleteFundAssignments = function (
+  fundAssignments: FundAmount[],
+): boolean {
+  return fundAssignments.some(
+    (fundAmount) =>
+      fundAmount.fundId === "" ||
+      fundAmount.fundName === "" ||
+      fundAmount.amount < 0 ||
+      (fundAmount.amount === 0 && fundAmount.fundName !== "Unassigned"),
+  );
+};
+
+/**
+ * Updates the amount assigned to the unassigned fund based on the total amount to assign and the amounts assigned to other funds.
+ */
+const updateUnassignedFundAmount = function (
+  unassignedFund: Fund | null,
+  totalAmountToAssign: number | null,
+  fundAmounts: FundAmount[],
+): FundAmount[] {
+  const assignedFundAmounts = fundAmounts.filter(
+    (fundAmount) => fundAmount.fundId !== unassignedFund?.id,
+  );
+  if (totalAmountToAssign === null || unassignedFund === null) {
+    return assignedFundAmounts;
+  }
+  const assignedAmount = assignedFundAmounts.reduce(
+    (acc, fundAmount) => acc + fundAmount.amount,
+    0,
+  );
+  return [
+    {
+      fundId: unassignedFund.id,
+      fundName: unassignedFund.name,
+      amount: Math.max(totalAmountToAssign - assignedAmount, 0),
+    },
+    ...assignedFundAmounts,
+  ];
+};
+
+/**
+ * Props for the FundAssignmentEntryFrame component.
+ */
+interface FundAssignmentEntryFrameProps {
   readonly label: string;
-  readonly funds: FundIdentifier[];
+  readonly funds: Fund[];
+  readonly totalAmountToAssign: number | null;
   readonly value: FundAmount[];
   readonly setValue: (newValue: FundAmount[]) => void;
 }
 
 /**
  * Component that presents the user with an entry field where they can enter a Fund Amount.
- * @param props - Props for the FundAmountCollectionEntryFrame component.
- * @returns JSX element representing the FundAmountCollectionEntryFrame component.
  */
-const FundAmountCollectionEntryFrame = function ({
+const FundAssignmentEntryFrame = function ({
   label,
   funds,
+  totalAmountToAssign,
   value,
   setValue,
-}: FundAmountCollectionEntryFrameProps): JSX.Element {
+}: FundAssignmentEntryFrameProps): JSX.Element {
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
-  const unassignedFundId =
-    funds.find((fund) => fund.name === "Unassigned")?.id ?? null;
+  const unassignedFund =
+    funds.find((fund) => fund.name === "Unassigned") ?? null;
 
-  const isUnassignedFundAmount = function (fundAmount: FundAmount): boolean {
-    return (
-      fundAmount.fundName === "Unassigned" ||
-      (unassignedFundId !== null && fundAmount.fundId === unassignedFundId)
+  /**
+   * Event handler for when the fund assignments are changed.
+   */
+  const onFundAssignmentChange = function (
+    newFundAssignments: FundAmount[],
+  ): void {
+    const updatedFundAssignments = updateUnassignedFundAmount(
+      unassignedFund,
+      totalAmountToAssign,
+      newFundAssignments,
     );
+    setValue(updatedFundAssignments);
   };
 
   return (
-    <div className="fund-amount-collection-entry-frame">
+    <div className="fund-assignment-entry-frame">
       <CaptionedFrame caption={label}>
         <Stack spacing={2} sx={{ marginTop: "16px" }}>
           {value.map((fundAmount, index) => (
@@ -56,12 +106,12 @@ const FundAmountCollectionEntryFrame = function ({
                 funds={funds}
                 value={fundAmount}
                 setValue={
-                  isUnassignedFundAmount(fundAmount)
+                  fundAmount.fundId === unassignedFund?.id
                     ? null
                     : (newValue): void => {
                         const newFundAmounts = [...value];
                         newFundAmounts[index] = newValue;
-                        setValue(newFundAmounts);
+                        onFundAssignmentChange(newFundAmounts);
                       }
                 }
                 filter={(fund) =>
@@ -78,9 +128,9 @@ const FundAmountCollectionEntryFrame = function ({
                 icon={<Delete />}
                 onClick={() => {
                   const newFundAmounts = value.filter((_, i) => i !== index);
-                  setValue(newFundAmounts);
+                  onFundAssignmentChange(newFundAmounts);
                 }}
-                hidden={isUnassignedFundAmount(fundAmount)}
+                hidden={fundAmount.fundId === unassignedFund?.id}
               />
             </Stack>
           ))}
@@ -100,7 +150,7 @@ const FundAmountCollectionEntryFrame = function ({
                   ...value,
                   { fundId: "", fundName: "", amount: 0 },
                 ];
-                setValue(newFundAmounts);
+                onFundAssignmentChange(newFundAmounts);
                 setFocusIndex(newFundAmounts.length - 1);
               }}
             >
@@ -119,4 +169,5 @@ const FundAmountCollectionEntryFrame = function ({
   );
 };
 
-export default FundAmountCollectionEntryFrame;
+export { hasIncompleteFundAssignments, updateUnassignedFundAmount };
+export default FundAssignmentEntryFrame;

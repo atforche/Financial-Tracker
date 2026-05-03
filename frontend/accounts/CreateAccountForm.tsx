@@ -12,7 +12,11 @@ import {
   getMinimumDate,
 } from "@/accounting-periods/types";
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
-import type { FundAmount, FundIdentifier } from "@/funds/types";
+import type { Fund, FundAmount } from "@/funds/types";
+import FundAssignmentEntryFrame, {
+  hasIncompleteFundAssignments,
+  updateUnassignedFundAmount,
+} from "@/funds/FundAssignmentEntryFrame";
 import { type JSX, startTransition, useActionState, useState } from "react";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
@@ -21,7 +25,6 @@ import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import type { Dayjs } from "dayjs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import FundAmountCollectionEntryFrame from "@/funds/FundAmountCollectionEntryFrame";
 import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import { ToggleState } from "@/accounting-periods/AccountingPeriodViewListFrames";
@@ -35,7 +38,7 @@ import routes from "@/accounts/routes";
  */
 interface CreateAccountFormProps {
   readonly accountingPeriods: AccountingPeriod[];
-  readonly funds: FundIdentifier[];
+  readonly funds: Fund[];
   readonly providedAccountingPeriod?: AccountingPeriod | null;
 }
 
@@ -52,69 +55,6 @@ const getRedirectUrl = function (
     );
   }
   return routes.index({});
-};
-
-/**
- * Determines whether any initial fund assignments are incomplete.
- */
-const hasIncompleteFundAssignments = function (
-  initialFundAssignments: FundAmount[],
-): boolean {
-  return initialFundAssignments.some(
-    (fundAmount) => fundAmount.fundId === "" || fundAmount.fundName === "",
-  );
-};
-
-/**
- * Gets the Unassigned fund identifier when it is available.
- */
-const getUnassignedFund = function (
-  funds: FundIdentifier[],
-): FundIdentifier | null {
-  return funds.find((fund) => fund.name === "Unassigned") ?? null;
-};
-
-/**
- * Determines whether the provided fund amount belongs to the Unassigned fund.
- */
-const isUnassignedFundAmount = function (
-  fundAmount: FundAmount,
-  unassignedFund: FundIdentifier | null,
-): boolean {
-  return (
-    unassignedFund !== null &&
-    (fundAmount.fundId === unassignedFund.id ||
-      fundAmount.fundName === unassignedFund.name)
-  );
-};
-
-/**
- * Keeps the Unassigned amount in sync with the initial balance and other fund assignments.
- */
-const normalizeInitialFundAssignments = function (
-  initialFundAssignments: FundAmount[],
-  initialBalance: number | null,
-  unassignedFund: FundIdentifier | null,
-): FundAmount[] {
-  if (unassignedFund === null) {
-    return initialFundAssignments;
-  }
-
-  const assignedFundAmounts = initialFundAssignments.filter(
-    (fundAmount) => !isUnassignedFundAmount(fundAmount, unassignedFund),
-  );
-  const unassignedAmount =
-    (initialBalance ?? 0) -
-    assignedFundAmounts.reduce((sum, fundAmount) => sum + fundAmount.amount, 0);
-
-  return [
-    {
-      fundId: unassignedFund.id,
-      fundName: unassignedFund.name,
-      amount: unassignedAmount,
-    },
-    ...assignedFundAmounts,
-  ];
 };
 
 /**
@@ -165,37 +105,27 @@ const CreateAccountForm = function ({
     redirectUrl: getRedirectUrl(providedAccountingPeriod),
   });
 
-  const unassignedFund = getUnassignedFund(funds);
+  const unassignedFund =
+    funds.find((fund) => fund.name === "Unassigned") ?? null;
   const trackedAccountType =
     accountType !== null && isTrackedAccountType(accountType);
 
-  const setNormalizedInitialFundAssignments = function (
-    newValue: FundAmount[],
-  ): void {
-    setInitialFundAssignments(
-      normalizeInitialFundAssignments(newValue, initialBalance, unassignedFund),
-    );
-  };
-
-  const handleAccountTypeChange = function (
+  const onAccountTypeChange = function (
     newAccountType: AccountType | null,
   ): void {
     setAccountType(newAccountType);
     if (newAccountType === null || !isTrackedAccountType(newAccountType)) {
       setInitialFundAssignments([]);
-      return;
-    }
-
-    setInitialFundAssignments((currentValue) =>
-      normalizeInitialFundAssignments(
-        currentValue,
-        initialBalance,
+    } else {
+      updateUnassignedFundAmount(
         unassignedFund,
-      ),
-    );
+        initialBalance,
+        initialFundAssignments,
+      );
+    }
   };
 
-  const handleAccountingPeriodChange = function (
+  const onAccountingPeriodChange = function (
     newAccountingPeriod: AccountingPeriod | null,
   ): void {
     setAccountingPeriod(newAccountingPeriod);
@@ -204,21 +134,19 @@ const CreateAccountForm = function ({
     );
   };
 
-  const handleInitialBalanceChange = function (
+  const onInitialBalanceChange = function (
     newInitialBalance: number | null,
   ): void {
     setInitialBalance(newInitialBalance);
-    if (!trackedAccountType) {
-      return;
+    if (trackedAccountType) {
+      setInitialFundAssignments((currentValue) =>
+        updateUnassignedFundAmount(
+          unassignedFund,
+          newInitialBalance,
+          currentValue,
+        ),
+      );
     }
-
-    setInitialFundAssignments((currentValue) =>
-      normalizeInitialFundAssignments(
-        currentValue,
-        newInitialBalance,
-        unassignedFund,
-      ),
-    );
   };
 
   const canSubmit =
@@ -243,7 +171,7 @@ const CreateAccountForm = function ({
         <AccountTypeEntryField
           label="Type"
           value={accountType}
-          setValue={handleAccountTypeChange}
+          setValue={onAccountTypeChange}
           errorMessage={state.typeErrors ?? null}
         />
         <AccountingPeriodEntryField
@@ -251,9 +179,7 @@ const CreateAccountForm = function ({
           options={accountingPeriods}
           value={accountingPeriod}
           setValue={
-            providedAccountingPeriod === null
-              ? handleAccountingPeriodChange
-              : null
+            providedAccountingPeriod === null ? onAccountingPeriodChange : null
           }
           errorMessage={state.accountingPeriodErrors ?? null}
         />
@@ -273,16 +199,17 @@ const CreateAccountForm = function ({
         <CurrencyEntryField
           label="Initial Balance"
           value={initialBalance}
-          setValue={handleInitialBalanceChange}
+          setValue={onInitialBalanceChange}
           errorMessage={state.initialBalanceErrors ?? null}
         />
         {trackedAccountType ? (
           <>
-            <FundAmountCollectionEntryFrame
+            <FundAssignmentEntryFrame
               label="Initial Fund Assignments"
               funds={funds}
+              totalAmountToAssign={initialBalance}
               value={initialFundAssignments}
-              setValue={setNormalizedInitialFundAssignments}
+              setValue={setInitialFundAssignments}
             />
             {state.initialFundAssignmentsErrors !== null &&
             typeof state.initialFundAssignmentsErrors !== "undefined" ? (

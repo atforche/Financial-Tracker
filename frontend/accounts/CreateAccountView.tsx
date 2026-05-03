@@ -1,6 +1,5 @@
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateAccountForm from "@/accounts/CreateAccountForm";
-import type { FundIdentifier } from "@/funds/types";
 import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
 
@@ -19,63 +18,25 @@ interface CreateAccountViewProps {
 }
 
 /**
- * Gets all fund identifiers available to the user.
- */
-const getFundIdentifiers = async function (): Promise<FundIdentifier[]> {
-  const apiClient = getApiClient();
-  const { data: funds } = await apiClient.GET("/funds", {
-    params: {
-      query: {
-        Search: "",
-        Sort: null,
-      },
-    },
-  });
-  if (typeof funds === "undefined") {
-    throw new Error(`Failed to fetch funds`);
-  }
-
-  let fundIdentifiers = funds.items;
-  if (funds.totalCount > funds.items.length) {
-    const { data: allFunds } = await apiClient.GET("/funds", {
-      params: {
-        query: {
-          Search: "",
-          Sort: null,
-          Limit: funds.totalCount,
-          Offset: 0,
-        },
-      },
-    });
-    if (typeof allFunds === "undefined") {
-      throw new Error(`Failed to fetch all funds`);
-    }
-    fundIdentifiers = allFunds.items;
-  }
-
-  return fundIdentifiers.map((fund) => ({
-    id: fund.id,
-    name: fund.name,
-  }));
-};
-
-/**
  * Component that displays the create account view.
  */
 const CreateAccountView = async function ({
   searchParams,
 }: CreateAccountViewProps): Promise<JSX.Element> {
   const { accountingPeriodId } = await searchParams;
+
   const apiClient = getApiClient();
-
-  const [accountingPeriodsResult, funds] = await Promise.all([
-    apiClient.GET("/accounting-periods/open"),
-    getFundIdentifiers(),
+  const accountingPeriodsPromise = apiClient.GET("/accounting-periods/open");
+  const fundsPromise = apiClient.GET("/funds");
+  const [{ data: accountingPeriods }, { data: funds }] = await Promise.all([
+    accountingPeriodsPromise,
+    fundsPromise,
   ]);
-  const { data: accountingPeriods } = accountingPeriodsResult;
-
-  if (typeof accountingPeriods === "undefined") {
-    throw new Error("Failed to fetch accounting periods:");
+  if (
+    typeof accountingPeriods === "undefined" ||
+    typeof funds === "undefined"
+  ) {
+    throw new Error("Failed to fetch accounting periods or funds");
   }
 
   let providedAccountingPeriod: AccountingPeriod | null = null;
@@ -88,7 +49,7 @@ const CreateAccountView = async function ({
   return (
     <CreateAccountForm
       accountingPeriods={accountingPeriods}
-      funds={funds}
+      funds={funds.items}
       providedAccountingPeriod={providedAccountingPeriod}
     />
   );

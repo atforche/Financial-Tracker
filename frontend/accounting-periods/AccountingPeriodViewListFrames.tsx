@@ -143,6 +143,7 @@ const AccountingPeriodListFrames = function ({
               paramName={nameof<AccountingPeriodViewSearchParams>("search")}
             />
             <TransactionListFrame
+              accountingPeriodId={accountingPeriod.id}
               data={transactions}
               totalCount={transactionTotalCount}
             />

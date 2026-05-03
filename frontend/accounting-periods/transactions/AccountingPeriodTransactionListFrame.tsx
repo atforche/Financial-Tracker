@@ -3,21 +3,25 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AccountingPeriodTransactionSortOrder } from "@/accounting-periods/types";
 import type { AccountingPeriodViewSearchParams } from "@/accounting-periods/AccountingPeriodView";
+import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import type { Transaction } from "@/transactions/types";
 import formatCurrency from "@/framework/formatCurrency";
 import nameof from "@/framework/data/nameof";
+import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
  * Props for the AccountingPeriodTransactionListFrame component.
  */
 interface AccountingPeriodTransactionListFrameProps {
+  readonly accountingPeriodId: string;
   readonly data: Transaction[] | null;
   readonly totalCount: number | null;
 }
@@ -26,6 +30,7 @@ interface AccountingPeriodTransactionListFrameProps {
  * Component that displays the list of transactions for an accounting period.
  */
 const AccountingPeriodTransactionListFrame = function ({
+  accountingPeriodId,
   data,
   totalCount,
 }: AccountingPeriodTransactionListFrameProps): JSX.Element {
@@ -121,9 +126,25 @@ const AccountingPeriodTransactionListFrame = function ({
     },
     {
       name: "actions",
-      headerContent: "",
-      getBodyContent: () => (
-        <ColumnButton label="View" icon={<ArrowForwardIos />} onClick={null} />
+      headerContent: (
+        <IconButton
+          label="Add"
+          icon={<AddCircleOutline />}
+          onClick={() => {
+            router.push(routes.create({ accountingPeriodId }));
+          }}
+        />
+      ),
+      getBodyContent: (transaction: Transaction) => (
+        <ColumnButton
+          label="View"
+          icon={<ArrowForwardIos />}
+          onClick={() => {
+            router.push(
+              routes.detail({ id: transaction.id }, { accountingPeriodId }),
+            );
+          }}
+        />
       ),
       alignment: "right",
       minWidth: 90,

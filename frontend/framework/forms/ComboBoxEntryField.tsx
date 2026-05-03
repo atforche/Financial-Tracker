@@ -17,8 +17,8 @@ interface ComboBoxOption<T> {
 interface ComboBoxEntryFieldProps<T> {
   readonly label: string;
   readonly options: ComboBoxOption<T>[];
-  readonly value: ComboBoxOption<T>;
-  readonly setValue?: ((newValue: ComboBoxOption<T>) => void) | null;
+  readonly value: ComboBoxOption<T> | null;
+  readonly setValue?: ((newValue: ComboBoxOption<T> | null) => void) | null;
   readonly errorMessage?: string | null;
   readonly autoFocus?: boolean;
 }
@@ -38,11 +38,11 @@ const ComboBoxEntryField = function <T>({
 }: ComboBoxEntryFieldProps<T>): JSX.Element {
   const hint = useRef("");
   const justSelected = useRef(false);
-  const [inputValue, setInputValue] = useState(value.label);
+  const [inputValue, setInputValue] = useState(value?.label ?? "");
   return (
     <Autocomplete
       className="combo-box-entry-field"
-      disableClearable
+      clearOnBlur
       options={options}
       inputValue={inputValue}
       value={value}
@@ -91,7 +91,7 @@ const ComboBoxEntryField = function <T>({
       )}
       onChange={(_, newValue) => {
         justSelected.current = true;
-        setInputValue(newValue.label);
+        setInputValue(newValue?.label ?? "");
         setValue?.(newValue);
       }}
       onKeyDown={(event) => {
@@ -112,7 +112,7 @@ const ComboBoxEntryField = function <T>({
         if (justSelected.current) {
           justSelected.current = false;
         } else {
-          setInputValue(value.label);
+          setInputValue(value?.label ?? "");
         }
       }}
     />

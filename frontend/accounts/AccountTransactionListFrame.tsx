@@ -5,17 +5,20 @@ import {
   type AccountType,
   isPositiveChangeInBalance,
 } from "@/accounts/types";
+import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountViewSearchParams } from "@/accounts/AccountView";
-import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import { Stack } from "@mui/material";
 import type { Transaction } from "@/transactions/types";
 import formatCurrency from "@/framework/formatCurrency";
 import nameof from "@/framework/data/nameof";
+import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
@@ -172,9 +175,34 @@ const AccountTransactionListFrame = function ({
     },
     {
       name: "actions",
-      headerContent: "",
-      getBodyContent: () => (
-        <ColumnButton label="View" icon={<ArrowForwardIos />} onClick={null} />
+      headerContent: (
+        <Stack direction="row">
+          <IconButton
+            label="Add Debit"
+            icon={<AddCircleOutline />}
+            onClick={() => {
+              router.push(routes.create({ debitAccountId: account.id }));
+            }}
+          />
+          <IconButton
+            label="Add Credit"
+            icon={<AddCircleOutline />}
+            onClick={() => {
+              router.push(routes.create({ creditAccountId: account.id }));
+            }}
+          />
+        </Stack>
+      ),
+      getBodyContent: (transaction: Transaction) => (
+        <ColumnButton
+          label="View"
+          icon={<ArrowForwardIos />}
+          onClick={() => {
+            router.push(
+              routes.detail({ id: transaction.id }, { accountId: account.id }),
+            );
+          }}
+        />
       ),
       alignment: "right",
       minWidth: 90,

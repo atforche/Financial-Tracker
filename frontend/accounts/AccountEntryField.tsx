@@ -39,7 +39,7 @@ const AccountEntryField = function ({
         setValue === null
           ? null
           : (newValue): void => {
-              setValue(newValue.value);
+              setValue(newValue?.value ?? null);
             }
       }
       errorMessage={errorMessage}
