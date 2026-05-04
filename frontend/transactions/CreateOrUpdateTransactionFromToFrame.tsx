@@ -12,14 +12,12 @@ import { Stack } from "@mui/material";
 interface CreateOrUpdateTransactionFromToFrameProps {
   readonly accounts: Account[];
   readonly debitAccount: Account | null;
-  readonly setDebitAccount: ((account: Account | null) => void) | null;
   readonly creditAccount: Account | null;
-  readonly setCreditAccount: ((account: Account | null) => void) | null;
   readonly funds: Fund[];
   readonly debitFund: Fund | null;
-  readonly setDebitFund: ((fund: Fund | null) => void) | null;
   readonly creditFund: Fund | null;
-  readonly setCreditFund: ((fund: Fund | null) => void) | null;
+  readonly setDebitFrom: ((newDebitAccount: Account | null, newDebitFund: Fund | null) => void) | null;
+  readonly setCreditTo: ((newCreditAccount: Account | null, newCreditFund: Fund | null) => void) | null;
 }
 
 /**
@@ -28,14 +26,12 @@ interface CreateOrUpdateTransactionFromToFrameProps {
 const CreateOrUpdateTransactionFromToFrame = function ({
   accounts,
   debitAccount,
-  setDebitAccount,
   creditAccount,
-  setCreditAccount,
   funds,
   debitFund,
-  setDebitFund,
   creditFund,
-  setCreditFund,
+  setDebitFrom,
+  setCreditTo,
 }: CreateOrUpdateTransactionFromToFrameProps): JSX.Element {
   const debitFromFilter = function (option: Account | Fund): boolean {
     if (creditFund !== null) {
@@ -51,8 +47,8 @@ const CreateOrUpdateTransactionFromToFrame = function ({
     if (debitFund !== null) {
       return !("type" in option);
     }
-    if (creditAccount !== null) {
-      return "accountType" in option;
+    if (debitAccount !== null) {
+      return "type" in option;
     }
     return true;
   };
@@ -70,18 +66,15 @@ const CreateOrUpdateTransactionFromToFrame = function ({
             options={[...accounts, ...funds]}
             value={debitAccount ?? debitFund}
             setValue={
-              setDebitAccount === null || setDebitFund === null
+              setDebitFrom === null
                 ? null
                 : (newValue): void => {
                     if (newValue === null) {
-                      setDebitAccount(null);
-                      setDebitFund(null);
+                      setDebitFrom(null, null);
                     } else if ("type" in newValue) {
-                      setDebitAccount(newValue);
-                      setDebitFund(null);
+                      setDebitFrom(newValue, null);
                     } else {
-                      setDebitAccount(null);
-                      setDebitFund(newValue);
+                      setDebitFrom(null, newValue);
                     }
                   }
             }
@@ -92,18 +85,15 @@ const CreateOrUpdateTransactionFromToFrame = function ({
             options={[...accounts, ...funds]}
             value={creditAccount ?? creditFund}
             setValue={
-              setCreditAccount === null || setCreditFund === null
+              setCreditTo === null
                 ? null
                 : (newValue): void => {
                     if (newValue === null) {
-                      setCreditAccount(null);
-                      setCreditFund(null);
+                      setCreditTo(null, null);
                     } else if ("type" in newValue) {
-                      setCreditAccount(newValue);
-                      setCreditFund(null);
+                      setCreditTo(newValue, null);
                     } else {
-                      setCreditAccount(null);
-                      setCreditFund(newValue);
+                      setCreditTo(null, newValue);
                     }
                   }
             }

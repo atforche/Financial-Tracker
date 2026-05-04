@@ -144,20 +144,6 @@ const CreateTransactionForm = function ({
     newDebitFund: Fund | null,
     newCreditFund: Fund | null,
   ): void {
-    if (newDebitAccount !== null) {
-      setDebitAccount(newDebitAccount);
-      setDebitFund(null);
-    } else if (newCreditAccount !== null) {
-      setCreditAccount(newCreditAccount);
-      setCreditFund(null);
-    } else if (newDebitFund !== null) {
-      setDebitFund(newDebitFund);
-      setDebitAccount(null);
-    } else if (newCreditFund !== null) {
-      setCreditFund(newCreditFund);
-      setCreditAccount(null);
-    }
-
     if (
       !isIncomeTransaction(
         newDebitAccount,
@@ -168,7 +154,7 @@ const CreateTransactionForm = function ({
     ) {
       setIncomeFundAssignments([]);
     } else {
-      updateUnassignedFundAmount(unassignedFund, amount, incomeFundAssignments);
+      setIncomeFundAssignments(updateUnassignedFundAmount(unassignedFund, amount, incomeFundAssignments));
     }
     if (
       !isSpendingTransaction(
@@ -180,13 +166,31 @@ const CreateTransactionForm = function ({
     ) {
       setSpendingFundAssignments([]);
     } else {
-      updateUnassignedFundAmount(
+      setSpendingFundAssignments(updateUnassignedFundAmount(
         unassignedFund,
         amount,
         spendingFundAssignments,
-      );
+      ));
     }
   };
+
+  /**
+   * Event handler for when the debit account or fund fields are changed in the create transaction form.
+   */
+  const onDebitFromChange = function(newDebitAccount: Account | null, newDebitFund: Fund | null): void {
+    setDebitAccount(newDebitAccount);
+    setDebitFund(newDebitFund);
+    onToFromChange(newDebitAccount, creditAccount, newDebitFund, creditFund);
+  }
+
+  /**
+   * Event handler for when the credit account or fund fields are changed in the create transaction form.
+   */
+  const onCreditToChange = function(newCreditAccount: Account | null, newCreditFund: Fund | null): void {
+    setCreditAccount(newCreditAccount);
+    setCreditFund(newCreditFund);
+    onToFromChange(debitAccount, newCreditAccount, debitFund, newCreditFund);
+  }
 
   /**
    * Event handler for when the amount field is changed in the create transaction form.
@@ -194,16 +198,16 @@ const CreateTransactionForm = function ({
   const onAmountChange = function (newAmount: number | null): void {
     setAmount(newAmount);
 
-    updateUnassignedFundAmount(
+    setIncomeFundAssignments(updateUnassignedFundAmount(
       unassignedFund,
       newAmount,
       incomeFundAssignments,
-    );
-    updateUnassignedFundAmount(
+    ));
+    setSpendingFundAssignments(updateUnassignedFundAmount(
       unassignedFund,
       newAmount,
       spendingFundAssignments,
-    );
+    ));
   };
 
   let request: CreateTransactionRequest | null = null;
@@ -347,21 +351,15 @@ const CreateTransactionForm = function ({
       <CreateOrUpdateTransactionFromToFrame
         accounts={accounts}
         debitAccount={debitAccount}
-        setDebitAccount={(newValue): void => {
-          onToFromChange(newValue, null, null, null);
-        }}
         creditAccount={creditAccount}
-        setCreditAccount={(newValue): void => {
-          onToFromChange(null, newValue, null, null);
-        }}
         funds={funds}
         debitFund={debitFund}
-        setDebitFund={(newValue): void => {
-          onToFromChange(null, null, newValue, null);
-        }}
         creditFund={creditFund}
-        setCreditFund={(newValue): void => {
-          onToFromChange(null, null, null, newValue);
+        setDebitFrom={(newDebitAccount, newDebitFund): void => {
+          onDebitFromChange(newDebitAccount, newDebitFund);
+        }}
+        setCreditTo={(newCreditAccount, newCreditFund): void => {
+          onCreditToChange(newCreditAccount, newCreditFund);
         }}
       />
       {isIncomeTransaction(
