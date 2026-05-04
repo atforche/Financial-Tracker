@@ -227,14 +227,12 @@ const UpdateTransactionForm = function ({
       <CreateOrUpdateTransactionFromToFrame
         accounts={[]}
         debitAccount={transactionDebitAccount}
-        setDebitAccount={null}
         creditAccount={transactionCreditAccount}
-        setCreditAccount={null}
         funds={funds}
         debitFund={transactionDebitFund}
-        setDebitFund={null}
         creditFund={transactionCreditFund}
-        setCreditFund={null}
+        setDebitFrom={null}
+        setCreditTo={null}
       />
       {transaction.type ===
         TransactionModelIncomeTransactionModelType.Income && (

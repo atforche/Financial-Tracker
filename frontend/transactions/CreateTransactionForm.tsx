@@ -154,7 +154,13 @@ const CreateTransactionForm = function ({
     ) {
       setIncomeFundAssignments([]);
     } else {
-      setIncomeFundAssignments(updateUnassignedFundAmount(unassignedFund, amount, incomeFundAssignments));
+      setIncomeFundAssignments(
+        updateUnassignedFundAmount(
+          unassignedFund,
+          amount,
+          incomeFundAssignments,
+        ),
+      );
     }
     if (
       !isSpendingTransaction(
@@ -166,31 +172,39 @@ const CreateTransactionForm = function ({
     ) {
       setSpendingFundAssignments([]);
     } else {
-      setSpendingFundAssignments(updateUnassignedFundAmount(
-        unassignedFund,
-        amount,
-        spendingFundAssignments,
-      ));
+      setSpendingFundAssignments(
+        updateUnassignedFundAmount(
+          unassignedFund,
+          amount,
+          spendingFundAssignments,
+        ),
+      );
     }
   };
 
   /**
    * Event handler for when the debit account or fund fields are changed in the create transaction form.
    */
-  const onDebitFromChange = function(newDebitAccount: Account | null, newDebitFund: Fund | null): void {
+  const onDebitFromChange = function (
+    newDebitAccount: Account | null,
+    newDebitFund: Fund | null,
+  ): void {
     setDebitAccount(newDebitAccount);
     setDebitFund(newDebitFund);
     onToFromChange(newDebitAccount, creditAccount, newDebitFund, creditFund);
-  }
+  };
 
   /**
    * Event handler for when the credit account or fund fields are changed in the create transaction form.
    */
-  const onCreditToChange = function(newCreditAccount: Account | null, newCreditFund: Fund | null): void {
+  const onCreditToChange = function (
+    newCreditAccount: Account | null,
+    newCreditFund: Fund | null,
+  ): void {
     setCreditAccount(newCreditAccount);
     setCreditFund(newCreditFund);
     onToFromChange(debitAccount, newCreditAccount, debitFund, newCreditFund);
-  }
+  };
 
   /**
    * Event handler for when the amount field is changed in the create transaction form.
@@ -198,16 +212,20 @@ const CreateTransactionForm = function ({
   const onAmountChange = function (newAmount: number | null): void {
     setAmount(newAmount);
 
-    setIncomeFundAssignments(updateUnassignedFundAmount(
-      unassignedFund,
-      newAmount,
-      incomeFundAssignments,
-    ));
-    setSpendingFundAssignments(updateUnassignedFundAmount(
-      unassignedFund,
-      newAmount,
-      spendingFundAssignments,
-    ));
+    setIncomeFundAssignments(
+      updateUnassignedFundAmount(
+        unassignedFund,
+        newAmount,
+        incomeFundAssignments,
+      ),
+    );
+    setSpendingFundAssignments(
+      updateUnassignedFundAmount(
+        unassignedFund,
+        newAmount,
+        spendingFundAssignments,
+      ),
+    );
   };
 
   let request: CreateTransactionRequest | null = null;
@@ -227,7 +245,7 @@ const CreateTransactionForm = function ({
         type: CreateIncomeTransactionType.Income,
         accountingPeriodId: accountingPeriod.id,
         date:
-          date?.format("yyyy-MM-DD") ?? defaultDate?.format("yyyy-MM-DD") ?? "",
+          date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
         location,
         description,
         amount,
@@ -258,7 +276,7 @@ const CreateTransactionForm = function ({
         type: CreateSpendingTransactionType.Spending,
         accountingPeriodId: accountingPeriod.id,
         date:
-          date?.format("yyyy-MM-DD") ?? defaultDate?.format("yyyy-MM-DD") ?? "",
+          date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
         location,
         description,
         amount,
@@ -271,10 +289,12 @@ const CreateTransactionForm = function ({
                 accountId: creditAccount.id,
               }
             : null,
-        fundAssignments: spendingFundAssignments.map((fundAmount) => ({
-          fundId: fundAmount.fundId,
-          amount: fundAmount.amount,
-        })),
+        fundAssignments: spendingFundAssignments
+          .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
+          .map((fundAmount) => ({
+            fundId: fundAmount.fundId,
+            amount: fundAmount.amount,
+          })),
       };
     } else if (
       isAccountTransaction(debitAccount, creditAccount, debitFund, creditFund)
@@ -283,7 +303,7 @@ const CreateTransactionForm = function ({
         type: CreateAccountTransactionType.Account,
         accountingPeriodId: accountingPeriod.id,
         date:
-          date?.format("yyyy-MM-DD") ?? defaultDate?.format("yyyy-MM-DD") ?? "",
+          date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
         location,
         description,
         amount,
@@ -308,7 +328,7 @@ const CreateTransactionForm = function ({
         type: CreateFundTransactionType.Fund,
         accountingPeriodId: accountingPeriod.id,
         date:
-          date?.format("yyyy-MM-DD") ?? defaultDate?.format("yyyy-MM-DD") ?? "",
+          date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
         location,
         description,
         amount,

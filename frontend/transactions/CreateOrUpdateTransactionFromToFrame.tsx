@@ -16,8 +16,12 @@ interface CreateOrUpdateTransactionFromToFrameProps {
   readonly funds: Fund[];
   readonly debitFund: Fund | null;
   readonly creditFund: Fund | null;
-  readonly setDebitFrom: ((newDebitAccount: Account | null, newDebitFund: Fund | null) => void) | null;
-  readonly setCreditTo: ((newCreditAccount: Account | null, newCreditFund: Fund | null) => void) | null;
+  readonly setDebitFrom:
+    | ((newDebitAccount: Account | null, newDebitFund: Fund | null) => void)
+    | null;
+  readonly setCreditTo:
+    | ((newCreditAccount: Account | null, newCreditFund: Fund | null) => void)
+    | null;
 }
 
 /**
