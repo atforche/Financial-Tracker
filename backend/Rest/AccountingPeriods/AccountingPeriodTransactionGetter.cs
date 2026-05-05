@@ -47,6 +47,62 @@ public class AccountingPeriodTransactionGetter(
         {
             results = results.OrderByDescending(transaction => transaction.Location).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
         }
+        else if (request.Sort == AccountingPeriodTransactionSortOrderModel.DebitFrom)
+        {
+            results = results.OrderByDescending(transaction => transaction switch
+            {
+                SpendingTransactionModel spendingTransaction => spendingTransaction.DebitAccount.AccountName,
+                IncomeTransactionModel incomeTransaction => incomeTransaction.DebitAccount?.AccountName,
+                AccountTransactionModel accountTransaction => accountTransaction.DebitAccount?.AccountName,
+                FundTransactionModel fundTransaction => fundTransaction.DebitFund?.FundName,
+                _ => null
+            })
+            .ThenByDescending(transaction => transaction.Date)
+            .ThenByDescending(transaction => transaction.Sequence)
+            .ToList();
+        }
+        else if (request.Sort == AccountingPeriodTransactionSortOrderModel.DebitFromDescending)
+        {
+            results = results.OrderByDescending(transaction => transaction switch
+            {
+                SpendingTransactionModel spendingTransaction => spendingTransaction.DebitAccount.AccountName,
+                IncomeTransactionModel incomeTransaction => incomeTransaction.DebitAccount?.AccountName,
+                AccountTransactionModel accountTransaction => accountTransaction.DebitAccount?.AccountName,
+                FundTransactionModel fundTransaction => fundTransaction.DebitFund?.FundName,
+                _ => null
+            })
+            .ThenByDescending(transaction => transaction.Date)
+            .ThenByDescending(transaction => transaction.Sequence)
+            .ToList();
+        }
+        else if (request.Sort == AccountingPeriodTransactionSortOrderModel.CreditTo)
+        {
+            results = results.OrderByDescending(transaction => transaction switch
+            {
+                SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName,
+                IncomeTransactionModel incomeTransaction => incomeTransaction.CreditAccount.AccountName,
+                AccountTransactionModel accountTransaction => accountTransaction.CreditAccount?.AccountName,
+                FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,
+                _ => null
+            })
+            .ThenByDescending(transaction => transaction.Date)
+            .ThenByDescending(transaction => transaction.Sequence)
+            .ToList();
+        }
+        else if (request.Sort == AccountingPeriodTransactionSortOrderModel.CreditToDescending)
+        {
+            results = results.OrderByDescending(transaction => transaction switch
+            {
+                SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName,
+                IncomeTransactionModel incomeTransaction => incomeTransaction.CreditAccount.AccountName,
+                AccountTransactionModel accountTransaction => accountTransaction.CreditAccount?.AccountName,
+                FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,
+                _ => null
+            })
+            .ThenByDescending(transaction => transaction.Date)
+            .ThenByDescending(transaction => transaction.Sequence)
+            .ToList();
+        }
         else if (request.Sort == AccountingPeriodTransactionSortOrderModel.Amount)
         {
             results = results.OrderBy(transaction => transaction.Amount).ThenBy(transaction => transaction.Date).ThenBy(transaction => transaction.Sequence).ToList();

@@ -2713,6 +2713,10 @@ export enum AccountingPeriodTransactionSortOrderModel {
     DateDescending = "DateDescending",
     Location = "Location",
     LocationDescending = "LocationDescending",
+    DebitFrom = "DebitFrom",
+    DebitFromDescending = "DebitFromDescending",
+    CreditTo = "CreditTo",
+    CreditToDescending = "CreditToDescending",
     Amount = "Amount",
     AmountDescending = "AmountDescending"
 }

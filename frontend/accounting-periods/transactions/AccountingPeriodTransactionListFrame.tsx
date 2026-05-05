@@ -101,6 +101,65 @@ const AccountingPeriodTransactionListFrame = function ({
       },
     },
     {
+      name: "debitFrom",
+      headerContent: "Debit From",
+      getBodyContent: (transaction: Transaction): string => 
+      {
+        if ("debitAccount" in transaction) {
+          return transaction.debitAccount?.accountName ?? "";
+        }
+        if ("debitFund" in transaction) {
+          return transaction.debitFund.fundName;
+        }
+        return "";
+      },
+      sortType:
+        currentSort === AccountingPeriodTransactionSortOrder.DebitFrom
+          ? ColumnSortType.Ascending
+          : currentSort ===
+              AccountingPeriodTransactionSortOrder.DebitFromDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSort(AccountingPeriodTransactionSortOrder.DebitFrom);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSort(AccountingPeriodTransactionSortOrder.DebitFromDescending);
+        } else {
+          setSort(null);
+        }
+      }
+    },
+    {
+      name: "creditTo",
+      headerContent: "Credit To",
+      getBodyContent: (transaction: Transaction): string => {
+        if ("creditAccount" in transaction) {
+          return transaction.creditAccount?.accountName ?? "";
+        }
+        if ("creditFund" in transaction) {
+          return transaction.creditFund.fundName;
+        }
+        return "";
+      },
+      sortType:
+        currentSort === AccountingPeriodTransactionSortOrder.CreditTo
+          ? ColumnSortType.Ascending
+          : currentSort ===
+              AccountingPeriodTransactionSortOrder.CreditToDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType: ColumnSortType | null): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSort(AccountingPeriodTransactionSortOrder.CreditTo);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSort(AccountingPeriodTransactionSortOrder.CreditToDescending);
+        } else {
+          setSort(null);
+        }
+      },
+    },
+    {
       name: "amount",
       headerContent: "Amount",
       getBodyContent: (transaction: Transaction) =>

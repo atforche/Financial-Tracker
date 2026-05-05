@@ -11,6 +11,7 @@ interface AccountEntryFieldProps {
   readonly value: AccountIdentifier | null;
   readonly setValue: ((newValue: AccountIdentifier | null) => void) | null;
   readonly errorMessage?: string | null;
+  readonly filter?: ((account: AccountIdentifier) => boolean) | null;
 }
 
 /**
@@ -22,14 +23,17 @@ const AccountEntryField = function ({
   value,
   setValue,
   errorMessage = null,
+  filter = null,
 }: AccountEntryFieldProps): JSX.Element {
   return (
     <ComboBoxEntryField<AccountIdentifier>
       label={label}
-      options={options.map((account) => ({
-        label: account.name,
-        value: { id: account.id, name: account.name },
-      }))}
+      options={options
+        .filter((account) => (filter ? filter(account) : true))
+        .map((account) => ({
+          label: account.name,
+          value: { id: account.id, name: account.name },
+        }))}
       value={
         value === null
           ? { label: "", value: null }

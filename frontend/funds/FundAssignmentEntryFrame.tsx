@@ -115,11 +115,12 @@ const FundAssignmentEntryFrame = function ({
                       }
                 }
                 filter={(fund) =>
-                  value[index]?.fundId === fund.id ||
-                  !value.some(
-                    (existingFundAmount) =>
-                      existingFundAmount.fundId === fund.id,
-                  )
+                  fund.id !== unassignedFund?.id &&
+                  (value[index]?.fundId === fund.id ||
+                    !value.some(
+                      (existingFundAmount) =>
+                        existingFundAmount.fundId === fund.id,
+                    ))
                 }
                 autoFocus={focusIndex === index}
               />
