@@ -1,16 +1,16 @@
 import type {
+  AccountingPeriodDetailViewParams,
+  AccountingPeriodDetailViewSearchParams,
+} from "@/accounting-periods/detail/AccountingPeriodDetailView";
+import type {
   AccountingPeriodFundViewParams,
   AccountingPeriodFundViewSearchParams,
 } from "@/accounting-periods/funds/AccountingPeriodFundView";
-import type {
-  AccountingPeriodViewParams,
-  AccountingPeriodViewSearchParams,
-} from "@/accounting-periods/AccountingPeriodView";
 import type { AccountingPeriodAccountViewParams } from "@/accounting-periods/accounts/AccountingPeriodAccountView";
-import type { AccountingPeriodsViewSearchParams } from "@/accounting-periods/AccountingPeriodsView";
-import type { CloseAccountingPeriodViewParams } from "@/accounting-periods/CloseAccountingPeriodView";
-import type { DeleteAccountingPeriodViewParams } from "@/accounting-periods/DeleteAccountingPeriodView";
-import type { ReopenAccountingPeriodViewParams } from "@/accounting-periods/ReopenAccountingPeriodView";
+import type { AccountingPeriodIndexViewSearchParams } from "@/accounting-periods/index/AccountingPeriodIndexView";
+import type { CloseAccountingPeriodViewParams } from "@/accounting-periods/close/CloseAccountingPeriodView";
+import type { DeleteAccountingPeriodViewParams } from "@/accounting-periods/delete/DeleteAccountingPeriodView";
+import type { ReopenAccountingPeriodViewParams } from "@/accounting-periods/reopen/ReopenAccountingPeriodView";
 import type { Route } from "next";
 import { objectToSearchParams } from "@/framework/routes";
 
@@ -18,12 +18,12 @@ import { objectToSearchParams } from "@/framework/routes";
  * App routes related to accounting periods.
  */
 const routes = {
-  index: (searchParams: AccountingPeriodsViewSearchParams): Route =>
+  index: (searchParams: AccountingPeriodIndexViewSearchParams): Route =>
     `/accounting-periods?${objectToSearchParams(searchParams).toString()}` as Route,
   create: "/accounting-periods/create" as Route,
   detail: (
-    params: AccountingPeriodViewParams,
-    searchParams: AccountingPeriodViewSearchParams,
+    params: AccountingPeriodDetailViewParams,
+    searchParams: AccountingPeriodDetailViewSearchParams,
   ): Route =>
     `/accounting-periods/${params.id}?${objectToSearchParams(searchParams).toString()}` as Route,
   close: (params: CloseAccountingPeriodViewParams): Route =>

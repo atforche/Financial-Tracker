@@ -6,7 +6,7 @@ import {
   AccountingPeriodAccountSortOrder,
 } from "@/accounting-periods/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { AccountingPeriodViewSearchParams } from "@/accounting-periods/AccountingPeriodView";
+import type { AccountingPeriodDetailViewSearchParams } from "@/accounting-periods/detail/AccountingPeriodDetailView";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -42,7 +42,7 @@ const AccountingPeriodAccountListFrame = function ({
   const pathname = usePathname();
   const router = useRouter();
   const sortSearchParamName =
-    nameof<AccountingPeriodViewSearchParams>("accountSort");
+    nameof<AccountingPeriodDetailViewSearchParams>("accountSort");
 
   const setSort = function (
     sort: AccountingPeriodAccountSortOrder | null,
@@ -191,7 +191,9 @@ const AccountingPeriodAccountListFrame = function ({
       getId={(account) => account.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      pageSearchParamName={nameof<AccountingPeriodViewSearchParams>("page")}
+      pageSearchParamName={nameof<AccountingPeriodDetailViewSearchParams>(
+        "page",
+      )}
     />
   );
 };

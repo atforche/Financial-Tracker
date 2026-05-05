@@ -1,3 +1,3 @@
-import UpdateGoalView from "@/goals/UpdateGoalView";
+import UpdateGoalView from "@/goals/update/UpdateGoalView";
 
 export default UpdateGoalView;

@@ -1,3 +1,3 @@
-import UnpostTransactionView from "@/transactions/UnpostTransactionView";
+import UnpostTransactionView from "@/transactions/unpost/UnpostTransactionView";
 
 export default UnpostTransactionView;

@@ -1,3 +1,3 @@
-import DeleteAccountingPeriodView from "@/accounting-periods/DeleteAccountingPeriodView";
+import DeleteAccountingPeriodView from "@/accounting-periods/delete/DeleteAccountingPeriodView";
 
 export default DeleteAccountingPeriodView;

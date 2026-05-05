@@ -1,3 +1,3 @@
-import FundView from "@/funds/FundView";
+import FundDetailView from "@/funds/detail/FundDetailView";
 
-export default FundView;
+export default FundDetailView;

@@ -1,3 +1,3 @@
-import PostTransactionView from "@/transactions/PostTransactionView";
+import PostTransactionView from "@/transactions/post/PostTransactionView";
 
 export default PostTransactionView;

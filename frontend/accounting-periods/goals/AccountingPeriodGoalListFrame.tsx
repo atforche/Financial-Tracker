@@ -5,7 +5,7 @@ import {
   AccountingPeriodGoalSortOrder,
 } from "@/accounting-periods/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { AccountingPeriodViewSearchParams } from "@/accounting-periods/AccountingPeriodView";
+import type { AccountingPeriodDetailViewSearchParams } from "@/accounting-periods/detail/AccountingPeriodDetailView";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -41,7 +41,7 @@ const AccountingPeriodGoalListFrame = function ({
   const pathname = usePathname();
   const router = useRouter();
   const sortSearchParamName =
-    nameof<AccountingPeriodViewSearchParams>("goalSort");
+    nameof<AccountingPeriodDetailViewSearchParams>("goalSort");
 
   const setSort = function (sort: AccountingPeriodGoalSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
@@ -249,7 +249,9 @@ const AccountingPeriodGoalListFrame = function ({
       getId={(goal) => goal.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      pageSearchParamName={nameof<AccountingPeriodViewSearchParams>("page")}
+      pageSearchParamName={nameof<AccountingPeriodDetailViewSearchParams>(
+        "page",
+      )}
     />
   );
 };

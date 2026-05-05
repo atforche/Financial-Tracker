@@ -1,3 +1,3 @@
-import DeleteGoalView from "@/goals/DeleteGoalView";
+import DeleteGoalView from "@/goals/delete/DeleteGoalView";
 
 export default DeleteGoalView;

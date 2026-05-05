@@ -1,3 +1,3 @@
-import DeleteFundView from "@/funds/DeleteFundView";
+import DeleteFundView from "@/funds/delete/DeleteFundView";
 
 export default DeleteFundView;

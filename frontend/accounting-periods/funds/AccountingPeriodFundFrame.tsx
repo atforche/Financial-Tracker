@@ -12,7 +12,7 @@ import type { Goal } from "@/goals/types";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import type { Transaction } from "@/transactions/types";
-import TransactionListFrame from "@/funds/FundTransactionListFrame";
+import TransactionListFrame from "@/funds/detail/FundTransactionListFrame";
 import formatCurrency from "@/framework/formatCurrency";
 import fundRoutes from "@/funds/routes";
 import nameof from "@/framework/data/nameof";

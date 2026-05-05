@@ -1,24 +1,24 @@
 import type {
   DeleteTransactionViewParams,
   DeleteTransactionViewSearchParams,
-} from "@/transactions/DeleteTransactionView";
+} from "@/transactions/delete/DeleteTransactionView";
 import type {
   PostTransactionViewParams,
   PostTransactionViewSearchParams,
-} from "@/transactions/PostTransactionView";
+} from "@/transactions/post/PostTransactionView";
 import type {
-  TransactionViewParams,
-  TransactionViewSearchParams,
-} from "@/transactions/TransactionView";
+  TransactionDetailViewParams,
+  TransactionDetailViewSearchParams,
+} from "@/transactions/detail/TransactionDetailView";
 import type {
   UnpostTransactionViewParams,
   UnpostTransactionViewSearchParams,
-} from "@/transactions/UnpostTransactionView";
+} from "@/transactions/unpost/UnpostTransactionView";
 import type {
   UpdateTransactionViewParams,
   UpdateTransactionViewSearchParams,
-} from "@/transactions/UpdateTransactionView";
-import type { CreateTransactionViewSearchParams } from "@/transactions/CreateTransactionView";
+} from "@/transactions/update/UpdateTransactionView";
+import type { CreateTransactionViewSearchParams } from "@/transactions/create/CreateTransactionView";
 import type { Route } from "next";
 import { objectToSearchParams } from "@/framework/routes";
 
@@ -29,8 +29,8 @@ const routes = {
   create: (searchParams: CreateTransactionViewSearchParams): Route =>
     `/transactions/create?${objectToSearchParams(searchParams).toString()}` as Route,
   detail: (
-    params: TransactionViewParams,
-    searchParams: TransactionViewSearchParams,
+    params: TransactionDetailViewParams,
+    searchParams: TransactionDetailViewSearchParams,
   ): Route =>
     `/transactions/${params.id}?${objectToSearchParams(searchParams).toString()}` as Route,
   update: (

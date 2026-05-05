@@ -1,3 +1,3 @@
-import UpdateTransactionView from "@/transactions/UpdateTransactionView";
+import UpdateTransactionView from "@/transactions/update/UpdateTransactionView";
 
 export default UpdateTransactionView;
