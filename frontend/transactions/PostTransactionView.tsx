@@ -75,8 +75,8 @@ const PostTransactionView = async function ({
   return (
     <PostTransactionForm
       transaction={transaction}
-      providedAccountingPeriod={accountingPeriod ?? null}
-      providedAccount={account ?? null}
+      routeAccountingPeriod={accountingPeriod ?? null}
+      routeAccount={account ?? null}
     />
   );
 };

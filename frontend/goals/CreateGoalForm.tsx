@@ -23,29 +23,29 @@ import createGoal from "@/goals/createGoal";
 interface CreateGoalFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly funds: Fund[];
-  readonly providedAccountingPeriod?: AccountingPeriod | null;
-  readonly providedFund?: Fund | null;
+  readonly routeAccountingPeriod?: AccountingPeriod | null;
+  readonly routeFund?: Fund | null;
 }
 
 /**
  * Gets the URL to return the user to after creating a goal.
  */
 const getRedirectUrl = function (
-  providedAccountingPeriod: AccountingPeriod | null,
-  providedFund: Fund | null,
+  routeAccountingPeriod: AccountingPeriod | null,
+  routeFund: Fund | null,
 ): string {
-  if (providedAccountingPeriod !== null && providedFund !== null) {
+  if (routeAccountingPeriod !== null && routeFund !== null) {
     return accountingPeriodRoutes.fundDetail(
       {
-        id: providedAccountingPeriod.id,
-        fundId: providedFund.id,
+        id: routeAccountingPeriod.id,
+        fundId: routeFund.id,
       },
       {},
     );
   }
-  if (providedAccountingPeriod !== null) {
+  if (routeAccountingPeriod !== null) {
     return accountingPeriodRoutes.detail(
-      { id: providedAccountingPeriod.id },
+      { id: routeAccountingPeriod.id },
       { display: ToggleState.Goals },
     );
   }
@@ -58,18 +58,18 @@ const getRedirectUrl = function (
 const CreateGoalForm = function ({
   accountingPeriods,
   funds,
-  providedAccountingPeriod = null,
-  providedFund = null,
+  routeAccountingPeriod = null,
+  routeFund = null,
 }: CreateGoalFormProps): JSX.Element {
   const [accountingPeriod, setAccountingPeriod] =
-    useState<AccountingPeriod | null>(providedAccountingPeriod);
+    useState<AccountingPeriod | null>(routeAccountingPeriod);
   const [fund, setFund] = useState<FundIdentifier | null>(
-    providedFund ? { id: providedFund.id, name: providedFund.name } : null,
+    routeFund ? { id: routeFund.id, name: routeFund.name } : null,
   );
   const [goalType, setGoalType] = useState<GoalType | null>(null);
   const [goalAmount, setGoalAmount] = useState<number | null>(null);
 
-  const redirectUrl = getRedirectUrl(providedAccountingPeriod, providedFund);
+  const redirectUrl = getRedirectUrl(routeAccountingPeriod, routeFund);
   const [state, action, pending] = useActionState(createGoal, {
     redirectUrl,
   });
@@ -87,7 +87,7 @@ const CreateGoalForm = function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={breadcrumbs.create(providedAccountingPeriod, providedFund)}
+        breadcrumbs={breadcrumbs.create(routeAccountingPeriod, routeFund)}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <AccountingPeriodEntryField
@@ -95,7 +95,7 @@ const CreateGoalForm = function ({
           options={accountingPeriods}
           value={accountingPeriod}
           setValue={
-            providedAccountingPeriod === null ? setAccountingPeriod : null
+            routeAccountingPeriod === null ? setAccountingPeriod : null
           }
           errorMessage={state.accountingPeriodErrors ?? null}
         />
@@ -103,7 +103,7 @@ const CreateGoalForm = function ({
           label="Fund"
           options={availableFunds}
           value={fund}
-          setValue={providedFund === null ? setFund : null}
+          setValue={routeFund === null ? setFund : null}
           filter={null}
         />
         <GoalTypeEntryField

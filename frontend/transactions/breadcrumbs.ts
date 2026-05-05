@@ -13,99 +13,99 @@ import routes from "@/transactions/routes";
  */
 const breadcrumbs = {
   create: (
-    providedAccountingPeriod: AccountingPeriod | null,
-    providedAccount: Account | null,
-    providedFund: Fund | null,
+    routeAccountingPeriod: AccountingPeriod | null,
+    routeAccount: Account | null,
+    routeFund: Fund | null,
   ): Breadcrumb[] => {
     const currentCrumb = {
       label: "Create Transaction",
       href: routes.create({}),
     };
-    if (providedAccountingPeriod !== null) {
-      if (providedAccount !== null) {
+    if (routeAccountingPeriod !== null) {
+      if (routeAccount !== null) {
         return [
           ...accountingPeriodBreadcrumbs.accountDetail(
-            providedAccountingPeriod,
-            providedAccount,
+            routeAccountingPeriod,
+            routeAccount,
           ),
           currentCrumb,
         ];
       }
-      if (providedFund !== null) {
+      if (routeFund !== null) {
         return [
           ...accountingPeriodBreadcrumbs.fundDetail(
-            providedAccountingPeriod,
-            providedFund,
+            routeAccountingPeriod,
+            routeFund,
           ),
           currentCrumb,
         ];
       }
       return [
-        ...accountingPeriodBreadcrumbs.detail(providedAccountingPeriod),
+        ...accountingPeriodBreadcrumbs.detail(routeAccountingPeriod),
         currentCrumb,
       ];
     }
-    if (providedAccount !== null) {
-      return [...accountBreadcrumbs.detail(providedAccount), currentCrumb];
+    if (routeAccount !== null) {
+      return [...accountBreadcrumbs.detail(routeAccount), currentCrumb];
     }
-    if (providedFund !== null) {
-      return [...fundBreadcrumbs.detail(providedFund), currentCrumb];
+    if (routeFund !== null) {
+      return [...fundBreadcrumbs.detail(routeFund), currentCrumb];
     }
     return [currentCrumb];
   },
   detail: (
     transaction: Transaction,
-    providedAccountingPeriod: AccountingPeriod | null,
-    providedAccount: Account | null,
-    providedFund: Fund | null,
+    routeAccountingPeriod: AccountingPeriod | null,
+    routeAccount: Account | null,
+    routeFund: Fund | null,
   ): Breadcrumb[] => {
     const currentCrumb = {
       label: "Transaction",
       href: routes.detail({ id: transaction.id }, {}),
     };
-    if (providedAccountingPeriod !== null) {
-      if (providedAccount !== null) {
+    if (routeAccountingPeriod !== null) {
+      if (routeAccount !== null) {
         return [
           ...accountingPeriodBreadcrumbs.accountDetail(
-            providedAccountingPeriod,
-            providedAccount,
+            routeAccountingPeriod,
+            routeAccount,
           ),
           currentCrumb,
         ];
       }
-      if (providedFund !== null) {
+      if (routeFund !== null) {
         return [
           ...accountingPeriodBreadcrumbs.fundDetail(
-            providedAccountingPeriod,
-            providedFund,
+            routeAccountingPeriod,
+            routeFund,
           ),
           currentCrumb,
         ];
       }
       return [
-        ...accountingPeriodBreadcrumbs.detail(providedAccountingPeriod),
+        ...accountingPeriodBreadcrumbs.detail(routeAccountingPeriod),
         currentCrumb,
       ];
     }
-    if (providedAccount !== null) {
-      return [...accountBreadcrumbs.detail(providedAccount), currentCrumb];
+    if (routeAccount !== null) {
+      return [...accountBreadcrumbs.detail(routeAccount), currentCrumb];
     }
-    if (providedFund !== null) {
-      return [...fundBreadcrumbs.detail(providedFund), currentCrumb];
+    if (routeFund !== null) {
+      return [...fundBreadcrumbs.detail(routeFund), currentCrumb];
     }
     return [currentCrumb];
   },
   update: (
     transaction: Transaction,
-    providedAccountingPeriod: AccountingPeriod | null,
-    providedAccount: Account | null,
-    providedFund: Fund | null,
+    routeAccountingPeriod: AccountingPeriod | null,
+    routeAccount: Account | null,
+    routeFund: Fund | null,
   ): Breadcrumb[] => [
     ...breadcrumbs.detail(
       transaction,
-      providedAccountingPeriod,
-      providedAccount,
-      providedFund,
+      routeAccountingPeriod,
+      routeAccount,
+      routeFund,
     ),
     {
       label: "Update",
@@ -114,13 +114,13 @@ const breadcrumbs = {
   ],
   post: (
     transaction: Transaction,
-    providedAccountingPeriod: AccountingPeriod | null,
-    providedAccount: Account | null,
+    routeAccountingPeriod: AccountingPeriod | null,
+    routeAccount: Account | null,
   ): Breadcrumb[] => [
     ...breadcrumbs.detail(
       transaction,
-      providedAccountingPeriod,
-      providedAccount,
+      routeAccountingPeriod,
+      routeAccount,
       null,
     ),
     {
@@ -130,13 +130,13 @@ const breadcrumbs = {
   ],
   unpost: (
     transaction: Transaction,
-    providedAccountingPeriod: AccountingPeriod | null,
-    providedAccount: Account | null,
+    routeAccountingPeriod: AccountingPeriod | null,
+    routeAccount: Account | null,
   ): Breadcrumb[] => [
     ...breadcrumbs.detail(
       transaction,
-      providedAccountingPeriod,
-      providedAccount,
+      routeAccountingPeriod,
+      routeAccount,
       null,
     ),
     {
@@ -146,15 +146,15 @@ const breadcrumbs = {
   ],
   delete: (
     transaction: Transaction,
-    providedAccountingPeriod: AccountingPeriod | null,
-    providedAccount: Account | null,
-    providedFund: Fund | null,
+    routeAccountingPeriod: AccountingPeriod | null,
+    routeAccount: Account | null,
+    routeFund: Fund | null,
   ): Breadcrumb[] => [
     ...breadcrumbs.detail(
       transaction,
-      providedAccountingPeriod,
-      providedAccount,
-      providedFund,
+      routeAccountingPeriod,
+      routeAccount,
+      routeFund,
     ),
     {
       label: "Delete",

@@ -18,7 +18,7 @@ import updateFund from "@/funds/updateFund";
  */
 interface UpdateFundFormProps {
   readonly fund: Fund;
-  readonly providedAccountingPeriod?: AccountingPeriod | null;
+  readonly routeAccountingPeriod?: AccountingPeriod | null;
 }
 
 /**
@@ -26,12 +26,12 @@ interface UpdateFundFormProps {
  */
 const getRedirectUrl = function (
   fund: Fund,
-  providedAccountingPeriod: AccountingPeriod | null,
+  routeAccountingPeriod: AccountingPeriod | null,
 ): string {
-  if (providedAccountingPeriod !== null) {
+  if (routeAccountingPeriod !== null) {
     return accountingPeriodRoutes.fundDetail(
       {
-        id: providedAccountingPeriod.id,
+        id: routeAccountingPeriod.id,
         fundId: fund.id,
       },
       {},
@@ -45,20 +45,20 @@ const getRedirectUrl = function (
  */
 const UpdateFundForm = function ({
   fund,
-  providedAccountingPeriod = null,
+  routeAccountingPeriod = null,
 }: UpdateFundFormProps): JSX.Element {
   const [name, setName] = useState<string>(fund.name);
   const [description, setDescription] = useState<string>(fund.description);
 
   const [state, action, pending] = useActionState(updateFund, {
     fundId: fund.id,
-    redirectUrl: getRedirectUrl(fund, providedAccountingPeriod),
+    redirectUrl: getRedirectUrl(fund, routeAccountingPeriod),
   });
 
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={breadcrumbs.update(fund, providedAccountingPeriod)}
+        breadcrumbs={breadcrumbs.update(fund, routeAccountingPeriod)}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <StringEntryField
@@ -75,7 +75,7 @@ const UpdateFundForm = function ({
         />
         <DialogActions>
           <Link
-            href={getRedirectUrl(fund, providedAccountingPeriod)}
+            href={getRedirectUrl(fund, routeAccountingPeriod)}
             tabIndex={-1}
           >
             <Button variant="outlined">Cancel</Button>

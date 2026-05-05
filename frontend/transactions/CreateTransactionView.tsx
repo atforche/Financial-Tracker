@@ -54,15 +54,15 @@ const CreateTransactionView = async function ({
     throw new Error("Failed to fetch data");
   }
 
-  const providedAccountingPeriod =
+  const routeAccountingPeriod =
     accountingPeriods.find((ap) => ap.id === accountingPeriodId) ?? null;
-  const providedDebitAccount =
+  const routeDebitAccount =
     accounts.items.find((a) => a.id === debitAccountId) ?? null;
-  const providedCreditAccount =
+  const routeCreditAccount =
     accounts.items.find((a) => a.id === creditAccountId) ?? null;
-  const providedDebitFund =
+  const routeDebitFund =
     funds.items.find((f) => f.id === debitFundId) ?? null;
-  const providedCreditFund =
+  const routeCreditFund =
     funds.items.find((f) => f.id === creditFundId) ?? null;
 
   return (
@@ -70,11 +70,11 @@ const CreateTransactionView = async function ({
       accountingPeriods={accountingPeriods}
       accounts={accounts.items}
       funds={funds.items}
-      providedAccountingPeriod={providedAccountingPeriod}
-      providedDebitAccount={providedDebitAccount}
-      providedCreditAccount={providedCreditAccount}
-      providedDebitFund={providedDebitFund}
-      providedCreditFund={providedCreditFund}
+      routeAccountingPeriod={routeAccountingPeriod}
+      routeDebitAccount={routeDebitAccount}
+      routeCreditAccount={routeCreditAccount}
+      routeDebitFund={routeDebitFund}
+      routeCreditFund={routeCreditFund}
     />
   );
 };

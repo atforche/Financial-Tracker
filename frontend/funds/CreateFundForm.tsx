@@ -18,18 +18,18 @@ import routes from "@/funds/routes";
  */
 interface CreateFundFormProps {
   readonly accountingPeriods: AccountingPeriod[];
-  readonly providedAccountingPeriod?: AccountingPeriod | null;
+  readonly routeAccountingPeriod?: AccountingPeriod | null;
 }
 
 /**
  * Gets the URL to redirect the user to after successfully creating a fund.
  */
 const getRedirectUrl = function (
-  providedAccountingPeriod: AccountingPeriod | null,
+  routeAccountingPeriod: AccountingPeriod | null,
 ): string {
-  if (providedAccountingPeriod !== null) {
+  if (routeAccountingPeriod !== null) {
     return accountingPeriodRoutes.detail(
-      { id: providedAccountingPeriod.id },
+      { id: routeAccountingPeriod.id },
       {},
     );
   }
@@ -41,20 +41,20 @@ const getRedirectUrl = function (
  */
 const CreateFundForm = function ({
   accountingPeriods,
-  providedAccountingPeriod = null,
+  routeAccountingPeriod = null,
 }: CreateFundFormProps): JSX.Element {
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [accountingPeriod, setAccountingPeriod] =
-    useState<AccountingPeriod | null>(providedAccountingPeriod);
+    useState<AccountingPeriod | null>(routeAccountingPeriod);
 
   const [state, action, pending] = useActionState(createFund, {
-    redirectUrl: getRedirectUrl(providedAccountingPeriod),
+    redirectUrl: getRedirectUrl(routeAccountingPeriod),
   });
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs breadcrumbs={breadcrumbs.create(providedAccountingPeriod)} />
+      <Breadcrumbs breadcrumbs={breadcrumbs.create(routeAccountingPeriod)} />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <StringEntryField
           label="Name"
@@ -73,12 +73,12 @@ const CreateFundForm = function ({
           options={accountingPeriods}
           value={accountingPeriod}
           setValue={
-            providedAccountingPeriod === null ? setAccountingPeriod : null
+            routeAccountingPeriod === null ? setAccountingPeriod : null
           }
           errorMessage={state.accountingPeriodErrors ?? null}
         />
         <DialogActions>
-          <Link href={getRedirectUrl(providedAccountingPeriod)} tabIndex={-1}>
+          <Link href={getRedirectUrl(routeAccountingPeriod)} tabIndex={-1}>
             <Button variant="outlined">Cancel</Button>
           </Link>
           <Button

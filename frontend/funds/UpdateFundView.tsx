@@ -66,7 +66,7 @@ const UpdateFundView = async function ({
   return (
     <UpdateFundForm
       fund={fund}
-      providedAccountingPeriod={accountingPeriod ?? null}
+      routeAccountingPeriod={accountingPeriod ?? null}
     />
   );
 };

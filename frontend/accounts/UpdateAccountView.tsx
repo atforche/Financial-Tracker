@@ -66,7 +66,7 @@ const UpdateAccountView = async function ({
   return (
     <UpdateAccountForm
       account={account}
-      providedAccountingPeriod={accountingPeriod ?? null}
+      routeAccountingPeriod={accountingPeriod ?? null}
     />
   );
 };

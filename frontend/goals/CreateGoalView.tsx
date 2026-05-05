@@ -43,24 +43,24 @@ const CreateGoalView = async function ({
     throw new Error("Failed to fetch accounting periods or funds");
   }
 
-  let providedAccountingPeriod: AccountingPeriod | null = null;
+  let routeAccountingPeriod: AccountingPeriod | null = null;
   if (typeof accountingPeriodId === "string") {
-    providedAccountingPeriod =
+    routeAccountingPeriod =
       accountingPeriods.find((period) => period.id === accountingPeriodId) ??
       null;
   }
 
-  let providedFund: Fund | null = null;
+  let routeFund: Fund | null = null;
   if (typeof fundId === "string") {
-    providedFund = funds.items.find((fund) => fund.id === fundId) ?? null;
+    routeFund = funds.items.find((fund) => fund.id === fundId) ?? null;
   }
 
   return (
     <CreateGoalForm
       accountingPeriods={accountingPeriods}
       funds={funds.items}
-      providedAccountingPeriod={providedAccountingPeriod}
-      providedFund={providedFund}
+      routeAccountingPeriod={routeAccountingPeriod}
+      routeFund={routeFund}
     />
   );
 };

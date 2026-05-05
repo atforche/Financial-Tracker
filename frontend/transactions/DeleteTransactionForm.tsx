@@ -20,38 +20,38 @@ import fundRoutes from "@/funds/routes";
  */
 interface DeleteTransactionFormProps {
   readonly transaction: Transaction;
-  readonly providedAccountingPeriod: AccountingPeriod | null;
-  readonly providedAccount: Account | null;
-  readonly providedFund: Fund | null;
+  readonly routeAccountingPeriod: AccountingPeriod | null;
+  readonly routeAccount: Account | null;
+  readonly routeFund: Fund | null;
 }
 
 /**
  * Gets the redirect URL based on the provided context of accounting period, account, and fund.
  */
 const getRedirectUrl = function (
-  providedAccountingPeriod: AccountingPeriod | null,
-  providedAccount: Account | null,
-  providedFund: Fund | null,
+  routeAccountingPeriod: AccountingPeriod | null,
+  routeAccount: Account | null,
+  routeFund: Fund | null,
 ): string {
-  if (providedAccountingPeriod !== null) {
-    if (providedAccount !== null) {
+  if (routeAccountingPeriod !== null) {
+    if (routeAccount !== null) {
       return accountingPeriodRoutes.accountDetail({
-        id: providedAccountingPeriod.id,
-        accountId: providedAccount.id,
+        id: routeAccountingPeriod.id,
+        accountId: routeAccount.id,
       });
     }
-    if (providedFund !== null) {
+    if (routeFund !== null) {
       return accountingPeriodRoutes.fundDetail(
-        { id: providedAccountingPeriod.id, fundId: providedFund.id },
+        { id: routeAccountingPeriod.id, fundId: routeFund.id },
         {},
       );
     }
   }
-  if (providedAccount !== null) {
-    return accountRoutes.detail({ id: providedAccount.id }, {});
+  if (routeAccount !== null) {
+    return accountRoutes.detail({ id: routeAccount.id }, {});
   }
-  if (providedFund !== null) {
-    return fundRoutes.detail({ id: providedFund.id }, {});
+  if (routeFund !== null) {
+    return fundRoutes.detail({ id: routeFund.id }, {});
   }
   return "";
 };
@@ -61,16 +61,16 @@ const getRedirectUrl = function (
  */
 const DeleteTransactionForm = function ({
   transaction,
-  providedAccountingPeriod,
-  providedAccount,
-  providedFund,
+  routeAccountingPeriod,
+  routeAccount,
+  routeFund,
 }: DeleteTransactionFormProps): JSX.Element {
   const [state, action, pending] = useActionState(deleteTransaction, {
     transactionId: transaction.id,
     redirectUrl: getRedirectUrl(
-      providedAccountingPeriod,
-      providedAccount,
-      providedFund,
+      routeAccountingPeriod,
+      routeAccount,
+      routeFund,
     ),
   });
 
@@ -79,9 +79,9 @@ const DeleteTransactionForm = function ({
       <Breadcrumbs
         breadcrumbs={breadcrumbs.delete(
           transaction,
-          providedAccountingPeriod,
-          providedAccount,
-          providedFund,
+          routeAccountingPeriod,
+          routeAccount,
+          routeFund,
         )}
       />
       <Stack spacing={2} sx={{ maxWidth: "600px" }}>

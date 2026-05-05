@@ -50,8 +50,8 @@ const getPostableTransactionAccounts = function (
  */
 interface PostTransactionFormProps {
   readonly transaction: Transaction;
-  readonly providedAccountingPeriod: AccountingPeriod | null;
-  readonly providedAccount: Account | null;
+  readonly routeAccountingPeriod: AccountingPeriod | null;
+  readonly routeAccount: Account | null;
 }
 
 /**
@@ -59,13 +59,13 @@ interface PostTransactionFormProps {
  */
 const PostTransactionForm = function ({
   transaction,
-  providedAccountingPeriod,
-  providedAccount,
+  routeAccountingPeriod,
+  routeAccount,
 }: PostTransactionFormProps): JSX.Element {
   const postableAccounts = getPostableTransactionAccounts(transaction);
   const [selectedAccount, setSelectedAccount] = useState(
     postableAccounts.find(
-      (account) => account.accountId === (providedAccount?.id ?? ""),
+      (account) => account.accountId === (routeAccount?.id ?? ""),
     ) ??
       postableAccounts[0] ??
       null,
@@ -74,8 +74,8 @@ const PostTransactionForm = function ({
   const redirectUrl = routes.detail(
     { id: transaction.id },
     {
-      accountingPeriodId: providedAccountingPeriod?.id ?? null,
-      accountId: providedAccount?.id ?? null,
+      accountingPeriodId: routeAccountingPeriod?.id ?? null,
+      accountId: routeAccount?.id ?? null,
     },
   );
   const [state, action, pending] = useActionState(postTransaction, {
@@ -88,8 +88,8 @@ const PostTransactionForm = function ({
       <Breadcrumbs
         breadcrumbs={breadcrumbs.post(
           transaction,
-          providedAccountingPeriod,
-          providedAccount,
+          routeAccountingPeriod,
+          routeAccount,
         )}
       />
       <Stack spacing={2} sx={{ maxWidth: "600px" }}>

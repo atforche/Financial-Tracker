@@ -19,18 +19,18 @@ import updateAccount from "@/accounts/updateAccount";
  */
 interface UpdateAccountFormProps {
   readonly account: Account;
-  readonly providedAccountingPeriod?: AccountingPeriod | null;
+  readonly routeAccountingPeriod?: AccountingPeriod | null;
 }
 
 /**
  * Gets the URL to redirect the user to after successfully updating an account.
  */
 const getRedirectUrl = function (
-  providedAccountingPeriod: AccountingPeriod | null,
+  routeAccountingPeriod: AccountingPeriod | null,
 ): string {
-  if (providedAccountingPeriod !== null) {
+  if (routeAccountingPeriod !== null) {
     return accountingPeriodRoutes.detail(
-      { id: providedAccountingPeriod.id },
+      { id: routeAccountingPeriod.id },
       { display: ToggleState.Accounts },
     );
   }
@@ -42,19 +42,19 @@ const getRedirectUrl = function (
  */
 const UpdateAccountForm = function ({
   account,
-  providedAccountingPeriod = null,
+  routeAccountingPeriod = null,
 }: UpdateAccountFormProps): JSX.Element {
   const [name, setName] = useState<string>(account.name);
 
   const [state, action, pending] = useActionState(updateAccount, {
     accountId: account.id,
-    redirectUrl: getRedirectUrl(providedAccountingPeriod),
+    redirectUrl: getRedirectUrl(routeAccountingPeriod),
   });
 
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={breadcrumbs.update(account, providedAccountingPeriod)}
+        breadcrumbs={breadcrumbs.update(account, routeAccountingPeriod)}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <StringEntryField
@@ -64,7 +64,7 @@ const UpdateAccountForm = function ({
           errorMessage={state.nameErrors ?? null}
         />
         <DialogActions>
-          <Link href={getRedirectUrl(providedAccountingPeriod)} tabIndex={-1}>
+          <Link href={getRedirectUrl(routeAccountingPeriod)} tabIndex={-1}>
             <Button variant="outlined">Cancel</Button>
           </Link>
           <Button

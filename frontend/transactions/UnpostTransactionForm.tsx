@@ -47,8 +47,8 @@ const getPostedTransactionAccounts = function (
  */
 interface UnpostTransactionFormProps {
   readonly transaction: Transaction;
-  readonly providedAccountingPeriod: AccountingPeriod | null;
-  readonly providedAccount: Account | null;
+  readonly routeAccountingPeriod: AccountingPeriod | null;
+  readonly routeAccount: Account | null;
 }
 
 /**
@@ -56,14 +56,14 @@ interface UnpostTransactionFormProps {
  */
 const UnpostTransactionForm = function ({
   transaction,
-  providedAccountingPeriod,
-  providedAccount,
+  routeAccountingPeriod,
+  routeAccount,
 }: UnpostTransactionFormProps): JSX.Element {
   const redirectUrl = routes.detail(
     { id: transaction.id },
     {
-      accountingPeriodId: providedAccountingPeriod?.id ?? null,
-      accountId: providedAccount?.id ?? null,
+      accountingPeriodId: routeAccountingPeriod?.id ?? null,
+      accountId: routeAccount?.id ?? null,
     },
   );
   const [state, action, pending] = useActionState(unpostTransaction, {
@@ -76,8 +76,8 @@ const UnpostTransactionForm = function ({
       <Breadcrumbs
         breadcrumbs={breadcrumbs.unpost(
           transaction,
-          providedAccountingPeriod,
-          providedAccount,
+          routeAccountingPeriod,
+          routeAccount,
         )}
       />
       <Stack spacing={2} sx={{ maxWidth: "600px" }}>

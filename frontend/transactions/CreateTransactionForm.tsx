@@ -42,47 +42,47 @@ interface CreateTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: Account[];
   readonly funds: Fund[];
-  readonly providedAccountingPeriod?: AccountingPeriod | null;
-  readonly providedDebitAccount?: Account | null;
-  readonly providedCreditAccount?: Account | null;
-  readonly providedDebitFund?: Fund | null;
-  readonly providedCreditFund?: Fund | null;
+  readonly routeAccountingPeriod?: AccountingPeriod | null;
+  readonly routeDebitAccount?: Account | null;
+  readonly routeCreditAccount?: Account | null;
+  readonly routeDebitFund?: Fund | null;
+  readonly routeCreditFund?: Fund | null;
 }
 
 /**
  * Gets the URL to redirect the user to after successfully creating a transaction.
  */
 const getRedirectUrl = function (
-  providedAccountingPeriod: AccountingPeriod | null,
-  providedAccount: Account | null,
-  providedFund: Fund | null,
+  routeAccountingPeriod: AccountingPeriod | null,
+  routeAccount: Account | null,
+  routeFund: Fund | null,
 ): string {
-  if (providedAccountingPeriod !== null) {
-    if (providedAccount !== null) {
+  if (routeAccountingPeriod !== null) {
+    if (routeAccount !== null) {
       return accountingPeriodRoutes.accountDetail({
-        id: providedAccountingPeriod.id,
-        accountId: providedAccount.id,
+        id: routeAccountingPeriod.id,
+        accountId: routeAccount.id,
       });
     }
-    if (providedFund !== null) {
+    if (routeFund !== null) {
       return accountingPeriodRoutes.fundDetail(
         {
-          id: providedAccountingPeriod.id,
-          fundId: providedFund.id,
+          id: routeAccountingPeriod.id,
+          fundId: routeFund.id,
         },
         {},
       );
     }
     return accountingPeriodRoutes.detail(
-      { id: providedAccountingPeriod.id },
+      { id: routeAccountingPeriod.id },
       { display: ToggleState.Transactions },
     );
   }
-  if (providedAccount !== null) {
-    return accountRoutes.detail({ id: providedAccount.id }, {});
+  if (routeAccount !== null) {
+    return accountRoutes.detail({ id: routeAccount.id }, {});
   }
-  if (providedFund !== null) {
-    return fundRoutes.detail({ id: providedFund.id }, {});
+  if (routeFund !== null) {
+    return fundRoutes.detail({ id: routeFund.id }, {});
   }
   return "";
 };
@@ -94,17 +94,17 @@ const CreateTransactionForm = function ({
   accountingPeriods,
   accounts,
   funds,
-  providedAccountingPeriod,
-  providedDebitAccount,
-  providedCreditAccount,
-  providedDebitFund,
-  providedCreditFund,
+  routeAccountingPeriod,
+  routeDebitAccount,
+  routeCreditAccount,
+  routeDebitFund,
+  routeCreditFund,
 }: CreateTransactionFormProps): JSX.Element {
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
 
   const [accountingPeriod, setAccountingPeriod] =
-    useState<AccountingPeriod | null>(providedAccountingPeriod ?? null);
+    useState<AccountingPeriod | null>(routeAccountingPeriod ?? null);
   const [date, setDate] = useState<Dayjs | null>(null);
   const defaultDate =
     accountingPeriod !== null
@@ -115,16 +115,16 @@ const CreateTransactionForm = function ({
   const [amount, setAmount] = useState<number | null>(null);
 
   const [debitAccount, setDebitAccount] = useState<Account | null>(
-    providedDebitAccount ?? null,
+    routeDebitAccount ?? null,
   );
   const [creditAccount, setCreditAccount] = useState<Account | null>(
-    providedCreditAccount ?? null,
+    routeCreditAccount ?? null,
   );
   const [debitFund, setDebitFund] = useState<Fund | null>(
-    providedDebitFund ?? null,
+    routeDebitFund ?? null,
   );
   const [creditFund, setCreditFund] = useState<Fund | null>(
-    providedCreditFund ?? null,
+    routeCreditFund ?? null,
   );
 
   const [incomeFundAssignments, setIncomeFundAssignments] = useState<
@@ -340,9 +340,9 @@ const CreateTransactionForm = function ({
 
   const [state, action, pending] = useActionState(createTransaction, {
     redirectUrl: getRedirectUrl(
-      providedAccountingPeriod ?? null,
-      providedDebitAccount ?? providedCreditAccount ?? null,
-      providedDebitFund ?? providedCreditFund ?? null,
+      routeAccountingPeriod ?? null,
+      routeDebitAccount ?? routeCreditAccount ?? null,
+      routeDebitFund ?? routeCreditFund ?? null,
     ),
   });
 
@@ -350,9 +350,9 @@ const CreateTransactionForm = function ({
     <Stack spacing={2}>
       <Breadcrumbs
         breadcrumbs={breadcrumbs.create(
-          providedAccountingPeriod ?? null,
-          providedDebitAccount ?? providedCreditAccount ?? null,
-          providedDebitFund ?? providedCreditFund ?? null,
+          routeAccountingPeriod ?? null,
+          routeDebitAccount ?? routeCreditAccount ?? null,
+          routeDebitFund ?? routeCreditFund ?? null,
         )}
       />
       <CreateOrUpdateTransactionDetailsFrame

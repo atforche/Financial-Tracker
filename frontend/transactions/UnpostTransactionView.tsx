@@ -77,8 +77,8 @@ const UnpostTransactionView = async function ({
   return (
     <UnpostTransactionForm
       transaction={transaction}
-      providedAccountingPeriod={accountingPeriod ?? null}
-      providedAccount={account ?? null}
+      routeAccountingPeriod={accountingPeriod ?? null}
+      routeAccount={account ?? null}
     />
   );
 };

@@ -92,9 +92,9 @@ const DeleteTransactionView = async function ({
   return (
     <DeleteTransactionForm
       transaction={transaction}
-      providedAccountingPeriod={accountingPeriod ?? null}
-      providedAccount={account ?? null}
-      providedFund={fund ?? null}
+      routeAccountingPeriod={accountingPeriod ?? null}
+      routeAccount={account ?? null}
+      routeFund={fund ?? null}
     />
   );
 };

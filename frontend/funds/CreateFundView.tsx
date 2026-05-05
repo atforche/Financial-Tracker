@@ -34,9 +34,9 @@ const CreateFundView = async function ({
     throw new Error("Failed to fetch accounting periods");
   }
 
-  let providedAccountingPeriod: AccountingPeriod | null = null;
+  let routeAccountingPeriod: AccountingPeriod | null = null;
   if (accountingPeriodId !== null) {
-    providedAccountingPeriod =
+    routeAccountingPeriod =
       accountingPeriods.find((period) => period.id === accountingPeriodId) ??
       null;
   }
@@ -44,7 +44,7 @@ const CreateFundView = async function ({
   return (
     <CreateFundForm
       accountingPeriods={accountingPeriods}
-      providedAccountingPeriod={providedAccountingPeriod}
+      routeAccountingPeriod={routeAccountingPeriod}
     />
   );
 };

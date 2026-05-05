@@ -39,18 +39,18 @@ import routes from "@/accounts/routes";
 interface CreateAccountFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly funds: Fund[];
-  readonly providedAccountingPeriod?: AccountingPeriod | null;
+  readonly routeAccountingPeriod?: AccountingPeriod | null;
 }
 
 /**
  * Gets the URL to redirect the user to after successfully creating an account.
  */
 const getRedirectUrl = function (
-  providedAccountingPeriod: AccountingPeriod | null,
+  routeAccountingPeriod: AccountingPeriod | null,
 ): string {
-  if (providedAccountingPeriod !== null) {
+  if (routeAccountingPeriod !== null) {
     return accountingPeriodRoutes.detail(
-      { id: providedAccountingPeriod.id },
+      { id: routeAccountingPeriod.id },
       { display: ToggleState.Accounts },
     );
   }
@@ -87,14 +87,14 @@ const getNormalizedAddDate = function (
 const CreateAccountForm = function ({
   accountingPeriods,
   funds,
-  providedAccountingPeriod = null,
+  routeAccountingPeriod = null,
 }: CreateAccountFormProps): JSX.Element {
   const [name, setName] = useState<string>("");
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [accountingPeriod, setAccountingPeriod] =
-    useState<AccountingPeriod | null>(providedAccountingPeriod);
+    useState<AccountingPeriod | null>(routeAccountingPeriod);
   const [addDate, setAddDate] = useState<Dayjs | null>(
-    getDefaultDate(providedAccountingPeriod),
+    getDefaultDate(routeAccountingPeriod),
   );
   const [initialBalance, setInitialBalance] = useState<number | null>(null);
   const [initialFundAssignments, setInitialFundAssignments] = useState<
@@ -102,7 +102,7 @@ const CreateAccountForm = function ({
   >([]);
 
   const [state, action, pending] = useActionState(createAccount, {
-    redirectUrl: getRedirectUrl(providedAccountingPeriod),
+    redirectUrl: getRedirectUrl(routeAccountingPeriod),
   });
 
   const unassignedFund =
@@ -160,7 +160,7 @@ const CreateAccountForm = function ({
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs breadcrumbs={breadcrumbs.create(providedAccountingPeriod)} />
+      <Breadcrumbs breadcrumbs={breadcrumbs.create(routeAccountingPeriod)} />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <StringEntryField
           label="Name"
@@ -179,7 +179,7 @@ const CreateAccountForm = function ({
           options={accountingPeriods}
           value={accountingPeriod}
           setValue={
-            providedAccountingPeriod === null ? onAccountingPeriodChange : null
+            routeAccountingPeriod === null ? onAccountingPeriodChange : null
           }
           errorMessage={state.accountingPeriodErrors ?? null}
         />
@@ -220,7 +220,7 @@ const CreateAccountForm = function ({
           </>
         ) : null}
         <DialogActions>
-          <Link href={getRedirectUrl(providedAccountingPeriod)} tabIndex={-1}>
+          <Link href={getRedirectUrl(routeAccountingPeriod)} tabIndex={-1}>
             <Button variant="outlined">Cancel</Button>
           </Link>
           <Button
