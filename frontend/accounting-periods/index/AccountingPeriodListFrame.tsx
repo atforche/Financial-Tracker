@@ -6,7 +6,7 @@ import {
 } from "@/accounting-periods/types";
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { AccountingPeriodIndexViewSearchParams } from "@/accounting-periods/index/AccountingPeriodIndexView";
+import type { AccountingPeriodIndexSearchParams } from "@/accounting-periods/index/accountingPeriodIndexNavigationContext";
 import { Checkbox } from "@mui/material";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -14,9 +14,10 @@ import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import { buildAccountingPeriodDetailRoute } from "@/accounting-periods/detail/accountingPeriodDetailNavigationContext";
+import { buildCreateAccountingPeriodRoute } from "@/accounting-periods/create/createAccountingPeriodNavigationContext";
 import formatCurrency from "@/framework/formatCurrency";
 import nameof from "@/framework/data/nameof";
-import routes from "@/accounting-periods/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
@@ -38,8 +39,7 @@ const AccountingPeriodListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const sortSearchParamName =
-    nameof<AccountingPeriodIndexViewSearchParams>("sort");
+  const sortSearchParamName = nameof<AccountingPeriodIndexSearchParams>("sort");
 
   const setSort = function (sort: AccountingPeriodSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
@@ -150,7 +150,7 @@ const AccountingPeriodListFrame = function ({
           label="Add"
           icon={<AddCircleOutline />}
           onClick={() => {
-            router.push(routes.create);
+            router.push(buildCreateAccountingPeriodRoute());
           }}
         />
       ),
@@ -159,7 +159,9 @@ const AccountingPeriodListFrame = function ({
           label="View"
           icon={<ArrowForwardIos />}
           onClick={() => {
-            router.push(routes.detail({ id: accountingPeriod.id }, {}));
+            router.push(
+              buildAccountingPeriodDetailRoute({ id: accountingPeriod.id }, {}),
+            );
           }}
         />
       ),
@@ -173,9 +175,7 @@ const AccountingPeriodListFrame = function ({
       getId={(accountingPeriod: AccountingPeriod) => accountingPeriod.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      pageSearchParamName={nameof<AccountingPeriodIndexViewSearchParams>(
-        "page",
-      )}
+      pageSearchParamName={nameof<AccountingPeriodIndexSearchParams>("page")}
     />
   );
 };

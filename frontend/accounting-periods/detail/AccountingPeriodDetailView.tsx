@@ -18,26 +18,6 @@ import getApiClient from "@/framework/data/getApiClient";
 import routes from "@/accounting-periods/routes";
 
 /**
- * Parameters for the AccountingPeriodDetailView component.
- */
-interface AccountingPeriodDetailViewParams {
-  id: string;
-}
-
-/**
- * Search parameters for the AccountingPeriodDetailView component.
- */
-interface AccountingPeriodDetailViewSearchParams {
-  search?: string;
-  fundSort?: AccountingPeriodFundSortOrder;
-  goalSort?: AccountingPeriodGoalSortOrder;
-  accountSort?: AccountingPeriodAccountSortOrder;
-  transactionSort?: AccountingPeriodTransactionSortOrder;
-  page?: number;
-  display?: ToggleState;
-}
-
-/**
  * Props for the AccountingPeriodDetailView component.
  */
 interface AccountingPeriodDetailViewProps {

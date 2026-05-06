@@ -18,16 +18,6 @@ import { objectToSearchParams } from "@/framework/routes";
  * App routes related to accounting periods.
  */
 const routes = {
-  index: (searchParams: AccountingPeriodIndexViewSearchParams): Route =>
-    `/accounting-periods?${objectToSearchParams(searchParams).toString()}` as Route,
-  create: "/accounting-periods/create" as Route,
-  detail: (
-    params: AccountingPeriodDetailViewParams,
-    searchParams: AccountingPeriodDetailViewSearchParams,
-  ): Route =>
-    `/accounting-periods/${params.id}?${objectToSearchParams(searchParams).toString()}` as Route,
-  close: (params: CloseAccountingPeriodViewParams): Route =>
-    `/accounting-periods/${params.id}/close`,
   reopen: (params: ReopenAccountingPeriodViewParams): Route =>
     `/accounting-periods/${params.id}/reopen`,
   delete: (params: DeleteAccountingPeriodViewParams): Route =>

@@ -1,28 +1,21 @@
+import {
+  type AccountingPeriodIndexSearchParams,
+  buildAccountingPeriodIndexNavigationContext,
+} from "@/accounting-periods/index/accountingPeriodIndexNavigationContext";
 import AccountingPeriodListFrame from "@/accounting-periods/index/AccountingPeriodListFrame";
-import type { AccountingPeriodSortOrder } from "@/accounting-periods/types";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import { Stack } from "@mui/material";
-import breadcrumbs from "@/accounting-periods/breadcrumbs";
 import getApiClient from "@/framework/data/getApiClient";
 import nameof from "@/framework/data/nameof";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
 /**
- * Search parameters for the AccountingPeriodIndexView component.
- */
-interface AccountingPeriodIndexViewSearchParams {
-  search?: string;
-  sort?: AccountingPeriodSortOrder;
-  page?: number;
-}
-
-/**
  * Props for the AccountingPeriodIndexView component.
  */
 interface AccountingPeriodIndexViewProps {
-  readonly searchParams?: Promise<AccountingPeriodIndexViewSearchParams>;
+  readonly searchParams?: Promise<AccountingPeriodIndexSearchParams>;
 }
 
 /**
@@ -31,7 +24,11 @@ interface AccountingPeriodIndexViewProps {
 const AccountingPeriodIndexView = async function ({
   searchParams,
 }: AccountingPeriodIndexViewProps): Promise<JSX.Element> {
-  const searchParamsValue = await searchParams;
+  const searchParamsValue = (await searchParams) ?? null;
+
+  const navigationContext =
+    buildAccountingPeriodIndexNavigationContext(searchParamsValue);
+
   const client = getApiClient();
   const { data: accountingPeriods } = await client.GET("/accounting-periods", {
     params: {
@@ -46,9 +43,9 @@ const AccountingPeriodIndexView = async function ({
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
+      <Breadcrumbs breadcrumbs={navigationContext.breadcrumbs} />
       <SearchBar
-        paramName={nameof<AccountingPeriodIndexViewSearchParams>("search")}
+        paramName={nameof<AccountingPeriodIndexSearchParams>("search")}
       />
       <AccountingPeriodListFrame
         data={accountingPeriods?.items ?? null}
@@ -58,5 +55,4 @@ const AccountingPeriodIndexView = async function ({
   );
 };
 
-export type { AccountingPeriodIndexViewSearchParams };
 export default AccountingPeriodIndexView;

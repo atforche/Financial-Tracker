@@ -5,13 +5,11 @@ import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import routes from "@/accounting-periods/routes";
 
 /**
  * Interface representing the state of closing an accounting period.
  */
 interface ActionState {
-  readonly accountingPeriodId: string;
   readonly errorTitle?: string | null;
   readonly unmappedErrors?: string | null;
 }
@@ -19,38 +17,39 @@ interface ActionState {
 /**
  * Server action that closes an existing accounting period.
  */
-const closeAccountingPeriod = async function ({
-  accountingPeriodId,
-}: ActionState): Promise<ActionState> {
-  const client = getApiClient();
-  const { error } = await client.POST(
-    "/accounting-periods/{accountingPeriodId}/close",
-    {
-      params: {
-        path: {
-          accountingPeriodId,
+const closeAccountingPeriod = function (
+  accountingPeriodId: string,
+  redirectUrl: string,
+): () => Promise<ActionState> {
+  return async function (): Promise<ActionState> {
+    const client = getApiClient();
+    const { error } = await client.POST(
+      "/accounting-periods/{accountingPeriodId}/close",
+      {
+        params: {
+          path: {
+            accountingPeriodId,
+          },
         },
       },
-    },
-  );
-  if (error) {
-    if (isApiError(error)) {
-      const unmappedErrors: (string | null)[] = [];
-      for (const key of Object.keys(error.errors ?? {})) {
-        unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
+    );
+    if (error) {
+      if (isApiError(error)) {
+        const unmappedErrors: (string | null)[] = [];
+        for (const key of Object.keys(error.errors ?? {})) {
+          unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
+        }
+        return {
+          errorTitle: error.title ?? null,
+          unmappedErrors: unmappedErrors.join(", ") || null,
+        };
       }
-      return {
-        accountingPeriodId,
-        errorTitle: error.title ?? null,
-        unmappedErrors: unmappedErrors.join(", ") || null,
-      };
+      throw new Error("An unexpected error occurred", { cause: error });
     }
-    throw new Error("An unexpected error occurred", { cause: error });
-  }
 
-  const redirectUrl = routes.detail({ id: accountingPeriodId }, {});
-  revalidatePath(redirectUrl);
-  redirect(redirectUrl);
+    revalidatePath(redirectUrl);
+    redirect(redirectUrl);
+  };
 };
 
 export default closeAccountingPeriod;

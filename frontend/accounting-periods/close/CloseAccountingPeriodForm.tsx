@@ -2,44 +2,38 @@
 
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState } from "react";
-import type { AccountingPeriod } from "@/accounting-periods/types";
 import Breadcrumbs from "@/framework/Breadcrumbs";
+import type { CloseAccountingPeriodNavigationContext } from "@/accounting-periods/close/closeAccountingPeriodNavigationContext";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
-import breadcrumbs from "@/accounting-periods/breadcrumbs";
 import closeAccountingPeriod from "@/accounting-periods/close/closeAccountingPeriod";
-import routes from "@/accounting-periods/routes";
 
 /**
  * Props for the CloseAccountingPeriodForm component.
  */
 interface CloseAccountingPeriodFormProps {
-  readonly accountingPeriod: AccountingPeriod;
+  readonly navigationContext: CloseAccountingPeriodNavigationContext;
 }
 
 /**
  * Component that displays the form for closing an accounting period.
  */
 const CloseAccountingPeriodForm = function ({
-  accountingPeriod,
+  navigationContext,
 }: CloseAccountingPeriodFormProps): JSX.Element {
-  const [state, action, pending] = useActionState(closeAccountingPeriod, {
-    accountingPeriodId: accountingPeriod.id,
-  });
+  const accountingPeriod = navigationContext.routeAccountingPeriod;
+  const [state, action, pending] = useActionState(closeAccountingPeriod(accountingPeriod.id, navigationContext.redirect), {});
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs breadcrumbs={breadcrumbs.close(accountingPeriod)} />
+      <Breadcrumbs breadcrumbs={navigationContext.breadcrumbs} />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <Typography>
           Are you sure you want to close the accounting period &quot;
           {accountingPeriod.name}&quot;?
         </Typography>
         <DialogActions>
-          <Link
-            href={routes.detail({ id: accountingPeriod.id }, {})}
-            tabIndex={-1}
-          >
+          <Link href={navigationContext.redirect} tabIndex={-1}>
             <Button variant="outlined">Cancel</Button>
           </Link>
           <Button

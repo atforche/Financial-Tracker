@@ -1,4 +1,7 @@
-import { type NavigationContext, objectToSearchParams } from "@/framework/navigation/navigationContext";
+import {
+  type NavigationContext,
+  objectToSearchParams,
+} from "@/framework/navigation/navigationContext";
 import AccountingPeriodDetailNavigationContext from "@/accounting-periods/detail/accountingPeriodDetailNavigationContext";
 import type { Breadcrumb } from "@/framework/Breadcrumbs";
 import FundIndexNavigationContext from "@/funds/index/fundIndexNavigationContext";
@@ -16,16 +19,21 @@ interface CreateFundViewSearchParams {
  */
 class CreateFundNavigationContext implements NavigationContext {
   private readonly searchParams: CreateFundViewSearchParams;
-  private readonly previousNavigationContext: AccountingPeriodDetailNavigationContext | FundIndexNavigationContext;
+  private readonly previousNavigationContext:
+    | AccountingPeriodDetailNavigationContext
+    | FundIndexNavigationContext;
 
   /**
    * Creates a navigation context for the supplied search parameters.
    */
   public constructor(searchParams: CreateFundViewSearchParams) {
     this.searchParams = searchParams;
-    this.previousNavigationContext = typeof searchParams.accountingPeriodId === "string"
-      ? new AccountingPeriodDetailNavigationContext({ id: searchParams.accountingPeriodId })
-      : new FundIndexNavigationContext({});
+    this.previousNavigationContext =
+      typeof searchParams.accountingPeriodId === "string"
+        ? new AccountingPeriodDetailNavigationContext({
+            id: searchParams.accountingPeriodId,
+          })
+        : new FundIndexNavigationContext({});
   }
 
   /**

@@ -1,9 +1,16 @@
-import { type NavigationContext, objectToSearchParams } from "@/framework/navigation/navigationContext";
-import type { AccountingPeriod } from "@/accounting-periods/types";
-import AccountingPeriodIndexNavigationContext from "@/accounting-periods/index/accountingPeriodIndexNavigationContext";
+import type {
+  AccountingPeriod,
+  AccountingPeriodAccountSortOrder,
+  AccountingPeriodFundSortOrder,
+  AccountingPeriodGoalSortOrder,
+  AccountingPeriodTransactionSortOrder,
+} from "@/accounting-periods/types";
 import type { Breadcrumb } from "@/framework/Breadcrumbs";
 import type { Route } from "next";
+import type { ToggleState } from "@/accounting-periods/detail/AccountingPeriodDetailViewListFrames";
+import { buildAccountingPeriodIndexNavigationContext } from "@/accounting-periods/index/accountingPeriodIndexNavigationContext";
 import getApiClient from "@/framework/data/getApiClient";
+import { objectToSearchParams } from "@/framework/navigation/navigationContext";
 
 /**
  * Parameters for viewing an accounting period.
@@ -13,75 +20,83 @@ interface AccountingPeriodDetailParams {
 }
 
 /**
- * Navigation context for viewing an accounting period.
+ * Search parameters for viewing an accounting period.
  */
-class AccountingPeriodDetailNavigationContext implements NavigationContext {
-  private readonly params: AccountingPeriodDetailParams;
-  private readonly previousNavigationContext: AccountingPeriodIndexNavigationContext;
-  private routeAccountingPeriod: AccountingPeriod | null = null;
+interface AccountingPeriodDetailSearchParams {
+  search?: string;
+  fundSort?: AccountingPeriodFundSortOrder;
+  goalSort?: AccountingPeriodGoalSortOrder;
+  accountSort?: AccountingPeriodAccountSortOrder;
+  transactionSort?: AccountingPeriodTransactionSortOrder;
+  page?: number;
+  display?: ToggleState;
+}
 
-  /**
-   * Creates a navigation context for the supplied parameters.
-   */
-  public constructor(params: AccountingPeriodDetailParams) {
-    this.params = params;
-    this.previousNavigationContext = new AccountingPeriodIndexNavigationContext({});
-  }
+/**
+ * Interface representing the navigation context for viewing an accounting period.
+ */
+interface AccountingPeriodDetailNavigationContext {
+  readonly route: Route;
+  readonly redirect: Route;
+  readonly breadcrumbs: Breadcrumb[];
+  readonly routeAccountingPeriod: AccountingPeriod;
+}
 
-  /**
-   * Populates the navigation context with data from the API.
-   */
-  public async populate(): Promise<void> {
-    const apiClient = getApiClient();
-    const accountingPeriodPromise = apiClient.GET(`/accounting-periods/{accountingPeriodId}`, {
-      params: {
-        path: {
-          accountingPeriodId: this.params.id,
-        },
-      }
-    });
-    return accountingPeriodPromise.then(({ data }) => {
-      this.routeAccountingPeriod = data ?? null;
-    });
-  }
-
-  /**
-   * Gets the route for viewing the details of an accounting period.
-   */
-  public getRoute(): Route {
-    return `/accounting-periods/${this.params.id}` as Route;
-  }
-
-  /**
-   * Gets the redirect target for the current navigation context.
-   */
-  public getRedirect(): Route {
-    return this.previousNavigationContext.getRoute();
-  }
-
-  /**
-   * Gets the breadcrumbs for the current navigation context.
-   */
-  public getBreadcrumbs(): Breadcrumb[] {
-    return [
-      ...this.previousNavigationContext.getBreadcrumbs(),
-      {
-        label: this.getRouteAccountingPeriod().name,
-        href: this.getRoute(),
-      },
-    ];
-  }
-
-  /**
-   * Gets the route Accounting Period for this navigation context.
-   */
-  public getRouteAccountingPeriod(): AccountingPeriod {
-    if (!this.routeAccountingPeriod) {
-      throw new Error("Accounting period data has not been loaded yet.");
-    }
-    return this.routeAccountingPeriod;
-  }
+/**
+ * Builds the route for viewing an accounting period.
+ */
+const buildAccountingPeriodDetailRoute = function (
+  params: AccountingPeriodDetailParams,
+  searchParams: AccountingPeriodDetailSearchParams,
+): Route {
+  return `/accounting-periods/${params.id}?${objectToSearchParams(searchParams).toString()}` as Route;
 };
 
-export type { AccountingPeriodDetailParams };
-export default AccountingPeriodDetailNavigationContext;
+/**
+ * Builds the navigation context for viewing an accounting period.
+ */
+const buildAccountingPeriodDetailNavigationContext = async function (
+  params: AccountingPeriodDetailParams,
+  searchParams: AccountingPeriodDetailSearchParams,
+): Promise<AccountingPeriodDetailNavigationContext> {
+  const previousNavigationContext = buildAccountingPeriodIndexNavigationContext(
+    {},
+  );
+
+  const apiClient = getApiClient();
+  const accountingPeriodPromise = apiClient.GET(
+    `/accounting-periods/{accountingPeriodId}`,
+    {
+      params: {
+        path: {
+          accountingPeriodId: params.id,
+        },
+      },
+    },
+  );
+  return accountingPeriodPromise.then(({ data: accountingPeriod }) => {
+    if (!accountingPeriod) {
+      throw new Error("Accounting period data could not be loaded.");
+    }
+    return {
+      route: buildAccountingPeriodDetailRoute(params, searchParams),
+      redirect: previousNavigationContext.route,
+      breadcrumbs: [
+        ...previousNavigationContext.breadcrumbs,
+        {
+          label: accountingPeriod.name,
+          href: buildAccountingPeriodDetailRoute(params, searchParams),
+        },
+      ],
+      routeAccountingPeriod: accountingPeriod,
+    };
+  });
+};
+
+export {
+  type AccountingPeriodDetailParams,
+  type AccountingPeriodDetailSearchParams,
+  type AccountingPeriodDetailNavigationContext,
+  buildAccountingPeriodDetailRoute,
+  buildAccountingPeriodDetailNavigationContext,
+};

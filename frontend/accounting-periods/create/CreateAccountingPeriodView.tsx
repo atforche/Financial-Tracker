@@ -6,21 +6,22 @@ import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import IntegerEntryField from "@/framework/forms/IntegerEntryField";
 import Link from "next/link";
-import breadcrumbs from "@/accounting-periods/breadcrumbs";
+import { buildCreateAccountingPeriodNavigationContext } from "@/accounting-periods/create/createAccountingPeriodNavigationContext";
 import createAccountingPeriod from "@/accounting-periods/create/createAccountingPeriod";
-import routes from "@/accounting-periods/routes";
 
 /**
  * Component that displays the create Accounting Period page.
  */
 const CreateAccountingPeriodView = function (): JSX.Element {
+  const navigationContext = buildCreateAccountingPeriodNavigationContext();
+
   const [year, setYear] = useState<number | null>(null);
   const [month, setMonth] = useState<number | null>(null);
-  const [state, action, pending] = useActionState(createAccountingPeriod, {});
+  const [state, action, pending] = useActionState(createAccountingPeriod(navigationContext.redirect), {});
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs breadcrumbs={breadcrumbs.create()} />
+      <Breadcrumbs breadcrumbs={navigationContext.breadcrumbs} />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <IntegerEntryField
           label="Year"
@@ -35,7 +36,7 @@ const CreateAccountingPeriodView = function (): JSX.Element {
           errorMessage={state.monthErrors ?? null}
         />
         <DialogActions>
-          <Link href={routes.index({})} tabIndex={-1}>
+          <Link href={navigationContext.redirect} tabIndex={-1}>
             <Button variant="outlined">Cancel</Button>
           </Link>
           <Button
@@ -44,7 +45,9 @@ const CreateAccountingPeriodView = function (): JSX.Element {
             disabled={year === null || month === null}
             onClick={() => {
               startTransition(() => {
-                action({ year: year ?? 0, month: month ?? 0 });
+                action(
+                  { year: year ?? 0, month: month ?? 0 },
+                );
               });
             }}
           >

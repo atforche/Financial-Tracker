@@ -203,7 +203,10 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-unnecessary-type-parameters": "off",
       "@typescript-eslint/consistent-return": "off",
       "@typescript-eslint/max-params": "off",
-      "@typescript-eslint/class-methods-use-this": ["error", { "ignoreClassesThatImplementAnInterface": true }]
+      "@typescript-eslint/class-methods-use-this": [
+        "error",
+        { ignoreClassesThatImplementAnInterface: true },
+      ],
     },
   },
   globalIgnores([

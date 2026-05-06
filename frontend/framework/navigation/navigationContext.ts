@@ -9,7 +9,7 @@ interface NavigationContext {
    * Populates the navigation context with data from the API.
    */
   populate: () => Promise<void>;
-  
+
   /**
    * Gets the route for the current navigation context.
    */
@@ -32,10 +32,12 @@ interface NavigationContext {
  */
 const objectToSearchParams = function (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  obj: Record<string, any>,
+  obj: Record<string, any> | null,
 ): URLSearchParams {
   const params = new URLSearchParams();
-
+  if (!obj) {
+    return params;
+  }
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === "undefined" || value === null) {
       continue;

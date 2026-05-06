@@ -1,4 +1,7 @@
-import { type NavigationContext, objectToSearchParams } from "@/framework/navigation/navigationContext";
+import {
+  type NavigationContext,
+  objectToSearchParams,
+} from "@/framework/navigation/navigationContext";
 import type { Breadcrumb } from "@/framework/Breadcrumbs";
 import { CreateFundNavigationContext } from "@/funds/create/createFundNavigationContext";
 import type { FundSortOrder } from "@/funds/types";
@@ -11,7 +14,7 @@ interface FundIndexSearchParams {
   search?: string;
   sort?: FundSortOrder;
   page?: number;
-};
+}
 
 /**
  * Navigation context for viewing the collection of funds.
@@ -55,8 +58,8 @@ class FundIndexNavigationContext implements NavigationContext {
       {
         label: "Funds",
         href: this.getRoute(),
-      }
-    ]
+      },
+    ];
   }
 
   /**
@@ -70,9 +73,9 @@ class FundIndexNavigationContext implements NavigationContext {
    * Gets the route for viewing the details of a fund.
    */
   public toFundDetail(fundId: string): Route {
-    return ;
+    return;
   }
 }
 
-export type { FundIndexSearchParams }
+export type { FundIndexSearchParams };
 export default FundIndexNavigationContext;
