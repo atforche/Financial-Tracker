@@ -1,7 +1,7 @@
 import { Drawer, Toolbar, Typography } from "@mui/material";
 import Image from "next/image";
 import type { JSX } from "react";
-import NavigationLinks from "@/app/NavigationLinks";
+import NavigationLinks from "@/framework/navigation/NavigationLinks";
 
 /**
  * Component that displays a navigation sidebar.
