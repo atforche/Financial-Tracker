@@ -1,3 +1,3 @@
-import CreateGoalView from "@/goals/create/CreateGoalView";
+import CreateGoalView from "@/goals/CreateGoalView";
 
 export default CreateGoalView;

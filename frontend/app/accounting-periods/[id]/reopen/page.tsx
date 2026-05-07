@@ -1,3 +1,3 @@
-import ReopenAccountingPeriodView from "@/accounting-periods/reopen/ReopenAccountingPeriodView";
+import ReopenAccountingPeriodView from "@/accounting-periods/ReopenAccountingPeriodView";
 
 export default ReopenAccountingPeriodView;

@@ -1,3 +1,3 @@
-import CloseAccountingPeriodView from "@/accounting-periods/close/CloseAccountingPeriodView";
+import CloseAccountingPeriodView from "@/accounting-periods/CloseAccountingPeriodView";
 
 export default CloseAccountingPeriodView;

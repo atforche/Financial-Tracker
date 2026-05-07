@@ -1,17 +1,17 @@
 import type {
-  AccountDetailViewParams,
-  AccountDetailViewSearchParams,
-} from "@/accounts/detail/AccountDetailView";
+  AccountViewParams,
+  AccountViewSearchParams,
+} from "@/accounts/AccountView";
 import type {
   DeleteAccountViewParams,
   DeleteAccountViewSearchParams,
-} from "@/accounts/delete/DeleteAccountView";
+} from "@/accounts/DeleteAccountView";
 import type {
   UpdateAccountViewParams,
   UpdateAccountViewSearchParams,
-} from "@/accounts/update/UpdateAccountView";
-import type { AccountIndexViewSearchParams } from "@/accounts/index/AccountIndexView";
-import type { CreateAccountViewSearchParams } from "@/accounts/create/CreateAccountView";
+} from "@/accounts/UpdateAccountView";
+import type { AccountsViewSearchParams } from "@/accounts/AccountsView";
+import type { CreateAccountViewSearchParams } from "@/accounts/CreateAccountView";
 import type { Route } from "next";
 import { objectToSearchParams } from "@/framework/routes";
 
@@ -19,13 +19,13 @@ import { objectToSearchParams } from "@/framework/routes";
  * App routes related to accounts.
  */
 const routes = {
-  index: (searchParams: AccountIndexViewSearchParams): Route =>
+  index: (searchParams: AccountsViewSearchParams): Route =>
     `/accounts?${objectToSearchParams(searchParams).toString()}` as Route,
   create: (searchParams: CreateAccountViewSearchParams): Route =>
     `/accounts/create?${objectToSearchParams(searchParams).toString()}` as Route,
   detail: (
-    params: AccountDetailViewParams,
-    searchParams: AccountDetailViewSearchParams,
+    params: AccountViewParams,
+    searchParams: AccountViewSearchParams,
   ): Route =>
     `/accounts/${params.id}?${objectToSearchParams(searchParams).toString()}` as Route,
   update: (

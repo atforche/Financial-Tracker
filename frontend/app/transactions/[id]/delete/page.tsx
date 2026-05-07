@@ -1,3 +1,3 @@
-import DeleteTransactionView from "@/transactions/delete/DeleteTransactionView";
+import DeleteTransactionView from "@/transactions/DeleteTransactionView";
 
 export default DeleteTransactionView;

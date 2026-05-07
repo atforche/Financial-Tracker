@@ -1,16 +1,13 @@
 import type {
   DeleteGoalViewParams,
   DeleteGoalViewSearchParams,
-} from "@/goals/delete/DeleteGoalView";
-import type {
-  GoalDetailViewParams,
-  GoalDetailViewSearchParams,
-} from "@/goals/detail/GoalDetailView";
+} from "@/goals/DeleteGoalView";
+import type { GoalViewParams, GoalViewSearchParams } from "@/goals/GoalView";
 import type {
   UpdateGoalViewParams,
   UpdateGoalViewSearchParams,
-} from "@/goals/update/UpdateGoalView";
-import type { CreateGoalViewSearchParams } from "@/goals/create/CreateGoalView";
+} from "@/goals/UpdateGoalView";
+import type { CreateGoalViewSearchParams } from "@/goals/CreateGoalView";
 import type { Route } from "next";
 import { objectToSearchParams } from "@/framework/routes";
 
@@ -20,10 +17,7 @@ import { objectToSearchParams } from "@/framework/routes";
 const routes = {
   create: (searchParams: CreateGoalViewSearchParams): Route =>
     `/goals/create?${objectToSearchParams(searchParams).toString()}` as Route,
-  detail: (
-    params: GoalDetailViewParams,
-    searchParams: GoalDetailViewSearchParams,
-  ): Route =>
+  detail: (params: GoalViewParams, searchParams: GoalViewSearchParams): Route =>
     `/goals/${params.id}?${objectToSearchParams(searchParams).toString()}` as Route,
   update: (
     params: UpdateGoalViewParams,

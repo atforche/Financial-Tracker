@@ -1,3 +1,3 @@
-import CreateTransactionView from "@/transactions/create/CreateTransactionView";
+import CreateTransactionView from "@/transactions/CreateTransactionView";
 
 export default CreateTransactionView;

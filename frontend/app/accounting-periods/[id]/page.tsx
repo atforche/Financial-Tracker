@@ -1,3 +1,3 @@
-import AccountingPeriodView from "@/accounting-periods/detail/AccountingPeriodDetailView";
+import AccountingPeriodView from "@/accounting-periods/AccountingPeriodView";
 
 export default AccountingPeriodView;

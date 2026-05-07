@@ -1,3 +1,3 @@
-import UpdateFundView from "@/funds/update/UpdateFundView";
+import UpdateFundView from "@/funds/UpdateFundView";
 
 export default UpdateFundView;

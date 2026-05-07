@@ -65,7 +65,6 @@ const eslintConfig = defineConfig([
       "max-lines": "off",
       complexity: "off",
       "no-continue": "off",
-      "class-methods-use-this": "off",
 
       // import rules
       "import/no-deprecated": "error",
@@ -203,10 +202,6 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-unnecessary-type-parameters": "off",
       "@typescript-eslint/consistent-return": "off",
       "@typescript-eslint/max-params": "off",
-      "@typescript-eslint/class-methods-use-this": [
-        "error",
-        { ignoreClassesThatImplementAnInterface: true },
-      ],
     },
   },
   globalIgnores([

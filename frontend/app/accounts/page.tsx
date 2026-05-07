@@ -1,3 +1,3 @@
-import AccountIndexView from "@/accounts/index/AccountIndexView";
+import AccountsView from "@/accounts/AccountsView";
 
-export default AccountIndexView;
+export default AccountsView;

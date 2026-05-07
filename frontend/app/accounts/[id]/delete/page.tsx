@@ -1,3 +1,3 @@
-import DeleteAccountView from "@/accounts/delete/DeleteAccountView";
+import DeleteAccountView from "@/accounts/DeleteAccountView";
 
 export default DeleteAccountView;

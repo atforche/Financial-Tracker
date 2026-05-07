@@ -1,8 +1,8 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { AccountingPeriodDetailViewSearchParams } from "@/accounting-periods/detail/AccountingPeriodDetailView";
 import { AccountingPeriodTransactionSortOrder } from "@/accounting-periods/types";
+import type { AccountingPeriodViewSearchParams } from "@/accounting-periods/AccountingPeriodView";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -38,7 +38,7 @@ const AccountingPeriodTransactionListFrame = function ({
   const pathname = usePathname();
   const router = useRouter();
   const sortSearchParamName =
-    nameof<AccountingPeriodDetailViewSearchParams>("transactionSort");
+    nameof<AccountingPeriodViewSearchParams>("transactionSort");
 
   const setSort = function (
     sort: AccountingPeriodTransactionSortOrder | null,
@@ -103,7 +103,8 @@ const AccountingPeriodTransactionListFrame = function ({
     {
       name: "debitFrom",
       headerContent: "Debit From",
-      getBodyContent: (transaction: Transaction): string => {
+      getBodyContent: (transaction: Transaction): string => 
+      {
         if ("debitAccount" in transaction) {
           return transaction.debitAccount?.accountName ?? "";
         }
@@ -127,7 +128,7 @@ const AccountingPeriodTransactionListFrame = function ({
         } else {
           setSort(null);
         }
-      },
+      }
     },
     {
       name: "creditTo",
@@ -215,9 +216,7 @@ const AccountingPeriodTransactionListFrame = function ({
       getId={(transaction) => transaction.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      pageSearchParamName={nameof<AccountingPeriodDetailViewSearchParams>(
-        "page",
-      )}
+      pageSearchParamName={nameof<AccountingPeriodViewSearchParams>("page")}
     />
   );
 };

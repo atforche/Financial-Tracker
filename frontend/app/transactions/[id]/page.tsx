@@ -1,3 +1,3 @@
-import TransactionDetailView from "@/transactions/detail/TransactionDetailView";
+import TransactionView from "@/transactions/TransactionView";
 
-export default TransactionDetailView;
+export default TransactionView;

@@ -1,3 +1,3 @@
-import UpdateAccountView from "@/accounts/update/UpdateAccountView";
+import UpdateAccountView from "@/accounts/UpdateAccountView";
 
 export default UpdateAccountView;

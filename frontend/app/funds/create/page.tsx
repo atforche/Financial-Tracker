@@ -1,3 +1,3 @@
-import CreateFundView from "@/funds/create/CreateFundView";
+import CreateFundView from "@/funds/CreateFundView";
 
 export default CreateFundView;

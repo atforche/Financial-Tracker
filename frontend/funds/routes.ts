@@ -1,17 +1,14 @@
 import type {
   DeleteFundViewParams,
   DeleteFundViewSearchParams,
-} from "@/funds/delete/DeleteFundView";
-import type {
-  FundDetailViewParams,
-  FundDetailViewSearchParams,
-} from "@/funds/detail/FundDetailView";
+} from "@/funds/DeleteFundView";
+import type { FundViewParams, FundViewSearchParams } from "@/funds/FundView";
 import type {
   UpdateFundViewParams,
   UpdateFundViewSearchParams,
-} from "@/funds/update/UpdateFundView";
-import type { CreateFundViewSearchParams } from "@/funds/create/CreateFundView";
-import type { FundIndexViewSearchParams } from "@/funds/index/FundIndexView";
+} from "@/funds/UpdateFundView";
+import type { CreateFundViewSearchParams } from "@/funds/CreateFundView";
+import type { FundsViewSearchParams } from "@/funds/FundsView";
 import type { Route } from "next";
 import { objectToSearchParams } from "@/framework/routes";
 
@@ -19,14 +16,11 @@ import { objectToSearchParams } from "@/framework/routes";
  * App routes related to funds.
  */
 const routes = {
-  index: (searchParams: FundIndexViewSearchParams): Route =>
+  index: (searchParams: FundsViewSearchParams): Route =>
     `/funds?${objectToSearchParams(searchParams).toString()}` as Route,
   create: (searchParams: CreateFundViewSearchParams): Route =>
     `/funds/create?${objectToSearchParams(searchParams).toString()}` as Route,
-  detail: (
-    params: FundDetailViewParams,
-    searchParams: FundDetailViewSearchParams,
-  ): Route =>
+  detail: (params: FundViewParams, searchParams: FundViewSearchParams): Route =>
     `/funds/${params.id}?${objectToSearchParams(searchParams).toString()}` as Route,
   update: (
     params: UpdateFundViewParams,
