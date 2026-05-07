@@ -103,8 +103,7 @@ const AccountingPeriodTransactionListFrame = function ({
     {
       name: "debitFrom",
       headerContent: "Debit From",
-      getBodyContent: (transaction: Transaction): string => 
-      {
+      getBodyContent: (transaction: Transaction): string => {
         if ("debitAccount" in transaction) {
           return transaction.debitAccount?.accountName ?? "";
         }
@@ -128,7 +127,7 @@ const AccountingPeriodTransactionListFrame = function ({
         } else {
           setSort(null);
         }
-      }
+      },
     },
     {
       name: "creditTo",

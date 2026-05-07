@@ -60,8 +60,7 @@ const CreateTransactionView = async function ({
     accounts.items.find((a) => a.id === debitAccountId) ?? null;
   const routeCreditAccount =
     accounts.items.find((a) => a.id === creditAccountId) ?? null;
-  const routeDebitFund =
-    funds.items.find((f) => f.id === debitFundId) ?? null;
+  const routeDebitFund = funds.items.find((f) => f.id === debitFundId) ?? null;
   const routeCreditFund =
     funds.items.find((f) => f.id === creditFundId) ?? null;
 

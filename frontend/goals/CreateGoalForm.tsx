@@ -94,9 +94,7 @@ const CreateGoalForm = function ({
           label="Accounting Period"
           options={accountingPeriods}
           value={accountingPeriod}
-          setValue={
-            routeAccountingPeriod === null ? setAccountingPeriod : null
-          }
+          setValue={routeAccountingPeriod === null ? setAccountingPeriod : null}
           errorMessage={state.accountingPeriodErrors ?? null}
         />
         <FundEntryField

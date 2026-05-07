@@ -67,11 +67,7 @@ const DeleteTransactionForm = function ({
 }: DeleteTransactionFormProps): JSX.Element {
   const [state, action, pending] = useActionState(deleteTransaction, {
     transactionId: transaction.id,
-    redirectUrl: getRedirectUrl(
-      routeAccountingPeriod,
-      routeAccount,
-      routeFund,
-    ),
+    redirectUrl: getRedirectUrl(routeAccountingPeriod, routeAccount, routeFund),
   });
 
   return (

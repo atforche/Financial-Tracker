@@ -28,10 +28,7 @@ const getRedirectUrl = function (
   routeAccountingPeriod: AccountingPeriod | null,
 ): string {
   if (routeAccountingPeriod !== null) {
-    return accountingPeriodRoutes.detail(
-      { id: routeAccountingPeriod.id },
-      {},
-    );
+    return accountingPeriodRoutes.detail({ id: routeAccountingPeriod.id }, {});
   }
   return routes.index({});
 };
@@ -72,9 +69,7 @@ const CreateFundForm = function ({
           label="Accounting Period"
           options={accountingPeriods}
           value={accountingPeriod}
-          setValue={
-            routeAccountingPeriod === null ? setAccountingPeriod : null
-          }
+          setValue={routeAccountingPeriod === null ? setAccountingPeriod : null}
           errorMessage={state.accountingPeriodErrors ?? null}
         />
         <DialogActions>
