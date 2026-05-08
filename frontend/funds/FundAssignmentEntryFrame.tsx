@@ -9,21 +9,6 @@ import FundAmountEntryFrame from "@/funds/FundAmountEntryFrame";
 import formatCurrency from "@/framework/formatCurrency";
 
 /**
- * Determines whether any fund assignments are incomplete.
- */
-const hasIncompleteFundAssignments = function (
-  fundAssignments: FundAmount[],
-): boolean {
-  return fundAssignments.some(
-    (fundAmount) =>
-      fundAmount.fundId === "" ||
-      fundAmount.fundName === "" ||
-      fundAmount.amount < 0 ||
-      (fundAmount.amount === 0 && fundAmount.fundName !== "Unassigned"),
-  );
-};
-
-/**
  * Updates the amount assigned to the unassigned fund based on the total amount to assign and the amounts assigned to other funds.
  */
 const updateUnassignedFundAmount = function (
@@ -170,5 +155,5 @@ const FundAssignmentEntryFrame = function ({
   );
 };
 
-export { hasIncompleteFundAssignments, updateUnassignedFundAmount };
+export { updateUnassignedFundAmount };
 export default FundAssignmentEntryFrame;

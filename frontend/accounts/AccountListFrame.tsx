@@ -13,7 +13,7 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
 import nameof from "@/framework/data/nameof";
-import routes from "@/accounting-periods/routes";
+import routes from "@/accounts/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
@@ -147,7 +147,7 @@ const AccountListFrame = function ({
           label="Add"
           icon={<AddCircleOutline />}
           onClick={() => {
-            router.push(routes.create);
+            router.push(routes.create({}));
           }}
         />
       ),

@@ -12,9 +12,12 @@ import {
   getMinimumDate,
 } from "@/accounting-periods/types";
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
-import type { Fund, FundAmount } from "@/funds/types";
-import FundAssignmentEntryFrame, {
+import {
+  type Fund,
+  type FundAmount,
   hasIncompleteFundAssignments,
+} from "@/funds/types";
+import FundAssignmentEntryFrame, {
   updateUnassignedFundAmount,
 } from "@/funds/FundAssignmentEntryFrame";
 import { type JSX, startTransition, useActionState, useState } from "react";

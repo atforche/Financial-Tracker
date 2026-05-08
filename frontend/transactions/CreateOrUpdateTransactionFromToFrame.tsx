@@ -104,9 +104,13 @@ const CreateOrUpdateTransactionFromToFrame = function ({
                 ? { label: "", value: null }
                 : { label: type, value: type }
             }
-            setValue={(newValue): void => {
-              onTypeChange(newValue?.value ?? null);
-            }}
+            setValue={
+              setDebitFrom === null && setCreditTo === null
+                ? null
+                : (newValue): void => {
+                    onTypeChange(newValue?.value ?? null);
+                  }
+            }
           />
           {type === "Account" && (
             <Stack direction="row" spacing={2} sx={{ maxWidth: "100%" }}>

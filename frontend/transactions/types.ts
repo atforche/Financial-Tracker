@@ -5,18 +5,18 @@ import {
   CreateTransactionModelCreateIncomeTransactionModelType,
   CreateTransactionModelCreateSpendingTransactionModelType,
   TransactionAccountTypeModel,
-  TransactionModelAccountTransactionModelType,
-  TransactionModelFundTransactionModelType,
-  TransactionModelIncomeTransactionModelType,
-  TransactionModelSpendingTransactionModelType,
+  TransactionTypeModel,
   UpdateTransactionModelUpdateAccountTransactionModelType,
   UpdateTransactionModelUpdateFundTransactionModelType,
   UpdateTransactionModelUpdateIncomeTransactionModelType,
   UpdateTransactionModelUpdateSpendingTransactionModelType,
   type components,
 } from "@/framework/data/api";
-import type { Fund, FundAmount } from "@/funds/types";
-import { hasIncompleteFundAssignments } from "@/funds/FundAssignmentEntryFrame";
+import {
+  type Fund,
+  type FundAmount,
+  hasIncompleteFundAssignments,
+} from "@/funds/types";
 
 /**
  * Type representing a Transaction.
@@ -167,21 +167,78 @@ const isFundTransactionComplete = function (
   return debitFund !== null && creditFund !== null;
 };
 
+/**
+ * Gets the accounts from the transaction that are eligible for posting.
+ */
+const getPostableTransactionAccounts = function (
+  transaction: Transaction,
+): { accountId: string; accountName: string }[] {
+  const accounts = [];
+  if (
+    "debitAccount" in transaction &&
+    transaction.debitAccount !== null &&
+    transaction.debitAccount.postedDate === null
+  ) {
+    accounts.push({
+      accountId: transaction.debitAccount.accountId,
+      accountName: transaction.debitAccount.accountName,
+    });
+  }
+  if (
+    "creditAccount" in transaction &&
+    transaction.creditAccount !== null &&
+    transaction.creditAccount.postedDate === null
+  ) {
+    accounts.push({
+      accountId: transaction.creditAccount.accountId,
+      accountName: transaction.creditAccount.accountName,
+    });
+  }
+  return accounts;
+};
+
+/**
+ * Gets the accounts from the transaction that are already posted.
+ */
+const getPostedTransactionAccounts = function (
+  transaction: Transaction,
+): { accountId: string; accountName: string }[] {
+  const accounts = [];
+  if (
+    "debitAccount" in transaction &&
+    transaction.debitAccount !== null &&
+    transaction.debitAccount.postedDate !== null
+  ) {
+    accounts.push({
+      accountId: transaction.debitAccount.accountId,
+      accountName: transaction.debitAccount.accountName,
+    });
+  }
+  if (
+    "creditAccount" in transaction &&
+    transaction.creditAccount !== null &&
+    transaction.creditAccount.postedDate !== null
+  ) {
+    accounts.push({
+      accountId: transaction.creditAccount.accountId,
+      accountName: transaction.creditAccount.accountName,
+    });
+  }
+  return accounts;
+};
+
 export {
   type Transaction,
   type TransactionAccount,
   type CreateTransactionRequest,
   type UpdateTransactionRequest,
   type PostTransactionRequest,
+  TransactionAccountTypeModel as TransactionAccountType,
+  TransactionTypeModel as TransactionType,
   CreateTransactionModelCreateAccountTransactionModelType as CreateAccountTransactionType,
   CreateTransactionModelCreateFundTransactionModelType as CreateFundTransactionType,
   CreateTransactionModelCreateIncomeTransactionModelType as CreateIncomeTransactionType,
   CreateTransactionModelCreateSpendingTransactionModelType as CreateSpendingTransactionType,
-  TransactionModelAccountTransactionModelType as AccountTransactionType,
-  TransactionModelFundTransactionModelType as FundTransactionType,
-  TransactionModelIncomeTransactionModelType as IncomeTransactionType,
-  TransactionModelSpendingTransactionModelType as SpendingTransactionType,
-  TransactionAccountTypeModel as TransactionAccountType,
   UpdateTransactionModelUpdateAccountTransactionModelType as UpdateAccountTransactionType,
   UpdateTransactionModelUpdateFundTransactionModelType as UpdateFundTransactionType,
   UpdateTransactionModelUpdateIncomeTransactionModelType as UpdateIncomeTransactionType,
@@ -193,4 +250,6 @@ export {
   isAccountTransaction,
   isFundTransaction,
   isFundTransactionComplete,
+  getPostableTransactionAccounts,
+  getPostedTransactionAccounts,
 };

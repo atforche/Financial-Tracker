@@ -8,6 +8,7 @@ import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import type { Fund } from "@/funds/types";
 import Link from "next/link";
+import { ToggleState } from "@/accounting-periods/AccountingPeriodViewListFrames";
 import type { Transaction } from "@/transactions/types";
 import accountRoutes from "@/accounts/routes";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
@@ -46,6 +47,10 @@ const getRedirectUrl = function (
         {},
       );
     }
+    return accountingPeriodRoutes.detail(
+      { id: routeAccountingPeriod.id },
+      { display: ToggleState.Transactions },
+    );
   }
   if (routeAccount !== null) {
     return accountRoutes.detail({ id: routeAccount.id }, {});

@@ -2,6 +2,10 @@
 
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
+import {
+  type Transaction,
+  getPostableTransactionAccounts,
+} from "@/transactions/types";
 import dayjs, { type Dayjs } from "dayjs";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
@@ -10,40 +14,9 @@ import { ComboBoxEntryField } from "@/framework/forms/ComboBoxEntryField";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
-import type { Transaction } from "@/transactions/types";
 import breadcrumbs from "@/transactions/breadcrumbs";
 import postTransaction from "@/transactions/postTransaction";
 import routes from "@/transactions/routes";
-
-/**
- * Gets the accounts from the transaction that are eligible for posting.
- */
-const getPostableTransactionAccounts = function (
-  transaction: Transaction,
-): { accountId: string; accountName: string }[] {
-  const accounts = [];
-  if (
-    "debitAccount" in transaction &&
-    transaction.debitAccount !== null &&
-    transaction.debitAccount.postedDate === null
-  ) {
-    accounts.push({
-      accountId: transaction.debitAccount.accountId,
-      accountName: transaction.debitAccount.accountName,
-    });
-  }
-  if (
-    "creditAccount" in transaction &&
-    transaction.creditAccount !== null &&
-    transaction.creditAccount.postedDate === null
-  ) {
-    accounts.push({
-      accountId: transaction.creditAccount.accountId,
-      accountName: transaction.creditAccount.accountName,
-    });
-  }
-  return accounts;
-};
 
 /**
  * Props for the PostTransactionForm component.

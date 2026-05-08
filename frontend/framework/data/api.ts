@@ -2374,6 +2374,8 @@ export interface components {
              * @description ID for the Transaction.
              */
             id: string;
+            /** @description Type of the Transaction. */
+            transactionType: components["schemas"]["TransactionTypeModel"];
             /**
              * Format: uuid
              * @description Accounting Period ID for the Transaction.
@@ -2414,6 +2416,8 @@ export interface components {
              * @description ID for the Transaction.
              */
             id: string;
+            /** @description Type of the Transaction. */
+            transactionType: components["schemas"]["TransactionTypeModel"];
             /**
              * Format: uuid
              * @description Accounting Period ID for the Transaction.
@@ -2455,6 +2459,8 @@ export interface components {
              * @description ID for the Transaction.
              */
             id: string;
+            /** @description Type of the Transaction. */
+            transactionType: components["schemas"]["TransactionTypeModel"];
             /**
              * Format: uuid
              * @description Accounting Period ID for the Transaction.
@@ -2496,6 +2502,8 @@ export interface components {
              * @description ID for the Transaction.
              */
             id: string;
+            /** @description Type of the Transaction. */
+            transactionType: components["schemas"]["TransactionTypeModel"];
             /**
              * Format: uuid
              * @description Accounting Period ID for the Transaction.
@@ -2523,6 +2531,11 @@ export interface components {
              */
             amount: number;
         };
+        /**
+         * @description Enum representing the different transaction types exposed by the REST API.
+         * @enum {unknown}
+         */
+        TransactionTypeModel: TransactionTypeModel;
         /** @description Model representing a request to update an Account */
         UpdateAccountModel: {
             /** @description Name for the Account */
@@ -2795,6 +2808,12 @@ export enum TransactionModelIncomeTransactionModelType {
 }
 export enum TransactionModelSpendingTransactionModelType {
     Spending = "Spending"
+}
+export enum TransactionTypeModel {
+    Spending = "Spending",
+    Income = "Income",
+    Account = "Account",
+    Fund = "Fund"
 }
 export enum UpdateTransactionModelUpdateAccountTransactionModelType {
     Account = "Account"

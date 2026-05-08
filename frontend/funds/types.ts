@@ -32,6 +32,21 @@ type UpdateFundRequest = components["schemas"]["UpdateFundModel"];
  */
 type FundAmount = components["schemas"]["FundAmountModel"];
 
+/**
+ * Determines whether any fund assignments are incomplete.
+ */
+const hasIncompleteFundAssignments = function (
+  fundAssignments: FundAmount[],
+): boolean {
+  return fundAssignments.some(
+    (fundAmount) =>
+      fundAmount.fundId === "" ||
+      fundAmount.fundName === "" ||
+      fundAmount.amount < 0 ||
+      (fundAmount.amount === 0 && fundAmount.fundName !== "Unassigned"),
+  );
+};
+
 export {
   type Fund,
   type FundIdentifier,
@@ -40,4 +55,5 @@ export {
   type FundAmount,
   FundSortOrderModel as FundSortOrder,
   FundTransactionSortOrderModel as FundTransactionSortOrder,
+  hasIncompleteFundAssignments,
 };

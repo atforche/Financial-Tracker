@@ -1,4 +1,8 @@
 import { Button, Stack } from "@mui/material";
+import {
+  getPostableTransactionAccounts,
+  getPostedTransactionAccounts,
+} from "@/transactions/types";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
@@ -6,8 +10,6 @@ import type { JSX } from "react";
 import breadcrumbs from "@/transactions/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
-import { getPostableTransactionAccounts } from "@/transactions/PostTransactionForm";
-import { getPostedTransactionAccounts } from "@/transactions/UnpostTransactionForm";
 import routes from "@/transactions/routes";
 
 /**

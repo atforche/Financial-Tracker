@@ -202,7 +202,7 @@ public class SpendingTransactionService(
         IReadOnlyCollection<Account> accounts,
         out IEnumerable<Exception> exceptions)
     {
-        _ = ValidateUpdate(transaction, request, accounts, out exceptions);
+        _ = base.ValidateUpdate(transaction, request, accounts, out exceptions);
 
         AccountingPeriod accountingPeriod = AccountingPeriodRepository.GetById(transaction.AccountingPeriodId);
         Account debitAccount = accountRepository.GetById(transaction.DebitAccountId);

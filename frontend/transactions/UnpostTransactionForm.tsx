@@ -13,36 +13,6 @@ import routes from "@/transactions/routes";
 import unpostTransaction from "@/transactions/unpostTransaction";
 
 /**
- * Gets the accounts from the transaction that are already posted.
- */
-const getPostedTransactionAccounts = function (
-  transaction: Transaction,
-): { accountId: string; accountName: string }[] {
-  const accounts = [];
-  if (
-    "debitAccount" in transaction &&
-    transaction.debitAccount !== null &&
-    transaction.debitAccount.postedDate !== null
-  ) {
-    accounts.push({
-      accountId: transaction.debitAccount.accountId,
-      accountName: transaction.debitAccount.accountName,
-    });
-  }
-  if (
-    "creditAccount" in transaction &&
-    transaction.creditAccount !== null &&
-    transaction.creditAccount.postedDate !== null
-  ) {
-    accounts.push({
-      accountId: transaction.creditAccount.accountId,
-      accountName: transaction.creditAccount.accountName,
-    });
-  }
-  return accounts;
-};
-
-/**
  * Props for the UnpostTransactionForm component.
  */
 interface UnpostTransactionFormProps {
@@ -110,5 +80,4 @@ const UnpostTransactionForm = function ({
   );
 };
 
-export { getPostedTransactionAccounts };
 export default UnpostTransactionForm;

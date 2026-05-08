@@ -5,33 +5,27 @@ import type { Fund, FundAmount } from "@/funds/types";
 import { type JSX, startTransition, useActionState, useState } from "react";
 import {
   type Transaction,
+  TransactionType,
+  UpdateAccountTransactionType,
+  UpdateFundTransactionType,
+  UpdateIncomeTransactionType,
+  UpdateSpendingTransactionType,
   type UpdateTransactionRequest,
   isIncomeTransactionComplete,
   isSpendingTransactionComplete,
 } from "@/transactions/types";
-import {
-  TransactionModelAccountTransactionModelType,
-  TransactionModelFundTransactionModelType,
-  TransactionModelIncomeTransactionModelType,
-  TransactionModelSpendingTransactionModelType,
-  UpdateTransactionModelUpdateAccountTransactionModelType,
-  UpdateTransactionModelUpdateFundTransactionModelType,
-  UpdateTransactionModelUpdateIncomeTransactionModelType,
-  UpdateTransactionModelUpdateSpendingTransactionModelType,
-} from "@/framework/data/api";
+import dayjs, { type Dayjs } from "dayjs";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import Breadcrumbs from "@/framework/Breadcrumbs";
 import CreateOrUpdateIncomeTransactionFrame from "@/transactions/CreateOrUpdateIncomeTransactionFrame";
 import CreateOrUpdateSpendingTransactionFrame from "@/transactions/CreateOrUpdateSpendingTransactionFrame";
 import CreateOrUpdateTransactionDetailsFrame from "@/transactions/CreateOrUpdateTransactionDetailsFrame";
 import CreateOrUpdateTransactionFromToFrame from "@/transactions/CreateOrUpdateTransactionFromToFrame";
-import type { Dayjs } from "dayjs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
-import { ToggleState } from "@/accounting-periods/AccountingPeriodViewListFrames";
-import accountRoutes from "@/accounts/routes";
-import accountingPeriodRoutes from "@/accounting-periods/routes";
-import fundRoutes from "@/funds/routes";
+import breadcrumbs from "@/transactions/breadcrumbs";
+import routes from "@/transactions/routes";
 import updateTransaction from "@/transactions/updateTransaction";
 import { updateUnassignedFundAmount } from "@/funds/FundAssignmentEntryFrame";
 
@@ -55,38 +49,19 @@ interface UpdateTransactionFormProps {
  * Gets the URL to redirect the user to after successfully creating a transaction.
  */
 const getRedirectUrl = function (
+  transaction: Transaction,
   accountingPeriod: AccountingPeriod | null,
   account: Account | null,
   fund: Fund | null,
 ): string {
-  if (accountingPeriod !== null) {
-    if (account !== null) {
-      return accountingPeriodRoutes.accountDetail({
-        id: accountingPeriod.id,
-        accountId: account.id,
-      });
-    }
-    if (fund !== null) {
-      return accountingPeriodRoutes.fundDetail(
-        {
-          id: accountingPeriod.id,
-          fundId: fund.id,
-        },
-        {},
-      );
-    }
-    return accountingPeriodRoutes.detail(
-      { id: accountingPeriod.id },
-      { display: ToggleState.Transactions },
-    );
-  }
-  if (account !== null) {
-    return accountRoutes.detail({ id: account.id }, {});
-  }
-  if (fund !== null) {
-    return fundRoutes.detail({ id: fund.id }, {});
-  }
-  return "";
+  return routes.detail(
+    { id: transaction.id },
+    {
+      accountingPeriodId: accountingPeriod?.id ?? null,
+      accountId: account?.id ?? null,
+      fundId: fund?.id ?? null,
+    },
+  );
 };
 
 /**
@@ -107,18 +82,38 @@ const UpdateTransactionForm = function ({
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
 
-  const [date, setDate] = useState<Dayjs | null>(null);
-  const [location, setLocation] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [amount, setAmount] = useState<number | null>(null);
+  const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
+  const [location, setLocation] = useState<string>(transaction.location);
+  const [description, setDescription] = useState<string>(
+    transaction.description,
+  );
+  const [amount, setAmount] = useState<number | null>(transaction.amount);
 
   const [incomeFundAssignments, setIncomeFundAssignments] = useState<
     FundAmount[]
-  >([]);
+  >(
+    transaction.transactionType === TransactionType.Income &&
+      "fundAssignments" in transaction
+      ? updateUnassignedFundAmount(
+          unassignedFund,
+          transaction.amount,
+          transaction.fundAssignments,
+        )
+      : [],
+  );
 
   const [spendingFundAssignments, setSpendingFundAssignments] = useState<
     FundAmount[]
-  >([]);
+  >(
+    transaction.transactionType === TransactionType.Spending &&
+      "fundAssignments" in transaction
+      ? updateUnassignedFundAmount(
+          unassignedFund,
+          transaction.amount,
+          transaction.fundAssignments,
+        )
+      : [],
+  );
 
   /**
    * Event handler for when the amount field is changed in the create transaction form.
@@ -126,15 +121,19 @@ const UpdateTransactionForm = function ({
   const onAmountChange = function (newAmount: number | null): void {
     setAmount(newAmount);
 
-    updateUnassignedFundAmount(
-      unassignedFund,
-      newAmount,
-      incomeFundAssignments,
+    setIncomeFundAssignments(
+      updateUnassignedFundAmount(
+        unassignedFund,
+        newAmount,
+        incomeFundAssignments,
+      ),
     );
-    updateUnassignedFundAmount(
-      unassignedFund,
-      newAmount,
-      spendingFundAssignments,
+    setSpendingFundAssignments(
+      updateUnassignedFundAmount(
+        unassignedFund,
+        newAmount,
+        spendingFundAssignments,
+      ),
     );
   };
 
@@ -147,52 +146,51 @@ const UpdateTransactionForm = function ({
     amount > 0
   ) {
     if (
-      transaction.type === TransactionModelIncomeTransactionModelType.Income &&
+      transaction.transactionType === TransactionType.Income &&
       isIncomeTransactionComplete(incomeFundAssignments)
     ) {
       request = {
-        type: UpdateTransactionModelUpdateIncomeTransactionModelType.Income,
-        date: date.format("yyyy-MM-DD"),
+        type: UpdateIncomeTransactionType.Income,
+        date: date.format("YYYY-MM-DD"),
         location,
         description,
         amount,
-        fundAssignments: incomeFundAssignments.map((fundAmount) => ({
-          fundId: fundAmount.fundId,
-          amount: fundAmount.amount,
-        })),
+        fundAssignments: incomeFundAssignments
+          .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
+          .map((fundAmount) => ({
+            fundId: fundAmount.fundId,
+            amount: fundAmount.amount,
+          })),
       };
     } else if (
-      transaction.type ===
-        TransactionModelSpendingTransactionModelType.Spending &&
+      transaction.transactionType === TransactionType.Spending &&
       isSpendingTransactionComplete(spendingFundAssignments)
     ) {
       request = {
-        type: UpdateTransactionModelUpdateSpendingTransactionModelType.Spending,
-        date: date.format("yyyy-MM-DD"),
+        type: UpdateSpendingTransactionType.Spending,
+        date: date.format("YYYY-MM-DD"),
         location,
         description,
         amount,
-        fundAssignments: spendingFundAssignments.map((fundAmount) => ({
-          fundId: fundAmount.fundId,
-          amount: fundAmount.amount,
-        })),
+        fundAssignments: spendingFundAssignments
+          .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
+          .map((fundAmount) => ({
+            fundId: fundAmount.fundId,
+            amount: fundAmount.amount,
+          })),
       };
-    } else if (
-      transaction.type === TransactionModelAccountTransactionModelType.Account
-    ) {
+    } else if (transaction.transactionType === TransactionType.Account) {
       request = {
-        type: UpdateTransactionModelUpdateAccountTransactionModelType.Account,
-        date: date.format("yyyy-MM-DD"),
+        type: UpdateAccountTransactionType.Account,
+        date: date.format("YYYY-MM-DD"),
         location,
         description,
         amount,
       };
-    } else if (
-      transaction.type === TransactionModelFundTransactionModelType.Fund
-    ) {
+    } else if (transaction.transactionType === TransactionType.Fund) {
       request = {
-        type: UpdateTransactionModelUpdateFundTransactionModelType.Fund,
-        date: date.format("yyyy-MM-DD"),
+        type: UpdateFundTransactionType.Fund,
+        date: date.format("YYYY-MM-DD"),
         location,
         description,
         amount,
@@ -203,6 +201,7 @@ const UpdateTransactionForm = function ({
   const [state, action, pending] = useActionState(updateTransaction, {
     transactionId: transaction.id,
     redirectUrl: getRedirectUrl(
+      transaction,
       routeAccountingPeriod ?? null,
       routeAccount ?? null,
       routeFund ?? null,
@@ -211,71 +210,79 @@ const UpdateTransactionForm = function ({
 
   return (
     <Stack spacing={2}>
-      <CreateOrUpdateTransactionDetailsFrame
-        accountingPeriods={[]}
-        accountingPeriod={transactionAccountingPeriod}
-        setAccountingPeriod={null}
-        date={date}
-        setDate={setDate}
-        location={location}
-        setLocation={setLocation}
-        description={description}
-        setDescription={setDescription}
-        amount={amount}
-        setAmount={onAmountChange}
+      <Breadcrumbs
+        breadcrumbs={breadcrumbs.update(
+          transaction,
+          routeAccountingPeriod ?? null,
+          routeAccount ?? null,
+          routeFund ?? null,
+        )}
       />
-      <CreateOrUpdateTransactionFromToFrame
-        accounts={[]}
-        debitAccount={transactionDebitAccount}
-        creditAccount={transactionCreditAccount}
-        funds={funds}
-        debitFund={transactionDebitFund}
-        creditFund={transactionCreditFund}
-        setDebitFrom={null}
-        setCreditTo={null}
-      />
-      {transaction.type ===
-        TransactionModelIncomeTransactionModelType.Income && (
-        <CreateOrUpdateIncomeTransactionFrame
-          funds={funds}
+      <Stack spacing={2} sx={{ maxWidth: "600px" }}>
+        <CreateOrUpdateTransactionDetailsFrame
+          accountingPeriods={[]}
+          accountingPeriod={transactionAccountingPeriod}
+          setAccountingPeriod={null}
+          date={date}
+          setDate={setDate}
+          location={location}
+          setLocation={setLocation}
+          description={description}
+          setDescription={setDescription}
           amount={amount}
-          incomeFundAssignments={incomeFundAssignments}
-          setIncomeFundAssignments={setIncomeFundAssignments}
+          setAmount={onAmountChange}
         />
-      )}
-      {transaction.type ===
-        TransactionModelSpendingTransactionModelType.Spending && (
-        <CreateOrUpdateSpendingTransactionFrame
+        <CreateOrUpdateTransactionFromToFrame
+          accounts={[]}
+          debitAccount={transactionDebitAccount}
+          creditAccount={transactionCreditAccount}
           funds={funds}
-          amount={amount}
-          spendingFundAssignments={spendingFundAssignments}
-          setSpendingFundAssignments={setSpendingFundAssignments}
+          debitFund={transactionDebitFund}
+          creditFund={transactionCreditFund}
+          setDebitFrom={null}
+          setCreditTo={null}
         />
-      )}
-      <DialogActions>
-        <Link href={state.redirectUrl} tabIndex={-1}>
-          <Button variant="outlined">Cancel</Button>
-        </Link>
-        <Button
-          variant="contained"
-          loading={pending}
-          disabled={request === null}
-          onClick={() => {
-            if (request === null) {
-              return;
-            }
-            startTransition(() => {
-              action(request);
-            });
-          }}
-        >
-          Create
-        </Button>
-      </DialogActions>
-      <ErrorAlert
-        errorMessage={state.errorTitle ?? null}
-        unmappedErrors={state.unmappedErrors ?? null}
-      />
+        {transaction.transactionType === TransactionType.Income && (
+          <CreateOrUpdateIncomeTransactionFrame
+            funds={funds}
+            amount={amount}
+            incomeFundAssignments={incomeFundAssignments}
+            setIncomeFundAssignments={setIncomeFundAssignments}
+          />
+        )}
+        {transaction.transactionType === TransactionType.Spending && (
+          <CreateOrUpdateSpendingTransactionFrame
+            funds={funds}
+            amount={amount}
+            spendingFundAssignments={spendingFundAssignments}
+            setSpendingFundAssignments={setSpendingFundAssignments}
+          />
+        )}
+        <DialogActions>
+          <Link href={state.redirectUrl} tabIndex={-1}>
+            <Button variant="outlined">Cancel</Button>
+          </Link>
+          <Button
+            variant="contained"
+            loading={pending}
+            disabled={request === null}
+            onClick={() => {
+              if (request === null) {
+                return;
+              }
+              startTransition(() => {
+                action(request);
+              });
+            }}
+          >
+            Update
+          </Button>
+        </DialogActions>
+        <ErrorAlert
+          errorMessage={state.errorTitle ?? null}
+          unmappedErrors={state.unmappedErrors ?? null}
+        />
+      </Stack>
     </Stack>
   );
 };

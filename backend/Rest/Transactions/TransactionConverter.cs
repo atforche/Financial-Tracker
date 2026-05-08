@@ -35,6 +35,7 @@ public sealed class TransactionConverter(
             SpendingTransaction spendingTransaction => new SpendingTransactionModel
             {
                 Id = transaction.Id.Value,
+                TransactionType = TransactionTypeModel.Spending,
                 AccountingPeriodId = transaction.AccountingPeriodId.Value,
                 AccountingPeriodName = accountingPeriodRepository.GetById(transaction.AccountingPeriodId).PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
                 Date = transaction.Date,
@@ -51,6 +52,7 @@ public sealed class TransactionConverter(
             IncomeTransaction incomeTransaction => new IncomeTransactionModel
             {
                 Id = transaction.Id.Value,
+                TransactionType = TransactionTypeModel.Income,
                 AccountingPeriodId = transaction.AccountingPeriodId.Value,
                 AccountingPeriodName = accountingPeriodRepository.GetById(transaction.AccountingPeriodId).PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
                 Date = transaction.Date,
@@ -67,6 +69,7 @@ public sealed class TransactionConverter(
             AccountTransaction accountTransaction => new AccountTransactionModel
             {
                 Id = transaction.Id.Value,
+                TransactionType = TransactionTypeModel.Account,
                 AccountingPeriodId = transaction.AccountingPeriodId.Value,
                 AccountingPeriodName = accountingPeriodRepository.GetById(transaction.AccountingPeriodId).PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
                 Date = transaction.Date,
@@ -84,6 +87,7 @@ public sealed class TransactionConverter(
             FundTransaction fundTransaction => new FundTransactionModel
             {
                 Id = transaction.Id.Value,
+                TransactionType = TransactionTypeModel.Fund,
                 AccountingPeriodId = transaction.AccountingPeriodId.Value,
                 AccountingPeriodName = accountingPeriodRepository.GetById(transaction.AccountingPeriodId).PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
                 Date = transaction.Date,

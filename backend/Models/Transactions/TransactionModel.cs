@@ -18,6 +18,11 @@ public abstract class TransactionModel
     public required Guid Id { get; init; }
 
     /// <summary>
+    /// Type of the Transaction.
+    /// </summary>
+    public required TransactionTypeModel TransactionType { get; init; }
+
+    /// <summary>
     /// Accounting Period ID for the Transaction.
     /// </summary>
     public required Guid AccountingPeriodId { get; init; }

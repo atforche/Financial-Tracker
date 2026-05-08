@@ -258,10 +258,12 @@ const CreateTransactionForm = function ({
         creditAccount: {
           accountId: creditAccount?.id ?? "",
         },
-        fundAssignments: incomeFundAssignments.map((fundAmount) => ({
-          fundId: fundAmount.fundId,
-          amount: fundAmount.amount,
-        })),
+        fundAssignments: incomeFundAssignments
+          .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
+          .map((fundAmount) => ({
+            fundId: fundAmount.fundId,
+            amount: fundAmount.amount,
+          })),
       };
     } else if (
       isSpendingTransaction(
@@ -355,83 +357,85 @@ const CreateTransactionForm = function ({
           routeDebitFund ?? routeCreditFund ?? null,
         )}
       />
-      <CreateOrUpdateTransactionDetailsFrame
-        accountingPeriods={accountingPeriods}
-        accountingPeriod={accountingPeriod}
-        setAccountingPeriod={setAccountingPeriod}
-        date={date ?? defaultDate}
-        setDate={setDate}
-        location={location}
-        setLocation={setLocation}
-        description={description}
-        setDescription={setDescription}
-        amount={amount}
-        setAmount={onAmountChange}
-      />
-      <CreateOrUpdateTransactionFromToFrame
-        accounts={accounts}
-        debitAccount={debitAccount}
-        creditAccount={creditAccount}
-        funds={funds}
-        debitFund={debitFund}
-        creditFund={creditFund}
-        setDebitFrom={(newDebitAccount, newDebitFund): void => {
-          onDebitFromChange(newDebitAccount, newDebitFund);
-        }}
-        setCreditTo={(newCreditAccount, newCreditFund): void => {
-          onCreditToChange(newCreditAccount, newCreditFund);
-        }}
-      />
-      {isIncomeTransaction(
-        debitAccount,
-        creditAccount,
-        debitFund,
-        creditFund,
-      ) && (
-        <CreateOrUpdateIncomeTransactionFrame
-          funds={funds}
+      <Stack spacing={2} sx={{ maxWidth: "600px" }}>
+        <CreateOrUpdateTransactionDetailsFrame
+          accountingPeriods={accountingPeriods}
+          accountingPeriod={accountingPeriod}
+          setAccountingPeriod={setAccountingPeriod}
+          date={date ?? defaultDate}
+          setDate={setDate}
+          location={location}
+          setLocation={setLocation}
+          description={description}
+          setDescription={setDescription}
           amount={amount}
-          incomeFundAssignments={incomeFundAssignments}
-          setIncomeFundAssignments={setIncomeFundAssignments}
+          setAmount={onAmountChange}
         />
-      )}
-      {isSpendingTransaction(
-        debitAccount,
-        creditAccount,
-        debitFund,
-        creditFund,
-      ) && (
-        <CreateOrUpdateSpendingTransactionFrame
+        <CreateOrUpdateTransactionFromToFrame
+          accounts={accounts}
+          debitAccount={debitAccount}
+          creditAccount={creditAccount}
           funds={funds}
-          amount={amount}
-          spendingFundAssignments={spendingFundAssignments}
-          setSpendingFundAssignments={setSpendingFundAssignments}
-        />
-      )}
-      <DialogActions>
-        <Link href={state.redirectUrl} tabIndex={-1}>
-          <Button variant="outlined">Cancel</Button>
-        </Link>
-        <Button
-          variant="contained"
-          loading={pending}
-          disabled={request === null}
-          onClick={() => {
-            if (request === null) {
-              return;
-            }
-            startTransition(() => {
-              action(request);
-            });
+          debitFund={debitFund}
+          creditFund={creditFund}
+          setDebitFrom={(newDebitAccount, newDebitFund): void => {
+            onDebitFromChange(newDebitAccount, newDebitFund);
           }}
-        >
-          Create
-        </Button>
-      </DialogActions>
-      <ErrorAlert
-        errorMessage={state.errorTitle ?? null}
-        unmappedErrors={state.unmappedErrors ?? null}
-      />
+          setCreditTo={(newCreditAccount, newCreditFund): void => {
+            onCreditToChange(newCreditAccount, newCreditFund);
+          }}
+        />
+        {isIncomeTransaction(
+          debitAccount,
+          creditAccount,
+          debitFund,
+          creditFund,
+        ) && (
+          <CreateOrUpdateIncomeTransactionFrame
+            funds={funds}
+            amount={amount}
+            incomeFundAssignments={incomeFundAssignments}
+            setIncomeFundAssignments={setIncomeFundAssignments}
+          />
+        )}
+        {isSpendingTransaction(
+          debitAccount,
+          creditAccount,
+          debitFund,
+          creditFund,
+        ) && (
+          <CreateOrUpdateSpendingTransactionFrame
+            funds={funds}
+            amount={amount}
+            spendingFundAssignments={spendingFundAssignments}
+            setSpendingFundAssignments={setSpendingFundAssignments}
+          />
+        )}
+        <DialogActions>
+          <Link href={state.redirectUrl} tabIndex={-1}>
+            <Button variant="outlined">Cancel</Button>
+          </Link>
+          <Button
+            variant="contained"
+            loading={pending}
+            disabled={request === null}
+            onClick={() => {
+              if (request === null) {
+                return;
+              }
+              startTransition(() => {
+                action(request);
+              });
+            }}
+          >
+            Create
+          </Button>
+        </DialogActions>
+        <ErrorAlert
+          errorMessage={state.errorTitle ?? null}
+          unmappedErrors={state.unmappedErrors ?? null}
+        />
+      </Stack>
     </Stack>
   );
 };

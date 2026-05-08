@@ -176,7 +176,7 @@ const AccountTransactionListFrame = function ({
     {
       name: "actions",
       headerContent: (
-        <Stack direction="row">
+        <Stack direction="row" spacing={1} justifyContent="flex-end">
           <IconButton
             label="Add Debit"
             icon={<AddCircleOutline />}
