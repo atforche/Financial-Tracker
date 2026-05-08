@@ -242,6 +242,7 @@ class BuildContainerImages(Command):
         print("Building the backend container image")
         self.run_subprocess(f"docker build ../backend -t backend-{self.configuration.name}")
         print("Building the frontend container image")
-        self.run_subprocess(f"docker build ../frontend -t frontend-{self.configuration.name} --build-arg VITE_API_URL=http://localhost:{self.configuration.backend_port} --build-arg NGINX_PORT={self.configuration.frontend_port}")
+        self.run_subprocess(f"docker build ../frontend -t frontend-{self.configuration.name}")
+
 if __name__ == "__main__":
     main()
