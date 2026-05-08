@@ -11,7 +11,27 @@ public enum AccountTypeModel
     Standard,
 
     /// <summary>
+    /// Credit Card Account
+    /// </summary>
+    CreditCard,
+
+    /// <summary>
+    /// Investment Account
+    /// </summary>
+    Investment,
+
+    /// <summary>
     /// Debt Account
     /// </summary>
     Debt,
+
+    /// <summary>
+    /// Retirement Account
+    /// </summary>
+    Retirement,
+
+    /// <summary>
+    /// Escrow Account
+    /// </summary>
+    Escrow,
 }

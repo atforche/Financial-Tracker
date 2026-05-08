@@ -8,20 +8,64 @@ public enum AccountType
     /// <summary>
     /// Standard Account
     /// </summary>
-    /// <remarks>
-    /// A Standard Account represents a standard checking or savings account.
-    /// Debiting a Standard Account will decrease its balance and crediting a
-    /// Standard Account will increase its balance.
-    /// </remarks>
     Standard,
+
+    /// <summary>
+    /// Credit Card Account
+    /// </summary>
+    CreditCard,
+
+    /// <summary>
+    /// Investment Account
+    /// </summary>
+    Investment,
 
     /// <summary>
     /// Debt Account
     /// </summary>
-    /// <remarks>
-    /// A Debt Account represents a credit card or loan account.
-    /// Debiting a Debt Account will increase its balance and crediting a 
-    /// Debt Account will decrease its balance.
-    /// </remarks>
     Debt,
+
+    /// <summary>
+    /// Retirement Account
+    /// </summary>
+    Retirement,
+
+    /// <summary>
+    /// Escrow Account
+    /// </summary>
+    Escrow,
+}
+
+/// <summary>
+/// Extension methods for AccountType
+/// </summary>
+public static class AccountTypeExtensions
+{
+    /// <summary>
+    /// Determines if an AccountType is tracked
+    /// </summary>
+    public static bool IsTracked(this AccountType accountType) => accountType switch
+    {
+        AccountType.Standard => true,
+        AccountType.CreditCard => true,
+        AccountType.Debt => false,
+        AccountType.Escrow => false,
+        AccountType.Investment => false,
+        AccountType.Retirement => false,
+        _ => throw new ArgumentOutOfRangeException(nameof(accountType), $"Not expected account type value: {accountType}"),
+    };
+
+    /// <summary>
+    /// Determines if an AccountType is a debt account
+    /// </summary>
+    public static bool IsDebt(this AccountType accountType) => accountType switch
+    {
+        AccountType.Standard => false,
+        AccountType.CreditCard => true,
+        AccountType.Investment => false,
+        AccountType.Debt => true,
+        AccountType.Retirement => false,
+        AccountType.Escrow => false,
+        _ => throw new ArgumentOutOfRangeException(nameof(accountType), $"Not expected account type value: {accountType}"),
+    };
 }

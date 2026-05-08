@@ -29,4 +29,14 @@ public class AccountingPeriodModel
     /// True if the Accounting Period is open, false otherwise
     /// </summary>
     public required bool IsOpen { get; init; }
+
+    /// <summary>
+    /// Opening balance for the Accounting Period
+    /// </summary>
+    public required decimal OpeningBalance { get; init; }
+
+    /// <summary>
+    /// Closing balance for the Accounting Period
+    /// </summary>
+    public required decimal ClosingBalance { get; init; }
 }

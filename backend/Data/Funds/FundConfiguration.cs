@@ -1,3 +1,4 @@
+using Domain.AccountingPeriods;
 using Domain.Funds;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -16,5 +17,8 @@ internal sealed class FundConfiguration : IEntityTypeConfiguration<Fund>
         builder.Property(fund => fund.Id).HasConversion(fundId => fundId.Value, value => new FundId(value));
 
         builder.HasIndex(fund => fund.Name).IsUnique();
+
+        builder.Property(fund => fund.AddAccountingPeriodId)
+            .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
     }
 }

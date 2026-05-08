@@ -94,7 +94,7 @@ class BuildFrontend(Command):
 
         os.chdir("../frontend")
         self.run_subprocess("npx tsc")
-        self.run_subprocess("npx vite build")
+        self.run_subprocess("npx next build")
 
 class RunFrontend(Command):
     """Command class that runs the frontend"""
@@ -109,7 +109,7 @@ class RunFrontend(Command):
         """Runs the frontend"""
 
         os.chdir("../frontend")
-        self.run_subprocess("npx vite")
+        self.run_subprocess("npx next dev")
 
 class RefreshFrontendModels(Command):
     """Command class that refreshes the API models used by the frontend"""
@@ -124,7 +124,7 @@ class RefreshFrontendModels(Command):
         """Refreshes the models used by the frontend"""
 
         os.chdir("../frontend")
-        self.run_subprocess("npx openapi-typescript ../backend/.artifacts/obj/Rest/Financial-Tracker-API.json --output src/data/api.ts --enum")
+        self.run_subprocess("npx openapi-typescript ../backend/.artifacts/obj/Rest/Financial-Tracker-API.json --output framework/data/api.ts --enum")
 
 class VerifyFrontendModels(Command):
     """Command class that verifies the API models used by the frontend are up to date"""
@@ -139,7 +139,7 @@ class VerifyFrontendModels(Command):
         """Verifies the models used by the frontend are up to date"""
 
         os.chdir("../frontend")
-        self.run_subprocess("npx openapi-typescript ../backend/.artifacts/obj/Rest/Financial-Tracker-API.json --output src/data/api.ts --check --enum")
+        self.run_subprocess("npx openapi-typescript ../backend/.artifacts/obj/Rest/Financial-Tracker-API.json --output framework/data/api.ts --check --enum")
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,3 @@
-using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
@@ -20,40 +19,7 @@ internal sealed class FundBalanceHistoryConfiguration : IEntityTypeConfiguration
         builder.Property(fundBalanceHistory => fundBalanceHistory.FundId)
             .HasConversion(fundId => fundId.Value, value => new FundId(value));
 
-        builder.Property(accountBalanceHistory => accountBalanceHistory.TransactionId)
+        builder.Property(fundBalanceHistory => fundBalanceHistory.TransactionId)
             .HasConversion(transactionId => transactionId.Value, value => new TransactionId(value));
-
-        builder.OwnsMany(fundBalanceHistory => fundBalanceHistory.AccountBalances, accountAmount =>
-        {
-            accountAmount.ToTable("FundBalanceHistoryAccountBalances");
-            accountAmount.Property<int>("Id");
-            accountAmount.HasKey("Id");
-
-            accountAmount.Property(accountBalance => accountBalance.AccountId)
-                .HasConversion(accountId => accountId.Value, value => new AccountId(value));
-        });
-        builder.Navigation(fundBalanceHistory => fundBalanceHistory.AccountBalances).AutoInclude();
-
-        builder.OwnsMany(fundBalanceHistory => fundBalanceHistory.PendingDebits, accountAmount =>
-        {
-            accountAmount.ToTable("FundBalanceHistoryPendingDebits");
-            accountAmount.Property<int>("Id");
-            accountAmount.HasKey("Id");
-
-            accountAmount.Property(accountBalance => accountBalance.AccountId)
-                .HasConversion(accountId => accountId.Value, value => new AccountId(value));
-        });
-        builder.Navigation(fundBalanceHistory => fundBalanceHistory.PendingDebits).AutoInclude();
-
-        builder.OwnsMany(fundBalanceHistory => fundBalanceHistory.PendingCredits, accountAmount =>
-        {
-            accountAmount.ToTable("FundBalanceHistoryPendingCredits");
-            accountAmount.Property<int>("Id");
-            accountAmount.HasKey("Id");
-
-            accountAmount.Property(accountBalance => accountBalance.AccountId)
-                .HasConversion(accountId => accountId.Value, value => new AccountId(value));
-        });
-        builder.Navigation(fundBalanceHistory => fundBalanceHistory.PendingCredits).AutoInclude();
     }
 }

@@ -1,5 +1,3 @@
-using Domain.Accounts;
-
 namespace Domain.Funds;
 
 /// <summary>
@@ -13,93 +11,70 @@ public class FundBalance
     public FundId FundId { get; }
 
     /// <summary>
-    /// Account Balances for this Fund Balance
-    /// </summary>
-    public IReadOnlyCollection<AccountAmount> AccountBalances { get; }
-
-    /// <summary>
-    /// Pending Debits for this Fund Balance
-    /// </summary>
-    public IReadOnlyCollection<AccountAmount> PendingDebits { get; }
-
-    /// <summary>
-    /// Pending Credits for this Fund Balance
-    /// </summary>
-    public IReadOnlyCollection<AccountAmount> PendingCredits { get; }
-
-    /// <summary>
     /// Posted Balance for this Fund Balance
     /// </summary>
-    public decimal PostedBalance => AccountBalances.Sum(balance => balance.Amount);
+    public decimal PostedBalance { get; }
 
     /// <summary>
-    /// Adds the provided pending debit to the current pending Fund Balance
+    /// Amount assigned for this Fund Balance
     /// </summary>
-    internal FundBalance AddNewPendingDebit(AccountAmount pendingDebit) => new(FundId, AccountBalances, PendingDebits.Append(pendingDebit), PendingCredits);
+    public decimal AmountAssigned { get; }
 
     /// <summary>
-    /// Posts the provided pending debit to the current posted Fund Balance
+    /// Pending amount assigned for this Fund Balance
     /// </summary>
-    internal FundBalance PostPendingDebit(AccountAmount pendingDebit)
-    {
-        var negativePendingDebit = new AccountAmount
-        {
-            AccountId = pendingDebit.AccountId,
-            Amount = -pendingDebit.Amount
-        };
-        return new FundBalance(FundId, AccountBalances.Append(negativePendingDebit), PendingDebits.Append(negativePendingDebit), PendingCredits);
-    }
+    public decimal PendingAmountAssigned { get; }
 
     /// <summary>
-    /// Adds the provided pending credit to the current pending Fund Balance
+    /// Amount spent for this Fund Balance
     /// </summary>
-    internal FundBalance AddNewPendingCredit(AccountAmount pendingCredit) => new(FundId, AccountBalances, PendingDebits, PendingCredits.Append(pendingCredit));
+    public decimal AmountSpent { get; }
 
     /// <summary>
-    /// Posts the provided pending credit to the current posted Fund Balance
+    /// Pending amount spent for this Fund Balance
     /// </summary>
-    internal FundBalance PostPendingCredit(AccountAmount pendingCredit)
-    {
-        var negativePendingCredit = new AccountAmount
-        {
-            AccountId = pendingCredit.AccountId,
-            Amount = -pendingCredit.Amount
-        };
-        return new FundBalance(FundId, AccountBalances.Append(pendingCredit), PendingDebits, PendingCredits.Append(negativePendingCredit));
-    }
+    public decimal PendingAmountSpent { get; }
+
+    /// <summary>
+    /// Adds the provided pending amount assigned to the current pending Fund Balance
+    /// </summary>
+    internal FundBalance AddNewPendingAmountAssigned(decimal pendingAmountAssigned) =>
+        new(FundId, PostedBalance, AmountAssigned, PendingAmountAssigned + pendingAmountAssigned, AmountSpent, PendingAmountSpent);
+
+    /// <summary>
+    /// Posts the provided pending amount assigned to the current posted Fund Balance
+    /// </summary>
+    internal FundBalance PostPendingAmountAssigned(decimal pendingAmountAssigned) =>
+        new(FundId, PostedBalance + pendingAmountAssigned, AmountAssigned, PendingAmountAssigned - pendingAmountAssigned, AmountSpent, PendingAmountSpent);
+
+    /// <summary>
+    /// Adds the provided pending amount spent to the current pending Fund Balance
+    /// </summary>
+    internal FundBalance AddNewPendingAmountSpent(decimal pendingAmountSpent) =>
+        new(FundId, PostedBalance, AmountAssigned, PendingAmountAssigned, AmountSpent, PendingAmountSpent + pendingAmountSpent);
+
+    /// <summary>
+    /// Posts the provided pending amount spent to the current posted Fund Balance
+    /// </summary>
+    internal FundBalance PostPendingAmountSpent(decimal pendingAmountSpent) =>
+        new(FundId, PostedBalance - pendingAmountSpent, AmountAssigned, PendingAmountAssigned, AmountSpent, PendingAmountSpent - pendingAmountSpent);
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal FundBalance(FundId fundId, IEnumerable<AccountAmount> accountBalances, IEnumerable<AccountAmount> pendingDebits, IEnumerable<AccountAmount> pendingCredits)
+    internal FundBalance(
+        FundId fundId,
+        decimal postedBalance,
+        decimal amountAssigned,
+        decimal pendingAmountAssigned,
+        decimal amountSpent,
+        decimal pendingAmountSpent)
     {
         FundId = fundId;
-        AccountBalances = accountBalances
-            .GroupBy(accountAmount => accountAmount.AccountId)
-            .Select(group => new AccountAmount
-            {
-                AccountId = group.Key,
-                Amount = group.Sum(accountAmount => accountAmount.Amount)
-            })
-            .Where(amount => amount.Amount != 0.00m)
-            .ToList();
-        PendingDebits = pendingDebits
-            .GroupBy(accountAmount => accountAmount.AccountId)
-            .Select(group => new AccountAmount
-            {
-                AccountId = group.Key,
-                Amount = group.Sum(accountAmount => accountAmount.Amount)
-            })
-            .Where(amount => amount.Amount != 0.00m)
-            .ToList();
-        PendingCredits = pendingCredits
-            .GroupBy(accountAmount => accountAmount.AccountId)
-            .Select(group => new AccountAmount
-            {
-                AccountId = group.Key,
-                Amount = group.Sum(accountAmount => accountAmount.Amount)
-            })
-            .Where(amount => amount.Amount != 0.00m)
-            .ToList();
+        PostedBalance = postedBalance;
+        AmountAssigned = amountAssigned;
+        PendingAmountAssigned = pendingAmountAssigned;
+        AmountSpent = amountSpent;
+        PendingAmountSpent = pendingAmountSpent;
     }
 }

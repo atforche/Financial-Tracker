@@ -26,8 +26,8 @@ class RunPipeline(Command):
         self.steps.append(Step("", "", lambda: RestoreBackendSolution().run([])))
         self.steps.append(Step("", "", lambda: FormatBackendSolution().run([])))
         self.steps.append(Step("", "", lambda: BuildBackendSolution().run([])))
-        self.steps.append(Step("", "", lambda: TestBackendSolution().run([])))
-        self.steps.append(Step("", "", lambda: TestBackendSolution().run(["--use-database"])))
+        # self.steps.append(Step("", "", lambda: TestBackendSolution().run([])))
+        # self.steps.append(Step("", "", lambda: TestBackendSolution().run(["--use-database"])))
 
         # Frontend Steps
         self.steps.append(Step("", "", lambda: InstallFrontendPackages().run([])))

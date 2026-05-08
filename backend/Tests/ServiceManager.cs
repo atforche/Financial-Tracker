@@ -24,7 +24,6 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<TestUnitOfWork>();
         _ = serviceCollection.AddScoped<AccountingPeriodBuilder>();
         _ = serviceCollection.AddScoped<AccountBuilder>();
-        _ = serviceCollection.AddScoped<FundBuilder>();
 
         Domain.ServiceManager.Register(serviceCollection);
 

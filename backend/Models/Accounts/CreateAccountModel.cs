@@ -28,7 +28,12 @@ public class CreateAccountModel
     public required DateOnly AddDate { get; init; }
 
     /// <summary>
-    /// Initial amounts for each Fund associated with the Account
+    /// Initial balance for the Account
     /// </summary>
-    public required IReadOnlyCollection<CreateFundAmountModel> InitialFundAmounts { get; init; }
+    public required decimal InitialBalance { get; init; }
+
+    /// <summary>
+    /// Initial Fund Assignments for the Account
+    /// </summary>
+    public required IReadOnlyCollection<CreateFundAmountModel> InitialFundAssignments { get; init; }
 }

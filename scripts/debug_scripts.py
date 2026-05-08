@@ -68,8 +68,8 @@ class RunDebugFrontend(Command):
 
         os.chdir("../frontend")
         environment = os.environ.copy()
-        environment["VITE_API_URL"] = f"http://localhost:{get_debug_configuration().backend_port}"
-        self.run_subprocess(f"npx vite --port {get_debug_configuration().frontend_port}", env=environment)
+        environment["API_URL"] = f"http://localhost:{get_debug_configuration().backend_port}"
+        self.run_subprocess(f"npx next dev --port {get_debug_configuration().frontend_port}", env=environment)
 
 class RunDebugBackend(Command):
     """Command class that runs the backend for the debug environment"""

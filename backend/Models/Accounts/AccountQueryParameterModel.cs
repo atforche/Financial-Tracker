@@ -6,19 +6,14 @@ namespace Models.Accounts;
 public class AccountQueryParameterModel
 {
     /// <summary>
-    /// Sort order to apply to the results
+    /// Search to apply to the results
     /// </summary>
-    public AccountSortOrderModel? SortBy { get; init; }
+    public string? Search { get; init; }
 
     /// <summary>
-    /// Account names to include in the results
+    /// Sort to apply to the results
     /// </summary>
-    public IReadOnlyCollection<string>? Names { get; init; }
-
-    /// <summary>
-    /// Account types to include in the results
-    /// </summary>
-    public IReadOnlyCollection<AccountTypeModel>? Types { get; init; }
+    public AccountSortOrderModel? Sort { get; init; }
 
     /// <summary>
     /// Maximum number of results to return

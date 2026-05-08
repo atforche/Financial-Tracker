@@ -54,8 +54,8 @@ class Configuration:
             file.write('ASPNETCORE_HTTP_PORTS="8080"\n')
             file.write('DATABASE_PATH="/data/database.db"\n')
             file.write(f'FRONTEND_ORIGIN="http://localhost:{self.frontend_port}"\n')
-            file.write('LOG_DIRECTORY="/logs"\n')
-            file.write('NGINX_PORT="8080"\n')     
+            file.write('API_URL="http://backend:8080"\n')
+            file.write('LOG_DIRECTORY="/logs"\n')  
 
     def get_database_file_path(self) -> str:
         """Returns the path to the database file"""

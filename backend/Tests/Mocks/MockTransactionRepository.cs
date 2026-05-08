@@ -2,6 +2,10 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
+using Domain.Transactions.Accounts;
+using Domain.Transactions.Funds;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 
 namespace Tests.Mocks;
 
@@ -10,12 +14,7 @@ namespace Tests.Mocks;
 /// </summary>
 internal sealed class MockTransactionRepository : ITransactionRepository
 {
-    private readonly Dictionary<Guid, Transaction> _transactions;
-
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    public MockTransactionRepository() => _transactions = new Dictionary<Guid, Transaction>();
+    private readonly Dictionary<Guid, Transaction> _transactions = [];
 
     /// <inheritdoc/>
     public int GetNextSequenceForDate(DateOnly transactionDate)
@@ -26,7 +25,7 @@ internal sealed class MockTransactionRepository : ITransactionRepository
 
     /// <inheritdoc/>
     public bool DoAnyTransactionsExistForAccount(Account account) =>
-        _transactions.Values.Any(transaction => (transaction.DebitAccount?.AccountId == account.Id || transaction.CreditAccount?.AccountId == account.Id) &&
+        _transactions.Values.Any(transaction => GetAccountIds(transaction).Contains(account.Id) &&
         transaction.Id != account.InitialTransaction);
 
     /// <inheritdoc/>
@@ -38,8 +37,7 @@ internal sealed class MockTransactionRepository : ITransactionRepository
 
     /// <inheritdoc/>
     public bool DoAnyTransactionsExistForFund(FundId fundId) =>
-        _transactions.Values.Any(transaction => (transaction.DebitAccount?.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId) ?? false) ||
-                                (transaction.CreditAccount?.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId) ?? false));
+        _transactions.Values.Any(transaction => GetFundIds(transaction).Contains(fundId));
 
     /// <inheritdoc/>
     public Transaction GetById(TransactionId id) => _transactions[id.Value];
@@ -49,4 +47,23 @@ internal sealed class MockTransactionRepository : ITransactionRepository
 
     /// <inheritdoc/>
     public void Delete(Transaction transaction) => _transactions.Remove(transaction.Id.Value);
+
+    private static IEnumerable<AccountId> GetAccountIds(Transaction transaction) => transaction switch
+    {
+        SpendingTransaction spendingTransaction => spendingTransaction.GetAllAffectedAccountIds(),
+        IncomeTransaction incomeTransaction => incomeTransaction.GetAllAffectedAccountIds(),
+        AccountTransaction accountTransaction => accountTransaction.GetAllAffectedAccountIds(),
+        FundTransaction => [],
+        // RefundTransaction r => GetAccountIds(r.Transaction),
+        _ => [],
+    };
+
+    private static IEnumerable<FundId> GetFundIds(Transaction transaction) => transaction switch
+    {
+        SpendingTransaction spendingTransaction => spendingTransaction.FundAssignments.Select(fundAmount => fundAmount.FundId),
+        IncomeTransaction incomeTransaction => incomeTransaction.FundAssignments.Select(fundAmount => fundAmount.FundId),
+        FundTransaction fundTransaction => [fundTransaction.DebitFundId, fundTransaction.CreditFundId],
+        // RefundTransaction r => GetFundIds(r.Transaction),
+        _ => [],
+    };
 }

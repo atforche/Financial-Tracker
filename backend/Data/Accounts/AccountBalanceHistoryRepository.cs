@@ -61,21 +61,13 @@ public class AccountBalanceHistoryRepository(DatabaseContext databaseContext) : 
             .FirstOrDefault();
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<(AccountBalanceHistory History, Transaction Transaction)> GetAllHistoriesLaterThan(AccountId accountId, DateOnly historyDate, int sequence)
-    {
-        var results = databaseContext.AccountBalanceHistories
+    public IReadOnlyCollection<AccountBalanceHistory> GetAllHistoriesLaterThan(AccountId accountId, DateOnly historyDate, int sequence) =>
+        databaseContext.AccountBalanceHistories
             .Where(history => history.Account.Id == accountId &&
-                              (history.Date > historyDate ||
-                               (history.Date == historyDate && history.Sequence > sequence)))
-            .Join(databaseContext.Transactions,
-                history => history.TransactionId,
-                transaction => transaction.Id,
-                (history, transaction) => new { history, transaction })
-            .OrderBy(result => result.history.Date)
-            .ThenBy(result => result.history.Sequence)
+                (history.Date > historyDate || (history.Date == historyDate && history.Sequence > sequence)))
+            .OrderBy(history => history.Date)
+            .ThenBy(history => history.Sequence)
             .ToList();
-        return results.Select(result => (result.history, result.transaction)).ToList();
-    }
 
     /// <inheritdoc/>
     public void Add(AccountBalanceHistory accountBalanceHistory) => databaseContext.Add(accountBalanceHistory);

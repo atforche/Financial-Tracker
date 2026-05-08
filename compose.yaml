@@ -15,5 +15,5 @@ services:
     image: "frontend-$INSTANCE_NAME"
     container_name: "frontend-$INSTANCE_NAME"
     ports:
-      - "$FRONTEND_PORT:80"
+      - "$FRONTEND_PORT:$FRONTEND_PORT"
     env_file: ".env"

@@ -24,12 +24,12 @@ public class Account : Entity<AccountId>
     /// <summary>
     /// Accounting Period that this Account was added in
     /// </summary>
-    public AccountingPeriodId InitialAccountingPeriodId { get; private set; }
+    public AccountingPeriodId AddAccountingPeriodId { get; private set; }
 
     /// <summary>
     /// Date that this Account was added
     /// </summary>
-    public DateOnly InitialDate { get; private set; }
+    public DateOnly AddDate { get; private set; }
 
     /// <summary>
     /// Initial Transaction for this Account (if this account was created with an initial balance)
@@ -39,13 +39,13 @@ public class Account : Entity<AccountId>
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal Account(string name, AccountType type, AccountingPeriodId initialAccountingPeriodId, DateOnly initialDate)
+    internal Account(string name, AccountType type, AccountingPeriodId addAccountingPeriodId, DateOnly addDate)
         : base(new AccountId(Guid.NewGuid()))
     {
         Name = name;
         Type = type;
-        InitialAccountingPeriodId = initialAccountingPeriodId;
-        InitialDate = initialDate;
+        AddAccountingPeriodId = addAccountingPeriodId;
+        AddDate = addDate;
     }
 
     /// <summary>
@@ -54,6 +54,20 @@ public class Account : Entity<AccountId>
     private Account() : base()
     {
         Name = "";
-        InitialAccountingPeriodId = null!;
+        AddAccountingPeriodId = null!;
+    }
+}
+
+/// <summary>
+/// Value object class representing the ID of an <see cref="Account"/>
+/// </summary>
+public record AccountId : EntityId
+{
+    /// <summary>
+    /// Constructs a new instance of this class. 
+    /// </summary>
+    internal AccountId(Guid value)
+        : base(value)
+    {
     }
 }

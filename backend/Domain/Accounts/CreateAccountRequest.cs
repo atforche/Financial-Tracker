@@ -29,7 +29,12 @@ public record CreateAccountRequest
     public required DateOnly AddDate { get; init; }
 
     /// <summary>
-    /// Initial amounts for each Fund in the Account
+    /// Initial balance for the Account
     /// </summary>
-    public required IEnumerable<FundAmount> InitialFundAmounts { get; init; }
+    public required decimal InitialBalance { get; init; }
+
+    /// <summary>
+    /// Fund assignments for the initial balance of the Account.
+    /// </summary>
+    public required IReadOnlyCollection<FundAmount> InitialFundAssignments { get; init; }
 }

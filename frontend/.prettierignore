@@ -1,6 +1,4 @@
-dist
-.devcontainer
+.next
 tsconfig.json
-vite.config.ts
-.vscode
+next-env.d.ts
 api.ts

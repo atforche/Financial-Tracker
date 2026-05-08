@@ -1,17 +1,12 @@
-using Domain.Funds;
 using Domain.Transactions;
 
 namespace Domain.Accounts;
 
 /// <summary>
-/// Value object class representing the balance of an Account at some point in time.
+/// Entity class representing the balance of an Account at some point in time.
 /// </summary>
 public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
 {
-    private List<FundAmount> _fundBalances = [];
-    private List<FundAmount> _pendingDebits = [];
-    private List<FundAmount> _pendingCredits = [];
-
     /// <summary>
     /// Account for this Account Balance History
     /// </summary>
@@ -36,37 +31,45 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     public int Sequence { get; internal set; }
 
     /// <summary>
-    /// Fund Balances for this Account Balance History
+    /// Posted Balance for this Account Balance History
     /// </summary>
-    public IReadOnlyCollection<FundAmount> FundBalances
-    {
-        get => _fundBalances;
-        internal set => _fundBalances = value.ToList();
-    }
+    public decimal PostedBalance { get; private set; }
 
     /// <summary>
-    /// Pending Debits for this Account Balance History
+    /// Pending Debit Amount for this Account Balance History
     /// </summary>
-    public IReadOnlyCollection<FundAmount> PendingDebits
-    {
-        get => _pendingDebits;
-        internal set => _pendingDebits = value.ToList();
-    }
+    public decimal PendingDebitAmount { get; private set; }
 
     /// <summary>
-    /// Pending Credits for this Account Balance History
+    /// Pending Credit Amount for this Account Balance History
     /// </summary>
-    public IReadOnlyCollection<FundAmount> PendingCredits
+    public decimal PendingCreditAmount { get; private set; }
+
+    /// <summary>
+    /// Available to Spend for this Account Balance History
+    /// </summary>
+    public decimal? AvailableToSpend { get; private set; }
+
+    /// <summary>
+    /// Updates this Account Balance History with a new Account Balance.
+    /// </summary>
+    public void Update(AccountBalance newBalance)
     {
-        get => _pendingCredits;
-        internal set => _pendingCredits = value.ToList();
+        if (newBalance.Account.Id != Account.Id)
+        {
+            throw new ArgumentException("New balance must be for the same account", nameof(newBalance));
+        }
+        PostedBalance = newBalance.PostedBalance;
+        PendingDebitAmount = newBalance.PendingDebitAmount;
+        PendingCreditAmount = newBalance.PendingCreditAmount;
+        AvailableToSpend = newBalance.AvailableToSpend;
     }
 
     /// <summary>
     /// Converts this Account Balance History to an Account Balance
     /// </summary>
     /// <returns></returns>
-    public AccountBalance ToAccountBalance() => new(Account, FundBalances, PendingDebits, PendingCredits);
+    public AccountBalance ToAccountBalance() => new(Account, PostedBalance, PendingDebitAmount, PendingCreditAmount);
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -75,18 +78,14 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
         TransactionId transactionId,
         DateOnly date,
         int sequence,
-        IEnumerable<FundAmount> fundBalances,
-        IEnumerable<FundAmount> pendingDebits,
-        IEnumerable<FundAmount> pendingCredits)
+        AccountBalance accountBalance)
         : base(new AccountBalanceHistoryId(Guid.NewGuid()))
     {
         Account = account;
         TransactionId = transactionId;
         Date = date;
         Sequence = sequence;
-        _fundBalances = fundBalances.ToList();
-        _pendingDebits = pendingDebits.ToList();
-        _pendingCredits = pendingCredits.ToList();
+        Update(accountBalance);
     }
 
     /// <summary>
@@ -96,5 +95,19 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     {
         Account = null!;
         TransactionId = null!;
+    }
+}
+
+/// <summary>
+/// Value object class representing the ID of an <see cref="AccountBalanceHistory"/>
+/// </summary>
+public record AccountBalanceHistoryId : EntityId
+{
+    /// <summary>
+    /// Constructs a new instance of this class. 
+    /// </summary>
+    internal AccountBalanceHistoryId(Guid value)
+        : base(value)
+    {
     }
 }

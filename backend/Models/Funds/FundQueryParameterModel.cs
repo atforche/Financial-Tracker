@@ -6,14 +6,14 @@ namespace Models.Funds;
 public class FundQueryParameterModel
 {
     /// <summary>
-    /// Sort order to apply to the results
+    /// Search to apply to the results
     /// </summary>
-    public FundSortOrderModel? SortBy { get; init; }
+    public string? Search { get; init; }
 
     /// <summary>
-    /// Fund names to include in the results
+    /// Sort to apply to the results
     /// </summary>
-    public IReadOnlyCollection<string>? Names { get; init; }
+    public FundSortOrderModel? Sort { get; init; }
 
     /// <summary>
     /// Maximum number of results to return

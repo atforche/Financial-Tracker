@@ -1,5 +1,4 @@
 using Models.Accounts;
-using Models.Funds;
 
 namespace Models.Transactions;
 
@@ -19,14 +18,19 @@ public class TransactionAccountModel
     public required string AccountName { get; init; }
 
     /// <summary>
+    /// Account Type for the Transaction Account
+    /// </summary>
+    public required AccountTypeModel AccountType { get; init; }
+
+    /// <summary>
+    /// Type for the Transaction Account
+    /// </summary>
+    public required TransactionAccountTypeModel Type { get; init; }
+
+    /// <summary>
     /// Posted Date for the Transaction Account
     /// </summary>
     public required DateOnly? PostedDate { get; init; }
-
-    /// <summary>
-    /// Fund Amounts for the Transaction Account
-    /// </summary>
-    public required IReadOnlyCollection<FundAmountModel> FundAmounts { get; init; }
 
     /// <summary>
     /// Previous Account Balance for the Transaction Account

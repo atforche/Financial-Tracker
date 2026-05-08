@@ -1,61 +1,33 @@
 {
   "compilerOptions": {
-  /* Visit https://aka.ms/tsconfig to read more about this file */
-
     /* Projects */
-    "incremental": false,
-    "composite": false,
-    "disableSourceOfProjectReferenceRedirect": false,
-    "disableSolutionSearching": false,
-    "disableReferencedProjectLoad": false,
-
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     /* Language and Environment */
     "target": "ES2021",
-    "lib": ["ES2021", "DOM", "DOM.Iterable"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "esnext"
+    ],
     "jsx": "react-jsx",
-    "experimentalDecorators": false,
-    "emitDecoratorMetadata": false,
-    "jsxFactory": "",
-    "jsxFragmentFactory": "",
-    "jsxImportSource": "",
-    "reactNamespace": "",
-    "noLib": false,
-    "useDefineForClassFields": true,
-    "moduleDetection": "auto",
-
     /* Modules */
     "module": "ESNext",
     "rootDir": "./",
     "moduleResolution": "bundler",
-    "baseUrl": ".",
     "paths": {
-      "@accounts/*": ["./src/accounts/*"],
-      "@accounting-periods/*": ["./src/accounting-periods/*"],
-      "@data/*": ["./src/data/*"],
-      "@framework/*": ["./src/framework/*"],
-      "@funds/*": ["./src/funds/*"],
-      "@navigation/*": ["./src/navigation/*"],
-      "@src/*": ["./src/*"],
-      "@transactions/*": ["./src/transactions/*"]
+      "@/*": [
+        "./*"
+      ]
     },
-    "rootDirs": [],
-    "typeRoots": [],
-    "types": [],
-    "allowUmdGlobalAccess": false,
-    "moduleSuffixes": [],
-    "allowImportingTsExtensions": true,
-    "resolvePackageJsonExports": false,
-    "resolvePackageJsonImports": false,
-    "customConditions": [],
-    "resolveJsonModule": true,
-    "allowArbitraryExtensions": false,
-    "noResolve": false,
-
     /* JavaScript Support */
-    "allowJs": false,
+    "allowJs": true,
     "checkJs": false,
     "maxNodeModuleJsDepth": 0,
-
     /* Emit */
     "declaration": false,
     "declarationMap": false,
@@ -66,7 +38,6 @@
     "noEmit": true,
     "importHelpers": false,
     "importsNotUsedAsValues": "remove",
-    "downlevelIteration": false,
     "sourceRoot": "",
     "mapRoot": "",
     "inlineSources": false,
@@ -77,15 +48,13 @@
     "noEmitOnError": true,
     "preserveConstEnums": true,
     "preserveValueImports": false,
-
     /* Interop Constraints */
     "isolatedModules": true,
     "verbatimModuleSyntax": false,
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "preserveSymlinks": false,
     "forceConsistentCasingInFileNames": true,
-
     /* Type Checking */
     "strict": true,
     "noImplicitAny": true,
@@ -106,11 +75,21 @@
     "noPropertyAccessFromIndexSignature": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
-
     /* Completeness */
     "skipDefaultLibCheck": false,
-    "skipLibCheck": true   
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ]
 }

@@ -1,7 +1,5 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Funds;
-using Domain.Transactions;
 using Tests.Mocks;
 
 namespace Tests.Builders;
@@ -19,7 +17,7 @@ public sealed class AccountBuilder(
     private AccountType _type = AccountType.Standard;
     private AccountingPeriod? _accountingPeriod;
     private DateOnly _addedDate = new(2025, 1, 1);
-    private List<FundAmount>? _addedFundAmounts;
+    private decimal _initialBalance;
 
     /// <summary>
     /// Builds the specified Account
@@ -34,10 +32,10 @@ public sealed class AccountBuilder(
                 Type = _type,
                 AccountingPeriod = DetermineAccountingPeriod(),
                 AddDate = _addedDate,
-                InitialFundAmounts = DetermineFundAmounts()
+                InitialBalance = _initialBalance,
+                InitialFundAssignments = [],
             },
             out Account? account,
-            out Transaction? _,
             out IEnumerable<Exception> exceptions))
         {
             throw new InvalidOperationException("Failed to create Account.", exceptions.First());
@@ -84,11 +82,11 @@ public sealed class AccountBuilder(
     }
 
     /// <summary>
-    /// Sets the Added Fund Amounts for this Account Builder
+    /// Sets the Initial Balance for this Account Builder
     /// </summary>
-    public AccountBuilder WithAddedFundAmounts(IEnumerable<FundAmount> addedFundAmounts)
+    public AccountBuilder WithInitialBalance(decimal initialBalance)
     {
-        _addedFundAmounts = addedFundAmounts.ToList();
+        _initialBalance = initialBalance;
         return this;
     }
 
@@ -102,17 +100,5 @@ public sealed class AccountBuilder(
             return _accountingPeriod;
         }
         return accountingPeriodRepository.GetByYearAndMonth(_addedDate.Year, _addedDate.Month) ?? throw new InvalidOperationException();
-    }
-
-    /// <summary>
-    /// Determines the Added Fund Amounts to use for this Account
-    /// </summary>
-    private List<FundAmount> DetermineFundAmounts()
-    {
-        if (_addedFundAmounts != null)
-        {
-            return _addedFundAmounts;
-        }
-        return [];
     }
 }

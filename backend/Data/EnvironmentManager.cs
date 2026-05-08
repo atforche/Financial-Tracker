@@ -10,7 +10,7 @@ public class EnvironmentManager : EnvironmentVariableManager
     /// <summary>
     /// Environment variable that stores the path to the database file
     /// </summary>
-    public string DatabasePath { get; }
+    public string DatabasePath { get; } = GetEnvironmentVariable("DATABASE_PATH");
 
     /// <summary>
     /// Gets the singleton instance of EnvironmentManager
@@ -20,5 +20,7 @@ public class EnvironmentManager : EnvironmentVariableManager
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    private EnvironmentManager() => DatabasePath = GetEnvironmentVariable("DATABASE_PATH");
+    private EnvironmentManager()
+    {
+    }
 }

@@ -11,8 +11,17 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
     #region IAccountingPeriodRepository
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<AccountingPeriod> GetAll() => databaseContext.AccountingPeriods.ToList();
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<AccountingPeriod> GetAllOpenPeriods() => databaseContext.AccountingPeriods
+        .Where(accountingPeriod => accountingPeriod.IsOpen)
+        .ToList();
+
+    /// <inheritdoc/>
     public AccountingPeriod GetById(AccountingPeriodId id) => databaseContext.AccountingPeriods
-        .Single(accountingPeriod => accountingPeriod.Id == id);
+        .SingleOrDefault(accountingPeriod => accountingPeriod.Id == id)
+        ?? databaseContext.AccountingPeriods.Local.Single(accountingPeriod => accountingPeriod.Id == id);
 
     /// <inheritdoc/>
     public AccountingPeriod? GetByYearAndMonth(int year, int month) => databaseContext.AccountingPeriods
@@ -34,7 +43,13 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
     }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> GetAllOpenPeriods() => GetMany(new GetAccountingPeriodsRequest { IsOpen = true }).Items;
+    public AccountingPeriod? GetPreviousAccountingPeriod(AccountingPeriodId id)
+    {
+        AccountingPeriod currentAccountingPeriod = GetById(id);
+        DateOnly previousMonth = currentAccountingPeriod.PeriodStartDate.AddMonths(-1);
+        return databaseContext.AccountingPeriods
+            .SingleOrDefault(accountingPeriod => accountingPeriod.Year == previousMonth.Year && accountingPeriod.Month == previousMonth.Month);
+    }
 
     /// <inheritdoc/>
     public void Add(AccountingPeriod accountingPeriod) => databaseContext.Add(accountingPeriod);
@@ -45,41 +60,11 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
     #endregion
 
     /// <summary>
-    /// Gets the Accounting Periods that match the specified criteria
-    /// </summary>
-    public PaginatedCollection<AccountingPeriod> GetMany(GetAccountingPeriodsRequest request)
-    {
-        List<AccountingPeriodSortModel> filteredAccountingPeriods = new AccountingPeriodFilterer(databaseContext).Get(request);
-        filteredAccountingPeriods.Sort(new AccountingPeriodComparer(request.SortBy));
-        return new PaginatedCollection<AccountingPeriod>
-        {
-            Items = GetPagedAccountingPeriods(filteredAccountingPeriods.Select(model => model.AccountingPeriod).ToList(), request.Limit, request.Offset),
-            TotalCount = filteredAccountingPeriods.Count,
-        };
-    }
-
-    /// <summary>
     /// Attempts to get the Accounting Period with the specified ID.
     /// </summary>
     public bool TryGetById(Guid id, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod)
     {
         accountingPeriod = databaseContext.AccountingPeriods.FirstOrDefault(accountingPeriod => ((Guid)(object)accountingPeriod.Id) == id);
         return accountingPeriod != null;
-    }
-
-    /// <summary>
-    /// Gets the paged collection of Accounting Periods based on the provided request
-    /// </summary>
-    private static List<AccountingPeriod> GetPagedAccountingPeriods(List<AccountingPeriod> sortedAccountingPeriods, int? limit, int? offset)
-    {
-        if (offset != null)
-        {
-            sortedAccountingPeriods = sortedAccountingPeriods.Skip(offset.Value).ToList();
-        }
-        if (limit != null)
-        {
-            sortedAccountingPeriods = sortedAccountingPeriods.Take(limit.Value).ToList();
-        }
-        return sortedAccountingPeriods;
     }
 }

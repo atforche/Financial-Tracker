@@ -15,5 +15,7 @@ internal sealed class AccountingPeriodConfiguration : IEntityTypeConfiguration<A
         builder.HasKey(accountingPeriod => accountingPeriod.Id);
         builder.Property(accountingPeriod => accountingPeriod.Id)
             .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
+
+        builder.HasIndex(accountingPeriod => accountingPeriod.Name);
     }
 }

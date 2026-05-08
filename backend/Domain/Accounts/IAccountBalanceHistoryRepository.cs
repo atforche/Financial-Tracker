@@ -35,7 +35,7 @@ public interface IAccountBalanceHistoryRepository
     /// <summary>
     /// Gets all Account Balance History entries later than the specified date and sequence number
     /// </summary>
-    IReadOnlyCollection<(AccountBalanceHistory History, Transaction Transaction)> GetAllHistoriesLaterThan(AccountId accountId, DateOnly historyDate, int sequence);
+    IReadOnlyCollection<AccountBalanceHistory> GetAllHistoriesLaterThan(AccountId accountId, DateOnly historyDate, int sequence);
 
     /// <summary>
     /// Adds the provided Account Balance History to the repository

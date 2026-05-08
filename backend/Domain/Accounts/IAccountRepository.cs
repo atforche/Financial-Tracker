@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.AccountingPeriods;
 
 namespace Domain.Accounts;
 
@@ -7,6 +8,16 @@ namespace Domain.Accounts;
 /// </summary>
 public interface IAccountRepository
 {
+    /// <summary>
+    /// Gets all Accounts in the repository.
+    /// </summary>
+    IReadOnlyCollection<Account> GetAll();
+
+    /// <summary>
+    /// Gets all the Accounts that were added in the specified accounting period.
+    /// </summary>
+    IReadOnlyCollection<Account> GetAllAccountsAddedInPeriod(AccountingPeriodId accountingPeriodId);
+
     /// <summary>
     /// Gets the Account with the specified ID.
     /// </summary>

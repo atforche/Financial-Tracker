@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 
 namespace Data.Accounts;
@@ -9,6 +10,13 @@ namespace Data.Accounts;
 public class AccountRepository(DatabaseContext databaseContext) : IAccountRepository
 {
     #region IAccountRepository
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<Account> GetAll() => databaseContext.Accounts.ToList();
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<Account> GetAllAccountsAddedInPeriod(AccountingPeriodId accountingPeriodId) =>
+        databaseContext.Accounts.Where(account => account.AddAccountingPeriodId == accountingPeriodId).ToList();
 
     /// <inheritdoc/>
     public Account GetById(AccountId id) => databaseContext.Accounts.SingleOrDefault(account => account.Id == id)
@@ -30,41 +38,11 @@ public class AccountRepository(DatabaseContext databaseContext) : IAccountReposi
     #endregion
 
     /// <summary>
-    /// Gets the Accounts that match the specified criteria
-    /// </summary>
-    public PaginatedCollection<Account> GetMany(GetAccountsRequest request)
-    {
-        List<AccountSortModel> filteredAccounts = new AccountFilterer(databaseContext).Get(request);
-        filteredAccounts.Sort(new AccountComparer(request.SortBy));
-        return new PaginatedCollection<Account>
-        {
-            Items = GetPagedAccounts(filteredAccounts.Select(model => model.Account).ToList(), request.Limit, request.Offset),
-            TotalCount = filteredAccounts.Count,
-        };
-    }
-
-    /// <summary>
     /// Attempts to get the Account with the specified ID
     /// </summary>
     public bool TryGetById(Guid id, [NotNullWhen(true)] out Account? account)
     {
         account = databaseContext.Accounts.FirstOrDefault(account => ((Guid)(object)account.Id) == id);
         return account != null;
-    }
-
-    /// <summary>
-    /// Gets the paged collection of Accounts based on the provided request
-    /// </summary>
-    private static List<Account> GetPagedAccounts(List<Account> sortedAccounts, int? limit, int? offset)
-    {
-        if (offset != null)
-        {
-            sortedAccounts = sortedAccounts.Skip(offset.Value).ToList();
-        }
-        if (limit != null)
-        {
-            sortedAccounts = sortedAccounts.Take(limit.Value).ToList();
-        }
-        return sortedAccounts;
     }
 }

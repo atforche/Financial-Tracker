@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 
 namespace Tests.Mocks;
@@ -8,12 +9,14 @@ namespace Tests.Mocks;
 /// </summary>
 internal sealed class MockAccountRepository : IAccountRepository
 {
-    private readonly Dictionary<Guid, Account> _accounts;
+    private readonly Dictionary<Guid, Account> _accounts = [];
 
-    /// <summary>
-    /// Constructs a new instance of this class
-    /// </summary>
-    public MockAccountRepository() => _accounts = [];
+    /// <inheritdoc/>
+    public IReadOnlyCollection<Account> GetAll() => _accounts.Values.ToList();
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<Account> GetAllAccountsAddedInPeriod(AccountingPeriodId accountingPeriodId) =>
+        _accounts.Values.Where(account => account.AddAccountingPeriodId == accountingPeriodId).ToList();
 
     /// <inheritdoc/>
     public Account GetById(AccountId id) => _accounts[id.Value];

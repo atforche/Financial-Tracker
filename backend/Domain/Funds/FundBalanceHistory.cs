@@ -1,17 +1,12 @@
-using Domain.Accounts;
 using Domain.Transactions;
 
 namespace Domain.Funds;
 
 /// <summary>
-/// Value object class representing the balance of an Account at some point in time.
+/// Entity class representing the balance of a Fund at some point in time.
 /// </summary>
 public class FundBalanceHistory : Entity<FundBalanceHistoryId>
 {
-    private List<AccountAmount> _accountBalances = [];
-    private List<AccountAmount> _pendingDebits = [];
-    private List<AccountAmount> _pendingCredits = [];
-
     /// <summary>
     /// Fund ID for this Fund Balance History
     /// </summary>
@@ -36,37 +31,51 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     public int Sequence { get; internal set; }
 
     /// <summary>
-    /// Fund Balances for this Fund Balance History
+    /// Posted Balance for this Fund Balance History
     /// </summary>
-    public IReadOnlyCollection<AccountAmount> AccountBalances
+    public decimal PostedBalance { get; private set; }
+
+    /// <summary>
+    /// Amount Assigned for this Fund Balance History
+    /// </summary>
+    public decimal AmountAssigned { get; private set; }
+
+    /// <summary>
+    /// Pending Amount Assigned for this Fund Balance History
+    /// </summary>
+    public decimal PendingAmountAssigned { get; private set; }
+
+    /// <summary>
+    /// Amount Spent for this Fund Balance History
+    /// </summary>
+    public decimal AmountSpent { get; private set; }
+
+    /// <summary>
+    /// Pending Amount Spent for this Fund Balance History
+    /// </summary>
+    public decimal PendingAmountSpent { get; private set; }
+
+    /// <summary>
+    /// Updates this Fund Balance History with a new Fund Balance.
+    /// </summary>
+    public void Update(FundBalance fundBalance)
     {
-        get => _accountBalances;
-        internal set => _accountBalances = value.ToList();
+        if (fundBalance.FundId != FundId)
+        {
+            throw new InvalidOperationException("Cannot update Fund Balance History with a Fund Balance for a different Fund");
+        }
+        PostedBalance = fundBalance.PostedBalance;
+        AmountAssigned = fundBalance.AmountAssigned;
+        PendingAmountAssigned = fundBalance.PendingAmountAssigned;
+        AmountSpent = fundBalance.AmountSpent;
+        PendingAmountSpent = fundBalance.PendingAmountSpent;
     }
 
     /// <summary>
-    /// Pending Debits for this Fund Balance History
-    /// </summary>
-    public IReadOnlyCollection<AccountAmount> PendingDebits
-    {
-        get => _pendingDebits;
-        internal set => _pendingDebits = value.ToList();
-    }
-
-    /// <summary>
-    /// Pending Credits for this Fund Balance History 
-    /// </summary>
-    public IReadOnlyCollection<AccountAmount> PendingCredits
-    {
-        get => _pendingCredits;
-        internal set => _pendingCredits = value.ToList();
-    }
-
-    /// <summary>
-    /// Converts this Account Balance History to an Account Balance
+    /// Converts this Fund Balance History to a Fund Balance
     /// </summary>
     /// <returns></returns>
-    public FundBalance ToFundBalance() => new(FundId, AccountBalances, PendingDebits, PendingCredits);
+    public FundBalance ToFundBalance() => new(FundId, PostedBalance, AmountAssigned, PendingAmountAssigned, AmountSpent, PendingAmountSpent);
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -75,18 +84,14 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
         TransactionId transactionId,
         DateOnly date,
         int sequence,
-        IEnumerable<AccountAmount> accountBalances,
-        IEnumerable<AccountAmount> pendingDebits,
-        IEnumerable<AccountAmount> pendingCredits)
+        FundBalance fundBalance)
         : base(new FundBalanceHistoryId(Guid.NewGuid()))
     {
         FundId = fundId;
         TransactionId = transactionId;
         Date = date;
         Sequence = sequence;
-        _accountBalances = accountBalances.ToList();
-        _pendingDebits = pendingDebits.ToList();
-        _pendingCredits = pendingCredits.ToList();
+        Update(fundBalance);
     }
 
     /// <summary>
@@ -96,5 +101,19 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     {
         FundId = null!;
         TransactionId = null!;
+    }
+}
+
+/// <summary>
+/// Value object class representing the ID of an <see cref="FundBalanceHistory"/>
+/// </summary>
+public record FundBalanceHistoryId : EntityId
+{
+    /// <summary>
+    /// Constructs a new instance of this class. 
+    /// </summary>
+    internal FundBalanceHistoryId(Guid value)
+        : base(value)
+    {
     }
 }

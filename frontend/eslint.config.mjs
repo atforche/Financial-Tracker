@@ -2,13 +2,16 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import eslint from "@eslint/js";
 import jsdoc from "eslint-plugin-jsdoc";
 import _import from "eslint-plugin-import";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
-import reactRefresh from "eslint-plugin-react-refresh";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
-export default defineConfig([
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
   {
     languageOptions: {
       globals: {
@@ -21,7 +24,7 @@ export default defineConfig([
       parserOptions: {
         allowAutomaticSingleRunInference: true,
         jsDocParsingMode: "all",
-        project: ["./tsconfig.json", "./tsconfig.node.json"],
+        project: ["./tsconfig.json"],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -38,13 +41,10 @@ export default defineConfig([
 
     extends: [
       eslint.configs.all,
-      _import.flatConfigs.recommended,
-      _import.flatConfigs.typescript,
       jsdoc.configs["flat/recommended-typescript-error"],
       tseslint.configs.all,
       react.configs.flat.all,
       reactHooks.configs.flat["recommended-latest"],
-      reactRefresh.configs.vite,
     ],
 
     rules: {
@@ -61,6 +61,10 @@ export default defineConfig([
       "prefer-named-capture-group": "off",
       "sort-keys": ["off"],
       "no-nested-ternary": "off",
+      "no-negated-condition": "off",
+      "max-lines": "off",
+      complexity: "off",
+      "no-continue": "off",
 
       // import rules
       "import/no-deprecated": "error",
@@ -121,7 +125,8 @@ export default defineConfig([
           checkSetters: true,
         },
       ],
-      "jsdoc/require-param": ["error", { checkDestructured: false }],
+      "jsdoc/require-param": "off",
+      "jsdoc/require-returns": "off",
       "jsdoc/ts-method-signature-style": "error",
 
       // react rules
@@ -150,6 +155,7 @@ export default defineConfig([
       "react/require-default-props": "off",
       "react/no-array-index-key": "off",
       "react/no-unstable-nested-components": "off",
+      "react/destructuring-assignment": "off",
 
       // react-hooks rules
       "react-hooks/set-state-in-effect": "off",
@@ -193,13 +199,19 @@ export default defineConfig([
         },
       ],
       "@typescript-eslint/prefer-readonly-parameter-types": "off",
+      "@typescript-eslint/no-unnecessary-type-parameters": "off",
+      "@typescript-eslint/consistent-return": "off",
+      "@typescript-eslint/max-params": "off",
     },
   },
   globalIgnores([
-    "**/dist",
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
     "**/eslint.config.mjs",
-    "**/vite-env.d.ts",
-    "**/vite.config.ts",
-    "**/api.ts",
+    "framework/data/api.ts",
   ]),
 ]);
+
+export default eslintConfig;

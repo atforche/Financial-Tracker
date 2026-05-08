@@ -15,12 +15,18 @@ public abstract class Entity<TId> : IEquatable<Entity<TId>>
     /// Constructs a new instance of this class
     /// </summary>
     /// <param name="id">ID for this entity</param>
-    protected Entity(TId id) => Id = id;
+    protected Entity(TId id)
+    {
+        Id = id;
+    }
 
     /// <summary>
     /// Constructs a default instance of this class
     /// </summary>
-    protected Entity() => Id = null!;
+    protected Entity()
+    {
+        Id = null!;
+    }
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is Entity<TId> other && Equals(other);

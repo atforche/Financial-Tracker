@@ -5,13 +5,15 @@ using Domain.Funds;
 namespace Domain.Transactions;
 
 /// <summary>
-/// Entity class representing a Transaction
+/// Abstract base class representing a Transaction
 /// </summary>
-/// <remarks>
-/// A Transaction represents a financial transaction were money is moved between accounts or funds.
-/// </remarks>
-public class Transaction : Entity<TransactionId>
+public abstract class Transaction : Entity<TransactionId>
 {
+    /// <summary>
+    /// Type for this Transaction
+    /// </summary>
+    public TransactionType Type { get; private set; }
+
     /// <summary>
     /// Accounting Period for this Transaction
     /// </summary>
@@ -43,149 +45,137 @@ public class Transaction : Entity<TransactionId>
     /// <summary>
     /// Amount for this Transaction
     /// </summary>
-    public decimal Amount => DebitAccount?.FundAmounts.Sum(fundAmount => fundAmount.Amount) ?? CreditAccount?.FundAmounts.Sum(fundAmount => fundAmount.Amount) ?? 0m;
+    public decimal Amount { get; internal set; }
 
     /// <summary>
-    /// Debit Account for this Transaction
+    /// Gets all Account IDs affected by this Transaction
     /// </summary>
-    public TransactionAccount? DebitAccount { get; internal set; }
+    public abstract IEnumerable<AccountId> GetAllAffectedAccountIds();
 
     /// <summary>
-    /// Credit Account for this Transaction
+    /// Gets the posted date for the provided account ID
     /// </summary>
-    public TransactionAccount? CreditAccount { get; internal set; }
+    public abstract DateOnly? GetPostedDateForAccount(AccountId accountId);
 
     /// <summary>
-    /// Account ID of the Account that generated this transaction when it was created, or null
+    /// Applies this Transaction to the provided existing Account Balance
     /// </summary>
-    public AccountId? GeneratedByAccountId { get; internal set; }
-
-    /// <summary>
-    /// Applies this Transaction to the provided existing Account Balance as of the specified date
-    /// </summary>
-    public AccountBalance ApplyToAccountBalance(AccountBalance existingAccountBalance, DateOnly date)
+    /// <param name="existingAccountBalance">The existing Account Balance to apply this Transaction to</param>
+    /// <param name="asOfDate">If provided, only applies the portions of this Transaction that occurred on the specified date</param>
+    /// <param name="reverse">If true, reverses the effects of this Transaction</param>
+    public AccountBalance ApplyToAccountBalance(
+        AccountBalance existingAccountBalance,
+        DateOnly? asOfDate = null,
+        bool reverse = false)
     {
-        AccountBalance newAccountBalance = existingAccountBalance;
-        if (DebitAccount?.AccountId == existingAccountBalance.Account.Id)
+        AccountBalance newBalance = existingAccountBalance;
+        if (asOfDate == null || Date == asOfDate)
         {
-            newAccountBalance = ApplyToAccountBalancePrivate(DebitAccount, TransactionAccountType.Debit, newAccountBalance, date);
+            newBalance = AddToAccountBalance(existingAccountBalance, reverse);
         }
-        if (CreditAccount?.AccountId == existingAccountBalance.Account.Id)
+        DateOnly? postedDate = GetPostedDateForAccount(existingAccountBalance.Account.Id);
+        if (postedDate != null && (asOfDate == null || postedDate == asOfDate))
         {
-            newAccountBalance = ApplyToAccountBalancePrivate(CreditAccount, TransactionAccountType.Credit, newAccountBalance, date);
+            newBalance = PostToAccountBalance(existingAccountBalance, reverse);
         }
-        return newAccountBalance;
+        return newBalance;
     }
 
     /// <summary>
-    /// Applies this Transaction to the provided existing Fund Balance as of the specified date
+    /// Gets all Fund IDs affected by this Transaction for the provided account ID
     /// </summary>
-    public FundBalance ApplyToFundBalance(FundBalance existingFundBalance, DateOnly date)
+    /// <param name="accountId">If provided, only returns Fund IDs for the specified account</param>
+    public abstract IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId);
+
+    /// <summary>
+    /// Applies this Transaction to the provided existing Fund Balance
+    /// </summary>
+    /// <param name="existingFundBalance">The existing Fund Balance to apply this Transaction to</param>
+    /// <param name="asOfDate">If provided, only applies the portions of this Transaction that occurred on the specified date</param>
+    /// <param name="accountId">If provided, only applies the portions of this Transaction that affect the specified account</param>
+    /// <param name="reverse">If true, reverses the effects of this Transaction</param>
+    public FundBalance ApplyToFundBalance(
+        FundBalance existingFundBalance,
+        DateOnly? asOfDate = null,
+        AccountId? accountId = null,
+        bool reverse = false)
     {
-        FundBalance newFundBalance = existingFundBalance;
-        FundAmount? debitFundAmount = DebitAccount?.FundAmounts.SingleOrDefault(fundAmount => fundAmount.FundId == existingFundBalance.FundId);
-        if (DebitAccount != null && debitFundAmount != null)
+        FundBalance newBalance = existingFundBalance;
+        if (asOfDate == null || Date == asOfDate)
         {
-            newFundBalance = ApplyToFundBalancePrivate(DebitAccount, debitFundAmount, TransactionAccountType.Debit, newFundBalance, date);
+            newBalance = AddToFundBalance(existingFundBalance, reverse);
         }
-        FundAmount? creditFundAmount = CreditAccount?.FundAmounts.SingleOrDefault(fundAmount => fundAmount.FundId == existingFundBalance.FundId);
-        if (CreditAccount != null && creditFundAmount != null)
+        foreach (AccountId affectedAccountId in GetAllAffectedAccountIds())
         {
-            newFundBalance = ApplyToFundBalancePrivate(CreditAccount, creditFundAmount, TransactionAccountType.Credit, newFundBalance, date);
+            if (accountId != null && affectedAccountId != accountId)
+            {
+                continue;
+            }
+            DateOnly? postedDate = GetPostedDateForAccount(affectedAccountId);
+            if (postedDate != null && (asOfDate == null || postedDate == asOfDate))
+            {
+                newBalance = PostToFundBalance(existingFundBalance, affectedAccountId, reverse);
+            }
         }
-        return newFundBalance;
+        return newBalance;
     }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal Transaction(CreateTransactionRequest request, int sequence)
+    internal Transaction(CreateTransactionRequest request, int sequence, TransactionType type)
         : base(new TransactionId(Guid.NewGuid()))
     {
-        AccountingPeriodId = request.AccountingPeriod.Id;
-        Date = request.Date;
+        Type = type;
+        AccountingPeriodId = request.AccountingPeriodId;
+        Date = request.TransactionDate;
         Sequence = sequence;
         Location = request.Location;
         Description = request.Description;
-        DebitAccount = request.DebitAccount != null ? new TransactionAccount(this, request.DebitAccount.Account.Id, request.DebitAccount.FundAmounts) : null;
-        CreditAccount = request.CreditAccount != null ? new TransactionAccount(this, request.CreditAccount.Account.Id, request.CreditAccount.FundAmounts) : null;
-        GeneratedByAccountId = request.IsInitialTransactionForAccount ? CreditAccount?.AccountId : null;
+        Amount = request.Amount;
     }
 
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private Transaction() : base()
+    protected Transaction() : base()
     {
         AccountingPeriodId = null!;
         Location = null!;
         Description = null!;
-        DebitAccount = null;
-        CreditAccount = null;
     }
 
     /// <summary>
-    /// Applies this Transaction to the provided existing Account Balance as of the specified date
+    /// Adds this Transaction to the provided existing Account Balance
     /// </summary>
-    private AccountBalance ApplyToAccountBalancePrivate(
-        TransactionAccount transactionAccount,
-        TransactionAccountType transactionAccountType,
-        AccountBalance existingAccountBalance,
-        DateOnly date)
-    {
-        AccountBalance newAccountBalance = existingAccountBalance;
-        if (Date == date)
-        {
-            newAccountBalance = transactionAccountType == TransactionAccountType.Debit
-                ? newAccountBalance.AddNewPendingDebits(transactionAccount.FundAmounts)
-                : newAccountBalance.AddNewPendingCredits(transactionAccount.FundAmounts);
-        }
-        if (transactionAccount.PostedDate == date)
-        {
-            newAccountBalance = transactionAccountType == TransactionAccountType.Debit
-                ? newAccountBalance.PostPendingDebits(transactionAccount.FundAmounts)
-                : newAccountBalance.PostPendingCredits(transactionAccount.FundAmounts);
-        }
-        return newAccountBalance;
-    }
+    protected abstract AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse);
 
     /// <summary>
-    /// Applies this Transaction to the provided existing Fund Balance as of the specified date
+    /// Posts this Transaction to the provided account balance
     /// </summary>
-    private FundBalance ApplyToFundBalancePrivate(
-        TransactionAccount transactionAccount,
-        FundAmount fundAmount,
-        TransactionAccountType transactionAccountType,
-        FundBalance existingFundBalance,
-        DateOnly date)
-    {
-        var accountAmount = new AccountAmount
-        {
-            AccountId = transactionAccount.AccountId,
-            Amount = fundAmount.Amount
-        };
-        FundBalance newFundBalance = existingFundBalance;
-        if (Date == date)
-        {
-            newFundBalance = transactionAccountType == TransactionAccountType.Debit
-                ? newFundBalance.AddNewPendingDebit(accountAmount)
-                : newFundBalance.AddNewPendingCredit(accountAmount);
-        }
-        if (transactionAccount.PostedDate == date)
-        {
-            newFundBalance = transactionAccountType == TransactionAccountType.Debit
-                ? newFundBalance.PostPendingDebit(accountAmount)
-                : newFundBalance.PostPendingCredit(accountAmount);
-        }
-        return newFundBalance;
-    }
+    protected abstract AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse);
 
     /// <summary>
-    /// Enum representing the types of Transaction Accounts
+    /// Adds this Transaction to the provided existing Fund Balance
     /// </summary>
-    private enum TransactionAccountType
+    protected abstract FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse);
+
+    /// <summary>
+    /// Posts this Transaction to the provided fund balance
+    /// </summary>
+    protected abstract FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse);
+}
+
+/// <summary>
+/// Value object class representing the ID of a <see cref="Transaction"/>
+/// </summary>
+public record TransactionId : EntityId
+{
+    /// <summary>
+    /// Constructs a new instance of this class. 
+    /// </summary>
+    internal TransactionId(Guid value)
+        : base(value)
     {
-        Debit,
-        Credit
     }
 }

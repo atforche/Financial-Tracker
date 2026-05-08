@@ -1,208 +1,289 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.Exceptions;
 using Domain.Funds;
-using Domain.Transactions.Exceptions;
 
 namespace Domain.Transactions;
 
 /// <summary>
 /// Service for managing Transactions
 /// </summary>
-public class TransactionService(
+public abstract class TransactionService(
     AccountBalanceService accountBalanceService,
+    AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
     IAccountingPeriodRepository accountingPeriodRepository,
-    IAccountRepository accountRepository,
     ITransactionRepository transactionRepository)
 {
     /// <summary>
-    /// Attempts to create a new Transaction
+    /// Accounting Period Repository
     /// </summary>
-    public bool TryCreate(CreateTransactionRequest request, [NotNullWhen(true)] out Transaction? transaction, out IEnumerable<Exception> exceptions)
+    protected IAccountingPeriodRepository AccountingPeriodRepository => accountingPeriodRepository;
+
+    /// <summary>
+    /// Transaction Repository
+    /// </summary>
+    protected ITransactionRepository TransactionRepository => transactionRepository;
+
+    /// <summary>
+    /// Validates a request to create a new Transaction
+    /// </summary>
+    protected bool ValidateCreate(
+        CreateTransactionRequest request,
+        IReadOnlyCollection<Account> accounts,
+        IReadOnlyCollection<Fund> funds,
+        out IEnumerable<Exception> exceptions)
     {
-        transaction = null;
         exceptions = [];
 
-        if (!ValidateAccountingPeriod(request, out IEnumerable<Exception> accountingPeriodExceptions))
+        AccountingPeriod accountingPeriod = AccountingPeriodRepository.GetById(request.AccountingPeriodId);
+        if (!ValidateAccountingPeriod(accounts, funds, accountingPeriod, out IEnumerable<Exception> accountingPeriodExceptions))
         {
             exceptions = exceptions.Concat(accountingPeriodExceptions);
         }
-        if (!ValidateDate(request.AccountingPeriod,
-                request.DebitAccount?.Account,
-                request.CreditAccount?.Account,
-                request.Date,
-                out IEnumerable<Exception> dateExceptions))
+        if (!ValidateDate(accountingPeriod, accounts, request.TransactionDate, out IEnumerable<Exception> dateExceptions))
         {
             exceptions = exceptions.Concat(dateExceptions);
         }
-        if (!ValidateAccountFundAmounts(request.DebitAccount?.Account.Id,
-                request.DebitAccount?.FundAmounts.ToList(),
-                request.CreditAccount?.Account.Id,
-                request.CreditAccount?.FundAmounts.ToList(),
-                null,
-                out IEnumerable<Exception> accountExceptions))
+        if (!ValidateAmount(request.Amount, out IEnumerable<Exception> amountExceptions))
         {
-            exceptions = exceptions.Concat(accountExceptions);
+            exceptions = exceptions.Concat(amountExceptions);
         }
-        if (exceptions.Any())
-        {
-            return false;
-        }
-        transaction = new Transaction(request, transactionRepository.GetNextSequenceForDate(request.Date));
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Adds a Transaction to the appropriate services and repositories
+    /// </summary>
+    protected void AddTransaction(Transaction transaction)
+    {
+        accountingPeriodBalanceService.AddTransaction(transaction);
         accountBalanceService.AddTransaction(transaction);
         fundBalanceService.AddTransaction(transaction);
         transactionRepository.Add(transaction);
-        return true;
     }
 
     /// <summary>
-    /// Attempts to update an existing Transaction
+    /// Validates a request to update an existing Transaction
     /// </summary>
-    public bool TryUpdate(Transaction transaction, UpdateTransactionRequest request, out IEnumerable<Exception> exceptions)
+    protected bool ValidateUpdate(
+        Transaction transaction,
+        UpdateTransactionRequest request,
+        IReadOnlyCollection<Account> accounts,
+        out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
-        if (!ValidateNotInitialTransactionForAccount(transaction, out IEnumerable<Exception> initialTransactionExceptions))
-        {
-            exceptions = exceptions.Concat(initialTransactionExceptions);
-        }
-        if (!ValidateNotPosted(transaction, null, out IEnumerable<Exception> postedExceptions))
-        {
-            exceptions = exceptions.Concat(postedExceptions);
-        }
-        if (!ValidateDate(accountingPeriodRepository.GetById(transaction.AccountingPeriodId),
-                transaction.DebitAccount != null ? accountRepository.GetById(transaction.DebitAccount.AccountId) : null,
-                transaction.CreditAccount != null ? accountRepository.GetById(transaction.CreditAccount.AccountId) : null,
-                request.Date,
-                out IEnumerable<Exception> dateExceptions))
+        AccountingPeriod accountingPeriod = AccountingPeriodRepository.GetById(transaction.AccountingPeriodId);
+        if (!ValidateDate(accountingPeriod, accounts, request.TransactionDate, out IEnumerable<Exception> dateExceptions))
         {
             exceptions = exceptions.Concat(dateExceptions);
         }
-        if (!ValidateAccountFundAmounts(transaction.DebitAccount?.AccountId,
-                request.DebitAccount?.FundAmounts.ToList(),
-                transaction.CreditAccount?.AccountId,
-                request.CreditAccount?.FundAmounts.ToList(),
-                transaction,
-                out IEnumerable<Exception> accountExceptions))
+        if (!ValidateAmount(request.Amount, out IEnumerable<Exception> amountExceptions))
         {
-            exceptions = exceptions.Concat(accountExceptions);
+            exceptions = exceptions.Concat(amountExceptions);
         }
-        if (exceptions.Any())
-        {
-            return false;
-        }
-        transaction.Date = request.Date;
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Updates the properties of an existing Transaction based on an UpdateTransactionRequest
+    /// </summary>
+    protected void UpdateTransaction(Transaction transaction, UpdateTransactionRequest request)
+    {
+        transaction.Date = request.TransactionDate;
         transaction.Location = request.Location;
         transaction.Description = request.Description;
-        if (transaction.DebitAccount != null && request.DebitAccount != null)
-        {
-            transaction.DebitAccount = new TransactionAccount(transaction, transaction.DebitAccount.AccountId, request.DebitAccount.FundAmounts);
-        }
-        if (transaction.CreditAccount != null && request.CreditAccount != null)
-        {
-            transaction.CreditAccount = new TransactionAccount(transaction, transaction.CreditAccount.AccountId, request.CreditAccount.FundAmounts);
-        }
+        transaction.Amount = request.Amount;
+
+        accountingPeriodBalanceService.UpdateTransaction(transaction);
         accountBalanceService.UpdateTransaction(transaction);
         fundBalanceService.UpdateTransaction(transaction);
-        return true;
     }
 
     /// <summary>
-    /// Attempts to post an existing Transaction within an Account
+    /// Validates the posting of this Transaction within an Account
     /// </summary>
-    public bool TryPost(Transaction transaction, AccountId account, DateOnly postedDate, out IEnumerable<Exception> exceptions)
+    protected bool ValidatePosting(
+        Transaction transaction,
+        AccountId accountId,
+        DateOnly postedDate,
+        out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
-        if (!ValidatePosting(transaction, account, postedDate, out TransactionAccount? transactionAccount, out IEnumerable<Exception> postingExceptions))
+        if (!transaction.GetAllAffectedAccountIds().Contains(accountId))
         {
-            exceptions = exceptions.Concat(postingExceptions);
+            exceptions = exceptions.Append(new InvalidAccountException("The provided account is not associated with this transaction."));
             return false;
         }
-        if (transaction.DebitAccount != null && transaction.CreditAccount != null && transaction.DebitAccount.AccountId == transaction.CreditAccount.AccountId)
+        if (transaction.GetPostedDateForAccount(accountId) != null)
         {
-            transaction.DebitAccount.PostedDate = postedDate;
-            transaction.CreditAccount.PostedDate = postedDate;
+            exceptions = exceptions.Append(new UnableToPostException("The Transaction has already been posted to this Account."));
+            return !exceptions.Any();
         }
-        else
+        if (postedDate < transaction.Date)
         {
-            transactionAccount.PostedDate = postedDate;
+            exceptions = exceptions.Append(new InvalidDateException("The provided date is earlier than the transaction date."));
         }
-        accountBalanceService.PostTransaction(transaction, transactionAccount);
-        fundBalanceService.PostTransaction(transaction, transactionAccount);
-        return true;
+        AccountingPeriod accountingPeriod = AccountingPeriodRepository.GetById(transaction.AccountingPeriodId);
+        int monthDifference = Math.Abs(((accountingPeriod.Year - postedDate.Year) * 12) + accountingPeriod.Month - postedDate.Month);
+        if (monthDifference > 1)
+        {
+            exceptions = exceptions.Append(new InvalidDateException("The provided date is not within the transaction's accounting period."));
+        }
+        return !exceptions.Any();
     }
 
     /// <summary>
-    /// Attempts to delete an existing Transaction
+    /// Posts a Transaction to an Account
     /// </summary>
-    public bool TryDelete(Transaction transaction, AccountId? accountBeingDeleted, out IEnumerable<Exception> exceptions)
+    protected void PostTransaction(Transaction transaction, AccountId accountId)
+    {
+        accountingPeriodBalanceService.PostTransaction(transaction, accountId);
+        accountBalanceService.PostTransaction(transaction, accountId);
+        fundBalanceService.PostTransaction(transaction, accountId);
+    }
+
+    /// <summary>
+    /// Validates the unposting of this Transaction
+    /// </summary>
+    protected bool ValidateUnposting(Transaction transaction, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
-        if (accountBeingDeleted != transaction.GeneratedByAccountId && !ValidateNotInitialTransactionForAccount(transaction, out IEnumerable<Exception> initialTransactionExceptions))
+        if (!AccountingPeriodRepository.GetById(transaction.AccountingPeriodId).IsOpen)
         {
-            exceptions = exceptions.Concat(initialTransactionExceptions);
+            exceptions = exceptions.Append(new UnableToUnpostException("The Transaction's Accounting Period is closed."));
         }
-        if (!ValidateAccountingPeriodNotClosed(accountingPeriodRepository.GetById(transaction.AccountingPeriodId), out IEnumerable<Exception> accountingPeriodExceptions))
+        if (transaction.GetAllAffectedAccountIds().All(id => transaction.GetPostedDateForAccount(id) == null))
         {
-            exceptions = exceptions.Concat(accountingPeriodExceptions);
+            exceptions = exceptions.Append(new UnableToUnpostException("The Transaction has not been posted to either account."));
         }
-        if (!ValidateNotPosted(transaction, accountBeingDeleted, out IEnumerable<Exception> notPostedExceptions))
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Unposts a Transaction from all accounts
+    /// </summary>
+    protected void UnpostTransaction(Transaction transaction)
+    {
+        accountingPeriodBalanceService.UnpostTransaction(transaction);
+        accountBalanceService.UnpostTransaction(transaction);
+        fundBalanceService.UnpostTransaction(transaction);
+    }
+
+    /// <summary>
+    /// Validates the deletion of this Transaction
+    /// </summary>
+    protected bool ValidateDelete(Transaction transaction, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (!AccountingPeriodRepository.GetById(transaction.AccountingPeriodId).IsOpen)
         {
-            exceptions = exceptions.Concat(notPostedExceptions);
+            exceptions = exceptions.Append(new UnableToDeleteException("The provided transaction is within a closed accounting period."));
         }
-        if (exceptions.Any())
+        if (transaction.GetAllAffectedAccountIds().Any(id => transaction.GetPostedDateForAccount(id) != null))
         {
-            return false;
+            exceptions = exceptions.Append(new UnableToDeleteException("The Transaction has been posted and cannot be deleted."));
         }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Deletes a Transaction
+    /// </summary>
+    protected void DeleteTransaction(Transaction transaction)
+    {
+        accountingPeriodBalanceService.DeleteTransaction(transaction);
         accountBalanceService.DeleteTransaction(transaction);
         fundBalanceService.DeleteTransaction(transaction);
-        transactionRepository.Delete(transaction);
-        return true;
+        TransactionRepository.Delete(transaction);
     }
 
     /// <summary>
-    /// Validates that the Accounting Period is not closed
+    /// Validates the posted date for the provided accounting period, account, and date
     /// </summary>
-    private static bool ValidateAccountingPeriodNotClosed(AccountingPeriod accountingPeriod, out IEnumerable<Exception> exceptions)
+    protected static bool ValidatePostedDate(AccountingPeriod accountingPeriod, Account account, DateOnly? postedDate, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (postedDate.HasValue)
+        {
+            if (!accountingPeriod.IsDateInPeriod(postedDate.Value))
+            {
+                exceptions = exceptions.Append(new InvalidDateException("Debit Posted Date must be within the Accounting Period"));
+            }
+            if (account.AddDate < postedDate)
+            {
+                exceptions = exceptions.Append(new InvalidDateException("Debit Posted Date cannot be before the Transaction was added"));
+            }
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates the fund assignments for a Transaction
+    /// </summary>
+    protected virtual bool ValidateFundAssignments(decimal amount, IReadOnlyCollection<FundAmount> fundAssignments, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (fundAssignments.Any(fundAmount => fundAmount.Amount <= 0))
+        {
+            exceptions = exceptions.Append(new InvalidFundAmountException("Fund assignment amounts must be positive"));
+        }
+        if (fundAssignments.Select(fundAmount => fundAmount.FundId).Distinct().Count() != fundAssignments.Count)
+        {
+            exceptions = exceptions.Append(new InvalidFundAmountException("Duplicate Funds are not allowed in fund assignments"));
+        }
+        if (fundAssignments.Sum(fundAmount => fundAmount.Amount) > amount)
+        {
+            exceptions = exceptions.Append(new InvalidFundAmountException("Sum of fund assignment amounts cannot exceed total transaction amount"));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates the IsInitialTransactionForAccount property for a Transaction
+    /// </summary>
+    protected static bool ValidateInitialTransactionForAccount(bool isInitialTransactionForAccount, Account account, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (isInitialTransactionForAccount && account.InitialTransaction != null)
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("Initial transaction for account already exists"));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates the Accounting Period for this Transaction
+    /// </summary>
+    private bool ValidateAccountingPeriod(IReadOnlyCollection<Account> accounts, IReadOnlyCollection<Fund> funds, AccountingPeriod accountingPeriod, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
         if (!accountingPeriod.IsOpen)
         {
             exceptions = exceptions.Append(new InvalidAccountingPeriodException("The Accounting Period is closed."));
-            return false;
         }
-        return true;
-    }
-
-    /// <summary>
-    /// Validates the Accounting Period for this Transaction
-    /// </summary>
-    private bool ValidateAccountingPeriod(CreateTransactionRequest request, out IEnumerable<Exception> exceptions)
-    {
-        exceptions = [];
-
-        if (!ValidateAccountingPeriodNotClosed(request.AccountingPeriod, out IEnumerable<Exception> accountingPeriodExceptions))
+        foreach (Account account in accounts)
         {
-            exceptions = exceptions.Concat(accountingPeriodExceptions);
-        }
-        if (request.DebitAccount != null)
-        {
-            AccountingPeriod debitAccountInitialPeriod = accountingPeriodRepository.GetById(request.DebitAccount.Account.InitialAccountingPeriodId);
-            if (request.AccountingPeriod.PeriodStartDate < debitAccountInitialPeriod.PeriodStartDate)
+            AccountingPeriod accountInitialPeriod = AccountingPeriodRepository.GetById(account.AddAccountingPeriodId);
+            if (accountingPeriod.PeriodStartDate < accountInitialPeriod.PeriodStartDate)
             {
-                exceptions = exceptions.Append(new InvalidAccountingPeriodException("The Debit Account did not exist during the provided Accounting Period."));
+                exceptions = exceptions.Append(new InvalidAccountingPeriodException($"Account {account.Name} did not exist during the provided Accounting Period."));
             }
         }
-        if (request.CreditAccount != null)
+        foreach (Fund fund in funds)
         {
-            AccountingPeriod creditAccountInitialPeriod = accountingPeriodRepository.GetById(request.CreditAccount.Account.InitialAccountingPeriodId);
-            if (request.AccountingPeriod.PeriodStartDate < creditAccountInitialPeriod.PeriodStartDate)
+            AccountingPeriod fundInitialPeriod = AccountingPeriodRepository.GetById(fund.AddAccountingPeriodId);
+            if (accountingPeriod.PeriodStartDate < fundInitialPeriod.PeriodStartDate)
             {
-                exceptions = exceptions.Append(new InvalidAccountingPeriodException("The Credit Account did not exist during the provided Accounting Period."));
+                exceptions = exceptions.Append(new InvalidAccountingPeriodException($"Fund {fund.Name} did not exist during the provided Accounting Period."));
             }
         }
         return !exceptions.Any();
@@ -213,8 +294,7 @@ public class TransactionService(
     /// </summary>
     private static bool ValidateDate(
         AccountingPeriod accountingPeriod,
-        Account? debitAccount,
-        Account? creditAccount,
+        IEnumerable<Account> accounts,
         DateOnly date,
         out IEnumerable<Exception> exceptions)
     {
@@ -222,179 +302,32 @@ public class TransactionService(
 
         if (date == DateOnly.MinValue)
         {
-            exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction must have a valid Date."));
+            exceptions = exceptions.Append(new InvalidDateException("The provided date is blank."));
         }
         if (!accountingPeriod.IsDateInPeriod(date))
         {
-            exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction Date must be in a month adjacent to the Accounting Period month."));
+            exceptions = exceptions.Append(new InvalidDateException("The provided date is not within the transaction's accounting period."));
         }
-        if (debitAccount != null && date < debitAccount.InitialDate)
+        foreach (Account account in accounts)
         {
-            exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction Date is before the Debit Account was created."));
-        }
-        if (creditAccount != null && date < creditAccount.InitialDate)
-        {
-            exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction Date is before the Credit Account was created."));
-        }
-        return !exceptions.Any();
-    }
-
-    /// <summary>
-    /// Validates the fund amounts for each Account for this Transaction
-    /// </summary>
-    private static bool ValidateAccountFundAmounts(
-        AccountId? debitAccount,
-        List<FundAmount>? debitFundAmounts,
-        AccountId? creditAccount,
-        List<FundAmount>? creditFundAmounts,
-        Transaction? existingTransaction,
-        out IEnumerable<Exception> exceptions)
-    {
-        exceptions = [];
-
-        if (debitAccount == null != (debitFundAmounts == null))
-        {
-            exceptions = exceptions.Append(new InvalidDebitAccountException("The Debit Account and its Fund Amounts must both be provided or both be null."));
-        }
-        if (creditAccount == null != (creditFundAmounts == null))
-        {
-            exceptions = exceptions.Append(new InvalidCreditAccountException("The Credit Account and its Fund Amounts must both be provided or both be null."));
-        }
-        if (debitFundAmounts == null && creditFundAmounts == null)
-        {
-            exceptions = exceptions.Append(new InvalidDebitAccountException("At least one of Debit Account or Credit Account must be provided."));
-            exceptions = exceptions.Append(new InvalidCreditAccountException("At least one of Debit Account or Credit Account must be provided."));
-        }
-        if (debitAccount == creditAccount && debitFundAmounts != null && creditFundAmounts != null &&
-            debitFundAmounts.Any(debitFund => creditFundAmounts.Select(fundAmount => fundAmount.FundId).Contains(debitFund.FundId)))
-        {
-            exceptions = exceptions.Append(new InvalidDebitAccountException("For a Transaction with a single Account, the same Fund cannot be both debited and credited"));
-            exceptions = exceptions.Append(new InvalidCreditAccountException("For a Transaction with a single Account, the same Fund cannot be both debited and credited"));
-        }
-        if (debitFundAmounts != null)
-        {
-            if (debitFundAmounts.Count == 0)
+            if (date < account.AddDate)
             {
-                exceptions = exceptions.Append(new InvalidDebitAccountException("The Debit Account must have at least one Fund Amount."));
-            }
-            if (debitFundAmounts.Any(fundAmount => fundAmount.Amount <= 0))
-            {
-                exceptions = exceptions.Append(new InvalidDebitAccountException("All Fund Amounts for the Debit Account must be greater than zero."));
-            }
-        }
-        if (creditFundAmounts != null)
-        {
-            if (creditFundAmounts.Count == 0)
-            {
-                exceptions = exceptions.Append(new InvalidCreditAccountException("The Credit Account must have at least one Fund Amount."));
-            }
-            if (creditFundAmounts.Any(fundAmount => fundAmount.Amount <= 0))
-            {
-                exceptions = exceptions.Append(new InvalidCreditAccountException("All Fund Amounts for the Credit Account must be greater than zero."));
-            }
-        }
-        if (debitFundAmounts != null && creditFundAmounts != null)
-        {
-            decimal totalDebit = debitFundAmounts.Sum(fundAmount => fundAmount.Amount);
-            decimal totalCredit = creditFundAmounts.Sum(fundAmount => fundAmount.Amount);
-            if (totalDebit != totalCredit)
-            {
-                exceptions = exceptions.Append(new InvalidDebitAccountException("The total Debit Fund Amounts must equal the total Credit Fund Amounts."));
-                exceptions = exceptions.Append(new InvalidCreditAccountException("The total Debit Fund Amounts must equal the total Credit Fund Amounts."));
-            }
-        }
-        if (existingTransaction != null)
-        {
-            if (existingTransaction.DebitAccount == null != (debitFundAmounts == null))
-            {
-                exceptions = exceptions.Append(new InvalidDebitAccountException("The Debit Account cannot be added or removed when updating a Transaction."));
-            }
-            if (existingTransaction.CreditAccount == null != (creditFundAmounts == null))
-            {
-                exceptions = exceptions.Append(new InvalidCreditAccountException("The Credit Account cannot be added or removed when updating a Transaction."));
+                exceptions = exceptions.Append(new InvalidDateException($"The provided date is before the account {account.Name} was created."));
             }
         }
         return !exceptions.Any();
     }
 
     /// <summary>
-    /// Validates the posting of this Transaction within an Account
+    /// Validates the Amount for this Transaction
     /// </summary>
-    private bool ValidatePosting(
-        Transaction transaction,
-        AccountId account,
-        DateOnly postedDate,
-        [NotNullWhen(true)] out TransactionAccount? transactionAccount,
-        out IEnumerable<Exception> exceptions)
-    {
-        transactionAccount = null;
-        exceptions = [];
-
-        if (transaction.DebitAccount != null && transaction.DebitAccount.AccountId == account)
-        {
-            transactionAccount = transaction.DebitAccount;
-        }
-        else if (transaction.CreditAccount != null && transaction.CreditAccount.AccountId == account)
-        {
-            transactionAccount = transaction.CreditAccount;
-        }
-        else
-        {
-            exceptions = exceptions.Append(new InvalidDebitAccountException("The Transaction does not involve the specified Account."));
-            exceptions = exceptions.Append(new InvalidCreditAccountException("The Transaction does not involve the specified Account."));
-            return false;
-        }
-        if (transactionAccount.PostedDate != null)
-        {
-            exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction has already been posted to this Account."));
-            return !exceptions.Any();
-        }
-        if (postedDate < transaction.Date)
-        {
-            exceptions = exceptions.Append(new InvalidTransactionDateException("The posted date is before the Transaction date."));
-        }
-        if (transaction.DebitAccount?.AccountId == transaction.CreditAccount?.AccountId && postedDate != transaction.Date)
-        {
-            exceptions = exceptions.Append(new InvalidTransactionDateException("A Transaction crediting and debiting the same Account must be posted on the same day it was added."));
-        }
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(transaction.AccountingPeriodId);
-        int monthDifference = Math.Abs(((accountingPeriod.Year - postedDate.Year) * 12) + accountingPeriod.Month - postedDate.Month);
-        if (monthDifference > 1)
-        {
-            exceptions = exceptions.Append(new InvalidTransactionDateException("The posted date must be in a month adjacent to the Accounting Period month."));
-        }
-        return !exceptions.Any();
-    }
-
-    /// <summary>
-    /// Validates that the Transaction is not the initial transaction for an Account
-    /// </summary>
-    private static bool ValidateNotInitialTransactionForAccount(Transaction transaction, out IEnumerable<Exception> exceptions)
+    private static bool ValidateAmount(decimal amount, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
-        if (transaction.GeneratedByAccountId != null)
+        if (amount <= 0)
         {
-            exceptions = exceptions.Append(new UnableToUpdateException("The Transaction is the initial transaction for an Account."));
-            return false;
-        }
-        return true;
-    }
-
-    /// <summary>
-    /// Validates that the Transaction has not been posted to either Account
-    /// </summary>
-    private static bool ValidateNotPosted(Transaction transaction, AccountId? accountBeingDeleted, out IEnumerable<Exception> exceptions)
-    {
-        exceptions = [];
-
-        if (transaction.DebitAccount != null && accountBeingDeleted != transaction.DebitAccount.AccountId && transaction.DebitAccount.PostedDate != null)
-        {
-            exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction has been posted to the Debit Account."));
-        }
-        if (transaction.CreditAccount != null && accountBeingDeleted != transaction.CreditAccount.AccountId && transaction.CreditAccount.PostedDate != null)
-        {
-            exceptions = exceptions.Append(new InvalidTransactionDateException("The Transaction has been posted to the Credit Account."));
+            exceptions = exceptions.Append(new InvalidAmountException("The provided amount must be greater than zero."));
         }
         return !exceptions.Any();
     }

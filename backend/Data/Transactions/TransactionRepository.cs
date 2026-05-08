@@ -3,6 +3,10 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
+using Domain.Transactions.Accounts;
+using Domain.Transactions.Funds;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 
 namespace Data.Transactions;
 
@@ -24,20 +28,25 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
 
     /// <inheritdoc/>
     public bool DoAnyTransactionsExistForAccount(Account account) =>
-        databaseContext.Transactions.Any(transaction =>
-            transaction.Id != account.InitialTransaction &&
-            ((transaction.DebitAccount != null && transaction.DebitAccount.AccountId == account.Id) ||
-            (transaction.CreditAccount != null && transaction.CreditAccount.AccountId == account.Id)));
+        databaseContext.Transactions.OfType<SpendingTransaction>()
+            .Any(t => t.DebitAccountId == account.Id || t.CreditAccountId == account.Id) ||
+        databaseContext.Transactions.OfType<IncomeTransaction>()
+            .Any(t => t.DebitAccountId == account.Id || t.CreditAccountId == account.Id) ||
+        databaseContext.Transactions.OfType<AccountTransaction>()
+            .Any(t => t.DebitAccountId == account.Id || t.CreditAccountId == account.Id);
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
-        GetManyByAccountingPeriod(accountingPeriodId, new GetAccountingPeriodTransactionsRequest()).Items;
+        databaseContext.Transactions.Where(transaction => transaction.AccountingPeriodId == accountingPeriodId).ToList();
 
     /// <inheritdoc/>
     public bool DoAnyTransactionsExistForFund(FundId fundId) =>
-        databaseContext.Transactions.Any(transaction =>
-            (transaction.DebitAccount != null && transaction.DebitAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId)) ||
-            (transaction.CreditAccount != null && transaction.CreditAccount.FundAmounts.Any(fundAmount => fundAmount.FundId == fundId)));
+        databaseContext.Transactions.OfType<SpendingTransaction>()
+            .Any(t => t.FundAssignments.Any(f => f.FundId == fundId)) ||
+        databaseContext.Transactions.OfType<IncomeTransaction>()
+            .Any(t => t.FundAssignments.Any(f => f.FundId == fundId)) ||
+        databaseContext.Transactions.OfType<FundTransaction>()
+            .Any(t => (t.DebitFundId == fundId) || (t.CreditFundId == fundId));
 
     /// <inheritdoc/>
     public Transaction GetById(TransactionId id) => databaseContext.Transactions.Single(transaction => transaction.Id == id);
@@ -51,48 +60,6 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     #endregion
 
     /// <summary>
-    /// Gets the Transactions within the specified Accounting Period that match the specified criteria
-    /// </summary>
-    public PaginatedCollection<Transaction> GetManyByAccountingPeriod(AccountingPeriodId accountingPeriodId, GetAccountingPeriodTransactionsRequest request)
-    {
-        List<AccountingPeriodTransactionSortModel> filteredTransactions = new AccountingPeriodTransactionFilterer(databaseContext).Get(accountingPeriodId, request);
-        filteredTransactions.Sort(new AccountingPeriodTransactionComparer(request.SortBy));
-        return new PaginatedCollection<Transaction>
-        {
-            Items = GetPagedTransactions(filteredTransactions.Select(t => t.Transaction).ToList(), request.Limit, request.Offset),
-            TotalCount = filteredTransactions.Count,
-        };
-    }
-
-    /// <summary>
-    /// Gets the Transactions within the specified Account that match the specified criteria
-    /// </summary>
-    public PaginatedCollection<Transaction> GetManyByAccount(AccountId accountId, GetAccountTransactionsRequest request)
-    {
-        List<AccountTransactionSortModel> filteredTransactions = new AccountTransactionFilterer(databaseContext).Get(accountId, request);
-        filteredTransactions.Sort(new AccountTransactionComparer(request.SortBy));
-        return new PaginatedCollection<Transaction>
-        {
-            Items = GetPagedTransactions(filteredTransactions.Select(t => t.Transaction).ToList(), request.Limit, request.Offset),
-            TotalCount = filteredTransactions.Count,
-        };
-    }
-
-    /// <summary>
-    /// Gets the Transactions within the specified Fund that match the specified criteria
-    /// </summary>
-    public PaginatedCollection<Transaction> GetManyByFund(FundId fundId, GetFundTransactionsRequest request)
-    {
-        List<FundTransactionSortModel> filteredTransactions = new FundTransactionFilterer(databaseContext).Get(fundId, request);
-        filteredTransactions.Sort(new FundTransactionComparer(request.SortBy));
-        return new PaginatedCollection<Transaction>
-        {
-            Items = GetPagedTransactions(filteredTransactions.Select(t => t.Transaction).ToList(), request.Limit, request.Offset),
-            TotalCount = filteredTransactions.Count,
-        };
-    }
-
-    /// <summary>
     /// Attempts to get the Transaction with the specified ID
     /// </summary>
     public bool TryGetById(Guid id, [NotNullWhen(true)] out Transaction? transaction)
@@ -102,18 +69,38 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     }
 
     /// <summary>
-    /// Gets the paged collection of Transactions based on the provided request
+    /// Gets all the Transactions that are associated with the specified Account, optionally filtered by Accounting Period
     /// </summary>
-    private static List<Transaction> GetPagedTransactions(List<Transaction> sortedTransactions, int? limit, int? offset)
+    public IReadOnlyCollection<Transaction> GetAllByAccount(AccountId accountId, AccountingPeriodId? accountingPeriodId = null)
     {
-        if (offset != null)
+        IQueryable<Transaction> transactions = databaseContext.Transactions;
+        if (accountingPeriodId != null)
         {
-            sortedTransactions = sortedTransactions.Skip(offset.Value).ToList();
+            transactions = transactions.Where(transaction => transaction.AccountingPeriodId == accountingPeriodId);
         }
-        if (limit != null)
+        var transactionsList = transactions.ToList();
+        return transactionsList.Where(transaction =>
+            (transaction is SpendingTransaction spendingTransaction && (spendingTransaction.DebitAccountId == accountId || spendingTransaction.CreditAccountId == accountId)) ||
+            (transaction is IncomeTransaction incomeTransaction && (incomeTransaction.DebitAccountId == accountId || incomeTransaction.CreditAccountId == accountId)) ||
+            (transaction is AccountTransaction accountTransaction && (accountTransaction.DebitAccountId == accountId || accountTransaction.CreditAccountId == accountId)))
+            .ToList();
+    }
+
+    /// <summary>
+    /// Gets all the Transactions that are associated with the specified Fund, optionally filtered by Accounting Period
+    /// </summary>
+    public IReadOnlyCollection<Transaction> GetAllByFund(FundId fundId, AccountingPeriodId? accountingPeriodId = null)
+    {
+        IQueryable<Transaction> transactions = databaseContext.Transactions;
+        if (accountingPeriodId != null)
         {
-            sortedTransactions = sortedTransactions.Take(limit.Value).ToList();
+            transactions = transactions.Where(transaction => transaction.AccountingPeriodId == accountingPeriodId);
         }
-        return sortedTransactions;
+        var transactionsList = transactions.ToList();
+        return transactionsList.Where(transaction =>
+            (transaction is SpendingTransaction spendingTransaction && spendingTransaction.FundAssignments.Any(f => f.FundId == fundId)) ||
+            (transaction is IncomeTransaction incomeTransaction && incomeTransaction.FundAssignments.Any(f => f.FundId == fundId)) ||
+            (transaction is FundTransaction fundTransaction && (fundTransaction.DebitFundId == fundId || fundTransaction.CreditFundId == fundId)))
+            .ToList();
     }
 }

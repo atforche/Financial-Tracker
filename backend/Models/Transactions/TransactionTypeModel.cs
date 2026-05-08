@@ -1,22 +1,27 @@
 namespace Models.Transactions;
 
 /// <summary>
-/// Enum representing the different types of Transactions
+/// Enum representing the different transaction types exposed by the REST API.
 /// </summary>
 public enum TransactionTypeModel
 {
     /// <summary>
-    /// Debit
+    /// Spending transaction.
     /// </summary>
-    Debit,
+    Spending,
 
     /// <summary>
-    /// Credit
+    /// Income transaction.
     /// </summary>
-    Credit,
+    Income,
 
     /// <summary>
-    /// Transfer
+    /// Account transaction.
     /// </summary>
-    Transfer,
+    Account,
+
+    /// <summary>
+    /// Fund transaction.
+    /// </summary>
+    Fund,
 }

@@ -1,5 +1,3 @@
-using Models.Accounts;
-
 namespace Models.Funds;
 
 /// <summary>
@@ -13,32 +11,32 @@ public class FundBalanceModel
     public required Guid FundId { get; init; }
 
     /// <summary>
+    /// Fund Name for the Fund Balance
+    /// </summary>
+    public required string FundName { get; init; }
+
+    /// <summary>
     /// Posted Balance for the Fund Balance
     /// </summary>
     public required decimal PostedBalance { get; init; }
 
     /// <summary>
-    /// Account Balances for the Fund Balance
+    /// Amount Assigned for the Fund Balance
     /// </summary>
-    public required IReadOnlyCollection<AccountAmountModel> AccountBalances { get; init; } = [];
+    public required decimal AmountAssigned { get; init; }
 
     /// <summary>
-    /// Pending Debit Amount for the Fund Balance
+    /// Pending Amount Assigned for the Fund Balance
     /// </summary>
-    public required decimal PendingDebitAmount { get; init; }
+    public required decimal PendingAmountAssigned { get; init; }
 
     /// <summary>
-    /// Pending Debits for the Fund Balance
+    /// Amount Spent for the Fund Balance
     /// </summary>
-    public required IReadOnlyCollection<AccountAmountModel> PendingDebits { get; init; } = [];
+    public required decimal AmountSpent { get; init; }
 
     /// <summary>
-    /// Pending Credit Amount for the Fund Balance
+    /// Pending Amount Spent for the Fund Balance
     /// </summary>
-    public required decimal PendingCreditAmount { get; init; }
-
-    /// <summary>
-    /// Pending Credits for the Fund Balance
-    /// </summary>
-    public required IReadOnlyCollection<AccountAmountModel> PendingCredits { get; init; } = [];
+    public required decimal PendingAmountSpent { get; init; }
 }
