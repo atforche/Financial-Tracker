@@ -19,22 +19,13 @@
     },
     {
       "label": "end-debug-session",
-      "dependsOn": ["kill-all-tasks", "destroy-debug-environment"]
+      "dependsOn": ["kill-all-tasks"]
     },
     {
       "label": "create-debug-environment",
       "type": "process",
       "command": "./debug_scripts.py",
       "args": ["create"],
-      "options": {
-        "cwd": "${workspaceFolder}/scripts"
-      }
-    },
-    {
-      "label": "destroy-debug-environment",
-      "type": "process",
-      "command": "./debug_scripts.py",
-      "args": ["destroy"],
       "options": {
         "cwd": "${workspaceFolder}/scripts"
       }

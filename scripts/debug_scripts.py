@@ -38,6 +38,8 @@ class CreateDebugEnvironment(Command):
         """Constructs a new instance of this class"""
 
         super().__init__("create", "Creates the debug environment")
+        if os.path.exists(get_debug_configuration().path):
+            return
         self.steps.append(Step("", "", lambda: CreateInstanceDirectory(get_debug_configuration()).run([])))
         self.steps.append(Step("", "", lambda: CreateEmptyDatabase(get_debug_configuration()).run([])))
         self.steps.append(Step("", "", lambda: ApplyMigrations(get_debug_configuration()).run([])))
