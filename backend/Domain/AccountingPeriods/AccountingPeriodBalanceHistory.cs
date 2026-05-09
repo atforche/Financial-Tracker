@@ -1,3 +1,5 @@
+using Domain.Accounts;
+
 namespace Domain.AccountingPeriods;
 
 /// <summary>
@@ -38,12 +40,7 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
     public IReadOnlyCollection<AccountingPeriodFundBalanceHistory> FundBalances
     {
         get => _fundBalances;
-        internal set
-        {
-            _fundBalances = value.ToList();
-            OpeningBalance = _fundBalances.Sum(f => f.OpeningBalance);
-            ClosingBalance = _fundBalances.Sum(f => f.ClosingBalance);
-        }
+        internal set => _fundBalances = value.ToList();
     }
 
     /// <summary>
@@ -58,6 +55,15 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
         AccountingPeriod = accountingPeriod;
         _accountBalances = accountBalances.ToList();
         _fundBalances = fundBalances.ToList();
+    }
+
+    /// <summary>
+    /// Updates the opening and closing balances for this Accounting Period Balance History
+    /// </summary>
+    internal void UpdateBalances()
+    {
+        OpeningBalance = AccountBalances.Sum(accountBalance => accountBalance.Account.Type == AccountType.Debt ? -accountBalance.OpeningBalance : accountBalance.OpeningBalance);
+        ClosingBalance = AccountBalances.Sum(accountBalance => accountBalance.Account.Type == AccountType.Debt ? -accountBalance.ClosingBalance : accountBalance.ClosingBalance);
     }
 
     /// <summary>

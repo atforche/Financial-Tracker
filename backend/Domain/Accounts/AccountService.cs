@@ -106,7 +106,6 @@ public class AccountService(
         {
             return true;
         }
-
         CreateTransactionRequest createRequest = !account.Type.IsTracked()
             ? new CreateAccountTransactionRequest
             {
