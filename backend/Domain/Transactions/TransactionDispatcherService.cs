@@ -99,12 +99,12 @@ public sealed class TransactionDispatcherService(
     /// <summary>
     /// Attempts to unpost the provided transaction.
     /// </summary>
-    public bool TryUnpost(Transaction transaction, out IEnumerable<Exception> exceptions) =>
+    public bool TryUnpost(Transaction transaction, AccountId? accountBeingDeleted, out IEnumerable<Exception> exceptions) =>
         transaction switch
         {
-            SpendingTransaction spendingTransaction => spendingTransactionService.TryUnpost(spendingTransaction, out exceptions),
-            IncomeTransaction incomeTransaction => incomeTransactionService.TryUnpost(incomeTransaction, out exceptions),
-            AccountTransaction accountTransaction => accountTransactionService.TryUnpost(accountTransaction, out exceptions),
+            SpendingTransaction spendingTransaction => spendingTransactionService.TryUnpost(spendingTransaction, accountBeingDeleted, out exceptions),
+            IncomeTransaction incomeTransaction => incomeTransactionService.TryUnpost(incomeTransaction, accountBeingDeleted, out exceptions),
+            AccountTransaction accountTransaction => accountTransactionService.TryUnpost(accountTransaction, accountBeingDeleted, out exceptions),
             FundTransaction => Fail(out exceptions, "Fund transactions cannot be unposted.", exceptionFactory: message => new UnableToUnpostException(message)),
             _ => Fail(out exceptions, $"Unrecognized transaction type: {transaction.GetType().Name}")
         };
