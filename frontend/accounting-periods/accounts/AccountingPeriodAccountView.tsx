@@ -1,4 +1,5 @@
 import { Button, Stack } from "@mui/material";
+import { formatAccountType, isPositiveChangeInBalance } from "@/accounts/types";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
@@ -7,7 +8,6 @@ import accountRoutes from "@/accounts/routes";
 import breadcrumbs from "@/accounting-periods/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
-import { isPositiveChangeInBalance } from "@/accounts/types";
 
 /**
  * Parameters for the AccountingPeriodAccountView component.
@@ -115,7 +115,10 @@ const AccountingPeriodAccountView = async function ({
       </Stack>
       <CaptionedFrame caption="Details">
         <CaptionedValue caption="Name" value={account.name} />
-        <CaptionedValue caption="Type" value={account.type} />
+        <CaptionedValue
+          caption="Type"
+          value={formatAccountType(account.type)}
+        />
       </CaptionedFrame>
       <CaptionedFrame caption="Opening Balance">
         <CaptionedValue

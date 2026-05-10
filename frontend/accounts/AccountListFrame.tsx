@@ -1,6 +1,10 @@
 "use client";
 
-import { type Account, AccountSortOrder } from "@/accounts/types";
+import {
+  type Account,
+  AccountSortOrder,
+  formatAccountType,
+} from "@/accounts/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountsViewSearchParams } from "@/accounts/AccountsView";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
@@ -75,7 +79,7 @@ const AccountListFrame = function ({
     {
       name: "type",
       headerContent: "Type",
-      getBodyContent: (account: Account) => account.type,
+      getBodyContent: (account: Account) => formatAccountType(account.type),
       sortType:
         currentSort === AccountSortOrder.Type
           ? ColumnSortType.Ascending

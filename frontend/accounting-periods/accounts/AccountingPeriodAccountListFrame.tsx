@@ -16,6 +16,7 @@ import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import accountRoutes from "@/accounts/routes";
+import { formatAccountType } from "@/accounts/types";
 import formatCurrency from "@/framework/formatCurrency";
 import nameof from "@/framework/data/nameof";
 import routes from "@/accounting-periods/routes";
@@ -85,7 +86,8 @@ const AccountingPeriodAccountListFrame = function ({
     {
       name: "type",
       headerContent: "Type",
-      getBodyContent: (account: AccountingPeriodAccount) => account.type,
+      getBodyContent: (account: AccountingPeriodAccount) =>
+        formatAccountType(account.type),
       sortType:
         currentSort === AccountingPeriodAccountSortOrder.Type
           ? ColumnSortType.Ascending

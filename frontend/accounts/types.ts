@@ -59,6 +59,28 @@ const isPositiveChangeInBalance = function (
   return changeInBalance >= 0;
 };
 
+/**
+ * Formats the provided account type into a readable string.
+ */
+const formatAccountType = function (accountType: AccountTypeModel): string {
+  switch (accountType) {
+    case AccountTypeModel.Standard:
+      return "Standard";
+    case AccountTypeModel.CreditCard:
+      return "Credit Card";
+    case AccountTypeModel.Investment:
+      return "Investment";
+    case AccountTypeModel.Debt:
+      return "Debt";
+    case AccountTypeModel.Retirement:
+      return "Retirement";
+    case AccountTypeModel.Escrow:
+      return "Escrow";
+    default:
+      return accountType;
+  }
+};
+
 export {
   type Account,
   type AccountIdentifier,
@@ -69,4 +91,5 @@ export {
   AccountTypeModel as AccountType,
   isTrackedAccountType,
   isPositiveChangeInBalance,
+  formatAccountType,
 };
