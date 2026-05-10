@@ -3,6 +3,7 @@
 import {
   type AccountType,
   type CreateAccountRequest,
+  isDebtAccountType,
   isTrackedAccountType,
 } from "@/accounts/types";
 import {
@@ -12,15 +13,15 @@ import {
   getMinimumDate,
 } from "@/accounting-periods/types";
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
-import {
-  type Fund,
-  type FundAmount,
-  hasIncompleteFundAssignments,
-} from "@/funds/types";
+import type { Fund, FundAmount } from "@/funds/types";
 import FundAssignmentEntryFrame, {
   updateUnassignedFundAmount,
 } from "@/funds/FundAssignmentEntryFrame";
 import { type JSX, startTransition, useActionState, useState } from "react";
+import {
+  isIncomeTransactionComplete,
+  isSpendingTransactionComplete,
+} from "@/transactions/types";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
 import Breadcrumbs from "@/framework/Breadcrumbs";
@@ -152,14 +153,38 @@ const CreateAccountForm = function ({
     }
   };
 
-  const canSubmit =
+  let request: CreateAccountRequest | null = null;
+  if (
     name !== "" &&
     accountType !== null &&
     accountingPeriod !== null &&
     addDate !== null &&
     initialBalance !== null &&
     (!trackedAccountType ||
-      !hasIncompleteFundAssignments(initialFundAssignments));
+      (isDebtAccountType(accountType) &&
+        isSpendingTransactionComplete(initialFundAssignments)) ||
+      (!isDebtAccountType(accountType) &&
+        isIncomeTransactionComplete(initialFundAssignments)))
+  ) {
+    request = {
+      name,
+      type: accountType,
+      accountingPeriodId: accountingPeriod.id,
+      addDate: addDate.format("YYYY-MM-DD"),
+      initialBalance,
+      initialFundAssignments: trackedAccountType
+        ? initialFundAssignments
+            .filter(
+              (fundAmount) =>
+                fundAmount.fundId !== "" && fundAmount.fundName !== "",
+            )
+            .map((fundAmount) => ({
+              fundId: fundAmount.fundId,
+              amount: fundAmount.amount,
+            }))
+        : [],
+    };
+  }
 
   return (
     <Stack spacing={2}>
@@ -229,38 +254,11 @@ const CreateAccountForm = function ({
           <Button
             variant="contained"
             loading={pending}
-            disabled={!canSubmit}
+            disabled={request === null}
             onClick={() => {
-              if (
-                name === "" ||
-                accountType === null ||
-                accountingPeriod === null ||
-                addDate === null ||
-                initialBalance === null
-              ) {
+              if (request === null) {
                 return;
               }
-
-              const request: CreateAccountRequest = {
-                name,
-                type: accountType,
-                accountingPeriodId: accountingPeriod.id,
-                addDate: addDate.format("YYYY-MM-DD"),
-                initialBalance,
-                initialFundAssignments: trackedAccountType
-                  ? initialFundAssignments
-                      .filter(
-                        (fundAmount) =>
-                          fundAmount.fundId !== "" &&
-                          fundAmount.fundName !== "",
-                      )
-                      .map((fundAmount) => ({
-                        fundId: fundAmount.fundId,
-                        amount: fundAmount.amount,
-                      }))
-                  : [],
-              };
-
               startTransition(() => {
                 action(request);
               });

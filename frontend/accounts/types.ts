@@ -47,6 +47,16 @@ const isTrackedAccountType = function (accountType: AccountTypeModel): boolean {
 };
 
 /**
+ * Determines if the provided account type is a debt account type.
+ */
+const isDebtAccountType = function (accountType: AccountTypeModel): boolean {
+  return (
+    accountType === AccountTypeModel.Debt ||
+    accountType === AccountTypeModel.CreditCard
+  );
+};
+
+/**
  * Determines if the provided change in balance is "positive" based on the provided account type.
  */
 const isPositiveChangeInBalance = function (
@@ -90,6 +100,7 @@ export {
   AccountTransactionSortOrderModel as AccountTransactionSortOrder,
   AccountTypeModel as AccountType,
   isTrackedAccountType,
+  isDebtAccountType,
   isPositiveChangeInBalance,
   formatAccountType,
 };
