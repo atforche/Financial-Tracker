@@ -1,27 +1,47 @@
-I want to readd the CRUD interface for Transactions back to the frontend. Here are some important details to keep in mind.
+## Develop a new account and fund onboarding flow for initial setup of the system.
 
-### Transaction Types
+### Motivation:
 
-There are four different types of transactions that all perform different tasks
+Currently, you can add an account with an initial balance, and that initial balance can be assigned to different funds. The problem is that this initial transaction needs an accounting period to be added, so these initial setup transactions appear as regular transactions in the first accounting period. This is problematic because it appears as if you have huge amounts of income coming in during that initial accounting period.
 
-1. Income Transaction - represents money entering a tracked account from an untracked place (either a standalone credit or a transfer from an untracked account)
+### Goal:
 
-1. Spending Transaction - represent money leaving a tracked account to an untracked place (either a standalone debit or a transaction to an untracked account)
+Develop a new onboarding flow that allows multiple accounts and funds to be added (with initial balances) without having any impact on any accounting periods. This facilitates getting accounts and funds set up in the system without polluting any of the accounting periods used for actual tracking.
 
-1. Fund Transaction - represents money moving between funds without affecting any accounts
+### Tasks:
 
-1. Account Transaction - represents money money between accounts without affecting any funds. There are three valid types of account transactions.
-    
-    1. Transferring money between two tracked accounts
-    1. Transferring money between two untracked accounts
-    1. A standalone debit or credit to an untracked account
+1. Remove the existing "initial balance" feature
 
-I want the UI to present the user with the exact set of fields that they need, without them having to worry about the different transaction types. This likely means that we need two "phases" of transaction entry: one phase where the user enters enough information to determine what type of transaction is needed, and a second phase where the user provides the remaining needed information. I'm imaging each phase as a collapsible section where only one section can be open at a time.
+    1. Remove the concepts of an "initial balance" and "initial transaction" from creating an Account. When an account is created through the normal flow, a transaction must be manually added to populate the balance of that account.
 
-### Routing
+    1. Rename the "AddAccountingPeriodId" on the Account and Fund classes to be "OpenedAccountingPeriodId"
 
-The transaction routes should be similar to the existing account, fund, and goal routes. There's a top-level /transactions route with a single detail, create, update, etc routes. Use query parameters to determine how the user navigated to the transaction page.
+    1. Rename the "AddDate" on the Account class to be "OpenedDate"
 
-Users should be able to add transactions from either the AccountingPeriodTransactionListFrame or the AccountTransactionListFrame. So the optional query parameters should be accountingPeriodId and accountId.
+    1. Update the UI to remove the now deprecated features
 
-I want to expose full create, read, update, post, unpost, and delete functionality for transactions through the UI.
+1. Add a new "onboarding" flow
+
+    1. Add new decimal "OnboardedBalance" properties to the Account and Fund classes.
+
+    1. Make the "OpenedAccountingPeriodId" and "OpenedDate" properties on the Account and Fund nullable.
+
+    1. Create a new OnboardingService domain service to orchestrate the onboarding process.
+
+    1. Validate that onboarding can only be completed if there are no accounts, funds, or accounting periods set up in the system.
+
+    1. Allow two collections to be passed into onboarding: a collection of account names, types, and initial balances and a collection of fund names and initial balances.
+
+    1. Onboarding will create a set of accounts with the "OnboardedBalance" set and the "OpenedAccountingPeriodId" and "OpenedDate" set to null.
+
+    1. Onboarding will create a set of funds with the "OnboardedBalance" set and the "OpenedAccountingPeriodId" set to null.
+
+    1. Modify the AccountBalanceService and FundBalanceService to fall back to the onboarded balance if no balance histories can be found
+
+    1. Onboarding will create the Unassigned fund if it doesn't already exist. Ensure that it is created first so that any subsequent funds are prevented from having a name of "unassigned".
+
+    1. Add validation that prevents onboarded accounts from being deleted.
+
+    1. Add an OnboardingController to the REST API
+
+    1. Add UI to the frontend to support onboarding
