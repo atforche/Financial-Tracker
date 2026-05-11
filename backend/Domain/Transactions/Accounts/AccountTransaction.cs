@@ -35,11 +35,6 @@ public class AccountTransaction : Transaction
     /// </summary>
     public DateOnly? CreditPostedDate { get; internal set; }
 
-    /// <summary>
-    /// Account ID of the Account that generated this transaction when it was created, or null
-    /// </summary>
-    public AccountId? GeneratedByAccountId { get; internal set; }
-
     /// <inheritdoc/>
     public override IEnumerable<AccountId> GetAllAffectedAccountIds()
     {

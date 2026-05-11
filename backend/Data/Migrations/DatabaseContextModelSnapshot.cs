@@ -68,17 +68,14 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("AddAccountingPeriodId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("AddDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("InitialTransaction")
+                    b.Property<DateOnly>("DateOpened")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OpeningAccountingPeriodId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Type")
@@ -134,9 +131,6 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("AddAccountingPeriodId")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -146,6 +140,9 @@ namespace Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OpeningAccountingPeriodId")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -299,10 +296,6 @@ namespace Data.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("AccountTransaction_DebitPostedDate");
 
-                    b.Property<Guid?>("GeneratedByAccountId")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("AccountTransaction_GeneratedByAccountId");
-
                     b.HasIndex("CreditAccountId");
 
                     b.HasIndex("DebitAccountId");
@@ -349,10 +342,6 @@ namespace Data.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("IncomeTransaction_DebitPostedDate");
 
-                    b.Property<Guid?>("GeneratedByAccountId")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("IncomeTransaction_GeneratedByAccountId");
-
                     b.HasIndex("CreditAccountId");
 
                     b.HasIndex("DebitAccountId");
@@ -379,10 +368,6 @@ namespace Data.Migrations
                     b.Property<DateOnly?>("DebitPostedDate")
                         .HasColumnType("TEXT")
                         .HasColumnName("SpendingTransaction_DebitPostedDate");
-
-                    b.Property<Guid?>("GeneratedByAccountId")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("SpendingTransaction_GeneratedByAccountId");
 
                     b.HasIndex("CreditAccountId");
 

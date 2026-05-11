@@ -16,7 +16,7 @@ public class AccountRepository(DatabaseContext databaseContext) : IAccountReposi
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Account> GetAllAccountsAddedInPeriod(AccountingPeriodId accountingPeriodId) =>
-        databaseContext.Accounts.Where(account => account.AddAccountingPeriodId == accountingPeriodId).ToList();
+        databaseContext.Accounts.Where(account => account.OpeningAccountingPeriodId == accountingPeriodId).ToList();
 
     /// <inheritdoc/>
     public Account GetById(AccountId id) => databaseContext.Accounts.SingleOrDefault(account => account.Id == id)

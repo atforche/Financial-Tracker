@@ -17,9 +17,7 @@ interface ActionState {
   readonly nameErrors?: string | null;
   readonly typeErrors?: string | null;
   readonly accountingPeriodErrors?: string | null;
-  readonly addDateErrors?: string | null;
-  readonly initialBalanceErrors?: string | null;
-  readonly initialFundAssignmentsErrors?: string | null;
+  readonly dateOpenedErrors?: string | null;
   readonly unmappedErrors?: string | null;
 }
 
@@ -39,9 +37,7 @@ const createAccount = async function (
       let nameErrorMessage = null;
       let typeErrorMessage = null;
       let accountingPeriodErrorMessage = null;
-      let addDateErrorMessage = null;
-      let initialBalanceErrorMessage = null;
-      let initialFundAssignmentsErrorMessage = null;
+      let dateOpenedErrorMessage = null;
       const unmappedErrors: (string | null)[] = [];
       for (const key of Object.keys(error.errors ?? {})) {
         if (
@@ -56,30 +52,18 @@ const createAccount = async function (
           typeErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else if (
           key.toUpperCase() ===
-          nameof<CreateAccountRequest>("accountingPeriodId").toUpperCase()
+          nameof<CreateAccountRequest>(
+            "openingAccountingPeriodId",
+          ).toUpperCase()
         ) {
           accountingPeriodErrorMessage = formatErrors(
             error.errors?.[key] ?? null,
           );
         } else if (
           key.toUpperCase() ===
-          nameof<CreateAccountRequest>("addDate").toUpperCase()
+          nameof<CreateAccountRequest>("dateOpened").toUpperCase()
         ) {
-          addDateErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateAccountRequest>("initialBalance").toUpperCase()
-        ) {
-          initialBalanceErrorMessage = formatErrors(
-            error.errors?.[key] ?? null,
-          );
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateAccountRequest>("initialFundAssignments").toUpperCase()
-        ) {
-          initialFundAssignmentsErrorMessage = formatErrors(
-            error.errors?.[key] ?? null,
-          );
+          dateOpenedErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else {
           unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
         }
@@ -91,9 +75,7 @@ const createAccount = async function (
         nameErrors: nameErrorMessage,
         typeErrors: typeErrorMessage,
         accountingPeriodErrors: accountingPeriodErrorMessage,
-        addDateErrors: addDateErrorMessage,
-        initialBalanceErrors: initialBalanceErrorMessage,
-        initialFundAssignmentsErrors: initialFundAssignmentsErrorMessage,
+        dateOpenedErrors: dateOpenedErrorMessage,
         unmappedErrors: unmappedErrors.join(", ") || null,
       };
     }

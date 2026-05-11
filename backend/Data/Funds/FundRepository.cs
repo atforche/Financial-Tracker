@@ -16,7 +16,7 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Fund> GetAllFundsAddedInPeriod(AccountingPeriodId accountingPeriodId) =>
-        databaseContext.Funds.Where(fund => fund.AddAccountingPeriodId == accountingPeriodId).ToList();
+        databaseContext.Funds.Where(fund => fund.OpeningAccountingPeriodId == accountingPeriodId).ToList();
 
     /// <inheritdoc/>
     public Fund GetById(FundId id) => databaseContext.Funds.Single(fund => fund.Id == id);

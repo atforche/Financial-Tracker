@@ -28,20 +28,20 @@ public class Fund : Entity<FundId>
     public string Description { get; internal set; }
 
     /// <summary>
-    /// Accounting Period that this Fund was added in
+    /// Accounting Period that this Fund was opened in
     /// </summary>
-    public AccountingPeriodId AddAccountingPeriodId { get; private set; }
+    public AccountingPeriodId OpeningAccountingPeriodId { get; private set; }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal Fund(string name, string description, AccountingPeriodId addAccountingPeriodId, bool isSystemFund)
+    internal Fund(string name, string description, AccountingPeriodId openingAccountingPeriodId, bool isSystemFund)
         : base(new FundId(Guid.NewGuid()))
     {
         Name = name;
         IsSystemFund = isSystemFund;
         Description = description;
-        AddAccountingPeriodId = addAccountingPeriodId;
+        OpeningAccountingPeriodId = openingAccountingPeriodId;
     }
 
     /// <summary>
@@ -53,7 +53,7 @@ public class Fund : Entity<FundId>
         Name = "";
         IsSystemFund = false;
         Description = "";
-        AddAccountingPeriodId = null!;
+        OpeningAccountingPeriodId = null!;
     }
 }
 

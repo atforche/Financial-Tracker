@@ -18,7 +18,7 @@ internal sealed class FundConfiguration : IEntityTypeConfiguration<Fund>
 
         builder.HasIndex(fund => fund.Name).IsUnique();
 
-        builder.Property(fund => fund.AddAccountingPeriodId)
+        builder.Property(fund => fund.OpeningAccountingPeriodId)
             .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
     }
 }

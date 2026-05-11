@@ -1973,25 +1973,18 @@ export interface components {
         CreateAccountModel: {
             /** @description Name for the Account */
             name: string;
-            /** @description Description for the Account */
+            /** @description Type of the Account */
             type: components["schemas"]["AccountTypeModel"];
             /**
              * Format: uuid
-             * @description Accounting Period that the Account is being added to
+             * @description Opening Accounting Period for the Account
              */
-            accountingPeriodId: string;
+            openingAccountingPeriodId: string;
             /**
              * Format: date
-             * @description Date the Account is being added
+             * @description Date the Account is being opened
              */
-            addDate: string;
-            /**
-             * Format: double
-             * @description Initial balance for the Account
-             */
-            initialBalance: number;
-            /** @description Initial Fund Assignments for the Account */
-            initialFundAssignments: components["schemas"]["CreateFundAmountModel"][];
+            dateOpened: string;
         };
         /** @description Model representing a request to create a Fund Amount */
         CreateFundAmountModel: {

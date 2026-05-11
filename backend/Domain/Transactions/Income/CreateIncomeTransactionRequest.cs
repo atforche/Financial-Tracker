@@ -32,9 +32,4 @@ public record CreateIncomeTransactionRequest : CreateTransactionRequest
     /// Fund assignments for the amount of this Income Transaction
     /// </summary>
     public required IReadOnlyCollection<FundAmount> FundAssignments { get; init; }
-
-    /// <summary>
-    /// True if this transaction is the initial transaction for the account, false otherwise
-    /// </summary>
-    public required bool IsInitialTransactionForAccount { get; init; }
 }

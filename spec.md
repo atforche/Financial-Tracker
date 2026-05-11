@@ -14,9 +14,9 @@ Develop a new onboarding flow that allows multiple accounts and funds to be adde
 
     1. Remove the concepts of an "initial balance" and "initial transaction" from creating an Account. When an account is created through the normal flow, a transaction must be manually added to populate the balance of that account.
 
-    1. Rename the "AddAccountingPeriodId" on the Account and Fund classes to be "OpenedAccountingPeriodId"
+    1. Rename the "AddAccountingPeriodId" on the Account and Fund classes to be "OpeningAccountingPeriodId"
 
-    1. Rename the "AddDate" on the Account class to be "OpenedDate"
+    1. Rename the "AddDate" on the Account class to be "DateOpened"
 
     1. Update the UI to remove the now deprecated features
 
@@ -24,7 +24,7 @@ Develop a new onboarding flow that allows multiple accounts and funds to be adde
 
     1. Add new decimal "OnboardedBalance" properties to the Account and Fund classes.
 
-    1. Make the "OpenedAccountingPeriodId" and "OpenedDate" properties on the Account and Fund nullable.
+    1. Make the "OpeningAccountingPeriodId" and "DateOpened" properties on the Account and Fund nullable.
 
     1. Create a new OnboardingService domain service to orchestrate the onboarding process.
 

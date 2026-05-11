@@ -65,12 +65,6 @@ internal sealed class TransactionConfiguration :
                 .HasConversion(fundId => fundId.Value, value => new FundId(value));
         });
         builder.Navigation(t => t.FundAssignments).AutoInclude();
-
-        builder.Property(t => t.GeneratedByAccountId)
-            .HasColumnName("SpendingTransaction_GeneratedByAccountId")
-            .HasConversion(
-                id => id == null ? (Guid?)null : id.Value,
-                value => value == null ? null : new AccountId(value.Value));
     }
 
     /// <inheritdoc/>
@@ -100,12 +94,6 @@ internal sealed class TransactionConfiguration :
             fundAssignment.Property(f => f.FundId)
                 .HasConversion(fundId => fundId.Value, value => new FundId(value));
         });
-
-        builder.Property(t => t.GeneratedByAccountId)
-            .HasColumnName("IncomeTransaction_GeneratedByAccountId")
-            .HasConversion(
-                id => id == null ? (Guid?)null : id.Value,
-                value => value == null ? null : new AccountId(value.Value));
     }
 
     /// <inheritdoc/>
@@ -126,12 +114,6 @@ internal sealed class TransactionConfiguration :
 
         builder.Property(t => t.CreditPostedDate)
             .HasColumnName("AccountTransaction_CreditPostedDate");
-
-        builder.Property(t => t.GeneratedByAccountId)
-            .HasColumnName("AccountTransaction_GeneratedByAccountId")
-            .HasConversion(
-                id => id == null ? (Guid?)null : id.Value,
-                value => value == null ? null : new AccountId(value.Value));
     }
 
     /// <inheritdoc/>

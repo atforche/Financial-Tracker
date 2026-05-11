@@ -16,7 +16,7 @@ internal sealed class MockFundRepository : IFundRepository
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Fund> GetAllFundsAddedInPeriod(AccountingPeriodId accountingPeriodId) =>
-        _funds.Values.Where(fund => fund.AddAccountingPeriodId == accountingPeriodId).ToList();
+        _funds.Values.Where(fund => fund.OpeningAccountingPeriodId == accountingPeriodId).ToList();
 
     /// <inheritdoc/>
     public Fund GetById(FundId id) => _funds[id.Value];

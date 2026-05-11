@@ -29,11 +29,11 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     /// <inheritdoc/>
     public bool DoAnyTransactionsExistForAccount(Account account) =>
         databaseContext.Transactions.OfType<SpendingTransaction>()
-            .Any(t => account.InitialTransaction != t.Id && (t.DebitAccountId == account.Id || t.CreditAccountId == account.Id)) ||
+            .Any(t => t.DebitAccountId == account.Id || t.CreditAccountId == account.Id) ||
         databaseContext.Transactions.OfType<IncomeTransaction>()
-            .Any(t => account.InitialTransaction != t.Id && (t.DebitAccountId == account.Id || t.CreditAccountId == account.Id)) ||
+            .Any(t => t.DebitAccountId == account.Id || t.CreditAccountId == account.Id) ||
         databaseContext.Transactions.OfType<AccountTransaction>()
-            .Any(t => account.InitialTransaction != t.Id && (t.DebitAccountId == account.Id || t.CreditAccountId == account.Id));
+            .Any(t => t.DebitAccountId == account.Id || t.CreditAccountId == account.Id);
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>

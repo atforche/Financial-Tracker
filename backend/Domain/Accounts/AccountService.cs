@@ -2,9 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Exceptions;
 using Domain.Transactions;
-using Domain.Transactions.Accounts;
-using Domain.Transactions.Income;
-using Domain.Transactions.Spending;
 
 namespace Domain.Accounts;
 
@@ -13,9 +10,8 @@ namespace Domain.Accounts;
 /// </summary>
 public class AccountService(
     IAccountRepository accountRepository,
-    ITransactionRepository transactionRepository,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
-    TransactionDispatcherService transactionService)
+    ITransactionRepository transactionRepository)
 {
     /// <summary>
     /// Attempts to create a new Account
@@ -31,13 +27,9 @@ public class AccountService(
         {
             return false;
         }
-        account = new Account(request.Name, request.Type, request.AccountingPeriod.Id, request.AddDate);
+        account = new Account(request.Name, request.Type, request.OpeningAccountingPeriod.Id, request.DateOpened);
         accountRepository.Add(account);
         accountingPeriodBalanceService.AddAccount(account);
-        if (!AddInitialAccountTransaction(request, account, out exceptions))
-        {
-            return false;
-        }
         return true;
     }
 
@@ -76,85 +68,8 @@ public class AccountService(
             exceptions = [new UnableToDeleteException("Cannot delete an Account that has Transactions.")];
             return false;
         }
-        if (account.InitialTransaction != null)
-        {
-            Transaction initialTransaction = transactionRepository.GetById(account.InitialTransaction);
-            if (!transactionService.TryUnpost(initialTransaction, account.Id, out IEnumerable<Exception> unpostingExceptions))
-            {
-                exceptions = exceptions.Concat(unpostingExceptions);
-                return false;
-            }
-            if (!transactionService.TryDelete(initialTransaction, account.Id, out IEnumerable<Exception> transactionExceptions))
-            {
-                exceptions = exceptions.Concat(transactionExceptions);
-                return false;
-            }
-        }
         accountingPeriodBalanceService.DeleteAccount(account);
         accountRepository.Delete(account);
-        return true;
-    }
-
-    /// <summary>
-    /// Adds the initial transaction for an Account if the initial balance is greater than 0
-    /// </summary>
-    private bool AddInitialAccountTransaction(CreateAccountRequest request, Account account, out IEnumerable<Exception> exceptions)
-    {
-        exceptions = [];
-
-        if (request.InitialBalance <= 0)
-        {
-            return true;
-        }
-        CreateTransactionRequest createRequest = !account.Type.IsTracked()
-            ? new CreateAccountTransactionRequest
-            {
-                AccountingPeriodId = request.AccountingPeriod.Id,
-                TransactionDate = request.AddDate,
-                Location = "Initial",
-                Description = "Initial Balance",
-                Amount = request.InitialBalance,
-                DebitAccount = account.Type.IsDebt() ? account : null,
-                DebitPostedDate = account.Type.IsDebt() ? request.AddDate : null,
-                CreditAccount = account.Type.IsDebt() ? null : account,
-                CreditPostedDate = account.Type.IsDebt() ? null : request.AddDate,
-                GeneratedByAccountId = account.Id
-            }
-            : account.Type.IsDebt()
-            ? new CreateSpendingTransactionRequest
-            {
-                AccountingPeriodId = request.AccountingPeriod.Id,
-                TransactionDate = request.AddDate,
-                Location = "Initial",
-                Description = "Initial Balance",
-                Amount = request.InitialBalance,
-                DebitAccount = account,
-                DebitPostedDate = request.AddDate,
-                CreditAccount = null,
-                CreditPostedDate = null,
-                FundAssignments = request.InitialFundAssignments,
-                IsInitialTransactionForAccount = true
-            }
-            : new CreateIncomeTransactionRequest
-            {
-                AccountingPeriodId = request.AccountingPeriod.Id,
-                TransactionDate = request.AddDate,
-                Location = "Initial",
-                Description = "Initial Balance",
-                Amount = request.InitialBalance,
-                CreditAccount = account,
-                CreditPostedDate = request.AddDate,
-                DebitAccount = null,
-                DebitPostedDate = null,
-                FundAssignments = request.InitialFundAssignments,
-                IsInitialTransactionForAccount = true
-            };
-        if (!transactionService.TryCreate(createRequest, out Transaction? transaction, out exceptions))
-        {
-            return false;
-        }
-        account.InitialTransaction = transaction.Id;
-        transactionRepository.Add(transaction);
         return true;
     }
 
@@ -187,17 +102,13 @@ public class AccountService(
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
-        if (!request.AccountingPeriod.IsOpen)
+        if (!request.OpeningAccountingPeriod.IsOpen)
         {
             exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
         }
-        if (!request.AccountingPeriod.IsDateInPeriod(request.AddDate))
+        if (!request.OpeningAccountingPeriod.IsDateInPeriod(request.DateOpened))
         {
-            exceptions = exceptions.Append(new InvalidDateException("The provided add date is not within the provided accounting period."));
-        }
-        if (!request.Type.IsTracked() && request.InitialFundAssignments.Count > 0)
-        {
-            exceptions = exceptions.Append(new InvalidAccountTypeException("Cannot assign funds to an untracked account."));
+            exceptions = exceptions.Append(new InvalidDateException("The provided date opened is not within the provided accounting period."));
         }
         return !exceptions.Any();
     }
