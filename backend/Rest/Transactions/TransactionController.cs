@@ -208,7 +208,7 @@ public sealed class TransactionController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!transactionDispatcherService.TryUnpost(transaction, out IEnumerable<Exception> exceptions))
+        if (!transactionDispatcherService.TryUnpost(transaction, null, out IEnumerable<Exception> exceptions))
         {
             errors.Add("", exceptions.Select(exception => exception.Message).ToArray());
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails

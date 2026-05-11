@@ -76,7 +76,7 @@ public abstract class Transaction : Entity<TransactionId>
         DateOnly? postedDate = GetPostedDateForAccount(existingAccountBalance.Account.Id);
         if (postedDate != null && (asOfDate == null || postedDate == asOfDate))
         {
-            newBalance = PostToAccountBalance(existingAccountBalance, reverse);
+            newBalance = PostToAccountBalance(newBalance, reverse);
         }
         return newBalance;
     }
@@ -114,7 +114,7 @@ public abstract class Transaction : Entity<TransactionId>
             DateOnly? postedDate = GetPostedDateForAccount(affectedAccountId);
             if (postedDate != null && (asOfDate == null || postedDate == asOfDate))
             {
-                newBalance = PostToFundBalance(existingFundBalance, affectedAccountId, reverse);
+                newBalance = PostToFundBalance(newBalance, affectedAccountId, reverse);
             }
         }
         return newBalance;

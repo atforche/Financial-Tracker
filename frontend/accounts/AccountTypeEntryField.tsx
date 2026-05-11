@@ -1,4 +1,4 @@
-import { AccountType } from "@/accounts/types";
+import { AccountType, formatAccountType } from "@/accounts/types";
 import { ComboBoxEntryField } from "@/framework/forms/ComboBoxEntryField";
 import type { JSX } from "react";
 
@@ -25,11 +25,13 @@ const AccountTypeEntryField = function ({
     <ComboBoxEntryField<AccountType>
       label={label}
       options={Object.values(AccountType).map((type) => ({
-        label: type,
+        label: formatAccountType(type),
         value: type,
       }))}
       value={
-        value === null ? { label: "", value: null } : { label: value, value }
+        value === null
+          ? { label: "", value: null }
+          : { label: formatAccountType(value), value }
       }
       setValue={(newValue): void => {
         setValue(newValue?.value ?? null);

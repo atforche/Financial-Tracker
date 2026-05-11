@@ -15,7 +15,7 @@ public class AccountService(
     IAccountRepository accountRepository,
     ITransactionRepository transactionRepository,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
-    TransactionDispatcherService transactionDispatcherService)
+    TransactionDispatcherService transactionService)
 {
     /// <summary>
     /// Attempts to create a new Account
@@ -79,7 +79,12 @@ public class AccountService(
         if (account.InitialTransaction != null)
         {
             Transaction initialTransaction = transactionRepository.GetById(account.InitialTransaction);
-            if (!transactionDispatcherService.TryDelete(initialTransaction, account.Id, out IEnumerable<Exception> transactionExceptions))
+            if (!transactionService.TryUnpost(initialTransaction, account.Id, out IEnumerable<Exception> unpostingExceptions))
+            {
+                exceptions = exceptions.Concat(unpostingExceptions);
+                return false;
+            }
+            if (!transactionService.TryDelete(initialTransaction, account.Id, out IEnumerable<Exception> transactionExceptions))
             {
                 exceptions = exceptions.Concat(transactionExceptions);
                 return false;
@@ -101,7 +106,6 @@ public class AccountService(
         {
             return true;
         }
-
         CreateTransactionRequest createRequest = !account.Type.IsTracked()
             ? new CreateAccountTransactionRequest
             {
@@ -145,7 +149,7 @@ public class AccountService(
                 FundAssignments = request.InitialFundAssignments,
                 IsInitialTransactionForAccount = true
             };
-        if (!transactionDispatcherService.TryCreate(createRequest, out Transaction? transaction, out exceptions))
+        if (!transactionService.TryCreate(createRequest, out Transaction? transaction, out exceptions))
         {
             return false;
         }

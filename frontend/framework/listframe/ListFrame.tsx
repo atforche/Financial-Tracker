@@ -110,7 +110,7 @@ const ListFrame = function <T>({
           page={currentPage === null ? 0 : parseInt(currentPage, 10) - 1}
           onPageChange={(_, newPage) => {
             const params = new URLSearchParams(searchParams.toString());
-            params.set(pageSearchParamName, newPage.toString());
+            params.set(pageSearchParamName, (newPage + 1).toString());
             router.replace(`${pathname}?${params.toString()}`);
           }}
         />

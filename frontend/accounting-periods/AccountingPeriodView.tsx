@@ -16,6 +16,7 @@ import breadcrumbs from "@/accounting-periods/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
 import routes from "@/accounting-periods/routes";
+import { rowsPerPage } from "@/framework/listframe/Constants";
 
 /**
  * Parameters for the AccountingPeriodView component.
@@ -53,7 +54,7 @@ const AccountingPeriodView = async function ({
   searchParams,
 }: AccountingPeriodViewProps): Promise<JSX.Element> {
   const { id } = await params;
-  const { search, fundSort, goalSort, accountSort, transactionSort } =
+  const { search, fundSort, goalSort, accountSort, transactionSort, page } =
     await searchParams;
 
   const apiClient = getApiClient();
@@ -77,6 +78,8 @@ const AccountingPeriodView = async function ({
         query: {
           Search: search ?? "",
           Sort: fundSort ?? null,
+          Limit: rowsPerPage,
+          Offset: ((page ?? 1) - 1) * rowsPerPage,
         },
       },
     },
@@ -91,6 +94,8 @@ const AccountingPeriodView = async function ({
         query: {
           Search: search ?? "",
           Sort: goalSort ?? null,
+          Limit: rowsPerPage,
+          Offset: ((page ?? 1) - 1) * rowsPerPage,
         },
       },
     },
@@ -105,6 +110,8 @@ const AccountingPeriodView = async function ({
         query: {
           Search: search ?? "",
           Sort: accountSort ?? null,
+          Limit: rowsPerPage,
+          Offset: ((page ?? 1) - 1) * rowsPerPage,
         },
       },
     },
@@ -119,6 +126,8 @@ const AccountingPeriodView = async function ({
         query: {
           Search: search ?? "",
           Sort: transactionSort ?? null,
+          Limit: rowsPerPage,
+          Offset: ((page ?? 1) - 1) * rowsPerPage,
         },
       },
     },

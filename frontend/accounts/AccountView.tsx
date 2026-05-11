@@ -1,5 +1,8 @@
+import {
+  type AccountTransactionSortOrder,
+  formatAccountType,
+} from "@/accounts/types";
 import { Button, Stack, Typography } from "@mui/material";
-import type { AccountTransactionSortOrder } from "@/accounts/types";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
@@ -112,7 +115,10 @@ const AccountView = async function ({
       </Stack>
       <CaptionedFrame caption="Details">
         <CaptionedValue caption="Name" value={account.name} />
-        <CaptionedValue caption="Type" value={account.type} />
+        <CaptionedValue
+          caption="Type"
+          value={formatAccountType(account.type)}
+        />
       </CaptionedFrame>
       <CaptionedFrame caption="Balance">
         <CaptionedValue

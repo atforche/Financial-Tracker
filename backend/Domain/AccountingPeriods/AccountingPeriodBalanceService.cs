@@ -207,6 +207,7 @@ public class AccountingPeriodBalanceService(
                     closingFundBalance,
                     goalRepository.GetByFundAndAccountingPeriod(fundBalanceHistory.Fund.Id, fundBalanceHistory.AccountingPeriod.Id));
             }
+            balanceHistory.UpdateBalances();
             accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
         }
     }
@@ -266,6 +267,7 @@ public class AccountingPeriodBalanceService(
                         closingFundBalance,
                         goalRepository.GetByFundAndAccountingPeriod(fundBalanceHistory.Fund.Id, fundBalanceHistory.AccountingPeriod.Id));
                 }
+                balanceHistory.UpdateBalances();
                 accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
             }
         }

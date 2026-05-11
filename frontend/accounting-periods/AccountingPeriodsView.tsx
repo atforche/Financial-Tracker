@@ -22,7 +22,7 @@ interface AccountingPeriodsViewSearchParams {
  * Props for the AccountingPeriodsView component.
  */
 interface AccountingPeriodsViewProps {
-  readonly searchParams?: Promise<AccountingPeriodsViewSearchParams>;
+  readonly searchParams: Promise<AccountingPeriodsViewSearchParams>;
 }
 
 /**
@@ -31,15 +31,16 @@ interface AccountingPeriodsViewProps {
 const AccountingPeriodsView = async function ({
   searchParams,
 }: AccountingPeriodsViewProps): Promise<JSX.Element> {
-  const searchParamsValue = await searchParams;
+  const { search, sort, page } = await searchParams;
+
   const client = getApiClient();
   const { data: accountingPeriods } = await client.GET("/accounting-periods", {
     params: {
       query: {
-        Search: searchParamsValue?.search ?? "",
-        Sort: searchParamsValue?.sort ?? null,
+        Search: search ?? "",
+        Sort: sort ?? null,
         Limit: rowsPerPage,
-        Offset: ((searchParamsValue?.page ?? 1) - 1) * rowsPerPage,
+        Offset: ((page ?? 1) - 1) * rowsPerPage,
       },
     },
   });

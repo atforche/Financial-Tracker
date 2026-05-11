@@ -7,6 +7,7 @@ import { Stack } from "@mui/material";
 import breadcrumbs from "@/funds/breadcrumbs";
 import getApiClient from "@/framework/data/getApiClient";
 import nameof from "@/framework/data/nameof";
+import { rowsPerPage } from "@/framework/listframe/Constants";
 
 /**
  * Search parameters for the FundsView component.
@@ -30,7 +31,7 @@ interface FundsViewProps {
 const FundsView = async function ({
   searchParams,
 }: FundsViewProps): Promise<JSX.Element> {
-  const { search, sort } = await searchParams;
+  const { search, sort, page } = await searchParams;
 
   const apiClient = getApiClient();
   const { data: funds } = await apiClient.GET("/funds", {
@@ -38,6 +39,8 @@ const FundsView = async function ({
       query: {
         Search: search ?? "",
         Sort: sort ?? null,
+        Limit: rowsPerPage,
+        Offset: ((page ?? 1) - 1) * rowsPerPage,
       },
     },
   });

@@ -47,6 +47,16 @@ const isTrackedAccountType = function (accountType: AccountTypeModel): boolean {
 };
 
 /**
+ * Determines if the provided account type is a debt account type.
+ */
+const isDebtAccountType = function (accountType: AccountTypeModel): boolean {
+  return (
+    accountType === AccountTypeModel.Debt ||
+    accountType === AccountTypeModel.CreditCard
+  );
+};
+
+/**
  * Determines if the provided change in balance is "positive" based on the provided account type.
  */
 const isPositiveChangeInBalance = function (
@@ -59,6 +69,28 @@ const isPositiveChangeInBalance = function (
   return changeInBalance >= 0;
 };
 
+/**
+ * Formats the provided account type into a readable string.
+ */
+const formatAccountType = function (accountType: AccountTypeModel): string {
+  switch (accountType) {
+    case AccountTypeModel.Standard:
+      return "Standard";
+    case AccountTypeModel.CreditCard:
+      return "Credit Card";
+    case AccountTypeModel.Investment:
+      return "Investment";
+    case AccountTypeModel.Debt:
+      return "Debt";
+    case AccountTypeModel.Retirement:
+      return "Retirement";
+    case AccountTypeModel.Escrow:
+      return "Escrow";
+    default:
+      return accountType;
+  }
+};
+
 export {
   type Account,
   type AccountIdentifier,
@@ -68,5 +100,7 @@ export {
   AccountTransactionSortOrderModel as AccountTransactionSortOrder,
   AccountTypeModel as AccountType,
   isTrackedAccountType,
+  isDebtAccountType,
   isPositiveChangeInBalance,
+  formatAccountType,
 };
