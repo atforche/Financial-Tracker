@@ -33,8 +33,9 @@ namespace Data.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Type = table.Column<string>(type: "TEXT", nullable: false),
-                    OpeningAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    DateOpened = table.Column<DateOnly>(type: "TEXT", nullable: false)
+                    OpeningAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    DateOpened = table.Column<DateOnly>(type: "TEXT", nullable: true),
+                    OnboardedBalance = table.Column<decimal>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -67,9 +68,9 @@ namespace Data.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    IsSystemFund = table.Column<bool>(type: "INTEGER", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
-                    OpeningAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    OpeningAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    OnboardedBalance = table.Column<decimal>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {

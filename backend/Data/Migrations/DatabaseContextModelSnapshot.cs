@@ -68,14 +68,17 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateOnly>("DateOpened")
+                    b.Property<DateOnly?>("DateOpened")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("OpeningAccountingPeriodId")
+                    b.Property<decimal?>("OnboardedBalance")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("OpeningAccountingPeriodId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Type")
@@ -135,14 +138,14 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsSystemFund")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("OpeningAccountingPeriodId")
+                    b.Property<decimal?>("OnboardedBalance")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("OpeningAccountingPeriodId")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
