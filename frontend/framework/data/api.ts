@@ -283,6 +283,95 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/onboarding/eligibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves whether onboarding can be completed. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["OnboardingEligibilityModel"];
+                        "application/json": components["schemas"]["OnboardingEligibilityModel"];
+                        "text/json": components["schemas"]["OnboardingEligibilityModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/onboarding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Completes the onboarding flow. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["OnboardingModel"];
+                    "text/json": components["schemas"]["OnboardingModel"];
+                    "application/*+json": components["schemas"]["OnboardingModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/goals/{goalId}": {
         parameters: {
             query?: never;
@@ -2286,6 +2375,44 @@ export interface components {
          * @enum {unknown}
          */
         GoalTypeModel: GoalTypeModel;
+        /** @description Model representing an Account to create during onboarding. */
+        OnboardingAccountModel: {
+            /** @description Name for the Account. */
+            name: string;
+            /** @description Type for the Account. */
+            type: components["schemas"]["AccountTypeModel"];
+            /**
+             * Format: double
+             * @description Balance for the Account.
+             */
+            balance: number;
+        };
+        /** @description Model representing whether onboarding can be completed. */
+        OnboardingEligibilityModel: {
+            /** @description Whether onboarding can be completed. */
+            isEligible: boolean;
+            /** @description Errors preventing onboarding. */
+            errors: string[];
+        };
+        /** @description Model representing a Fund to create during onboarding. */
+        OnboardingFundModel: {
+            /** @description Name for the Fund. */
+            name: string;
+            /** @description Description for the Fund. */
+            description: string;
+            /**
+             * Format: double
+             * @description Balance for the Fund.
+             */
+            balance: number;
+        };
+        /** @description Model representing a request to complete onboarding. */
+        OnboardingModel: {
+            /** @description Accounts to create during onboarding. */
+            accounts: components["schemas"]["OnboardingAccountModel"][];
+            /** @description Funds to create during onboarding. */
+            funds: components["schemas"]["OnboardingFundModel"][];
+        };
         /** @description Model representing a request to post a Transaction */
         PostTransactionModel: {
             /**

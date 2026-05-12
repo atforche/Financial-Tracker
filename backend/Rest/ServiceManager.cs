@@ -2,6 +2,7 @@ using Rest.AccountingPeriods;
 using Rest.Accounts;
 using Rest.Funds;
 using Rest.Goals;
+using Rest.Onboarding;
 using Rest.Transactions;
 
 namespace Rest;
@@ -36,6 +37,8 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<FundTransactionGetter>();
 
         _ = serviceCollection.AddScoped<GoalConverter>();
+
+        _ = serviceCollection.AddScoped<OnboardingRequestConverter>();
 
         _ = serviceCollection.AddScoped<TransactionConverter>();
         _ = serviceCollection.AddScoped<TransactionRequestConverter>();
