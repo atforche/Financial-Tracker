@@ -13,11 +13,6 @@ public record CreateFundRequest
     public required string Name { get; init; }
 
     /// <summary>
-    /// Whether the Fund is a system-defined fund
-    /// </summary>
-    public bool IsSystemFund { get; init; }
-
-    /// <summary>
     /// Description for the Fund
     /// </summary>
     public required string Description { get; init; }
@@ -25,5 +20,10 @@ public record CreateFundRequest
     /// <summary>
     /// Accounting Period that the Fund is being added to
     /// </summary>
-    public required AccountingPeriod AccountingPeriod { get; init; }
+    public required AccountingPeriod? AccountingPeriod { get; init; }
+
+    /// <summary>
+    /// Onboarded balance for the Fund
+    /// </summary>
+    public required decimal? OnboardedBalance { get; init; }
 }

@@ -20,10 +20,15 @@ public record CreateAccountRequest
     /// <summary>
     /// Accounting Period that the Account is being added to
     /// </summary>
-    public required AccountingPeriod OpeningAccountingPeriod { get; init; }
+    public AccountingPeriod? OpeningAccountingPeriod { get; init; }
 
     /// <summary>
     /// Date the Account is being opened
     /// </summary>
-    public required DateOnly DateOpened { get; init; }
+    public DateOnly? DateOpened { get; init; }
+
+    /// <summary>
+    /// Onboarded balance for the Account
+    /// </summary>
+    public decimal? OnboardedBalance { get; init; }
 }

@@ -27,7 +27,7 @@ public class AccountService(
         {
             return false;
         }
-        account = new Account(request.Name, request.Type, request.OpeningAccountingPeriod.Id, request.DateOpened);
+        account = new Account(request.Name, request.Type, request.OpeningAccountingPeriod?.Id, request.DateOpened, request.OnboardedBalance);
         accountRepository.Add(account);
         accountingPeriodBalanceService.AddAccount(account);
         return true;
@@ -63,6 +63,11 @@ public class AccountService(
     {
         exceptions = [];
 
+        if (account.IsOnboarded)
+        {
+            exceptions = [new UnableToDeleteException("Cannot delete an Account that was created during onboarding.")];
+            return false;
+        }
         if (transactionRepository.DoAnyTransactionsExistForAccount(account))
         {
             exceptions = [new UnableToDeleteException("Cannot delete an Account that has Transactions.")];
@@ -102,11 +107,19 @@ public class AccountService(
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
-        if (!request.OpeningAccountingPeriod.IsOpen)
+        if (request.OpeningAccountingPeriod != null != (request.DateOpened != null))
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("Both opening accounting period and date opened must be provided together."));
+        }
+        if (request.OpeningAccountingPeriod != null && request.OnboardedBalance != null)
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("Onboarded balance cannot be provided if opening accounting period is provided."));
+        }
+        if (request.OpeningAccountingPeriod != null && !request.OpeningAccountingPeriod.IsOpen)
         {
             exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
         }
-        if (!request.OpeningAccountingPeriod.IsDateInPeriod(request.DateOpened))
+        if (request.OpeningAccountingPeriod != null && request.DateOpened != null && !request.OpeningAccountingPeriod.IsDateInPeriod(request.DateOpened.Value))
         {
             exceptions = exceptions.Append(new InvalidDateException("The provided date opened is not within the provided accounting period."));
         }

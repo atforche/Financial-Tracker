@@ -27,7 +27,7 @@ public class FundService(
         {
             return false;
         }
-        fund = new Fund(request.Name, request.Description, request.AccountingPeriod.Id, request.IsSystemFund);
+        fund = new Fund(request.Name, request.Description, request.AccountingPeriod?.Id, request.OnboardedBalance);
         accountingPeriodBalanceService.AddFund(fund);
         return true;
     }
@@ -89,11 +89,11 @@ public class FundService(
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
-        if (request.IsSystemFund && fundRepository.GetSystemFund() != null)
+        if (request.AccountingPeriod == null == (request.OnboardedBalance == null))
         {
-            exceptions = exceptions.Append(new InvalidFundException("An unassigned fund already exists."));
+            exceptions = exceptions.Append(new InvalidFundException("Only one of accounting period and onboarded balance can be provided."));
         }
-        if (!request.AccountingPeriod.IsOpen)
+        if (request.AccountingPeriod != null && !request.AccountingPeriod.IsOpen)
         {
             exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
         }
@@ -111,7 +111,7 @@ public class FundService(
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
-        if (fund.IsSystemFund)
+        if (fund.IsUnassignedFund)
         {
             exceptions = exceptions.Append(new UnableToUpdateException("The unassigned fund cannot be updated."));
         }
@@ -125,9 +125,13 @@ public class FundService(
     {
         exceptions = [];
 
-        if (fund.IsSystemFund)
+        if (fund.IsUnassignedFund)
         {
             exceptions = exceptions.Append(new UnableToDeleteException("The unassigned fund cannot be deleted."));
+        }
+        if (fund.IsOnboarded)
+        {
+            exceptions = exceptions.Append(new UnableToDeleteException("Funds created during onboarding cannot be deleted."));
         }
         if (transactionRepository.DoAnyTransactionsExistForFund(fund.Id))
         {

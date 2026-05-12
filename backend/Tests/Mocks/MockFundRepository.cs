@@ -22,7 +22,7 @@ internal sealed class MockFundRepository : IFundRepository
     public Fund GetById(FundId id) => _funds[id.Value];
 
     /// <inheritdoc/>
-    public Fund? GetSystemFund() => _funds.Values.FirstOrDefault(fund => fund.IsSystemFund);
+    public Fund? GetUnassignedFund() => _funds.Values.FirstOrDefault(fund => fund.Name == Fund.UnassignedFundName);
 
     /// <inheritdoc/>
     public bool TryGetByName(string name, [NotNullWhen(true)] out Fund? fund)

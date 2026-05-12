@@ -23,23 +23,39 @@ public class Account : Entity<AccountId>
     /// <summary>
     /// Accounting Period that this Account was opened in
     /// </summary>
-    public AccountingPeriodId OpeningAccountingPeriodId { get; private set; }
+    public AccountingPeriodId? OpeningAccountingPeriodId { get; private set; }
 
     /// <summary>
     /// Date that this Account was opened
     /// </summary>
-    public DateOnly DateOpened { get; private set; }
+    public DateOnly? DateOpened { get; private set; }
+
+    /// <summary>
+    /// Balance assigned during onboarding before accounting periods exist
+    /// </summary>
+    public decimal? OnboardedBalance { get; private set; }
+
+    /// <summary>
+    /// True if this Account was created during onboarding, false otherwise
+    /// </summary>
+    public bool IsOnboarded => OpeningAccountingPeriodId == null && DateOpened == null;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal Account(string name, AccountType type, AccountingPeriodId openingAccountingPeriodId, DateOnly dateOpened)
+    internal Account(
+        string name,
+        AccountType type,
+        AccountingPeriodId? openingAccountingPeriodId,
+        DateOnly? dateOpened,
+        decimal? onboardedBalance)
         : base(new AccountId(Guid.NewGuid()))
     {
         Name = name;
         Type = type;
         OpeningAccountingPeriodId = openingAccountingPeriodId;
         DateOpened = dateOpened;
+        OnboardedBalance = onboardedBalance;
     }
 
     /// <summary>
@@ -48,7 +64,7 @@ public class Account : Entity<AccountId>
     private Account() : base()
     {
         Name = "";
-        OpeningAccountingPeriodId = null!;
+        OpeningAccountingPeriodId = null;
     }
 }
 
