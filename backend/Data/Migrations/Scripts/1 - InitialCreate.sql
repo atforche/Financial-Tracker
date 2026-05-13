@@ -16,8 +16,9 @@ CREATE TABLE "Accounts" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_Accounts" PRIMARY KEY,
     "Name" TEXT NOT NULL,
     "Type" TEXT NOT NULL,
-    "OpeningAccountingPeriodId" TEXT NOT NULL,
-    "DateOpened" TEXT NOT NULL
+    "OpeningAccountingPeriodId" TEXT NULL,
+    "DateOpened" TEXT NULL,
+    "OnboardedBalance" TEXT NULL
 );
 
 CREATE TABLE "FundBalanceHistories" (
@@ -36,9 +37,9 @@ CREATE TABLE "FundBalanceHistories" (
 CREATE TABLE "Funds" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_Funds" PRIMARY KEY,
     "Name" TEXT NOT NULL,
-    "IsSystemFund" INTEGER NOT NULL,
     "Description" TEXT NOT NULL,
-    "OpeningAccountingPeriodId" TEXT NOT NULL
+    "OpeningAccountingPeriodId" TEXT NULL,
+    "OnboardedBalance" TEXT NULL
 );
 
 CREATE TABLE "AccountingPeriodBalanceHistories" (
@@ -201,7 +202,7 @@ CREATE INDEX "IX_Transactions_SpendingTransaction_CreditAccountId" ON "Transacti
 CREATE INDEX "IX_Transactions_SpendingTransaction_DebitAccountId" ON "Transactions" ("SpendingTransaction_DebitAccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260511170733_InitialCreate', '10.0.2');
+VALUES ('20260513134807_InitialCreate', '10.0.2');
 
 COMMIT;
 

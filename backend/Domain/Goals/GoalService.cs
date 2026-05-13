@@ -66,7 +66,7 @@ public class GoalService(
     {
         exceptions = [];
 
-        if (request.Fund.IsSystemFund)
+        if (request.Fund.IsUnassignedFund)
         {
             exceptions = exceptions.Append(new InvalidFundException("The unassigned fund cannot have a goal."));
         }

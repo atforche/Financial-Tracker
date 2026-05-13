@@ -258,6 +258,10 @@ public abstract class TransactionService(
         }
         foreach (Account account in accounts)
         {
+            if (account.OpeningAccountingPeriodId == null)
+            {
+                continue;
+            }
             AccountingPeriod accountInitialPeriod = AccountingPeriodRepository.GetById(account.OpeningAccountingPeriodId);
             if (accountingPeriod.PeriodStartDate < accountInitialPeriod.PeriodStartDate)
             {
@@ -266,6 +270,10 @@ public abstract class TransactionService(
         }
         foreach (Fund fund in funds)
         {
+            if (fund.OpeningAccountingPeriodId == null)
+            {
+                continue;
+            }
             AccountingPeriod fundInitialPeriod = AccountingPeriodRepository.GetById(fund.OpeningAccountingPeriodId);
             if (accountingPeriod.PeriodStartDate < fundInitialPeriod.PeriodStartDate)
             {

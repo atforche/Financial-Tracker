@@ -61,6 +61,10 @@ public class AccountingPeriodBalanceService(
     /// </summary>
     internal void AddFund(Fund newFund)
     {
+        if (newFund.OpeningAccountingPeriodId == null)
+        {
+            return;
+        }
         AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(newFund.OpeningAccountingPeriodId);
         while (accountingPeriod != null)
         {
@@ -77,6 +81,10 @@ public class AccountingPeriodBalanceService(
     /// </summary>
     internal void DeleteFund(Fund fund)
     {
+        if (fund.OpeningAccountingPeriodId == null)
+        {
+            return;
+        }
         AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(fund.OpeningAccountingPeriodId);
         while (accountingPeriod != null)
         {
@@ -91,6 +99,10 @@ public class AccountingPeriodBalanceService(
     /// </summary>
     internal void AddAccount(Account newAccount)
     {
+        if (newAccount.OpeningAccountingPeriodId == null)
+        {
+            return;
+        }
         AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(newAccount.OpeningAccountingPeriodId);
         while (accountingPeriod != null)
         {
@@ -106,6 +118,10 @@ public class AccountingPeriodBalanceService(
     /// </summary>
     internal void DeleteAccount(Account account)
     {
+        if (account.OpeningAccountingPeriodId == null)
+        {
+            return;
+        }
         AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(account.OpeningAccountingPeriodId);
         while (accountingPeriod != null)
         {

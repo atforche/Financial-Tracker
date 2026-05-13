@@ -22,7 +22,7 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
     public Fund GetById(FundId id) => databaseContext.Funds.Single(fund => fund.Id == id);
 
     /// <inheritdoc/>
-    public Fund? GetSystemFund() => databaseContext.Funds.FirstOrDefault(fund => fund.IsSystemFund);
+    public Fund? GetUnassignedFund() => databaseContext.Funds.FirstOrDefault(fund => fund.Name == Fund.UnassignedFundName);
 
     /// <inheritdoc/>
     public bool TryGetByName(string name, [NotNullWhen(true)] out Fund? fund)
