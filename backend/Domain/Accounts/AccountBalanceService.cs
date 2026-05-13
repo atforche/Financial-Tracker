@@ -13,8 +13,7 @@ public class AccountBalanceService(
     /// Gets the current balance for the provided Account
     /// </summary>
     public AccountBalance GetCurrentBalance(Account account) =>
-        accountBalanceHistoryRepository.GetLatestForAccount(account.Id)?.ToAccountBalance() ??
-            new AccountBalance(account, account.OnboardedBalance ?? 0, 0, 0);
+        accountBalanceHistoryRepository.GetLatestForAccount(account.Id)?.ToAccountBalance() ?? new AccountBalance(account, 0, 0, 0);
 
     /// <summary>
     /// Gets the Account Balance prior to the provided Transaction
@@ -203,6 +202,6 @@ public class AccountBalanceService(
         {
             return existingHistory.ToAccountBalance();
         }
-        return new AccountBalance(account, account.OnboardedBalance ?? 0, 0, 0);
+        return new AccountBalance(account, 0, 0, 0);
     }
 }

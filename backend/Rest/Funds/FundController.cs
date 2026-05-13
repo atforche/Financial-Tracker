@@ -112,7 +112,6 @@ public sealed class FundController(
                 Name = createFundModel.Name,
                 Description = createFundModel.Description,
                 AccountingPeriod = accountingPeriod,
-                OnboardedBalance = null,
             },
             out Fund? newFund,
             out IEnumerable<Exception> exceptions))

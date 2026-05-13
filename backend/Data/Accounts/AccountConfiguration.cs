@@ -19,8 +19,7 @@ internal sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
         builder.HasIndex(account => account.Name).IsUnique();
         builder.Property(account => account.Type).HasConversion<string>();
 
-        builder.Property(account => account.OpeningAccountingPeriodId).HasConversion(
-            accountingPeriodId => accountingPeriodId == null ? (Guid?)null : accountingPeriodId.Value,
-            value => value == null ? null : new AccountingPeriodId(value.Value));
+        builder.Property(account => account.OpeningAccountingPeriodId)
+            .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
     }
 }

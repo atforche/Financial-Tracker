@@ -6,17 +6,13 @@ namespace Domain.Funds;
 /// <summary>
 /// Service for managing Fund Balances
 /// </summary>
-public class FundBalanceService(
-    IFundRepository fundRepository,
-    IFundBalanceHistoryRepository fundBalanceHistoryRepository,
-    ITransactionRepository transactionRepository)
+public class FundBalanceService(IFundBalanceHistoryRepository fundBalanceHistoryRepository, ITransactionRepository transactionRepository)
 {
     /// <summary>
     /// Gets the current balance for the provided Account
     /// </summary>
     public FundBalance GetCurrentBalance(FundId fundId) =>
-        fundBalanceHistoryRepository.GetLatestForFund(fundId)?.ToFundBalance() ??
-            new FundBalance(fundId, fundRepository.GetById(fundId).OnboardedBalance ?? 0, 0, 0, 0, 0);
+        fundBalanceHistoryRepository.GetLatestForFund(fundId)?.ToFundBalance() ?? new FundBalance(fundId, 0, 0, 0, 0, 0);
 
     /// <summary>
     /// Gets the Fund Balances prior to the provided Transaction
@@ -227,6 +223,6 @@ public class FundBalanceService(
         {
             return existingHistory.ToFundBalance();
         }
-        return new FundBalance(fundId, fundRepository.GetById(fundId).OnboardedBalance ?? 0, 0, 0, 0, 0);
+        return new FundBalance(fundId, 0, 0, 0, 0, 0);
     }
 }

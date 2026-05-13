@@ -18,6 +18,11 @@ public class Fund : Entity<FundId>
     public string Name { get; internal set; }
 
     /// <summary>
+    /// Whether this Fund is a system-defined fund
+    /// </summary>
+    public bool IsSystemFund { get; private set; }
+
+    /// <summary>
     /// Description for this Fund
     /// </summary>
     public string Description { get; internal set; }
@@ -25,38 +30,18 @@ public class Fund : Entity<FundId>
     /// <summary>
     /// Accounting Period that this Fund was opened in
     /// </summary>
-    public AccountingPeriodId? OpeningAccountingPeriodId { get; private set; }
-
-    /// <summary>
-    /// Balance assigned during onboarding before accounting periods exist
-    /// </summary>
-    public decimal? OnboardedBalance { get; private set; }
-
-    /// <summary>
-    /// Name of the special unassigned fund
-    /// </summary>
-    public const string UnassignedFundName = "Unassigned";
-
-    /// <summary>
-    /// True if this fund is the unassigned fund, false otherwise
-    /// </summary>
-    public bool IsUnassignedFund => Name == UnassignedFundName;
-
-    /// <summary>
-    /// True if this Fund was created during onboarding, false otherwise
-    /// </summary>
-    public bool IsOnboarded => OpeningAccountingPeriodId == null;
+    public AccountingPeriodId OpeningAccountingPeriodId { get; private set; }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal Fund(string name, string description, AccountingPeriodId? openingAccountingPeriodId, decimal? onboardedBalance)
+    internal Fund(string name, string description, AccountingPeriodId openingAccountingPeriodId, bool isSystemFund)
         : base(new FundId(Guid.NewGuid()))
     {
         Name = name;
+        IsSystemFund = isSystemFund;
         Description = description;
         OpeningAccountingPeriodId = openingAccountingPeriodId;
-        OnboardedBalance = onboardedBalance;
     }
 
     /// <summary>
@@ -66,7 +51,9 @@ public class Fund : Entity<FundId>
         : base()
     {
         Name = "";
+        IsSystemFund = false;
         Description = "";
+        OpeningAccountingPeriodId = null!;
     }
 }
 

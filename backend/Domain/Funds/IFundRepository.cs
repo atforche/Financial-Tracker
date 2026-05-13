@@ -24,9 +24,9 @@ public interface IFundRepository
     Fund GetById(FundId id);
 
     /// <summary>
-    /// Gets the unassigned Fund
+    /// Gets the system Fund
     /// </summary>
-    Fund? GetUnassignedFund();
+    Fund? GetSystemFund();
 
     /// <summary>
     /// Attempts to get the Fund with the specified name

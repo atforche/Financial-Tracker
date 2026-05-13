@@ -26,19 +26,19 @@ Develop a new onboarding flow that allows multiple accounts and funds to be adde
 
     1. Make the "OpeningAccountingPeriodId" and "DateOpened" properties on the Account and Fund nullable.
 
-    1. Create a new OnboardingService domain service to orchestrate the onboarding process with two methods: IsEligible and Onboard.
+    1. Create a new OnboardingService domain service to orchestrate the onboarding process.
 
     1. Validate that onboarding can only be completed if there are no accounts, funds, or accounting periods set up in the system.
 
     1. Allow two collections to be passed into onboarding: a collection of account names, types, and initial balances and a collection of fund names and initial balances.
 
-    1. Onboarding will create a set of accounts with the "OnboardedBalance" set and the "OpeningAccountingPeriodId" and "OpenedDate" set to null.
+    1. Onboarding will create a set of accounts with the "OnboardedBalance" set and the "OpenedAccountingPeriodId" and "OpenedDate" set to null.
 
-    1. Onboarding will create a set of funds with the "OnboardedBalance" set and the "OpeningAccountingPeriodId" set to null.
+    1. Onboarding will create a set of funds with the "OnboardedBalance" set and the "OpenedAccountingPeriodId" set to null.
 
     1. Modify the AccountBalanceService and FundBalanceService to fall back to the onboarded balance if no balance histories can be found
 
-    1. Onboarding will create the Unassigned fund if it doesn't already exist. Ensure that it is created first so that any subsequent funds are prevented from having a name of "unassigned". The "Unassigned" funds balance should be equal to the sum of the account balances minus the sum of the fund balances
+    1. Onboarding will create the Unassigned fund if it doesn't already exist. Ensure that it is created first so that any subsequent funds are prevented from having a name of "unassigned".
 
     1. Add validation that prevents onboarded accounts from being deleted.
 

@@ -215,7 +215,7 @@ public abstract class TransactionService(
             {
                 exceptions = exceptions.Append(new InvalidDateException("Debit Posted Date must be within the Accounting Period"));
             }
-            if (account.DateOpened.HasValue && account.DateOpened.Value < postedDate.Value)
+            if (account.DateOpened < postedDate)
             {
                 exceptions = exceptions.Append(new InvalidDateException("Debit Posted Date cannot be before the Transaction was added"));
             }
@@ -258,10 +258,6 @@ public abstract class TransactionService(
         }
         foreach (Account account in accounts)
         {
-            if (account.OpeningAccountingPeriodId == null)
-            {
-                continue;
-            }
             AccountingPeriod accountInitialPeriod = AccountingPeriodRepository.GetById(account.OpeningAccountingPeriodId);
             if (accountingPeriod.PeriodStartDate < accountInitialPeriod.PeriodStartDate)
             {
@@ -270,10 +266,6 @@ public abstract class TransactionService(
         }
         foreach (Fund fund in funds)
         {
-            if (fund.OpeningAccountingPeriodId == null)
-            {
-                continue;
-            }
             AccountingPeriod fundInitialPeriod = AccountingPeriodRepository.GetById(fund.OpeningAccountingPeriodId);
             if (accountingPeriod.PeriodStartDate < fundInitialPeriod.PeriodStartDate)
             {
@@ -304,7 +296,7 @@ public abstract class TransactionService(
         }
         foreach (Account account in accounts)
         {
-            if (account.DateOpened.HasValue && date < account.DateOpened.Value)
+            if (date < account.DateOpened)
             {
                 exceptions = exceptions.Append(new InvalidDateException($"The provided date is before the account {account.Name} was created."));
             }

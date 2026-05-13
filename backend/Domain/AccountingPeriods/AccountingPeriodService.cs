@@ -41,21 +41,19 @@ public class AccountingPeriodService(
         AccountingPeriod? previousAccountingPeriod = accountingPeriodRepository.GetPreviousAccountingPeriod(accountingPeriod.Id);
         if (previousAccountingPeriod == null)
         {
-            if (fundRepository.GetUnassignedFund() == null)
+            // This is the first accounting period added to the system, so automatically add the unassigned fund
+            if (!fundService.TryCreate(new CreateFundRequest
             {
-                if (!fundService.TryCreate(new CreateFundRequest
-                {
-                    Name = Fund.UnassignedFundName,
-                    Description = "Fund that tracks money that has not been assigned to a specific fund",
-                    AccountingPeriod = accountingPeriod,
-                    OnboardedBalance = null,
-                }, out Fund? unassignedFund, out IEnumerable<Exception> unassignedFundExceptions))
-                {
-                    exceptions = exceptions.Concat(unassignedFundExceptions);
-                    return false;
-                }
-                fundRepository.Add(unassignedFund);
+                Name = "Unassigned",
+                Description = "Fund that tracks money that has not been assigned to a specific fund",
+                AccountingPeriod = accountingPeriod,
+                IsSystemFund = true,
+            }, out Fund? unassignedFund, out IEnumerable<Exception> unassignedFundExceptions))
+            {
+                exceptions = exceptions.Concat(unassignedFundExceptions);
+                return false;
             }
+            fundRepository.Add(unassignedFund);
         }
         else
         {
@@ -116,7 +114,7 @@ public class AccountingPeriodService(
             return false;
         }
         accountingPeriodBalanceService.DeleteAccountingPeriod(accountingPeriod);
-        if (fundRepository.GetAllFundsAddedInPeriod(accountingPeriod.Id).FirstOrDefault(fund => fund.IsUnassignedFund) is Fund unassignedFund)
+        if (fundRepository.GetAllFundsAddedInPeriod(accountingPeriod.Id).FirstOrDefault(fund => fund.IsSystemFund) is Fund unassignedFund)
         {
             // If the unassigned fund was added in this accounting period, delete it. 
             // It will be added again when a new accounting period is created.
@@ -223,7 +221,7 @@ public class AccountingPeriodService(
         {
             exceptions = exceptions.Append(new UnableToDeleteException("Deleting this Accounting Period would cause a gap between existing Accounting Periods."));
         }
-        if (fundRepository.GetAllFundsAddedInPeriod(accountingPeriod.Id).Any(fund => !fund.IsUnassignedFund))
+        if (fundRepository.GetAllFundsAddedInPeriod(accountingPeriod.Id).Any(fund => !fund.IsSystemFund))
         {
             exceptions = exceptions.Append(new UnableToDeleteException("This Accounting Period has funds that were added in it."));
         }
