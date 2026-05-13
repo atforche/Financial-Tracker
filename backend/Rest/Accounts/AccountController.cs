@@ -134,6 +134,57 @@ public sealed class AccountController(
     }
 
     /// <summary>
+    /// Onboards a new Account with the provided properties
+    /// </summary>
+    [HttpPost("onboard")]
+    [ProducesResponseType(typeof(AccountModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> OnboardAsync(OnboardAccountModel onboardAccountModel)
+    {
+        Dictionary<string, string[]> errors = [];
+        if (!AccountTypeConverter.TryToDomain(onboardAccountModel.Type, out AccountType? accountType))
+        {
+            errors.Add(nameof(onboardAccountModel.Type), [$"Unrecognized Account Type: {onboardAccountModel.Type}"]);
+        }
+        if (errors.Count > 0 || accountType == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to onboard Account.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        if (!accountService.TryOnboard(
+            new OnboardAccountRequest
+            {
+                Name = onboardAccountModel.Name,
+                Type = accountType.Value,
+                OnboardedBalance = onboardAccountModel.OnboardedBalance
+            },
+            out Account? newAccount,
+            out IEnumerable<Exception> exceptions))
+        {
+            errors = exceptions.GroupBy(exception => exception switch
+            {
+                InvalidNameException => nameof(onboardAccountModel.Name),
+                InvalidAmountException => nameof(onboardAccountModel.OnboardedBalance),
+                InvalidAccountingPeriodException => string.Empty,
+                InvalidFundException => string.Empty,
+                _ => string.Empty
+            }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray());
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to onboard Account.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+        await unitOfWork.SaveChangesAsync();
+        return Ok(accountConverter.ToModel(newAccount));
+    }
+
+    /// <summary>
     /// Updates the provided Account with the provided properties
     /// </summary>
     [HttpPost("{accountId}")]

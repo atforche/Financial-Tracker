@@ -119,14 +119,53 @@ public sealed class FundController(
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to create Fund.",
-                Errors = GetCreateFundErrors(
-                    exceptions,
-                    nameof(createFundModel.Name),
-                    nameof(createFundModel.AccountingPeriodId)),
+                Errors = exceptions.GroupBy(exception => exception switch
+                {
+                    InvalidNameException => nameof(createFundModel.Name),
+                    InvalidAccountingPeriodException => nameof(createFundModel.AccountingPeriodId),
+                    InvalidFundException => string.Empty,
+                    _ => string.Empty,
+                }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray()),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
         fundRepository.Add(newFund);
+        await unitOfWork.SaveChangesAsync();
+        return Ok(fundConverter.ToModel(newFund));
+    }
+
+    /// <summary>
+    /// Onboards a new Fund with the provided properties
+    /// </summary>
+    [HttpPost("onboard")]
+    [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> OnboardAsync(OnboardFundModel onboardFundModel)
+    {
+        if (!fundService.TryOnboard(
+            new OnboardFundRequest
+            {
+                Name = onboardFundModel.Name,
+                Description = onboardFundModel.Description,
+                OnboardedBalance = onboardFundModel.OnboardedBalance
+            },
+            out Fund? newFund,
+            out IEnumerable<Exception> exceptions))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to onboard Fund.",
+                Errors = exceptions.GroupBy(exception => exception switch
+                {
+                    InvalidNameException => nameof(onboardFundModel.Name),
+                    InvalidAmountException => nameof(onboardFundModel.OnboardedBalance),
+                    InvalidAccountingPeriodException => string.Empty,
+                    InvalidFundException => string.Empty,
+                    _ => string.Empty,
+                }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray()),
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
         await unitOfWork.SaveChangesAsync();
         return Ok(fundConverter.ToModel(newFund));
     }
@@ -200,20 +239,4 @@ public sealed class FundController(
         await unitOfWork.SaveChangesAsync();
         return Ok();
     }
-
-    /// <summary>
-    /// Maps create Fund exceptions to validation errors
-    /// </summary>
-    private static Dictionary<string, string[]> GetCreateFundErrors(
-        IEnumerable<Exception> exceptions,
-        string nameKey,
-        string accountingPeriodKey) =>
-        exceptions.GroupBy(exception => exception switch
-        {
-            InvalidNameException => nameKey,
-            InvalidAccountingPeriodException => accountingPeriodKey,
-            InvalidFundException => string.Empty,
-            _ => string.Empty,
-        }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray());
-
 }
