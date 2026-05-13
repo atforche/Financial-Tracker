@@ -34,7 +34,7 @@ const AccountsView = async function ({
   const { search, sort, page } = await searchParams;
 
   const apiClient = getApiClient();
-  const { data: accounts, error } = await apiClient.GET("/accounts", {
+  const accountsPromise = apiClient.GET("/accounts", {
     params: {
       query: {
         Search: search ?? "",
@@ -44,8 +44,26 @@ const AccountsView = async function ({
       },
     },
   });
-  if (typeof accounts === "undefined") {
-    throw new Error(`Failed to fetch accounts: ${error.detail}`);
+  const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
+    params: {
+      query: {
+        Search: "",
+        Sort: null,
+        Limit: 1,
+        Offset: 0,
+      },
+    },
+  });
+
+  const [{ data: accounts }, { data: accountingPeriods }] = await Promise.all([
+    accountsPromise,
+    accountingPeriodsPromise,
+  ]);
+  if (
+    typeof accounts === "undefined" ||
+    typeof accountingPeriods === "undefined"
+  ) {
+    throw new Error(`Failed to fetch accounts`);
   }
 
   return (
@@ -54,6 +72,7 @@ const AccountsView = async function ({
       <SearchBar paramName={nameof<AccountsViewSearchParams>("search")} />
       <AccountListFrame
         data={accounts.items}
+        isInOnboardingMode={accountingPeriods.totalCount === 0}
         totalCount={accounts.totalCount}
       />
     </Stack>

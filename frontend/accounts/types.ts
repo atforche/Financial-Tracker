@@ -24,6 +24,11 @@ interface AccountIdentifier {
 type CreateAccountRequest = components["schemas"]["CreateAccountModel"];
 
 /**
+ * Type representing a request to onboard an account.
+ */
+type OnboardAccountRequest = components["schemas"]["OnboardAccountModel"];
+
+/**
  * Type representing a request to update an account.
  */
 type UpdateAccountRequest = components["schemas"]["UpdateAccountModel"];
@@ -95,6 +100,7 @@ export {
   type Account,
   type AccountIdentifier,
   type CreateAccountRequest,
+  type OnboardAccountRequest,
   type UpdateAccountRequest,
   AccountSortOrderModel as AccountSortOrder,
   AccountTransactionSortOrderModel as AccountTransactionSortOrder,

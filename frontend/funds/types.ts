@@ -23,6 +23,11 @@ interface FundIdentifier {
 type CreateFundRequest = components["schemas"]["CreateFundModel"];
 
 /**
+ * Type representing a request to onboard a Fund.
+ */
+type OnboardFundRequest = components["schemas"]["OnboardFundModel"];
+
+/**
  * Type representing a request to update a Fund.
  */
 type UpdateFundRequest = components["schemas"]["UpdateFundModel"];
@@ -51,6 +56,7 @@ export {
   type Fund,
   type FundIdentifier,
   type CreateFundRequest,
+  type OnboardFundRequest,
   type UpdateFundRequest,
   type FundAmount,
   FundSortOrderModel as FundSortOrder,

@@ -32,6 +32,13 @@ const breadcrumbs = {
       },
     ];
   },
+  onboard: (): Breadcrumb[] => [
+    ...breadcrumbs.index(),
+    {
+      label: "Onboard Account",
+      href: routes.onboard,
+    },
+  ],
   detail: (account: Account): Breadcrumb[] => [
     ...breadcrumbs.index(),
     {
