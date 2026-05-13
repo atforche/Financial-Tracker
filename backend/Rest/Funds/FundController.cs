@@ -54,6 +54,27 @@ public sealed class FundController(
         Ok(fundGetter.Get(queryParameters));
 
     /// <summary>
+    /// Retrieves the unassigned Fund
+    /// </summary>
+    [HttpGet("unassigned")]
+    [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetUnassigned()
+    {
+        Fund? unassignedFund = fundRepository.GetUnassignedFund();
+        if (unassignedFund == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Fund.",
+                Errors = { [""] = ["The unassigned fund was not found."] },
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        return Ok(fundConverter.ToModel(unassignedFund));
+    }
+
+    /// <summary>
     /// Retrieves the Transactions for the Fund that match the specified criteria
     /// </summary>
     [HttpGet("{fundId}/transactions")]
