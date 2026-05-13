@@ -13,14 +13,13 @@ interface ActionState {
 }
 
 /**
- * Completes onboarding with an empty initial setup.
+ * Completes onboarding with the provided initial setup.
  */
-const completeOnboarding = async function (): Promise<ActionState> {
+const completeOnboarding = async function (
+  _: ActionState,
+  request: components["schemas"]["OnboardingModel"],
+): Promise<ActionState> { 
   const client = getApiClient();
-  const request: components["schemas"]["OnboardingModel"] = {
-    accounts: [],
-    funds: [],
-  };
 
   const { error } = await client.POST("/onboarding", {
     body: request,

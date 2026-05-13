@@ -14,7 +14,6 @@ const getOnboardingEligibility =
     if (typeof data === "undefined") {
       throw new Error("Failed to fetch onboarding eligibility.");
     }
-
     return data;
   };
 
