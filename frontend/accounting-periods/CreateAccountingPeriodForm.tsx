@@ -32,7 +32,11 @@ const CreateAccountingPeriodForm = function ({
       <Breadcrumbs breadcrumbs={breadcrumbs.create()} />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         {isInOnboardingMode ? (
-          <Alert severity="info">You are in onboarding mode.</Alert>
+          <Alert severity="info">
+            You are currently in onboarding mode. Adding an accounting period
+            will start regular data tracking. You will be unable to modify your
+            onboarded accounts and funds once you proceed.
+          </Alert>
         ) : null}
         <IntegerEntryField
           label="Year"

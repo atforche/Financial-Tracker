@@ -43,14 +43,17 @@ public class FundService(
     {
         fund = null;
 
-        Fund? unassignedFund = fundRepository.GetUnassignedFund();
-        if (!ValidateOnboard(request, out exceptions) || unassignedFund == null)
+        if (!ValidateOnboard(request, out exceptions))
         {
             return false;
         }
         fund = new Fund(request.Name, request.Description, request.OnboardedBalance);
         fundRepository.Add(fund);
-        unassignedFund.OnboardedBalance -= request.OnboardedBalance;
+        if (request.Name != Fund.UnassignedFundName)
+        {
+            Fund? unassignedFund = fundRepository.GetUnassignedFund() ?? throw new InvalidOperationException();
+            unassignedFund.OnboardedBalance -= request.OnboardedBalance;
+        }
         return true;
     }
 
@@ -137,16 +140,18 @@ public class FundService(
         {
             exceptions = exceptions.Append(new InvalidAmountException("Fund balance cannot be negative."));
         }
-        Fund? unassignedFund = fundRepository.GetUnassignedFund();
-        if (unassignedFund == null)
+        if (request.Name != Fund.UnassignedFundName)
         {
-            exceptions = exceptions.Append(new InvalidFundException("The unassigned fund must exist before onboarding a Fund."));
+            Fund? unassignedFund = fundRepository.GetUnassignedFund();
+            if (unassignedFund == null)
+            {
+                exceptions = exceptions.Append(new InvalidFundException("The unassigned fund must exist before onboarding a Fund."));
+            }
+            else if (unassignedFund.OnboardedBalance < request.OnboardedBalance)
+            {
+                exceptions = exceptions.Append(new InvalidFundException("There is not enough unassigned balance to onboard this Fund."));
+            }
         }
-        else if (unassignedFund.OnboardedBalance < request.OnboardedBalance)
-        {
-            exceptions = exceptions.Append(new InvalidFundException("There is not enough unassigned balance to onboard this Fund."));
-        }
-
         return !exceptions.Any();
     }
 

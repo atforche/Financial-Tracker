@@ -27,7 +27,7 @@ const breadcrumbs = {
     return [
       ...breadcrumbs.index(),
       {
-        label: "Create",
+        label: "Create Fund",
         href: routes.create({}),
       },
     ];
@@ -35,7 +35,7 @@ const breadcrumbs = {
   onboard: (): Breadcrumb[] => [
     ...breadcrumbs.index(),
     {
-      label: "Onboard",
+      label: "Onboard Fund",
       href: routes.onboard,
     },
   ],
