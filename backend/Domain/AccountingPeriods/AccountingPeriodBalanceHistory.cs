@@ -55,6 +55,7 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
         AccountingPeriod = accountingPeriod;
         _accountBalances = accountBalances.ToList();
         _fundBalances = fundBalances.ToList();
+        UpdateBalances();
     }
 
     /// <summary>

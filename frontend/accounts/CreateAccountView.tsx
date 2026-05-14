@@ -26,17 +26,11 @@ const CreateAccountView = async function ({
   const { accountingPeriodId } = await searchParams;
 
   const apiClient = getApiClient();
-  const accountingPeriodsPromise = apiClient.GET("/accounting-periods/open");
-  const fundsPromise = apiClient.GET("/funds");
-  const [{ data: accountingPeriods }, { data: funds }] = await Promise.all([
-    accountingPeriodsPromise,
-    fundsPromise,
-  ]);
-  if (
-    typeof accountingPeriods === "undefined" ||
-    typeof funds === "undefined"
-  ) {
-    throw new Error("Failed to fetch accounting periods or funds");
+  const { data: accountingPeriods } = await apiClient.GET(
+    "/accounting-periods/open",
+  );
+  if (typeof accountingPeriods === "undefined") {
+    throw new Error("Failed to fetch accounting periods");
   }
 
   let routeAccountingPeriod: AccountingPeriod | null = null;
@@ -49,7 +43,6 @@ const CreateAccountView = async function ({
   return (
     <CreateAccountForm
       accountingPeriods={accountingPeriods}
-      funds={funds.items}
       routeAccountingPeriod={routeAccountingPeriod}
     />
   );

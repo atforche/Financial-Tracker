@@ -26,6 +26,7 @@ import tryParseEnum from "@/framework/data/tryParseEnum";
 interface AccountListFrameProps {
   readonly data: Account[] | null;
   readonly totalCount: number | null;
+  readonly isInOnboardingMode: boolean;
 }
 
 /**
@@ -34,6 +35,7 @@ interface AccountListFrameProps {
 const AccountListFrame = function ({
   data,
   totalCount,
+  isInOnboardingMode,
 }: AccountListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -151,7 +153,9 @@ const AccountListFrame = function ({
           label="Add"
           icon={<AddCircleOutline />}
           onClick={() => {
-            router.push(routes.create({}));
+            router.push(
+              isInOnboardingMode ? routes.onboard : routes.create({}),
+            );
           }}
         />
       ),

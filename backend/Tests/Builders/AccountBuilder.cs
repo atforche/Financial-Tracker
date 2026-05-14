@@ -9,15 +9,13 @@ namespace Tests.Builders;
 /// </summary>
 public sealed class AccountBuilder(
     AccountService accountService,
-    IAccountRepository accountRepository,
     IAccountingPeriodRepository accountingPeriodRepository,
     TestUnitOfWork testUnitOfWork)
 {
     private string? _name;
     private AccountType _type = AccountType.Standard;
     private AccountingPeriod? _accountingPeriod;
-    private DateOnly _addedDate = new(2025, 1, 1);
-    private decimal _initialBalance;
+    private DateOnly _dateOpened = new(2025, 1, 1);
 
     /// <summary>
     /// Builds the specified Account
@@ -30,19 +28,16 @@ public sealed class AccountBuilder(
             {
                 Name = _name ?? Guid.NewGuid().ToString(),
                 Type = _type,
-                AccountingPeriod = DetermineAccountingPeriod(),
-                AddDate = _addedDate,
-                InitialBalance = _initialBalance,
-                InitialFundAssignments = [],
+                OpeningAccountingPeriod = DetermineAccountingPeriod(),
+                DateOpened = _dateOpened,
             },
             out Account? account,
             out IEnumerable<Exception> exceptions))
         {
             throw new InvalidOperationException("Failed to create Account.", exceptions.First());
         }
-        accountRepository.Add(account);
         testUnitOfWork.SaveChanges();
-        return account;
+        return account ?? throw new InvalidOperationException("Account creation returned null.");
     }
 
     /// <summary>
@@ -73,20 +68,11 @@ public sealed class AccountBuilder(
     }
 
     /// <summary>
-    /// Sets the Added Date for this Account Builder
+    /// Sets the opened date for this Account Builder
     /// </summary>
-    public AccountBuilder WithAddedDate(DateOnly addedDate)
+    public AccountBuilder WithDateOpened(DateOnly dateOpened)
     {
-        _addedDate = addedDate;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the Initial Balance for this Account Builder
-    /// </summary>
-    public AccountBuilder WithInitialBalance(decimal initialBalance)
-    {
-        _initialBalance = initialBalance;
+        _dateOpened = dateOpened;
         return this;
     }
 
@@ -99,6 +85,6 @@ public sealed class AccountBuilder(
         {
             return _accountingPeriod;
         }
-        return accountingPeriodRepository.GetByYearAndMonth(_addedDate.Year, _addedDate.Month) ?? throw new InvalidOperationException();
+        return accountingPeriodRepository.GetByYearAndMonth(_dateOpened.Year, _dateOpened.Month) ?? throw new InvalidOperationException();
     }
 }

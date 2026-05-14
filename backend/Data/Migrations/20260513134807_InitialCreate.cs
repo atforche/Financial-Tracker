@@ -33,9 +33,9 @@ namespace Data.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Type = table.Column<string>(type: "TEXT", nullable: false),
-                    AddAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    AddDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    InitialTransaction = table.Column<Guid>(type: "TEXT", nullable: true)
+                    OpeningAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    DateOpened = table.Column<DateOnly>(type: "TEXT", nullable: true),
+                    OnboardedBalance = table.Column<decimal>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -68,9 +68,9 @@ namespace Data.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    IsSystemFund = table.Column<bool>(type: "INTEGER", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
-                    AddAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    OpeningAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    OnboardedBalance = table.Column<decimal>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -167,19 +167,16 @@ namespace Data.Migrations
                     AccountTransaction_DebitPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     AccountTransaction_CreditAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
                     AccountTransaction_CreditPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
-                    AccountTransaction_GeneratedByAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
                     FundTransaction_DebitFundId = table.Column<Guid>(type: "TEXT", nullable: true),
                     FundTransaction_CreditFundId = table.Column<Guid>(type: "TEXT", nullable: true),
                     IncomeTransaction_CreditAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
                     IncomeTransaction_CreditPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     IncomeTransaction_DebitAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
                     IncomeTransaction_DebitPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
-                    IncomeTransaction_GeneratedByAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
                     SpendingTransaction_DebitAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
                     SpendingTransaction_DebitPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     SpendingTransaction_CreditAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    SpendingTransaction_CreditPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
-                    SpendingTransaction_GeneratedByAccountId = table.Column<Guid>(type: "TEXT", nullable: true)
+                    SpendingTransaction_CreditPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {

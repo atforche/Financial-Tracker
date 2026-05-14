@@ -215,7 +215,7 @@ public abstract class TransactionService(
             {
                 exceptions = exceptions.Append(new InvalidDateException("Debit Posted Date must be within the Accounting Period"));
             }
-            if (account.AddDate < postedDate)
+            if (account.DateOpened < postedDate)
             {
                 exceptions = exceptions.Append(new InvalidDateException("Debit Posted Date cannot be before the Transaction was added"));
             }
@@ -246,20 +246,6 @@ public abstract class TransactionService(
     }
 
     /// <summary>
-    /// Validates the IsInitialTransactionForAccount property for a Transaction
-    /// </summary>
-    protected static bool ValidateInitialTransactionForAccount(bool isInitialTransactionForAccount, Account account, out IEnumerable<Exception> exceptions)
-    {
-        exceptions = [];
-
-        if (isInitialTransactionForAccount && account.InitialTransaction != null)
-        {
-            exceptions = exceptions.Append(new InvalidAccountException("Initial transaction for account already exists"));
-        }
-        return !exceptions.Any();
-    }
-
-    /// <summary>
     /// Validates the Accounting Period for this Transaction
     /// </summary>
     private bool ValidateAccountingPeriod(IReadOnlyCollection<Account> accounts, IReadOnlyCollection<Fund> funds, AccountingPeriod accountingPeriod, out IEnumerable<Exception> exceptions)
@@ -272,7 +258,11 @@ public abstract class TransactionService(
         }
         foreach (Account account in accounts)
         {
-            AccountingPeriod accountInitialPeriod = AccountingPeriodRepository.GetById(account.AddAccountingPeriodId);
+            if (account.OpeningAccountingPeriodId == null)
+            {
+                continue;
+            }
+            AccountingPeriod accountInitialPeriod = AccountingPeriodRepository.GetById(account.OpeningAccountingPeriodId);
             if (accountingPeriod.PeriodStartDate < accountInitialPeriod.PeriodStartDate)
             {
                 exceptions = exceptions.Append(new InvalidAccountingPeriodException($"Account {account.Name} did not exist during the provided Accounting Period."));
@@ -280,7 +270,11 @@ public abstract class TransactionService(
         }
         foreach (Fund fund in funds)
         {
-            AccountingPeriod fundInitialPeriod = AccountingPeriodRepository.GetById(fund.AddAccountingPeriodId);
+            if (fund.OpeningAccountingPeriodId == null)
+            {
+                continue;
+            }
+            AccountingPeriod fundInitialPeriod = AccountingPeriodRepository.GetById(fund.OpeningAccountingPeriodId);
             if (accountingPeriod.PeriodStartDate < fundInitialPeriod.PeriodStartDate)
             {
                 exceptions = exceptions.Append(new InvalidAccountingPeriodException($"Fund {fund.Name} did not exist during the provided Accounting Period."));
@@ -310,7 +304,7 @@ public abstract class TransactionService(
         }
         foreach (Account account in accounts)
         {
-            if (date < account.AddDate)
+            if (date < account.DateOpened)
             {
                 exceptions = exceptions.Append(new InvalidDateException($"The provided date is before the account {account.Name} was created."));
             }

@@ -118,7 +118,6 @@ public sealed class TransactionRequestConverter(
             CreditAccount = creditAccount,
             CreditPostedDate = model.CreditAccount?.PostedDate,
             FundAssignments = fundAssignments,
-            IsInitialTransactionForAccount = false,
         };
     }
 
@@ -152,7 +151,6 @@ public sealed class TransactionRequestConverter(
             DebitAccount = debitAccount,
             DebitPostedDate = model.DebitAccount?.PostedDate,
             FundAssignments = fundAssignments,
-            IsInitialTransactionForAccount = false,
         };
     }
 

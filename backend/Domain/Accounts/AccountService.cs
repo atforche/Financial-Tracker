@@ -1,10 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Exceptions;
+using Domain.Funds;
 using Domain.Transactions;
-using Domain.Transactions.Accounts;
-using Domain.Transactions.Income;
-using Domain.Transactions.Spending;
 
 namespace Domain.Accounts;
 
@@ -12,10 +10,12 @@ namespace Domain.Accounts;
 /// Service for managing Accounts
 /// </summary>
 public class AccountService(
-    IAccountRepository accountRepository,
-    ITransactionRepository transactionRepository,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
-    TransactionDispatcherService transactionService)
+    FundService fundService,
+    IAccountRepository accountRepository,
+    IAccountingPeriodRepository accountingPeriodRepository,
+    IFundRepository fundRepository,
+    ITransactionRepository transactionRepository)
 {
     /// <summary>
     /// Attempts to create a new Account
@@ -31,12 +31,48 @@ public class AccountService(
         {
             return false;
         }
-        account = new Account(request.Name, request.Type, request.AccountingPeriod.Id, request.AddDate);
+        account = new Account(request.Name, request.Type, request.OpeningAccountingPeriod.Id, request.DateOpened);
         accountRepository.Add(account);
         accountingPeriodBalanceService.AddAccount(account);
-        if (!AddInitialAccountTransaction(request, account, out exceptions))
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to onboard a new Account.
+    /// </summary>
+    public bool TryOnboard(
+        OnboardAccountRequest request,
+        [NotNullWhen(true)] out Account? account,
+        out IEnumerable<Exception> exceptions)
+    {
+        account = null;
+
+        if (!ValidateOnboard(request, out exceptions))
         {
             return false;
+        }
+        account = new Account(request.Name, request.Type, request.OnboardedBalance);
+        accountRepository.Add(account);
+        if (request.Type.IsTracked())
+        {
+            Fund? unassignedFund = fundRepository.GetUnassignedFund();
+            if (unassignedFund == null)
+            {
+                if (!fundService.TryOnboard(new OnboardFundRequest
+                {
+                    Name = Fund.UnassignedFundName,
+                    Description = Fund.UnassignedFundDescription,
+                    OnboardedBalance = 0,
+                }, out Fund? newUnassignedFund, out IEnumerable<Exception> unassignedFundExceptions))
+                {
+                    exceptions = exceptions.Concat(unassignedFundExceptions);
+                    return false;
+                }
+                fundRepository.Add(newUnassignedFund);
+                unassignedFund = newUnassignedFund;
+            }
+            decimal changeInUnassignedBalance = request.Type.IsDebt() ? -request.OnboardedBalance : request.OnboardedBalance;
+            unassignedFund.OnboardedBalance += changeInUnassignedBalance;
         }
         return true;
     }
@@ -50,11 +86,8 @@ public class AccountService(
     /// <returns>True if update was successful, false otherwise</returns>
     public bool TryUpdate(Account account, string name, out IEnumerable<Exception> exceptions)
     {
-        exceptions = [];
-
-        if (!ValidateAccountName(name, out IEnumerable<Exception> nameExceptions))
+        if (!ValidateAccountName(name, out exceptions))
         {
-            exceptions = exceptions.Concat(nameExceptions);
             return false;
         }
         account.Name = name;
@@ -69,92 +102,18 @@ public class AccountService(
     /// <returns>True if deletion was successful, false otherwise</returns>
     public bool TryDelete(Account account, out IEnumerable<Exception> exceptions)
     {
-        exceptions = [];
-
-        if (transactionRepository.DoAnyTransactionsExistForAccount(account))
+        if (!ValidateDelete(account, out exceptions))
         {
-            exceptions = [new UnableToDeleteException("Cannot delete an Account that has Transactions.")];
             return false;
         }
-        if (account.InitialTransaction != null)
+        if (account.OnboardedBalance != null)
         {
-            Transaction initialTransaction = transactionRepository.GetById(account.InitialTransaction);
-            if (!transactionService.TryUnpost(initialTransaction, account.Id, out IEnumerable<Exception> unpostingExceptions))
-            {
-                exceptions = exceptions.Concat(unpostingExceptions);
-                return false;
-            }
-            if (!transactionService.TryDelete(initialTransaction, account.Id, out IEnumerable<Exception> transactionExceptions))
-            {
-                exceptions = exceptions.Concat(transactionExceptions);
-                return false;
-            }
+            Fund unassignedFund = fundRepository.GetUnassignedFund() ?? throw new InvalidOperationException();
+            decimal changeInUnassignedBalance = account.Type.IsDebt() ? -account.OnboardedBalance.Value : account.OnboardedBalance.Value;
+            unassignedFund.OnboardedBalance -= changeInUnassignedBalance;
         }
         accountingPeriodBalanceService.DeleteAccount(account);
         accountRepository.Delete(account);
-        return true;
-    }
-
-    /// <summary>
-    /// Adds the initial transaction for an Account if the initial balance is greater than 0
-    /// </summary>
-    private bool AddInitialAccountTransaction(CreateAccountRequest request, Account account, out IEnumerable<Exception> exceptions)
-    {
-        exceptions = [];
-
-        if (request.InitialBalance <= 0)
-        {
-            return true;
-        }
-        CreateTransactionRequest createRequest = !account.Type.IsTracked()
-            ? new CreateAccountTransactionRequest
-            {
-                AccountingPeriodId = request.AccountingPeriod.Id,
-                TransactionDate = request.AddDate,
-                Location = "Initial",
-                Description = "Initial Balance",
-                Amount = request.InitialBalance,
-                DebitAccount = account.Type.IsDebt() ? account : null,
-                DebitPostedDate = account.Type.IsDebt() ? request.AddDate : null,
-                CreditAccount = account.Type.IsDebt() ? null : account,
-                CreditPostedDate = account.Type.IsDebt() ? null : request.AddDate,
-                GeneratedByAccountId = account.Id
-            }
-            : account.Type.IsDebt()
-            ? new CreateSpendingTransactionRequest
-            {
-                AccountingPeriodId = request.AccountingPeriod.Id,
-                TransactionDate = request.AddDate,
-                Location = "Initial",
-                Description = "Initial Balance",
-                Amount = request.InitialBalance,
-                DebitAccount = account,
-                DebitPostedDate = request.AddDate,
-                CreditAccount = null,
-                CreditPostedDate = null,
-                FundAssignments = request.InitialFundAssignments,
-                IsInitialTransactionForAccount = true
-            }
-            : new CreateIncomeTransactionRequest
-            {
-                AccountingPeriodId = request.AccountingPeriod.Id,
-                TransactionDate = request.AddDate,
-                Location = "Initial",
-                Description = "Initial Balance",
-                Amount = request.InitialBalance,
-                CreditAccount = account,
-                CreditPostedDate = request.AddDate,
-                DebitAccount = null,
-                DebitPostedDate = null,
-                FundAssignments = request.InitialFundAssignments,
-                IsInitialTransactionForAccount = true
-            };
-        if (!transactionService.TryCreate(createRequest, out Transaction? transaction, out exceptions))
-        {
-            return false;
-        }
-        account.InitialTransaction = transaction.Id;
-        transactionRepository.Add(transaction);
         return true;
     }
 
@@ -187,17 +146,70 @@ public class AccountService(
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
-        if (!request.AccountingPeriod.IsOpen)
+        if (!request.OpeningAccountingPeriod.IsOpen)
         {
             exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
         }
-        if (!request.AccountingPeriod.IsDateInPeriod(request.AddDate))
+        if (!request.OpeningAccountingPeriod.IsDateInPeriod(request.DateOpened))
         {
-            exceptions = exceptions.Append(new InvalidDateException("The provided add date is not within the provided accounting period."));
+            exceptions = exceptions.Append(new InvalidDateException("The provided date opened is not within the provided accounting period."));
         }
-        if (!request.Type.IsTracked() && request.InitialFundAssignments.Count > 0)
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates a request to onboard an Account.
+    /// </summary>
+    private bool ValidateOnboard(OnboardAccountRequest request, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (!ValidateAccountName(request.Name, out IEnumerable<Exception> nameExceptions))
         {
-            exceptions = exceptions.Append(new InvalidAccountTypeException("Cannot assign funds to an untracked account."));
+            exceptions = exceptions.Concat(nameExceptions);
+        }
+        if (accountingPeriodRepository.GetAll().Count > 0)
+        {
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException("Accounts can only be onboarded before any Accounting Periods have been created."));
+        }
+        if (request.OnboardedBalance < 0)
+        {
+            exceptions = exceptions.Append(new InvalidAmountException("Account balance cannot be negative."));
+        }
+        if (request.Type.IsTracked())
+        {
+            decimal startingUnassignedBalance = fundRepository.GetUnassignedFund()?.OnboardedBalance ?? 0;
+            decimal updatedUnassignedBalance = startingUnassignedBalance + (request.Type.IsDebt() ? -request.OnboardedBalance : request.OnboardedBalance);
+            if (updatedUnassignedBalance < 0)
+            {
+                exceptions = exceptions.Append(new InvalidFundException("Onboarding this Account would cause the unassigned fund balance to go negative."));
+            }
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates a request to delete an Account.
+    /// </summary>
+    private bool ValidateDelete(Account account, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (account.IsOnboarded && accountingPeriodRepository.GetLatestAccountingPeriod() != null)
+        {
+            exceptions = exceptions.Append(new UnableToDeleteException("Cannot delete an onboarded Account."));
+        }
+        if (transactionRepository.DoAnyTransactionsExistForAccount(account))
+        {
+            exceptions = exceptions.Append(new UnableToDeleteException("Cannot delete an Account that has Transactions."));
+        }
+        if (account.OnboardedBalance != null && !account.Type.IsDebt())
+        {
+            Fund unassignedFund = fundRepository.GetUnassignedFund() ?? throw new InvalidOperationException();
+            if (unassignedFund.OnboardedBalance - account.OnboardedBalance < 0)
+            {
+                exceptions = exceptions.Append(new InvalidFundException("Deleting this Account would cause the unassigned fund balance to go negative."));
+            }
         }
         return !exceptions.Any();
     }

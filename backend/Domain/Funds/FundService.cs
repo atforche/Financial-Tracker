@@ -10,6 +10,7 @@ namespace Domain.Funds;
 /// </summary>
 public class FundService(
     IFundRepository fundRepository,
+    IAccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository,
     AccountingPeriodBalanceService accountingPeriodBalanceService)
 {
@@ -27,8 +28,32 @@ public class FundService(
         {
             return false;
         }
-        fund = new Fund(request.Name, request.Description, request.AccountingPeriod.Id, request.IsSystemFund);
+        fund = new Fund(request.Name, request.Description, request.OpeningAccountingPeriod.Id);
         accountingPeriodBalanceService.AddFund(fund);
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to onboard a new Fund.
+    /// </summary>
+    public bool TryOnboard(
+        OnboardFundRequest request,
+        [NotNullWhen(true)] out Fund? fund,
+        out IEnumerable<Exception> exceptions)
+    {
+        fund = null;
+
+        if (!ValidateOnboard(request, out exceptions))
+        {
+            return false;
+        }
+        fund = new Fund(request.Name, request.Description, request.OnboardedBalance);
+        fundRepository.Add(fund);
+        if (request.Name != Fund.UnassignedFundName)
+        {
+            Fund? unassignedFund = fundRepository.GetUnassignedFund() ?? throw new InvalidOperationException();
+            unassignedFund.OnboardedBalance -= request.OnboardedBalance;
+        }
         return true;
     }
 
@@ -54,6 +79,11 @@ public class FundService(
         if (!ValidateDelete(fund, out exceptions))
         {
             return false;
+        }
+        if (fund.OnboardedBalance != null)
+        {
+            Fund unassignedFund = fundRepository.GetUnassignedFund() ?? throw new InvalidOperationException();
+            unassignedFund.OnboardedBalance += fund.OnboardedBalance.Value;
         }
         accountingPeriodBalanceService.DeleteFund(fund);
         fundRepository.Delete(fund);
@@ -89,13 +119,43 @@ public class FundService(
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
-        if (request.IsSystemFund && fundRepository.GetSystemFund() != null)
-        {
-            exceptions = exceptions.Append(new InvalidFundException("An unassigned fund already exists."));
-        }
-        if (!request.AccountingPeriod.IsOpen)
+        if (!request.OpeningAccountingPeriod.IsOpen)
         {
             exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates the provided request to onboard a Fund.
+    /// </summary>
+    private bool ValidateOnboard(OnboardFundRequest request, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (!ValidateName(request.Name, null, out IEnumerable<Exception> nameExceptions))
+        {
+            exceptions = exceptions.Concat(nameExceptions);
+        }
+        if (accountingPeriodRepository.GetAll().Count > 0)
+        {
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException("Funds can only be onboarded before any Accounting Periods have been created."));
+        }
+        if (request.OnboardedBalance < 0)
+        {
+            exceptions = exceptions.Append(new InvalidAmountException("Fund balance cannot be negative."));
+        }
+        if (request.Name != Fund.UnassignedFundName)
+        {
+            Fund? unassignedFund = fundRepository.GetUnassignedFund();
+            if (unassignedFund == null)
+            {
+                exceptions = exceptions.Append(new InvalidFundException("The unassigned fund must exist before onboarding a Fund."));
+            }
+            else if (unassignedFund.OnboardedBalance < request.OnboardedBalance)
+            {
+                exceptions = exceptions.Append(new InvalidFundException("There is not enough unassigned balance to onboard this Fund."));
+            }
         }
         return !exceptions.Any();
     }
@@ -111,7 +171,7 @@ public class FundService(
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
-        if (fund.IsSystemFund)
+        if (fund.IsUnassignedFund)
         {
             exceptions = exceptions.Append(new UnableToUpdateException("The unassigned fund cannot be updated."));
         }
@@ -125,9 +185,13 @@ public class FundService(
     {
         exceptions = [];
 
-        if (fund.IsSystemFund)
+        if (fund.IsUnassignedFund)
         {
             exceptions = exceptions.Append(new UnableToDeleteException("The unassigned fund cannot be deleted."));
+        }
+        if (fund.IsOnboarded && accountingPeriodRepository.GetLatestAccountingPeriod() != null)
+        {
+            exceptions = exceptions.Append(new UnableToDeleteException("Cannot delete an onboarded Fund."));
         }
         if (transactionRepository.DoAnyTransactionsExistForFund(fund.Id))
         {

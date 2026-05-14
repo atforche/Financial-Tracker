@@ -694,6 +694,55 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/funds/unassigned": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves the unassigned Fund */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["FundModel"];
+                        "application/json": components["schemas"]["FundModel"];
+                        "text/json": components["schemas"]["FundModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/funds/{fundId}/transactions": {
         parameters: {
             query?: never;
@@ -750,6 +799,61 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/funds/onboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Onboards a new Fund with the provided properties */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["OnboardFundModel"];
+                    "text/json": components["schemas"]["OnboardFundModel"];
+                    "application/*+json": components["schemas"]["OnboardFundModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["FundModel"];
+                        "application/json": components["schemas"]["FundModel"];
+                        "text/json": components["schemas"]["FundModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -1025,6 +1129,61 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/onboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Onboards a new Account with the provided properties */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["OnboardAccountModel"];
+                    "text/json": components["schemas"]["OnboardAccountModel"];
+                    "application/*+json": components["schemas"]["OnboardAccountModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountModel"];
+                        "application/json": components["schemas"]["AccountModel"];
+                        "text/json": components["schemas"]["AccountModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -1973,25 +2132,18 @@ export interface components {
         CreateAccountModel: {
             /** @description Name for the Account */
             name: string;
-            /** @description Description for the Account */
+            /** @description Type of the Account */
             type: components["schemas"]["AccountTypeModel"];
             /**
              * Format: uuid
-             * @description Accounting Period that the Account is being added to
+             * @description Opening Accounting Period for the Account
              */
-            accountingPeriodId: string;
+            openingAccountingPeriodId: string;
             /**
              * Format: date
-             * @description Date the Account is being added
+             * @description Date the Account is being opened
              */
-            addDate: string;
-            /**
-             * Format: double
-             * @description Initial balance for the Account
-             */
-            initialBalance: number;
-            /** @description Initial Fund Assignments for the Account */
-            initialFundAssignments: components["schemas"]["CreateFundAmountModel"][];
+            dateOpened: string;
         };
         /** @description Model representing a request to create a Fund Amount */
         CreateFundAmountModel: {
@@ -2293,6 +2445,30 @@ export interface components {
          * @enum {unknown}
          */
         GoalTypeModel: GoalTypeModel;
+        /** @description Model representing a request to onboard an Account. */
+        OnboardAccountModel: {
+            /** @description Name for the Account */
+            name: string;
+            /** @description Type of the Account */
+            type: components["schemas"]["AccountTypeModel"];
+            /**
+             * Format: double
+             * @description Starting balance assigned during onboarding
+             */
+            onboardedBalance: number;
+        };
+        /** @description Model representing a request to onboard a Fund. */
+        OnboardFundModel: {
+            /** @description Name for the Fund */
+            name: string;
+            /** @description Description for the Fund */
+            description: string;
+            /**
+             * Format: double
+             * @description Starting balance assigned during onboarding
+             */
+            onboardedBalance: number;
+        };
         /** @description Model representing a request to post a Transaction */
         PostTransactionModel: {
             /**

@@ -22,6 +22,7 @@ import tryParseEnum from "@/framework/data/tryParseEnum";
 interface FundListFrameProps {
   readonly data: Fund[] | null;
   readonly totalCount: number | null;
+  readonly isInOnboardingMode: boolean;
 }
 
 /**
@@ -30,6 +31,7 @@ interface FundListFrameProps {
 const FundListFrame = function ({
   data,
   totalCount,
+  isInOnboardingMode,
 }: FundListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -122,7 +124,9 @@ const FundListFrame = function ({
           label="Add"
           icon={<AddCircleOutline />}
           onClick={() => {
-            router.push(routes.create({}));
+            router.push(
+              isInOnboardingMode ? routes.onboard : routes.create({}),
+            );
           }}
         />
       ),

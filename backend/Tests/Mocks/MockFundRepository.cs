@@ -16,13 +16,13 @@ internal sealed class MockFundRepository : IFundRepository
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Fund> GetAllFundsAddedInPeriod(AccountingPeriodId accountingPeriodId) =>
-        _funds.Values.Where(fund => fund.AddAccountingPeriodId == accountingPeriodId).ToList();
+        _funds.Values.Where(fund => fund.OpeningAccountingPeriodId == accountingPeriodId).ToList();
 
     /// <inheritdoc/>
     public Fund GetById(FundId id) => _funds[id.Value];
 
     /// <inheritdoc/>
-    public Fund? GetSystemFund() => _funds.Values.FirstOrDefault(fund => fund.IsSystemFund);
+    public Fund? GetUnassignedFund() => _funds.Values.FirstOrDefault(fund => fund.Name == Fund.UnassignedFundName);
 
     /// <inheritdoc/>
     public bool TryGetByName(string name, [NotNullWhen(true)] out Fund? fund)

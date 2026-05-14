@@ -61,7 +61,11 @@ public class AccountingPeriodBalanceService(
     /// </summary>
     internal void AddFund(Fund newFund)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(newFund.AddAccountingPeriodId);
+        if (newFund.OpeningAccountingPeriodId == null)
+        {
+            return;
+        }
+        AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(newFund.OpeningAccountingPeriodId);
         while (accountingPeriod != null)
         {
             AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
@@ -77,7 +81,11 @@ public class AccountingPeriodBalanceService(
     /// </summary>
     internal void DeleteFund(Fund fund)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(fund.AddAccountingPeriodId);
+        if (fund.OpeningAccountingPeriodId == null)
+        {
+            return;
+        }
+        AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(fund.OpeningAccountingPeriodId);
         while (accountingPeriod != null)
         {
             AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
@@ -91,7 +99,11 @@ public class AccountingPeriodBalanceService(
     /// </summary>
     internal void AddAccount(Account newAccount)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(newAccount.AddAccountingPeriodId);
+        if (newAccount.OpeningAccountingPeriodId == null)
+        {
+            return;
+        }
+        AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(newAccount.OpeningAccountingPeriodId);
         while (accountingPeriod != null)
         {
             AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
@@ -106,7 +118,11 @@ public class AccountingPeriodBalanceService(
     /// </summary>
     internal void DeleteAccount(Account account)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(account.AddAccountingPeriodId);
+        if (account.OpeningAccountingPeriodId == null)
+        {
+            return;
+        }
+        AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(account.OpeningAccountingPeriodId);
         while (accountingPeriod != null)
         {
             AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);

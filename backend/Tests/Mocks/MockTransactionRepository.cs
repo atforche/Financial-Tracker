@@ -25,8 +25,7 @@ internal sealed class MockTransactionRepository : ITransactionRepository
 
     /// <inheritdoc/>
     public bool DoAnyTransactionsExistForAccount(Account account) =>
-        _transactions.Values.Any(transaction => GetAccountIds(transaction).Contains(account.Id) &&
-        transaction.Id != account.InitialTransaction);
+        _transactions.Values.Any(transaction => GetAccountIds(transaction).Contains(account.Id));
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>

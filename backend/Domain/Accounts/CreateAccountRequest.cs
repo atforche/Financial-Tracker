@@ -1,5 +1,4 @@
 using Domain.AccountingPeriods;
-using Domain.Funds;
 
 namespace Domain.Accounts;
 
@@ -21,20 +20,10 @@ public record CreateAccountRequest
     /// <summary>
     /// Accounting Period that the Account is being added to
     /// </summary>
-    public required AccountingPeriod AccountingPeriod { get; init; }
+    public required AccountingPeriod OpeningAccountingPeriod { get; init; }
 
     /// <summary>
-    /// Date the Account is being added
+    /// Date the Account is being opened
     /// </summary>
-    public required DateOnly AddDate { get; init; }
-
-    /// <summary>
-    /// Initial balance for the Account
-    /// </summary>
-    public required decimal InitialBalance { get; init; }
-
-    /// <summary>
-    /// Fund assignments for the initial balance of the Account.
-    /// </summary>
-    public required IReadOnlyCollection<FundAmount> InitialFundAssignments { get; init; }
+    public required DateOnly DateOpened { get; init; }
 }

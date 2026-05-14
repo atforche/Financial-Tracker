@@ -34,7 +34,7 @@ const FundsView = async function ({
   const { search, sort, page } = await searchParams;
 
   const apiClient = getApiClient();
-  const { data: funds } = await apiClient.GET("/funds", {
+  const fundsPromise = apiClient.GET("/funds", {
     params: {
       query: {
         Search: search ?? "",
@@ -44,7 +44,26 @@ const FundsView = async function ({
       },
     },
   });
-  if (typeof funds === "undefined") {
+  const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
+    params: {
+      query: {
+        Search: "",
+        Sort: null,
+        Limit: 1,
+        Offset: 0,
+      },
+    },
+  });
+
+  const [{ data: funds }, { data: accountingPeriods }] = await Promise.all([
+    fundsPromise,
+    accountingPeriodsPromise,
+  ]);
+
+  if (
+    typeof funds === "undefined" ||
+    typeof accountingPeriods === "undefined"
+  ) {
     throw new Error(`Failed to fetch funds`);
   }
 
@@ -52,7 +71,11 @@ const FundsView = async function ({
     <Stack spacing={2}>
       <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
       <SearchBar paramName={nameof<FundsViewSearchParams>("search")} />
-      <FundListFrame data={funds.items} totalCount={funds.totalCount} />
+      <FundListFrame
+        data={funds.items}
+        isInOnboardingMode={accountingPeriods.totalCount === 0}
+        totalCount={funds.totalCount}
+      />
     </Stack>
   );
 };

@@ -1,11 +1,9 @@
-using Domain.AccountingPeriods;
-
-namespace Domain.Funds;
+namespace Models.Funds;
 
 /// <summary>
-/// Record representing a request to create a <see cref="Fund"/>
+/// Model representing a request to onboard a Fund.
 /// </summary>
-public record CreateFundRequest
+public class OnboardFundModel
 {
     /// <summary>
     /// Name for the Fund
@@ -18,7 +16,7 @@ public record CreateFundRequest
     public required string Description { get; init; }
 
     /// <summary>
-    /// Opening Accounting Period for the Fund
+    /// Starting balance assigned during onboarding
     /// </summary>
-    public required AccountingPeriod OpeningAccountingPeriod { get; init; }
+    public required decimal OnboardedBalance { get; init; }
 }

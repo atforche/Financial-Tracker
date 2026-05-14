@@ -1,5 +1,4 @@
 using Domain.AccountingPeriods;
-using Domain.Transactions;
 
 namespace Domain.Accounts;
 
@@ -22,30 +21,49 @@ public class Account : Entity<AccountId>
     public AccountType Type { get; private set; }
 
     /// <summary>
-    /// Accounting Period that this Account was added in
+    /// Accounting Period that this Account was opened in
     /// </summary>
-    public AccountingPeriodId AddAccountingPeriodId { get; private set; }
+    public AccountingPeriodId? OpeningAccountingPeriodId { get; private set; }
 
     /// <summary>
-    /// Date that this Account was added
+    /// Date that this Account was opened
     /// </summary>
-    public DateOnly AddDate { get; private set; }
+    public DateOnly? DateOpened { get; private set; }
 
     /// <summary>
-    /// Initial Transaction for this Account (if this account was created with an initial balance)
+    /// Balance assigned during onboarding before accounting periods exist
     /// </summary>
-    public TransactionId? InitialTransaction { get; internal set; }
+    public decimal? OnboardedBalance { get; private set; }
+
+    /// <summary>
+    /// True if this Account was created during onboarding, false otherwise
+    /// </summary>
+    public bool IsOnboarded => OpeningAccountingPeriodId == null && DateOpened == null;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal Account(string name, AccountType type, AccountingPeriodId addAccountingPeriodId, DateOnly addDate)
+    internal Account(string name, AccountType type, AccountingPeriodId openingAccountingPeriodId, DateOnly dateOpened)
         : base(new AccountId(Guid.NewGuid()))
     {
         Name = name;
         Type = type;
-        AddAccountingPeriodId = addAccountingPeriodId;
-        AddDate = addDate;
+        OpeningAccountingPeriodId = openingAccountingPeriodId;
+        DateOpened = dateOpened;
+        OnboardedBalance = null;
+    }
+
+    /// <summary>
+    /// Constructs a new onboarded instance of this class
+    /// </summary>
+    internal Account(string name, AccountType type, decimal onboardedBalance)
+        : base(new AccountId(Guid.NewGuid()))
+    {
+        Name = name;
+        Type = type;
+        OpeningAccountingPeriodId = null;
+        DateOpened = null;
+        OnboardedBalance = onboardedBalance;
     }
 
     /// <summary>
@@ -54,7 +72,7 @@ public class Account : Entity<AccountId>
     private Account() : base()
     {
         Name = "";
-        AddAccountingPeriodId = null!;
+        OpeningAccountingPeriodId = null;
     }
 }
 

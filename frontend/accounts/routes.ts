@@ -23,6 +23,7 @@ const routes = {
     `/accounts?${objectToSearchParams(searchParams).toString()}` as Route,
   create: (searchParams: CreateAccountViewSearchParams): Route =>
     `/accounts/create?${objectToSearchParams(searchParams).toString()}` as Route,
+  onboard: "/accounts/onboard" as Route,
   detail: (
     params: AccountViewParams,
     searchParams: AccountViewSearchParams,

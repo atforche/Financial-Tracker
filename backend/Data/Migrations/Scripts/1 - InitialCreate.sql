@@ -16,9 +16,9 @@ CREATE TABLE "Accounts" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_Accounts" PRIMARY KEY,
     "Name" TEXT NOT NULL,
     "Type" TEXT NOT NULL,
-    "AddAccountingPeriodId" TEXT NOT NULL,
-    "AddDate" TEXT NOT NULL,
-    "InitialTransaction" TEXT NULL
+    "OpeningAccountingPeriodId" TEXT NULL,
+    "DateOpened" TEXT NULL,
+    "OnboardedBalance" TEXT NULL
 );
 
 CREATE TABLE "FundBalanceHistories" (
@@ -37,9 +37,9 @@ CREATE TABLE "FundBalanceHistories" (
 CREATE TABLE "Funds" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_Funds" PRIMARY KEY,
     "Name" TEXT NOT NULL,
-    "IsSystemFund" INTEGER NOT NULL,
     "Description" TEXT NOT NULL,
-    "AddAccountingPeriodId" TEXT NOT NULL
+    "OpeningAccountingPeriodId" TEXT NULL,
+    "OnboardedBalance" TEXT NULL
 );
 
 CREATE TABLE "AccountingPeriodBalanceHistories" (
@@ -93,19 +93,16 @@ CREATE TABLE "Transactions" (
     "AccountTransaction_DebitPostedDate" TEXT NULL,
     "AccountTransaction_CreditAccountId" TEXT NULL,
     "AccountTransaction_CreditPostedDate" TEXT NULL,
-    "AccountTransaction_GeneratedByAccountId" TEXT NULL,
     "FundTransaction_DebitFundId" TEXT NULL,
     "FundTransaction_CreditFundId" TEXT NULL,
     "IncomeTransaction_CreditAccountId" TEXT NULL,
     "IncomeTransaction_CreditPostedDate" TEXT NULL,
     "IncomeTransaction_DebitAccountId" TEXT NULL,
     "IncomeTransaction_DebitPostedDate" TEXT NULL,
-    "IncomeTransaction_GeneratedByAccountId" TEXT NULL,
     "SpendingTransaction_DebitAccountId" TEXT NULL,
     "SpendingTransaction_DebitPostedDate" TEXT NULL,
     "SpendingTransaction_CreditAccountId" TEXT NULL,
     "SpendingTransaction_CreditPostedDate" TEXT NULL,
-    "SpendingTransaction_GeneratedByAccountId" TEXT NULL,
     CONSTRAINT "FK_Transactions_Accounts_AccountTransaction_CreditAccountId" FOREIGN KEY ("AccountTransaction_CreditAccountId") REFERENCES "Accounts" ("Id"),
     CONSTRAINT "FK_Transactions_Accounts_AccountTransaction_DebitAccountId" FOREIGN KEY ("AccountTransaction_DebitAccountId") REFERENCES "Accounts" ("Id"),
     CONSTRAINT "FK_Transactions_Accounts_IncomeTransaction_CreditAccountId" FOREIGN KEY ("IncomeTransaction_CreditAccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
@@ -205,7 +202,7 @@ CREATE INDEX "IX_Transactions_SpendingTransaction_CreditAccountId" ON "Transacti
 CREATE INDEX "IX_Transactions_SpendingTransaction_DebitAccountId" ON "Transactions" ("SpendingTransaction_DebitAccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260502192315_InitialCreate', '10.0.2');
+VALUES ('20260513134807_InitialCreate', '10.0.2');
 
 COMMIT;
 

@@ -1,5 +1,3 @@
-using Models.Funds;
-
 namespace Models.Accounts;
 
 /// <summary>
@@ -13,27 +11,17 @@ public class CreateAccountModel
     public required string Name { get; init; }
 
     /// <summary>
-    /// Description for the Account
+    /// Type of the Account
     /// </summary>
     public required AccountTypeModel Type { get; init; }
 
     /// <summary>
-    /// Accounting Period that the Account is being added to
+    /// Opening Accounting Period for the Account
     /// </summary>
-    public required Guid AccountingPeriodId { get; init; }
+    public required Guid OpeningAccountingPeriodId { get; init; }
 
     /// <summary>
-    /// Date the Account is being added
+    /// Date the Account is being opened
     /// </summary>
-    public required DateOnly AddDate { get; init; }
-
-    /// <summary>
-    /// Initial balance for the Account
-    /// </summary>
-    public required decimal InitialBalance { get; init; }
-
-    /// <summary>
-    /// Initial Fund Assignments for the Account
-    /// </summary>
-    public required IReadOnlyCollection<CreateFundAmountModel> InitialFundAssignments { get; init; }
+    public required DateOnly DateOpened { get; init; }
 }

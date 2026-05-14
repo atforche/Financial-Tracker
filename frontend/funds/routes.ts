@@ -20,6 +20,7 @@ const routes = {
     `/funds?${objectToSearchParams(searchParams).toString()}` as Route,
   create: (searchParams: CreateFundViewSearchParams): Route =>
     `/funds/create?${objectToSearchParams(searchParams).toString()}` as Route,
+  onboard: "/funds/onboard" as Route,
   detail: (params: FundViewParams, searchParams: FundViewSearchParams): Route =>
     `/funds/${params.id}?${objectToSearchParams(searchParams).toString()}` as Route,
   update: (
