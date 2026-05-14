@@ -86,11 +86,8 @@ public class AccountService(
     /// <returns>True if update was successful, false otherwise</returns>
     public bool TryUpdate(Account account, string name, out IEnumerable<Exception> exceptions)
     {
-        exceptions = [];
-
-        if (!ValidateAccountName(name, out IEnumerable<Exception> nameExceptions))
+        if (!ValidateAccountName(name, out exceptions))
         {
-            exceptions = exceptions.Concat(nameExceptions);
             return false;
         }
         account.Name = name;
@@ -105,17 +102,15 @@ public class AccountService(
     /// <returns>True if deletion was successful, false otherwise</returns>
     public bool TryDelete(Account account, out IEnumerable<Exception> exceptions)
     {
-        exceptions = [];
-
-        if (account.IsOnboarded)
+        if (!ValidateDelete(account, out exceptions))
         {
-            exceptions = [new UnableToDeleteException("Cannot delete an onboarded Account.")];
             return false;
         }
-        if (transactionRepository.DoAnyTransactionsExistForAccount(account))
+        if (account.OnboardedBalance != null)
         {
-            exceptions = [new UnableToDeleteException("Cannot delete an Account that has Transactions.")];
-            return false;
+            Fund unassignedFund = fundRepository.GetUnassignedFund() ?? throw new InvalidOperationException();
+            decimal changeInUnassignedBalance = account.Type.IsDebt() ? -account.OnboardedBalance.Value : account.OnboardedBalance.Value;
+            unassignedFund.OnboardedBalance -= changeInUnassignedBalance;
         }
         accountingPeriodBalanceService.DeleteAccount(account);
         accountRepository.Delete(account);
@@ -190,7 +185,32 @@ public class AccountService(
                 exceptions = exceptions.Append(new InvalidFundException("Onboarding this Account would cause the unassigned fund balance to go negative."));
             }
         }
+        return !exceptions.Any();
+    }
 
+    /// <summary>
+    /// Validates a request to delete an Account.
+    /// </summary>
+    private bool ValidateDelete(Account account, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (account.IsOnboarded && accountingPeriodRepository.GetLatestAccountingPeriod() != null)
+        {
+            exceptions = exceptions.Append(new UnableToDeleteException("Cannot delete an onboarded Account."));
+        }
+        if (transactionRepository.DoAnyTransactionsExistForAccount(account))
+        {
+            exceptions = exceptions.Append(new UnableToDeleteException("Cannot delete an Account that has Transactions."));
+        }
+        if (account.OnboardedBalance != null && !account.Type.IsDebt())
+        {
+            Fund unassignedFund = fundRepository.GetUnassignedFund() ?? throw new InvalidOperationException();
+            if (unassignedFund.OnboardedBalance - account.OnboardedBalance < 0)
+            {
+                exceptions = exceptions.Append(new InvalidFundException("Deleting this Account would cause the unassigned fund balance to go negative."));
+            }
+        }
         return !exceptions.Any();
     }
 }

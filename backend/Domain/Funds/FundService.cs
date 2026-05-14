@@ -80,6 +80,11 @@ public class FundService(
         {
             return false;
         }
+        if (fund.OnboardedBalance != null)
+        {
+            Fund unassignedFund = fundRepository.GetUnassignedFund() ?? throw new InvalidOperationException();
+            unassignedFund.OnboardedBalance += fund.OnboardedBalance.Value;
+        }
         accountingPeriodBalanceService.DeleteFund(fund);
         fundRepository.Delete(fund);
         return true;
@@ -184,7 +189,7 @@ public class FundService(
         {
             exceptions = exceptions.Append(new UnableToDeleteException("The unassigned fund cannot be deleted."));
         }
-        if (fund.IsOnboarded)
+        if (fund.IsOnboarded && accountingPeriodRepository.GetLatestAccountingPeriod() != null)
         {
             exceptions = exceptions.Append(new UnableToDeleteException("Cannot delete an onboarded Fund."));
         }
