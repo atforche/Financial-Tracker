@@ -141,10 +141,6 @@ public class FundService(
         {
             exceptions = exceptions.Append(new InvalidAccountingPeriodException("Funds can only be onboarded before any Accounting Periods have been created."));
         }
-        if (request.OnboardedBalance < 0)
-        {
-            exceptions = exceptions.Append(new InvalidAmountException("Fund balance cannot be negative."));
-        }
         if (request.Name != Fund.UnassignedFundName)
         {
             Fund? unassignedFund = fundRepository.GetUnassignedFund();
