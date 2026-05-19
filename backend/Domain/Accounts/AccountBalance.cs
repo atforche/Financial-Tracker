@@ -26,11 +26,6 @@ public class AccountBalance
     public decimal PendingCreditAmount { get; }
 
     /// <summary>
-    /// Available to Spend Balance for this Account Balance
-    /// </summary>
-    public decimal? AvailableToSpend => Account.Type == AccountType.Debt ? null : PostedBalance - PendingDebitAmount;
-
-    /// <summary>
     /// Adds the provided pending debit amount to the current pending Account Balance
     /// </summary>
     internal AccountBalance AddNewPendingDebitAmount(decimal pendingDebitAmount) =>

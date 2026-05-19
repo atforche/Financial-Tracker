@@ -122,31 +122,6 @@ const AccountListFrame = function ({
       alignment: "right",
     },
     {
-      name: "availableToSpend",
-      headerContent: "Available to Spend",
-      getBodyContent: (account: Account) =>
-        account.currentBalance.availableToSpend !== null
-          ? formatCurrency(account.currentBalance.availableToSpend)
-          : null,
-      sortType:
-        currentSort === AccountSortOrder.AvailableToSpend
-          ? ColumnSortType.Ascending
-          : currentSort === AccountSortOrder.AvailableToSpendDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType: ColumnSortType | null): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountSortOrder.AvailableToSpend);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountSortOrder.AvailableToSpendDescending);
-        } else {
-          setSort(null);
-        }
-      },
-      minWidth: 125,
-      alignment: "right",
-    },
-    {
       name: "actions",
       headerContent: (
         <IconButton

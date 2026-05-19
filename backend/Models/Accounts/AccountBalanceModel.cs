@@ -16,11 +16,6 @@ public class AccountBalanceModel
     public required decimal PostedBalance { get; init; }
 
     /// <summary>
-    /// Available to Spend Balance for the Account Balance
-    /// </summary>
-    public required decimal? AvailableToSpend { get; init; }
-
-    /// <summary>
     /// Pending Debit Amount for the Account Balance
     /// </summary>
     public required decimal PendingDebitAmount { get; init; }

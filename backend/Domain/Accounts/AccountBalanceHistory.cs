@@ -46,11 +46,6 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     public decimal PendingCreditAmount { get; private set; }
 
     /// <summary>
-    /// Available to Spend for this Account Balance History
-    /// </summary>
-    public decimal? AvailableToSpend { get; private set; }
-
-    /// <summary>
     /// Updates this Account Balance History with a new Account Balance.
     /// </summary>
     public void Update(AccountBalance newBalance)
@@ -62,7 +57,6 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
         PostedBalance = newBalance.PostedBalance;
         PendingDebitAmount = newBalance.PendingDebitAmount;
         PendingCreditAmount = newBalance.PendingCreditAmount;
-        AvailableToSpend = newBalance.AvailableToSpend;
     }
 
     /// <summary>

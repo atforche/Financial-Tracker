@@ -1908,11 +1908,6 @@ export interface components {
             postedBalance: number;
             /**
              * Format: double
-             * @description Available to Spend Balance for the Account Balance
-             */
-            availableToSpend: null | number;
-            /**
-             * Format: double
              * @description Pending Debit Amount for the Account Balance
              */
             pendingDebitAmount: number;
@@ -2915,9 +2910,7 @@ export enum AccountSortOrderModel {
     Type = "Type",
     TypeDescending = "TypeDescending",
     PostedBalance = "PostedBalance",
-    PostedBalanceDescending = "PostedBalanceDescending",
-    AvailableToSpend = "AvailableToSpend",
-    AvailableToSpendDescending = "AvailableToSpendDescending"
+    PostedBalanceDescending = "PostedBalanceDescending"
 }
 export enum AccountTransactionSortOrderModel {
     Date = "Date",

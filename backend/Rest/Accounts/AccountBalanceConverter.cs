@@ -15,7 +15,6 @@ public sealed class AccountBalanceConverter
     {
         AccountId = accountBalance.Account.Id.Value,
         PostedBalance = accountBalance.PostedBalance,
-        AvailableToSpend = accountBalance.AvailableToSpend,
         PendingDebitAmount = accountBalance.PendingDebitAmount,
         PendingCreditAmount = accountBalance.PendingCreditAmount,
     };

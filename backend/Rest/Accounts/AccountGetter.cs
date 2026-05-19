@@ -22,8 +22,7 @@ public class AccountGetter(IAccountRepository accountRepository, AccountConverte
             results = results.Where(account =>
                 account.Name.Contains(request.Search, StringComparison.OrdinalIgnoreCase) ||
                 account.Type.ToString().Contains(request.Search, StringComparison.OrdinalIgnoreCase) ||
-                account.CurrentBalance.PostedBalance.ToString(CultureInfo.InvariantCulture).Contains(request.Search, StringComparison.OrdinalIgnoreCase) ||
-                (account.CurrentBalance.AvailableToSpend != null && account.CurrentBalance.AvailableToSpend.Value.ToString(CultureInfo.InvariantCulture).Contains(request.Search, StringComparison.OrdinalIgnoreCase)))
+                account.CurrentBalance.PostedBalance.ToString(CultureInfo.InvariantCulture).Contains(request.Search, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
         if (request.Sort is null or AccountSortOrderModel.Name)
@@ -49,14 +48,6 @@ public class AccountGetter(IAccountRepository accountRepository, AccountConverte
         else if (request.Sort == AccountSortOrderModel.PostedBalanceDescending)
         {
             results = results.OrderByDescending(account => account.CurrentBalance.PostedBalance).ThenBy(account => account.Name).ToList();
-        }
-        else if (request.Sort == AccountSortOrderModel.AvailableToSpend)
-        {
-            results = results.OrderBy(account => account.CurrentBalance.AvailableToSpend).ThenBy(account => account.Name).ToList();
-        }
-        else if (request.Sort == AccountSortOrderModel.AvailableToSpendDescending)
-        {
-            results = results.OrderByDescending(account => account.CurrentBalance.AvailableToSpend).ThenBy(account => account.Name).ToList();
         }
         return new CollectionModel<AccountModel>
         {

@@ -34,13 +34,4 @@ public enum AccountSortOrderModel
     /// Accounts are sorted by current balance in descending order
     /// </summary>
     PostedBalanceDescending,
-
-    /// <summary>
-    /// Accounts are sorted by available to spend in ascending order
-    /// </summary>
-    AvailableToSpend,
-
-    /// <summary> Accounts are sorted by available to spend in descending order
-    /// </summary>
-    AvailableToSpendDescending,
 }

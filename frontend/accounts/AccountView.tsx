@@ -39,10 +39,6 @@ interface AccountViewProps {
   readonly searchParams: Promise<AccountViewSearchParams>;
 }
 
-const formatAmount = function (value: number | null): string {
-  return value === null ? "-" : formatCurrency(value);
-};
-
 /**
  * Component that displays the view for a single account.
  */
@@ -124,10 +120,6 @@ const AccountView = async function ({
         <CaptionedValue
           caption="Posted Balance"
           value={formatCurrency(account.currentBalance.postedBalance)}
-        />
-        <CaptionedValue
-          caption="Available to Spend"
-          value={formatAmount(account.currentBalance.availableToSpend)}
         />
         <CaptionedValue
           caption="Pending Debit"
