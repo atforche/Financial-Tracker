@@ -5,9 +5,9 @@ import {
   AccountingPeriodSortOrder,
 } from "@/accounting-periods/types";
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
+import { Button, Checkbox } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriodsViewSearchParams } from "@/accounting-periods/AccountingPeriodsView";
-import { Checkbox } from "@mui/material";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
@@ -38,21 +38,24 @@ const AccountingPeriodListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const sortSearchParamName = nameof<AccountingPeriodsViewSearchParams>("sort");
+
+  const searchParamName = nameof<AccountingPeriodsViewSearchParams>("search");
+  const sortParamName = nameof<AccountingPeriodsViewSearchParams>("sort");
+  const pageParamName = nameof<AccountingPeriodsViewSearchParams>("page");
 
   const setSort = function (sort: AccountingPeriodSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete(sortSearchParamName);
+      params.delete(sortParamName);
     } else {
-      params.set(sortSearchParamName, sort);
+      params.set(sortParamName, sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     AccountingPeriodSortOrder,
-    searchParams.get(sortSearchParamName) ?? "",
+    searchParams.get(sortParamName) ?? "",
   );
   const columns: ColumnDefinition<AccountingPeriod>[] = [
     {
@@ -172,7 +175,41 @@ const AccountingPeriodListFrame = function ({
       getId={(accountingPeriod: AccountingPeriod) => accountingPeriod.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      pageSearchParamName={nameof<AccountingPeriodsViewSearchParams>("page")}
+      searchParamName={searchParamName}
+      pageParamName={pageParamName}
+      initialEmptyState={{
+        title: "No accounting periods yet",
+        description:
+          "Create an accounting period to start organizing balances, accounts, and transactions by month.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              router.push(routes.create);
+            }}
+          >
+            Create accounting period
+          </Button>
+        ),
+      }}
+      filteredEmptyState={{
+        title: "No accounting periods match this search",
+        description:
+          "Try a different month or year, or clear the current search to see all accounting periods.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.delete(searchParamName);
+              params.delete(pageParamName);
+              router.replace(`${pathname}?${params.toString()}`);
+            }}
+          >
+            Clear search
+          </Button>
+        ),
+      }}
     />
   );
 };

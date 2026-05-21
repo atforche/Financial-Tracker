@@ -1,5 +1,6 @@
 "use client";
 
+import { Box, Button } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -72,21 +73,24 @@ const FundTransactionListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const sortSearchParamName = nameof<FundViewSearchParams>("sort");
+
+  const searchParamName = nameof<FundViewSearchParams>("search");
+  const sortParamName = nameof<FundViewSearchParams>("sort");
+  const pageParamName = nameof<FundViewSearchParams>("page");
 
   const setSort = function (sort: FundTransactionSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete(sortSearchParamName);
+      params.delete(sortParamName);
     } else {
-      params.set(sortSearchParamName, sort);
+      params.set(sortParamName, sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     FundTransactionSortOrder,
-    searchParams.get(sortSearchParamName) ?? "",
+    searchParams.get(sortParamName) ?? "",
   );
 
   const columns: ColumnDefinition<Transaction>[] = [
@@ -186,7 +190,31 @@ const FundTransactionListFrame = function ({
       getId={(transaction) => transaction.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      pageSearchParamName={nameof<FundViewSearchParams>("page")}
+      searchParamName={searchParamName}
+      pageParamName={pageParamName}
+      initialEmptyState={{
+        title: "No transactions yet",
+        description: "This fund has not been affected by any transactions yet.",
+        action: <Box />,
+      }}
+      filteredEmptyState={{
+        title: "No transactions match this search",
+        description:
+          "Try a different date or location, or clear the current search to see all transactions affecting this fund.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.delete(searchParamName);
+              params.delete(pageParamName);
+              router.replace(`${pathname}?${params.toString()}`);
+            }}
+          >
+            Clear search
+          </Button>
+        ),
+      }}
     />
   );
 };

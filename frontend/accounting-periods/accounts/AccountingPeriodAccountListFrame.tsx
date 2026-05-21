@@ -9,6 +9,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriodViewSearchParams } from "@/accounting-periods/AccountingPeriodView";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
+import { Button } from "@mui/material";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
@@ -42,24 +43,26 @@ const AccountingPeriodAccountListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const sortSearchParamName =
-    nameof<AccountingPeriodViewSearchParams>("accountSort");
+
+  const searchParamName = nameof<AccountingPeriodViewSearchParams>("search");
+  const sortParamName = nameof<AccountingPeriodViewSearchParams>("accountSort");
+  const pageParamName = nameof<AccountingPeriodViewSearchParams>("page");
 
   const setSort = function (
     sort: AccountingPeriodAccountSortOrder | null,
   ): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete(sortSearchParamName);
+      params.delete(sortParamName);
     } else {
-      params.set(sortSearchParamName, sort);
+      params.set(sortParamName, sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     AccountingPeriodAccountSortOrder,
-    searchParams.get(sortSearchParamName) ?? "",
+    searchParams.get(sortParamName) ?? "",
   );
 
   const columns: ColumnDefinition<AccountingPeriodAccount>[] = [
@@ -193,7 +196,47 @@ const AccountingPeriodAccountListFrame = function ({
       getId={(account) => account.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      pageSearchParamName={nameof<AccountingPeriodViewSearchParams>("page")}
+      searchParamName={searchParamName}
+      pageParamName={pageParamName}
+      initialEmptyState={{
+        title: "No accounts in this period",
+        description: accountingPeriod.isOpen
+          ? "Add an account to include it in this accounting period and start tracking balances."
+          : "This accounting period has no accounts to show.",
+        action: (
+          <Button
+            variant="contained"
+            disabled={!accountingPeriod.isOpen}
+            onClick={() => {
+              router.push(
+                accountRoutes.create({
+                  accountingPeriodId: accountingPeriod.id,
+                }),
+              );
+            }}
+          >
+            Create account
+          </Button>
+        ),
+      }}
+      filteredEmptyState={{
+        title: "No accounts match this search",
+        description:
+          "Try a different account name or clear the current search to see all accounts in this period.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.delete(searchParamName);
+              params.delete(pageParamName);
+              router.replace(`${pathname}?${params.toString()}`);
+            }}
+          >
+            Clear search
+          </Button>
+        ),
+      }}
     />
   );
 };

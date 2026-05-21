@@ -6,6 +6,7 @@ import {
   isPositiveChangeInBalance,
 } from "@/accounts/types";
 import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
+import { Button, Stack } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountViewSearchParams } from "@/accounts/AccountView";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -14,7 +15,6 @@ import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
-import { Stack } from "@mui/material";
 import type { Transaction } from "@/transactions/types";
 import formatCurrency from "@/framework/formatCurrency";
 import nameof from "@/framework/data/nameof";
@@ -80,21 +80,24 @@ const AccountTransactionListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const sortSearchParamName = nameof<AccountViewSearchParams>("sort");
+
+  const searchParamName = nameof<AccountViewSearchParams>("search");
+  const sortParamName = nameof<AccountViewSearchParams>("sort");
+  const pageParamName = nameof<AccountViewSearchParams>("page");
 
   const setSort = function (sort: AccountTransactionSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete(sortSearchParamName);
+      params.delete(sortParamName);
     } else {
-      params.set(sortSearchParamName, sort);
+      params.set(sortParamName, sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     AccountTransactionSortOrder,
-    searchParams.get(sortSearchParamName) ?? "",
+    searchParams.get(sortParamName) ?? "",
   );
 
   const columns: ColumnDefinition<Transaction>[] = [
@@ -215,7 +218,51 @@ const AccountTransactionListFrame = function ({
       getId={(transaction) => transaction.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      pageSearchParamName={nameof<AccountViewSearchParams>("page")}
+      searchParamName={searchParamName}
+      pageParamName={pageParamName}
+      initialEmptyState={{
+        title: "No transactions yet",
+        description:
+          "Add a debit or credit transaction to start building this account's history.",
+        action: (
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant="contained"
+              onClick={() => {
+                router.push(routes.create({ debitAccountId: account.id }));
+              }}
+            >
+              Add debit
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                router.push(routes.create({ creditAccountId: account.id }));
+              }}
+            >
+              Add credit
+            </Button>
+          </Stack>
+        ),
+      }}
+      filteredEmptyState={{
+        title: "No transactions match this search",
+        description:
+          "Try a different date or location, or clear the current search to see all transactions for this account.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.delete(searchParamName);
+              params.delete(pageParamName);
+              router.replace(`${pathname}?${params.toString()}`);
+            }}
+          >
+            Clear search
+          </Button>
+        ),
+      }}
     />
   );
 };

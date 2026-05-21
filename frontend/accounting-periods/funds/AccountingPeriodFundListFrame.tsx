@@ -9,6 +9,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriodViewSearchParams } from "@/accounting-periods/AccountingPeriodView";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
+import { Button } from "@mui/material";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
@@ -41,22 +42,24 @@ const AccountingPeriodFundListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const sortSearchParamName =
-    nameof<AccountingPeriodViewSearchParams>("fundSort");
+
+  const searchParamName = nameof<AccountingPeriodViewSearchParams>("search");
+  const sortParamName = nameof<AccountingPeriodViewSearchParams>("fundSort");
+  const pageParamName = nameof<AccountingPeriodViewSearchParams>("page");
 
   const setSort = function (sort: AccountingPeriodFundSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete(sortSearchParamName);
+      params.delete(sortParamName);
     } else {
-      params.set(sortSearchParamName, sort);
+      params.set(sortParamName, sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     AccountingPeriodFundSortOrder,
-    searchParams.get(sortSearchParamName) ?? "",
+    searchParams.get(sortParamName) ?? "",
   );
 
   const columns: ColumnDefinition<AccountingPeriodFund>[] = [
@@ -214,7 +217,45 @@ const AccountingPeriodFundListFrame = function ({
       getId={(fund) => fund.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      pageSearchParamName={nameof<AccountingPeriodViewSearchParams>("page")}
+      searchParamName={searchParamName}
+      pageParamName={pageParamName}
+      initialEmptyState={{
+        title: "No funds in this period",
+        description: accountingPeriod.isOpen
+          ? "Add a fund to this accounting period so you can assign balances and spending."
+          : "This accounting period has no funds to show.",
+        action: (
+          <Button
+            variant="contained"
+            disabled={!accountingPeriod.isOpen}
+            onClick={() => {
+              router.push(
+                fundRoutes.create({ accountingPeriodId: accountingPeriod.id }),
+              );
+            }}
+          >
+            Create fund
+          </Button>
+        ),
+      }}
+      filteredEmptyState={{
+        title: "No funds match this search",
+        description:
+          "Try a different fund name or clear the current search to see all funds in this period.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.delete(searchParamName);
+              params.delete(pageParamName);
+              router.replace(`${pathname}?${params.toString()}`);
+            }}
+          >
+            Clear search
+          </Button>
+        ),
+      }}
     />
   );
 };

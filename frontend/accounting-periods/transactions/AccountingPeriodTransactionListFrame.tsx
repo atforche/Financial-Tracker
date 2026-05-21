@@ -5,6 +5,7 @@ import { AccountingPeriodTransactionSortOrder } from "@/accounting-periods/types
 import type { AccountingPeriodViewSearchParams } from "@/accounting-periods/AccountingPeriodView";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
+import { Button } from "@mui/material";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
@@ -37,24 +38,27 @@ const AccountingPeriodTransactionListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const sortSearchParamName =
+
+  const searchParamName = nameof<AccountingPeriodViewSearchParams>("search");
+  const sortParamName =
     nameof<AccountingPeriodViewSearchParams>("transactionSort");
+  const pageParamName = nameof<AccountingPeriodViewSearchParams>("page");
 
   const setSort = function (
     sort: AccountingPeriodTransactionSortOrder | null,
   ): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete(sortSearchParamName);
+      params.delete(sortParamName);
     } else {
-      params.set(sortSearchParamName, sort);
+      params.set(sortParamName, sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     AccountingPeriodTransactionSortOrder,
-    searchParams.get(sortSearchParamName) ?? "",
+    searchParams.get(sortParamName) ?? "",
   );
 
   const columns: ColumnDefinition<Transaction>[] = [
@@ -215,7 +219,41 @@ const AccountingPeriodTransactionListFrame = function ({
       getId={(transaction) => transaction.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      pageSearchParamName={nameof<AccountingPeriodViewSearchParams>("page")}
+      searchParamName={searchParamName}
+      pageParamName={pageParamName}
+      initialEmptyState={{
+        title: "No transactions in this period",
+        description:
+          "Create a transaction to start recording activity for this accounting period.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              router.push(routes.create({ accountingPeriodId }));
+            }}
+          >
+            Create transaction
+          </Button>
+        ),
+      }}
+      filteredEmptyState={{
+        title: "No transactions match this search",
+        description:
+          "Try a different date, location, or account name, or clear the current search to see all transactions in this period.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.delete(searchParamName);
+              params.delete(pageParamName);
+              router.replace(`${pathname}?${params.toString()}`);
+            }}
+          >
+            Clear search
+          </Button>
+        ),
+      }}
     />
   );
 };

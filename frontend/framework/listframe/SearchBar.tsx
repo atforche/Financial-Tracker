@@ -10,13 +10,17 @@ import { useDebouncedCallback } from "use-debounce";
  * Props for the SearchBar component.
  */
 interface SearchBarProps {
-  readonly paramName: string;
+  readonly searchParamName: string;
+  readonly pageParamName: string;
 }
 
 /**
  * Component that renders a search bar that syncs its value with URL search parameters.
  */
-const SearchBar = function ({ paramName }: SearchBarProps): JSX.Element {
+const SearchBar = function ({
+  searchParamName,
+  pageParamName,
+}: SearchBarProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -26,10 +30,11 @@ const SearchBar = function ({ paramName }: SearchBarProps): JSX.Element {
       const params = new URLSearchParams(searchParams.toString());
       const { value } = event.target;
       if (value) {
-        params.set(paramName, value);
+        params.set(searchParamName, value);
       } else {
-        params.delete(paramName);
+        params.delete(searchParamName);
       }
+      params.delete(pageParamName);
       router.replace(`${pathname}?${params.toString()}`);
     },
     300,
@@ -39,7 +44,7 @@ const SearchBar = function ({ paramName }: SearchBarProps): JSX.Element {
     <TextField
       size="small"
       placeholder="Search..."
-      defaultValue={searchParams.get(paramName) ?? ""}
+      defaultValue={searchParams.get(searchParamName) ?? ""}
       onChange={handleChange}
       slotProps={{
         input: {

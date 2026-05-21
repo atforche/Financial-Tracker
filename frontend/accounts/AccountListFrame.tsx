@@ -9,6 +9,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountsViewSearchParams } from "@/accounts/AccountsView";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
+import { Button } from "@mui/material";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
@@ -40,21 +41,24 @@ const AccountListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const sortSearchParamName = nameof<AccountsViewSearchParams>("sort");
+
+  const searchParamName = nameof<AccountsViewSearchParams>("search");
+  const sortParamName = nameof<AccountsViewSearchParams>("sort");
+  const pageParamName = nameof<AccountsViewSearchParams>("page");
 
   const setSort = function (sort: AccountSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
-      params.delete(sortSearchParamName);
+      params.delete(sortParamName);
     } else {
-      params.set(sortSearchParamName, sort);
+      params.set(sortParamName, sort);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
     AccountSortOrder,
-    searchParams.get(sortSearchParamName) ?? "",
+    searchParams.get(sortParamName) ?? "",
   );
 
   const columns: ColumnDefinition<Account>[] = [
@@ -154,7 +158,44 @@ const AccountListFrame = function ({
       getId={(account) => account.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      pageSearchParamName={nameof<AccountsViewSearchParams>("page")}
+      searchParamName={searchParamName}
+      pageParamName={pageParamName}
+      initialEmptyState={{
+        title: "No accounts yet",
+        description: isInOnboardingMode
+          ? "Create your first account to finish onboarding and start tracking balances."
+          : "Create an account to start tracking balances and transaction history.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              router.push(
+                isInOnboardingMode ? routes.onboard : routes.create({}),
+              );
+            }}
+          >
+            {isInOnboardingMode ? "Start onboarding" : "Create account"}
+          </Button>
+        ),
+      }}
+      filteredEmptyState={{
+        title: "No accounts match this search",
+        description:
+          "Try a different account name or clear the current search to see all accounts.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.delete(searchParamName);
+              params.delete(pageParamName);
+              router.replace(`${pathname}?${params.toString()}`);
+            }}
+          >
+            Clear search
+          </Button>
+        ),
+      }}
     />
   );
 };
