@@ -118,7 +118,10 @@ const AccountingPeriodFundFrame = function ({
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
         <Typography variant="h6">Transactions</Typography>
         <SearchBar
-          paramName={nameof<AccountingPeriodFundViewSearchParams>("search")}
+          searchParamName={nameof<AccountingPeriodFundViewSearchParams>(
+            "search",
+          )}
+          pageParamName=""
         />
         <TransactionListFrame
           fund={fund}

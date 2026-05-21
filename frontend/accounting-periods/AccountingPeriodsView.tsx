@@ -49,7 +49,8 @@ const AccountingPeriodsView = async function ({
     <Stack spacing={2}>
       <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
       <SearchBar
-        paramName={nameof<AccountingPeriodsViewSearchParams>("search")}
+        searchParamName={nameof<AccountingPeriodsViewSearchParams>("search")}
+        pageParamName={nameof<AccountingPeriodsViewSearchParams>("page")}
       />
       <AccountingPeriodListFrame
         data={accountingPeriods?.items ?? null}

@@ -132,7 +132,10 @@ const AccountView = async function ({
       </CaptionedFrame>
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
         <Typography variant="h6">Transactions</Typography>
-        <SearchBar paramName={nameof<AccountViewSearchParams>("search")} />
+        <SearchBar
+          searchParamName={nameof<AccountViewSearchParams>("search")}
+          pageParamName={nameof<AccountViewSearchParams>("page")}
+        />
         <TransactionListFrame
           account={account}
           data={transactions.items}

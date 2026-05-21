@@ -70,7 +70,10 @@ const FundsView = async function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
-      <SearchBar paramName={nameof<FundsViewSearchParams>("search")} />
+      <SearchBar
+        searchParamName={nameof<FundsViewSearchParams>("search")}
+        pageParamName={nameof<FundsViewSearchParams>("page")}
+      />
       <FundListFrame
         data={funds.items}
         isInOnboardingMode={accountingPeriods.totalCount === 0}

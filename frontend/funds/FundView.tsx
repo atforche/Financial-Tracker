@@ -120,7 +120,10 @@ const FundView = async function ({
       </CaptionedFrame>
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
         <Typography variant="h6">Transactions</Typography>
-        <SearchBar paramName={nameof<FundViewSearchParams>("search")} />
+        <SearchBar
+          searchParamName={nameof<FundViewSearchParams>("search")}
+          pageParamName={nameof<FundViewSearchParams>("page")}
+        />
         <TransactionListFrame
           fund={fund}
           data={transactions.items}

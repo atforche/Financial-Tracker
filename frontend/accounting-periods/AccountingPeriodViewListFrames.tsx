@@ -101,7 +101,10 @@ const AccountingPeriodListFrames = function ({
           <Stack spacing={2} sx={{ width: "100%" }}>
             <Typography variant="h6">Funds</Typography>
             <SearchBar
-              paramName={nameof<AccountingPeriodViewSearchParams>("search")}
+              searchParamName={nameof<AccountingPeriodViewSearchParams>(
+                "search",
+              )}
+              pageParamName={nameof<AccountingPeriodViewSearchParams>("page")}
             />
             <FundListFrame
               accountingPeriod={accountingPeriod}
@@ -114,7 +117,10 @@ const AccountingPeriodListFrames = function ({
           <Stack spacing={2} sx={{ width: "100%" }}>
             <Typography variant="h6">Goals</Typography>
             <SearchBar
-              paramName={nameof<AccountingPeriodViewSearchParams>("search")}
+              searchParamName={nameof<AccountingPeriodViewSearchParams>(
+                "search",
+              )}
+              pageParamName={nameof<AccountingPeriodViewSearchParams>("page")}
             />
             <GoalListFrame
               accountingPeriod={accountingPeriod}
@@ -127,7 +133,10 @@ const AccountingPeriodListFrames = function ({
           <Stack spacing={2} sx={{ width: "100%" }}>
             <Typography variant="h6">Accounts</Typography>
             <SearchBar
-              paramName={nameof<AccountingPeriodViewSearchParams>("search")}
+              searchParamName={nameof<AccountingPeriodViewSearchParams>(
+                "search",
+              )}
+              pageParamName={nameof<AccountingPeriodViewSearchParams>("page")}
             />
             <AccountListFrame
               accountingPeriod={accountingPeriod}
@@ -140,7 +149,10 @@ const AccountingPeriodListFrames = function ({
           <Stack spacing={2} sx={{ width: "100%" }}>
             <Typography variant="h6">Transactions</Typography>
             <SearchBar
-              paramName={nameof<AccountingPeriodViewSearchParams>("search")}
+              searchParamName={nameof<AccountingPeriodViewSearchParams>(
+                "search",
+              )}
+              pageParamName={nameof<AccountingPeriodViewSearchParams>("page")}
             />
             <TransactionListFrame
               accountingPeriodId={accountingPeriod.id}

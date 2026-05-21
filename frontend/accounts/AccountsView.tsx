@@ -69,7 +69,10 @@ const AccountsView = async function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
-      <SearchBar paramName={nameof<AccountsViewSearchParams>("search")} />
+      <SearchBar
+        searchParamName={nameof<AccountsViewSearchParams>("search")}
+        pageParamName={nameof<AccountsViewSearchParams>("page")}
+      />
       <AccountListFrame
         data={accounts.items}
         isInOnboardingMode={accountingPeriods.totalCount === 0}
