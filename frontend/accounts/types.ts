@@ -11,6 +11,16 @@ import {
 type Account = components["schemas"]["AccountModel"];
 
 /**
+ * Type representing Account summary balances.
+ */
+type AccountSummary = components["schemas"]["AccountSummaryModel"];
+
+/**
+ * Type representing an Account Type balance summary.
+ */
+type AccountTypeBalance = components["schemas"]["AccountTypeBalanceModel"];
+
+/**
  * Interface representing an identifier for an Account.
  */
 interface AccountIdentifier {
@@ -40,8 +50,8 @@ const isTrackedAccountType = function (accountType: AccountTypeModel): boolean {
   switch (accountType) {
     case AccountTypeModel.Standard:
     case AccountTypeModel.CreditCard:
-    case AccountTypeModel.Investment:
       return true;
+    case AccountTypeModel.Investment:
     case AccountTypeModel.Debt:
     case AccountTypeModel.Retirement:
     case AccountTypeModel.Escrow:
@@ -98,6 +108,8 @@ const formatAccountType = function (accountType: AccountTypeModel): string {
 
 export {
   type Account,
+  type AccountSummary,
+  type AccountTypeBalance,
   type AccountIdentifier,
   type CreateAccountRequest,
   type OnboardAccountRequest,

@@ -20,6 +20,7 @@ public sealed class AccountController(
     AccountingPeriodConverter accountingPeriodConverter,
     AccountService accountService,
     AccountGetter accountGetter,
+    AccountSummaryGetter accountSummaryGetter,
     AccountConverter accountConverter,
     AccountTransactionGetter accountTransactionGetter) : ControllerBase
 {
@@ -51,6 +52,13 @@ public sealed class AccountController(
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public IActionResult GetMany([FromQuery] AccountQueryParameterModel queryParameters) =>
         Ok(accountGetter.Get(queryParameters));
+
+    /// <summary>
+    /// Retrieves summary balances for Accounts
+    /// </summary>
+    [HttpGet("summary")]
+    [ProducesResponseType(typeof(AccountSummaryModel), StatusCodes.Status200OK)]
+    public IActionResult GetSummary() => Ok(accountSummaryGetter.Get());
 
     /// <summary>
     /// Retrieves the Transactions for the Account that matches the provided ID

@@ -694,6 +694,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/funds/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves summary balances for Funds */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["FundSummaryModel"];
+                        "application/json": components["schemas"]["FundSummaryModel"];
+                        "text/json": components["schemas"]["FundSummaryModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/funds/unassigned": {
         parameters: {
             query?: never;
@@ -1067,6 +1105,44 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves summary balances for Accounts */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountSummaryModel"];
+                        "application/json": components["schemas"]["AccountSummaryModel"];
+                        "text/json": components["schemas"]["AccountSummaryModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2033,8 +2109,38 @@ export interface components {
         };
         /** @enum {unknown} */
         AccountSortOrderModel: AccountSortOrderModel | null;
+        /** @description Model representing summary balances for Accounts. */
+        AccountSummaryModel: {
+            /**
+             * Format: double
+             * @description Sum of the posted balances for all Accounts.
+             */
+            totalBalance: number;
+            /**
+             * Format: double
+             * @description Sum of the posted balances for tracked Accounts.
+             */
+            totalTrackedBalance: number;
+            /**
+             * Format: double
+             * @description Sum of the posted balances for untracked Accounts.
+             */
+            totalUntrackedBalance: number;
+            /** @description Breakdown of total posted balances by Account Type. */
+            balanceByAccountType: components["schemas"]["AccountTypeBalanceModel"][];
+        };
         /** @enum {unknown} */
         AccountTransactionSortOrderModel: AccountTransactionSortOrderModel | null;
+        /** @description Model representing the total posted balance for an Account Type. */
+        AccountTypeBalanceModel: {
+            /** @description Account Type for this balance total. */
+            accountType: components["schemas"]["AccountTypeModel"];
+            /**
+             * Format: double
+             * @description Total posted balance for the Account Type.
+             */
+            totalBalance: number;
+        };
         /**
          * @description Enum representing the different Account types
          * @enum {unknown}
@@ -2376,6 +2482,24 @@ export interface components {
         };
         /** @enum {unknown} */
         FundSortOrderModel: FundSortOrderModel | null;
+        /** @description Model representing summary balances for Funds. */
+        FundSummaryModel: {
+            /**
+             * Format: double
+             * @description Sum of the posted balances for all Funds.
+             */
+            totalTrackedBalance: number;
+            /**
+             * Format: double
+             * @description Sum of the posted balances for all Funds except the unassigned Fund.
+             */
+            totalAssignedBalance: number;
+            /**
+             * Format: double
+             * @description Posted balance of the unassigned Fund.
+             */
+            totalUnassignedBalance: number;
+        };
         /** @enum {unknown} */
         FundTransactionSortOrderModel: FundTransactionSortOrderModel | null;
         /** @description Model representing a Goal */

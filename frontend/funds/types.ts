@@ -10,6 +10,11 @@ import {
 type Fund = components["schemas"]["FundModel"];
 
 /**
+ * Type representing Fund summary balances.
+ */
+type FundSummary = components["schemas"]["FundSummaryModel"];
+
+/**
  * Interface representing a Fund identifier with its ID and name.
  */
 interface FundIdentifier {
@@ -54,6 +59,7 @@ const hasIncompleteFundAssignments = function (
 
 export {
   type Fund,
+  type FundSummary,
   type FundIdentifier,
   type CreateFundRequest,
   type OnboardFundRequest,

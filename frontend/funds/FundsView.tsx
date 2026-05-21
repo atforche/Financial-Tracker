@@ -1,9 +1,10 @@
-import { Paper, Stack, Typography } from "@mui/material";
+import { Box, Stack } from "@mui/material";
+import type { FundSortOrder, FundSummary } from "@/funds/types";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import FundListFrame from "@/funds/FundListFrame";
-import type { FundSortOrder } from "@/funds/types";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
+import SummaryCard from "@/framework/view/SummaryCard";
 import breadcrumbs from "@/funds/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
@@ -55,49 +56,50 @@ const FundsView = async function ({
       },
     },
   });
-  const unassignedFundPromise = apiClient.GET("/funds/unassigned");
+  const summaryPromise = apiClient.GET("/funds/summary");
 
-  const [
-    { data: funds },
-    { data: accountingPeriods },
-    { data: unassignedFund },
-  ] = await Promise.all([
-    fundsPromise,
-    accountingPeriodsPromise,
-    unassignedFundPromise,
-  ]);
+  const [{ data: funds }, { data: accountingPeriods }, { data: summary }] =
+    await Promise.all([fundsPromise, accountingPeriodsPromise, summaryPromise]);
 
   if (
     typeof funds === "undefined" ||
-    typeof accountingPeriods === "undefined"
+    typeof accountingPeriods === "undefined" ||
+    typeof summary === "undefined"
   ) {
     throw new Error(`Failed to fetch funds`);
   }
 
+  const fundSummary: FundSummary = summary;
+
   return (
     <Stack spacing={2}>
       <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
-      {typeof unassignedFund !== "undefined" && (
-        <Paper
-          sx={{
-            p: 2,
-            border: "1px solid",
-            maxWidth: 400,
-          }}
-        >
-          <Stack spacing={0.5}>
-            <Typography variant="overline" color="text.secondary">
-              Unassigned Fund
-            </Typography>
-            <Typography variant="h4">
-              {formatCurrency(unassignedFund.currentBalance.postedBalance)}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Current unassigned balance
-            </Typography>
-          </Stack>
-        </Paper>
-      )}
+      <Box
+        sx={{
+          display: "grid",
+          gap: 2,
+          gridTemplateColumns: {
+            xs: "1fr",
+            md: "repeat(3, minmax(0, 1fr))",
+          },
+        }}
+      >
+        <SummaryCard
+          title="Total Tracked Balance"
+          value={formatCurrency(fundSummary.totalTrackedBalance)}
+          description="Sum of all fund balances"
+        />
+        <SummaryCard
+          title="Total Assigned Balance"
+          value={formatCurrency(fundSummary.totalAssignedBalance)}
+          description="All fund balances except Unassigned"
+        />
+        <SummaryCard
+          title="Total Unassigned Balance"
+          value={formatCurrency(fundSummary.totalUnassignedBalance)}
+          description="Current balance of the Unassigned fund"
+        />
+      </Box>
       <SearchBar
         searchParamName={nameof<FundsViewSearchParams>("search")}
         pageParamName={nameof<FundsViewSearchParams>("page")}

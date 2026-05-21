@@ -98,6 +98,7 @@ const ListFrame = function <T>({
             <TableBody>
               {hasLoadingCompleted
                 ? data.map((item) => (
+                    // eslint-disable-next-line react/jsx-indent
                     <TableRow hover tabIndex={-1} key={getId(item)}>
                       {columns.map((column) => (
                         <TableCell

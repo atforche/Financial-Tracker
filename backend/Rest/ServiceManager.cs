@@ -28,11 +28,13 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<AccountConverter>();
         _ = serviceCollection.AddScoped<AccountGetter>();
+        _ = serviceCollection.AddScoped<AccountSummaryGetter>();
         _ = serviceCollection.AddScoped<AccountTransactionGetter>();
 
         _ = serviceCollection.AddScoped<FundAmountConverter>();
         _ = serviceCollection.AddScoped<FundConverter>();
         _ = serviceCollection.AddScoped<FundGetter>();
+        _ = serviceCollection.AddScoped<FundSummaryGetter>();
         _ = serviceCollection.AddScoped<FundTransactionGetter>();
 
         _ = serviceCollection.AddScoped<GoalConverter>();
