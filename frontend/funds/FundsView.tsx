@@ -1,10 +1,11 @@
+import { Paper, Stack, Typography } from "@mui/material";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import FundListFrame from "@/funds/FundListFrame";
 import type { FundSortOrder } from "@/funds/types";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
-import { Stack } from "@mui/material";
 import breadcrumbs from "@/funds/breadcrumbs";
+import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
 import nameof from "@/framework/data/nameof";
 import { rowsPerPage } from "@/framework/listframe/Constants";
@@ -54,10 +55,16 @@ const FundsView = async function ({
       },
     },
   });
+  const unassignedFundPromise = apiClient.GET("/funds/unassigned");
 
-  const [{ data: funds }, { data: accountingPeriods }] = await Promise.all([
+  const [
+    { data: funds },
+    { data: accountingPeriods },
+    { data: unassignedFund },
+  ] = await Promise.all([
     fundsPromise,
     accountingPeriodsPromise,
+    unassignedFundPromise,
   ]);
 
   if (
@@ -70,6 +77,27 @@ const FundsView = async function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
+      {typeof unassignedFund !== "undefined" && (
+        <Paper
+          sx={{
+            p: 2,
+            border: "1px solid",
+            maxWidth: 400,
+          }}
+        >
+          <Stack spacing={0.5}>
+            <Typography variant="overline" color="text.secondary">
+              Unassigned Fund
+            </Typography>
+            <Typography variant="h4">
+              {formatCurrency(unassignedFund.currentBalance.postedBalance)}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Current unassigned balance
+            </Typography>
+          </Stack>
+        </Paper>
+      )}
       <SearchBar
         searchParamName={nameof<FundsViewSearchParams>("search")}
         pageParamName={nameof<FundsViewSearchParams>("page")}
