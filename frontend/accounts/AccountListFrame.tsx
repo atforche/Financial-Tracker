@@ -28,6 +28,7 @@ interface AccountListFrameProps {
   readonly data: Account[] | null;
   readonly totalCount: number | null;
   readonly isInOnboardingMode: boolean;
+  readonly showCreateAction?: boolean;
 }
 
 /**
@@ -37,6 +38,7 @@ const AccountListFrame = function ({
   data,
   totalCount,
   isInOnboardingMode,
+  showCreateAction = true,
 }: AccountListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -127,7 +129,7 @@ const AccountListFrame = function ({
     },
     {
       name: "actions",
-      headerContent: (
+      headerContent: showCreateAction ? (
         <IconButton
           label="Add"
           icon={<AddCircleOutline />}
@@ -137,6 +139,8 @@ const AccountListFrame = function ({
             );
           }}
         />
+      ) : (
+        ""
       ),
       getBodyContent: (account: Account) => (
         <ColumnButton
