@@ -23,6 +23,11 @@ public interface IAccountBalanceHistoryRepository
     IReadOnlyCollection<AccountBalanceHistory> GetAllByTransactionId(TransactionId transactionId);
 
     /// <summary>
+    /// Gets all Account Balance History entries for the specified Transaction ID and Account ID
+    /// </summary>
+    IReadOnlyCollection<AccountBalanceHistory> GetAllByTransactionIdAndAccountId(TransactionId transactionId, AccountId accountId);
+
+    /// <summary>
     /// Gets the earliest Account Balance History entry for the specified Transaction ID
     /// </summary>
     AccountBalanceHistory GetEarliestByTransactionId(AccountId accountId, TransactionId transactionId);

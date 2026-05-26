@@ -21,7 +21,7 @@ public class AccountBalanceService(
     /// </summary>
     public AccountBalance GetPreviousBalanceForTransaction(Transaction transaction, AccountId account)
     {
-        var balanceHistories = accountBalanceHistoryRepository.GetAllByTransactionId(transaction.Id).ToList();
+        var balanceHistories = accountBalanceHistoryRepository.GetAllByTransactionIdAndAccountId(transaction.Id, account).ToList();
         DateOnly? postedDate = transaction.GetPostedDateForAccount(account);
         if (postedDate != null)
         {
@@ -43,7 +43,7 @@ public class AccountBalanceService(
     /// </summary>
     public AccountBalance GetNewBalanceForTransaction(Transaction transaction, AccountId account)
     {
-        var balanceHistories = accountBalanceHistoryRepository.GetAllByTransactionId(transaction.Id).ToList();
+        var balanceHistories = accountBalanceHistoryRepository.GetAllByTransactionIdAndAccountId(transaction.Id, account).ToList();
         DateOnly? postedDate = transaction.GetPostedDateForAccount(account);
         if (postedDate != null)
         {
@@ -102,7 +102,7 @@ public class AccountBalanceService(
         foreach (AccountId accountId in transaction.GetAllAffectedAccountIds())
         {
             AccountBalanceHistory? oldPostedHistory = accountBalanceHistoryRepository
-                .GetAllByTransactionId(transaction.Id)
+                .GetAllByTransactionIdAndAccountId(transaction.Id, accountId)
                 .SingleOrDefault(bh => bh.Date != transaction.Date);
             if (oldPostedHistory == null)
             {

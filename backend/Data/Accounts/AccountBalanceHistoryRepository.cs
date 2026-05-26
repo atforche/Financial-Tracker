@@ -38,6 +38,13 @@ public class AccountBalanceHistoryRepository(DatabaseContext databaseContext) : 
             .ToList();
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<AccountBalanceHistory> GetAllByTransactionIdAndAccountId(TransactionId transactionId, AccountId accountId) =>
+        databaseContext.AccountBalanceHistories
+            .Where(history => history.TransactionId == transactionId && history.Account.Id == accountId)
+            .OrderBy(history => history.Date)
+            .ToList();
+
+    /// <inheritdoc/>
     public AccountBalanceHistory GetEarliestByTransactionId(AccountId accountId, TransactionId transactionId) =>
         databaseContext.AccountBalanceHistories
             .Where(history => history.Account.Id == accountId && history.TransactionId == transactionId)
