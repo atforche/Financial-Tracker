@@ -134,9 +134,9 @@ public class SpendingTransactionService(
         {
             return false;
         }
+        UnpostTransaction(transaction);
         transaction.DebitPostedDate = null;
         transaction.CreditPostedDate = null;
-        UnpostTransaction(transaction);
         return true;
     }
 

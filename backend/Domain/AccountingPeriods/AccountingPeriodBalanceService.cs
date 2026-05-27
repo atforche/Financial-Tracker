@@ -233,13 +233,13 @@ public class AccountingPeriodBalanceService(
     /// </summary>
     internal void UnpostTransaction(Transaction transaction)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(transaction.AccountingPeriodId);
         foreach (Account account in transaction.GetAllAffectedAccountIds().Select(accountRepository.GetById))
         {
+            AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(transaction.AccountingPeriodId);
             DateOnly? postedDate = transaction.GetPostedDateForAccount(account.Id);
             if (postedDate == null)
             {
-                return;
+                continue;
             }
             while (accountingPeriod != null)
             {

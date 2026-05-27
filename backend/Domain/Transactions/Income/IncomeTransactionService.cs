@@ -134,9 +134,9 @@ public class IncomeTransactionService(
         {
             return false;
         }
+        UnpostTransaction(transaction);
         transaction.CreditPostedDate = null;
         transaction.DebitPostedDate = null;
-        UnpostTransaction(transaction);
         return true;
     }
 

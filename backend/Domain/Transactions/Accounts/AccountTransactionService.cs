@@ -126,9 +126,9 @@ public class AccountTransactionService(
         {
             return false;
         }
+        UnpostTransaction(transaction);
         transaction.DebitPostedDate = null;
         transaction.CreditPostedDate = null;
-        UnpostTransaction(transaction);
         return true;
     }
 
