@@ -58,12 +58,7 @@ public class AccountService(
             Fund? unassignedFund = fundRepository.GetUnassignedFund();
             if (unassignedFund == null)
             {
-                if (!fundService.TryOnboard(new OnboardFundRequest
-                {
-                    Name = Fund.UnassignedFundName,
-                    Description = Fund.UnassignedFundDescription,
-                    OnboardedBalance = 0,
-                }, out Fund? newUnassignedFund, out IEnumerable<Exception> unassignedFundExceptions))
+                if (!fundService.TryOnboardUnassignedFund(0, out Fund? newUnassignedFund, out IEnumerable<Exception> unassignedFundExceptions))
                 {
                     exceptions = exceptions.Concat(unassignedFundExceptions);
                     return false;

@@ -86,6 +86,14 @@ public class SpendingTransaction : Transaction
     {
         _fundAssignments.Clear();
         _fundAssignments.AddRange(fundAssignments);
+        if (Amount != _fundAssignments.Sum(f => f.Amount))
+        {
+            _fundAssignments.Add(new FundAmount
+            {
+                FundId = Fund.UnassignedFundId,
+                Amount = Amount - _fundAssignments.Sum(f => f.Amount)
+            });
+        }
     }
 
     /// <summary>
@@ -96,7 +104,7 @@ public class SpendingTransaction : Transaction
     {
         DebitAccountId = request.DebitAccount.Id;
         CreditAccountId = request.CreditAccount?.Id;
-        _fundAssignments.AddRange(request.FundAssignments);
+        UpdateFundAssignments(request.FundAssignments);
     }
 
     /// <summary>

@@ -43,12 +43,7 @@ public class AccountingPeriodService(
         {
             if (fundRepository.GetUnassignedFund() == null)
             {
-                if (!fundService.TryCreate(new CreateFundRequest
-                {
-                    Name = Fund.UnassignedFundName,
-                    Description = Fund.UnassignedFundDescription,
-                    OpeningAccountingPeriod = accountingPeriod,
-                }, out Fund? unassignedFund, out IEnumerable<Exception> unassignedFundExceptions))
+                if (!fundService.TryCreateUnassignedFund(accountingPeriod, out Fund? unassignedFund, out IEnumerable<Exception> unassignedFundExceptions))
                 {
                     exceptions = exceptions.Concat(unassignedFundExceptions);
                     return false;

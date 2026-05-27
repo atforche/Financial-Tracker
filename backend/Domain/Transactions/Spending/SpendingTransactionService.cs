@@ -234,8 +234,7 @@ public class SpendingTransactionService(
     {
         _ = base.ValidateFundAssignments(amount, fundAssignments, out exceptions);
 
-        Fund? unassignedFund = fundRepository.GetUnassignedFund();
-        if (fundAssignments.Any(fundAmount => fundAmount.FundId == unassignedFund?.Id))
+        if (fundAssignments.Any(fundAmount => fundAmount.FundId == Fund.UnassignedFundId))
         {
             exceptions = exceptions.Append(new InvalidFundAmountException("Cannot spend money from the unassigned fund"));
         }

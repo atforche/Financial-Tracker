@@ -24,7 +24,7 @@ public class FundService(
     {
         fund = null;
 
-        if (!ValidateCreate(request, out exceptions))
+        if (!ValidateCreate(request.Name, request.OpeningAccountingPeriod, out exceptions))
         {
             return false;
         }
@@ -43,7 +43,7 @@ public class FundService(
     {
         fund = null;
 
-        if (!ValidateOnboard(request, out exceptions))
+        if (!ValidateOnboard(request.Name, request.OnboardedBalance, out exceptions))
         {
             return false;
         }
@@ -91,6 +91,44 @@ public class FundService(
     }
 
     /// <summary>
+    /// Attempts to create the unassigned Fund
+    /// </summary>
+    internal bool TryCreateUnassignedFund(
+        AccountingPeriod openingAccountingPeriod,
+        [NotNullWhen(true)] out Fund? fund,
+        out IEnumerable<Exception> exceptions)
+    {
+        fund = null;
+
+        if (!ValidateCreate(Fund.UnassignedFundName, openingAccountingPeriod, out exceptions))
+        {
+            return false;
+        }
+        fund = new Fund(openingAccountingPeriod.Id);
+        accountingPeriodBalanceService.AddFund(fund);
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to onboard the unassigned Fund
+    /// </summary>
+    internal bool TryOnboardUnassignedFund(
+        decimal onboardedBalance,
+        [NotNullWhen(true)] out Fund? fund,
+        out IEnumerable<Exception> exceptions)
+    {
+        fund = null;
+
+        if (!ValidateOnboard(Fund.UnassignedFundName, onboardedBalance, out exceptions))
+        {
+            return false;
+        }
+        fund = new Fund(onboardedBalance);
+        fundRepository.Add(fund);
+        return true;
+    }
+
+    /// <summary>
     /// Validates the name for a Fund
     /// </summary>
     private bool ValidateName(string name, Fund? existingFund, out IEnumerable<Exception> exceptions)
@@ -111,15 +149,15 @@ public class FundService(
     /// <summary>
     /// Validates the provided request to create a fund
     /// </summary>
-    private bool ValidateCreate(CreateFundRequest request, out IEnumerable<Exception> exceptions)
+    private bool ValidateCreate(string name, AccountingPeriod openingAccountingPeriod, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
-        if (!ValidateName(request.Name, null, out IEnumerable<Exception> nameExceptions))
+        if (!ValidateName(name, null, out IEnumerable<Exception> nameExceptions))
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
-        if (!request.OpeningAccountingPeriod.IsOpen)
+        if (!openingAccountingPeriod.IsOpen)
         {
             exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
         }
@@ -129,11 +167,11 @@ public class FundService(
     /// <summary>
     /// Validates the provided request to onboard a Fund.
     /// </summary>
-    private bool ValidateOnboard(OnboardFundRequest request, out IEnumerable<Exception> exceptions)
+    private bool ValidateOnboard(string name, decimal onboardedBalance, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
-        if (!ValidateName(request.Name, null, out IEnumerable<Exception> nameExceptions))
+        if (!ValidateName(name, null, out IEnumerable<Exception> nameExceptions))
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
@@ -141,14 +179,14 @@ public class FundService(
         {
             exceptions = exceptions.Append(new InvalidAccountingPeriodException("Funds can only be onboarded before any Accounting Periods have been created."));
         }
-        if (request.Name != Fund.UnassignedFundName)
+        if (name != Fund.UnassignedFundName)
         {
             Fund? unassignedFund = fundRepository.GetUnassignedFund();
             if (unassignedFund == null)
             {
                 exceptions = exceptions.Append(new InvalidFundException("The unassigned fund must exist before onboarding a Fund."));
             }
-            else if (unassignedFund.OnboardedBalance < request.OnboardedBalance)
+            else if (unassignedFund.OnboardedBalance < onboardedBalance)
             {
                 exceptions = exceptions.Append(new InvalidFundException("There is not enough unassigned balance to onboard this Fund."));
             }
