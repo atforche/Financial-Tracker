@@ -1,0 +1,477 @@
+using System.Globalization;
+using Domain;
+using Domain.AccountingPeriods;
+using Domain.Accounts;
+using Models;
+using Models.Accounts;
+using Rest.AccountingPeriods;
+
+namespace Rest.Accounts;
+
+/// <summary>
+/// Class that handles retrieving Account dashboard data for a date range or Accounting Period range.
+/// </summary>
+public class AccountDashboardGetter(
+    IAccountRepository accountRepository,
+    IAccountBalanceHistoryRepository accountBalanceHistoryRepository,
+    IAccountingPeriodRepository accountingPeriodRepository,
+    IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
+    AccountingPeriodConverter accountingPeriodConverter)
+{
+    /// <summary>
+    /// Retrieves the Account dashboard data that matches the specified criteria.
+    /// </summary>
+    public bool TryGet(
+        AccountDashboardQueryParameterModel request,
+        out AccountDashboardModel results,
+        out Dictionary<string, string[]> errors)
+    {
+        errors = [];
+
+        AccountType? accountType = null;
+        if (request.AccountType is AccountTypeModel requestAccountType &&
+            !AccountTypeConverter.TryToDomain(requestAccountType, out accountType))
+        {
+            errors.Add(nameof(request.AccountType), [$"Unrecognized Account Type: {requestAccountType}"]);
+        }
+
+        bool hasDateRangeParameters = request.StartDate != null || request.EndDate != null;
+        bool hasAccountingPeriodRangeParameters =
+            request.StartAccountingPeriodId != null || request.EndAccountingPeriodId != null;
+        if (hasDateRangeParameters == hasAccountingPeriodRangeParameters)
+        {
+            const string message = "Provide either a date range or an Accounting Period range.";
+            errors.Add(nameof(request.StartDate), [message]);
+            errors.Add(nameof(request.StartAccountingPeriodId), [message]);
+            results = CreateEmptyResult(AccountDashboardModeModel.AccountingPeriod);
+            return false;
+        }
+
+        if (hasDateRangeParameters)
+        {
+            return TryGetDateMode(request, accountType, errors, out results);
+        }
+
+        return TryGetAccountingPeriodMode(request, accountType, errors, out results);
+    }
+
+    /// <summary>
+    /// Retrieves the Account dashboard data for a range of accounting periods.
+    /// </summary>
+    private bool TryGetAccountingPeriodMode(
+        AccountDashboardQueryParameterModel request,
+        AccountType? accountType,
+        Dictionary<string, string[]> errors,
+        out AccountDashboardModel results)
+    {
+        AccountingPeriod? startAccountingPeriod = null;
+        if (request.StartAccountingPeriodId is null)
+        {
+            errors.Add(nameof(request.StartAccountingPeriodId), ["StartAccountingPeriodId is required."]);
+        }
+        else if (!accountingPeriodConverter.TryToDomain(request.StartAccountingPeriodId.Value, out startAccountingPeriod))
+        {
+            errors.Add(
+                nameof(request.StartAccountingPeriodId),
+                [$"Accounting Period with ID {request.StartAccountingPeriodId.Value} was not found."]);
+        }
+        AccountingPeriod? endAccountingPeriod = null;
+        if (request.EndAccountingPeriodId is null)
+        {
+            errors.Add(nameof(request.EndAccountingPeriodId), ["EndAccountingPeriodId is required."]);
+        }
+        else if (!accountingPeriodConverter.TryToDomain(request.EndAccountingPeriodId.Value, out endAccountingPeriod))
+        {
+            errors.Add(
+                nameof(request.EndAccountingPeriodId),
+                [$"Accounting Period with ID {request.EndAccountingPeriodId.Value} was not found."]);
+        }
+        if (errors.Count > 0 || startAccountingPeriod == null || endAccountingPeriod == null)
+        {
+            results = CreateEmptyResult(AccountDashboardModeModel.AccountingPeriod);
+            return false;
+        }
+        bool startAccountingPeriodIsAfterEndAccountingPeriod =
+            startAccountingPeriod.Year > endAccountingPeriod.Year ||
+            (startAccountingPeriod.Year == endAccountingPeriod.Year &&
+             startAccountingPeriod.Month > endAccountingPeriod.Month);
+        if (startAccountingPeriodIsAfterEndAccountingPeriod)
+        {
+            errors.Add(
+                nameof(request.StartAccountingPeriodId),
+                ["StartAccountingPeriodId must be earlier than or equal to EndAccountingPeriodId."]);
+            results = CreateEmptyResult(AccountDashboardModeModel.AccountingPeriod);
+            return false;
+        }
+
+        if (!TryGetAccountingPeriodsInRange(startAccountingPeriod, endAccountingPeriod, out List<AccountingPeriod>? accountingPeriods))
+        {
+            errors.Add(
+                nameof(request.EndAccountingPeriodId),
+                ["The requested Accounting Period range must be contiguous."]);
+            results = CreateEmptyResult(AccountDashboardModeModel.AccountingPeriod);
+            return false;
+        }
+        List<AccountDashboardRow> filteredRows = BuildAccountingPeriodRows(accountingPeriods, accountType, request.Search);
+        filteredRows = SortRows(filteredRows, request.Sort);
+        results = new AccountDashboardModel
+        {
+            Mode = AccountDashboardModeModel.AccountingPeriod,
+            Accounts = new CollectionModel<AccountDashboardAccountModel>
+            {
+                Items = ApplyPaging(filteredRows, request)
+                    .Select(ToModel)
+                    .ToList(),
+                TotalCount = filteredRows.Count,
+            },
+            AccountingPeriods = BuildPeriodSummaries(accountingPeriods, filteredRows),
+            Dates = null,
+        };
+        return true;
+    }
+
+    /// <summary>
+    /// Retrieves the Account dashboard data for a range of dates.
+    /// </summary>
+    private bool TryGetDateMode(
+        AccountDashboardQueryParameterModel request,
+        AccountType? accountType,
+        Dictionary<string, string[]> errors,
+        out AccountDashboardModel results)
+    {
+        if (request.StartDate is null)
+        {
+            errors.Add(nameof(request.StartDate), ["StartDate is required."]);
+        }
+        if (request.EndDate is null)
+        {
+            errors.Add(nameof(request.EndDate), ["EndDate is required."]);
+        }
+        if (errors.Count > 0 || request.StartDate == null || request.EndDate == null)
+        {
+            results = CreateEmptyResult(AccountDashboardModeModel.Date);
+            return false;
+        }
+        if (request.StartDate > request.EndDate)
+        {
+            errors.Add(nameof(request.StartDate), ["StartDate must be earlier than or equal to EndDate."]);
+            results = CreateEmptyResult(AccountDashboardModeModel.Date);
+            return false;
+        }
+        var dates = new DateRange(request.StartDate.Value, request.EndDate.Value)
+            .GetInclusiveDates()
+            .ToList();
+        List<AccountDashboardRow> filteredRows = BuildDateRows(dates, request.EndDate.Value, accountType, request.Search);
+        filteredRows = SortRows(filteredRows, request.Sort);
+        results = new AccountDashboardModel
+        {
+            Mode = AccountDashboardModeModel.Date,
+            Accounts = new CollectionModel<AccountDashboardAccountModel>
+            {
+                Items = ApplyPaging(filteredRows, request)
+                    .Select(ToModel)
+                    .ToList(),
+                TotalCount = filteredRows.Count,
+            },
+            AccountingPeriods = null,
+            Dates = BuildDateSummaries(dates, filteredRows),
+        };
+        return true;
+    }
+
+    private static IEnumerable<AccountDashboardRow> ApplyPaging(
+        IEnumerable<AccountDashboardRow> rows,
+        AccountDashboardQueryParameterModel request) => rows
+        .Skip(request.Offset ?? 0)
+        .Take(request.Limit ?? int.MaxValue);
+
+    private static AccountDashboardModel CreateEmptyResult(AccountDashboardModeModel mode) => new()
+    {
+        Mode = mode,
+        Accounts = new CollectionModel<AccountDashboardAccountModel>
+        {
+            Items = [],
+            TotalCount = 0,
+        },
+        AccountingPeriods = null,
+        Dates = null,
+    };
+
+    private bool TryGetAccountingPeriodsInRange(
+        AccountingPeriod startAccountingPeriod,
+        AccountingPeriod endAccountingPeriod,
+        out List<AccountingPeriod> accountingPeriods)
+    {
+        accountingPeriods = [];
+
+        AccountingPeriod? currentAccountingPeriod = startAccountingPeriod;
+        while (currentAccountingPeriod != null)
+        {
+            accountingPeriods.Add(currentAccountingPeriod);
+            if (currentAccountingPeriod.Id == endAccountingPeriod.Id)
+            {
+                return true;
+            }
+            currentAccountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(currentAccountingPeriod.Id);
+        }
+
+        accountingPeriods = [];
+        return false;
+    }
+
+    private List<AccountDashboardRow> BuildAccountingPeriodRows(
+        IReadOnlyList<AccountingPeriod> accountingPeriods,
+        AccountType? accountType,
+        string? search)
+    {
+        Dictionary<Guid, Account> accountsById = [];
+        Dictionary<Guid, Dictionary<Guid, AccountingPeriodAccountBalanceHistory>> balanceHistoriesByAccountId = [];
+
+        foreach (AccountingPeriod accountingPeriod in accountingPeriods)
+        {
+            AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
+            foreach (AccountingPeriodAccountBalanceHistory accountBalanceHistory in balanceHistory.AccountBalances)
+            {
+                if (accountType != null && accountBalanceHistory.Account.Type != accountType)
+                {
+                    continue;
+                }
+
+                Guid accountId = accountBalanceHistory.Account.Id.Value;
+                accountsById[accountId] = accountBalanceHistory.Account;
+                if (!balanceHistoriesByAccountId.TryGetValue(accountId, out Dictionary<Guid, AccountingPeriodAccountBalanceHistory>? accountHistories))
+                {
+                    accountHistories = [];
+                    balanceHistoriesByAccountId[accountId] = accountHistories;
+                }
+
+                accountHistories[accountingPeriod.Id.Value] = accountBalanceHistory;
+            }
+        }
+
+        IEnumerable<AccountDashboardRow> rows = accountsById.Values.Select(account =>
+        {
+            var periodBalances = accountingPeriods.Select(accountingPeriod =>
+            {
+                AccountingPeriodAccountBalanceHistory? accountBalanceHistory = balanceHistoriesByAccountId[account.Id.Value]
+                    .GetValueOrDefault(accountingPeriod.Id.Value);
+                decimal openingBalance = accountBalanceHistory == null ? 0 : NormalizeBalance(account.Type, accountBalanceHistory.OpeningBalance);
+                decimal closingBalance = accountBalanceHistory == null ? 0 : NormalizeBalance(account.Type, accountBalanceHistory.ClosingBalance);
+                return new AccountingPeriodBalanceValue(
+                    accountingPeriod.Id.Value,
+                    accountingPeriod.Name,
+                    openingBalance,
+                    closingBalance);
+            }).ToList();
+
+            return new AccountDashboardRow(
+                account.Id.Value,
+                account.Name,
+                account.Type,
+                periodBalances.First().OpeningBalance,
+                periodBalances.Last().ClosingBalance,
+                periodBalances,
+                null);
+        });
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            rows = rows.Where(row => MatchesSearch(row, search));
+        }
+
+        return rows.ToList();
+    }
+
+    private List<AccountDashboardRow> BuildDateRows(
+        IReadOnlyList<DateOnly> dates,
+        DateOnly endDate,
+        AccountType? accountType,
+        string? search)
+    {
+        IEnumerable<Account> accounts = accountRepository.GetAll()
+            .Where(account => accountType == null || account.Type == accountType)
+            .Where(account => account.IsOnboarded || account.DateOpened == null || account.DateOpened <= endDate);
+
+        IEnumerable<AccountDashboardRow> rows = accounts.Select(account =>
+        {
+            var dateModels = dates.Select(date => new AccountDashboardDateModel
+            {
+                Date = date,
+                Balance = GetBalanceForDate(account, date),
+            }).ToList();
+
+            return new AccountDashboardRow(
+                account.Id.Value,
+                account.Name,
+                account.Type,
+                dateModels.First().Balance,
+                dateModels.Last().Balance,
+                null,
+                dateModels);
+        });
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            rows = rows.Where(row => MatchesSearch(row, search));
+        }
+
+        return rows.ToList();
+    }
+
+    private decimal GetBalanceForDate(Account account, DateOnly date)
+    {
+        if (account.DateOpened is DateOnly dateOpened && date < dateOpened)
+        {
+            return 0;
+        }
+        AccountBalanceHistory? accountBalanceHistory = accountBalanceHistoryRepository
+            .GetLatestHistoryEarlierThan(account.Id, date, int.MaxValue);
+        decimal balance = accountBalanceHistory?.PostedBalance ?? account.OnboardedBalance ?? 0;
+        return NormalizeBalance(account.Type, balance);
+    }
+
+    private static bool MatchesSearch(AccountDashboardRow row, string search) =>
+        row.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+        row.Type.ToString().Contains(search, StringComparison.OrdinalIgnoreCase) ||
+        row.OpeningBalance.ToString(CultureInfo.InvariantCulture).Contains(search, StringComparison.OrdinalIgnoreCase) ||
+        row.ClosingBalance.ToString(CultureInfo.InvariantCulture).Contains(search, StringComparison.OrdinalIgnoreCase) ||
+        (row.AccountingPeriods?.Any(accountingPeriod =>
+            accountingPeriod.AccountingPeriodName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+            accountingPeriod.OpeningBalance.ToString(CultureInfo.InvariantCulture).Contains(search, StringComparison.OrdinalIgnoreCase) ||
+            accountingPeriod.ClosingBalance.ToString(CultureInfo.InvariantCulture).Contains(search, StringComparison.OrdinalIgnoreCase)) ?? false) ||
+        (row.Dates?.Any(date =>
+            date.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture).Contains(search, StringComparison.OrdinalIgnoreCase) ||
+            date.Balance.ToString(CultureInfo.InvariantCulture).Contains(search, StringComparison.OrdinalIgnoreCase)) ?? false);
+
+    private static List<AccountDashboardRow> SortRows(
+        List<AccountDashboardRow> rows,
+        AccountDashboardSortOrderModel? sort) => sort switch
+        {
+            null or AccountDashboardSortOrderModel.Name => rows.OrderBy(row => row.Name).ToList(),
+            AccountDashboardSortOrderModel.NameDescending => rows.OrderByDescending(row => row.Name).ToList(),
+            AccountDashboardSortOrderModel.Type => rows.OrderBy(row => row.Type).ThenBy(row => row.Name).ToList(),
+            AccountDashboardSortOrderModel.TypeDescending => rows.OrderByDescending(row => row.Type).ThenBy(row => row.Name).ToList(),
+            AccountDashboardSortOrderModel.OpeningBalance => rows.OrderBy(row => row.OpeningBalance).ThenBy(row => row.Name).ToList(),
+            AccountDashboardSortOrderModel.OpeningBalanceDescending => rows.OrderByDescending(row => row.OpeningBalance).ThenBy(row => row.Name).ToList(),
+            AccountDashboardSortOrderModel.ClosingBalance => rows.OrderBy(row => row.ClosingBalance).ThenBy(row => row.Name).ToList(),
+            AccountDashboardSortOrderModel.ClosingBalanceDescending => rows.OrderByDescending(row => row.ClosingBalance).ThenBy(row => row.Name).ToList(),
+            _ => rows,
+        };
+
+    private static List<AccountDashboardPeriodSummaryModel> BuildPeriodSummaries(
+        IReadOnlyList<AccountingPeriod> accountingPeriods,
+        IReadOnlyCollection<AccountDashboardRow> rows) => accountingPeriods.Select(accountingPeriod =>
+        {
+            List<(AccountType AccountType, decimal OpeningBalance, decimal ClosingBalance)> balances = rows
+                .Select(row =>
+                {
+                    AccountingPeriodBalanceValue periodModel = row.AccountingPeriods!
+                        .Single(period => period.AccountingPeriodId == accountingPeriod.Id.Value);
+                    return (row.Type, periodModel.OpeningBalance, periodModel.ClosingBalance);
+                })
+                .ToList();
+
+            decimal trackedOpeningBalance = balances
+                .Where(balance => balance.AccountType.IsTracked())
+                .Sum(balance => balance.OpeningBalance);
+            decimal trackedClosingBalance = balances
+                .Where(balance => balance.AccountType.IsTracked())
+                .Sum(balance => balance.ClosingBalance);
+            decimal untrackedOpeningBalance = balances
+                .Where(balance => !balance.AccountType.IsTracked())
+                .Sum(balance => balance.OpeningBalance);
+            decimal untrackedClosingBalance = balances
+                .Where(balance => !balance.AccountType.IsTracked())
+                .Sum(balance => balance.ClosingBalance);
+
+            return new AccountDashboardPeriodSummaryModel
+            {
+                AccountingPeriodId = accountingPeriod.Id.Value,
+                AccountingPeriodName = accountingPeriod.Name,
+                Year = accountingPeriod.Year,
+                Month = accountingPeriod.Month,
+                TotalOpeningBalance = balances.Sum(balance => balance.OpeningBalance),
+                TotalClosingBalance = balances.Sum(balance => balance.ClosingBalance),
+                TrackedOpeningBalance = trackedOpeningBalance,
+                TrackedClosingBalance = trackedClosingBalance,
+                UntrackedOpeningBalance = untrackedOpeningBalance,
+                UntrackedClosingBalance = untrackedClosingBalance,
+                OpeningBalanceByAccountType = balances
+                    .GroupBy(balance => balance.AccountType)
+                    .OrderBy(group => group.Key)
+                    .Select(group => new AccountTypeBalanceModel
+                    {
+                        AccountType = AccountTypeConverter.ToModel(group.Key),
+                        TotalBalance = group.Sum(balance => balance.OpeningBalance),
+                    })
+                    .ToList(),
+                ClosingBalanceByAccountType = balances
+                    .GroupBy(balance => balance.AccountType)
+                    .OrderBy(group => group.Key)
+                    .Select(group => new AccountTypeBalanceModel
+                    {
+                        AccountType = AccountTypeConverter.ToModel(group.Key),
+                        TotalBalance = group.Sum(balance => balance.ClosingBalance),
+                    })
+                    .ToList(),
+            };
+        }).ToList();
+
+    private static List<AccountDashboardDateSummaryModel> BuildDateSummaries(
+        IReadOnlyList<DateOnly> dates,
+        IReadOnlyCollection<AccountDashboardRow> rows) => dates.Select(date =>
+        {
+            List<(AccountType AccountType, decimal Balance)> balances = rows
+                .Select(row =>
+                {
+                    AccountDashboardDateModel dateModel = row.Dates!
+                        .Single(item => item.Date == date);
+                    return (row.Type, dateModel.Balance);
+                })
+                .ToList();
+
+            return new AccountDashboardDateSummaryModel
+            {
+                Date = date,
+                TotalBalance = balances.Sum(balance => balance.Balance),
+                TrackedBalance = balances.Where(balance => balance.AccountType.IsTracked()).Sum(balance => balance.Balance),
+                UntrackedBalance = balances.Where(balance => !balance.AccountType.IsTracked()).Sum(balance => balance.Balance),
+                BalanceByAccountType = balances
+                    .GroupBy(balance => balance.AccountType)
+                    .OrderBy(group => group.Key)
+                    .Select(group => new AccountTypeBalanceModel
+                    {
+                        AccountType = AccountTypeConverter.ToModel(group.Key),
+                        TotalBalance = group.Sum(balance => balance.Balance),
+                    })
+                    .ToList(),
+            };
+        }).ToList();
+
+    private static AccountDashboardAccountModel ToModel(AccountDashboardRow row) => new()
+    {
+        Id = row.Id,
+        Name = row.Name,
+        Type = AccountTypeConverter.ToModel(row.Type),
+        StartingBalance = row.OpeningBalance,
+        EndingBalance = row.ClosingBalance,
+    };
+
+    private static decimal NormalizeBalance(AccountType accountType, decimal balance) =>
+        accountType.IsDebt() ? -balance : balance;
+
+    private sealed record AccountingPeriodBalanceValue(
+        Guid AccountingPeriodId,
+        string AccountingPeriodName,
+        decimal OpeningBalance,
+        decimal ClosingBalance);
+
+    private sealed record AccountDashboardRow(
+        Guid Id,
+        string Name,
+        AccountType Type,
+        decimal OpeningBalance,
+        decimal ClosingBalance,
+        IReadOnlyCollection<AccountingPeriodBalanceValue>? AccountingPeriods,
+        IReadOnlyCollection<AccountDashboardDateModel>? Dates);
+}

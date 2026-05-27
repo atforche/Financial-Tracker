@@ -19,6 +19,7 @@ public sealed class AccountController(
     UnitOfWork unitOfWork,
     AccountingPeriodConverter accountingPeriodConverter,
     AccountService accountService,
+    AccountDashboardGetter accountDashboardGetter,
     AccountGetter accountGetter,
     AccountSummaryGetter accountSummaryGetter,
     AccountConverter accountConverter,
@@ -52,6 +53,27 @@ public sealed class AccountController(
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public IActionResult GetMany([FromQuery] AccountQueryParameterModel queryParameters) =>
         Ok(accountGetter.Get(queryParameters));
+
+    /// <summary>
+    /// Retrieves dashboard data for Accounts across a range of Accounting Periods.
+    /// </summary>
+    [HttpGet("dashboard")]
+    [ProducesResponseType(typeof(AccountDashboardModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetDashboard([FromQuery] AccountDashboardQueryParameterModel queryParameters)
+    {
+        if (!accountDashboardGetter.TryGet(queryParameters, out AccountDashboardModel? dashboard, out Dictionary<string, string[]> errors))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Account dashboard.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        return Ok(dashboard);
+    }
 
     /// <summary>
     /// Retrieves summary balances for Accounts
