@@ -34,8 +34,11 @@ public class AccountBalance
     /// <summary>
     /// Posts the provided pending debit amount to the current Account Balance
     /// </summary>
-    internal AccountBalance PostPendingDebitAmount(decimal pendingDebitAmount) =>
-        new(Account, PostedBalance - pendingDebitAmount, PendingDebitAmount - pendingDebitAmount, PendingCreditAmount);
+    internal AccountBalance PostPendingDebitAmount(decimal pendingDebitAmount) => new(
+        Account,
+        PostedBalance + (Account.Type.IsDebt() ? pendingDebitAmount : -pendingDebitAmount),
+        PendingDebitAmount - pendingDebitAmount,
+        PendingCreditAmount);
 
     /// <summary>
     /// Adds the provided pending credit amount to the current pending Account Balance
@@ -46,8 +49,11 @@ public class AccountBalance
     /// <summary>
     /// Posts the provided pending credit amount to the current Account Balance
     /// </summary>
-    internal AccountBalance PostPendingCreditAmount(decimal pendingCreditAmount) =>
-        new(Account, PostedBalance + pendingCreditAmount, PendingDebitAmount, PendingCreditAmount - pendingCreditAmount);
+    internal AccountBalance PostPendingCreditAmount(decimal pendingCreditAmount) => new(
+        Account,
+        PostedBalance + (Account.Type.IsDebt() ? -pendingCreditAmount : pendingCreditAmount),
+        PendingDebitAmount,
+        PendingCreditAmount - pendingCreditAmount);
 
     /// <summary>
     /// Constructs a new instance of this class
