@@ -14,12 +14,11 @@ import {
   AccountingPeriodSortOrder,
 } from "@/accounting-periods/types";
 import { Box, Button, Paper, Stack, Typography } from "@mui/material";
-import AccountsDashboardControls from "@/accounts/overview-dashboard/AccountsDashboardControls";
+import AccountOverviewDashboardFilter from "@/accounts/overview-dashboard/AccountOverviewDashboardFilter";
+import AccountOverviewQuickActions from "@/accounts/overview-dashboard/AccountOverviewQuickActions";
 import AccountsDashboardListFrame from "@/accounts/overview-dashboard/AccountsDashboardListFrame";
-import Breadcrumbs from "@/framework/Breadcrumbs";
 import type { JSX } from "react";
 import SummaryCard from "@/framework/view/SummaryCard";
-import breadcrumbs from "@/accounts/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
 import { redirect } from "next/navigation";
@@ -505,7 +504,6 @@ const AccountOverviewDashboard = async function ({
   if (isInOnboardingMode) {
     return (
       <Stack spacing={3} sx={{ maxWidth: 1280 }}>
-        <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
         <Paper
           sx={{
             backgroundColor: "background.paper",
@@ -630,78 +628,16 @@ const AccountOverviewDashboard = async function ({
   const rangeChange =
     snapshot.totalEndingBalance - snapshot.totalStartingBalance;
   const rangeLabel = getDashboardRangeLabel(dashboard);
-  const dateModeHref = routes.index({
-    mode: "date",
-    startDate: defaultDateRange.startDate,
-    endDate: defaultDateRange.endDate,
-  });
-  const defaultDashboardHref = routes.index({
-    mode: defaultFilterMode,
-    startAccountingPeriodId: currentAccountingPeriod.id,
-    endAccountingPeriodId: currentAccountingPeriod.id,
-  });
 
   return (
     <Stack spacing={3} sx={{ maxWidth: 1440 }}>
-      <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
-      <Paper
-        sx={{
-          backgroundColor: "background.paper",
-          backgroundImage:
-            "linear-gradient(135deg, rgba(76, 175, 80, 0.18) 0%, rgba(255, 255, 255, 0) 58%)",
-          border: "1px solid",
-          borderColor: "divider",
-          overflow: "hidden",
-          p: { xs: 3, md: 4 },
-        }}
-      >
-        <Box
-          sx={{
-            display: "grid",
-            gap: 3,
-            gridTemplateColumns: {
-              xs: "1fr",
-              xl: "minmax(0, 1.2fr) minmax(360px, 0.8fr)",
-            },
-          }}
-        >
-          <Stack spacing={3}>
-            <Stack spacing={1}>
-              <Typography variant="overline" color="text.secondary">
-                Accounts workspace
-              </Typography>
-              <Typography variant="h3">Accounts dashboard</Typography>
-              <Typography color="text.secondary" maxWidth={760}>
-                Review account balances across accounting periods or date ranges
-                from a single dashboard query, then move straight into the
-                accounts that need attention.
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {hasActiveSearch
-                  ? `Showing ${visibleCount} of ${dashboard.accounts.totalCount} matching accounts for ${rangeLabel}.`
-                  : `Showing ${visibleCount} accounts on this page across ${dashboard.accounts.totalCount} total accounts for ${rangeLabel}.`}
-              </Typography>
-            </Stack>
-            <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
-              <Button variant="contained" href={routes.create({})}>
-                Create account
-              </Button>
-              <Button variant="outlined" href={dateModeHref}>
-                Current period by date
-              </Button>
-              <Button variant="outlined" href={defaultDashboardHref}>
-                Reset to current period
-              </Button>
-            </Stack>
-          </Stack>
-          <AccountsDashboardControls
-            accountingPeriods={sortedAccountingPeriodsAscending}
-            defaultAccountingPeriodId={currentAccountingPeriod.id}
-            defaultStartDate={defaultDateRange.startDate}
-            defaultEndDate={defaultDateRange.endDate}
-          />
-        </Box>
-      </Paper>
+      <AccountOverviewDashboardFilter
+        accountingPeriods={sortedAccountingPeriodsAscending}
+        defaultAccountingPeriodId={currentAccountingPeriod.id}
+        defaultStartDate={defaultDateRange.startDate}
+        defaultEndDate={defaultDateRange.endDate}
+      />
+      <AccountOverviewQuickActions />
       <Box
         sx={{
           display: "grid",
@@ -879,26 +815,6 @@ const AccountOverviewDashboard = async function ({
                     {formatCurrency(snapshot.untrackedEndingBalance)}
                   </Typography>
                 </Stack>
-              </Stack>
-            </Stack>
-          </Paper>
-          <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
-            <Stack spacing={2}>
-              <Typography variant="h6">Next actions</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Use the range filters to narrow the dashboard, then open an
-                account when you need row-level transaction detail.
-              </Typography>
-              <Stack spacing={1.25}>
-                <Button variant="contained" href={routes.create({})}>
-                  Create account
-                </Button>
-                <Button variant="outlined" href={dateModeHref}>
-                  Inspect current month by date
-                </Button>
-                <Button variant="outlined" href={defaultDashboardHref}>
-                  Reset dashboard view
-                </Button>
               </Stack>
             </Stack>
           </Paper>

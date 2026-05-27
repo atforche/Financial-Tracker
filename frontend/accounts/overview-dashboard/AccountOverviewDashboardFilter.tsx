@@ -1,14 +1,11 @@
 "use client";
 
-import {
-  AccountDashboardSortOrder,
-  AccountType,
-  formatAccountType,
-} from "@/accounts/types";
+import { AccountType, formatAccountType } from "@/accounts/types";
 import {
   Button,
   InputAdornment,
   MenuItem,
+  Paper,
   Stack,
   TextField,
   ToggleButton,
@@ -18,7 +15,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
-import { Search } from "@mui/icons-material";
+import Search from "@mui/icons-material/Search";
 import { useDebouncedCallback } from "use-debounce";
 
 /**
@@ -27,9 +24,9 @@ import { useDebouncedCallback } from "use-debounce";
 type AccountsDashboardFilterMode = "accounting-period" | "date";
 
 /**
- * Props for the AccountsDashboardControls component.
+ * Props for the AccountOverviewDashboardFilter component.
  */
-interface AccountsDashboardControlsProps {
+interface AccountOverviewDashboardFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly defaultAccountingPeriodId: string | null;
   readonly defaultStartDate: string;
@@ -38,52 +35,7 @@ interface AccountsDashboardControlsProps {
 }
 
 /**
- * Sort options available in the Accounts dashboard controls.
- */
-const sortOptions: {
-  readonly label: string;
-  readonly value: AccountDashboardSortOrder | "";
-}[] = [
-  {
-    label: "Default order",
-    value: "",
-  },
-  {
-    label: "Name: A to Z",
-    value: AccountDashboardSortOrder.Name,
-  },
-  {
-    label: "Name: Z to A",
-    value: AccountDashboardSortOrder.NameDescending,
-  },
-  {
-    label: "Type: A to Z",
-    value: AccountDashboardSortOrder.Type,
-  },
-  {
-    label: "Type: Z to A",
-    value: AccountDashboardSortOrder.TypeDescending,
-  },
-  {
-    label: "Opening balance: low to high",
-    value: AccountDashboardSortOrder.OpeningBalance,
-  },
-  {
-    label: "Opening balance: high to low",
-    value: AccountDashboardSortOrder.OpeningBalanceDescending,
-  },
-  {
-    label: "Ending balance: low to high",
-    value: AccountDashboardSortOrder.ClosingBalance,
-  },
-  {
-    label: "Ending balance: high to low",
-    value: AccountDashboardSortOrder.ClosingBalanceDescending,
-  },
-];
-
-/**
- * Account type options available in the Accounts dashboard controls.
+ * Account type options available in the Accounts dashboard filters.
  */
 const accountTypeOptions: {
   readonly label: string;
@@ -97,21 +49,20 @@ const accountTypeOptions: {
 ];
 
 /**
- * Renders the hero-band controls for searching, sorting, and resetting the Accounts view.
+ * Renders the dashboard filter card for the Accounts view.
  */
-const AccountsDashboardControls = function ({
+const AccountOverviewDashboardFilter = function ({
   accountingPeriods,
   defaultAccountingPeriodId,
   defaultStartDate,
   defaultEndDate,
   disabled = false,
-}: AccountsDashboardControlsProps): JSX.Element {
+}: AccountOverviewDashboardFilterProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
   const searchParamName = "search";
-  const sortParamName = "sort";
   const pageParamName = "page";
   const modeParamName = "mode";
   const accountTypeParamName = "accountType";
@@ -123,7 +74,6 @@ const AccountsDashboardControls = function ({
   const currentMode: AccountsDashboardFilterMode =
     searchParams.get(modeParamName) === "date" ? "date" : "accounting-period";
   const currentSearch = searchParams.get(searchParamName) ?? "";
-  const currentSort = searchParams.get(sortParamName) ?? "";
   const currentAccountType = searchParams.get(accountTypeParamName) ?? "";
   const currentStartAccountingPeriodId =
     searchParams.get(startAccountingPeriodIdParamName) ??
@@ -154,7 +104,6 @@ const AccountsDashboardControls = function ({
   const hasActiveView =
     currentMode !== "accounting-period" ||
     currentSearch.trim() !== "" ||
-    currentSort !== "" ||
     currentAccountType !== "" ||
     currentStartAccountingPeriodId !== (defaultAccountingPeriodId ?? "") ||
     currentEndAccountingPeriodId !== (defaultAccountingPeriodId ?? "") ||
@@ -174,19 +123,6 @@ const AccountsDashboardControls = function ({
     },
     300,
   );
-
-  const handleSortChange = function (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ): void {
-    updateParams((params) => {
-      const nextSort = event.target.value;
-      if (nextSort === "") {
-        params.delete(sortParamName);
-      } else {
-        params.set(sortParamName, nextSort);
-      }
-    });
-  };
 
   const handleAccountTypeChange = function (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -311,7 +247,6 @@ const AccountsDashboardControls = function ({
   const clearView = function (): void {
     updateParams((params) => {
       params.delete(searchParamName);
-      params.delete(sortParamName);
       params.delete(accountTypeParamName);
       params.set(modeParamName, "accounting-period");
       params.delete(startDateParamName);
@@ -326,165 +261,162 @@ const AccountsDashboardControls = function ({
     });
   };
 
+  const sharedFieldSx = {
+    minWidth: { xs: "100%", sm: 180 },
+  };
+
   return (
-    <Stack
-      spacing={1.5}
+    <Paper
       sx={{
+        position: "sticky",
+        top: 10,
+        zIndex: (theme) => theme.zIndex.appBar - 1,
         border: "1px solid",
         borderColor: "divider",
         borderRadius: 3,
         bgcolor: "background.paper",
-        p: 2,
+        p: { xs: 2, md: 2.5 },
       }}
     >
-      <Stack spacing={0.5}>
-        <Typography variant="overline" color="text.secondary">
-          Dashboard filters
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Switch between accounting-period and date mode, then narrow the
-          account set from one dashboard query.
-        </Typography>
-      </Stack>
-      <ToggleButtonGroup
-        exclusive
-        value={currentMode}
-        size="small"
-        disabled={disabled}
-        onChange={handleModeChange}
-        sx={{ alignSelf: "flex-start" }}
-      >
-        <ToggleButton value="accounting-period">
-          Accounting periods
-        </ToggleButton>
-        <ToggleButton value="date">Dates</ToggleButton>
-      </ToggleButtonGroup>
-      <Stack direction={{ xs: "column", lg: "row" }} spacing={1.5} useFlexGap>
-        <TextField
-          fullWidth
-          size="small"
-          placeholder="Search accounts"
-          defaultValue={currentSearch}
-          onChange={handleSearchChange}
-          disabled={disabled}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
-        <TextField
-          select
-          size="small"
-          label="Sort"
-          value={currentSort}
-          onChange={handleSortChange}
-          disabled={disabled}
-          sx={{ minWidth: { xs: "100%", sm: 220 } }}
+      <Stack spacing={2}>
+        <Stack spacing={0.5}>
+          <Typography variant="h5">Account Overview Dashboard</Typography>
+        </Stack>
+        <Stack
+          direction="row"
+          spacing={1.5}
+          useFlexGap
+          flexWrap="wrap"
+          alignItems={{ xs: "stretch", md: "center" }}
         >
-          {sortOptions.map((option) => (
-            <MenuItem key={option.label} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          size="small"
-          label="Account type"
-          value={currentAccountType}
-          onChange={handleAccountTypeChange}
-          disabled={disabled}
-          sx={{ minWidth: { xs: "100%", sm: 220 } }}
-        >
-          {accountTypeOptions.map((option) => (
-            <MenuItem key={option.label} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </TextField>
+          <ToggleButtonGroup
+            exclusive
+            value={currentMode}
+            size="small"
+            disabled={disabled}
+            onChange={handleModeChange}
+            sx={{ flexShrink: 0 }}
+          >
+            <ToggleButton value="accounting-period">
+              Accounting periods
+            </ToggleButton>
+            <ToggleButton value="date">Dates</ToggleButton>
+          </ToggleButtonGroup>
+          {currentMode === "accounting-period" ? (
+            <>
+              <TextField
+                select
+                size="small"
+                label="Start period"
+                value={currentStartAccountingPeriodId}
+                onChange={handleStartAccountingPeriodChange}
+                disabled={disabled || accountingPeriods.length === 0}
+                sx={sharedFieldSx}
+              >
+                {accountingPeriods.map((accountingPeriod) => (
+                  <MenuItem
+                    key={accountingPeriod.id}
+                    value={accountingPeriod.id}
+                  >
+                    {accountingPeriod.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                select
+                size="small"
+                label="End period"
+                value={currentEndAccountingPeriodId}
+                onChange={handleEndAccountingPeriodChange}
+                disabled={disabled || accountingPeriods.length === 0}
+                sx={sharedFieldSx}
+              >
+                {accountingPeriods.map((accountingPeriod) => (
+                  <MenuItem
+                    key={accountingPeriod.id}
+                    value={accountingPeriod.id}
+                  >
+                    {accountingPeriod.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </>
+          ) : (
+            <>
+              <TextField
+                size="small"
+                label="Start date"
+                type="date"
+                value={currentStartDate}
+                onChange={handleStartDateChange}
+                disabled={disabled}
+                sx={sharedFieldSx}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                  },
+                }}
+              />
+              <TextField
+                size="small"
+                label="End date"
+                type="date"
+                value={currentEndDate}
+                onChange={handleEndDateChange}
+                disabled={disabled}
+                sx={sharedFieldSx}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                  },
+                }}
+              />
+            </>
+          )}
+          <TextField
+            size="small"
+            placeholder="Search accounts"
+            defaultValue={currentSearch}
+            onChange={handleSearchChange}
+            disabled={disabled}
+            sx={{ flex: 1, minWidth: { xs: "100%", md: 240 } }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+          <TextField
+            select
+            size="small"
+            label="Account type"
+            value={currentAccountType}
+            onChange={handleAccountTypeChange}
+            disabled={disabled}
+            sx={sharedFieldSx}
+          >
+            {accountTypeOptions.map((option) => (
+              <MenuItem key={option.label} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
+          <Button
+            variant="outlined"
+            onClick={clearView}
+            disabled={!hasActiveView}
+            sx={{ flexShrink: 0 }}
+          >
+            Reset filters
+          </Button>
+        </Stack>
       </Stack>
-      <Stack direction={{ xs: "column", lg: "row" }} spacing={1.5} useFlexGap>
-        {currentMode === "accounting-period" ? (
-          <>
-            <TextField
-              select
-              size="small"
-              label="Start period"
-              value={currentStartAccountingPeriodId}
-              onChange={handleStartAccountingPeriodChange}
-              disabled={disabled || accountingPeriods.length === 0}
-              sx={{ minWidth: { xs: "100%", sm: 220 } }}
-            >
-              {accountingPeriods.map((accountingPeriod) => (
-                <MenuItem key={accountingPeriod.id} value={accountingPeriod.id}>
-                  {accountingPeriod.name}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              select
-              size="small"
-              label="End period"
-              value={currentEndAccountingPeriodId}
-              onChange={handleEndAccountingPeriodChange}
-              disabled={disabled || accountingPeriods.length === 0}
-              sx={{ minWidth: { xs: "100%", sm: 220 } }}
-            >
-              {accountingPeriods.map((accountingPeriod) => (
-                <MenuItem key={accountingPeriod.id} value={accountingPeriod.id}>
-                  {accountingPeriod.name}
-                </MenuItem>
-              ))}
-            </TextField>
-          </>
-        ) : (
-          <>
-            <TextField
-              size="small"
-              label="Start date"
-              type="date"
-              value={currentStartDate}
-              onChange={handleStartDateChange}
-              disabled={disabled}
-              sx={{ minWidth: { xs: "100%", sm: 220 } }}
-              slotProps={{
-                inputLabel: {
-                  shrink: true,
-                },
-              }}
-            />
-            <TextField
-              size="small"
-              label="End date"
-              type="date"
-              value={currentEndDate}
-              onChange={handleEndDateChange}
-              disabled={disabled}
-              sx={{ minWidth: { xs: "100%", sm: 220 } }}
-              slotProps={{
-                inputLabel: {
-                  shrink: true,
-                },
-              }}
-            />
-          </>
-        )}
-        <Button
-          variant="outlined"
-          onClick={clearView}
-          disabled={!hasActiveView}
-          sx={{ flexShrink: 0 }}
-        >
-          Reset to current period
-        </Button>
-      </Stack>
-    </Stack>
+    </Paper>
   );
 };
 
-export default AccountsDashboardControls;
+export default AccountOverviewDashboardFilter;
