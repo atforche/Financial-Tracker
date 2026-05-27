@@ -1,14 +1,15 @@
 "use client";
 
 import {
-  type Account,
-  AccountSortOrder,
+  type AccountDashboardAccount,
+  AccountDashboardSortOrder,
   formatAccountType,
+  isPositiveChangeInBalance,
 } from "@/accounts/types";
+import { Button, Stack, Typography } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
-import { Button } from "@mui/material";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
@@ -20,24 +21,22 @@ import routes from "@/accounts/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
- * Props for the AccountListFrame component.
+ * Props for the AccountsDashboardListFrame component.
  */
-interface AccountListFrameProps {
-  readonly data: Account[] | null;
+interface AccountsDashboardListFrameProps {
+  readonly data: AccountDashboardAccount[] | null;
   readonly totalCount: number | null;
   readonly isInOnboardingMode: boolean;
-  readonly showCreateAction?: boolean;
 }
 
 /**
- * Component that displays the list of accounts associated with an accounting period.
+ * Presents the paged account table for the Accounts dashboard.
  */
-const AccountListFrame = function ({
+const AccountsDashboardListFrame = function ({
   data,
   totalCount,
   isInOnboardingMode,
-  showCreateAction = true,
-}: AccountListFrameProps): JSX.Element {
+}: AccountsDashboardListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -46,37 +45,38 @@ const AccountListFrame = function ({
   const sortParamName = "sort";
   const pageParamName = "page";
 
-  const setSort = function (sort: AccountSortOrder | null): void {
+  const setSort = function (sort: AccountDashboardSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
       params.delete(sortParamName);
     } else {
       params.set(sortParamName, sort);
     }
+    params.delete(pageParamName);
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const currentSort = tryParseEnum(
-    AccountSortOrder,
+    AccountDashboardSortOrder,
     searchParams.get(sortParamName) ?? "",
   );
 
-  const columns: ColumnDefinition<Account>[] = [
+  const columns: ColumnDefinition<AccountDashboardAccount>[] = [
     {
       name: "name",
       headerContent: "Name",
-      getBodyContent: (account: Account) => account.name,
+      getBodyContent: (account) => account.name,
       sortType:
-        currentSort === AccountSortOrder.Name
+        currentSort === AccountDashboardSortOrder.Name
           ? ColumnSortType.Ascending
-          : currentSort === AccountSortOrder.NameDescending
+          : currentSort === AccountDashboardSortOrder.NameDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType: ColumnSortType | null): void => {
+      onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountSortOrder.Name);
+          setSort(AccountDashboardSortOrder.Name);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountSortOrder.NameDescending);
+          setSort(AccountDashboardSortOrder.NameDescending);
         } else {
           setSort(null);
         }
@@ -85,49 +85,99 @@ const AccountListFrame = function ({
     {
       name: "type",
       headerContent: "Type",
-      getBodyContent: (account: Account) => formatAccountType(account.type),
+      getBodyContent: (account) => formatAccountType(account.type),
       sortType:
-        currentSort === AccountSortOrder.Type
+        currentSort === AccountDashboardSortOrder.Type
           ? ColumnSortType.Ascending
-          : currentSort === AccountSortOrder.TypeDescending
+          : currentSort === AccountDashboardSortOrder.TypeDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType: ColumnSortType | null): void => {
+      onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountSortOrder.Type);
+          setSort(AccountDashboardSortOrder.Type);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountSortOrder.TypeDescending);
+          setSort(AccountDashboardSortOrder.TypeDescending);
         } else {
           setSort(null);
         }
       },
     },
     {
-      name: "postedBalance",
-      headerContent: "Posted Balance",
-      getBodyContent: (account: Account) =>
-        formatCurrency(account.currentBalance.postedBalance),
+      name: "startingBalance",
+      headerContent: "Starting Balance",
+      getBodyContent: (account) => formatCurrency(account.startingBalance),
       sortType:
-        currentSort === AccountSortOrder.PostedBalance
+        currentSort === AccountDashboardSortOrder.OpeningBalance
           ? ColumnSortType.Ascending
-          : currentSort === AccountSortOrder.PostedBalanceDescending
+          : currentSort === AccountDashboardSortOrder.OpeningBalanceDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType: ColumnSortType | null): void => {
+      onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountSortOrder.PostedBalance);
+          setSort(AccountDashboardSortOrder.OpeningBalance);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountSortOrder.PostedBalanceDescending);
+          setSort(AccountDashboardSortOrder.OpeningBalanceDescending);
         } else {
           setSort(null);
         }
       },
-      minWidth: 125,
       alignment: "right",
+      minWidth: 140,
+    },
+    {
+      name: "endingBalance",
+      headerContent: "Ending Balance",
+      getBodyContent: (account) => formatCurrency(account.endingBalance),
+      sortType:
+        currentSort === AccountDashboardSortOrder.ClosingBalance
+          ? ColumnSortType.Ascending
+          : currentSort === AccountDashboardSortOrder.ClosingBalanceDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSort(AccountDashboardSortOrder.ClosingBalance);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSort(AccountDashboardSortOrder.ClosingBalanceDescending);
+        } else {
+          setSort(null);
+        }
+      },
+      alignment: "right",
+      minWidth: 140,
+    },
+    {
+      name: "change",
+      headerContent: "Range Change",
+      getBodyContent: (account): JSX.Element => {
+        const changeInBalance = account.endingBalance - account.startingBalance;
+        const isPositive = isPositiveChangeInBalance(
+          account.type,
+          changeInBalance,
+        );
+
+        return (
+          <Stack spacing={0.25} alignItems="flex-end">
+            <Typography
+              variant="body2"
+              fontWeight={700}
+              color={isPositive ? "success.main" : "error.main"}
+            >
+              {formatCurrency(changeInBalance)}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {formatCurrency(account.startingBalance)} to{" "}
+              {formatCurrency(account.endingBalance)}
+            </Typography>
+          </Stack>
+        );
+      },
+      alignment: "right",
+      minWidth: 160,
     },
     {
       name: "actions",
-      headerContent: showCreateAction ? (
+      headerContent: (
         <IconButton
           label="Add"
           icon={<AddCircleOutline />}
@@ -137,10 +187,8 @@ const AccountListFrame = function ({
             );
           }}
         />
-      ) : (
-        ""
       ),
-      getBodyContent: (account: Account) => (
+      getBodyContent: (account) => (
         <ColumnButton
           label="View"
           icon={<ArrowForwardIos />}
@@ -155,7 +203,7 @@ const AccountListFrame = function ({
   ];
 
   return (
-    <ListFrame<Account>
+    <ListFrame<AccountDashboardAccount>
       columns={columns}
       getId={(account) => account.id}
       data={data ?? null}
@@ -163,10 +211,10 @@ const AccountListFrame = function ({
       searchParamName={searchParamName}
       pageParamName={pageParamName}
       initialEmptyState={{
-        title: "No accounts yet",
+        title: "No accounts in this range",
         description: isInOnboardingMode
-          ? "Create your first account to finish onboarding and start tracking balances."
-          : "Create an account to start tracking balances and transaction history.",
+          ? "Start onboarding to create your first account and populate the dashboard."
+          : "No accounts fall inside the selected dashboard range yet.",
         action: (
           <Button
             variant="contained"
@@ -181,9 +229,9 @@ const AccountListFrame = function ({
         ),
       }}
       filteredEmptyState={{
-        title: "No accounts match this search",
+        title: "No accounts match this dashboard filter",
         description:
-          "Try a different account name or clear the current search to see all accounts.",
+          "Try a different search, account type, or date range to widen the dashboard scope.",
         action: (
           <Button
             variant="contained"
@@ -202,4 +250,4 @@ const AccountListFrame = function ({
   );
 };
 
-export default AccountListFrame;
+export default AccountsDashboardListFrame;

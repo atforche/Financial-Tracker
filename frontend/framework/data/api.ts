@@ -1155,6 +1155,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/accounts/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves dashboard data for Accounts across a range of Accounting Periods. */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description First date in the requested range. */
+                    StartDate?: string;
+                    /** @description Last date in the requested range. */
+                    EndDate?: string;
+                    /** @description ID for the first Accounting Period in the requested range. */
+                    StartAccountingPeriodId?: string;
+                    /** @description ID for the last Accounting Period in the requested range. */
+                    EndAccountingPeriodId?: string;
+                    /** @description Optional Account Type filter to apply to the dashboard. */
+                    AccountType?: components["schemas"]["AccountTypeModel"];
+                    /** @description Optional search string to apply to the matching Accounts. */
+                    Search?: string;
+                    /** @description Optional sort to apply to the matching Accounts. */
+                    Sort?: components["schemas"]["AccountDashboardSortOrderModel"];
+                    /** @description Maximum number of results to return */
+                    Limit?: number;
+                    /** @description Number of results to skip */
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountDashboardModel"];
+                        "application/json": components["schemas"]["AccountDashboardModel"];
+                        "text/json": components["schemas"]["AccountDashboardModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/accounts/summary": {
         parameters: {
             query?: never;
@@ -2037,6 +2105,125 @@ export interface components {
              */
             pendingCreditAmount: number;
         };
+        /** @description Model representing an Account row within the dashboard response. */
+        AccountDashboardAccountModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Account.
+             */
+            id: string;
+            /** @description Name for the Account. */
+            name: string;
+            /** @description Type for the Account. */
+            type: components["schemas"]["AccountTypeModel"];
+            /**
+             * Format: double
+             * @description Balance at the beginning of the requested range.
+             */
+            startingBalance: number;
+            /**
+             * Format: double
+             * @description Balance at the end of the requested range.
+             */
+            endingBalance: number;
+        };
+        /** @description Model representing top-level dashboard balances for a specific date. */
+        AccountDashboardDateSummaryModel: {
+            /**
+             * Format: date
+             * @description Date for this summary.
+             */
+            date: string;
+            /**
+             * Format: double
+             * @description Total balance across all matching Accounts.
+             */
+            totalBalance: number;
+            /**
+             * Format: double
+             * @description Total balance across tracked Accounts.
+             */
+            trackedBalance: number;
+            /**
+             * Format: double
+             * @description Total balance across untracked Accounts.
+             */
+            untrackedBalance: number;
+            /** @description Total balances grouped by Account Type. */
+            balanceByAccountType: components["schemas"]["AccountTypeBalanceModel"][];
+        };
+        /** @description Model representing the Account dashboard response. */
+        AccountDashboardModel: {
+            /** @description Time mode used to build the dashboard response. */
+            mode: components["schemas"]["AccountDashboardModeModel"];
+            /** @description Matching Accounts for the requested dashboard page. */
+            accounts: components["schemas"]["CollectionModelOfAccountDashboardAccountModel"];
+            /** @description Summary balances for each Accounting Period in the requested range. */
+            accountingPeriods?: null | components["schemas"]["AccountDashboardPeriodSummaryModel"][];
+            /** @description Summary balances for each date in the requested range. */
+            dates?: null | components["schemas"]["AccountDashboardDateSummaryModel"][];
+        };
+        /**
+         * @description Enum representing the time mode used to build the Account dashboard response.
+         * @enum {unknown}
+         */
+        AccountDashboardModeModel: AccountDashboardModeModel;
+        /** @description Model representing top-level dashboard balances for a specific Accounting Period. */
+        AccountDashboardPeriodSummaryModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Accounting Period.
+             */
+            accountingPeriodId: string;
+            /** @description Name for the Accounting Period. */
+            accountingPeriodName: string;
+            /**
+             * Format: int32
+             * @description Year for the Accounting Period.
+             */
+            year: number;
+            /**
+             * Format: int32
+             * @description Month for the Accounting Period.
+             */
+            month: number;
+            /**
+             * Format: double
+             * @description Total opening balance across all matching Accounts.
+             */
+            totalOpeningBalance: number;
+            /**
+             * Format: double
+             * @description Total closing balance across all matching Accounts.
+             */
+            totalClosingBalance: number;
+            /**
+             * Format: double
+             * @description Opening balance across tracked Accounts.
+             */
+            trackedOpeningBalance: number;
+            /**
+             * Format: double
+             * @description Closing balance across tracked Accounts.
+             */
+            trackedClosingBalance: number;
+            /**
+             * Format: double
+             * @description Opening balance across untracked Accounts.
+             */
+            untrackedOpeningBalance: number;
+            /**
+             * Format: double
+             * @description Closing balance across untracked Accounts.
+             */
+            untrackedClosingBalance: number;
+            /** @description Opening balance totals grouped by Account Type. */
+            openingBalanceByAccountType: components["schemas"]["AccountTypeBalanceModel"][];
+            /** @description Closing balance totals grouped by Account Type. */
+            closingBalanceByAccountType: components["schemas"]["AccountTypeBalanceModel"][];
+        };
+        /** @enum {unknown} */
+        AccountDashboardSortOrderModel: AccountDashboardSortOrderModel | null;
         /** @description Model representing an Account in the context of a specific Accounting Period */
         AccountingPeriodAccountModel: {
             /**
@@ -2190,6 +2377,16 @@ export interface components {
          * @enum {unknown}
          */
         AccountTypeModel: AccountTypeModel;
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfAccountDashboardAccountModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["AccountDashboardAccountModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfAccountingPeriodAccountModel: {
             /** @description The collection of items. */
@@ -3014,6 +3211,20 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
+export enum AccountDashboardModeModel {
+    AccountingPeriod = "AccountingPeriod",
+    Date = "Date"
+}
+export enum AccountDashboardSortOrderModel {
+    Name = "Name",
+    NameDescending = "NameDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    OpeningBalance = "OpeningBalance",
+    OpeningBalanceDescending = "OpeningBalanceDescending",
+    ClosingBalance = "ClosingBalance",
+    ClosingBalanceDescending = "ClosingBalanceDescending"
+}
 export enum AccountingPeriodAccountSortOrderModel {
     Name = "Name",
     NameDescending = "NameDescending",

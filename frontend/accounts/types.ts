@@ -16,6 +16,59 @@ type Account = components["schemas"]["AccountModel"];
 type AccountSummary = components["schemas"]["AccountSummaryModel"];
 
 /**
+ * Type representing the Accounts dashboard response.
+ */
+interface AccountDashboard {
+  readonly mode: AccountDashboardMode;
+  readonly accounts: {
+    readonly items: AccountDashboardAccount[];
+    readonly totalCount: number;
+  };
+  readonly accountingPeriods: readonly AccountDashboardPeriodSummary[] | null;
+  readonly dates: readonly AccountDashboardDateSummary[] | null;
+}
+
+/**
+ * Type representing a row in the Accounts dashboard account table.
+ */
+interface AccountDashboardAccount {
+  readonly id: string;
+  readonly name: string;
+  readonly type: AccountTypeModel;
+  readonly startingBalance: number;
+  readonly endingBalance: number;
+}
+
+/**
+ * Type representing a period summary in the Accounts dashboard response.
+ */
+interface AccountDashboardPeriodSummary {
+  readonly accountingPeriodId: string;
+  readonly accountingPeriodName: string;
+  readonly year: number;
+  readonly month: number;
+  readonly totalOpeningBalance: number;
+  readonly totalClosingBalance: number;
+  readonly trackedOpeningBalance: number;
+  readonly trackedClosingBalance: number;
+  readonly untrackedOpeningBalance: number;
+  readonly untrackedClosingBalance: number;
+  readonly openingBalanceByAccountType: readonly AccountTypeBalance[];
+  readonly closingBalanceByAccountType: readonly AccountTypeBalance[];
+}
+
+/**
+ * Type representing a date summary in the Accounts dashboard response.
+ */
+interface AccountDashboardDateSummary {
+  readonly date: string;
+  readonly totalBalance: number;
+  readonly trackedBalance: number;
+  readonly untrackedBalance: number;
+  readonly balanceByAccountType: readonly AccountTypeBalance[];
+}
+
+/**
  * Type representing an Account Type balance summary.
  */
 type AccountTypeBalance = components["schemas"]["AccountTypeBalanceModel"];
@@ -42,6 +95,28 @@ type OnboardAccountRequest = components["schemas"]["OnboardAccountModel"];
  * Type representing a request to update an account.
  */
 type UpdateAccountRequest = components["schemas"]["UpdateAccountModel"];
+
+/**
+ * Enum representing how Accounts dashboard rows can be sorted.
+ */
+enum AccountDashboardSortOrder {
+  Name = "Name",
+  NameDescending = "NameDescending",
+  Type = "Type",
+  TypeDescending = "TypeDescending",
+  OpeningBalance = "OpeningBalance",
+  OpeningBalanceDescending = "OpeningBalanceDescending",
+  ClosingBalance = "ClosingBalance",
+  ClosingBalanceDescending = "ClosingBalanceDescending",
+}
+
+/**
+ * Enum representing the dashboard response time mode.
+ */
+enum AccountDashboardMode {
+  AccountingPeriod = "AccountingPeriod",
+  Date = "Date",
+}
 
 /**
  * Determines if the provided account type supports tracked fund assignments.
@@ -108,12 +183,18 @@ const formatAccountType = function (accountType: AccountTypeModel): string {
 
 export {
   type Account,
+  type AccountDashboard,
+  type AccountDashboardAccount,
+  type AccountDashboardDateSummary,
+  type AccountDashboardPeriodSummary,
   type AccountSummary,
   type AccountTypeBalance,
   type AccountIdentifier,
   type CreateAccountRequest,
   type OnboardAccountRequest,
   type UpdateAccountRequest,
+  AccountDashboardMode,
+  AccountDashboardSortOrder,
   AccountSortOrderModel as AccountSortOrder,
   AccountTransactionSortOrderModel as AccountTransactionSortOrder,
   AccountTypeModel as AccountType,
