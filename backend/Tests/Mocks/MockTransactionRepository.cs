@@ -17,6 +17,12 @@ internal sealed class MockTransactionRepository : ITransactionRepository
     private readonly Dictionary<Guid, Transaction> _transactions = [];
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<Transaction> GetAll() => _transactions.Values
+        .OrderBy(transaction => transaction.Date)
+        .ThenBy(transaction => transaction.Sequence)
+        .ToList();
+
+    /// <inheritdoc/>
     public int GetNextSequenceForDate(DateOnly transactionDate)
     {
         var transactionsOnDate = _transactions.Values.Where(transaction => transaction.Date == transactionDate).ToList();

@@ -20,12 +20,15 @@ import type {
 } from "@/transactions/UpdateTransactionView";
 import type { CreateTransactionViewSearchParams } from "@/transactions/CreateTransactionView";
 import type { Route } from "next";
+import type { TransactionsViewSearchParams } from "@/transactions/TransactionsView";
 import { objectToSearchParams } from "@/framework/routes";
 
 /**
  * App routes related to transactions.
  */
 const routes = {
+  index: (searchParams: TransactionsViewSearchParams): Route =>
+    `/transactions?${objectToSearchParams(searchParams).toString()}` as Route,
   create: (searchParams: CreateTransactionViewSearchParams): Route =>
     `/transactions/create?${objectToSearchParams(searchParams).toString()}` as Route,
   detail: (

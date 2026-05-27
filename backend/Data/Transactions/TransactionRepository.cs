@@ -18,6 +18,9 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     #region ITransactionRepository
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<Transaction> GetAll() => databaseContext.Transactions.ToList();
+
+    /// <inheritdoc/>
     public int GetNextSequenceForDate(DateOnly transactionDate)
     {
         var historiesOnDate = databaseContext.Transactions

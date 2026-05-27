@@ -12,6 +12,12 @@ import routes from "@/transactions/routes";
  * Breadcrumbs related to transactions.
  */
 const breadcrumbs = {
+  index: (): Breadcrumb[] => [
+    {
+      label: "Transactions",
+      href: routes.index({}),
+    },
+  ],
   create: (
     routeAccountingPeriod: AccountingPeriod | null,
     routeAccount: Account | null,
@@ -51,7 +57,7 @@ const breadcrumbs = {
     if (routeFund !== null) {
       return [...fundBreadcrumbs.detail(routeFund), currentCrumb];
     }
-    return [currentCrumb];
+    return [...breadcrumbs.index(), currentCrumb];
   },
   detail: (
     transaction: Transaction,
@@ -93,7 +99,7 @@ const breadcrumbs = {
     if (routeFund !== null) {
       return [...fundBreadcrumbs.detail(routeFund), currentCrumb];
     }
-    return [currentCrumb];
+    return [...breadcrumbs.index(), currentCrumb];
   },
   update: (
     transaction: Transaction,

@@ -40,6 +40,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<GoalConverter>();
 
         _ = serviceCollection.AddScoped<TransactionConverter>();
+        _ = serviceCollection.AddScoped<TransactionGetter>();
         _ = serviceCollection.AddScoped<TransactionRequestConverter>();
     }
 }

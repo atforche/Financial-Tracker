@@ -4,6 +4,7 @@ using Domain.Accounts;
 using Domain.Exceptions;
 using Domain.Transactions;
 using Microsoft.AspNetCore.Mvc;
+using Models;
 using Models.Transactions;
 using Rest.AccountingPeriods;
 using Rest.Accounts;
@@ -19,10 +20,32 @@ public sealed class TransactionController(
     UnitOfWork unitOfWork,
     AccountConverter accountConverter,
     AccountingPeriodConverter accountingPeriodConverter,
+    TransactionGetter transactionGetter,
     TransactionConverter transactionConverter,
     TransactionDispatcherService transactionDispatcherService,
     TransactionRequestConverter transactionRequestConverter) : ControllerBase
 {
+    /// <summary>
+    /// Retrieves the Transactions that match the specified criteria
+    /// </summary>
+    [HttpGet("")]
+    [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetMany([FromQuery] TransactionQueryParameterModel queryParameters)
+    {
+        if (!transactionGetter.TryGet(queryParameters, out CollectionModel<TransactionModel>? transactions, out Dictionary<string, string[]> errors))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Transactions.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+
+        return Ok(transactions);
+    }
+
     /// <summary>
     /// Retrieves the Transaction with the provided ID
     /// </summary>

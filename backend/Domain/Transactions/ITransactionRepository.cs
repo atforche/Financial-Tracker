@@ -10,6 +10,11 @@ namespace Domain.Transactions;
 public interface ITransactionRepository
 {
     /// <summary>
+    /// Gets all Transactions
+    /// </summary>
+    IReadOnlyCollection<Transaction> GetAll();
+
+    /// <summary>
     /// Gets the next sequence number for the specified transaction date
     /// </summary>
     int GetNextSequenceForDate(DateOnly transactionDate);
