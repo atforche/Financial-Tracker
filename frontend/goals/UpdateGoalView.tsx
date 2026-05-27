@@ -14,6 +14,7 @@ interface UpdateGoalViewParams {
  */
 interface UpdateGoalViewSearchParams {
   fundId?: string | null;
+  returnUrl?: string | null;
 }
 
 /**
@@ -32,7 +33,7 @@ const UpdateGoalView = async function ({
   searchParams,
 }: UpdateGoalViewProps): Promise<JSX.Element> {
   const { id } = await params;
-  const { fundId } = await searchParams;
+  const { fundId, returnUrl } = await searchParams;
 
   const apiClient = getApiClient();
   const goalPromise = apiClient.GET("/goals/{goalId}", {
@@ -84,6 +85,7 @@ const UpdateGoalView = async function ({
       accountingPeriod={accountingPeriod}
       goal={goal}
       fund={fund ?? null}
+      returnUrl={returnUrl ?? null}
     />
   );
 };

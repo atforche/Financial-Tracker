@@ -8,6 +8,7 @@ import type {
   UpdateGoalViewSearchParams,
 } from "@/goals/UpdateGoalView";
 import type { CreateGoalViewSearchParams } from "@/goals/CreateGoalView";
+import type { GoalsViewSearchParams } from "@/goals/GoalsView";
 import type { Route } from "next";
 import { objectToSearchParams } from "@/framework/routes";
 
@@ -15,6 +16,8 @@ import { objectToSearchParams } from "@/framework/routes";
  * App routes related to goals.
  */
 const routes = {
+  index: (searchParams: GoalsViewSearchParams): Route =>
+    `/goals?${objectToSearchParams(searchParams).toString()}` as Route,
   create: (searchParams: CreateGoalViewSearchParams): Route =>
     `/goals/create?${objectToSearchParams(searchParams).toString()}` as Route,
   detail: (params: GoalViewParams, searchParams: GoalViewSearchParams): Route =>

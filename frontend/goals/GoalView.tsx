@@ -18,6 +18,7 @@ interface GoalViewParams {
 interface GoalViewSearchParams {
   search?: string;
   sort?: FundTransactionSortOrder;
+  returnUrl?: string | null;
 }
 
 /**
@@ -36,7 +37,7 @@ const GoalView = async function ({
   searchParams,
 }: GoalViewProps): Promise<JSX.Element> {
   const { id } = await params;
-  const { search, sort } = await searchParams;
+  const { search, sort, returnUrl } = await searchParams;
 
   const apiClient = getApiClient();
   const { data: goal, error: goalError } = await apiClient.GET(
@@ -116,13 +117,18 @@ const GoalView = async function ({
 
   return (
     <AccountingPeriodFundFrame
-      breadcrumbs={breadcrumbs.detail(accountingPeriod, goal)}
+      breadcrumbs={breadcrumbs.detail(
+        accountingPeriod,
+        goal,
+        returnUrl ?? null,
+      )}
       accountingPeriod={accountingPeriod}
       fund={fund}
       goal={goal}
       transactions={transactions.items}
       transactionsTotalCount={transactions.totalCount}
       context={GoalFrameContext.GoalDetail}
+      returnUrl={returnUrl ?? null}
     />
   );
 };

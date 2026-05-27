@@ -28,6 +28,7 @@ interface AccountingPeriodFundFrameProps {
   readonly transactions: Transaction[];
   readonly transactionsTotalCount: number;
   readonly context: GoalFrameContext;
+  readonly returnUrl?: string | null;
 }
 
 /**
@@ -41,6 +42,7 @@ const AccountingPeriodFundFrame = function ({
   transactions,
   transactionsTotalCount,
   context,
+  returnUrl = null,
 }: AccountingPeriodFundFrameProps): JSX.Element {
   const isSystemFund = fund.name === "Unassigned";
   return (
@@ -114,6 +116,7 @@ const AccountingPeriodFundFrame = function ({
         isSystemFund={isSystemFund}
         fundId={fund.id}
         context={context}
+        returnUrl={returnUrl}
       />
       <Stack spacing={2} style={{ maxWidth: 1000 }}>
         <Typography variant="h6">Transactions</Typography>

@@ -10,6 +10,7 @@ import getApiClient from "@/framework/data/getApiClient";
 interface CreateGoalViewSearchParams {
   accountingPeriodId?: string | null;
   fundId?: string | null;
+  returnUrl?: string | null;
 }
 
 /**
@@ -25,7 +26,7 @@ interface CreateGoalViewProps {
 const CreateGoalView = async function ({
   searchParams,
 }: CreateGoalViewProps): Promise<JSX.Element> {
-  const { accountingPeriodId, fundId } = await searchParams;
+  const { accountingPeriodId, fundId, returnUrl } = await searchParams;
 
   const apiClient = getApiClient();
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods/open");
@@ -61,6 +62,7 @@ const CreateGoalView = async function ({
       funds={funds.items}
       routeAccountingPeriod={routeAccountingPeriod}
       routeFund={routeFund}
+      returnUrl={returnUrl ?? null}
     />
   );
 };

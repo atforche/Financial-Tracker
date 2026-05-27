@@ -4,6 +4,7 @@ import {
   AccountBalance,
   Assessment,
   CalendarMonth,
+  EmojiEvents,
   GridView,
   ReceiptLong,
 } from "@mui/icons-material";
@@ -22,6 +23,7 @@ import type { Route } from "next";
 import accountRoutes from "@/accounts/routes";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
 import fundRoutes from "@/funds/routes";
+import goalRoutes from "@/goals/routes";
 import transactionRoutes from "@/transactions/routes";
 import { usePathname } from "next/navigation";
 
@@ -48,6 +50,11 @@ const links: NavigationLink[] = [
     name: "Transactions",
     href: transactionRoutes.index({}),
     icon: <ReceiptLong />,
+  },
+  {
+    name: "Goals",
+    href: goalRoutes.index({}),
+    icon: <EmojiEvents />,
   },
   { name: "Accounts", href: accountRoutes.index({}), icon: <AccountBalance /> },
   { name: "Funds", href: fundRoutes.index({}), icon: <Assessment /> },

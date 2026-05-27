@@ -24,6 +24,7 @@ interface GoalFrameProps {
   readonly isAccountingPeriodOpen: boolean;
   readonly isSystemFund: boolean;
   readonly context: GoalFrameContext;
+  readonly returnUrl?: string | null;
 }
 
 /**
@@ -36,6 +37,7 @@ const GoalFrame = function ({
   isAccountingPeriodOpen,
   isSystemFund,
   context,
+  returnUrl = null,
 }: GoalFrameProps): JSX.Element {
   return (
     <CaptionedFrame
@@ -72,6 +74,7 @@ const GoalFrame = function ({
                 {
                   fundId:
                     context === GoalFrameContext.FundDetail ? fundId : null,
+                  returnUrl,
                 },
               )}
               disabled={isSystemFund || !isAccountingPeriodOpen}
@@ -86,6 +89,7 @@ const GoalFrame = function ({
                 {
                   fundId:
                     context === GoalFrameContext.FundDetail ? fundId : null,
+                  returnUrl,
                 },
               )}
               disabled={isSystemFund || !isAccountingPeriodOpen}
@@ -100,6 +104,7 @@ const GoalFrame = function ({
             href={routes.create({
               accountingPeriodId,
               fundId: context === GoalFrameContext.FundDetail ? fundId : null,
+              returnUrl,
             })}
             disabled={isSystemFund || !isAccountingPeriodOpen}
           >

@@ -21,6 +21,7 @@ interface DeleteGoalFormProps {
   readonly accountingPeriod: AccountingPeriod;
   readonly goal: Goal;
   readonly fund: Fund | null;
+  readonly returnUrl?: string | null;
 }
 
 /**
@@ -30,21 +31,27 @@ const DeleteGoalForm = function ({
   accountingPeriod,
   goal,
   fund,
+  returnUrl = null,
 }: DeleteGoalFormProps): JSX.Element {
-  const cancelUrl = routes.detail({ id: goal.id }, {});
+  const cancelUrl = routes.detail(
+    { id: goal.id },
+    { returnUrl: returnUrl ?? null },
+  );
   const redirectUrl =
-    fund !== null
-      ? accountingPeriodRoutes.fundDetail(
-          {
-            id: accountingPeriod.id,
-            fundId: fund.id,
-          },
-          {},
-        )
-      : accountingPeriodRoutes.detail(
-          { id: accountingPeriod.id },
-          { display: ToggleState.Goals },
-        );
+    typeof returnUrl === "string" && returnUrl !== ""
+      ? returnUrl
+      : fund !== null
+        ? accountingPeriodRoutes.fundDetail(
+            {
+              id: accountingPeriod.id,
+              fundId: fund.id,
+            },
+            {},
+          )
+        : accountingPeriodRoutes.detail(
+            { id: accountingPeriod.id },
+            { display: ToggleState.Goals },
+          );
   const [state, action, pending] = useActionState(deleteGoal, {
     goalId: goal.id,
     redirectUrl,
@@ -53,7 +60,12 @@ const DeleteGoalForm = function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={breadcrumbs.delete(accountingPeriod, goal, fund)}
+        breadcrumbs={breadcrumbs.delete(
+          accountingPeriod,
+          goal,
+          fund,
+          returnUrl,
+        )}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <Typography>

@@ -22,6 +22,7 @@ interface UpdateGoalFormProps {
   readonly accountingPeriod: AccountingPeriod;
   readonly goal: Goal;
   readonly fund: Fund | null;
+  readonly returnUrl?: string | null;
 }
 
 /**
@@ -31,17 +32,20 @@ const UpdateGoalForm = function ({
   accountingPeriod,
   goal,
   fund,
+  returnUrl = null,
 }: UpdateGoalFormProps): JSX.Element {
   const [goalType, setGoalType] = useState<GoalType | null>(goal.goalType);
   const [goalAmount, setGoalAmount] = useState<number | null>(goal.goalAmount);
 
   const redirectUrl =
-    fund !== null
-      ? accountingPeriodRoutes.fundDetail(
-          { id: accountingPeriod.id, fundId: fund.id },
-          {},
-        )
-      : routes.detail({ id: goal.id }, {});
+    typeof returnUrl === "string" && returnUrl !== ""
+      ? returnUrl
+      : fund !== null
+        ? accountingPeriodRoutes.fundDetail(
+            { id: accountingPeriod.id, fundId: fund.id },
+            {},
+          )
+        : routes.detail({ id: goal.id }, {});
   const [state, action, pending] = useActionState(updateGoal, {
     goalId: goal.id,
     redirectUrl,
@@ -50,7 +54,12 @@ const UpdateGoalForm = function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={breadcrumbs.update(accountingPeriod, goal, fund)}
+        breadcrumbs={breadcrumbs.update(
+          accountingPeriod,
+          goal,
+          fund,
+          returnUrl,
+        )}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <GoalTypeEntryField

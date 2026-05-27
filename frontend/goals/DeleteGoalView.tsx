@@ -14,6 +14,7 @@ interface DeleteGoalViewParams {
  */
 interface DeleteGoalViewSearchParams {
   fundId?: string | null;
+  returnUrl?: string | null;
 }
 
 /**
@@ -32,7 +33,7 @@ const DeleteGoalView = async function ({
   searchParams,
 }: DeleteGoalViewProps): Promise<JSX.Element> {
   const { id } = await params;
-  const { fundId } = await searchParams;
+  const { fundId, returnUrl } = await searchParams;
 
   const apiClient = getApiClient();
   const goalPromise = apiClient.GET("/goals/{goalId}", {
@@ -84,6 +85,7 @@ const DeleteGoalView = async function ({
       accountingPeriod={accountingPeriod}
       goal={goal}
       fund={fund ?? null}
+      returnUrl={returnUrl ?? null}
     />
   );
 };

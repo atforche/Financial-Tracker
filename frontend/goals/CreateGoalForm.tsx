@@ -25,6 +25,7 @@ interface CreateGoalFormProps {
   readonly funds: Fund[];
   readonly routeAccountingPeriod?: AccountingPeriod | null;
   readonly routeFund?: Fund | null;
+  readonly returnUrl?: string | null;
 }
 
 /**
@@ -33,7 +34,11 @@ interface CreateGoalFormProps {
 const getRedirectUrl = function (
   routeAccountingPeriod: AccountingPeriod | null,
   routeFund: Fund | null,
+  returnUrl: string | null,
 ): string {
+  if (typeof returnUrl === "string" && returnUrl !== "") {
+    return returnUrl;
+  }
   if (routeAccountingPeriod !== null && routeFund !== null) {
     return accountingPeriodRoutes.fundDetail(
       {
@@ -60,6 +65,7 @@ const CreateGoalForm = function ({
   funds,
   routeAccountingPeriod = null,
   routeFund = null,
+  returnUrl = null,
 }: CreateGoalFormProps): JSX.Element {
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(routeAccountingPeriod);
@@ -69,7 +75,11 @@ const CreateGoalForm = function ({
   const [goalType, setGoalType] = useState<GoalType | null>(null);
   const [goalAmount, setGoalAmount] = useState<number | null>(null);
 
-  const redirectUrl = getRedirectUrl(routeAccountingPeriod, routeFund);
+  const redirectUrl = getRedirectUrl(
+    routeAccountingPeriod,
+    routeFund,
+    returnUrl,
+  );
   const [state, action, pending] = useActionState(createGoal, {
     redirectUrl,
   });
@@ -87,7 +97,11 @@ const CreateGoalForm = function ({
   return (
     <Stack spacing={2}>
       <Breadcrumbs
-        breadcrumbs={breadcrumbs.create(routeAccountingPeriod, routeFund)}
+        breadcrumbs={breadcrumbs.create(
+          routeAccountingPeriod,
+          routeFund,
+          returnUrl,
+        )}
       />
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <AccountingPeriodEntryField
