@@ -228,13 +228,13 @@ public class AccountTransactionService(
         }
         else if (request.DebitAccount != null || request.CreditAccount != null)
         {
-            if (request.DebitAccount != null && !request.DebitAccount.Type.IsTracked())
+            if (request.DebitAccount != null && request.DebitAccount.Type.IsTracked())
             {
-                exceptions = exceptions.Append(new InvalidAccountException("A one-sided Account Transaction cannot debit money from an untracked account"));
+                exceptions = exceptions.Append(new InvalidAccountException("A one-sided Account Transaction cannot debit money from a tracked account"));
             }
-            if (request.CreditAccount != null && !request.CreditAccount.Type.IsTracked())
+            if (request.CreditAccount != null && request.CreditAccount.Type.IsTracked())
             {
-                exceptions = exceptions.Append(new InvalidAccountException("A one-sided Account Transaction cannot credit money to an untracked account"));
+                exceptions = exceptions.Append(new InvalidAccountException("A one-sided Account Transaction cannot credit money to a tracked account"));
             }
         }
         else
