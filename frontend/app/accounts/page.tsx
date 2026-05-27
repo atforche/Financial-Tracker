@@ -1,5 +1,5 @@
-import AccountsView from "@/accounts/AccountsView";
+import AccountOverviewDashboard from "@/accounts/overview-dashboard/AccountOverviewDashboard";
 
 export const dynamic = "force-dynamic";
 
-export default AccountsView;
+export default AccountOverviewDashboard;

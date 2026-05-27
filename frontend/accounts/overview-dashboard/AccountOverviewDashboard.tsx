@@ -3,7 +3,7 @@ import {
   type AccountBalanceTrendPoint,
   AccountLargestMoversPanel,
   AccountTypeComparisonPanel,
-} from "@/accounts/AccountsDashboardPanels";
+} from "@/accounts/overview-dashboard/AccountsDashboardPanels";
 import type {
   AccountDashboardSortOrder,
   AccountType,
@@ -14,8 +14,8 @@ import {
   AccountingPeriodSortOrder,
 } from "@/accounting-periods/types";
 import { Box, Button, Paper, Stack, Typography } from "@mui/material";
-import AccountsDashboardControls from "@/accounts/AccountsDashboardControls";
-import AccountsDashboardListFrame from "@/accounts/AccountsDashboardListFrame";
+import AccountsDashboardControls from "@/accounts/overview-dashboard/AccountsDashboardControls";
+import AccountsDashboardListFrame from "@/accounts/overview-dashboard/AccountsDashboardListFrame";
 import Breadcrumbs from "@/framework/Breadcrumbs";
 import type { JSX } from "react";
 import SummaryCard from "@/framework/view/SummaryCard";
@@ -32,9 +32,9 @@ import { rowsPerPage } from "@/framework/listframe/Constants";
 type AccountsDashboardFilterMode = "accounting-period" | "date";
 
 /**
- * Search parameters for the Accounts view.
+ * Search parameters for the account overview dashboard.
  */
-interface AccountsViewSearchParams {
+interface AccountOverviewDashboardSearchParams {
   search?: string;
   sort?: AccountDashboardSortOrder;
   page?: number | string;
@@ -47,10 +47,10 @@ interface AccountsViewSearchParams {
 }
 
 /**
- * Props for the AccountsView component.
+ * Props for the AccountOverviewDashboard component.
  */
-interface AccountsViewProps {
-  readonly searchParams: Promise<AccountsViewSearchParams>;
+interface AccountOverviewDashboardProps {
+  readonly searchParams: Promise<AccountOverviewDashboardSearchParams>;
 }
 
 const accountDashboardMode = {
@@ -147,7 +147,7 @@ const compareAccountingPeriodsAscending = function (
 };
 
 const parsePageNumber = function (
-  page: AccountsViewSearchParams["page"],
+  page: AccountOverviewDashboardSearchParams["page"],
 ): number {
   const pageNumber =
     typeof page === "number" ? page : Number.parseInt(page ?? "1", 10);
@@ -452,9 +452,9 @@ const fetchAccountsDashboard = async function (
 /**
  * Component that displays the Accounts view.
  */
-const AccountsView = async function ({
+const AccountOverviewDashboard = async function ({
   searchParams,
-}: AccountsViewProps): Promise<JSX.Element> {
+}: AccountOverviewDashboardProps): Promise<JSX.Element> {
   const {
     search,
     sort,
@@ -908,5 +908,5 @@ const AccountsView = async function ({
   );
 };
 
-export type { AccountsViewSearchParams };
-export default AccountsView;
+export type { AccountOverviewDashboardSearchParams };
+export default AccountOverviewDashboard;

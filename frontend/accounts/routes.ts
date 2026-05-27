@@ -10,7 +10,7 @@ import type {
   UpdateAccountViewParams,
   UpdateAccountViewSearchParams,
 } from "@/accounts/UpdateAccountView";
-import type { AccountsViewSearchParams } from "@/accounts/AccountsView";
+import type { AccountOverviewDashboardSearchParams } from "@/accounts/overview-dashboard/AccountOverviewDashboard";
 import type { CreateAccountViewSearchParams } from "@/accounts/CreateAccountView";
 import type { Route } from "next";
 import { objectToSearchParams } from "@/framework/routes";
@@ -19,7 +19,7 @@ import { objectToSearchParams } from "@/framework/routes";
  * App routes related to accounts.
  */
 const routes = {
-  index: (searchParams: AccountsViewSearchParams): Route =>
+  index: (searchParams: AccountOverviewDashboardSearchParams): Route =>
     `/accounts?${objectToSearchParams(searchParams).toString()}` as Route,
   create: (searchParams: CreateAccountViewSearchParams): Route =>
     `/accounts/create?${objectToSearchParams(searchParams).toString()}` as Route,
