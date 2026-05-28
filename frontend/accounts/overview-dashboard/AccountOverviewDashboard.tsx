@@ -391,40 +391,6 @@ const getTrendPoints = function (
   }));
 };
 
-const getDashboardRangeLabel = function (
-  dashboard: AccountDashboardResult,
-): string {
-  if (
-    dashboard.mode === accountDashboardMode.AccountingPeriod &&
-    dashboard.accountingPeriods !== null &&
-    dashboard.accountingPeriods.length > 0
-  ) {
-    const firstPeriod = dashboard.accountingPeriods.at(0);
-    const lastPeriod = dashboard.accountingPeriods.at(-1);
-    if (
-      typeof firstPeriod === "undefined" ||
-      typeof lastPeriod === "undefined"
-    ) {
-      return "No range selected";
-    }
-    return firstPeriod.accountingPeriodId === lastPeriod.accountingPeriodId
-      ? firstPeriod.accountingPeriodName
-      : `${firstPeriod.accountingPeriodName} to ${lastPeriod.accountingPeriodName}`;
-  }
-
-  const dates = dashboard.dates ?? [];
-  const firstDate = dates.at(0);
-  const lastDate = dates.at(-1);
-
-  if (typeof firstDate === "undefined" || typeof lastDate === "undefined") {
-    return "No range selected";
-  }
-
-  return firstDate.date === lastDate.date
-    ? formatDateLabel(firstDate.date)
-    : `${formatDateLabel(firstDate.date)} to ${formatDateLabel(lastDate.date)}`;
-};
-
 const fetchAccountsDashboard = async function (
   searchParams: URLSearchParams,
 ): Promise<AccountDashboardResult> {
@@ -624,7 +590,6 @@ const AccountOverviewDashboard = async function ({
   const dashboard = await fetchAccountsDashboard(dashboardRequestParams);
   const snapshot = getDashboardSnapshot(dashboard);
   const trendPoints = getTrendPoints(dashboard);
-  const visibleCount = dashboard.accounts.items.length;
   const trackedUntrackedTotal =
     Math.abs(snapshot.trackedEndingBalance) +
     Math.abs(snapshot.untrackedEndingBalance);
@@ -632,7 +597,6 @@ const AccountOverviewDashboard = async function ({
     trackedUntrackedTotal === 0
       ? 0
       : (Math.abs(snapshot.trackedEndingBalance) / trackedUntrackedTotal) * 100;
-  const rangeLabel = getDashboardRangeLabel(dashboard);
 
   return (
     <Stack spacing={3} sx={{ maxWidth: 1440 }}>
@@ -680,16 +644,6 @@ const AccountOverviewDashboard = async function ({
             startingBalances={snapshot.startingBalancesByType}
             endingBalances={snapshot.endingBalancesByType}
           />
-          <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
-            <Stack spacing={0.75}>
-              <Typography variant="h5">Accounts in range</Typography>
-              <Typography variant="body2" color="text.secondary">
-                The dashboard page stays paged for scanning, while the table
-                reflects the same range, search, and type filters used by the
-                summary visuals.
-              </Typography>
-            </Stack>
-          </Paper>
           <AccountsDashboardListFrame
             data={[...dashboard.accounts.items]}
             isInOnboardingMode={isInOnboardingMode}
@@ -705,69 +659,6 @@ const AccountOverviewDashboard = async function ({
           }}
         >
           <AccountLargestMoversPanel accounts={dashboard.accounts.items} />
-          <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
-            <Stack spacing={2}>
-              <Typography variant="h6">Current range</Typography>
-              <Stack spacing={1.25}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 2,
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    Mode
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    fontWeight={600}
-                    textAlign="right"
-                  >
-                    {dashboard.mode === accountDashboardMode.AccountingPeriod
-                      ? "Accounting periods"
-                      : "Dates"}
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 2,
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    Range
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    fontWeight={600}
-                    textAlign="right"
-                  >
-                    {rangeLabel}
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 2,
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    Visible rows
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    fontWeight={600}
-                    textAlign="right"
-                  >
-                    {visibleCount} of {dashboard.accounts.totalCount}
-                  </Typography>
-                </Box>
-              </Stack>
-            </Stack>
-          </Paper>
           <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
             <Stack spacing={2}>
               <Typography variant="h6">Ending balance mix</Typography>
