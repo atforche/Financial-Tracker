@@ -1,9 +1,3 @@
-import {
-  AccountBalanceTrendPanel,
-  type AccountBalanceTrendPoint,
-  AccountLargestMoversPanel,
-  AccountTypeComparisonPanel,
-} from "@/accounts/overview-dashboard/AccountsDashboardPanels";
 import type {
   AccountDashboardSortOrder,
   AccountType,
@@ -13,13 +7,12 @@ import {
   type AccountingPeriod,
   AccountingPeriodSortOrder,
 } from "@/accounting-periods/types";
-import { Box, Button, Paper, Stack, Typography } from "@mui/material";
+import { Button, Paper, Stack, Typography } from "@mui/material";
 import AccountOverviewDashboardFilter from "@/accounts/overview-dashboard/AccountOverviewDashboardFilter";
+import AccountOverviewListFrame from "@/accounts/overview-dashboard/AccountOverviewListFrame";
 import AccountOverviewQuickActions from "@/accounts/overview-dashboard/AccountOverviewQuickActions";
 import AccountOverviewSummaryCards from "@/accounts/overview-dashboard/AccountOverviewSummaryCards";
-import AccountsDashboardListFrame from "@/accounts/overview-dashboard/AccountsDashboardListFrame";
 import type { JSX } from "react";
-import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
@@ -368,29 +361,6 @@ const getDashboardSnapshot = function (
   };
 };
 
-const getTrendPoints = function (
-  dashboard: AccountDashboardResult,
-): AccountBalanceTrendPoint[] {
-  if (
-    dashboard.mode === accountDashboardMode.AccountingPeriod &&
-    dashboard.accountingPeriods !== null
-  ) {
-    return dashboard.accountingPeriods.map((accountingPeriod) => ({
-      label: accountingPeriod.accountingPeriodName,
-      totalBalance: accountingPeriod.totalClosingBalance,
-      trackedBalance: accountingPeriod.trackedClosingBalance,
-      untrackedBalance: accountingPeriod.untrackedClosingBalance,
-    }));
-  }
-
-  return (dashboard.dates ?? []).map((dateSummary) => ({
-    label: formatDateLabel(dateSummary.date),
-    totalBalance: dateSummary.totalBalance,
-    trackedBalance: dateSummary.trackedBalance,
-    untrackedBalance: dateSummary.untrackedBalance,
-  }));
-};
-
 const fetchAccountsDashboard = async function (
   searchParams: URLSearchParams,
 ): Promise<AccountDashboardResult> {
@@ -589,14 +559,6 @@ const AccountOverviewDashboard = async function ({
 
   const dashboard = await fetchAccountsDashboard(dashboardRequestParams);
   const snapshot = getDashboardSnapshot(dashboard);
-  const trendPoints = getTrendPoints(dashboard);
-  const trackedUntrackedTotal =
-    Math.abs(snapshot.trackedEndingBalance) +
-    Math.abs(snapshot.untrackedEndingBalance);
-  const trackedShare =
-    trackedUntrackedTotal === 0
-      ? 0
-      : (Math.abs(snapshot.trackedEndingBalance) / trackedUntrackedTotal) * 100;
 
   return (
     <Stack spacing={3} sx={{ maxWidth: 1440 }}>
@@ -619,79 +581,11 @@ const AccountOverviewDashboard = async function ({
         startingBalancesByType={snapshot.startingBalancesByType}
         endingBalancesByType={snapshot.endingBalancesByType}
       />
-      <Box
-        sx={{
-          display: "grid",
-          gap: 3,
-          gridTemplateColumns: {
-            xs: "1fr",
-            xl: "minmax(0, 1.15fr) minmax(0, 0.85fr)",
-          },
-        }}
-      >
-        <Stack spacing={2}>
-          <AccountBalanceTrendPanel
-            points={trendPoints}
-            modeLabel={
-              dashboard.mode === accountDashboardMode.AccountingPeriod
-                ? "Accounting periods"
-                : "Dates"
-            }
-          />
-          <AccountTypeComparisonPanel
-            startLabel={snapshot.startLabel}
-            endLabel={snapshot.endLabel}
-            startingBalances={snapshot.startingBalancesByType}
-            endingBalances={snapshot.endingBalancesByType}
-          />
-          <AccountsDashboardListFrame
-            data={[...dashboard.accounts.items]}
-            isInOnboardingMode={isInOnboardingMode}
-            totalCount={dashboard.accounts.totalCount}
-          />
-        </Stack>
-        <Stack
-          spacing={2}
-          sx={{
-            alignSelf: "start",
-            position: { xl: "sticky" },
-            top: { xl: 24 },
-          }}
-        >
-          <AccountLargestMoversPanel accounts={dashboard.accounts.items} />
-          <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
-            <Stack spacing={2}>
-              <Typography variant="h6">Ending balance mix</Typography>
-              <Stack spacing={1.5}>
-                <Stack spacing={0.75}>
-                  <Typography variant="body2" color="text.secondary">
-                    Tracked balances
-                  </Typography>
-                  <Typography variant="h6">
-                    {formatCurrency(snapshot.trackedEndingBalance)}
-                  </Typography>
-                </Stack>
-                <Stack spacing={0.75}>
-                  <Typography variant="body2" color="text.secondary">
-                    Tracked share
-                  </Typography>
-                  <Typography variant="h6">
-                    {trackedShare.toFixed(0)}%
-                  </Typography>
-                </Stack>
-                <Stack spacing={0.75}>
-                  <Typography variant="body2" color="text.secondary">
-                    Untracked balances
-                  </Typography>
-                  <Typography variant="h6">
-                    {formatCurrency(snapshot.untrackedEndingBalance)}
-                  </Typography>
-                </Stack>
-              </Stack>
-            </Stack>
-          </Paper>
-        </Stack>
-      </Box>
+      <AccountOverviewListFrame
+        data={[...dashboard.accounts.items]}
+        isInOnboardingMode={isInOnboardingMode}
+        totalCount={dashboard.accounts.totalCount}
+      />
     </Stack>
   );
 };

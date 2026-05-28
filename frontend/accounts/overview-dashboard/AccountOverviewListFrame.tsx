@@ -6,7 +6,7 @@ import {
   formatAccountType,
   isPositiveChangeInBalance,
 } from "@/accounts/types";
-import { Button, Stack, Typography } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
@@ -21,9 +21,9 @@ import routes from "@/accounts/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
- * Props for the AccountsDashboardListFrame component.
+ * Props for the AccountOverviewListFrame component.
  */
-interface AccountsDashboardListFrameProps {
+interface AccountOverviewListFrameProps {
   readonly data: AccountDashboardAccount[] | null;
   readonly totalCount: number | null;
   readonly isInOnboardingMode: boolean;
@@ -32,11 +32,11 @@ interface AccountsDashboardListFrameProps {
 /**
  * Presents the paged account table for the Accounts dashboard.
  */
-const AccountsDashboardListFrame = function ({
+const AccountOverviewListFrame = function ({
   data,
   totalCount,
   isInOnboardingMode,
-}: AccountsDashboardListFrameProps): JSX.Element {
+}: AccountOverviewListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -148,28 +148,23 @@ const AccountsDashboardListFrame = function ({
     },
     {
       name: "change",
-      headerContent: "Range Change",
+      headerContent: "Net Change",
       getBodyContent: (account): JSX.Element => {
         const changeInBalance = account.endingBalance - account.startingBalance;
         const isPositive = isPositiveChangeInBalance(
           account.type,
           changeInBalance,
         );
-
         return (
-          <Stack spacing={0.25} alignItems="flex-end">
-            <Typography
-              variant="body2"
-              fontWeight={700}
-              color={isPositive ? "success.main" : "error.main"}
-            >
-              {formatCurrency(changeInBalance)}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {formatCurrency(account.startingBalance)} to{" "}
-              {formatCurrency(account.endingBalance)}
-            </Typography>
-          </Stack>
+          <Box
+            component="span"
+            sx={{
+              color: isPositive ? "success.main" : "error.main",
+              display: "inline",
+            }}
+          >
+            {formatCurrency(changeInBalance)}
+          </Box>
         );
       },
       alignment: "right",
@@ -250,4 +245,4 @@ const AccountsDashboardListFrame = function ({
   );
 };
 
-export default AccountsDashboardListFrame;
+export default AccountOverviewListFrame;
