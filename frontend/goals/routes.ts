@@ -17,21 +17,21 @@ import { objectToSearchParams } from "@/framework/routes";
  */
 const routes = {
   index: (searchParams: GoalsViewSearchParams): Route =>
-    `/goals?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/goals?${objectToSearchParams(searchParams).toString()}`,
   create: (searchParams: CreateGoalViewSearchParams): Route =>
-    `/goals/create?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/goals/create?${objectToSearchParams(searchParams).toString()}`,
   detail: (params: GoalViewParams, searchParams: GoalViewSearchParams): Route =>
-    `/goals/${params.id}?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/goals/${params.id}?${objectToSearchParams(searchParams).toString()}`,
   update: (
     params: UpdateGoalViewParams,
     searchParams: UpdateGoalViewSearchParams,
   ): Route =>
-    `/goals/${params.id}/update?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/goals/${params.id}/update?${objectToSearchParams(searchParams).toString()}`,
   delete: (
     params: DeleteGoalViewParams,
     searchParams: DeleteGoalViewSearchParams,
   ): Route =>
-    `/goals/${params.id}/delete?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/goals/${params.id}/delete?${objectToSearchParams(searchParams).toString()}`,
 };
 
 export default routes;

@@ -16,9 +16,9 @@ import {
 import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import AccountOverviewDashboardFilter from "@/accounts/overview-dashboard/AccountOverviewDashboardFilter";
 import AccountOverviewQuickActions from "@/accounts/overview-dashboard/AccountOverviewQuickActions";
+import AccountOverviewSummaryCards from "@/accounts/overview-dashboard/AccountOverviewSummaryCards";
 import AccountsDashboardListFrame from "@/accounts/overview-dashboard/AccountsDashboardListFrame";
 import type { JSX } from "react";
-import SummaryCard from "@/framework/view/SummaryCard";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
 import { redirect } from "next/navigation";
@@ -111,7 +111,9 @@ interface DashboardSnapshot {
   readonly endLabel: string;
   readonly totalStartingBalance: number;
   readonly totalEndingBalance: number;
+  readonly trackedStartingBalance: number;
   readonly trackedEndingBalance: number;
+  readonly untrackedStartingBalance: number;
   readonly untrackedEndingBalance: number;
   readonly startingBalancesByType: readonly AccountTypeBalance[];
   readonly endingBalancesByType: readonly AccountTypeBalance[];
@@ -326,7 +328,9 @@ const getDashboardSnapshot = function (
         endLabel: "End",
         totalStartingBalance: 0,
         totalEndingBalance: 0,
+        trackedStartingBalance: 0,
         trackedEndingBalance: 0,
+        untrackedStartingBalance: 0,
         untrackedEndingBalance: 0,
         startingBalancesByType: [],
         endingBalancesByType: [],
@@ -337,7 +341,9 @@ const getDashboardSnapshot = function (
       endLabel: lastPeriod.accountingPeriodName,
       totalStartingBalance: firstPeriod.totalOpeningBalance,
       totalEndingBalance: lastPeriod.totalClosingBalance,
+      trackedStartingBalance: firstPeriod.trackedOpeningBalance,
       trackedEndingBalance: lastPeriod.trackedClosingBalance,
+      untrackedStartingBalance: firstPeriod.untrackedOpeningBalance,
       untrackedEndingBalance: lastPeriod.untrackedClosingBalance,
       startingBalancesByType: firstPeriod.openingBalanceByAccountType,
       endingBalancesByType: lastPeriod.closingBalanceByAccountType,
@@ -353,7 +359,9 @@ const getDashboardSnapshot = function (
     endLabel: lastDate ? formatDateLabel(lastDate.date) : "End",
     totalStartingBalance: firstDate?.totalBalance ?? 0,
     totalEndingBalance: lastDate?.totalBalance ?? 0,
+    trackedStartingBalance: firstDate?.trackedBalance ?? 0,
     trackedEndingBalance: lastDate?.trackedBalance ?? 0,
+    untrackedStartingBalance: firstDate?.untrackedBalance ?? 0,
     untrackedEndingBalance: lastDate?.untrackedBalance ?? 0,
     startingBalancesByType: firstDate?.balanceByAccountType ?? [],
     endingBalancesByType: lastDate?.balanceByAccountType ?? [],
@@ -499,7 +507,6 @@ const AccountOverviewDashboard = async function ({
     null;
   const isInOnboardingMode = currentAccountingPeriod === null;
   const currentSearch = search?.trim() ?? "";
-  const hasActiveSearch = currentSearch !== "";
 
   if (isInOnboardingMode) {
     return (
@@ -625,8 +632,6 @@ const AccountOverviewDashboard = async function ({
     trackedUntrackedTotal === 0
       ? 0
       : (Math.abs(snapshot.trackedEndingBalance) / trackedUntrackedTotal) * 100;
-  const rangeChange =
-    snapshot.totalEndingBalance - snapshot.totalStartingBalance;
   const rangeLabel = getDashboardRangeLabel(dashboard);
 
   return (
@@ -638,42 +643,18 @@ const AccountOverviewDashboard = async function ({
         defaultEndDate={defaultDateRange.endDate}
       />
       <AccountOverviewQuickActions />
-      <Box
-        sx={{
-          display: "grid",
-          gap: 2,
-          gridTemplateColumns: {
-            xs: "1fr",
-            md: "repeat(2, minmax(0, 1fr))",
-            xl: "repeat(4, minmax(0, 1fr))",
-          },
-        }}
-      >
-        <SummaryCard
-          title={snapshot.startLabel}
-          value={formatCurrency(snapshot.totalStartingBalance)}
-          description="Starting balance for the selected range"
-        />
-        <SummaryCard
-          title={snapshot.endLabel}
-          value={formatCurrency(snapshot.totalEndingBalance)}
-          description="Ending balance for the selected range"
-        />
-        <SummaryCard
-          title="Net change"
-          value={formatCurrency(rangeChange)}
-          description="Total change from the start of the range to the end"
-        />
-        <SummaryCard
-          title="Accounts In Scope"
-          value={dashboard.accounts.totalCount}
-          description={
-            hasActiveSearch
-              ? `Filtered by "${currentSearch}" with ${visibleCount} account${visibleCount === 1 ? "" : "s"} visible on this page.`
-              : `${visibleCount} account${visibleCount === 1 ? "" : "s"} visible on this page.`
-          }
-        />
-      </Box>
+      <AccountOverviewSummaryCards
+        startLabel={snapshot.startLabel}
+        endLabel={snapshot.endLabel}
+        totalStartingBalance={snapshot.totalStartingBalance}
+        totalEndingBalance={snapshot.totalEndingBalance}
+        trackedStartingBalance={snapshot.trackedStartingBalance}
+        trackedEndingBalance={snapshot.trackedEndingBalance}
+        untrackedStartingBalance={snapshot.untrackedStartingBalance}
+        untrackedEndingBalance={snapshot.untrackedEndingBalance}
+        startingBalancesByType={snapshot.startingBalancesByType}
+        endingBalancesByType={snapshot.endingBalancesByType}
+      />
       <Box
         sx={{
           display: "grid",

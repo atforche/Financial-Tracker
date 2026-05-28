@@ -21,7 +21,11 @@ const AccountOverviewQuickActions = function (): JSX.Element {
           <Typography variant="overline" color="text.secondary">
             Quick actions:
           </Typography>
-          <Button variant="contained" href={routes.create({})} sx={{ flexShrink: 0 }}>
+          <Button
+            variant="contained"
+            href={routes.create({})}
+            sx={{ flexShrink: 0 }}
+          >
             Create account
           </Button>
         </Stack>

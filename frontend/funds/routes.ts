@@ -17,22 +17,22 @@ import { objectToSearchParams } from "@/framework/routes";
  */
 const routes = {
   index: (searchParams: FundsViewSearchParams): Route =>
-    `/funds?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/funds?${objectToSearchParams(searchParams).toString()}`,
   create: (searchParams: CreateFundViewSearchParams): Route =>
-    `/funds/create?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/funds/create?${objectToSearchParams(searchParams).toString()}`,
   onboard: "/funds/onboard" as Route,
   detail: (params: FundViewParams, searchParams: FundViewSearchParams): Route =>
-    `/funds/${params.id}?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/funds/${params.id}?${objectToSearchParams(searchParams).toString()}`,
   update: (
     params: UpdateFundViewParams,
     searchParams: UpdateFundViewSearchParams,
   ): Route =>
-    `/funds/${params.id}/update?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/funds/${params.id}/update?${objectToSearchParams(searchParams).toString()}`,
   delete: (
     params: DeleteFundViewParams,
     searchParams: DeleteFundViewSearchParams,
   ): Route =>
-    `/funds/${params.id}/delete?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/funds/${params.id}/delete?${objectToSearchParams(searchParams).toString()}`,
 };
 
 export default routes;

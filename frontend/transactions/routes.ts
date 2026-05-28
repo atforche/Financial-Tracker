@@ -28,34 +28,34 @@ import { objectToSearchParams } from "@/framework/routes";
  */
 const routes = {
   index: (searchParams: TransactionsViewSearchParams): Route =>
-    `/transactions?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/transactions?${objectToSearchParams(searchParams).toString()}`,
   create: (searchParams: CreateTransactionViewSearchParams): Route =>
-    `/transactions/create?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/transactions/create?${objectToSearchParams(searchParams).toString()}`,
   detail: (
     params: TransactionViewParams,
     searchParams: TransactionViewSearchParams,
   ): Route =>
-    `/transactions/${params.id}?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/transactions/${params.id}?${objectToSearchParams(searchParams).toString()}`,
   update: (
     params: UpdateTransactionViewParams,
     searchParams: UpdateTransactionViewSearchParams,
   ): Route =>
-    `/transactions/${params.id}/update?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/transactions/${params.id}/update?${objectToSearchParams(searchParams).toString()}`,
   post: (
     params: PostTransactionViewParams,
     searchParams: PostTransactionViewSearchParams,
   ): Route =>
-    `/transactions/${params.id}/post?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/transactions/${params.id}/post?${objectToSearchParams(searchParams).toString()}`,
   unpost: (
     params: UnpostTransactionViewParams,
     searchParams: UnpostTransactionViewSearchParams,
   ): Route =>
-    `/transactions/${params.id}/unpost?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/transactions/${params.id}/unpost?${objectToSearchParams(searchParams).toString()}`,
   delete: (
     params: DeleteTransactionViewParams,
     searchParams: DeleteTransactionViewSearchParams,
   ): Route =>
-    `/transactions/${params.id}/delete?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/transactions/${params.id}/delete?${objectToSearchParams(searchParams).toString()}`,
 };
 
 export default routes;

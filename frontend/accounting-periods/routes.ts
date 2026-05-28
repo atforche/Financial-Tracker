@@ -19,13 +19,13 @@ import { objectToSearchParams } from "@/framework/routes";
  */
 const routes = {
   index: (searchParams: AccountingPeriodsViewSearchParams): Route =>
-    `/accounting-periods?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/accounting-periods?${objectToSearchParams(searchParams).toString()}`,
   create: "/accounting-periods/create" as Route,
   detail: (
     params: AccountingPeriodViewParams,
     searchParams: AccountingPeriodViewSearchParams,
   ): Route =>
-    `/accounting-periods/${params.id}?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/accounting-periods/${params.id}?${objectToSearchParams(searchParams).toString()}`,
   close: (params: CloseAccountingPeriodViewParams): Route =>
     `/accounting-periods/${params.id}/close`,
   reopen: (params: ReopenAccountingPeriodViewParams): Route =>

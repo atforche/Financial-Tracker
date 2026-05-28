@@ -2,7 +2,6 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Breadcrumb } from "@/framework/Breadcrumbs";
 import type { Fund } from "@/funds/types";
 import type { Goal } from "@/goals/types";
-import type { Route } from "next";
 import accountingPeriodBreadcrumbs from "@/accounting-periods/breadcrumbs";
 import routes from "@/goals/routes";
 
@@ -13,7 +12,7 @@ const getGoalsIndexBreadcrumbs = function (
   returnUrl?: string | null,
 ): Breadcrumb[] | null {
   if (typeof returnUrl === "string" && returnUrl.startsWith("/goals")) {
-    return [{ label: "Goals", href: returnUrl as Route }];
+    return [{ label: "Goals", href: returnUrl }];
   }
   return null;
 };

@@ -20,25 +20,25 @@ import { objectToSearchParams } from "@/framework/routes";
  */
 const routes = {
   index: (searchParams: AccountOverviewDashboardSearchParams): Route =>
-    `/accounts?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/accounts?${objectToSearchParams(searchParams).toString()}`,
   create: (searchParams: CreateAccountViewSearchParams): Route =>
-    `/accounts/create?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/accounts/create?${objectToSearchParams(searchParams).toString()}`,
   onboard: "/accounts/onboard" as Route,
   detail: (
     params: AccountViewParams,
     searchParams: AccountViewSearchParams,
   ): Route =>
-    `/accounts/${params.id}?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/accounts/${params.id}?${objectToSearchParams(searchParams).toString()}`,
   update: (
     params: UpdateAccountViewParams,
     searchParams: UpdateAccountViewSearchParams,
   ): Route =>
-    `/accounts/${params.id}/update?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/accounts/${params.id}/update?${objectToSearchParams(searchParams).toString()}`,
   delete: (
     params: DeleteAccountViewParams,
     searchParams: DeleteAccountViewSearchParams,
   ): Route =>
-    `/accounts/${params.id}/delete?${objectToSearchParams(searchParams).toString()}` as Route,
+    `/accounts/${params.id}/delete?${objectToSearchParams(searchParams).toString()}`,
 };
 
 export default routes;
