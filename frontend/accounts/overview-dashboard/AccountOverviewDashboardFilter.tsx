@@ -297,10 +297,13 @@ const AccountOverviewDashboardFilter = function ({
             onChange={handleModeChange}
             sx={{ flexShrink: 0 }}
           >
-            <ToggleButton value="accounting-period">
+            <ToggleButton value="date">Dates</ToggleButton>
+            <ToggleButton
+              value="accounting-period"
+              disabled={defaultAccountingPeriodId === null}
+            >
               Accounting periods
             </ToggleButton>
-            <ToggleButton value="date">Dates</ToggleButton>
           </ToggleButtonGroup>
           {currentMode === "accounting-period" ? (
             <>

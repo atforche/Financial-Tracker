@@ -2,10 +2,16 @@ import { Button, Paper, Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
 import routes from "@/accounts/routes";
 
+interface AccountOverviewQuickActionsProps {
+  readonly isInOnboardingMode: boolean;
+}
+
 /**
  * Displays quick actions for the account overview dashboard.
  */
-const AccountOverviewQuickActions = function (): JSX.Element {
+const AccountOverviewQuickActions = function ({
+  isInOnboardingMode,
+}: AccountOverviewQuickActionsProps): JSX.Element {
   return (
     <Paper
       sx={{
@@ -21,13 +27,24 @@ const AccountOverviewQuickActions = function (): JSX.Element {
           <Typography variant="overline" color="text.secondary">
             Quick actions:
           </Typography>
-          <Button
-            variant="contained"
-            href={routes.create({})}
-            sx={{ flexShrink: 0 }}
-          >
-            Create account
-          </Button>
+          {isInOnboardingMode ? (
+            <Button
+              variant="contained"
+              href={routes.onboard}
+              sx={{ flexShrink: 0 }}
+            >
+              Onboard account
+            </Button>
+          ) : null}
+          {!isInOnboardingMode && (
+            <Button
+              variant="contained"
+              href={routes.create({})}
+              sx={{ flexShrink: 0 }}
+            >
+              Create account
+            </Button>
+          )}
         </Stack>
       </Stack>
     </Paper>

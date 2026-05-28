@@ -1,4 +1,5 @@
 import {
+  AccountDashboardSortOrderModel,
   AccountSortOrderModel,
   AccountTransactionSortOrderModel,
   AccountTypeModel,
@@ -97,20 +98,6 @@ type OnboardAccountRequest = components["schemas"]["OnboardAccountModel"];
 type UpdateAccountRequest = components["schemas"]["UpdateAccountModel"];
 
 /**
- * Enum representing how Accounts dashboard rows can be sorted.
- */
-enum AccountDashboardSortOrder {
-  Name = "Name",
-  NameDescending = "NameDescending",
-  Type = "Type",
-  TypeDescending = "TypeDescending",
-  OpeningBalance = "OpeningBalance",
-  OpeningBalanceDescending = "OpeningBalanceDescending",
-  ClosingBalance = "ClosingBalance",
-  ClosingBalanceDescending = "ClosingBalanceDescending",
-}
-
-/**
  * Enum representing the dashboard response time mode.
  */
 enum AccountDashboardMode {
@@ -194,7 +181,7 @@ export {
   type OnboardAccountRequest,
   type UpdateAccountRequest,
   AccountDashboardMode,
-  AccountDashboardSortOrder,
+  AccountDashboardSortOrderModel as AccountDashboardSortOrder,
   AccountSortOrderModel as AccountSortOrder,
   AccountTransactionSortOrderModel as AccountTransactionSortOrder,
   AccountTypeModel as AccountType,

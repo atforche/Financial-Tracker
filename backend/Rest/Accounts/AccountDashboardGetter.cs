@@ -355,6 +355,8 @@ public class AccountDashboardGetter(
             AccountDashboardSortOrderModel.OpeningBalanceDescending => rows.OrderByDescending(row => row.OpeningBalance).ThenBy(row => row.Name).ToList(),
             AccountDashboardSortOrderModel.ClosingBalance => rows.OrderBy(row => row.ClosingBalance).ThenBy(row => row.Name).ToList(),
             AccountDashboardSortOrderModel.ClosingBalanceDescending => rows.OrderByDescending(row => row.ClosingBalance).ThenBy(row => row.Name).ToList(),
+            AccountDashboardSortOrderModel.NetChange => rows.OrderBy(row => row.ClosingBalance - row.OpeningBalance).ThenBy(row => row.Name).ToList(),
+            AccountDashboardSortOrderModel.NetChangeDescending => rows.OrderByDescending(row => row.ClosingBalance - row.OpeningBalance).ThenBy(row => row.Name).ToList(),
             _ => rows,
         };
 

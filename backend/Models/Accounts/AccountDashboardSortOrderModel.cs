@@ -44,4 +44,14 @@ public enum AccountDashboardSortOrderModel
     /// Accounts are sorted by closing balance in descending order.
     /// </summary>
     ClosingBalanceDescending,
+
+    /// <summary>
+    /// Accounts are sorted by net change (closing balance - opening balance) in ascending order.
+    /// </summary>
+    NetChange,
+
+    /// <summary>
+    /// Accounts are sorted by net change (closing balance - opening balance) in descending order.
+    /// </summary>
+    NetChangeDescending,
 }

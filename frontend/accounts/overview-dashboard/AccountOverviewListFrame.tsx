@@ -8,12 +8,10 @@ import {
 } from "@/accounts/types";
 import { Box, Button } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
-import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
@@ -167,22 +165,27 @@ const AccountOverviewListFrame = function ({
           </Box>
         );
       },
+      sortType:
+        currentSort === AccountDashboardSortOrder.NetChange
+          ? ColumnSortType.Ascending
+          : currentSort === AccountDashboardSortOrder.NetChangeDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSort(AccountDashboardSortOrder.NetChange);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSort(AccountDashboardSortOrder.NetChangeDescending);
+        } else {
+          setSort(null);
+        }
+      },
       alignment: "right",
       minWidth: 160,
     },
     {
       name: "actions",
-      headerContent: (
-        <IconButton
-          label="Add"
-          icon={<AddCircleOutline />}
-          onClick={() => {
-            router.push(
-              isInOnboardingMode ? routes.onboard : routes.create({}),
-            );
-          }}
-        />
-      ),
+      headerContent: "",
       getBodyContent: (account) => (
         <ColumnButton
           label="View"
@@ -206,10 +209,10 @@ const AccountOverviewListFrame = function ({
       searchParamName={searchParamName}
       pageParamName={pageParamName}
       initialEmptyState={{
-        title: "No accounts in this range",
+        title: "No accounts have been added",
         description: isInOnboardingMode
-          ? "Start onboarding to create your first account and populate the dashboard."
-          : "No accounts fall inside the selected dashboard range yet.",
+          ? "Onboard a new account to start tracking balances."
+          : "Create a new account to start tracking balances.",
         action: (
           <Button
             variant="contained"
@@ -219,7 +222,7 @@ const AccountOverviewListFrame = function ({
               );
             }}
           >
-            {isInOnboardingMode ? "Start onboarding" : "Create account"}
+            {isInOnboardingMode ? "Onboard account" : "Create account"}
           </Button>
         ),
       }}

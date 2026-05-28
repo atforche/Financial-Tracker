@@ -7,13 +7,15 @@ import {
   type AccountingPeriod,
   AccountingPeriodSortOrder,
 } from "@/accounting-periods/types";
-import { Button, Paper, Stack, Typography } from "@mui/material";
+import { Box, Stack } from "@mui/material";
+import AccountOverviewChangeChart from "@/accounts/overview-dashboard/AccountOverviewChangeChart";
 import AccountOverviewDashboardFilter from "@/accounts/overview-dashboard/AccountOverviewDashboardFilter";
 import AccountOverviewListFrame from "@/accounts/overview-dashboard/AccountOverviewListFrame";
 import AccountOverviewQuickActions from "@/accounts/overview-dashboard/AccountOverviewQuickActions";
 import AccountOverviewSummaryCards from "@/accounts/overview-dashboard/AccountOverviewSummaryCards";
 import AccountOverviewTrendChart from "@/accounts/overview-dashboard/AccountOverviewTrendChart";
 import type { JSX } from "react";
+import dayjs from "dayjs";
 import getApiClient from "@/framework/data/getApiClient";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
@@ -147,37 +149,6 @@ const parsePageNumber = function (
   const pageNumber =
     typeof page === "number" ? page : Number.parseInt(page ?? "1", 10);
   return Number.isFinite(pageNumber) && pageNumber > 0 ? pageNumber : 1;
-};
-
-const toInputDate = function (
-  year: number,
-  month: number,
-  day: number,
-): string {
-  return `${year.toString().padStart(4, "0")}-${month
-    .toString()
-    .padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
-};
-
-const getPeriodDateRange = function (accountingPeriod: AccountingPeriod): {
-  startDate: string;
-  endDate: string;
-} {
-  const startDate = toInputDate(
-    accountingPeriod.year,
-    accountingPeriod.month,
-    1,
-  );
-  const endDate = toInputDate(
-    accountingPeriod.year,
-    accountingPeriod.month,
-    new Date(accountingPeriod.year, accountingPeriod.month, 0).getDate(),
-  );
-
-  return {
-    startDate,
-    endDate,
-  };
 };
 
 const formatDateLabel = function (value: string): string {
@@ -445,51 +416,13 @@ const AccountOverviewDashboard = async function ({
   const isInOnboardingMode = currentAccountingPeriod === null;
   const currentSearch = search?.trim() ?? "";
 
-  if (isInOnboardingMode) {
-    return (
-      <Stack spacing={3} sx={{ maxWidth: 1280 }}>
-        <Paper
-          sx={{
-            backgroundColor: "background.paper",
-            backgroundImage:
-              "linear-gradient(135deg, rgba(76, 175, 80, 0.18) 0%, rgba(255, 255, 255, 0) 58%)",
-            border: "1px solid",
-            borderColor: "divider",
-            overflow: "hidden",
-            p: { xs: 3, md: 4 },
-          }}
-        >
-          <Stack spacing={2.5}>
-            <Typography variant="overline" color="text.secondary">
-              Accounts workspace
-            </Typography>
-            <Typography variant="h3">Accounts dashboard</Typography>
-            <Typography color="text.secondary" maxWidth={760}>
-              Start onboarding to create your first accounting period and
-              account structure. The dashboard becomes available as soon as
-              there is range data to review.
-            </Typography>
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={1.5}
-              useFlexGap
-            >
-              <Button variant="contained" href={routes.onboard}>
-                Start onboarding
-              </Button>
-              <Button variant="outlined" href={routes.create({})}>
-                Create account
-              </Button>
-            </Stack>
-          </Stack>
-        </Paper>
-      </Stack>
-    );
-  }
+  const defaultEndDate = dayjs();
+  const defaultStartDate = defaultEndDate.subtract(90, "day");
 
-  const defaultDateRange = getPeriodDateRange(currentAccountingPeriod);
   const currentMode: AccountsDashboardFilterMode =
-    mode === "date" ? "date" : defaultFilterMode;
+    mode === "date" || currentAccountingPeriod === null
+      ? "date"
+      : defaultFilterMode;
   const currentPage = parsePageNumber(page);
   const persistedFilters = {
     ...(currentSearch === "" ? {} : { search: currentSearch }),
@@ -498,7 +431,23 @@ const AccountOverviewDashboard = async function ({
   };
 
   if (
+    (currentMode === "date" &&
+      (typeof startDate === "undefined" || typeof endDate === "undefined")) ||
+    (currentMode === "accounting-period" && currentAccountingPeriod === null)
+  ) {
+    redirect(
+      routes.index({
+        mode: "date",
+        ...persistedFilters,
+        startDate: defaultStartDate.format("YYYY-MM-DD"),
+        endDate: defaultEndDate.format("YYYY-MM-DD"),
+      }),
+    );
+  }
+
+  if (
     currentMode === "accounting-period" &&
+    currentAccountingPeriod !== null &&
     (typeof startAccountingPeriodId === "undefined" ||
       typeof endAccountingPeriodId === "undefined")
   ) {
@@ -508,20 +457,6 @@ const AccountOverviewDashboard = async function ({
         ...persistedFilters,
         startAccountingPeriodId: currentAccountingPeriod.id,
         endAccountingPeriodId: currentAccountingPeriod.id,
-      }),
-    );
-  }
-
-  if (
-    currentMode === "date" &&
-    (typeof startDate === "undefined" || typeof endDate === "undefined")
-  ) {
-    redirect(
-      routes.index({
-        mode: "date",
-        ...persistedFilters,
-        startDate: defaultDateRange.startDate,
-        endDate: defaultDateRange.endDate,
       }),
     );
   }
@@ -544,17 +479,20 @@ const AccountOverviewDashboard = async function ({
   if (currentMode === "date") {
     dashboardRequestParams.set(
       "StartDate",
-      startDate ?? defaultDateRange.startDate,
+      startDate ?? defaultStartDate.format("YYYY-MM-DD"),
     );
-    dashboardRequestParams.set("EndDate", endDate ?? defaultDateRange.endDate);
+    dashboardRequestParams.set(
+      "EndDate",
+      endDate ?? defaultEndDate.format("YYYY-MM-DD"),
+    );
   } else {
     dashboardRequestParams.set(
       "StartAccountingPeriodId",
-      startAccountingPeriodId ?? currentAccountingPeriod.id,
+      startAccountingPeriodId ?? currentAccountingPeriod?.id ?? "",
     );
     dashboardRequestParams.set(
       "EndAccountingPeriodId",
-      endAccountingPeriodId ?? currentAccountingPeriod.id,
+      endAccountingPeriodId ?? currentAccountingPeriod?.id ?? "",
     );
   }
 
@@ -565,11 +503,11 @@ const AccountOverviewDashboard = async function ({
     <Stack spacing={3} sx={{ maxWidth: 1440 }}>
       <AccountOverviewDashboardFilter
         accountingPeriods={sortedAccountingPeriodsAscending}
-        defaultAccountingPeriodId={currentAccountingPeriod.id}
-        defaultStartDate={defaultDateRange.startDate}
-        defaultEndDate={defaultDateRange.endDate}
+        defaultAccountingPeriodId={currentAccountingPeriod?.id ?? null}
+        defaultStartDate={defaultStartDate.format("YYYY-MM-DD")}
+        defaultEndDate={defaultEndDate.format("YYYY-MM-DD")}
       />
-      <AccountOverviewQuickActions />
+      <AccountOverviewQuickActions isInOnboardingMode={isInOnboardingMode} />
       <AccountOverviewSummaryCards
         startLabel={snapshot.startLabel}
         endLabel={snapshot.endLabel}
@@ -582,11 +520,26 @@ const AccountOverviewDashboard = async function ({
         startingBalancesByType={snapshot.startingBalancesByType}
         endingBalancesByType={snapshot.endingBalancesByType}
       />
-      <AccountOverviewTrendChart
-        mode={dashboard.mode}
-        accountingPeriods={dashboard.accountingPeriods}
-        dates={dashboard.dates}
-      />
+      <Box
+        sx={{
+          display: "grid",
+          gap: 3,
+          gridTemplateColumns: {
+            xs: "1fr",
+            lg: "minmax(0, 1fr) minmax(0, 1fr)",
+          },
+        }}
+      >
+        <AccountOverviewTrendChart
+          mode={dashboard.mode}
+          accountingPeriods={dashboard.accountingPeriods}
+          dates={dashboard.dates}
+        />
+        <AccountOverviewChangeChart
+          mode={dashboard.mode}
+          dates={dashboard.dates}
+        />
+      </Box>
       <AccountOverviewListFrame
         data={[...dashboard.accounts.items]}
         isInOnboardingMode={isInOnboardingMode}

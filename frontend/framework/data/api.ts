@@ -3223,7 +3223,9 @@ export enum AccountDashboardSortOrderModel {
     OpeningBalance = "OpeningBalance",
     OpeningBalanceDescending = "OpeningBalanceDescending",
     ClosingBalance = "ClosingBalance",
-    ClosingBalanceDescending = "ClosingBalanceDescending"
+    ClosingBalanceDescending = "ClosingBalanceDescending",
+    NetChange = "NetChange",
+    NetChangeDescending = "NetChangeDescending"
 }
 export enum AccountingPeriodAccountSortOrderModel {
     Name = "Name",
