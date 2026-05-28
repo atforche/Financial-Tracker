@@ -12,6 +12,7 @@ import AccountOverviewDashboardFilter from "@/accounts/overview-dashboard/Accoun
 import AccountOverviewListFrame from "@/accounts/overview-dashboard/AccountOverviewListFrame";
 import AccountOverviewQuickActions from "@/accounts/overview-dashboard/AccountOverviewQuickActions";
 import AccountOverviewSummaryCards from "@/accounts/overview-dashboard/AccountOverviewSummaryCards";
+import AccountOverviewTrendChart from "@/accounts/overview-dashboard/AccountOverviewTrendChart";
 import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
 import { redirect } from "next/navigation";
@@ -580,6 +581,11 @@ const AccountOverviewDashboard = async function ({
         untrackedEndingBalance={snapshot.untrackedEndingBalance}
         startingBalancesByType={snapshot.startingBalancesByType}
         endingBalancesByType={snapshot.endingBalancesByType}
+      />
+      <AccountOverviewTrendChart
+        mode={dashboard.mode}
+        accountingPeriods={dashboard.accountingPeriods}
+        dates={dashboard.dates}
       />
       <AccountOverviewListFrame
         data={[...dashboard.accounts.items]}
