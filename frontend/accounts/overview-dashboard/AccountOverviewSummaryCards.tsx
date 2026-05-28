@@ -53,6 +53,8 @@ interface BalanceBreakdownSectionProps {
   readonly onToggle: () => void;
 }
 
+const expandToggleSlotSize = 26;
+
 const BalanceBreakdownSection = function ({
   label,
   value,
@@ -77,19 +79,29 @@ const BalanceBreakdownSection = function ({
           >
             {value}
           </Typography>
-          {detailRows.length > 0 && (
-            <IconButton
-              size="small"
-              onClick={onToggle}
-              sx={{
-                p: 0.25,
-                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.3s ease-in-out",
-              }}
-            >
-              <ExpandMore fontSize="small" />
-            </IconButton>
-          )}
+          <Box
+            sx={{
+              width: expandToggleSlotSize,
+              height: expandToggleSlotSize,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {detailRows.length > 0 && (
+              <IconButton
+                size="small"
+                onClick={onToggle}
+                sx={{
+                  p: 0.25,
+                  transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.3s ease-in-out",
+                }}
+              >
+                <ExpandMore fontSize="small" />
+              </IconButton>
+            )}
+          </Box>
         </Stack>
       </Stack>
       {detailRows.length > 0 && (
@@ -106,13 +118,22 @@ const BalanceBreakdownSection = function ({
                 <Typography variant="caption" color="text.secondary">
                   {detailRow.label}
                 </Typography>
-                <Typography
-                  variant="caption"
-                  fontWeight={600}
-                  sx={{ textAlign: "right" }}
-                >
-                  {detailRow.value}
-                </Typography>
+                <Stack direction="row" alignItems="center" gap={0.5}>
+                  <Typography
+                    variant="caption"
+                    fontWeight={600}
+                    sx={{ textAlign: "right" }}
+                  >
+                    {detailRow.value}
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: expandToggleSlotSize,
+                      height: expandToggleSlotSize,
+                      flexShrink: 0,
+                    }}
+                  />
+                </Stack>
               </Stack>
             ))}
           </Stack>
