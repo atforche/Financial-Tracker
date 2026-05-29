@@ -10,14 +10,14 @@ import type {
   UpdateAccountViewParams,
   UpdateAccountViewSearchParams,
 } from "@/accounts/UpdateAccountView";
-import type { AccountOverviewDashboardSearchParams } from "@/accounts/overview-dashboard/AccountOverviewDashboard";
+import type { AccountDashboardSearchParams } from "@/accounts/dashboard/AccountDashboard";
 import type { AccountType } from "@/accounts/types";
 import type { CreateAccountViewSearchParams } from "@/accounts/CreateAccountView";
 import type { Route } from "next";
 import { objectToSearchParams } from "@/framework/routes";
 
 const isAccountTypeArray = function (
-  value: AccountOverviewDashboardSearchParams["accountType"],
+  value: AccountDashboardSearchParams["accountType"],
 ): value is readonly AccountType[] {
   return Array.isArray(value);
 };
@@ -45,8 +45,8 @@ const appendRepeatedSearchParam = function (
   }
 };
 
-const accountOverviewDashboardSearchParamsToSearchParams = function (
-  searchParams: AccountOverviewDashboardSearchParams,
+const accountDashboardSearchParamsToSearchParams = function (
+  searchParams: AccountDashboardSearchParams,
 ): URLSearchParams {
   const { accountType, accountName, ...remainingSearchParams } = searchParams;
   const params = objectToSearchParams(remainingSearchParams);
@@ -73,10 +73,10 @@ const pathWithSearchParams = function (
  * App routes related to accounts.
  */
 const routes = {
-  index: (searchParams: AccountOverviewDashboardSearchParams): Route =>
+  index: (searchParams: AccountDashboardSearchParams): Route =>
     pathWithSearchParams(
       "/accounts",
-      accountOverviewDashboardSearchParamsToSearchParams(searchParams),
+      accountDashboardSearchParamsToSearchParams(searchParams),
     ),
   create: (searchParams: CreateAccountViewSearchParams): Route =>
     pathWithSearchParams(

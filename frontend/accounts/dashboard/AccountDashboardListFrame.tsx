@@ -19,9 +19,9 @@ import routes from "@/accounts/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
- * Props for the AccountOverviewListFrame component.
+ * Props for the AccountDashboardListFrame component.
  */
-interface AccountOverviewListFrameProps {
+interface AccountDashboardListFrameProps {
   readonly data: AccountDashboardAccount[] | null;
   readonly totalCount: number | null;
   readonly isInOnboardingMode: boolean;
@@ -30,11 +30,11 @@ interface AccountOverviewListFrameProps {
 /**
  * Presents the paged account table for the Accounts dashboard.
  */
-const AccountOverviewListFrame = function ({
+const AccountDashboardListFrame = function ({
   data,
   totalCount,
   isInOnboardingMode,
-}: AccountOverviewListFrameProps): JSX.Element {
+}: AccountDashboardListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -271,4 +271,4 @@ const AccountOverviewListFrame = function ({
   );
 };
 
-export default AccountOverviewListFrame;
+export default AccountDashboardListFrame;

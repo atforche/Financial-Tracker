@@ -4,7 +4,7 @@ import { Autocomplete, TextField } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
 
-interface AccountOverviewAccountingPeriodFilterProps {
+interface AccountDashboardAccountingPeriodFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly label: string;
   readonly value: string;
@@ -17,15 +17,15 @@ const fieldSx = {
 };
 
 /**
- * Renders a single accounting period selector used in the account overview dashboard.
+ * Renders a single accounting period selector used in the account dashboard.
  */
-const AccountOverviewAccountingPeriodFilter = function ({
+const AccountDashboardAccountingPeriodFilter = function ({
   accountingPeriods,
   label,
   value,
   onChange,
   disabled = false,
-}: AccountOverviewAccountingPeriodFilterProps): JSX.Element {
+}: AccountDashboardAccountingPeriodFilterProps): JSX.Element {
   const isDisabled = disabled || accountingPeriods.length === 0;
   const sortedPeriods = [...accountingPeriods].sort((a, b) => {
     if (b.year !== a.year) {
@@ -72,4 +72,4 @@ const AccountOverviewAccountingPeriodFilter = function ({
   );
 };
 
-export default AccountOverviewAccountingPeriodFilter;
+export default AccountDashboardAccountingPeriodFilter;

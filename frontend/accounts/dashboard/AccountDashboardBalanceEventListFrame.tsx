@@ -28,9 +28,9 @@ const formatBalanceEventType = function (
 };
 
 /**
- * Props for the AccountOverviewBalanceEventListFrame component.
+ * Props for the AccountDashboardBalanceEventListFrame component.
  */
-interface AccountOverviewBalanceEventListFrameProps {
+interface AccountDashboardBalanceEventListFrameProps {
   readonly data: AccountDashboardBalanceEvent[] | null;
   readonly totalCount: number | null;
   readonly mode: AccountDashboardMode;
@@ -39,11 +39,11 @@ interface AccountOverviewBalanceEventListFrameProps {
 /**
  * Presents the paged balance event table for the Accounts dashboard.
  */
-const AccountOverviewBalanceEventListFrame = function ({
+const AccountDashboardBalanceEventListFrame = function ({
   data,
   mode,
   totalCount,
-}: AccountOverviewBalanceEventListFrameProps): JSX.Element {
+}: AccountDashboardBalanceEventListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -274,4 +274,4 @@ const AccountOverviewBalanceEventListFrame = function ({
   );
 };
 
-export default AccountOverviewBalanceEventListFrame;
+export default AccountDashboardBalanceEventListFrame;

@@ -8,7 +8,7 @@ import {
   getAccountTypeGroupSelectionState,
   normalizeAccountTypes,
   toggleAccountTypeGroup,
-} from "@/accounts/overview-dashboard/accountTypeFilter";
+} from "@/accounts/dashboard/accountTypeFilter";
 import {
   Checkbox,
   FormControl,
@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import type { JSX } from "react";
 
-interface AccountOverviewAccountTypeFilterProps {
+interface AccountDashboardAccountTypeFilterProps {
   readonly value: readonly AccountType[];
   readonly onChange: (accountTypes: readonly AccountType[]) => void;
   readonly disabled?: boolean;
@@ -49,11 +49,11 @@ const getAccountTypeFilterGroupFromValue = function (
 /**
  * Renders the account type multi-select with tracked and untracked group toggles.
  */
-const AccountOverviewAccountTypeFilter = function ({
+const AccountDashboardAccountTypeFilter = function ({
   value,
   onChange,
   disabled = false,
-}: AccountOverviewAccountTypeFilterProps): JSX.Element {
+}: AccountDashboardAccountTypeFilterProps): JSX.Element {
   const handleChange = function (event: SelectChangeEvent<string[]>): void {
     const nextValue = event.target.value;
     const nextValues =
@@ -125,4 +125,4 @@ const AccountOverviewAccountTypeFilter = function ({
   );
 };
 
-export default AccountOverviewAccountTypeFilter;
+export default AccountDashboardAccountTypeFilter;

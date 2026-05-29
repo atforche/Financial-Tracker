@@ -5,10 +5,10 @@ import type {
   AccountDashboardPeriodSummary,
 } from "@/accounts/types";
 import {
-  Bar,
-  BarChart,
+  Area,
+  AreaChart,
   CartesianGrid,
-  ReferenceLine,
+  Line,
   ResponsiveContainer,
   Tooltip,
   type TooltipContentProps,
@@ -20,10 +20,13 @@ import type { JSX } from "react";
 import dayjs from "dayjs";
 import formatCurrency from "@/framework/formatCurrency";
 
-type AccountOverviewChangeChartMode = "AccountingPeriod" | "Date";
+type AccountDashboardTrendChartMode = "AccountingPeriod" | "Date";
 
-interface AccountOverviewChangeChartProps {
-  readonly mode: AccountOverviewChangeChartMode;
+/**
+ * Props for the AccountDashboardTrendChart component.
+ */
+interface AccountDashboardTrendChartProps {
+  readonly mode: AccountDashboardTrendChartMode;
   readonly accountingPeriods: readonly AccountDashboardPeriodSummary[] | null;
   readonly dates: readonly AccountDashboardDateSummary[] | null;
 }
@@ -32,21 +35,15 @@ interface ChartPoint {
   readonly key: string;
   readonly tickLabel: string;
   readonly tooltipLabel: string;
-  readonly change: number;
-  readonly fill: string;
+  readonly balance: number;
 }
 
 interface ChartPointCandidate {
   readonly key?: unknown;
   readonly tickLabel?: unknown;
   readonly tooltipLabel?: unknown;
-  readonly change?: unknown;
-  readonly fill?: unknown;
+  readonly balance?: unknown;
 }
-
-const positiveBarColor = "#2e7d32";
-const negativeBarColor = "#c62828";
-const neutralBarColor = "#90a4ae";
 
 const isObject = function (
   value: unknown,
@@ -63,16 +60,14 @@ const isChartPoint = function (value: unknown): value is ChartPoint {
     key: value["key"],
     tickLabel: value["tickLabel"],
     tooltipLabel: value["tooltipLabel"],
-    change: value["change"],
-    fill: value["fill"],
+    balance: value["balance"],
   };
 
   return (
     typeof candidate.key === "string" &&
     typeof candidate.tickLabel === "string" &&
     typeof candidate.tooltipLabel === "string" &&
-    typeof candidate.change === "number" &&
-    typeof candidate.fill === "string"
+    typeof candidate.balance === "number"
   );
 };
 
@@ -85,8 +80,7 @@ const toChartPoint = function (value: unknown): ChartPoint | null {
     key: value.key,
     tickLabel: value.tickLabel,
     tooltipLabel: value.tooltipLabel,
-    change: value.change,
-    fill: value.fill,
+    balance: value.balance,
   };
 };
 
@@ -108,93 +102,73 @@ const compactCurrencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
   notation: "compact",
   maximumFractionDigits: 1,
-  signDisplay: "exceptZero",
 });
 
-const formatSignedCurrency = function (value: number): string {
-  if (value === 0) {
-    return formatCurrency(value);
-  }
-
-  return `${value > 0 ? "+" : "-"}${formatCurrency(Math.abs(value))}`;
-};
-
-const getBarColor = function (value: number): string {
-  if (value > 0) {
-    return positiveBarColor;
-  }
-  if (value < 0) {
-    return negativeBarColor;
-  }
-  return neutralBarColor;
-};
-
-const buildChartPoints = function (
-  mode: AccountOverviewChangeChartMode,
-  accountingPeriods: readonly AccountDashboardPeriodSummary[],
+const buildDateChartPoints = function (
   dates: readonly AccountDashboardDateSummary[],
 ): ChartPoint[] {
-  if (mode === "AccountingPeriod") {
-    return accountingPeriods.map((accountingPeriod) => {
-      const change =
-        accountingPeriod.totalClosingBalance -
-        accountingPeriod.totalOpeningBalance;
-
-      return {
-        key: accountingPeriod.accountingPeriodId,
-        tickLabel: accountingPeriod.accountingPeriodName,
-        tooltipLabel: accountingPeriod.accountingPeriodName,
-        change,
-        fill: getBarColor(change),
-      };
-    });
-  }
-
-  if (dates.length === 1) {
-    const [dateSummary] = dates;
-    if (typeof dateSummary === "undefined") {
-      return [];
-    }
-
-    return [
-      {
-        key: dateSummary.date,
-        tickLabel: dayjs(dateSummary.date).format("MMM D"),
-        tooltipLabel: dayjs(dateSummary.date).format("MMMM D, YYYY"),
-        change: 0,
-        fill: getBarColor(0),
-      },
-    ];
-  }
-
-  return dates.slice(1).map((dateSummary, index) => {
-    const previousDateSummary = dates[index];
-    const change =
-      dateSummary.totalBalance - (previousDateSummary?.totalBalance ?? 0);
-
-    return {
-      key: dateSummary.date,
-      tickLabel: dayjs(dateSummary.date).format("MMM D"),
-      tooltipLabel: dayjs(dateSummary.date).format("MMMM D, YYYY"),
-      change,
-      fill: getBarColor(change),
-    };
-  });
+  return dates.map((dateSummary) => ({
+    key: dateSummary.date,
+    tickLabel: dayjs(dateSummary.date).format("MMMM D"),
+    tooltipLabel: dayjs(dateSummary.date).format("MMMM D, YYYY"),
+    balance: dateSummary.totalBalance,
+  }));
 };
 
-/**
- * Renders balance changes for the account overview dashboard.
- */
-const AccountOverviewChangeChart = function ({
+const buildAccountingPeriodChartPoints = function (
+  accountingPeriods: readonly AccountDashboardPeriodSummary[],
+): ChartPoint[] {
+  const openingPoints = accountingPeriods.map((accountingPeriod) => ({
+    key: `${accountingPeriod.accountingPeriodId}-opening`,
+    tickLabel: dayjs(
+      new Date(accountingPeriod.year, accountingPeriod.month - 1, 1),
+    ).format("MMMM YYYY"),
+    tooltipLabel: `${accountingPeriod.accountingPeriodName} opening balance`,
+    balance: accountingPeriod.totalOpeningBalance,
+  }));
+
+  const lastAccountingPeriod = accountingPeriods.at(-1);
+  if (typeof lastAccountingPeriod === "undefined") {
+    return openingPoints;
+  }
+
+  return [
+    ...openingPoints,
+    {
+      key: `${lastAccountingPeriod.accountingPeriodId}-closing`,
+      tickLabel: "End",
+      tooltipLabel: `${lastAccountingPeriod.accountingPeriodName} closing balance`,
+      balance: lastAccountingPeriod.totalClosingBalance,
+    },
+  ];
+};
+
+const buildChartPoints = function ({
   mode,
   accountingPeriods,
   dates,
-}: AccountOverviewChangeChartProps): JSX.Element {
-  const chartPoints = buildChartPoints(
+}: AccountDashboardTrendChartProps): ChartPoint[] {
+  if (mode === "Date") {
+    return buildDateChartPoints(dates ?? []);
+  }
+
+  return buildAccountingPeriodChartPoints(accountingPeriods ?? []);
+};
+
+/**
+ * Renders the balance trend for the account dashboard.
+ */
+const AccountDashboardTrendChart = function ({
+  mode,
+  accountingPeriods,
+  dates,
+}: AccountDashboardTrendChartProps): JSX.Element {
+  const chartPoints = buildChartPoints({
     mode,
-    accountingPeriods ?? [],
-    dates ?? [],
-  );
+    accountingPeriods,
+    dates,
+  });
+
   if (chartPoints.length === 0) {
     return (
       <Paper
@@ -205,13 +179,19 @@ const AccountOverviewChangeChart = function ({
         }}
       >
         <Stack spacing={1}>
-          <Typography variant="h5">Balance Change</Typography>
+          <Typography variant="h5">Balance trend</Typography>
           <Typography variant="body2" color="text.secondary">
-            No balance changes are available for the selected dashboard range.
+            No balance history is available for the selected dashboard range.
           </Typography>
         </Stack>
       </Paper>
     );
+  }
+
+  const firstPoint = chartPoints.at(0);
+  const lastPoint = chartPoints.at(-1);
+  if (typeof firstPoint === "undefined" || typeof lastPoint === "undefined") {
+    throw new Error("Failed to build account overview trend chart");
   }
 
   return (
@@ -223,22 +203,35 @@ const AccountOverviewChangeChart = function ({
       }}
     >
       <Stack spacing={2.5}>
-        <Typography variant="h5">Balance Change</Typography>
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          justifyContent="space-between"
+          spacing={1.5}
+        >
+          <Typography variant="h5">Balance Trend</Typography>
+        </Stack>
         <Box sx={{ height: 320, width: "100%" }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
+            <AreaChart
               data={chartPoints}
               margin={{ top: 12, right: 12, bottom: 24, left: 12 }}
             >
+              <defs>
+                <linearGradient
+                  id="account-overview-trend-fill"
+                  x1="0"
+                  x2="0"
+                  y1="0"
+                  y2="1"
+                >
+                  <stop offset="0%" stopColor="rgba(25, 118, 210, 0.28)" />
+                  <stop offset="100%" stopColor="rgba(25, 118, 210, 0.02)" />
+                </linearGradient>
+              </defs>
               <CartesianGrid
                 strokeDasharray="4 4"
                 vertical={false}
                 opacity={0.24}
-              />
-              <ReferenceLine
-                stroke="rgba(15, 23, 42, 0.2)"
-                strokeDasharray="4 4"
-                y={0}
               />
               <XAxis
                 axisLine={false}
@@ -262,7 +255,7 @@ const AccountOverviewChangeChart = function ({
               <YAxis
                 axisLine={false}
                 label={{
-                  value: "Balance Change",
+                  value: "Total Balance",
                   angle: -90,
                   position: "center",
                   dx: -45,
@@ -278,7 +271,7 @@ const AccountOverviewChangeChart = function ({
                   compactCurrencyFormatter.format(value)
                 }
                 tickLine={false}
-                width={96}
+                width={80}
               />
               <Tooltip
                 content={(
@@ -304,23 +297,34 @@ const AccountOverviewChangeChart = function ({
                           {point.tooltipLabel}
                         </Typography>
                         <Typography variant="body1">
-                          {formatSignedCurrency(point.change)}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {point.change > 0
-                            ? "Increase from previous day"
-                            : point.change < 0
-                              ? "Decrease from previous day"
-                              : "No change from previous day"}
+                          {formatCurrency(point.balance)}
                         </Typography>
                       </Stack>
                     </Paper>
                   );
                 }}
-                cursor={{ fill: "rgba(25, 118, 210, 0.08)" }}
+                cursor={{ stroke: "rgba(25, 118, 210, 0.24)", strokeWidth: 1 }}
               />
-              <Bar dataKey="change" />
-            </BarChart>
+              <Area
+                dataKey="balance"
+                fill="url(#account-overview-trend-fill)"
+                stroke="none"
+                type="monotone"
+              />
+              <Line
+                activeDot={{
+                  fill: "#1976d2",
+                  r: 6,
+                  stroke: "#ffffff",
+                  strokeWidth: 2,
+                }}
+                dataKey="balance"
+                dot={false}
+                stroke="#1976d2"
+                strokeWidth={3}
+                type="monotone"
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </Box>
       </Stack>
@@ -328,4 +332,4 @@ const AccountOverviewChangeChart = function ({
   );
 };
 
-export default AccountOverviewChangeChart;
+export default AccountDashboardTrendChart;

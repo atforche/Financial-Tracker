@@ -12,15 +12,15 @@ import {
 import {
   normalizeAccountNames,
   shouldPersistAccountNames,
-} from "@/accounts/overview-dashboard/accountNameFilter";
+} from "@/accounts/dashboard/accountNameFilter";
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
-} from "@/accounts/overview-dashboard/accountTypeFilter";
+} from "@/accounts/dashboard/accountTypeFilter";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import AccountOverviewAccountNameFilter from "@/accounts/overview-dashboard/AccountOverviewAccountNameFilter";
-import AccountOverviewAccountTypeFilter from "@/accounts/overview-dashboard/AccountOverviewAccountTypeFilter";
-import AccountOverviewAccountingPeriodFilter from "@/accounts/overview-dashboard/AccountOverviewAccountingPeriodFilter";
+import AccountDashboardAccountNameFilter from "@/accounts/dashboard/AccountDashboardAccountNameFilter";
+import AccountDashboardAccountTypeFilter from "@/accounts/dashboard/AccountDashboardAccountTypeFilter";
+import AccountDashboardAccountingPeriodFilter from "@/accounts/dashboard/AccountDashboardAccountingPeriodFilter";
 import type { AccountType } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
@@ -31,9 +31,9 @@ import type { JSX } from "react";
 type AccountsDashboardFilterMode = "accounting-period" | "date";
 
 /**
- * Props for the AccountOverviewDashboardFilter component.
+ * Props for the AccountDashboardFilter component.
  */
-interface AccountOverviewDashboardFilterProps {
+interface AccountDashboardFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly availableAccountNames: readonly string[];
   readonly defaultAccountingPeriodId: string | null;
@@ -45,14 +45,14 @@ interface AccountOverviewDashboardFilterProps {
 /**
  * Renders the dashboard filter card for the Accounts view.
  */
-const AccountOverviewDashboardFilter = function ({
+const AccountDashboardFilter = function ({
   accountingPeriods,
   availableAccountNames,
   defaultAccountingPeriodId,
   defaultStartDate,
   defaultEndDate,
   disabled = false,
-}: AccountOverviewDashboardFilterProps): JSX.Element {
+}: AccountDashboardFilterProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -280,7 +280,7 @@ const AccountOverviewDashboardFilter = function ({
     >
       <Stack spacing={2}>
         <Stack spacing={0.5}>
-          <Typography variant="h5">Account Overview Dashboard</Typography>
+          <Typography variant="h5">Account Dashboard</Typography>
         </Stack>
         <Stack
           direction="row"
@@ -307,14 +307,14 @@ const AccountOverviewDashboardFilter = function ({
           </ToggleButtonGroup>
           {currentMode === "accounting-period" ? (
             <>
-              <AccountOverviewAccountingPeriodFilter
+              <AccountDashboardAccountingPeriodFilter
                 accountingPeriods={accountingPeriods}
                 label="Start period"
                 value={currentStartAccountingPeriodId}
                 onChange={handleStartAccountingPeriodChange}
                 disabled={disabled}
               />
-              <AccountOverviewAccountingPeriodFilter
+              <AccountDashboardAccountingPeriodFilter
                 accountingPeriods={accountingPeriods}
                 label="End period"
                 value={currentEndAccountingPeriodId}
@@ -354,12 +354,12 @@ const AccountOverviewDashboardFilter = function ({
               />
             </>
           )}
-          <AccountOverviewAccountTypeFilter
+          <AccountDashboardAccountTypeFilter
             value={currentAccountTypes}
             onChange={handleAccountTypeChange}
             disabled={disabled}
           />
-          <AccountOverviewAccountNameFilter
+          <AccountDashboardAccountNameFilter
             availableAccountNames={availableAccountNames}
             value={currentAccountNames}
             onChange={handleAccountNameChange}
@@ -379,4 +379,4 @@ const AccountOverviewDashboardFilter = function ({
   );
 };
 
-export default AccountOverviewDashboardFilter;
+export default AccountDashboardFilter;

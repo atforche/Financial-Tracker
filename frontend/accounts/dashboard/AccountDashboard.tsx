@@ -14,18 +14,18 @@ import { Box, Stack } from "@mui/material";
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
-} from "@/accounts/overview-dashboard/accountTypeFilter";
+} from "@/accounts/dashboard/accountTypeFilter";
 import {
   normalizeRequestedAccountNames,
   shouldPersistAccountNames,
-} from "@/accounts/overview-dashboard/accountNameFilter";
-import AccountOverviewBalanceEventListFrame from "@/accounts/overview-dashboard/AccountOverviewBalanceEventListFrame";
-import AccountOverviewChangeChart from "@/accounts/overview-dashboard/AccountOverviewChangeChart";
-import AccountOverviewDashboardFilter from "@/accounts/overview-dashboard/AccountOverviewDashboardFilter";
-import AccountOverviewListFrame from "@/accounts/overview-dashboard/AccountOverviewListFrame";
-import AccountOverviewQuickActions from "@/accounts/overview-dashboard/AccountOverviewQuickActions";
-import AccountOverviewSummaryCards from "@/accounts/overview-dashboard/AccountOverviewSummaryCards";
-import AccountOverviewTrendChart from "@/accounts/overview-dashboard/AccountOverviewTrendChart";
+} from "@/accounts/dashboard/accountNameFilter";
+import AccountDashboardBalanceEventListFrame from "@/accounts/dashboard/AccountDashboardBalanceEventListFrame";
+import AccountDashboardChangeChart from "@/accounts/dashboard/AccountDashboardChangeChart";
+import AccountDashboardFilter from "@/accounts/dashboard/AccountDashboardFilter";
+import AccountDashboardListFrame from "@/accounts/dashboard/AccountDashboardListFrame";
+import AccountDashboardQuickActions from "@/accounts/dashboard/AccountDashboardQuickActions";
+import AccountDashboardSummaryCards from "@/accounts/dashboard/AccountDashboardSummaryCards";
+import AccountDashboardTrendChart from "@/accounts/dashboard/AccountDashboardTrendChart";
 import type { JSX } from "react";
 import dayjs from "dayjs";
 import getApiClient from "@/framework/data/getApiClient";
@@ -39,9 +39,9 @@ import { rowsPerPage } from "@/framework/listframe/Constants";
 type AccountsDashboardFilterMode = "accounting-period" | "date";
 
 /**
- * Search parameters for the account overview dashboard.
+ * Search parameters for the account dashboard.
  */
-interface AccountOverviewDashboardSearchParams {
+interface AccountDashboardSearchParams {
   sort?: AccountDashboardSortOrder;
   page?: number | string;
   balanceEventSort?: AccountDashboardBalanceEventSortOrder;
@@ -56,10 +56,10 @@ interface AccountOverviewDashboardSearchParams {
 }
 
 /**
- * Props for the AccountOverviewDashboard component.
+ * Props for the AccountDashboard component.
  */
-interface AccountOverviewDashboardProps {
-  readonly searchParams: Promise<AccountOverviewDashboardSearchParams>;
+interface AccountDashboardProps {
+  readonly searchParams: Promise<AccountDashboardSearchParams>;
 }
 
 interface AccountDashboardAccountResult {
@@ -166,7 +166,7 @@ const compareAccountingPeriodsAscending = function (
 };
 
 const parsePageNumber = function (
-  page: AccountOverviewDashboardSearchParams["page"],
+  page: AccountDashboardSearchParams["page"],
 ): number {
   const pageNumber =
     typeof page === "number" ? page : Number.parseInt(page ?? "1", 10);
@@ -424,9 +424,9 @@ const fetchAccountsDashboard = async function (
 /**
  * Component that displays the Accounts view.
  */
-const AccountOverviewDashboard = async function ({
+const AccountDashboard = async function ({
   searchParams,
-}: AccountOverviewDashboardProps): Promise<JSX.Element> {
+}: AccountDashboardProps): Promise<JSX.Element> {
   const {
     sort,
     page,
@@ -592,16 +592,16 @@ const AccountOverviewDashboard = async function ({
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
       <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
-        <AccountOverviewDashboardFilter
+        <AccountDashboardFilter
           accountingPeriods={sortedAccountingPeriodsAscending}
           availableAccountNames={dashboard.availableAccountNames}
           defaultAccountingPeriodId={currentAccountingPeriod?.id ?? null}
           defaultStartDate={defaultStartDate.format("YYYY-MM-DD")}
           defaultEndDate={defaultEndDate.format("YYYY-MM-DD")}
         />
-        <AccountOverviewQuickActions isInOnboardingMode={isInOnboardingMode} />
+        <AccountDashboardQuickActions isInOnboardingMode={isInOnboardingMode} />
       </Stack>
-      <AccountOverviewSummaryCards
+      <AccountDashboardSummaryCards
         startLabel={snapshot.startLabel}
         endLabel={snapshot.endLabel}
         totalStartingBalance={snapshot.totalStartingBalance}
@@ -623,12 +623,12 @@ const AccountOverviewDashboard = async function ({
           },
         }}
       >
-        <AccountOverviewTrendChart
+        <AccountDashboardTrendChart
           mode={dashboard.mode}
           accountingPeriods={dashboard.accountingPeriods}
           dates={dashboard.dates}
         />
-        <AccountOverviewChangeChart
+        <AccountDashboardChangeChart
           mode={dashboard.mode}
           accountingPeriods={dashboard.accountingPeriods}
           dates={dashboard.dates}
@@ -642,12 +642,12 @@ const AccountOverviewDashboard = async function ({
             "repeat(auto-fit, minmax(min(100%, 800px), 1fr))",
         }}
       >
-        <AccountOverviewListFrame
+        <AccountDashboardListFrame
           data={[...dashboard.accounts.items]}
           isInOnboardingMode={isInOnboardingMode}
           totalCount={dashboard.accounts.totalCount}
         />
-        <AccountOverviewBalanceEventListFrame
+        <AccountDashboardBalanceEventListFrame
           data={[...dashboard.balanceEvents.items]}
           mode={dashboard.mode}
           totalCount={dashboard.balanceEvents.totalCount}
@@ -657,5 +657,5 @@ const AccountOverviewDashboard = async function ({
   );
 };
 
-export type { AccountOverviewDashboardSearchParams };
-export default AccountOverviewDashboard;
+export type { AccountDashboardSearchParams };
+export default AccountDashboard;

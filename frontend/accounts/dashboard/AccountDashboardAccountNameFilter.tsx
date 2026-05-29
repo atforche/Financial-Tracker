@@ -2,9 +2,9 @@
 
 import { Autocomplete, Checkbox, TextField } from "@mui/material";
 import type { JSX } from "react";
-import { normalizeAccountNames } from "@/accounts/overview-dashboard/accountNameFilter";
+import { normalizeAccountNames } from "@/accounts/dashboard/accountNameFilter";
 
-interface AccountOverviewAccountNameFilterProps {
+interface AccountDashboardAccountNameFilterProps {
   readonly availableAccountNames: readonly string[];
   readonly value: readonly string[];
   readonly onChange: (accountNames: readonly string[]) => void;
@@ -14,12 +14,12 @@ interface AccountOverviewAccountNameFilterProps {
 /**
  * Renders the account name multi-select with built-in search and scrolling.
  */
-const AccountOverviewAccountNameFilter = function ({
+const AccountDashboardAccountNameFilter = function ({
   availableAccountNames,
   value,
   onChange,
   disabled = false,
-}: AccountOverviewAccountNameFilterProps): JSX.Element {
+}: AccountDashboardAccountNameFilterProps): JSX.Element {
   return (
     <Autocomplete
       multiple
@@ -66,4 +66,4 @@ const AccountOverviewAccountNameFilter = function ({
   );
 };
 
-export default AccountOverviewAccountNameFilter;
+export default AccountDashboardAccountNameFilter;

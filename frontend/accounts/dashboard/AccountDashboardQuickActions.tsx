@@ -2,16 +2,16 @@ import { Button, Paper, Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
 import routes from "@/accounts/routes";
 
-interface AccountOverviewQuickActionsProps {
+interface AccountDashboardQuickActionsProps {
   readonly isInOnboardingMode: boolean;
 }
 
 /**
- * Displays quick actions for the account overview dashboard.
+ * Displays quick actions for the account dashboard.
  */
-const AccountOverviewQuickActions = function ({
+const AccountDashboardQuickActions = function ({
   isInOnboardingMode,
-}: AccountOverviewQuickActionsProps): JSX.Element {
+}: AccountDashboardQuickActionsProps): JSX.Element {
   return (
     <Paper
       sx={{
@@ -51,4 +51,4 @@ const AccountOverviewQuickActions = function ({
   );
 };
 
-export default AccountOverviewQuickActions;
+export default AccountDashboardQuickActions;

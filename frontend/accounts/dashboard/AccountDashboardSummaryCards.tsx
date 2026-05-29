@@ -19,7 +19,7 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 import SummaryCard from "@/framework/view/SummaryCard";
 import formatCurrency from "@/framework/formatCurrency";
 
-interface AccountOverviewSummaryCardsProps {
+interface AccountDashboardSummaryCardsProps {
   readonly startLabel: string;
   readonly endLabel: string;
   readonly totalStartingBalance: number;
@@ -214,7 +214,7 @@ const toBalanceBreakdownDetailRows = function (
 /**
  * Displays the top-level account balance summary cards with synchronized details.
  */
-const AccountOverviewSummaryCards = function ({
+const AccountDashboardSummaryCards = function ({
   startLabel,
   endLabel,
   totalStartingBalance,
@@ -225,7 +225,7 @@ const AccountOverviewSummaryCards = function ({
   untrackedEndingBalance,
   startingBalancesByType,
   endingBalancesByType,
-}: AccountOverviewSummaryCardsProps): JSX.Element {
+}: AccountDashboardSummaryCardsProps): JSX.Element {
   const [expanded, setExpanded] = useState(false);
   const [trackedTypesExpanded, setTrackedTypesExpanded] = useState(false);
   const [untrackedTypesExpanded, setUntrackedTypesExpanded] = useState(false);
@@ -490,4 +490,4 @@ const AccountOverviewSummaryCards = function ({
   );
 };
 
-export default AccountOverviewSummaryCards;
+export default AccountDashboardSummaryCards;
