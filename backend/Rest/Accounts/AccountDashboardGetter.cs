@@ -1,6 +1,10 @@
 using Domain;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.Transactions;
+using Domain.Transactions.Accounts;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 using Models;
 using Models.Accounts;
 using Rest.AccountingPeriods;
@@ -15,6 +19,7 @@ public class AccountDashboardGetter(
     IAccountBalanceHistoryRepository accountBalanceHistoryRepository,
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
+    ITransactionRepository transactionRepository,
     AccountingPeriodConverter accountingPeriodConverter)
 {
     /// <summary>
@@ -140,6 +145,11 @@ public class AccountDashboardGetter(
         List<AccountDashboardRow> filteredRows = ApplyFilters(
             baseRows,
             GetApplicableAccountNames(requestedAccountNames, availableAccountNames));
+        List<AccountDashboardBalanceEventRow> balanceEvents = BuildBalanceEventsForAccountingPeriods(accountingPeriods, accountTypes);
+        balanceEvents = ApplyBalanceEventFilters(
+            balanceEvents,
+            GetApplicableAccountNames(requestedAccountNames, availableAccountNames));
+        balanceEvents = SortBalanceEvents(balanceEvents, request.BalanceEventSort);
         filteredRows = SortRows(filteredRows, request.Sort);
         results = new AccountDashboardModel
         {
@@ -150,6 +160,13 @@ public class AccountDashboardGetter(
                     .Select(ToModel)
                     .ToList(),
                 TotalCount = filteredRows.Count,
+            },
+            BalanceEvents = new CollectionModel<AccountDashboardBalanceEventModel>
+            {
+                Items = ApplyBalanceEventPaging(balanceEvents, request)
+                    .Select(ToModel)
+                    .ToList(),
+                TotalCount = balanceEvents.Count,
             },
             AvailableAccountNames = availableAccountNames,
             AccountingPeriods = BuildPeriodSummaries(accountingPeriods, filteredRows),
@@ -195,6 +212,14 @@ public class AccountDashboardGetter(
         List<AccountDashboardRow> filteredRows = ApplyFilters(
             baseRows,
             GetApplicableAccountNames(requestedAccountNames, availableAccountNames));
+        List<AccountDashboardBalanceEventRow> balanceEvents = BuildBalanceEventsForDates(
+            request.StartDate.Value,
+            request.EndDate.Value,
+            accountTypes);
+        balanceEvents = ApplyBalanceEventFilters(
+            balanceEvents,
+            GetApplicableAccountNames(requestedAccountNames, availableAccountNames));
+        balanceEvents = SortBalanceEvents(balanceEvents, request.BalanceEventSort);
         filteredRows = SortRows(filteredRows, request.Sort);
         results = new AccountDashboardModel
         {
@@ -205,6 +230,13 @@ public class AccountDashboardGetter(
                     .Select(ToModel)
                     .ToList(),
                 TotalCount = filteredRows.Count,
+            },
+            BalanceEvents = new CollectionModel<AccountDashboardBalanceEventModel>
+            {
+                Items = ApplyBalanceEventPaging(balanceEvents, request)
+                    .Select(ToModel)
+                    .ToList(),
+                TotalCount = balanceEvents.Count,
             },
             AvailableAccountNames = availableAccountNames,
             AccountingPeriods = null,
@@ -219,10 +251,21 @@ public class AccountDashboardGetter(
         .Skip(request.Offset ?? 0)
         .Take(request.Limit ?? int.MaxValue);
 
+    private static IEnumerable<AccountDashboardBalanceEventRow> ApplyBalanceEventPaging(
+        IEnumerable<AccountDashboardBalanceEventRow> rows,
+        AccountDashboardQueryParameterModel request) => rows
+        .Skip(request.BalanceEventOffset ?? 0)
+        .Take(request.BalanceEventLimit ?? int.MaxValue);
+
     private static AccountDashboardModel CreateEmptyResult(AccountDashboardModeModel mode) => new()
     {
         Mode = mode,
         Accounts = new CollectionModel<AccountDashboardAccountModel>
+        {
+            Items = [],
+            TotalCount = 0,
+        },
+        BalanceEvents = new CollectionModel<AccountDashboardBalanceEventModel>
         {
             Items = [],
             TotalCount = 0,
@@ -378,6 +421,20 @@ public class AccountDashboardGetter(
         return filteredRows.ToList();
     }
 
+    private static List<AccountDashboardBalanceEventRow> ApplyBalanceEventFilters(
+        IReadOnlyCollection<AccountDashboardBalanceEventRow> rows,
+        HashSet<string>? accountNames)
+    {
+        IEnumerable<AccountDashboardBalanceEventRow> filteredRows = rows;
+
+        if (accountNames != null)
+        {
+            filteredRows = filteredRows.Where(row => accountNames.Contains(row.AccountName));
+        }
+
+        return filteredRows.ToList();
+    }
+
     private decimal GetBalanceForDate(Account account, DateOnly date)
     {
         if (account.DateOpened is DateOnly dateOpened && date < dateOpened)
@@ -406,6 +463,283 @@ public class AccountDashboardGetter(
             AccountDashboardSortOrderModel.NetChangeDescending => rows.OrderByDescending(row => row.ClosingBalance - row.OpeningBalance).ThenBy(row => row.Name).ToList(),
             _ => rows,
         };
+
+    private static List<AccountDashboardBalanceEventRow> SortBalanceEvents(
+        List<AccountDashboardBalanceEventRow> rows,
+        AccountDashboardBalanceEventSortOrderModel? sort) => sort switch
+        {
+            AccountDashboardBalanceEventSortOrderModel.AccountName => rows
+                .OrderBy(row => row.AccountName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            AccountDashboardBalanceEventSortOrderModel.AccountNameDescending => rows
+                .OrderByDescending(row => row.AccountName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            AccountDashboardBalanceEventSortOrderModel.AccountingPeriodName => rows
+                .OrderBy(row => row.AccountingPeriodName)
+                .ThenBy(row => row.AccountName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            AccountDashboardBalanceEventSortOrderModel.AccountingPeriodNameDescending => rows
+                .OrderByDescending(row => row.AccountingPeriodName)
+                .ThenBy(row => row.AccountName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            null or AccountDashboardBalanceEventSortOrderModel.DateDescending => rows
+                .OrderBy(row => row.IsPosted)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ThenBy(row => row.AccountId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            AccountDashboardBalanceEventSortOrderModel.Date => rows
+                .OrderByDescending(row => row.IsPosted)
+                .ThenBy(row => row.Date)
+                .ThenBy(row => row.TransactionDate)
+                .ThenBy(row => row.Sequence)
+                .ThenBy(row => row.TransactionId)
+                .ThenBy(row => row.AccountId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            AccountDashboardBalanceEventSortOrderModel.Type => rows
+                .OrderBy(row => row.Type)
+                .ThenBy(row => row.AccountName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ToList(),
+            AccountDashboardBalanceEventSortOrderModel.TypeDescending => rows
+                .OrderByDescending(row => row.Type)
+                .ThenBy(row => row.AccountName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ToList(),
+            AccountDashboardBalanceEventSortOrderModel.Amount => rows
+                .OrderBy(row => row.Amount)
+                .ThenBy(row => row.AccountName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            AccountDashboardBalanceEventSortOrderModel.AmountDescending => rows
+                .OrderByDescending(row => row.Amount)
+                .ThenBy(row => row.AccountName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            _ => rows,
+        };
+
+    private List<AccountDashboardBalanceEventRow> BuildBalanceEventsForAccountingPeriods(
+        IReadOnlyCollection<AccountingPeriod> accountingPeriods,
+        IReadOnlySet<AccountType>? accountTypes)
+    {
+        var accountingPeriodIds = accountingPeriods
+            .Select(accountingPeriod => accountingPeriod.Id.Value)
+            .ToHashSet();
+
+        return BuildBalanceEvents(
+            transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId.Value),
+            accountTypes);
+    }
+
+    private List<AccountDashboardBalanceEventRow> BuildBalanceEventsForDates(
+        DateOnly startDate,
+        DateOnly endDate,
+        IReadOnlySet<AccountType>? accountTypes) => BuildBalanceEvents(
+            transaction => true,
+            accountTypes,
+            effectiveDate => effectiveDate >= startDate && effectiveDate <= endDate);
+
+    private List<AccountDashboardBalanceEventRow> BuildBalanceEvents(
+        Func<Transaction, bool> transactionFilter,
+        IReadOnlySet<AccountType>? accountTypes,
+        Func<DateOnly, bool>? effectiveDateFilter = null)
+    {
+        var accountsById = accountRepository.GetAll()
+            .ToDictionary(account => account.Id.Value);
+        var accountingPeriodsById = accountingPeriodRepository.GetAll()
+            .ToDictionary(accountingPeriod => accountingPeriod.Id.Value);
+
+        return transactionRepository.GetAll()
+            .Where(transactionFilter)
+            .SelectMany(transaction => BuildBalanceEvents(transaction, accountsById, accountingPeriodsById, accountTypes))
+            .Where(row => effectiveDateFilter == null || effectiveDateFilter(row.Date))
+            .ToList();
+    }
+
+    private static IEnumerable<AccountDashboardBalanceEventRow> BuildBalanceEvents(
+        Transaction transaction,
+        IReadOnlyDictionary<Guid, Account> accountsById,
+        IReadOnlyDictionary<Guid, AccountingPeriod> accountingPeriodsById,
+        IReadOnlySet<AccountType>? accountTypes)
+    {
+        switch (transaction)
+        {
+            case SpendingTransaction spendingTransaction:
+                foreach (AccountDashboardBalanceEventRow balanceEvent in BuildBalanceEvents(
+                    transaction,
+                    accountsById,
+                    accountingPeriodsById,
+                    accountTypes,
+                    spendingTransaction.DebitAccountId,
+                    spendingTransaction.DebitPostedDate,
+                    AccountDashboardBalanceEventTypeModel.Debit))
+                {
+                    yield return balanceEvent;
+                }
+
+                if (spendingTransaction.CreditAccountId != null)
+                {
+                    foreach (AccountDashboardBalanceEventRow balanceEvent in BuildBalanceEvents(
+                        transaction,
+                        accountsById,
+                        accountingPeriodsById,
+                        accountTypes,
+                        spendingTransaction.CreditAccountId,
+                        spendingTransaction.CreditPostedDate,
+                        AccountDashboardBalanceEventTypeModel.Credit))
+                    {
+                        yield return balanceEvent;
+                    }
+                }
+
+                break;
+            case IncomeTransaction incomeTransaction:
+                if (incomeTransaction.DebitAccountId != null)
+                {
+                    foreach (AccountDashboardBalanceEventRow balanceEvent in BuildBalanceEvents(
+                        transaction,
+                        accountsById,
+                        accountingPeriodsById,
+                        accountTypes,
+                        incomeTransaction.DebitAccountId,
+                        incomeTransaction.DebitPostedDate,
+                        AccountDashboardBalanceEventTypeModel.Debit))
+                    {
+                        yield return balanceEvent;
+                    }
+                }
+
+                foreach (AccountDashboardBalanceEventRow balanceEvent in BuildBalanceEvents(
+                    transaction,
+                    accountsById,
+                    accountingPeriodsById,
+                    accountTypes,
+                    incomeTransaction.CreditAccountId,
+                    incomeTransaction.CreditPostedDate,
+                    AccountDashboardBalanceEventTypeModel.Credit))
+                {
+                    yield return balanceEvent;
+                }
+
+                break;
+            case AccountTransaction accountTransaction:
+                if (accountTransaction.DebitAccountId != null)
+                {
+                    foreach (AccountDashboardBalanceEventRow balanceEvent in BuildBalanceEvents(
+                        transaction,
+                        accountsById,
+                        accountingPeriodsById,
+                        accountTypes,
+                        accountTransaction.DebitAccountId,
+                        accountTransaction.DebitPostedDate,
+                        AccountDashboardBalanceEventTypeModel.Debit))
+                    {
+                        yield return balanceEvent;
+                    }
+                }
+
+                if (accountTransaction.CreditAccountId != null)
+                {
+                    foreach (AccountDashboardBalanceEventRow balanceEvent in BuildBalanceEvents(
+                        transaction,
+                        accountsById,
+                        accountingPeriodsById,
+                        accountTypes,
+                        accountTransaction.CreditAccountId,
+                        accountTransaction.CreditPostedDate,
+                        AccountDashboardBalanceEventTypeModel.Credit))
+                    {
+                        yield return balanceEvent;
+                    }
+                }
+
+                break;
+            default:
+                yield break;
+        }
+    }
+
+    private static IEnumerable<AccountDashboardBalanceEventRow> BuildBalanceEvents(
+        Transaction transaction,
+        IReadOnlyDictionary<Guid, Account> accountsById,
+        IReadOnlyDictionary<Guid, AccountingPeriod> accountingPeriodsById,
+        IReadOnlySet<AccountType>? accountTypes,
+        AccountId? accountId,
+        DateOnly? postedDate,
+        AccountDashboardBalanceEventTypeModel type)
+    {
+        if (accountId == null)
+        {
+            yield break;
+        }
+
+        if (!accountsById.TryGetValue(accountId.Value, out Account? account))
+        {
+            yield break;
+        }
+
+        if (accountTypes != null && !accountTypes.Contains(account.Type))
+        {
+            yield break;
+        }
+
+        if (!accountingPeriodsById.TryGetValue(transaction.AccountingPeriodId.Value, out AccountingPeriod? accountingPeriod))
+        {
+            yield break;
+        }
+
+        yield return new AccountDashboardBalanceEventRow(
+            account.Id.Value,
+            account.Name,
+            postedDate ?? transaction.Date,
+            transaction.AccountingPeriodId.Value,
+            accountingPeriod.Name,
+            type,
+            postedDate != null,
+            transaction.Amount,
+            transaction.Date,
+            transaction.Sequence,
+            transaction.Id.Value);
+    }
 
     private static List<AccountDashboardPeriodSummaryModel> BuildPeriodSummaries(
         IReadOnlyList<AccountingPeriod> accountingPeriods,
@@ -506,6 +840,18 @@ public class AccountDashboardGetter(
         EndingBalance = row.ClosingBalance,
     };
 
+    private static AccountDashboardBalanceEventModel ToModel(AccountDashboardBalanceEventRow row) => new()
+    {
+        AccountId = row.AccountId,
+        AccountName = row.AccountName,
+        Date = row.Date,
+        AccountingPeriodId = row.AccountingPeriodId,
+        AccountingPeriodName = row.AccountingPeriodName,
+        Type = row.Type,
+        IsPosted = row.IsPosted,
+        Amount = row.Amount,
+    };
+
     private static decimal NormalizeBalance(AccountType accountType, decimal balance) =>
         accountType.IsDebt() ? -balance : balance;
 
@@ -523,4 +869,17 @@ public class AccountDashboardGetter(
         decimal ClosingBalance,
         IReadOnlyCollection<AccountingPeriodBalanceValue>? AccountingPeriods,
         IReadOnlyCollection<AccountDashboardDateModel>? Dates);
+
+    private sealed record AccountDashboardBalanceEventRow(
+        Guid AccountId,
+        string AccountName,
+        DateOnly Date,
+        Guid AccountingPeriodId,
+        string AccountingPeriodName,
+        AccountDashboardBalanceEventTypeModel Type,
+        bool IsPosted,
+        decimal Amount,
+        DateOnly TransactionDate,
+        int Sequence,
+        Guid TransactionId);
 }

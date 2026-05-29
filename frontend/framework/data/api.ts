@@ -1180,10 +1180,16 @@ export interface paths {
                     AccountName?: string[];
                     /** @description Optional sort to apply to the matching Accounts. */
                     Sort?: components["schemas"]["AccountDashboardSortOrderModel"];
+                    /** @description Optional sort to apply to the matching balance events. */
+                    BalanceEventSort?: components["schemas"]["AccountDashboardBalanceEventSortOrderModel"];
                     /** @description Maximum number of results to return */
                     Limit?: number;
                     /** @description Number of results to skip */
                     Offset?: number;
+                    /** @description Maximum number of balance events to return. */
+                    BalanceEventLimit?: number;
+                    /** @description Number of balance events to skip. */
+                    BalanceEventOffset?: number;
                 };
                 header?: never;
                 path?: never;
@@ -2127,6 +2133,44 @@ export interface components {
              */
             endingBalance: number;
         };
+        /** @description Model representing a balance event on the Account dashboard. */
+        AccountDashboardBalanceEventModel: {
+            /**
+             * Format: uuid
+             * @description Account affected by the balance event.
+             */
+            accountId: string;
+            /** @description Name of the account affected by the balance event. */
+            accountName: string;
+            /**
+             * Format: date
+             * @description Effective date of the balance event.
+             */
+            date: string;
+            /**
+             * Format: uuid
+             * @description Accounting Period containing the balance event.
+             */
+            accountingPeriodId: string;
+            /** @description Name of the Accounting Period containing the balance event. */
+            accountingPeriodName: string;
+            /** @description Type of balance event. */
+            type: components["schemas"]["AccountDashboardBalanceEventTypeModel"];
+            /** @description Whether the transaction has been posted to the account. */
+            isPosted: boolean;
+            /**
+             * Format: double
+             * @description Amount associated with the balance event.
+             */
+            amount: number;
+        };
+        /** @enum {unknown} */
+        AccountDashboardBalanceEventSortOrderModel: AccountDashboardBalanceEventSortOrderModel | null;
+        /**
+         * @description Type of balance event on the Account dashboard.
+         * @enum {unknown}
+         */
+        AccountDashboardBalanceEventTypeModel: AccountDashboardBalanceEventTypeModel;
         /** @description Model representing top-level dashboard balances for a specific date. */
         AccountDashboardDateSummaryModel: {
             /**
@@ -2158,6 +2202,8 @@ export interface components {
             mode: components["schemas"]["AccountDashboardModeModel"];
             /** @description Matching Accounts for the requested dashboard page. */
             accounts: components["schemas"]["CollectionModelOfAccountDashboardAccountModel"];
+            /** @description Matching balance events for the requested dashboard page. */
+            balanceEvents: components["schemas"]["CollectionModelOfAccountDashboardBalanceEventModel"];
             /** @description Available Account Names for the current dashboard scope before account-name filtering. */
             availableAccountNames: string[];
             /** @description Summary balances for each Accounting Period in the requested range. */
@@ -2383,6 +2429,16 @@ export interface components {
         CollectionModelOfAccountDashboardAccountModel: {
             /** @description The collection of items. */
             items: components["schemas"]["AccountDashboardAccountModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfAccountDashboardBalanceEventModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["AccountDashboardBalanceEventModel"][];
             /**
              * Format: int32
              * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
@@ -3213,6 +3269,22 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
+export enum AccountDashboardBalanceEventSortOrderModel {
+    AccountName = "AccountName",
+    AccountNameDescending = "AccountNameDescending",
+    AccountingPeriodName = "AccountingPeriodName",
+    AccountingPeriodNameDescending = "AccountingPeriodNameDescending",
+    Date = "Date",
+    DateDescending = "DateDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    Amount = "Amount",
+    AmountDescending = "AmountDescending"
+}
+export enum AccountDashboardBalanceEventTypeModel {
+    Debit = "Debit",
+    Credit = "Credit"
+}
 export enum AccountDashboardModeModel {
     AccountingPeriod = "AccountingPeriod",
     Date = "Date"

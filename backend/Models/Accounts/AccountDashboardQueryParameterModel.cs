@@ -41,6 +41,11 @@ public class AccountDashboardQueryParameterModel
     public AccountDashboardSortOrderModel? Sort { get; init; }
 
     /// <summary>
+    /// Optional sort to apply to the matching balance events.
+    /// </summary>
+    public AccountDashboardBalanceEventSortOrderModel? BalanceEventSort { get; init; }
+
+    /// <summary>
     /// Maximum number of results to return
     /// </summary>
     public int? Limit { get; init; }
@@ -49,4 +54,14 @@ public class AccountDashboardQueryParameterModel
     /// Number of results to skip
     /// </summary>
     public int? Offset { get; init; }
+
+    /// <summary>
+    /// Maximum number of balance events to return.
+    /// </summary>
+    public int? BalanceEventLimit { get; init; }
+
+    /// <summary>
+    /// Number of balance events to skip.
+    /// </summary>
+    public int? BalanceEventOffset { get; init; }
 }

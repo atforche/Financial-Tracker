@@ -16,6 +16,11 @@ public class AccountDashboardModel
     public required CollectionModel<AccountDashboardAccountModel> Accounts { get; init; }
 
     /// <summary>
+    /// Matching balance events for the requested dashboard page.
+    /// </summary>
+    public required CollectionModel<AccountDashboardBalanceEventModel> BalanceEvents { get; init; }
+
+    /// <summary>
     /// Available Account Names for the current dashboard scope before account-name filtering.
     /// </summary>
     public required IReadOnlyCollection<string> AvailableAccountNames { get; init; }
