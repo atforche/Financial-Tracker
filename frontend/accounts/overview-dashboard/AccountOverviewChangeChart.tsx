@@ -1,5 +1,9 @@
 "use client";
 
+import type {
+  AccountDashboardDateSummary,
+  AccountDashboardPeriodSummary,
+} from "@/accounts/types";
 import {
   Bar,
   BarChart,
@@ -12,7 +16,6 @@ import {
   YAxis,
 } from "recharts";
 import { Box, Paper, Stack, Typography } from "@mui/material";
-import type { AccountDashboardDateSummary } from "@/accounts/types";
 import type { JSX } from "react";
 import dayjs from "dayjs";
 import formatCurrency from "@/framework/formatCurrency";
@@ -21,6 +24,7 @@ type AccountOverviewChangeChartMode = "AccountingPeriod" | "Date";
 
 interface AccountOverviewChangeChartProps {
   readonly mode: AccountOverviewChangeChartMode;
+  readonly accountingPeriods: readonly AccountDashboardPeriodSummary[] | null;
   readonly dates: readonly AccountDashboardDateSummary[] | null;
 }
 
@@ -126,8 +130,43 @@ const getBarColor = function (value: number): string {
 };
 
 const buildChartPoints = function (
+  mode: AccountOverviewChangeChartMode,
+  accountingPeriods: readonly AccountDashboardPeriodSummary[],
   dates: readonly AccountDashboardDateSummary[],
 ): ChartPoint[] {
+  if (mode === "AccountingPeriod") {
+    return accountingPeriods.map((accountingPeriod) => {
+      const change =
+        accountingPeriod.totalClosingBalance -
+        accountingPeriod.totalOpeningBalance;
+
+      return {
+        key: accountingPeriod.accountingPeriodId,
+        tickLabel: accountingPeriod.accountingPeriodName,
+        tooltipLabel: accountingPeriod.accountingPeriodName,
+        change,
+        fill: getBarColor(change),
+      };
+    });
+  }
+
+  if (dates.length === 1) {
+    const [dateSummary] = dates;
+    if (typeof dateSummary === "undefined") {
+      return [];
+    }
+
+    return [
+      {
+        key: dateSummary.date,
+        tickLabel: dayjs(dateSummary.date).format("MMM D"),
+        tooltipLabel: dayjs(dateSummary.date).format("MMMM D, YYYY"),
+        change: 0,
+        fill: getBarColor(0),
+      },
+    ];
+  }
+
   return dates.slice(1).map((dateSummary, index) => {
     const previousDateSummary = dates[index];
     const change =
@@ -144,33 +183,18 @@ const buildChartPoints = function (
 };
 
 /**
- * Renders the day-over-day change in total account balance for a date range.
+ * Renders balance changes for the account overview dashboard.
  */
 const AccountOverviewChangeChart = function ({
   mode,
+  accountingPeriods,
   dates,
 }: AccountOverviewChangeChartProps): JSX.Element {
-  if (mode !== "Date") {
-    return (
-      <Paper
-        sx={{
-          border: "1px solid",
-          borderColor: "divider",
-          p: 3,
-        }}
-      >
-        <Stack spacing={1}>
-          <Typography variant="h5">Daily Balance Change</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Daily balance changes are available when the dashboard is filtered
-            by date range.
-          </Typography>
-        </Stack>
-      </Paper>
-    );
-  }
-
-  const chartPoints = buildChartPoints(dates ?? []);
+  const chartPoints = buildChartPoints(
+    mode,
+    accountingPeriods ?? [],
+    dates ?? [],
+  );
   if (chartPoints.length === 0) {
     return (
       <Paper
@@ -181,9 +205,9 @@ const AccountOverviewChangeChart = function ({
         }}
       >
         <Stack spacing={1}>
-          <Typography variant="h5">Daily Balance Change</Typography>
+          <Typography variant="h5">Balance Change</Typography>
           <Typography variant="body2" color="text.secondary">
-            At least two days are required to calculate daily balance changes.
+            No balance changes are available for the selected dashboard range.
           </Typography>
         </Stack>
       </Paper>
@@ -199,7 +223,7 @@ const AccountOverviewChangeChart = function ({
       }}
     >
       <Stack spacing={2.5}>
-        <Typography variant="h5">Daily Balance Change</Typography>
+        <Typography variant="h5">Balance Change</Typography>
         <Box sx={{ height: 320, width: "100%" }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -221,7 +245,7 @@ const AccountOverviewChangeChart = function ({
                 dataKey="tickLabel"
                 interval="preserveStartEnd"
                 label={{
-                  value: "Date",
+                  value: mode === "Date" ? "Date" : "Accounting Period",
                   position: "insideBottom",
                   dy: 24,
                   style: {
@@ -241,7 +265,7 @@ const AccountOverviewChangeChart = function ({
                   value: "Balance Change",
                   angle: -90,
                   position: "center",
-                  dx: -25,
+                  dx: -45,
                   style: {
                     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
                   },

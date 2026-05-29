@@ -6,7 +6,7 @@ import {
   formatAccountType,
   isPositiveChangeInBalance,
 } from "@/accounts/types";
-import { Box, Button } from "@mui/material";
+import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import ColumnButton from "@/framework/listframe/ColumnButton";
@@ -215,48 +215,59 @@ const AccountOverviewListFrame = function ({
   ];
 
   return (
-    <ListFrame<AccountDashboardAccount>
-      columns={columns}
-      getId={(account) => account.id}
-      data={data ?? null}
-      totalCount={totalCount ?? null}
-      searchParamName="search"
-      pageParamName={pageParamName}
-      hasActiveFilters={hasActiveFilters}
-      initialEmptyState={{
-        title: "No accounts have been added",
-        description: isInOnboardingMode
-          ? "Onboard a new account to start tracking balances."
-          : "Create a new account to start tracking balances.",
-        action: (
-          <Button
-            variant="contained"
-            onClick={() => {
-              router.push(
-                isInOnboardingMode ? routes.onboard : routes.create({}),
-              );
-            }}
-          >
-            {isInOnboardingMode ? "Onboard account" : "Create account"}
-          </Button>
-        ),
+    <Paper
+      sx={{
+        border: "1px solid",
+        borderColor: "divider",
+        p: 3,
       }}
-      filteredEmptyState={{
-        title: "No accounts match this dashboard filter",
-        description:
-          "Try a different account type, account name, or date range to widen the dashboard scope.",
-        action: (
-          <Button
-            variant="contained"
-            onClick={() => {
-              router.replace(pathname);
-            }}
-          >
-            Reset filters
-          </Button>
-        ),
-      }}
-    />
+    >
+      <Stack spacing={2.5}>
+        <Typography variant="h5">Accounts</Typography>
+        <ListFrame<AccountDashboardAccount>
+          columns={columns}
+          getId={(account) => account.id}
+          data={data ?? null}
+          totalCount={totalCount ?? null}
+          searchParamName="search"
+          pageParamName={pageParamName}
+          hasActiveFilters={hasActiveFilters}
+          initialEmptyState={{
+            title: "No accounts have been added",
+            description: isInOnboardingMode
+              ? "Onboard a new account to start tracking balances."
+              : "Create a new account to start tracking balances.",
+            action: (
+              <Button
+                variant="contained"
+                onClick={() => {
+                  router.push(
+                    isInOnboardingMode ? routes.onboard : routes.create({}),
+                  );
+                }}
+              >
+                {isInOnboardingMode ? "Onboard account" : "Create account"}
+              </Button>
+            ),
+          }}
+          filteredEmptyState={{
+            title: "No accounts match this dashboard filter",
+            description:
+              "Try a different account type, account name, or date range to widen the dashboard scope.",
+            action: (
+              <Button
+                variant="contained"
+                onClick={() => {
+                  router.replace(pathname);
+                }}
+              >
+                Reset filters
+              </Button>
+            ),
+          }}
+        />
+      </Stack>
+    </Paper>
   );
 };
 

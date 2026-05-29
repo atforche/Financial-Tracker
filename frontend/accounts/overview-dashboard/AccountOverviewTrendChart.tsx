@@ -258,7 +258,7 @@ const AccountOverviewTrendChart = function ({
                   value: "Total Balance",
                   angle: -90,
                   position: "center",
-                  dx: -25,
+                  dx: -45,
                   style: {
                     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
                   },

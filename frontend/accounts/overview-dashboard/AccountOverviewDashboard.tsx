@@ -130,7 +130,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 });
 
-const defaultFilterMode: AccountsDashboardFilterMode = "accounting-period";
+const defaultFilterMode: AccountsDashboardFilterMode = "date";
 
 const compareAccountingPeriodsDescending = function (
   left: AccountingPeriod,
@@ -451,9 +451,9 @@ const AccountOverviewDashboard = async function ({
   const defaultStartDate = defaultEndDate.subtract(90, "day");
 
   const currentMode: AccountsDashboardFilterMode =
-    mode === "date" || currentAccountingPeriod === null
-      ? "date"
-      : defaultFilterMode;
+    typeof mode === "undefined" || currentAccountingPeriod === null
+      ? defaultFilterMode
+      : mode;
   const currentPage = parsePageNumber(page);
   const persistedFilters = {
     ...(typeof sort === "string" ? { sort } : {}),
@@ -577,6 +577,7 @@ const AccountOverviewDashboard = async function ({
         />
         <AccountOverviewChangeChart
           mode={dashboard.mode}
+          accountingPeriods={dashboard.accountingPeriods}
           dates={dashboard.dates}
         />
       </Box>

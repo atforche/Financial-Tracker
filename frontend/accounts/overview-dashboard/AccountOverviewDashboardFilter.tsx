@@ -2,7 +2,6 @@
 
 import {
   Button,
-  MenuItem,
   Paper,
   Stack,
   TextField,
@@ -21,6 +20,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AccountOverviewAccountNameFilter from "@/accounts/overview-dashboard/AccountOverviewAccountNameFilter";
 import AccountOverviewAccountTypeFilter from "@/accounts/overview-dashboard/AccountOverviewAccountTypeFilter";
+import AccountOverviewAccountingPeriodFilter from "@/accounts/overview-dashboard/AccountOverviewAccountingPeriodFilter";
 import type { AccountType } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
@@ -67,7 +67,9 @@ const AccountOverviewDashboardFilter = function ({
   const endDateParamName = "endDate";
 
   const currentMode: AccountsDashboardFilterMode =
-    searchParams.get(modeParamName) === "date" ? "date" : "accounting-period";
+    searchParams.get(modeParamName) === "accounting-period"
+      ? "accounting-period"
+      : "date";
   const currentAccountTypes = normalizeAccountTypes(
     searchParams.getAll(accountTypeParamName),
   );
@@ -102,7 +104,7 @@ const AccountOverviewDashboardFilter = function ({
   };
 
   const hasActiveView =
-    currentMode !== "accounting-period" ||
+    currentMode !== "date" ||
     shouldPersistAccountTypes(currentAccountTypes) ||
     shouldPersistAccountNames(currentAccountNames) ||
     currentStartAccountingPeriodId !== (defaultAccountingPeriodId ?? "") ||
@@ -179,9 +181,8 @@ const AccountOverviewDashboardFilter = function ({
   };
 
   const handleStartAccountingPeriodChange = function (
-    event: React.ChangeEvent<HTMLInputElement>,
+    nextStartAccountingPeriodId: string,
   ): void {
-    const nextStartAccountingPeriodId = event.target.value;
     const nextStartIndex =
       accountingPeriodIndexes.get(nextStartAccountingPeriodId) ?? 0;
     const currentEndIndex =
@@ -199,9 +200,8 @@ const AccountOverviewDashboardFilter = function ({
   };
 
   const handleEndAccountingPeriodChange = function (
-    event: React.ChangeEvent<HTMLInputElement>,
+    nextEndAccountingPeriodId: string,
   ): void {
-    const nextEndAccountingPeriodId = event.target.value;
     const nextEndIndex =
       accountingPeriodIndexes.get(nextEndAccountingPeriodId) ?? 0;
     const currentStartIndex =
@@ -248,7 +248,7 @@ const AccountOverviewDashboardFilter = function ({
     updateParams((params) => {
       params.delete(accountTypeParamName);
       params.delete(accountNameParamName);
-      params.set(modeParamName, "accounting-period");
+      params.set(modeParamName, "date");
       params.delete(startDateParamName);
       params.delete(endDateParamName);
       if (defaultAccountingPeriodId !== null) {
@@ -307,42 +307,20 @@ const AccountOverviewDashboardFilter = function ({
           </ToggleButtonGroup>
           {currentMode === "accounting-period" ? (
             <>
-              <TextField
-                select
-                size="small"
+              <AccountOverviewAccountingPeriodFilter
+                accountingPeriods={accountingPeriods}
                 label="Start period"
                 value={currentStartAccountingPeriodId}
                 onChange={handleStartAccountingPeriodChange}
-                disabled={disabled || accountingPeriods.length === 0}
-                sx={sharedFieldSx}
-              >
-                {accountingPeriods.map((accountingPeriod) => (
-                  <MenuItem
-                    key={accountingPeriod.id}
-                    value={accountingPeriod.id}
-                  >
-                    {accountingPeriod.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                select
-                size="small"
+                disabled={disabled}
+              />
+              <AccountOverviewAccountingPeriodFilter
+                accountingPeriods={accountingPeriods}
                 label="End period"
                 value={currentEndAccountingPeriodId}
                 onChange={handleEndAccountingPeriodChange}
-                disabled={disabled || accountingPeriods.length === 0}
-                sx={sharedFieldSx}
-              >
-                {accountingPeriods.map((accountingPeriod) => (
-                  <MenuItem
-                    key={accountingPeriod.id}
-                    value={accountingPeriod.id}
-                  >
-                    {accountingPeriod.name}
-                  </MenuItem>
-                ))}
-              </TextField>
+                disabled={disabled}
+              />
             </>
           ) : (
             <>
