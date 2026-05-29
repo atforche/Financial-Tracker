@@ -219,7 +219,7 @@ const AccountOverviewListFrame = function ({
       sx={{
         border: "1px solid",
         borderColor: "divider",
-        p: 3,
+        p: { xs: 2, md: 2.5 },
       }}
     >
       <Stack spacing={2.5}>

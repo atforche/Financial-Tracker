@@ -25,6 +25,10 @@ interface AccountDashboard {
     readonly items: AccountDashboardAccount[];
     readonly totalCount: number;
   };
+  readonly balanceEvents: {
+    readonly items: AccountDashboardBalanceEvent[];
+    readonly totalCount: number;
+  };
   readonly availableAccountNames: readonly string[];
   readonly accountingPeriods: readonly AccountDashboardPeriodSummary[] | null;
   readonly dates: readonly AccountDashboardDateSummary[] | null;
@@ -39,6 +43,20 @@ interface AccountDashboardAccount {
   readonly type: AccountTypeModel;
   readonly startingBalance: number;
   readonly endingBalance: number;
+}
+
+/**
+ * Type representing a row in the Accounts dashboard balance event table.
+ */
+interface AccountDashboardBalanceEvent {
+  readonly accountId: string;
+  readonly accountName: string;
+  readonly date: string;
+  readonly accountingPeriodId: string;
+  readonly accountingPeriodName: string;
+  readonly type: AccountDashboardBalanceEventType;
+  readonly isPosted: boolean;
+  readonly amount: number;
 }
 
 /**
@@ -104,6 +122,30 @@ type UpdateAccountRequest = components["schemas"]["UpdateAccountModel"];
 enum AccountDashboardMode {
   AccountingPeriod = "AccountingPeriod",
   Date = "Date",
+}
+
+/**
+ * Enum representing balance event types on the account dashboard.
+ */
+enum AccountDashboardBalanceEventType {
+  Debit = "Debit",
+  Credit = "Credit",
+}
+
+/**
+ * Enum representing the supported balance event sort orders on the account dashboard.
+ */
+enum AccountDashboardBalanceEventSortOrder {
+  AccountName = "AccountName",
+  AccountNameDescending = "AccountNameDescending",
+  AccountingPeriodName = "AccountingPeriodName",
+  AccountingPeriodNameDescending = "AccountingPeriodNameDescending",
+  Date = "Date",
+  DateDescending = "DateDescending",
+  Type = "Type",
+  TypeDescending = "TypeDescending",
+  Amount = "Amount",
+  AmountDescending = "AmountDescending",
 }
 
 /**
@@ -173,6 +215,7 @@ export {
   type Account,
   type AccountDashboard,
   type AccountDashboardAccount,
+  type AccountDashboardBalanceEvent,
   type AccountDashboardDateSummary,
   type AccountDashboardPeriodSummary,
   type AccountSummary,
@@ -181,6 +224,8 @@ export {
   type CreateAccountRequest,
   type OnboardAccountRequest,
   type UpdateAccountRequest,
+  AccountDashboardBalanceEventSortOrder,
+  AccountDashboardBalanceEventType,
   AccountDashboardMode,
   AccountDashboardSortOrderModel as AccountDashboardSortOrder,
   AccountSortOrderModel as AccountSortOrder,

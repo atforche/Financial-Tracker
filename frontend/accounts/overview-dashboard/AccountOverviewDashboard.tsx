@@ -1,7 +1,10 @@
-import type {
-  AccountDashboardSortOrder,
-  AccountType,
-  AccountTypeBalance,
+import {
+  type AccountDashboardBalanceEventSortOrder,
+  type AccountDashboardBalanceEventType,
+  AccountDashboardMode,
+  type AccountDashboardSortOrder,
+  type AccountType,
+  type AccountTypeBalance,
 } from "@/accounts/types";
 import {
   type AccountingPeriod,
@@ -16,6 +19,7 @@ import {
   normalizeRequestedAccountNames,
   shouldPersistAccountNames,
 } from "@/accounts/overview-dashboard/accountNameFilter";
+import AccountOverviewBalanceEventListFrame from "@/accounts/overview-dashboard/AccountOverviewBalanceEventListFrame";
 import AccountOverviewChangeChart from "@/accounts/overview-dashboard/AccountOverviewChangeChart";
 import AccountOverviewDashboardFilter from "@/accounts/overview-dashboard/AccountOverviewDashboardFilter";
 import AccountOverviewListFrame from "@/accounts/overview-dashboard/AccountOverviewListFrame";
@@ -40,6 +44,8 @@ type AccountsDashboardFilterMode = "accounting-period" | "date";
 interface AccountOverviewDashboardSearchParams {
   sort?: AccountDashboardSortOrder;
   page?: number | string;
+  balanceEventSort?: AccountDashboardBalanceEventSortOrder;
+  balanceEventPage?: number | string;
   mode?: AccountsDashboardFilterMode;
   accountType?: AccountType | readonly AccountType[];
   accountName?: string | readonly string[];
@@ -56,20 +62,23 @@ interface AccountOverviewDashboardProps {
   readonly searchParams: Promise<AccountOverviewDashboardSearchParams>;
 }
 
-const accountDashboardMode = {
-  AccountingPeriod: "AccountingPeriod",
-  Date: "Date",
-} as const;
-
-type AccountDashboardModeValue =
-  (typeof accountDashboardMode)[keyof typeof accountDashboardMode];
-
 interface AccountDashboardAccountResult {
   readonly id: string;
   readonly name: string;
   readonly type: AccountType;
   readonly startingBalance: number;
   readonly endingBalance: number;
+}
+
+interface AccountDashboardBalanceEventResult {
+  readonly accountId: string;
+  readonly accountName: string;
+  readonly date: string;
+  readonly accountingPeriodId: string;
+  readonly accountingPeriodName: string;
+  readonly type: AccountDashboardBalanceEventType;
+  readonly isPosted: boolean;
+  readonly amount: number;
 }
 
 interface AccountDashboardPeriodSummaryResult {
@@ -96,9 +105,13 @@ interface AccountDashboardDateSummaryResult {
 }
 
 interface AccountDashboardResult {
-  readonly mode: AccountDashboardModeValue;
+  readonly mode: AccountDashboardMode;
   readonly accounts: {
     readonly items: readonly AccountDashboardAccountResult[];
+    readonly totalCount: number;
+  };
+  readonly balanceEvents: {
+    readonly items: readonly AccountDashboardBalanceEventResult[];
     readonly totalCount: number;
   };
   readonly availableAccountNames: readonly string[];
@@ -226,6 +239,22 @@ const isAccountDashboardPeriodSummary = function (
   );
 };
 
+const isAccountDashboardBalanceEvent = function (
+  value: unknown,
+): value is AccountDashboardBalanceEventResult {
+  return (
+    isObject(value) &&
+    typeof value["accountId"] === "string" &&
+    typeof value["accountName"] === "string" &&
+    typeof value["date"] === "string" &&
+    typeof value["accountingPeriodId"] === "string" &&
+    typeof value["accountingPeriodName"] === "string" &&
+    (value["type"] === "Debit" || value["type"] === "Credit") &&
+    typeof value["isPosted"] === "boolean" &&
+    typeof value["amount"] === "number"
+  );
+};
+
 const isAccountDashboardDateSummary = function (
   value: unknown,
 ): value is AccountDashboardDateSummaryResult {
@@ -250,8 +279,8 @@ const isAccountDashboard = function (
   const { mode, accounts, availableAccountNames, accountingPeriods, dates } =
     value;
   if (
-    mode !== accountDashboardMode.AccountingPeriod &&
-    mode !== accountDashboardMode.Date
+    mode !== AccountDashboardMode.AccountingPeriod &&
+    mode !== AccountDashboardMode.Date
   ) {
     return false;
   }
@@ -262,6 +291,16 @@ const isAccountDashboard = function (
     !Array.isArray(accounts["items"]) ||
     !accounts["items"].every(isAccountDashboardAccount) ||
     typeof accounts["totalCount"] !== "number"
+  ) {
+    return false;
+  }
+  if (!isObject(value["balanceEvents"])) {
+    return false;
+  }
+  if (
+    !Array.isArray(value["balanceEvents"]["items"]) ||
+    !value["balanceEvents"]["items"].every(isAccountDashboardBalanceEvent) ||
+    typeof value["balanceEvents"]["totalCount"] !== "number"
   ) {
     return false;
   }
@@ -296,7 +335,7 @@ const getDashboardSnapshot = function (
   dashboard: AccountDashboardResult,
 ): DashboardSnapshot {
   if (
-    dashboard.mode === accountDashboardMode.AccountingPeriod &&
+    dashboard.mode === AccountDashboardMode.AccountingPeriod &&
     dashboard.accountingPeriods !== null &&
     dashboard.accountingPeriods.length > 0
   ) {
@@ -391,6 +430,8 @@ const AccountOverviewDashboard = async function ({
   const {
     sort,
     page,
+    balanceEventSort,
+    balanceEventPage,
     mode,
     accountType,
     accountName,
@@ -455,8 +496,10 @@ const AccountOverviewDashboard = async function ({
       ? defaultFilterMode
       : mode;
   const currentPage = parsePageNumber(page);
+  const currentBalanceEventPage = parsePageNumber(balanceEventPage);
   const persistedFilters = {
     ...(typeof sort === "string" ? { sort } : {}),
+    ...(typeof balanceEventSort === "string" ? { balanceEventSort } : {}),
     ...(shouldPersistAccountTypes(currentAccountTypes)
       ? { accountType: currentAccountTypes }
       : {}),
@@ -500,6 +543,9 @@ const AccountOverviewDashboard = async function ({
   if (typeof sort === "string") {
     dashboardRequestParams.set("Sort", sort);
   }
+  if (typeof balanceEventSort === "string") {
+    dashboardRequestParams.set("BalanceEventSort", balanceEventSort);
+  }
   if (shouldPersistAccountTypes(currentAccountTypes)) {
     currentAccountTypes.forEach((selectedAccountType) => {
       dashboardRequestParams.append("AccountType", selectedAccountType);
@@ -514,6 +560,11 @@ const AccountOverviewDashboard = async function ({
   dashboardRequestParams.set(
     "Offset",
     ((currentPage - 1) * rowsPerPage).toString(),
+  );
+  dashboardRequestParams.set("BalanceEventLimit", rowsPerPage.toString());
+  dashboardRequestParams.set(
+    "BalanceEventOffset",
+    ((currentBalanceEventPage - 1) * rowsPerPage).toString(),
   );
   if (currentMode === "date") {
     dashboardRequestParams.set(
@@ -539,15 +590,17 @@ const AccountOverviewDashboard = async function ({
   const snapshot = getDashboardSnapshot(dashboard);
 
   return (
-    <Stack spacing={3} sx={{ maxWidth: 1440 }}>
-      <AccountOverviewDashboardFilter
-        accountingPeriods={sortedAccountingPeriodsAscending}
-        availableAccountNames={dashboard.availableAccountNames}
-        defaultAccountingPeriodId={currentAccountingPeriod?.id ?? null}
-        defaultStartDate={defaultStartDate.format("YYYY-MM-DD")}
-        defaultEndDate={defaultEndDate.format("YYYY-MM-DD")}
-      />
-      <AccountOverviewQuickActions isInOnboardingMode={isInOnboardingMode} />
+    <Stack spacing={3} sx={{ width: "100%" }}>
+      <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
+        <AccountOverviewDashboardFilter
+          accountingPeriods={sortedAccountingPeriodsAscending}
+          availableAccountNames={dashboard.availableAccountNames}
+          defaultAccountingPeriodId={currentAccountingPeriod?.id ?? null}
+          defaultStartDate={defaultStartDate.format("YYYY-MM-DD")}
+          defaultEndDate={defaultEndDate.format("YYYY-MM-DD")}
+        />
+        <AccountOverviewQuickActions isInOnboardingMode={isInOnboardingMode} />
+      </Stack>
       <AccountOverviewSummaryCards
         startLabel={snapshot.startLabel}
         endLabel={snapshot.endLabel}
@@ -581,11 +634,25 @@ const AccountOverviewDashboard = async function ({
           dates={dashboard.dates}
         />
       </Box>
-      <AccountOverviewListFrame
-        data={[...dashboard.accounts.items]}
-        isInOnboardingMode={isInOnboardingMode}
-        totalCount={dashboard.accounts.totalCount}
-      />
+      <Box
+        sx={{
+          display: "grid",
+          gap: 3,
+          gridTemplateColumns:
+            "repeat(auto-fit, minmax(min(100%, 800px), 1fr))",
+        }}
+      >
+        <AccountOverviewListFrame
+          data={[...dashboard.accounts.items]}
+          isInOnboardingMode={isInOnboardingMode}
+          totalCount={dashboard.accounts.totalCount}
+        />
+        <AccountOverviewBalanceEventListFrame
+          data={[...dashboard.balanceEvents.items]}
+          mode={dashboard.mode}
+          totalCount={dashboard.balanceEvents.totalCount}
+        />
+      </Box>
     </Stack>
   );
 };
