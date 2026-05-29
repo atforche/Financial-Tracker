@@ -22,19 +22,41 @@ const isAccountTypeArray = function (
   return Array.isArray(value);
 };
 
+const isRepeatedSearchParamArray = function (
+  value: string | readonly string[] | undefined,
+): value is readonly string[] {
+  return Array.isArray(value);
+};
+
+const appendRepeatedSearchParam = function (
+  params: URLSearchParams,
+  key: string,
+  value: string | readonly string[] | undefined,
+): void {
+  if (isRepeatedSearchParamArray(value)) {
+    value.forEach((item) => {
+      params.append(key, item);
+    });
+    return;
+  }
+
+  if (typeof value === "string") {
+    params.append(key, value);
+  }
+};
+
 const accountOverviewDashboardSearchParamsToSearchParams = function (
   searchParams: AccountOverviewDashboardSearchParams,
 ): URLSearchParams {
-  const { accountType, ...remainingSearchParams } = searchParams;
+  const { accountType, accountName, ...remainingSearchParams } = searchParams;
   const params = objectToSearchParams(remainingSearchParams);
 
-  if (isAccountTypeArray(accountType)) {
-    accountType.forEach((selectedAccountType) => {
-      params.append("accountType", selectedAccountType);
-    });
-  } else if (typeof accountType === "string") {
-    params.append("accountType", accountType);
-  }
+  appendRepeatedSearchParam(
+    params,
+    "accountType",
+    isAccountTypeArray(accountType) ? accountType : accountType,
+  );
+  appendRepeatedSearchParam(params, "accountName", accountName);
 
   return params;
 };

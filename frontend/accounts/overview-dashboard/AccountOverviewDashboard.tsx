@@ -12,6 +12,10 @@ import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
 } from "@/accounts/overview-dashboard/accountTypeFilter";
+import {
+  normalizeRequestedAccountNames,
+  shouldPersistAccountNames,
+} from "@/accounts/overview-dashboard/accountNameFilter";
 import AccountOverviewChangeChart from "@/accounts/overview-dashboard/AccountOverviewChangeChart";
 import AccountOverviewDashboardFilter from "@/accounts/overview-dashboard/AccountOverviewDashboardFilter";
 import AccountOverviewListFrame from "@/accounts/overview-dashboard/AccountOverviewListFrame";
@@ -34,11 +38,11 @@ type AccountsDashboardFilterMode = "accounting-period" | "date";
  * Search parameters for the account overview dashboard.
  */
 interface AccountOverviewDashboardSearchParams {
-  search?: string;
   sort?: AccountDashboardSortOrder;
   page?: number | string;
   mode?: AccountsDashboardFilterMode;
   accountType?: AccountType | readonly AccountType[];
+  accountName?: string | readonly string[];
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;
   startDate?: string;
@@ -97,6 +101,7 @@ interface AccountDashboardResult {
     readonly items: readonly AccountDashboardAccountResult[];
     readonly totalCount: number;
   };
+  readonly availableAccountNames: readonly string[];
   readonly accountingPeriods:
     | readonly AccountDashboardPeriodSummaryResult[]
     | null;
@@ -242,7 +247,8 @@ const isAccountDashboard = function (
     return false;
   }
 
-  const { mode, accounts, accountingPeriods, dates } = value;
+  const { mode, accounts, availableAccountNames, accountingPeriods, dates } =
+    value;
   if (
     mode !== accountDashboardMode.AccountingPeriod &&
     mode !== accountDashboardMode.Date
@@ -256,6 +262,14 @@ const isAccountDashboard = function (
     !Array.isArray(accounts["items"]) ||
     !accounts["items"].every(isAccountDashboardAccount) ||
     typeof accounts["totalCount"] !== "number"
+  ) {
+    return false;
+  }
+  if (
+    !Array.isArray(availableAccountNames) ||
+    !availableAccountNames.every(
+      (accountName) => typeof accountName === "string",
+    )
   ) {
     return false;
   }
@@ -375,11 +389,11 @@ const AccountOverviewDashboard = async function ({
   searchParams,
 }: AccountOverviewDashboardProps): Promise<JSX.Element> {
   const {
-    search,
     sort,
     page,
     mode,
     accountType,
+    accountName,
     startAccountingPeriodId,
     endAccountingPeriodId,
     startDate,
@@ -418,12 +432,18 @@ const AccountOverviewDashboard = async function ({
     sortedAccountingPeriodsDescending[0] ??
     null;
   const isInOnboardingMode = currentAccountingPeriod === null;
-  const currentSearch = search?.trim() ?? "";
   const currentAccountTypes = normalizeAccountTypes(
     Array.isArray(accountType)
       ? accountType
       : typeof accountType === "string"
         ? [accountType]
+        : [],
+  );
+  const currentAccountNames = normalizeRequestedAccountNames(
+    Array.isArray(accountName)
+      ? accountName
+      : typeof accountName === "string"
+        ? [accountName]
         : [],
   );
 
@@ -436,10 +456,12 @@ const AccountOverviewDashboard = async function ({
       : defaultFilterMode;
   const currentPage = parsePageNumber(page);
   const persistedFilters = {
-    ...(currentSearch === "" ? {} : { search: currentSearch }),
     ...(typeof sort === "string" ? { sort } : {}),
     ...(shouldPersistAccountTypes(currentAccountTypes)
       ? { accountType: currentAccountTypes }
+      : {}),
+    ...(shouldPersistAccountNames(currentAccountNames)
+      ? { accountName: currentAccountNames }
       : {}),
   };
 
@@ -475,15 +497,17 @@ const AccountOverviewDashboard = async function ({
   }
 
   const dashboardRequestParams = new URLSearchParams();
-  if (currentSearch !== "") {
-    dashboardRequestParams.set("Search", currentSearch);
-  }
   if (typeof sort === "string") {
     dashboardRequestParams.set("Sort", sort);
   }
   if (shouldPersistAccountTypes(currentAccountTypes)) {
     currentAccountTypes.forEach((selectedAccountType) => {
       dashboardRequestParams.append("AccountType", selectedAccountType);
+    });
+  }
+  if (shouldPersistAccountNames(currentAccountNames)) {
+    currentAccountNames.forEach((selectedAccountName) => {
+      dashboardRequestParams.append("AccountName", selectedAccountName);
     });
   }
   dashboardRequestParams.set("Limit", rowsPerPage.toString());
@@ -518,6 +542,7 @@ const AccountOverviewDashboard = async function ({
     <Stack spacing={3} sx={{ maxWidth: 1440 }}>
       <AccountOverviewDashboardFilter
         accountingPeriods={sortedAccountingPeriodsAscending}
+        availableAccountNames={dashboard.availableAccountNames}
         defaultAccountingPeriodId={currentAccountingPeriod?.id ?? null}
         defaultStartDate={defaultStartDate.format("YYYY-MM-DD")}
         defaultEndDate={defaultEndDate.format("YYYY-MM-DD")}

@@ -16,6 +16,11 @@ public class AccountDashboardModel
     public required CollectionModel<AccountDashboardAccountModel> Accounts { get; init; }
 
     /// <summary>
+    /// Available Account Names for the current dashboard scope before account-name filtering.
+    /// </summary>
+    public required IReadOnlyCollection<string> AvailableAccountNames { get; init; }
+
+    /// <summary>
     /// Summary balances for each Accounting Period in the requested range.
     /// </summary>
     public IReadOnlyCollection<AccountDashboardPeriodSummaryModel>? AccountingPeriods { get; init; }

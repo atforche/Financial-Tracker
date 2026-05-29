@@ -1176,8 +1176,8 @@ export interface paths {
                     EndAccountingPeriodId?: string;
                     /** @description Optional Account Type filters to apply to the dashboard. */
                     AccountType?: components["schemas"]["AccountTypeModel"][];
-                    /** @description Optional search string to apply to the matching Accounts. */
-                    Search?: string;
+                    /** @description Optional Account Name filters to apply to the dashboard. */
+                    AccountName?: string[];
                     /** @description Optional sort to apply to the matching Accounts. */
                     Sort?: components["schemas"]["AccountDashboardSortOrderModel"];
                     /** @description Maximum number of results to return */
@@ -2158,6 +2158,8 @@ export interface components {
             mode: components["schemas"]["AccountDashboardModeModel"];
             /** @description Matching Accounts for the requested dashboard page. */
             accounts: components["schemas"]["CollectionModelOfAccountDashboardAccountModel"];
+            /** @description Available Account Names for the current dashboard scope before account-name filtering. */
+            availableAccountNames: string[];
             /** @description Summary balances for each Accounting Period in the requested range. */
             accountingPeriods?: null | components["schemas"]["AccountDashboardPeriodSummaryModel"][];
             /** @description Summary balances for each date in the requested range. */

@@ -1,4 +1,3 @@
-using System.Globalization;
 using Domain;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
@@ -44,6 +43,20 @@ public class AccountDashboardGetter(
             }
         }
 
+        HashSet<string>? requestedAccountNames = null;
+        if (request.AccountName is { Count: > 0 } requestAccountNames)
+        {
+            requestedAccountNames = requestAccountNames
+                .Where(accountName => !string.IsNullOrWhiteSpace(accountName))
+                .Select(accountName => accountName.Trim())
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            if (requestedAccountNames.Count == 0)
+            {
+                requestedAccountNames = null;
+            }
+        }
+
         bool hasDateRangeParameters = request.StartDate != null || request.EndDate != null;
         bool hasAccountingPeriodRangeParameters =
             request.StartAccountingPeriodId != null || request.EndAccountingPeriodId != null;
@@ -58,10 +71,10 @@ public class AccountDashboardGetter(
 
         if (hasDateRangeParameters)
         {
-            return TryGetDateMode(request, accountTypes, errors, out results);
+            return TryGetDateMode(request, accountTypes, requestedAccountNames, errors, out results);
         }
 
-        return TryGetAccountingPeriodMode(request, accountTypes, errors, out results);
+        return TryGetAccountingPeriodMode(request, accountTypes, requestedAccountNames, errors, out results);
     }
 
     /// <summary>
@@ -70,6 +83,7 @@ public class AccountDashboardGetter(
     private bool TryGetAccountingPeriodMode(
         AccountDashboardQueryParameterModel request,
         IReadOnlySet<AccountType>? accountTypes,
+        IReadOnlySet<string>? requestedAccountNames,
         Dictionary<string, string[]> errors,
         out AccountDashboardModel results)
     {
@@ -121,7 +135,11 @@ public class AccountDashboardGetter(
             results = CreateEmptyResult(AccountDashboardModeModel.AccountingPeriod);
             return false;
         }
-        List<AccountDashboardRow> filteredRows = BuildAccountingPeriodRows(accountingPeriods, accountTypes, request.Search);
+        List<AccountDashboardRow> baseRows = BuildAccountingPeriodRows(accountingPeriods, accountTypes);
+        List<string> availableAccountNames = GetAvailableAccountNames(baseRows);
+        List<AccountDashboardRow> filteredRows = ApplyFilters(
+            baseRows,
+            GetApplicableAccountNames(requestedAccountNames, availableAccountNames));
         filteredRows = SortRows(filteredRows, request.Sort);
         results = new AccountDashboardModel
         {
@@ -133,6 +151,7 @@ public class AccountDashboardGetter(
                     .ToList(),
                 TotalCount = filteredRows.Count,
             },
+            AvailableAccountNames = availableAccountNames,
             AccountingPeriods = BuildPeriodSummaries(accountingPeriods, filteredRows),
             Dates = null,
         };
@@ -145,6 +164,7 @@ public class AccountDashboardGetter(
     private bool TryGetDateMode(
         AccountDashboardQueryParameterModel request,
         IReadOnlySet<AccountType>? accountTypes,
+        IReadOnlySet<string>? requestedAccountNames,
         Dictionary<string, string[]> errors,
         out AccountDashboardModel results)
     {
@@ -170,7 +190,11 @@ public class AccountDashboardGetter(
         var dates = new DateRange(request.StartDate.Value, request.EndDate.Value)
             .GetInclusiveDates()
             .ToList();
-        List<AccountDashboardRow> filteredRows = BuildDateRows(dates, request.EndDate.Value, accountTypes, request.Search);
+        List<AccountDashboardRow> baseRows = BuildDateRows(dates, request.EndDate.Value, accountTypes);
+        List<string> availableAccountNames = GetAvailableAccountNames(baseRows);
+        List<AccountDashboardRow> filteredRows = ApplyFilters(
+            baseRows,
+            GetApplicableAccountNames(requestedAccountNames, availableAccountNames));
         filteredRows = SortRows(filteredRows, request.Sort);
         results = new AccountDashboardModel
         {
@@ -182,6 +206,7 @@ public class AccountDashboardGetter(
                     .ToList(),
                 TotalCount = filteredRows.Count,
             },
+            AvailableAccountNames = availableAccountNames,
             AccountingPeriods = null,
             Dates = BuildDateSummaries(dates, filteredRows),
         };
@@ -202,6 +227,7 @@ public class AccountDashboardGetter(
             Items = [],
             TotalCount = 0,
         },
+        AvailableAccountNames = [],
         AccountingPeriods = null,
         Dates = null,
     };
@@ -230,8 +256,7 @@ public class AccountDashboardGetter(
 
     private List<AccountDashboardRow> BuildAccountingPeriodRows(
         IReadOnlyList<AccountingPeriod> accountingPeriods,
-        IReadOnlySet<AccountType>? accountTypes,
-        string? search)
+        IReadOnlySet<AccountType>? accountTypes)
     {
         Dictionary<Guid, Account> accountsById = [];
         Dictionary<Guid, Dictionary<Guid, AccountingPeriodAccountBalanceHistory>> balanceHistoriesByAccountId = [];
@@ -283,19 +308,13 @@ public class AccountDashboardGetter(
                 null);
         });
 
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            rows = rows.Where(row => MatchesSearch(row, search));
-        }
-
         return rows.ToList();
     }
 
     private List<AccountDashboardRow> BuildDateRows(
         IReadOnlyList<DateOnly> dates,
         DateOnly endDate,
-        IReadOnlySet<AccountType>? accountTypes,
-        string? search)
+        IReadOnlySet<AccountType>? accountTypes)
     {
         IEnumerable<Account> accounts = accountRepository.GetAll()
             .Where(account => accountTypes == null || accountTypes.Contains(account.Type))
@@ -319,12 +338,44 @@ public class AccountDashboardGetter(
                 dateModels);
         });
 
-        if (!string.IsNullOrWhiteSpace(search))
+        return rows.ToList();
+    }
+
+    private static List<string> GetAvailableAccountNames(
+        IReadOnlyCollection<AccountDashboardRow> rows) => rows
+        .Select(row => row.Name)
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .Order(StringComparer.OrdinalIgnoreCase)
+        .ToList();
+
+    private static HashSet<string>? GetApplicableAccountNames(
+        IReadOnlySet<string>? requestedAccountNames,
+        IReadOnlyCollection<string> availableAccountNames)
+    {
+        if (requestedAccountNames == null)
         {
-            rows = rows.Where(row => MatchesSearch(row, search));
+            return null;
         }
 
-        return rows.ToList();
+        var applicableAccountNames = availableAccountNames
+            .Where(requestedAccountNames.Contains)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return applicableAccountNames.Count == 0 ? null : applicableAccountNames;
+    }
+
+    private static List<AccountDashboardRow> ApplyFilters(
+        IReadOnlyCollection<AccountDashboardRow> rows,
+        HashSet<string>? accountNames)
+    {
+        IEnumerable<AccountDashboardRow> filteredRows = rows;
+
+        if (accountNames != null)
+        {
+            filteredRows = filteredRows.Where(row => accountNames.Contains(row.Name));
+        }
+
+        return filteredRows.ToList();
     }
 
     private decimal GetBalanceForDate(Account account, DateOnly date)
@@ -338,19 +389,6 @@ public class AccountDashboardGetter(
         decimal balance = accountBalanceHistory?.PostedBalance ?? account.OnboardedBalance ?? 0;
         return NormalizeBalance(account.Type, balance);
     }
-
-    private static bool MatchesSearch(AccountDashboardRow row, string search) =>
-        row.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-        row.Type.ToString().Contains(search, StringComparison.OrdinalIgnoreCase) ||
-        row.OpeningBalance.ToString(CultureInfo.InvariantCulture).Contains(search, StringComparison.OrdinalIgnoreCase) ||
-        row.ClosingBalance.ToString(CultureInfo.InvariantCulture).Contains(search, StringComparison.OrdinalIgnoreCase) ||
-        (row.AccountingPeriods?.Any(accountingPeriod =>
-            accountingPeriod.AccountingPeriodName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-            accountingPeriod.OpeningBalance.ToString(CultureInfo.InvariantCulture).Contains(search, StringComparison.OrdinalIgnoreCase) ||
-            accountingPeriod.ClosingBalance.ToString(CultureInfo.InvariantCulture).Contains(search, StringComparison.OrdinalIgnoreCase)) ?? false) ||
-        (row.Dates?.Any(date =>
-            date.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture).Contains(search, StringComparison.OrdinalIgnoreCase) ||
-            date.Balance.ToString(CultureInfo.InvariantCulture).Contains(search, StringComparison.OrdinalIgnoreCase)) ?? false);
 
     private static List<AccountDashboardRow> SortRows(
         List<AccountDashboardRow> rows,

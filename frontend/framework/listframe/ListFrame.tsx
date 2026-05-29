@@ -42,6 +42,7 @@ interface ListFrameProps<T> {
   readonly totalCount: number | null;
   readonly searchParamName: string;
   readonly pageParamName: string;
+  readonly hasActiveFilters?: boolean;
   readonly initialEmptyState?: EmptyStateDefinition;
   readonly filteredEmptyState?: EmptyStateDefinition;
 }
@@ -56,6 +57,7 @@ const ListFrame = function <T>({
   totalCount,
   searchParamName,
   pageParamName,
+  hasActiveFilters,
   initialEmptyState,
   filteredEmptyState,
 }: ListFrameProps<T>): JSX.Element {
@@ -64,6 +66,10 @@ const ListFrame = function <T>({
   const router = useRouter();
   const currentSearch = searchParams.get(searchParamName);
   const currentPage = searchParams.get(pageParamName);
+  const isFiltered =
+    typeof hasActiveFilters === "boolean"
+      ? hasActiveFilters
+      : typeof currentSearch === "string" && currentSearch.trim() !== "";
 
   const hasLoadingCompleted = data !== null && totalCount !== null;
   const numberOfRows = data?.length ?? 0;
@@ -72,7 +78,7 @@ const ListFrame = function <T>({
 
   let emptyStateToDisplay = null;
   if (hasLoadingCompleted && numberOfRows === 0) {
-    if (typeof currentSearch === "string" && currentSearch.trim() !== "") {
+    if (isFiltered) {
       emptyStateToDisplay = filteredEmptyState ?? null;
     } else {
       emptyStateToDisplay = initialEmptyState ?? null;

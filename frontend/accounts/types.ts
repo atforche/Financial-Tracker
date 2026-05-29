@@ -25,6 +25,7 @@ interface AccountDashboard {
     readonly items: AccountDashboardAccount[];
     readonly totalCount: number;
   };
+  readonly availableAccountNames: readonly string[];
   readonly accountingPeriods: readonly AccountDashboardPeriodSummary[] | null;
   readonly dates: readonly AccountDashboardDateSummary[] | null;
 }

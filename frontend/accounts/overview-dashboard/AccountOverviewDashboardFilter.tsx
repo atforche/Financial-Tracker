@@ -2,7 +2,6 @@
 
 import {
   Button,
-  InputAdornment,
   MenuItem,
   Paper,
   Stack,
@@ -12,16 +11,19 @@ import {
   Typography,
 } from "@mui/material";
 import {
+  normalizeAccountNames,
+  shouldPersistAccountNames,
+} from "@/accounts/overview-dashboard/accountNameFilter";
+import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
 } from "@/accounts/overview-dashboard/accountTypeFilter";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import AccountOverviewAccountNameFilter from "@/accounts/overview-dashboard/AccountOverviewAccountNameFilter";
 import AccountOverviewAccountTypeFilter from "@/accounts/overview-dashboard/AccountOverviewAccountTypeFilter";
 import type { AccountType } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
-import Search from "@mui/icons-material/Search";
-import { useDebouncedCallback } from "use-debounce";
 
 /**
  * Dashboard filter mode values used in the Accounts view URL.
@@ -33,6 +35,7 @@ type AccountsDashboardFilterMode = "accounting-period" | "date";
  */
 interface AccountOverviewDashboardFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
+  readonly availableAccountNames: readonly string[];
   readonly defaultAccountingPeriodId: string | null;
   readonly defaultStartDate: string;
   readonly defaultEndDate: string;
@@ -44,6 +47,7 @@ interface AccountOverviewDashboardFilterProps {
  */
 const AccountOverviewDashboardFilter = function ({
   accountingPeriods,
+  availableAccountNames,
   defaultAccountingPeriodId,
   defaultStartDate,
   defaultEndDate,
@@ -53,10 +57,10 @@ const AccountOverviewDashboardFilter = function ({
   const pathname = usePathname();
   const router = useRouter();
 
-  const searchParamName = "search";
   const pageParamName = "page";
   const modeParamName = "mode";
   const accountTypeParamName = "accountType";
+  const accountNameParamName = "accountName";
   const startAccountingPeriodIdParamName = "startAccountingPeriodId";
   const endAccountingPeriodIdParamName = "endAccountingPeriodId";
   const startDateParamName = "startDate";
@@ -64,9 +68,12 @@ const AccountOverviewDashboardFilter = function ({
 
   const currentMode: AccountsDashboardFilterMode =
     searchParams.get(modeParamName) === "date" ? "date" : "accounting-period";
-  const currentSearch = searchParams.get(searchParamName) ?? "";
   const currentAccountTypes = normalizeAccountTypes(
     searchParams.getAll(accountTypeParamName),
+  );
+  const currentAccountNames = normalizeAccountNames(
+    searchParams.getAll(accountNameParamName),
+    availableAccountNames,
   );
   const currentStartAccountingPeriodId =
     searchParams.get(startAccountingPeriodIdParamName) ??
@@ -96,35 +103,35 @@ const AccountOverviewDashboardFilter = function ({
 
   const hasActiveView =
     currentMode !== "accounting-period" ||
-    currentSearch.trim() !== "" ||
     shouldPersistAccountTypes(currentAccountTypes) ||
+    shouldPersistAccountNames(currentAccountNames) ||
     currentStartAccountingPeriodId !== (defaultAccountingPeriodId ?? "") ||
     currentEndAccountingPeriodId !== (defaultAccountingPeriodId ?? "") ||
     currentStartDate !== defaultStartDate ||
     currentEndDate !== defaultEndDate;
-
-  const handleSearchChange = useDebouncedCallback(
-    (event: React.ChangeEvent<HTMLInputElement>): void => {
-      updateParams((params) => {
-        const { value } = event.target;
-        if (value.trim() !== "") {
-          params.set(searchParamName, value);
-        } else {
-          params.delete(searchParamName);
-        }
-      });
-    },
-    300,
-  );
 
   const handleAccountTypeChange = function (
     nextAccountTypes: readonly AccountType[],
   ): void {
     updateParams((params) => {
       params.delete(accountTypeParamName);
+      params.delete(accountNameParamName);
       if (shouldPersistAccountTypes(nextAccountTypes)) {
         nextAccountTypes.forEach((accountType) => {
           params.append(accountTypeParamName, accountType);
+        });
+      }
+    });
+  };
+
+  const handleAccountNameChange = function (
+    nextAccountNames: readonly string[],
+  ): void {
+    updateParams((params) => {
+      params.delete(accountNameParamName);
+      if (shouldPersistAccountNames(nextAccountNames)) {
+        nextAccountNames.forEach((accountName) => {
+          params.append(accountNameParamName, accountName);
         });
       }
     });
@@ -239,8 +246,8 @@ const AccountOverviewDashboardFilter = function ({
 
   const clearView = function (): void {
     updateParams((params) => {
-      params.delete(searchParamName);
       params.delete(accountTypeParamName);
+      params.delete(accountNameParamName);
       params.set(modeParamName, "accounting-period");
       params.delete(startDateParamName);
       params.delete(endDateParamName);
@@ -369,26 +376,15 @@ const AccountOverviewDashboardFilter = function ({
               />
             </>
           )}
-          <TextField
-            size="small"
-            placeholder="Search accounts"
-            defaultValue={currentSearch}
-            onChange={handleSearchChange}
-            disabled={disabled}
-            sx={{ flex: 1, minWidth: { xs: "100%", md: 240 } }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
           <AccountOverviewAccountTypeFilter
             value={currentAccountTypes}
             onChange={handleAccountTypeChange}
+            disabled={disabled}
+          />
+          <AccountOverviewAccountNameFilter
+            availableAccountNames={availableAccountNames}
+            value={currentAccountNames}
+            onChange={handleAccountNameChange}
             disabled={disabled}
           />
           <Button

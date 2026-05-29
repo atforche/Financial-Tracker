@@ -31,9 +31,9 @@ public class AccountDashboardQueryParameterModel
     public List<AccountTypeModel>? AccountType { get; init; }
 
     /// <summary>
-    /// Optional search string to apply to the matching Accounts.
+    /// Optional Account Name filters to apply to the dashboard.
     /// </summary>
-    public string? Search { get; init; }
+    public List<string>? AccountName { get; init; }
 
     /// <summary>
     /// Optional sort to apply to the matching Accounts.

@@ -39,9 +39,15 @@ const AccountOverviewListFrame = function ({
   const pathname = usePathname();
   const router = useRouter();
 
-  const searchParamName = "search";
   const sortParamName = "sort";
   const pageParamName = "page";
+  const accountTypeParamName = "accountType";
+  const accountNameParamName = "accountName";
+  const modeParamName = "mode";
+  const startAccountingPeriodIdParamName = "startAccountingPeriodId";
+  const endAccountingPeriodIdParamName = "endAccountingPeriodId";
+  const startDateParamName = "startDate";
+  const endDateParamName = "endDate";
 
   const setSort = function (sort: AccountDashboardSortOrder | null): void {
     const params = new URLSearchParams(searchParams.toString());
@@ -58,6 +64,14 @@ const AccountOverviewListFrame = function ({
     AccountDashboardSortOrder,
     searchParams.get(sortParamName) ?? "",
   );
+  const hasActiveFilters =
+    searchParams.getAll(accountTypeParamName).length > 0 ||
+    searchParams.getAll(accountNameParamName).length > 0 ||
+    searchParams.get(modeParamName) === "date" ||
+    searchParams.has(startAccountingPeriodIdParamName) ||
+    searchParams.has(endAccountingPeriodIdParamName) ||
+    searchParams.has(startDateParamName) ||
+    searchParams.has(endDateParamName);
 
   const columns: ColumnDefinition<AccountDashboardAccount>[] = [
     {
@@ -206,8 +220,9 @@ const AccountOverviewListFrame = function ({
       getId={(account) => account.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      searchParamName={searchParamName}
+      searchParamName="search"
       pageParamName={pageParamName}
+      hasActiveFilters={hasActiveFilters}
       initialEmptyState={{
         title: "No accounts have been added",
         description: isInOnboardingMode
@@ -229,18 +244,15 @@ const AccountOverviewListFrame = function ({
       filteredEmptyState={{
         title: "No accounts match this dashboard filter",
         description:
-          "Try a different search, account type, or date range to widen the dashboard scope.",
+          "Try a different account type, account name, or date range to widen the dashboard scope.",
         action: (
           <Button
             variant="contained"
             onClick={() => {
-              const params = new URLSearchParams(searchParams.toString());
-              params.delete(searchParamName);
-              params.delete(pageParamName);
-              router.replace(`${pathname}?${params.toString()}`);
+              router.replace(pathname);
             }}
           >
-            Clear search
+            Reset filters
           </Button>
         ),
       }}
