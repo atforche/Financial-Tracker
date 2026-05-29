@@ -78,9 +78,7 @@ const OverviewQuickActions = function ({
             title: "Add a new account",
             description:
               "Create another account and tie it to the active accounting period.",
-            href: accountRoutes.create({
-              accountingPeriodId: currentAccountingPeriod.id,
-            }),
+            href: accountRoutes.create(),
             buttonLabel: "Create account",
           },
           {

@@ -64,9 +64,7 @@ const OverviewHero = function ({ data }: OverviewHeroProps): JSX.Element {
               </Button>
               <Button
                 variant="outlined"
-                href={accountRoutes.create({
-                  accountingPeriodId: currentAccountingPeriod.id,
-                })}
+                href={accountRoutes.create()}
               >
                 Create account
               </Button>

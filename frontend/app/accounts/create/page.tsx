@@ -1,3 +1,3 @@
-import CreateAccountView from "@/accounts/CreateAccountView";
+import CreateAccountView from "@/accounts/create/CreateAccountView";
 
 export default CreateAccountView;

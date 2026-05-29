@@ -12,7 +12,6 @@ import type {
 } from "@/accounts/UpdateAccountView";
 import type { AccountDashboardSearchParams } from "@/accounts/dashboard/AccountDashboard";
 import type { AccountType } from "@/accounts/types";
-import type { CreateAccountViewSearchParams } from "@/accounts/CreateAccountView";
 import type { Route } from "next";
 import { objectToSearchParams } from "@/framework/routes";
 
@@ -78,11 +77,7 @@ const routes = {
       "/accounts",
       accountDashboardSearchParamsToSearchParams(searchParams),
     ),
-  create: (searchParams: CreateAccountViewSearchParams): Route =>
-    pathWithSearchParams(
-      "/accounts/create",
-      objectToSearchParams(searchParams),
-    ),
+  create: (): Route => "/accounts/create",
   onboard: "/accounts/onboard" as Route,
   detail: (
     params: AccountViewParams,

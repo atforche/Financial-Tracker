@@ -14,24 +14,13 @@ const breadcrumbs = {
       href: routes.index({}),
     },
   ],
-  create: (accountingPeriod: AccountingPeriod | null): Breadcrumb[] => {
-    if (accountingPeriod !== null) {
-      return [
-        ...accountingPeriodBreadcrumbs.detail(accountingPeriod),
-        {
-          label: "Create Account",
-          href: routes.create({}),
-        },
-      ];
-    }
-    return [
-      ...breadcrumbs.index(),
-      {
-        label: "Create Account",
-        href: routes.create({}),
-      },
-    ];
-  },
+  create: (): Breadcrumb[] => [
+    ...breadcrumbs.index(),
+    {
+      label: "Create Account",
+      href: routes.create(),
+    },
+  ],
   onboard: (): Breadcrumb[] => [
     ...breadcrumbs.index(),
     {

@@ -7,12 +7,12 @@ import { isApiError } from "@/framework/data/apiError";
 import nameof from "@/framework/data/nameof";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import routes from "@/accounts/routes";
 
 /**
  * Interface representing the state of creating an account.
  */
 interface ActionState {
-  readonly redirectUrl: string;
   readonly errorTitle?: string | null;
   readonly nameErrors?: string | null;
   readonly typeErrors?: string | null;
@@ -22,12 +22,35 @@ interface ActionState {
 }
 
 /**
+ * Payload for the create account server action.
+ */
+interface ActionPayload {
+  readonly redirectUrl: string;
+  readonly request: CreateAccountRequest;
+}
+
+/**
+ * Ensures redirects stay within the app.
+ */
+const getSafeRedirectUrl = function (redirectUrl: string): string {
+  if (
+    redirectUrl.startsWith("/") &&
+    !redirectUrl.startsWith("//")
+  ) {
+    return redirectUrl;
+  }
+
+  return routes.index({});
+};
+
+/**
  * Server action that creates a new account.
  */
 const createAccount = async function (
-  { redirectUrl }: ActionState,
-  request: CreateAccountRequest,
+  _: ActionState,
+  { redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
+  const safeRedirectUrl = getSafeRedirectUrl(redirectUrl);
   const client = getApiClient();
   const { error } = await client.POST("/accounts", {
     body: request,
@@ -70,7 +93,6 @@ const createAccount = async function (
       }
 
       return {
-        redirectUrl,
         errorTitle: error.title ?? null,
         nameErrors: nameErrorMessage,
         typeErrors: typeErrorMessage,
@@ -82,8 +104,8 @@ const createAccount = async function (
     throw new Error("An unexpected error occurred", { cause: error });
   }
 
-  revalidatePath(redirectUrl);
-  redirect(redirectUrl);
+  revalidatePath(safeRedirectUrl);
+  redirect(safeRedirectUrl);
 };
 
 export default createAccount;
