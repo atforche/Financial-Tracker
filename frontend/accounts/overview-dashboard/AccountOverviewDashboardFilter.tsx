@@ -1,6 +1,5 @@
 "use client";
 
-import { AccountType, formatAccountType } from "@/accounts/types";
 import {
   Button,
   InputAdornment,
@@ -12,7 +11,13 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
+import {
+  normalizeAccountTypes,
+  shouldPersistAccountTypes,
+} from "@/accounts/overview-dashboard/accountTypeFilter";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import AccountOverviewAccountTypeFilter from "@/accounts/overview-dashboard/AccountOverviewAccountTypeFilter";
+import type { AccountType } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
 import Search from "@mui/icons-material/Search";
@@ -33,20 +38,6 @@ interface AccountOverviewDashboardFilterProps {
   readonly defaultEndDate: string;
   readonly disabled?: boolean;
 }
-
-/**
- * Account type options available in the Accounts dashboard filters.
- */
-const accountTypeOptions: {
-  readonly label: string;
-  readonly value: AccountType | "";
-}[] = [
-  { label: "All account types", value: "" },
-  ...Object.values(AccountType).map((accountType) => ({
-    label: formatAccountType(accountType),
-    value: accountType,
-  })),
-];
 
 /**
  * Renders the dashboard filter card for the Accounts view.
@@ -74,7 +65,9 @@ const AccountOverviewDashboardFilter = function ({
   const currentMode: AccountsDashboardFilterMode =
     searchParams.get(modeParamName) === "date" ? "date" : "accounting-period";
   const currentSearch = searchParams.get(searchParamName) ?? "";
-  const currentAccountType = searchParams.get(accountTypeParamName) ?? "";
+  const currentAccountTypes = normalizeAccountTypes(
+    searchParams.getAll(accountTypeParamName),
+  );
   const currentStartAccountingPeriodId =
     searchParams.get(startAccountingPeriodIdParamName) ??
     defaultAccountingPeriodId ??
@@ -104,7 +97,7 @@ const AccountOverviewDashboardFilter = function ({
   const hasActiveView =
     currentMode !== "accounting-period" ||
     currentSearch.trim() !== "" ||
-    currentAccountType !== "" ||
+    shouldPersistAccountTypes(currentAccountTypes) ||
     currentStartAccountingPeriodId !== (defaultAccountingPeriodId ?? "") ||
     currentEndAccountingPeriodId !== (defaultAccountingPeriodId ?? "") ||
     currentStartDate !== defaultStartDate ||
@@ -125,14 +118,14 @@ const AccountOverviewDashboardFilter = function ({
   );
 
   const handleAccountTypeChange = function (
-    event: React.ChangeEvent<HTMLInputElement>,
+    nextAccountTypes: readonly AccountType[],
   ): void {
     updateParams((params) => {
-      const nextAccountType = event.target.value;
-      if (nextAccountType === "") {
-        params.delete(accountTypeParamName);
-      } else {
-        params.set(accountTypeParamName, nextAccountType);
+      params.delete(accountTypeParamName);
+      if (shouldPersistAccountTypes(nextAccountTypes)) {
+        nextAccountTypes.forEach((accountType) => {
+          params.append(accountTypeParamName, accountType);
+        });
       }
     });
   };
@@ -393,21 +386,11 @@ const AccountOverviewDashboardFilter = function ({
               },
             }}
           />
-          <TextField
-            select
-            size="small"
-            label="Account type"
-            value={currentAccountType}
+          <AccountOverviewAccountTypeFilter
+            value={currentAccountTypes}
             onChange={handleAccountTypeChange}
             disabled={disabled}
-            sx={sharedFieldSx}
-          >
-            {accountTypeOptions.map((option) => (
-              <MenuItem key={option.label} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </TextField>
+          />
           <Button
             variant="outlined"
             onClick={clearView}

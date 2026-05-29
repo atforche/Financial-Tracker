@@ -8,6 +8,10 @@ import {
   AccountingPeriodSortOrder,
 } from "@/accounting-periods/types";
 import { Box, Stack } from "@mui/material";
+import {
+  normalizeAccountTypes,
+  shouldPersistAccountTypes,
+} from "@/accounts/overview-dashboard/accountTypeFilter";
 import AccountOverviewChangeChart from "@/accounts/overview-dashboard/AccountOverviewChangeChart";
 import AccountOverviewDashboardFilter from "@/accounts/overview-dashboard/AccountOverviewDashboardFilter";
 import AccountOverviewListFrame from "@/accounts/overview-dashboard/AccountOverviewListFrame";
@@ -34,7 +38,7 @@ interface AccountOverviewDashboardSearchParams {
   sort?: AccountDashboardSortOrder;
   page?: number | string;
   mode?: AccountsDashboardFilterMode;
-  accountType?: AccountType;
+  accountType?: AccountType | readonly AccountType[];
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;
   startDate?: string;
@@ -415,6 +419,13 @@ const AccountOverviewDashboard = async function ({
     null;
   const isInOnboardingMode = currentAccountingPeriod === null;
   const currentSearch = search?.trim() ?? "";
+  const currentAccountTypes = normalizeAccountTypes(
+    Array.isArray(accountType)
+      ? accountType
+      : typeof accountType === "string"
+        ? [accountType]
+        : [],
+  );
 
   const defaultEndDate = dayjs();
   const defaultStartDate = defaultEndDate.subtract(90, "day");
@@ -427,7 +438,9 @@ const AccountOverviewDashboard = async function ({
   const persistedFilters = {
     ...(currentSearch === "" ? {} : { search: currentSearch }),
     ...(typeof sort === "string" ? { sort } : {}),
-    ...(typeof accountType === "string" ? { accountType } : {}),
+    ...(shouldPersistAccountTypes(currentAccountTypes)
+      ? { accountType: currentAccountTypes }
+      : {}),
   };
 
   if (
@@ -468,8 +481,10 @@ const AccountOverviewDashboard = async function ({
   if (typeof sort === "string") {
     dashboardRequestParams.set("Sort", sort);
   }
-  if (typeof accountType === "string") {
-    dashboardRequestParams.set("AccountType", accountType);
+  if (shouldPersistAccountTypes(currentAccountTypes)) {
+    currentAccountTypes.forEach((selectedAccountType) => {
+      dashboardRequestParams.append("AccountType", selectedAccountType);
+    });
   }
   dashboardRequestParams.set("Limit", rowsPerPage.toString());
   dashboardRequestParams.set(

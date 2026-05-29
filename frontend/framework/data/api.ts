@@ -1174,8 +1174,8 @@ export interface paths {
                     StartAccountingPeriodId?: string;
                     /** @description ID for the last Accounting Period in the requested range. */
                     EndAccountingPeriodId?: string;
-                    /** @description Optional Account Type filter to apply to the dashboard. */
-                    AccountType?: components["schemas"]["AccountTypeModel"];
+                    /** @description Optional Account Type filters to apply to the dashboard. */
+                    AccountType?: components["schemas"]["AccountTypeModel"][];
                     /** @description Optional search string to apply to the matching Accounts. */
                     Search?: string;
                     /** @description Optional sort to apply to the matching Accounts. */

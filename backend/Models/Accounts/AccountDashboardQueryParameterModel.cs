@@ -26,9 +26,9 @@ public class AccountDashboardQueryParameterModel
     public Guid? EndAccountingPeriodId { get; init; }
 
     /// <summary>
-    /// Optional Account Type filter to apply to the dashboard.
+    /// Optional Account Type filters to apply to the dashboard.
     /// </summary>
-    public AccountTypeModel? AccountType { get; init; }
+    public List<AccountTypeModel>? AccountType { get; init; }
 
     /// <summary>
     /// Optional search string to apply to the matching Accounts.
