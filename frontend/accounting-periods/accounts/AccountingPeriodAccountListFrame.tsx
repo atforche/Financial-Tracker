@@ -162,9 +162,7 @@ const AccountingPeriodAccountListFrame = function ({
           label="Add"
           icon={<AddCircleOutline />}
           onClick={() => {
-            router.push(
-                accountRoutes.create(),
-            );
+            router.push(accountRoutes.create());
           }}
           disabled={!accountingPeriod.isOpen}
         />
@@ -206,9 +204,7 @@ const AccountingPeriodAccountListFrame = function ({
             variant="contained"
             disabled={!accountingPeriod.isOpen}
             onClick={() => {
-              router.push(
-                accountRoutes.create(),
-              );
+              router.push(accountRoutes.create());
             }}
           >
             Create account

@@ -8,8 +8,6 @@ import {
 } from "@/accounts/types";
 import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
-import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
@@ -56,6 +54,14 @@ const AccountDashboardListFrame = function ({
     } else {
       params.set(sortParamName, sort);
     }
+    params.delete(pageParamName);
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
+  const setAccountNameFilter = function (accountName: string): void {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete(accountNameParamName);
+    params.append(accountNameParamName, accountName);
     params.delete(pageParamName);
     router.replace(`${pathname}?${params.toString()}`);
   };
@@ -197,21 +203,6 @@ const AccountDashboardListFrame = function ({
       alignment: "right",
       minWidth: 160,
     },
-    {
-      name: "actions",
-      headerContent: "",
-      getBodyContent: (account) => (
-        <ColumnButton
-          label="View"
-          icon={<ArrowForwardIos />}
-          onClick={() => {
-            router.push(routes.detail({ id: account.id }, {}));
-          }}
-        />
-      ),
-      alignment: "right",
-      minWidth: 90,
-    },
   ];
 
   return (
@@ -231,6 +222,9 @@ const AccountDashboardListFrame = function ({
           totalCount={totalCount ?? null}
           searchParamName="search"
           pageParamName={pageParamName}
+          onRowClick={(account: AccountDashboardAccount): void => {
+            setAccountNameFilter(account.name);
+          }}
           hasActiveFilters={hasActiveFilters}
           initialEmptyState={{
             title: "No accounts have been added",
@@ -242,7 +236,7 @@ const AccountDashboardListFrame = function ({
                 variant="contained"
                 onClick={() => {
                   router.push(
-                    isInOnboardingMode ? routes.onboard : routes.create({}),
+                    isInOnboardingMode ? routes.onboard : routes.create(),
                   );
                 }}
               >

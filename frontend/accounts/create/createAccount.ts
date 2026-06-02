@@ -33,10 +33,7 @@ interface ActionPayload {
  * Ensures redirects stay within the app.
  */
 const getSafeRedirectUrl = function (redirectUrl: string): string {
-  if (
-    redirectUrl.startsWith("/") &&
-    !redirectUrl.startsWith("//")
-  ) {
+  if (redirectUrl.startsWith("/") && !redirectUrl.startsWith("//")) {
     return redirectUrl;
   }
 

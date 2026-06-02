@@ -42,6 +42,7 @@ interface ListFrameProps<T> {
   readonly totalCount: number | null;
   readonly searchParamName: string;
   readonly pageParamName: string;
+  readonly onRowClick?: (item: T) => void;
   readonly hasActiveFilters?: boolean;
   readonly initialEmptyState?: EmptyStateDefinition;
   readonly filteredEmptyState?: EmptyStateDefinition;
@@ -57,6 +58,7 @@ const ListFrame = function <T>({
   totalCount,
   searchParamName,
   pageParamName,
+  onRowClick,
   hasActiveFilters,
   initialEmptyState,
   filteredEmptyState,
@@ -103,24 +105,37 @@ const ListFrame = function <T>({
             </TableHead>
             <TableBody>
               {hasLoadingCompleted
-                ? data.map((item) => (
-                    // eslint-disable-next-line react/jsx-indent
-                    <TableRow hover tabIndex={-1} key={getId(item)}>
-                      {columns.map((column) => (
-                        <TableCell
-                          className="list-frame-table-cell"
-                          key={`${getId(item)}-${column.name}`}
-                          align={column.alignment ?? "left"}
-                          sx={{
-                            paddingTop: "8px",
-                            paddingBottom: "8px",
-                          }}
-                        >
-                          {column.getBodyContent(item)}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
+                ? data.map((item): JSX.Element => {
+                    const isClickable = typeof onRowClick === "function";
+                    return (
+                      <TableRow
+                        hover
+                        tabIndex={-1}
+                        key={getId(item)}
+                        onClick={(): void => {
+                          if (isClickable) {
+                            onRowClick(item);
+                          }
+                        }}
+                        style={{ height: listFrameRowHeight }}
+                        sx={isClickable ? { cursor: "pointer" } : null}
+                      >
+                        {columns.map((column) => (
+                          <TableCell
+                            className="list-frame-table-cell"
+                            key={`${getId(item)}-${column.name}`}
+                            align={column.alignment ?? "left"}
+                            sx={{
+                              paddingTop: "8px",
+                              paddingBottom: "8px",
+                            }}
+                          >
+                            {column.getBodyContent(item)}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    );
+                  })
                 : null}
               {placeholderRowCount > 0
                 ? Array(placeholderRowCount)

@@ -39,7 +39,7 @@ const AccountDashboardQuickActions = function ({
           {!isInOnboardingMode && (
             <Button
               variant="contained"
-              href={routes.create({})}
+              href={routes.create()}
               sx={{ flexShrink: 0 }}
             >
               Create account

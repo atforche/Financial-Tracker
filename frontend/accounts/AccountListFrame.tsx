@@ -132,9 +132,7 @@ const AccountListFrame = function ({
           label="Add"
           icon={<AddCircleOutline />}
           onClick={() => {
-            router.push(
-              isInOnboardingMode ? routes.onboard : routes.create({}),
-            );
+            router.push(isInOnboardingMode ? routes.onboard : routes.create());
           }}
         />
       ) : (
@@ -172,7 +170,7 @@ const AccountListFrame = function ({
             variant="contained"
             onClick={() => {
               router.push(
-                isInOnboardingMode ? routes.onboard : routes.create({}),
+                isInOnboardingMode ? routes.onboard : routes.create(),
               );
             }}
           >

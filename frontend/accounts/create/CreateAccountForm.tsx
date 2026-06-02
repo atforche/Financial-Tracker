@@ -7,7 +7,14 @@ import {
   getMaximumDate,
   getMinimumDate,
 } from "@/accounting-periods/types";
-import { Button, DialogActions, Divider, Paper, Stack, Typography } from "@mui/material";
+import {
+  Button,
+  DialogActions,
+  Divider,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
@@ -171,10 +178,14 @@ const CreateAccountForm = function ({
               setValue={setDateOpened}
               errorMessage={state.dateOpenedErrors ?? null}
               minDate={
-                accountingPeriod === null ? null : getMinimumDate(accountingPeriod)
+                accountingPeriod === null
+                  ? null
+                  : getMinimumDate(accountingPeriod)
               }
               maxDate={
-                accountingPeriod === null ? null : getMaximumDate(accountingPeriod)
+                accountingPeriod === null
+                  ? null
+                  : getMaximumDate(accountingPeriod)
               }
               disabled={accountingPeriod === null}
             />
