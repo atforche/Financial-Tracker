@@ -1,17 +1,6 @@
-import type {
-  AccountViewParams,
-  AccountViewSearchParams,
-} from "@/accounts/AccountView";
-import type {
-  DeleteAccountViewParams,
-  DeleteAccountViewSearchParams,
-} from "@/accounts/DeleteAccountView";
-import type {
-  UpdateAccountViewParams,
-  UpdateAccountViewSearchParams,
-} from "@/accounts/UpdateAccountView";
 import type { AccountDashboardSearchParams } from "@/accounts/dashboard/AccountDashboard";
 import type { AccountType } from "@/accounts/types";
+import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
 import type { Route } from "next";
 import { objectToSearchParams } from "@/framework/routes";
 
@@ -68,40 +57,25 @@ const pathWithSearchParams = function (
   return query === "" ? pathname : `${pathname}?${query}`;
 };
 
+const accountWorkspaceSearchParamsToSearchParams = function (
+  searchParams: AccountWorkspaceSearchParams,
+): URLSearchParams {
+  return objectToSearchParams(searchParams);
+};
+
 /**
  * App routes related to accounts.
  */
 const routes = {
-  index: (searchParams: AccountDashboardSearchParams): Route =>
+  dashboard: (searchParams: AccountDashboardSearchParams): Route =>
     pathWithSearchParams(
-      "/accounts",
+      "/accounts/dashboard",
       accountDashboardSearchParamsToSearchParams(searchParams),
     ),
-  create: (): Route => "/accounts/create",
-  onboard: "/accounts/onboard" as Route,
-  detail: (
-    params: AccountViewParams,
-    searchParams: AccountViewSearchParams,
-  ): Route =>
+  workspace: (searchParams: AccountWorkspaceSearchParams): Route =>
     pathWithSearchParams(
-      `/accounts/${params.id}`,
-      objectToSearchParams(searchParams),
-    ),
-  update: (
-    params: UpdateAccountViewParams,
-    searchParams: UpdateAccountViewSearchParams,
-  ): Route =>
-    pathWithSearchParams(
-      `/accounts/${params.id}/update`,
-      objectToSearchParams(searchParams),
-    ),
-  delete: (
-    params: DeleteAccountViewParams,
-    searchParams: DeleteAccountViewSearchParams,
-  ): Route =>
-    pathWithSearchParams(
-      `/accounts/${params.id}/delete`,
-      objectToSearchParams(searchParams),
+      "/accounts/workspace",
+      accountWorkspaceSearchParamsToSearchParams(searchParams),
     ),
 };
 

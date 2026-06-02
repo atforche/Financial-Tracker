@@ -53,7 +53,7 @@ const OverviewQuickActions = function ({
             title: "Check account balances",
             description:
               "Review tracked and untracked balances across all accounts.",
-            href: accountRoutes.index({}),
+            href: accountRoutes.dashboard({}),
             buttonLabel: "View accounts",
           },
           {
@@ -78,7 +78,7 @@ const OverviewQuickActions = function ({
             title: "Add a new account",
             description:
               "Create another account and tie it to the active accounting period.",
-            href: accountRoutes.create(),
+            href: accountRoutes.workspace({ action: "create" }),
             buttonLabel: "Create account",
           },
           {
@@ -103,7 +103,7 @@ const OverviewQuickActions = function ({
             title: "Audit all accounts",
             description:
               "Review the full account list, balances, and account-type totals.",
-            href: accountRoutes.index({}),
+            href: accountRoutes.dashboard({}),
             buttonLabel: "Open accounts",
           },
           {

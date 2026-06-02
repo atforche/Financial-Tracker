@@ -1,6 +1,6 @@
 "use server";
 
-import type { CreateAccountRequest } from "@/accounts/types";
+import type { OnboardAccountRequest } from "@/accounts/types";
 import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
@@ -10,23 +10,22 @@ import { revalidatePath } from "next/cache";
 import routes from "@/accounts/routes";
 
 /**
- * Interface representing the state of creating an account.
+ * Interface representing the state of onboarding an account.
  */
 interface ActionState {
   readonly errorTitle?: string | null;
   readonly nameErrors?: string | null;
   readonly typeErrors?: string | null;
-  readonly accountingPeriodErrors?: string | null;
-  readonly dateOpenedErrors?: string | null;
+  readonly onboardedBalanceErrors?: string | null;
   readonly unmappedErrors?: string | null;
 }
 
 /**
- * Payload for the create account server action.
+ * Payload for the onboarding server action.
  */
 interface ActionPayload {
   readonly redirectUrl: string;
-  readonly request: CreateAccountRequest;
+  readonly request: OnboardAccountRequest;
 }
 
 /**
@@ -36,54 +35,50 @@ const getSafeRedirectUrl = function (redirectUrl: string): string {
   if (redirectUrl.startsWith("/") && !redirectUrl.startsWith("//")) {
     return redirectUrl;
   }
-
-  return routes.index({});
+  return routes.workspace({});
 };
 
 /**
- * Server action that creates a new account.
+ * Server action that onboards a new account before any accounting periods exist.
  */
-const createAccount = async function (
+const onboardAccount = async function (
   _: ActionState,
-  { redirectUrl, request }: ActionPayload,
+  payload: OnboardAccountRequest | ActionPayload,
 ): Promise<ActionState> {
-  const safeRedirectUrl = getSafeRedirectUrl(redirectUrl);
-  const client = getApiClient();
-  const { error } = await client.POST("/accounts", {
+  const request = "request" in payload ? payload.request : payload;
+  const redirectUrl =
+    "request" in payload
+      ? getSafeRedirectUrl(payload.redirectUrl)
+      : routes.workspace({});
+  const apiClient = getApiClient();
+  const { error } = await apiClient.POST("/accounts/onboard", {
     body: request,
   });
   if (error) {
     if (isApiError(error)) {
       let nameErrorMessage = null;
       let typeErrorMessage = null;
-      let accountingPeriodErrorMessage = null;
-      let dateOpenedErrorMessage = null;
+      let onboardedBalanceErrorMessage = null;
       const unmappedErrors: (string | null)[] = [];
+
       for (const key of Object.keys(error.errors ?? {})) {
         if (
           key.toUpperCase() ===
-          nameof<CreateAccountRequest>("name").toUpperCase()
+          nameof<OnboardAccountRequest>("name").toUpperCase()
         ) {
           nameErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else if (
           key.toUpperCase() ===
-          nameof<CreateAccountRequest>("type").toUpperCase()
+          nameof<OnboardAccountRequest>("type").toUpperCase()
         ) {
           typeErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else if (
           key.toUpperCase() ===
-          nameof<CreateAccountRequest>(
-            "openingAccountingPeriodId",
-          ).toUpperCase()
+          nameof<OnboardAccountRequest>("onboardedBalance").toUpperCase()
         ) {
-          accountingPeriodErrorMessage = formatErrors(
+          onboardedBalanceErrorMessage = formatErrors(
             error.errors?.[key] ?? null,
           );
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateAccountRequest>("dateOpened").toUpperCase()
-        ) {
-          dateOpenedErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else {
           unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
         }
@@ -93,16 +88,15 @@ const createAccount = async function (
         errorTitle: error.title ?? null,
         nameErrors: nameErrorMessage,
         typeErrors: typeErrorMessage,
-        accountingPeriodErrors: accountingPeriodErrorMessage,
-        dateOpenedErrors: dateOpenedErrorMessage,
+        onboardedBalanceErrors: onboardedBalanceErrorMessage,
         unmappedErrors: unmappedErrors.join(", ") || null,
       };
     }
     throw new Error("An unexpected error occurred", { cause: error });
   }
 
-  revalidatePath(safeRedirectUrl);
-  redirect(safeRedirectUrl);
+  revalidatePath(redirectUrl);
+  redirect(redirectUrl);
 };
 
-export default createAccount;
+export default onboardAccount;

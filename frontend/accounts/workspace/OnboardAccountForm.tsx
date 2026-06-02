@@ -1,26 +1,37 @@
 "use client";
 
 import type { AccountType, OnboardAccountRequest } from "@/accounts/types";
-import { Button, DialogActions, Stack } from "@mui/material";
+import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
-import Breadcrumbs from "@/framework/Breadcrumbs";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import breadcrumbs from "@/accounts/breadcrumbs";
-import onboardAccount from "@/accounts/onboardAccount";
-import routes from "@/accounts/routes";
+import onboardAccount from "@/accounts/workspace/onboardAccount";
 
 /**
- * Component that displays the form for onboarding an account.
+ * Props for the OnboardAccountForm component.
  */
-const OnboardAccountForm = function (): JSX.Element {
+interface OnboardAccountFormProps {
+  readonly redirectUrl: string;
+}
+
+/**
+ * Displays the inline onboarding form for the workspace.
+ */
+const OnboardAccountForm = function ({
+  redirectUrl,
+}: OnboardAccountFormProps): JSX.Element {
   const [name, setName] = useState<string>("");
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [onboardedBalance, setOnboardedBalance] = useState<number | null>(null);
   const [state, action, pending] = useActionState(onboardAccount, {});
+
+  const reset = function (): void {
+    setName("");
+    setAccountType(null);
+    setOnboardedBalance(null);
+  };
 
   let request: OnboardAccountRequest | null = null;
   if (name !== "" && accountType !== null && onboardedBalance !== null) {
@@ -32,9 +43,9 @@ const OnboardAccountForm = function (): JSX.Element {
   }
 
   return (
-    <Stack spacing={2}>
-      <Breadcrumbs breadcrumbs={breadcrumbs.onboard()} />
-      <Stack spacing={2} sx={{ maxWidth: "500px" }}>
+    <Stack spacing={3}>
+      <Typography variant="h6">Onboard Account</Typography>
+      <Stack spacing={2.5} sx={{ maxWidth: 520 }}>
         <StringEntryField
           label="Name"
           value={name}
@@ -53,31 +64,34 @@ const OnboardAccountForm = function (): JSX.Element {
           setValue={setOnboardedBalance}
           errorMessage={state.onboardedBalanceErrors ?? null}
         />
-        <DialogActions>
-          <Link href={routes.index({})} tabIndex={-1}>
-            <Button variant="outlined">Cancel</Button>
-          </Link>
-          <Button
-            variant="contained"
-            loading={pending}
-            disabled={request === null}
-            onClick={() => {
-              if (request === null) {
-                return;
-              }
-              startTransition(() => {
-                action(request);
-              });
-            }}
-          >
-            Onboard
-          </Button>
-        </DialogActions>
-        <ErrorAlert
-          errorMessage={state.errorTitle ?? null}
-          unmappedErrors={state.unmappedErrors ?? null}
-        />
       </Stack>
+      <ErrorAlert
+        errorMessage={state.errorTitle ?? null}
+        unmappedErrors={state.unmappedErrors ?? null}
+      />
+      <DialogActions sx={{ px: 0, pb: 0 }}>
+        <Button variant="outlined" onClick={reset}>
+          Reset
+        </Button>
+        <Button
+          variant="contained"
+          loading={pending}
+          disabled={request === null}
+          onClick={() => {
+            if (request === null) {
+              return;
+            }
+            startTransition(() => {
+              action({
+                redirectUrl,
+                request,
+              });
+            });
+          }}
+        >
+          Onboard account
+        </Button>
+      </DialogActions>
     </Stack>
   );
 };

@@ -62,7 +62,10 @@ const OverviewHero = function ({ data }: OverviewHeroProps): JSX.Element {
               >
                 Create transaction
               </Button>
-              <Button variant="outlined" href={accountRoutes.create()}>
+              <Button
+                variant="outlined"
+                href={accountRoutes.workspace({ action: "create" })}
+              >
                 Create account
               </Button>
               <Button
@@ -93,7 +96,7 @@ const OverviewHero = function ({ data }: OverviewHeroProps): JSX.Element {
               >
                 Browse accounting periods
               </Button>
-              <Button variant="outlined" href={accountRoutes.index({})}>
+              <Button variant="outlined" href={accountRoutes.dashboard({})}>
                 Review accounts
               </Button>
               <Button variant="outlined" href={fundRoutes.index({})}>

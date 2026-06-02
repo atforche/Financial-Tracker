@@ -236,7 +236,9 @@ const AccountDashboardListFrame = function ({
                 variant="contained"
                 onClick={() => {
                   router.push(
-                    isInOnboardingMode ? routes.onboard : routes.create(),
+                    isInOnboardingMode
+                      ? routes.workspace({ action: "onboard" })
+                      : routes.workspace({ action: "create" }),
                   );
                 }}
               >

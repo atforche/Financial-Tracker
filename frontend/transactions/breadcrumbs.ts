@@ -3,7 +3,6 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Breadcrumb } from "@/framework/Breadcrumbs";
 import type { Fund } from "@/funds/types";
 import type { Transaction } from "@/transactions/types";
-import accountBreadcrumbs from "@/accounts/breadcrumbs";
 import accountingPeriodBreadcrumbs from "@/accounting-periods/breadcrumbs";
 import fundBreadcrumbs from "@/funds/breadcrumbs";
 import routes from "@/transactions/routes";
@@ -51,9 +50,6 @@ const breadcrumbs = {
         currentCrumb,
       ];
     }
-    if (routeAccount !== null) {
-      return [...accountBreadcrumbs.detail(routeAccount), currentCrumb];
-    }
     if (routeFund !== null) {
       return [...fundBreadcrumbs.detail(routeFund), currentCrumb];
     }
@@ -92,9 +88,6 @@ const breadcrumbs = {
         ...accountingPeriodBreadcrumbs.detail(routeAccountingPeriod),
         currentCrumb,
       ];
-    }
-    if (routeAccount !== null) {
-      return [...accountBreadcrumbs.detail(routeAccount), currentCrumb];
     }
     if (routeFund !== null) {
       return [...fundBreadcrumbs.detail(routeFund), currentCrumb];

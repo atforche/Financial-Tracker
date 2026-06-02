@@ -4,7 +4,6 @@ import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
 import type { JSX } from "react";
-import accountRoutes from "@/accounts/routes";
 import breadcrumbs from "@/accounting-periods/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
@@ -87,28 +86,10 @@ const AccountingPeriodAccountView = async function ({
           breadcrumbs={breadcrumbs.accountDetail(accountingPeriod, account)}
         />
         <Stack direction="row" spacing={1}>
-          <Button
-            variant="contained"
-            color="primary"
-            href={accountRoutes.update(
-              { id: account.id },
-              {
-                accountingPeriodId: id,
-              },
-            )}
-          >
+          <Button variant="contained" color="primary">
             Edit
           </Button>
-          <Button
-            variant="contained"
-            color="error"
-            href={accountRoutes.delete(
-              { id: account.id },
-              {
-                accountingPeriodId: id,
-              },
-            )}
-          >
+          <Button variant="contained" color="error">
             Delete
           </Button>
         </Stack>

@@ -1,5 +1,12 @@
-import AccountDashboard from "@/accounts/dashboard/AccountDashboard";
+import { redirect } from "next/navigation";
+import routes from "@/accounts/routes";
+
+/**
+ * Redirects to the accounts dashboard.
+ */
+const AccountsIndexPage = function (): never {
+  redirect(routes.dashboard({}));
+};
 
 export const dynamic = "force-dynamic";
-
-export default AccountDashboard;
+export default AccountsIndexPage;

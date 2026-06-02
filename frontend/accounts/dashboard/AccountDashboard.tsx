@@ -23,7 +23,6 @@ import AccountDashboardBalanceEventListFrame from "@/accounts/dashboard/AccountD
 import AccountDashboardChangeChart from "@/accounts/dashboard/AccountDashboardChangeChart";
 import AccountDashboardFilter from "@/accounts/dashboard/AccountDashboardFilter";
 import AccountDashboardListFrame from "@/accounts/dashboard/AccountDashboardListFrame";
-import AccountDashboardQuickActions from "@/accounts/dashboard/AccountDashboardQuickActions";
 import AccountDashboardSummaryCards from "@/accounts/dashboard/AccountDashboardSummaryCards";
 import AccountDashboardTrendChart from "@/accounts/dashboard/AccountDashboardTrendChart";
 import type { JSX } from "react";
@@ -514,7 +513,7 @@ const AccountDashboard = async function ({
     (currentMode === "accounting-period" && currentAccountingPeriod === null)
   ) {
     redirect(
-      routes.index({
+      routes.dashboard({
         mode: "date",
         ...persistedFilters,
         startDate: defaultStartDate.format("YYYY-MM-DD"),
@@ -530,7 +529,7 @@ const AccountDashboard = async function ({
       typeof endAccountingPeriodId === "undefined")
   ) {
     redirect(
-      routes.index({
+      routes.dashboard({
         mode: defaultFilterMode,
         ...persistedFilters,
         startAccountingPeriodId: currentAccountingPeriod.id,
@@ -599,7 +598,6 @@ const AccountDashboard = async function ({
           defaultStartDate={defaultStartDate.format("YYYY-MM-DD")}
           defaultEndDate={defaultEndDate.format("YYYY-MM-DD")}
         />
-        <AccountDashboardQuickActions isInOnboardingMode={isInOnboardingMode} />
       </Stack>
       <AccountDashboardSummaryCards
         startLabel={snapshot.startLabel}

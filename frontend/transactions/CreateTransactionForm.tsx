@@ -79,7 +79,7 @@ const getRedirectUrl = function (
     );
   }
   if (routeAccount !== null) {
-    return accountRoutes.detail({ id: routeAccount.id }, {});
+    return accountRoutes.dashboard({});
   }
   if (routeFund !== null) {
     return fundRoutes.detail({ id: routeFund.id }, {});

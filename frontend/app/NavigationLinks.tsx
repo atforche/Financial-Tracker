@@ -10,14 +10,18 @@ import {
 } from "@mui/icons-material";
 import {
   Box,
+  Collapse,
   Divider,
+  IconButton,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import type { JSX } from "react";
+import { type JSX, useEffect, useState } from "react";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
 import Link from "next/link";
 import type { Route } from "next";
 import accountRoutes from "@/accounts/routes";
@@ -34,6 +38,11 @@ interface NavigationLink {
   name: string;
   href: Route;
   icon: JSX.Element;
+}
+
+interface NavigationChildLink {
+  name: string;
+  href: Route;
 }
 
 /**
@@ -56,8 +65,18 @@ const links: NavigationLink[] = [
     href: goalRoutes.index({}),
     icon: <EmojiEvents />,
   },
-  { name: "Accounts", href: accountRoutes.index({}), icon: <AccountBalance /> },
   { name: "Funds", href: fundRoutes.index({}), icon: <Assessment /> },
+];
+
+const accountChildLinks: NavigationChildLink[] = [
+  {
+    name: "Dashboard",
+    href: accountRoutes.dashboard({}),
+  },
+  {
+    name: "Workspace",
+    href: accountRoutes.workspace({}),
+  },
 ];
 
 /**
@@ -65,6 +84,22 @@ const links: NavigationLink[] = [
  */
 const NavigationLinks = function (): JSX.Element {
   const pathname = usePathname();
+  const isOnAccountsRoute =
+    pathname === "/accounts" ||
+    pathname.startsWith("/accounts/dashboard") ||
+    pathname.startsWith("/accounts/workspace");
+  const [isAccountsExpanded, setIsAccountsExpanded] =
+    useState<boolean>(isOnAccountsRoute);
+
+  useEffect(() => {
+    if (isOnAccountsRoute) {
+      setIsAccountsExpanded(true);
+      return;
+    }
+
+    setIsAccountsExpanded(false);
+  }, [isOnAccountsRoute]);
+
   return (
     <Box sx={{ overflow: "auto" }}>
       <Divider />
@@ -85,6 +120,54 @@ const NavigationLinks = function (): JSX.Element {
             </ListItem>
           </Link>
         ))}
+        <ListItem
+          disablePadding
+          secondaryAction={
+            <IconButton
+              edge="end"
+              aria-label={
+                isAccountsExpanded ? "Collapse Accounts" : "Expand Accounts"
+              }
+              onClick={() => {
+                setIsAccountsExpanded((currentValue) => !currentValue);
+              }}
+            >
+              {isAccountsExpanded ? <ExpandLess /> : <ExpandMore />}
+            </IconButton>
+          }
+        >
+          <Link
+            href={accountRoutes.dashboard({})}
+            style={{ textDecoration: "none", color: "inherit", width: "100%" }}
+          >
+            <ListItemButton selected={isOnAccountsRoute}>
+              <ListItemIcon sx={{ paddingLeft: "15px" }}>
+                <AccountBalance />
+              </ListItemIcon>
+              <ListItemText primary="Accounts" />
+            </ListItemButton>
+          </Link>
+        </ListItem>
+        <Collapse in={isAccountsExpanded} timeout="auto" unmountOnExit>
+          <List disablePadding>
+            {accountChildLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
+                <ListItem disablePadding>
+                  <ListItemButton
+                    selected={pathname === link.href}
+                    sx={{ pl: 7.5 }}
+                  >
+                    <ListItemText primary={link.name} />
+                  </ListItemButton>
+                </ListItem>
+              </Link>
+            ))}
+          </List>
+        </Collapse>
       </List>
       <Divider />
     </Box>

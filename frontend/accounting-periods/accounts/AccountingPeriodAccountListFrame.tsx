@@ -7,16 +7,13 @@ import {
 } from "@/accounting-periods/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriodViewSearchParams } from "@/accounting-periods/AccountingPeriodView";
-import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import { Button } from "@mui/material";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
-import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
-import accountRoutes from "@/accounts/routes";
 import { formatAccountType } from "@/accounts/types";
 import formatCurrency from "@/framework/formatCurrency";
 import nameof from "@/framework/data/nameof";
@@ -157,16 +154,7 @@ const AccountingPeriodAccountListFrame = function ({
     },
     {
       name: "actions",
-      headerContent: (
-        <IconButton
-          label="Add"
-          icon={<AddCircleOutline />}
-          onClick={() => {
-            router.push(accountRoutes.create());
-          }}
-          disabled={!accountingPeriod.isOpen}
-        />
-      ),
+      headerContent: "",
       getBodyContent: (account: AccountingPeriodAccount) => (
         <ColumnButton
           label="View"
@@ -200,13 +188,7 @@ const AccountingPeriodAccountListFrame = function ({
           ? "Add an account to include it in this accounting period and start tracking balances."
           : "This accounting period has no accounts to show.",
         action: (
-          <Button
-            variant="contained"
-            disabled={!accountingPeriod.isOpen}
-            onClick={() => {
-              router.push(accountRoutes.create());
-            }}
-          >
+          <Button variant="contained" disabled={!accountingPeriod.isOpen}>
             Create account
           </Button>
         ),

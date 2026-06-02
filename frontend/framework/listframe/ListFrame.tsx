@@ -43,6 +43,7 @@ interface ListFrameProps<T> {
   readonly searchParamName: string;
   readonly pageParamName: string;
   readonly onRowClick?: (item: T) => void;
+  readonly isRowSelected?: (item: T) => boolean;
   readonly hasActiveFilters?: boolean;
   readonly initialEmptyState?: EmptyStateDefinition;
   readonly filteredEmptyState?: EmptyStateDefinition;
@@ -59,6 +60,7 @@ const ListFrame = function <T>({
   searchParamName,
   pageParamName,
   onRowClick,
+  isRowSelected,
   hasActiveFilters,
   initialEmptyState,
   filteredEmptyState,
@@ -107,9 +109,11 @@ const ListFrame = function <T>({
               {hasLoadingCompleted
                 ? data.map((item): JSX.Element => {
                     const isClickable = typeof onRowClick === "function";
+                    const isSelected = isRowSelected?.(item) ?? false;
                     return (
                       <TableRow
                         hover
+                        selected={isSelected}
                         tabIndex={-1}
                         key={getId(item)}
                         onClick={(): void => {
