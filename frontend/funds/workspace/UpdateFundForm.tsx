@@ -1,40 +1,37 @@
 "use client";
 
-import type { Account, UpdateAccountRequest } from "@/accounts/types";
 import { Button, DialogActions, Stack } from "@mui/material";
+import type { Fund, UpdateFundRequest } from "@/funds/types";
 import { type JSX, startTransition, useActionState, useState } from "react";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import updateAccount from "@/accounts/workspace/updateAccount";
+import updateFund from "@/funds/workspace/updateFund";
 
 /**
- * Props for the UpdateAccountForm component.
+ * Props for the UpdateFundForm component.
  */
-interface UpdateAccountFormProps {
-  readonly account: Account;
+interface UpdateFundFormProps {
+  readonly fund: Fund;
   readonly redirectUrl: string;
 }
 
 /**
- * Displays the inline update form for the selected account.
+ * Component that displays the form for updating a fund.
  */
-const UpdateAccountForm = function ({
-  account,
+const UpdateFundForm = function ({
+  fund,
   redirectUrl,
-}: UpdateAccountFormProps): JSX.Element {
-  const [accountId, setAccountId] = useState<string>(account.id);
-  const [name, setName] = useState<string>(account.name);
-  if (accountId !== account.id) {
-    setAccountId(account.id);
-    setName(account.name);
-  }
+}: UpdateFundFormProps): JSX.Element {
+  const [name, setName] = useState<string>(fund.name);
+  const [description, setDescription] = useState<string>(fund.description);
 
-  const [state, action, pending] = useActionState(updateAccount, {});
+  const [state, action, pending] = useActionState(updateFund, {});
 
-  let request: UpdateAccountRequest | null = null;
+  let request: UpdateFundRequest | null = null;
   if (name !== "") {
     request = {
       name,
+      description,
     };
   }
 
@@ -46,15 +43,22 @@ const UpdateAccountForm = function ({
         setValue={setName}
         errorMessage={state.nameErrors ?? null}
       />
+      <StringEntryField
+        label="Description"
+        value={description}
+        setValue={setDescription}
+        errorMessage={state.descriptionErrors ?? null}
+      />
       <ErrorAlert
         errorMessage={state.errorTitle ?? null}
         unmappedErrors={state.unmappedErrors ?? null}
       />
-      <DialogActions sx={{ px: 0, pb: 0 }}>
+      <DialogActions>
         <Button
           variant="outlined"
           onClick={() => {
-            setName(account.name);
+            setName(fund.name);
+            setDescription(fund.description);
           }}
         >
           Reset
@@ -68,15 +72,15 @@ const UpdateAccountForm = function ({
               return;
             }
             startTransition(() => {
-              action({ accountId: account.id, redirectUrl, request });
+              action({ fundId: fund.id, redirectUrl, request });
             });
           }}
         >
-          Update account
+          Update
         </Button>
       </DialogActions>
     </Stack>
   );
 };
 
-export default UpdateAccountForm;
+export default UpdateFundForm;

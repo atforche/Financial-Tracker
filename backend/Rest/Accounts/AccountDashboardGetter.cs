@@ -43,11 +43,9 @@ public class AccountDashboardGetter(
                     errors.Add(nameof(request.AccountType), [$"Unrecognized Account Type: {requestAccountType}"]);
                     continue;
                 }
-
                 _ = accountTypes.Add(accountType.Value);
             }
         }
-
         HashSet<string>? requestedAccountNames = null;
         if (request.AccountName is { Count: > 0 } requestAccountNames)
         {
@@ -61,7 +59,6 @@ public class AccountDashboardGetter(
                 requestedAccountNames = null;
             }
         }
-
         bool hasDateRangeParameters = request.StartDate != null || request.EndDate != null;
         bool hasAccountingPeriodRangeParameters =
             request.StartAccountingPeriodId != null || request.EndAccountingPeriodId != null;

@@ -12,19 +12,26 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of updating an account.
  */
 interface ActionState {
-  readonly accountId: string;
-  readonly redirectUrl: string;
   readonly errorTitle?: string | null;
   readonly nameErrors?: string | null;
   readonly unmappedErrors?: string | null;
 }
 
 /**
+ * Payload for the update server action.
+ */
+interface ActionPayload {
+  readonly accountId: string;
+  readonly redirectUrl: string;
+  readonly request: UpdateAccountRequest;
+}
+
+/**
  * Server action that updates an existing account.
  */
 const updateAccount = async function (
-  { accountId, redirectUrl }: ActionState,
-  request: UpdateAccountRequest,
+  _: ActionState,
+  { accountId, redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
   const client = getApiClient();
   const { error } = await client.POST("/accounts/{accountId}", {
@@ -50,8 +57,6 @@ const updateAccount = async function (
         }
       }
       return {
-        accountId,
-        redirectUrl,
         errorTitle: error.title ?? null,
         nameErrors: nameErrorMessage,
         unmappedErrors: unmappedErrors.join(", ") || null,

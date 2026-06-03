@@ -27,7 +27,6 @@ const appendRepeatedSearchParam = function (
     });
     return;
   }
-
   if (typeof value === "string") {
     params.append(key, value);
   }
@@ -45,7 +44,6 @@ const accountDashboardSearchParamsToSearchParams = function (
     isAccountTypeArray(accountType) ? accountType : accountType,
   );
   appendRepeatedSearchParam(params, "accountName", accountName);
-
   return params;
 };
 
@@ -55,12 +53,6 @@ const pathWithSearchParams = function (
 ): Route {
   const query = searchParams.toString();
   return query === "" ? pathname : `${pathname}?${query}`;
-};
-
-const accountWorkspaceSearchParamsToSearchParams = function (
-  searchParams: AccountWorkspaceSearchParams,
-): URLSearchParams {
-  return objectToSearchParams(searchParams);
 };
 
 /**
@@ -75,7 +67,7 @@ const routes = {
   workspace: (searchParams: AccountWorkspaceSearchParams): Route =>
     pathWithSearchParams(
       "/accounts/workspace",
-      accountWorkspaceSearchParamsToSearchParams(searchParams),
+      objectToSearchParams(searchParams),
     ),
 };
 

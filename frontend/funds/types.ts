@@ -1,4 +1,8 @@
 import {
+  FundDashboardBalanceEventSortOrderModel,
+  FundDashboardBalanceEventTypeModel,
+  FundDashboardModeModel,
+  FundDashboardSortOrderModel,
   FundSortOrderModel,
   FundTransactionSortOrderModel,
   type components,
@@ -13,6 +17,34 @@ type Fund = components["schemas"]["FundModel"];
  * Type representing Fund summary balances.
  */
 type FundSummary = components["schemas"]["FundSummaryModel"];
+
+/**
+ * Type representing the Funds dashboard response.
+ */
+type FundDashboard = components["schemas"]["FundDashboardModel"];
+
+/**
+ * Type representing a row in the Funds dashboard fund table.
+ */
+type FundDashboardFund = components["schemas"]["FundDashboardFundModel"];
+
+/**
+ * Type representing a row in the Funds dashboard balance event table.
+ */
+type FundDashboardBalanceEvent =
+  components["schemas"]["FundDashboardBalanceEventModel"];
+
+/**
+ * Type representing a period summary in the Funds dashboard response.
+ */
+type FundDashboardPeriodSummary =
+  components["schemas"]["FundDashboardPeriodSummaryModel"];
+
+/**
+ * Type representing a date summary in the Funds dashboard response.
+ */
+type FundDashboardDateSummary =
+  components["schemas"]["FundDashboardDateSummaryModel"];
 
 /**
  * Interface representing a Fund identifier with its ID and name.
@@ -59,12 +91,21 @@ const hasIncompleteFundAssignments = function (
 
 export {
   type Fund,
+  type FundDashboard,
+  type FundDashboardFund,
+  type FundDashboardBalanceEvent,
+  type FundDashboardDateSummary,
+  type FundDashboardPeriodSummary,
   type FundSummary,
   type FundIdentifier,
   type CreateFundRequest,
   type OnboardFundRequest,
   type UpdateFundRequest,
   type FundAmount,
+  FundDashboardBalanceEventSortOrderModel as FundDashboardBalanceEventSortOrder,
+  FundDashboardBalanceEventTypeModel as FundDashboardBalanceEventType,
+  FundDashboardModeModel as FundDashboardMode,
+  FundDashboardSortOrderModel as FundDashboardSortOrder,
   FundSortOrderModel as FundSortOrder,
   FundTransactionSortOrderModel as FundTransactionSortOrder,
   hasIncompleteFundAssignments,

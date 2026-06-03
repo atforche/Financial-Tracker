@@ -1,7 +1,7 @@
 "use client";
 
 import type { AccountType, OnboardAccountRequest } from "@/accounts/types";
-import { Button, DialogActions, Stack, Typography } from "@mui/material";
+import { Button, DialogActions, Stack } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
@@ -44,7 +44,6 @@ const OnboardAccountForm = function ({
 
   return (
     <Stack spacing={3}>
-      <Typography variant="h6">Onboard Account</Typography>
       <Stack spacing={2.5} sx={{ maxWidth: 520 }}>
         <StringEntryField
           label="Name"

@@ -3,7 +3,6 @@ import type { JSX } from "react";
 import type { OverviewData } from "@/overview/types";
 import accountRoutes from "@/accounts/routes";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
-import fundRoutes from "@/funds/routes";
 import goalRoutes from "@/goals/routes";
 import transactionRoutes from "@/transactions/routes";
 
@@ -56,13 +55,6 @@ const OverviewQuickActions = function ({
             href: accountRoutes.dashboard({}),
             buttonLabel: "View accounts",
           },
-          {
-            title: "Check fund balances",
-            description:
-              "Confirm assigned and unassigned fund balances before starting a new cycle.",
-            href: fundRoutes.index({}),
-            buttonLabel: "View funds",
-          },
         ]
       : [
           {
@@ -82,15 +74,6 @@ const OverviewQuickActions = function ({
             buttonLabel: "Create account",
           },
           {
-            title: "Add a new fund",
-            description:
-              "Create a budget fund and preselect the active accounting period.",
-            href: fundRoutes.create({
-              accountingPeriodId: currentAccountingPeriod.id,
-            }),
-            buttonLabel: "Create fund",
-          },
-          {
             title: "Define a goal",
             description:
               "Create a goal tied to the active period and an existing fund.",
@@ -105,13 +88,6 @@ const OverviewQuickActions = function ({
               "Review the full account list, balances, and account-type totals.",
             href: accountRoutes.dashboard({}),
             buttonLabel: "Open accounts",
-          },
-          {
-            title: "Audit all funds",
-            description:
-              "Review tracked fund balances and unassigned money at a glance.",
-            href: fundRoutes.index({}),
-            buttonLabel: "Open funds",
           },
         ];
 

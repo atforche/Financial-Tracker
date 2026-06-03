@@ -7,7 +7,6 @@ import { isApiError } from "@/framework/data/apiError";
 import nameof from "@/framework/data/nameof";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import routes from "@/accounts/routes";
 
 /**
  * Interface representing the state of onboarding an account.
@@ -29,27 +28,12 @@ interface ActionPayload {
 }
 
 /**
- * Ensures redirects stay within the app.
- */
-const getSafeRedirectUrl = function (redirectUrl: string): string {
-  if (redirectUrl.startsWith("/") && !redirectUrl.startsWith("//")) {
-    return redirectUrl;
-  }
-  return routes.workspace({});
-};
-
-/**
  * Server action that onboards a new account before any accounting periods exist.
  */
 const onboardAccount = async function (
   _: ActionState,
-  payload: OnboardAccountRequest | ActionPayload,
+  { redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const request = "request" in payload ? payload.request : payload;
-  const redirectUrl =
-    "request" in payload
-      ? getSafeRedirectUrl(payload.redirectUrl)
-      : routes.workspace({});
   const apiClient = getApiClient();
   const { error } = await apiClient.POST("/accounts/onboard", {
     body: request,
@@ -94,7 +78,6 @@ const onboardAccount = async function (
     }
     throw new Error("An unexpected error occurred", { cause: error });
   }
-
   revalidatePath(redirectUrl);
   redirect(redirectUrl);
 };

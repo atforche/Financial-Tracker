@@ -7,17 +7,14 @@ import {
 } from "@/accounting-periods/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriodViewSearchParams } from "@/accounting-periods/AccountingPeriodView";
-import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import { Button } from "@mui/material";
 import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
-import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
-import fundRoutes from "@/funds/routes";
 import nameof from "@/framework/data/nameof";
 import routes from "@/accounting-periods/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
@@ -180,18 +177,7 @@ const AccountingPeriodFundListFrame = function ({
     },
     {
       name: "actions",
-      headerContent: (
-        <IconButton
-          label="Add"
-          icon={<AddCircleOutline />}
-          onClick={() => {
-            router.push(
-              fundRoutes.create({ accountingPeriodId: accountingPeriod.id }),
-            );
-          }}
-          disabled={!accountingPeriod.isOpen}
-        />
-      ),
+      headerContent: "",
       getBodyContent: (fund: AccountingPeriodFund) => (
         <ColumnButton
           label="View"
@@ -225,15 +211,7 @@ const AccountingPeriodFundListFrame = function ({
           ? "Add a fund to this accounting period so you can assign balances and spending."
           : "This accounting period has no funds to show.",
         action: (
-          <Button
-            variant="contained"
-            disabled={!accountingPeriod.isOpen}
-            onClick={() => {
-              router.push(
-                fundRoutes.create({ accountingPeriodId: accountingPeriod.id }),
-              );
-            }}
-          >
+          <Button variant="contained" disabled={!accountingPeriod.isOpen}>
             Create fund
           </Button>
         ),

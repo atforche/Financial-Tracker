@@ -2907,6 +2907,16 @@ export interface components {
              * @description Total balance across all matching Funds.
              */
             totalBalance: number;
+            /**
+             * Format: double
+             * @description Total balance across assigned Funds.
+             */
+            assignedBalance: number;
+            /**
+             * Format: double
+             * @description Total balance across unassigned Funds.
+             */
+            unassignedBalance: number;
         };
         /** @description Model representing a Fund row within the dashboard response. */
         FundDashboardFundModel: {
@@ -2977,6 +2987,26 @@ export interface components {
              * @description Total closing balance across all matching Funds.
              */
             totalClosingBalance: number;
+            /**
+             * Format: double
+             * @description Opening balance across assigned Funds.
+             */
+            assignedOpeningBalance: number;
+            /**
+             * Format: double
+             * @description Closing balance across assigned Funds.
+             */
+            assignedClosingBalance: number;
+            /**
+             * Format: double
+             * @description Opening balance across unassigned Funds.
+             */
+            unassignedOpeningBalance: number;
+            /**
+             * Format: double
+             * @description Closing balance across unassigned Funds.
+             */
+            unassignedClosingBalance: number;
         };
         /** @enum {unknown} */
         FundDashboardSortOrderModel: FundDashboardSortOrderModel | null;

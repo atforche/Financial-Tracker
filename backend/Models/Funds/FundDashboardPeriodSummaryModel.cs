@@ -34,4 +34,23 @@ public class FundDashboardPeriodSummaryModel
     /// Total closing balance across all matching Funds.
     /// </summary>
     public required decimal TotalClosingBalance { get; init; }
+
+    /// <summary>
+    /// Opening balance across assigned Funds.
+    /// </summary>
+    public required decimal AssignedOpeningBalance { get; init; }
+    /// <summary> 
+    /// Closing balance across assigned Funds.
+    /// </summary>
+    public required decimal AssignedClosingBalance { get; init; }
+
+    /// <summary>
+    /// Opening balance across unassigned Funds.
+    /// </summary>
+    public required decimal UnassignedOpeningBalance { get; init; }
+
+    /// <summary> 
+    /// Closing balance across unassigned Funds.
+    /// </summary>
+    public required decimal UnassignedClosingBalance { get; init; }
 }

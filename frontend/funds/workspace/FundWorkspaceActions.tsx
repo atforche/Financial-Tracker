@@ -2,23 +2,24 @@
 
 import { Paper, Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { Account } from "@/accounts/types";
-import type { AccountWorkspaceAction } from "@/accounts/workspace/AccountWorkspace";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import CreateAccountForm from "@/accounts/workspace/CreateAccountForm";
-import DeleteAccountForm from "@/accounts/workspace/DeleteAccountForm";
+import CreateFundForm from "@/funds/workspace/CreateFundForm";
+import DeleteFundForm from "@/funds/workspace/DeleteFundForm";
+import type { Fund } from "@/funds/types";
+import type { FundWorkspaceAction } from "@/funds/workspace/FundWorkspace";
 import type { JSX } from "react";
-import OnboardAccountForm from "@/accounts/workspace/OnboardAccountForm";
-import UpdateAccountForm from "@/accounts/workspace/UpdateAccountForm";
+import OnboardFundForm from "@/funds/workspace/OnboardFundForm";
+import UpdateFundForm from "@/funds/workspace/UpdateFundForm";
 
 /**
- * Props for the AccountWorkspaceActions component.
+ * Props for the FundWorkspaceActions component.
  */
-interface AccountWorkspaceActionsProps {
+interface FundWorkspaceActionsProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly isInOnboardingMode: boolean;
-  readonly selectedAccount: Account | null;
-  readonly requestedAction: AccountWorkspaceAction | null;
+  readonly selectedFund: Fund | null;
+  readonly unassignedBalance: number | null;
+  readonly requestedAction: FundWorkspaceAction | null;
   readonly createRedirectUrl: string;
   readonly onboardRedirectUrl: string;
   readonly updateRedirectUrl: string;
@@ -27,7 +28,7 @@ interface AccountWorkspaceActionsProps {
 
 const isValidAction = function (
   action: string | null,
-): action is AccountWorkspaceAction {
+): action is FundWorkspaceAction {
   return (
     action === "create" ||
     action === "onboard" ||
@@ -37,27 +38,28 @@ const isValidAction = function (
 };
 
 /**
- * Displays the available account actions for the current workspace selection.
+ * Displays the available fund actions for the current workspace selection.
  */
-const AccountWorkspaceActions = function ({
+const FundWorkspaceActions = function ({
   accountingPeriods,
   isInOnboardingMode,
-  selectedAccount,
+  selectedFund,
+  unassignedBalance,
   requestedAction,
   createRedirectUrl,
   onboardRedirectUrl,
   updateRedirectUrl,
   deleteRedirectUrl,
-}: AccountWorkspaceActionsProps): JSX.Element {
+}: FundWorkspaceActionsProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
-  const allActions: readonly AccountWorkspaceAction[] = isInOnboardingMode
+  const allActions: readonly FundWorkspaceAction[] = isInOnboardingMode
     ? ["onboard", "update", "delete"]
     : ["create", "update", "delete"];
-  const availableActions: readonly AccountWorkspaceAction[] =
-    selectedAccount === null
+  const availableActions: readonly FundWorkspaceAction[] =
+    selectedFund === null
       ? isInOnboardingMode
         ? ["onboard"]
         : ["create"]
@@ -67,7 +69,7 @@ const AccountWorkspaceActions = function ({
       ? requestedAction
       : availableActions[0];
 
-  const setAction = function (action: AccountWorkspaceAction | null): void {
+  const setAction = function (action: FundWorkspaceAction | null): void {
     const params = new URLSearchParams(searchParams.toString());
 
     if (action === null) {
@@ -117,29 +119,26 @@ const AccountWorkspaceActions = function ({
           ))}
         </ToggleButtonGroup>
         {activeAction === "create" ? (
-          <CreateAccountForm
+          <CreateFundForm
             accountingPeriods={accountingPeriods}
             redirectUrl={createRedirectUrl}
           />
         ) : null}
         {activeAction === "onboard" ? (
-          <OnboardAccountForm redirectUrl={onboardRedirectUrl} />
-        ) : null}
-        {activeAction === "update" && selectedAccount !== null ? (
-          <UpdateAccountForm
-            account={selectedAccount}
-            redirectUrl={updateRedirectUrl}
+          <OnboardFundForm
+            redirectUrl={onboardRedirectUrl}
+            unassignedBalance={unassignedBalance}
           />
         ) : null}
-        {activeAction === "delete" && selectedAccount !== null ? (
-          <DeleteAccountForm
-            account={selectedAccount}
-            redirectUrl={deleteRedirectUrl}
-          />
+        {activeAction === "update" && selectedFund !== null ? (
+          <UpdateFundForm fund={selectedFund} redirectUrl={updateRedirectUrl} />
+        ) : null}
+        {activeAction === "delete" && selectedFund !== null ? (
+          <DeleteFundForm fund={selectedFund} redirectUrl={deleteRedirectUrl} />
         ) : null}
       </Stack>
     </Paper>
   );
 };
 
-export default AccountWorkspaceActions;
+export default FundWorkspaceActions;

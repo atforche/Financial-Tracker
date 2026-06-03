@@ -14,7 +14,6 @@ import accountRoutes from "@/accounts/routes";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
 import breadcrumbs from "@/transactions/breadcrumbs";
 import deleteTransaction from "@/transactions/deleteTransaction";
-import fundRoutes from "@/funds/routes";
 
 /**
  * Props for the DeleteTransactionForm component.
@@ -54,9 +53,6 @@ const getRedirectUrl = function (
   }
   if (routeAccount !== null) {
     return accountRoutes.dashboard({});
-  }
-  if (routeFund !== null) {
-    return fundRoutes.detail({ id: routeFund.id }, {});
   }
   return "";
 };

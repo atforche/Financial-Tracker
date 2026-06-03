@@ -38,6 +38,7 @@ interface NavigationLink {
   name: string;
   href: Route;
   icon: JSX.Element;
+  childLinks?: NavigationChildLink[];
 }
 
 interface NavigationChildLink {
@@ -56,26 +57,44 @@ const links: NavigationLink[] = [
     icon: <CalendarMonth />,
   },
   {
-    name: "Transactions",
-    href: transactionRoutes.index({}),
-    icon: <ReceiptLong />,
+    name: "Accounts",
+    href: accountRoutes.dashboard({}),
+    icon: <AccountBalance />,
+    childLinks: [
+      {
+        name: "Dashboard",
+        href: accountRoutes.dashboard({}),
+      },
+      {
+        name: "Workspace",
+        href: accountRoutes.workspace({}),
+      },
+    ],
+  },
+  {
+    name: "Funds",
+    href: fundRoutes.dashboard({}),
+    icon: <Assessment />,
+    childLinks: [
+      {
+        name: "Dashboard",
+        href: fundRoutes.dashboard({}),
+      },
+      {
+        name: "Workspace",
+        href: fundRoutes.workspace({}),
+      },
+    ],
   },
   {
     name: "Goals",
     href: goalRoutes.index({}),
     icon: <EmojiEvents />,
   },
-  { name: "Funds", href: fundRoutes.index({}), icon: <Assessment /> },
-];
-
-const accountChildLinks: NavigationChildLink[] = [
   {
-    name: "Dashboard",
-    href: accountRoutes.dashboard({}),
-  },
-  {
-    name: "Workspace",
-    href: accountRoutes.workspace({}),
+    name: "Transactions",
+    href: transactionRoutes.index({}),
+    icon: <ReceiptLong />,
   },
 ];
 
@@ -84,90 +103,109 @@ const accountChildLinks: NavigationChildLink[] = [
  */
 const NavigationLinks = function (): JSX.Element {
   const pathname = usePathname();
-  const isOnAccountsRoute =
-    pathname === "/accounts" ||
-    pathname.startsWith("/accounts/dashboard") ||
-    pathname.startsWith("/accounts/workspace");
-  const [isAccountsExpanded, setIsAccountsExpanded] =
-    useState<boolean>(isOnAccountsRoute);
+  const [expandedLinkName, setExpandedLinkName] = useState<string | null>(null);
 
+  // Determine which link should be expanded based on current pathname
   useEffect(() => {
-    if (isOnAccountsRoute) {
-      setIsAccountsExpanded(true);
-      return;
-    }
-
-    setIsAccountsExpanded(false);
-  }, [isOnAccountsRoute]);
+    const expandedLink = links.find(
+      (link) =>
+        typeof link.childLinks !== "undefined" &&
+        (pathname === link.href ||
+          link.childLinks.some((child) => pathname === child.href)),
+    );
+    setExpandedLinkName(expandedLink?.name ?? null);
+  }, [pathname]);
 
   return (
     <Box sx={{ overflow: "auto" }}>
       <Divider />
       <List>
-        {links.map((link) => (
-          <Link
-            key={link.name}
-            href={link.href}
-            style={{ textDecoration: "none", color: "inherit" }}
-          >
-            <ListItem disablePadding>
-              <ListItemButton selected={pathname === link.href}>
-                <ListItemIcon sx={{ paddingLeft: "15px" }}>
-                  {link.icon}
-                </ListItemIcon>
-                <ListItemText primary={link.name} />
-              </ListItemButton>
-            </ListItem>
-          </Link>
-        ))}
-        <ListItem
-          disablePadding
-          secondaryAction={
-            <IconButton
-              edge="end"
-              aria-label={
-                isAccountsExpanded ? "Collapse Accounts" : "Expand Accounts"
-              }
-              onClick={() => {
-                setIsAccountsExpanded((currentValue) => !currentValue);
-              }}
-            >
-              {isAccountsExpanded ? <ExpandLess /> : <ExpandMore />}
-            </IconButton>
-          }
-        >
-          <Link
-            href={accountRoutes.dashboard({})}
-            style={{ textDecoration: "none", color: "inherit", width: "100%" }}
-          >
-            <ListItemButton selected={isOnAccountsRoute}>
-              <ListItemIcon sx={{ paddingLeft: "15px" }}>
-                <AccountBalance />
-              </ListItemIcon>
-              <ListItemText primary="Accounts" />
-            </ListItemButton>
-          </Link>
-        </ListItem>
-        <Collapse in={isAccountsExpanded} timeout="auto" unmountOnExit>
-          <List disablePadding>
-            {accountChildLinks.map((link) => (
+        {links.map((link) => {
+          // Regular links without children
+          if (!link.childLinks) {
+            return (
               <Link
                 key={link.name}
                 href={link.href}
                 style={{ textDecoration: "none", color: "inherit" }}
               >
                 <ListItem disablePadding>
-                  <ListItemButton
-                    selected={pathname === link.href}
-                    sx={{ pl: 7.5 }}
-                  >
+                  <ListItemButton selected={pathname === link.href}>
+                    <ListItemIcon sx={{ paddingLeft: "15px" }}>
+                      {link.icon}
+                    </ListItemIcon>
                     <ListItemText primary={link.name} />
                   </ListItemButton>
                 </ListItem>
               </Link>
-            ))}
-          </List>
-        </Collapse>
+            );
+          }
+
+          // Links with children
+          const isExpanded = expandedLinkName === link.name;
+          const isSelected =
+            pathname === link.href ||
+            link.childLinks.some((child) => pathname === child.href);
+
+          return (
+            <div key={link.name}>
+              <ListItem
+                disablePadding
+                secondaryAction={
+                  <IconButton
+                    edge="end"
+                    aria-label={
+                      isExpanded
+                        ? `Collapse ${link.name}`
+                        : `Expand ${link.name}`
+                    }
+                    onClick={() => {
+                      setExpandedLinkName(isExpanded ? null : link.name);
+                    }}
+                  >
+                    {isExpanded ? <ExpandLess /> : <ExpandMore />}
+                  </IconButton>
+                }
+              >
+                <Link
+                  href={link.href}
+                  style={{
+                    textDecoration: "none",
+                    color: "inherit",
+                    width: "100%",
+                  }}
+                >
+                  <ListItemButton selected={isSelected}>
+                    <ListItemIcon sx={{ paddingLeft: "15px" }}>
+                      {link.icon}
+                    </ListItemIcon>
+                    <ListItemText primary={link.name} />
+                  </ListItemButton>
+                </Link>
+              </ListItem>
+              <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                <List disablePadding>
+                  {link.childLinks.map((childLink) => (
+                    <Link
+                      key={childLink.name}
+                      href={childLink.href}
+                      style={{ textDecoration: "none", color: "inherit" }}
+                    >
+                      <ListItem disablePadding>
+                        <ListItemButton
+                          selected={pathname === childLink.href}
+                          sx={{ pl: 7.5 }}
+                        >
+                          <ListItemText primary={childLink.name} />
+                        </ListItemButton>
+                      </ListItem>
+                    </Link>
+                  ))}
+                </List>
+              </Collapse>
+            </div>
+          );
+        })}
       </List>
       <Divider />
     </Box>

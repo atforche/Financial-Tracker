@@ -1,4 +1,7 @@
 import {
+  AccountDashboardBalanceEventSortOrderModel,
+  AccountDashboardBalanceEventTypeModel,
+  AccountDashboardModeModel,
   AccountDashboardSortOrderModel,
   AccountSortOrderModel,
   AccountTransactionSortOrderModel,
@@ -19,74 +22,31 @@ type AccountSummary = components["schemas"]["AccountSummaryModel"];
 /**
  * Type representing the Accounts dashboard response.
  */
-interface AccountDashboard {
-  readonly mode: AccountDashboardMode;
-  readonly accounts: {
-    readonly items: AccountDashboardAccount[];
-    readonly totalCount: number;
-  };
-  readonly balanceEvents: {
-    readonly items: AccountDashboardBalanceEvent[];
-    readonly totalCount: number;
-  };
-  readonly availableAccountNames: readonly string[];
-  readonly accountingPeriods: readonly AccountDashboardPeriodSummary[] | null;
-  readonly dates: readonly AccountDashboardDateSummary[] | null;
-}
+type AccountDashboard = components["schemas"]["AccountDashboardModel"];
 
 /**
  * Type representing a row in the Accounts dashboard account table.
  */
-interface AccountDashboardAccount {
-  readonly id: string;
-  readonly name: string;
-  readonly type: AccountTypeModel;
-  readonly startingBalance: number;
-  readonly endingBalance: number;
-}
+type AccountDashboardAccount =
+  components["schemas"]["AccountDashboardAccountModel"];
 
 /**
  * Type representing a row in the Accounts dashboard balance event table.
  */
-interface AccountDashboardBalanceEvent {
-  readonly accountId: string;
-  readonly accountName: string;
-  readonly date: string;
-  readonly accountingPeriodId: string;
-  readonly accountingPeriodName: string;
-  readonly type: AccountDashboardBalanceEventType;
-  readonly isPosted: boolean;
-  readonly amount: number;
-}
+type AccountDashboardBalanceEvent =
+  components["schemas"]["AccountDashboardBalanceEventModel"];
 
 /**
  * Type representing a period summary in the Accounts dashboard response.
  */
-interface AccountDashboardPeriodSummary {
-  readonly accountingPeriodId: string;
-  readonly accountingPeriodName: string;
-  readonly year: number;
-  readonly month: number;
-  readonly totalOpeningBalance: number;
-  readonly totalClosingBalance: number;
-  readonly trackedOpeningBalance: number;
-  readonly trackedClosingBalance: number;
-  readonly untrackedOpeningBalance: number;
-  readonly untrackedClosingBalance: number;
-  readonly openingBalanceByAccountType: readonly AccountTypeBalance[];
-  readonly closingBalanceByAccountType: readonly AccountTypeBalance[];
-}
+type AccountDashboardPeriodSummary =
+  components["schemas"]["AccountDashboardPeriodSummaryModel"];
 
 /**
  * Type representing a date summary in the Accounts dashboard response.
  */
-interface AccountDashboardDateSummary {
-  readonly date: string;
-  readonly totalBalance: number;
-  readonly trackedBalance: number;
-  readonly untrackedBalance: number;
-  readonly balanceByAccountType: readonly AccountTypeBalance[];
-}
+type AccountDashboardDateSummary =
+  components["schemas"]["AccountDashboardDateSummaryModel"];
 
 /**
  * Type representing an Account Type balance summary.
@@ -115,38 +75,6 @@ type OnboardAccountRequest = components["schemas"]["OnboardAccountModel"];
  * Type representing a request to update an account.
  */
 type UpdateAccountRequest = components["schemas"]["UpdateAccountModel"];
-
-/**
- * Enum representing the dashboard response time mode.
- */
-enum AccountDashboardMode {
-  AccountingPeriod = "AccountingPeriod",
-  Date = "Date",
-}
-
-/**
- * Enum representing balance event types on the account dashboard.
- */
-enum AccountDashboardBalanceEventType {
-  Debit = "Debit",
-  Credit = "Credit",
-}
-
-/**
- * Enum representing the supported balance event sort orders on the account dashboard.
- */
-enum AccountDashboardBalanceEventSortOrder {
-  AccountName = "AccountName",
-  AccountNameDescending = "AccountNameDescending",
-  AccountingPeriodName = "AccountingPeriodName",
-  AccountingPeriodNameDescending = "AccountingPeriodNameDescending",
-  Date = "Date",
-  DateDescending = "DateDescending",
-  Type = "Type",
-  TypeDescending = "TypeDescending",
-  Amount = "Amount",
-  AmountDescending = "AmountDescending",
-}
 
 /**
  * Determines if the provided account type supports tracked fund assignments.
@@ -224,9 +152,9 @@ export {
   type CreateAccountRequest,
   type OnboardAccountRequest,
   type UpdateAccountRequest,
-  AccountDashboardBalanceEventSortOrder,
-  AccountDashboardBalanceEventType,
-  AccountDashboardMode,
+  AccountDashboardBalanceEventSortOrderModel as AccountDashboardBalanceEventSortOrder,
+  AccountDashboardBalanceEventTypeModel as AccountDashboardBalanceEventType,
+  AccountDashboardModeModel as AccountDashboardMode,
   AccountDashboardSortOrderModel as AccountDashboardSortOrder,
   AccountSortOrderModel as AccountSortOrder,
   AccountTransactionSortOrderModel as AccountTransactionSortOrder,

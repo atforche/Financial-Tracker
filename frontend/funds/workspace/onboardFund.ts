@@ -1,6 +1,6 @@
 "use server";
 
-import type { UpdateFundRequest } from "@/funds/types";
+import type { OnboardFundRequest } from "@/funds/types";
 import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
@@ -9,58 +9,67 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
- * Interface representing the state of updating a fund.
+ * Interface representing the state of onboarding a fund.
  */
 interface ActionState {
-  readonly fundId: string;
-  readonly redirectUrl: string;
   readonly errorTitle?: string | null;
   readonly nameErrors?: string | null;
   readonly descriptionErrors?: string | null;
+  readonly onboardedBalanceErrors?: string | null;
   readonly unmappedErrors?: string | null;
 }
 
 /**
- * Server action that updates an existing fund.
+ * Payload for the onboarding server action.
  */
-const updateFund = async function (
-  { fundId, redirectUrl }: ActionState,
-  request: UpdateFundRequest,
+interface ActionPayload {
+  readonly redirectUrl: string;
+  readonly request: OnboardFundRequest;
+}
+
+/**
+ * Server action that onboards a new fund before any accounting periods exist.
+ */
+const onboardFund = async function (
+  _: ActionState,
+  { redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const client = getApiClient();
-  const { error } = await client.POST("/funds/{fundId}", {
-    params: {
-      path: {
-        fundId,
-      },
-    },
-    body: request,
-  });
+  const apiClient = getApiClient();
+  const { error } = await apiClient.POST("/funds/onboard", { body: request });
   if (error) {
     if (isApiError(error)) {
       let nameErrorMessage = null;
       let descriptionErrorMessage = null;
+      let onboardedBalanceErrorMessage = null;
       const unmappedErrors: (string | null)[] = [];
+
       for (const key of Object.keys(error.errors ?? {})) {
         if (
-          key.toUpperCase() === nameof<UpdateFundRequest>("name").toUpperCase()
+          key.toUpperCase() === nameof<OnboardFundRequest>("name").toUpperCase()
         ) {
           nameErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else if (
           key.toUpperCase() ===
-          nameof<UpdateFundRequest>("description").toUpperCase()
+          nameof<OnboardFundRequest>("description").toUpperCase()
         ) {
           descriptionErrorMessage = formatErrors(error.errors?.[key] ?? null);
+        } else if (
+          key.toUpperCase() ===
+          nameof<OnboardFundRequest>("onboardedBalance").toUpperCase()
+        ) {
+          onboardedBalanceErrorMessage = formatErrors(
+            error.errors?.[key] ?? null,
+          );
         } else {
           unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
         }
       }
+
       return {
-        fundId,
-        redirectUrl,
         errorTitle: error.title ?? null,
         nameErrors: nameErrorMessage,
         descriptionErrors: descriptionErrorMessage,
+        onboardedBalanceErrors: onboardedBalanceErrorMessage,
         unmappedErrors: unmappedErrors.join(", ") || null,
       };
     }
@@ -71,4 +80,4 @@ const updateFund = async function (
   redirect(redirectUrl);
 };
 
-export default updateFund;
+export default onboardFund;

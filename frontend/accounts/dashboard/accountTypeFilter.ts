@@ -54,7 +54,6 @@ const normalizeAccountTypes = function (
   if (selectedValues.size === 0) {
     return accountTypeValues;
   }
-
   return accountTypeValues.filter((accountType) =>
     selectedValues.has(accountType),
   );

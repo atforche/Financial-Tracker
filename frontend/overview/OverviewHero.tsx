@@ -3,7 +3,6 @@ import type { JSX } from "react";
 import type { OverviewData } from "@/overview/types";
 import accountRoutes from "@/accounts/routes";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
-import fundRoutes from "@/funds/routes";
 import goalRoutes from "@/goals/routes";
 import transactionRoutes from "@/transactions/routes";
 
@@ -70,14 +69,6 @@ const OverviewHero = function ({ data }: OverviewHeroProps): JSX.Element {
               </Button>
               <Button
                 variant="outlined"
-                href={fundRoutes.create({
-                  accountingPeriodId: currentAccountingPeriod.id,
-                })}
-              >
-                Create fund
-              </Button>
-              <Button
-                variant="outlined"
                 href={goalRoutes.create({
                   accountingPeriodId: currentAccountingPeriod.id,
                 })}
@@ -98,9 +89,6 @@ const OverviewHero = function ({ data }: OverviewHeroProps): JSX.Element {
               </Button>
               <Button variant="outlined" href={accountRoutes.dashboard({})}>
                 Review accounts
-              </Button>
-              <Button variant="outlined" href={fundRoutes.index({})}>
-                Review funds
               </Button>
             </>
           )}

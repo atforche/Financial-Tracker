@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  type AccountDashboard,
+  AccountDashboardMode,
   type AccountType,
   type AccountTypeBalance,
   formatAccountType,
@@ -20,6 +22,13 @@ import SummaryCard from "@/framework/view/SummaryCard";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface AccountDashboardSummaryCardsProps {
+  readonly dashboard: AccountDashboard;
+}
+
+/**
+ * Summary metrics derived from the selected dashboard range.
+ */
+interface DashboardSnapshot {
   readonly startLabel: string;
   readonly endLabel: string;
   readonly totalStartingBalance: number;
@@ -52,6 +61,75 @@ interface BalanceBreakdownSectionProps {
   readonly expanded: boolean;
   readonly onToggle: () => void;
 }
+
+const getDashboardSnapshot = function (
+  dashboard: AccountDashboard,
+): DashboardSnapshot {
+  if (
+    dashboard.mode === AccountDashboardMode.AccountingPeriod &&
+    typeof dashboard.accountingPeriods !== "undefined" &&
+    dashboard.accountingPeriods !== null &&
+    dashboard.accountingPeriods.length > 0
+  ) {
+    const firstPeriod = dashboard.accountingPeriods.at(0);
+    const lastPeriod = dashboard.accountingPeriods.at(-1);
+    if (
+      typeof firstPeriod === "undefined" ||
+      typeof lastPeriod === "undefined"
+    ) {
+      return {
+        startLabel: "Start",
+        endLabel: "End",
+        totalStartingBalance: 0,
+        totalEndingBalance: 0,
+        trackedStartingBalance: 0,
+        trackedEndingBalance: 0,
+        untrackedStartingBalance: 0,
+        untrackedEndingBalance: 0,
+        startingBalancesByType: [],
+        endingBalancesByType: [],
+      };
+    }
+    return {
+      startLabel: firstPeriod.accountingPeriodName,
+      endLabel: lastPeriod.accountingPeriodName,
+      totalStartingBalance: firstPeriod.totalOpeningBalance,
+      totalEndingBalance: lastPeriod.totalClosingBalance,
+      trackedStartingBalance: firstPeriod.trackedOpeningBalance,
+      trackedEndingBalance: lastPeriod.trackedClosingBalance,
+      untrackedStartingBalance: firstPeriod.untrackedOpeningBalance,
+      untrackedEndingBalance: lastPeriod.untrackedClosingBalance,
+      startingBalancesByType: firstPeriod.openingBalanceByAccountType,
+      endingBalancesByType: lastPeriod.closingBalanceByAccountType,
+    };
+  }
+
+  const dates = dashboard.dates ?? [];
+  const firstDate = dates.at(0);
+  const lastDate = dates.at(-1);
+
+  const dateFormatter = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  return {
+    startLabel: firstDate
+      ? dateFormatter.format(new Date(`${firstDate.date}T00:00:00`))
+      : "Start",
+    endLabel: lastDate
+      ? dateFormatter.format(new Date(`${lastDate.date}T00:00:00`))
+      : "End",
+    totalStartingBalance: firstDate?.totalBalance ?? 0,
+    totalEndingBalance: lastDate?.totalBalance ?? 0,
+    trackedStartingBalance: firstDate?.trackedBalance ?? 0,
+    trackedEndingBalance: lastDate?.trackedBalance ?? 0,
+    untrackedStartingBalance: firstDate?.untrackedBalance ?? 0,
+    untrackedEndingBalance: lastDate?.untrackedBalance ?? 0,
+    startingBalancesByType: firstDate?.balanceByAccountType ?? [],
+    endingBalancesByType: lastDate?.balanceByAccountType ?? [],
+  };
+};
 
 const expandToggleSlotSize = 26;
 
@@ -215,40 +293,36 @@ const toBalanceBreakdownDetailRows = function (
  * Displays the top-level account balance summary cards with synchronized details.
  */
 const AccountDashboardSummaryCards = function ({
-  startLabel,
-  endLabel,
-  totalStartingBalance,
-  totalEndingBalance,
-  trackedStartingBalance,
-  trackedEndingBalance,
-  untrackedStartingBalance,
-  untrackedEndingBalance,
-  startingBalancesByType,
-  endingBalancesByType,
+  dashboard,
 }: AccountDashboardSummaryCardsProps): JSX.Element {
+  const snapshot = getDashboardSnapshot(dashboard);
+
   const [expanded, setExpanded] = useState(false);
   const [trackedTypesExpanded, setTrackedTypesExpanded] = useState(false);
   const [untrackedTypesExpanded, setUntrackedTypesExpanded] = useState(false);
-  const netChange = totalEndingBalance - totalStartingBalance;
+  const netChange = snapshot.totalEndingBalance - snapshot.totalStartingBalance;
   const percentChange =
-    totalStartingBalance === 0
+    snapshot.totalStartingBalance === 0
       ? 0
-      : (netChange / Math.abs(totalStartingBalance)) * 100;
+      : (netChange / Math.abs(snapshot.totalStartingBalance)) * 100;
   const isPositive = netChange >= 0;
   const valueColor = isPositive ? "success.main" : "error.main";
-  const trackedNetChange = trackedEndingBalance - trackedStartingBalance;
-  const untrackedNetChange = untrackedEndingBalance - untrackedStartingBalance;
+  const trackedNetChange =
+    snapshot.trackedEndingBalance - snapshot.trackedStartingBalance;
+  const untrackedNetChange =
+    snapshot.untrackedEndingBalance - snapshot.untrackedStartingBalance;
   const trackedPercentChange =
-    trackedStartingBalance === 0
+    snapshot.trackedStartingBalance === 0
       ? 0
-      : (trackedNetChange / Math.abs(trackedStartingBalance)) * 100;
+      : (trackedNetChange / Math.abs(snapshot.trackedStartingBalance)) * 100;
   const untrackedPercentChange =
-    untrackedStartingBalance === 0
+    snapshot.untrackedStartingBalance === 0
       ? 0
-      : (untrackedNetChange / Math.abs(untrackedStartingBalance)) * 100;
+      : (untrackedNetChange / Math.abs(snapshot.untrackedStartingBalance)) *
+        100;
   const accountTypeBreakdownDetails = getAccountTypeBreakdownDetails(
-    startingBalancesByType,
-    endingBalancesByType,
+    snapshot.startingBalancesByType,
+    snapshot.endingBalancesByType,
   );
   const trackedAccountTypeDetails = accountTypeBreakdownDetails.filter(
     (detail) => isTrackedAccountType(detail.accountType),
@@ -331,7 +405,7 @@ const AccountDashboardSummaryCards = function ({
       }}
     >
       <SummaryCard
-        title={`Starting balance (${startLabel})`}
+        title={`Starting balance (${snapshot.startLabel})`}
         value={
           <Stack
             direction="row"
@@ -339,7 +413,7 @@ const AccountDashboardSummaryCards = function ({
             gap={0.5}
             justifyContent="space-between"
           >
-            <Box>{formatCurrency(totalStartingBalance)}</Box>
+            <Box>{formatCurrency(snapshot.totalStartingBalance)}</Box>
             <IconButton
               size="small"
               onClick={handleToggleExpanded}
@@ -358,14 +432,14 @@ const AccountDashboardSummaryCards = function ({
           <Stack spacing={1.25} divider={<Divider flexItem />}>
             <BalanceBreakdownSection
               label="Tracked"
-              value={formatCurrency(trackedStartingBalance)}
+              value={formatCurrency(snapshot.trackedStartingBalance)}
               detailRows={trackedStartingDetailRows}
               expanded={trackedTypesExpanded}
               onToggle={handleToggleTrackedTypesExpanded}
             />
             <BalanceBreakdownSection
               label="Untracked"
-              value={formatCurrency(untrackedStartingBalance)}
+              value={formatCurrency(snapshot.untrackedStartingBalance)}
               detailRows={untrackedStartingDetailRows}
               expanded={untrackedTypesExpanded}
               onToggle={handleToggleUntrackedTypesExpanded}
@@ -374,7 +448,7 @@ const AccountDashboardSummaryCards = function ({
         </BalanceBreakdown>
       </SummaryCard>
       <SummaryCard
-        title={`Ending balance (${endLabel})`}
+        title={`Ending balance (${snapshot.endLabel})`}
         value={
           <Stack
             direction="row"
@@ -382,7 +456,7 @@ const AccountDashboardSummaryCards = function ({
             gap={0.5}
             justifyContent="space-between"
           >
-            <Box>{formatCurrency(totalEndingBalance)}</Box>
+            <Box>{formatCurrency(snapshot.totalEndingBalance)}</Box>
             <IconButton
               size="small"
               onClick={handleToggleExpanded}
@@ -401,14 +475,14 @@ const AccountDashboardSummaryCards = function ({
           <Stack spacing={1.25} divider={<Divider flexItem />}>
             <BalanceBreakdownSection
               label="Tracked"
-              value={formatCurrency(trackedEndingBalance)}
+              value={formatCurrency(snapshot.trackedEndingBalance)}
               detailRows={trackedEndingDetailRows}
               expanded={trackedTypesExpanded}
               onToggle={handleToggleTrackedTypesExpanded}
             />
             <BalanceBreakdownSection
               label="Untracked"
-              value={formatCurrency(untrackedEndingBalance)}
+              value={formatCurrency(snapshot.untrackedEndingBalance)}
               detailRows={untrackedEndingDetailRows}
               expanded={untrackedTypesExpanded}
               onToggle={handleToggleUntrackedTypesExpanded}

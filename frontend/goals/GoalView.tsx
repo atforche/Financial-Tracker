@@ -125,8 +125,6 @@ const GoalView = async function ({
       accountingPeriod={accountingPeriod}
       fund={fund}
       goal={goal}
-      transactions={transactions.items}
-      transactionsTotalCount={transactions.totalCount}
       context={GoalFrameContext.GoalDetail}
       returnUrl={returnUrl ?? null}
     />

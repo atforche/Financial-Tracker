@@ -6,19 +6,15 @@ const normalizeRequestedAccountNames = function (
 ): readonly string[] {
   const seenAccountNames = new Set<string>();
   const normalizedAccountNames: string[] = [];
-
   values.forEach((value) => {
     const trimmedValue = value.trim();
     const normalizedValue = trimmedValue.toLocaleLowerCase();
-
     if (trimmedValue === "" || seenAccountNames.has(normalizedValue)) {
       return;
     }
-
     seenAccountNames.add(normalizedValue);
     normalizedAccountNames.push(trimmedValue);
   });
-
   return normalizedAccountNames;
 };
 
@@ -34,11 +30,9 @@ const normalizeAccountNames = function (
       accountName.toLocaleLowerCase(),
     ),
   );
-
   if (selectedAccountNames.size === 0 || availableAccountNames.length === 0) {
     return [];
   }
-
   return availableAccountNames.filter((accountName) =>
     selectedAccountNames.has(accountName.toLocaleLowerCase()),
   );

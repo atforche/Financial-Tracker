@@ -4,55 +4,51 @@ import { Button, DialogActions, Stack } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
-import Breadcrumbs from "@/framework/Breadcrumbs";
+import type { CreateFundRequest } from "@/funds/types";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import Link from "next/link";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import accountingPeriodRoutes from "@/accounting-periods/routes";
-import breadcrumbs from "@/funds/breadcrumbs";
-import createFund from "@/funds/createFund";
-import routes from "@/funds/routes";
+import createFund from "@/funds/workspace/createFund";
 
 /**
  * Props for the CreateFundForm component.
  */
 interface CreateFundFormProps {
   readonly accountingPeriods: AccountingPeriod[];
-  readonly routeAccountingPeriod?: AccountingPeriod | null;
+  readonly redirectUrl: string;
 }
-
-/**
- * Gets the URL to redirect the user to after successfully creating a fund.
- */
-const getRedirectUrl = function (
-  routeAccountingPeriod: AccountingPeriod | null,
-): string {
-  if (routeAccountingPeriod !== null) {
-    return accountingPeriodRoutes.detail({ id: routeAccountingPeriod.id }, {});
-  }
-  return routes.index({});
-};
 
 /**
  * Component that displays the form for creating a fund.
  */
 const CreateFundForm = function ({
   accountingPeriods,
-  routeAccountingPeriod = null,
+  redirectUrl,
 }: CreateFundFormProps): JSX.Element {
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [accountingPeriod, setAccountingPeriod] =
-    useState<AccountingPeriod | null>(routeAccountingPeriod);
+    useState<AccountingPeriod | null>(null);
 
-  const [state, action, pending] = useActionState(createFund, {
-    redirectUrl: getRedirectUrl(routeAccountingPeriod),
-  });
+  const [state, action, pending] = useActionState(createFund, {});
+
+  const reset = function (): void {
+    setName("");
+    setDescription("");
+    setAccountingPeriod(null);
+  };
+
+  let request: CreateFundRequest | null = null;
+  if (name !== "" && accountingPeriod !== null) {
+    request = {
+      name,
+      description,
+      accountingPeriodId: accountingPeriod.id,
+    };
+  }
 
   return (
-    <Stack spacing={2}>
-      <Breadcrumbs breadcrumbs={breadcrumbs.create(routeAccountingPeriod)} />
-      <Stack spacing={2} sx={{ maxWidth: "500px" }}>
+    <Stack spacing={3}>
+      <Stack spacing={2.5}>
         <StringEntryField
           label="Name"
           value={name}
@@ -69,31 +65,30 @@ const CreateFundForm = function ({
           label="Accounting Period"
           options={accountingPeriods}
           value={accountingPeriod}
-          setValue={routeAccountingPeriod === null ? setAccountingPeriod : null}
+          setValue={setAccountingPeriod}
           errorMessage={state.accountingPeriodErrors ?? null}
         />
         <DialogActions>
-          <Link href={getRedirectUrl(routeAccountingPeriod)} tabIndex={-1}>
-            <Button variant="outlined">Cancel</Button>
-          </Link>
+          <Button variant="outlined" onClick={reset}>
+            Reset
+          </Button>
           <Button
             variant="contained"
             loading={pending}
-            disabled={name === "" || accountingPeriod === null}
+            disabled={request === null}
             onClick={() => {
-              if (name === "" || accountingPeriod === null) {
+              if (request === null) {
                 return;
               }
               startTransition(() => {
                 action({
-                  name,
-                  description,
-                  accountingPeriodId: accountingPeriod.id,
+                  redirectUrl,
+                  request,
                 });
               });
             }}
           >
-            Create
+            Create Fund
           </Button>
         </DialogActions>
         <ErrorAlert

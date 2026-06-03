@@ -620,11 +620,11 @@ public class FundDashboardGetter(
         IReadOnlyList<AccountingPeriod> accountingPeriods,
         IReadOnlyCollection<FundDashboardRow> rows) => accountingPeriods.Select(accountingPeriod =>
         {
-            var balances = rows.Select(row =>
+            List<(decimal OpeningBalance, decimal ClosingBalance, string fundName)> balances = rows.Select(row =>
             {
                 AccountingPeriodBalanceValue periodModel = row.AccountingPeriods!
                     .Single(period => period.AccountingPeriodId == accountingPeriod.Id.Value);
-                return (periodModel.OpeningBalance, periodModel.ClosingBalance);
+                return (periodModel.OpeningBalance, periodModel.ClosingBalance, row.Name);
             }).ToList();
             return new FundDashboardPeriodSummaryModel
             {
@@ -634,6 +634,10 @@ public class FundDashboardGetter(
                 Month = accountingPeriod.Month,
                 TotalOpeningBalance = balances.Sum(balance => balance.OpeningBalance),
                 TotalClosingBalance = balances.Sum(balance => balance.ClosingBalance),
+                AssignedOpeningBalance = balances.Where(balance => balance.fundName != Fund.UnassignedFundName).Sum(balance => balance.OpeningBalance),
+                AssignedClosingBalance = balances.Where(balance => balance.fundName != Fund.UnassignedFundName).Sum(balance => balance.ClosingBalance),
+                UnassignedOpeningBalance = balances.Where(balance => balance.fundName == Fund.UnassignedFundName).Sum(balance => balance.OpeningBalance),
+                UnassignedClosingBalance = balances.Where(balance => balance.fundName == Fund.UnassignedFundName).Sum(balance => balance.ClosingBalance),
             };
         }).ToList();
 
@@ -641,15 +645,17 @@ public class FundDashboardGetter(
         IReadOnlyList<DateOnly> dates,
         IReadOnlyCollection<FundDashboardRow> rows) => dates.Select(date =>
         {
-            decimal balance = rows.Sum(row =>
+            List<(string fundName, decimal balance)> balances = rows.Select(row =>
             {
                 FundDashboardDateModel dateModel = row.Dates!.Single(item => item.Date == date);
-                return dateModel.Balance;
-            });
+                return (row.Name, dateModel.Balance);
+            }).ToList();
             return new FundDashboardDateSummaryModel
             {
                 Date = date,
-                TotalBalance = balance,
+                TotalBalance = balances.Sum(balance => balance.balance),
+                AssignedBalance = balances.Where(balance => balance.fundName != Fund.UnassignedFundName).Sum(balance => balance.balance),
+                UnassignedBalance = balances.Where(balance => balance.fundName == Fund.UnassignedFundName).Sum(balance => balance.balance)
             };
         }).ToList();
 

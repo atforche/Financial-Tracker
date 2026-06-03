@@ -7,7 +7,6 @@ import { isApiError } from "@/framework/data/apiError";
 import nameof from "@/framework/data/nameof";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import routes from "@/accounts/routes";
 
 /**
  * Interface representing the state of creating an account.
@@ -30,23 +29,12 @@ interface ActionPayload {
 }
 
 /**
- * Ensures redirects stay within the app.
- */
-const getSafeRedirectUrl = function (redirectUrl: string): string {
-  if (redirectUrl.startsWith("/") && !redirectUrl.startsWith("//")) {
-    return redirectUrl;
-  }
-  return routes.workspace({});
-};
-
-/**
  * Server action that creates a new account.
  */
 const createAccount = async function (
   _: ActionState,
   { redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const safeRedirectUrl = getSafeRedirectUrl(redirectUrl);
   const client = getApiClient();
   const { error } = await client.POST("/accounts", {
     body: request,
@@ -87,7 +75,6 @@ const createAccount = async function (
           unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
         }
       }
-
       return {
         errorTitle: error.title ?? null,
         nameErrors: nameErrorMessage,
@@ -99,9 +86,8 @@ const createAccount = async function (
     }
     throw new Error("An unexpected error occurred", { cause: error });
   }
-
-  revalidatePath(safeRedirectUrl);
-  redirect(safeRedirectUrl);
+  revalidatePath(redirectUrl);
+  redirect(redirectUrl);
 };
 
 export default createAccount;

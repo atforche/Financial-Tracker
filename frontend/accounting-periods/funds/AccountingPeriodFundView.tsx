@@ -112,8 +112,6 @@ const AccountingPeriodFundView = async function ({
       accountingPeriod={accountingPeriod}
       fund={fund}
       goal={goal ?? null}
-      transactions={transactions.items}
-      transactionsTotalCount={transactions.totalCount}
       context={GoalFrameContext.FundDetail}
     />
   );

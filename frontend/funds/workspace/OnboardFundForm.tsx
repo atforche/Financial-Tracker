@@ -2,21 +2,18 @@
 
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
-import Breadcrumbs from "@/framework/Breadcrumbs";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import Link from "next/link";
 import type { OnboardFundRequest } from "@/funds/types";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import breadcrumbs from "@/funds/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
-import onboardFund from "@/funds/onboardFund";
-import routes from "@/funds/routes";
+import onboardFund from "@/funds/workspace/onboardFund";
 
 /**
  * Props for the OnboardFundForm component.
  */
 interface OnboardFundFormProps {
+  readonly redirectUrl: string;
   readonly unassignedBalance: number | null;
 }
 
@@ -24,12 +21,19 @@ interface OnboardFundFormProps {
  * Component that displays the form for onboarding a fund.
  */
 const OnboardFundForm = function ({
+  redirectUrl,
   unassignedBalance,
 }: OnboardFundFormProps): JSX.Element {
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [onboardedBalance, setOnboardedBalance] = useState<number | null>(null);
   const [state, action, pending] = useActionState(onboardFund, {});
+
+  const reset = function (): void {
+    setName("");
+    setDescription("");
+    setOnboardedBalance(null);
+  };
 
   const remainingUnassignedAmount =
     unassignedBalance === null
@@ -46,8 +50,7 @@ const OnboardFundForm = function ({
   }
 
   return (
-    <Stack spacing={2}>
-      <Breadcrumbs breadcrumbs={breadcrumbs.onboard()} />
+    <Stack spacing={3}>
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <StringEntryField
           label="Name"
@@ -80,9 +83,9 @@ const OnboardFundForm = function ({
           </Typography>
         ) : null}
         <DialogActions>
-          <Link href={routes.index({})} tabIndex={-1}>
-            <Button variant="outlined">Cancel</Button>
-          </Link>
+          <Button variant="outlined" onClick={reset}>
+            Reset
+          </Button>
           <Button
             variant="contained"
             loading={pending}
@@ -92,7 +95,10 @@ const OnboardFundForm = function ({
                 return;
               }
               startTransition(() => {
-                action(request);
+                action({
+                  redirectUrl,
+                  request,
+                });
               });
             }}
           >

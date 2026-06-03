@@ -32,7 +32,6 @@ const getNormalizedDateOpened = function (
   if (accountingPeriod === null) {
     return null;
   }
-
   const minimumDate = getMinimumDate(accountingPeriod);
   const maximumDate = getMaximumDate(accountingPeriod);
   if (
@@ -42,7 +41,6 @@ const getNormalizedDateOpened = function (
   ) {
     return getDefaultDate(accountingPeriod);
   }
-
   return dateOpened;
 };
 

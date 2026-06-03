@@ -1,47 +1,41 @@
-import type {
-  AccountDashboardBalanceEventSortOrder,
-  AccountDashboardSortOrder,
-  AccountType,
-} from "@/accounts/types";
 import { Box, Stack } from "@mui/material";
+import type {
+  FundDashboardBalanceEventSortOrder,
+  FundDashboardSortOrder,
+} from "@/funds/types";
 import {
-  normalizeAccountTypes,
-  shouldPersistAccountTypes,
-} from "@/accounts/dashboard/accountTypeFilter";
-import {
-  normalizeRequestedAccountNames,
-  shouldPersistAccountNames,
-} from "@/accounts/dashboard/accountNameFilter";
-import AccountDashboardBalanceEventListFrame from "@/accounts/dashboard/AccountDashboardBalanceEventListFrame";
-import AccountDashboardChangeChart from "@/accounts/dashboard/AccountDashboardChangeChart";
-import AccountDashboardFilter from "@/accounts/dashboard/AccountDashboardFilter";
-import AccountDashboardListFrame from "@/accounts/dashboard/AccountDashboardListFrame";
-import AccountDashboardSummaryCards from "@/accounts/dashboard/AccountDashboardSummaryCards";
-import AccountDashboardTrendChart from "@/accounts/dashboard/AccountDashboardTrendChart";
+  normalizeRequestedFundNames,
+  shouldPersistFundNames,
+} from "@/funds/dashboard/fundNameFilter";
 import { AccountingPeriodSortOrder } from "@/accounting-periods/types";
+import FundDashboardBalanceEventListFrame from "@/funds/dashboard/FundDashboardBalanceEventListFrame";
+import FundDashboardChangeChart from "@/funds/dashboard/FundDashboardChangeChart";
+import FundDashboardFilter from "@/funds/dashboard/FundDashboardFilter";
+import FundDashboardListFrame from "@/funds/dashboard/FundDashboardListFrame";
+import FundDashboardSummaryCards from "@/funds/dashboard/FundDashboardSummaryCards";
+import FundDashboardTrendChart from "@/funds/dashboard/FundDashboardTrendChart";
 import type { JSX } from "react";
 import dayjs from "dayjs";
 import getApiClient from "@/framework/data/getApiClient";
 import { redirect } from "next/navigation";
-import routes from "@/accounts/routes";
+import routes from "@/funds/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
 /**
- * URL mode values used to filter the Accounts dashboard.
+ * URL mode values used to filter the Funds dashboard.
  */
-type AccountsDashboardFilterMode = "accounting-period" | "date";
+type FundsDashboardFilterMode = "accounting-period" | "date";
 
 /**
- * Search parameters for the account dashboard.
+ * Search parameters for the fund dashboard.
  */
-interface AccountDashboardSearchParams {
-  sort?: AccountDashboardSortOrder;
+interface FundDashboardSearchParams {
+  sort?: FundDashboardSortOrder;
   page?: number | null;
-  balanceEventSort?: AccountDashboardBalanceEventSortOrder;
+  balanceEventSort?: FundDashboardBalanceEventSortOrder;
   balanceEventPage?: number | string;
-  mode?: AccountsDashboardFilterMode;
-  accountType?: AccountType | readonly AccountType[];
-  accountName?: string | readonly string[];
+  mode?: FundsDashboardFilterMode;
+  fundName?: string | readonly string[];
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;
   startDate?: string;
@@ -49,26 +43,25 @@ interface AccountDashboardSearchParams {
 }
 
 /**
- * Props for the AccountDashboard component.
+ * Props for the FundDashboard component.
  */
-interface AccountDashboardProps {
-  readonly searchParams: Promise<AccountDashboardSearchParams>;
+interface FundDashboardProps {
+  readonly searchParams: Promise<FundDashboardSearchParams>;
 }
 
 /**
- * Component that displays the Accounts view.
+ * Component that displays the Funds view.
  */
-const AccountDashboard = async function ({
+const FundDashboard = async function ({
   searchParams,
-}: AccountDashboardProps): Promise<JSX.Element> {
+}: FundDashboardProps): Promise<JSX.Element> {
   const {
     sort,
     page,
     balanceEventSort,
     balanceEventPage,
     mode,
-    accountType,
-    accountName,
+    fundName,
     startAccountingPeriodId,
     endAccountingPeriodId,
     startDate,
@@ -92,31 +85,21 @@ const AccountDashboard = async function ({
   const { data: accountingPeriods } = await accountingPeriodsPromise;
   const latestAccountingPeriod = accountingPeriods?.items[0] ?? null;
   const isInOnboardingMode = typeof latestAccountingPeriod === "undefined";
-  const currentMode: AccountsDashboardFilterMode =
+  const currentMode: FundsDashboardFilterMode =
     typeof mode === "undefined" || isInOnboardingMode ? "date" : mode;
-  const currentAccountTypes = normalizeAccountTypes(
-    Array.isArray(accountType)
-      ? accountType
-      : typeof accountType === "string"
-        ? [accountType]
-        : [],
-  );
-  const currentAccountNames = normalizeRequestedAccountNames(
-    Array.isArray(accountName)
-      ? accountName
-      : typeof accountName === "string"
-        ? [accountName]
+  const currentFundNames = normalizeRequestedFundNames(
+    Array.isArray(fundName)
+      ? fundName
+      : typeof fundName === "string"
+        ? [fundName]
         : [],
   );
 
   const persistedFilters = {
     ...(typeof sort === "string" ? { sort } : {}),
     ...(typeof balanceEventSort === "string" ? { balanceEventSort } : {}),
-    ...(shouldPersistAccountTypes(currentAccountTypes)
-      ? { accountType: currentAccountTypes }
-      : {}),
-    ...(shouldPersistAccountNames(currentAccountNames)
-      ? { accountName: currentAccountNames }
+    ...(shouldPersistFundNames(currentFundNames)
+      ? { fundName: currentFundNames }
       : {}),
   };
 
@@ -151,7 +134,7 @@ const AccountDashboard = async function ({
     );
   }
 
-  const accountDashboardPromise = apiClient.GET("/accounts/dashboard", {
+  const fundDashboardPromise = apiClient.GET("/funds/dashboard", {
     params: {
       query: {
         ...(typeof sort === "string" ? { Sort: sort } : {}),
@@ -160,11 +143,8 @@ const AccountDashboard = async function ({
           : {}),
         Limit: rowsPerPage,
         BalanceEventLimit: rowsPerPage,
-        ...(shouldPersistAccountTypes(currentAccountTypes)
-          ? { AccountType: [...currentAccountTypes] }
-          : {}),
-        ...(shouldPersistAccountNames(currentAccountNames)
-          ? { AccountName: [...currentAccountNames] }
+        ...(shouldPersistFundNames(currentFundNames)
+          ? { FundName: [...currentFundNames] }
           : {}),
         ...(typeof page === "number" && page > 0
           ? { Offset: (page - 1) * rowsPerPage }
@@ -200,23 +180,23 @@ const AccountDashboard = async function ({
       },
     },
   });
-  const { data: dashboard } = await accountDashboardPromise;
+  const { data: dashboard } = await fundDashboardPromise;
   if (typeof dashboard === "undefined") {
-    throw new Error("Failed to load account dashboard data");
+    throw new Error("Failed to load fund dashboard data");
   }
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
       <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
-        <AccountDashboardFilter
+        <FundDashboardFilter
           accountingPeriods={accountingPeriods?.items ?? []}
-          availableAccountNames={dashboard.availableAccountNames}
+          availableFundNames={dashboard.availableFundNames}
           defaultAccountingPeriodId={latestAccountingPeriod?.id ?? null}
           defaultStartDate={defaultStartDate.format("YYYY-MM-DD")}
           defaultEndDate={defaultEndDate.format("YYYY-MM-DD")}
         />
       </Stack>
-      <AccountDashboardSummaryCards dashboard={dashboard} />
+      <FundDashboardSummaryCards dashboard={dashboard} />
       <Box
         sx={{
           display: "grid",
@@ -227,12 +207,12 @@ const AccountDashboard = async function ({
           },
         }}
       >
-        <AccountDashboardTrendChart
+        <FundDashboardTrendChart
           mode={dashboard.mode}
           accountingPeriods={dashboard.accountingPeriods ?? null}
           dates={dashboard.dates ?? null}
         />
-        <AccountDashboardChangeChart
+        <FundDashboardChangeChart
           mode={dashboard.mode}
           accountingPeriods={dashboard.accountingPeriods ?? null}
           dates={dashboard.dates ?? null}
@@ -246,12 +226,12 @@ const AccountDashboard = async function ({
             "repeat(auto-fit, minmax(min(100%, 800px), 1fr))",
         }}
       >
-        <AccountDashboardListFrame
-          data={[...dashboard.accounts.items]}
+        <FundDashboardListFrame
+          data={[...dashboard.funds.items]}
           isInOnboardingMode={isInOnboardingMode}
-          totalCount={dashboard.accounts.totalCount}
+          totalCount={dashboard.funds.totalCount}
         />
-        <AccountDashboardBalanceEventListFrame
+        <FundDashboardBalanceEventListFrame
           data={[...dashboard.balanceEvents.items]}
           mode={dashboard.mode}
           totalCount={dashboard.balanceEvents.totalCount}
@@ -261,5 +241,5 @@ const AccountDashboard = async function ({
   );
 };
 
-export type { AccountDashboardSearchParams };
-export default AccountDashboard;
+export type { FundDashboardSearchParams };
+export default FundDashboard;

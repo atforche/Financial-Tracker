@@ -11,10 +11,7 @@ import CaptionedValue from "@/framework/view/CaptionedValue";
 import type { Goal } from "@/goals/types";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
-import type { Transaction } from "@/transactions/types";
-import TransactionListFrame from "@/funds/FundTransactionListFrame";
 import formatCurrency from "@/framework/formatCurrency";
-import fundRoutes from "@/funds/routes";
 import nameof from "@/framework/data/nameof";
 
 /**
@@ -25,8 +22,6 @@ interface AccountingPeriodFundFrameProps {
   readonly accountingPeriod: AccountingPeriod;
   readonly fund: AccountingPeriodFund;
   readonly goal: Goal | null;
-  readonly transactions: Transaction[];
-  readonly transactionsTotalCount: number;
   readonly context: GoalFrameContext;
   readonly returnUrl?: string | null;
 }
@@ -39,8 +34,6 @@ const AccountingPeriodFundFrame = function ({
   accountingPeriod,
   fund,
   goal,
-  transactions,
-  transactionsTotalCount,
   context,
   returnUrl = null,
 }: AccountingPeriodFundFrameProps): JSX.Element {
@@ -55,26 +48,10 @@ const AccountingPeriodFundFrame = function ({
       >
         <Breadcrumbs breadcrumbs={breadcrumbs} />
         <Stack direction="row" spacing={1}>
-          <Button
-            variant="contained"
-            color="primary"
-            href={fundRoutes.update(
-              { id: fund.id },
-              { accountingPeriodId: accountingPeriod.id },
-            )}
-            disabled={isSystemFund}
-          >
+          <Button variant="contained" color="primary" disabled={isSystemFund}>
             Edit
           </Button>
-          <Button
-            variant="contained"
-            color="error"
-            href={fundRoutes.delete(
-              { id: fund.id },
-              { accountingPeriodId: accountingPeriod.id },
-            )}
-            disabled={isSystemFund}
-          >
+          <Button variant="contained" color="error" disabled={isSystemFund}>
             Delete
           </Button>
         </Stack>
@@ -125,11 +102,6 @@ const AccountingPeriodFundFrame = function ({
             "search",
           )}
           pageParamName=""
-        />
-        <TransactionListFrame
-          fund={fund}
-          data={transactions}
-          totalCount={transactionsTotalCount}
         />
       </Stack>
     </Stack>

@@ -32,7 +32,6 @@ import accountRoutes from "@/accounts/routes";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
 import breadcrumbs from "@/transactions/breadcrumbs";
 import createTransaction from "@/transactions/createTransaction";
-import fundRoutes from "@/funds/routes";
 import { updateUnassignedFundAmount } from "@/funds/FundAssignmentEntryFrame";
 
 /**
@@ -80,9 +79,6 @@ const getRedirectUrl = function (
   }
   if (routeAccount !== null) {
     return accountRoutes.dashboard({});
-  }
-  if (routeFund !== null) {
-    return fundRoutes.detail({ id: routeFund.id }, {});
   }
   return "";
 };
