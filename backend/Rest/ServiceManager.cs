@@ -25,6 +25,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<AccountingPeriodGoalGetter>();
         _ = serviceCollection.AddScoped<AccountingPeriodGetter>();
         _ = serviceCollection.AddScoped<AccountingPeriodTransactionGetter>();
+        _ = serviceCollection.AddScoped<AccountingPeriodDashboardGetter>();
 
         _ = serviceCollection.AddScoped<AccountConverter>();
         _ = serviceCollection.AddScoped<AccountDashboardGetter>();

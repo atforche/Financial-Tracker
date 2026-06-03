@@ -1619,6 +1619,72 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/accounting-periods/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves dashboard data for Accounting Periods across a range of Accounting Periods. */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description ID for the first Accounting Period in the requested range. */
+                    StartAccountingPeriodId?: string;
+                    /** @description ID for the last Accounting Period in the requested range. */
+                    EndAccountingPeriodId?: string;
+                    /** @description Optional sort to apply to the matching Accounting Periods. */
+                    Sort?: components["schemas"]["AccountingPeriodSortOrderModel"];
+                    /** @description Optional sort to apply to the matching transactions. */
+                    TransactionSort?: components["schemas"]["AccountingPeriodTransactionSortOrderModel"];
+                    /** @description Maximum number of Accounting Periods to return. */
+                    Limit?: number;
+                    /** @description Number of Accounting Periods to skip. */
+                    Offset?: number;
+                    /** @description Maximum number of transactions to return. */
+                    TransactionLimit?: number;
+                    /** @description Number of transactions to skip. */
+                    TransactionOffset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountingPeriodDashboardModel"];
+                        "application/json": components["schemas"]["AccountingPeriodDashboardModel"];
+                        "text/json": components["schemas"]["AccountingPeriodDashboardModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/accounting-periods/open": {
         parameters: {
             query?: never;
@@ -2380,6 +2446,23 @@ export interface components {
         };
         /** @enum {unknown} */
         AccountingPeriodAccountSortOrderModel: AccountingPeriodAccountSortOrderModel | null;
+        /** @description Model representing the Accounting Period dashboard response. */
+        AccountingPeriodDashboardModel: {
+            /** @description Matching Accounting Periods for the requested dashboard page. */
+            accountingPeriods: components["schemas"]["CollectionModelOfAccountingPeriodModel"];
+            /** @description Matching transactions for the requested dashboard page. */
+            transactions: components["schemas"]["CollectionModelOfTransactionModel"];
+            /**
+             * Format: double
+             * @description Total income over the requested range.
+             */
+            totalIncome: number;
+            /**
+             * Format: double
+             * @description Total spending over the requested range.
+             */
+            totalSpending: number;
+        };
         /** @description Model representing a Fund in the context of a specific Accounting Period */
         AccountingPeriodFundModel: {
             /**

@@ -27,6 +27,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountingPeriodAccountConverter accountingPeriodAccountConverter,
     AccountingPeriodAccountGetter accountingPeriodAccountGetter,
     AccountingPeriodConverter accountingPeriodConverter,
+    AccountingPeriodDashboardGetter accountingPeriodDashboardGetter,
     AccountingPeriodFundConverter accountingPeriodFundConverter,
     AccountingPeriodFundGetter accountingPeriodFundGetter,
     AccountingPeriodGoalGetter accountingPeriodGoalGetter,
@@ -65,6 +66,26 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     [ProducesResponseType(typeof(CollectionModel<AccountingPeriodModel>), StatusCodes.Status200OK)]
     public IActionResult GetMany([FromQuery] AccountingPeriodQueryParameterModel queryParameters) =>
         Ok(accountingPeriodGetter.Get(queryParameters));
+
+    /// <summary>
+    /// Retrieves dashboard data for Accounting Periods across a range of Accounting Periods.
+    /// </summary>
+    [HttpGet("dashboard")]
+    [ProducesResponseType(typeof(AccountingPeriodDashboardModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetDashboard([FromQuery] AccountingPeriodDashboardQueryParameterModel queryParameters)
+    {
+        if (!accountingPeriodDashboardGetter.TryGet(queryParameters, out AccountingPeriodDashboardModel? dashboard, out Dictionary<string, string[]> errors))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Accounting Period dashboard.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        return Ok(dashboard);
+    }
 
     /// <summary>
     /// Retrieves all the open Accounting Periods from the database
