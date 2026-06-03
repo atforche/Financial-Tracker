@@ -133,6 +133,9 @@ public class FundDashboardGetter(
             GetApplicableFundNames(requestedFundNames, availableFundNames));
         balanceEvents = SortBalanceEvents(balanceEvents, request.BalanceEventSort);
         filteredRows = SortRows(filteredRows, request.Sort);
+        (decimal totalAmountAssigned, decimal totalAmountSpent) = GetTransactionTotalsForAccountingPeriods(
+            filteredRows.Select(row => row.Id).ToList(),
+            accountingPeriods);
         results = new FundDashboardModel
         {
             Mode = FundDashboardModeModel.AccountingPeriod,
@@ -151,6 +154,8 @@ public class FundDashboardGetter(
                 TotalCount = balanceEvents.Count,
             },
             AvailableFundNames = availableFundNames,
+            TotalAmountAssigned = totalAmountAssigned,
+            TotalAmountSpent = totalAmountSpent,
             AccountingPeriods = BuildPeriodSummaries(accountingPeriods, filteredRows),
             Dates = null,
         };
@@ -201,6 +206,10 @@ public class FundDashboardGetter(
             GetApplicableFundNames(requestedFundNames, availableFundNames));
         balanceEvents = SortBalanceEvents(balanceEvents, request.BalanceEventSort);
         filteredRows = SortRows(filteredRows, request.Sort);
+        (decimal totalAmountAssigned, decimal totalAmountSpent) = GetTransactionTotalsForDates(
+            filteredRows.Select(row => row.Id).ToList(),
+            request.StartDate.Value,
+            request.EndDate.Value);
         results = new FundDashboardModel
         {
             Mode = FundDashboardModeModel.Date,
@@ -219,6 +228,8 @@ public class FundDashboardGetter(
                 TotalCount = balanceEvents.Count,
             },
             AvailableFundNames = availableFundNames,
+            TotalAmountAssigned = totalAmountAssigned,
+            TotalAmountSpent = totalAmountSpent,
             AccountingPeriods = null,
             Dates = BuildDateSummaries(dates, filteredRows),
         };
@@ -251,6 +262,8 @@ public class FundDashboardGetter(
             TotalCount = 0,
         },
         AvailableFundNames = [],
+        TotalAmountAssigned = 0,
+        TotalAmountSpent = 0,
         AccountingPeriods = null,
         Dates = null,
     };
@@ -533,6 +546,57 @@ public class FundDashboardGetter(
         DateOnly endDate) => BuildBalanceEvents(
             transaction => true,
             effectiveDate => effectiveDate >= startDate && effectiveDate <= endDate);
+
+    private (decimal TotalAmountAssigned, decimal TotalAmountSpent) GetTransactionTotalsForAccountingPeriods(
+        List<Guid> filteredFundIds,
+        IReadOnlyList<AccountingPeriod> accountingPeriods)
+    {
+        decimal totalAmountAssigned = 0;
+        decimal totalAmountSpent = 0;
+
+        foreach (AccountingPeriodId accountingPeriodId in accountingPeriods.Select(accountingPeriod => accountingPeriod.Id).ToHashSet())
+        {
+            foreach (Transaction transaction in transactionRepository.GetAllByAccountingPeriod(accountingPeriodId))
+            {
+                if (transaction is IncomeTransaction incomeTransaction)
+                {
+                    totalAmountAssigned += incomeTransaction.FundAssignments
+                        .Where(fundAssignment => filteredFundIds.Contains(fundAssignment.FundId.Value))
+                        .Sum(fundAssignment => fundAssignment.Amount);
+                }
+                if (transaction is SpendingTransaction spendingTransaction)
+                {
+                    totalAmountSpent += spendingTransaction.FundAssignments
+                        .Where(fundAssignment => filteredFundIds.Contains(fundAssignment.FundId.Value))
+                        .Sum(fundAssignment => fundAssignment.Amount);
+                }
+            }
+        }
+        return (totalAmountAssigned, totalAmountSpent);
+    }
+
+    private (decimal TotalAmountAssigned, decimal TotalAmountSpent) GetTransactionTotalsForDates(
+        List<Guid> filteredFundIds,
+        DateOnly startDate,
+        DateOnly endDate)
+    {
+        decimal totalAmountAssigned = 0;
+        decimal totalAmountSpent = 0;
+
+        foreach (IncomeTransaction transaction in transactionRepository.GetAllIncomeTransactionsByDateRange(startDate, endDate).OfType<IncomeTransaction>())
+        {
+            totalAmountAssigned += transaction.FundAssignments
+                .Where(fundAssignment => filteredFundIds.Contains(fundAssignment.FundId.Value))
+                .Sum(fundAssignment => fundAssignment.Amount);
+        }
+        foreach (SpendingTransaction transaction in transactionRepository.GetAllSpendingTransactionsByDateRange(startDate, endDate).OfType<SpendingTransaction>())
+        {
+            totalAmountSpent += transaction.FundAssignments
+                .Where(fundAssignment => filteredFundIds.Contains(fundAssignment.FundId.Value))
+                .Sum(fundAssignment => fundAssignment.Amount);
+        }
+        return (totalAmountAssigned, totalAmountSpent);
+    }
 
     private List<FundDashboardBalanceEventRow> BuildBalanceEvents(
         Func<Transaction, bool> transactionFilter,

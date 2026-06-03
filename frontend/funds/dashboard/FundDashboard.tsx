@@ -8,6 +8,7 @@ import {
   shouldPersistFundNames,
 } from "@/funds/dashboard/fundNameFilter";
 import { AccountingPeriodSortOrder } from "@/accounting-periods/types";
+import FundDashboardAssignmentSpendingCard from "@/funds/dashboard/FundDashboardAssignmentSpendingCard";
 import FundDashboardBalanceEventListFrame from "@/funds/dashboard/FundDashboardBalanceEventListFrame";
 import FundDashboardChangeChart from "@/funds/dashboard/FundDashboardChangeChart";
 import FundDashboardFilter from "@/funds/dashboard/FundDashboardFilter";
@@ -197,6 +198,7 @@ const FundDashboard = async function ({
         />
       </Stack>
       <FundDashboardSummaryCards dashboard={dashboard} />
+      <FundDashboardAssignmentSpendingCard dashboard={dashboard} />
       <Box
         sx={{
           display: "grid",

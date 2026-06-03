@@ -34,4 +34,14 @@ public class FundDashboardModel
     /// Summary balances for each date in the requested range.
     /// </summary>
     public IReadOnlyCollection<FundDashboardDateSummaryModel>? Dates { get; init; }
+
+    /// <summary>
+    /// Total amount assigned to funds from income transactions in the requested range.
+    /// </summary>
+    public required decimal TotalAmountAssigned { get; init; }
+
+    /// <summary>
+    /// Total amount spent from funds via spending transactions in the requested range.
+    /// </summary>
+    public required decimal TotalAmountSpent { get; init; }
 }

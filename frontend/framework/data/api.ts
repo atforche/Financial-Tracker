@@ -2962,6 +2962,16 @@ export interface components {
             accountingPeriods?: null | components["schemas"]["FundDashboardPeriodSummaryModel"][];
             /** @description Summary balances for each date in the requested range. */
             dates?: null | components["schemas"]["FundDashboardDateSummaryModel"][];
+            /**
+             * Format: double
+             * @description Total amount assigned to funds from income transactions in the requested range.
+             */
+            totalAmountAssigned: number;
+            /**
+             * Format: double
+             * @description Total amount spent from funds via spending transactions in the requested range.
+             */
+            totalAmountSpent: number;
         };
         /**
          * @description Enum representing the time mode used to build the Fund dashboard response.
