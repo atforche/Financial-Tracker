@@ -73,12 +73,6 @@ const AccountWorkspaceListFrame = function ({
     });
   };
 
-  const setPrimaryAction = function (): void {
-    replaceSearchParams((params) => {
-      params.set(actionParamName, isInOnboardingMode ? "onboard" : "create");
-    });
-  };
-
   const currentSort = tryParseEnum(
     AccountSortOrder,
     searchParams.get(sortParamName) ?? "",
@@ -194,13 +188,9 @@ const AccountWorkspaceListFrame = function ({
         initialEmptyState={{
           title: "No accounts yet",
           description: isInOnboardingMode
-            ? "Use the onboarding action below to add the first account."
-            : "Use the create action below to add the first account.",
-          action: (
-            <Button variant="contained" onClick={setPrimaryAction}>
-              {isInOnboardingMode ? "Onboard account" : "Create account"}
-            </Button>
-          ),
+            ? "Use the onboarding action to add the first account."
+            : "Use the create action to add the first account.",
+          action: null,
         }}
         filteredEmptyState={{
           title: "No accounts match this search",

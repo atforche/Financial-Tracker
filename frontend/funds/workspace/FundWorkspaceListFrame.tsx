@@ -69,12 +69,6 @@ const FundWorkspaceListFrame = function ({
     });
   };
 
-  const setPrimaryAction = function (): void {
-    replaceSearchParams((params) => {
-      params.set(actionParamName, isInOnboardingMode ? "onboard" : "create");
-    });
-  };
-
   const currentSort = tryParseEnum(
     FundSortOrder,
     searchParams.get(sortParamName) ?? "",
@@ -170,13 +164,9 @@ const FundWorkspaceListFrame = function ({
         initialEmptyState={{
           title: "No funds yet",
           description: isInOnboardingMode
-            ? "Use the onboarding action below to add the first fund."
-            : "Use the create action below to add the first fund.",
-          action: (
-            <Button variant="contained" onClick={setPrimaryAction}>
-              {isInOnboardingMode ? "Onboard fund" : "Create fund"}
-            </Button>
-          ),
+            ? "Use the onboarding action to add the first fund."
+            : "Use the create action to add the first fund.",
+          action: null,
         }}
         filteredEmptyState={{
           title: "No funds match this search",

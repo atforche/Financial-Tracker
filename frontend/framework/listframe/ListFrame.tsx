@@ -29,7 +29,7 @@ const listFrameRowHeight = 50;
 interface EmptyStateDefinition {
   readonly title: string;
   readonly description: string;
-  readonly action: JSX.Element;
+  readonly action: JSX.Element | null;
 }
 
 /**

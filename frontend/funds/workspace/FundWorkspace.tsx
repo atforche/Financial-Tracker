@@ -87,13 +87,13 @@ const FundWorkspace = async function ({
     openAccountingPeriodsPromise,
     fundsPromise,
   ]);
-
   if (typeof openAccountingPeriods === "undefined") {
     throw new Error("Failed to fetch open accounting periods");
   }
   if (typeof funds === "undefined") {
     throw new Error("Failed to fetch funds");
   }
+  funds.items = funds.items.filter((fund) => fund.name !== "Unassigned");
 
   const selectedFund =
     typeof resolvedSearchParams.selectedFundId === "string"

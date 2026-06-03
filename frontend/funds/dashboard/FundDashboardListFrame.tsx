@@ -142,7 +142,7 @@ const FundDashboardListFrame = function ({
       headerContent: "Net Change",
       getBodyContent: (fund): JSX.Element => {
         const changeInBalance = fund.endingBalance - fund.startingBalance;
-        const isPositive = changeInBalance > 0;
+        const isPositive = changeInBalance >= 0;
         return (
           <Box
             component="span"
