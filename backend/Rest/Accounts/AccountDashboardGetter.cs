@@ -148,7 +148,9 @@ public class AccountDashboardGetter(
             GetApplicableAccountNames(requestedAccountNames, availableAccountNames));
         balanceEvents = SortBalanceEvents(balanceEvents, request.BalanceEventSort);
         filteredRows = SortRows(filteredRows, request.Sort);
-        (decimal totalIncome, decimal totalSpending) = GetTransactionTotalsForAccountingPeriods(accountingPeriods);
+        (decimal totalIncome, decimal totalSpending) = GetTransactionTotalsForAccountingPeriods(
+            filteredRows.Select(row => row.Id).ToList(),
+            accountingPeriods);
         results = new AccountDashboardModel
         {
             Mode = AccountDashboardModeModel.AccountingPeriod,
@@ -221,7 +223,10 @@ public class AccountDashboardGetter(
             GetApplicableAccountNames(requestedAccountNames, availableAccountNames));
         balanceEvents = SortBalanceEvents(balanceEvents, request.BalanceEventSort);
         filteredRows = SortRows(filteredRows, request.Sort);
-        (decimal totalIncome, decimal totalSpending) = GetTransactionTotalsForDates(request.StartDate.Value, request.EndDate.Value);
+        (decimal totalIncome, decimal totalSpending) = GetTransactionTotalsForDates(
+            filteredRows.Select(row => row.Id).ToList(),
+            request.StartDate.Value,
+            request.EndDate.Value);
         results = new AccountDashboardModel
         {
             Mode = AccountDashboardModeModel.Date,
@@ -347,7 +352,7 @@ public class AccountDashboardGetter(
             }).ToList();
 
             return new AccountDashboardRow(
-                account.Id.Value,
+                account.Id,
                 account.Name,
                 account.Type,
                 periodBalances.First().OpeningBalance,
@@ -377,7 +382,7 @@ public class AccountDashboardGetter(
             }).ToList();
 
             return new AccountDashboardRow(
-                account.Id.Value,
+                account.Id,
                 account.Name,
                 account.Type,
                 dateModels.First().Balance,
@@ -583,7 +588,7 @@ public class AccountDashboardGetter(
             accountTypes,
             effectiveDate => effectiveDate >= startDate && effectiveDate <= endDate);
 
-    private (decimal TotalIncome, decimal TotalSpending) GetTransactionTotalsForAccountingPeriods(IReadOnlyList<AccountingPeriod> accountingPeriods)
+    private (decimal TotalIncome, decimal TotalSpending) GetTransactionTotalsForAccountingPeriods(List<AccountId> filteredAccountIds, IReadOnlyList<AccountingPeriod> accountingPeriods)
     {
         decimal totalIncome = 0;
         decimal totalSpending = 0;
@@ -592,11 +597,11 @@ public class AccountDashboardGetter(
         {
             foreach (Transaction transaction in transactionRepository.GetAllByAccountingPeriod(accountingPeriodId))
             {
-                if (transaction is IncomeTransaction)
+                if (transaction is IncomeTransaction incomeTransaction && filteredAccountIds.Contains(incomeTransaction.CreditAccountId))
                 {
                     totalIncome += transaction.Amount;
                 }
-                if (transaction is SpendingTransaction)
+                if (transaction is SpendingTransaction spendingTransaction && filteredAccountIds.Contains(spendingTransaction.DebitAccountId))
                 {
                     totalSpending += transaction.Amount;
                 }
@@ -605,18 +610,24 @@ public class AccountDashboardGetter(
         return (totalIncome, totalSpending);
     }
 
-    private (decimal TotalIncome, decimal TotalSpending) GetTransactionTotalsForDates(DateOnly startDate, DateOnly endDate)
+    private (decimal TotalIncome, decimal TotalSpending) GetTransactionTotalsForDates(List<AccountId> filteredAccountIds, DateOnly startDate, DateOnly endDate)
     {
         decimal totalIncome = 0;
         decimal totalSpending = 0;
 
-        foreach (Transaction transaction in transactionRepository.GetAllIncomeTransactionsByDateRange(startDate, endDate))
+        foreach (IncomeTransaction transaction in transactionRepository.GetAllIncomeTransactionsByDateRange(startDate, endDate).OfType<IncomeTransaction>())
         {
-            totalIncome += transaction.Amount;
+            if (filteredAccountIds.Contains(transaction.CreditAccountId))
+            {
+                totalIncome += transaction.Amount;
+            }
         }
-        foreach (Transaction transaction in transactionRepository.GetAllSpendingTransactionsByDateRange(startDate, endDate))
+        foreach (SpendingTransaction transaction in transactionRepository.GetAllSpendingTransactionsByDateRange(startDate, endDate).OfType<SpendingTransaction>())
         {
-            totalSpending += transaction.Amount;
+            if (filteredAccountIds.Contains(transaction.DebitAccountId))
+            {
+                totalSpending += transaction.Amount;
+            }
         }
         return (totalIncome, totalSpending);
     }
@@ -771,7 +782,7 @@ public class AccountDashboardGetter(
         }
 
         yield return new AccountDashboardBalanceEventRow(
-            account.Id.Value,
+            account.Id,
             account.Name,
             postedDate ?? transaction.Date,
             transaction.AccountingPeriodId.Value,
@@ -876,7 +887,7 @@ public class AccountDashboardGetter(
 
     private static AccountDashboardAccountModel ToModel(AccountDashboardRow row) => new()
     {
-        Id = row.Id,
+        Id = row.Id.Value,
         Name = row.Name,
         Type = AccountTypeConverter.ToModel(row.Type),
         StartingBalance = row.OpeningBalance,
@@ -885,7 +896,7 @@ public class AccountDashboardGetter(
 
     private static AccountDashboardBalanceEventModel ToModel(AccountDashboardBalanceEventRow row) => new()
     {
-        AccountId = row.AccountId,
+        AccountId = row.AccountId.Value,
         AccountName = row.AccountName,
         Date = row.Date,
         AccountingPeriodId = row.AccountingPeriodId,
@@ -905,7 +916,7 @@ public class AccountDashboardGetter(
         decimal ClosingBalance);
 
     private sealed record AccountDashboardRow(
-        Guid Id,
+        AccountId Id,
         string Name,
         AccountType Type,
         decimal OpeningBalance,
@@ -914,7 +925,7 @@ public class AccountDashboardGetter(
         IReadOnlyCollection<AccountDashboardDateModel>? Dates);
 
     private sealed record AccountDashboardBalanceEventRow(
-        Guid AccountId,
+        AccountId AccountId,
         string AccountName,
         DateOnly Date,
         Guid AccountingPeriodId,
