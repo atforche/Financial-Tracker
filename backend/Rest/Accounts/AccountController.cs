@@ -71,7 +71,6 @@ public sealed class AccountController(
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
-
         return Ok(dashboard);
     }
 

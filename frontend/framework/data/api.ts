@@ -738,6 +738,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/funds/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves dashboard data for Funds across a range of Accounting Periods. */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description First date in the requested range. */
+                    StartDate?: string;
+                    /** @description Last date in the requested range. */
+                    EndDate?: string;
+                    /** @description ID for the first Accounting Period in the requested range. */
+                    StartAccountingPeriodId?: string;
+                    /** @description ID for the last Accounting Period in the requested range. */
+                    EndAccountingPeriodId?: string;
+                    /** @description Optional Fund Name filters to apply to the dashboard. */
+                    FundName?: string[];
+                    /** @description Optional sort to apply to the matching Funds. */
+                    Sort?: components["schemas"]["FundDashboardSortOrderModel"];
+                    /** @description Optional sort to apply to the matching balance events. */
+                    BalanceEventSort?: components["schemas"]["FundDashboardBalanceEventSortOrderModel"];
+                    /** @description Maximum number of results to return */
+                    Limit?: number;
+                    /** @description Number of results to skip */
+                    Offset?: number;
+                    /** @description Maximum number of balance events to return. */
+                    BalanceEventLimit?: number;
+                    /** @description Number of balance events to skip. */
+                    BalanceEventOffset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["FundDashboardModel"];
+                        "application/json": components["schemas"]["FundDashboardModel"];
+                        "text/json": components["schemas"]["FundDashboardModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/funds/summary": {
         parameters: {
             query?: never;
@@ -2486,6 +2558,26 @@ export interface components {
             totalCount: number;
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfFundDashboardBalanceEventModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["FundDashboardBalanceEventModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfFundDashboardFundModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["FundDashboardFundModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfFundModel: {
             /** @description The collection of items. */
             items: components["schemas"]["FundModel"][];
@@ -2765,6 +2857,129 @@ export interface components {
              */
             pendingAmountSpent: number;
         };
+        /** @description Model representing a balance event on the Fund dashboard. */
+        FundDashboardBalanceEventModel: {
+            /**
+             * Format: uuid
+             * @description Fund affected by the balance event.
+             */
+            fundId: string;
+            /** @description Name of the fund affected by the balance event. */
+            fundName: string;
+            /**
+             * Format: date
+             * @description Effective date of the balance event.
+             */
+            date: string;
+            /**
+             * Format: uuid
+             * @description Accounting Period containing the balance event.
+             */
+            accountingPeriodId: string;
+            /** @description Name of the Accounting Period containing the balance event. */
+            accountingPeriodName: string;
+            /** @description Type of balance event. */
+            type: components["schemas"]["FundDashboardBalanceEventTypeModel"];
+            /** @description Whether the transaction has been posted to the fund. */
+            isPosted: boolean;
+            /**
+             * Format: double
+             * @description Amount associated with the balance event.
+             */
+            amount: number;
+        };
+        /** @enum {unknown} */
+        FundDashboardBalanceEventSortOrderModel: FundDashboardBalanceEventSortOrderModel | null;
+        /**
+         * @description Type of balance event on the Fund dashboard.
+         * @enum {unknown}
+         */
+        FundDashboardBalanceEventTypeModel: FundDashboardBalanceEventTypeModel;
+        /** @description Model representing top-level dashboard balances for a specific date. */
+        FundDashboardDateSummaryModel: {
+            /**
+             * Format: date
+             * @description Date for this summary.
+             */
+            date: string;
+            /**
+             * Format: double
+             * @description Total balance across all matching Funds.
+             */
+            totalBalance: number;
+        };
+        /** @description Model representing a Fund row within the dashboard response. */
+        FundDashboardFundModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Fund.
+             */
+            id: string;
+            /** @description Name for the Fund. */
+            name: string;
+            /**
+             * Format: double
+             * @description Balance at the beginning of the requested range.
+             */
+            startingBalance: number;
+            /**
+             * Format: double
+             * @description Balance at the end of the requested range.
+             */
+            endingBalance: number;
+        };
+        /** @description Model representing the Fund dashboard response. */
+        FundDashboardModel: {
+            /** @description Time mode used to build the dashboard response. */
+            mode: components["schemas"]["FundDashboardModeModel"];
+            /** @description Matching Funds for the requested dashboard page. */
+            funds: components["schemas"]["CollectionModelOfFundDashboardFundModel"];
+            /** @description Matching balance events for the requested dashboard page. */
+            balanceEvents: components["schemas"]["CollectionModelOfFundDashboardBalanceEventModel"];
+            /** @description Available Fund Names for the current dashboard scope before fund-name filtering. */
+            availableFundNames: string[];
+            /** @description Summary balances for each Accounting Period in the requested range. */
+            accountingPeriods?: null | components["schemas"]["FundDashboardPeriodSummaryModel"][];
+            /** @description Summary balances for each date in the requested range. */
+            dates?: null | components["schemas"]["FundDashboardDateSummaryModel"][];
+        };
+        /**
+         * @description Enum representing the time mode used to build the Fund dashboard response.
+         * @enum {unknown}
+         */
+        FundDashboardModeModel: FundDashboardModeModel;
+        /** @description Model representing top-level dashboard balances for a specific Accounting Period. */
+        FundDashboardPeriodSummaryModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Accounting Period.
+             */
+            accountingPeriodId: string;
+            /** @description Name for the Accounting Period. */
+            accountingPeriodName: string;
+            /**
+             * Format: int32
+             * @description Year for the Accounting Period.
+             */
+            year: number;
+            /**
+             * Format: int32
+             * @description Month for the Accounting Period.
+             */
+            month: number;
+            /**
+             * Format: double
+             * @description Total opening balance across all matching Funds.
+             */
+            totalOpeningBalance: number;
+            /**
+             * Format: double
+             * @description Total closing balance across all matching Funds.
+             */
+            totalClosingBalance: number;
+        };
+        /** @enum {unknown} */
+        FundDashboardSortOrderModel: FundDashboardSortOrderModel | null;
         /** @description Model representing a Fund */
         FundModel: {
             /**
@@ -3396,6 +3611,36 @@ export enum CreateTransactionModelCreateIncomeTransactionModelType {
 }
 export enum CreateTransactionModelCreateSpendingTransactionModelType {
     Spending = "Spending"
+}
+export enum FundDashboardBalanceEventSortOrderModel {
+    FundName = "FundName",
+    FundNameDescending = "FundNameDescending",
+    AccountingPeriodName = "AccountingPeriodName",
+    AccountingPeriodNameDescending = "AccountingPeriodNameDescending",
+    Date = "Date",
+    DateDescending = "DateDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    Amount = "Amount",
+    AmountDescending = "AmountDescending"
+}
+export enum FundDashboardBalanceEventTypeModel {
+    Debit = "Debit",
+    Credit = "Credit"
+}
+export enum FundDashboardModeModel {
+    AccountingPeriod = "AccountingPeriod",
+    Date = "Date"
+}
+export enum FundDashboardSortOrderModel {
+    Name = "Name",
+    NameDescending = "NameDescending",
+    OpeningBalance = "OpeningBalance",
+    OpeningBalanceDescending = "OpeningBalanceDescending",
+    ClosingBalance = "ClosingBalance",
+    ClosingBalanceDescending = "ClosingBalanceDescending",
+    NetChange = "NetChange",
+    NetChangeDescending = "NetChangeDescending"
 }
 export enum FundSortOrderModel {
     Name = "Name",

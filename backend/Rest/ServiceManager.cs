@@ -34,6 +34,7 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<FundAmountConverter>();
         _ = serviceCollection.AddScoped<FundConverter>();
+        _ = serviceCollection.AddScoped<FundDashboardGetter>();
         _ = serviceCollection.AddScoped<FundGetter>();
         _ = serviceCollection.AddScoped<FundSummaryGetter>();
         _ = serviceCollection.AddScoped<FundTransactionGetter>();

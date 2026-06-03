@@ -20,6 +20,7 @@ public sealed class FundController(
     UnitOfWork unitOfWork,
     AccountingPeriodConverter accountingPeriodConverter,
     FundConverter fundConverter,
+    FundDashboardGetter fundDashboardGetter,
     FundGetter fundGetter,
     FundSummaryGetter fundSummaryGetter,
     FundRepository fundRepository,
@@ -53,6 +54,26 @@ public sealed class FundController(
     [ProducesResponseType(typeof(CollectionModel<FundModel>), StatusCodes.Status200OK)]
     public IActionResult GetMany([FromQuery] FundQueryParameterModel queryParameters) =>
         Ok(fundGetter.Get(queryParameters));
+
+    /// <summary>
+    /// Retrieves dashboard data for Funds across a range of Accounting Periods.
+    /// </summary>
+    [HttpGet("dashboard")]
+    [ProducesResponseType(typeof(FundDashboardModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetDashboard([FromQuery] FundDashboardQueryParameterModel queryParameters)
+    {
+        if (!fundDashboardGetter.TryGet(queryParameters, out FundDashboardModel? dashboard, out Dictionary<string, string[]> errors))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Fund dashboard.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        return Ok(dashboard);
+    }
 
     /// <summary>
     /// Retrieves summary balances for Funds
