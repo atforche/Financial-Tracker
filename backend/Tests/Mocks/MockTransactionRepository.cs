@@ -41,6 +41,18 @@ internal sealed class MockTransactionRepository : ITransactionRepository
             .ToList();
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<Transaction> GetAllIncomeTransactionsByDateRange(DateOnly startDate, DateOnly endDate) =>
+        _transactions.Values.OfType<IncomeTransaction>()
+            .Where(t => t.CreditPostedDate != null && t.CreditPostedDate >= startDate && t.CreditPostedDate <= endDate)
+            .ToList();
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<Transaction> GetAllSpendingTransactionsByDateRange(DateOnly startDate, DateOnly endDate) =>
+        _transactions.Values.OfType<SpendingTransaction>()
+            .Where(t => t.DebitPostedDate != null && t.DebitPostedDate >= startDate && t.DebitPostedDate <= endDate)
+            .ToList();
+
+    /// <inheritdoc/>
     public bool DoAnyTransactionsExistForFund(FundId fundId) =>
         _transactions.Values.Any(transaction => GetFundIds(transaction).Contains(fundId));
 

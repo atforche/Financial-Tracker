@@ -148,6 +148,7 @@ public class AccountDashboardGetter(
             GetApplicableAccountNames(requestedAccountNames, availableAccountNames));
         balanceEvents = SortBalanceEvents(balanceEvents, request.BalanceEventSort);
         filteredRows = SortRows(filteredRows, request.Sort);
+        (decimal totalIncome, decimal totalSpending) = GetTransactionTotalsForAccountingPeriods(accountingPeriods);
         results = new AccountDashboardModel
         {
             Mode = AccountDashboardModeModel.AccountingPeriod,
@@ -166,6 +167,8 @@ public class AccountDashboardGetter(
                 TotalCount = balanceEvents.Count,
             },
             AvailableAccountNames = availableAccountNames,
+            TotalIncome = totalIncome,
+            TotalSpending = totalSpending,
             AccountingPeriods = BuildPeriodSummaries(accountingPeriods, filteredRows),
             Dates = null,
         };
@@ -218,6 +221,7 @@ public class AccountDashboardGetter(
             GetApplicableAccountNames(requestedAccountNames, availableAccountNames));
         balanceEvents = SortBalanceEvents(balanceEvents, request.BalanceEventSort);
         filteredRows = SortRows(filteredRows, request.Sort);
+        (decimal totalIncome, decimal totalSpending) = GetTransactionTotalsForDates(request.StartDate.Value, request.EndDate.Value);
         results = new AccountDashboardModel
         {
             Mode = AccountDashboardModeModel.Date,
@@ -236,6 +240,8 @@ public class AccountDashboardGetter(
                 TotalCount = balanceEvents.Count,
             },
             AvailableAccountNames = availableAccountNames,
+            TotalIncome = totalIncome,
+            TotalSpending = totalSpending,
             AccountingPeriods = null,
             Dates = BuildDateSummaries(dates, filteredRows),
         };
@@ -268,6 +274,8 @@ public class AccountDashboardGetter(
             TotalCount = 0,
         },
         AvailableAccountNames = [],
+        TotalIncome = 0,
+        TotalSpending = 0,
         AccountingPeriods = null,
         Dates = null,
     };
@@ -574,6 +582,44 @@ public class AccountDashboardGetter(
             transaction => true,
             accountTypes,
             effectiveDate => effectiveDate >= startDate && effectiveDate <= endDate);
+
+    private (decimal TotalIncome, decimal TotalSpending) GetTransactionTotalsForAccountingPeriods(IReadOnlyList<AccountingPeriod> accountingPeriods)
+    {
+        decimal totalIncome = 0;
+        decimal totalSpending = 0;
+
+        foreach (AccountingPeriodId accountingPeriodId in accountingPeriods.Select(accountingPeriod => accountingPeriod.Id).ToHashSet())
+        {
+            foreach (Transaction transaction in transactionRepository.GetAllByAccountingPeriod(accountingPeriodId))
+            {
+                if (transaction is IncomeTransaction)
+                {
+                    totalIncome += transaction.Amount;
+                }
+                if (transaction is SpendingTransaction)
+                {
+                    totalSpending += transaction.Amount;
+                }
+            }
+        }
+        return (totalIncome, totalSpending);
+    }
+
+    private (decimal TotalIncome, decimal TotalSpending) GetTransactionTotalsForDates(DateOnly startDate, DateOnly endDate)
+    {
+        decimal totalIncome = 0;
+        decimal totalSpending = 0;
+
+        foreach (Transaction transaction in transactionRepository.GetAllIncomeTransactionsByDateRange(startDate, endDate))
+        {
+            totalIncome += transaction.Amount;
+        }
+        foreach (Transaction transaction in transactionRepository.GetAllSpendingTransactionsByDateRange(startDate, endDate))
+        {
+            totalSpending += transaction.Amount;
+        }
+        return (totalIncome, totalSpending);
+    }
 
     private List<AccountDashboardBalanceEventRow> BuildBalanceEvents(
         Func<Transaction, bool> transactionFilter,

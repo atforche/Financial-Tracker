@@ -2278,6 +2278,16 @@ export interface components {
             balanceEvents: components["schemas"]["CollectionModelOfAccountDashboardBalanceEventModel"];
             /** @description Available Account Names for the current dashboard scope before account-name filtering. */
             availableAccountNames: string[];
+            /**
+             * Format: double
+             * @description Total income over the requested range.
+             */
+            totalIncome: number;
+            /**
+             * Format: double
+             * @description Total spending over the requested range.
+             */
+            totalSpending: number;
             /** @description Summary balances for each Accounting Period in the requested range. */
             accountingPeriods?: null | components["schemas"]["AccountDashboardPeriodSummaryModel"][];
             /** @description Summary balances for each date in the requested range. */

@@ -26,6 +26,16 @@ public class AccountDashboardModel
     public required IReadOnlyCollection<string> AvailableAccountNames { get; init; }
 
     /// <summary>
+    /// Total income over the requested range.
+    /// </summary>
+    public required decimal TotalIncome { get; init; }
+
+    /// <summary>
+    /// Total spending over the requested range.
+    /// </summary>
+    public required decimal TotalSpending { get; init; }
+
+    /// <summary>
     /// Summary balances for each Accounting Period in the requested range.
     /// </summary>
     public IReadOnlyCollection<AccountDashboardPeriodSummaryModel>? AccountingPeriods { get; init; }

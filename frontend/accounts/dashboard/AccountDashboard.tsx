@@ -15,6 +15,7 @@ import {
 import AccountDashboardBalanceEventListFrame from "@/accounts/dashboard/AccountDashboardBalanceEventListFrame";
 import AccountDashboardChangeChart from "@/accounts/dashboard/AccountDashboardChangeChart";
 import AccountDashboardFilter from "@/accounts/dashboard/AccountDashboardFilter";
+import AccountDashboardIncomeSpendingCard from "@/accounts/dashboard/AccountDashboardIncomeSpendingCard";
 import AccountDashboardListFrame from "@/accounts/dashboard/AccountDashboardListFrame";
 import AccountDashboardSummaryCards from "@/accounts/dashboard/AccountDashboardSummaryCards";
 import AccountDashboardTrendChart from "@/accounts/dashboard/AccountDashboardTrendChart";
@@ -217,6 +218,7 @@ const AccountDashboard = async function ({
         />
       </Stack>
       <AccountDashboardSummaryCards dashboard={dashboard} />
+      <AccountDashboardIncomeSpendingCard dashboard={dashboard} />
       <Box
         sx={{
           display: "grid",

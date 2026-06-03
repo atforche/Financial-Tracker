@@ -43,6 +43,18 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
         databaseContext.Transactions.Where(transaction => transaction.AccountingPeriodId == accountingPeriodId).ToList();
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<Transaction> GetAllIncomeTransactionsByDateRange(DateOnly startDate, DateOnly endDate) =>
+        databaseContext.Transactions.OfType<IncomeTransaction>()
+            .Where(t => t.CreditPostedDate != null && t.CreditPostedDate >= startDate && t.CreditPostedDate <= endDate)
+            .ToList();
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<Transaction> GetAllSpendingTransactionsByDateRange(DateOnly startDate, DateOnly endDate) =>
+        databaseContext.Transactions.OfType<SpendingTransaction>()
+            .Where(t => t.DebitPostedDate != null && t.DebitPostedDate >= startDate && t.DebitPostedDate <= endDate)
+            .ToList();
+
+    /// <inheritdoc/>
     public bool DoAnyTransactionsExistForFund(FundId fundId) =>
         databaseContext.Transactions.OfType<SpendingTransaction>()
             .Any(t => t.FundAssignments.Any(f => f.FundId == fundId)) ||
