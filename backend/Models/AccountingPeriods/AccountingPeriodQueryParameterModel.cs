@@ -6,9 +6,14 @@ namespace Models.AccountingPeriods;
 public class AccountingPeriodQueryParameterModel
 {
     /// <summary>
-    /// Search string to apply to the results
+    /// Years to include in the results
     /// </summary>
-    public string? Search { get; init; }
+    public IReadOnlyCollection<int>? Years { get; init; }
+
+    /// <summary>
+    /// Months to include in the results
+    /// </summary>
+    public IReadOnlyCollection<int>? Months { get; init; }
 
     /// <summary>
     /// Sort to apply to the results

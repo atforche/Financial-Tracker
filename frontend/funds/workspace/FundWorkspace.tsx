@@ -17,7 +17,7 @@ type FundWorkspaceAction = "create" | "onboard" | "update" | "delete";
 interface FundWorkspaceSearchParams {
   search?: string;
   sort?: FundSortOrder;
-  page?: number | string;
+  page?: number;
   selectedFundId?: string;
   action?: FundWorkspaceAction;
 }
@@ -29,44 +29,19 @@ interface FundWorkspaceProps {
   readonly searchParams: Promise<FundWorkspaceSearchParams>;
 }
 
-const parsePageNumber = function (
-  page: FundWorkspaceSearchParams["page"],
-): number {
-  const pageNumber =
-    typeof page === "number" ? page : Number.parseInt(page ?? "1", 10);
-  return Number.isFinite(pageNumber) && pageNumber > 0 ? pageNumber : 1;
-};
-
-const normalizeSearchParams = function (
-  searchParams: FundWorkspaceSearchParams,
-): FundWorkspaceSearchParams {
-  return {
-    ...(typeof searchParams.search === "string" && searchParams.search !== ""
-      ? { search: searchParams.search }
-      : {}),
-    ...(typeof searchParams.sort === "string"
-      ? { sort: searchParams.sort }
-      : {}),
-    ...(parsePageNumber(searchParams.page) > 1
-      ? { page: parsePageNumber(searchParams.page) }
-      : {}),
-    ...(typeof searchParams.selectedFundId === "string"
-      ? { selectedFundId: searchParams.selectedFundId }
-      : {}),
-    ...(typeof searchParams.action === "string"
-      ? { action: searchParams.action }
-      : {}),
-  };
-};
-
 /**
  * Displays the fund workspace with list-backed inline actions.
  */
 const FundWorkspace = async function ({
   searchParams,
 }: FundWorkspaceProps): Promise<JSX.Element> {
-  const resolvedSearchParams = normalizeSearchParams(await searchParams);
-  const currentPage = parsePageNumber(resolvedSearchParams.page);
+  const {
+    search,
+    sort,
+    page,
+    selectedFundId,
+    action,
+  } = await searchParams;
   const apiClient = getApiClient();
 
   const openAccountingPeriodsPromise = apiClient.GET(

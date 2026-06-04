@@ -1,23 +1,28 @@
 "use client";
 
-import { Button, Paper, Stack, Typography } from "@mui/material";
+import {
+  Autocomplete,
+  Button,
+  Checkbox,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import AccountingPeriodDashboardAccountingPeriodFilter from "@/accounting-periods/dashboard/AccountingPeriodDashboardAccountingPeriodFilter";
 import type { JSX } from "react";
 
 interface AccountingPeriodWorkspaceFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
-  readonly defaultAccountingPeriodId: string | null;
   readonly disabled?: boolean;
 }
 
 /**
- * Renders the filter card for the Accounting Period workspace with header and search bar.
+ * Renders the filter card for the Accounting Period workspace with year and month filters.
  */
 const AccountingPeriodWorkspaceFilter = function ({
   accountingPeriods,
-  defaultAccountingPeriodId,
   disabled = false,
 }: AccountingPeriodWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
@@ -25,20 +30,73 @@ const AccountingPeriodWorkspaceFilter = function ({
   const router = useRouter();
 
   const pageParamName = "page";
-  const startAccountingPeriodIdParamName = "startAccountingPeriodId";
-  const endAccountingPeriodIdParamName = "endAccountingPeriodId";
+  const yearParamName = "year";
+  const monthParamName = "month";
 
-  const currentStartAccountingPeriodId =
-    searchParams.get(startAccountingPeriodIdParamName) ??
-    defaultAccountingPeriodId ??
-    "";
-  const currentEndAccountingPeriodId =
-    searchParams.get(endAccountingPeriodIdParamName) ??
-    defaultAccountingPeriodId ??
-    "";
+  const currentYear = new Date().getFullYear();
+  const firstAccountingPeriodYear =
+    accountingPeriods.reduce<number | null>((minimumYear, accountingPeriod) => {
+      if (minimumYear === null) {
+        return accountingPeriod.year;
+      }
+      return Math.min(minimumYear, accountingPeriod.year);
+    }, null) ?? currentYear;
 
-  const accountingPeriodIndexes = new Map(
-    accountingPeriods.map((period, index) => [period.id, index]),
+  const availableYears = Array.from(
+    { length: currentYear - firstAccountingPeriodYear + 1 },
+    (_, index) => firstAccountingPeriodYear + index,
+  );
+  const availableMonths = Array.from({ length: 12 }, (_, index) => index + 1);
+
+  const normalizeRequestedNumberValues = function (
+    values: readonly string[],
+    minimumValue: number,
+    maximumValue: number,
+  ): readonly number[] {
+    const seenValues = new Set<number>();
+    const normalizedValues: number[] = [];
+
+    values.forEach((value) => {
+      const parsedValue = Number.parseInt(value.trim(), 10);
+      if (
+        !Number.isFinite(parsedValue) ||
+        parsedValue < minimumValue ||
+        parsedValue > maximumValue ||
+        seenValues.has(parsedValue)
+      ) {
+        return;
+      }
+
+      seenValues.add(parsedValue);
+      normalizedValues.push(parsedValue);
+    });
+
+    return normalizedValues;
+  };
+
+  const normalizeSelectedNumberValues = function (
+    values: readonly number[],
+    availableValues: readonly number[],
+  ): readonly number[] {
+    const selectedValues = new Set(values);
+    if (selectedValues.size === 0 || availableValues.length === 0) {
+      return [];
+    }
+
+    return availableValues.filter((value) => selectedValues.has(value));
+  };
+
+  const currentYears = normalizeSelectedNumberValues(
+    normalizeRequestedNumberValues(
+      searchParams.getAll(yearParamName),
+      firstAccountingPeriodYear,
+      currentYear,
+    ),
+    availableYears,
+  );
+  const currentMonths = normalizeSelectedNumberValues(
+    normalizeRequestedNumberValues(searchParams.getAll(monthParamName), 1, 12),
+    availableMonths,
   );
 
   const updateParams = function (
@@ -51,57 +109,30 @@ const AccountingPeriodWorkspaceFilter = function ({
     router.replace(nextQuery === "" ? pathname : `${pathname}?${nextQuery}`);
   };
 
-  const hasActiveView =
-    currentStartAccountingPeriodId !== (defaultAccountingPeriodId ?? "") ||
-    currentEndAccountingPeriodId !== (defaultAccountingPeriodId ?? "");
+  const hasActiveView = currentYears.length > 0 || currentMonths.length > 0;
 
-  const handleStartAccountingPeriodChange = function (
-    nextStartAccountingPeriodId: string,
-  ): void {
-    const nextStartIndex =
-      accountingPeriodIndexes.get(nextStartAccountingPeriodId) ?? 0;
-    const currentEndIndex =
-      accountingPeriodIndexes.get(currentEndAccountingPeriodId) ??
-      nextStartIndex;
-    const nextEndAccountingPeriodId =
-      nextStartIndex > currentEndIndex
-        ? nextStartAccountingPeriodId
-        : currentEndAccountingPeriodId;
-
+  const handleYearChange = function (nextYears: readonly number[]): void {
     updateParams((params) => {
-      params.set(startAccountingPeriodIdParamName, nextStartAccountingPeriodId);
-      params.set(endAccountingPeriodIdParamName, nextEndAccountingPeriodId);
+      params.delete(yearParamName);
+      nextYears.forEach((year) => {
+        params.append(yearParamName, year.toString());
+      });
     });
   };
 
-  const handleEndAccountingPeriodChange = function (
-    nextEndAccountingPeriodId: string,
-  ): void {
-    const nextEndIndex =
-      accountingPeriodIndexes.get(nextEndAccountingPeriodId) ?? 0;
-    const currentStartIndex =
-      accountingPeriodIndexes.get(currentStartAccountingPeriodId) ??
-      nextEndIndex;
-    const nextStartAccountingPeriodId =
-      nextEndIndex < currentStartIndex
-        ? nextEndAccountingPeriodId
-        : currentStartAccountingPeriodId;
-
+  const handleMonthChange = function (nextMonths: readonly number[]): void {
     updateParams((params) => {
-      params.set(startAccountingPeriodIdParamName, nextStartAccountingPeriodId);
-      params.set(endAccountingPeriodIdParamName, nextEndAccountingPeriodId);
+      params.delete(monthParamName);
+      nextMonths.forEach((month) => {
+        params.append(monthParamName, month.toString());
+      });
     });
   };
 
   const clearView = function (): void {
     updateParams((params) => {
-      if (defaultAccountingPeriodId !== null) {
-        params.set(startAccountingPeriodIdParamName, defaultAccountingPeriodId);
-        params.set(endAccountingPeriodIdParamName, defaultAccountingPeriodId);
-      } else {
-        params.delete(startAccountingPeriodIdParamName);
-        params.delete(endAccountingPeriodIdParamName);
-      }
+      params.delete(yearParamName);
+      params.delete(monthParamName);
     });
   };
 
@@ -129,19 +160,91 @@ const AccountingPeriodWorkspaceFilter = function ({
           flexWrap="wrap"
           alignItems={{ xs: "stretch", md: "center" }}
         >
-          <AccountingPeriodDashboardAccountingPeriodFilter
-            accountingPeriods={accountingPeriods}
-            label="Start period"
-            value={currentStartAccountingPeriodId}
-            onChange={handleStartAccountingPeriodChange}
-            disabled={disabled}
+          <Autocomplete
+            multiple
+            disableCloseOnSelect
+            size="small"
+            options={[...availableYears]}
+            value={[...currentYears]}
+            disabled={disabled || availableYears.length === 0}
+            limitTags={1}
+            sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
+            noOptionsText={
+              availableYears.length === 0
+                ? "No years available"
+                : "No years found"
+            }
+            slotProps={{
+              paper: {
+                sx: {
+                  "& .MuiAutocomplete-listbox": {
+                    maxHeight: 320,
+                  },
+                },
+              },
+            }}
+            onChange={(_, nextYears) => {
+              handleYearChange(nextYears);
+            }}
+            getOptionLabel={(year) => year.toString()}
+            renderOption={(props, option, { selected }) => (
+              <li {...props}>
+                <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
+                {option}
+              </li>
+            )}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Years"
+                {...(currentYears.length === 0
+                  ? { placeholder: "All years" }
+                  : {})}
+              />
+            )}
           />
-          <AccountingPeriodDashboardAccountingPeriodFilter
-            accountingPeriods={accountingPeriods}
-            label="End period"
-            value={currentEndAccountingPeriodId}
-            onChange={handleEndAccountingPeriodChange}
-            disabled={disabled}
+          <Autocomplete
+            multiple
+            disableCloseOnSelect
+            size="small"
+            options={[...availableMonths]}
+            value={[...currentMonths]}
+            disabled={disabled || availableMonths.length === 0}
+            limitTags={1}
+            sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
+            noOptionsText={
+              availableMonths.length === 0
+                ? "No months available"
+                : "No months found"
+            }
+            slotProps={{
+              paper: {
+                sx: {
+                  "& .MuiAutocomplete-listbox": {
+                    maxHeight: 320,
+                  },
+                },
+              },
+            }}
+            onChange={(_, nextMonths) => {
+              handleMonthChange(nextMonths);
+            }}
+            getOptionLabel={(month) => month.toString()}
+            renderOption={(props, option, { selected }) => (
+              <li {...props}>
+                <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
+                {option}
+              </li>
+            )}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Months"
+                {...(currentMonths.length === 0
+                  ? { placeholder: "All months" }
+                  : {})}
+              />
+            )}
           />
           <Button
             variant="outlined"

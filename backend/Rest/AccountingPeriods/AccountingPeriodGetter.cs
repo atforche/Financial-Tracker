@@ -1,4 +1,3 @@
-using System.Globalization;
 using Domain.AccountingPeriods;
 using Models;
 using Models.AccountingPeriods;
@@ -19,12 +18,13 @@ public class AccountingPeriodGetter(
     {
         var results = accountingPeriodRepository.GetAll().Select(accountingPeriodConverter.ToModel).ToList();
 
-        if (request.Search != null)
+        if (request.Years != null && request.Years.Count > 0)
         {
-            results = results.Where(accountingPeriod =>
-                accountingPeriod.Name.Contains(request.Search, StringComparison.OrdinalIgnoreCase) ||
-                accountingPeriod.Year.ToString(CultureInfo.InvariantCulture).Contains(request.Search, StringComparison.OrdinalIgnoreCase) ||
-                accountingPeriod.Month.ToString(CultureInfo.InvariantCulture).Contains(request.Search, StringComparison.OrdinalIgnoreCase)).ToList();
+            results = results.Where(accountingPeriod => request.Years.Contains(accountingPeriod.Year)).ToList();
+        }
+        if (request.Months != null && request.Months.Count > 0)
+        {
+            results = results.Where(accountingPeriod => request.Months.Contains(accountingPeriod.Month)).ToList();
         }
         if (request.Sort is null or AccountingPeriodSortOrderModel.DateDescending)
         {

@@ -1543,8 +1543,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description Search string to apply to the results */
-                    Search?: string;
+                    /** @description Years to include in the results */
+                    Years?: number[];
+                    /** @description Months to include in the results */
+                    Months?: number[];
                     /** @description Sort to apply to the results */
                     Sort?: components["schemas"]["AccountingPeriodSortOrderModel"];
                     /** @description Maximum number of results to return */

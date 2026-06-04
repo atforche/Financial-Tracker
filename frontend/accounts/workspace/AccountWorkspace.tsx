@@ -17,7 +17,7 @@ type AccountWorkspaceAction = "create" | "onboard" | "update" | "delete";
 interface AccountWorkspaceSearchParams {
   search?: string;
   sort?: AccountSortOrder;
-  page?: number | string;
+  page?: number;
   selectedAccountId?: string;
   action?: AccountWorkspaceAction;
 }
@@ -29,44 +29,13 @@ interface AccountWorkspaceProps {
   readonly searchParams: Promise<AccountWorkspaceSearchParams>;
 }
 
-const parsePageNumber = function (
-  page: AccountWorkspaceSearchParams["page"],
-): number {
-  const pageNumber =
-    typeof page === "number" ? page : Number.parseInt(page ?? "1", 10);
-  return Number.isFinite(pageNumber) && pageNumber > 0 ? pageNumber : 1;
-};
-
-const normalizeSearchParams = function (
-  searchParams: AccountWorkspaceSearchParams,
-): AccountWorkspaceSearchParams {
-  return {
-    ...(typeof searchParams.search === "string" && searchParams.search !== ""
-      ? { search: searchParams.search }
-      : {}),
-    ...(typeof searchParams.sort === "string"
-      ? { sort: searchParams.sort }
-      : {}),
-    ...(parsePageNumber(searchParams.page) > 1
-      ? { page: parsePageNumber(searchParams.page) }
-      : {}),
-    ...(typeof searchParams.selectedAccountId === "string"
-      ? { selectedAccountId: searchParams.selectedAccountId }
-      : {}),
-    ...(typeof searchParams.action === "string"
-      ? { action: searchParams.action }
-      : {}),
-  };
-};
-
 /**
  * Displays the account workspace with list-backed inline actions.
  */
 const AccountWorkspace = async function ({
   searchParams,
 }: AccountWorkspaceProps): Promise<JSX.Element> {
-  const resolvedSearchParams = normalizeSearchParams(await searchParams);
-  const currentPage = parsePageNumber(resolvedSearchParams.page);
+  const { search, sort, page, selectedAccountId, action } = await searchParams;
   const apiClient = getApiClient();
 
   const openAccountingPeriodsPromise = apiClient.GET(
@@ -75,10 +44,10 @@ const AccountWorkspace = async function ({
   const accountsPromise = apiClient.GET("/accounts", {
     params: {
       query: {
-        Search: resolvedSearchParams.search ?? "",
-        Sort: resolvedSearchParams.sort ?? null,
+        Search: search ?? "",
+        Sort: sort ?? null,
         Limit: rowsPerPage,
-        Offset: (currentPage - 1) * rowsPerPage,
+        Offset: ((page ?? 1) - 1) * rowsPerPage,
       },
     },
   });
@@ -93,15 +62,12 @@ const AccountWorkspace = async function ({
     throw new Error("Failed to fetch accounts");
   }
 
-  const selectedAccount =
-    typeof resolvedSearchParams.selectedAccountId === "string"
-      ? (accounts.items.find(
-          (account) => account.id === resolvedSearchParams.selectedAccountId,
-        ) ?? null)
-      : null;
+  const selectedAccount = accounts.items.find(
+          (account) => account.id === selectedAccountId,
+        ) ?? null;
 
   if (
-    typeof resolvedSearchParams.selectedAccountId === "string" &&
+    typeof selectedAccountId === "string" &&
     selectedAccount === null
   ) {
     const { ...remainingSearchParams } = resolvedSearchParams;
