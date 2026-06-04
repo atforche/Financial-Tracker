@@ -1,3 +1,12 @@
-import AccountingPeriodsView from "@/accounting-periods/AccountingPeriodsView";
+import { redirect } from "next/navigation";
+import routes from "@/accounting-periods/routes";
 
-export default AccountingPeriodsView;
+/**
+ * Redirects to the accounting periods dashboard.
+ */
+const AccountingPeriodsIndexPage = function (): never {
+  redirect(routes.dashboard({}));
+};
+
+export const dynamic = "force-dynamic";
+export default AccountingPeriodsIndexPage;

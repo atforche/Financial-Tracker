@@ -21,10 +21,7 @@ const DeleteFundForm = function ({
   fund,
   redirectUrl,
 }: DeleteFundFormProps): JSX.Element {
-  const [state, action, pending] = useActionState(deleteFund, {
-    fundId: fund.id,
-    redirectUrl,
-  });
+  const [state, action, pending] = useActionState(deleteFund, {});
 
   return (
     <Stack spacing={3}>
@@ -41,7 +38,7 @@ const DeleteFundForm = function ({
           loading={pending}
           onClick={() => {
             startTransition(() => {
-              action();
+              action({ fundId: fund.id, redirectUrl });
             });
           }}
         >

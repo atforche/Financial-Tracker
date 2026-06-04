@@ -17,14 +17,12 @@ import {
 import dayjs, { type Dayjs } from "dayjs";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import Breadcrumbs from "@/framework/Breadcrumbs";
 import CreateOrUpdateIncomeTransactionFrame from "@/transactions/CreateOrUpdateIncomeTransactionFrame";
 import CreateOrUpdateSpendingTransactionFrame from "@/transactions/CreateOrUpdateSpendingTransactionFrame";
 import CreateOrUpdateTransactionDetailsFrame from "@/transactions/CreateOrUpdateTransactionDetailsFrame";
 import CreateOrUpdateTransactionFromToFrame from "@/transactions/CreateOrUpdateTransactionFromToFrame";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
-import breadcrumbs from "@/transactions/breadcrumbs";
 import routes from "@/transactions/routes";
 import updateTransaction from "@/transactions/updateTransaction";
 import { updateUnassignedFundAmount } from "@/funds/FundAssignmentEntryFrame";
@@ -210,14 +208,6 @@ const UpdateTransactionForm = function ({
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs
-        breadcrumbs={breadcrumbs.update(
-          transaction,
-          routeAccountingPeriod ?? null,
-          routeAccount ?? null,
-          routeFund ?? null,
-        )}
-      />
       <Stack spacing={2} sx={{ maxWidth: "600px" }}>
         <CreateOrUpdateTransactionDetailsFrame
           accountingPeriods={[]}

@@ -21,10 +21,7 @@ const DeleteAccountForm = function ({
   account,
   redirectUrl,
 }: DeleteAccountFormProps): JSX.Element {
-  const [state, action, pending] = useActionState(deleteAccount, {
-    accountId: account.id,
-    redirectUrl,
-  });
+  const [state, action, pending] = useActionState(deleteAccount, {});
 
   return (
     <Stack spacing={3}>
@@ -42,7 +39,10 @@ const DeleteAccountForm = function ({
           loading={pending}
           onClick={() => {
             startTransition(() => {
-              action();
+              action({
+                accountId: account.id,
+                redirectUrl,
+              });
             });
           }}
         >

@@ -19,25 +19,19 @@ enum GoalFrameContext {
  */
 interface GoalFrameProps {
   readonly goal: Goal | null;
-  readonly fundId: string;
-  readonly accountingPeriodId: string;
   readonly isAccountingPeriodOpen: boolean;
   readonly isSystemFund: boolean;
   readonly context: GoalFrameContext;
-  readonly returnUrl?: string | null;
 }
 
 /**
  * Component that displays the current goal for a fund and accounting period.
  */
 const GoalFrame = function ({
-  fundId,
   goal,
-  accountingPeriodId,
   isAccountingPeriodOpen,
   isSystemFund,
   context,
-  returnUrl = null,
 }: GoalFrameProps): JSX.Element {
   return (
     <CaptionedFrame
@@ -69,14 +63,7 @@ const GoalFrame = function ({
             <Button
               variant="contained"
               color="primary"
-              href={routes.update(
-                { id: goal.id },
-                {
-                  fundId:
-                    context === GoalFrameContext.FundDetail ? fundId : null,
-                  returnUrl,
-                },
-              )}
+              href={routes.update({ id: goal.id })}
               disabled={isSystemFund || !isAccountingPeriodOpen}
             >
               Edit
@@ -84,14 +71,7 @@ const GoalFrame = function ({
             <Button
               variant="contained"
               color="error"
-              href={routes.delete(
-                { id: goal.id },
-                {
-                  fundId:
-                    context === GoalFrameContext.FundDetail ? fundId : null,
-                  returnUrl,
-                },
-              )}
+              href={routes.delete({ id: goal.id })}
               disabled={isSystemFund || !isAccountingPeriodOpen}
             >
               Delete
@@ -101,11 +81,7 @@ const GoalFrame = function ({
           <Button
             variant="contained"
             color="primary"
-            href={routes.create({
-              accountingPeriodId,
-              fundId: context === GoalFrameContext.FundDetail ? fundId : null,
-              returnUrl,
-            })}
+            href={routes.create()}
             disabled={isSystemFund || !isAccountingPeriodOpen}
           >
             Add

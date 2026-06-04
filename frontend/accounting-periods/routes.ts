@@ -1,44 +1,30 @@
-import type {
-  AccountingPeriodFundViewParams,
-  AccountingPeriodFundViewSearchParams,
-} from "@/accounting-periods/funds/AccountingPeriodFundView";
-import type {
-  AccountingPeriodViewParams,
-  AccountingPeriodViewSearchParams,
-} from "@/accounting-periods/AccountingPeriodView";
-import type { AccountingPeriodAccountViewParams } from "@/accounting-periods/accounts/AccountingPeriodAccountView";
-import type { AccountingPeriodsViewSearchParams } from "@/accounting-periods/AccountingPeriodsView";
-import type { CloseAccountingPeriodViewParams } from "@/accounting-periods/CloseAccountingPeriodView";
-import type { DeleteAccountingPeriodViewParams } from "@/accounting-periods/DeleteAccountingPeriodView";
-import type { ReopenAccountingPeriodViewParams } from "@/accounting-periods/ReopenAccountingPeriodView";
+import type { AccountingPeriodDashboardSearchParams } from "@/accounting-periods/dashboard/AccountingPeriodDashboard";
+import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import type { Route } from "next";
 import { objectToSearchParams } from "@/framework/routes";
+
+const pathWithSearchParams = function (
+  pathname: string,
+  searchParams: URLSearchParams,
+): Route {
+  const query = searchParams.toString();
+  return query === "" ? pathname : `${pathname}?${query}`;
+};
 
 /**
  * App routes related to accounting periods.
  */
 const routes = {
-  index: (searchParams: AccountingPeriodsViewSearchParams): Route =>
-    `/accounting-periods?${objectToSearchParams(searchParams).toString()}`,
-  create: "/accounting-periods/create" as Route,
-  detail: (
-    params: AccountingPeriodViewParams,
-    searchParams: AccountingPeriodViewSearchParams,
-  ): Route =>
-    `/accounting-periods/${params.id}?${objectToSearchParams(searchParams).toString()}`,
-  close: (params: CloseAccountingPeriodViewParams): Route =>
-    `/accounting-periods/${params.id}/close`,
-  reopen: (params: ReopenAccountingPeriodViewParams): Route =>
-    `/accounting-periods/${params.id}/reopen`,
-  delete: (params: DeleteAccountingPeriodViewParams): Route =>
-    `/accounting-periods/${params.id}/delete`,
-  accountDetail: (params: AccountingPeriodAccountViewParams): Route =>
-    `/accounting-periods/${params.id}/accounts/${params.accountId}`,
-  fundDetail: (
-    params: AccountingPeriodFundViewParams,
-    searchParams: AccountingPeriodFundViewSearchParams,
-  ): Route =>
-    `/accounting-periods/${params.id}/funds/${params.fundId}?${objectToSearchParams(searchParams).toString()}`,
+  dashboard: (searchParams: AccountingPeriodDashboardSearchParams): Route =>
+    pathWithSearchParams(
+      "/accounting-periods/dashboard",
+      objectToSearchParams(searchParams),
+    ),
+  workspace: (searchParams: AccountingPeriodWorkspaceSearchParams): Route =>
+    pathWithSearchParams(
+      "/accounting-periods/workspace",
+      objectToSearchParams(searchParams),
+    ),
 };
 
 export default routes;

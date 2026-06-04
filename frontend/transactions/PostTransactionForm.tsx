@@ -9,12 +9,10 @@ import {
 import dayjs, { type Dayjs } from "dayjs";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import Breadcrumbs from "@/framework/Breadcrumbs";
 import { ComboBoxEntryField } from "@/framework/forms/ComboBoxEntryField";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
-import breadcrumbs from "@/transactions/breadcrumbs";
 import postTransaction from "@/transactions/postTransaction";
 import routes from "@/transactions/routes";
 
@@ -58,13 +56,6 @@ const PostTransactionForm = function ({
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs
-        breadcrumbs={breadcrumbs.post(
-          transaction,
-          routeAccountingPeriod,
-          routeAccount,
-        )}
-      />
       <Stack spacing={2} sx={{ maxWidth: "600px" }}>
         {postableAccounts.length === 0 ? (
           <Typography>

@@ -10,19 +10,10 @@ interface DeleteGoalViewParams {
 }
 
 /**
- * Search parameters for the DeleteGoalView component.
- */
-interface DeleteGoalViewSearchParams {
-  fundId?: string | null;
-  returnUrl?: string | null;
-}
-
-/**
  * Props for the DeleteGoalView component.
  */
 interface DeleteGoalViewProps {
   readonly params: Promise<DeleteGoalViewParams>;
-  readonly searchParams: Promise<DeleteGoalViewSearchParams>;
 }
 
 /**
@@ -30,10 +21,8 @@ interface DeleteGoalViewProps {
  */
 const DeleteGoalView = async function ({
   params,
-  searchParams,
 }: DeleteGoalViewProps): Promise<JSX.Element> {
   const { id } = await params;
-  const { fundId, returnUrl } = await searchParams;
 
   const apiClient = getApiClient();
   const goalPromise = apiClient.GET("/goals/{goalId}", {
@@ -43,21 +32,8 @@ const DeleteGoalView = async function ({
       },
     },
   });
-  const fundPromise =
-    typeof fundId === "string"
-      ? apiClient.GET("/funds/{fundId}", {
-          params: {
-            path: {
-              fundId,
-            },
-          },
-        })
-      : Promise.resolve({ data: null });
 
-  const [{ data: goal, error: goalError }, { data: fund }] = await Promise.all([
-    goalPromise,
-    fundPromise,
-  ]);
+  const [{ data: goal, error: goalError }] = await Promise.all([goalPromise]);
 
   if (typeof goal === "undefined") {
     throw new Error(
@@ -80,15 +56,8 @@ const DeleteGoalView = async function ({
     throw new Error("Failed to fetch goal data");
   }
 
-  return (
-    <DeleteGoalForm
-      accountingPeriod={accountingPeriod}
-      goal={goal}
-      fund={fund ?? null}
-      returnUrl={returnUrl ?? null}
-    />
-  );
+  return <DeleteGoalForm accountingPeriod={accountingPeriod} goal={goal} />;
 };
 
-export type { DeleteGoalViewParams, DeleteGoalViewSearchParams };
+export type { DeleteGoalViewParams };
 export default DeleteGoalView;

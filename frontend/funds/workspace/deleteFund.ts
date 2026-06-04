@@ -10,19 +10,25 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of deleting a fund.
  */
 interface ActionState {
-  readonly fundId: string;
-  readonly redirectUrl: string;
   readonly errorTitle?: string | null;
   readonly unmappedErrors?: string | null;
 }
 
 /**
+ * Payload for the delete fund server action.
+ */
+interface ActionPayload {
+  readonly fundId: string;
+  readonly redirectUrl: string;
+}
+
+/**
  * Server action that deletes an existing fund.
  */
-const deleteFund = async function ({
-  fundId,
-  redirectUrl,
-}: ActionState): Promise<ActionState> {
+const deleteFund = async function (
+  _: ActionState,
+  { fundId, redirectUrl }: ActionPayload,
+): Promise<ActionState> {
   const client = getApiClient();
   const { error } = await client.DELETE("/funds/{fundId}", {
     params: {
@@ -38,15 +44,12 @@ const deleteFund = async function ({
         unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
       }
       return {
-        fundId,
-        redirectUrl,
         errorTitle: error.title ?? null,
         unmappedErrors: unmappedErrors.join(", ") || null,
       };
     }
     throw new Error("An unexpected error occurred", { cause: error });
   }
-
   revalidatePath(redirectUrl);
   redirect(redirectUrl);
 };

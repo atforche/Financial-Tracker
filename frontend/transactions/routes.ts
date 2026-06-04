@@ -1,8 +1,4 @@
 import type {
-  DeleteTransactionViewParams,
-  DeleteTransactionViewSearchParams,
-} from "@/transactions/DeleteTransactionView";
-import type {
   PostTransactionViewParams,
   PostTransactionViewSearchParams,
 } from "@/transactions/PostTransactionView";
@@ -14,13 +10,11 @@ import type {
   UnpostTransactionViewParams,
   UnpostTransactionViewSearchParams,
 } from "@/transactions/UnpostTransactionView";
-import type {
-  UpdateTransactionViewParams,
-  UpdateTransactionViewSearchParams,
-} from "@/transactions/UpdateTransactionView";
 import type { CreateTransactionViewSearchParams } from "@/transactions/CreateTransactionView";
+import type { DeleteTransactionViewParams } from "@/transactions/DeleteTransactionView";
 import type { Route } from "next";
 import type { TransactionsViewSearchParams } from "@/transactions/TransactionsView";
+import type { UpdateTransactionViewParams } from "@/transactions/UpdateTransactionView";
 import { objectToSearchParams } from "@/framework/routes";
 
 /**
@@ -36,11 +30,8 @@ const routes = {
     searchParams: TransactionViewSearchParams,
   ): Route =>
     `/transactions/${params.id}?${objectToSearchParams(searchParams).toString()}`,
-  update: (
-    params: UpdateTransactionViewParams,
-    searchParams: UpdateTransactionViewSearchParams,
-  ): Route =>
-    `/transactions/${params.id}/update?${objectToSearchParams(searchParams).toString()}`,
+  update: (params: UpdateTransactionViewParams): Route =>
+    `/transactions/${params.id}/update`,
   post: (
     params: PostTransactionViewParams,
     searchParams: PostTransactionViewSearchParams,
@@ -51,11 +42,8 @@ const routes = {
     searchParams: UnpostTransactionViewSearchParams,
   ): Route =>
     `/transactions/${params.id}/unpost?${objectToSearchParams(searchParams).toString()}`,
-  delete: (
-    params: DeleteTransactionViewParams,
-    searchParams: DeleteTransactionViewSearchParams,
-  ): Route =>
-    `/transactions/${params.id}/delete?${objectToSearchParams(searchParams).toString()}`,
+  delete: (params: DeleteTransactionViewParams): Route =>
+    `/transactions/${params.id}/delete`,
 };
 
 export default routes;

@@ -16,6 +16,16 @@ public enum AccountingPeriodTransactionSortOrderModel
     DateDescending,
 
     /// <summary>
+    /// Transactions are sorted by accounting period in ascending order
+    /// </summary>
+    AccountingPeriod,
+
+    /// <summary>
+    /// Transactions are sorted by accounting period in descending order
+    /// </summary>
+    AccountingPeriodDescending,
+
+    /// <summary>
     /// Transactions are sorted by location in ascending order
     /// </summary>
     Location,

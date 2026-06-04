@@ -10,20 +10,10 @@ interface UpdateTransactionViewParams {
 }
 
 /**
- * Search parameters for the update transaction view component.
- */
-interface UpdateTransactionViewSearchParams {
-  readonly accountingPeriodId?: string | null;
-  readonly accountId?: string | null;
-  readonly fundId?: string | null;
-}
-
-/**
  * Props for the UpdateTransactionView component.
  */
 interface UpdateTransactionViewProps {
   readonly params: Promise<UpdateTransactionViewParams>;
-  readonly searchParams: Promise<UpdateTransactionViewSearchParams>;
 }
 
 /**
@@ -31,10 +21,8 @@ interface UpdateTransactionViewProps {
  */
 const UpdateTransactionView = async function ({
   params,
-  searchParams,
 }: UpdateTransactionViewProps): Promise<JSX.Element> {
   const { id } = await params;
-  const { accountingPeriodId, accountId, fundId } = await searchParams;
 
   const apiClient = getApiClient();
   const transactionPromise = apiClient.GET("/transactions/{transactionId}", {
@@ -44,46 +32,14 @@ const UpdateTransactionView = async function ({
       },
     },
   });
-  const accountingPeriodPromise =
-    accountingPeriodId !== null && typeof accountingPeriodId !== "undefined"
-      ? apiClient.GET("/accounting-periods/{accountingPeriodId}", {
-          params: {
-            path: {
-              accountingPeriodId,
-            },
-          },
-        })
-      : Promise.resolve({ data: null });
-  const accountPromise =
-    accountId !== null && typeof accountId !== "undefined"
-      ? apiClient.GET("/accounts/{accountId}", {
-          params: {
-            path: {
-              accountId,
-            },
-          },
-        })
-      : Promise.resolve({ data: null });
   const fundsPromise = apiClient.GET("/funds");
-  const [
-    { data: transaction },
-    { data: accountingPeriod },
-    { data: account },
-    { data: funds },
-  ] = await Promise.all([
+  const [{ data: transaction }, { data: funds }] = await Promise.all([
     transactionPromise,
-    accountingPeriodPromise,
-    accountPromise,
     fundsPromise,
   ]);
   if (typeof transaction === "undefined" || typeof funds === "undefined") {
     throw new Error(`Failed to fetch transaction with ID ${id}"}`);
   }
-  const fund =
-    typeof fundId !== "undefined" && fundId !== null
-      ? (funds.items.find((f) => f.id === fundId) ?? null)
-      : null;
-
   const transactionAccountingPeriodPromise = apiClient.GET(
     "/accounting-periods/{accountingPeriodId}",
     {
@@ -162,12 +118,9 @@ const UpdateTransactionView = async function ({
       transactionDebitFund={transactionDebitFund ?? null}
       transactionCreditFund={transactionCreditFund ?? null}
       funds={funds.items}
-      routeAccountingPeriod={accountingPeriod ?? null}
-      routeAccount={account ?? null}
-      routeFund={fund ?? null}
     />
   );
 };
 
-export type { UpdateTransactionViewParams, UpdateTransactionViewSearchParams };
+export type { UpdateTransactionViewParams };
 export default UpdateTransactionView;

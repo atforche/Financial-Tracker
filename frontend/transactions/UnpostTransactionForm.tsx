@@ -4,11 +4,9 @@ import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState } from "react";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import Breadcrumbs from "@/framework/Breadcrumbs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
 import type { Transaction } from "@/transactions/types";
-import breadcrumbs from "@/transactions/breadcrumbs";
 import routes from "@/transactions/routes";
 import unpostTransaction from "@/transactions/unpostTransaction";
 
@@ -43,13 +41,6 @@ const UnpostTransactionForm = function ({
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs
-        breadcrumbs={breadcrumbs.unpost(
-          transaction,
-          routeAccountingPeriod,
-          routeAccount,
-        )}
-      />
       <Stack spacing={2} sx={{ maxWidth: "600px" }}>
         <Typography>
           Are you sure you want to unpost this transaction from all posted

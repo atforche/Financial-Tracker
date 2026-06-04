@@ -3,11 +3,9 @@ import {
   getPostableTransactionAccounts,
   getPostedTransactionAccounts,
 } from "@/transactions/types";
-import Breadcrumbs from "@/framework/Breadcrumbs";
 import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CaptionedValue from "@/framework/view/CaptionedValue";
 import type { JSX } from "react";
-import breadcrumbs from "@/transactions/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
 import routes from "@/transactions/routes";
@@ -84,12 +82,7 @@ const TransactionView = async function ({
           },
         })
       : Promise.resolve({ data: null });
-  const [
-    { data: transaction },
-    { data: accountingPeriod },
-    { data: account },
-    { data: fund },
-  ] = await Promise.all([
+  const [{ data: transaction }] = await Promise.all([
     transactionPromise,
     accountingPeriodPromise,
     accountPromise,
@@ -109,26 +102,11 @@ const TransactionView = async function ({
         alignItems="center"
         maxWidth={1000}
       >
-        <Breadcrumbs
-          breadcrumbs={breadcrumbs.detail(
-            transaction,
-            accountingPeriod ?? null,
-            account ?? null,
-            fund ?? null,
-          )}
-        />
         <Stack direction="row" spacing={1}>
           <Button
             variant="contained"
             color="primary"
-            href={routes.update(
-              { id },
-              {
-                accountingPeriodId: accountingPeriodId ?? null,
-                accountId: accountId ?? null,
-                fundId: fundId ?? null,
-              },
-            )}
+            href={routes.update({ id })}
           >
             Edit
           </Button>
@@ -165,14 +143,7 @@ const TransactionView = async function ({
           <Button
             variant="contained"
             color="error"
-            href={routes.delete(
-              { id },
-              {
-                accountingPeriodId: accountingPeriodId ?? null,
-                accountId: accountId ?? null,
-                fundId: fundId ?? null,
-              },
-            )}
+            href={routes.delete({ id })}
           >
             Delete
           </Button>

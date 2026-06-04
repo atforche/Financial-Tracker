@@ -2,8 +2,6 @@ import { Button, Paper, Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
 import type { OverviewData } from "@/overview/types";
 import accountRoutes from "@/accounts/routes";
-import accountingPeriodRoutes from "@/accounting-periods/routes";
-import goalRoutes from "@/goals/routes";
 import transactionRoutes from "@/transactions/routes";
 
 /**
@@ -35,20 +33,6 @@ const OverviewQuickActions = function ({
     currentAccountingPeriod === null
       ? [
           {
-            title: "Open the next period",
-            description:
-              "Create the next accounting period before entering fresh activity.",
-            href: accountingPeriodRoutes.create,
-            buttonLabel: "Create period",
-          },
-          {
-            title: "Review past periods",
-            description:
-              "Inspect prior balances and drill into historical monthly snapshots.",
-            href: accountingPeriodRoutes.index({}),
-            buttonLabel: "View periods",
-          },
-          {
             title: "Check account balances",
             description:
               "Review tracked and untracked balances across all accounts.",
@@ -72,15 +56,6 @@ const OverviewQuickActions = function ({
               "Create another account and tie it to the active accounting period.",
             href: accountRoutes.workspace({ action: "create" }),
             buttonLabel: "Create account",
-          },
-          {
-            title: "Define a goal",
-            description:
-              "Create a goal tied to the active period and an existing fund.",
-            href: goalRoutes.create({
-              accountingPeriodId: currentAccountingPeriod.id,
-            }),
-            buttonLabel: "Create goal",
           },
           {
             title: "Audit all accounts",

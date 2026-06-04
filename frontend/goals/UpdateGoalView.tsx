@@ -10,19 +10,10 @@ interface UpdateGoalViewParams {
 }
 
 /**
- * Search parameters for the UpdateGoalView component.
- */
-interface UpdateGoalViewSearchParams {
-  fundId?: string | null;
-  returnUrl?: string | null;
-}
-
-/**
  * Props for the UpdateGoalView component.
  */
 interface UpdateGoalViewProps {
   readonly params: Promise<UpdateGoalViewParams>;
-  readonly searchParams: Promise<UpdateGoalViewSearchParams>;
 }
 
 /**
@@ -30,10 +21,8 @@ interface UpdateGoalViewProps {
  */
 const UpdateGoalView = async function ({
   params,
-  searchParams,
 }: UpdateGoalViewProps): Promise<JSX.Element> {
   const { id } = await params;
-  const { fundId, returnUrl } = await searchParams;
 
   const apiClient = getApiClient();
   const goalPromise = apiClient.GET("/goals/{goalId}", {
@@ -43,21 +32,8 @@ const UpdateGoalView = async function ({
       },
     },
   });
-  const fundPromise =
-    typeof fundId === "string"
-      ? apiClient.GET("/funds/{fundId}", {
-          params: {
-            path: {
-              fundId,
-            },
-          },
-        })
-      : Promise.resolve({ data: null });
 
-  const [{ data: goal, error: goalError }, { data: fund }] = await Promise.all([
-    goalPromise,
-    fundPromise,
-  ]);
+  const { data: goal, error: goalError } = await goalPromise;
 
   if (typeof goal === "undefined") {
     throw new Error(
@@ -80,15 +56,8 @@ const UpdateGoalView = async function ({
     throw new Error("Failed to fetch goal data");
   }
 
-  return (
-    <UpdateGoalForm
-      accountingPeriod={accountingPeriod}
-      goal={goal}
-      fund={fund ?? null}
-      returnUrl={returnUrl ?? null}
-    />
-  );
+  return <UpdateGoalForm goal={goal} />;
 };
 
-export type { UpdateGoalViewParams, UpdateGoalViewSearchParams };
+export type { UpdateGoalViewParams };
 export default UpdateGoalView;

@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
- * Interface representing the state of deleting an account.
+ * Interface representing the state of deleting an accounting period.
  */
 interface ActionState {
   readonly errorTitle?: string | null;
@@ -15,28 +15,31 @@ interface ActionState {
 }
 
 /**
- * Payload for the delete account server action.
+ * Payload for the delete accounting period server action.
  */
 interface ActionPayload {
-  readonly accountId: string;
+  readonly accountingPeriodId: string;
   readonly redirectUrl: string;
 }
 
 /**
- * Server action that deletes an existing account.
+ * Server action that deletes an existing accounting period.
  */
-const deleteAccount = async function (
+const deleteAccountingPeriod = async function (
   _: ActionState,
-  { accountId, redirectUrl }: ActionPayload,
+  { accountingPeriodId, redirectUrl }: ActionPayload,
 ): Promise<ActionState> {
   const client = getApiClient();
-  const { error } = await client.DELETE("/accounts/{accountId}", {
-    params: {
-      path: {
-        accountId,
+  const { error } = await client.DELETE(
+    "/accounting-periods/{accountingPeriodId}",
+    {
+      params: {
+        path: {
+          accountingPeriodId,
+        },
       },
     },
-  });
+  );
   if (error) {
     if (isApiError(error)) {
       const unmappedErrors: (string | null)[] = [];
@@ -54,4 +57,4 @@ const deleteAccount = async function (
   redirect(redirectUrl);
 };
 
-export default deleteAccount;
+export default deleteAccountingPeriod;

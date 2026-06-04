@@ -1,7 +1,6 @@
 import { Button, Chip, Divider, Paper, Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
 import type { OverviewData } from "@/overview/types";
-import accountingPeriodRoutes from "@/accounting-periods/routes";
 import formatCurrency from "@/framework/formatCurrency";
 import transactionRoutes from "@/transactions/routes";
 
@@ -18,12 +17,7 @@ interface OverviewCurrentPeriodPanelProps {
 const OverviewCurrentPeriodPanel = function ({
   data,
 }: OverviewCurrentPeriodPanelProps): JSX.Element {
-  const {
-    currentAccountingPeriod,
-    totalAccounts,
-    totalFunds,
-    totalAccountingPeriods,
-  } = data;
+  const { currentAccountingPeriod, totalAccounts, totalFunds } = data;
 
   if (currentAccountingPeriod === null) {
     return (
@@ -34,14 +28,6 @@ const OverviewCurrentPeriodPanel = function ({
             Open a new accounting period to start entering transactions,
             assigning funds, and tracking this month&apos;s work in one place.
           </Typography>
-          <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
-            <Button variant="contained" href={accountingPeriodRoutes.create}>
-              Create accounting period
-            </Button>
-            <Button variant="outlined" href={accountingPeriodRoutes.index({})}>
-              Review {totalAccountingPeriods} recorded periods
-            </Button>
-          </Stack>
         </Stack>
       </Paper>
     );
@@ -94,15 +80,6 @@ const OverviewCurrentPeriodPanel = function ({
             </Typography>
           </Stack>
           <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
-            <Button
-              variant="outlined"
-              href={accountingPeriodRoutes.detail(
-                { id: currentAccountingPeriod.id },
-                {},
-              )}
-            >
-              View period
-            </Button>
             <Button
               variant="outlined"
               href={`${accountingPeriodBasePath}?display=accounts`}

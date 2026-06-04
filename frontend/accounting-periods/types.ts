@@ -14,6 +14,12 @@ import dayjs, { type Dayjs } from "dayjs";
 type AccountingPeriod = components["schemas"]["AccountingPeriodModel"];
 
 /**
+ * Type representing the Accounting Periods dashboard response.
+ */
+type AccountingPeriodDashboard =
+  components["schemas"]["AccountingPeriodDashboardModel"];
+
+/**
  * Type representing an Account in the context of an Accounting Period.
  */
 type AccountingPeriodAccount =
@@ -68,6 +74,7 @@ const getDefaultDate = function (
 
 export {
   type AccountingPeriod,
+  type AccountingPeriodDashboard,
   type AccountingPeriodAccount,
   type AccountingPeriodFund,
   type CreateAccountingPeriodRequest,

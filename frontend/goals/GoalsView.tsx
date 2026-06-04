@@ -4,13 +4,10 @@ import {
   AccountingPeriodSortOrder,
 } from "@/accounting-periods/types";
 import { Box, Button, Paper, Stack, Typography } from "@mui/material";
-import Breadcrumbs from "@/framework/Breadcrumbs";
 import GoalListFrame from "@/goals/GoalListFrame";
 import GoalsDashboardControls from "@/goals/GoalsDashboardControls";
 import type { JSX } from "react";
 import SummaryCard from "@/framework/view/SummaryCard";
-import accountingPeriodRoutes from "@/accounting-periods/routes";
-import breadcrumbs from "@/goals/breadcrumbs";
 import formatCurrency from "@/framework/formatCurrency";
 import getApiClient from "@/framework/data/getApiClient";
 import nameof from "@/framework/data/nameof";
@@ -115,12 +112,6 @@ const GoalsView = async function ({
       id: accountingPeriod.id,
       name: accountingPeriod.name,
     }));
-  const currentViewRoute = routes.index({
-    accountingPeriodId: selectedAccountingPeriod?.id ?? null,
-    search: search ?? null,
-    sort: sort ?? null,
-    page: page ?? null,
-  });
   const assignmentGoalMetCount = goals.items.filter(
     (goal) => goal.isAssignmentGoalMet,
   ).length;
@@ -135,18 +126,7 @@ const GoalsView = async function ({
     (sum, goal) => sum + goal.remainingAmountToSpend,
     0,
   );
-  const createActionHref =
-    selectedAccountingPeriod?.isOpen === true
-      ? routes.create({
-          accountingPeriodId: selectedAccountingPeriod.id,
-          returnUrl: currentViewRoute,
-        })
-      : currentOpenAccountingPeriod !== null
-        ? routes.create({
-            accountingPeriodId: currentOpenAccountingPeriod.id,
-            returnUrl: currentViewRoute,
-          })
-        : accountingPeriodRoutes.create;
+  const createActionHref = routes.create();
   const createActionLabel =
     selectedAccountingPeriod?.isOpen === true
       ? "Create goal"
@@ -157,7 +137,6 @@ const GoalsView = async function ({
   if (selectedAccountingPeriod === null) {
     return (
       <Stack spacing={3} sx={{ maxWidth: 1440 }}>
-        <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
         <Paper
           sx={{
             backgroundColor: "background.paper",
@@ -178,13 +157,6 @@ const GoalsView = async function ({
               Create an accounting period before tracking assignment or spending
               targets across your funds.
             </Typography>
-            <Button
-              variant="contained"
-              href={accountingPeriodRoutes.create}
-              sx={{ width: "fit-content" }}
-            >
-              Create accounting period
-            </Button>
           </Stack>
         </Paper>
       </Stack>
@@ -193,7 +165,6 @@ const GoalsView = async function ({
 
   return (
     <Stack spacing={3} sx={{ maxWidth: 1440 }}>
-      <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
       <Paper
         sx={{
           backgroundColor: "background.paper",
@@ -318,7 +289,6 @@ const GoalsView = async function ({
           searchParamName={nameof<GoalsViewSearchParams>("search")}
           sortParamName={nameof<GoalsViewSearchParams>("sort")}
           pageParamName={nameof<GoalsViewSearchParams>("page")}
-          returnUrl={currentViewRoute}
         />
       </Stack>
     </Stack>

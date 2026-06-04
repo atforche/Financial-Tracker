@@ -20,17 +20,13 @@ import { type JSX, startTransition, useActionState, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import Breadcrumbs from "@/framework/Breadcrumbs";
 import CreateOrUpdateIncomeTransactionFrame from "@/transactions/CreateOrUpdateIncomeTransactionFrame";
 import CreateOrUpdateSpendingTransactionFrame from "@/transactions/CreateOrUpdateSpendingTransactionFrame";
 import CreateOrUpdateTransactionDetailsFrame from "@/transactions/CreateOrUpdateTransactionDetailsFrame";
 import CreateOrUpdateTransactionFromToFrame from "@/transactions/CreateOrUpdateTransactionFromToFrame";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
-import { ToggleState } from "@/accounting-periods/AccountingPeriodViewListFrames";
 import accountRoutes from "@/accounts/routes";
-import accountingPeriodRoutes from "@/accounting-periods/routes";
-import breadcrumbs from "@/transactions/breadcrumbs";
 import createTransaction from "@/transactions/createTransaction";
 import { updateUnassignedFundAmount } from "@/funds/FundAssignmentEntryFrame";
 
@@ -51,32 +47,7 @@ interface CreateTransactionFormProps {
 /**
  * Gets the URL to redirect the user to after successfully creating a transaction.
  */
-const getRedirectUrl = function (
-  routeAccountingPeriod: AccountingPeriod | null,
-  routeAccount: Account | null,
-  routeFund: Fund | null,
-): string {
-  if (routeAccountingPeriod !== null) {
-    if (routeAccount !== null) {
-      return accountingPeriodRoutes.accountDetail({
-        id: routeAccountingPeriod.id,
-        accountId: routeAccount.id,
-      });
-    }
-    if (routeFund !== null) {
-      return accountingPeriodRoutes.fundDetail(
-        {
-          id: routeAccountingPeriod.id,
-          fundId: routeFund.id,
-        },
-        {},
-      );
-    }
-    return accountingPeriodRoutes.detail(
-      { id: routeAccountingPeriod.id },
-      { display: ToggleState.Transactions },
-    );
-  }
+const getRedirectUrl = function (routeAccount: Account | null): string {
   if (routeAccount !== null) {
     return accountRoutes.dashboard({});
   }
@@ -338,21 +309,12 @@ const CreateTransactionForm = function ({
 
   const [state, action, pending] = useActionState(createTransaction, {
     redirectUrl: getRedirectUrl(
-      routeAccountingPeriod ?? null,
       routeDebitAccount ?? routeCreditAccount ?? null,
-      routeDebitFund ?? routeCreditFund ?? null,
     ),
   });
 
   return (
     <Stack spacing={2}>
-      <Breadcrumbs
-        breadcrumbs={breadcrumbs.create(
-          routeAccountingPeriod ?? null,
-          routeDebitAccount ?? routeCreditAccount ?? null,
-          routeDebitFund ?? routeCreditFund ?? null,
-        )}
-      />
       <Stack spacing={2} sx={{ maxWidth: "600px" }}>
         <CreateOrUpdateTransactionDetailsFrame
           accountingPeriods={accountingPeriods}

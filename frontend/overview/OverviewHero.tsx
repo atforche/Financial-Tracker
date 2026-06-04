@@ -2,8 +2,6 @@ import { Button, Paper, Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
 import type { OverviewData } from "@/overview/types";
 import accountRoutes from "@/accounts/routes";
-import accountingPeriodRoutes from "@/accounting-periods/routes";
-import goalRoutes from "@/goals/routes";
 import transactionRoutes from "@/transactions/routes";
 
 /**
@@ -67,30 +65,11 @@ const OverviewHero = function ({ data }: OverviewHeroProps): JSX.Element {
               >
                 Create account
               </Button>
-              <Button
-                variant="outlined"
-                href={goalRoutes.create({
-                  accountingPeriodId: currentAccountingPeriod.id,
-                })}
-              >
-                Create goal
-              </Button>
             </>
           ) : (
-            <>
-              <Button variant="contained" href={accountingPeriodRoutes.create}>
-                Create accounting period
-              </Button>
-              <Button
-                variant="outlined"
-                href={accountingPeriodRoutes.index({})}
-              >
-                Browse accounting periods
-              </Button>
-              <Button variant="outlined" href={accountRoutes.dashboard({})}>
-                Review accounts
-              </Button>
-            </>
+            <Button variant="outlined" href={accountRoutes.dashboard({})}>
+              Review accounts
+            </Button>
           )}
         </Stack>
       </Stack>

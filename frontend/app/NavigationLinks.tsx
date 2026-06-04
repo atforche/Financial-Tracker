@@ -53,8 +53,18 @@ const links: NavigationLink[] = [
   { name: "Overview", href: "/", icon: <GridView /> },
   {
     name: "Accounting Periods",
-    href: accountingPeriodRoutes.index({}),
+    href: accountingPeriodRoutes.dashboard({}),
     icon: <CalendarMonth />,
+    childLinks: [
+      {
+        name: "Dashboard",
+        href: accountingPeriodRoutes.dashboard({}),
+      },
+      {
+        name: "Workspace",
+        href: accountingPeriodRoutes.workspace({}),
+      },
+    ],
   },
   {
     name: "Accounts",

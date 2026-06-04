@@ -4,13 +4,10 @@ import {
   getPostableTransactionAccounts,
 } from "@/transactions/types";
 import type { AccountingPeriodIdentifier } from "@/accounting-periods/types";
-import Breadcrumbs from "@/framework/Breadcrumbs";
 import type { JSX } from "react";
 import SummaryCard from "@/framework/view/SummaryCard";
 import TransactionListFrame from "@/transactions/TransactionListFrame";
 import TransactionsDashboardControls from "@/transactions/TransactionsDashboardControls";
-import accountingPeriodRoutes from "@/accounting-periods/routes";
-import breadcrumbs from "@/transactions/breadcrumbs";
 import getApiClient from "@/framework/data/getApiClient";
 import nameof from "@/framework/data/nameof";
 import routes from "@/transactions/routes";
@@ -147,7 +144,7 @@ const TransactionsView = async function ({
             ? { accountingPeriodId: currentOpenAccountingPeriod.id }
             : {},
       )
-    : accountingPeriodRoutes.create;
+    : "";
   const createActionLabel = hasOpenAccountingPeriods
     ? "Create transaction"
     : "Open accounting period";
@@ -159,7 +156,6 @@ const TransactionsView = async function ({
 
   return (
     <Stack spacing={3} sx={{ maxWidth: 1440 }}>
-      <Breadcrumbs breadcrumbs={breadcrumbs.index()} />
       <Paper
         sx={{
           backgroundColor: "background.paper",
@@ -419,11 +415,7 @@ const TransactionsView = async function ({
                 <Button variant="outlined" href={createActionHref}>
                   Create another transaction
                 </Button>
-              ) : (
-                <Button variant="outlined" href={accountingPeriodRoutes.create}>
-                  Open next accounting period
-                </Button>
-              )}
+              ) : null}
             </Stack>
           </Paper>
         </Stack>

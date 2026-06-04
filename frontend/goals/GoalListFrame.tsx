@@ -16,7 +16,6 @@ import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
-import goalRoutes from "@/goals/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
@@ -29,7 +28,6 @@ interface GoalListFrameProps {
   readonly searchParamName: string;
   readonly sortParamName: string;
   readonly pageParamName: string;
-  readonly returnUrl?: string | null;
 }
 
 /**
@@ -42,7 +40,6 @@ const GoalListFrame = function ({
   searchParamName,
   sortParamName,
   pageParamName,
-  returnUrl = null,
 }: GoalListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -63,9 +60,6 @@ const GoalListFrame = function ({
     AccountingPeriodGoalSortOrder,
     searchParams.get(sortParamName) ?? "",
   );
-
-  const goalActionSearchParams =
-    typeof returnUrl === "string" && returnUrl !== "" ? { returnUrl } : {};
 
   const columns: ColumnDefinition<Goal>[] = [
     {
@@ -231,24 +225,17 @@ const GoalListFrame = function ({
           label="Add"
           icon={<AddCircleOutline />}
           onClick={() => {
-            router.push(
-              goalRoutes.create({
-                accountingPeriodId: accountingPeriod.id,
-                returnUrl,
-              }),
-            );
+            router.push("");
           }}
           disabled={!accountingPeriod.isOpen}
         />
       ),
-      getBodyContent: (goal: Goal) => (
+      getBodyContent: () => (
         <ColumnButton
           label="View"
           icon={<ArrowForwardIos />}
           onClick={() => {
-            router.push(
-              goalRoutes.detail({ id: goal.id }, goalActionSearchParams),
-            );
+            router.push("");
           }}
         />
       ),
@@ -275,12 +262,7 @@ const GoalListFrame = function ({
             variant="contained"
             disabled={!accountingPeriod.isOpen}
             onClick={() => {
-              router.push(
-                goalRoutes.create({
-                  accountingPeriodId: accountingPeriod.id,
-                  returnUrl,
-                }),
-              );
+              router.push("");
             }}
           >
             Create goal
