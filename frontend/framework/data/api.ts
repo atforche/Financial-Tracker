@@ -668,6 +668,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/goals/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves the Goal dashboard that matches the specified criteria. */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description ID for the first Accounting Period in the requested range. */
+                    StartAccountingPeriodId?: string;
+                    /** @description ID for the last Accounting Period in the requested range. */
+                    EndAccountingPeriodId?: string;
+                    /** @description Optional Goal Type filters to apply to the dashboard. */
+                    GoalType?: components["schemas"]["GoalTypeModel"][];
+                    /** @description Optional Fund Name filters to apply to the dashboard. */
+                    FundName?: string[];
+                    /** @description Optional sort to apply to the matching Goals. */
+                    Sort?: components["schemas"]["GoalSortOrderModel"];
+                    /** @description Maximum number of results to return. */
+                    Limit?: number;
+                    /** @description Number of results to skip. */
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GoalDashboardModel"];
+                        "application/json": components["schemas"]["GoalDashboardModel"];
+                        "text/json": components["schemas"]["GoalDashboardModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/funds/{fundId}": {
         parameters: {
             query?: never;
@@ -3283,6 +3347,102 @@ export interface components {
         };
         /** @enum {unknown} */
         FundTransactionSortOrderModel: FundTransactionSortOrderModel | null;
+        /** @description Model representing Goal totals grouped by Accounting Period. */
+        GoalDashboardAccountingPeriodSummaryModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Accounting Period.
+             */
+            accountingPeriodId: string;
+            /** @description Name for the Accounting Period. */
+            accountingPeriodName: string;
+            /**
+             * Format: int32
+             * @description Year for the Accounting Period.
+             */
+            year: number;
+            /**
+             * Format: int32
+             * @description Month for the Accounting Period.
+             */
+            month: number;
+            /**
+             * Format: double
+             * @description Total Goal amount for the group.
+             */
+            goalAmount: number;
+            /**
+             * Format: double
+             * @description Total amount assigned for the group.
+             */
+            amountAssigned: number;
+            /**
+             * Format: double
+             * @description Total amount spent for the group.
+             */
+            amountSpent: number;
+            /**
+             * Format: double
+             * @description Percentage of goals met for the group.
+             */
+            percentageOfGoalsMet: number;
+        };
+        /** @description Model representing Goal totals grouped by Goal Type. */
+        GoalDashboardGoalTypeSummaryModel: {
+            /** @description Goal Type for the group. */
+            goalType: components["schemas"]["GoalTypeModel"];
+            /**
+             * Format: double
+             * @description Total Goal amount for the group.
+             */
+            goalAmount: number;
+            /**
+             * Format: double
+             * @description Total amount assigned for the group.
+             */
+            amountAssigned: number;
+            /**
+             * Format: double
+             * @description Total amount spent for the group.
+             */
+            amountSpent: number;
+            /**
+             * Format: double
+             * @description Percentage of goals met for the group.
+             */
+            percentageOfGoalsMet: number;
+        };
+        /** @description Model representing the Goal dashboard response. */
+        GoalDashboardModel: {
+            /** @description Matching Goals for the requested dashboard page. */
+            goals: components["schemas"]["CollectionModelOfGoalModel"];
+            /** @description Available Fund names for the current dashboard scope before Fund-name filtering. */
+            availableFundNames: string[];
+            /**
+             * Format: double
+             * @description Total Goal amount across the filtered results.
+             */
+            totalGoalAmount: number;
+            /**
+             * Format: double
+             * @description Total amount assigned across the filtered results.
+             */
+            totalAmountAssigned: number;
+            /**
+             * Format: double
+             * @description Total amount spent across the filtered results.
+             */
+            totalAmountSpent: number;
+            /**
+             * Format: double
+             * @description Percentage of goals met across the filtered results.
+             */
+            percentageOfGoalsMet: number;
+            /** @description Goal totals grouped by Goal Type. */
+            goalTypes?: null | components["schemas"]["GoalDashboardGoalTypeSummaryModel"][];
+            /** @description Goal totals grouped by Accounting Period. */
+            accountingPeriods?: null | components["schemas"]["GoalDashboardAccountingPeriodSummaryModel"][];
+        };
         /** @description Model representing a Goal */
         GoalModel: {
             /**

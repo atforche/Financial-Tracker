@@ -23,6 +23,7 @@ public sealed class GoalController(
     FundConverter fundConverter,
     GoalService goalService,
     GoalGetter goalGetter,
+    GoalDashboardGetter goalDashboardGetter,
     GoalConverter goalConverter,
     GoalRepository goalRepository) : ControllerBase
 {
@@ -91,6 +92,27 @@ public sealed class GoalController(
         }
 
         return Ok(goals);
+    }
+
+    /// <summary>
+    /// Retrieves the Goal dashboard that matches the specified criteria.
+    /// </summary>
+    [HttpGet("dashboard")]
+    [ProducesResponseType(typeof(GoalDashboardModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetDashboard([FromQuery] GoalDashboardQueryParameterModel queryParameters)
+    {
+        if (!goalDashboardGetter.TryGet(queryParameters, out GoalDashboardModel? dashboard, out Dictionary<string, string[]> errors))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Goal dashboard.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        return Ok(dashboard);
     }
 
     /// <summary>
