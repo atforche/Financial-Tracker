@@ -5,6 +5,7 @@ import {
   CreateTransactionModelCreateIncomeTransactionModelType,
   CreateTransactionModelCreateSpendingTransactionModelType,
   TransactionAccountTypeModel,
+  TransactionDashboardModeModel,
   TransactionSortOrderModel,
   TransactionTypeModel,
   UpdateTransactionModelUpdateAccountTransactionModelType,
@@ -23,6 +24,29 @@ import {
  * Type representing a Transaction.
  */
 type Transaction = components["schemas"]["TransactionModel"];
+
+/**
+ * Type representing the Transaction dashboard response.
+ */
+type TransactionDashboard = components["schemas"]["TransactionDashboardModel"];
+
+/**
+ * Type representing a Transaction dashboard summary by type.
+ */
+type TransactionDashboardTransactionTypeSummary =
+  components["schemas"]["TransactionDashboardTransactionTypeSummaryModel"];
+
+/**
+ * Type representing a Transaction dashboard summary by date.
+ */
+type TransactionDashboardDateSummary =
+  components["schemas"]["TransactionDashboardDateSummaryModel"];
+
+/**
+ * Type representing a Transaction dashboard summary by accounting period.
+ */
+type TransactionDashboardPeriodSummary =
+  components["schemas"]["TransactionDashboardPeriodSummaryModel"];
 
 /**
  * Type representing a Transaction Account.
@@ -230,10 +254,15 @@ const getPostedTransactionAccounts = function (
 
 export {
   type Transaction,
+  type TransactionDashboard,
+  type TransactionDashboardDateSummary,
+  type TransactionDashboardPeriodSummary,
+  type TransactionDashboardTransactionTypeSummary,
   type TransactionAccount,
   type CreateTransactionRequest,
   type UpdateTransactionRequest,
   type PostTransactionRequest,
+  TransactionDashboardModeModel as TransactionDashboardMode,
   TransactionSortOrderModel as TransactionSortOrder,
   TransactionAccountTypeModel as TransactionAccountType,
   TransactionTypeModel as TransactionType,

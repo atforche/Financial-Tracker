@@ -31,7 +31,12 @@ public class TransactionDashboardModel
     public required IReadOnlyCollection<TransactionDashboardTransactionTypeSummaryModel> TransactionTypes { get; init; }
 
     /// <summary>
+    /// Summary counts and amounts for each Accounting Period in the requested range.
+    /// </summary>
+    public IReadOnlyCollection<TransactionDashboardPeriodSummaryModel>? AccountingPeriods { get; init; }
+
+    /// <summary>
     /// Summary counts and amounts for each date in the requested range.
     /// </summary>
-    public required IReadOnlyCollection<TransactionDashboardDateSummaryModel> Dates { get; init; }
+    public IReadOnlyCollection<TransactionDashboardDateSummaryModel>? Dates { get; init; }
 }

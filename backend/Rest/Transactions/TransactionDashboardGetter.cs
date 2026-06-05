@@ -123,6 +123,7 @@ public class TransactionDashboardGetter(
             accountingPeriods.First().GetMinimumDateInPeriod(),
             accountingPeriods.Last().GetMaximumDateInPeriod(),
             transaction => accountingPeriods.Any(accountingPeriod => accountingPeriod.Id == transaction.AccountingPeriodId),
+            accountingPeriods,
             out results);
     }
 
@@ -163,6 +164,7 @@ public class TransactionDashboardGetter(
             request.StartDate.Value,
             request.EndDate.Value,
             transaction => transaction.Date >= request.StartDate.Value && transaction.Date <= request.EndDate.Value,
+            null,
             out results);
     }
 
@@ -175,6 +177,7 @@ public class TransactionDashboardGetter(
         DateOnly startDate,
         DateOnly endDate,
         Func<Transaction, bool> transactionFilter,
+        IReadOnlyList<AccountingPeriod>? accountingPeriods,
         out TransactionDashboardModel results)
     {
         var baseTransactions = transactionRepository.GetAll()
@@ -204,7 +207,12 @@ public class TransactionDashboardGetter(
             AvailableAccountNames = availableAccountNames,
             AvailableFundNames = availableFundNames,
             TransactionTypes = BuildTransactionTypeSummaries(filteredTransactions),
-            Dates = BuildDateSummaries(startDate, endDate, filteredTransactions),
+            AccountingPeriods = mode == TransactionDashboardModeModel.AccountingPeriod && accountingPeriods != null
+                ? BuildPeriodSummaries(accountingPeriods, filteredTransactions)
+                : null,
+            Dates = mode == TransactionDashboardModeModel.Date
+                ? BuildDateSummaries(startDate, endDate, filteredTransactions)
+                : null,
         };
 
         return true;
@@ -227,7 +235,8 @@ public class TransactionDashboardGetter(
         AvailableAccountNames = [],
         AvailableFundNames = [],
         TransactionTypes = [],
-        Dates = [],
+        AccountingPeriods = null,
+        Dates = null,
     };
 
     private bool TryGetAccountingPeriodsInRange(
@@ -316,6 +325,8 @@ public class TransactionDashboardGetter(
         {
             null or TransactionSortOrderModel.Date => transactions.OrderBy(transaction => transaction.Date).ThenBy(transaction => transaction.Sequence).ToList(),
             TransactionSortOrderModel.DateDescending => transactions.OrderByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
+            TransactionSortOrderModel.AccountingPeriod => transactions.OrderBy(transaction => transaction.AccountingPeriodName).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
+            TransactionSortOrderModel.AccountingPeriodDescending => transactions.OrderByDescending(transaction => transaction.AccountingPeriodName).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
             TransactionSortOrderModel.Location => transactions.OrderBy(transaction => transaction.Location).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
             TransactionSortOrderModel.LocationDescending => transactions.OrderByDescending(transaction => transaction.Location).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
             TransactionSortOrderModel.DebitFrom => transactions.OrderBy(GetDebitFrom).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
@@ -363,6 +374,24 @@ public class TransactionDashboardGetter(
             })
             .ToList();
     }
+
+    private static List<TransactionDashboardPeriodSummaryModel> BuildPeriodSummaries(
+        IReadOnlyList<AccountingPeriod> accountingPeriods,
+        IReadOnlyCollection<TransactionModel> transactions) => accountingPeriods.Select(accountingPeriod =>
+    {
+        var periodTransactions = transactions
+            .Where(transaction => transaction.AccountingPeriodId == accountingPeriod.Id.Value)
+            .ToList();
+        return new TransactionDashboardPeriodSummaryModel
+        {
+            AccountingPeriodId = accountingPeriod.Id.Value,
+            AccountingPeriodName = accountingPeriod.Name,
+            Year = accountingPeriod.Year,
+            Month = accountingPeriod.Month,
+            TotalCount = periodTransactions.Count,
+            TotalAmount = periodTransactions.Sum(transaction => transaction.Amount),
+        };
+    }).ToList();
 
     private static IEnumerable<string> GetAccountNamesForTransaction(TransactionModel transaction) => transaction switch
     {

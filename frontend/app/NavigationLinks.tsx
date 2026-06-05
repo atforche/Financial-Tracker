@@ -103,8 +103,18 @@ const links: NavigationLink[] = [
   },
   {
     name: "Transactions",
-    href: transactionRoutes.workspace({}),
+    href: transactionRoutes.dashboard({}),
     icon: <ReceiptLong />,
+    childLinks: [
+      {
+        name: "Dashboard",
+        href: transactionRoutes.dashboard({}),
+      },
+      {
+        name: "Workspace",
+        href: transactionRoutes.workspace({}),
+      },
+    ],
   },
 ];
 

@@ -3450,14 +3450,46 @@ export interface components {
             availableFundNames: string[];
             /** @description Summary counts and amounts for each Transaction Type in the requested range. */
             transactionTypes: components["schemas"]["TransactionDashboardTransactionTypeSummaryModel"][];
+            /** @description Summary counts and amounts for each Accounting Period in the requested range. */
+            accountingPeriods?: null | components["schemas"]["TransactionDashboardPeriodSummaryModel"][];
             /** @description Summary counts and amounts for each date in the requested range. */
-            dates: components["schemas"]["TransactionDashboardDateSummaryModel"][];
+            dates?: null | components["schemas"]["TransactionDashboardDateSummaryModel"][];
         };
         /**
          * @description Enum representing the time mode used to build the Transaction dashboard response.
          * @enum {unknown}
          */
         TransactionDashboardModeModel: TransactionDashboardModeModel;
+        /** @description Model representing summary counts and amounts for a specific Accounting Period. */
+        TransactionDashboardPeriodSummaryModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Accounting Period.
+             */
+            accountingPeriodId: string;
+            /** @description Name for the Accounting Period. */
+            accountingPeriodName: string;
+            /**
+             * Format: int32
+             * @description Year for the Accounting Period.
+             */
+            year: number;
+            /**
+             * Format: int32
+             * @description Month for the Accounting Period.
+             */
+            month: number;
+            /**
+             * Format: int32
+             * @description Total count of transactions for this Accounting Period.
+             */
+            totalCount: number;
+            /**
+             * Format: double
+             * @description Total amount of transactions for this Accounting Period.
+             */
+            totalAmount: number;
+        };
         /** @description Model representing summary counts and amounts for a specific Transaction Type. */
         TransactionDashboardTransactionTypeSummaryModel: {
             /** @description Transaction type for this summary. */
@@ -4019,6 +4051,8 @@ export enum TransactionModelSpendingTransactionModelType {
 export enum TransactionSortOrderModel {
     Date = "Date",
     DateDescending = "DateDescending",
+    AccountingPeriod = "AccountingPeriod",
+    AccountingPeriodDescending = "AccountingPeriodDescending",
     Location = "Location",
     LocationDescending = "LocationDescending",
     DebitFrom = "DebitFrom",

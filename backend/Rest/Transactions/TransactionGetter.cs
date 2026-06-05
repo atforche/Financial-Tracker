@@ -122,6 +122,14 @@ public class TransactionGetter(
         {
             filteredResults = filteredResults.OrderByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
         }
+        else if (request.Sort == TransactionSortOrderModel.AccountingPeriod)
+        {
+            filteredResults = filteredResults.OrderBy(transaction => transaction.AccountingPeriodName).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
+        }
+        else if (request.Sort == TransactionSortOrderModel.AccountingPeriodDescending)
+        {
+            filteredResults = filteredResults.OrderByDescending(transaction => transaction.AccountingPeriodName).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
+        }
         else if (request.Sort == TransactionSortOrderModel.Location)
         {
             filteredResults = filteredResults.OrderBy(transaction => transaction.Location).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
