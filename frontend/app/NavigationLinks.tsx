@@ -156,7 +156,6 @@ const NavigationLinks = function (): JSX.Element {
           const isSelected =
             pathname === link.href ||
             link.childLinks.some((child) => pathname === child.href);
-
           return (
             <div key={link.name}>
               <ListItem
@@ -185,7 +184,10 @@ const NavigationLinks = function (): JSX.Element {
                     width: "100%",
                   }}
                 >
-                  <ListItemButton selected={isSelected}>
+                  <ListItemButton
+                    selected={isSelected}
+                    sx={{ width: "100%", pr: 7.5 }}
+                  >
                     <ListItemIcon sx={{ paddingLeft: "15px" }}>
                       {link.icon}
                     </ListItemIcon>

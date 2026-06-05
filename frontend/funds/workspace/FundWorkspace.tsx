@@ -35,33 +35,42 @@ interface FundWorkspaceProps {
 const FundWorkspace = async function ({
   searchParams,
 }: FundWorkspaceProps): Promise<JSX.Element> {
-  const {
-    search,
-    sort,
-    page,
-    selectedFundId,
-    action,
-  } = await searchParams;
+  const { search, sort, page, selectedFundId, action } = await searchParams;
   const apiClient = getApiClient();
 
+  const anyAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
+    params: {
+      query: {
+        Limit: 1,
+      },
+    },
+  });
   const openAccountingPeriodsPromise = apiClient.GET(
     "/accounting-periods/open",
   );
   const fundsPromise = apiClient.GET("/funds", {
     params: {
       query: {
-        Search: resolvedSearchParams.search ?? "",
-        Sort: resolvedSearchParams.sort ?? null,
+        Search: search ?? "",
+        Sort: sort ?? null,
         Limit: rowsPerPage,
-        Offset: (currentPage - 1) * rowsPerPage,
+        Offset: ((page ?? 1) - 1) * rowsPerPage,
       },
     },
   });
 
-  const [{ data: openAccountingPeriods }, { data: funds }] = await Promise.all([
+  const [
+    { data: accountingPeriod },
+    { data: openAccountingPeriods },
+    { data: funds },
+  ] = await Promise.all([
+    anyAccountingPeriodsPromise,
     openAccountingPeriodsPromise,
     fundsPromise,
   ]);
+  if (typeof accountingPeriod === "undefined") {
+    throw new Error("Failed to fetch accounting periods");
+  }
   if (typeof openAccountingPeriods === "undefined") {
     throw new Error("Failed to fetch open accounting periods");
   }
@@ -71,43 +80,20 @@ const FundWorkspace = async function ({
   funds.items = funds.items.filter((fund) => fund.name !== "Unassigned");
 
   const selectedFund =
-    typeof resolvedSearchParams.selectedFundId === "string"
-      ? (funds.items.find(
-          (fund) => fund.id === resolvedSearchParams.selectedFundId,
-        ) ?? null)
-      : null;
+    funds.items.find((fund) => fund.id === selectedFundId) ?? null;
+  const isInOnboardingMode = accountingPeriod.items.length === 0;
 
-  if (
-    typeof resolvedSearchParams.selectedFundId === "string" &&
-    selectedFund === null
-  ) {
-    const { ...remainingSearchParams } = resolvedSearchParams;
-    const nextSearchParams =
-      remainingSearchParams.action === "update" ||
-      remainingSearchParams.action === "delete"
-        ? (({ ...searchParamsWithoutAction }): FundWorkspaceSearchParams =>
-            searchParamsWithoutAction)(remainingSearchParams)
-        : remainingSearchParams;
-    redirect(routes.workspace(nextSearchParams));
+  if (typeof selectedFundId === "string" && selectedFund === null) {
+    redirect(
+      routes.workspace({
+        search: search ?? "",
+        ...(typeof sort !== "undefined" ? { sort } : {}),
+        ...(typeof page !== "undefined" ? { page } : {}),
+        selectedFundId: "",
+        ...(typeof action !== "undefined" ? { action } : {}),
+      }),
+    );
   }
-
-  const isInOnboardingMode = openAccountingPeriods.length === 0;
-  const redirectSearchParams = {
-    ...(typeof resolvedSearchParams.search === "string"
-      ? { search: resolvedSearchParams.search }
-      : {}),
-    ...(typeof resolvedSearchParams.sort === "string"
-      ? { sort: resolvedSearchParams.sort }
-      : {}),
-    ...(currentPage > 1 ? { page: currentPage } : {}),
-  };
-  const updateRedirectUrl =
-    selectedFund === null
-      ? routes.workspace(redirectSearchParams)
-      : routes.workspace({
-          ...redirectSearchParams,
-          selectedFundId: selectedFund.id,
-        });
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
@@ -136,11 +122,7 @@ const FundWorkspace = async function ({
             funds.items.find((fund) => fund.name === "Unassigned")
               ?.currentBalance.postedBalance ?? null
           }
-          requestedAction={resolvedSearchParams.action ?? null}
-          createRedirectUrl={routes.workspace(redirectSearchParams)}
-          onboardRedirectUrl={routes.workspace(redirectSearchParams)}
-          updateRedirectUrl={updateRedirectUrl}
-          deleteRedirectUrl={routes.workspace(redirectSearchParams)}
+          requestedAction={action ?? null}
         />
       </Box>
     </Stack>

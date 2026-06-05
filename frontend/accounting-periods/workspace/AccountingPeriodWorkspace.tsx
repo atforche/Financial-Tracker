@@ -40,11 +40,27 @@ const AccountingPeriodWorkspace = async function ({
   const { years, months, sort, page, selectedAccountingPeriodId, action } =
     await searchParams;
 
+  const firstAccountingPeriodPromise = apiClient.GET("/accounting-periods", {
+    params: {
+      query: {
+        Sort: AccountingPeriodSortOrder.Date,
+        Limit: 1,
+      },
+    },
+  });
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
       query: {
-        Years: Array.isArray(years) ? years : typeof years !== "undefined" ? [years] : [],
-        Months: Array.isArray(months) ? months : typeof months !== "undefined" ? [months] : [],
+        ...(Array.isArray(years)
+          ? { Years: years }
+          : typeof years !== "undefined"
+            ? { Years: [years] }
+            : {}),
+        ...(Array.isArray(months)
+          ? { Months: months }
+          : typeof months !== "undefined"
+            ? { Months: [months] }
+            : {}),
         Sort: sort ?? null,
         Limit: rowsPerPage,
         Offset: ((page ?? 1) - 1) * rowsPerPage,
@@ -52,60 +68,50 @@ const AccountingPeriodWorkspace = async function ({
     },
   });
 
-  const { data: accountingPeriods } = await accountingPeriodsPromise;
+  const [{ data: firstAccountingPeriod }, { data: accountingPeriods }] =
+    await Promise.all([firstAccountingPeriodPromise, accountingPeriodsPromise]);
+  if (typeof firstAccountingPeriod === "undefined") {
+    throw new Error("Failed to fetch accounting periods");
+  }
   if (typeof accountingPeriods === "undefined") {
     throw new Error("Failed to fetch accounting periods");
   }
 
-  const defaultAccountingPeriodId = accountingPeriods.items[0]?.id ?? null;
-  const isInOnboardingMode = accountingPeriods.items.length === 0;
   const selectedAccountingPeriod =
     accountingPeriods.items.find(
       (accountingPeriod) => accountingPeriod.id === selectedAccountingPeriodId,
     ) ?? null;
+  const isInOnboardingMode = firstAccountingPeriod.items.length === 0;
 
   if (
     typeof selectedAccountingPeriodId === "string" &&
     selectedAccountingPeriod === null
   ) {
-    redirect(routes.workspace({
-      years: Array.isArray(years) ? years : typeof years !== "undefined" ? [years] : [],
-      months: Array.isArray(months) ? months : typeof months !== "undefined" ? [months] : [],
-      ...(typeof sort !== "undefined" ? { sort } : {}),
-      ...(typeof page !== "undefined" ? { page } : {}),
-      selectedAccountingPeriodId: "",
-      ...(typeof action !== "undefined" ? { action } : {}),
-    }));
+    redirect(
+      routes.workspace({
+        years: Array.isArray(years)
+          ? years
+          : typeof years !== "undefined"
+            ? [years]
+            : [],
+        months: Array.isArray(months)
+          ? months
+          : typeof months !== "undefined"
+            ? [months]
+            : [],
+        ...(typeof sort !== "undefined" ? { sort } : {}),
+        ...(typeof page !== "undefined" ? { page } : {}),
+        selectedAccountingPeriodId: "",
+        ...(typeof action !== "undefined" ? { action } : {}),
+      }),
+    );
   }
-
-  const redirectSearchParams: AccountingPeriodWorkspaceSearchParams = {
-    ...(typeof resolvedSearchParams.startAccountingPeriodId !== "undefined"
-      ? {
-          startAccountingPeriodId: resolvedSearchParams.startAccountingPeriodId,
-        }
-      : {}),
-    ...(typeof resolvedSearchParams.endAccountingPeriodId !== "undefined"
-      ? { endAccountingPeriodId: resolvedSearchParams.endAccountingPeriodId }
-      : {}),
-    ...(currentPage > 1 ? { page: currentPage } : {}),
-  };
-  const createRedirectUrl = routes.workspace(redirectSearchParams);
-  const selectedRedirectSearchParams: AccountingPeriodWorkspaceSearchParams =
-    selectedAccountingPeriod === null
-      ? redirectSearchParams
-      : {
-          ...redirectSearchParams,
-          startAccountingPeriodId: selectedAccountingPeriod.id,
-          endAccountingPeriodId: selectedAccountingPeriod.id,
-        };
-  const selectedRedirectUrl = routes.workspace(selectedRedirectSearchParams);
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
       <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
         <AccountingPeriodWorkspaceFilter
-          accountingPeriods={accountingPeriods.items}
-          disabled={defaultAccountingPeriodId === null}
+          firstAccountingPeriod={firstAccountingPeriod.items[0] ?? null}
         />
       </Stack>
       <Box
@@ -117,17 +123,14 @@ const AccountingPeriodWorkspace = async function ({
         }}
       >
         <AccountingPeriodWorkspaceListFrame
-          accountingPeriods={accountingPeriods.items}
-          defaultAccountingPeriodId={defaultAccountingPeriodId}
+          data={accountingPeriods.items}
+          totalCount={accountingPeriods.totalCount}
+          selectedAccountingPeriodId={selectedAccountingPeriodId ?? null}
         />
         <AccountingPeriodWorkspaceActions
           isInOnboardingMode={isInOnboardingMode}
           selectedAccountingPeriod={selectedAccountingPeriod}
-          requestedAction={resolvedSearchParams.action ?? null}
-          createRedirectUrl={createRedirectUrl}
-          closeRedirectUrl={selectedRedirectUrl}
-          reopenRedirectUrl={selectedRedirectUrl}
-          deleteRedirectUrl={selectedRedirectUrl}
+          requestedAction={action ?? null}
         />
       </Box>
     </Stack>

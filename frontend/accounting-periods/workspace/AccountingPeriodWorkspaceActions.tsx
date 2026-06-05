@@ -17,22 +17,7 @@ interface AccountingPeriodWorkspaceActionsProps {
   readonly isInOnboardingMode: boolean;
   readonly selectedAccountingPeriod: AccountingPeriod | null;
   readonly requestedAction: AccountingPeriodWorkspaceAction | null;
-  readonly createRedirectUrl: string;
-  readonly closeRedirectUrl: string;
-  readonly reopenRedirectUrl: string;
-  readonly deleteRedirectUrl: string;
 }
-
-const isValidAction = function (
-  action: string | null,
-): action is AccountingPeriodWorkspaceAction {
-  return (
-    action === "create" ||
-    action === "close" ||
-    action === "reopen" ||
-    action === "delete"
-  );
-};
 
 /**
  * Displays the available accounting period actions for the current workspace selection.
@@ -41,10 +26,6 @@ const AccountingPeriodWorkspaceActions = function ({
   isInOnboardingMode,
   selectedAccountingPeriod,
   requestedAction,
-  createRedirectUrl,
-  closeRedirectUrl,
-  reopenRedirectUrl,
-  deleteRedirectUrl,
 }: AccountingPeriodWorkspaceActionsProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -71,13 +52,11 @@ const AccountingPeriodWorkspaceActions = function ({
     action: AccountingPeriodWorkspaceAction | null,
   ): void {
     const params = new URLSearchParams(searchParams.toString());
-
     if (action === null) {
       params.delete("action");
     } else {
       params.set("action", action);
     }
-
     router.replace(`${pathname}?${params.toString()}`);
   };
 
@@ -94,10 +73,7 @@ const AccountingPeriodWorkspaceActions = function ({
         <ToggleButtonGroup
           value={activeAction}
           exclusive
-          onChange={(_, nextValue: string | null) => {
-            if (nextValue === null || !isValidAction(nextValue)) {
-              return;
-            }
+          onChange={(_, nextValue: AccountingPeriodWorkspaceAction | null) => {
             setAction(nextValue);
           }}
           sx={{ flexWrap: "wrap" }}
@@ -121,25 +97,25 @@ const AccountingPeriodWorkspaceActions = function ({
         {activeAction === "create" ? (
           <CreateAccountingPeriodForm
             isInOnboardingMode={isInOnboardingMode}
-            redirectUrl={createRedirectUrl}
+            redirectUrl={pathname}
           />
         ) : null}
         {activeAction === "close" && selectedAccountingPeriod !== null ? (
           <CloseAccountingPeriodForm
             accountingPeriod={selectedAccountingPeriod}
-            redirectUrl={closeRedirectUrl}
+            redirectUrl={pathname}
           />
         ) : null}
         {activeAction === "reopen" && selectedAccountingPeriod !== null ? (
           <ReopenAccountingPeriodForm
             accountingPeriod={selectedAccountingPeriod}
-            redirectUrl={reopenRedirectUrl}
+            redirectUrl={pathname}
           />
         ) : null}
         {activeAction === "delete" && selectedAccountingPeriod !== null ? (
           <DeleteAccountingPeriodForm
             accountingPeriod={selectedAccountingPeriod}
-            redirectUrl={deleteRedirectUrl}
+            redirectUrl={pathname}
           />
         ) : null}
       </Stack>

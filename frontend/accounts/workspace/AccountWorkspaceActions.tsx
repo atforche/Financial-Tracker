@@ -19,22 +19,7 @@ interface AccountWorkspaceActionsProps {
   readonly isInOnboardingMode: boolean;
   readonly selectedAccount: Account | null;
   readonly requestedAction: AccountWorkspaceAction | null;
-  readonly createRedirectUrl: string;
-  readonly onboardRedirectUrl: string;
-  readonly updateRedirectUrl: string;
-  readonly deleteRedirectUrl: string;
 }
-
-const isValidAction = function (
-  action: string | null,
-): action is AccountWorkspaceAction {
-  return (
-    action === "create" ||
-    action === "onboard" ||
-    action === "update" ||
-    action === "delete"
-  );
-};
 
 /**
  * Displays the available account actions for the current workspace selection.
@@ -44,10 +29,6 @@ const AccountWorkspaceActions = function ({
   isInOnboardingMode,
   selectedAccount,
   requestedAction,
-  createRedirectUrl,
-  onboardRedirectUrl,
-  updateRedirectUrl,
-  deleteRedirectUrl,
 }: AccountWorkspaceActionsProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -92,10 +73,7 @@ const AccountWorkspaceActions = function ({
         <ToggleButtonGroup
           value={activeAction}
           exclusive
-          onChange={(_, nextValue: string | null) => {
-            if (nextValue === null || !isValidAction(nextValue)) {
-              return;
-            }
+          onChange={(_, nextValue: AccountWorkspaceAction | null) => {
             setAction(nextValue);
           }}
           sx={{ flexWrap: "wrap" }}
@@ -119,23 +97,17 @@ const AccountWorkspaceActions = function ({
         {activeAction === "create" ? (
           <CreateAccountForm
             accountingPeriods={accountingPeriods}
-            redirectUrl={createRedirectUrl}
+            redirectUrl={pathname}
           />
         ) : null}
         {activeAction === "onboard" ? (
-          <OnboardAccountForm redirectUrl={onboardRedirectUrl} />
+          <OnboardAccountForm redirectUrl={pathname} />
         ) : null}
         {activeAction === "update" && selectedAccount !== null ? (
-          <UpdateAccountForm
-            account={selectedAccount}
-            redirectUrl={updateRedirectUrl}
-          />
+          <UpdateAccountForm account={selectedAccount} redirectUrl={pathname} />
         ) : null}
         {activeAction === "delete" && selectedAccount !== null ? (
-          <DeleteAccountForm
-            account={selectedAccount}
-            redirectUrl={deleteRedirectUrl}
-          />
+          <DeleteAccountForm account={selectedAccount} redirectUrl={pathname} />
         ) : null}
       </Stack>
     </Paper>

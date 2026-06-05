@@ -170,7 +170,7 @@ const AccountingPeriodDashboardTransactionListFrame = function ({
           setSort(null);
         }
       },
-      minWidth: 170,
+      minWidth: 100,
     },
     {
       name: "creditTo",
@@ -192,7 +192,7 @@ const AccountingPeriodDashboardTransactionListFrame = function ({
           setSort(null);
         }
       },
-      minWidth: 170,
+      minWidth: 100,
     },
     {
       name: "amount",
@@ -216,7 +216,7 @@ const AccountingPeriodDashboardTransactionListFrame = function ({
         }
       },
       alignment: "right",
-      minWidth: 150,
+      minWidth: 100,
     },
   ];
 

@@ -20,22 +20,7 @@ interface FundWorkspaceActionsProps {
   readonly selectedFund: Fund | null;
   readonly unassignedBalance: number | null;
   readonly requestedAction: FundWorkspaceAction | null;
-  readonly createRedirectUrl: string;
-  readonly onboardRedirectUrl: string;
-  readonly updateRedirectUrl: string;
-  readonly deleteRedirectUrl: string;
 }
-
-const isValidAction = function (
-  action: string | null,
-): action is FundWorkspaceAction {
-  return (
-    action === "create" ||
-    action === "onboard" ||
-    action === "update" ||
-    action === "delete"
-  );
-};
 
 /**
  * Displays the available fund actions for the current workspace selection.
@@ -46,10 +31,6 @@ const FundWorkspaceActions = function ({
   selectedFund,
   unassignedBalance,
   requestedAction,
-  createRedirectUrl,
-  onboardRedirectUrl,
-  updateRedirectUrl,
-  deleteRedirectUrl,
 }: FundWorkspaceActionsProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -94,10 +75,7 @@ const FundWorkspaceActions = function ({
         <ToggleButtonGroup
           value={activeAction}
           exclusive
-          onChange={(_, nextValue: string | null) => {
-            if (nextValue === null || !isValidAction(nextValue)) {
-              return;
-            }
+          onChange={(_, nextValue: FundWorkspaceAction | null) => {
             setAction(nextValue);
           }}
           sx={{ flexWrap: "wrap" }}
@@ -121,20 +99,20 @@ const FundWorkspaceActions = function ({
         {activeAction === "create" ? (
           <CreateFundForm
             accountingPeriods={accountingPeriods}
-            redirectUrl={createRedirectUrl}
+            redirectUrl={pathname}
           />
         ) : null}
         {activeAction === "onboard" ? (
           <OnboardFundForm
-            redirectUrl={onboardRedirectUrl}
+            redirectUrl={pathname}
             unassignedBalance={unassignedBalance}
           />
         ) : null}
         {activeAction === "update" && selectedFund !== null ? (
-          <UpdateFundForm fund={selectedFund} redirectUrl={updateRedirectUrl} />
+          <UpdateFundForm fund={selectedFund} redirectUrl={pathname} />
         ) : null}
         {activeAction === "delete" && selectedFund !== null ? (
-          <DeleteFundForm fund={selectedFund} redirectUrl={deleteRedirectUrl} />
+          <DeleteFundForm fund={selectedFund} redirectUrl={pathname} />
         ) : null}
       </Stack>
     </Paper>

@@ -38,6 +38,13 @@ const AccountWorkspace = async function ({
   const { search, sort, page, selectedAccountId, action } = await searchParams;
   const apiClient = getApiClient();
 
+  const anyAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
+    params: {
+      query: {
+        Limit: 1,
+      },
+    },
+  });
   const openAccountingPeriodsPromise = apiClient.GET(
     "/accounting-periods/open",
   );
@@ -52,9 +59,19 @@ const AccountWorkspace = async function ({
     },
   });
 
-  const [{ data: openAccountingPeriods }, { data: accounts }] =
-    await Promise.all([openAccountingPeriodsPromise, accountsPromise]);
+  const [
+    { data: accountingPeriod },
+    { data: openAccountingPeriods },
+    { data: accounts },
+  ] = await Promise.all([
+    anyAccountingPeriodsPromise,
+    openAccountingPeriodsPromise,
+    accountsPromise,
+  ]);
 
+  if (typeof accountingPeriod === "undefined") {
+    throw new Error("Failed to fetch accounting periods");
+  }
   if (typeof openAccountingPeriods === "undefined") {
     throw new Error("Failed to fetch open accounting periods");
   }
@@ -62,41 +79,21 @@ const AccountWorkspace = async function ({
     throw new Error("Failed to fetch accounts");
   }
 
-  const selectedAccount = accounts.items.find(
-          (account) => account.id === selectedAccountId,
-        ) ?? null;
+  const selectedAccount =
+    accounts.items.find((account) => account.id === selectedAccountId) ?? null;
+  const isInOnboardingMode = accountingPeriod.items.length === 0;
 
-  if (
-    typeof selectedAccountId === "string" &&
-    selectedAccount === null
-  ) {
-    const { ...remainingSearchParams } = resolvedSearchParams;
-    const nextSearchParams =
-      remainingSearchParams.action === "update" ||
-      remainingSearchParams.action === "delete"
-        ? (({ ...searchParamsWithoutAction }): AccountWorkspaceSearchParams =>
-            searchParamsWithoutAction)(remainingSearchParams)
-        : remainingSearchParams;
-    redirect(routes.workspace(nextSearchParams));
+  if (typeof selectedAccountId === "string" && selectedAccount === null) {
+    redirect(
+      routes.workspace({
+        search: search ?? "",
+        ...(typeof sort !== "undefined" ? { sort } : {}),
+        ...(typeof page !== "undefined" ? { page } : {}),
+        selectedAccountId: "",
+        ...(typeof action !== "undefined" ? { action } : {}),
+      }),
+    );
   }
-
-  const isInOnboardingMode = openAccountingPeriods.length === 0;
-  const redirectSearchParams = {
-    ...(typeof resolvedSearchParams.search === "string"
-      ? { search: resolvedSearchParams.search }
-      : {}),
-    ...(typeof resolvedSearchParams.sort === "string"
-      ? { sort: resolvedSearchParams.sort }
-      : {}),
-    ...(currentPage > 1 ? { page: currentPage } : {}),
-  };
-  const updateRedirectUrl =
-    selectedAccount === null
-      ? routes.workspace(redirectSearchParams)
-      : routes.workspace({
-          ...redirectSearchParams,
-          selectedAccountId: selectedAccount.id,
-        });
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
@@ -121,11 +118,7 @@ const AccountWorkspace = async function ({
           accountingPeriods={openAccountingPeriods}
           isInOnboardingMode={isInOnboardingMode}
           selectedAccount={selectedAccount}
-          requestedAction={resolvedSearchParams.action ?? null}
-          createRedirectUrl={routes.workspace(redirectSearchParams)}
-          onboardRedirectUrl={routes.workspace(redirectSearchParams)}
-          updateRedirectUrl={updateRedirectUrl}
-          deleteRedirectUrl={routes.workspace(redirectSearchParams)}
+          requestedAction={action ?? null}
         />
       </Box>
     </Stack>

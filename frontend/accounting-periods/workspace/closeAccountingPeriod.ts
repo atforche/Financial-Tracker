@@ -3,7 +3,6 @@
 import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -54,7 +53,7 @@ const closeAccountingPeriod = async function (
     throw new Error("An unexpected error occurred", { cause: error });
   }
   revalidatePath(redirectUrl);
-  redirect(redirectUrl);
+  return {};
 };
 
 export default closeAccountingPeriod;

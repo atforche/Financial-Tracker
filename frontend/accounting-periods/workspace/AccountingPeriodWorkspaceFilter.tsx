@@ -14,34 +14,25 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
 
 interface AccountingPeriodWorkspaceFilterProps {
-  readonly accountingPeriods: readonly AccountingPeriod[];
-  readonly disabled?: boolean;
+  readonly firstAccountingPeriod: AccountingPeriod | null;
 }
 
 /**
  * Renders the filter card for the Accounting Period workspace with year and month filters.
  */
 const AccountingPeriodWorkspaceFilter = function ({
-  accountingPeriods,
-  disabled = false,
+  firstAccountingPeriod,
 }: AccountingPeriodWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
   const pageParamName = "page";
-  const yearParamName = "year";
-  const monthParamName = "month";
+  const yearsParamName = "years";
+  const monthsParamName = "months";
 
   const currentYear = new Date().getFullYear();
-  const firstAccountingPeriodYear =
-    accountingPeriods.reduce<number | null>((minimumYear, accountingPeriod) => {
-      if (minimumYear === null) {
-        return accountingPeriod.year;
-      }
-      return Math.min(minimumYear, accountingPeriod.year);
-    }, null) ?? currentYear;
-
+  const firstAccountingPeriodYear = firstAccountingPeriod?.year ?? currentYear;
   const availableYears = Array.from(
     { length: currentYear - firstAccountingPeriodYear + 1 },
     (_, index) => firstAccountingPeriodYear + index,
@@ -88,14 +79,14 @@ const AccountingPeriodWorkspaceFilter = function ({
 
   const currentYears = normalizeSelectedNumberValues(
     normalizeRequestedNumberValues(
-      searchParams.getAll(yearParamName),
+      searchParams.getAll(yearsParamName),
       firstAccountingPeriodYear,
       currentYear,
     ),
     availableYears,
   );
   const currentMonths = normalizeSelectedNumberValues(
-    normalizeRequestedNumberValues(searchParams.getAll(monthParamName), 1, 12),
+    normalizeRequestedNumberValues(searchParams.getAll(monthsParamName), 1, 12),
     availableMonths,
   );
 
@@ -113,26 +104,26 @@ const AccountingPeriodWorkspaceFilter = function ({
 
   const handleYearChange = function (nextYears: readonly number[]): void {
     updateParams((params) => {
-      params.delete(yearParamName);
+      params.delete(yearsParamName);
       nextYears.forEach((year) => {
-        params.append(yearParamName, year.toString());
+        params.append(yearsParamName, year.toString());
       });
     });
   };
 
   const handleMonthChange = function (nextMonths: readonly number[]): void {
     updateParams((params) => {
-      params.delete(monthParamName);
+      params.delete(monthsParamName);
       nextMonths.forEach((month) => {
-        params.append(monthParamName, month.toString());
+        params.append(monthsParamName, month.toString());
       });
     });
   };
 
   const clearView = function (): void {
     updateParams((params) => {
-      params.delete(yearParamName);
-      params.delete(monthParamName);
+      params.delete(yearsParamName);
+      params.delete(monthsParamName);
     });
   };
 
@@ -166,7 +157,9 @@ const AccountingPeriodWorkspaceFilter = function ({
             size="small"
             options={[...availableYears]}
             value={[...currentYears]}
-            disabled={disabled || availableYears.length === 0}
+            disabled={
+              firstAccountingPeriod === null || availableYears.length === 0
+            }
             limitTags={1}
             sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
             noOptionsText={
@@ -209,7 +202,9 @@ const AccountingPeriodWorkspaceFilter = function ({
             size="small"
             options={[...availableMonths]}
             value={[...currentMonths]}
-            disabled={disabled || availableMonths.length === 0}
+            disabled={
+              firstAccountingPeriod === null || availableMonths.length === 0
+            }
             limitTags={1}
             sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
             noOptionsText={

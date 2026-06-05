@@ -7,7 +7,7 @@ import NavigationLinks from "@/app/NavigationLinks";
  * Component that displays a navigation sidebar.
  */
 const Navigation = function (): JSX.Element {
-  const drawerWidth = 260;
+  const drawerWidth = 280;
   return (
     <Drawer
       variant="permanent"
