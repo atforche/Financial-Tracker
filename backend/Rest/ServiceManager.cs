@@ -44,6 +44,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<GoalGetter>();
 
         _ = serviceCollection.AddScoped<TransactionConverter>();
+        _ = serviceCollection.AddScoped<TransactionDashboardGetter>();
         _ = serviceCollection.AddScoped<TransactionGetter>();
         _ = serviceCollection.AddScoped<TransactionRequestConverter>();
     }

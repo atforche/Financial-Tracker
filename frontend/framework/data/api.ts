@@ -105,6 +105,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/transactions/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves dashboard data for Transactions across a range of Accounting Periods or dates. */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description First date in the requested range. */
+                    StartDate?: string;
+                    /** @description Last date in the requested range. */
+                    EndDate?: string;
+                    /** @description ID for the first Accounting Period in the requested range. */
+                    StartAccountingPeriodId?: string;
+                    /** @description ID for the last Accounting Period in the requested range. */
+                    EndAccountingPeriodId?: string;
+                    /** @description Optional Transaction Type filters to apply to the dashboard. */
+                    TransactionType?: components["schemas"]["TransactionTypeModel"][];
+                    /** @description Optional Account Name filters to apply to the dashboard. */
+                    AccountName?: string[];
+                    /** @description Optional Fund Name filters to apply to the dashboard. */
+                    FundName?: string[];
+                    /** @description Optional sort to apply to the matching Transactions. */
+                    Sort?: components["schemas"]["TransactionSortOrderModel"];
+                    /** @description Maximum number of results to return. */
+                    Limit?: number;
+                    /** @description Number of results to skip. */
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionDashboardModel"];
+                        "application/json": components["schemas"]["TransactionDashboardModel"];
+                        "text/json": components["schemas"]["TransactionDashboardModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/transactions/{transactionId}": {
         parameters: {
             query?: never;
@@ -3350,6 +3420,59 @@ export interface components {
          * @enum {unknown}
          */
         TransactionAccountTypeModel: TransactionAccountTypeModel;
+        /** @description Model representing summary counts and amounts for a specific date. */
+        TransactionDashboardDateSummaryModel: {
+            /**
+             * Format: date
+             * @description Date for this summary.
+             */
+            date: string;
+            /**
+             * Format: int32
+             * @description Total count of transactions for this date.
+             */
+            totalCount: number;
+            /**
+             * Format: double
+             * @description Total amount of transactions for this date.
+             */
+            totalAmount: number;
+        };
+        /** @description Model representing the Transaction dashboard response. */
+        TransactionDashboardModel: {
+            /** @description Time mode used to build the dashboard response. */
+            mode: components["schemas"]["TransactionDashboardModeModel"];
+            /** @description Matching Transactions for the requested dashboard page. */
+            transactions: components["schemas"]["CollectionModelOfTransactionModel"];
+            /** @description Available Account Names for the current dashboard scope before account-name filtering. */
+            availableAccountNames: string[];
+            /** @description Available Fund Names for the current dashboard scope before fund-name filtering. */
+            availableFundNames: string[];
+            /** @description Summary counts and amounts for each Transaction Type in the requested range. */
+            transactionTypes: components["schemas"]["TransactionDashboardTransactionTypeSummaryModel"][];
+            /** @description Summary counts and amounts for each date in the requested range. */
+            dates: components["schemas"]["TransactionDashboardDateSummaryModel"][];
+        };
+        /**
+         * @description Enum representing the time mode used to build the Transaction dashboard response.
+         * @enum {unknown}
+         */
+        TransactionDashboardModeModel: TransactionDashboardModeModel;
+        /** @description Model representing summary counts and amounts for a specific Transaction Type. */
+        TransactionDashboardTransactionTypeSummaryModel: {
+            /** @description Transaction type for this summary. */
+            transactionType: components["schemas"]["TransactionTypeModel"];
+            /**
+             * Format: int32
+             * @description Total count of transactions for this type.
+             */
+            totalCount: number;
+            /**
+             * Format: double
+             * @description Total amount of transactions for this type.
+             */
+            totalAmount: number;
+        };
         /** @description Model representing a fund referenced by a transaction. */
         TransactionFundModel: {
             /**
@@ -3876,6 +3999,10 @@ export enum GoalTypeModel {
 export enum TransactionAccountTypeModel {
     Debit = "Debit",
     Credit = "Credit"
+}
+export enum TransactionDashboardModeModel {
+    AccountingPeriod = "AccountingPeriod",
+    Date = "Date"
 }
 export enum TransactionModelAccountTransactionModelType {
     Account = "Account"

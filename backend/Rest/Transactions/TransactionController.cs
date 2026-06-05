@@ -20,6 +20,7 @@ public sealed class TransactionController(
     UnitOfWork unitOfWork,
     AccountConverter accountConverter,
     AccountingPeriodConverter accountingPeriodConverter,
+    TransactionDashboardGetter transactionDashboardGetter,
     TransactionGetter transactionGetter,
     TransactionConverter transactionConverter,
     TransactionDispatcherService transactionDispatcherService,
@@ -44,6 +45,27 @@ public sealed class TransactionController(
         }
 
         return Ok(transactions);
+    }
+
+    /// <summary>
+    /// Retrieves dashboard data for Transactions across a range of Accounting Periods or dates.
+    /// </summary>
+    [HttpGet("dashboard")]
+    [ProducesResponseType(typeof(TransactionDashboardModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetDashboard([FromQuery] TransactionDashboardQueryParameterModel queryParameters)
+    {
+        if (!transactionDashboardGetter.TryGet(queryParameters, out TransactionDashboardModel? dashboard, out Dictionary<string, string[]> errors))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Transaction dashboard.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        return Ok(dashboard);
     }
 
     /// <summary>
