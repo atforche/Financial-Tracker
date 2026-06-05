@@ -13,6 +13,9 @@ public class GoalRepository(DatabaseContext databaseContext) : IGoalRepository
     #region IGoalRepository
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<Goal> GetAll() => databaseContext.Goals.ToList();
+
+    /// <inheritdoc/>
     public Goal GetById(GoalId id) =>
         databaseContext.Goals.Single(goal => goal.Id == id);
 

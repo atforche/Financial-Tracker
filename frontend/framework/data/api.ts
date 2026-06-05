@@ -538,6 +538,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/goals/many": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves the Goals that match the specified criteria */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Accounting Period IDs to filter the Goals by */
+                    AccountingPeriodIds?: string[];
+                    /** @description Fund IDs to filter the Goals by */
+                    FundIds?: string[];
+                    /** @description Sort to apply to the results */
+                    Sort?: components["schemas"]["GoalSortOrderModel"];
+                    /** @description Maximum number of results to return */
+                    Limit?: number;
+                    /** @description Number of results to skip */
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfGoalModel"];
+                        "application/json": components["schemas"]["CollectionModelOfGoalModel"];
+                        "text/json": components["schemas"]["CollectionModelOfGoalModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/funds/{fundId}": {
         parameters: {
             query?: never;
@@ -3210,6 +3270,8 @@ export interface components {
             /** @description Whether the spending goal has been met for the Goal including pending spent amounts */
             isSpendingGoalMetIncludingPending: boolean;
         };
+        /** @enum {unknown} */
+        GoalSortOrderModel: GoalSortOrderModel | null;
         /**
          * @description Enum representing the different monthly Goal types
          * @enum {unknown}
@@ -3796,6 +3858,14 @@ export enum FundTransactionSortOrderModel {
     LocationDescending = "LocationDescending",
     ChangeInBalance = "ChangeInBalance",
     ChangeInBalanceDescending = "ChangeInBalanceDescending"
+}
+export enum GoalSortOrderModel {
+    AccountingPeriod = "AccountingPeriod",
+    AccountingPeriodDescending = "AccountingPeriodDescending",
+    Fund = "Fund",
+    FundDescending = "FundDescending",
+    GoalAmount = "GoalAmount",
+    GoalAmountDescending = "GoalAmountDescending"
 }
 export enum GoalTypeModel {
     Monthly = "Monthly",

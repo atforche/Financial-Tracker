@@ -5,6 +5,7 @@ using Domain.Exceptions;
 using Domain.Funds;
 using Domain.Goals;
 using Microsoft.AspNetCore.Mvc;
+using Models;
 using Models.Goals;
 using Rest.AccountingPeriods;
 using Rest.Funds;
@@ -12,7 +13,7 @@ using Rest.Funds;
 namespace Rest.Goals;
 
 /// <summary>
-/// Controller class that exposes endpoints related to Goals for a Fund
+/// Controller class that exposes endpoints related to Goals
 /// </summary>
 [ApiController]
 [Route("/goals")]
@@ -21,6 +22,7 @@ public sealed class GoalController(
     AccountingPeriodConverter accountingPeriodConverter,
     FundConverter fundConverter,
     GoalService goalService,
+    GoalGetter goalGetter,
     GoalConverter goalConverter,
     GoalRepository goalRepository) : ControllerBase
 {
@@ -68,6 +70,27 @@ public sealed class GoalController(
             });
         }
         return Ok(goalConverter.ToModel(goal));
+    }
+
+    /// <summary>
+    /// Retrieves the Goals that match the specified criteria
+    /// </summary>
+    [HttpGet("many")]
+    [ProducesResponseType(typeof(CollectionModel<GoalModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetMany([FromQuery] GoalQueryParameterModel queryParameters)
+    {
+        if (!goalGetter.TryGet(queryParameters, out CollectionModel<GoalModel>? goals, out Dictionary<string, string[]> errors))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Goals.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        return Ok(goals);
     }
 
     /// <summary>

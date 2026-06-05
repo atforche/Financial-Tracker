@@ -1,4 +1,4 @@
-import GoalsView from "@/goals/GoalsView";
+import GoalWorkspace from "@/goals/workspace/GoalWorkspace";
 
 export const dynamic = "force-dynamic";
-export default GoalsView;
+export default GoalWorkspace;

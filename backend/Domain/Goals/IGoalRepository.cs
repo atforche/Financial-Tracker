@@ -9,6 +9,11 @@ namespace Domain.Goals;
 public interface IGoalRepository
 {
     /// <summary>
+    /// Gets all Goals.
+    /// </summary>
+    IReadOnlyCollection<Goal> GetAll();
+
+    /// <summary>
     /// Gets the Goal with the specified ID.
     /// </summary>
     Goal GetById(GoalId id);

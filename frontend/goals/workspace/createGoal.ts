@@ -5,14 +5,12 @@ import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import nameof from "@/framework/data/nameof";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
  * Interface representing the state of creating a goal.
  */
 interface ActionState {
-  readonly redirectUrl: string;
   readonly errorTitle?: string | null;
   readonly fundErrors?: string | null;
   readonly accountingPeriodErrors?: string | null;
@@ -22,11 +20,19 @@ interface ActionState {
 }
 
 /**
+ * Interface representing the payload for creating a goal action.
+ */
+interface ActionPayload {
+  readonly redirectUrl: string;
+  readonly request: CreateGoalRequest;
+}
+
+/**
  * Server action that creates a goal.
  */
 const createGoal = async function (
-  { redirectUrl }: ActionState,
-  request: CreateGoalRequest,
+  _: ActionState,
+  { redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
   const client = getApiClient();
   const { data, error } = await client.POST("/goals", {
@@ -67,7 +73,6 @@ const createGoal = async function (
         }
       }
       return {
-        redirectUrl,
         errorTitle: error.title ?? null,
         fundErrors: fundErrorMessage,
         accountingPeriodErrors: accountingPeriodErrorMessage,
@@ -78,13 +83,11 @@ const createGoal = async function (
     }
     throw new Error("An unexpected error occurred", { cause: error });
   }
-
   if (typeof data === "undefined") {
     throw new Error("Goal creation did not return a Goal.");
   }
-
   revalidatePath(redirectUrl);
-  redirect(redirectUrl);
+  return {};
 };
 
 export default createGoal;

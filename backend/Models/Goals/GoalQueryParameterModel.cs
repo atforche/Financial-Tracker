@@ -1,14 +1,19 @@
 namespace Models.Goals;
 
 /// <summary>
-/// Model representing the query parameters that can be provided when retrieving Goals for a Fund
+/// Model representing the query parameters that can be provided when retrieving Goals
 /// </summary>
 public class GoalQueryParameterModel
 {
     /// <summary>
-    /// Search to apply to the results
+    /// Accounting Period IDs to filter the Goals by
     /// </summary>
-    public string? Search { get; init; }
+    public IReadOnlyCollection<Guid>? AccountingPeriodIds { get; init; }
+
+    /// <summary>
+    /// Fund IDs to filter the Goals by
+    /// </summary>
+    public IReadOnlyCollection<Guid>? FundIds { get; init; }
 
     /// <summary>
     /// Sort to apply to the results

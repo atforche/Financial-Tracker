@@ -1,4 +1,8 @@
-import { GoalTypeModel, type components } from "@/framework/data/api";
+import {
+  GoalSortOrderModel,
+  GoalTypeModel,
+  type components,
+} from "@/framework/data/api";
 
 /**
  * Type representing a Goal.
@@ -20,4 +24,5 @@ export {
   type CreateGoalRequest,
   type UpdateGoalRequest,
   GoalTypeModel as GoalType,
+  GoalSortOrderModel as GoalSortOrder,
 };

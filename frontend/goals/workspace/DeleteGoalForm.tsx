@@ -6,7 +6,7 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import type { Goal } from "@/goals/types";
 import Link from "next/link";
-import deleteGoal from "@/goals/deleteGoal";
+import deleteGoal from "@/goals/workspace/deleteGoal";
 
 /**
  * Props for the DeleteGoalForm component.
@@ -14,6 +14,7 @@ import deleteGoal from "@/goals/deleteGoal";
 interface DeleteGoalFormProps {
   readonly accountingPeriod: AccountingPeriod;
   readonly goal: Goal;
+  readonly redirectUrl: string;
 }
 
 /**
@@ -22,12 +23,9 @@ interface DeleteGoalFormProps {
 const DeleteGoalForm = function ({
   accountingPeriod,
   goal,
+  redirectUrl,
 }: DeleteGoalFormProps): JSX.Element {
-  const [state, action, pending] = useActionState(deleteGoal, {
-    goalId: goal.id,
-    redirectUrl: "/",
-  });
-
+  const [state, action, pending] = useActionState(deleteGoal, {});
   return (
     <Stack spacing={2}>
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
@@ -44,7 +42,7 @@ const DeleteGoalForm = function ({
             loading={pending}
             onClick={() => {
               startTransition(() => {
-                action();
+                action({ redirectUrl, goalId: goal.id });
               });
             }}
           >

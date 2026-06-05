@@ -16,6 +16,16 @@ public enum GoalSortOrderModel
     AccountingPeriodDescending,
 
     /// <summary>
+    /// Goals are sorted by fund in ascending order
+    /// </summary>
+    Fund,
+
+    /// <summary>
+    /// Goals are sorted by fund in descending order
+    /// </summary>
+    FundDescending,
+
+    /// <summary>
     /// Goals are sorted by goal amount in ascending order
     /// </summary>
     GoalAmount,

@@ -5,15 +5,12 @@ import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import nameof from "@/framework/data/nameof";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
  * Interface representing the state of updating a goal.
  */
 interface ActionState {
-  readonly goalId: string;
-  readonly redirectUrl: string;
   readonly errorTitle?: string | null;
   readonly goalTypeErrors?: string | null;
   readonly goalAmountErrors?: string | null;
@@ -21,11 +18,20 @@ interface ActionState {
 }
 
 /**
+ * Interface representing the payload for updating a goal action.
+ */
+interface ActionPayload {
+  readonly goalId: string;
+  readonly request: UpdateGoalRequest;
+  readonly redirectUrl: string;
+}
+
+/**
  * Server action that updates a goal.
  */
 const updateGoal = async function (
-  { goalId, redirectUrl }: ActionState,
-  request: UpdateGoalRequest,
+  _: ActionState,
+  { goalId, request, redirectUrl }: ActionPayload,
 ): Promise<ActionState> {
   const client = getApiClient();
   const { error } = await client.POST("/goals/{goalId}", {
@@ -57,8 +63,6 @@ const updateGoal = async function (
         }
       }
       return {
-        goalId,
-        redirectUrl,
         errorTitle: error.title ?? null,
         goalTypeErrors: goalTypeErrorMessage,
         goalAmountErrors: goalAmountErrorMessage,
@@ -67,9 +71,8 @@ const updateGoal = async function (
     }
     throw new Error("An unexpected error occurred", { cause: error });
   }
-
   revalidatePath(redirectUrl);
-  redirect(redirectUrl);
+  return {};
 };
 
 export default updateGoal;

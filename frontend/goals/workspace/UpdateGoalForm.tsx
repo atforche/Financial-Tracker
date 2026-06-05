@@ -1,32 +1,41 @@
 "use client";
 
 import { Button, DialogActions, Stack } from "@mui/material";
-import type { Goal, GoalType } from "@/goals/types";
+import type { Goal, GoalType, UpdateGoalRequest } from "@/goals/types";
 import { type JSX, startTransition, useActionState, useState } from "react";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import GoalTypeEntryField from "@/goals/GoalTypeEntryField";
 import Link from "next/link";
-import updateGoal from "@/goals/updateGoal";
+import updateGoal from "@/goals/workspace/updateGoal";
 
 /**
  * Props for the GoalForm component.
  */
 interface UpdateGoalFormProps {
   readonly goal: Goal;
+  readonly redirectUrl: string;
 }
 
 /**
  * Component that displays the form for updating a goal.
  */
-const UpdateGoalForm = function ({ goal }: UpdateGoalFormProps): JSX.Element {
+const UpdateGoalForm = function ({
+  goal,
+  redirectUrl,
+}: UpdateGoalFormProps): JSX.Element {
   const [goalType, setGoalType] = useState<GoalType | null>(goal.goalType);
   const [goalAmount, setGoalAmount] = useState<number | null>(goal.goalAmount);
 
-  const [state, action, pending] = useActionState(updateGoal, {
-    goalId: goal.id,
-    redirectUrl: "",
-  });
+  const [state, action, pending] = useActionState(updateGoal, {});
+
+  let request: UpdateGoalRequest | null = null;
+  if (goalType !== null && goalAmount !== null) {
+    request = {
+      goalType,
+      goalAmount,
+    };
+  }
 
   return (
     <Stack spacing={2}>
@@ -50,15 +59,16 @@ const UpdateGoalForm = function ({ goal }: UpdateGoalFormProps): JSX.Element {
           <Button
             variant="contained"
             loading={pending}
-            disabled={goalType === null || goalAmount === null}
+            disabled={request === null}
             onClick={() => {
-              if (goalType === null || goalAmount === null) {
+              if (request === null) {
                 return;
               }
               startTransition(() => {
                 action({
-                  goalType,
-                  goalAmount,
+                  goalId: goal.id,
+                  request,
+                  redirectUrl,
                 });
               });
             }}
