@@ -20,14 +20,12 @@ import { type JSX, startTransition, useActionState, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import CreateOrUpdateIncomeTransactionFrame from "@/transactions/CreateOrUpdateIncomeTransactionFrame";
-import CreateOrUpdateSpendingTransactionFrame from "@/transactions/CreateOrUpdateSpendingTransactionFrame";
-import CreateOrUpdateTransactionDetailsFrame from "@/transactions/CreateOrUpdateTransactionDetailsFrame";
-import CreateOrUpdateTransactionFromToFrame from "@/transactions/CreateOrUpdateTransactionFromToFrame";
+import CreateOrUpdateIncomeTransactionFrame from "@/transactions/workspace/CreateOrUpdateIncomeTransactionFrame";
+import CreateOrUpdateSpendingTransactionFrame from "@/transactions/workspace/CreateOrUpdateSpendingTransactionFrame";
+import CreateOrUpdateTransactionDetailsFrame from "@/transactions/workspace/CreateOrUpdateTransactionDetailsFrame";
+import CreateOrUpdateTransactionFromToFrame from "@/transactions/workspace/CreateOrUpdateTransactionFromToFrame";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import Link from "next/link";
-import accountRoutes from "@/accounts/routes";
-import createTransaction from "@/transactions/createTransaction";
+import createTransaction from "@/transactions/workspace/createTransaction";
 import { updateUnassignedFundAmount } from "@/funds/FundAssignmentEntryFrame";
 
 /**
@@ -37,22 +35,8 @@ interface CreateTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: Account[];
   readonly funds: Fund[];
-  readonly routeAccountingPeriod?: AccountingPeriod | null;
-  readonly routeDebitAccount?: Account | null;
-  readonly routeCreditAccount?: Account | null;
-  readonly routeDebitFund?: Fund | null;
-  readonly routeCreditFund?: Fund | null;
+  readonly redirectUrl: string;
 }
-
-/**
- * Gets the URL to redirect the user to after successfully creating a transaction.
- */
-const getRedirectUrl = function (routeAccount: Account | null): string {
-  if (routeAccount !== null) {
-    return accountRoutes.dashboard({});
-  }
-  return "";
-};
 
 /**
  * Component that displays the form for creating a transaction.
@@ -61,17 +45,17 @@ const CreateTransactionForm = function ({
   accountingPeriods,
   accounts,
   funds,
-  routeAccountingPeriod,
-  routeDebitAccount,
-  routeCreditAccount,
-  routeDebitFund,
-  routeCreditFund,
+  redirectUrl,
 }: CreateTransactionFormProps): JSX.Element {
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
 
   const [accountingPeriod, setAccountingPeriod] =
-    useState<AccountingPeriod | null>(routeAccountingPeriod ?? null);
+    useState<AccountingPeriod | null>(
+      accountingPeriods.length > 0
+        ? (accountingPeriods[accountingPeriods.length - 1] ?? null)
+        : null,
+    );
   const [date, setDate] = useState<Dayjs | null>(null);
   const defaultDate =
     accountingPeriod !== null
@@ -81,18 +65,10 @@ const CreateTransactionForm = function ({
   const [description, setDescription] = useState<string>("");
   const [amount, setAmount] = useState<number | null>(null);
 
-  const [debitAccount, setDebitAccount] = useState<Account | null>(
-    routeDebitAccount ?? null,
-  );
-  const [creditAccount, setCreditAccount] = useState<Account | null>(
-    routeCreditAccount ?? null,
-  );
-  const [debitFund, setDebitFund] = useState<Fund | null>(
-    routeDebitFund ?? null,
-  );
-  const [creditFund, setCreditFund] = useState<Fund | null>(
-    routeCreditFund ?? null,
-  );
+  const [debitAccount, setDebitAccount] = useState<Account | null>(null);
+  const [creditAccount, setCreditAccount] = useState<Account | null>(null);
+  const [debitFund, setDebitFund] = useState<Fund | null>(null);
+  const [creditFund, setCreditFund] = useState<Fund | null>(null);
 
   const [incomeFundAssignments, setIncomeFundAssignments] = useState<
     FundAmount[]
@@ -307,11 +283,25 @@ const CreateTransactionForm = function ({
     }
   }
 
-  const [state, action, pending] = useActionState(createTransaction, {
-    redirectUrl: getRedirectUrl(
-      routeDebitAccount ?? routeCreditAccount ?? null,
-    ),
-  });
+  const [state, action, pending] = useActionState(createTransaction, {});
+
+  const reset = function (): void {
+    setAccountingPeriod(
+      accountingPeriods.length > 0
+        ? (accountingPeriods[accountingPeriods.length - 1] ?? null)
+        : null,
+    );
+    setDate(null);
+    setLocation("");
+    setDescription("");
+    setAmount(null);
+    setDebitAccount(null);
+    setCreditAccount(null);
+    setDebitFund(null);
+    setCreditFund(null);
+    setIncomeFundAssignments([]);
+    setSpendingFundAssignments([]);
+  };
 
   return (
     <Stack spacing={2}>
@@ -370,9 +360,9 @@ const CreateTransactionForm = function ({
           />
         )}
         <DialogActions>
-          <Link href={state.redirectUrl} tabIndex={-1}>
-            <Button variant="outlined">Cancel</Button>
-          </Link>
+          <Button variant="outlined" onClick={reset}>
+            Reset
+          </Button>
           <Button
             variant="contained"
             loading={pending}
@@ -382,7 +372,7 @@ const CreateTransactionForm = function ({
                 return;
               }
               startTransition(() => {
-                action(request);
+                action({ redirectUrl, request });
               });
             }}
           >

@@ -5,14 +5,12 @@ import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import nameof from "@/framework/data/nameof";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
  * Interface representing the state of creating a transaction.
  */
 interface ActionState {
-  readonly redirectUrl: string;
   readonly errorTitle?: string | null;
   readonly accountingPeriodErrors?: string | null;
   readonly dateErrors?: string | null;
@@ -26,11 +24,19 @@ interface ActionState {
 }
 
 /**
+ * Payload for the create transaction server action.
+ */
+interface ActionPayload {
+  readonly redirectUrl: string;
+  readonly request: CreateTransactionRequest;
+}
+
+/**
  * Server action that creates a transaction.
  */
 const createTransaction = async function (
-  { redirectUrl }: ActionState,
-  request: CreateTransactionRequest,
+  _: ActionState,
+  { redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
   const client = getApiClient();
   const { data, error } = await client.POST("/transactions", {
@@ -75,9 +81,7 @@ const createTransaction = async function (
           unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
         }
       }
-
       return {
-        redirectUrl,
         errorTitle: error.title ?? null,
         accountingPeriodErrors,
         dateErrors,
@@ -89,13 +93,11 @@ const createTransaction = async function (
     }
     throw new Error("An unexpected error occurred", { cause: error });
   }
-
   if (typeof data === "undefined") {
     throw new Error("Transaction creation did not return a transaction.");
   }
-
   revalidatePath(redirectUrl);
-  redirect(redirectUrl);
+  return {};
 };
 
 export default createTransaction;

@@ -5,15 +5,12 @@ import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import nameof from "@/framework/data/nameof";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
  * Interface representing the state of updating a transaction.
  */
 interface ActionState {
-  readonly transactionId: string;
-  readonly redirectUrl: string;
   readonly errorTitle?: string | null;
   readonly dateErrors?: string | null;
   readonly locationErrors?: string | null;
@@ -26,11 +23,20 @@ interface ActionState {
 }
 
 /**
+ * Payload for the update transaction server action.
+ */
+interface ActionPayload {
+  readonly transactionId: string;
+  readonly redirectUrl: string;
+  readonly request: UpdateTransactionRequest;
+}
+
+/**
  * Server action that updates a transaction.
  */
 const updateTransaction = async function (
-  { transactionId, redirectUrl }: ActionState,
-  request: UpdateTransactionRequest,
+  _: ActionState,
+  { transactionId, redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
   const client = getApiClient();
   const { error } = await client.POST("/transactions/{transactionId}", {
@@ -73,10 +79,7 @@ const updateTransaction = async function (
           unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
         }
       }
-
       return {
-        transactionId,
-        redirectUrl,
         errorTitle: error.title ?? null,
         dateErrors,
         locationErrors,
@@ -87,9 +90,8 @@ const updateTransaction = async function (
     }
     throw new Error("An unexpected error occurred", { cause: error });
   }
-
   revalidatePath(redirectUrl);
-  redirect(redirectUrl);
+  return {};
 };
 
 export default updateTransaction;

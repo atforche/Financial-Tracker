@@ -2,21 +2,17 @@
 
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState } from "react";
-import type { Account } from "@/accounts/types";
-import type { AccountingPeriod } from "@/accounting-periods/types";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
 import type { Transaction } from "@/transactions/types";
-import routes from "@/transactions/routes";
-import unpostTransaction from "@/transactions/unpostTransaction";
+import unpostTransaction from "@/transactions/workspace/unpostTransaction";
 
 /**
  * Props for the UnpostTransactionForm component.
  */
 interface UnpostTransactionFormProps {
   readonly transaction: Transaction;
-  readonly routeAccountingPeriod: AccountingPeriod | null;
-  readonly routeAccount: Account | null;
+  readonly redirectUrl: string;
 }
 
 /**
@@ -24,20 +20,9 @@ interface UnpostTransactionFormProps {
  */
 const UnpostTransactionForm = function ({
   transaction,
-  routeAccountingPeriod,
-  routeAccount,
+  redirectUrl,
 }: UnpostTransactionFormProps): JSX.Element {
-  const redirectUrl = routes.detail(
-    { id: transaction.id },
-    {
-      accountingPeriodId: routeAccountingPeriod?.id ?? null,
-      accountId: routeAccount?.id ?? null,
-    },
-  );
-  const [state, action, pending] = useActionState(unpostTransaction, {
-    transactionId: transaction.id,
-    redirectUrl,
-  });
+  const [state, action, pending] = useActionState(unpostTransaction, {});
 
   return (
     <Stack spacing={2}>
@@ -55,7 +40,7 @@ const UnpostTransactionForm = function ({
             loading={pending}
             onClick={() => {
               startTransition(() => {
-                action();
+                action({ transactionId: transaction.id, redirectUrl });
               });
             }}
           >

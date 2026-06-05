@@ -2,7 +2,6 @@ import { Button, Chip, Divider, Paper, Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
 import type { OverviewData } from "@/overview/types";
 import formatCurrency from "@/framework/formatCurrency";
-import transactionRoutes from "@/transactions/routes";
 
 /**
  * Props for the OverviewCurrentPeriodPanel component.
@@ -97,14 +96,6 @@ const OverviewCurrentPeriodPanel = function ({
               href={`${accountingPeriodBasePath}?display=transactions`}
             >
               Transactions
-            </Button>
-            <Button
-              variant="contained"
-              href={transactionRoutes.create({
-                accountingPeriodId: currentAccountingPeriod.id,
-              })}
-            >
-              Add transaction
             </Button>
           </Stack>
         </Stack>

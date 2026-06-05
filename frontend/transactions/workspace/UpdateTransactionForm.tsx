@@ -17,14 +17,12 @@ import {
 import dayjs, { type Dayjs } from "dayjs";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import CreateOrUpdateIncomeTransactionFrame from "@/transactions/CreateOrUpdateIncomeTransactionFrame";
-import CreateOrUpdateSpendingTransactionFrame from "@/transactions/CreateOrUpdateSpendingTransactionFrame";
-import CreateOrUpdateTransactionDetailsFrame from "@/transactions/CreateOrUpdateTransactionDetailsFrame";
-import CreateOrUpdateTransactionFromToFrame from "@/transactions/CreateOrUpdateTransactionFromToFrame";
+import CreateOrUpdateIncomeTransactionFrame from "@/transactions/workspace/CreateOrUpdateIncomeTransactionFrame";
+import CreateOrUpdateSpendingTransactionFrame from "@/transactions/workspace/CreateOrUpdateSpendingTransactionFrame";
+import CreateOrUpdateTransactionDetailsFrame from "@/transactions/workspace/CreateOrUpdateTransactionDetailsFrame";
+import CreateOrUpdateTransactionFromToFrame from "@/transactions/workspace/CreateOrUpdateTransactionFromToFrame";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import Link from "next/link";
-import routes from "@/transactions/routes";
-import updateTransaction from "@/transactions/updateTransaction";
+import updateTransaction from "@/transactions/workspace/updateTransaction";
 import { updateUnassignedFundAmount } from "@/funds/FundAssignmentEntryFrame";
 
 /**
@@ -38,29 +36,8 @@ interface UpdateTransactionFormProps {
   readonly transactionDebitFund: Fund | null;
   readonly transactionCreditFund: Fund | null;
   readonly funds: Fund[];
-  readonly routeAccountingPeriod?: AccountingPeriod | null;
-  readonly routeAccount?: Account | null;
-  readonly routeFund?: Fund | null;
+  readonly redirectUrl: string;
 }
-
-/**
- * Gets the URL to redirect the user to after successfully creating a transaction.
- */
-const getRedirectUrl = function (
-  transaction: Transaction,
-  accountingPeriod: AccountingPeriod | null,
-  account: Account | null,
-  fund: Fund | null,
-): string {
-  return routes.detail(
-    { id: transaction.id },
-    {
-      accountingPeriodId: accountingPeriod?.id ?? null,
-      accountId: account?.id ?? null,
-      fundId: fund?.id ?? null,
-    },
-  );
-};
 
 /**
  * Component that displays the form for updating a transaction.
@@ -73,9 +50,7 @@ const UpdateTransactionForm = function ({
   transactionDebitFund,
   transactionCreditFund,
   funds,
-  routeAccountingPeriod,
-  routeAccount,
-  routeFund,
+  redirectUrl,
 }: UpdateTransactionFormProps): JSX.Element {
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
@@ -196,15 +171,35 @@ const UpdateTransactionForm = function ({
     }
   }
 
-  const [state, action, pending] = useActionState(updateTransaction, {
-    transactionId: transaction.id,
-    redirectUrl: getRedirectUrl(
-      transaction,
-      routeAccountingPeriod ?? null,
-      routeAccount ?? null,
-      routeFund ?? null,
-    ),
-  });
+  const [state, action, pending] = useActionState(updateTransaction, {});
+
+  const reset = function (): void {
+    setDate(dayjs(transaction.date));
+    setLocation(transaction.location);
+    setDescription(transaction.description);
+    setAmount(transaction.amount);
+    if (transaction.transactionType === TransactionType.Income) {
+      setIncomeFundAssignments(
+        "fundAssignments" in transaction
+          ? updateUnassignedFundAmount(
+              unassignedFund,
+              transaction.amount,
+              transaction.fundAssignments,
+            )
+          : [],
+      );
+    } else if (transaction.transactionType === TransactionType.Spending) {
+      setSpendingFundAssignments(
+        "fundAssignments" in transaction
+          ? updateUnassignedFundAmount(
+              unassignedFund,
+              transaction.amount,
+              transaction.fundAssignments,
+            )
+          : [],
+      );
+    }
+  };
 
   return (
     <Stack spacing={2}>
@@ -249,9 +244,9 @@ const UpdateTransactionForm = function ({
           />
         )}
         <DialogActions>
-          <Link href={state.redirectUrl} tabIndex={-1}>
-            <Button variant="outlined">Cancel</Button>
-          </Link>
+          <Button variant="outlined" onClick={reset}>
+            Reset
+          </Button>
           <Button
             variant="contained"
             loading={pending}
@@ -261,7 +256,7 @@ const UpdateTransactionForm = function ({
                 return;
               }
               startTransition(() => {
-                action(request);
+                action({ transactionId: transaction.id, redirectUrl, request });
               });
             }}
           >

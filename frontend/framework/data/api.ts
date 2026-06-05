@@ -15,10 +15,12 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description Accounting Period ID to filter the Transactions by */
-                    AccountingPeriodId?: string;
-                    /** @description Search string to apply to the results */
-                    Search?: string;
+                    /** @description Accounting Period IDs to filter the Transactions by */
+                    AccountingPeriodIds?: string[];
+                    /** @description Account IDs to filter the Transactions by */
+                    AccountIds?: string[];
+                    /** @description Fund IDs to filter the Transactions by */
+                    FundIds?: string[];
                     /** @description Sort to apply to the results */
                     Sort?: components["schemas"]["TransactionSortOrderModel"];
                     /** @description Maximum number of results to return */

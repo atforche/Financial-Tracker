@@ -1,9 +1,16 @@
-using System.Globalization;
 using Domain.AccountingPeriods;
+using Domain.Accounts;
+using Domain.Funds;
 using Domain.Transactions;
+using Domain.Transactions.Accounts;
+using Domain.Transactions.Funds;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 using Models;
 using Models.Transactions;
 using Rest.AccountingPeriods;
+using Rest.Accounts;
+using Rest.Funds;
 
 namespace Rest.Transactions;
 
@@ -13,6 +20,8 @@ namespace Rest.Transactions;
 public class TransactionGetter(
     ITransactionRepository transactionRepository,
     AccountingPeriodConverter accountingPeriodConverter,
+    AccountConverter accountConverter,
+    FundConverter fundConverter,
     TransactionConverter transactionConverter)
 {
     /// <summary>
@@ -25,41 +34,86 @@ public class TransactionGetter(
     {
         errors = [];
 
-        AccountingPeriodId? accountingPeriodId = null;
-        if (request.AccountingPeriodId is Guid requestAccountingPeriodId)
+        List<AccountingPeriodId> accountingPeriodIds = [];
+        foreach (Guid accountingPeriodId in request.AccountingPeriodIds ?? [])
         {
-            if (!accountingPeriodConverter.TryToDomain(requestAccountingPeriodId, out AccountingPeriod? accountingPeriod))
+            if (!accountingPeriodConverter.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
             {
                 errors.Add(
-                    nameof(request.AccountingPeriodId),
-                    [$"Accounting Period with ID {requestAccountingPeriodId} was not found."]);
-                results = new CollectionModel<TransactionModel>
-                {
-                    Items = [],
-                    TotalCount = 0,
-                };
-                return false;
+                    nameof(request.AccountingPeriodIds),
+                    [$"Accounting Period with ID {accountingPeriodId} was not found."]);
             }
-
-            accountingPeriodId = accountingPeriod.Id;
+            else
+            {
+                accountingPeriodIds.Add(accountingPeriod.Id);
+            }
+        }
+        List<AccountId> accountIds = [];
+        foreach (Guid accountId in request.AccountIds ?? [])
+        {
+            if (!accountConverter.TryToDomain(accountId, out Account? account))
+            {
+                errors.Add(
+                    nameof(request.AccountIds),
+                    [$"Account with ID {accountId} was not found."]);
+            }
+            else
+            {
+                accountIds.Add(account.Id);
+            }
+        }
+        List<FundId> fundIds = [];
+        foreach (Guid fundId in request.FundIds ?? [])
+        {
+            if (!fundConverter.TryToDomain(fundId, out Fund? fund))
+            {
+                errors.Add(
+                    nameof(request.FundIds),
+                    [$"Fund with ID {fundId} was not found."]);
+            }
+            else
+            {
+                fundIds.Add(fund.Id);
+            }
         }
 
-        var filteredResults = (accountingPeriodId is null
-                ? transactionRepository.GetAll()
-                : transactionRepository.GetAllByAccountingPeriod(accountingPeriodId))
-            .Select(transactionConverter.ToModel)
-            .ToList();
-
-        if (request.Search != null)
+        List<Transaction> transactions = [];
+        if (accountingPeriodIds.Count == 0)
         {
-            filteredResults = filteredResults.Where(transaction =>
-                    transaction.Description.Contains(request.Search, StringComparison.OrdinalIgnoreCase) ||
-                    transaction.Amount.ToString(CultureInfo.InvariantCulture).Contains(request.Search, StringComparison.OrdinalIgnoreCase) ||
-                    transaction.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture).Contains(request.Search, StringComparison.OrdinalIgnoreCase) ||
-                    GetAccountNamesForTransaction(transaction).Any(accountName => accountName.Contains(request.Search, StringComparison.OrdinalIgnoreCase)))
+            transactions = transactionRepository.GetAll().ToList();
+        }
+        else
+        {
+            foreach (AccountingPeriodId accountingPeriodId in accountingPeriodIds)
+            {
+                transactions.AddRange(transactionRepository.GetAllByAccountingPeriod(accountingPeriodId));
+            }
+        }
+        if (accountIds.Count > 0)
+        {
+            transactions = transactions.Where(transaction =>
+                (transaction is SpendingTransaction spendingTransaction &&
+                    (accountIds.Contains(spendingTransaction.DebitAccountId) ||
+                    (spendingTransaction.CreditAccountId != null && accountIds.Contains(spendingTransaction.CreditAccountId)))) ||
+                (transaction is IncomeTransaction incomeTransaction &&
+                    ((incomeTransaction.DebitAccountId != null && accountIds.Contains(incomeTransaction.DebitAccountId)) ||
+                    accountIds.Contains(incomeTransaction.CreditAccountId))) ||
+                (transaction is AccountTransaction accountTransaction &&
+                    ((accountTransaction.DebitAccountId != null && accountIds.Contains(accountTransaction.DebitAccountId)) ||
+                    (accountTransaction.CreditAccountId != null && accountIds.Contains(accountTransaction.CreditAccountId)))))
                 .ToList();
         }
-
+        if (fundIds.Count > 0)
+        {
+            transactions = transactions.Where(transaction =>
+                (transaction is FundTransaction fundTransaction &&
+                    ((fundTransaction.DebitFundId != null && fundIds.Contains(fundTransaction.DebitFundId)) ||
+                    (fundTransaction.CreditFundId != null && fundIds.Contains(fundTransaction.CreditFundId)))) ||
+                (transaction is SpendingTransaction spendingTransaction && spendingTransaction.FundAssignments.Any(fundAssignment => fundIds.Contains(fundAssignment.FundId))) ||
+                (transaction is IncomeTransaction incomeTransaction && incomeTransaction.FundAssignments.Any(fundAssignment => fundIds.Contains(fundAssignment.FundId))))
+                .ToList();
+        }
+        var filteredResults = transactions.Select(transactionConverter.ToModel).ToList();
         if (request.Sort is null or TransactionSortOrderModel.Date)
         {
             filteredResults = filteredResults.OrderBy(transaction => transaction.Date).ThenBy(transaction => transaction.Sequence).ToList();
@@ -126,35 +180,4 @@ public class TransactionGetter(
         FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,
         _ => null,
     };
-
-    private static IEnumerable<string> GetAccountNamesForTransaction(TransactionModel transaction)
-    {
-        if (transaction is SpendingTransactionModel spendingTransaction)
-        {
-            yield return spendingTransaction.DebitAccount.AccountName;
-            if (spendingTransaction.CreditAccount != null)
-            {
-                yield return spendingTransaction.CreditAccount.AccountName;
-            }
-        }
-        else if (transaction is IncomeTransactionModel incomeTransaction)
-        {
-            if (incomeTransaction.DebitAccount != null)
-            {
-                yield return incomeTransaction.DebitAccount.AccountName;
-            }
-            yield return incomeTransaction.CreditAccount.AccountName;
-        }
-        else if (transaction is AccountTransactionModel accountTransaction)
-        {
-            if (accountTransaction.DebitAccount != null)
-            {
-                yield return accountTransaction.DebitAccount.AccountName;
-            }
-            if (accountTransaction.CreditAccount != null)
-            {
-                yield return accountTransaction.CreditAccount.AccountName;
-            }
-        }
-    }
 }

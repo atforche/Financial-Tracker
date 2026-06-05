@@ -2,7 +2,6 @@ import { Button, Paper, Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
 import type { OverviewData } from "@/overview/types";
 import accountRoutes from "@/accounts/routes";
-import transactionRoutes from "@/transactions/routes";
 
 /**
  * Props for the OverviewHero component.
@@ -50,22 +49,12 @@ const OverviewHero = function ({ data }: OverviewHeroProps): JSX.Element {
         </Stack>
         <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
           {hasOpenAccountingPeriod ? (
-            <>
-              <Button
-                variant="contained"
-                href={transactionRoutes.create({
-                  accountingPeriodId: currentAccountingPeriod.id,
-                })}
-              >
-                Create transaction
-              </Button>
-              <Button
-                variant="outlined"
-                href={accountRoutes.workspace({ action: "create" })}
-              >
-                Create account
-              </Button>
-            </>
+            <Button
+              variant="outlined"
+              href={accountRoutes.workspace({ action: "create" })}
+            >
+              Create account
+            </Button>
           ) : (
             <Button variant="outlined" href={accountRoutes.dashboard({})}>
               Review accounts

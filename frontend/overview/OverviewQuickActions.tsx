@@ -2,7 +2,6 @@ import { Button, Paper, Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
 import type { OverviewData } from "@/overview/types";
 import accountRoutes from "@/accounts/routes";
-import transactionRoutes from "@/transactions/routes";
 
 /**
  * Represents a quick action card on the overview page.
@@ -41,15 +40,6 @@ const OverviewQuickActions = function ({
           },
         ]
       : [
-          {
-            title: "Record activity",
-            description:
-              "Start a new transaction inside the current accounting period.",
-            href: transactionRoutes.create({
-              accountingPeriodId: currentAccountingPeriod.id,
-            }),
-            buttonLabel: "Create transaction",
-          },
           {
             title: "Add a new account",
             description:

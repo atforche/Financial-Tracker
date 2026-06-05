@@ -3,26 +3,23 @@
 import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
 import {
+  type PostTransactionRequest,
   type Transaction,
   getPostableTransactionAccounts,
 } from "@/transactions/types";
 import dayjs, { type Dayjs } from "dayjs";
-import type { Account } from "@/accounts/types";
-import type { AccountingPeriod } from "@/accounting-periods/types";
 import { ComboBoxEntryField } from "@/framework/forms/ComboBoxEntryField";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Link from "next/link";
-import postTransaction from "@/transactions/postTransaction";
-import routes from "@/transactions/routes";
+import postTransaction from "@/transactions/workspace/postTransaction";
 
 /**
  * Props for the PostTransactionForm component.
  */
 interface PostTransactionFormProps {
   readonly transaction: Transaction;
-  readonly routeAccountingPeriod: AccountingPeriod | null;
-  readonly routeAccount: Account | null;
+  readonly redirectUrl: string;
 }
 
 /**
@@ -30,29 +27,22 @@ interface PostTransactionFormProps {
  */
 const PostTransactionForm = function ({
   transaction,
-  routeAccountingPeriod,
-  routeAccount,
+  redirectUrl,
 }: PostTransactionFormProps): JSX.Element {
   const postableAccounts = getPostableTransactionAccounts(transaction);
   const [selectedAccount, setSelectedAccount] = useState(
-    postableAccounts.find(
-      (account) => account.accountId === (routeAccount?.id ?? ""),
-    ) ??
-      postableAccounts[0] ??
-      null,
+    postableAccounts[0] ?? null,
   );
   const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
-  const redirectUrl = routes.detail(
-    { id: transaction.id },
-    {
-      accountingPeriodId: routeAccountingPeriod?.id ?? null,
-      accountId: routeAccount?.id ?? null,
-    },
-  );
-  const [state, action, pending] = useActionState(postTransaction, {
-    transactionId: transaction.id,
-    redirectUrl,
-  });
+  const [state, action, pending] = useActionState(postTransaction, {});
+
+  let request: PostTransactionRequest | null = null;
+  if (selectedAccount !== null && date !== null) {
+    request = {
+      accountId: selectedAccount.accountId,
+      date: date.format("YYYY-MM-DD"),
+    };
+  }
 
   return (
     <Stack spacing={2}>
@@ -103,14 +93,14 @@ const PostTransactionForm = function ({
               date === null
             }
             onClick={() => {
-              if (selectedAccount === null || date === null) {
+              if (request === null) {
                 return;
               }
-
               startTransition(() => {
                 action({
-                  accountId: selectedAccount.accountId,
-                  date: date.format("YYYY-MM-DD"),
+                  transactionId: transaction.id,
+                  redirectUrl,
+                  request,
                 });
               });
             }}

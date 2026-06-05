@@ -103,9 +103,9 @@ const links: NavigationLink[] = [
   },
   {
     name: "Transactions",
-    href: transactionRoutes.index({}),
+    href: transactionRoutes.workspace({}),
     icon: <ReceiptLong />,
-  },
+  }
 ];
 
 /**

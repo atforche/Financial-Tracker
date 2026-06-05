@@ -1,4 +1,4 @@
-import "@/transactions/CreateOrUpdateTransactionFromToFrame.css";
+import "@/transactions/workspace/CreateOrUpdateTransactionFromToFrame.css";
 import type { Account, AccountIdentifier } from "@/accounts/types";
 import type { Fund, FundIdentifier } from "@/funds/types";
 import { type JSX, useState } from "react";

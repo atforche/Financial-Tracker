@@ -6,14 +6,19 @@ namespace Models.Transactions;
 public class TransactionQueryParameterModel
 {
     /// <summary>
-    /// Accounting Period ID to filter the Transactions by
+    /// Accounting Period IDs to filter the Transactions by
     /// </summary>
-    public Guid? AccountingPeriodId { get; init; }
+    public IReadOnlyCollection<Guid>? AccountingPeriodIds { get; init; }
 
     /// <summary>
-    /// Search string to apply to the results
+    /// Account IDs to filter the Transactions by
     /// </summary>
-    public string? Search { get; init; }
+    public IReadOnlyCollection<Guid>? AccountIds { get; init; }
+
+    /// <summary>
+    /// Fund IDs to filter the Transactions by
+    /// </summary>
+    public IReadOnlyCollection<Guid>? FundIds { get; init; }
 
     /// <summary>
     /// Sort to apply to the results

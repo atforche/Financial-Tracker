@@ -5,15 +5,12 @@ import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import nameof from "@/framework/data/nameof";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
  * Interface representing the state of posting a transaction.
  */
 interface ActionState {
-  readonly transactionId: string;
-  readonly redirectUrl: string;
   readonly errorTitle?: string | null;
   readonly accountErrors?: string | null;
   readonly dateErrors?: string | null;
@@ -21,11 +18,20 @@ interface ActionState {
 }
 
 /**
+ * Payload for the post transaction server action.
+ */
+interface ActionPayload {
+  readonly transactionId: string;
+  readonly redirectUrl: string;
+  readonly request: PostTransactionRequest;
+}
+
+/**
  * Server action that posts a transaction.
  */
 const postTransaction = async function (
-  { transactionId, redirectUrl }: ActionState,
-  request: PostTransactionRequest,
+  _: ActionState,
+  { transactionId, redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
   const client = getApiClient();
   const { error } = await client.POST("/transactions/{transactionId}/post", {
@@ -56,10 +62,7 @@ const postTransaction = async function (
           unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
         }
       }
-
       return {
-        transactionId,
-        redirectUrl,
         errorTitle: error.title ?? null,
         accountErrors,
         dateErrors,
@@ -70,7 +73,7 @@ const postTransaction = async function (
   }
 
   revalidatePath(redirectUrl);
-  redirect(redirectUrl);
+  return {};
 };
 
 export default postTransaction;

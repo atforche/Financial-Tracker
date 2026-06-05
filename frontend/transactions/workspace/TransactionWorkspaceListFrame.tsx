@@ -1,30 +1,22 @@
 "use client";
 
-import { AddCircleOutline, ArrowForwardIos } from "@mui/icons-material";
+import { Button, Checkbox } from "@mui/material";
 import { type Transaction, TransactionSortOrder } from "@/transactions/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@mui/material";
-import ColumnButton from "@/framework/listframe/ColumnButton";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
-import IconButton from "@/framework/listframe/IconButton";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
-import type { TransactionsViewSearchParams } from "@/transactions/TransactionsView";
 import formatCurrency from "@/framework/formatCurrency";
-import nameof from "@/framework/data/nameof";
-import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
- * Props for the TransactionListFrame component.
+ * Props for the TransactionWorkspaceListFrame component.
  */
-interface TransactionListFrameProps {
+interface TransactionWorkspaceListFrameProps {
   readonly data: Transaction[] | null;
   readonly totalCount: number | null;
-  readonly createActionHref: string;
-  readonly createActionLabel: string;
-  readonly selectedAccountingPeriodName: string | null;
+  readonly selectedTransactionId: string | null;
 }
 
 const getDebitFrom = function (transaction: Transaction): string {
@@ -50,30 +42,52 @@ const getCreditTo = function (transaction: Transaction): string {
 /**
  * Component that displays the top-level transaction ledger.
  */
-const TransactionListFrame = function ({
+const TransactionWorkspaceListFrame = function ({
   data,
   totalCount,
-  createActionHref,
-  createActionLabel,
-  selectedAccountingPeriodName,
-}: TransactionListFrameProps): JSX.Element {
+  selectedTransactionId,
+}: TransactionWorkspaceListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
-  const searchParamName = nameof<TransactionsViewSearchParams>("search");
-  const sortParamName = nameof<TransactionsViewSearchParams>("sort");
-  const pageParamName = nameof<TransactionsViewSearchParams>("page");
+  const accountingPeriodIdsParamName = "accountingPeriodIds";
+  const accountIdsParamName = "accountIds";
+  const fundIdsParamName = "fundIds";
+  const selectedTransactionIdParamName = "selectedTransactionId";
+  const sortParamName = "sort";
+  const pageParamName = "page";
+
+  const replaceSearchParams = function (
+    update: (params: URLSearchParams) => void,
+  ): void {
+    const params = new URLSearchParams(searchParams.toString());
+    update(params);
+    router.replace(`${pathname}?${params.toString()}`);
+  };
 
   const setSort = function (sort: TransactionSortOrder | null): void {
-    const params = new URLSearchParams(searchParams.toString());
-    if (sort === null) {
-      params.delete(sortParamName);
-    } else {
-      params.set(sortParamName, sort);
-    }
-    params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`);
+    replaceSearchParams((params) => {
+      if (sort === null) {
+        params.delete(sortParamName);
+      } else {
+        params.set(sortParamName, sort);
+      }
+      params.delete(pageParamName);
+    });
+  };
+
+  const toggleSelection = function (transactionId: string): void {
+    replaceSearchParams((params) => {
+      const currentlySelectedTransactionId = params.get(
+        selectedTransactionIdParamName,
+      );
+      if (currentlySelectedTransactionId === transactionId) {
+        params.delete(selectedTransactionIdParamName);
+        return;
+      }
+      params.set(selectedTransactionIdParamName, transactionId);
+    });
   };
 
   const currentSort = tryParseEnum(
@@ -82,6 +96,27 @@ const TransactionListFrame = function ({
   );
 
   const columns: ColumnDefinition<Transaction>[] = [
+    {
+      name: "selected",
+      headerContent: "",
+      getBodyContent: (transaction) => (
+        <Checkbox
+          checked={selectedTransactionId === transaction.id}
+          onClick={(event) => {
+            event.stopPropagation();
+            toggleSelection(transaction.id);
+          }}
+          slotProps={{
+            input: {
+              "aria-label": `Select ${transaction.id}`,
+            },
+          }}
+        />
+      ),
+      alignment: "center",
+      minWidth: 0,
+      maxWidth: 0,
+    },
     {
       name: "date",
       headerContent: "Date",
@@ -196,35 +231,7 @@ const TransactionListFrame = function ({
       alignment: "right",
       minWidth: 150,
     },
-    {
-      name: "actions",
-      headerContent: (
-        <IconButton
-          label={createActionLabel}
-          icon={<AddCircleOutline />}
-          onClick={() => {
-            router.push(createActionHref);
-          }}
-        />
-      ),
-      getBodyContent: (transaction: Transaction) => (
-        <ColumnButton
-          label="View"
-          icon={<ArrowForwardIos />}
-          onClick={() => {
-            router.push(routes.detail({ id: transaction.id }, {}));
-          }}
-        />
-      ),
-      alignment: "right",
-      minWidth: 90,
-    },
   ];
-
-  const initialEmptyDescription =
-    selectedAccountingPeriodName !== null
-      ? `No transactions have been recorded for ${selectedAccountingPeriodName} yet.`
-      : "No transactions have been recorded yet.";
 
   return (
     <ListFrame<Transaction>
@@ -232,21 +239,12 @@ const TransactionListFrame = function ({
       getId={(transaction) => transaction.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      searchParamName={searchParamName}
+      searchParamName=""
       pageParamName={pageParamName}
       initialEmptyState={{
         title: "No transactions found",
-        description: initialEmptyDescription,
-        action: (
-          <Button
-            variant="contained"
-            onClick={() => {
-              router.push(createActionHref);
-            }}
-          >
-            {createActionLabel}
-          </Button>
-        ),
+        description: "No transactions have been recorded yet.",
+        action: null,
       }}
       filteredEmptyState={{
         title: "No transactions match this search",
@@ -257,7 +255,9 @@ const TransactionListFrame = function ({
             variant="contained"
             onClick={() => {
               const params = new URLSearchParams(searchParams.toString());
-              params.delete(searchParamName);
+              params.delete(accountingPeriodIdsParamName);
+              params.delete(accountIdsParamName);
+              params.delete(fundIdsParamName);
               params.delete(pageParamName);
               router.replace(`${pathname}?${params.toString()}`);
             }}
@@ -270,4 +270,4 @@ const TransactionListFrame = function ({
   );
 };
 
-export default TransactionListFrame;
+export default TransactionWorkspaceListFrame;
