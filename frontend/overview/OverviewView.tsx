@@ -1,18 +1,29 @@
+import { Box, Paper, Stack, Typography } from "@mui/material";
+import AccountOverview from "@/overview/AccountOverview";
+import AccountingPeriodOverview from "@/overview/AccountingPeriodOverview";
+import FundOverview from "@/overview/FundOverview";
+import GoalOverview from "@/overview/GoalOverview";
 import type { JSX } from "react";
-import OverviewCompositionPanel from "@/overview/OverviewCompositionPanel";
-import OverviewCurrentPeriodPanel from "@/overview/OverviewCurrentPeriodPanel";
 import type { OverviewData } from "@/overview/types";
-import OverviewHero from "@/overview/OverviewHero";
-import OverviewMetrics from "@/overview/OverviewMetrics";
-import OverviewQuickActions from "@/overview/OverviewQuickActions";
-import { Stack } from "@mui/material";
+import TransactionOverview from "@/overview/TransactionOverview";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
  * Loads all data required by the overview page.
  */
-const getOverviewData = async function (): Promise<OverviewData> {
+const getOverviewData = async function (
+  searchParams: Promise<{ page?: string | string[] }>,
+): Promise<OverviewData> {
   const apiClient = getApiClient();
+  const resolvedSearchParams = await searchParams;
+  const requestedPage = Number.parseInt(
+    Array.isArray(resolvedSearchParams.page)
+      ? (resolvedSearchParams.page[0] ?? "1")
+      : (resolvedSearchParams.page ?? "1"),
+    10,
+  );
+  const currentPage =
+    Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const accountSummaryPromise = apiClient.GET("/accounts/summary");
   const fundSummaryPromise = apiClient.GET("/funds/summary");
   const openAccountingPeriodsPromise = apiClient.GET(
@@ -38,6 +49,16 @@ const getOverviewData = async function (): Promise<OverviewData> {
       },
     },
   });
+  const transactionsPromise = apiClient.GET("/transactions/unposted", {
+    params: {
+      query: {
+        Search: "",
+        Sort: null,
+        Limit: 10,
+        Offset: (currentPage - 1) * 10,
+      },
+    },
+  });
   const fundsPromise = apiClient.GET("/funds", {
     params: {
       query: {
@@ -56,6 +77,7 @@ const getOverviewData = async function (): Promise<OverviewData> {
     { data: accountingPeriods },
     { data: accounts },
     { data: funds },
+    { data: transactions },
   ] = await Promise.all([
     accountSummaryPromise,
     fundSummaryPromise,
@@ -63,6 +85,7 @@ const getOverviewData = async function (): Promise<OverviewData> {
     accountingPeriodsPromise,
     accountsPromise,
     fundsPromise,
+    transactionsPromise,
   ]);
 
   if (
@@ -71,10 +94,13 @@ const getOverviewData = async function (): Promise<OverviewData> {
     typeof openAccountingPeriods === "undefined" ||
     typeof accountingPeriods === "undefined" ||
     typeof accounts === "undefined" ||
-    typeof funds === "undefined"
+    typeof funds === "undefined" ||
+    typeof transactions === "undefined"
   ) {
     throw new Error("Failed to fetch overview data");
   }
+
+  const unpostedTransactions = transactions.items;
 
   return {
     accountSummary,
@@ -84,33 +110,69 @@ const getOverviewData = async function (): Promise<OverviewData> {
     totalAccountingPeriods: accountingPeriods.totalCount,
     totalAccounts: accounts.totalCount,
     totalFunds: funds.totalCount,
+    unpostedTransactions,
+    unpostedTransactionTotalCount: transactions.totalCount,
   };
 };
+
+interface OverviewViewProps {
+  readonly searchParams: Promise<{ page?: string | string[] }>;
+}
 
 /**
  * Component that displays the Overview view.
  */
-const OverviewView = async function (): Promise<JSX.Element> {
-  const data = await getOverviewData();
+const OverviewView = async function ({
+  searchParams,
+}: OverviewViewProps): Promise<JSX.Element> {
+  const data = await getOverviewData(searchParams);
 
   return (
-    <Stack spacing={3} sx={{ maxWidth: 1440 }}>
-      <OverviewHero data={data} />
-      <OverviewMetrics data={data} />
-      <Stack
+    <Stack spacing={3} sx={{ width: "100%" }}>
+      <Paper
+        sx={{
+          border: "1px solid",
+          borderColor: "divider",
+          p: { xs: 3, md: 4 },
+          maxWidth: 1440,
+        }}
+      >
+        <Stack spacing={1.5}>
+          <Typography variant="overline" color="text.secondary">
+            Financial Tracker
+          </Typography>
+          <Typography variant="h3">Overview</Typography>
+        </Stack>
+      </Paper>
+
+      <Box
         sx={{
           display: "grid",
           gap: 3,
           gridTemplateColumns: {
             xs: "1fr",
-            xl: "minmax(0, 1.05fr) minmax(0, 0.95fr)",
+            lg: "repeat(1, minmax(0, 1fr))",
           },
         }}
       >
-        <OverviewCurrentPeriodPanel data={data} />
-        <OverviewCompositionPanel data={data} />
-      </Stack>
-      <OverviewQuickActions data={data} />
+        <AccountingPeriodOverview />
+        <Box
+          sx={{
+            display: "grid",
+            gap: 3,
+            gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
+          }}
+        >
+          <AccountOverview data={data} />
+          <FundOverview data={data} />
+        </Box>
+        <GoalOverview />
+      </Box>
+
+      <TransactionOverview
+        transactions={data.unpostedTransactions}
+        totalCount={data.unpostedTransactionTotalCount}
+      />
     </Stack>
   );
 };

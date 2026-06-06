@@ -118,4 +118,22 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
             (transaction is FundTransaction fundTransaction && (fundTransaction.DebitFundId == fundId || fundTransaction.CreditFundId == fundId)))
             .ToList();
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<Transaction> GetUnposted() =>
+        databaseContext.Transactions
+            .OfType<SpendingTransaction>()
+            .Where(transaction => transaction.DebitPostedDate == null || transaction.CreditPostedDate == null)
+            .Cast<Transaction>().ToList()
+            .Concat(
+                databaseContext.Transactions
+                    .OfType<IncomeTransaction>()
+                    .Where(transaction => transaction.DebitPostedDate == null || transaction.CreditPostedDate == null)
+                    .Cast<Transaction>()).ToList()
+            .Concat(
+                databaseContext.Transactions
+                    .OfType<AccountTransaction>()
+                    .Where(transaction => transaction.DebitPostedDate == null || transaction.CreditPostedDate == null)
+                    .Cast<Transaction>()).ToList()
+            .ToList();
 }

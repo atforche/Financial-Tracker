@@ -105,6 +105,68 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/transactions/unposted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves unposted transactions that still affect account balances. */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Accounting Period IDs to filter the Transactions by */
+                    AccountingPeriodIds?: string[];
+                    /** @description Account IDs to filter the Transactions by */
+                    AccountIds?: string[];
+                    /** @description Fund IDs to filter the Transactions by */
+                    FundIds?: string[];
+                    /** @description Sort to apply to the results */
+                    Sort?: components["schemas"]["TransactionSortOrderModel"];
+                    /** @description Maximum number of results to return */
+                    Limit?: number;
+                    /** @description Number of results to skip */
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfTransactionModel"];
+                        "application/json": components["schemas"]["CollectionModelOfTransactionModel"];
+                        "text/json": components["schemas"]["CollectionModelOfTransactionModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/transactions/dashboard": {
         parameters: {
             query?: never;

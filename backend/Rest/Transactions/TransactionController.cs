@@ -1,4 +1,5 @@
 using Data;
+using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Exceptions;
@@ -22,6 +23,7 @@ public sealed class TransactionController(
     AccountingPeriodConverter accountingPeriodConverter,
     TransactionDashboardGetter transactionDashboardGetter,
     TransactionGetter transactionGetter,
+    TransactionRepository transactionRepository,
     TransactionConverter transactionConverter,
     TransactionDispatcherService transactionDispatcherService,
     TransactionRequestConverter transactionRequestConverter) : ControllerBase
@@ -43,8 +45,75 @@ public sealed class TransactionController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-
         return Ok(transactions);
+    }
+
+    /// <summary>
+    /// Retrieves unposted transactions that still affect account balances.
+    /// </summary>
+    [HttpGet("unposted")]
+    [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetUnposted([FromQuery] TransactionQueryParameterModel queryParameters)
+    {
+        var transactions = transactionRepository.GetUnposted()
+            .Select(transactionConverter.ToModel)
+            .ToList();
+
+        if (queryParameters.Sort is null or TransactionSortOrderModel.Date)
+        {
+            transactions = transactions.OrderBy(transaction => transaction.Date).ThenBy(transaction => transaction.Sequence).ToList();
+        }
+        else if (queryParameters.Sort == TransactionSortOrderModel.DateDescending)
+        {
+            transactions = transactions.OrderByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
+        }
+        else if (queryParameters.Sort == TransactionSortOrderModel.AccountingPeriod)
+        {
+            transactions = transactions.OrderBy(transaction => transaction.AccountingPeriodName).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
+        }
+        else if (queryParameters.Sort == TransactionSortOrderModel.AccountingPeriodDescending)
+        {
+            transactions = transactions.OrderByDescending(transaction => transaction.AccountingPeriodName).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
+        }
+        else if (queryParameters.Sort == TransactionSortOrderModel.Location)
+        {
+            transactions = transactions.OrderBy(transaction => transaction.Location).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
+        }
+        else if (queryParameters.Sort == TransactionSortOrderModel.LocationDescending)
+        {
+            transactions = transactions.OrderByDescending(transaction => transaction.Location).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
+        }
+        else if (queryParameters.Sort == TransactionSortOrderModel.DebitFrom)
+        {
+            transactions = transactions.OrderBy(GetDebitFrom).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
+        }
+        else if (queryParameters.Sort == TransactionSortOrderModel.DebitFromDescending)
+        {
+            transactions = transactions.OrderByDescending(GetDebitFrom).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
+        }
+        else if (queryParameters.Sort == TransactionSortOrderModel.CreditTo)
+        {
+            transactions = transactions.OrderBy(GetCreditTo).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
+        }
+        else if (queryParameters.Sort == TransactionSortOrderModel.CreditToDescending)
+        {
+            transactions = transactions.OrderByDescending(GetCreditTo).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
+        }
+        else if (queryParameters.Sort == TransactionSortOrderModel.Amount)
+        {
+            transactions = transactions.OrderBy(transaction => transaction.Amount).ThenBy(transaction => transaction.Date).ThenBy(transaction => transaction.Sequence).ToList();
+        }
+        else if (queryParameters.Sort == TransactionSortOrderModel.AmountDescending)
+        {
+            transactions = transactions.OrderByDescending(transaction => transaction.Amount).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
+        }
+
+        return Ok(new CollectionModel<TransactionModel>
+        {
+            Items = transactions.Skip(queryParameters.Offset ?? 0).Take(queryParameters.Limit ?? int.MaxValue).ToList(),
+            TotalCount = transactions.Count,
+        });
     }
 
     /// <summary>
@@ -302,6 +371,24 @@ public sealed class TransactionController(
         await unitOfWork.SaveChangesAsync();
         return NoContent();
     }
+
+    private static string? GetDebitFrom(TransactionModel transaction) => transaction switch
+    {
+        SpendingTransactionModel spendingTransaction => spendingTransaction.DebitAccount.AccountName,
+        IncomeTransactionModel incomeTransaction => incomeTransaction.DebitAccount?.AccountName,
+        AccountTransactionModel accountTransaction => accountTransaction.DebitAccount?.AccountName,
+        FundTransactionModel fundTransaction => fundTransaction.DebitFund?.FundName,
+        _ => null,
+    };
+
+    private static string? GetCreditTo(TransactionModel transaction) => transaction switch
+    {
+        SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName,
+        IncomeTransactionModel incomeTransaction => incomeTransaction.CreditAccount.AccountName,
+        AccountTransactionModel accountTransaction => accountTransaction.CreditAccount?.AccountName,
+        FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,
+        _ => null,
+    };
 
     private static Dictionary<string, string[]> GroupCreateExceptions(CreateTransactionModel model, IEnumerable<Exception> exceptions) =>
         GroupExceptions(exceptions, exception => exception switch

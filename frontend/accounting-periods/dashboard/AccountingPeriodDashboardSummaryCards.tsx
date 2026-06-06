@@ -50,6 +50,14 @@ const AccountingPeriodDashboardSummaryCards = function ({
   dashboard,
 }: AccountingPeriodDashboardSummaryCardsProps): JSX.Element {
   const snapshot = getDashboardSnapshot(dashboard);
+  const netChange = snapshot.totalEndingBalance - snapshot.totalStartingBalance;
+  const percentChange =
+    snapshot.totalStartingBalance === 0
+      ? 0
+      : (netChange / Math.abs(snapshot.totalStartingBalance)) * 100;
+  const isPositive = netChange >= 0;
+  const valueColor = isPositive ? "success.main" : "error.main";
+
   return (
     <Box
       sx={{
@@ -57,7 +65,7 @@ const AccountingPeriodDashboardSummaryCards = function ({
         gap: 2,
         gridTemplateColumns: {
           xs: "1fr",
-          md: "repeat(2, minmax(0, 1fr))",
+          md: "repeat(3, minmax(0, 1fr))",
         },
       }}
     >
@@ -68,6 +76,17 @@ const AccountingPeriodDashboardSummaryCards = function ({
       <SummaryCard
         title={`Ending balance (${snapshot.endLabel})`}
         value={<Stack>{formatCurrency(snapshot.totalEndingBalance)}</Stack>}
+      />
+      <SummaryCard
+        title="Net change"
+        value={
+          <Stack>
+            <Box component="span" sx={{ color: valueColor }}>
+              {formatCurrency(netChange)} ({isPositive ? "+" : ""}
+              {percentChange.toFixed(2)}%)
+            </Box>
+          </Stack>
+        }
       />
     </Box>
   );

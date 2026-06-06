@@ -200,7 +200,7 @@ const GoalDashboardSummaryCards = function ({
       }}
     >
       <SummaryCard
-        title="Goal amount"
+        title="Total Goal amounts"
         value={
           <Stack
             direction="row"
@@ -237,7 +237,7 @@ const GoalDashboardSummaryCards = function ({
       </SummaryCard>
 
       <SummaryCard
-        title="Amount assigned"
+        title="Total Amount assigned"
         value={
           <Stack
             direction="row"
@@ -274,7 +274,7 @@ const GoalDashboardSummaryCards = function ({
       </SummaryCard>
 
       <SummaryCard
-        title="Amount spent"
+        title="Total Amount spent"
         value={
           <Stack
             direction="row"
@@ -311,7 +311,7 @@ const GoalDashboardSummaryCards = function ({
       </SummaryCard>
 
       <SummaryCard
-        title="Percentage of goals met"
+        title="Total Percentage of goals met"
         value={
           <Stack
             direction="row"
