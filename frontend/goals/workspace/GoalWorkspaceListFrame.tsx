@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Checkbox } from "@mui/material";
+import { Button, Checkbox, Paper, Stack, Typography } from "@mui/material";
 import { type Goal, GoalSortOrder } from "@/goals/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -182,39 +182,53 @@ const GoalWorkspaceListFrame = function ({
   ];
 
   return (
-    <ListFrame<Goal>
-      columns={columns}
-      getId={(goal) => goal.id}
-      data={data ?? null}
-      totalCount={totalCount ?? null}
-      searchParamName=""
-      pageParamName={pageParamName}
-      initialEmptyState={{
-        title: "No goals found",
-        description: "No goals have been recorded yet.",
-        action: null,
+    <Paper
+      sx={{
+        border: "1px solid",
+        borderColor: "divider",
+        borderRadius: 3,
+        p: { xs: 2, md: 2.5 },
       }}
-      filteredEmptyState={{
-        title: "No goals match this search",
-        description:
-          "Try a different accounting period, fund, or goal amount filter, or clear the current filters to see all matching goals.",
-        action: (
-          <Button
-            variant="contained"
-            onClick={() => {
-              replaceSearchParams((params) => {
-                params.delete(accountingPeriodIdParamName);
-                params.delete(fundIdParamName);
-                params.delete(pageParamName);
-                params.delete(selectedGoalIdParamName);
-              });
-            }}
-          >
-            Clear search
-          </Button>
-        ),
-      }}
-    />
+    >
+      <Stack spacing={2.5}>
+        <Typography variant="h6" color="text.secondary">
+          Goals
+        </Typography>
+        <ListFrame<Goal>
+          columns={columns}
+          getId={(goal) => goal.id}
+          data={data ?? null}
+          totalCount={totalCount ?? null}
+          searchParamName=""
+          pageParamName={pageParamName}
+          initialEmptyState={{
+            title: "No goals found",
+            description: "No goals have been recorded yet.",
+            action: null,
+          }}
+          filteredEmptyState={{
+            title: "No goals match this search",
+            description:
+              "Try a different accounting period, fund, or goal amount filter, or clear the current filters to see all matching goals.",
+            action: (
+              <Button
+                variant="contained"
+                onClick={() => {
+                  replaceSearchParams((params) => {
+                    params.delete(accountingPeriodIdParamName);
+                    params.delete(fundIdParamName);
+                    params.delete(pageParamName);
+                    params.delete(selectedGoalIdParamName);
+                  });
+                }}
+              >
+                Clear search
+              </Button>
+            ),
+          }}
+        />
+      </Stack>
+    </Paper>
   );
 };
 

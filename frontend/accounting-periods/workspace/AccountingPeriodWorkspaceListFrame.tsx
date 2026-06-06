@@ -4,7 +4,7 @@ import {
   type AccountingPeriod,
   AccountingPeriodSortOrder,
 } from "@/accounting-periods/types";
-import { Button, Checkbox, Paper } from "@mui/material";
+import { Button, Checkbox, Paper, Stack, Typography } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
@@ -198,52 +198,57 @@ const AccountingPeriodWorkspaceListFrame = function ({
         p: { xs: 2, md: 2.5 },
       }}
     >
-      <ListFrame<AccountingPeriod>
-        columns={columns}
-        getId={(accountingPeriod) => accountingPeriod.id}
-        data={data ?? null}
-        totalCount={totalCount ?? null}
-        searchParamName=""
-        pageParamName={pageParamName}
-        onRowClick={(accountingPeriod) => {
-          toggleSelection(accountingPeriod.id);
-        }}
-        isRowSelected={(accountingPeriod) =>
-          accountingPeriod.id === selectedAccountingPeriodId
-        }
-        initialEmptyState={{
-          title: "No accounting periods yet",
-          description:
-            "Use the create action to add the first accounting period.",
-          action: null,
-        }}
-        filteredEmptyState={{
-          title: "No accounting periods match the current filters",
-          description:
-            "Try a wider accounting period range to include more periods.",
-          action: (
-            <Button
-              variant="contained"
-              onClick={() => {
-                replaceSearchParams((params) => {
-                  params.delete(yearParamName);
-                  params.delete(monthParamName);
-                  params.delete(pageParamName);
-                  params.delete(selectedAccountingPeriodIdParamName);
-                  if (
-                    params.get(actionParamName) === "update" ||
-                    params.get(actionParamName) === "delete"
-                  ) {
-                    params.delete(actionParamName);
-                  }
-                });
-              }}
-            >
-              Reset filters
-            </Button>
-          ),
-        }}
-      />
+      <Stack spacing={2.5}>
+        <Typography variant="h6" color="text.secondary">
+          Accounting Periods
+        </Typography>
+        <ListFrame<AccountingPeriod>
+          columns={columns}
+          getId={(accountingPeriod) => accountingPeriod.id}
+          data={data ?? null}
+          totalCount={totalCount ?? null}
+          searchParamName=""
+          pageParamName={pageParamName}
+          onRowClick={(accountingPeriod) => {
+            toggleSelection(accountingPeriod.id);
+          }}
+          isRowSelected={(accountingPeriod) =>
+            accountingPeriod.id === selectedAccountingPeriodId
+          }
+          initialEmptyState={{
+            title: "No accounting periods yet",
+            description:
+              "Use the create action to add the first accounting period.",
+            action: null,
+          }}
+          filteredEmptyState={{
+            title: "No accounting periods match the current filters",
+            description:
+              "Try a wider accounting period range to include more periods.",
+            action: (
+              <Button
+                variant="contained"
+                onClick={() => {
+                  replaceSearchParams((params) => {
+                    params.delete(yearParamName);
+                    params.delete(monthParamName);
+                    params.delete(pageParamName);
+                    params.delete(selectedAccountingPeriodIdParamName);
+                    if (
+                      params.get(actionParamName) === "update" ||
+                      params.get(actionParamName) === "delete"
+                    ) {
+                      params.delete(actionParamName);
+                    }
+                  });
+                }}
+              >
+                Reset filters
+              </Button>
+            ),
+          }}
+        />
+      </Stack>
     </Paper>
   );
 };

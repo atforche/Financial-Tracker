@@ -5,7 +5,7 @@ import {
   AccountSortOrder,
   formatAccountType,
 } from "@/accounts/types";
-import { Button, Checkbox, Paper } from "@mui/material";
+import { Button, Checkbox, Paper, Stack, Typography } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
@@ -174,50 +174,55 @@ const AccountWorkspaceListFrame = function ({
         p: { xs: 2, md: 2.5 },
       }}
     >
-      <ListFrame<Account>
-        columns={columns}
-        getId={(account) => account.id}
-        data={data ?? null}
-        totalCount={totalCount ?? null}
-        searchParamName={searchParamName}
-        pageParamName={pageParamName}
-        onRowClick={(account) => {
-          toggleSelection(account.id);
-        }}
-        isRowSelected={(account) => account.id === selectedAccountId}
-        initialEmptyState={{
-          title: "No accounts yet",
-          description: isInOnboardingMode
-            ? "Use the onboarding action to add the first account."
-            : "Use the create action to add the first account.",
-          action: null,
-        }}
-        filteredEmptyState={{
-          title: "No accounts match this search",
-          description:
-            "Try a different name, type, or balance search to widen the list.",
-          action: (
-            <Button
-              variant="contained"
-              onClick={() => {
-                replaceSearchParams((params) => {
-                  params.delete(searchParamName);
-                  params.delete(pageParamName);
-                  params.delete(selectedAccountIdParamName);
-                  if (
-                    params.get(actionParamName) === "update" ||
-                    params.get(actionParamName) === "delete"
-                  ) {
-                    params.delete(actionParamName);
-                  }
-                });
-              }}
-            >
-              Clear search
-            </Button>
-          ),
-        }}
-      />
+      <Stack spacing={2.5}>
+        <Typography variant="h6" color="text.secondary">
+          Accounts
+        </Typography>
+        <ListFrame<Account>
+          columns={columns}
+          getId={(account) => account.id}
+          data={data ?? null}
+          totalCount={totalCount ?? null}
+          searchParamName={searchParamName}
+          pageParamName={pageParamName}
+          onRowClick={(account) => {
+            toggleSelection(account.id);
+          }}
+          isRowSelected={(account) => account.id === selectedAccountId}
+          initialEmptyState={{
+            title: "No accounts yet",
+            description: isInOnboardingMode
+              ? "Use the onboarding action to add the first account."
+              : "Use the create action to add the first account.",
+            action: null,
+          }}
+          filteredEmptyState={{
+            title: "No accounts match this search",
+            description:
+              "Try a different name, type, or balance search to widen the list.",
+            action: (
+              <Button
+                variant="contained"
+                onClick={() => {
+                  replaceSearchParams((params) => {
+                    params.delete(searchParamName);
+                    params.delete(pageParamName);
+                    params.delete(selectedAccountIdParamName);
+                    if (
+                      params.get(actionParamName) === "update" ||
+                      params.get(actionParamName) === "delete"
+                    ) {
+                      params.delete(actionParamName);
+                    }
+                  });
+                }}
+              >
+                Clear search
+              </Button>
+            ),
+          }}
+        />
+      </Stack>
     </Paper>
   );
 };

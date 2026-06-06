@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Checkbox } from "@mui/material";
+import { Button, Checkbox, Paper, Stack, Typography } from "@mui/material";
 import { type Transaction, TransactionSortOrder } from "@/transactions/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -234,39 +234,53 @@ const TransactionWorkspaceListFrame = function ({
   ];
 
   return (
-    <ListFrame<Transaction>
-      columns={columns}
-      getId={(transaction) => transaction.id}
-      data={data ?? null}
-      totalCount={totalCount ?? null}
-      searchParamName=""
-      pageParamName={pageParamName}
-      initialEmptyState={{
-        title: "No transactions found",
-        description: "No transactions have been recorded yet.",
-        action: null,
+    <Paper
+      sx={{
+        border: "1px solid",
+        borderColor: "divider",
+        borderRadius: 3,
+        p: { xs: 2, md: 2.5 },
       }}
-      filteredEmptyState={{
-        title: "No transactions match this search",
-        description:
-          "Try a different description, amount, date, or account name, or clear the current search to see all matching transactions.",
-        action: (
-          <Button
-            variant="contained"
-            onClick={() => {
-              const params = new URLSearchParams(searchParams.toString());
-              params.delete(accountingPeriodIdsParamName);
-              params.delete(accountIdsParamName);
-              params.delete(fundIdsParamName);
-              params.delete(pageParamName);
-              router.replace(`${pathname}?${params.toString()}`);
-            }}
-          >
-            Clear search
-          </Button>
-        ),
-      }}
-    />
+    >
+      <Stack spacing={2.5}>
+        <Typography variant="h6" color="text.secondary">
+          Transactions
+        </Typography>
+        <ListFrame<Transaction>
+          columns={columns}
+          getId={(transaction) => transaction.id}
+          data={data ?? null}
+          totalCount={totalCount ?? null}
+          searchParamName=""
+          pageParamName={pageParamName}
+          initialEmptyState={{
+            title: "No transactions found",
+            description: "No transactions have been recorded yet.",
+            action: null,
+          }}
+          filteredEmptyState={{
+            title: "No transactions match this search",
+            description:
+              "Try a different description, amount, date, or account name, or clear the current search to see all matching transactions.",
+            action: (
+              <Button
+                variant="contained"
+                onClick={() => {
+                  const params = new URLSearchParams(searchParams.toString());
+                  params.delete(accountingPeriodIdsParamName);
+                  params.delete(accountIdsParamName);
+                  params.delete(fundIdsParamName);
+                  params.delete(pageParamName);
+                  router.replace(`${pathname}?${params.toString()}`);
+                }}
+              >
+                Clear search
+              </Button>
+            ),
+          }}
+        />
+      </Stack>
+    </Paper>
   );
 };
 

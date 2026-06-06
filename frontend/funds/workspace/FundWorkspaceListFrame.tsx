@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Checkbox, Paper } from "@mui/material";
+import { Button, Checkbox, Paper, Stack, Typography } from "@mui/material";
 import { type Fund, FundSortOrder } from "@/funds/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -150,50 +150,55 @@ const FundWorkspaceListFrame = function ({
         p: { xs: 2, md: 2.5 },
       }}
     >
-      <ListFrame<Fund>
-        columns={columns}
-        getId={(fund) => fund.id}
-        data={data ?? null}
-        totalCount={totalCount ?? null}
-        searchParamName={searchParamName}
-        pageParamName={pageParamName}
-        onRowClick={(fund) => {
-          toggleSelection(fund.id);
-        }}
-        isRowSelected={(fund) => fund.id === selectedFundId}
-        initialEmptyState={{
-          title: "No funds yet",
-          description: isInOnboardingMode
-            ? "Use the onboarding action to add the first fund."
-            : "Use the create action to add the first fund.",
-          action: null,
-        }}
-        filteredEmptyState={{
-          title: "No funds match this search",
-          description:
-            "Try a different name, type, or balance search to widen the list.",
-          action: (
-            <Button
-              variant="contained"
-              onClick={() => {
-                replaceSearchParams((params) => {
-                  params.delete(searchParamName);
-                  params.delete(pageParamName);
-                  params.delete(selectedFundIdParamName);
-                  if (
-                    params.get(actionParamName) === "update" ||
-                    params.get(actionParamName) === "delete"
-                  ) {
-                    params.delete(actionParamName);
-                  }
-                });
-              }}
-            >
-              Clear search
-            </Button>
-          ),
-        }}
-      />
+      <Stack spacing={2.5}>
+        <Typography variant="h6" color="text.secondary">
+          Funds
+        </Typography>
+        <ListFrame<Fund>
+          columns={columns}
+          getId={(fund) => fund.id}
+          data={data ?? null}
+          totalCount={totalCount ?? null}
+          searchParamName={searchParamName}
+          pageParamName={pageParamName}
+          onRowClick={(fund) => {
+            toggleSelection(fund.id);
+          }}
+          isRowSelected={(fund) => fund.id === selectedFundId}
+          initialEmptyState={{
+            title: "No funds yet",
+            description: isInOnboardingMode
+              ? "Use the onboarding action to add the first fund."
+              : "Use the create action to add the first fund.",
+            action: null,
+          }}
+          filteredEmptyState={{
+            title: "No funds match this search",
+            description:
+              "Try a different name, type, or balance search to widen the list.",
+            action: (
+              <Button
+                variant="contained"
+                onClick={() => {
+                  replaceSearchParams((params) => {
+                    params.delete(searchParamName);
+                    params.delete(pageParamName);
+                    params.delete(selectedFundIdParamName);
+                    if (
+                      params.get(actionParamName) === "update" ||
+                      params.get(actionParamName) === "delete"
+                    ) {
+                      params.delete(actionParamName);
+                    }
+                  });
+                }}
+              >
+                Clear search
+              </Button>
+            ),
+          }}
+        />
+      </Stack>
     </Paper>
   );
 };
