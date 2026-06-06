@@ -16,7 +16,13 @@ import {
   isSpendingTransactionComplete,
 } from "@/transactions/types";
 import type { Fund, FundAmount } from "@/funds/types";
-import { type JSX, startTransition, useActionState, useState } from "react";
+import {
+  type JSX,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
@@ -302,6 +308,13 @@ const CreateTransactionForm = function ({
     setIncomeFundAssignments([]);
     setSpendingFundAssignments([]);
   };
+
+  useEffect(() => {
+    if (state.success === true) {
+      reset();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
 
   return (
     <Stack spacing={2}>

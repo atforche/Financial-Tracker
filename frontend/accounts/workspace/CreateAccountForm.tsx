@@ -8,7 +8,13 @@ import {
   getMinimumDate,
 } from "@/accounting-periods/types";
 import { Button, DialogActions, Divider, Stack } from "@mui/material";
-import { type JSX, startTransition, useActionState, useState } from "react";
+import {
+  type JSX,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
 import DateEntryField from "@/framework/forms/DateEntryField";
@@ -76,6 +82,12 @@ const CreateAccountForm = function ({
     setAccountingPeriod(null);
     setDateOpened(getDefaultDate(null));
   };
+
+  useEffect(() => {
+    if (state.success === true) {
+      reset();
+    }
+  }, [state]);
 
   let request: CreateAccountRequest | null = null;
   if (

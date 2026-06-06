@@ -1,7 +1,13 @@
 "use client";
 
 import { Alert, Button, DialogActions, Stack } from "@mui/material";
-import { type JSX, startTransition, useActionState, useState } from "react";
+import {
+  type JSX,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
 import type { CreateAccountingPeriodRequest } from "@/accounting-periods/types";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import IntegerEntryField from "@/framework/forms/IntegerEntryField";
@@ -30,6 +36,12 @@ const CreateAccountingPeriodForm = function ({
     setYear(null);
     setMonth(null);
   };
+
+  useEffect(() => {
+    if (state.success === true) {
+      reset();
+    }
+  }, [state]);
 
   let request: CreateAccountingPeriodRequest | null = null;
   if (year !== null && month !== null) {

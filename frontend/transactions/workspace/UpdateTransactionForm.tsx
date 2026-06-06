@@ -2,7 +2,13 @@
 
 import { Button, DialogActions, Stack } from "@mui/material";
 import type { Fund, FundAmount } from "@/funds/types";
-import { type JSX, startTransition, useActionState, useState } from "react";
+import {
+  type JSX,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
 import {
   type Transaction,
   TransactionType,
@@ -200,6 +206,13 @@ const UpdateTransactionForm = function ({
       );
     }
   };
+
+  useEffect(() => {
+    if (state.success === true) {
+      reset();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
 
   return (
     <Stack spacing={2}>

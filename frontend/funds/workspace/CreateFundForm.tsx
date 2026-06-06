@@ -1,7 +1,13 @@
 "use client";
 
 import { Button, DialogActions, Stack } from "@mui/material";
-import { type JSX, startTransition, useActionState, useState } from "react";
+import {
+  type JSX,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
 import type { CreateFundRequest } from "@/funds/types";
@@ -36,6 +42,12 @@ const CreateFundForm = function ({
     setDescription("");
     setAccountingPeriod(null);
   };
+
+  useEffect(() => {
+    if (state.success === true) {
+      reset();
+    }
+  }, [state]);
 
   let request: CreateFundRequest | null = null;
   if (name !== "" && accountingPeriod !== null) {

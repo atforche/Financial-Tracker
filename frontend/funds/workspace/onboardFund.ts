@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of onboarding a fund.
  */
 interface ActionState {
+  readonly success?: boolean;
   readonly errorTitle?: string | null;
   readonly nameErrors?: string | null;
   readonly descriptionErrors?: string | null;
@@ -76,7 +77,7 @@ const onboardFund = async function (
   }
 
   revalidatePath(redirectUrl);
-  return {};
+  return { success: true };
 };
 
 export default onboardFund;

@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of creating an accounting period.
  */
 interface ActionState {
+  readonly success?: boolean;
   readonly errorTitle?: string | null;
   readonly yearErrors?: string | null;
   readonly monthErrors?: string | null;
@@ -68,7 +69,7 @@ const createAccountingPeriod = async function (
     throw new Error("An unexpected error occurred", { cause: error });
   }
   revalidatePath(redirectUrl);
-  return {};
+  return { success: true };
 };
 
 export default createAccountingPeriod;

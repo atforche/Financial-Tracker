@@ -2,7 +2,13 @@
 
 import { Button, DialogActions, Stack } from "@mui/material";
 import type { Fund, UpdateFundRequest } from "@/funds/types";
-import { type JSX, startTransition, useActionState, useState } from "react";
+import {
+  type JSX,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import updateFund from "@/funds/workspace/updateFund";
@@ -26,6 +32,18 @@ const UpdateFundForm = function ({
   const [description, setDescription] = useState<string>(fund.description);
 
   const [state, action, pending] = useActionState(updateFund, {});
+
+  const reset = function (): void {
+    setName(fund.name);
+    setDescription(fund.description);
+  };
+
+  useEffect(() => {
+    if (state.success === true) {
+      reset();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
 
   let request: UpdateFundRequest | null = null;
   if (name !== "") {
@@ -54,13 +72,7 @@ const UpdateFundForm = function ({
         unmappedErrors={state.unmappedErrors ?? null}
       />
       <DialogActions>
-        <Button
-          variant="outlined"
-          onClick={() => {
-            setName(fund.name);
-            setDescription(fund.description);
-          }}
-        >
+        <Button variant="outlined" onClick={reset}>
           Reset
         </Button>
         <Button

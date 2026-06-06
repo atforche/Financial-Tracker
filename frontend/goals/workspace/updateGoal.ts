@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of updating a goal.
  */
 interface ActionState {
+  readonly success?: boolean;
   readonly errorTitle?: string | null;
   readonly goalTypeErrors?: string | null;
   readonly goalAmountErrors?: string | null;
@@ -72,7 +73,7 @@ const updateGoal = async function (
     throw new Error("An unexpected error occurred", { cause: error });
   }
   revalidatePath(redirectUrl);
-  return {};
+  return { success: true };
 };
 
 export default updateGoal;

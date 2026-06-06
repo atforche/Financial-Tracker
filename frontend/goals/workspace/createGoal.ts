@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of creating a goal.
  */
 interface ActionState {
+  readonly success?: boolean;
   readonly errorTitle?: string | null;
   readonly fundErrors?: string | null;
   readonly accountingPeriodErrors?: string | null;
@@ -87,7 +88,7 @@ const createGoal = async function (
     throw new Error("Goal creation did not return a Goal.");
   }
   revalidatePath(redirectUrl);
-  return {};
+  return { success: true };
 };
 
 export default createGoal;

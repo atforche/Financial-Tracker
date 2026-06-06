@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of creating a fund.
  */
 interface ActionState {
+  readonly success?: boolean;
   readonly errorTitle?: string | null;
   readonly nameErrors?: string | null;
   readonly descriptionErrors?: string | null;
@@ -75,7 +76,7 @@ const createFund = async function (
     throw new Error("An unexpected error occurred", { cause: error });
   }
   revalidatePath(redirectUrl);
-  return {};
+  return { success: true };
 };
 
 export default createFund;

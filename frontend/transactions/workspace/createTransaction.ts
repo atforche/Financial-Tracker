@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of creating a transaction.
  */
 interface ActionState {
+  readonly success?: boolean;
   readonly errorTitle?: string | null;
   readonly accountingPeriodErrors?: string | null;
   readonly dateErrors?: string | null;
@@ -97,7 +98,7 @@ const createTransaction = async function (
     throw new Error("Transaction creation did not return a transaction.");
   }
   revalidatePath(redirectUrl);
-  return {};
+  return { success: true };
 };
 
 export default createTransaction;

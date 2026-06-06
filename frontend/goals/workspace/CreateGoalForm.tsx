@@ -3,7 +3,13 @@
 import { Button, DialogActions, Stack } from "@mui/material";
 import type { CreateGoalRequest, GoalType } from "@/goals/types";
 import type { Fund, FundIdentifier } from "@/funds/types";
-import { type JSX, startTransition, useActionState, useState } from "react";
+import {
+  type JSX,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
@@ -71,6 +77,13 @@ const CreateGoalForm = function ({
     setGoalType(null);
     setGoalAmount(null);
   };
+
+  useEffect(() => {
+    if (state.success === true) {
+      reset();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
 
   return (
     <Stack spacing={2}>

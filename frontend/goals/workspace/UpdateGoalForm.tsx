@@ -2,7 +2,13 @@
 
 import { Button, DialogActions, Stack } from "@mui/material";
 import type { Goal, GoalType, UpdateGoalRequest } from "@/goals/types";
-import { type JSX, startTransition, useActionState, useState } from "react";
+import {
+  type JSX,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import GoalTypeEntryField from "@/goals/GoalTypeEntryField";
@@ -29,6 +35,18 @@ const UpdateGoalForm = function ({
 
   const [state, action, pending] = useActionState(updateGoal, {});
 
+  const reset = function (): void {
+    setGoalType(goal.goalType);
+    setGoalAmount(goal.goalAmount);
+  };
+
+  useEffect(() => {
+    if (state.success === true) {
+      reset();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+
   let request: UpdateGoalRequest | null = null;
   if (goalType !== null && goalAmount !== null) {
     request = {
@@ -54,7 +72,9 @@ const UpdateGoalForm = function ({
         />
         <DialogActions>
           <Link href="" tabIndex={-1}>
-            <Button variant="outlined">Cancel</Button>
+            <Button variant="outlined" onClick={reset}>
+              Cancel
+            </Button>
           </Link>
           <Button
             variant="contained"

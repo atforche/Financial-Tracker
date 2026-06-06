@@ -1,5 +1,5 @@
 import { Autocomplete, Box, TextField, Typography } from "@mui/material";
-import { type JSX, useRef, useState } from "react";
+import { type JSX, useEffect, useRef, useState } from "react";
 
 /**
  * Interface representing a Combo Box option.
@@ -39,6 +39,11 @@ const ComboBoxEntryField = function <T>({
   const hint = useRef("");
   const justSelected = useRef(false);
   const [inputValue, setInputValue] = useState(value?.label ?? "");
+
+  useEffect(() => {
+    setInputValue(value?.label ?? "");
+  }, [value]);
+
   return (
     <Autocomplete
       className="combo-box-entry-field"

@@ -2,7 +2,13 @@
 
 import type { AccountType, OnboardAccountRequest } from "@/accounts/types";
 import { Button, DialogActions, Stack } from "@mui/material";
-import { type JSX, startTransition, useActionState, useState } from "react";
+import {
+  type JSX,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
@@ -41,6 +47,12 @@ const OnboardAccountForm = function ({
       onboardedBalance,
     };
   }
+
+  useEffect(() => {
+    if (state.success === true) {
+      reset();
+    }
+  }, [state]);
 
   return (
     <Stack spacing={3}>

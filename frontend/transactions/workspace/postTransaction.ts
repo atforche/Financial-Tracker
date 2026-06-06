@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of posting a transaction.
  */
 interface ActionState {
+  readonly success?: boolean;
   readonly errorTitle?: string | null;
   readonly accountErrors?: string | null;
   readonly dateErrors?: string | null;
@@ -73,7 +74,7 @@ const postTransaction = async function (
   }
 
   revalidatePath(redirectUrl);
-  return {};
+  return { success: true };
 };
 
 export default postTransaction;

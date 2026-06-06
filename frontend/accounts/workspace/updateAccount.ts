@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of updating an account.
  */
 interface ActionState {
+  readonly success?: boolean;
   readonly errorTitle?: string | null;
   readonly nameErrors?: string | null;
   readonly unmappedErrors?: string | null;
@@ -65,7 +66,7 @@ const updateAccount = async function (
   }
 
   revalidatePath(redirectUrl);
-  return {};
+  return { success: true };
 };
 
 export default updateAccount;

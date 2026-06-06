@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of onboarding an account.
  */
 interface ActionState {
+  readonly success?: boolean;
   readonly errorTitle?: string | null;
   readonly nameErrors?: string | null;
   readonly typeErrors?: string | null;
@@ -66,8 +67,8 @@ const onboardAccount = async function (
           unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
         }
       }
-
       return {
+        success: false,
         errorTitle: error.title ?? null,
         nameErrors: nameErrorMessage,
         typeErrors: typeErrorMessage,
@@ -78,7 +79,7 @@ const onboardAccount = async function (
     throw new Error("An unexpected error occurred", { cause: error });
   }
   revalidatePath(redirectUrl);
-  return {};
+  return { success: true };
 };
 
 export default onboardAccount;

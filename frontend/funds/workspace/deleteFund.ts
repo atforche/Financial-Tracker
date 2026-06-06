@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of deleting a fund.
  */
 interface ActionState {
+  readonly success?: boolean;
   readonly errorTitle?: string | null;
   readonly unmappedErrors?: string | null;
 }
@@ -50,7 +51,7 @@ const deleteFund = async function (
     throw new Error("An unexpected error occurred", { cause: error });
   }
   revalidatePath(redirectUrl);
-  return {};
+  return { success: true };
 };
 
 export default deleteFund;

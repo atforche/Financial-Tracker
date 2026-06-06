@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
  * Interface representing the state of updating a fund.
  */
 interface ActionState {
+  readonly success?: boolean;
   readonly errorTitle?: string | null;
   readonly nameErrors?: string | null;
   readonly descriptionErrors?: string | null;
@@ -72,7 +73,7 @@ const updateFund = async function (
   }
 
   revalidatePath(redirectUrl);
-  return {};
+  return { success: true };
 };
 
 export default updateFund;

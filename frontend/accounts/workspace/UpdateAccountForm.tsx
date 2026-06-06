@@ -2,7 +2,13 @@
 
 import type { Account, UpdateAccountRequest } from "@/accounts/types";
 import { Button, DialogActions, Stack } from "@mui/material";
-import { type JSX, startTransition, useActionState, useState } from "react";
+import {
+  type JSX,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import updateAccount from "@/accounts/workspace/updateAccount";
@@ -31,6 +37,17 @@ const UpdateAccountForm = function ({
 
   const [state, action, pending] = useActionState(updateAccount, {});
 
+  const reset = function (): void {
+    setName(account.name);
+  };
+
+  useEffect(() => {
+    if (state.success === true) {
+      reset();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+
   let request: UpdateAccountRequest | null = null;
   if (name !== "") {
     request = {
@@ -51,12 +68,7 @@ const UpdateAccountForm = function ({
         unmappedErrors={state.unmappedErrors ?? null}
       />
       <DialogActions sx={{ px: 0, pb: 0 }}>
-        <Button
-          variant="outlined"
-          onClick={() => {
-            setName(account.name);
-          }}
-        >
+        <Button variant="outlined" onClick={reset}>
           Reset
         </Button>
         <Button
