@@ -1,3 +1,4 @@
+import type { GoalDashboardSearchParams } from "@/goals/dashboard/GoalDashboard";
 import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
 import type { Route } from "next";
 import { objectToSearchParams } from "@/framework/routes";
@@ -49,15 +50,32 @@ const goalWorkspaceSearchParamsToSearchParams = function (
 /**
  * App routes related to goals.
  */
+const goalDashboardSearchParamsToSearchParams = function (
+  searchParams: GoalDashboardSearchParams,
+): URLSearchParams {
+  const { goalType, fundName, ...remainingSearchParams } = searchParams;
+  const params = objectToSearchParams(remainingSearchParams);
+
+  appendRepeatedSearchParam(params, "goalType", goalType);
+  appendRepeatedSearchParam(params, "fundName", fundName);
+
+  return params;
+};
+
 const routes = {
-  index: (searchParams: GoalWorkspaceSearchParams): Route =>
+  index: (searchParams: GoalDashboardSearchParams): Route =>
     pathWithSearchParams(
-      "/goals",
-      goalWorkspaceSearchParamsToSearchParams(searchParams),
+      "/goals/dashboard",
+      goalDashboardSearchParamsToSearchParams(searchParams),
+    ),
+  dashboard: (searchParams: GoalDashboardSearchParams): Route =>
+    pathWithSearchParams(
+      "/goals/dashboard",
+      goalDashboardSearchParamsToSearchParams(searchParams),
     ),
   workspace: (searchParams: GoalWorkspaceSearchParams): Route =>
     pathWithSearchParams(
-      "/goals",
+      "/goals/workspace",
       goalWorkspaceSearchParamsToSearchParams(searchParams),
     ),
 };

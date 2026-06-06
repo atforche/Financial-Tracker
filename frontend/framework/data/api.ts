@@ -689,10 +689,16 @@ export interface paths {
                     FundName?: string[];
                     /** @description Optional sort to apply to the matching Goals. */
                     Sort?: components["schemas"]["GoalSortOrderModel"];
+                    /** @description Optional sort to apply to the matching balance events. */
+                    BalanceEventSort?: components["schemas"]["GoalDashboardBalanceEventSortOrderModel"];
                     /** @description Maximum number of results to return. */
                     Limit?: number;
                     /** @description Number of results to skip. */
                     Offset?: number;
+                    /** @description Maximum number of balance events to return. */
+                    BalanceEventLimit?: number;
+                    /** @description Number of balance events to skip. */
+                    BalanceEventOffset?: number;
                 };
                 header?: never;
                 path?: never;
@@ -2879,6 +2885,16 @@ export interface components {
             totalCount: number;
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfGoalDashboardBalanceEventModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["GoalDashboardBalanceEventModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfGoalModel: {
             /** @description The collection of items. */
             items: components["schemas"]["GoalModel"][];
@@ -3387,6 +3403,44 @@ export interface components {
              */
             percentageOfGoalsMet: number;
         };
+        /** @description Model representing a balance event on the Goal dashboard. */
+        GoalDashboardBalanceEventModel: {
+            /**
+             * Format: uuid
+             * @description Fund affected by the balance event.
+             */
+            fundId: string;
+            /** @description Name of the fund affected by the balance event. */
+            fundName: string;
+            /**
+             * Format: date
+             * @description Effective date of the balance event.
+             */
+            date: string;
+            /**
+             * Format: uuid
+             * @description Accounting Period containing the balance event.
+             */
+            accountingPeriodId: string;
+            /** @description Name of the Accounting Period containing the balance event. */
+            accountingPeriodName: string;
+            /** @description Type of balance event. */
+            type: components["schemas"]["GoalDashboardBalanceEventTypeModel"];
+            /** @description Whether the transaction has been posted to the fund. */
+            isPosted: boolean;
+            /**
+             * Format: double
+             * @description Amount associated with the balance event.
+             */
+            amount: number;
+        };
+        /** @enum {unknown} */
+        GoalDashboardBalanceEventSortOrderModel: GoalDashboardBalanceEventSortOrderModel | null;
+        /**
+         * @description Type of balance event on the Goal dashboard.
+         * @enum {unknown}
+         */
+        GoalDashboardBalanceEventTypeModel: GoalDashboardBalanceEventTypeModel;
         /** @description Model representing Goal totals grouped by Goal Type. */
         GoalDashboardGoalTypeSummaryModel: {
             /** @description Goal Type for the group. */
@@ -3416,6 +3470,8 @@ export interface components {
         GoalDashboardModel: {
             /** @description Matching Goals for the requested dashboard page. */
             goals: components["schemas"]["CollectionModelOfGoalModel"];
+            /** @description Matching balance events for the requested dashboard page. */
+            balanceEvents: components["schemas"]["CollectionModelOfGoalDashboardBalanceEventModel"];
             /** @description Available Fund names for the current dashboard scope before Fund-name filtering. */
             availableFundNames: string[];
             /**
@@ -4173,6 +4229,22 @@ export enum FundTransactionSortOrderModel {
     LocationDescending = "LocationDescending",
     ChangeInBalance = "ChangeInBalance",
     ChangeInBalanceDescending = "ChangeInBalanceDescending"
+}
+export enum GoalDashboardBalanceEventSortOrderModel {
+    FundName = "FundName",
+    FundNameDescending = "FundNameDescending",
+    AccountingPeriodName = "AccountingPeriodName",
+    AccountingPeriodNameDescending = "AccountingPeriodNameDescending",
+    Date = "Date",
+    DateDescending = "DateDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    Amount = "Amount",
+    AmountDescending = "AmountDescending"
+}
+export enum GoalDashboardBalanceEventTypeModel {
+    Assignment = "Assignment",
+    Spending = "Spending"
 }
 export enum GoalSortOrderModel {
     AccountingPeriod = "AccountingPeriod",

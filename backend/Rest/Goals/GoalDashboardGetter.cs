@@ -1,5 +1,9 @@
 using Domain.AccountingPeriods;
+using Domain.Funds;
 using Domain.Goals;
+using Domain.Transactions;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 using Models;
 using Models.Goals;
 using Rest.AccountingPeriods;
@@ -13,6 +17,7 @@ public class GoalDashboardGetter(
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
     IGoalRepository goalRepository,
+    ITransactionRepository transactionRepository,
     GoalConverter goalConverter,
     AccountingPeriodConverter accountingPeriodConverter)
 {
@@ -89,6 +94,9 @@ public class GoalDashboardGetter(
             .Where(goal => requestedFundNames.Count == 0 || requestedFundNames.Contains(goal.Fund.Name));
 
         List<Goal> sortedGoals = SortGoals(filteredGoals.ToList(), request.Sort);
+        List<GoalDashboardBalanceEventRow> balanceEvents = BuildBalanceEventsForAccountingPeriods(accountingPeriods, requestedFundNames);
+        balanceEvents = ApplyBalanceEventFilters(balanceEvents, requestedFundNames);
+        balanceEvents = SortBalanceEvents(balanceEvents, request.BalanceEventSort);
 
         var goalModels = sortedGoals
             .Select(goalConverter.ToModel)
@@ -109,6 +117,13 @@ public class GoalDashboardGetter(
                 Items = goalModels.Skip(request.Offset ?? 0).Take(request.Limit ?? int.MaxValue).ToList(),
                 TotalCount = goalModels.Count,
             },
+            BalanceEvents = new CollectionModel<GoalDashboardBalanceEventModel>
+            {
+                Items = ApplyBalanceEventPaging(balanceEvents, request)
+                    .Select(ToModel)
+                    .ToList(),
+                TotalCount = balanceEvents.Count,
+            },
             AvailableFundNames = availableFundNames,
             TotalGoalAmount = totalGoalAmount,
             TotalAmountAssigned = totalAmountAssigned,
@@ -121,9 +136,234 @@ public class GoalDashboardGetter(
         return true;
     }
 
+    private static IEnumerable<GoalDashboardBalanceEventRow> ApplyBalanceEventPaging(
+        IEnumerable<GoalDashboardBalanceEventRow> rows,
+        GoalDashboardQueryParameterModel request) => rows
+        .Skip(request.BalanceEventOffset ?? 0)
+        .Take(request.BalanceEventLimit ?? int.MaxValue);
+
+    private static List<GoalDashboardBalanceEventRow> ApplyBalanceEventFilters(
+        IReadOnlyCollection<GoalDashboardBalanceEventRow> rows,
+        HashSet<string>? fundNames)
+    {
+        IEnumerable<GoalDashboardBalanceEventRow> filteredRows = rows;
+
+        if (fundNames != null)
+        {
+            filteredRows = filteredRows.Where(row => fundNames.Contains(row.FundName));
+        }
+
+        return filteredRows.ToList();
+    }
+
+    private static List<GoalDashboardBalanceEventRow> SortBalanceEvents(
+        List<GoalDashboardBalanceEventRow> rows,
+        GoalDashboardBalanceEventSortOrderModel? sort) => sort switch
+        {
+            GoalDashboardBalanceEventSortOrderModel.FundName => rows
+                .OrderBy(row => row.FundName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            GoalDashboardBalanceEventSortOrderModel.FundNameDescending => rows
+                .OrderByDescending(row => row.FundName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            GoalDashboardBalanceEventSortOrderModel.AccountingPeriodName => rows
+                .OrderBy(row => row.AccountingPeriodName)
+                .ThenBy(row => row.FundName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            GoalDashboardBalanceEventSortOrderModel.AccountingPeriodNameDescending => rows
+                .OrderByDescending(row => row.AccountingPeriodName)
+                .ThenBy(row => row.FundName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            null or GoalDashboardBalanceEventSortOrderModel.DateDescending => rows
+                .OrderBy(row => row.IsPosted)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ThenBy(row => row.FundId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            GoalDashboardBalanceEventSortOrderModel.Date => rows
+                .OrderByDescending(row => row.IsPosted)
+                .ThenBy(row => row.Date)
+                .ThenBy(row => row.TransactionDate)
+                .ThenBy(row => row.Sequence)
+                .ThenBy(row => row.TransactionId)
+                .ThenBy(row => row.FundId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            GoalDashboardBalanceEventSortOrderModel.Type => rows
+                .OrderBy(row => row.Type)
+                .ThenBy(row => row.FundName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ToList(),
+            GoalDashboardBalanceEventSortOrderModel.TypeDescending => rows
+                .OrderByDescending(row => row.Type)
+                .ThenBy(row => row.FundName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ToList(),
+            GoalDashboardBalanceEventSortOrderModel.Amount => rows
+                .OrderBy(row => row.Amount)
+                .ThenBy(row => row.FundName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            GoalDashboardBalanceEventSortOrderModel.AmountDescending => rows
+                .OrderByDescending(row => row.Amount)
+                .ThenBy(row => row.FundName)
+                .ThenByDescending(row => row.Date)
+                .ThenByDescending(row => row.TransactionDate)
+                .ThenByDescending(row => row.Sequence)
+                .ThenByDescending(row => row.TransactionId)
+                .ThenBy(row => row.Type)
+                .ToList(),
+            _ => rows,
+        };
+
+    private List<GoalDashboardBalanceEventRow> BuildBalanceEventsForAccountingPeriods(
+        IReadOnlyCollection<AccountingPeriod> accountingPeriods,
+        IReadOnlySet<string>? requestedFundNames)
+    {
+        var accountingPeriodIds = accountingPeriods
+            .Select(accountingPeriod => accountingPeriod.Id.Value)
+            .ToHashSet();
+
+        return BuildBalanceEvents(
+            transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId.Value),
+            requestedFundNames);
+    }
+
+    private List<GoalDashboardBalanceEventRow> BuildBalanceEvents(
+        Func<Transaction, bool> transactionFilter,
+        IReadOnlySet<string>? requestedFundNames)
+    {
+        var fundsById = goalRepository.GetAll()
+            .Select(goal => goal.Fund)
+            .Distinct()
+            .ToDictionary(fund => fund.Id.Value);
+        var accountingPeriodsById = accountingPeriodRepository.GetAll().ToDictionary(period => period.Id.Value);
+
+        return transactionRepository.GetAll()
+            .Where(transactionFilter)
+            .SelectMany(transaction => BuildBalanceEvents(transaction, fundsById, accountingPeriodsById, requestedFundNames))
+            .ToList();
+    }
+
+    private static IEnumerable<GoalDashboardBalanceEventRow> BuildBalanceEvents(
+        Transaction transaction,
+        IReadOnlyDictionary<Guid, Fund> fundsById,
+        IReadOnlyDictionary<Guid, AccountingPeriod> accountingPeriodsById,
+        IReadOnlySet<string>? requestedFundNames)
+    {
+        switch (transaction)
+        {
+            case SpendingTransaction spendingTransaction:
+                foreach (GoalDashboardBalanceEventRow balanceEvent in BuildBalanceEventsByFundAssignments(
+                    transaction,
+                    spendingTransaction.FundAssignments,
+                    spendingTransaction.Date,
+                    fundsById,
+                    accountingPeriodsById,
+                    requestedFundNames,
+                    GoalDashboardBalanceEventTypeModel.Spending))
+                {
+                    yield return balanceEvent;
+                }
+
+                break;
+            case IncomeTransaction incomeTransaction:
+                foreach (GoalDashboardBalanceEventRow balanceEvent in BuildBalanceEventsByFundAssignments(
+                    transaction,
+                    incomeTransaction.FundAssignments,
+                    incomeTransaction.Date,
+                    fundsById,
+                    accountingPeriodsById,
+                    requestedFundNames,
+                    GoalDashboardBalanceEventTypeModel.Assignment))
+                {
+                    yield return balanceEvent;
+                }
+
+                break;
+            default:
+                yield break;
+        }
+    }
+
+    private static IEnumerable<GoalDashboardBalanceEventRow> BuildBalanceEventsByFundAssignments(
+        Transaction transaction,
+        IReadOnlyCollection<FundAmount> fundAssignments,
+        DateOnly date,
+        IReadOnlyDictionary<Guid, Fund> fundsById,
+        IReadOnlyDictionary<Guid, AccountingPeriod> accountingPeriodsById,
+        IReadOnlySet<string>? requestedFundNames,
+        GoalDashboardBalanceEventTypeModel type)
+    {
+        if (!accountingPeriodsById.TryGetValue(transaction.AccountingPeriodId.Value, out AccountingPeriod? accountingPeriod))
+        {
+            yield break;
+        }
+
+        foreach (FundAmount? fundAssignment in fundAssignments.Where(fa => fundsById.ContainsKey(fa.FundId.Value)))
+        {
+            Fund fund = fundsById[fundAssignment.FundId.Value];
+            if (requestedFundNames != null && !requestedFundNames.Contains(fund.Name))
+            {
+                continue;
+            }
+
+            yield return new GoalDashboardBalanceEventRow(
+                fund.Id.Value,
+                fund.Name,
+                date,
+                transaction.AccountingPeriodId.Value,
+                accountingPeriod.Name,
+                type,
+                true,
+                fundAssignment.Amount,
+                transaction.Date,
+                transaction.Sequence,
+                transaction.Id.Value);
+        }
+    }
+
     private static GoalDashboardModel CreateEmptyResult() => new()
     {
         Goals = new CollectionModel<GoalModel>
+        {
+            Items = [],
+            TotalCount = 0,
+        },
+        BalanceEvents = new CollectionModel<GoalDashboardBalanceEventModel>
         {
             Items = [],
             TotalCount = 0,
@@ -264,10 +504,35 @@ public class GoalDashboardGetter(
             .FundBalances
             .Single(fundBalance => fundBalance.Fund.Id == goal.Fund.Id);
 
+    private static GoalDashboardBalanceEventModel ToModel(GoalDashboardBalanceEventRow row) => new()
+    {
+        FundId = row.FundId,
+        FundName = row.FundName,
+        Date = row.Date,
+        AccountingPeriodId = row.AccountingPeriodId,
+        AccountingPeriodName = row.AccountingPeriodName,
+        Type = row.Type,
+        IsPosted = row.IsPosted,
+        Amount = row.Amount,
+    };
+
     private static List<string> NormalizeNames(IEnumerable<string>? names) =>
         names?
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .Select(name => name.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList() ?? [];
+
+    private sealed record GoalDashboardBalanceEventRow(
+        Guid FundId,
+        string FundName,
+        DateOnly Date,
+        Guid AccountingPeriodId,
+        string AccountingPeriodName,
+        GoalDashboardBalanceEventTypeModel Type,
+        bool IsPosted,
+        decimal Amount,
+        DateOnly TransactionDate,
+        int Sequence,
+        Guid TransactionId);
 }

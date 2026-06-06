@@ -11,6 +11,11 @@ public class GoalDashboardModel
     public required CollectionModel<GoalModel> Goals { get; init; }
 
     /// <summary>
+    /// Matching balance events for the requested dashboard page.
+    /// </summary>
+    public required CollectionModel<GoalDashboardBalanceEventModel> BalanceEvents { get; init; }
+
+    /// <summary>
     /// Available Fund names for the current dashboard scope before Fund-name filtering.
     /// </summary>
     public required IReadOnlyCollection<string> AvailableFundNames { get; init; }
