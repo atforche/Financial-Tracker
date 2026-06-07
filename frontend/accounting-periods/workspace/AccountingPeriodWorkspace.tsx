@@ -70,14 +70,22 @@ const AccountingPeriodWorkspace = async function ({
     },
   });
 
-  const [{ data: firstAccountingPeriod }, { data: accountingPeriods }] =
-    await Promise.all([firstAccountingPeriodPromise, accountingPeriodsPromise]);
-  if (typeof firstAccountingPeriod === "undefined") {
-    throw new Error("Failed to fetch accounting periods");
-  }
-  if (typeof accountingPeriods === "undefined") {
-    throw new Error("Failed to fetch accounting periods");
-  }
+  const [
+    { data: firstAccountingPeriodResponse },
+    { data: accountingPeriodsResponse },
+  ] = await Promise.all([
+    firstAccountingPeriodPromise,
+    accountingPeriodsPromise,
+  ]);
+
+  const firstAccountingPeriod = firstAccountingPeriodResponse ?? {
+    items: [],
+    totalCount: 0,
+  };
+  const accountingPeriods = accountingPeriodsResponse ?? {
+    items: [],
+    totalCount: 0,
+  };
 
   const selectedAccountingPeriod =
     accountingPeriods.items.find(
