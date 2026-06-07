@@ -3,6 +3,7 @@ import type {
   FundDashboardBalanceEventSortOrder,
   FundDashboardSortOrder,
 } from "@/funds/types";
+import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import {
   normalizeRequestedFundNames,
   shouldPersistFundNames,
@@ -32,9 +33,9 @@ type FundsDashboardFilterMode = "accounting-period" | "date";
  */
 interface FundDashboardSearchParams {
   sort?: FundDashboardSortOrder;
-  page?: number | null;
+  page?: number | string | null;
   balanceEventSort?: FundDashboardBalanceEventSortOrder;
-  balanceEventPage?: number | string;
+  balanceEventPage?: number | string | null;
   mode?: FundsDashboardFilterMode;
   fundName?: string | readonly string[];
   startAccountingPeriodId?: string;
@@ -95,6 +96,8 @@ const FundDashboard = async function ({
         ? [fundName]
         : [],
   );
+  const currentPage = normalizePageValue(page);
+  const currentBalanceEventPage = normalizePageValue(balanceEventPage);
 
   const persistedFilters = {
     ...(typeof sort === "string" ? { sort } : {}),
@@ -147,12 +150,8 @@ const FundDashboard = async function ({
         ...(shouldPersistFundNames(currentFundNames)
           ? { FundName: [...currentFundNames] }
           : {}),
-        ...(typeof page === "number" && page > 0
-          ? { Offset: (page - 1) * rowsPerPage }
-          : {}),
-        ...(typeof balanceEventPage === "number" && balanceEventPage > 0
-          ? { BalanceEventOffset: (balanceEventPage - 1) * rowsPerPage }
-          : {}),
+        Offset: getPageOffset(currentPage),
+        BalanceEventOffset: getPageOffset(currentBalanceEventPage),
         ...(currentMode === "date"
           ? {
               StartDate:

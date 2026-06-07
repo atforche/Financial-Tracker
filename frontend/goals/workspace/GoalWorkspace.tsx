@@ -1,5 +1,5 @@
 import { Box, Stack } from "@mui/material";
-
+import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import type { GoalSortOrder } from "@/goals/types";
 import GoalWorkspaceActions from "@/goals/workspace/GoalWorkspaceActions";
 import GoalWorkspaceFilter from "@/goals/workspace/GoalWorkspaceFilter";
@@ -19,7 +19,7 @@ interface GoalWorkspaceSearchParams {
   accountingPeriodIds?: string | string[];
   fundIds?: string | string[];
   sort?: GoalSortOrder;
-  page?: number;
+  page?: number | string | null;
   selectedGoalId?: string;
   action?: GoalWorkspaceAction;
 }
@@ -40,6 +40,7 @@ const GoalWorkspace = async function ({
   const { accountingPeriodIds, fundIds, sort, page, selectedGoalId, action } =
     await searchParams;
   const apiClient = getApiClient();
+  const currentPage = normalizePageValue(page);
 
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
@@ -64,7 +65,7 @@ const GoalWorkspace = async function ({
             : {}),
         Sort: sort ?? null,
         Limit: rowsPerPage,
-        Offset: ((page ?? 1) - 1) * rowsPerPage,
+        Offset: getPageOffset(currentPage),
       },
     },
   });
@@ -99,7 +100,7 @@ const GoalWorkspace = async function ({
             ? [fundIds]
             : [],
         ...(typeof sort !== "undefined" ? { sort } : {}),
-        ...(typeof page !== "undefined" ? { page } : {}),
+        ...(typeof page !== "undefined" ? { page: currentPage } : {}),
         selectedGoalId: "",
         ...(typeof action !== "undefined" ? { action } : {}),
       }),

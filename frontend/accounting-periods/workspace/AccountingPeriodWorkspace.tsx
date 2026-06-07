@@ -1,4 +1,5 @@
 import { Box, Stack } from "@mui/material";
+import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import { AccountingPeriodSortOrder } from "@/accounting-periods/types";
 import AccountingPeriodWorkspaceActions from "@/accounting-periods/workspace/AccountingPeriodWorkspaceActions";
 import AccountingPeriodWorkspaceFilter from "@/accounting-periods/workspace/AccountingPeriodWorkspaceFilter";
@@ -18,7 +19,7 @@ interface AccountingPeriodWorkspaceSearchParams {
   years?: number | number[];
   months?: number | number[];
   sort?: AccountingPeriodSortOrder;
-  page?: number;
+  page?: number | string | null;
   selectedAccountingPeriodId?: string;
   action?: AccountingPeriodWorkspaceAction;
 }
@@ -39,6 +40,7 @@ const AccountingPeriodWorkspace = async function ({
   const apiClient = getApiClient();
   const { years, months, sort, page, selectedAccountingPeriodId, action } =
     await searchParams;
+  const currentPage = normalizePageValue(page);
 
   const firstAccountingPeriodPromise = apiClient.GET("/accounting-periods", {
     params: {
@@ -63,7 +65,7 @@ const AccountingPeriodWorkspace = async function ({
             : {}),
         Sort: sort ?? null,
         Limit: rowsPerPage,
-        Offset: ((page ?? 1) - 1) * rowsPerPage,
+        Offset: getPageOffset(currentPage),
       },
     },
   });
@@ -100,7 +102,7 @@ const AccountingPeriodWorkspace = async function ({
             ? [months]
             : [],
         ...(typeof sort !== "undefined" ? { sort } : {}),
-        ...(typeof page !== "undefined" ? { page } : {}),
+        ...(typeof page !== "undefined" ? { page: currentPage } : {}),
         selectedAccountingPeriodId: "",
         ...(typeof action !== "undefined" ? { action } : {}),
       }),

@@ -4,6 +4,7 @@ import type {
   AccountType,
 } from "@/accounts/types";
 import { Box, Stack } from "@mui/material";
+import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
@@ -37,9 +38,9 @@ type AccountsDashboardFilterMode = "accounting-period" | "date";
  */
 interface AccountDashboardSearchParams {
   sort?: AccountDashboardSortOrder;
-  page?: number | null;
+  page?: number | string | null;
   balanceEventSort?: AccountDashboardBalanceEventSortOrder;
-  balanceEventPage?: number | string;
+  balanceEventPage?: number | string | null;
   mode?: AccountsDashboardFilterMode;
   accountType?: AccountType | readonly AccountType[];
   accountName?: string | readonly string[];
@@ -109,6 +110,8 @@ const AccountDashboard = async function ({
         ? [accountName]
         : [],
   );
+  const currentPage = normalizePageValue(page);
+  const currentBalanceEventPage = normalizePageValue(balanceEventPage);
 
   const persistedFilters = {
     ...(typeof sort === "string" ? { sort } : {}),
@@ -167,12 +170,8 @@ const AccountDashboard = async function ({
         ...(shouldPersistAccountNames(currentAccountNames)
           ? { AccountName: [...currentAccountNames] }
           : {}),
-        ...(typeof page === "number" && page > 0
-          ? { Offset: (page - 1) * rowsPerPage }
-          : {}),
-        ...(typeof balanceEventPage === "number" && balanceEventPage > 0
-          ? { BalanceEventOffset: (balanceEventPage - 1) * rowsPerPage }
-          : {}),
+        Offset: getPageOffset(currentPage),
+        BalanceEventOffset: getPageOffset(currentBalanceEventPage),
         ...(currentMode === "date"
           ? {
               StartDate:

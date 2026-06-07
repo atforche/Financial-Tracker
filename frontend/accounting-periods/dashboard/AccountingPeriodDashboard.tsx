@@ -4,6 +4,7 @@ import {
   type AccountingPeriodTransactionSortOrder,
 } from "@/accounting-periods/types";
 import { Box, Stack } from "@mui/material";
+import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import AccountingPeriodDashboardChangeChart from "@/accounting-periods/dashboard/AccountingPeriodDashboardChangeChart";
 import AccountingPeriodDashboardFilter from "@/accounting-periods/dashboard/AccountingPeriodDashboardFilter";
 import AccountingPeriodDashboardIncomeSpendingCard from "@/accounting-periods/dashboard/AccountingPeriodDashboardIncomeSpendingCard";
@@ -20,9 +21,9 @@ import { rowsPerPage } from "@/framework/listframe/Constants";
  */
 interface AccountingPeriodDashboardSearchParams {
   sort?: AccountingPeriodSortOrder;
-  page?: number | null;
+  page?: number | string | null;
   transactionSort?: AccountingPeriodTransactionSortOrder;
-  transactionPage?: number | string;
+  transactionPage?: number | string | null;
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;
 }
@@ -76,6 +77,8 @@ const AccountingPeriodDashboard = async function ({
     },
   });
   const { data: accountingPeriods } = await accountingPeriodsPromise;
+  const currentPage = normalizePageValue(page);
+  const currentTransactionPage = normalizePageValue(transactionPage);
 
   if (typeof accountingPeriods === "undefined") {
     throw new Error("Failed to fetch accounting periods");
@@ -95,12 +98,8 @@ const AccountingPeriodDashboard = async function ({
                   : {}),
                 Limit: rowsPerPage,
                 TransactionLimit: rowsPerPage,
-                ...(typeof page === "number" && page > 0
-                  ? { Offset: (page - 1) * rowsPerPage }
-                  : {}),
-                ...(typeof transactionPage === "number" && transactionPage > 0
-                  ? { TransactionOffset: (transactionPage - 1) * rowsPerPage }
-                  : {}),
+                Offset: getPageOffset(currentPage),
+                TransactionOffset: getPageOffset(currentTransactionPage),
                 ...{
                   StartAccountingPeriodId:
                     typeof startAccountingPeriodId === "string"

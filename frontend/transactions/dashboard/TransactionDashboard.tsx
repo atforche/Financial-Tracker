@@ -5,6 +5,7 @@ import {
   type TransactionSortOrder,
   type TransactionType,
 } from "@/transactions/types";
+import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import {
   normalizeRequestedAccountNames,
   shouldPersistAccountNames,
@@ -40,7 +41,7 @@ type TransactionsDashboardFilterMode = "accounting-period" | "date";
  */
 interface TransactionDashboardSearchParams {
   sort?: TransactionSortOrder;
-  page?: number | null;
+  page?: number | string | null;
   mode?: TransactionsDashboardFilterMode;
   transactionType?: TransactionType | readonly TransactionType[];
   accountName?: string | readonly string[];
@@ -132,6 +133,7 @@ const TransactionDashboard = async function ({
         ? [fundName]
         : [],
   );
+  const currentPage = normalizePageValue(page);
 
   const persistedFilters = {
     ...(typeof sort === "string" ? { sort } : {}),
@@ -182,9 +184,7 @@ const TransactionDashboard = async function ({
       query: {
         ...(typeof sort === "string" ? { Sort: sort } : {}),
         Limit: rowsPerPage,
-        ...(typeof page === "number" && page > 0
-          ? { Offset: (page - 1) * rowsPerPage }
-          : {}),
+        Offset: getPageOffset(currentPage),
         ...(shouldPersistTransactionTypes(currentTransactionTypes)
           ? { TransactionType: [...currentTransactionTypes] }
           : {}),

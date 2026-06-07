@@ -1,4 +1,5 @@
 import { Box, Stack } from "@mui/material";
+import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import type { AccountSortOrder } from "@/accounts/types";
 import AccountWorkspaceActions from "@/accounts/workspace/AccountWorkspaceActions";
 import AccountWorkspaceFilter from "@/accounts/workspace/AccountWorkspaceFilter";
@@ -17,7 +18,7 @@ type AccountWorkspaceAction = "create" | "onboard" | "update" | "delete";
 interface AccountWorkspaceSearchParams {
   search?: string;
   sort?: AccountSortOrder;
-  page?: number;
+  page?: number | string | null;
   selectedAccountId?: string;
   action?: AccountWorkspaceAction;
 }
@@ -37,6 +38,7 @@ const AccountWorkspace = async function ({
 }: AccountWorkspaceProps): Promise<JSX.Element> {
   const { search, sort, page, selectedAccountId, action } = await searchParams;
   const apiClient = getApiClient();
+  const currentPage = normalizePageValue(page);
 
   const anyAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
@@ -54,7 +56,7 @@ const AccountWorkspace = async function ({
         Search: search ?? "",
         Sort: sort ?? null,
         Limit: rowsPerPage,
-        Offset: ((page ?? 1) - 1) * rowsPerPage,
+        Offset: getPageOffset(currentPage),
       },
     },
   });
@@ -88,7 +90,7 @@ const AccountWorkspace = async function ({
       routes.workspace({
         search: search ?? "",
         ...(typeof sort !== "undefined" ? { sort } : {}),
-        ...(typeof page !== "undefined" ? { page } : {}),
+        ...(typeof page !== "undefined" ? { page: currentPage } : {}),
         selectedAccountId: "",
         ...(typeof action !== "undefined" ? { action } : {}),
       }),

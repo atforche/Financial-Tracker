@@ -3,6 +3,7 @@ import type {
   GoalDashboardBalanceEventSortOrder,
   GoalSortOrder,
 } from "@/goals/types";
+import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import { AccountingPeriodSortOrder } from "@/accounting-periods/types";
 import GoalDashboardAmountAssignedChart from "@/goals/dashboard/GoalDashboardAmountAssignedChart";
 import GoalDashboardAmountSpentChart from "@/goals/dashboard/GoalDashboardAmountSpentChart";
@@ -21,9 +22,9 @@ import { rowsPerPage } from "@/framework/listframe/Constants";
 
 interface GoalDashboardSearchParams {
   sort?: GoalSortOrder;
-  page?: number | null;
+  page?: number | string | null;
   balanceEventSort?: GoalDashboardBalanceEventSortOrder;
-  balanceEventPage?: number | string;
+  balanceEventPage?: number | string | null;
   goalType?: string | string[];
   fundName?: string | string[];
   startAccountingPeriodId?: string;
@@ -89,24 +90,10 @@ const GoalDashboard = async function ({
         ? [goalType]
         : [],
   );
-
-  const getPageOffset = function (
-    value: number | string | null | undefined,
-  ): number | null {
-    const currentPage = Number.parseInt(String(value), 10);
-    return Number.isNaN(currentPage) || currentPage <= 0
-      ? null
-      : (currentPage - 1) * rowsPerPage;
-  };
-
-  const pageOffset =
-    typeof page === "string" || typeof page === "number"
-      ? getPageOffset(page)
-      : null;
-  const balanceEventOffset =
-    typeof balanceEventPage === "string" || typeof balanceEventPage === "number"
-      ? getPageOffset(balanceEventPage)
-      : null;
+  const currentPage = normalizePageValue(page);
+  const currentBalanceEventPage = normalizePageValue(balanceEventPage);
+  const pageOffset = getPageOffset(currentPage);
+  const balanceEventOffset = getPageOffset(currentBalanceEventPage);
 
   const dashboardPromise = apiClient.GET("/goals/dashboard", {
     params: {
@@ -117,10 +104,8 @@ const GoalDashboard = async function ({
           : {}),
         Limit: rowsPerPage,
         BalanceEventLimit: rowsPerPage,
-        ...(pageOffset === null ? {} : { Offset: pageOffset }),
-        ...(balanceEventOffset === null
-          ? {}
-          : { BalanceEventOffset: balanceEventOffset }),
+        Offset: pageOffset,
+        BalanceEventOffset: balanceEventOffset,
         StartAccountingPeriodId:
           typeof startAccountingPeriodId === "string"
             ? startAccountingPeriodId

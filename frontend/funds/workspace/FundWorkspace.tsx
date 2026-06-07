@@ -1,4 +1,5 @@
 import { Box, Stack } from "@mui/material";
+import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import type { FundSortOrder } from "@/funds/types";
 import FundWorkspaceActions from "@/funds/workspace/FundWorkspaceActions";
 import FundWorkspaceFilter from "@/funds/workspace/FundWorkspaceFilter";
@@ -17,7 +18,7 @@ type FundWorkspaceAction = "create" | "onboard" | "update" | "delete";
 interface FundWorkspaceSearchParams {
   search?: string;
   sort?: FundSortOrder;
-  page?: number;
+  page?: number | string | null;
   selectedFundId?: string;
   action?: FundWorkspaceAction;
 }
@@ -37,6 +38,7 @@ const FundWorkspace = async function ({
 }: FundWorkspaceProps): Promise<JSX.Element> {
   const { search, sort, page, selectedFundId, action } = await searchParams;
   const apiClient = getApiClient();
+  const currentPage = normalizePageValue(page);
 
   const anyAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
@@ -54,7 +56,7 @@ const FundWorkspace = async function ({
         Search: search ?? "",
         Sort: sort ?? null,
         Limit: rowsPerPage,
-        Offset: ((page ?? 1) - 1) * rowsPerPage,
+        Offset: getPageOffset(currentPage),
       },
     },
   });
@@ -88,7 +90,7 @@ const FundWorkspace = async function ({
       routes.workspace({
         search: search ?? "",
         ...(typeof sort !== "undefined" ? { sort } : {}),
-        ...(typeof page !== "undefined" ? { page } : {}),
+        ...(typeof page !== "undefined" ? { page: currentPage } : {}),
         selectedFundId: "",
         ...(typeof action !== "undefined" ? { action } : {}),
       }),

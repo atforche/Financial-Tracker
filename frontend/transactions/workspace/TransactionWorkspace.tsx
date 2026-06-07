@@ -1,5 +1,5 @@
 import { Box, Stack } from "@mui/material";
-
+import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import type { JSX } from "react";
 import type { TransactionSortOrder } from "@/transactions/types";
 import TransactionWorkspaceActions from "@/transactions/workspace/TransactionWorkspaceActions";
@@ -25,7 +25,7 @@ interface TransactionWorkspaceSearchParams {
   accountIds?: string | string[];
   fundIds?: string | string[];
   sort?: TransactionSortOrder;
-  page?: number;
+  page?: number | string | null;
   selectedTransactionId?: string;
   action?: TransactionWorkspaceAction;
 }
@@ -53,6 +53,7 @@ const TransactionWorkspace = async function ({
     action,
   } = await searchParams;
   const apiClient = getApiClient();
+  const currentPage = normalizePageValue(page);
 
   const openAccountingPeriodsPromise = apiClient.GET(
     "/accounting-periods/open",
@@ -79,7 +80,7 @@ const TransactionWorkspace = async function ({
             : {}),
         Sort: sort ?? null,
         Limit: rowsPerPage,
-        Offset: ((page ?? 1) - 1) * rowsPerPage,
+        Offset: getPageOffset(currentPage),
       },
     },
   });
@@ -136,7 +137,7 @@ const TransactionWorkspace = async function ({
             ? [fundIds]
             : [],
         ...(typeof sort !== "undefined" ? { sort } : {}),
-        ...(typeof page !== "undefined" ? { page } : {}),
+        ...(typeof page !== "undefined" ? { page: currentPage } : {}),
         selectedTransactionId: "",
         ...(typeof action !== "undefined" ? { action } : {}),
       }),
