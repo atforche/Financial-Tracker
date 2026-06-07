@@ -91,7 +91,6 @@ const FundWorkspace = async function ({
         search: search ?? "",
         ...(typeof sort !== "undefined" ? { sort } : {}),
         ...(typeof page !== "undefined" ? { page: currentPage } : {}),
-        selectedFundId: "",
         ...(typeof action !== "undefined" ? { action } : {}),
       }),
     );

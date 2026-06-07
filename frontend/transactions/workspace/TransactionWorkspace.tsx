@@ -138,7 +138,6 @@ const TransactionWorkspace = async function ({
             : [],
         ...(typeof sort !== "undefined" ? { sort } : {}),
         ...(typeof page !== "undefined" ? { page: currentPage } : {}),
-        selectedTransactionId: "",
         ...(typeof action !== "undefined" ? { action } : {}),
       }),
     );

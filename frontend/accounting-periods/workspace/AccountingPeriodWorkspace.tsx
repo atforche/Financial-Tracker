@@ -103,7 +103,6 @@ const AccountingPeriodWorkspace = async function ({
             : [],
         ...(typeof sort !== "undefined" ? { sort } : {}),
         ...(typeof page !== "undefined" ? { page: currentPage } : {}),
-        selectedAccountingPeriodId: "",
         ...(typeof action !== "undefined" ? { action } : {}),
       }),
     );

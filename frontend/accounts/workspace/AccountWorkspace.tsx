@@ -91,7 +91,6 @@ const AccountWorkspace = async function ({
         search: search ?? "",
         ...(typeof sort !== "undefined" ? { sort } : {}),
         ...(typeof page !== "undefined" ? { page: currentPage } : {}),
-        selectedAccountId: "",
         ...(typeof action !== "undefined" ? { action } : {}),
       }),
     );
