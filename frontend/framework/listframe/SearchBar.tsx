@@ -35,7 +35,7 @@ const SearchBar = function ({
         params.delete(searchParamName);
       }
       params.delete(pageParamName);
-      router.replace(`${pathname}?${params.toString()}`);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     },
     300,
   );

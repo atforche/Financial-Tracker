@@ -201,7 +201,9 @@ const ListFrame = function <T>({
             onPageChange={(_, newPage) => {
               const params = new URLSearchParams(searchParams.toString());
               params.set(pageParamName, (newPage + 1).toString());
-              router.replace(`${pathname}?${params.toString()}`);
+              router.replace(`${pathname}?${params.toString()}`, {
+                scroll: false,
+              });
             }}
           />
         ) : null}

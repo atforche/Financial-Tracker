@@ -83,7 +83,9 @@ const GoalDashboardFilter = function ({
     updater(params);
     params.delete(pageParamName);
     const nextQuery = params.toString();
-    router.replace(nextQuery === "" ? pathname : `${pathname}?${nextQuery}`);
+    router.replace(nextQuery === "" ? pathname : `${pathname}?${nextQuery}`, {
+      scroll: false,
+    });
   };
 
   const hasActiveView =

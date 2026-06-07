@@ -48,7 +48,7 @@ const AccountWorkspaceListFrame = function ({
   ): void {
     const params = new URLSearchParams(searchParams.toString());
     update(params);
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const setSort = function (sort: AccountSortOrder | null): void {

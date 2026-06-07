@@ -51,7 +51,7 @@ const GoalDashboardListFrame = function ({
       params.set(sortParamName, sort);
     }
     params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const setFundNameFilter = function (fundName: string): void {
@@ -59,7 +59,7 @@ const GoalDashboardListFrame = function ({
     params.delete(fundNameParamName);
     params.append(fundNameParamName, fundName);
     params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const currentSort = tryParseEnum(

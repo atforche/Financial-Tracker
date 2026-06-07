@@ -50,7 +50,7 @@ const AccountingPeriodDashboardListFrame = function ({
       params.set(sortParamName, sort);
     }
     params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const setAccountingPeriodFilter = function (
@@ -62,7 +62,7 @@ const AccountingPeriodDashboardListFrame = function ({
     params.delete(endAccountingPeriodParamName);
     params.append(endAccountingPeriodParamName, accountingPeriod.id);
     params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const currentSort = tryParseEnum(

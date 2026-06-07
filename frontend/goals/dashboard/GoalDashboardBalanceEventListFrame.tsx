@@ -64,7 +64,7 @@ const GoalDashboardBalanceEventListFrame = function ({
       params.set(sortParamName, sort);
     }
     params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const currentSort = tryParseEnum(

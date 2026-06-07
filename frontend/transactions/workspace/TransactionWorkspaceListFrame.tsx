@@ -63,7 +63,7 @@ const TransactionWorkspaceListFrame = function ({
   ): void {
     const params = new URLSearchParams(searchParams.toString());
     update(params);
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const setSort = function (sort: TransactionSortOrder | null): void {
@@ -271,7 +271,9 @@ const TransactionWorkspaceListFrame = function ({
                   params.delete(accountIdsParamName);
                   params.delete(fundIdsParamName);
                   params.delete(pageParamName);
-                  router.replace(`${pathname}?${params.toString()}`);
+                  router.replace(`${pathname}?${params.toString()}`, {
+                    scroll: false,
+                  });
                 }}
               >
                 Clear search

@@ -57,7 +57,7 @@ const AccountWorkspaceActions = function ({
       params.set("action", action);
     }
 
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   return (

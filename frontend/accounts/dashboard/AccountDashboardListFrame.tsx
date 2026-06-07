@@ -55,7 +55,7 @@ const AccountDashboardListFrame = function ({
       params.set(sortParamName, sort);
     }
     params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const setAccountNameFilter = function (accountName: string): void {
@@ -63,7 +63,7 @@ const AccountDashboardListFrame = function ({
     params.delete(accountNameParamName);
     params.append(accountNameParamName, accountName);
     params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const currentSort = tryParseEnum(

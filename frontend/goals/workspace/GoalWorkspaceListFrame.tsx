@@ -43,7 +43,9 @@ const GoalWorkspaceListFrame = function ({
     const params = new URLSearchParams(searchParams.toString());
     update(params);
     const nextQuery = params.toString();
-    router.replace(nextQuery === "" ? pathname : `${pathname}?${nextQuery}`);
+    router.replace(nextQuery === "" ? pathname : `${pathname}?${nextQuery}`, {
+      scroll: false,
+    });
   };
 
   const setSort = function (sort: GoalSortOrder | null): void {
