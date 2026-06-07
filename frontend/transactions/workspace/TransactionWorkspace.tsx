@@ -121,21 +121,21 @@ const TransactionWorkspace = async function ({
   ) {
     redirect(
       routes.workspace({
-        accountingPeriodIds: Array.isArray(accountingPeriodIds)
-          ? accountingPeriodIds
+        ...(Array.isArray(accountingPeriodIds)
+          ? { accountingPeriodIds }
           : typeof accountingPeriodIds !== "undefined"
-            ? [accountingPeriodIds]
-            : [],
-        accountIds: Array.isArray(accountIds)
-          ? accountIds
+            ? { accountingPeriodIds: [accountingPeriodIds] }
+            : {}),
+        ...(Array.isArray(accountIds)
+          ? { accountIds }
           : typeof accountIds !== "undefined"
-            ? [accountIds]
-            : [],
-        fundIds: Array.isArray(fundIds)
-          ? fundIds
+            ? { accountIds: [accountIds] }
+            : {}),
+        ...(Array.isArray(fundIds)
+          ? { fundIds }
           : typeof fundIds !== "undefined"
-            ? [fundIds]
-            : [],
+            ? { fundIds: [fundIds] }
+            : {}),
         ...(typeof sort !== "undefined" ? { sort } : {}),
         ...(typeof page !== "undefined" ? { page: currentPage } : {}),
         ...(typeof action !== "undefined" ? { action } : {}),
