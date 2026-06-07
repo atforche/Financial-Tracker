@@ -31,29 +31,17 @@ public class GoalDashboardGetter(
     {
         errors = [];
 
-        if (request.StartAccountingPeriodId is null)
-        {
-            errors.Add(nameof(request.StartAccountingPeriodId), ["StartAccountingPeriodId is required."]);
-        }
-
-        if (request.EndAccountingPeriodId is null)
-        {
-            errors.Add(nameof(request.EndAccountingPeriodId), ["EndAccountingPeriodId is required."]);
-        }
-
-        if (errors.Count > 0 || request.StartAccountingPeriodId is null || request.EndAccountingPeriodId is null)
+        if (request.StartAccountingPeriodId is null || request.EndAccountingPeriodId is null)
         {
             results = CreateEmptyResult();
-            return false;
+            return true;
         }
-
         if (!TryGetAccountingPeriodsInRange(request.StartAccountingPeriodId.Value, request.EndAccountingPeriodId.Value, out List<AccountingPeriod> accountingPeriods, out string? rangeError))
         {
             errors.Add(nameof(request.EndAccountingPeriodId), [rangeError ?? "The requested Accounting Period range is invalid."]);
             results = CreateEmptyResult();
             return false;
         }
-
         HashSet<GoalType>? requestedGoalTypes = null;
         if (request.GoalType is { Count: > 0 } requestedGoalTypesInput)
         {

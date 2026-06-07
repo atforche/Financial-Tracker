@@ -67,13 +67,10 @@ const GoalDashboard = async function ({
   const { data: accountingPeriods } = await accountingPeriodsPromise;
   const latestAccountingPeriod = accountingPeriods?.items[0] ?? null;
 
-  if (latestAccountingPeriod === null) {
-    throw new Error("Failed to load goal dashboard data");
-  }
-
   if (
-    typeof startAccountingPeriodId === "undefined" ||
-    typeof endAccountingPeriodId === "undefined"
+    (typeof startAccountingPeriodId === "undefined" ||
+      typeof endAccountingPeriodId === "undefined") &&
+    latestAccountingPeriod !== null
   ) {
     redirect(
       routes.dashboard({
@@ -106,14 +103,16 @@ const GoalDashboard = async function ({
         BalanceEventLimit: rowsPerPage,
         Offset: pageOffset,
         BalanceEventOffset: balanceEventOffset,
-        StartAccountingPeriodId:
-          typeof startAccountingPeriodId === "string"
-            ? startAccountingPeriodId
-            : latestAccountingPeriod.id,
-        EndAccountingPeriodId:
-          typeof endAccountingPeriodId === "string"
-            ? endAccountingPeriodId
-            : latestAccountingPeriod.id,
+        ...(typeof startAccountingPeriodId === "string"
+          ? { StartAccountingPeriodId: startAccountingPeriodId }
+          : latestAccountingPeriod !== null
+            ? { StartAccountingPeriodId: latestAccountingPeriod.id }
+            : {}),
+        ...(typeof endAccountingPeriodId === "string"
+          ? { EndAccountingPeriodId: endAccountingPeriodId }
+          : latestAccountingPeriod !== null
+            ? { EndAccountingPeriodId: latestAccountingPeriod.id }
+            : {}),
         ...(currentGoalTypes.length > 0
           ? { GoalType: [...currentGoalTypes] }
           : {}),
@@ -137,7 +136,7 @@ const GoalDashboard = async function ({
         <GoalDashboardFilter
           accountingPeriods={accountingPeriods?.items ?? []}
           availableFundNames={dashboard.availableFundNames}
-          defaultAccountingPeriodId={latestAccountingPeriod.id}
+          defaultAccountingPeriodId={latestAccountingPeriod?.id ?? null}
           defaultStartDate=""
           defaultEndDate=""
         />
