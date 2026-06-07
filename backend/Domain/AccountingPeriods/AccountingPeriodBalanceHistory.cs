@@ -63,8 +63,8 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
     /// </summary>
     internal void UpdateBalances()
     {
-        OpeningBalance = AccountBalances.Sum(accountBalance => accountBalance.Account.Type == AccountType.Debt ? -accountBalance.OpeningBalance : accountBalance.OpeningBalance);
-        ClosingBalance = AccountBalances.Sum(accountBalance => accountBalance.Account.Type == AccountType.Debt ? -accountBalance.ClosingBalance : accountBalance.ClosingBalance);
+        OpeningBalance = AccountBalances.Sum(accountBalance => accountBalance.Account.Type.IsDebt() ? -accountBalance.OpeningBalance : accountBalance.OpeningBalance);
+        ClosingBalance = AccountBalances.Sum(accountBalance => accountBalance.Account.Type.IsDebt() ? -accountBalance.ClosingBalance : accountBalance.ClosingBalance);
     }
 
     /// <summary>
