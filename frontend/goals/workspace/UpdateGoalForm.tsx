@@ -7,12 +7,14 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import GoalTypeEntryField from "@/goals/GoalTypeEntryField";
 import Link from "next/link";
+import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import updateGoal from "@/goals/workspace/updateGoal";
 
 /**
@@ -32,12 +34,14 @@ const UpdateGoalForm = function ({
 }: UpdateGoalFormProps): JSX.Element {
   const [goalType, setGoalType] = useState<GoalType | null>(goal.goalType);
   const [goalAmount, setGoalAmount] = useState<number | null>(goal.goalAmount);
+  const formRef = useRef<HTMLDivElement | null>(null);
 
   const [state, action, pending] = useActionState(updateGoal, {});
 
   const reset = function (): void {
     setGoalType(goal.goalType);
     setGoalAmount(goal.goalAmount);
+    focusFirstEntryControl(formRef.current);
   };
 
   useEffect(() => {
@@ -56,7 +60,7 @@ const UpdateGoalForm = function ({
   }
 
   return (
-    <Stack spacing={2}>
+    <Stack ref={formRef} spacing={2}>
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <GoalTypeEntryField
           label="Goal Type"

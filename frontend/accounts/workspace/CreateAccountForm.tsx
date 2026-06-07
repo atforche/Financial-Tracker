@@ -13,6 +13,7 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
@@ -22,6 +23,7 @@ import type { Dayjs } from "dayjs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import createAccount from "@/accounts/workspace/createAccount";
+import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 
 /**
  * Props for the CreateAccountForm component.
@@ -64,6 +66,7 @@ const CreateAccountForm = function ({
   const [dateOpened, setDateOpened] = useState<Dayjs | null>(
     getDefaultDate(null),
   );
+  const formRef = useRef<HTMLDivElement | null>(null);
 
   const [state, action, pending] = useActionState(createAccount, {});
 
@@ -81,6 +84,7 @@ const CreateAccountForm = function ({
     setAccountType(null);
     setAccountingPeriod(null);
     setDateOpened(getDefaultDate(null));
+    focusFirstEntryControl(formRef.current);
   };
 
   useEffect(() => {
@@ -105,7 +109,7 @@ const CreateAccountForm = function ({
   }
 
   return (
-    <Stack spacing={3}>
+    <Stack ref={formRef} spacing={3}>
       <Stack spacing={2.5}>
         <StringEntryField
           label="Name"

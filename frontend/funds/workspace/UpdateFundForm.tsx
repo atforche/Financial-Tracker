@@ -7,10 +7,12 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import StringEntryField from "@/framework/forms/StringEntryField";
+import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import updateFund from "@/funds/workspace/updateFund";
 
 /**
@@ -30,12 +32,14 @@ const UpdateFundForm = function ({
 }: UpdateFundFormProps): JSX.Element {
   const [name, setName] = useState<string>(fund.name);
   const [description, setDescription] = useState<string>(fund.description);
+  const formRef = useRef<HTMLDivElement | null>(null);
 
   const [state, action, pending] = useActionState(updateFund, {});
 
   const reset = function (): void {
     setName(fund.name);
     setDescription(fund.description);
+    focusFirstEntryControl(formRef.current);
   };
 
   useEffect(() => {
@@ -54,7 +58,7 @@ const UpdateFundForm = function ({
   }
 
   return (
-    <Stack spacing={3}>
+    <Stack ref={formRef} spacing={3}>
       <StringEntryField
         label="Name"
         value={name}

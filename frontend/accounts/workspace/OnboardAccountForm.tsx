@@ -7,12 +7,14 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import StringEntryField from "@/framework/forms/StringEntryField";
+import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import onboardAccount from "@/accounts/workspace/onboardAccount";
 
 /**
@@ -31,12 +33,14 @@ const OnboardAccountForm = function ({
   const [name, setName] = useState<string>("");
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [onboardedBalance, setOnboardedBalance] = useState<number | null>(null);
+  const formRef = useRef<HTMLDivElement | null>(null);
   const [state, action, pending] = useActionState(onboardAccount, {});
 
   const reset = function (): void {
     setName("");
     setAccountType(null);
     setOnboardedBalance(null);
+    focusFirstEntryControl(formRef.current);
   };
 
   let request: OnboardAccountRequest | null = null;
@@ -55,7 +59,7 @@ const OnboardAccountForm = function ({
   }, [state]);
 
   return (
-    <Stack spacing={3}>
+    <Stack ref={formRef} spacing={3}>
       <Stack spacing={2.5} sx={{ maxWidth: 520 }}>
         <StringEntryField
           label="Name"

@@ -7,6 +7,7 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import {
@@ -28,6 +29,7 @@ import CreateOrUpdateSpendingTransactionFrame from "@/transactions/workspace/Cre
 import CreateOrUpdateTransactionDetailsFrame from "@/transactions/workspace/CreateOrUpdateTransactionDetailsFrame";
 import CreateOrUpdateTransactionFromToFrame from "@/transactions/workspace/CreateOrUpdateTransactionFromToFrame";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import updateTransaction from "@/transactions/workspace/updateTransaction";
 import { updateUnassignedFundAmount } from "@/funds/FundAssignmentEntryFrame";
 
@@ -177,6 +179,7 @@ const UpdateTransactionForm = function ({
     }
   }
 
+  const formRef = useRef<HTMLDivElement | null>(null);
   const [state, action, pending] = useActionState(updateTransaction, {});
 
   const reset = function (): void {
@@ -205,6 +208,7 @@ const UpdateTransactionForm = function ({
           : [],
       );
     }
+    focusFirstEntryControl(formRef.current);
   };
 
   useEffect(() => {
@@ -215,7 +219,7 @@ const UpdateTransactionForm = function ({
   }, [state]);
 
   return (
-    <Stack spacing={2}>
+    <Stack ref={formRef} spacing={2}>
       <Stack spacing={2} sx={{ maxWidth: "600px" }}>
         <CreateOrUpdateTransactionDetailsFrame
           accountingPeriods={[]}

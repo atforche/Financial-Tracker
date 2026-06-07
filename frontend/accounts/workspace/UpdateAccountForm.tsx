@@ -7,10 +7,12 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import StringEntryField from "@/framework/forms/StringEntryField";
+import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import updateAccount from "@/accounts/workspace/updateAccount";
 
 /**
@@ -30,6 +32,7 @@ const UpdateAccountForm = function ({
 }: UpdateAccountFormProps): JSX.Element {
   const [accountId, setAccountId] = useState<string>(account.id);
   const [name, setName] = useState<string>(account.name);
+  const formRef = useRef<HTMLDivElement | null>(null);
   if (accountId !== account.id) {
     setAccountId(account.id);
     setName(account.name);
@@ -39,6 +42,7 @@ const UpdateAccountForm = function ({
 
   const reset = function (): void {
     setName(account.name);
+    focusFirstEntryControl(formRef.current);
   };
 
   useEffect(() => {
@@ -56,7 +60,7 @@ const UpdateAccountForm = function ({
   }
 
   return (
-    <Stack spacing={3}>
+    <Stack ref={formRef} spacing={3}>
       <StringEntryField
         label="Name"
         value={name}

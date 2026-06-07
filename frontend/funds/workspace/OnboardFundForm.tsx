@@ -6,12 +6,14 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import type { OnboardFundRequest } from "@/funds/types";
 import StringEntryField from "@/framework/forms/StringEntryField";
+import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import formatCurrency from "@/framework/formatCurrency";
 import onboardFund from "@/funds/workspace/onboardFund";
 
@@ -32,6 +34,7 @@ const OnboardFundForm = function ({
 }: OnboardFundFormProps): JSX.Element {
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
+  const formRef = useRef<HTMLDivElement | null>(null);
   const [onboardedBalance, setOnboardedBalance] = useState<number | null>(null);
   const [state, action, pending] = useActionState(onboardFund, {});
 
@@ -39,6 +42,7 @@ const OnboardFundForm = function ({
     setName("");
     setDescription("");
     setOnboardedBalance(null);
+    focusFirstEntryControl(formRef.current);
   };
 
   useEffect(() => {
@@ -62,7 +66,7 @@ const OnboardFundForm = function ({
   }
 
   return (
-    <Stack spacing={3}>
+    <Stack ref={formRef} spacing={3}>
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <StringEntryField
           label="Name"

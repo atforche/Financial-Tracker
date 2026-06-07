@@ -6,12 +6,14 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import type { CreateAccountingPeriodRequest } from "@/accounting-periods/types";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import IntegerEntryField from "@/framework/forms/IntegerEntryField";
 import createAccountingPeriod from "@/accounting-periods/workspace/createAccountingPeriod";
+import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 
 /**
  * Props for the CreateAccountingPeriodForm component.
@@ -30,11 +32,13 @@ const CreateAccountingPeriodForm = function ({
 }: CreateAccountingPeriodFormProps): JSX.Element {
   const [year, setYear] = useState<number | null>(null);
   const [month, setMonth] = useState<number | null>(null);
+  const formRef = useRef<HTMLDivElement | null>(null);
   const [state, action, pending] = useActionState(createAccountingPeriod, {});
 
   const reset = function (): void {
     setYear(null);
     setMonth(null);
+    focusFirstEntryControl(formRef.current);
   };
 
   useEffect(() => {
@@ -49,7 +53,7 @@ const CreateAccountingPeriodForm = function ({
   }
 
   return (
-    <Stack spacing={2}>
+    <Stack ref={formRef} spacing={2}>
       {isInOnboardingMode ? (
         <Alert severity="info">
           You are currently in onboarding mode. Adding an accounting period will

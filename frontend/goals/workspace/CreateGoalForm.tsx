@@ -8,6 +8,7 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
@@ -17,6 +18,7 @@ import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FundEntryField from "@/funds/FundEntryField";
 import GoalTypeEntryField from "@/goals/GoalTypeEntryField";
 import createGoal from "@/goals/workspace/createGoal";
+import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 
 /**
  * Props for the CreateGoalForm component.
@@ -44,6 +46,7 @@ const CreateGoalForm = function ({
   const [fund, setFund] = useState<FundIdentifier | null>(null);
   const [goalType, setGoalType] = useState<GoalType | null>(null);
   const [goalAmount, setGoalAmount] = useState<number | null>(null);
+  const formRef = useRef<HTMLDivElement | null>(null);
 
   const [state, action, pending] = useActionState(createGoal, {});
 
@@ -76,6 +79,7 @@ const CreateGoalForm = function ({
     setFund(null);
     setGoalType(null);
     setGoalAmount(null);
+    focusFirstEntryControl(formRef.current);
   };
 
   useEffect(() => {
@@ -86,7 +90,7 @@ const CreateGoalForm = function ({
   }, [state]);
 
   return (
-    <Stack spacing={2}>
+    <Stack ref={formRef} spacing={2}>
       <Stack spacing={2} sx={{ maxWidth: "500px" }}>
         <AccountingPeriodEntryField
           label="Accounting Period"

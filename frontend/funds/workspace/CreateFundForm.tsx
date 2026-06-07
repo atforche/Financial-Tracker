@@ -6,6 +6,7 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
@@ -14,6 +15,7 @@ import type { CreateFundRequest } from "@/funds/types";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import createFund from "@/funds/workspace/createFund";
+import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 
 /**
  * Props for the CreateFundForm component.
@@ -32,6 +34,7 @@ const CreateFundForm = function ({
 }: CreateFundFormProps): JSX.Element {
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
+  const formRef = useRef<HTMLDivElement | null>(null);
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(null);
 
@@ -41,6 +44,7 @@ const CreateFundForm = function ({
     setName("");
     setDescription("");
     setAccountingPeriod(null);
+    focusFirstEntryControl(formRef.current);
   };
 
   useEffect(() => {
@@ -59,7 +63,7 @@ const CreateFundForm = function ({
   }
 
   return (
-    <Stack spacing={3}>
+    <Stack ref={formRef} spacing={3}>
       <Stack spacing={2.5}>
         <StringEntryField
           label="Name"

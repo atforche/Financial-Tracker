@@ -21,6 +21,7 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import dayjs, { type Dayjs } from "dayjs";
@@ -32,6 +33,7 @@ import CreateOrUpdateTransactionDetailsFrame from "@/transactions/workspace/Crea
 import CreateOrUpdateTransactionFromToFrame from "@/transactions/workspace/CreateOrUpdateTransactionFromToFrame";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import createTransaction from "@/transactions/workspace/createTransaction";
+import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import { updateUnassignedFundAmount } from "@/funds/FundAssignmentEntryFrame";
 
 /**
@@ -289,6 +291,7 @@ const CreateTransactionForm = function ({
     }
   }
 
+  const formRef = useRef<HTMLDivElement | null>(null);
   const [state, action, pending] = useActionState(createTransaction, {});
 
   const reset = function (): void {
@@ -307,6 +310,7 @@ const CreateTransactionForm = function ({
     setCreditFund(null);
     setIncomeFundAssignments([]);
     setSpendingFundAssignments([]);
+    focusFirstEntryControl(formRef.current);
   };
 
   useEffect(() => {
@@ -317,7 +321,7 @@ const CreateTransactionForm = function ({
   }, [state]);
 
   return (
-    <Stack spacing={2}>
+    <Stack ref={formRef} spacing={2}>
       <Stack spacing={2} sx={{ maxWidth: "600px" }}>
         <CreateOrUpdateTransactionDetailsFrame
           accountingPeriods={accountingPeriods}
