@@ -2,11 +2,12 @@
 
 import os
 import re
+from pathlib import Path
 
 class MigrationScript:
     """Class representing a database migration script"""
 
-    directory: str = "../backend/Data/Migrations/Scripts"
+    directory: str = str((Path(__file__).resolve().parent.parent.parent / "backend" / "Data" / "Migrations" / "Scripts"))
 
     id: int
     name: str

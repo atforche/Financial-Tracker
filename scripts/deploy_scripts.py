@@ -3,6 +3,7 @@
 
 import os
 import shutil
+from pathlib import Path
 from typing import Annotated
 from instance_scripts import StopCommand
 from shared.configuration import Configuration
@@ -10,6 +11,22 @@ from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.migration_script import MigrationScript
 from shared.step import Step
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+SCRIPTS_DIR = Path(__file__).resolve().parent
+
+
+def get_compose_file_path() -> Path:
+    """Gets the compose file path for the repository root."""
+
+    return PROJECT_ROOT / "compose.yaml"
+
+
+def get_scripts_dir() -> Path:
+    """Gets the scripts directory path for this project."""
+
+    return SCRIPTS_DIR
+
 
 def main():
     """Builds and runs the command collection for this script"""
@@ -55,7 +72,7 @@ class CreateCommand(Command):
         """Copies the Docker compose file from the source code directory to the instance directory"""
 
         print(f"Copying compose.yaml file to {self.configuration.get_compose_file_path()}")
-        shutil.copy("../compose.yaml", self.configuration.get_compose_file_path())
+        shutil.copy(get_compose_file_path(), self.configuration.get_compose_file_path())
 
     def create_environment_file(self) -> None:
         """Creates the file with environment variables in the instance directory"""
@@ -138,13 +155,13 @@ class CopyScripts(Command):
         print(f"Copying scripts to {self.configuration.get_scripts_directory_path()}")
         os.mkdir(self.configuration.get_scripts_directory_path())
         os.mkdir(f"{self.configuration.get_scripts_directory_path()}/shared")
-        shutil.copy("instance_scripts.py", f"{self.configuration.get_scripts_directory_path()}/instance_scripts.py")
-        shutil.copy("./shared/argument.py", f"{self.configuration.get_scripts_directory_path()}/shared/argument.py")
-        shutil.copy("./shared/environment_variable.py", f"{self.configuration.get_scripts_directory_path()}/shared/environment_variable.py")
-        shutil.copy("./shared/command.py", f"{self.configuration.get_scripts_directory_path()}/shared/command.py")
-        shutil.copy("./shared/command_collection.py", f"{self.configuration.get_scripts_directory_path()}/shared/command_collection.py")
-        shutil.copy("./shared/configuration.py", f"{self.configuration.get_scripts_directory_path()}/shared/configuration.py")
-        shutil.copy("./shared/step.py", f"{self.configuration.get_scripts_directory_path()}/shared/step.py")
+        shutil.copy(get_scripts_dir() / "instance_scripts.py", f"{self.configuration.get_scripts_directory_path()}/instance_scripts.py")
+        shutil.copy(get_scripts_dir() / "shared" / "argument.py", f"{self.configuration.get_scripts_directory_path()}/shared/argument.py")
+        shutil.copy(get_scripts_dir() / "shared" / "environment_variable.py", f"{self.configuration.get_scripts_directory_path()}/shared/environment_variable.py")
+        shutil.copy(get_scripts_dir() / "shared" / "command.py", f"{self.configuration.get_scripts_directory_path()}/shared/command.py")
+        shutil.copy(get_scripts_dir() / "shared" / "command_collection.py", f"{self.configuration.get_scripts_directory_path()}/shared/command_collection.py")
+        shutil.copy(get_scripts_dir() / "shared" / "configuration.py", f"{self.configuration.get_scripts_directory_path()}/shared/configuration.py")
+        shutil.copy(get_scripts_dir() / "shared" / "step.py", f"{self.configuration.get_scripts_directory_path()}/shared/step.py")
         self.run_subprocess(f"chmod +x {self.configuration.get_scripts_directory_path()}/instance_scripts.py")
 
 class CreateEmptyDatabase(Command):
@@ -240,9 +257,9 @@ class BuildContainerImages(Command):
         """Builds the containers for the Financial Tracker using the current source code"""
 
         print("Building the backend container image")
-        self.run_subprocess(f"docker build ../backend -t backend-{self.configuration.name}")
+        self.run_subprocess(f"docker build {PROJECT_ROOT / 'backend'} -t backend-{self.configuration.name}")
         print("Building the frontend container image")
-        self.run_subprocess(f"docker build ../frontend -t frontend-{self.configuration.name}")
+        self.run_subprocess(f"docker build {PROJECT_ROOT / 'frontend'} -t frontend-{self.configuration.name}")
 
 if __name__ == "__main__":
     main()
