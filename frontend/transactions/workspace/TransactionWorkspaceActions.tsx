@@ -175,29 +175,29 @@ const TransactionWorkspaceActions = function ({
             transactionDebitAccount={
               accounts.find(
                 (account) =>
-                  "debitAccountId" in selectedTransaction &&
-                  account.id === selectedTransaction.debitAccountId,
+                  "debitAccount" in selectedTransaction &&
+                  account.id === selectedTransaction.debitAccount?.accountId,
               ) ?? null
             }
             transactionCreditAccount={
               accounts.find(
                 (account) =>
-                  "creditAccountId" in selectedTransaction &&
-                  account.id === selectedTransaction.creditAccountId,
+                  "creditAccount" in selectedTransaction &&
+                  account.id === selectedTransaction.creditAccount?.accountId,
               ) ?? null
             }
             transactionDebitFund={
               funds.find(
                 (fund) =>
-                  "debitFundId" in selectedTransaction &&
-                  fund.id === selectedTransaction.debitFundId,
+                  "debitFund" in selectedTransaction &&
+                  fund.id === selectedTransaction.debitFund.fundId,
               ) ?? null
             }
             transactionCreditFund={
               funds.find(
                 (fund) =>
-                  "creditFundId" in selectedTransaction &&
-                  fund.id === selectedTransaction.creditFundId,
+                  "creditFund" in selectedTransaction &&
+                  fund.id === selectedTransaction.creditFund.fundId,
               ) ?? null
             }
             funds={funds}
