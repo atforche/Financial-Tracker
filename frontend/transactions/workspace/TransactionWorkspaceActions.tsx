@@ -1,6 +1,12 @@
 "use client";
 
-import { Paper, Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import {
+  Paper,
+  Stack,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from "@mui/material";
 import {
   type Transaction,
   getPostableTransactionAccounts,
@@ -67,7 +73,6 @@ const TransactionWorkspaceActions = function ({
   const router = useRouter();
 
   const allActions: readonly TransactionWorkspaceAction[] = [
-    "create",
     "update",
     "post",
     "unpost",
@@ -107,32 +112,40 @@ const TransactionWorkspaceActions = function ({
       }}
     >
       <Stack spacing={3}>
-        <ToggleButtonGroup
-          value={activeAction}
-          exclusive
-          onChange={(_, nextValue: TransactionWorkspaceAction | null) => {
-            setAction(nextValue);
-          }}
-          sx={{ flexWrap: "wrap" }}
-        >
-          {allActions.map((action) => (
-            <ToggleButton
-              key={action}
-              value={action}
-              disabled={!availableActions.includes(action)}
+        {selectedTransaction !== null ? (
+          <>
+            <Stack spacing={0.5}>
+              <Typography variant="h5">Modify Transaction</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Choose how to modify this transaction.
+              </Typography>
+            </Stack>
+            <ToggleButtonGroup
+              value={activeAction}
+              exclusive
+              onChange={(_, nextValue: TransactionWorkspaceAction | null) => {
+                setAction(nextValue);
+              }}
+              sx={{ flexWrap: "wrap" }}
             >
-              {action === "create"
-                ? "Create"
-                : action === "post"
-                  ? "Post"
-                  : action === "unpost"
-                    ? "Unpost"
-                    : action === "update"
-                      ? "Update"
-                      : "Delete"}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
+              {allActions.map((action) => (
+                <ToggleButton
+                  key={action}
+                  value={action}
+                  disabled={!availableActions.includes(action)}
+                >
+                  {action === "post"
+                    ? "Post"
+                    : action === "unpost"
+                      ? "Unpost"
+                      : action === "update"
+                        ? "Update"
+                        : "Delete"}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </>
+        ) : null}
         {activeAction === "create" ? (
           <CreateTransactionForm
             accountingPeriods={accountingPeriods}

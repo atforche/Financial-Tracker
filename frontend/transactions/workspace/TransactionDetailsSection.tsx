@@ -4,18 +4,15 @@ import {
   getMinimumDate,
 } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
-import CaptionedFrame from "@/framework/view/CaptionedFrame";
+import { Box } from "@mui/material";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import type { Dayjs } from "dayjs";
 import type { JSX } from "react";
-import { Stack } from "@mui/material";
 import StringEntryField from "@/framework/forms/StringEntryField";
+import TransactionSection from "@/transactions/workspace/TransactionSection";
 
-/**
- * Props for the CreateOrUpdateTransactionDetailsFrame component.
- */
-interface CreateOrUpdateTransactionDetailsFrameProps {
+interface TransactionDetailsSectionProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
   readonly setAccountingPeriod:
@@ -25,16 +22,16 @@ interface CreateOrUpdateTransactionDetailsFrameProps {
   readonly setDate: (date: Dayjs | null) => void;
   readonly location: string;
   readonly setLocation: (location: string) => void;
-  readonly description: string;
-  readonly setDescription: (description: string) => void;
+  readonly descriptionValue: string;
+  readonly setDescriptionValue: (description: string) => void;
   readonly amount: number | null;
   readonly setAmount: (amount: number | null) => void;
 }
 
 /**
- * Components that displays the shared transaction details when creating or updating a Transaction.
+ * Displays the shared date, amount, and memo fields for transaction forms.
  */
-const CreateOrUpdateTransactionDetailsFrame = function ({
+const TransactionDetailsSection = function ({
   accountingPeriods,
   accountingPeriod,
   setAccountingPeriod,
@@ -42,14 +39,24 @@ const CreateOrUpdateTransactionDetailsFrame = function ({
   setDate,
   location,
   setLocation,
-  description,
-  setDescription,
+  descriptionValue,
+  setDescriptionValue,
   amount,
   setAmount,
-}: CreateOrUpdateTransactionDetailsFrameProps): JSX.Element {
+}: TransactionDetailsSectionProps): JSX.Element {
   return (
-    <CaptionedFrame caption="Details">
-      <Stack spacing={2} sx={{ marginTop: 2 }}>
+    <TransactionSection
+      title="Transaction Details"
+      description="Specify the high level information about the transaction."
+    >
+      <Box
+        sx={{
+          display: "grid",
+          gap: 2,
+          gridTemplateColumns:
+            "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
+        }}
+      >
         <AccountingPeriodEntryField
           label="Accounting Period"
           options={accountingPeriods}
@@ -68,19 +75,19 @@ const CreateOrUpdateTransactionDetailsFrame = function ({
           value={location}
           setValue={setLocation}
         />
-        <StringEntryField
-          label="Description"
-          value={description}
-          setValue={setDescription}
-        />
         <CurrencyEntryField
           label="Amount"
           value={amount}
           setValue={setAmount}
         />
-      </Stack>
-    </CaptionedFrame>
+      </Box>
+      <StringEntryField
+        label="Description"
+        value={descriptionValue}
+        setValue={setDescriptionValue}
+      />
+    </TransactionSection>
   );
 };
 
-export default CreateOrUpdateTransactionDetailsFrame;
+export default TransactionDetailsSection;
