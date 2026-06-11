@@ -11,6 +11,7 @@ import routes from "@/transactions/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
 type TransactionWorkspaceAction =
+  | "view"
   | "create"
   | "update"
   | "post"

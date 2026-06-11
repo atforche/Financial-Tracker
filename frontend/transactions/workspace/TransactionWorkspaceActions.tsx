@@ -23,6 +23,7 @@ import PostTransactionForm from "@/transactions/workspace/PostTransactionForm";
 import type { TransactionWorkspaceAction } from "@/transactions/workspace/TransactionWorkspace";
 import UnpostTransactionForm from "@/transactions/workspace/UnpostTransactionForm";
 import UpdateTransactionForm from "@/transactions/workspace/UpdateTransactionForm";
+import ViewTransactionForm from "@/transactions/workspace/ViewTransactionForm";
 
 /**
  * Props for the TransactionWorkspaceActions component.
@@ -48,7 +49,7 @@ const getAvailableActions = function (
     getPostableTransactionAccounts(selectedTransaction).length > 0;
   const isUnpostable =
     getPostedTransactionAccounts(selectedTransaction).length > 0;
-  const actions: TransactionWorkspaceAction[] = ["update", "delete"];
+  const actions: TransactionWorkspaceAction[] = ["view", "update", "delete"];
   if (isPostable) {
     actions.push("post");
   }
@@ -73,6 +74,7 @@ const TransactionWorkspaceActions = function ({
   const router = useRouter();
 
   const allActions: readonly TransactionWorkspaceAction[] = [
+    "view",
     "update",
     "post",
     "unpost",
@@ -101,6 +103,38 @@ const TransactionWorkspaceActions = function ({
         (period) => period.id === selectedTransaction.accountingPeriodId,
       ) ?? null)
     : null;
+  const selectedTransactionDebitAccount =
+    selectedTransaction === null
+      ? null
+      : (accounts.find(
+          (account) =>
+            "debitAccount" in selectedTransaction &&
+            account.id === selectedTransaction.debitAccount?.accountId,
+        ) ?? null);
+  const selectedTransactionCreditAccount =
+    selectedTransaction === null
+      ? null
+      : (accounts.find(
+          (account) =>
+            "creditAccount" in selectedTransaction &&
+            account.id === selectedTransaction.creditAccount?.accountId,
+        ) ?? null);
+  const selectedTransactionDebitFund =
+    selectedTransaction === null
+      ? null
+      : (funds.find(
+          (fund) =>
+            "debitFund" in selectedTransaction &&
+            fund.id === selectedTransaction.debitFund.fundId,
+        ) ?? null);
+  const selectedTransactionCreditFund =
+    selectedTransaction === null
+      ? null
+      : (funds.find(
+          (fund) =>
+            "creditFund" in selectedTransaction &&
+            fund.id === selectedTransaction.creditFund.fundId,
+        ) ?? null);
 
   return (
     <Paper
@@ -115,9 +149,9 @@ const TransactionWorkspaceActions = function ({
         {selectedTransaction !== null ? (
           <>
             <Stack spacing={0.5}>
-              <Typography variant="h5">Modify Transaction</Typography>
+              <Typography variant="h5">Existing Transaction</Typography>
               <Typography variant="body2" color="text.secondary">
-                Choose how to modify this transaction.
+                Choose how to interact with this existing transaction.
               </Typography>
             </Stack>
             <ToggleButtonGroup
@@ -134,13 +168,15 @@ const TransactionWorkspaceActions = function ({
                   value={action}
                   disabled={!availableActions.includes(action)}
                 >
-                  {action === "post"
-                    ? "Post"
-                    : action === "unpost"
-                      ? "Unpost"
-                      : action === "update"
-                        ? "Update"
-                        : "Delete"}
+                  {action === "view"
+                    ? "View"
+                    : action === "post"
+                      ? "Post"
+                      : action === "unpost"
+                        ? "Unpost"
+                        : action === "update"
+                          ? "Update"
+                          : "Delete"}
                 </ToggleButton>
               ))}
             </ToggleButtonGroup>
@@ -152,6 +188,17 @@ const TransactionWorkspaceActions = function ({
             accounts={accounts}
             funds={funds}
             redirectUrl={pathname}
+          />
+        ) : null}
+        {activeAction === "view" &&
+        selectedTransaction !== null &&
+        selectedTransactionAccountingPeriod !== null ? (
+          <ViewTransactionForm
+            transaction={selectedTransaction}
+            transactionAccountingPeriod={selectedTransactionAccountingPeriod}
+            transactionDebitFund={selectedTransactionDebitFund}
+            transactionCreditFund={selectedTransactionCreditFund}
+            funds={funds}
           />
         ) : null}
         {activeAction === "post" && selectedTransaction !== null ? (
@@ -172,34 +219,10 @@ const TransactionWorkspaceActions = function ({
           <UpdateTransactionForm
             transaction={selectedTransaction}
             transactionAccountingPeriod={selectedTransactionAccountingPeriod}
-            transactionDebitAccount={
-              accounts.find(
-                (account) =>
-                  "debitAccount" in selectedTransaction &&
-                  account.id === selectedTransaction.debitAccount?.accountId,
-              ) ?? null
-            }
-            transactionCreditAccount={
-              accounts.find(
-                (account) =>
-                  "creditAccount" in selectedTransaction &&
-                  account.id === selectedTransaction.creditAccount?.accountId,
-              ) ?? null
-            }
-            transactionDebitFund={
-              funds.find(
-                (fund) =>
-                  "debitFund" in selectedTransaction &&
-                  fund.id === selectedTransaction.debitFund.fundId,
-              ) ?? null
-            }
-            transactionCreditFund={
-              funds.find(
-                (fund) =>
-                  "creditFund" in selectedTransaction &&
-                  fund.id === selectedTransaction.creditFund.fundId,
-              ) ?? null
-            }
+            transactionDebitAccount={selectedTransactionDebitAccount}
+            transactionCreditAccount={selectedTransactionCreditAccount}
+            transactionDebitFund={selectedTransactionDebitFund}
+            transactionCreditFund={selectedTransactionCreditFund}
             funds={funds}
             redirectUrl={pathname}
           />
