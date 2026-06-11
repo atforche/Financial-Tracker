@@ -19,26 +19,6 @@ interface TransactionWorkspaceListFrameProps {
   readonly selectedTransactionId: string | null;
 }
 
-const getDebitFrom = function (transaction: Transaction): string {
-  if ("debitAccount" in transaction) {
-    return transaction.debitAccount?.accountName ?? "";
-  }
-  if ("debitFund" in transaction) {
-    return transaction.debitFund.fundName;
-  }
-  return "";
-};
-
-const getCreditTo = function (transaction: Transaction): string {
-  if ("creditAccount" in transaction) {
-    return transaction.creditAccount?.accountName ?? "";
-  }
-  if ("creditFund" in transaction) {
-    return transaction.creditFund.fundName;
-  }
-  return "";
-};
-
 /**
  * Component that displays the top-level transaction ledger.
  */
@@ -139,13 +119,6 @@ const TransactionWorkspaceListFrame = function ({
       minWidth: 125,
     },
     {
-      name: "accountingPeriod",
-      headerContent: "Accounting Period",
-      getBodyContent: (transaction: Transaction) =>
-        transaction.accountingPeriodName,
-      minWidth: 165,
-    },
-    {
       name: "location",
       headerContent: "Location",
       getBodyContent: (transaction: Transaction) => transaction.location,
@@ -165,48 +138,6 @@ const TransactionWorkspaceListFrame = function ({
         }
       },
       minWidth: 150,
-    },
-    {
-      name: "debitFrom",
-      headerContent: "Debit From",
-      getBodyContent: getDebitFrom,
-      sortType:
-        currentSort === TransactionSortOrder.DebitFrom
-          ? ColumnSortType.Ascending
-          : currentSort === TransactionSortOrder.DebitFromDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType: ColumnSortType | null): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSortOrder.DebitFrom);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSortOrder.DebitFromDescending);
-        } else {
-          setSort(null);
-        }
-      },
-      minWidth: 170,
-    },
-    {
-      name: "creditTo",
-      headerContent: "Credit To",
-      getBodyContent: getCreditTo,
-      sortType:
-        currentSort === TransactionSortOrder.CreditTo
-          ? ColumnSortType.Ascending
-          : currentSort === TransactionSortOrder.CreditToDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType: ColumnSortType | null): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSortOrder.CreditTo);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSortOrder.CreditToDescending);
-        } else {
-          setSort(null);
-        }
-      },
-      minWidth: 170,
     },
     {
       name: "amount",
