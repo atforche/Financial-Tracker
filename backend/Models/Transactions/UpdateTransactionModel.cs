@@ -40,16 +40,6 @@ public abstract class UpdateTransactionModel
 public sealed class UpdateSpendingTransactionModel : UpdateTransactionModel
 {
     /// <summary>
-    /// Posted date for the debit side.
-    /// </summary>
-    public UpdateTransactionAccountModel? DebitAccount { get; init; }
-
-    /// <summary>
-    /// Posted date for the credit side.
-    /// </summary>
-    public UpdateTransactionAccountModel? CreditAccount { get; init; }
-
-    /// <summary>
     /// Fund assignments for the spending transaction.
     /// </summary>
     public required IReadOnlyCollection<CreateFundAmountModel> FundAssignments { get; init; }
@@ -61,16 +51,6 @@ public sealed class UpdateSpendingTransactionModel : UpdateTransactionModel
 public sealed class UpdateIncomeTransactionModel : UpdateTransactionModel
 {
     /// <summary>
-    /// Posted date for the debit side.
-    /// </summary>
-    public UpdateTransactionAccountModel? DebitAccount { get; init; }
-
-    /// <summary>
-    /// Posted date for the credit side.
-    /// </summary>
-    public UpdateTransactionAccountModel? CreditAccount { get; init; }
-
-    /// <summary>
     /// Fund assignments for the income transaction.
     /// </summary>
     public required IReadOnlyCollection<CreateFundAmountModel> FundAssignments { get; init; }
@@ -81,15 +61,6 @@ public sealed class UpdateIncomeTransactionModel : UpdateTransactionModel
 /// </summary>
 public sealed class UpdateAccountTransactionModel : UpdateTransactionModel
 {
-    /// <summary>
-    /// Posted date for the debit side.
-    /// </summary>
-    public UpdateTransactionAccountModel? DebitAccount { get; init; }
-
-    /// <summary>
-    /// Posted date for the credit side.
-    /// </summary>
-    public UpdateTransactionAccountModel? CreditAccount { get; init; }
 }
 
 /// <summary>
@@ -97,15 +68,4 @@ public sealed class UpdateAccountTransactionModel : UpdateTransactionModel
 /// </summary>
 public sealed class UpdateFundTransactionModel : UpdateTransactionModel
 {
-}
-
-/// <summary>
-/// Model representing an account posting update for a transaction.
-/// </summary>
-public class UpdateTransactionAccountModel
-{
-    /// <summary>
-    /// Posted date for the transaction account, if it should be posted immediately.
-    /// </summary>
-    public DateOnly? PostedDate { get; init; }
 }

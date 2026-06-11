@@ -13,19 +13,9 @@ public record CreateAccountTransactionRequest : CreateTransactionRequest
     public required Account? DebitAccount { get; init; }
 
     /// <summary>
-    /// Posted Date for the Debit Account of this Account Transaction
-    /// </summary>
-    public DateOnly? DebitPostedDate { get; init; }
-
-    /// <summary>
     /// Credit Account for this Account Transaction
     /// </summary>
     public required Account? CreditAccount { get; init; }
-
-    /// <summary>
-    /// Posted Date for the Credit Account of this Account Transaction
-    /// </summary>
-    public DateOnly? CreditPostedDate { get; init; }
 
     /// <summary>
     /// Account ID of the Account that generated this transaction when it was created, or null

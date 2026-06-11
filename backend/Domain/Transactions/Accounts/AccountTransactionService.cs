@@ -40,20 +40,6 @@ public class AccountTransactionService(
         int sequence = TransactionRepository.GetNextSequenceForDate(request.TransactionDate);
         transaction = new AccountTransaction(request, sequence);
         AddTransaction(transaction);
-        if (transaction.DebitAccountId != null && request.DebitPostedDate.HasValue)
-        {
-            if (!TryPost(transaction, transaction.DebitAccountId, request.DebitPostedDate.Value, out IEnumerable<Exception> postingExceptions))
-            {
-                exceptions = exceptions.Concat(postingExceptions);
-            }
-        }
-        if (transaction.CreditAccountId != null && request.CreditPostedDate.HasValue)
-        {
-            if (!TryPost(transaction, transaction.CreditAccountId, request.CreditPostedDate.Value, out IEnumerable<Exception> postingExceptions))
-            {
-                exceptions = exceptions.Concat(postingExceptions);
-            }
-        }
         if (exceptions.Any())
         {
             transaction = null;
@@ -75,20 +61,6 @@ public class AccountTransactionService(
             return false;
         }
         UpdateTransaction(transaction, request);
-        if (transaction.DebitAccountId != null && request.DebitPostedDate.HasValue)
-        {
-            if (!TryPost(transaction, transaction.DebitAccountId, request.DebitPostedDate.Value, out IEnumerable<Exception> postingExceptions))
-            {
-                exceptions = exceptions.Concat(postingExceptions);
-            }
-        }
-        if (transaction.CreditAccountId != null && request.CreditPostedDate.HasValue)
-        {
-            if (!TryPost(transaction, transaction.CreditAccountId, request.CreditPostedDate.Value, out IEnumerable<Exception> postingExceptions))
-            {
-                exceptions = exceptions.Concat(postingExceptions);
-            }
-        }
         return !exceptions.Any();
     }
 
@@ -160,17 +132,6 @@ public class AccountTransactionService(
         {
             exceptions = exceptions.Concat(accountExceptions);
         }
-        AccountingPeriod accountingPeriod = AccountingPeriodRepository.GetById(request.AccountingPeriodId);
-        if (!ValidatePostedDates(
-                accountingPeriod,
-                request.DebitAccount,
-                request.DebitPostedDate,
-                request.CreditAccount,
-                request.CreditPostedDate,
-                out IEnumerable<Exception> postedDateExceptions))
-        {
-            exceptions = exceptions.Concat(postedDateExceptions);
-        }
         return !exceptions.Any();
     }
 
@@ -182,21 +143,10 @@ public class AccountTransactionService(
         UpdateAccountTransactionRequest request,
         out IEnumerable<Exception> exceptions)
     {
-        AccountingPeriod accountingPeriod = AccountingPeriodRepository.GetById(transaction.AccountingPeriodId);
         Account? debitAccount = transaction.DebitAccountId != null ? accountRepository.GetById(transaction.DebitAccountId) : null;
         Account? creditAccount = transaction.CreditAccountId != null ? accountRepository.GetById(transaction.CreditAccountId) : null;
         _ = ValidateUpdate(transaction, request, new List<Account?> { debitAccount, creditAccount }.OfType<Account>().ToList(), out exceptions);
 
-        if (!ValidatePostedDates(
-                accountingPeriod,
-                debitAccount,
-                request.DebitPostedDate,
-                creditAccount,
-                request.CreditPostedDate,
-                out IEnumerable<Exception> postedDateExceptions))
-        {
-            exceptions = exceptions.Concat(postedDateExceptions);
-        }
         if (transaction.DebitPostedDate.HasValue || transaction.CreditPostedDate.HasValue)
         {
             exceptions = exceptions.Append(new UnableToUpdateException("Transaction has already been posted and cannot be updated"));
@@ -240,38 +190,6 @@ public class AccountTransactionService(
         else
         {
             exceptions = exceptions.Append(new InvalidAccountException("At least one account must be provided"));
-        }
-        return !exceptions.Any();
-    }
-
-    /// <summary>
-    /// Validates the Posted Dates for this Account Transaction
-    /// </summary>
-    private static bool ValidatePostedDates(
-        AccountingPeriod accountingPeriod,
-        Account? debitAccount,
-        DateOnly? debitPostedDate,
-        Account? creditAccount,
-        DateOnly? creditPostedDate,
-        out IEnumerable<Exception> exceptions)
-    {
-        exceptions = [];
-
-        if (debitPostedDate.HasValue && debitAccount == null)
-        {
-            exceptions = exceptions.Append(new InvalidDateException("A posted date cannot be provided for the debit account if no debit account is provided"));
-        }
-        if (creditPostedDate.HasValue && creditAccount == null)
-        {
-            exceptions = exceptions.Append(new InvalidDateException("A posted date cannot be provided for the credit account if no credit account is provided"));
-        }
-        if (debitAccount != null && !ValidatePostedDate(accountingPeriod, debitAccount, debitPostedDate, out IEnumerable<Exception> debitPostedDateExceptions))
-        {
-            exceptions = exceptions.Concat(debitPostedDateExceptions);
-        }
-        if (creditAccount != null && !ValidatePostedDate(accountingPeriod, creditAccount, creditPostedDate, out IEnumerable<Exception> creditPostedDateExceptions))
-        {
-            exceptions = exceptions.Concat(creditPostedDateExceptions);
         }
         return !exceptions.Any();
     }

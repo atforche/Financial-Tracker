@@ -3051,27 +3051,22 @@ export interface components {
              */
             goalAmount: number;
         };
-        /** @description Model representing an account selection for create transaction requests. */
-        CreateTransactionAccountModel: {
-            /**
-             * Format: uuid
-             * @description Account for the transaction account.
-             */
-            accountId: string;
-            /**
-             * Format: date
-             * @description Posted date for the transaction account, if it should be posted immediately.
-             */
-            postedDate?: null | string;
-        };
         /** @description Model representing a request to create a Transaction. */
         CreateTransactionModel: components["schemas"]["CreateTransactionModelCreateSpendingTransactionModel"] | components["schemas"]["CreateTransactionModelCreateIncomeTransactionModel"] | components["schemas"]["CreateTransactionModelCreateAccountTransactionModel"] | components["schemas"]["CreateTransactionModelCreateFundTransactionModel"];
         /** @description Model representing a request to create an account transaction. */
         CreateTransactionModelCreateAccountTransactionModel: {
             /** @enum {string} */
             type?: CreateTransactionModelCreateAccountTransactionModelType;
-            debitAccount?: null | components["schemas"]["CreateTransactionAccountModel"];
-            creditAccount?: null | components["schemas"]["CreateTransactionAccountModel"];
+            /**
+             * Format: uuid
+             * @description Optional debit account for the account transaction.
+             */
+            debitAccountId?: null | string;
+            /**
+             * Format: uuid
+             * @description Optional credit account for the account transaction.
+             */
+            creditAccountId?: null | string;
             /**
              * Format: uuid
              * @description Accounting Period for the Transaction.
@@ -3130,9 +3125,16 @@ export interface components {
         CreateTransactionModelCreateIncomeTransactionModel: {
             /** @enum {string} */
             type?: CreateTransactionModelCreateIncomeTransactionModelType;
-            debitAccount?: null | components["schemas"]["CreateTransactionAccountModel"];
-            /** @description Credit account for the income transaction. */
-            creditAccount: components["schemas"]["CreateTransactionAccountModel"];
+            /**
+             * Format: uuid
+             * @description Optional debit account for the income transaction.
+             */
+            debitAccountId?: null | string;
+            /**
+             * Format: uuid
+             * @description Credit account for the income transaction.
+             */
+            creditAccountId: string;
             /** @description Fund assignments for the income transaction. */
             fundAssignments: components["schemas"]["CreateFundAmountModel"][];
             /**
@@ -3159,9 +3161,16 @@ export interface components {
         CreateTransactionModelCreateSpendingTransactionModel: {
             /** @enum {string} */
             type?: CreateTransactionModelCreateSpendingTransactionModelType;
-            /** @description Debit account for the spending transaction. */
-            debitAccount: components["schemas"]["CreateTransactionAccountModel"];
-            creditAccount?: null | components["schemas"]["CreateTransactionAccountModel"];
+            /**
+             * Format: uuid
+             * @description Debit account for the spending transaction.
+             */
+            debitAccountId: string;
+            /**
+             * Format: uuid
+             * @description Optional credit account for the spending transaction.
+             */
+            creditAccountId?: null | string;
             /** @description Fund assignments for the spending transaction. */
             fundAssignments: components["schemas"]["CreateFundAmountModel"][];
             /**
@@ -4001,22 +4010,12 @@ export interface components {
              */
             goalAmount: number;
         };
-        /** @description Model representing an account posting update for a transaction. */
-        UpdateTransactionAccountModel: {
-            /**
-             * Format: date
-             * @description Posted date for the transaction account, if it should be posted immediately.
-             */
-            postedDate?: null | string;
-        };
         /** @description Model representing a request to update a Transaction. */
         UpdateTransactionModel: components["schemas"]["UpdateTransactionModelUpdateSpendingTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateIncomeTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateAccountTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateFundTransactionModel"];
         /** @description Model representing a request to update an account transaction. */
         UpdateTransactionModelUpdateAccountTransactionModel: {
             /** @enum {string} */
             type?: UpdateTransactionModelUpdateAccountTransactionModelType;
-            debitAccount?: null | components["schemas"]["UpdateTransactionAccountModel"];
-            creditAccount?: null | components["schemas"]["UpdateTransactionAccountModel"];
             /**
              * Format: date
              * @description Date for the Transaction.
@@ -4055,8 +4054,6 @@ export interface components {
         UpdateTransactionModelUpdateIncomeTransactionModel: {
             /** @enum {string} */
             type?: UpdateTransactionModelUpdateIncomeTransactionModelType;
-            debitAccount?: null | components["schemas"]["UpdateTransactionAccountModel"];
-            creditAccount?: null | components["schemas"]["UpdateTransactionAccountModel"];
             /** @description Fund assignments for the income transaction. */
             fundAssignments: components["schemas"]["CreateFundAmountModel"][];
             /**
@@ -4078,8 +4075,6 @@ export interface components {
         UpdateTransactionModelUpdateSpendingTransactionModel: {
             /** @enum {string} */
             type?: UpdateTransactionModelUpdateSpendingTransactionModelType;
-            debitAccount?: null | components["schemas"]["UpdateTransactionAccountModel"];
-            creditAccount?: null | components["schemas"]["UpdateTransactionAccountModel"];
             /** @description Fund assignments for the spending transaction. */
             fundAssignments: components["schemas"]["CreateFundAmountModel"][];
             /**

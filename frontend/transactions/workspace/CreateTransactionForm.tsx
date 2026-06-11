@@ -200,15 +200,8 @@ const CreateTransactionForm = function ({
         location,
         description,
         amount,
-        debitAccount:
-          debitAccount !== null
-            ? {
-                accountId: debitAccount.id,
-              }
-            : null,
-        creditAccount: {
-          accountId: creditAccount?.id ?? "",
-        },
+        debitAccountId: debitAccount?.id ?? null,
+        creditAccountId: creditAccount?.id ?? "",
         fundAssignments: incomeFundAssignments
           .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
           .map((fundAmount) => ({
@@ -233,15 +226,8 @@ const CreateTransactionForm = function ({
         location,
         description,
         amount,
-        debitAccount: {
-          accountId: debitAccount?.id ?? "",
-        },
-        creditAccount:
-          creditAccount !== null
-            ? {
-                accountId: creditAccount.id,
-              }
-            : null,
+        debitAccountId: debitAccount?.id ?? "",
+        creditAccountId: creditAccount?.id ?? null,
         fundAssignments: spendingFundAssignments
           .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
           .map((fundAmount) => ({
@@ -260,18 +246,8 @@ const CreateTransactionForm = function ({
         location,
         description,
         amount,
-        debitAccount:
-          debitAccount !== null
-            ? {
-                accountId: debitAccount.id,
-              }
-            : null,
-        creditAccount:
-          creditAccount !== null
-            ? {
-                accountId: creditAccount.id,
-              }
-            : null,
+        debitAccountId: debitAccount?.id ?? null,
+        creditAccountId: creditAccount?.id ?? null,
       };
     } else if (
       isFundTransaction(debitAccount, creditAccount, debitFund, creditFund) &&

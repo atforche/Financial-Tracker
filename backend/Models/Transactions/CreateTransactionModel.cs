@@ -47,12 +47,12 @@ public sealed class CreateSpendingTransactionModel : CreateTransactionModel
     /// <summary>
     /// Debit account for the spending transaction.
     /// </summary>
-    public required CreateTransactionAccountModel DebitAccount { get; init; }
+    public required Guid DebitAccountId { get; init; }
 
     /// <summary>
     /// Optional credit account for the spending transaction.
     /// </summary>
-    public CreateTransactionAccountModel? CreditAccount { get; init; }
+    public Guid? CreditAccountId { get; init; }
 
     /// <summary>
     /// Fund assignments for the spending transaction.
@@ -68,12 +68,12 @@ public sealed class CreateIncomeTransactionModel : CreateTransactionModel
     /// <summary>
     /// Optional debit account for the income transaction.
     /// </summary>
-    public CreateTransactionAccountModel? DebitAccount { get; init; }
+    public Guid? DebitAccountId { get; init; }
 
     /// <summary>
     /// Credit account for the income transaction.
     /// </summary>
-    public required CreateTransactionAccountModel CreditAccount { get; init; }
+    public required Guid CreditAccountId { get; init; }
 
     /// <summary>
     /// Fund assignments for the income transaction.
@@ -89,12 +89,12 @@ public sealed class CreateAccountTransactionModel : CreateTransactionModel
     /// <summary>
     /// Optional debit account for the account transaction.
     /// </summary>
-    public CreateTransactionAccountModel? DebitAccount { get; init; }
+    public Guid? DebitAccountId { get; init; }
 
     /// <summary>
     /// Optional credit account for the account transaction.
     /// </summary>
-    public CreateTransactionAccountModel? CreditAccount { get; init; }
+    public Guid? CreditAccountId { get; init; }
 }
 
 /// <summary>
@@ -111,20 +111,4 @@ public sealed class CreateFundTransactionModel : CreateTransactionModel
     /// Credit fund for the fund transaction.
     /// </summary>
     public required Guid CreditFundId { get; init; }
-}
-
-/// <summary>
-/// Model representing an account selection for create transaction requests.
-/// </summary>
-public class CreateTransactionAccountModel
-{
-    /// <summary>
-    /// Account for the transaction account.
-    /// </summary>
-    public required Guid AccountId { get; init; }
-
-    /// <summary>
-    /// Posted date for the transaction account, if it should be posted immediately.
-    /// </summary>
-    public DateOnly? PostedDate { get; init; }
 }

@@ -93,12 +93,12 @@ public sealed class TransactionRequestConverter(
         CreateSpendingTransactionModel model,
         Dictionary<string, string[]> errors)
     {
-        if (!TryGetAccount(model.DebitAccount.AccountId, nameof(CreateSpendingTransactionModel.DebitAccount) + "." + nameof(CreateTransactionAccountModel.AccountId), errors, out Account? debitAccount))
+        if (!TryGetAccount(model.DebitAccountId, nameof(CreateSpendingTransactionModel.DebitAccountId), errors, out Account? debitAccount))
         {
             return null;
         }
         Account? creditAccount = null;
-        if (model.CreditAccount != null && !TryGetAccount(model.CreditAccount.AccountId, nameof(CreateSpendingTransactionModel.CreditAccount) + "." + nameof(CreateTransactionAccountModel.AccountId), errors, out creditAccount))
+        if (model.CreditAccountId != null && !TryGetAccount(model.CreditAccountId.Value, nameof(CreateSpendingTransactionModel.CreditAccountId), errors, out creditAccount))
         {
             return null;
         }
@@ -114,9 +114,7 @@ public sealed class TransactionRequestConverter(
             Description = model.Description,
             Amount = model.Amount,
             DebitAccount = debitAccount,
-            DebitPostedDate = model.DebitAccount.PostedDate,
             CreditAccount = creditAccount,
-            CreditPostedDate = model.CreditAccount?.PostedDate,
             FundAssignments = fundAssignments,
         };
     }
@@ -126,12 +124,12 @@ public sealed class TransactionRequestConverter(
         CreateIncomeTransactionModel model,
         Dictionary<string, string[]> errors)
     {
-        if (!TryGetAccount(model.CreditAccount.AccountId, nameof(CreateIncomeTransactionModel.CreditAccount) + "." + nameof(CreateTransactionAccountModel.AccountId), errors, out Account? creditAccount))
+        if (!TryGetAccount(model.CreditAccountId, nameof(CreateIncomeTransactionModel.CreditAccountId), errors, out Account? creditAccount))
         {
             return null;
         }
         Account? debitAccount = null;
-        if (model.DebitAccount != null && !TryGetAccount(model.DebitAccount.AccountId, nameof(CreateIncomeTransactionModel.DebitAccount) + "." + nameof(CreateTransactionAccountModel.AccountId), errors, out debitAccount))
+        if (model.DebitAccountId != null && !TryGetAccount(model.DebitAccountId.Value, nameof(CreateIncomeTransactionModel.DebitAccountId), errors, out debitAccount))
         {
             return null;
         }
@@ -147,9 +145,7 @@ public sealed class TransactionRequestConverter(
             Description = model.Description,
             Amount = model.Amount,
             CreditAccount = creditAccount,
-            CreditPostedDate = model.CreditAccount.PostedDate,
             DebitAccount = debitAccount,
-            DebitPostedDate = model.DebitAccount?.PostedDate,
             FundAssignments = fundAssignments,
         };
     }
@@ -160,12 +156,12 @@ public sealed class TransactionRequestConverter(
         Dictionary<string, string[]> errors)
     {
         Account? debitAccount = null;
-        if (model.DebitAccount != null && !TryGetAccount(model.DebitAccount.AccountId, nameof(CreateAccountTransactionModel.DebitAccount) + "." + nameof(CreateTransactionAccountModel.AccountId), errors, out debitAccount))
+        if (model.DebitAccountId != null && !TryGetAccount(model.DebitAccountId.Value, nameof(CreateAccountTransactionModel.DebitAccountId), errors, out debitAccount))
         {
             return null;
         }
         Account? creditAccount = null;
-        if (model.CreditAccount != null && !TryGetAccount(model.CreditAccount.AccountId, nameof(CreateAccountTransactionModel.CreditAccount) + "." + nameof(CreateTransactionAccountModel.AccountId), errors, out creditAccount))
+        if (model.CreditAccountId != null && !TryGetAccount(model.CreditAccountId.Value, nameof(CreateAccountTransactionModel.CreditAccountId), errors, out creditAccount))
         {
             return null;
         }
@@ -177,9 +173,7 @@ public sealed class TransactionRequestConverter(
             Description = model.Description,
             Amount = model.Amount,
             DebitAccount = debitAccount,
-            DebitPostedDate = model.DebitAccount?.PostedDate,
             CreditAccount = creditAccount,
-            CreditPostedDate = model.CreditAccount?.PostedDate,
             GeneratedByAccountId = null,
         };
     }
@@ -220,8 +214,6 @@ public sealed class TransactionRequestConverter(
             Location = model.Location,
             Description = model.Description,
             Amount = model.Amount,
-            DebitPostedDate = model.DebitAccount?.PostedDate,
-            CreditPostedDate = model.CreditAccount?.PostedDate,
             FundAssignments = fundAssignments,
         };
     }
@@ -238,8 +230,6 @@ public sealed class TransactionRequestConverter(
             Location = model.Location,
             Description = model.Description,
             Amount = model.Amount,
-            DebitPostedDate = model.DebitAccount?.PostedDate,
-            CreditPostedDate = model.CreditAccount?.PostedDate,
             FundAssignments = fundAssignments,
         };
     }
@@ -251,8 +241,6 @@ public sealed class TransactionRequestConverter(
             Location = model.Location,
             Description = model.Description,
             Amount = model.Amount,
-            DebitPostedDate = model.DebitAccount?.PostedDate,
-            CreditPostedDate = model.CreditAccount?.PostedDate,
         };
 
     private static UpdateFundTransactionRequest BuildFundUpdateRequest(UpdateFundTransactionModel model) =>
