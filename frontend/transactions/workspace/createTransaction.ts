@@ -12,6 +12,7 @@ import { revalidatePath } from "next/cache";
  */
 interface ActionState {
   readonly success?: boolean;
+  readonly transactionId?: string | null;
   readonly errorTitle?: string | null;
   readonly accountingPeriodErrors?: string | null;
   readonly dateErrors?: string | null;
@@ -98,7 +99,7 @@ const createTransaction = async function (
     throw new Error("Transaction creation did not return a transaction.");
   }
   revalidatePath(redirectUrl);
-  return { success: true };
+  return { success: true, transactionId: data.id };
 };
 
 export default createTransaction;

@@ -88,6 +88,8 @@ const TransactionWorkspaceActions = function ({
       ? requestedAction
       : availableActions[0];
 
+  const redirectUrl = `${pathname}?${searchParams.toString()}`;
+
   const setAction = function (action: TransactionWorkspaceAction | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (action === null) {
@@ -187,7 +189,7 @@ const TransactionWorkspaceActions = function ({
             accountingPeriods={accountingPeriods}
             accounts={accounts}
             funds={funds}
-            redirectUrl={pathname}
+            redirectUrl={redirectUrl}
           />
         ) : null}
         {activeAction === "view" &&

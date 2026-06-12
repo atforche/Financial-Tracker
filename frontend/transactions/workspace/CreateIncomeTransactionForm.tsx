@@ -25,6 +25,7 @@ import TransactionDetailsSection from "@/transactions/workspace/TransactionDetai
 import createTransaction from "@/transactions/workspace/createTransaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
+import { useRouter } from "next/navigation";
 
 interface CreateIncomeTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
@@ -42,6 +43,7 @@ const CreateIncomeTransactionForm = function ({
   funds,
   redirectUrl,
 }: CreateIncomeTransactionFormProps): JSX.Element {
+  const router = useRouter();
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
   const formRef = useRef<HTMLDivElement | null>(null);
@@ -86,11 +88,13 @@ const CreateIncomeTransactionForm = function ({
   };
 
   useEffect(() => {
-    if (state.success === true) {
+    if (state.success === true && state.transactionId !== null) {
+      const nextUrl = `${redirectUrl}${redirectUrl.includes("?") ? "&" : "?"}selectedTransactionId=${state.transactionId}`;
+      router.replace(nextUrl, { scroll: false });
       reset();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
+  }, [redirectUrl, router, state]);
 
   const onAmountChange = function (newAmount: number | null): void {
     setAmount(newAmount);

@@ -22,6 +22,7 @@ import TransactionAccountPairSection from "@/transactions/workspace/TransactionA
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import createTransaction from "@/transactions/workspace/createTransaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
+import { useRouter } from "next/navigation";
 
 interface CreateAccountTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
@@ -37,6 +38,7 @@ const CreateAccountTransactionForm = function ({
   accounts,
   redirectUrl,
 }: CreateAccountTransactionFormProps): JSX.Element {
+  const router = useRouter();
   const formRef = useRef<HTMLDivElement | null>(null);
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(
@@ -73,11 +75,13 @@ const CreateAccountTransactionForm = function ({
   };
 
   useEffect(() => {
-    if (state.success === true) {
+    if (state.success === true && state.transactionId !== null) {
+      const nextUrl = `${redirectUrl}${redirectUrl.includes("?") ? "&" : "?"}selectedTransactionId=${state.transactionId}`;
+      router.replace(nextUrl, { scroll: false });
       reset();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
+  }, [redirectUrl, router, state]);
 
   let request: CreateTransactionRequest | null = null;
   if (
