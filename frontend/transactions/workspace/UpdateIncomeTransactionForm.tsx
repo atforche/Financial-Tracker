@@ -22,6 +22,7 @@ import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FundAssignmentPlanner from "@/funds/FundAssignmentPlanner";
+import type { Goal } from "@/goals/types";
 import TransactionAccountPairSection from "@/transactions/workspace/TransactionAccountPairSection";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
@@ -34,6 +35,7 @@ interface UpdateIncomeTransactionFormProps {
   readonly transactionDebitAccount: Account | null;
   readonly transactionCreditAccount: Account | null;
   readonly funds: Fund[];
+  readonly goals: Goal[];
   readonly redirectUrl: string;
 }
 
@@ -46,6 +48,7 @@ const UpdateIncomeTransactionForm = function ({
   transactionDebitAccount,
   transactionCreditAccount,
   funds,
+  goals,
   redirectUrl,
 }: UpdateIncomeTransactionFormProps): JSX.Element {
   const unassignedFund =
@@ -66,6 +69,9 @@ const UpdateIncomeTransactionForm = function ({
           transaction.fundAssignments,
         )
       : [],
+  );
+  const currentGoals = goals.filter(
+    (goal) => goal.accountingPeriodId === transactionAccountingPeriod.id,
   );
 
   const [state, action, pending] = useActionState(updateTransaction, {});
@@ -159,7 +165,14 @@ const UpdateIncomeTransactionForm = function ({
           title="Fund Allocation"
           tone="income"
           funds={funds}
+          goals={currentGoals}
           totalAmountToAssign={amount}
+          baselineValue={
+            transaction.transactionType === TransactionType.Income &&
+            "fundAssignments" in transaction
+              ? transaction.fundAssignments
+              : []
+          }
           value={fundAssignments}
           setValue={setFundAssignments}
         />

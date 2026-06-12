@@ -18,6 +18,7 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateTransactionForm from "@/transactions/workspace/CreateTransactionForm";
 import DeleteTransactionForm from "@/transactions/workspace/DeleteTransactionForm";
 import type { Fund } from "@/funds/types";
+import type { Goal } from "@/goals/types";
 import type { JSX } from "react";
 import PostTransactionForm from "@/transactions/workspace/PostTransactionForm";
 import type { TransactionWorkspaceAction } from "@/transactions/workspace/TransactionWorkspace";
@@ -32,6 +33,7 @@ interface TransactionWorkspaceActionsProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: Account[];
   readonly funds: Fund[];
+  readonly goals: Goal[];
   readonly selectedTransaction: Transaction | null;
   readonly requestedAction: TransactionWorkspaceAction | null;
 }
@@ -66,6 +68,7 @@ const TransactionWorkspaceActions = function ({
   accountingPeriods,
   accounts,
   funds,
+  goals,
   selectedTransaction,
   requestedAction,
 }: TransactionWorkspaceActionsProps): JSX.Element {
@@ -189,6 +192,7 @@ const TransactionWorkspaceActions = function ({
             accountingPeriods={accountingPeriods}
             accounts={accounts}
             funds={funds}
+            goals={goals}
             redirectUrl={redirectUrl}
           />
         ) : null}
@@ -226,6 +230,7 @@ const TransactionWorkspaceActions = function ({
             transactionDebitFund={selectedTransactionDebitFund}
             transactionCreditFund={selectedTransactionCreditFund}
             funds={funds}
+            goals={goals}
             redirectUrl={pathname}
           />
         ) : null}

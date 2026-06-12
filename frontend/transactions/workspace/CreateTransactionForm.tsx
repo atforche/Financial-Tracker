@@ -14,6 +14,7 @@ import CreateFundTransactionForm from "@/transactions/workspace/CreateFundTransa
 import CreateIncomeTransactionForm from "@/transactions/workspace/CreateIncomeTransactionForm";
 import CreateSpendingTransactionForm from "@/transactions/workspace/CreateSpendingTransactionForm";
 import type { Fund } from "@/funds/types";
+import type { Goal } from "@/goals/types";
 
 /**
  * Props for the CreateTransactionForm component.
@@ -22,6 +23,7 @@ interface CreateTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: Account[];
   readonly funds: Fund[];
+  readonly goals: Goal[];
   readonly redirectUrl: string;
 }
 
@@ -32,6 +34,7 @@ const CreateTransactionForm = function ({
   accountingPeriods,
   accounts,
   funds,
+  goals,
   redirectUrl,
 }: CreateTransactionFormProps): JSX.Element {
   type TransactionFormKind = "income" | "spending" | "account" | "fund";
@@ -69,6 +72,7 @@ const CreateTransactionForm = function ({
           accountingPeriods={accountingPeriods}
           accounts={accounts}
           funds={funds}
+          goals={goals}
           redirectUrl={redirectUrl}
         />
       ) : null}
@@ -77,6 +81,7 @@ const CreateTransactionForm = function ({
           accountingPeriods={accountingPeriods}
           accounts={accounts}
           funds={funds}
+          goals={goals}
           redirectUrl={redirectUrl}
         />
       ) : null}

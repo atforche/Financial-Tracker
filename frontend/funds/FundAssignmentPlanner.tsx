@@ -11,7 +11,7 @@ import {
   Typography,
   alpha,
 } from "@mui/material";
-import type { Fund, FundAmount } from "@/funds/types";
+import type { Fund, FundAmount, FundIdentifier } from "@/funds/types";
 import {
   getAssignedFundAmount,
   getExplicitFundAssignments,
@@ -22,6 +22,7 @@ import {
 } from "@/funds/fundAssignment";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import FundEntryField from "@/funds/FundEntryField";
+import type { Goal } from "@/goals/types";
 import type { JSX } from "react";
 import formatCurrency from "@/framework/formatCurrency";
 
@@ -29,10 +30,15 @@ interface FundAssignmentPlannerProps {
   readonly title: string;
   readonly tone: "income" | "spending";
   readonly funds: Fund[];
+  readonly goals?: Goal[];
   readonly totalAmountToAssign: number | null;
+  readonly baselineValue?: FundAmount[];
   readonly value: FundAmount[];
   readonly setValue: (newValue: FundAmount[]) => void;
 }
+
+const emptyGoals: Goal[] = [];
+const emptyFundAmounts: FundAmount[] = [];
 
 /**
  * Presents a responsive fund allocation planner that keeps the unassigned remainder automatic.
@@ -41,7 +47,9 @@ const FundAssignmentPlanner = function ({
   title,
   tone,
   funds,
+  goals = emptyGoals,
   totalAmountToAssign,
+  baselineValue = emptyFundAmounts,
   value,
   setValue,
 }: FundAssignmentPlannerProps): JSX.Element {
@@ -49,6 +57,10 @@ const FundAssignmentPlanner = function ({
   const explicitFundAssignments = getExplicitFundAssignments(
     unassignedFund,
     value,
+  );
+  const baselineAssignments = getExplicitFundAssignments(
+    unassignedFund,
+    baselineValue,
   );
   const assignedAmount = getAssignedFundAmount(unassignedFund, value);
   const remainingAmount = getRemainingFundAmount(
@@ -60,6 +72,13 @@ const FundAssignmentPlanner = function ({
     unassignedFund,
     totalAmountToAssign,
     value,
+  );
+  const goalsByFundId = new Map(goals.map((goal) => [goal.fundId, goal]));
+  const baselineAssignedAmountsByFundId = new Map(
+    baselineAssignments.map((assignment) => [
+      assignment.fundId,
+      assignment.amount,
+    ]),
   );
 
   const availableFunds = funds.filter(
@@ -78,6 +97,83 @@ const FundAssignmentPlanner = function ({
         nextAssignments,
       ),
     );
+  };
+
+  const getGoalRemainingBeforeCurrentAssignment = function (
+    fundId: string,
+  ): number | null {
+    const goal = goalsByFundId.get(fundId);
+
+    if (typeof goal === "undefined") {
+      return null;
+    }
+
+    const baselineAssignedAmount =
+      baselineAssignedAmountsByFundId.get(fundId) ?? 0;
+
+    return tone === "income"
+      ? goal.remainingAmountToAssignIncludingPending + baselineAssignedAmount
+      : goal.remainingAmountToSpendIncludingPending + baselineAssignedAmount;
+  };
+
+  const getProjectedGoalRemainingAmount = function (
+    fundId: string,
+    amount: number,
+  ): number | null {
+    const goalRemainingBeforeCurrentAssignment =
+      getGoalRemainingBeforeCurrentAssignment(fundId);
+
+    if (goalRemainingBeforeCurrentAssignment === null) {
+      return null;
+    }
+
+    return goalRemainingBeforeCurrentAssignment - amount;
+  };
+
+  const getFundOptionSecondaryLabel = function (
+    fund: FundIdentifier,
+  ): string | null {
+    const goalRemainingAmount = getGoalRemainingBeforeCurrentAssignment(
+      fund.id,
+    );
+
+    if (goalRemainingAmount === null) {
+      return "No goal";
+    }
+
+    return tone === "income"
+      ? `Remaining to assign ${formatCurrency(goalRemainingAmount)}`
+      : `Remaining to spend ${formatCurrency(goalRemainingAmount)}`;
+  };
+
+  const sortFundsByRemainingAmount = function (
+    left: FundIdentifier,
+    right: FundIdentifier,
+  ): number {
+    const leftRemainingAmount = getGoalRemainingBeforeCurrentAssignment(
+      left.id,
+    );
+    const rightRemainingAmount = getGoalRemainingBeforeCurrentAssignment(
+      right.id,
+    );
+
+    if (leftRemainingAmount === null && rightRemainingAmount === null) {
+      return left.name.localeCompare(right.name);
+    }
+
+    if (leftRemainingAmount === null) {
+      return 1;
+    }
+
+    if (rightRemainingAmount === null) {
+      return -1;
+    }
+
+    if (leftRemainingAmount !== rightRemainingAmount) {
+      return rightRemainingAmount - leftRemainingAmount;
+    }
+
+    return left.name.localeCompare(right.name);
   };
 
   const getSuggestedAmount = function (index: number): number {
@@ -238,101 +334,144 @@ const FundAssignmentPlanner = function ({
             </Box>
           ) : null}
 
-          {explicitFundAssignments.map((assignment, index) => (
-            <Paper
-              key={assignment.fundId || `assignment-${index}`}
-              variant="outlined"
-              sx={{ borderRadius: 3, p: { xs: 2, md: 2.5 } }}
-            >
-              <Stack spacing={2}>
-                <Stack
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={1}
-                  justifyContent="space-between"
-                  alignItems={{ xs: "flex-start", sm: "center" }}
-                >
-                  <Box>
-                    <Typography variant="subtitle1">
-                      Assignment {index + 1}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Suggested amount:{" "}
-                      {formatCurrency(getSuggestedAmount(index))}
-                    </Typography>
+          {explicitFundAssignments.map((assignment, index) => {
+            const goal = goalsByFundId.get(assignment.fundId) ?? null;
+            const projectedGoalRemainingAmount =
+              getProjectedGoalRemainingAmount(
+                assignment.fundId,
+                assignment.amount,
+              );
+
+            return (
+              <Paper
+                key={assignment.fundId || `assignment-${index}`}
+                variant="outlined"
+                sx={{ borderRadius: 3, p: { xs: 2, md: 2.5 } }}
+              >
+                <Stack spacing={2}>
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={1}
+                    justifyContent="space-between"
+                    alignItems={{ xs: "flex-start", sm: "center" }}
+                  >
+                    <Box>
+                      <Typography variant="subtitle1">
+                        Assignment {index + 1}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Suggested amount:{" "}
+                        {formatCurrency(getSuggestedAmount(index))}
+                      </Typography>
+                    </Box>
+                    <IconButton
+                      aria-label="Delete fund assignment"
+                      onClick={() => {
+                        applyAssignments(
+                          explicitFundAssignments.filter(
+                            (_, itemIndex) => itemIndex !== index,
+                          ),
+                        );
+                      }}
+                    >
+                      <DeleteOutline />
+                    </IconButton>
+                  </Stack>
+
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gap: 2,
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
+                    }}
+                  >
+                    <FundEntryField
+                      label="Fund"
+                      options={funds}
+                      value={{
+                        id: assignment.fundId,
+                        name: assignment.fundName,
+                      }}
+                      setValue={(newValue): void => {
+                        updateAssignment(index, {
+                          fundId: newValue?.id ?? "",
+                          fundName: newValue?.name ?? "",
+                          amount:
+                            assignment.amount > 0
+                              ? assignment.amount
+                              : getSuggestedAmount(index),
+                        });
+                      }}
+                      filter={(fund) =>
+                        fund.name !== "Unassigned" &&
+                        (fund.id === assignment.fundId ||
+                          !explicitFundAssignments.some(
+                            (existingAssignment) =>
+                              existingAssignment.fundId === fund.id,
+                          ))
+                      }
+                      getOptionSecondaryLabel={getFundOptionSecondaryLabel}
+                      sortComparator={sortFundsByRemainingAmount}
+                    />
+                    <CurrencyEntryField
+                      label="Assigned Amount"
+                      value={assignment.amount}
+                      setValue={(newAmount): void => {
+                        updateAssignment(index, {
+                          ...assignment,
+                          amount: newAmount ?? 0,
+                        });
+                      }}
+                    />
                   </Box>
-                  <IconButton
-                    aria-label="Delete fund assignment"
-                    onClick={() => {
-                      applyAssignments(
-                        explicitFundAssignments.filter(
-                          (_, itemIndex) => itemIndex !== index,
-                        ),
-                      );
-                    }}
-                  >
-                    <DeleteOutline />
-                  </IconButton>
-                </Stack>
 
-                <Box
-                  sx={{
-                    display: "grid",
-                    gap: 2,
-                    gridTemplateColumns:
-                      "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
-                  }}
-                >
-                  <FundEntryField
-                    label="Fund"
-                    options={funds}
-                    value={{ id: assignment.fundId, name: assignment.fundName }}
-                    setValue={(newValue): void => {
-                      updateAssignment(index, {
-                        fundId: newValue?.id ?? "",
-                        fundName: newValue?.name ?? "",
-                        amount:
-                          assignment.amount > 0
-                            ? assignment.amount
-                            : getSuggestedAmount(index),
-                      });
-                    }}
-                    filter={(fund) =>
-                      fund.name !== "Unassigned" &&
-                      (fund.id === assignment.fundId ||
-                        !explicitFundAssignments.some(
-                          (existingAssignment) =>
-                            existingAssignment.fundId === fund.id,
-                        ))
-                    }
-                  />
-                  <CurrencyEntryField
-                    label="Assigned Amount"
-                    value={assignment.amount}
-                    setValue={(newAmount): void => {
-                      updateAssignment(index, {
-                        ...assignment,
-                        amount: newAmount ?? 0,
-                      });
-                    }}
-                  />
-                </Box>
+                  {assignment.fundId === "" ? (
+                    <Typography variant="body2" color="text.secondary">
+                      Choose a fund to see how this assignment changes its goal.
+                    </Typography>
+                  ) : goal === null || projectedGoalRemainingAmount === null ? (
+                    <Typography variant="body2" color="text.secondary">
+                      No goal is set for this fund.
+                    </Typography>
+                  ) : (
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      spacing={1}
+                      useFlexGap
+                    >
+                      <Chip
+                        variant="outlined"
+                        label={`Goal ${formatCurrency(goal.goalAmount)}`}
+                      />
+                      <Chip
+                        color={
+                          projectedGoalRemainingAmount <= 0
+                            ? "success"
+                            : "default"
+                        }
+                        label={`${tone === "income" ? "New remaining to assign" : "New remaining to spend"} ${formatCurrency(projectedGoalRemainingAmount)}`}
+                      />
+                    </Stack>
+                  )}
 
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                  <Button
-                    variant="text"
-                    onClick={() => {
-                      updateAssignment(index, {
-                        ...assignment,
-                        amount: getSuggestedAmount(index),
-                      });
-                    }}
-                  >
-                    Use Suggested Amount
-                  </Button>
+                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                    <Button
+                      variant="text"
+                      onClick={() => {
+                        updateAssignment(index, {
+                          ...assignment,
+                          amount: getSuggestedAmount(index),
+                        });
+                      }}
+                    >
+                      Use Suggested Amount
+                    </Button>
+                  </Stack>
                 </Stack>
-              </Stack>
-            </Paper>
-          ))}
+              </Paper>
+            );
+          })}
         </Stack>
 
         <Stack

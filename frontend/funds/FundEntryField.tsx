@@ -11,6 +11,12 @@ interface FundEntryFieldProps {
   readonly value: FundIdentifier | null;
   readonly setValue: ((newValue: FundIdentifier | null) => void) | null;
   readonly filter: ((fund: FundIdentifier) => boolean) | null;
+  readonly getOptionSecondaryLabel?:
+    | ((fund: FundIdentifier) => string | null)
+    | null;
+  readonly sortComparator?:
+    | ((left: FundIdentifier, right: FundIdentifier) => number)
+    | null;
   readonly autoFocus?: boolean;
 }
 
@@ -23,17 +29,26 @@ const FundEntryField = function ({
   value,
   setValue,
   filter,
+  getOptionSecondaryLabel = null,
+  sortComparator = null,
   autoFocus = false,
 }: FundEntryFieldProps): JSX.Element {
+  const filteredOptions = options.filter((fund) =>
+    filter ? filter(fund) : true,
+  );
+  const orderedOptions =
+    sortComparator === null
+      ? filteredOptions
+      : [...filteredOptions].sort(sortComparator);
+
   return (
     <ComboBoxEntryField<FundIdentifier>
       label={label}
-      options={options
-        .filter((fund) => (filter ? filter(fund) : true))
-        .map((fund) => ({
-          label: fund.name,
-          value: fund,
-        }))}
+      options={orderedOptions.map((fund) => ({
+        label: fund.name,
+        secondaryLabel: getOptionSecondaryLabel?.(fund) ?? null,
+        value: fund,
+      }))}
       value={
         value === null
           ? { label: "", value: null }

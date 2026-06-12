@@ -20,6 +20,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FundAssignmentPlanner from "@/funds/FundAssignmentPlanner";
+import type { Goal } from "@/goals/types";
 import TransactionAccountPairSection from "@/transactions/workspace/TransactionAccountPairSection";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import createTransaction from "@/transactions/workspace/createTransaction";
@@ -31,6 +32,7 @@ interface CreateSpendingTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: Account[];
   readonly funds: Fund[];
+  readonly goals: Goal[];
   readonly redirectUrl: string;
 }
 
@@ -41,6 +43,7 @@ const CreateSpendingTransactionForm = function ({
   accountingPeriods,
   accounts,
   funds,
+  goals,
   redirectUrl,
 }: CreateSpendingTransactionFormProps): JSX.Element {
   const router = useRouter();
@@ -70,6 +73,9 @@ const CreateSpendingTransactionForm = function ({
     null,
   );
   const [fundAssignments, setFundAssignments] = useState<FundAmount[]>([]);
+  const currentGoals = goals.filter(
+    (goal) => goal.accountingPeriodId === accountingPeriod?.id,
+  );
 
   const [state, action, pending] = useActionState(createTransaction, {});
 
@@ -182,7 +188,9 @@ const CreateSpendingTransactionForm = function ({
           title="Fund Allocation"
           tone="spending"
           funds={funds}
+          goals={currentGoals}
           totalAmountToAssign={amount}
+          baselineValue={[]}
           value={fundAssignments}
           setValue={setFundAssignments}
         />

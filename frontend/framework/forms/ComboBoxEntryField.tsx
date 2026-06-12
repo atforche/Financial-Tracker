@@ -8,6 +8,7 @@ import { type JSX, useEffect, useRef, useState } from "react";
  */
 interface ComboBoxOption<T> {
   readonly label: string;
+  readonly secondaryLabel?: string | null;
   readonly value: T | null;
 }
 
@@ -52,6 +53,21 @@ const ComboBoxEntryField = function <T>({
       inputValue={inputValue}
       value={value}
       disabled={setValue === null}
+      isOptionEqualToValue={(option, selectedValue) =>
+        option.label === selectedValue.label
+      }
+      renderOption={(props, option) => (
+        <Box component="li" {...props}>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography>{option.label}</Typography>
+            {typeof option.secondaryLabel === "string" ? (
+              <Typography variant="body2" color="text.secondary">
+                {option.secondaryLabel}
+              </Typography>
+            ) : null}
+          </Box>
+        </Box>
+      )}
       renderInput={(params) => (
         <Box sx={{ position: "relative" }}>
           <Typography

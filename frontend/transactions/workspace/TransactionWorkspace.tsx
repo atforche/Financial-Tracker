@@ -1,5 +1,6 @@
 import { Box, Stack } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import type { Goal } from "@/goals/types";
 import type { JSX } from "react";
 import type { TransactionSortOrder } from "@/transactions/types";
 import TransactionWorkspaceActions from "@/transactions/workspace/TransactionWorkspaceActions";
@@ -117,6 +118,23 @@ const TransactionWorkspace = async function ({
     throw new Error("Failed to fetch transactions");
   }
 
+  let goals: Goal[] = [];
+  if (openAccountingPeriods.length > 0) {
+    const { data: matchingGoals } = await apiClient.GET("/goals/many", {
+      params: {
+        query: {
+          AccountingPeriodIds: openAccountingPeriods.map((period) => period.id),
+        },
+      },
+    });
+
+    if (typeof matchingGoals === "undefined") {
+      throw new Error("Failed to fetch goals");
+    }
+
+    goals = matchingGoals.items;
+  }
+
   const selectedTransactionById =
     typeof selectedTransactionId === "string"
       ? ((
@@ -190,6 +208,7 @@ const TransactionWorkspace = async function ({
           accountingPeriods={openAccountingPeriods}
           accounts={accounts.items}
           funds={funds.items}
+          goals={goals}
           selectedTransaction={selectedTransaction}
           requestedAction={action ?? null}
         />

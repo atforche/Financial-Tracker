@@ -20,6 +20,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FundAssignmentPlanner from "@/funds/FundAssignmentPlanner";
+import type { Goal } from "@/goals/types";
 import TransactionAccountPairSection from "@/transactions/workspace/TransactionAccountPairSection";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import createTransaction from "@/transactions/workspace/createTransaction";
@@ -31,6 +32,7 @@ interface CreateIncomeTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: Account[];
   readonly funds: Fund[];
+  readonly goals: Goal[];
   readonly redirectUrl: string;
 }
 
@@ -41,6 +43,7 @@ const CreateIncomeTransactionForm = function ({
   accountingPeriods,
   accounts,
   funds,
+  goals,
   redirectUrl,
 }: CreateIncomeTransactionFormProps): JSX.Element {
   const router = useRouter();
@@ -68,6 +71,9 @@ const CreateIncomeTransactionForm = function ({
   const [sourceAccount, setSourceAccount] = useState<Account | null>(null);
   const [depositAccount, setDepositAccount] = useState<Account | null>(null);
   const [fundAssignments, setFundAssignments] = useState<FundAmount[]>([]);
+  const currentGoals = goals.filter(
+    (goal) => goal.accountingPeriodId === accountingPeriod?.id,
+  );
 
   const [state, action, pending] = useActionState(createTransaction, {});
 
@@ -180,7 +186,9 @@ const CreateIncomeTransactionForm = function ({
           title="Fund Allocation"
           tone="income"
           funds={funds}
+          goals={currentGoals}
           totalAmountToAssign={amount}
+          baselineValue={[]}
           value={fundAssignments}
           setValue={setFundAssignments}
         />
