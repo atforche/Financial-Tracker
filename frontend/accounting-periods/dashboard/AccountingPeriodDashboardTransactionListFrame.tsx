@@ -4,14 +4,16 @@ import {
   type AccountingPeriodDashboard,
   AccountingPeriodTransactionSortOrder,
 } from "@/accounting-periods/types";
-import { Button, Paper, Stack, Typography } from "@mui/material";
+import { Button, IconButton, Paper, Stack, Typography } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import type { Transaction } from "@/transactions/types";
 import formatCurrency from "@/framework/formatCurrency";
+import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 const getDebitFrom = function (transaction: Transaction): string {
@@ -32,6 +34,32 @@ const getCreditTo = function (transaction: Transaction): string {
     return transaction.creditFund.fundName;
   }
   return "";
+};
+
+const getAccountIds = function (transaction: Transaction): string[] {
+  const accountIds = new Set<string>();
+
+  if ("debitAccount" in transaction && transaction.debitAccount !== null) {
+    accountIds.add(transaction.debitAccount.accountId);
+  }
+  if ("creditAccount" in transaction && transaction.creditAccount !== null) {
+    accountIds.add(transaction.creditAccount.accountId);
+  }
+
+  return Array.from(accountIds);
+};
+
+const getFundIds = function (transaction: Transaction): string[] {
+  const fundIds = new Set<string>();
+
+  if ("debitFund" in transaction) {
+    fundIds.add(transaction.debitFund.fundId);
+  }
+  if ("creditFund" in transaction) {
+    fundIds.add(transaction.creditFund.fundId);
+  }
+
+  return Array.from(fundIds);
 };
 
 /**
@@ -80,6 +108,17 @@ const AccountingPeriodDashboardTransactionListFrame = function ({
     searchParams.get(modeParamName) === "accounting-period" ||
     searchParams.has(startAccountingPeriodIdParamName) ||
     searchParams.has(endAccountingPeriodIdParamName);
+
+  const openTransactionWorkspace = function (transaction: Transaction): void {
+    router.push(
+      routes.workspace({
+        accountingPeriodIds: [transaction.accountingPeriodId],
+        accountIds: getAccountIds(transaction),
+        fundIds: getFundIds(transaction),
+        selectedTransactionId: transaction.id,
+      }),
+    );
+  };
 
   const columns: ColumnDefinition<Transaction>[] = [
     {
@@ -218,6 +257,26 @@ const AccountingPeriodDashboardTransactionListFrame = function ({
       alignment: "right",
       minWidth: 100,
     },
+    {
+      name: "actions",
+      headerContent: "",
+      getBodyContent: (transaction: Transaction) => (
+        <IconButton
+          size="small"
+          color="primary"
+          onClick={(event) => {
+            event.stopPropagation();
+            openTransactionWorkspace(transaction);
+          }}
+          aria-label={`Open ${transaction.id}`}
+        >
+          <ArrowForwardOutlined fontSize="small" color="action" />
+        </IconButton>
+      ),
+      alignment: "right",
+      minWidth: 52,
+      maxWidth: 52,
+    },
   ];
 
   return (
@@ -234,6 +293,9 @@ const AccountingPeriodDashboardTransactionListFrame = function ({
           columns={columns}
           getId={(transaction) => transaction.id}
           data={dashboard.transactions.items}
+          onRowClick={(transaction) => {
+            openTransactionWorkspace(transaction);
+          }}
           totalCount={dashboard.transactions.totalCount}
           searchParamName={searchParamName}
           pageParamName={pageParamName}

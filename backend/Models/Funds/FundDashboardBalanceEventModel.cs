@@ -6,6 +6,11 @@ namespace Models.Funds;
 public class FundDashboardBalanceEventModel
 {
     /// <summary>
+    /// Transaction that produced this balance event.
+    /// </summary>
+    public required Guid TransactionId { get; init; }
+
+    /// <summary>
     /// Fund affected by the balance event.
     /// </summary>
     public required Guid FundId { get; init; }

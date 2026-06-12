@@ -1,14 +1,16 @@
 "use client";
 
-import { Button, Paper, Stack, Typography } from "@mui/material";
+import { Button, IconButton, Paper, Stack, Typography } from "@mui/material";
 import {
   type GoalDashboardGoal,
   GoalSortOrder,
   formatGoalType,
 } from "@/goals/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
@@ -60,6 +62,10 @@ const GoalDashboardListFrame = function ({
     params.append(fundNameParamName, fundName);
     params.delete(pageParamName);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const openGoalWorkspace = function (goal: GoalDashboardGoal): void {
+    router.push(routes.workspace({ selectedGoalId: goal.id }));
   };
 
   const currentSort = tryParseEnum(
@@ -156,6 +162,39 @@ const GoalDashboardListFrame = function ({
       getBodyContent: (goal) => formatCurrency(goal.remainingAmountToSpend),
       alignment: "right",
       minWidth: 180,
+    },
+    {
+      name: "actions",
+      headerContent: "",
+      getBodyContent: (goal) => (
+        <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+          <IconButton
+            size="small"
+            color="inherit"
+            onClick={(event) => {
+              event.stopPropagation();
+              setFundNameFilter(goal.fundName);
+            }}
+            aria-label={`Filter ${goal.fundName}`}
+          >
+            <FilterListOutlined fontSize="small" color="action" />
+          </IconButton>
+          <IconButton
+            size="small"
+            color="primary"
+            onClick={(event) => {
+              event.stopPropagation();
+              openGoalWorkspace(goal);
+            }}
+            aria-label={`Open ${goal.fundName}`}
+          >
+            <ArrowForwardOutlined fontSize="small" color="action" />
+          </IconButton>
+        </Stack>
+      ),
+      alignment: "right",
+      minWidth: 84,
+      maxWidth: 84,
     },
   ];
 

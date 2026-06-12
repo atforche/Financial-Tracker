@@ -6,6 +6,11 @@ namespace Models.Accounts;
 public class AccountDashboardBalanceEventModel
 {
     /// <summary>
+    /// Transaction that produced this balance event.
+    /// </summary>
+    public required Guid TransactionId { get; init; }
+
+    /// <summary>
     /// Account affected by the balance event.
     /// </summary>
     public required Guid AccountId { get; init; }

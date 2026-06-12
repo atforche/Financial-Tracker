@@ -2541,6 +2541,11 @@ export interface components {
         AccountDashboardBalanceEventModel: {
             /**
              * Format: uuid
+             * @description Transaction that produced this balance event.
+             */
+            transactionId: string;
+            /**
+             * Format: uuid
              * @description Account affected by the balance event.
              */
             accountId: string;
@@ -3239,6 +3244,11 @@ export interface components {
         FundDashboardBalanceEventModel: {
             /**
              * Format: uuid
+             * @description Transaction that produced this balance event.
+             */
+            transactionId: string;
+            /**
+             * Format: uuid
              * @description Fund affected by the balance event.
              */
             fundId: string;
@@ -3476,6 +3486,11 @@ export interface components {
         };
         /** @description Model representing a balance event on the Goal dashboard. */
         GoalDashboardBalanceEventModel: {
+            /**
+             * Format: uuid
+             * @description Transaction that produced this balance event.
+             */
+            transactionId: string;
             /**
              * Format: uuid
              * @description Fund affected by the balance event.

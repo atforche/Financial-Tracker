@@ -1,17 +1,26 @@
 "use client";
 
-import { Box, Button, Paper, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
 import {
   type GoalDashboardBalanceEvent,
   GoalDashboardBalanceEventSortOrder,
   GoalDashboardBalanceEventType,
 } from "@/goals/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
+import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -71,6 +80,18 @@ const GoalDashboardBalanceEventListFrame = function ({
     GoalDashboardBalanceEventSortOrder,
     searchParams.get(sortParamName) ?? "",
   );
+
+  const openTransactionWorkspace = function (
+    balanceEvent: GoalDashboardBalanceEvent,
+  ): void {
+    router.push(
+      routes.workspace({
+        accountingPeriodIds: [balanceEvent.accountingPeriodId],
+        fundIds: [balanceEvent.fundId],
+        selectedTransactionId: balanceEvent.transactionId,
+      }),
+    );
+  };
   const hasActiveFilters =
     searchParams.getAll(goalTypeParamName).length > 0 ||
     searchParams.getAll(fundNameParamName).length > 0 ||
@@ -204,6 +225,26 @@ const GoalDashboardBalanceEventListFrame = function ({
       alignment: "right",
       minWidth: 130,
     },
+    {
+      name: "actions",
+      headerContent: "",
+      getBodyContent: (balanceEvent) => (
+        <IconButton
+          size="small"
+          color="primary"
+          onClick={(event) => {
+            event.stopPropagation();
+            openTransactionWorkspace(balanceEvent);
+          }}
+          aria-label={`Open transaction ${balanceEvent.transactionId}`}
+        >
+          <ArrowForwardOutlined fontSize="small" color="action" />
+        </IconButton>
+      ),
+      alignment: "right",
+      minWidth: 52,
+      maxWidth: 52,
+    },
   ];
 
   return (
@@ -226,6 +267,9 @@ const GoalDashboardBalanceEventListFrame = function ({
           searchParamName="balanceEventSearch"
           pageParamName={pageParamName}
           hasActiveFilters={hasActiveFilters}
+          onRowClick={(balanceEvent) => {
+            openTransactionWorkspace(balanceEvent);
+          }}
           initialEmptyState={{
             title: "No balance events found",
             description:

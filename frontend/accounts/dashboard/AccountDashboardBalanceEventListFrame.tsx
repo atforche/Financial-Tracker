@@ -6,13 +6,22 @@ import {
   AccountDashboardBalanceEventType,
   AccountDashboardMode,
 } from "@/accounts/types";
-import { Box, Button, Paper, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
+import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -75,6 +84,18 @@ const AccountDashboardBalanceEventListFrame = function ({
     AccountDashboardBalanceEventSortOrder,
     searchParams.get(sortParamName) ?? "",
   );
+
+  const openTransactionWorkspace = function (
+    balanceEvent: AccountDashboardBalanceEvent,
+  ): void {
+    router.push(
+      routes.workspace({
+        accountingPeriodIds: [balanceEvent.accountingPeriodId],
+        accountIds: [balanceEvent.accountId],
+        selectedTransactionId: balanceEvent.transactionId,
+      }),
+    );
+  };
   const hasActiveFilters =
     searchParams.getAll(accountTypeParamName).length > 0 ||
     searchParams.getAll(accountNameParamName).length > 0 ||
@@ -188,6 +209,26 @@ const AccountDashboardBalanceEventListFrame = function ({
       alignment: "right",
       minWidth: 120,
     },
+    {
+      name: "actions",
+      headerContent: "",
+      getBodyContent: (balanceEvent) => (
+        <IconButton
+          size="small"
+          color="primary"
+          onClick={(event) => {
+            event.stopPropagation();
+            openTransactionWorkspace(balanceEvent);
+          }}
+          aria-label={`Open transaction ${balanceEvent.transactionId}`}
+        >
+          <ArrowForwardOutlined fontSize="small" color="action" />
+        </IconButton>
+      ),
+      alignment: "right",
+      minWidth: 52,
+      maxWidth: 52,
+    },
   ];
 
   if (mode === AccountDashboardMode.AccountingPeriod) {
@@ -238,6 +279,9 @@ const AccountDashboardBalanceEventListFrame = function ({
           searchParamName="balanceEventSearch"
           pageParamName={pageParamName}
           hasActiveFilters={hasActiveFilters}
+          onRowClick={(balanceEvent) => {
+            openTransactionWorkspace(balanceEvent);
+          }}
           initialEmptyState={{
             title: "No balance events found",
             description:

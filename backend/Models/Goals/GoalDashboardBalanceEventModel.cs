@@ -6,6 +6,11 @@ namespace Models.Goals;
 public class GoalDashboardBalanceEventModel
 {
     /// <summary>
+    /// Transaction that produced this balance event.
+    /// </summary>
+    public required Guid TransactionId { get; init; }
+
+    /// <summary>
     /// Fund affected by the balance event.
     /// </summary>
     public required Guid FundId { get; init; }

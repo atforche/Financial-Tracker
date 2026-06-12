@@ -502,6 +502,7 @@ public class GoalDashboardGetter(
         Type = row.Type,
         IsPosted = row.IsPosted,
         Amount = row.Amount,
+        TransactionId = row.TransactionId,
     };
 
     private static List<string> NormalizeNames(IEnumerable<string>? names) =>

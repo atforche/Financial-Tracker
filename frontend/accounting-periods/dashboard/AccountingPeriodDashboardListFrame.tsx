@@ -4,11 +4,20 @@ import {
   type AccountingPeriod,
   AccountingPeriodSortOrder,
 } from "@/accounting-periods/types";
-import { Button, Checkbox, Paper, Stack, Typography } from "@mui/material";
+import {
+  Button,
+  Checkbox,
+  IconButton,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriodDashboardSearchParams } from "@/accounting-periods/dashboard/AccountingPeriodDashboard";
+import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
@@ -69,6 +78,18 @@ const AccountingPeriodDashboardListFrame = function ({
     AccountingPeriodSortOrder,
     searchParams.get(sortParamName) ?? "",
   );
+
+  const openAccountingPeriodWorkspace = function (
+    accountingPeriod: AccountingPeriod,
+  ): void {
+    router.push(
+      routes.workspace({
+        years: [accountingPeriod.year],
+        months: [accountingPeriod.month],
+        selectedAccountingPeriodId: accountingPeriod.id,
+      }),
+    );
+  };
 
   const columns: ColumnDefinition<AccountingPeriod>[] = [
     {
@@ -156,6 +177,39 @@ const AccountingPeriodDashboardListFrame = function ({
         }
       },
       alignment: "right",
+    },
+    {
+      name: "actions",
+      headerContent: "",
+      getBodyContent: (accountingPeriod) => (
+        <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+          <IconButton
+            size="small"
+            color="inherit"
+            onClick={(event) => {
+              event.stopPropagation();
+              setAccountingPeriodFilter(accountingPeriod);
+            }}
+            aria-label={`Filter ${accountingPeriod.name}`}
+          >
+            <FilterListOutlined fontSize="small" color="action" />
+          </IconButton>
+          <IconButton
+            size="small"
+            color="primary"
+            onClick={(event) => {
+              event.stopPropagation();
+              openAccountingPeriodWorkspace(accountingPeriod);
+            }}
+            aria-label={`Open ${accountingPeriod.name}`}
+          >
+            <ArrowForwardOutlined fontSize="small" color="action" />
+          </IconButton>
+        </Stack>
+      ),
+      alignment: "right",
+      minWidth: 84,
+      maxWidth: 84,
     },
   ];
 

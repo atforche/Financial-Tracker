@@ -1,14 +1,23 @@
 "use client";
 
-import { Box, Button, Paper, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { type FundDashboardFund, FundDashboardSortOrder } from "@/funds/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
-import routes from "@/accounts/routes";
+import routes from "@/funds/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
@@ -58,6 +67,10 @@ const FundDashboardListFrame = function ({
     params.append(fundNameParamName, fundName);
     params.delete(pageParamName);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const openFundWorkspace = function (fund: FundDashboardFund): void {
+    router.push(routes.workspace({ selectedFundId: fund.id }));
   };
 
   const currentSort = tryParseEnum(
@@ -172,6 +185,39 @@ const FundDashboardListFrame = function ({
       },
       alignment: "right",
       minWidth: 160,
+    },
+    {
+      name: "actions",
+      headerContent: "",
+      getBodyContent: (fund) => (
+        <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+          <IconButton
+            size="small"
+            color="inherit"
+            onClick={(event) => {
+              event.stopPropagation();
+              setFundNameFilter(fund.name);
+            }}
+            aria-label={`Filter ${fund.name}`}
+          >
+            <FilterListOutlined fontSize="small" color="action" />
+          </IconButton>
+          <IconButton
+            size="small"
+            color="primary"
+            onClick={(event) => {
+              event.stopPropagation();
+              openFundWorkspace(fund);
+            }}
+            aria-label={`Open ${fund.name}`}
+          >
+            <ArrowForwardOutlined fontSize="small" color="action" />
+          </IconButton>
+        </Stack>
+      ),
+      alignment: "right",
+      minWidth: 84,
+      maxWidth: 84,
     },
   ];
 

@@ -6,10 +6,19 @@ import {
   formatAccountType,
   isPositiveChangeInBalance,
 } from "@/accounts/types";
-import { Box, Button, Paper, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
@@ -64,6 +73,12 @@ const AccountDashboardListFrame = function ({
     params.append(accountNameParamName, accountName);
     params.delete(pageParamName);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const openAccountWorkspace = function (
+    account: AccountDashboardAccount,
+  ): void {
+    router.push(routes.workspace({ selectedAccountId: account.id }));
   };
 
   const currentSort = tryParseEnum(
@@ -202,6 +217,39 @@ const AccountDashboardListFrame = function ({
       },
       alignment: "right",
       minWidth: 160,
+    },
+    {
+      name: "actions",
+      headerContent: "",
+      getBodyContent: (account) => (
+        <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+          <IconButton
+            size="small"
+            color="inherit"
+            onClick={(event) => {
+              event.stopPropagation();
+              setAccountNameFilter(account.name);
+            }}
+            aria-label={`Filter ${account.name}`}
+          >
+            <FilterListOutlined fontSize="small" color="action" />
+          </IconButton>
+          <IconButton
+            size="small"
+            color="primary"
+            onClick={(event) => {
+              event.stopPropagation();
+              openAccountWorkspace(account);
+            }}
+            aria-label={`Open ${account.name}`}
+          >
+            <ArrowForwardOutlined fontSize="small" color="action" />
+          </IconButton>
+        </Stack>
+      ),
+      alignment: "right",
+      minWidth: 84,
+      maxWidth: 84,
     },
   ];
 

@@ -904,6 +904,7 @@ public class AccountDashboardGetter(
         Type = row.Type,
         IsPosted = row.IsPosted,
         Amount = row.Amount,
+        TransactionId = row.TransactionId,
     };
 
     private static decimal NormalizeBalance(AccountType accountType, decimal balance) =>

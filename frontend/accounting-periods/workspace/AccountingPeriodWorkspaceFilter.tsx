@@ -38,6 +38,9 @@ const AccountingPeriodWorkspaceFilter = function ({
     (_, index) => firstAccountingPeriodYear + index,
   );
   const availableMonths = Array.from({ length: 12 }, (_, index) => index + 1);
+  const monthNames = Array.from({ length: 12 }, (_, index) =>
+    new Date(2024, index, 1).toLocaleString("en", { month: "long" }),
+  );
 
   const normalizeRequestedNumberValues = function (
     values: readonly string[],
@@ -226,11 +229,13 @@ const AccountingPeriodWorkspaceFilter = function ({
             onChange={(_, nextMonths) => {
               handleMonthChange(nextMonths);
             }}
-            getOptionLabel={(month) => month.toString()}
+            getOptionLabel={(month) =>
+              monthNames[month - 1] ?? month.toString()
+            }
             renderOption={(props, option, { selected }) => (
               <li {...props}>
                 <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-                {option}
+                {monthNames[option - 1] ?? option.toString()}
               </li>
             )}
             renderInput={(params) => (

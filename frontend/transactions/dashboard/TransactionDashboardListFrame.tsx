@@ -1,8 +1,9 @@
 "use client";
 
-import { Button, Paper, Stack, Typography } from "@mui/material";
+import { Button, IconButton, Paper, Stack, Typography } from "@mui/material";
 import { type Transaction, TransactionSortOrder } from "@/transactions/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
@@ -29,6 +30,35 @@ const getCreditTo = function (transaction: Transaction): string {
     return transaction.creditFund.fundName;
   }
   return "";
+};
+
+const getAccountIds = function (transaction: Transaction): string[] {
+  const accountIds = new Set<string>();
+
+  if ("debitAccount" in transaction && transaction.debitAccount !== null) {
+    accountIds.add(transaction.debitAccount.accountId);
+  }
+  if ("creditAccount" in transaction && transaction.creditAccount !== null) {
+    accountIds.add(transaction.creditAccount.accountId);
+  }
+
+  return Array.from(accountIds);
+};
+
+const getFundIds = function (transaction: Transaction): string[] {
+  const fundIds = new Set<string>();
+  const debitFund = "debitFund" in transaction ? transaction.debitFund : null;
+  const creditFund =
+    "creditFund" in transaction ? transaction.creditFund : null;
+
+  if (debitFund !== null) {
+    fundIds.add(debitFund.fundId);
+  }
+  if (creditFund !== null) {
+    fundIds.add(creditFund.fundId);
+  }
+
+  return Array.from(fundIds);
 };
 
 /**
@@ -77,6 +107,17 @@ const TransactionDashboardListFrame = function ({
     TransactionSortOrder,
     searchParams.get(sortParamName) ?? "",
   );
+
+  const openTransactionWorkspace = function (transaction: Transaction): void {
+    router.push(
+      routes.workspace({
+        accountingPeriodIds: [transaction.accountingPeriodId],
+        accountIds: getAccountIds(transaction),
+        fundIds: getFundIds(transaction),
+        selectedTransactionId: transaction.id,
+      }),
+    );
+  };
 
   const hasActiveFilters =
     searchParams.get(modeParamName) === "date" ||
@@ -218,6 +259,26 @@ const TransactionDashboardListFrame = function ({
       alignment: "right",
       minWidth: 150,
     },
+    {
+      name: "actions",
+      headerContent: "",
+      getBodyContent: (transaction) => (
+        <IconButton
+          size="small"
+          color="primary"
+          onClick={(event) => {
+            event.stopPropagation();
+            openTransactionWorkspace(transaction);
+          }}
+          aria-label={`Open transaction ${transaction.id}`}
+        >
+          <ArrowForwardOutlined fontSize="small" color="action" />
+        </IconButton>
+      ),
+      alignment: "right",
+      minWidth: 52,
+      maxWidth: 52,
+    },
   ];
 
   return (
@@ -238,6 +299,9 @@ const TransactionDashboardListFrame = function ({
           searchParamName={searchParamName}
           pageParamName={pageParamName}
           hasActiveFilters={hasActiveFilters}
+          onRowClick={(transaction) => {
+            openTransactionWorkspace(transaction);
+          }}
           initialEmptyState={{
             title: "No transactions have been recorded",
             description:

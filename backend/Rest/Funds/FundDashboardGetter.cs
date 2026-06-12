@@ -741,6 +741,7 @@ public class FundDashboardGetter(
         Type = row.Type,
         IsPosted = row.IsPosted,
         Amount = row.Amount,
+        TransactionId = row.TransactionId,
     };
 
     private sealed record AccountingPeriodBalanceValue(

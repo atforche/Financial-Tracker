@@ -1,11 +1,14 @@
 "use client";
 
 import { Paper, Stack, Typography } from "@mui/material";
+import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import type { Transaction } from "@/transactions/types";
 import formatCurrency from "@/framework/formatCurrency";
+import routes from "@/transactions/routes";
+import { useRouter } from "next/navigation";
 
 interface TransactionOverviewProps {
   readonly transactions: Transaction[];
@@ -32,6 +35,19 @@ const getCreditTo = function (transaction: Transaction): string {
   return "";
 };
 
+const getAccountIds = function (transaction: Transaction): string[] {
+  const accountIds = new Set<string>();
+
+  if ("debitAccount" in transaction && transaction.debitAccount !== null) {
+    accountIds.add(transaction.debitAccount.accountId);
+  }
+  if ("creditAccount" in transaction && transaction.creditAccount !== null) {
+    accountIds.add(transaction.creditAccount.accountId);
+  }
+
+  return Array.from(accountIds);
+};
+
 /**
  * Overview component for Transactions.
  */
@@ -39,6 +55,18 @@ const TransactionOverview = function ({
   transactions,
   totalCount,
 }: TransactionOverviewProps): JSX.Element {
+  const router = useRouter();
+
+  const handleRowClick = function (transaction: Transaction): void {
+    router.push(
+      routes.workspace({
+        accountingPeriodIds: [transaction.accountingPeriodId],
+        accountIds: getAccountIds(transaction),
+        selectedTransactionId: transaction.id,
+      }),
+    );
+  };
+
   const columns: ColumnDefinition<Transaction>[] = [
     {
       name: "date",
@@ -71,6 +99,16 @@ const TransactionOverview = function ({
       alignment: "right",
       minWidth: 110,
     },
+    {
+      name: "open",
+      headerContent: "",
+      getBodyContent: () => (
+        <ArrowForwardOutlined fontSize="small" color="action" />
+      ),
+      alignment: "right",
+      minWidth: 44,
+      maxWidth: 44,
+    },
   ];
 
   return (
@@ -84,6 +122,7 @@ const TransactionOverview = function ({
           getId={(transaction) => transaction.id}
           data={transactions}
           totalCount={totalCount}
+          onRowClick={handleRowClick}
           searchParamName="overviewTransactionSearch"
           pageParamName="overviewTransactionPage"
           initialEmptyState={{
