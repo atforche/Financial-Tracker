@@ -39,6 +39,19 @@ const transactionDashboardSearchParamsToSearchParams = function (
   return params;
 };
 
+const transactionWorkspaceSearchParamsToSearchParams = function (
+  searchParams: TransactionWorkspaceSearchParams,
+): URLSearchParams {
+  const { accountingPeriodIds, accountIds, fundIds, ...remainingSearchParams } =
+    searchParams;
+  const params = objectToSearchParams(remainingSearchParams);
+
+  appendRepeatedSearchParam(params, "accountingPeriodIds", accountingPeriodIds);
+  appendRepeatedSearchParam(params, "accountIds", accountIds);
+  appendRepeatedSearchParam(params, "fundIds", fundIds);
+  return params;
+};
+
 const pathWithSearchParams = function (
   pathname: string,
   searchParams: URLSearchParams,
@@ -59,7 +72,7 @@ const routes = {
   workspace: (searchParams: TransactionWorkspaceSearchParams): Route =>
     pathWithSearchParams(
       "/transactions/workspace",
-      objectToSearchParams(searchParams),
+      transactionWorkspaceSearchParamsToSearchParams(searchParams),
     ),
 };
 

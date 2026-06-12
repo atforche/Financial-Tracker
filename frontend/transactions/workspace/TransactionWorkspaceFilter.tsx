@@ -65,9 +65,9 @@ const TransactionWorkspaceFilter = function ({
   const router = useRouter();
 
   const pageParamName = "page";
-  const accountingPeriodParamName = "accountingPeriodId";
-  const accountParamName = "accountId";
-  const fundParamName = "fundId";
+  const accountingPeriodParamName = "accountingPeriodIds";
+  const accountParamName = "accountIds";
+  const fundParamName = "fundIds";
 
   const currentAccountingPeriods = normalizeSelectedItems(
     normalizeRequestedIds(searchParams.getAll(accountingPeriodParamName)),

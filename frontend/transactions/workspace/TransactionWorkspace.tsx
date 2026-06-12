@@ -38,6 +38,16 @@ interface TransactionWorkspaceProps {
   readonly searchParams: Promise<TransactionWorkspaceSearchParams>;
 }
 
+const toRepeatedSearchParam = function (
+  value: string | string[] | undefined,
+): string[] | null {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  return typeof value === "string" ? [value] : null;
+};
+
 /**
  * Displays the transaction workspace with list-backed inline actions.
  */
@@ -55,6 +65,10 @@ const TransactionWorkspace = async function ({
   } = await searchParams;
   const apiClient = getApiClient();
   const currentPage = normalizePageValue(page);
+  const normalizedAccountingPeriodIds =
+    toRepeatedSearchParam(accountingPeriodIds);
+  const normalizedAccountIds = toRepeatedSearchParam(accountIds);
+  const normalizedFundIds = toRepeatedSearchParam(fundIds);
 
   const openAccountingPeriodsPromise = apiClient.GET(
     "/accounting-periods/open",
@@ -64,21 +78,13 @@ const TransactionWorkspace = async function ({
   const transactionsPromise = apiClient.GET("/transactions", {
     params: {
       query: {
-        ...(Array.isArray(accountingPeriodIds)
-          ? { AccountingPeriodIds: accountingPeriodIds }
-          : typeof accountingPeriodIds !== "undefined"
-            ? { AccountingPeriodIds: [accountingPeriodIds] }
-            : {}),
-        ...(Array.isArray(accountIds)
-          ? { AccountIds: accountIds }
-          : typeof accountIds !== "undefined"
-            ? { AccountIds: [accountIds] }
-            : {}),
-        ...(Array.isArray(fundIds)
-          ? { FundIds: fundIds }
-          : typeof fundIds !== "undefined"
-            ? { FundIds: [fundIds] }
-            : {}),
+        ...(normalizedAccountingPeriodIds !== null
+          ? { AccountingPeriodIds: normalizedAccountingPeriodIds }
+          : {}),
+        ...(normalizedAccountIds !== null
+          ? { AccountIds: normalizedAccountIds }
+          : {}),
+        ...(normalizedFundIds !== null ? { FundIds: normalizedFundIds } : {}),
         Sort: sort ?? null,
         Limit: rowsPerPage,
         Offset: getPageOffset(currentPage),
@@ -111,10 +117,32 @@ const TransactionWorkspace = async function ({
     throw new Error("Failed to fetch transactions");
   }
 
+  const selectedTransactionById =
+    typeof selectedTransactionId === "string"
+      ? ((
+          await apiClient.GET("/transactions/{transactionId}", {
+            params: {
+              path: {
+                transactionId: selectedTransactionId,
+              },
+            },
+          })
+        ).data ?? null)
+      : null;
+
   const selectedTransaction =
+    selectedTransactionById ??
     transactions.items.find(
       (transaction) => transaction.id === selectedTransactionId,
-    ) ?? null;
+    ) ??
+    null;
+  const displayedTransactions =
+    selectedTransaction !== null &&
+    !transactions.items.some(
+      (transaction) => transaction.id === selectedTransaction.id,
+    )
+      ? [selectedTransaction, ...transactions.items].slice(0, rowsPerPage)
+      : transactions.items;
 
   if (
     typeof selectedTransactionId === "string" &&
@@ -122,21 +150,13 @@ const TransactionWorkspace = async function ({
   ) {
     redirect(
       routes.workspace({
-        ...(Array.isArray(accountingPeriodIds)
-          ? { accountingPeriodIds }
-          : typeof accountingPeriodIds !== "undefined"
-            ? { accountingPeriodIds: [accountingPeriodIds] }
-            : {}),
-        ...(Array.isArray(accountIds)
-          ? { accountIds }
-          : typeof accountIds !== "undefined"
-            ? { accountIds: [accountIds] }
-            : {}),
-        ...(Array.isArray(fundIds)
-          ? { fundIds }
-          : typeof fundIds !== "undefined"
-            ? { fundIds: [fundIds] }
-            : {}),
+        ...(normalizedAccountingPeriodIds !== null
+          ? { accountingPeriodIds: normalizedAccountingPeriodIds }
+          : {}),
+        ...(normalizedAccountIds !== null
+          ? { accountIds: normalizedAccountIds }
+          : {}),
+        ...(normalizedFundIds !== null ? { fundIds: normalizedFundIds } : {}),
         ...(typeof sort !== "undefined" ? { sort } : {}),
         ...(typeof page !== "undefined" ? { page: currentPage } : {}),
         ...(typeof action !== "undefined" ? { action } : {}),
@@ -162,7 +182,7 @@ const TransactionWorkspace = async function ({
         }}
       >
         <TransactionWorkspaceListFrame
-          data={transactions.items}
+          data={displayedTransactions}
           totalCount={transactions.totalCount}
           selectedTransactionId={selectedTransaction?.id ?? null}
         />
