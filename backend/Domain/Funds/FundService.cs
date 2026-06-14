@@ -246,10 +246,6 @@ public class FundService(
         {
             exceptions = exceptions.Append(new InvalidAccountingPeriodException("Funds can only be onboarded before any Accounting Periods have been created."));
         }
-        if (request.OnboardedBalance < 0)
-        {
-            exceptions = exceptions.Append(new InvalidAmountException("Fund balance cannot be negative."));
-        }
         if (!ValidateGoalConfiguration(request.AssignmentGoalType, request.AssignmentGoalAmount, request.SpendingGoalType, out IEnumerable<Exception> goalExceptions))
         {
             exceptions = exceptions.Concat(goalExceptions);
