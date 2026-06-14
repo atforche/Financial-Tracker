@@ -526,6 +526,12 @@ public class GoalDashboardGetter(
             AssignmentGoalSortOrderModel.TypeDescending => goals.OrderByDescending(goal => goal.AssignmentGoalType).ThenByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId).ToList(),
             AssignmentGoalSortOrderModel.GoalAmount => goals.OrderBy(goal => goal.GoalAmount).ThenBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
             AssignmentGoalSortOrderModel.GoalAmountDescending => goals.OrderByDescending(goal => goal.GoalAmount).ThenByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId).ToList(),
+            AssignmentGoalSortOrderModel.TotalAmountToAssign => goals.OrderBy(goal => goal.TotalAmountToAssign).ThenBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
+            AssignmentGoalSortOrderModel.TotalAmountToAssignDescending => goals.OrderByDescending(goal => goal.TotalAmountToAssign).ThenByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId).ToList(),
+            AssignmentGoalSortOrderModel.TotalAmountAssigned => goals.OrderBy(goal => goal.TotalAmountAssigned).ThenBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
+            AssignmentGoalSortOrderModel.TotalAmountAssignedDescending => goals.OrderByDescending(goal => goal.TotalAmountAssigned).ThenByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId).ToList(),
+            AssignmentGoalSortOrderModel.IsMet => goals.OrderBy(goal => goal.IsGoalMet).ThenBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
+            AssignmentGoalSortOrderModel.IsMetDescending => goals.OrderByDescending(goal => goal.IsGoalMet).ThenByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId).ToList(),
             _ => goals.OrderBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
         };
 
@@ -539,6 +545,12 @@ public class GoalDashboardGetter(
             SpendingGoalSortOrderModel.FundDescending => goals.OrderByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId).ToList(),
             SpendingGoalSortOrderModel.Type => goals.OrderBy(goal => goal.SpendingGoalType).ThenBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
             SpendingGoalSortOrderModel.TypeDescending => goals.OrderByDescending(goal => goal.SpendingGoalType).ThenByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId).ToList(),
+            SpendingGoalSortOrderModel.TotalAmountToSpend => goals.OrderBy(goal => goal.TotalAmountToSpend).ThenBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
+            SpendingGoalSortOrderModel.TotalAmountToSpendDescending => goals.OrderByDescending(goal => goal.TotalAmountToSpend).ThenByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId).ToList(),
+            SpendingGoalSortOrderModel.TotalAmountSpent => goals.OrderBy(goal => goal.TotalAmountSpent).ThenBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
+            SpendingGoalSortOrderModel.TotalAmountSpentDescending => goals.OrderByDescending(goal => goal.TotalAmountSpent).ThenByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId).ToList(),
+            SpendingGoalSortOrderModel.IsMet => goals.OrderBy(goal => goal.IsGoalMet).ThenBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
+            SpendingGoalSortOrderModel.IsMetDescending => goals.OrderByDescending(goal => goal.IsGoalMet).ThenByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId).ToList(),
             _ => goals.OrderBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
         };
 

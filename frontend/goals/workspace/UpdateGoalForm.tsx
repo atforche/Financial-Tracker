@@ -118,7 +118,7 @@ const UpdateGoalForm = function ({
           >
             <TransactionDisplayField
               label="Accounting Period"
-              value={goal.accountingPeriodName}
+              value={goal.accountingPeriodName ?? "Onboarded"}
             />
             <TransactionDisplayField label="Fund" value={goal.fundName} />
             <TransactionDisplayField

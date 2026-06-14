@@ -5,7 +5,6 @@ import {
   AssignmentGoalSortOrder,
   type SpendingGoal,
   SpendingGoalSortOrder,
-  formatAssignmentGoalType,
   formatSpendingGoalType,
 } from "@/goals/types";
 import { Button, IconButton, Paper, Stack, Typography } from "@mui/material";
@@ -155,41 +154,21 @@ const GoalDashboardListFrame = function ({
         minWidth: 160,
       },
       {
-        name: "goalType",
-        headerContent: "Goal Type",
-        getBodyContent: (goal) => formatAssignmentGoalType(goal.type),
+        name: "totalAmountToAssign",
+        headerContent: "Total Amount To Assign",
+        getBodyContent: (goal) => formatCurrency(goal.totalAmountToAssign),
         sortType:
-          currentSort === AssignmentGoalSortOrder.Type
+          currentSort === AssignmentGoalSortOrder.TotalAmountToAssign
             ? ColumnSortType.Ascending
-            : currentSort === AssignmentGoalSortOrder.TypeDescending
+            : currentSort ===
+                AssignmentGoalSortOrder.TotalAmountToAssignDescending
               ? ColumnSortType.Descending
               : null,
         onSort: (sortType): void => {
           if (sortType === ColumnSortType.Ascending) {
-            setSort(AssignmentGoalSortOrder.Type);
+            setSort(AssignmentGoalSortOrder.TotalAmountToAssign);
           } else if (sortType === ColumnSortType.Descending) {
-            setSort(AssignmentGoalSortOrder.TypeDescending);
-          } else {
-            setSort(null);
-          }
-        },
-        minWidth: 160,
-      },
-      {
-        name: "goalAmount",
-        headerContent: "Goal Amount",
-        getBodyContent: (goal) => formatCurrency(goal.goalAmount),
-        sortType:
-          currentSort === AssignmentGoalSortOrder.GoalAmount
-            ? ColumnSortType.Ascending
-            : currentSort === AssignmentGoalSortOrder.GoalAmountDescending
-              ? ColumnSortType.Descending
-              : null,
-        onSort: (sortType): void => {
-          if (sortType === ColumnSortType.Ascending) {
-            setSort(AssignmentGoalSortOrder.GoalAmount);
-          } else if (sortType === ColumnSortType.Descending) {
-            setSort(AssignmentGoalSortOrder.GoalAmountDescending);
+            setSort(AssignmentGoalSortOrder.TotalAmountToAssignDescending);
           } else {
             setSort(null);
           }
@@ -198,11 +177,49 @@ const GoalDashboardListFrame = function ({
         minWidth: 140,
       },
       {
-        name: "remainingAmountToAssign",
-        headerContent: "Remaining To Assign",
-        getBodyContent: (goal) => formatCurrency(goal.remainingAmountToAssign),
+        name: "totalAmountAssigned",
+        headerContent: "Total Amount Assigned",
+        getBodyContent: (goal) => formatCurrency(goal.totalAmountAssigned),
+        sortType:
+          currentSort === AssignmentGoalSortOrder.TotalAmountAssigned
+            ? ColumnSortType.Ascending
+            : currentSort ===
+                AssignmentGoalSortOrder.TotalAmountAssignedDescending
+              ? ColumnSortType.Descending
+              : null,
+        onSort: (sortType): void => {
+          if (sortType === ColumnSortType.Ascending) {
+            setSort(AssignmentGoalSortOrder.TotalAmountAssigned);
+          } else if (sortType === ColumnSortType.Descending) {
+            setSort(AssignmentGoalSortOrder.TotalAmountAssignedDescending);
+          } else {
+            setSort(null);
+          }
+        },
         alignment: "right",
         minWidth: 190,
+      },
+      {
+        name: "isMet",
+        headerContent: "Is Goal Met?",
+        getBodyContent: (goal) => (goal.isGoalMet ? "Yes" : "No"),
+        sortType:
+          currentSort === AssignmentGoalSortOrder.IsMet
+            ? ColumnSortType.Ascending
+            : currentSort === AssignmentGoalSortOrder.IsMetDescending
+              ? ColumnSortType.Descending
+              : null,
+        onSort: (sortType): void => {
+          if (sortType === ColumnSortType.Ascending) {
+            setSort(AssignmentGoalSortOrder.IsMet);
+          } else if (sortType === ColumnSortType.Descending) {
+            setSort(AssignmentGoalSortOrder.IsMetDescending);
+          } else {
+            setSort(null);
+          }
+        },
+        alignment: "center",
+        minWidth: 120,
       },
       {
         name: "actions",
@@ -371,15 +388,67 @@ const GoalDashboardListFrame = function ({
       name: "totalAmountToSpend",
       headerContent: "Amount To Spend",
       getBodyContent: (goal) => formatCurrency(goal.totalAmountToSpend),
+      sortType:
+        currentSort === SpendingGoalSortOrder.TotalAmountToSpend
+          ? ColumnSortType.Ascending
+          : currentSort === SpendingGoalSortOrder.TotalAmountToSpendDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSort(SpendingGoalSortOrder.TotalAmountToSpend);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSort(SpendingGoalSortOrder.TotalAmountToSpendDescending);
+        } else {
+          setSort(null);
+        }
+      },
       alignment: "right",
       minWidth: 160,
     },
     {
-      name: "remainingAmountToSpend",
-      headerContent: "Remaining To Spend",
-      getBodyContent: (goal) => formatCurrency(goal.remainingAmountToSpend),
+      name: "totalAmountSpent",
+      headerContent: "Amount Spent",
+      getBodyContent: (goal) => formatCurrency(goal.totalAmountSpent),
+      sortType:
+        currentSort === SpendingGoalSortOrder.TotalAmountSpent
+          ? ColumnSortType.Ascending
+          : currentSort === SpendingGoalSortOrder.TotalAmountSpentDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSort(SpendingGoalSortOrder.TotalAmountSpent);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSort(SpendingGoalSortOrder.TotalAmountSpentDescending);
+        } else {
+          setSort(null);
+        }
+      },
       alignment: "right",
       minWidth: 180,
+    },
+    {
+      name: "isMet",
+      headerContent: "Is Goal Met?",
+      getBodyContent: (goal) => (goal.isGoalMet ? "Yes" : "No"),
+      sortType:
+        currentSort === SpendingGoalSortOrder.IsMet
+          ? ColumnSortType.Ascending
+          : currentSort === SpendingGoalSortOrder.IsMetDescending
+            ? ColumnSortType.Descending
+            : null,
+      onSort: (sortType): void => {
+        if (sortType === ColumnSortType.Ascending) {
+          setSort(SpendingGoalSortOrder.IsMet);
+        } else if (sortType === ColumnSortType.Descending) {
+          setSort(SpendingGoalSortOrder.IsMetDescending);
+        } else {
+          setSort(null);
+        }
+      },
+      alignment: "center",
+      minWidth: 120,
     },
     {
       name: "actions",

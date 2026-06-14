@@ -131,8 +131,8 @@ namespace Data.Migrations
                     AssignmentGoalType = table.Column<string>(type: "TEXT", nullable: false),
                     GoalAmount = table.Column<decimal>(type: "TEXT", nullable: false),
                     TotalAmountToAssign = table.Column<decimal>(type: "TEXT", nullable: false),
-                    RemainingAmountToAssign = table.Column<decimal>(type: "TEXT", nullable: false),
-                    RemainingAmountToAssignIncludingPending = table.Column<decimal>(type: "TEXT", nullable: false),
+                    TotalAmountAssigned = table.Column<decimal>(type: "TEXT", nullable: false),
+                    TotalAmountAssignedIncludingPending = table.Column<decimal>(type: "TEXT", nullable: false),
                     IsGoalMet = table.Column<bool>(type: "INTEGER", nullable: false),
                     IsGoalMetIncludingPending = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
@@ -156,8 +156,8 @@ namespace Data.Migrations
                     AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: true),
                     SpendingGoalType = table.Column<string>(type: "TEXT", nullable: false),
                     TotalAmountToSpend = table.Column<decimal>(type: "TEXT", nullable: false),
-                    RemainingAmountToSpend = table.Column<decimal>(type: "TEXT", nullable: false),
-                    RemainingAmountToSpendIncludingPending = table.Column<decimal>(type: "TEXT", nullable: false),
+                    TotalAmountSpent = table.Column<decimal>(type: "TEXT", nullable: false),
+                    TotalAmountSpentIncludingPending = table.Column<decimal>(type: "TEXT", nullable: false),
                     IsGoalMet = table.Column<bool>(type: "INTEGER", nullable: false),
                     IsGoalMetIncludingPending = table.Column<bool>(type: "INTEGER", nullable: false)
                 },

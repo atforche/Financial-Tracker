@@ -23,12 +23,12 @@ public class AssignmentGoalModel
     /// <summary>
     /// Accounting Period ID for the Assignment Goal
     /// </summary>
-    public required Guid AccountingPeriodId { get; init; }
+    public required Guid? AccountingPeriodId { get; init; }
 
     /// <summary>
     /// Accounting Period name for the Assignment Goal
     /// </summary>
-    public required string AccountingPeriodName { get; init; }
+    public required string? AccountingPeriodName { get; init; }
 
     /// <summary>
     /// Type for the Assignment Goal
@@ -46,12 +46,22 @@ public class AssignmentGoalModel
     public required decimal TotalAmountToAssign { get; init; }
 
     /// <summary>
+    /// Total amount assigned for the Assignment Goal
+    /// </summary>
+    public required decimal TotalAmountAssigned { get; init; }
+
+    /// <summary>
+    /// Total amount assigned including pending assigned amounts for the Assignment Goal
+    /// </summary>
+    public required decimal TotalAmountAssignedIncludingPending { get; init; }
+
+    /// <summary>
     /// Remaining amount to assign for the Assignment Goal
     /// </summary>
     public required decimal RemainingAmountToAssign { get; init; }
 
     /// <summary>
-    /// Remaining amount to assign for the Assignment Goal including pending assigned amounts
+    /// Remaining amount to assign including pending assigned amounts for the Assignment Goal
     /// </summary>
     public required decimal RemainingAmountToAssignIncludingPending { get; init; }
 

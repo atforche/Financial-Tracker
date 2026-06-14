@@ -69,8 +69,8 @@ CREATE TABLE "AssignmentGoals" (
     "AssignmentGoalType" TEXT NOT NULL,
     "GoalAmount" TEXT NOT NULL,
     "TotalAmountToAssign" TEXT NOT NULL,
-    "RemainingAmountToAssign" TEXT NOT NULL,
-    "RemainingAmountToAssignIncludingPending" TEXT NOT NULL,
+    "TotalAmountAssigned" TEXT NOT NULL,
+    "TotalAmountAssignedIncludingPending" TEXT NOT NULL,
     "IsGoalMet" INTEGER NOT NULL,
     "IsGoalMetIncludingPending" INTEGER NOT NULL,
     CONSTRAINT "FK_AssignmentGoals_Funds_FundId" FOREIGN KEY ("FundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE
@@ -82,8 +82,8 @@ CREATE TABLE "SpendingGoals" (
     "AccountingPeriodId" TEXT NULL,
     "SpendingGoalType" TEXT NOT NULL,
     "TotalAmountToSpend" TEXT NOT NULL,
-    "RemainingAmountToSpend" TEXT NOT NULL,
-    "RemainingAmountToSpendIncludingPending" TEXT NOT NULL,
+    "TotalAmountSpent" TEXT NOT NULL,
+    "TotalAmountSpentIncludingPending" TEXT NOT NULL,
     "IsGoalMet" INTEGER NOT NULL,
     "IsGoalMetIncludingPending" INTEGER NOT NULL,
     CONSTRAINT "FK_SpendingGoals_Funds_FundId" FOREIGN KEY ("FundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE
@@ -213,7 +213,7 @@ CREATE INDEX "IX_Transactions_SpendingTransaction_CreditAccountId" ON "Transacti
 CREATE INDEX "IX_Transactions_SpendingTransaction_DebitAccountId" ON "Transactions" ("SpendingTransaction_DebitAccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260613232904_InitialCreate', '10.0.2');
+VALUES ('20260614203142_InitialCreate', '10.0.2');
 
 COMMIT;
 

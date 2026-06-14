@@ -44,4 +44,34 @@ public enum AssignmentGoalSortOrderModel
     /// Assignment Goals are sorted by goal amount in descending order
     /// </summary>
     GoalAmountDescending,
+
+    /// <summary>
+    /// Assignment Goals are sorted by total amount to assign in ascending order
+    /// </summary>
+    TotalAmountToAssign,
+
+    /// <summary>
+    /// Assignment Goals are sorted by total amount to assign in descending order
+    /// </summary>
+    TotalAmountToAssignDescending,
+
+    /// <summary>
+    /// Assignment Goals are sorted by total amount assigned in ascending order
+    /// </summary>
+    TotalAmountAssigned,
+
+    /// <summary>
+    /// Assignment Goals are sorted by total amount assigned in descending order
+    /// </summary>
+    TotalAmountAssignedDescending,
+
+    /// <summary>
+    /// Assignment Goals are sorted by whether or not they are met, with unmet goals appearing first
+    /// </summary>
+    IsMet,
+
+    /// <summary>
+    /// Assignment Goals are sorted by whether or not they are met, with met goals appearing first
+    /// </summary>
+    IsMetDescending,
 }

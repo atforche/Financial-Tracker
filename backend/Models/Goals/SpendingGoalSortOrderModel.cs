@@ -34,4 +34,34 @@ public enum SpendingGoalSortOrderModel
     /// Spending Goals are sorted by type in descending order
     /// </summary>
     TypeDescending,
+
+    /// <summary>
+    /// Spending Goals are sorted by total amount to spend in ascending order
+    /// </summary>
+    TotalAmountToSpend,
+
+    /// <summary>
+    /// Spending Goals are sorted by total amount to spend in descending order
+    /// </summary>
+    TotalAmountToSpendDescending,
+
+    /// <summary>
+    /// Spending Goals are sorted by total amount spent in ascending order
+    /// </summary>
+    TotalAmountSpent,
+
+    /// <summary>
+    /// Spending Goals are sorted by total amount spent in descending order
+    /// </summary>
+    TotalAmountSpentDescending,
+
+    /// <summary>
+    /// Spending Goals are sorted by whether or not they are met, with unmet goals appearing first
+    /// </summary>
+    IsMet,
+
+    /// <summary>
+    /// Spending Goals are sorted by whether or not they are met, with met goals appearing first
+    /// </summary>
+    IsMetDescending,
 }

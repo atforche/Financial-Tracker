@@ -16,7 +16,8 @@ public class AssignmentGoalGetter(
     AssignmentGoalRepository goalRepository,
     AccountingPeriodConverter accountingPeriodConverter,
     FundConverter fundConverter,
-    GoalConverter goalConverter)
+    GoalConverter goalConverter,
+    IAccountingPeriodRepository accountingPeriodRepository)
 {
     /// <summary>
     /// Gets the Assignment Goals that match the specified criteria
@@ -57,6 +58,10 @@ public class AssignmentGoalGetter(
         IEnumerable<AssignmentGoal> goals = accountingPeriodIds.Count == 0
             ? goalRepository.GetAll()
             : accountingPeriodIds.SelectMany(goalRepository.GetAllByAccountingPeriod);
+        if (accountingPeriodRepository.GetLatestAccountingPeriod() != null)
+        {
+            goals = goals.Where(goal => goal.AccountingPeriodId != null);
+        }
 
         if (fundIds.Count > 0)
         {
@@ -120,6 +125,54 @@ public class AssignmentGoalGetter(
         {
             resultsList = resultsList
                 .OrderByDescending(goal => goal.GoalAmount)
+                .ThenByDescending(goal => goal.FundName)
+                .ThenByDescending(goal => goal.AccountingPeriodName)
+                .ToList();
+        }
+        else if (request.Sort == AssignmentGoalSortOrderModel.TotalAmountToAssign)
+        {
+            resultsList = resultsList
+                .OrderByDescending(goal => goal.TotalAmountToAssign)
+                .ThenBy(goal => goal.FundName)
+                .ThenBy(goal => goal.AccountingPeriodName)
+                .ToList();
+        }
+        else if (request.Sort == AssignmentGoalSortOrderModel.TotalAmountToAssignDescending)
+        {
+            resultsList = resultsList
+                .OrderBy(goal => goal.TotalAmountToAssign)
+                .ThenByDescending(goal => goal.FundName)
+                .ThenByDescending(goal => goal.AccountingPeriodName)
+                .ToList();
+        }
+        else if (request.Sort == AssignmentGoalSortOrderModel.TotalAmountAssigned)
+        {
+            resultsList = resultsList
+                .OrderByDescending(goal => goal.TotalAmountAssigned)
+                .ThenBy(goal => goal.FundName)
+                .ThenBy(goal => goal.AccountingPeriodName)
+                .ToList();
+        }
+        else if (request.Sort == AssignmentGoalSortOrderModel.TotalAmountAssignedDescending)
+        {
+            resultsList = resultsList
+                .OrderBy(goal => goal.TotalAmountAssigned)
+                .ThenByDescending(goal => goal.FundName)
+                .ThenByDescending(goal => goal.AccountingPeriodName)
+                .ToList();
+        }
+        else if (request.Sort == AssignmentGoalSortOrderModel.IsMet)
+        {
+            resultsList = resultsList
+                .OrderByDescending(goal => goal.IsGoalMet)
+                .ThenBy(goal => goal.FundName)
+                .ThenBy(goal => goal.AccountingPeriodName)
+                .ToList();
+        }
+        else if (request.Sort == AssignmentGoalSortOrderModel.IsMetDescending)
+        {
+            resultsList = resultsList
+                .OrderBy(goal => goal.IsGoalMet)
                 .ThenByDescending(goal => goal.FundName)
                 .ThenByDescending(goal => goal.AccountingPeriodName)
                 .ToList();

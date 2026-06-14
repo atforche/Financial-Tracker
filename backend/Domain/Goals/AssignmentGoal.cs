@@ -34,14 +34,14 @@ public class AssignmentGoal : Entity<AssignmentGoalId>
     public decimal TotalAmountToAssign { get; private set; }
 
     /// <summary>
-    /// Remaining amount to assign for this Assignment Goal
+    /// Total amount assigned for this Assignment Goal
     /// </summary>
-    public decimal RemainingAmountToAssign { get; private set; }
+    public decimal TotalAmountAssigned { get; private set; }
 
     /// <summary>
-    /// Remaining amount to assign for this Assignment Goal including pending assigned amounts
+    /// Total amount assigned for this Assignment Goal including pending assigned amounts
     /// </summary>
-    public decimal RemainingAmountToAssignIncludingPending { get; private set; }
+    public decimal TotalAmountAssignedIncludingPending { get; private set; }
 
     /// <summary>
     /// Indicates whether the assignment goal has been met
@@ -90,10 +90,10 @@ public class AssignmentGoal : Entity<AssignmentGoalId>
             AssignmentGoalType.RecurringContribution => GoalAmount,
             _ => throw new InvalidOperationException($"Unsupported assignment goal type '{AssignmentGoalType}'."),
         };
-        RemainingAmountToAssign = TotalAmountToAssign - balanceHistory.AmountAssigned;
-        RemainingAmountToAssignIncludingPending = RemainingAmountToAssign - balanceHistory.PendingAmountAssigned;
-        IsGoalMet = RemainingAmountToAssign <= 0;
-        IsGoalMetIncludingPending = RemainingAmountToAssignIncludingPending <= 0;
+        TotalAmountAssigned = balanceHistory.AmountAssigned;
+        TotalAmountAssignedIncludingPending = TotalAmountAssigned + balanceHistory.PendingAmountAssigned;
+        IsGoalMet = TotalAmountAssigned >= TotalAmountToAssign;
+        IsGoalMetIncludingPending = TotalAmountAssignedIncludingPending >= TotalAmountToAssign;
     }
 
     /// <summary>

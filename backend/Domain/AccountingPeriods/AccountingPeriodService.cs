@@ -68,7 +68,7 @@ public class AccountingPeriodService(
                     Fund = fund,
                     AccountingPeriod = accountingPeriod,
                     AssignmentGoalType = assignmentGoalPlaceholder.AssignmentGoalType,
-                    GoalAmount = assignmentGoalPlaceholder.TotalAmountToAssign,
+                    GoalAmount = assignmentGoalPlaceholder.GoalAmount,
                 };
                 if (!assignmentGoalService.TryCreate(
                     createAssignmentGoalRequest,

@@ -123,7 +123,7 @@ const GoalWorkspaceListFrame = function ({
       {
         name: "accountingPeriod",
         headerContent: "Accounting Period",
-        getBodyContent: (goal) => goal.accountingPeriodName,
+        getBodyContent: (goal) => goal.accountingPeriodName ?? "Onboarded",
         sortType:
           currentSort === AssignmentGoalSortOrder.AccountingPeriod
             ? ColumnSortType.Ascending
@@ -139,7 +139,7 @@ const GoalWorkspaceListFrame = function ({
             setSort(null);
           }
         },
-        minWidth: 180,
+        minWidth: 150,
       },
       {
         name: "fund",
@@ -204,20 +204,6 @@ const GoalWorkspaceListFrame = function ({
         },
         alignment: "right",
         minWidth: 150,
-      },
-      {
-        name: "totalAmountToAssign",
-        headerContent: "Assigned So Far",
-        getBodyContent: (goal) => formatCurrency(goal.totalAmountToAssign),
-        alignment: "right",
-        minWidth: 160,
-      },
-      {
-        name: "remainingAmountToAssign",
-        headerContent: "Remaining To Assign",
-        getBodyContent: (goal) => formatCurrency(goal.remainingAmountToAssign),
-        alignment: "right",
-        minWidth: 180,
       },
     ];
 
@@ -363,20 +349,6 @@ const GoalWorkspaceListFrame = function ({
         }
       },
       minWidth: 170,
-    },
-    {
-      name: "totalAmountToSpend",
-      headerContent: "Spent So Far",
-      getBodyContent: (goal) => formatCurrency(goal.totalAmountToSpend),
-      alignment: "right",
-      minWidth: 150,
-    },
-    {
-      name: "remainingAmountToSpend",
-      headerContent: "Remaining To Spend",
-      getBodyContent: (goal) => formatCurrency(goal.remainingAmountToSpend),
-      alignment: "right",
-      minWidth: 180,
     },
   ];
 

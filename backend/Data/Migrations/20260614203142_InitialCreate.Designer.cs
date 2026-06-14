@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20260613232904_InitialCreate")]
+    [Migration("20260614203142_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -217,10 +217,10 @@ namespace Data.Migrations
                     b.Property<bool>("IsGoalMetIncludingPending")
                         .HasColumnType("INTEGER");
 
-                    b.Property<decimal>("RemainingAmountToAssign")
+                    b.Property<decimal>("TotalAmountAssigned")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("RemainingAmountToAssignIncludingPending")
+                    b.Property<decimal>("TotalAmountAssignedIncludingPending")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("TotalAmountToAssign")
@@ -250,14 +250,14 @@ namespace Data.Migrations
                     b.Property<bool>("IsGoalMetIncludingPending")
                         .HasColumnType("INTEGER");
 
-                    b.Property<decimal>("RemainingAmountToSpend")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("RemainingAmountToSpendIncludingPending")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("SpendingGoalType")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("TotalAmountSpent")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("TotalAmountSpentIncludingPending")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("TotalAmountToSpend")

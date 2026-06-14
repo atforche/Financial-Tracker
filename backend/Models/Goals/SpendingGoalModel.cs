@@ -23,12 +23,12 @@ public class SpendingGoalModel
     /// <summary>
     /// Accounting Period ID for the Spending Goal
     /// </summary>
-    public required Guid AccountingPeriodId { get; init; }
+    public required Guid? AccountingPeriodId { get; init; }
 
     /// <summary>
     /// Accounting Period name for the Spending Goal
     /// </summary>
-    public required string AccountingPeriodName { get; init; }
+    public required string? AccountingPeriodName { get; init; }
 
     /// <summary>
     /// Type of the Spending Goal.
@@ -41,12 +41,22 @@ public class SpendingGoalModel
     public required decimal TotalAmountToSpend { get; init; }
 
     /// <summary>
+    /// Total amount spent for the Spending Goal
+    /// </summary>
+    public required decimal TotalAmountSpent { get; init; }
+
+    /// <summary>
+    /// Total amount spent including pending assigned amounts for the Spending Goal
+    /// </summary>
+    public required decimal TotalAmountSpentIncludingPending { get; init; }
+
+    /// <summary>
     /// Remaining amount to spend for the Spending Goal
     /// </summary>
     public required decimal RemainingAmountToSpend { get; init; }
 
     /// <summary>
-    /// Remaining amount to spend for the Spending Goal including pending assigned amounts
+    /// Remaining amount to spend including pending assigned amounts for the Spending Goal
     /// </summary>
     public required decimal RemainingAmountToSpendIncludingPending { get; init; }
 

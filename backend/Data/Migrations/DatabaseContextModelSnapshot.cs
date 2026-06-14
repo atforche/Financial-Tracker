@@ -214,10 +214,10 @@ namespace Data.Migrations
                     b.Property<bool>("IsGoalMetIncludingPending")
                         .HasColumnType("INTEGER");
 
-                    b.Property<decimal>("RemainingAmountToAssign")
+                    b.Property<decimal>("TotalAmountAssigned")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("RemainingAmountToAssignIncludingPending")
+                    b.Property<decimal>("TotalAmountAssignedIncludingPending")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("TotalAmountToAssign")
@@ -247,14 +247,14 @@ namespace Data.Migrations
                     b.Property<bool>("IsGoalMetIncludingPending")
                         .HasColumnType("INTEGER");
 
-                    b.Property<decimal>("RemainingAmountToSpend")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("RemainingAmountToSpendIncludingPending")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("SpendingGoalType")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("TotalAmountSpent")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("TotalAmountSpentIncludingPending")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("TotalAmountToSpend")

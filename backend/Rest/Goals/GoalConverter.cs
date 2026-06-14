@@ -14,19 +14,21 @@ public sealed class GoalConverter(IAccountingPeriodRepository accountingPeriodRe
     /// </summary>
     public AssignmentGoalModel ToModel(AssignmentGoal goal)
     {
-        AccountingPeriod accountingPeriod = GetAccountingPeriod(goal.AccountingPeriodId);
+        AccountingPeriod? accountingPeriod = goal.AccountingPeriodId == null ? null : accountingPeriodRepository.GetById(goal.AccountingPeriodId);
         return new AssignmentGoalModel
         {
             Id = goal.Id.Value,
             FundId = goal.Fund.Id.Value,
             FundName = goal.Fund.Name,
-            AccountingPeriodId = accountingPeriod.Id.Value,
-            AccountingPeriodName = accountingPeriod.Name,
+            AccountingPeriodId = accountingPeriod?.Id.Value,
+            AccountingPeriodName = accountingPeriod?.Name,
             Type = GoalTypeConverter.ToModel(goal.AssignmentGoalType),
             GoalAmount = goal.GoalAmount,
             TotalAmountToAssign = goal.TotalAmountToAssign,
-            RemainingAmountToAssign = goal.RemainingAmountToAssign,
-            RemainingAmountToAssignIncludingPending = goal.RemainingAmountToAssignIncludingPending,
+            TotalAmountAssigned = goal.TotalAmountAssigned,
+            TotalAmountAssignedIncludingPending = goal.TotalAmountAssignedIncludingPending,
+            RemainingAmountToAssign = Math.Max(goal.TotalAmountToAssign - goal.TotalAmountAssigned, 0),
+            RemainingAmountToAssignIncludingPending = Math.Max(goal.GoalAmount - goal.TotalAmountAssignedIncludingPending, 0),
             IsGoalMet = goal.IsGoalMet,
             IsGoalMetIncludingPending = goal.IsGoalMetIncludingPending,
         };
@@ -37,23 +39,22 @@ public sealed class GoalConverter(IAccountingPeriodRepository accountingPeriodRe
     /// </summary>
     public SpendingGoalModel ToModel(SpendingGoal goal)
     {
-        AccountingPeriod accountingPeriod = GetAccountingPeriod(goal.AccountingPeriodId);
+        AccountingPeriod? accountingPeriod = goal.AccountingPeriodId == null ? null : accountingPeriodRepository.GetById(goal.AccountingPeriodId);
         return new SpendingGoalModel
         {
             Id = goal.Id.Value,
             FundId = goal.Fund.Id.Value,
             FundName = goal.Fund.Name,
-            AccountingPeriodId = accountingPeriod.Id.Value,
-            AccountingPeriodName = accountingPeriod.Name,
+            AccountingPeriodId = accountingPeriod?.Id.Value,
+            AccountingPeriodName = accountingPeriod?.Name,
             Type = GoalTypeConverter.ToModel(goal.SpendingGoalType),
             TotalAmountToSpend = goal.TotalAmountToSpend,
-            RemainingAmountToSpend = goal.RemainingAmountToSpend,
-            RemainingAmountToSpendIncludingPending = goal.RemainingAmountToSpendIncludingPending,
+            TotalAmountSpent = goal.TotalAmountSpent,
+            TotalAmountSpentIncludingPending = goal.TotalAmountSpentIncludingPending,
+            RemainingAmountToSpend = Math.Max(goal.TotalAmountToSpend - goal.TotalAmountSpent, 0),
+            RemainingAmountToSpendIncludingPending = Math.Max(goal.TotalAmountToSpend - goal.TotalAmountSpentIncludingPending, 0),
             IsGoalMet = goal.IsGoalMet,
             IsGoalMetIncludingPending = goal.IsGoalMetIncludingPending,
         };
     }
-
-    private AccountingPeriod GetAccountingPeriod(AccountingPeriodId? accountingPeriodId) =>
-        accountingPeriodRepository.GetById(accountingPeriodId ?? throw new InvalidOperationException("Goal must belong to an accounting period to be mapped."));
 }

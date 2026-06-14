@@ -29,14 +29,14 @@ public class SpendingGoal : Entity<SpendingGoalId>
     public decimal TotalAmountToSpend { get; private set; }
 
     /// <summary>
-    /// Remaining amount available to spend for this Spending Goal
+    /// Total amount spent for this Spending Goal
     /// </summary>
-    public decimal RemainingAmountToSpend { get; private set; }
+    public decimal TotalAmountSpent { get; private set; }
 
     /// <summary>
-    /// Remaining amount available to spend for this Spending Goal including pending spent amounts
+    /// Total amount spent for this Spending Goal including pending spent amounts
     /// </summary>
-    public decimal RemainingAmountToSpendIncludingPending { get; private set; }
+    public decimal TotalAmountSpentIncludingPending { get; private set; }
 
     /// <summary>
     /// Indicates whether the spending goal has been met
@@ -77,20 +77,19 @@ public class SpendingGoal : Entity<SpendingGoalId>
     internal void EvaluateGoal(AccountingPeriodFundBalanceHistory balanceHistory)
     {
         TotalAmountToSpend = balanceHistory.OpeningBalance + balanceHistory.AmountAssigned;
-        RemainingAmountToSpend = balanceHistory.ClosingBalance;
-        RemainingAmountToSpendIncludingPending = RemainingAmountToSpend - balanceHistory.PendingAmountSpent;
+        TotalAmountSpent = balanceHistory.AmountSpent;
+        TotalAmountSpentIncludingPending = TotalAmountSpent + balanceHistory.PendingAmountSpent;
 
         IsGoalMet = SpendingGoalType switch
         {
-            SpendingGoalType.Standard => RemainingAmountToSpend >= 0,
-            SpendingGoalType.Debt => RemainingAmountToSpend == 0,
+            SpendingGoalType.Standard => TotalAmountSpent <= TotalAmountToSpend,
+            SpendingGoalType.Debt => TotalAmountSpent == TotalAmountToSpend,
             _ => throw new InvalidOperationException($"Unsupported spending goal type '{SpendingGoalType}'."),
         };
-
         IsGoalMetIncludingPending = SpendingGoalType switch
         {
-            SpendingGoalType.Standard => RemainingAmountToSpendIncludingPending >= 0,
-            SpendingGoalType.Debt => RemainingAmountToSpendIncludingPending == 0,
+            SpendingGoalType.Standard => TotalAmountSpentIncludingPending <= TotalAmountToSpend,
+            SpendingGoalType.Debt => TotalAmountSpentIncludingPending == TotalAmountToSpend,
             _ => throw new InvalidOperationException($"Unsupported spending goal type '{SpendingGoalType}'."),
         };
     }

@@ -2450,9 +2450,9 @@ export interface components {
              * Format: uuid
              * @description Accounting Period ID for the Assignment Goal
              */
-            accountingPeriodId: string;
+            accountingPeriodId: null | string;
             /** @description Accounting Period name for the Assignment Goal */
-            accountingPeriodName: string;
+            accountingPeriodName: null | string;
             /** @description Type for the Assignment Goal */
             type: components["schemas"]["AssignmentGoalTypeModel"];
             /**
@@ -2467,12 +2467,22 @@ export interface components {
             totalAmountToAssign: number;
             /**
              * Format: double
+             * @description Total amount assigned for the Assignment Goal
+             */
+            totalAmountAssigned: number;
+            /**
+             * Format: double
+             * @description Total amount assigned including pending assigned amounts for the Assignment Goal
+             */
+            totalAmountAssignedIncludingPending: number;
+            /**
+             * Format: double
              * @description Remaining amount to assign for the Assignment Goal
              */
             remainingAmountToAssign: number;
             /**
              * Format: double
-             * @description Remaining amount to assign for the Assignment Goal including pending assigned amounts
+             * @description Remaining amount to assign including pending assigned amounts for the Assignment Goal
              */
             remainingAmountToAssignIncludingPending: number;
             /** @description Whether the Assignment Goal has been met */
@@ -3294,9 +3304,9 @@ export interface components {
              * Format: uuid
              * @description Accounting Period ID for the Spending Goal
              */
-            accountingPeriodId: string;
+            accountingPeriodId: null | string;
             /** @description Accounting Period name for the Spending Goal */
-            accountingPeriodName: string;
+            accountingPeriodName: null | string;
             /** @description Type of the Spending Goal. */
             type: components["schemas"]["SpendingGoalTypeModel"];
             /**
@@ -3306,12 +3316,22 @@ export interface components {
             totalAmountToSpend: number;
             /**
              * Format: double
+             * @description Total amount spent for the Spending Goal
+             */
+            totalAmountSpent: number;
+            /**
+             * Format: double
+             * @description Total amount spent including pending assigned amounts for the Spending Goal
+             */
+            totalAmountSpentIncludingPending: number;
+            /**
+             * Format: double
              * @description Remaining amount to spend for the Spending Goal
              */
             remainingAmountToSpend: number;
             /**
              * Format: double
-             * @description Remaining amount to spend for the Spending Goal including pending assigned amounts
+             * @description Remaining amount to spend including pending assigned amounts for the Spending Goal
              */
             remainingAmountToSpendIncludingPending: number;
             /** @description Whether the Spending Goal has been met */
@@ -3843,7 +3863,13 @@ export enum AssignmentGoalSortOrderModel {
     Type = "Type",
     TypeDescending = "TypeDescending",
     GoalAmount = "GoalAmount",
-    GoalAmountDescending = "GoalAmountDescending"
+    GoalAmountDescending = "GoalAmountDescending",
+    TotalAmountToAssign = "TotalAmountToAssign",
+    TotalAmountToAssignDescending = "TotalAmountToAssignDescending",
+    TotalAmountAssigned = "TotalAmountAssigned",
+    TotalAmountAssignedDescending = "TotalAmountAssignedDescending",
+    IsMet = "IsMet",
+    IsMetDescending = "IsMetDescending"
 }
 export enum AssignmentGoalTypeModel {
     MonthlyTarget = "MonthlyTarget",
@@ -3917,7 +3943,13 @@ export enum SpendingGoalSortOrderModel {
     Fund = "Fund",
     FundDescending = "FundDescending",
     Type = "Type",
-    TypeDescending = "TypeDescending"
+    TypeDescending = "TypeDescending",
+    TotalAmountToSpend = "TotalAmountToSpend",
+    TotalAmountToSpendDescending = "TotalAmountToSpendDescending",
+    TotalAmountSpent = "TotalAmountSpent",
+    TotalAmountSpentDescending = "TotalAmountSpentDescending",
+    IsMet = "IsMet",
+    IsMetDescending = "IsMetDescending"
 }
 export enum SpendingGoalTypeModel {
     Standard = "Standard",
