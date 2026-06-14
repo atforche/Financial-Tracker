@@ -1,3 +1,4 @@
+using Data.Goals;
 using Domain.AccountingPeriods;
 using Domain.Funds;
 using Domain.Goals;
@@ -14,12 +15,13 @@ namespace Rest.Goals;
 /// Class that handles retrieving Goal dashboard data for an Accounting Period range.
 /// </summary>
 public class GoalDashboardGetter(
+    AccountingPeriodConverter accountingPeriodConverter,
+    AssignmentGoalRepository assignmentGoalRepository,
+    GoalConverter goalConverter,
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
-    IGoalRepository goalRepository,
     ITransactionRepository transactionRepository,
-    GoalConverter goalConverter,
-    AccountingPeriodConverter accountingPeriodConverter)
+    SpendingGoalRepository spendingGoalRepository)
 {
     /// <summary>
     /// Retrieves the Goal dashboard data that matches the specified criteria.
@@ -42,31 +44,53 @@ public class GoalDashboardGetter(
             results = CreateEmptyResult();
             return false;
         }
-        HashSet<GoalType>? requestedGoalTypes = null;
-        if (request.GoalType is { Count: > 0 } requestedGoalTypesInput)
+        HashSet<AssignmentGoalType>? requestedAssignmentGoalTypes = null;
+        if (request.AssignmentGoalType is { Count: > 0 } requestedAssignmentGoalTypesInput)
         {
-            requestedGoalTypes = [];
-            foreach (GoalTypeModel goalTypeModel in requestedGoalTypesInput)
+            requestedAssignmentGoalTypes = [];
+            foreach (AssignmentGoalTypeModel goalTypeModel in requestedAssignmentGoalTypesInput)
             {
-                if (!GoalTypeConverter.TryToDomain(goalTypeModel, out GoalType? goalType) || goalType is null)
+                if (!GoalTypeConverter.TryToDomain(goalTypeModel, out AssignmentGoalType? goalType) || goalType is null)
                 {
-                    errors.Add(nameof(request.GoalType), [$"Unrecognized Goal Type: {goalTypeModel}"]);
+                    errors.Add(nameof(request.AssignmentGoalType), [$"Unrecognized Assignment Goal Type: {goalTypeModel}"]);
                     continue;
                 }
 
-                GoalType goalTypeValue = goalType.Value;
-                _ = requestedGoalTypes.Add(goalTypeValue);
+                _ = requestedAssignmentGoalTypes.Add(goalType.Value);
+            }
+        }
+
+        HashSet<SpendingGoalType>? requestedSpendingGoalTypes = null;
+        if (request.SpendingGoalType is { Count: > 0 } requestedSpendingGoalTypesInput)
+        {
+            requestedSpendingGoalTypes = [];
+            foreach (SpendingGoalTypeModel goalTypeModel in requestedSpendingGoalTypesInput)
+            {
+                if (!GoalTypeConverter.TryToDomain(goalTypeModel, out SpendingGoalType? goalType) || goalType is null)
+                {
+                    errors.Add(nameof(request.SpendingGoalType), [$"Unrecognized Spending Goal Type: {goalTypeModel}"]);
+                    continue;
+                }
+
+                _ = requestedSpendingGoalTypes.Add(goalType.Value);
             }
         }
 
         var requestedFundNames = NormalizeNames(request.FundName).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var accountingPeriodIds = accountingPeriods
+            .Select(accountingPeriod => accountingPeriod.Id)
+            .ToHashSet();
 
-        var baseGoals = goalRepository.GetAll()
-            .Where(goal => accountingPeriods.Any(accountingPeriod => accountingPeriod.Id == goal.AccountingPeriodId))
+        var baseAssignmentGoals = assignmentGoalRepository.GetAll()
+            .Where(goal => goal.AccountingPeriodId is not null && accountingPeriodIds.Contains(goal.AccountingPeriodId))
+            .ToList();
+        var baseSpendingGoals = spendingGoalRepository.GetAll()
+            .Where(goal => goal.AccountingPeriodId is not null && accountingPeriodIds.Contains(goal.AccountingPeriodId))
             .ToList();
 
-        var availableFundNames = baseGoals
+        var availableFundNames = baseAssignmentGoals
             .Select(goal => goal.Fund.Name)
+            .Concat(baseSpendingGoals.Select(goal => goal.Fund.Name))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
             .ToList();
@@ -77,58 +101,109 @@ public class GoalDashboardGetter(
             return false;
         }
 
-        IEnumerable<Goal> filteredGoals = baseGoals
-            .Where(goal => requestedGoalTypes == null || requestedGoalTypes.Count == 0 || requestedGoalTypes.Contains(goal.GoalType))
-            .Where(goal => requestedFundNames.Count == 0 || requestedFundNames.Contains(goal.Fund.Name));
+        var assignmentGoals = baseAssignmentGoals
+            .Where(goal => requestedFundNames.Count == 0 || requestedFundNames.Contains(goal.Fund.Name))
+            .Where(goal => requestedAssignmentGoalTypes == null || requestedAssignmentGoalTypes.Count == 0 || requestedAssignmentGoalTypes.Contains(goal.AssignmentGoalType))
+            .ToList();
+        var spendingGoals = baseSpendingGoals
+            .Where(goal => requestedFundNames.Count == 0 || requestedFundNames.Contains(goal.Fund.Name))
+            .Where(goal => requestedSpendingGoalTypes == null || requestedSpendingGoalTypes.Count == 0 || requestedSpendingGoalTypes.Contains(goal.SpendingGoalType))
+            .ToList();
 
-        List<Goal> sortedGoals = SortGoals(filteredGoals.ToList(), request.Sort);
+        List<AssignmentGoal> sortedAssignmentGoals = SortAssignmentGoals(assignmentGoals, request.AssignmentSort);
+        List<SpendingGoal> sortedSpendingGoals = SortSpendingGoals(spendingGoals, request.SpendingSort);
         List<GoalDashboardBalanceEventRow> balanceEvents = BuildBalanceEventsForAccountingPeriods(accountingPeriods, requestedFundNames);
         balanceEvents = ApplyBalanceEventFilters(balanceEvents, requestedFundNames);
-        balanceEvents = SortBalanceEvents(balanceEvents, request.BalanceEventSort);
 
-        var goalModels = sortedGoals
+        var assignmentGoalModels = sortedAssignmentGoals
+            .Select(goalConverter.ToModel)
+            .ToList();
+        var spendingGoalModels = sortedSpendingGoals
             .Select(goalConverter.ToModel)
             .ToList();
 
-        decimal totalGoalAmount = sortedGoals.Sum(goal => goal.GoalAmount);
-        decimal totalAmountAssigned = sortedGoals.Sum(goal => GetFundBalanceHistory(goal).AmountAssigned);
-        decimal totalAmountSpent = sortedGoals.Sum(goal => GetFundBalanceHistory(goal).AmountSpent);
-        int metGoals = sortedGoals.Count(goal => goal.IsAssignmentGoalMet && goal.IsSpendingGoalMet);
+        List<GoalDashboardBalanceEventRow> assignmentBalanceEvents = SortBalanceEvents(
+            balanceEvents.Where(row => row.Type == GoalDashboardBalanceEventType.Assignment).ToList(),
+            request.AssignmentBalanceEventSort);
+        List<GoalDashboardBalanceEventRow> spendingBalanceEvents = SortBalanceEvents(
+            balanceEvents.Where(row => row.Type == GoalDashboardBalanceEventType.Spending).ToList(),
+            request.SpendingBalanceEventSort);
 
-        List<GoalDashboardGoalTypeSummaryModel> goalTypeSummary = BuildTypeSummary(sortedGoals);
-        List<GoalDashboardAccountingPeriodSummaryModel> accountingPeriodSummary = BuildAccountingPeriodSummary(sortedGoals);
+        decimal totalAmountToAssign = sortedAssignmentGoals.Sum(goal => goal.TotalAmountToAssign);
+        decimal totalAmountAssigned = sortedAssignmentGoals.Sum(goal => GetFundBalanceHistory(goal).AmountAssigned);
+        int metAssignmentGoals = sortedAssignmentGoals.Count(goal => goal.IsGoalMet);
+        decimal totalAmountToSpend = sortedSpendingGoals.Sum(goal => goal.TotalAmountToSpend);
+        decimal totalAmountSpent = sortedSpendingGoals.Sum(goal => GetFundBalanceHistory(goal).AmountSpent);
+        int metSpendingGoals = sortedSpendingGoals.Count(goal => goal.IsGoalMet);
+
+        List<GoalDashboardAssignmentGoalTypeSummaryModel> assignmentGoalTypeSummary = BuildAssignmentTypeSummary(sortedAssignmentGoals);
+        List<GoalDashboardSpendingGoalTypeSummaryModel> spendingGoalTypeSummary = BuildSpendingTypeSummary(sortedSpendingGoals);
+        List<GoalDashboardAccountingPeriodSummaryModel> accountingPeriodSummary = BuildAccountingPeriodSummary(
+            accountingPeriods,
+            sortedAssignmentGoals,
+            sortedSpendingGoals);
 
         results = new GoalDashboardModel
         {
-            Goals = new CollectionModel<GoalModel>
+            AssignmentGoals = new CollectionModel<AssignmentGoalModel>
             {
-                Items = goalModels.Skip(request.Offset ?? 0).Take(request.Limit ?? int.MaxValue).ToList(),
-                TotalCount = goalModels.Count,
+                Items = ApplyGoalPaging(assignmentGoalModels, request.AssignmentGoalOffset, request.AssignmentGoalLimit),
+                TotalCount = assignmentGoalModels.Count,
             },
-            BalanceEvents = new CollectionModel<GoalDashboardBalanceEventModel>
+            AssignmentBalanceEvents = new CollectionModel<GoalDashboardBalanceEventModel>
             {
-                Items = ApplyBalanceEventPaging(balanceEvents, request)
+                Items = ApplyBalanceEventPaging(
+                        assignmentBalanceEvents,
+                        request.AssignmentBalanceEventOffset,
+                        request.AssignmentBalanceEventLimit)
                     .Select(ToModel)
                     .ToList(),
-                TotalCount = balanceEvents.Count,
+                TotalCount = assignmentBalanceEvents.Count,
             },
+            AssignmentGoalTypes = assignmentGoalTypeSummary,
+            SpendingGoals = new CollectionModel<SpendingGoalModel>
+            {
+                Items = ApplyGoalPaging(spendingGoalModels, request.SpendingGoalOffset, request.SpendingGoalLimit),
+                TotalCount = spendingGoalModels.Count,
+            },
+            SpendingBalanceEvents = new CollectionModel<GoalDashboardBalanceEventModel>
+            {
+                Items = ApplyBalanceEventPaging(
+                        spendingBalanceEvents,
+                        request.SpendingBalanceEventOffset,
+                        request.SpendingBalanceEventLimit)
+                    .Select(ToModel)
+                    .ToList(),
+                TotalCount = spendingBalanceEvents.Count,
+            },
+            SpendingGoalTypes = spendingGoalTypeSummary,
             AvailableFundNames = availableFundNames,
-            TotalGoalAmount = totalGoalAmount,
+            TotalAmountToAssign = totalAmountToAssign,
             TotalAmountAssigned = totalAmountAssigned,
+            PercentageOfAssignmentGoalsMet = sortedAssignmentGoals.Count == 0 ? 0 : metAssignmentGoals * 100m / sortedAssignmentGoals.Count,
+            TotalAmountToSpend = totalAmountToSpend,
             TotalAmountSpent = totalAmountSpent,
-            PercentageOfGoalsMet = sortedGoals.Count == 0 ? 0 : metGoals * 100m / sortedGoals.Count,
-            GoalTypes = goalTypeSummary,
+            PercentageOfSpendingGoalsMet = sortedSpendingGoals.Count == 0 ? 0 : metSpendingGoals * 100m / sortedSpendingGoals.Count,
             AccountingPeriods = accountingPeriodSummary,
         };
 
         return true;
     }
 
+    private static List<T> ApplyGoalPaging<T>(
+        IEnumerable<T> items,
+        int? offset,
+        int? limit) => items
+        .Skip(offset ?? 0)
+        .Take(limit ?? int.MaxValue)
+        .ToList();
+
     private static IEnumerable<GoalDashboardBalanceEventRow> ApplyBalanceEventPaging(
         IEnumerable<GoalDashboardBalanceEventRow> rows,
-        GoalDashboardQueryParameterModel request) => rows
-        .Skip(request.BalanceEventOffset ?? 0)
-        .Take(request.BalanceEventLimit ?? int.MaxValue);
+        int? offset,
+        int? limit) => rows
+        .Skip(offset ?? 0)
+        .Take(limit ?? int.MaxValue);
 
     private static List<GoalDashboardBalanceEventRow> ApplyBalanceEventFilters(
         IReadOnlyCollection<GoalDashboardBalanceEventRow> rows,
@@ -254,8 +329,9 @@ public class GoalDashboardGetter(
         Func<Transaction, bool> transactionFilter,
         IReadOnlySet<string>? requestedFundNames)
     {
-        var fundsById = goalRepository.GetAll()
+        var fundsById = assignmentGoalRepository.GetAll()
             .Select(goal => goal.Fund)
+            .Concat(spendingGoalRepository.GetAll().Select(goal => goal.Fund))
             .Distinct()
             .ToDictionary(fund => fund.Id.Value);
         var accountingPeriodsById = accountingPeriodRepository.GetAll().ToDictionary(period => period.Id.Value);
@@ -282,7 +358,7 @@ public class GoalDashboardGetter(
                     fundsById,
                     accountingPeriodsById,
                     requestedFundNames,
-                    GoalDashboardBalanceEventTypeModel.Spending))
+                    GoalDashboardBalanceEventType.Spending))
                 {
                     yield return balanceEvent;
                 }
@@ -296,7 +372,7 @@ public class GoalDashboardGetter(
                     fundsById,
                     accountingPeriodsById,
                     requestedFundNames,
-                    GoalDashboardBalanceEventTypeModel.Assignment))
+                    GoalDashboardBalanceEventType.Assignment))
                 {
                     yield return balanceEvent;
                 }
@@ -314,7 +390,7 @@ public class GoalDashboardGetter(
         IReadOnlyDictionary<Guid, Fund> fundsById,
         IReadOnlyDictionary<Guid, AccountingPeriod> accountingPeriodsById,
         IReadOnlySet<string>? requestedFundNames,
-        GoalDashboardBalanceEventTypeModel type)
+        GoalDashboardBalanceEventType type)
     {
         if (!accountingPeriodsById.TryGetValue(transaction.AccountingPeriodId.Value, out AccountingPeriod? accountingPeriod))
         {
@@ -346,22 +422,35 @@ public class GoalDashboardGetter(
 
     private static GoalDashboardModel CreateEmptyResult() => new()
     {
-        Goals = new CollectionModel<GoalModel>
+        AssignmentGoals = new CollectionModel<AssignmentGoalModel>
         {
             Items = [],
             TotalCount = 0,
         },
-        BalanceEvents = new CollectionModel<GoalDashboardBalanceEventModel>
+        AssignmentBalanceEvents = new CollectionModel<GoalDashboardBalanceEventModel>
         {
             Items = [],
             TotalCount = 0,
         },
+        AssignmentGoalTypes = [],
+        SpendingGoals = new CollectionModel<SpendingGoalModel>
+        {
+            Items = [],
+            TotalCount = 0,
+        },
+        SpendingBalanceEvents = new CollectionModel<GoalDashboardBalanceEventModel>
+        {
+            Items = [],
+            TotalCount = 0,
+        },
+        SpendingGoalTypes = [],
         AvailableFundNames = [],
-        TotalGoalAmount = 0,
+        TotalAmountToAssign = 0,
         TotalAmountAssigned = 0,
+        PercentageOfAssignmentGoalsMet = 0,
+        TotalAmountToSpend = 0,
         TotalAmountSpent = 0,
-        PercentageOfGoalsMet = 0,
-        GoalTypes = [],
+        PercentageOfSpendingGoalsMet = 0,
         AccountingPeriods = [],
     };
 
@@ -425,53 +514,113 @@ public class GoalDashboardGetter(
         return false;
     }
 
-    private static List<Goal> SortGoals(IEnumerable<Goal> goals, GoalSortOrderModel? sort) => sort switch
-    {
-        GoalSortOrderModel.AccountingPeriod => goals.OrderBy(goal => goal.AccountingPeriodId.Value).ThenBy(goal => goal.Fund.Name).ToList(),
-        GoalSortOrderModel.AccountingPeriodDescending => goals.OrderByDescending(goal => goal.AccountingPeriodId.Value).ThenByDescending(goal => goal.Fund.Name).ToList(),
-        GoalSortOrderModel.Fund => goals.OrderBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId.Value).ToList(),
-        GoalSortOrderModel.FundDescending => goals.OrderByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId.Value).ToList(),
-        GoalSortOrderModel.GoalAmount => goals.OrderBy(goal => goal.GoalAmount).ThenBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId.Value).ToList(),
-        GoalSortOrderModel.GoalAmountDescending => goals.OrderByDescending(goal => goal.GoalAmount).ThenByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId.Value).ToList(),
-        _ => goals.OrderBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId.Value).ToList(),
-    };
-
-    private List<GoalDashboardGoalTypeSummaryModel> BuildTypeSummary(IEnumerable<Goal> goals) => goals
-        .GroupBy(goal => goal.GoalType)
-        .Select(group => BuildGoalTypeGroupSummary(group.ToList(), group.Key))
-        .OrderBy(summary => summary.GoalType)
-        .ToList();
-
-    private List<GoalDashboardAccountingPeriodSummaryModel> BuildAccountingPeriodSummary(IEnumerable<Goal> goals) => goals
-        .GroupBy(goal => goal.AccountingPeriodId)
-        .Select(group => BuildAccountingPeriodGroupSummary(group.ToList(), group.Key))
-        .OrderBy(summary => summary.AccountingPeriodName, StringComparer.OrdinalIgnoreCase)
-        .ToList();
-
-    private GoalDashboardGoalTypeSummaryModel BuildGoalTypeGroupSummary(List<Goal> goals, GoalType goalType)
-    {
-        decimal goalAmount = goals.Sum(goal => goal.GoalAmount);
-        decimal amountAssigned = goals.Sum(goal => GetFundBalanceHistory(goal).AmountAssigned);
-        decimal amountSpent = goals.Sum(goal => GetFundBalanceHistory(goal).AmountSpent);
-        int metGoals = goals.Count(goal => goal.IsAssignmentGoalMet && goal.IsSpendingGoalMet);
-
-        return new GoalDashboardGoalTypeSummaryModel
+    private static List<AssignmentGoal> SortAssignmentGoals(
+        IEnumerable<AssignmentGoal> goals,
+        AssignmentGoalSortOrderModel? sort) => sort switch
         {
-            GoalType = GoalTypeConverter.ToModel(goalType),
-            GoalAmount = goalAmount,
-            AmountAssigned = amountAssigned,
-            AmountSpent = amountSpent,
+            AssignmentGoalSortOrderModel.AccountingPeriod => goals.OrderBy(goal => goal.AccountingPeriodId).ThenBy(goal => goal.Fund.Name).ToList(),
+            AssignmentGoalSortOrderModel.AccountingPeriodDescending => goals.OrderByDescending(goal => goal.AccountingPeriodId).ThenByDescending(goal => goal.Fund.Name).ToList(),
+            null or AssignmentGoalSortOrderModel.Fund => goals.OrderBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
+            AssignmentGoalSortOrderModel.FundDescending => goals.OrderByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId).ToList(),
+            AssignmentGoalSortOrderModel.Type => goals.OrderBy(goal => goal.AssignmentGoalType).ThenBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
+            AssignmentGoalSortOrderModel.TypeDescending => goals.OrderByDescending(goal => goal.AssignmentGoalType).ThenByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId).ToList(),
+            AssignmentGoalSortOrderModel.GoalAmount => goals.OrderBy(goal => goal.GoalAmount).ThenBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
+            AssignmentGoalSortOrderModel.GoalAmountDescending => goals.OrderByDescending(goal => goal.GoalAmount).ThenByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId).ToList(),
+            _ => goals.OrderBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
+        };
+
+    private static List<SpendingGoal> SortSpendingGoals(
+        IEnumerable<SpendingGoal> goals,
+        SpendingGoalSortOrderModel? sort) => sort switch
+        {
+            SpendingGoalSortOrderModel.AccountingPeriod => goals.OrderBy(goal => goal.AccountingPeriodId).ThenBy(goal => goal.Fund.Name).ToList(),
+            SpendingGoalSortOrderModel.AccountingPeriodDescending => goals.OrderByDescending(goal => goal.AccountingPeriodId).ThenByDescending(goal => goal.Fund.Name).ToList(),
+            null or SpendingGoalSortOrderModel.Fund => goals.OrderBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
+            SpendingGoalSortOrderModel.FundDescending => goals.OrderByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId).ToList(),
+            SpendingGoalSortOrderModel.Type => goals.OrderBy(goal => goal.SpendingGoalType).ThenBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
+            SpendingGoalSortOrderModel.TypeDescending => goals.OrderByDescending(goal => goal.SpendingGoalType).ThenByDescending(goal => goal.Fund.Name).ThenByDescending(goal => goal.AccountingPeriodId).ToList(),
+            _ => goals.OrderBy(goal => goal.Fund.Name).ThenBy(goal => goal.AccountingPeriodId).ToList(),
+        };
+
+    private List<GoalDashboardAssignmentGoalTypeSummaryModel> BuildAssignmentTypeSummary(IEnumerable<AssignmentGoal> goals) => goals
+        .GroupBy(goal => goal.AssignmentGoalType)
+        .Select(group => BuildAssignmentGoalTypeGroupSummary(group.ToList(), group.Key))
+        .OrderBy(summary => summary.AssignmentGoalType)
+        .ToList();
+
+    private List<GoalDashboardSpendingGoalTypeSummaryModel> BuildSpendingTypeSummary(IEnumerable<SpendingGoal> goals) => goals
+        .GroupBy(goal => goal.SpendingGoalType)
+        .Select(group => BuildSpendingGoalTypeGroupSummary(group.ToList(), group.Key))
+        .OrderBy(summary => summary.SpendingGoalType)
+        .ToList();
+
+    private List<GoalDashboardAccountingPeriodSummaryModel> BuildAccountingPeriodSummary(
+        IEnumerable<AccountingPeriod> accountingPeriods,
+        IEnumerable<AssignmentGoal> assignmentGoals,
+        IEnumerable<SpendingGoal> spendingGoals)
+    {
+        var assignmentGoalsByPeriodId = assignmentGoals
+            .Where(goal => goal.AccountingPeriodId is not null)
+            .GroupBy(goal => goal.AccountingPeriodId!)
+            .ToDictionary(group => group.Key, group => group.ToList());
+        var spendingGoalsByPeriodId = spendingGoals
+            .Where(goal => goal.AccountingPeriodId is not null)
+            .GroupBy(goal => goal.AccountingPeriodId!)
+            .ToDictionary(group => group.Key, group => group.ToList());
+
+        return accountingPeriods
+            .Select(accountingPeriod => BuildAccountingPeriodGroupSummary(
+                accountingPeriod,
+                assignmentGoalsByPeriodId.GetValueOrDefault(accountingPeriod.Id, []),
+                spendingGoalsByPeriodId.GetValueOrDefault(accountingPeriod.Id, [])))
+            .ToList();
+    }
+
+    private GoalDashboardAssignmentGoalTypeSummaryModel BuildAssignmentGoalTypeGroupSummary(
+        List<AssignmentGoal> goals,
+        AssignmentGoalType assignmentGoalType)
+    {
+        decimal totalAmountToAssign = goals.Sum(goal => goal.TotalAmountToAssign);
+        decimal totalAmountAssigned = goals.Sum(goal => GetFundBalanceHistory(goal).AmountAssigned);
+        int metGoals = goals.Count(goal => goal.IsGoalMet);
+
+        return new GoalDashboardAssignmentGoalTypeSummaryModel
+        {
+            AssignmentGoalType = GoalTypeConverter.ToModel(assignmentGoalType),
+            TotalAmountToAssign = totalAmountToAssign,
+            TotalAmountAssigned = totalAmountAssigned,
             PercentageOfGoalsMet = goals.Count == 0 ? 0 : metGoals * 100m / goals.Count,
         };
     }
 
-    private GoalDashboardAccountingPeriodSummaryModel BuildAccountingPeriodGroupSummary(List<Goal> goals, AccountingPeriodId accountingPeriodId)
+    private GoalDashboardSpendingGoalTypeSummaryModel BuildSpendingGoalTypeGroupSummary(
+        List<SpendingGoal> goals,
+        SpendingGoalType spendingGoalType)
     {
-        AccountingPeriod accountingPeriod = accountingPeriodRepository.GetById(accountingPeriodId);
-        decimal goalAmount = goals.Sum(goal => goal.GoalAmount);
-        decimal amountAssigned = goals.Sum(goal => GetFundBalanceHistory(goal).AmountAssigned);
-        decimal amountSpent = goals.Sum(goal => GetFundBalanceHistory(goal).AmountSpent);
-        int metGoals = goals.Count(goal => goal.IsAssignmentGoalMet && goal.IsSpendingGoalMet);
+        decimal totalAmountToSpend = goals.Sum(goal => goal.TotalAmountToSpend);
+        decimal totalAmountSpent = goals.Sum(goal => GetFundBalanceHistory(goal).AmountSpent);
+        int metGoals = goals.Count(goal => goal.IsGoalMet);
+
+        return new GoalDashboardSpendingGoalTypeSummaryModel
+        {
+            SpendingGoalType = GoalTypeConverter.ToModel(spendingGoalType),
+            TotalAmountToSpend = totalAmountToSpend,
+            TotalAmountSpent = totalAmountSpent,
+            PercentageOfGoalsMet = goals.Count == 0 ? 0 : metGoals * 100m / goals.Count,
+        };
+    }
+
+    private GoalDashboardAccountingPeriodSummaryModel BuildAccountingPeriodGroupSummary(
+        AccountingPeriod accountingPeriod,
+        List<AssignmentGoal> assignmentGoals,
+        List<SpendingGoal> spendingGoals)
+    {
+        decimal totalAmountToAssign = assignmentGoals.Sum(goal => goal.TotalAmountToAssign);
+        decimal totalAmountAssigned = assignmentGoals.Sum(goal => GetFundBalanceHistory(goal).AmountAssigned);
+        int metAssignmentGoals = assignmentGoals.Count(goal => goal.IsGoalMet);
+        decimal totalAmountToSpend = spendingGoals.Sum(goal => goal.TotalAmountToSpend);
+        decimal totalAmountSpent = spendingGoals.Sum(goal => GetFundBalanceHistory(goal).AmountSpent);
+        int metSpendingGoals = spendingGoals.Count(goal => goal.IsGoalMet);
 
         return new GoalDashboardAccountingPeriodSummaryModel
         {
@@ -479,16 +628,24 @@ public class GoalDashboardGetter(
             AccountingPeriodName = accountingPeriod.Name,
             Year = accountingPeriod.Year,
             Month = accountingPeriod.Month,
-            GoalAmount = goalAmount,
-            AmountAssigned = amountAssigned,
-            AmountSpent = amountSpent,
-            PercentageOfGoalsMet = goals.Count == 0 ? 0 : metGoals * 100m / goals.Count,
+            TotalAmountToAssign = totalAmountToAssign,
+            TotalAmountAssigned = totalAmountAssigned,
+            PercentageOfAssignmentGoalsMet = assignmentGoals.Count == 0 ? 0 : metAssignmentGoals * 100m / assignmentGoals.Count,
+            TotalAmountToSpend = totalAmountToSpend,
+            TotalAmountSpent = totalAmountSpent,
+            PercentageOfSpendingGoalsMet = spendingGoals.Count == 0 ? 0 : metSpendingGoals * 100m / spendingGoals.Count,
         };
     }
 
-    private AccountingPeriodFundBalanceHistory GetFundBalanceHistory(Goal goal) =>
+    private AccountingPeriodFundBalanceHistory GetFundBalanceHistory(AssignmentGoal goal) =>
         accountingPeriodBalanceHistoryRepository
-            .GetForAccountingPeriod(goal.AccountingPeriodId)
+            .GetForAccountingPeriod(goal.AccountingPeriodId ?? throw new InvalidOperationException("Assignment Goal must belong to an accounting period."))
+            .FundBalances
+            .Single(fundBalance => fundBalance.Fund.Id == goal.Fund.Id);
+
+    private AccountingPeriodFundBalanceHistory GetFundBalanceHistory(SpendingGoal goal) =>
+        accountingPeriodBalanceHistoryRepository
+            .GetForAccountingPeriod(goal.AccountingPeriodId ?? throw new InvalidOperationException("Spending Goal must belong to an accounting period."))
             .FundBalances
             .Single(fundBalance => fundBalance.Fund.Id == goal.Fund.Id);
 
@@ -499,7 +656,6 @@ public class GoalDashboardGetter(
         Date = row.Date,
         AccountingPeriodId = row.AccountingPeriodId,
         AccountingPeriodName = row.AccountingPeriodName,
-        Type = row.Type,
         IsPosted = row.IsPosted,
         Amount = row.Amount,
         TransactionId = row.TransactionId,
@@ -512,13 +668,19 @@ public class GoalDashboardGetter(
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList() ?? [];
 
+    private enum GoalDashboardBalanceEventType
+    {
+        Assignment,
+        Spending,
+    }
+
     private sealed record GoalDashboardBalanceEventRow(
         Guid FundId,
         string FundName,
         DateOnly Date,
         Guid AccountingPeriodId,
         string AccountingPeriodName,
-        GoalDashboardBalanceEventTypeModel Type,
+        GoalDashboardBalanceEventType Type,
         bool IsPosted,
         decimal Amount,
         DateOnly TransactionDate,

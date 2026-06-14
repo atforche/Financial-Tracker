@@ -43,9 +43,14 @@ public class DatabaseContext : DbContext
     internal DbSet<FundBalanceHistory> FundBalanceHistories { get; set; } = default!;
 
     /// <summary>
-    /// Collection of Goals in the database
+    /// Collection of Assignment Goals in the database
     /// </summary>
-    internal DbSet<Goal> Goals { get; set; } = default!;
+    internal DbSet<AssignmentGoal> AssignmentGoals { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of Spending Goals in the database
+    /// </summary>
+    internal DbSet<SpendingGoal> SpendingGoals { get; set; } = default!;
 
     /// <summary>
     /// Collection of Transactions in the database

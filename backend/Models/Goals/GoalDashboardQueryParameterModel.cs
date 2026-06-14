@@ -16,9 +16,14 @@ public class GoalDashboardQueryParameterModel
     public Guid? EndAccountingPeriodId { get; init; }
 
     /// <summary>
-    /// Optional Goal Type filters to apply to the dashboard.
+    /// Optional Assignment Goal Type filters to apply to the dashboard.
     /// </summary>
-    public IReadOnlyCollection<GoalTypeModel>? GoalType { get; init; }
+    public IReadOnlyCollection<AssignmentGoalTypeModel>? AssignmentGoalType { get; init; }
+
+    /// <summary>
+    /// Optional Spending Goal Type filters to apply to the dashboard.
+    /// </summary>
+    public IReadOnlyCollection<SpendingGoalTypeModel>? SpendingGoalType { get; init; }
 
     /// <summary>
     /// Optional Fund Name filters to apply to the dashboard.
@@ -26,32 +31,62 @@ public class GoalDashboardQueryParameterModel
     public IReadOnlyCollection<string>? FundName { get; init; }
 
     /// <summary>
-    /// Optional sort to apply to the matching Goals.
+    /// Optional sort to apply to the matching Assignment Goals.
     /// </summary>
-    public GoalSortOrderModel? Sort { get; init; }
+    public AssignmentGoalSortOrderModel? AssignmentSort { get; init; }
 
     /// <summary>
-    /// Optional sort to apply to the matching balance events.
+    /// Optional sort to apply to the matching Spending Goals.
     /// </summary>
-    public GoalDashboardBalanceEventSortOrderModel? BalanceEventSort { get; init; }
+    public SpendingGoalSortOrderModel? SpendingSort { get; init; }
 
     /// <summary>
-    /// Maximum number of results to return.
+    /// Optional sort to apply to the matching Assignment Goal balance events.
     /// </summary>
-    public int? Limit { get; init; }
+    public GoalDashboardBalanceEventSortOrderModel? AssignmentBalanceEventSort { get; init; }
 
     /// <summary>
-    /// Number of results to skip.
+    /// Optional sort to apply to the matching Spending Goal balance events.
     /// </summary>
-    public int? Offset { get; init; }
+    public GoalDashboardBalanceEventSortOrderModel? SpendingBalanceEventSort { get; init; }
 
     /// <summary>
-    /// Maximum number of balance events to return.
+    /// Maximum number of Assignment Goal results to return.
     /// </summary>
-    public int? BalanceEventLimit { get; init; }
+    public int? AssignmentGoalLimit { get; init; }
 
     /// <summary>
-    /// Number of balance events to skip.
+    /// Number of Assignment Goal results to skip.
     /// </summary>
-    public int? BalanceEventOffset { get; init; }
+    public int? AssignmentGoalOffset { get; init; }
+
+    /// <summary>
+    /// Maximum number of Spending Goal results to return.
+    /// </summary>
+    public int? SpendingGoalLimit { get; init; }
+
+    /// <summary>
+    /// Number of Spending Goal results to skip.
+    /// </summary>
+    public int? SpendingGoalOffset { get; init; }
+
+    /// <summary>
+    /// Maximum number of Assignment Goal balance events to return.
+    /// </summary>
+    public int? AssignmentBalanceEventLimit { get; init; }
+
+    /// <summary>
+    /// Number of Assignment Goal balance events to skip.
+    /// </summary>
+    public int? AssignmentBalanceEventOffset { get; init; }
+
+    /// <summary>
+    /// Maximum number of Spending Goal balance events to return.
+    /// </summary>
+    public int? SpendingBalanceEventLimit { get; init; }
+
+    /// <summary>
+    /// Number of Spending Goal balance events to skip.
+    /// </summary>
+    public int? SpendingBalanceEventOffset { get; init; }
 }

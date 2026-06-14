@@ -23,7 +23,7 @@ public class AccountingPeriodDashboardQueryParameterModel
     /// <summary>
     /// Optional sort to apply to the matching transactions.
     /// </summary>
-    public AccountingPeriodTransactionSortOrderModel? TransactionSort { get; init; }
+    public AccountingPeriodDashboardTransactionSortOrderModel? TransactionSort { get; init; }
 
     /// <summary>
     /// Maximum number of Accounting Periods to return.

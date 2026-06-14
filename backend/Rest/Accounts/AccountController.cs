@@ -5,7 +5,6 @@ using Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Accounts;
-using Models.Transactions;
 using Rest.AccountingPeriods;
 
 namespace Rest.Accounts;
@@ -21,9 +20,7 @@ public sealed class AccountController(
     AccountService accountService,
     AccountDashboardGetter accountDashboardGetter,
     AccountGetter accountGetter,
-    AccountSummaryGetter accountSummaryGetter,
-    AccountConverter accountConverter,
-    AccountTransactionGetter accountTransactionGetter) : ControllerBase
+    AccountConverter accountConverter) : ControllerBase
 {
     /// <summary>
     /// Retrieves the Account that matches the provided ID
@@ -72,38 +69,6 @@ public sealed class AccountController(
             });
         }
         return Ok(dashboard);
-    }
-
-    /// <summary>
-    /// Retrieves summary balances for Accounts
-    /// </summary>
-    [HttpGet("summary")]
-    [ProducesResponseType(typeof(AccountSummaryModel), StatusCodes.Status200OK)]
-    public IActionResult GetSummary() => Ok(accountSummaryGetter.Get());
-
-    /// <summary>
-    /// Retrieves the Transactions for the Account that matches the provided ID
-    /// </summary>
-    [HttpGet("{accountId}/transactions")]
-    [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetTransactions(Guid accountId, [FromQuery] AccountTransactionQueryParameterModel queryParameters)
-    {
-        Dictionary<string, string[]> errors = [];
-        if (!accountConverter.TryToDomain(accountId, out Account? account))
-        {
-            errors.Add(nameof(accountId), [$"Account with ID {accountId} was not found."]);
-        }
-        if (errors.Count > 0 || account == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Account Transactions.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        return Ok(accountTransactionGetter.Get(account.Id, queryParameters));
     }
 
     /// <summary>

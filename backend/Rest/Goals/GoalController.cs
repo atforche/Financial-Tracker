@@ -1,14 +1,10 @@
 using Data;
 using Data.Goals;
-using Domain.AccountingPeriods;
 using Domain.Exceptions;
-using Domain.Funds;
 using Domain.Goals;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Goals;
-using Rest.AccountingPeriods;
-using Rest.Funds;
 
 namespace Rest.Goals;
 
@@ -19,23 +15,24 @@ namespace Rest.Goals;
 [Route("/goals")]
 public sealed class GoalController(
     UnitOfWork unitOfWork,
-    AccountingPeriodConverter accountingPeriodConverter,
-    FundConverter fundConverter,
-    GoalService goalService,
-    GoalGetter goalGetter,
+    AssignmentGoalGetter assignmentGoalGetter,
+    AssignmentGoalRepository assignmentGoalRepository,
+    AssignmentGoalService assignmentGoalService,
+    SpendingGoalGetter spendingGoalGetter,
+    SpendingGoalRepository spendingGoalRepository,
+    SpendingGoalService spendingGoalService,
     GoalDashboardGetter goalDashboardGetter,
-    GoalConverter goalConverter,
-    GoalRepository goalRepository) : ControllerBase
+    GoalConverter goalConverter) : ControllerBase
 {
     /// <summary>
-    /// Retrieves the Goal that matches the provided ID
+    /// Retrieves the Assignment Goal that matches the provided ID
     /// </summary>
-    [HttpGet("{goalId}")]
-    [ProducesResponseType(typeof(GoalModel), StatusCodes.Status200OK)]
+    [HttpGet("assignment/{goalId}")]
+    [ProducesResponseType(typeof(AssignmentGoalModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult Get(Guid goalId)
+    public IActionResult GetAssignment(Guid goalId)
     {
-        if (!goalRepository.TryGetById(goalId, out Goal? goal))
+        if (!assignmentGoalRepository.TryGetById(goalId, out AssignmentGoal? goal))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
@@ -44,20 +41,19 @@ public sealed class GoalController(
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
-
         return Ok(goalConverter.ToModel(goal));
     }
 
     /// <summary>
-    /// Retrieves the Goal that matches the provided accounting period for the provided Fund
+    /// Retrieves the Assignment Goal that matches the provided accounting period for the provided Fund
     /// </summary>
-    [HttpGet("")]
-    [ProducesResponseType(typeof(GoalModel), StatusCodes.Status200OK)]
+    [HttpGet("assignment")]
+    [ProducesResponseType(typeof(AssignmentGoalModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public IActionResult Get([FromQuery] GetGoalModel getGoalModel)
     {
         Dictionary<string, string[]> errors = [];
-        if (!goalRepository.TryGetByFundAndAccountingPeriod(getGoalModel.FundId, getGoalModel.AccountingPeriodId, out Goal? goal))
+        if (!assignmentGoalRepository.TryGetByFundAndAccountingPeriod(getGoalModel.FundId, getGoalModel.AccountingPeriodId, out AssignmentGoal? goal))
         {
             errors.Add(nameof(getGoalModel.AccountingPeriodId), [$"Goal with Accounting Period ID {getGoalModel.AccountingPeriodId} not found."]);
         }
@@ -74,14 +70,80 @@ public sealed class GoalController(
     }
 
     /// <summary>
-    /// Retrieves the Goals that match the specified criteria
+    /// Retrieves the Assignment Goals that match the specified criteria
     /// </summary>
-    [HttpGet("many")]
-    [ProducesResponseType(typeof(CollectionModel<GoalModel>), StatusCodes.Status200OK)]
+    [HttpGet("assignment/many")]
+    [ProducesResponseType(typeof(CollectionModel<AssignmentGoalModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetMany([FromQuery] GoalQueryParameterModel queryParameters)
+    public IActionResult GetManyAssignment([FromQuery] AssignmentGoalQueryParameterModel queryParameters)
     {
-        if (!goalGetter.TryGet(queryParameters, out CollectionModel<GoalModel>? goals, out Dictionary<string, string[]> errors))
+        if (!assignmentGoalGetter.TryGet(queryParameters, out CollectionModel<AssignmentGoalModel>? goals, out Dictionary<string, string[]> errors))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Goals.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        return Ok(goals);
+    }
+
+    /// <summary>
+    /// Retrieves the Spending Goal that matches the provided ID
+    /// </summary>
+    [HttpGet("spending/{goalId}")]
+    [ProducesResponseType(typeof(SpendingGoalModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetSpending(Guid goalId)
+    {
+        if (!spendingGoalRepository.TryGetById(goalId, out SpendingGoal? goal))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Goal.",
+                Errors = { [nameof(goalId)] = new[] { $"Goal with ID {goalId} not found." } },
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        return Ok(goalConverter.ToModel(goal));
+    }
+
+    /// <summary>
+    /// Retrieves the Spending Goal that matches the provided accounting period for the provided Fund
+    /// </summary>
+    [HttpGet("spending")]
+    [ProducesResponseType(typeof(SpendingGoalModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetSpending([FromQuery] GetGoalModel getGoalModel)
+    {
+        Dictionary<string, string[]> errors = [];
+        if (!spendingGoalRepository.TryGetByFundAndAccountingPeriod(getGoalModel.FundId, getGoalModel.AccountingPeriodId, out SpendingGoal? goal))
+        {
+            errors.Add(nameof(getGoalModel.AccountingPeriodId), [$"Goal with Accounting Period ID {getGoalModel.AccountingPeriodId} not found."]);
+        }
+        if (errors.Count > 0 || goal == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Goal.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        return Ok(goalConverter.ToModel(goal));
+    }
+
+    /// <summary>
+    /// Retrieves the Spending Goals that match the specified criteria
+    /// </summary>
+    [HttpGet("spending/many")]
+    [ProducesResponseType(typeof(CollectionModel<SpendingGoalModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetManySpending([FromQuery] SpendingGoalQueryParameterModel queryParameters)
+    {
+        if (!spendingGoalGetter.TryGet(queryParameters, out CollectionModel<SpendingGoalModel>? goals, out Dictionary<string, string[]> errors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
@@ -116,75 +178,15 @@ public sealed class GoalController(
     }
 
     /// <summary>
-    /// Creates a new Goal for the provided Fund with the provided properties
+    /// Updates the provided Assignment Goal with the provided properties
     /// </summary>
-    [HttpPost("")]
-    [ProducesResponseType(typeof(GoalModel), StatusCodes.Status200OK)]
+    [HttpPost("assignment/{goalId}")]
+    [ProducesResponseType(typeof(AssignmentGoalModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> CreateAsync(CreateGoalModel createGoalModel)
+    public async Task<IActionResult> UpdateAssignmentAsync(Guid goalId, UpdateAssignmentGoalModel updateGoalModel)
     {
         Dictionary<string, string[]> errors = [];
-        if (!fundConverter.TryToDomain(createGoalModel.FundId, out Fund? fund))
-        {
-            errors.Add(nameof(createGoalModel.FundId), [$"Fund with ID {createGoalModel.FundId} was not found."]);
-        }
-        if (!accountingPeriodConverter.TryToDomain(createGoalModel.AccountingPeriodId, out AccountingPeriod? accountingPeriod))
-        {
-            errors.Add(nameof(createGoalModel.AccountingPeriodId), [$"Accounting Period with ID {createGoalModel.AccountingPeriodId} was not found."]);
-        }
-        if (!GoalTypeConverter.TryToDomain(createGoalModel.GoalType, out GoalType? goalType))
-        {
-            errors.Add(nameof(createGoalModel.GoalType), [$"Unrecognized Goal Type: {createGoalModel.GoalType}"]);
-        }
-        if (errors.Count > 0 || fund == null || accountingPeriod == null || goalType == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to create Goal.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-
-        if (!goalService.TryCreate(
-            new CreateGoalRequest
-            {
-                Fund = fund,
-                AccountingPeriod = accountingPeriod,
-                GoalType = goalType.Value,
-                GoalAmount = createGoalModel.GoalAmount,
-            },
-            out Goal? newGoal,
-            out IEnumerable<Exception> exceptions))
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to create Goal.",
-                Errors = GetGoalErrors(
-                    exceptions,
-                    nameof(createGoalModel.FundId),
-                    nameof(createGoalModel.AccountingPeriodId),
-                    nameof(createGoalModel.GoalType),
-                    nameof(createGoalModel.GoalAmount)),
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-
-        goalRepository.Add(newGoal);
-        await unitOfWork.SaveChangesAsync();
-        return Ok(goalConverter.ToModel(newGoal));
-    }
-
-    /// <summary>
-    /// Updates the provided Goal with the provided properties
-    /// </summary>
-    [HttpPost("{goalId}")]
-    [ProducesResponseType(typeof(GoalModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> UpdateAsync(Guid goalId, UpdateGoalModel updateGoalModel)
-    {
-        Dictionary<string, string[]> errors = [];
-        if (!goalRepository.TryGetById(goalId, out Goal? goalToUpdate))
+        if (!assignmentGoalRepository.TryGetById(goalId, out AssignmentGoal? goalToUpdate))
         {
             errors.Add(nameof(goalId), [$"Goal with ID {goalId} was not found."]);
         }
@@ -192,31 +194,35 @@ public sealed class GoalController(
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
-                Title = "Unable to update Goal.",
+                Title = "Unable to update Assignment Goal.",
                 Errors = errors,
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
-        if (!GoalTypeConverter.TryToDomain(updateGoalModel.GoalType, out GoalType? goalType))
+        if (!GoalTypeConverter.TryToDomain(updateGoalModel.AssignmentGoalType, out AssignmentGoalType? assignmentGoalType))
+        {
+            AddError(errors, nameof(updateGoalModel.AssignmentGoalType), $"Unrecognized Assignment Goal Type: {updateGoalModel.AssignmentGoalType}");
+        }
+        if (errors.Count > 0 || assignmentGoalType == null)
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
-                Title = "Unable to update Goal.",
-                Errors = { [nameof(updateGoalModel.GoalType)] = new[] { $"Unrecognized Goal Type: {updateGoalModel.GoalType}" } },
+                Title = "Unable to update Assignment Goal.",
+                Errors = errors,
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
-        if (!goalService.TryUpdate(goalToUpdate, goalType.Value, updateGoalModel.GoalAmount, out IEnumerable<Exception> exceptions))
+
+        if (!assignmentGoalService.TryUpdate(goalToUpdate, assignmentGoalType.Value, updateGoalModel.GoalAmount, out IEnumerable<Exception> assignmentGoalExceptions))
+        {
+            AddErrors(errors, assignmentGoalExceptions, nameof(updateGoalModel.AssignmentGoalType), nameof(updateGoalModel.GoalAmount));
+        }
+        if (errors.Count > 0)
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
-                Title = "Unable to update Goal.",
-                Errors = GetGoalErrors(
-                    exceptions,
-                    nameof(goalToUpdate.Fund.Id),
-                    nameof(goalToUpdate.AccountingPeriodId),
-                    nameof(updateGoalModel.GoalType),
-                    nameof(updateGoalModel.GoalAmount)),
+                Title = "Unable to update Assignment Goal.",
+                Errors = errors,
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
@@ -226,60 +232,91 @@ public sealed class GoalController(
     }
 
     /// <summary>
-    /// Deletes the Goal with the provided Accounting Period ID for the provided Fund
+    /// Updates the provided Spending Goal with the provided properties
     /// </summary>
-    [HttpDelete("{goalId}")]
+    [HttpPost("spending/{goalId}")]
+    [ProducesResponseType(typeof(SpendingGoalModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> DeleteAsync(Guid goalId)
+    public async Task<IActionResult> UpdateSpendingAsync(Guid goalId, UpdateSpendingGoalModel updateGoalModel)
     {
         Dictionary<string, string[]> errors = [];
-        if (!goalRepository.TryGetById(goalId, out Goal? goalToDelete))
+        if (!spendingGoalRepository.TryGetById(goalId, out SpendingGoal? goalToUpdate))
         {
             errors.Add(nameof(goalId), [$"Goal with ID {goalId} was not found."]);
         }
-        if (errors.Count > 0 || goalToDelete == null)
+        if (errors.Count > 0 || goalToUpdate == null)
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
-                Title = "Unable to delete Goal.",
+                Title = "Unable to update Spending Goal.",
                 Errors = errors,
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
-        if (!goalService.TryDelete(goalToDelete, out IEnumerable<Exception> exceptions))
+        if (!GoalTypeConverter.TryToDomain(updateGoalModel.SpendingGoalType, out SpendingGoalType? spendingGoalType))
+        {
+            AddError(errors, nameof(updateGoalModel.SpendingGoalType), $"Unrecognized Spending Goal Type: {updateGoalModel.SpendingGoalType}");
+        }
+        if (errors.Count > 0 || spendingGoalType == null)
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
-                Title = "Unable to delete Goal.",
-                Errors = {
-                    { string.Empty, exceptions.Select(exception => exception.Message).ToArray() }
-                },
+                Title = "Unable to update Spending Goal.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        if (!spendingGoalService.TryUpdate(goalToUpdate, spendingGoalType.Value, out IEnumerable<Exception> spendingGoalExceptions))
+        {
+            AddErrors(errors, spendingGoalExceptions, nameof(updateGoalModel.SpendingGoalType), null);
+        }
+        if (errors.Count > 0)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to update Spending Goal.",
+                Errors = errors,
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
 
         await unitOfWork.SaveChangesAsync();
-        return Ok();
+        return Ok(goalConverter.ToModel(goalToUpdate));
     }
 
     /// <summary>
     /// Maps goal exceptions to validation errors
     /// </summary>
-    private static Dictionary<string, string[]> GetGoalErrors(
+    private static void AddErrors(
+        Dictionary<string, string[]> errors,
         IEnumerable<Exception> exceptions,
-        string fundKey,
-        string relationshipKey,
         string goalTypeKey,
-        string goalAmountKey) =>
-        exceptions.GroupBy(exception => exception switch
+        string? goalAmountKey)
+    {
+        foreach (IGrouping<string, Exception> grouping in exceptions.GroupBy(exception => exception switch
         {
-            InvalidAccountingPeriodException => relationshipKey,
             InvalidGoalTypeException => goalTypeKey,
             InvalidFundException invalidFundException
-                when invalidFundException.Message.Contains("goal amount", StringComparison.InvariantCultureIgnoreCase) => goalAmountKey,
-            InvalidFundException invalidFundException
-                when invalidFundException.Message.Contains("already exists", StringComparison.InvariantCultureIgnoreCase) => relationshipKey,
-            InvalidFundException => fundKey,
+                when goalAmountKey != null && invalidFundException.Message.Contains("goal amount", StringComparison.InvariantCultureIgnoreCase) => goalAmountKey,
             _ => string.Empty,
-        }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray());
+        }))
+        {
+            foreach (Exception exception in grouping)
+            {
+                AddError(errors, grouping.Key, exception.Message);
+            }
+        }
+    }
+
+    private static void AddError(Dictionary<string, string[]> errors, string key, string message)
+    {
+        if (errors.TryGetValue(key, out string[]? existingMessages))
+        {
+            errors[key] = [.. existingMessages, message];
+            return;
+        }
+
+        errors[key] = [message];
+    }
 }

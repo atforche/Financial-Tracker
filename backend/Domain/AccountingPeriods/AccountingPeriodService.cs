@@ -14,11 +14,13 @@ public class AccountingPeriodService(
     IAccountingPeriodRepository accountingPeriodRepository,
     IAccountRepository accountRepository,
     IFundRepository fundRepository,
-    IGoalRepository goalRepository,
+    IAssignmentGoalRepository assignmentGoalRepository,
+    ISpendingGoalRepository spendingGoalRepository,
     ITransactionRepository transactionRepository,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundService fundService,
-    GoalService goalService)
+    AssignmentGoalService assignmentGoalService,
+    SpendingGoalService spendingGoalService)
 {
     /// <summary>
     /// Attempts to create a new Accounting Period
@@ -50,25 +52,92 @@ public class AccountingPeriodService(
                 }
                 fundRepository.Add(unassignedFund);
             }
+
+            foreach (Fund fund in fundRepository.GetAll().Where(fund => !fund.IsUnassignedFund && fund.IsOnboarded))
+            {
+                AssignmentGoal? assignmentGoalPlaceholder = assignmentGoalRepository.GetByFundAndAccountingPeriod(fund.Id, null);
+                SpendingGoal? spendingGoalPlaceholder = spendingGoalRepository.GetByFundAndAccountingPeriod(fund.Id, null);
+                if (assignmentGoalPlaceholder == null || spendingGoalPlaceholder == null)
+                {
+                    exceptions = exceptions.Append(new InvalidFundException($"The onboarded fund '{fund.Name}' is missing placeholder goals."));
+                    return false;
+                }
+
+                var createAssignmentGoalRequest = new CreateAssignmentGoalRequest
+                {
+                    Fund = fund,
+                    AccountingPeriod = accountingPeriod,
+                    AssignmentGoalType = assignmentGoalPlaceholder.AssignmentGoalType,
+                    GoalAmount = assignmentGoalPlaceholder.TotalAmountToAssign,
+                };
+                if (!assignmentGoalService.TryCreate(
+                    createAssignmentGoalRequest,
+                    out AssignmentGoal? createdAssignmentGoal,
+                    out IEnumerable<Exception> createdAssignmentGoalExceptions))
+                {
+                    exceptions = exceptions.Concat(createdAssignmentGoalExceptions);
+                    return false;
+                }
+                assignmentGoalRepository.Add(createdAssignmentGoal);
+
+                var createSpendingGoalRequest = new CreateSpendingGoalRequest
+                {
+                    Fund = fund,
+                    AccountingPeriod = accountingPeriod,
+                    SpendingGoalType = spendingGoalPlaceholder.SpendingGoalType,
+                };
+                if (!spendingGoalService.TryCreate(
+                    createSpendingGoalRequest,
+                    out SpendingGoal? createdSpendingGoal,
+                    out IEnumerable<Exception> createdSpendingGoalExceptions))
+                {
+                    exceptions = exceptions.Concat(createdSpendingGoalExceptions);
+                    return false;
+                }
+                spendingGoalRepository.Add(createdSpendingGoal);
+            }
         }
         else
         {
-            // Automatically carry over all fund goals from the previous accounting period
-            foreach (Goal goal in goalRepository.GetAllByAccountingPeriod(previousAccountingPeriod.Id))
+            // Automatically carry over all fund assignment goals from the previous accounting period
+            foreach (AssignmentGoal assignmentGoal in assignmentGoalRepository.GetAllByAccountingPeriod(previousAccountingPeriod.Id))
             {
-                var createGoalRequest = new CreateGoalRequest
+                var createAssignmentGoalRequest = new CreateAssignmentGoalRequest
                 {
-                    Fund = goal.Fund,
+                    Fund = assignmentGoal.Fund,
                     AccountingPeriod = accountingPeriod,
-                    GoalType = goal.GoalType,
-                    GoalAmount = goal.GoalAmount,
+                    AssignmentGoalType = assignmentGoal.AssignmentGoalType,
+                    GoalAmount = assignmentGoal.TotalAmountToAssign,
                 };
-                if (!goalService.TryCreate(createGoalRequest, out Goal? createdGoal, out IEnumerable<Exception> createdGoalExceptions))
+                if (!assignmentGoalService.TryCreate(
+                    createAssignmentGoalRequest,
+                    out AssignmentGoal? createdAssignmentGoal,
+                    out IEnumerable<Exception> createdAssignmentGoalExceptions))
                 {
-                    exceptions = exceptions.Concat(createdGoalExceptions);
+                    exceptions = exceptions.Concat(createdAssignmentGoalExceptions);
                     return false;
                 }
-                goalRepository.Add(createdGoal);
+                assignmentGoalRepository.Add(createdAssignmentGoal);
+            }
+
+            // Automatically carry over all fund spending goals from the previous accounting period
+            foreach (SpendingGoal spendingGoal in spendingGoalRepository.GetAllByAccountingPeriod(previousAccountingPeriod.Id))
+            {
+                var createSpendingGoalRequest = new CreateSpendingGoalRequest
+                {
+                    Fund = spendingGoal.Fund,
+                    AccountingPeriod = accountingPeriod,
+                    SpendingGoalType = spendingGoal.SpendingGoalType,
+                };
+                if (!spendingGoalService.TryCreate(
+                    createSpendingGoalRequest,
+                    out SpendingGoal? createdSpendingGoal,
+                    out IEnumerable<Exception> createdSpendingGoalExceptions))
+                {
+                    exceptions = exceptions.Concat(createdSpendingGoalExceptions);
+                    return false;
+                }
+                spendingGoalRepository.Add(createdSpendingGoal);
             }
         }
         return true;
@@ -112,7 +181,7 @@ public class AccountingPeriodService(
         accountingPeriodBalanceService.DeleteAccountingPeriod(accountingPeriod);
         if (fundRepository.GetAllFundsAddedInPeriod(accountingPeriod.Id).FirstOrDefault(fund => fund.IsUnassignedFund) is Fund unassignedFund)
         {
-            // If the unassigned fund was added in this accounting period, delete it. 
+            // If the unassigned fund was added in this accounting period, delete it.
             // It will be added again when a new accounting period is created.
             fundRepository.Delete(unassignedFund);
         }
@@ -137,16 +206,13 @@ public class AccountingPeriodService(
         }
         if (exceptions.Any())
         {
-            // If year or month are invalid, no need to continue validation
             return false;
         }
-        // Validate that there are no duplicate accounting periods
         if (accountingPeriodRepository.GetByYearAndMonth(year, month) != null)
         {
             exceptions = exceptions.Append(new InvalidMonthException("An Accounting Period already exists for this year and month."));
             exceptions = exceptions.Append(new InvalidYearException("An Accounting Period already exists for this year and month."));
         }
-        // Validate that accounting periods can only be added after existing accounting periods
         AccountingPeriod? latestAccountingPeriod = accountingPeriodRepository.GetLatestAccountingPeriod();
         if (latestAccountingPeriod != null && latestAccountingPeriod.PeriodStartDate != new DateOnly(year, month, 1).AddMonths(-1))
         {
@@ -219,11 +285,11 @@ public class AccountingPeriodService(
         }
         if (fundRepository.GetAllFundsAddedInPeriod(accountingPeriod.Id).Any(fund => !fund.IsUnassignedFund))
         {
-            exceptions = exceptions.Append(new UnableToDeleteException("This Accounting Period has funds that were added in it."));
+            exceptions = exceptions.Append(new UnableToDeleteException("This Accounting Period has funds that were added during it."));
         }
         if (accountRepository.GetAllAccountsAddedInPeriod(accountingPeriod.Id).Count > 0)
         {
-            exceptions = exceptions.Append(new UnableToDeleteException("This Accounting Period has accounts that were added in it."));
+            exceptions = exceptions.Append(new UnableToDeleteException("This Accounting Period has accounts that were added during it."));
         }
         return !exceptions.Any();
     }

@@ -1,3 +1,5 @@
+using Domain.Goals;
+
 namespace Domain.Funds;
 
 /// <summary>
@@ -19,4 +21,19 @@ public record OnboardFundRequest
     /// Onboarded Balance for the Fund
     /// </summary>
     public required decimal OnboardedBalance { get; init; }
+
+    /// <summary>
+    /// Assignment goal behavior for the Fund.
+    /// </summary>
+    public required AssignmentGoalType AssignmentGoalType { get; init; }
+
+    /// <summary>
+    /// Assignment goal amount for the Fund.
+    /// </summary>
+    public required decimal AssignmentGoalAmount { get; init; }
+
+    /// <summary>
+    /// Spending goal behavior for the Fund.
+    /// </summary>
+    public required SpendingGoalType SpendingGoalType { get; init; }
 }

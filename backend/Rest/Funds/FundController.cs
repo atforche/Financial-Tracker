@@ -3,10 +3,10 @@ using Data.Funds;
 using Domain.AccountingPeriods;
 using Domain.Exceptions;
 using Domain.Funds;
+using Domain.Goals;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Funds;
-using Models.Transactions;
 using Rest.AccountingPeriods;
 
 namespace Rest.Funds;
@@ -22,10 +22,8 @@ public sealed class FundController(
     FundConverter fundConverter,
     FundDashboardGetter fundDashboardGetter,
     FundGetter fundGetter,
-    FundSummaryGetter fundSummaryGetter,
     FundRepository fundRepository,
-    FundService fundService,
-    FundTransactionGetter fundTransactionGetter) : ControllerBase
+    FundService fundService) : ControllerBase
 {
     /// <summary>
     /// Retrieves the Fund that matches the provided ID
@@ -76,13 +74,6 @@ public sealed class FundController(
     }
 
     /// <summary>
-    /// Retrieves summary balances for Funds
-    /// </summary>
-    [HttpGet("summary")]
-    [ProducesResponseType(typeof(FundSummaryModel), StatusCodes.Status200OK)]
-    public IActionResult GetSummary() => Ok(fundSummaryGetter.Get());
-
-    /// <summary>
     /// Retrieves the unassigned Fund
     /// </summary>
     [HttpGet("unassigned")]
@@ -101,36 +92,6 @@ public sealed class FundController(
             });
         }
         return Ok(fundConverter.ToModel(unassignedFund));
-    }
-
-    /// <summary>
-    /// Retrieves the Transactions for the Fund that match the specified criteria
-    /// </summary>
-    [HttpGet("{fundId}/transactions")]
-    [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetManyTransactions(Guid fundId, [FromQuery] FundTransactionQueryParameterModel queryParameters)
-    {
-        Dictionary<string, string[]> errors = [];
-        if (!fundConverter.TryToDomain(fundId, out Fund? fund))
-        {
-            errors.Add(nameof(fundId), new[] { $"Fund with ID {fundId} not found." });
-        }
-        AccountingPeriod? accountingPeriod = null;
-        if (queryParameters.AccountingPeriodId != null && !accountingPeriodConverter.TryToDomain(queryParameters.AccountingPeriodId.Value, out accountingPeriod))
-        {
-            errors.Add(nameof(queryParameters.AccountingPeriodId), new[] { $"Accounting Period with ID {queryParameters.AccountingPeriodId.Value} not found." });
-        }
-        if (errors.Count > 0 || fund == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Fund Transactions.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        return Ok(fundTransactionGetter.Get(fund.Id, queryParameters, accountingPeriod?.Id));
     }
 
     /// <summary>
@@ -156,12 +117,33 @@ public sealed class FundController(
             });
         }
 
+        if (!FundGoalTypeConverter.TryToDomain(createFundModel.AssignmentGoalType, out AssignmentGoalType? assignmentGoalType))
+        {
+            errors.Add(nameof(createFundModel.AssignmentGoalType), [$"Unrecognized assignment goal type: {createFundModel.AssignmentGoalType}"]);
+        }
+        if (!FundGoalTypeConverter.TryToDomain(createFundModel.SpendingGoalType, out SpendingGoalType? spendingGoalType))
+        {
+            errors.Add(nameof(createFundModel.SpendingGoalType), [$"Unrecognized spending goal type: {createFundModel.SpendingGoalType}"]);
+        }
+        if (errors.Count > 0 || assignmentGoalType == null || spendingGoalType == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to create Fund.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity
+            });
+        }
+
         if (!fundService.TryCreate(
             new CreateFundRequest
             {
                 Name = createFundModel.Name,
                 Description = createFundModel.Description,
                 OpeningAccountingPeriod = accountingPeriod,
+                AssignmentGoalType = assignmentGoalType.Value,
+                AssignmentGoalAmount = createFundModel.AssignmentGoalAmount,
+                SpendingGoalType = spendingGoalType.Value,
             },
             out Fund? newFund,
             out IEnumerable<Exception> exceptions))
@@ -173,13 +155,15 @@ public sealed class FundController(
                 {
                     InvalidNameException => nameof(createFundModel.Name),
                     InvalidAccountingPeriodException => nameof(createFundModel.AccountingPeriodId),
+                    InvalidGoalTypeException when exception.Message.Contains("assignment", StringComparison.OrdinalIgnoreCase) => nameof(createFundModel.AssignmentGoalType),
+                    InvalidGoalTypeException => nameof(createFundModel.SpendingGoalType),
+                    InvalidFundException when exception.Message.Contains("Goal amount", StringComparison.OrdinalIgnoreCase) => nameof(createFundModel.AssignmentGoalAmount),
                     InvalidFundException => string.Empty,
                     _ => string.Empty,
                 }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray()),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        fundRepository.Add(newFund);
         await unitOfWork.SaveChangesAsync();
         return Ok(fundConverter.ToModel(newFund));
     }
@@ -192,12 +176,34 @@ public sealed class FundController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> OnboardAsync(OnboardFundModel onboardFundModel)
     {
+        Dictionary<string, string[]> errors = [];
+        if (!FundGoalTypeConverter.TryToDomain(onboardFundModel.AssignmentGoalType, out AssignmentGoalType? assignmentGoalType))
+        {
+            errors.Add(nameof(onboardFundModel.AssignmentGoalType), [$"Unrecognized assignment goal type: {onboardFundModel.AssignmentGoalType}"]);
+        }
+        if (!FundGoalTypeConverter.TryToDomain(onboardFundModel.SpendingGoalType, out SpendingGoalType? spendingGoalType))
+        {
+            errors.Add(nameof(onboardFundModel.SpendingGoalType), [$"Unrecognized spending goal type: {onboardFundModel.SpendingGoalType}"]);
+        }
+        if (errors.Count > 0 || assignmentGoalType == null || spendingGoalType == null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to onboard Fund.",
+                Errors = errors,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
         if (!fundService.TryOnboard(
             new OnboardFundRequest
             {
                 Name = onboardFundModel.Name,
                 Description = onboardFundModel.Description,
-                OnboardedBalance = onboardFundModel.OnboardedBalance
+                OnboardedBalance = onboardFundModel.OnboardedBalance,
+                AssignmentGoalType = assignmentGoalType.Value,
+                AssignmentGoalAmount = onboardFundModel.AssignmentGoalAmount,
+                SpendingGoalType = spendingGoalType.Value,
             },
             out Fund? newFund,
             out IEnumerable<Exception> exceptions))
@@ -210,6 +216,9 @@ public sealed class FundController(
                     InvalidNameException => nameof(onboardFundModel.Name),
                     InvalidAmountException => nameof(onboardFundModel.OnboardedBalance),
                     InvalidAccountingPeriodException => string.Empty,
+                    InvalidGoalTypeException when exception.Message.Contains("assignment", StringComparison.OrdinalIgnoreCase) => nameof(onboardFundModel.AssignmentGoalType),
+                    InvalidGoalTypeException => nameof(onboardFundModel.SpendingGoalType),
+                    InvalidFundException when exception.Message.Contains("Goal amount", StringComparison.OrdinalIgnoreCase) => nameof(onboardFundModel.AssignmentGoalAmount),
                     InvalidFundException => string.Empty,
                     _ => string.Empty,
                 }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray()),

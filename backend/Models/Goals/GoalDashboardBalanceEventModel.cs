@@ -36,11 +36,6 @@ public class GoalDashboardBalanceEventModel
     public required string AccountingPeriodName { get; init; }
 
     /// <summary>
-    /// Type of balance event.
-    /// </summary>
-    public required GoalDashboardBalanceEventTypeModel Type { get; init; }
-
-    /// <summary>
     /// Whether the transaction has been posted to the fund.
     /// </summary>
     public required bool IsPosted { get; init; }

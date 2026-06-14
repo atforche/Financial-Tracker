@@ -217,64 +217,64 @@ public class AccountingPeriodDashboardGetter(
     private static List<TransactionModel> SortTransactions(
         List<TransactionModel> transactions,
         Dictionary<Guid, AccountingPeriodModel> accountingPeriodsById,
-        AccountingPeriodTransactionSortOrderModel? sort) => sort switch
+        AccountingPeriodDashboardTransactionSortOrderModel? sort) => sort switch
         {
-            null or AccountingPeriodTransactionSortOrderModel.Date => transactions
+            null or AccountingPeriodDashboardTransactionSortOrderModel.Date => transactions
                 .OrderBy(transaction => transaction.Date)
                 .ThenBy(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTransactionSortOrderModel.DateDescending => transactions
+            AccountingPeriodDashboardTransactionSortOrderModel.DateDescending => transactions
                 .OrderByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTransactionSortOrderModel.AccountingPeriod => transactions
+            AccountingPeriodDashboardTransactionSortOrderModel.AccountingPeriod => transactions
                 .OrderBy(transaction => accountingPeriodsById[transaction.AccountingPeriodId].Year)
                 .ThenBy(transaction => accountingPeriodsById[transaction.AccountingPeriodId].Month)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTransactionSortOrderModel.AccountingPeriodDescending => transactions
+            AccountingPeriodDashboardTransactionSortOrderModel.AccountingPeriodDescending => transactions
                 .OrderByDescending(transaction => accountingPeriodsById[transaction.AccountingPeriodId].Year)
                 .ThenByDescending(transaction => accountingPeriodsById[transaction.AccountingPeriodId].Month)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTransactionSortOrderModel.Location => transactions
+            AccountingPeriodDashboardTransactionSortOrderModel.Location => transactions
                 .OrderBy(transaction => transaction.Location)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTransactionSortOrderModel.LocationDescending => transactions
+            AccountingPeriodDashboardTransactionSortOrderModel.LocationDescending => transactions
                 .OrderByDescending(transaction => transaction.Location)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTransactionSortOrderModel.DebitFrom => transactions
+            AccountingPeriodDashboardTransactionSortOrderModel.DebitFrom => transactions
                 .OrderBy(GetDebitFrom)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTransactionSortOrderModel.DebitFromDescending => transactions
+            AccountingPeriodDashboardTransactionSortOrderModel.DebitFromDescending => transactions
                 .OrderByDescending(GetDebitFrom)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTransactionSortOrderModel.CreditTo => transactions
+            AccountingPeriodDashboardTransactionSortOrderModel.CreditTo => transactions
                 .OrderBy(GetCreditTo)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTransactionSortOrderModel.CreditToDescending => transactions
+            AccountingPeriodDashboardTransactionSortOrderModel.CreditToDescending => transactions
                 .OrderByDescending(GetCreditTo)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTransactionSortOrderModel.Amount => transactions
+            AccountingPeriodDashboardTransactionSortOrderModel.Amount => transactions
                 .OrderBy(transaction => transaction.Amount)
                 .ThenBy(transaction => transaction.Date)
                 .ThenBy(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTransactionSortOrderModel.AmountDescending => transactions
+            AccountingPeriodDashboardTransactionSortOrderModel.AmountDescending => transactions
                 .OrderByDescending(transaction => transaction.Amount)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)

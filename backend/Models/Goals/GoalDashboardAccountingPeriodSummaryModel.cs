@@ -26,22 +26,32 @@ public class GoalDashboardAccountingPeriodSummaryModel
     public required int Month { get; init; }
 
     /// <summary>
-    /// Total Goal amount for the group.
+    /// Total amount to assign for the group.
     /// </summary>
-    public required decimal GoalAmount { get; init; }
+    public required decimal TotalAmountToAssign { get; init; }
 
     /// <summary>
     /// Total amount assigned for the group.
     /// </summary>
-    public required decimal AmountAssigned { get; init; }
+    public required decimal TotalAmountAssigned { get; init; }
+
+    /// <summary>
+    /// Percentage of Assignment Goals met for the group.
+    /// </summary>
+    public required decimal PercentageOfAssignmentGoalsMet { get; init; }
+
+    /// <summary>
+    /// Total amount to spend for the group.
+    /// </summary>
+    public required decimal TotalAmountToSpend { get; init; }
 
     /// <summary>
     /// Total amount spent for the group.
     /// </summary>
-    public required decimal AmountSpent { get; init; }
+    public required decimal TotalAmountSpent { get; init; }
 
     /// <summary>
-    /// Percentage of goals met for the group.
+    /// Percentage of Spending Goals met for the group.
     /// </summary>
-    public required decimal PercentageOfGoalsMet { get; init; }
+    public required decimal PercentageOfSpendingGoalsMet { get; init; }
 }

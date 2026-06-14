@@ -1,3 +1,5 @@
+using Models.Goals;
+
 namespace Models.Funds;
 
 /// <summary>
@@ -19,4 +21,19 @@ public class OnboardFundModel
     /// Starting balance assigned during onboarding
     /// </summary>
     public required decimal OnboardedBalance { get; init; }
+
+    /// <summary>
+    /// Assignment goal behavior for the Fund.
+    /// </summary>
+    public required AssignmentGoalTypeModel AssignmentGoalType { get; init; }
+
+    /// <summary>
+    /// Assignment goal amount for the Fund.
+    /// </summary>
+    public required decimal AssignmentGoalAmount { get; init; }
+
+    /// <summary>
+    /// Spending goal behavior for the Fund.
+    /// </summary>
+    public required SpendingGoalTypeModel SpendingGoalType { get; init; }
 }

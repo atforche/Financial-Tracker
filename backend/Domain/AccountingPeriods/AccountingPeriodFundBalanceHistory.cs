@@ -82,7 +82,11 @@ public class AccountingPeriodFundBalanceHistory : Entity<AccountingPeriodFundBal
     /// <summary>
     /// Updates this Fund Accounting Period Balance History
     /// </summary>
-    internal void Update(FundBalance openingBalance, FundBalance closingBalance, Goal? goal)
+    internal void Update(
+        FundBalance openingBalance,
+        FundBalance closingBalance,
+        AssignmentGoal? assignmentGoal,
+        SpendingGoal? spendingGoal)
     {
         OpeningBalance = openingBalance.PostedBalance;
         AmountAssigned = closingBalance.AmountAssigned;
@@ -90,7 +94,8 @@ public class AccountingPeriodFundBalanceHistory : Entity<AccountingPeriodFundBal
         AmountSpent = closingBalance.AmountSpent;
         PendingAmountSpent = closingBalance.PendingAmountSpent;
         ClosingBalance = closingBalance.PostedBalance;
-        goal?.EvaluateGoal(this);
+        assignmentGoal?.EvaluateGoal(this);
+        spendingGoal?.EvaluateGoal(this);
     }
 
     /// <summary>

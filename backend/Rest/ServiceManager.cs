@@ -17,32 +17,21 @@ public static class ServiceManager
     /// <param name="serviceCollection">Service Collection</param>
     public static void Register(IServiceCollection serviceCollection)
     {
-        _ = serviceCollection.AddScoped<AccountingPeriodAccountConverter>();
-        _ = serviceCollection.AddScoped<AccountingPeriodAccountGetter>();
         _ = serviceCollection.AddScoped<AccountingPeriodConverter>();
-        _ = serviceCollection.AddScoped<AccountingPeriodFundConverter>();
-        _ = serviceCollection.AddScoped<AccountingPeriodFundGetter>();
-        _ = serviceCollection.AddScoped<AccountingPeriodGoalGetter>();
         _ = serviceCollection.AddScoped<AccountingPeriodGetter>();
-        _ = serviceCollection.AddScoped<AccountingPeriodTransactionGetter>();
         _ = serviceCollection.AddScoped<AccountingPeriodDashboardGetter>();
 
         _ = serviceCollection.AddScoped<AccountConverter>();
         _ = serviceCollection.AddScoped<AccountDashboardGetter>();
         _ = serviceCollection.AddScoped<AccountGetter>();
-        _ = serviceCollection.AddScoped<AccountSummaryGetter>();
-        _ = serviceCollection.AddScoped<AccountTransactionGetter>();
 
         _ = serviceCollection.AddScoped<FundAmountConverter>();
         _ = serviceCollection.AddScoped<FundConverter>();
         _ = serviceCollection.AddScoped<FundDashboardGetter>();
         _ = serviceCollection.AddScoped<FundGetter>();
-        _ = serviceCollection.AddScoped<FundSummaryGetter>();
-        _ = serviceCollection.AddScoped<FundTransactionGetter>();
 
         _ = serviceCollection.AddScoped<GoalConverter>();
         _ = serviceCollection.AddScoped<GoalDashboardGetter>();
-        _ = serviceCollection.AddScoped<GoalGetter>();
 
         _ = serviceCollection.AddScoped<TransactionConverter>();
         _ = serviceCollection.AddScoped<TransactionDashboardGetter>();

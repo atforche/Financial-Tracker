@@ -1,18 +1,10 @@
 using Data;
 using Data.AccountingPeriods;
 using Domain.AccountingPeriods;
-using Domain.Accounts;
 using Domain.Exceptions;
-using Domain.Funds;
-using Domain.Goals;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.AccountingPeriods;
-using Models.Goals;
-using Models.Transactions;
-using Rest.Accounts;
-using Rest.Funds;
-using Rest.Goals;
 
 namespace Rest.AccountingPeriods;
 
@@ -22,22 +14,11 @@ namespace Rest.AccountingPeriods;
 [ApiController]
 [Route("/accounting-periods")]
 public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
-    AccountConverter accountConverter,
     AccountingPeriodRepository accountingPeriodRepository,
-    AccountingPeriodAccountConverter accountingPeriodAccountConverter,
-    AccountingPeriodAccountGetter accountingPeriodAccountGetter,
     AccountingPeriodConverter accountingPeriodConverter,
     AccountingPeriodDashboardGetter accountingPeriodDashboardGetter,
-    AccountingPeriodFundConverter accountingPeriodFundConverter,
-    AccountingPeriodFundGetter accountingPeriodFundGetter,
-    AccountingPeriodGoalGetter accountingPeriodGoalGetter,
     AccountingPeriodGetter accountingPeriodGetter,
-    AccountingPeriodService accountingPeriodService,
-    AccountingPeriodTransactionGetter accountingPeriodTransactionGetter,
-    FundConverter fundConverter,
-    GoalConverter goalConverter,
-    IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
-    IGoalRepository goalRepository) : ControllerBase
+    AccountingPeriodService accountingPeriodService) : ControllerBase
 {
     /// <summary>
     /// Retrieves the Accounting Period that matches the provided ID
@@ -94,224 +75,6 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     public IReadOnlyCollection<AccountingPeriodModel> GetAllOpen() => accountingPeriodRepository.GetAllOpenPeriods()
         .OrderByDescending(accountingPeriod => accountingPeriod.PeriodStartDate)
         .Select(accountingPeriodConverter.ToModel).ToList();
-
-    /// <summary>
-    /// Retrieves the Funds for the Accounting Period that match the specified criteria
-    /// </summary>
-    [HttpGet("{accountingPeriodId}/funds")]
-    [ProducesResponseType(typeof(CollectionModel<AccountingPeriodFundModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetManyFunds(Guid accountingPeriodId, [FromQuery] AccountingPeriodFundQueryParameterModel queryParameters)
-    {
-        Dictionary<string, string[]> errors = [];
-        if (!accountingPeriodConverter.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
-        {
-            errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
-        }
-        if (errors.Count > 0 || accountingPeriod == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Accounting Period Funds.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        return Ok(accountingPeriodFundGetter.Get(accountingPeriod.Id, queryParameters));
-    }
-
-    /// <summary>
-    /// Retrieves the Fund as it appeared in the provided Accounting Period
-    /// </summary>
-    [HttpGet("{accountingPeriodId}/funds/{fundId}")]
-    [ProducesResponseType(typeof(AccountingPeriodFundModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetFund(Guid accountingPeriodId, Guid fundId)
-    {
-        Dictionary<string, string[]> errors = [];
-        if (!fundConverter.TryToDomain(fundId, out Fund? fund))
-        {
-            errors.Add(nameof(fundId), new[] { $"Fund with ID {fundId} not found." });
-        }
-        if (!accountingPeriodConverter.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
-        {
-            errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
-        }
-        if (errors.Count > 0 || fund == null || accountingPeriod == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Accounting Period Fund.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        AccountingPeriodBalanceHistory? accountingPeriodBalanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
-        AccountingPeriodFundBalanceHistory? fundBalanceHistory = accountingPeriodBalanceHistory?.FundBalances.FirstOrDefault(fundHistory => fundHistory.Fund.Id == fund.Id);
-        if (fundBalanceHistory == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Accounting Period Fund.",
-                Errors = new Dictionary<string, string[]>
-                {
-                    { nameof(fundId), new[] { $"Fund with ID {fundId} not found for Accounting Period with ID {accountingPeriodId}." } }
-                },
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        return Ok(accountingPeriodFundConverter.ToModel(fundBalanceHistory));
-    }
-
-    /// <summary>
-    /// Retrieves the Goals for the Accounting Period that match the specified criteria
-    /// </summary>
-    [HttpGet("{accountingPeriodId}/goals")]
-    [ProducesResponseType(typeof(CollectionModel<GoalModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetManyGoals(Guid accountingPeriodId, [FromQuery] AccountingPeriodGoalQueryParameterModel queryParameters)
-    {
-        Dictionary<string, string[]> errors = [];
-        if (!accountingPeriodConverter.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
-        {
-            errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
-        }
-        if (errors.Count > 0 || accountingPeriod == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Accounting Period Goals.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        return Ok(accountingPeriodGoalGetter.Get(accountingPeriod.Id, queryParameters));
-    }
-
-    /// <summary>
-    /// Retrieves the Goal for the Accounting Period that matches the provided Fund ID
-    /// </summary>
-    [HttpGet("{accountingPeriodId}/goals/{fundId}")]
-    [ProducesResponseType(typeof(GoalModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetGoal(Guid accountingPeriodId, Guid fundId)
-    {
-        Dictionary<string, string[]> errors = [];
-        if (!fundConverter.TryToDomain(fundId, out Fund? fund))
-        {
-            errors.Add(nameof(fundId), [$"Fund with ID {fundId} not found."]);
-        }
-        if (!accountingPeriodConverter.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
-        {
-            errors.Add(nameof(accountingPeriodId), [$"Accounting Period with ID {accountingPeriodId} not found."]);
-        }
-        if (errors.Count > 0 || fund == null || accountingPeriod == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Accounting Period Goal.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-
-        Goal? goal = goalRepository.GetByFundAndAccountingPeriod(fund.Id, accountingPeriod.Id);
-        return goal != null ? Ok(goalConverter.ToModel(goal)) : Ok(null);
-    }
-
-    /// <summary>
-    /// Retrieves the Accounts for the Accounting Period that match the specified criteria
-    /// </summary>
-    [HttpGet("{accountingPeriodId}/accounts")]
-    [ProducesResponseType(typeof(CollectionModel<AccountingPeriodAccountModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetManyAccounts(Guid accountingPeriodId, [FromQuery] AccountingPeriodAccountQueryParameterModel queryParameters)
-    {
-        Dictionary<string, string[]> errors = [];
-        if (!accountingPeriodConverter.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
-        {
-            errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
-        }
-        if (errors.Count > 0 || accountingPeriod == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Accounting Period Accounts.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        return Ok(accountingPeriodAccountGetter.Get(accountingPeriod.Id, queryParameters));
-    }
-
-    /// <summary>
-    /// Retrieves the Account as it appeared in the provided Accounting Period
-    /// </summary>
-    [HttpGet("{accountingPeriodId}/accounts/{accountId}")]
-    [ProducesResponseType(typeof(AccountingPeriodAccountModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetAccountingPeriodAccount(Guid accountingPeriodId, Guid accountId)
-    {
-        Dictionary<string, string[]> errors = [];
-        if (!accountConverter.TryToDomain(accountId, out Account? account))
-        {
-            errors.Add(nameof(accountId), new[] { $"Account with ID {accountId} not found." });
-        }
-        if (!accountingPeriodConverter.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
-        {
-            errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
-        }
-        if (errors.Count > 0 || account == null || accountingPeriod == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Accounting Period Account.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        AccountingPeriodBalanceHistory? accountingPeriodBalanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
-        AccountingPeriodAccountBalanceHistory? accountBalanceHistory = accountingPeriodBalanceHistory?.AccountBalances
-            .FirstOrDefault(accountHistory => accountHistory.Account.Id == account.Id);
-        if (accountBalanceHistory == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Accounting Period Account.",
-                Errors = new Dictionary<string, string[]>
-                {
-                    { nameof(accountId), new[] { $"Account with ID {accountId} not found for Accounting Period with ID {accountingPeriodId}." } }
-                },
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        return Ok(accountingPeriodAccountConverter.ToModel(accountBalanceHistory));
-    }
-
-    /// <summary>
-    /// Retrieves the Transactions for the Accounting Period that match the specified criteria
-    /// </summary>
-    [HttpGet("{accountingPeriodId}/transactions")]
-    [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetManyTransactions(Guid accountingPeriodId, [FromQuery] AccountingPeriodTransactionQueryParameterModel queryParameters)
-    {
-        Dictionary<string, string[]> errors = [];
-        if (!accountingPeriodConverter.TryToDomain(accountingPeriodId, out AccountingPeriod? accountingPeriod))
-        {
-            errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
-        }
-        if (errors.Count > 0 || accountingPeriod == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Accounting Period Transactions.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        return Ok(accountingPeriodTransactionGetter.Get(accountingPeriod.Id, queryParameters));
-    }
 
     /// <summary>
     /// Creates a new Accounting Period with the provided properties
