@@ -334,9 +334,9 @@ public class FundService(
         {
             exceptions = exceptions.Append(new InvalidGoalTypeException("The provided assignment goal type is invalid."));
         }
-        if (assignmentGoalAmount <= 0)
+        if (assignmentGoalAmount < 0)
         {
-            exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than zero."));
+            exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than or equal to zero."));
         }
         if (!Enum.IsDefined(spendingGoalType))
         {
