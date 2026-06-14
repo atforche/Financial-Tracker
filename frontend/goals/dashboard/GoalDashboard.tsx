@@ -1,8 +1,14 @@
-import { Box, Stack } from "@mui/material";
-import type {
+import {
+  AssignmentGoalSortOrder,
   GoalDashboardBalanceEventSortOrder,
-  GoalSortOrder,
+  SpendingGoalSortOrder,
 } from "@/goals/types";
+import { Box, Stack } from "@mui/material";
+import {
+  type GoalDashboardView,
+  defaultGoalDashboardView,
+  isGoalDashboardView,
+} from "@/goals/dashboard/goalDashboardTypes";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import { AccountingPeriodSortOrder } from "@/accounting-periods/types";
 import GoalDashboardAmountAssignedChart from "@/goals/dashboard/GoalDashboardAmountAssignedChart";
@@ -19,9 +25,10 @@ import { normalizeGoalTypes } from "@/goals/dashboard/goalTypeFilter";
 import { redirect } from "next/navigation";
 import routes from "@/goals/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
+import tryParseEnum from "@/framework/data/tryParseEnum";
 
 interface GoalDashboardSearchParams {
-  sort?: GoalSortOrder;
+  sort?: string;
   page?: number | string | null;
   balanceEventSort?: GoalDashboardBalanceEventSortOrder;
   balanceEventPage?: number | string | null;
@@ -29,6 +36,7 @@ interface GoalDashboardSearchParams {
   fundName?: string | string[];
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;
+  view?: GoalDashboardView;
 }
 
 interface GoalDashboardProps {
@@ -50,7 +58,12 @@ const GoalDashboard = async function ({
     fundName,
     startAccountingPeriodId,
     endAccountingPeriodId,
+    view,
   } = await searchParams;
+
+  const currentView = isGoalDashboardView(view)
+    ? view
+    : defaultGoalDashboardView;
 
   const apiClient = getApiClient();
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
@@ -74,35 +87,59 @@ const GoalDashboard = async function ({
   ) {
     redirect(
       routes.dashboard({
+        ...(currentView === defaultGoalDashboardView
+          ? {}
+          : { view: currentView }),
         startAccountingPeriodId: latestAccountingPeriod.id,
         endAccountingPeriodId: latestAccountingPeriod.id,
       }),
     );
   }
 
-  const currentGoalTypes = normalizeGoalTypes(
-    Array.isArray(goalType)
-      ? goalType
-      : typeof goalType === "string"
-        ? [goalType]
-        : [],
-  );
+  const requestedGoalTypes = Array.isArray(goalType)
+    ? goalType
+    : typeof goalType === "string"
+      ? [goalType]
+      : [];
+  const currentAssignmentGoalTypes =
+    currentView === "assignment"
+      ? normalizeGoalTypes(requestedGoalTypes, currentView)
+      : [];
+  const currentSpendingGoalTypes =
+    currentView === "spending"
+      ? normalizeGoalTypes(requestedGoalTypes, currentView)
+      : [];
   const currentPage = normalizePageValue(page);
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
   const pageOffset = getPageOffset(currentPage);
   const balanceEventOffset = getPageOffset(currentBalanceEventPage);
+  const currentBalanceEventSort =
+    typeof balanceEventSort === "string"
+      ? tryParseEnum(GoalDashboardBalanceEventSortOrder, balanceEventSort)
+      : null;
+  const currentAssignmentSort =
+    currentView === "assignment" && typeof sort === "string"
+      ? tryParseEnum(AssignmentGoalSortOrder, sort)
+      : null;
+  const currentSpendingSort =
+    currentView === "spending" && typeof sort === "string"
+      ? tryParseEnum(SpendingGoalSortOrder, sort)
+      : null;
 
   const dashboardPromise = apiClient.GET("/goals/dashboard", {
     params: {
       query: {
-        ...(typeof sort === "string" ? { Sort: sort } : {}),
-        ...(typeof balanceEventSort === "string"
-          ? { BalanceEventSort: balanceEventSort }
-          : {}),
-        Limit: rowsPerPage,
-        BalanceEventLimit: rowsPerPage,
-        Offset: pageOffset,
-        BalanceEventOffset: balanceEventOffset,
+        AssignmentGoalLimit: currentView === "assignment" ? rowsPerPage : 0,
+        AssignmentGoalOffset: currentView === "assignment" ? pageOffset : 0,
+        SpendingGoalLimit: currentView === "spending" ? rowsPerPage : 0,
+        SpendingGoalOffset: currentView === "spending" ? pageOffset : 0,
+        AssignmentBalanceEventLimit:
+          currentView === "assignment" ? rowsPerPage : 0,
+        AssignmentBalanceEventOffset:
+          currentView === "assignment" ? balanceEventOffset : 0,
+        SpendingBalanceEventLimit: currentView === "spending" ? rowsPerPage : 0,
+        SpendingBalanceEventOffset:
+          currentView === "spending" ? balanceEventOffset : 0,
         ...(typeof startAccountingPeriodId === "string"
           ? { StartAccountingPeriodId: startAccountingPeriodId }
           : latestAccountingPeriod !== null
@@ -113,14 +150,33 @@ const GoalDashboard = async function ({
           : latestAccountingPeriod !== null
             ? { EndAccountingPeriodId: latestAccountingPeriod.id }
             : {}),
-        ...(currentGoalTypes.length > 0
-          ? { GoalType: [...currentGoalTypes] }
+        ...(currentAssignmentGoalTypes.length > 0
+          ? {
+              AssignmentGoalType: [...currentAssignmentGoalTypes],
+            }
+          : {}),
+        ...(currentSpendingGoalTypes.length > 0
+          ? {
+              SpendingGoalType: [...currentSpendingGoalTypes],
+            }
           : {}),
         ...(Array.isArray(fundName)
           ? { FundName: [...fundName] }
           : typeof fundName === "string"
             ? { FundName: [fundName] }
             : {}),
+        ...(currentAssignmentSort !== null
+          ? { AssignmentSort: currentAssignmentSort }
+          : {}),
+        ...(currentSpendingSort !== null
+          ? { SpendingSort: currentSpendingSort }
+          : {}),
+        ...(currentView === "assignment" && currentBalanceEventSort !== null
+          ? { AssignmentBalanceEventSort: currentBalanceEventSort }
+          : {}),
+        ...(currentView === "spending" && currentBalanceEventSort !== null
+          ? { SpendingBalanceEventSort: currentBalanceEventSort }
+          : {}),
       },
     },
   });
@@ -139,30 +195,36 @@ const GoalDashboard = async function ({
           defaultAccountingPeriodId={latestAccountingPeriod?.id ?? null}
           defaultStartDate=""
           defaultEndDate=""
+          view={currentView}
         />
       </Stack>
-      <GoalDashboardSummaryCards dashboard={dashboard} />
+      <GoalDashboardSummaryCards dashboard={dashboard} view={currentView} />
       <Box
         sx={{
           display: "grid",
           gap: 3,
           gridTemplateColumns: {
             xs: "1fr",
-            lg: "repeat(2, minmax(0, 1fr))",
+            lg: "repeat(3, minmax(0, 1fr))",
           },
         }}
       >
         <GoalDashboardGoalAmountChart
           accountingPeriods={dashboard.accountingPeriods ?? null}
+          view={currentView}
         />
-        <GoalDashboardAmountAssignedChart
-          accountingPeriods={dashboard.accountingPeriods ?? null}
-        />
-        <GoalDashboardAmountSpentChart
-          accountingPeriods={dashboard.accountingPeriods ?? null}
-        />
+        {currentView === "assignment" ? (
+          <GoalDashboardAmountAssignedChart
+            accountingPeriods={dashboard.accountingPeriods ?? null}
+          />
+        ) : (
+          <GoalDashboardAmountSpentChart
+            accountingPeriods={dashboard.accountingPeriods ?? null}
+          />
+        )}
         <GoalDashboardGoalsMetChart
           accountingPeriods={dashboard.accountingPeriods ?? null}
+          view={currentView}
         />
       </Box>
       <Box
@@ -173,15 +235,35 @@ const GoalDashboard = async function ({
             "repeat(auto-fit, minmax(min(100%, 800px), 1fr))",
         }}
       >
-        <GoalDashboardListFrame
-          data={[...dashboard.goals.items]}
-          totalCount={dashboard.goals.totalCount}
-          isInOnboardingMode={false}
-        />
-        <GoalDashboardBalanceEventListFrame
-          data={[...dashboard.balanceEvents.items]}
-          totalCount={dashboard.balanceEvents.totalCount}
-        />
+        {currentView === "assignment" ? (
+          <>
+            <GoalDashboardListFrame
+              view={currentView}
+              data={[...dashboard.assignmentGoals.items]}
+              totalCount={dashboard.assignmentGoals.totalCount}
+              isInOnboardingMode={false}
+            />
+            <GoalDashboardBalanceEventListFrame
+              view={currentView}
+              data={[...dashboard.assignmentBalanceEvents.items]}
+              totalCount={dashboard.assignmentBalanceEvents.totalCount}
+            />
+          </>
+        ) : (
+          <>
+            <GoalDashboardListFrame
+              view={currentView}
+              data={[...dashboard.spendingGoals.items]}
+              totalCount={dashboard.spendingGoals.totalCount}
+              isInOnboardingMode={false}
+            />
+            <GoalDashboardBalanceEventListFrame
+              view={currentView}
+              data={[...dashboard.spendingBalanceEvents.items]}
+              totalCount={dashboard.spendingBalanceEvents.totalCount}
+            />
+          </>
+        )}
       </Box>
     </Stack>
   );

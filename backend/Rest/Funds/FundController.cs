@@ -22,6 +22,7 @@ public sealed class FundController(
     FundConverter fundConverter,
     FundDashboardGetter fundDashboardGetter,
     FundGetter fundGetter,
+    FundSummaryGetter fundSummaryGetter,
     FundRepository fundRepository,
     FundService fundService) : ControllerBase
 {
@@ -52,6 +53,13 @@ public sealed class FundController(
     [ProducesResponseType(typeof(CollectionModel<FundModel>), StatusCodes.Status200OK)]
     public IActionResult GetMany([FromQuery] FundQueryParameterModel queryParameters) =>
         Ok(fundGetter.Get(queryParameters));
+
+    /// <summary>
+    /// Retrieves summary balances for Funds
+    /// </summary>
+    [HttpGet("summary")]
+    [ProducesResponseType(typeof(FundSummaryModel), StatusCodes.Status200OK)]
+    public IActionResult GetSummary() => Ok(fundSummaryGetter.Get());
 
     /// <summary>
     /// Retrieves dashboard data for Funds across a range of Accounting Periods.

@@ -2,6 +2,7 @@ import { Paper, Stack, Typography } from "@mui/material";
 import { AccountingPeriodSortOrder } from "@/accounting-periods/types";
 import GoalDashboardSummaryCards from "@/goals/dashboard/GoalDashboardSummaryCards";
 import type { JSX } from "react";
+import { defaultGoalDashboardView } from "@/goals/dashboard/goalDashboardTypes";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
@@ -42,8 +43,10 @@ const GoalOverview = async function (): Promise<JSX.Element> {
   const { data: dashboard } = await apiClient.GET("/goals/dashboard", {
     params: {
       query: {
-        Limit: 10,
-        BalanceEventLimit: 10,
+        AssignmentGoalLimit: 10,
+        AssignmentBalanceEventLimit: 10,
+        SpendingGoalLimit: 0,
+        SpendingBalanceEventLimit: 0,
         StartAccountingPeriodId: latestAccountingPeriod.id,
         EndAccountingPeriodId: latestAccountingPeriod.id,
       },
@@ -60,7 +63,10 @@ const GoalOverview = async function (): Promise<JSX.Element> {
         <Typography variant="h6" color="text.secondary">
           Current Goals ({latestAccountingPeriod.name})
         </Typography>
-        <GoalDashboardSummaryCards dashboard={dashboard} />
+        <GoalDashboardSummaryCards
+          dashboard={dashboard}
+          view={defaultGoalDashboardView}
+        />
       </Stack>
     </Paper>
   );

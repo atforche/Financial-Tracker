@@ -21,9 +21,9 @@ const GoalDashboardAmountSpentChart = function ({
     <GoalDashboardMetricChart
       title="Amount spent"
       subtitle="No spending amounts are available for the selected range."
-      dataKey="amountSpent"
       label="Amount Spent"
       accountingPeriods={accountingPeriods}
+      getValue={(accountingPeriod) => accountingPeriod.totalAmountSpent}
       formatter={formatCurrency}
       tickFormatter={(value: number) =>
         new Intl.NumberFormat("en-US", {

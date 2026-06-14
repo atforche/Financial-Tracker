@@ -1,6 +1,7 @@
 "use client";
 
 import { type Account, isTrackedAccountType } from "@/accounts/types";
+import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { Button, Stack } from "@mui/material";
 import {
   CreateSpendingTransactionType,
@@ -20,7 +21,6 @@ import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FundAssignmentPlanner from "@/funds/FundAssignmentPlanner";
-import type { Goal } from "@/goals/types";
 import TransactionAccountPairSection from "@/transactions/workspace/TransactionAccountPairSection";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import createTransaction from "@/transactions/workspace/createTransaction";
@@ -32,7 +32,8 @@ interface CreateSpendingTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: Account[];
   readonly funds: Fund[];
-  readonly goals: Goal[];
+  readonly assignmentGoals: AssignmentGoal[];
+  readonly spendingGoals: SpendingGoal[];
   readonly redirectUrl: string;
 }
 
@@ -43,7 +44,8 @@ const CreateSpendingTransactionForm = function ({
   accountingPeriods,
   accounts,
   funds,
-  goals,
+  assignmentGoals,
+  spendingGoals,
   redirectUrl,
 }: CreateSpendingTransactionFormProps): JSX.Element {
   const router = useRouter();
@@ -73,7 +75,10 @@ const CreateSpendingTransactionForm = function ({
     null,
   );
   const [fundAssignments, setFundAssignments] = useState<FundAmount[]>([]);
-  const currentGoals = goals.filter(
+  const currentAssignmentGoals = assignmentGoals.filter(
+    (goal) => goal.accountingPeriodId === accountingPeriod?.id,
+  );
+  const currentSpendingGoals = spendingGoals.filter(
     (goal) => goal.accountingPeriodId === accountingPeriod?.id,
   );
 
@@ -188,7 +193,8 @@ const CreateSpendingTransactionForm = function ({
           title="Fund Allocation"
           tone="spending"
           funds={funds}
-          goals={currentGoals}
+          assignmentGoals={currentAssignmentGoals}
+          spendingGoals={currentSpendingGoals}
           totalAmountToAssign={amount}
           baselineValue={[]}
           value={fundAssignments}

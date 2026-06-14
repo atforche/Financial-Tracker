@@ -1,11 +1,18 @@
 "use client";
 
+import {
+  type AssignmentGoal,
+  AssignmentGoalSortOrder,
+  type SpendingGoal,
+  SpendingGoalSortOrder,
+  formatAssignmentGoalType,
+  formatSpendingGoalType,
+} from "@/goals/types";
 import { Button, IconButton, Paper, Stack, Typography } from "@mui/material";
 import {
-  type GoalDashboardGoal,
-  GoalSortOrder,
-  formatGoalType,
-} from "@/goals/types";
+  type GoalDashboardView,
+  defaultGoalDashboardView,
+} from "@/goals/dashboard/goalDashboardTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -21,15 +28,28 @@ import tryParseEnum from "@/framework/data/tryParseEnum";
  * Props for the GoalDashboardListFrame component.
  */
 interface GoalDashboardListFrameProps {
-  readonly data: GoalDashboardGoal[] | null;
+  readonly view: GoalDashboardView;
+  readonly data: AssignmentGoal[] | SpendingGoal[] | null;
   readonly totalCount: number | null;
   readonly isInOnboardingMode: boolean;
 }
+
+const getResetRoute = function (
+  pathname: string,
+  view: GoalDashboardView,
+): string {
+  if (view === defaultGoalDashboardView) {
+    return pathname;
+  }
+
+  return `${pathname}?view=${view}`;
+};
 
 /**
  * Presents the paged goal table for the Goals dashboard.
  */
 const GoalDashboardListFrame = function ({
+  view,
   data,
   totalCount,
   isInOnboardingMode,
@@ -45,7 +65,7 @@ const GoalDashboardListFrame = function ({
   const startAccountingPeriodIdParamName = "startAccountingPeriodId";
   const endAccountingPeriodIdParamName = "endAccountingPeriodId";
 
-  const setSort = function (sort: GoalSortOrder | null): void {
+  const setSort = function (sort: string | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
       params.delete(sortParamName);
@@ -64,36 +84,241 @@ const GoalDashboardListFrame = function ({
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const openGoalWorkspace = function (goal: GoalDashboardGoal): void {
-    router.push(routes.workspace({ selectedGoalId: goal.id }));
+  const openGoalWorkspace = function (
+    goal: AssignmentGoal | SpendingGoal,
+  ): void {
+    router.push(routes.workspace({ selectedGoalId: goal.id, view }));
   };
 
-  const currentSort = tryParseEnum(
-    GoalSortOrder,
-    searchParams.get(sortParamName) ?? "",
-  );
   const hasActiveFilters =
     searchParams.getAll(goalTypeParamName).length > 0 ||
     searchParams.getAll(fundNameParamName).length > 0 ||
     searchParams.has(startAccountingPeriodIdParamName) ||
     searchParams.has(endAccountingPeriodIdParamName);
 
-  const columns: ColumnDefinition<GoalDashboardGoal>[] = [
+  const emptyActionLabel =
+    view === "assignment"
+      ? "Open assignment workspace"
+      : "Open spending workspace";
+  const emptyDescription =
+    view === "assignment"
+      ? "Create or onboard an assignment goal to start tracking funding progress."
+      : "Create or onboard a spending goal to start tracking spending progress.";
+
+  if (view === "assignment") {
+    const currentSort = tryParseEnum(
+      AssignmentGoalSortOrder,
+      searchParams.get(sortParamName) ?? "",
+    );
+
+    const columns: ColumnDefinition<AssignmentGoal>[] = [
+      {
+        name: "accountingPeriod",
+        headerContent: "Accounting Period",
+        getBodyContent: (goal) => goal.accountingPeriodName,
+        sortType:
+          currentSort === AssignmentGoalSortOrder.AccountingPeriod
+            ? ColumnSortType.Ascending
+            : currentSort === AssignmentGoalSortOrder.AccountingPeriodDescending
+              ? ColumnSortType.Descending
+              : null,
+        onSort: (sortType): void => {
+          if (sortType === ColumnSortType.Ascending) {
+            setSort(AssignmentGoalSortOrder.AccountingPeriod);
+          } else if (sortType === ColumnSortType.Descending) {
+            setSort(AssignmentGoalSortOrder.AccountingPeriodDescending);
+          } else {
+            setSort(null);
+          }
+        },
+        minWidth: 170,
+      },
+      {
+        name: "fund",
+        headerContent: "Fund",
+        getBodyContent: (goal) => goal.fundName,
+        sortType:
+          currentSort === AssignmentGoalSortOrder.Fund
+            ? ColumnSortType.Ascending
+            : currentSort === AssignmentGoalSortOrder.FundDescending
+              ? ColumnSortType.Descending
+              : null,
+        onSort: (sortType): void => {
+          if (sortType === ColumnSortType.Ascending) {
+            setSort(AssignmentGoalSortOrder.Fund);
+          } else if (sortType === ColumnSortType.Descending) {
+            setSort(AssignmentGoalSortOrder.FundDescending);
+          } else {
+            setSort(null);
+          }
+        },
+        minWidth: 160,
+      },
+      {
+        name: "goalType",
+        headerContent: "Goal Type",
+        getBodyContent: (goal) => formatAssignmentGoalType(goal.type),
+        sortType:
+          currentSort === AssignmentGoalSortOrder.Type
+            ? ColumnSortType.Ascending
+            : currentSort === AssignmentGoalSortOrder.TypeDescending
+              ? ColumnSortType.Descending
+              : null,
+        onSort: (sortType): void => {
+          if (sortType === ColumnSortType.Ascending) {
+            setSort(AssignmentGoalSortOrder.Type);
+          } else if (sortType === ColumnSortType.Descending) {
+            setSort(AssignmentGoalSortOrder.TypeDescending);
+          } else {
+            setSort(null);
+          }
+        },
+        minWidth: 160,
+      },
+      {
+        name: "goalAmount",
+        headerContent: "Goal Amount",
+        getBodyContent: (goal) => formatCurrency(goal.goalAmount),
+        sortType:
+          currentSort === AssignmentGoalSortOrder.GoalAmount
+            ? ColumnSortType.Ascending
+            : currentSort === AssignmentGoalSortOrder.GoalAmountDescending
+              ? ColumnSortType.Descending
+              : null,
+        onSort: (sortType): void => {
+          if (sortType === ColumnSortType.Ascending) {
+            setSort(AssignmentGoalSortOrder.GoalAmount);
+          } else if (sortType === ColumnSortType.Descending) {
+            setSort(AssignmentGoalSortOrder.GoalAmountDescending);
+          } else {
+            setSort(null);
+          }
+        },
+        alignment: "right",
+        minWidth: 140,
+      },
+      {
+        name: "remainingAmountToAssign",
+        headerContent: "Remaining To Assign",
+        getBodyContent: (goal) => formatCurrency(goal.remainingAmountToAssign),
+        alignment: "right",
+        minWidth: 190,
+      },
+      {
+        name: "actions",
+        headerContent: "",
+        getBodyContent: (goal) => (
+          <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+            <IconButton
+              size="small"
+              color="inherit"
+              onClick={(event) => {
+                event.stopPropagation();
+                setFundNameFilter(goal.fundName);
+              }}
+              aria-label={`Filter ${goal.fundName}`}
+            >
+              <FilterListOutlined fontSize="small" color="action" />
+            </IconButton>
+            <IconButton
+              size="small"
+              color="primary"
+              onClick={(event) => {
+                event.stopPropagation();
+                openGoalWorkspace(goal);
+              }}
+              aria-label={`Open ${goal.fundName}`}
+            >
+              <ArrowForwardOutlined fontSize="small" color="action" />
+            </IconButton>
+          </Stack>
+        ),
+        alignment: "right",
+        minWidth: 84,
+        maxWidth: 84,
+      },
+    ];
+
+    return (
+      <Paper
+        sx={{
+          border: "1px solid",
+          borderColor: "divider",
+          p: { xs: 2, md: 2.5 },
+        }}
+      >
+        <Stack spacing={2.5}>
+          <Typography variant="h5">Assignment Goals</Typography>
+          <ListFrame<AssignmentGoal>
+            columns={columns}
+            getId={(goal) => goal.id}
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+            data={data as AssignmentGoal[] | null}
+            totalCount={totalCount ?? null}
+            searchParamName="search"
+            pageParamName={pageParamName}
+            onRowClick={(goal: AssignmentGoal): void => {
+              setFundNameFilter(goal.fundName);
+            }}
+            hasActiveFilters={hasActiveFilters}
+            initialEmptyState={{
+              title: "No assignment goals have been added",
+              description: isInOnboardingMode
+                ? emptyDescription
+                : "Create a new assignment goal to start tracking funding progress.",
+              action: (
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    router.push(routes.workspace({ view }));
+                  }}
+                >
+                  {emptyActionLabel}
+                </Button>
+              ),
+            }}
+            filteredEmptyState={{
+              title: "No assignment goals match this dashboard filter",
+              description:
+                "Try a different fund name, goal type, or accounting period to widen the dashboard scope.",
+              action: (
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    router.replace(getResetRoute(pathname, view));
+                  }}
+                >
+                  Reset filters
+                </Button>
+              ),
+            }}
+          />
+        </Stack>
+      </Paper>
+    );
+  }
+
+  const currentSort = tryParseEnum(
+    SpendingGoalSortOrder,
+    searchParams.get(sortParamName) ?? "",
+  );
+
+  const columns: ColumnDefinition<SpendingGoal>[] = [
     {
       name: "accountingPeriod",
       headerContent: "Accounting Period",
       getBodyContent: (goal) => goal.accountingPeriodName,
       sortType:
-        currentSort === GoalSortOrder.AccountingPeriod
+        currentSort === SpendingGoalSortOrder.AccountingPeriod
           ? ColumnSortType.Ascending
-          : currentSort === GoalSortOrder.AccountingPeriodDescending
+          : currentSort === SpendingGoalSortOrder.AccountingPeriodDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(GoalSortOrder.AccountingPeriod);
+          setSort(SpendingGoalSortOrder.AccountingPeriod);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(GoalSortOrder.AccountingPeriodDescending);
+          setSort(SpendingGoalSortOrder.AccountingPeriodDescending);
         } else {
           setSort(null);
         }
@@ -105,16 +330,16 @@ const GoalDashboardListFrame = function ({
       headerContent: "Fund",
       getBodyContent: (goal) => goal.fundName,
       sortType:
-        currentSort === GoalSortOrder.Fund
+        currentSort === SpendingGoalSortOrder.Fund
           ? ColumnSortType.Ascending
-          : currentSort === GoalSortOrder.FundDescending
+          : currentSort === SpendingGoalSortOrder.FundDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(GoalSortOrder.Fund);
+          setSort(SpendingGoalSortOrder.Fund);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(GoalSortOrder.FundDescending);
+          setSort(SpendingGoalSortOrder.FundDescending);
         } else {
           setSort(null);
         }
@@ -124,37 +349,30 @@ const GoalDashboardListFrame = function ({
     {
       name: "goalType",
       headerContent: "Goal Type",
-      getBodyContent: (goal) => formatGoalType(goal.goalType),
-      minWidth: 130,
-    },
-    {
-      name: "goalAmount",
-      headerContent: "Goal Amount",
-      getBodyContent: (goal) => formatCurrency(goal.goalAmount),
+      getBodyContent: (goal) => formatSpendingGoalType(goal.type),
       sortType:
-        currentSort === GoalSortOrder.GoalAmount
+        currentSort === SpendingGoalSortOrder.Type
           ? ColumnSortType.Ascending
-          : currentSort === GoalSortOrder.GoalAmountDescending
+          : currentSort === SpendingGoalSortOrder.TypeDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(GoalSortOrder.GoalAmount);
+          setSort(SpendingGoalSortOrder.Type);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(GoalSortOrder.GoalAmountDescending);
+          setSort(SpendingGoalSortOrder.TypeDescending);
         } else {
           setSort(null);
         }
       },
-      alignment: "right",
-      minWidth: 140,
+      minWidth: 160,
     },
     {
-      name: "remainingAmountToAssign",
-      headerContent: "Remaining To Assign",
-      getBodyContent: (goal) => formatCurrency(goal.remainingAmountToAssign),
+      name: "totalAmountToSpend",
+      headerContent: "Amount To Spend",
+      getBodyContent: (goal) => formatCurrency(goal.totalAmountToSpend),
       alignment: "right",
-      minWidth: 190,
+      minWidth: 160,
     },
     {
       name: "remainingAmountToSpend",
@@ -207,43 +425,44 @@ const GoalDashboardListFrame = function ({
       }}
     >
       <Stack spacing={2.5}>
-        <Typography variant="h5">Goals</Typography>
-        <ListFrame<GoalDashboardGoal>
+        <Typography variant="h5">Spending Goals</Typography>
+        <ListFrame<SpendingGoal>
           columns={columns}
           getId={(goal) => goal.id}
-          data={data ?? null}
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+          data={data as SpendingGoal[] | null}
           totalCount={totalCount ?? null}
           searchParamName="search"
           pageParamName={pageParamName}
-          onRowClick={(goal: GoalDashboardGoal): void => {
+          onRowClick={(goal: SpendingGoal): void => {
             setFundNameFilter(goal.fundName);
           }}
           hasActiveFilters={hasActiveFilters}
           initialEmptyState={{
-            title: "No goals have been added",
+            title: "No spending goals have been added",
             description: isInOnboardingMode
-              ? "Create or onboard a goal to start tracking funding progress."
-              : "Create a new goal to start tracking funding progress.",
+              ? emptyDescription
+              : "Create a new spending goal to start tracking spending progress.",
             action: (
               <Button
                 variant="contained"
                 onClick={() => {
-                  router.push(routes.workspace({ action: "create" }));
+                  router.push(routes.workspace({ view }));
                 }}
               >
-                {isInOnboardingMode ? "Onboard goal" : "Create goal"}
+                {emptyActionLabel}
               </Button>
             ),
           }}
           filteredEmptyState={{
-            title: "No goals match this dashboard filter",
+            title: "No spending goals match this dashboard filter",
             description:
               "Try a different fund name, goal type, or accounting period to widen the dashboard scope.",
             action: (
               <Button
                 variant="contained"
                 onClick={() => {
-                  router.replace(pathname);
+                  router.replace(getResetRoute(pathname, view));
                 }}
               >
                 Reset filters

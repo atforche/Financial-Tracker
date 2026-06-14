@@ -1,9 +1,6 @@
 import {
-  AccountingPeriodAccountSortOrderModel,
-  AccountingPeriodFundSortOrderModel,
-  AccountingPeriodGoalSortOrderModel,
+  AccountingPeriodDashboardTransactionSortOrderModel,
   AccountingPeriodSortOrderModel,
-  AccountingPeriodTransactionSortOrderModel,
   type components,
 } from "@/framework/data/api";
 import dayjs, { type Dayjs } from "dayjs";
@@ -18,17 +15,6 @@ type AccountingPeriod = components["schemas"]["AccountingPeriodModel"];
  */
 type AccountingPeriodDashboard =
   components["schemas"]["AccountingPeriodDashboardModel"];
-
-/**
- * Type representing an Account in the context of an Accounting Period.
- */
-type AccountingPeriodAccount =
-  components["schemas"]["AccountingPeriodAccountModel"];
-
-/**
- * Type representing a Fund in the context of an Accounting Period.
- */
-type AccountingPeriodFund = components["schemas"]["AccountingPeriodFundModel"];
 
 /**
  * Interface representing an identifier for an Accounting Period.
@@ -75,16 +61,11 @@ const getDefaultDate = function (
 export {
   type AccountingPeriod,
   type AccountingPeriodDashboard,
-  type AccountingPeriodAccount,
-  type AccountingPeriodFund,
   type CreateAccountingPeriodRequest,
   type AccountingPeriodIdentifier,
   getMinimumDate,
   getMaximumDate,
   getDefaultDate,
   AccountingPeriodSortOrderModel as AccountingPeriodSortOrder,
-  AccountingPeriodAccountSortOrderModel as AccountingPeriodAccountSortOrder,
-  AccountingPeriodFundSortOrderModel as AccountingPeriodFundSortOrder,
-  AccountingPeriodGoalSortOrderModel as AccountingPeriodGoalSortOrder,
-  AccountingPeriodTransactionSortOrderModel as AccountingPeriodTransactionSortOrder,
+  AccountingPeriodDashboardTransactionSortOrderModel as AccountingPeriodDashboardTransactionSortOrder,
 };

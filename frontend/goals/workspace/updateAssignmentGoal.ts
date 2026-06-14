@@ -1,6 +1,9 @@
 "use server";
 
-import type { UpdateGoalRequest } from "@/goals/types";
+import type {
+  AssignmentGoal,
+  UpdateAssignmentGoalRequest,
+} from "@/goals/types";
 import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
@@ -8,55 +11,57 @@ import nameof from "@/framework/data/nameof";
 import { revalidatePath } from "next/cache";
 
 /**
- * Interface representing the state of updating a goal.
+ * Interface representing the state of updating an assignment goal.
  */
 interface ActionState {
   readonly success?: boolean;
   readonly errorTitle?: string | null;
-  readonly goalTypeErrors?: string | null;
+  readonly typeErrors?: string | null;
   readonly goalAmountErrors?: string | null;
   readonly unmappedErrors?: string | null;
 }
 
 /**
- * Interface representing the payload for updating a goal action.
+ * Payload for the update goal action.
  */
 interface ActionPayload {
-  readonly goalId: string;
-  readonly request: UpdateGoalRequest;
+  readonly goal: AssignmentGoal;
+  readonly request: UpdateAssignmentGoalRequest;
   readonly redirectUrl: string;
 }
 
 /**
- * Server action that updates a goal.
+ * Server action that updates an assignment goal.
  */
-const updateGoal = async function (
+const updateAssignmentGoal = async function (
   _: ActionState,
-  { goalId, request, redirectUrl }: ActionPayload,
+  { goal, request, redirectUrl }: ActionPayload,
 ): Promise<ActionState> {
   const client = getApiClient();
-  const { error } = await client.POST("/goals/{goalId}", {
+  const { error } = await client.POST("/goals/assignment/{goalId}", {
     params: {
       path: {
-        goalId,
+        goalId: goal.id,
       },
     },
     body: request,
   });
   if (error) {
     if (isApiError(error)) {
-      let goalTypeErrorMessage = null;
+      let typeErrorMessage = null;
       let goalAmountErrorMessage = null;
       const unmappedErrors: (string | null)[] = [];
       for (const key of Object.keys(error.errors ?? {})) {
         if (
           key.toUpperCase() ===
-          nameof<UpdateGoalRequest>("goalType").toUpperCase()
+          nameof<UpdateAssignmentGoalRequest>(
+            "assignmentGoalType",
+          ).toUpperCase()
         ) {
-          goalTypeErrorMessage = formatErrors(error.errors?.[key] ?? null);
+          typeErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else if (
           key.toUpperCase() ===
-          nameof<UpdateGoalRequest>("goalAmount").toUpperCase()
+          nameof<UpdateAssignmentGoalRequest>("goalAmount").toUpperCase()
         ) {
           goalAmountErrorMessage = formatErrors(error.errors?.[key] ?? null);
         } else {
@@ -65,7 +70,7 @@ const updateGoal = async function (
       }
       return {
         errorTitle: error.title ?? null,
-        goalTypeErrors: goalTypeErrorMessage,
+        typeErrors: typeErrorMessage,
         goalAmountErrors: goalAmountErrorMessage,
         unmappedErrors: unmappedErrors.join(", ") || null,
       };
@@ -76,4 +81,4 @@ const updateGoal = async function (
   return { success: true };
 };
 
-export default updateGoal;
+export default updateAssignmentGoal;

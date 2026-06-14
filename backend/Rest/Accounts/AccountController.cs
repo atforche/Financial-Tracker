@@ -20,6 +20,7 @@ public sealed class AccountController(
     AccountService accountService,
     AccountDashboardGetter accountDashboardGetter,
     AccountGetter accountGetter,
+    AccountSummaryGetter accountSummaryGetter,
     AccountConverter accountConverter) : ControllerBase
 {
     /// <summary>
@@ -50,6 +51,13 @@ public sealed class AccountController(
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public IActionResult GetMany([FromQuery] AccountQueryParameterModel queryParameters) =>
         Ok(accountGetter.Get(queryParameters));
+
+    /// <summary>
+    /// Retrieves summary balances for Accounts
+    /// </summary>
+    [HttpGet("summary")]
+    [ProducesResponseType(typeof(AccountSummaryModel), StatusCodes.Status200OK)]
+    public IActionResult GetSummary() => Ok(accountSummaryGetter.Get());
 
     /// <summary>
     /// Retrieves dashboard data for Accounts across a range of Accounting Periods.

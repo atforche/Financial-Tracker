@@ -8,6 +8,7 @@ namespace Domain.Goals;
 /// Service for managing Spending Goals
 /// </summary>
 public class SpendingGoalService(
+    IAccountingPeriodRepository accountingPeriodRepository,
     IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
     ISpendingGoalRepository spendingGoalRepository)
 {
@@ -47,7 +48,7 @@ public class SpendingGoalService(
     {
         exceptions = [];
 
-        if (!ValidateUpdate(spendingGoalType, out IEnumerable<Exception> updateExceptions))
+        if (!ValidateUpdate(spendingGoal, spendingGoalType, out IEnumerable<Exception> updateExceptions))
         {
             exceptions = exceptions.Concat(updateExceptions);
             return false;
@@ -68,6 +69,10 @@ public class SpendingGoalService(
         {
             exceptions = exceptions.Append(new InvalidFundException("The unassigned fund cannot have a spending goal."));
         }
+        if (request.AccountingPeriod == null && accountingPeriodRepository.GetLatestAccountingPeriod() != null)
+        {
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException("A spending goal without an accounting period cannot be created if any accounting periods exist."));
+        }
         if (request.AccountingPeriod != null && !request.AccountingPeriod.IsOpen)
         {
             exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
@@ -86,13 +91,21 @@ public class SpendingGoalService(
     /// <summary>
     /// Validates the provided information to update a spending goal
     /// </summary>
-    private static bool ValidateUpdate(SpendingGoalType spendingGoalType, out IEnumerable<Exception> exceptions)
+    private bool ValidateUpdate(SpendingGoal spendingGoal, SpendingGoalType spendingGoalType, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
         if (!Enum.IsDefined(spendingGoalType))
         {
             exceptions = exceptions.Append(new InvalidGoalTypeException("The provided spending goal type is invalid."));
+        }
+        if (spendingGoal.AccountingPeriodId == null && accountingPeriodRepository.GetLatestAccountingPeriod() != null)
+        {
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException("A spending goal without an accounting period cannot be updated if any accounting periods exist."));
+        }
+        if (spendingGoal.AccountingPeriodId != null && !accountingPeriodRepository.GetById(spendingGoal.AccountingPeriodId)?.IsOpen == true)
+        {
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The accounting period for this spending goal is closed."));
         }
         return !exceptions.Any();
     }

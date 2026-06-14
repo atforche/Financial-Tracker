@@ -4,7 +4,6 @@ import {
   AccountDashboardModeModel,
   AccountDashboardSortOrderModel,
   AccountSortOrderModel,
-  AccountTransactionSortOrderModel,
   AccountTypeModel,
   type components,
 } from "@/framework/data/api";
@@ -141,12 +140,12 @@ const formatAccountType = function (accountType: AccountTypeModel): string {
 
 export {
   type Account,
+  type AccountSummary,
   type AccountDashboard,
   type AccountDashboardAccount,
   type AccountDashboardBalanceEvent,
   type AccountDashboardDateSummary,
   type AccountDashboardPeriodSummary,
-  type AccountSummary,
   type AccountTypeBalance,
   type AccountIdentifier,
   type CreateAccountRequest,
@@ -157,7 +156,6 @@ export {
   AccountDashboardModeModel as AccountDashboardMode,
   AccountDashboardSortOrderModel as AccountDashboardSortOrder,
   AccountSortOrderModel as AccountSortOrder,
-  AccountTransactionSortOrderModel as AccountTransactionSortOrder,
   AccountTypeModel as AccountType,
   isTrackedAccountType,
   isDebtAccountType,

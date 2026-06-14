@@ -1,79 +1,34 @@
 "use client";
 
-import { Paper, Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { AccountingPeriod } from "@/accounting-periods/types";
-import CreateGoalForm from "@/goals/workspace/CreateGoalForm";
-import DeleteGoalForm from "@/goals/workspace/DeleteGoalForm";
-import type { Fund } from "@/funds/types";
-import type { Goal } from "@/goals/types";
-import type { GoalWorkspaceAction } from "@/goals/workspace/GoalWorkspace";
+import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
+import { Paper, Stack, Typography } from "@mui/material";
+import type { GoalWorkspaceView } from "@/goals/workspace/goalWorkspaceTypes";
 import type { JSX } from "react";
 import UpdateGoalForm from "@/goals/workspace/UpdateGoalForm";
-
-/**
- * Props for the GoalWorkspaceActions component.
- */
-interface GoalWorkspaceActionsProps {
-  readonly accountingPeriods: AccountingPeriod[];
-  readonly funds: Fund[];
-  readonly selectedGoal: Goal | null;
-  readonly requestedAction: GoalWorkspaceAction | null;
-}
-
-/**
- * Gets the available actions for the provided goal.
- */
-const getAvailableActions = function (
-  selectedGoal: Goal | null,
-): readonly GoalWorkspaceAction[] {
-  if (selectedGoal === null) {
-    return ["create"];
-  }
-  return ["update", "delete"];
-};
+import { usePathname } from "next/navigation";
 
 /**
  * Displays the available goal actions for the current workspace selection.
  */
+interface GoalWorkspaceActionsProps {
+  readonly view: GoalWorkspaceView;
+  readonly selectedGoal: AssignmentGoal | SpendingGoal | null;
+}
+
+/**
+ * Renders the update panel for the selected goal.
+ */
 const GoalWorkspaceActions = function ({
-  accountingPeriods,
-  funds,
+  view,
   selectedGoal,
-  requestedAction,
 }: GoalWorkspaceActionsProps): JSX.Element {
-  const searchParams = useSearchParams();
   const pathname = usePathname();
-  const router = useRouter();
-
-  const allActions: readonly GoalWorkspaceAction[] = [
-    "create",
-    "update",
-    "delete",
-  ];
-  const availableActions: readonly GoalWorkspaceAction[] =
-    getAvailableActions(selectedGoal);
-
-  const activeAction =
-    requestedAction !== null && availableActions.includes(requestedAction)
-      ? requestedAction
-      : availableActions[0];
-
-  const setAction = function (action: GoalWorkspaceAction | null): void {
-    const params = new URLSearchParams(searchParams.toString());
-    if (action === null) {
-      params.delete("action");
-    } else {
-      params.set("action", action);
-    }
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
-
-  const selectedGoalAccountingPeriod = selectedGoal
-    ? (accountingPeriods.find(
-        (period) => period.id === selectedGoal.accountingPeriodId,
-      ) ?? null)
-    : null;
+  const title =
+    view === "assignment" ? "Update Assignment Goal" : "Update Spending Goal";
+  const description =
+    view === "assignment"
+      ? "Select an assignment goal to adjust its behavior and target amount."
+      : "Select a spending goal to adjust how spending against the fund is evaluated.";
 
   return (
     <Paper
@@ -85,47 +40,27 @@ const GoalWorkspaceActions = function ({
       }}
     >
       <Stack spacing={3}>
-        <ToggleButtonGroup
-          value={activeAction}
-          exclusive
-          onChange={(_, nextValue: GoalWorkspaceAction | null) => {
-            setAction(nextValue);
-          }}
-          sx={{ flexWrap: "wrap" }}
-        >
-          {allActions.map((action) => (
-            <ToggleButton
-              key={action}
-              value={action}
-              disabled={!availableActions.includes(action)}
-            >
-              {action === "create"
-                ? "Create"
-                : action === "update"
-                  ? "Update"
-                  : "Delete"}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-        {activeAction === "create" ? (
-          <CreateGoalForm
-            accountingPeriods={accountingPeriods}
-            funds={funds}
-            redirectUrl={pathname}
-          />
-        ) : null}
-        {activeAction === "update" && selectedGoal !== null ? (
+        <Stack spacing={0.5}>
+          <Typography variant="h6">{title}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {description}
+          </Typography>
+        </Stack>
+        {selectedGoal !== null ? (
           <UpdateGoalForm goal={selectedGoal} redirectUrl={pathname} />
-        ) : null}
-        {activeAction === "delete" &&
-        selectedGoal !== null &&
-        selectedGoalAccountingPeriod !== null ? (
-          <DeleteGoalForm
-            accountingPeriod={selectedGoalAccountingPeriod}
-            goal={selectedGoal}
-            redirectUrl={pathname}
-          />
-        ) : null}
+        ) : (
+          <Paper
+            variant="outlined"
+            sx={{ borderRadius: 4, p: { xs: 2.5, md: 3 } }}
+          >
+            <Stack spacing={1}>
+              <Typography variant="subtitle1">No goal selected</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Pick a goal from the table to edit it here.
+              </Typography>
+            </Stack>
+          </Paper>
+        )}
       </Stack>
     </Paper>
   );

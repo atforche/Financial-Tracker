@@ -16,6 +16,9 @@ interface ActionState {
   readonly nameErrors?: string | null;
   readonly descriptionErrors?: string | null;
   readonly onboardedBalanceErrors?: string | null;
+  readonly assignmentGoalTypeErrors?: string | null;
+  readonly assignmentGoalAmountErrors?: string | null;
+  readonly spendingGoalTypeErrors?: string | null;
   readonly unmappedErrors?: string | null;
 }
 
@@ -41,6 +44,9 @@ const onboardFund = async function (
       let nameErrorMessage = null;
       let descriptionErrorMessage = null;
       let onboardedBalanceErrorMessage = null;
+      let assignmentGoalTypeErrorMessage = null;
+      let assignmentGoalAmountErrorMessage = null;
+      let spendingGoalTypeErrorMessage = null;
       const unmappedErrors: (string | null)[] = [];
 
       for (const key of Object.keys(error.errors ?? {})) {
@@ -60,6 +66,27 @@ const onboardFund = async function (
           onboardedBalanceErrorMessage = formatErrors(
             error.errors?.[key] ?? null,
           );
+        } else if (
+          key.toUpperCase() ===
+          nameof<OnboardFundRequest>("assignmentGoalType").toUpperCase()
+        ) {
+          assignmentGoalTypeErrorMessage = formatErrors(
+            error.errors?.[key] ?? null,
+          );
+        } else if (
+          key.toUpperCase() ===
+          nameof<OnboardFundRequest>("assignmentGoalAmount").toUpperCase()
+        ) {
+          assignmentGoalAmountErrorMessage = formatErrors(
+            error.errors?.[key] ?? null,
+          );
+        } else if (
+          key.toUpperCase() ===
+          nameof<OnboardFundRequest>("spendingGoalType").toUpperCase()
+        ) {
+          spendingGoalTypeErrorMessage = formatErrors(
+            error.errors?.[key] ?? null,
+          );
         } else {
           unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
         }
@@ -70,6 +97,9 @@ const onboardFund = async function (
         nameErrors: nameErrorMessage,
         descriptionErrors: descriptionErrorMessage,
         onboardedBalanceErrors: onboardedBalanceErrorMessage,
+        assignmentGoalTypeErrors: assignmentGoalTypeErrorMessage,
+        assignmentGoalAmountErrors: assignmentGoalAmountErrorMessage,
+        spendingGoalTypeErrors: spendingGoalTypeErrorMessage,
         unmappedErrors: unmappedErrors.join(", ") || null,
       };
     }

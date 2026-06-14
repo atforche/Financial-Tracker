@@ -24,14 +24,18 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<AccountConverter>();
         _ = serviceCollection.AddScoped<AccountDashboardGetter>();
         _ = serviceCollection.AddScoped<AccountGetter>();
+        _ = serviceCollection.AddScoped<AccountSummaryGetter>();
 
         _ = serviceCollection.AddScoped<FundAmountConverter>();
         _ = serviceCollection.AddScoped<FundConverter>();
         _ = serviceCollection.AddScoped<FundDashboardGetter>();
         _ = serviceCollection.AddScoped<FundGetter>();
+        _ = serviceCollection.AddScoped<FundSummaryGetter>();
 
+        _ = serviceCollection.AddScoped<AssignmentGoalGetter>();
         _ = serviceCollection.AddScoped<GoalConverter>();
         _ = serviceCollection.AddScoped<GoalDashboardGetter>();
+        _ = serviceCollection.AddScoped<SpendingGoalGetter>();
 
         _ = serviceCollection.AddScoped<TransactionConverter>();
         _ = serviceCollection.AddScoped<TransactionDashboardGetter>();

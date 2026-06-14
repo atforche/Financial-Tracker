@@ -8,6 +8,7 @@ namespace Domain.Goals;
 /// Service for managing Assignment Goals
 /// </summary>
 public class AssignmentGoalService(
+    IAccountingPeriodRepository accountingPeriodRepository,
     IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
     IAssignmentGoalRepository assignmentGoalRepository)
 {
@@ -48,7 +49,7 @@ public class AssignmentGoalService(
     {
         exceptions = [];
 
-        if (!ValidateUpdate(assignmentGoalType, goalAmount, out IEnumerable<Exception> updateExceptions))
+        if (!ValidateUpdate(assignmentGoal, assignmentGoalType, goalAmount, out IEnumerable<Exception> updateExceptions))
         {
             exceptions = exceptions.Concat(updateExceptions);
             return false;
@@ -68,6 +69,10 @@ public class AssignmentGoalService(
         {
             exceptions = exceptions.Append(new InvalidFundException("The unassigned fund cannot have an assignment goal."));
         }
+        if (request.AccountingPeriod == null && accountingPeriodRepository.GetLatestAccountingPeriod() != null)
+        {
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException("An assignment goal cannot be created without an accounting period if any accounting periods exist."));
+        }
         if (request.AccountingPeriod != null && !request.AccountingPeriod.IsOpen)
         {
             exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
@@ -76,9 +81,9 @@ public class AssignmentGoalService(
         {
             exceptions = exceptions.Append(new InvalidFundException("An assignment goal already exists for this fund and accounting period."));
         }
-        if (request.GoalAmount <= 0)
+        if (request.GoalAmount < 0)
         {
-            exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than zero."));
+            exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than or equal to zero."));
         }
         if (!Enum.IsDefined(request.AssignmentGoalType))
         {
@@ -90,7 +95,7 @@ public class AssignmentGoalService(
     /// <summary>
     /// Validates the provided information to update an assignment goal
     /// </summary>
-    private static bool ValidateUpdate(AssignmentGoalType assignmentGoalType, decimal goalAmount, out IEnumerable<Exception> exceptions)
+    private bool ValidateUpdate(AssignmentGoal assignmentGoal, AssignmentGoalType assignmentGoalType, decimal goalAmount, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
@@ -98,9 +103,17 @@ public class AssignmentGoalService(
         {
             exceptions = exceptions.Append(new InvalidGoalTypeException("The provided assignment goal type is invalid."));
         }
-        if (goalAmount <= 0)
+        if (assignmentGoal.AccountingPeriodId == null && accountingPeriodRepository.GetLatestAccountingPeriod() != null)
         {
-            exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than zero."));
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException("An assignment goal without an accounting period cannot be updated if any accounting periods exist."));
+        }
+        if (assignmentGoal.AccountingPeriodId != null && !accountingPeriodRepository.GetById(assignmentGoal.AccountingPeriodId)?.IsOpen == true)
+        {
+            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The accounting period for this assignment goal is closed."));
+        }
+        if (goalAmount < 0)
+        {
+            exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than or equal to zero."));
         }
         return !exceptions.Any();
     }

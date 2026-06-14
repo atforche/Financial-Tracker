@@ -1,7 +1,14 @@
 "use client";
 
+import {
+  type AssignmentGoal,
+  AssignmentGoalSortOrder,
+  type SpendingGoal,
+  SpendingGoalSortOrder,
+  formatAssignmentGoalType,
+  formatSpendingGoalType,
+} from "@/goals/types";
 import { Button, Checkbox, Paper, Stack, Typography } from "@mui/material";
-import { type Goal, GoalSortOrder } from "@/goals/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
@@ -10,19 +17,25 @@ import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
-/**
- * Props for the GoalWorkspaceListFrame component.
- */
-interface GoalWorkspaceListFrameProps {
-  readonly data: Goal[] | null;
-  readonly totalCount: number | null;
-  readonly selectedGoalId: string | null;
-}
+type GoalWorkspaceListFrameProps =
+  | {
+      readonly view: "assignment";
+      readonly data: AssignmentGoal[] | null;
+      readonly totalCount: number | null;
+      readonly selectedGoalId: string | null;
+    }
+  | {
+      readonly view: "spending";
+      readonly data: SpendingGoal[] | null;
+      readonly totalCount: number | null;
+      readonly selectedGoalId: string | null;
+    };
 
 /**
  * Component that displays the top-level goal list.
  */
 const GoalWorkspaceListFrame = function ({
+  view,
   data,
   totalCount,
   selectedGoalId,
@@ -31,8 +44,8 @@ const GoalWorkspaceListFrame = function ({
   const pathname = usePathname();
   const router = useRouter();
 
-  const accountingPeriodIdParamName = "accountingPeriodId";
-  const fundIdParamName = "fundId";
+  const accountingPeriodIdParamName = "accountingPeriodIds";
+  const fundIdParamName = "fundIds";
   const selectedGoalIdParamName = "selectedGoalId";
   const sortParamName = "sort";
   const pageParamName = "page";
@@ -48,14 +61,12 @@ const GoalWorkspaceListFrame = function ({
     });
   };
 
-  const setSort = function (sort: GoalSortOrder | null): void {
+  const clearSearch = function (): void {
     replaceSearchParams((params) => {
-      if (sort === null) {
-        params.delete(sortParamName);
-      } else {
-        params.set(sortParamName, sort);
-      }
+      params.delete(accountingPeriodIdParamName);
+      params.delete(fundIdParamName);
       params.delete(pageParamName);
+      params.delete(selectedGoalIdParamName);
     });
   };
 
@@ -70,12 +81,205 @@ const GoalWorkspaceListFrame = function ({
     });
   };
 
+  if (view === "assignment") {
+    const currentSort = tryParseEnum(
+      AssignmentGoalSortOrder,
+      searchParams.get(sortParamName) ?? "",
+    );
+
+    const setSort = function (sort: AssignmentGoalSortOrder | null): void {
+      replaceSearchParams((params) => {
+        if (sort === null) {
+          params.delete(sortParamName);
+        } else {
+          params.set(sortParamName, sort);
+        }
+        params.delete(pageParamName);
+      });
+    };
+
+    const columns: ColumnDefinition<AssignmentGoal>[] = [
+      {
+        name: "selected",
+        headerContent: "",
+        getBodyContent: (goal) => (
+          <Checkbox
+            checked={selectedGoalId === goal.id}
+            onClick={(event) => {
+              event.stopPropagation();
+              toggleSelection(goal.id);
+            }}
+            slotProps={{
+              input: {
+                "aria-label": `Select ${goal.fundName} assignment goal`,
+              },
+            }}
+          />
+        ),
+        alignment: "center",
+        minWidth: 0,
+        maxWidth: 0,
+      },
+      {
+        name: "accountingPeriod",
+        headerContent: "Accounting Period",
+        getBodyContent: (goal) => goal.accountingPeriodName,
+        sortType:
+          currentSort === AssignmentGoalSortOrder.AccountingPeriod
+            ? ColumnSortType.Ascending
+            : currentSort === AssignmentGoalSortOrder.AccountingPeriodDescending
+              ? ColumnSortType.Descending
+              : null,
+        onSort: (sortType: ColumnSortType | null): void => {
+          if (sortType === ColumnSortType.Ascending) {
+            setSort(AssignmentGoalSortOrder.AccountingPeriod);
+          } else if (sortType === ColumnSortType.Descending) {
+            setSort(AssignmentGoalSortOrder.AccountingPeriodDescending);
+          } else {
+            setSort(null);
+          }
+        },
+        minWidth: 180,
+      },
+      {
+        name: "fund",
+        headerContent: "Fund",
+        getBodyContent: (goal) => goal.fundName,
+        sortType:
+          currentSort === AssignmentGoalSortOrder.Fund
+            ? ColumnSortType.Ascending
+            : currentSort === AssignmentGoalSortOrder.FundDescending
+              ? ColumnSortType.Descending
+              : null,
+        onSort: (sortType: ColumnSortType | null): void => {
+          if (sortType === ColumnSortType.Ascending) {
+            setSort(AssignmentGoalSortOrder.Fund);
+          } else if (sortType === ColumnSortType.Descending) {
+            setSort(AssignmentGoalSortOrder.FundDescending);
+          } else {
+            setSort(null);
+          }
+        },
+        minWidth: 170,
+      },
+      {
+        name: "type",
+        headerContent: "Goal Type",
+        getBodyContent: (goal) => formatAssignmentGoalType(goal.type),
+        sortType:
+          currentSort === AssignmentGoalSortOrder.Type
+            ? ColumnSortType.Ascending
+            : currentSort === AssignmentGoalSortOrder.TypeDescending
+              ? ColumnSortType.Descending
+              : null,
+        onSort: (sortType: ColumnSortType | null): void => {
+          if (sortType === ColumnSortType.Ascending) {
+            setSort(AssignmentGoalSortOrder.Type);
+          } else if (sortType === ColumnSortType.Descending) {
+            setSort(AssignmentGoalSortOrder.TypeDescending);
+          } else {
+            setSort(null);
+          }
+        },
+        minWidth: 170,
+      },
+      {
+        name: "goalAmount",
+        headerContent: "Goal Amount",
+        getBodyContent: (goal) => formatCurrency(goal.goalAmount),
+        sortType:
+          currentSort === AssignmentGoalSortOrder.GoalAmount
+            ? ColumnSortType.Ascending
+            : currentSort === AssignmentGoalSortOrder.GoalAmountDescending
+              ? ColumnSortType.Descending
+              : null,
+        onSort: (sortType: ColumnSortType | null): void => {
+          if (sortType === ColumnSortType.Ascending) {
+            setSort(AssignmentGoalSortOrder.GoalAmount);
+          } else if (sortType === ColumnSortType.Descending) {
+            setSort(AssignmentGoalSortOrder.GoalAmountDescending);
+          } else {
+            setSort(null);
+          }
+        },
+        alignment: "right",
+        minWidth: 150,
+      },
+      {
+        name: "totalAmountToAssign",
+        headerContent: "Assigned So Far",
+        getBodyContent: (goal) => formatCurrency(goal.totalAmountToAssign),
+        alignment: "right",
+        minWidth: 160,
+      },
+      {
+        name: "remainingAmountToAssign",
+        headerContent: "Remaining To Assign",
+        getBodyContent: (goal) => formatCurrency(goal.remainingAmountToAssign),
+        alignment: "right",
+        minWidth: 180,
+      },
+    ];
+
+    return (
+      <Paper
+        sx={{
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 3,
+          p: { xs: 2, md: 2.5 },
+        }}
+      >
+        <Stack spacing={2.5}>
+          <Typography variant="h6" color="text.secondary">
+            Assignment Goals
+          </Typography>
+          <ListFrame<AssignmentGoal>
+            columns={columns}
+            getId={(goal) => goal.id}
+            data={data}
+            totalCount={totalCount ?? null}
+            searchParamName=""
+            pageParamName={pageParamName}
+            initialEmptyState={{
+              title: "No assignment goals found",
+              description:
+                "No assignment goals match the current workspace view yet.",
+              action: null,
+            }}
+            filteredEmptyState={{
+              title: "No assignment goals match this search",
+              description:
+                "Try a different accounting period or fund filter, or clear the current filters to see all assignment goals.",
+              action: (
+                <Button variant="contained" onClick={clearSearch}>
+                  Clear search
+                </Button>
+              ),
+            }}
+          />
+        </Stack>
+      </Paper>
+    );
+  }
+
   const currentSort = tryParseEnum(
-    GoalSortOrder,
+    SpendingGoalSortOrder,
     searchParams.get(sortParamName) ?? "",
   );
 
-  const columns: ColumnDefinition<Goal>[] = [
+  const setSort = function (sort: SpendingGoalSortOrder | null): void {
+    replaceSearchParams((params) => {
+      if (sort === null) {
+        params.delete(sortParamName);
+      } else {
+        params.set(sortParamName, sort);
+      }
+      params.delete(pageParamName);
+    });
+  };
+
+  const columns: ColumnDefinition<SpendingGoal>[] = [
     {
       name: "selected",
       headerContent: "",
@@ -88,7 +292,7 @@ const GoalWorkspaceListFrame = function ({
           }}
           slotProps={{
             input: {
-              "aria-label": `Select ${goal.fundName} goal`,
+              "aria-label": `Select ${goal.fundName} spending goal`,
             },
           }}
         />
@@ -102,16 +306,16 @@ const GoalWorkspaceListFrame = function ({
       headerContent: "Accounting Period",
       getBodyContent: (goal) => goal.accountingPeriodName,
       sortType:
-        currentSort === GoalSortOrder.AccountingPeriod
+        currentSort === SpendingGoalSortOrder.AccountingPeriod
           ? ColumnSortType.Ascending
-          : currentSort === GoalSortOrder.AccountingPeriodDescending
+          : currentSort === SpendingGoalSortOrder.AccountingPeriodDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(GoalSortOrder.AccountingPeriod);
+          setSort(SpendingGoalSortOrder.AccountingPeriod);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(GoalSortOrder.AccountingPeriodDescending);
+          setSort(SpendingGoalSortOrder.AccountingPeriodDescending);
         } else {
           setSort(null);
         }
@@ -123,16 +327,16 @@ const GoalWorkspaceListFrame = function ({
       headerContent: "Fund",
       getBodyContent: (goal) => goal.fundName,
       sortType:
-        currentSort === GoalSortOrder.Fund
+        currentSort === SpendingGoalSortOrder.Fund
           ? ColumnSortType.Ascending
-          : currentSort === GoalSortOrder.FundDescending
+          : currentSort === SpendingGoalSortOrder.FundDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(GoalSortOrder.Fund);
+          setSort(SpendingGoalSortOrder.Fund);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(GoalSortOrder.FundDescending);
+          setSort(SpendingGoalSortOrder.FundDescending);
         } else {
           setSort(null);
         }
@@ -140,46 +344,39 @@ const GoalWorkspaceListFrame = function ({
       minWidth: 170,
     },
     {
-      name: "goalType",
+      name: "type",
       headerContent: "Goal Type",
-      getBodyContent: (goal) => goal.goalType,
-      minWidth: 140,
-    },
-    {
-      name: "goalAmount",
-      headerContent: "Goal Amount",
-      getBodyContent: (goal) => formatCurrency(goal.goalAmount),
+      getBodyContent: (goal) => formatSpendingGoalType(goal.type),
       sortType:
-        currentSort === GoalSortOrder.GoalAmount
+        currentSort === SpendingGoalSortOrder.Type
           ? ColumnSortType.Ascending
-          : currentSort === GoalSortOrder.GoalAmountDescending
+          : currentSort === SpendingGoalSortOrder.TypeDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(GoalSortOrder.GoalAmount);
+          setSort(SpendingGoalSortOrder.Type);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(GoalSortOrder.GoalAmountDescending);
+          setSort(SpendingGoalSortOrder.TypeDescending);
         } else {
           setSort(null);
         }
       },
-      alignment: "right",
-      minWidth: 150,
+      minWidth: 170,
     },
     {
-      name: "remainingAmountToAssign",
-      headerContent: "Remaining To Assign",
-      getBodyContent: (goal) => formatCurrency(goal.remainingAmountToAssign),
+      name: "totalAmountToSpend",
+      headerContent: "Spent So Far",
+      getBodyContent: (goal) => formatCurrency(goal.totalAmountToSpend),
       alignment: "right",
-      minWidth: 180,
+      minWidth: 150,
     },
     {
       name: "remainingAmountToSpend",
       headerContent: "Remaining To Spend",
       getBodyContent: (goal) => formatCurrency(goal.remainingAmountToSpend),
       alignment: "right",
-      minWidth: 170,
+      minWidth: 180,
     },
   ];
 
@@ -194,36 +391,27 @@ const GoalWorkspaceListFrame = function ({
     >
       <Stack spacing={2.5}>
         <Typography variant="h6" color="text.secondary">
-          Goals
+          Spending Goals
         </Typography>
-        <ListFrame<Goal>
+        <ListFrame<SpendingGoal>
           columns={columns}
           getId={(goal) => goal.id}
-          data={data ?? null}
+          data={data}
           totalCount={totalCount ?? null}
           searchParamName=""
           pageParamName={pageParamName}
           initialEmptyState={{
-            title: "No goals found",
-            description: "No goals have been recorded yet.",
+            title: "No spending goals found",
+            description:
+              "No spending goals match the current workspace view yet.",
             action: null,
           }}
           filteredEmptyState={{
-            title: "No goals match this search",
+            title: "No spending goals match this search",
             description:
-              "Try a different accounting period, fund, or goal amount filter, or clear the current filters to see all matching goals.",
+              "Try a different accounting period or fund filter, or clear the current filters to see all spending goals.",
             action: (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  replaceSearchParams((params) => {
-                    params.delete(accountingPeriodIdParamName);
-                    params.delete(fundIdParamName);
-                    params.delete(pageParamName);
-                    params.delete(selectedGoalIdParamName);
-                  });
-                }}
-              >
+              <Button variant="contained" onClick={clearSearch}>
                 Clear search
               </Button>
             ),

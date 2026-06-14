@@ -2,7 +2,7 @@
 
 import {
   type AccountingPeriodDashboard,
-  AccountingPeriodTransactionSortOrder,
+  AccountingPeriodDashboardTransactionSortOrder,
 } from "@/accounting-periods/types";
 import { Button, IconButton, Paper, Stack, Typography } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -87,7 +87,7 @@ const AccountingPeriodDashboardTransactionListFrame = function ({
   const endAccountingPeriodIdParamName = "endAccountingPeriodId";
 
   const setSort = function (
-    sort: AccountingPeriodTransactionSortOrder | null,
+    sort: AccountingPeriodDashboardTransactionSortOrder | null,
   ): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
@@ -100,7 +100,7 @@ const AccountingPeriodDashboardTransactionListFrame = function ({
   };
 
   const currentSort = tryParseEnum(
-    AccountingPeriodTransactionSortOrder,
+    AccountingPeriodDashboardTransactionSortOrder,
     searchParams.get(sortParamName) ?? "",
   );
 
@@ -126,16 +126,17 @@ const AccountingPeriodDashboardTransactionListFrame = function ({
       headerContent: "Date",
       getBodyContent: (transaction: Transaction) => transaction.date,
       sortType:
-        currentSort === AccountingPeriodTransactionSortOrder.Date
+        currentSort === AccountingPeriodDashboardTransactionSortOrder.Date
           ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodTransactionSortOrder.DateDescending
+          : currentSort ===
+              AccountingPeriodDashboardTransactionSortOrder.DateDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodTransactionSortOrder.Date);
+          setSort(AccountingPeriodDashboardTransactionSortOrder.Date);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodTransactionSortOrder.DateDescending);
+          setSort(AccountingPeriodDashboardTransactionSortOrder.DateDescending);
         } else {
           setSort(null);
         }
@@ -148,18 +149,21 @@ const AccountingPeriodDashboardTransactionListFrame = function ({
       getBodyContent: (transaction: Transaction) =>
         transaction.accountingPeriodName,
       sortType:
-        currentSort === AccountingPeriodTransactionSortOrder.AccountingPeriod
+        currentSort ===
+        AccountingPeriodDashboardTransactionSortOrder.AccountingPeriod
           ? ColumnSortType.Ascending
           : currentSort ===
-              AccountingPeriodTransactionSortOrder.AccountingPeriodDescending
+              AccountingPeriodDashboardTransactionSortOrder.AccountingPeriodDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodTransactionSortOrder.AccountingPeriod);
+          setSort(
+            AccountingPeriodDashboardTransactionSortOrder.AccountingPeriod,
+          );
         } else if (sortType === ColumnSortType.Descending) {
           setSort(
-            AccountingPeriodTransactionSortOrder.AccountingPeriodDescending,
+            AccountingPeriodDashboardTransactionSortOrder.AccountingPeriodDescending,
           );
         } else {
           setSort(null);
@@ -172,17 +176,19 @@ const AccountingPeriodDashboardTransactionListFrame = function ({
       headerContent: "Location",
       getBodyContent: (transaction: Transaction) => transaction.location,
       sortType:
-        currentSort === AccountingPeriodTransactionSortOrder.Location
+        currentSort === AccountingPeriodDashboardTransactionSortOrder.Location
           ? ColumnSortType.Ascending
           : currentSort ===
-              AccountingPeriodTransactionSortOrder.LocationDescending
+              AccountingPeriodDashboardTransactionSortOrder.LocationDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodTransactionSortOrder.Location);
+          setSort(AccountingPeriodDashboardTransactionSortOrder.Location);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodTransactionSortOrder.LocationDescending);
+          setSort(
+            AccountingPeriodDashboardTransactionSortOrder.LocationDescending,
+          );
         } else {
           setSort(null);
         }
@@ -194,17 +200,19 @@ const AccountingPeriodDashboardTransactionListFrame = function ({
       headerContent: "Debit From",
       getBodyContent: getDebitFrom,
       sortType:
-        currentSort === AccountingPeriodTransactionSortOrder.DebitFrom
+        currentSort === AccountingPeriodDashboardTransactionSortOrder.DebitFrom
           ? ColumnSortType.Ascending
           : currentSort ===
-              AccountingPeriodTransactionSortOrder.DebitFromDescending
+              AccountingPeriodDashboardTransactionSortOrder.DebitFromDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodTransactionSortOrder.DebitFrom);
+          setSort(AccountingPeriodDashboardTransactionSortOrder.DebitFrom);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodTransactionSortOrder.DebitFromDescending);
+          setSort(
+            AccountingPeriodDashboardTransactionSortOrder.DebitFromDescending,
+          );
         } else {
           setSort(null);
         }
@@ -216,17 +224,19 @@ const AccountingPeriodDashboardTransactionListFrame = function ({
       headerContent: "Credit To",
       getBodyContent: getCreditTo,
       sortType:
-        currentSort === AccountingPeriodTransactionSortOrder.CreditTo
+        currentSort === AccountingPeriodDashboardTransactionSortOrder.CreditTo
           ? ColumnSortType.Ascending
           : currentSort ===
-              AccountingPeriodTransactionSortOrder.CreditToDescending
+              AccountingPeriodDashboardTransactionSortOrder.CreditToDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodTransactionSortOrder.CreditTo);
+          setSort(AccountingPeriodDashboardTransactionSortOrder.CreditTo);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodTransactionSortOrder.CreditToDescending);
+          setSort(
+            AccountingPeriodDashboardTransactionSortOrder.CreditToDescending,
+          );
         } else {
           setSort(null);
         }
@@ -239,17 +249,19 @@ const AccountingPeriodDashboardTransactionListFrame = function ({
       getBodyContent: (transaction: Transaction) =>
         formatCurrency(transaction.amount),
       sortType:
-        currentSort === AccountingPeriodTransactionSortOrder.Amount
+        currentSort === AccountingPeriodDashboardTransactionSortOrder.Amount
           ? ColumnSortType.Ascending
           : currentSort ===
-              AccountingPeriodTransactionSortOrder.AmountDescending
+              AccountingPeriodDashboardTransactionSortOrder.AmountDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodTransactionSortOrder.Amount);
+          setSort(AccountingPeriodDashboardTransactionSortOrder.Amount);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodTransactionSortOrder.AmountDescending);
+          setSort(
+            AccountingPeriodDashboardTransactionSortOrder.AmountDescending,
+          );
         } else {
           setSort(null);
         }

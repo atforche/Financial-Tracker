@@ -11,6 +11,7 @@ import {
   Typography,
   alpha,
 } from "@mui/material";
+import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import type { Fund, FundAmount, FundIdentifier } from "@/funds/types";
 import {
   getAssignedFundAmount,
@@ -22,7 +23,6 @@ import {
 } from "@/funds/fundAssignment";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import FundEntryField from "@/funds/FundEntryField";
-import type { Goal } from "@/goals/types";
 import type { JSX } from "react";
 import formatCurrency from "@/framework/formatCurrency";
 
@@ -30,14 +30,16 @@ interface FundAssignmentPlannerProps {
   readonly title: string;
   readonly tone: "income" | "spending";
   readonly funds: Fund[];
-  readonly goals?: Goal[];
+  readonly assignmentGoals?: AssignmentGoal[];
+  readonly spendingGoals?: SpendingGoal[];
   readonly totalAmountToAssign: number | null;
   readonly baselineValue?: FundAmount[];
   readonly value: FundAmount[];
   readonly setValue: (newValue: FundAmount[]) => void;
 }
 
-const emptyGoals: Goal[] = [];
+const emptyAssignmentGoals: AssignmentGoal[] = [];
+const emptySpendingGoals: SpendingGoal[] = [];
 const emptyFundAmounts: FundAmount[] = [];
 
 /**
@@ -47,7 +49,8 @@ const FundAssignmentPlanner = function ({
   title,
   tone,
   funds,
-  goals = emptyGoals,
+  assignmentGoals = emptyAssignmentGoals,
+  spendingGoals = emptySpendingGoals,
   totalAmountToAssign,
   baselineValue = emptyFundAmounts,
   value,
@@ -73,7 +76,12 @@ const FundAssignmentPlanner = function ({
     totalAmountToAssign,
     value,
   );
-  const goalsByFundId = new Map(goals.map((goal) => [goal.fundId, goal]));
+  const assignmentGoalsByFundId = new Map(
+    assignmentGoals.map((goal) => [goal.fundId, goal]),
+  );
+  const spendingGoalsByFundId = new Map(
+    spendingGoals.map((goal) => [goal.fundId, goal]),
+  );
   const baselineAssignedAmountsByFundId = new Map(
     baselineAssignments.map((assignment) => [
       assignment.fundId,
@@ -102,7 +110,10 @@ const FundAssignmentPlanner = function ({
   const getGoalRemainingBeforeCurrentAssignment = function (
     fundId: string,
   ): number | null {
-    const goal = goalsByFundId.get(fundId);
+    const goal =
+      tone === "income"
+        ? assignmentGoalsByFundId.get(fundId)
+        : spendingGoalsByFundId.get(fundId);
 
     if (typeof goal === "undefined") {
       return null;
@@ -111,7 +122,7 @@ const FundAssignmentPlanner = function ({
     const baselineAssignedAmount =
       baselineAssignedAmountsByFundId.get(fundId) ?? 0;
 
-    return tone === "income"
+    return "remainingAmountToAssignIncludingPending" in goal
       ? goal.remainingAmountToAssignIncludingPending + baselineAssignedAmount
       : goal.remainingAmountToSpendIncludingPending + baselineAssignedAmount;
   };
@@ -335,7 +346,6 @@ const FundAssignmentPlanner = function ({
           ) : null}
 
           {explicitFundAssignments.map((assignment, index) => {
-            const goal = goalsByFundId.get(assignment.fundId) ?? null;
             const projectedGoalRemainingAmount =
               getProjectedGoalRemainingAmount(
                 assignment.fundId,
@@ -430,7 +440,7 @@ const FundAssignmentPlanner = function ({
                     <Typography variant="body2" color="text.secondary">
                       Choose a fund to see how this assignment changes its goal.
                     </Typography>
-                  ) : goal === null || projectedGoalRemainingAmount === null ? (
+                  ) : projectedGoalRemainingAmount === null ? (
                     <Typography variant="body2" color="text.secondary">
                       No goal is set for this fund.
                     </Typography>
@@ -442,7 +452,7 @@ const FundAssignmentPlanner = function ({
                     >
                       <Chip
                         variant="outlined"
-                        label={`Goal ${formatCurrency(goal.goalAmount)}`}
+                        label={`${tone === "income" ? "Remaining to assign" : "Remaining to spend"} ${formatCurrency(projectedGoalRemainingAmount - assignment.amount)}`}
                       />
                       <Chip
                         color={

@@ -4,7 +4,6 @@ import {
   FundDashboardModeModel,
   FundDashboardSortOrderModel,
   FundSortOrderModel,
-  FundTransactionSortOrderModel,
   type components,
 } from "@/framework/data/api";
 
@@ -91,12 +90,12 @@ const hasIncompleteFundAssignments = function (
 
 export {
   type Fund,
+  type FundSummary,
   type FundDashboard,
   type FundDashboardFund,
   type FundDashboardBalanceEvent,
   type FundDashboardDateSummary,
   type FundDashboardPeriodSummary,
-  type FundSummary,
   type FundIdentifier,
   type CreateFundRequest,
   type OnboardFundRequest,
@@ -107,6 +106,5 @@ export {
   FundDashboardModeModel as FundDashboardMode,
   FundDashboardSortOrderModel as FundDashboardSortOrder,
   FundSortOrderModel as FundSortOrder,
-  FundTransactionSortOrderModel as FundTransactionSortOrder,
   hasIncompleteFundAssignments,
 };

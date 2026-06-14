@@ -1,6 +1,6 @@
+import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { Box, Stack } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
-import type { Goal } from "@/goals/types";
 import type { JSX } from "react";
 import type { TransactionSortOrder } from "@/transactions/types";
 import TransactionWorkspaceActions from "@/transactions/workspace/TransactionWorkspaceActions";
@@ -118,21 +118,48 @@ const TransactionWorkspace = async function ({
     throw new Error("Failed to fetch transactions");
   }
 
-  let goals: Goal[] = [];
+  let assignmentGoals: AssignmentGoal[] = [];
   if (openAccountingPeriods.length > 0) {
-    const { data: matchingGoals } = await apiClient.GET("/goals/many", {
-      params: {
-        query: {
-          AccountingPeriodIds: openAccountingPeriods.map((period) => period.id),
+    const { data: matchingGoals } = await apiClient.GET(
+      "/goals/assignment/many",
+      {
+        params: {
+          query: {
+            AccountingPeriodIds: openAccountingPeriods.map(
+              (period) => period.id,
+            ),
+          },
         },
       },
-    });
+    );
 
     if (typeof matchingGoals === "undefined") {
       throw new Error("Failed to fetch goals");
     }
 
-    goals = matchingGoals.items;
+    assignmentGoals = matchingGoals.items;
+  }
+
+  let spendingGoals: SpendingGoal[] = [];
+  if (openAccountingPeriods.length > 0) {
+    const { data: matchingGoals } = await apiClient.GET(
+      "/goals/spending/many",
+      {
+        params: {
+          query: {
+            AccountingPeriodIds: openAccountingPeriods.map(
+              (period) => period.id,
+            ),
+          },
+        },
+      },
+    );
+
+    if (typeof matchingGoals === "undefined") {
+      throw new Error("Failed to fetch goals");
+    }
+
+    spendingGoals = matchingGoals.items;
   }
 
   const selectedTransactionById =
@@ -208,7 +235,8 @@ const TransactionWorkspace = async function ({
           accountingPeriods={openAccountingPeriods}
           accounts={accounts.items}
           funds={funds.items}
-          goals={goals}
+          assignmentGoals={assignmentGoals}
+          spendingGoals={spendingGoals}
           selectedTransaction={selectedTransaction}
           requestedAction={action ?? null}
         />

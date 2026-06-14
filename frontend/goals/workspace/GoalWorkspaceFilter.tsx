@@ -7,16 +7,23 @@ import {
   Paper,
   Stack,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
+import {
+  type GoalWorkspaceView,
+  defaultGoalWorkspaceView,
+} from "@/goals/workspace/goalWorkspaceTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
 
 interface GoalWorkspaceFilterProps {
-  readonly accountingPeriods: readonly AccountingPeriod[];
-  readonly funds: readonly Fund[];
+  readonly accountingPeriods: AccountingPeriod[];
+  readonly funds: Fund[];
+  readonly view: GoalWorkspaceView;
 }
 
 const normalizeRequestedIds = function (
@@ -56,14 +63,18 @@ const normalizeSelectedItems = function <T extends { id: string }>(
 const GoalWorkspaceFilter = function ({
   accountingPeriods,
   funds,
+  view,
 }: GoalWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
   const pageParamName = "page";
-  const accountingPeriodParamName = "accountingPeriodId";
-  const fundParamName = "fundId";
+  const sortParamName = "sort";
+  const selectedGoalIdParamName = "selectedGoalId";
+  const viewParamName = "view";
+  const accountingPeriodParamName = "accountingPeriodIds";
+  const fundParamName = "fundIds";
 
   const currentAccountingPeriods = normalizeSelectedItems(
     normalizeRequestedIds(searchParams.getAll(accountingPeriodParamName)),
@@ -86,8 +97,24 @@ const GoalWorkspaceFilter = function ({
     });
   };
 
-  const hasActiveView =
+  const hasActiveFilters =
     currentAccountingPeriods.length > 0 || currentFunds.length > 0;
+
+  const handleViewChange = function (nextView: GoalWorkspaceView | null): void {
+    if (nextView === null || nextView === view) {
+      return;
+    }
+
+    updateParams((params) => {
+      if (nextView === defaultGoalWorkspaceView) {
+        params.delete(viewParamName);
+      } else {
+        params.set(viewParamName, nextView);
+      }
+      params.delete(sortParamName);
+      params.delete(selectedGoalIdParamName);
+    });
+  };
 
   const handleAccountingPeriodChange = function (
     nextAccountingPeriods: readonly AccountingPeriod[],
@@ -97,6 +124,7 @@ const GoalWorkspaceFilter = function ({
       nextAccountingPeriods.forEach((accountingPeriod) => {
         params.append(accountingPeriodParamName, accountingPeriod.id);
       });
+      params.delete(selectedGoalIdParamName);
     });
   };
 
@@ -106,6 +134,7 @@ const GoalWorkspaceFilter = function ({
       nextFunds.forEach((fund) => {
         params.append(fundParamName, fund.id);
       });
+      params.delete(selectedGoalIdParamName);
     });
   };
 
@@ -113,6 +142,7 @@ const GoalWorkspaceFilter = function ({
     updateParams((params) => {
       params.delete(accountingPeriodParamName);
       params.delete(fundParamName);
+      params.delete(selectedGoalIdParamName);
     });
   };
 
@@ -135,8 +165,26 @@ const GoalWorkspaceFilter = function ({
       }}
     >
       <Stack spacing={2}>
-        <Stack spacing={0.5}>
-          <Typography variant="h5">Goals Workspace</Typography>
+        <Stack
+          direction={{ xs: "column", lg: "row" }}
+          spacing={1.5}
+          justifyContent="space-between"
+          alignItems={{ xs: "flex-start", lg: "center" }}
+        >
+          <Stack spacing={0.5}>
+            <Typography variant="h5">Goals Workspace</Typography>
+          </Stack>
+          <ToggleButtonGroup
+            exclusive
+            size="small"
+            value={view}
+            onChange={(_, nextValue: GoalWorkspaceView | null) => {
+              handleViewChange(nextValue);
+            }}
+          >
+            <ToggleButton value="assignment">Assignment</ToggleButton>
+            <ToggleButton value="spending">Spending</ToggleButton>
+          </ToggleButtonGroup>
         </Stack>
         <Stack
           direction="row"
@@ -234,7 +282,7 @@ const GoalWorkspaceFilter = function ({
           <Button
             variant="outlined"
             onClick={clearView}
-            disabled={!hasActiveView}
+            disabled={!hasActiveFilters}
             sx={{ flexShrink: 0 }}
           >
             Reset filters

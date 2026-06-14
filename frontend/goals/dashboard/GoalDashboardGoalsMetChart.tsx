@@ -2,12 +2,14 @@
 
 import type { GoalDashboardAccountingPeriodSummaryModel } from "@/goals/types";
 import GoalDashboardMetricChart from "@/goals/dashboard/GoalDashboardMetricChart";
+import type { GoalDashboardView } from "@/goals/dashboard/goalDashboardTypes";
 import type { JSX } from "react";
 
 interface GoalDashboardGoalsMetChartProps {
   readonly accountingPeriods:
     | readonly GoalDashboardAccountingPeriodSummaryModel[]
     | null;
+  readonly view: GoalDashboardView;
 }
 
 /**
@@ -15,14 +17,19 @@ interface GoalDashboardGoalsMetChartProps {
  */
 const GoalDashboardGoalsMetChart = function ({
   accountingPeriods,
+  view,
 }: GoalDashboardGoalsMetChartProps): JSX.Element {
   return (
     <GoalDashboardMetricChart
       title="Goals met"
       subtitle="No goals-met percentages are available for the selected range."
-      dataKey="percentageOfGoalsMet"
       label="Goals Met (%)"
       accountingPeriods={accountingPeriods}
+      getValue={(accountingPeriod) =>
+        view === "assignment"
+          ? accountingPeriod.percentageOfAssignmentGoalsMet
+          : accountingPeriod.percentageOfSpendingGoalsMet
+      }
       formatter={(value: number) => `${value.toFixed(2)}%`}
       tickFormatter={(value: number) => `${value.toFixed(0)}%`}
     />

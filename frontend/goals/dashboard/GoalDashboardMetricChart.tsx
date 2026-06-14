@@ -17,15 +17,13 @@ import formatCurrency from "@/framework/formatCurrency";
 interface GoalDashboardMetricChartProps {
   readonly title: string;
   readonly subtitle: string;
-  readonly dataKey:
-    | "goalAmount"
-    | "amountAssigned"
-    | "amountSpent"
-    | "percentageOfGoalsMet";
   readonly label: string;
   readonly accountingPeriods:
     | readonly GoalDashboardAccountingPeriodSummaryModel[]
     | null;
+  readonly getValue: (
+    accountingPeriod: GoalDashboardAccountingPeriodSummaryModel,
+  ) => number;
   readonly formatter: (value: number) => string;
   readonly tickFormatter?: (value: number) => string;
 }
@@ -37,21 +35,21 @@ interface ChartPoint {
 }
 
 /**
- * A reusable chart component for displaying a single metric across accounting periods on the goal dashboard. The metric to display is determined by the `dataKey` prop, which specifies which property of the `GoalDashboardAccountingPeriodSummaryModel` to use for the chart values. The `formatter` prop is used to format the metric values for display in the tooltip, while the optional `tickFormatter` prop can be used to format the y-axis tick labels (defaulting to currency formatting if not provided). If there are no accounting periods or if all values for the specified metric are null, a placeholder message is shown instead of the chart.
+ * A reusable chart component for displaying a single metric across accounting periods on the goal dashboard.
  */
 const GoalDashboardMetricChart = function ({
   title,
   subtitle,
-  dataKey,
   label,
   accountingPeriods,
+  getValue,
   formatter,
   tickFormatter,
 }: GoalDashboardMetricChartProps): JSX.Element {
   const chartPoints = (accountingPeriods ?? []).map((summary) => ({
     key: summary.accountingPeriodId,
     label: summary.accountingPeriodName,
-    value: summary[dataKey],
+    value: getValue(summary),
   }));
 
   if (chartPoints.length === 0) {

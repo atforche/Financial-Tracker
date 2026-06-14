@@ -10,16 +10,20 @@ import {
 } from "@mui/material";
 import {
   type GoalDashboard,
-  type GoalTypeSummary,
-  formatGoalType,
+  type GoalDashboardAssignmentGoalTypeSummary,
+  type GoalDashboardSpendingGoalTypeSummary,
+  formatAssignmentGoalType,
+  formatSpendingGoalType,
 } from "@/goals/types";
 import { type JSX, type ReactNode, useState } from "react";
 import ExpandMore from "@mui/icons-material/ExpandMore";
+import type { GoalDashboardView } from "@/goals/dashboard/goalDashboardTypes";
 import SummaryCard from "@/framework/view/SummaryCard";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface GoalDashboardSummaryCardsProps {
   readonly dashboard: GoalDashboard;
+  readonly view: GoalDashboardView;
 }
 
 interface GoalTypeBreakdownDetailRow {
@@ -34,6 +38,14 @@ interface GoalTypeBreakdownSectionProps {
   readonly detailRows: readonly GoalTypeBreakdownDetailRow[];
   readonly expanded: boolean;
   readonly onToggle: () => void;
+}
+
+interface SummaryCardDefinition {
+  readonly title: string;
+  readonly value: ReactNode;
+  readonly detailLabel: string;
+  readonly detailValue: ReactNode;
+  readonly detailRows: readonly GoalTypeBreakdownDetailRow[];
 }
 
 const expandToggleSlotSize = 26;
@@ -145,19 +157,30 @@ const GoalTypeBreakdown = function ({
   );
 };
 
-const getGoalTypeRows = function (
-  typeSummaries: readonly GoalTypeSummary[],
-  getValue: (summary: GoalTypeSummary) => ReactNode,
+const formatPercentage = function (value: number): string {
+  return `${value.toFixed(2)}%`;
+};
+
+const getAssignmentRows = function (
+  typeSummaries: readonly GoalDashboardAssignmentGoalTypeSummary[],
+  getValue: (summary: GoalDashboardAssignmentGoalTypeSummary) => ReactNode,
 ): GoalTypeBreakdownDetailRow[] {
   return typeSummaries.map((summary) => ({
-    key: summary.goalType,
-    label: formatGoalType(summary.goalType),
+    key: summary.assignmentGoalType,
+    label: formatAssignmentGoalType(summary.assignmentGoalType),
     value: getValue(summary),
   }));
 };
 
-const formatPercentage = function (value: number): string {
-  return `${value.toFixed(2)}%`;
+const getSpendingRows = function (
+  typeSummaries: readonly GoalDashboardSpendingGoalTypeSummary[],
+  getValue: (summary: GoalDashboardSpendingGoalTypeSummary) => ReactNode,
+): GoalTypeBreakdownDetailRow[] {
+  return typeSummaries.map((summary) => ({
+    key: summary.spendingGoalType,
+    label: formatSpendingGoalType(summary.spendingGoalType),
+    value: getValue(summary),
+  }));
 };
 
 /**
@@ -165,6 +188,7 @@ const formatPercentage = function (value: number): string {
  */
 const GoalDashboardSummaryCards = function ({
   dashboard,
+  view,
 }: GoalDashboardSummaryCardsProps): JSX.Element {
   const [expanded, setExpanded] = useState(false);
 
@@ -172,20 +196,76 @@ const GoalDashboardSummaryCards = function ({
     setExpanded((currentValue) => !currentValue);
   };
 
-  const goalTypeSummaries = dashboard.goalTypes ?? [];
-
-  const goalAmountRows = getGoalTypeRows(goalTypeSummaries, (summary) =>
-    formatCurrency(summary.goalAmount),
-  );
-  const amountAssignedRows = getGoalTypeRows(goalTypeSummaries, (summary) =>
-    formatCurrency(summary.amountAssigned),
-  );
-  const amountSpentRows = getGoalTypeRows(goalTypeSummaries, (summary) =>
-    formatCurrency(summary.amountSpent),
-  );
-  const percentageRows = getGoalTypeRows(goalTypeSummaries, (summary) =>
-    formatPercentage(summary.percentageOfGoalsMet),
-  );
+  const cardDefinitions: readonly SummaryCardDefinition[] =
+    view === "assignment"
+      ? [
+          {
+            title: "Total amount to assign",
+            value: formatCurrency(dashboard.totalAmountToAssign),
+            detailLabel: "Goal type breakdown",
+            detailValue: formatCurrency(dashboard.totalAmountToAssign),
+            detailRows: getAssignmentRows(
+              dashboard.assignmentGoalTypes ?? [],
+              (summary) => formatCurrency(summary.totalAmountToAssign),
+            ),
+          },
+          {
+            title: "Total amount assigned",
+            value: formatCurrency(dashboard.totalAmountAssigned),
+            detailLabel: "Goal type breakdown",
+            detailValue: formatCurrency(dashboard.totalAmountAssigned),
+            detailRows: getAssignmentRows(
+              dashboard.assignmentGoalTypes ?? [],
+              (summary) => formatCurrency(summary.totalAmountAssigned),
+            ),
+          },
+          {
+            title: "Goals met",
+            value: formatPercentage(dashboard.percentageOfAssignmentGoalsMet),
+            detailLabel: "Goal type breakdown",
+            detailValue: formatPercentage(
+              dashboard.percentageOfAssignmentGoalsMet,
+            ),
+            detailRows: getAssignmentRows(
+              dashboard.assignmentGoalTypes ?? [],
+              (summary) => formatPercentage(summary.percentageOfGoalsMet),
+            ),
+          },
+        ]
+      : [
+          {
+            title: "Total amount to spend",
+            value: formatCurrency(dashboard.totalAmountToSpend),
+            detailLabel: "Goal type breakdown",
+            detailValue: formatCurrency(dashboard.totalAmountToSpend),
+            detailRows: getSpendingRows(
+              dashboard.spendingGoalTypes ?? [],
+              (summary) => formatCurrency(summary.totalAmountToSpend),
+            ),
+          },
+          {
+            title: "Total amount spent",
+            value: formatCurrency(dashboard.totalAmountSpent),
+            detailLabel: "Goal type breakdown",
+            detailValue: formatCurrency(dashboard.totalAmountSpent),
+            detailRows: getSpendingRows(
+              dashboard.spendingGoalTypes ?? [],
+              (summary) => formatCurrency(summary.totalAmountSpent),
+            ),
+          },
+          {
+            title: "Goals met",
+            value: formatPercentage(dashboard.percentageOfSpendingGoalsMet),
+            detailLabel: "Goal type breakdown",
+            detailValue: formatPercentage(
+              dashboard.percentageOfSpendingGoalsMet,
+            ),
+            detailRows: getSpendingRows(
+              dashboard.spendingGoalTypes ?? [],
+              (summary) => formatPercentage(summary.percentageOfGoalsMet),
+            ),
+          },
+        ];
 
   return (
     <Box
@@ -195,157 +275,49 @@ const GoalDashboardSummaryCards = function ({
         gridTemplateColumns: {
           xs: "1fr",
           md: "repeat(2, minmax(0, 1fr))",
-          xl: "repeat(4, minmax(0, 1fr))",
+          xl: "repeat(3, minmax(0, 1fr))",
         },
       }}
     >
-      <SummaryCard
-        title="Total Goal amounts"
-        value={
-          <Stack
-            direction="row"
-            alignItems="center"
-            gap={0.5}
-            justifyContent="space-between"
-          >
-            <Box>{formatCurrency(dashboard.totalGoalAmount)}</Box>
-            <IconButton
-              size="small"
-              onClick={handleToggleExpanded}
-              sx={{
-                p: 0.25,
-                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.3s ease-in-out",
-              }}
+      {cardDefinitions.map((card) => (
+        <SummaryCard
+          key={card.title}
+          title={card.title}
+          value={
+            <Stack
+              direction="row"
+              alignItems="center"
+              gap={0.5}
+              justifyContent="space-between"
             >
-              <ExpandMore fontSize="small" />
-            </IconButton>
-          </Stack>
-        }
-      >
-        <GoalTypeBreakdown expanded={expanded}>
-          <Stack spacing={1.25} divider={<Divider flexItem />}>
-            <GoalTypeBreakdownSection
-              label="Goal type breakdown"
-              value={formatCurrency(dashboard.totalGoalAmount)}
-              detailRows={goalAmountRows}
-              expanded={expanded}
-              onToggle={handleToggleExpanded}
-            />
-          </Stack>
-        </GoalTypeBreakdown>
-      </SummaryCard>
-
-      <SummaryCard
-        title="Total Amount assigned"
-        value={
-          <Stack
-            direction="row"
-            alignItems="center"
-            gap={0.5}
-            justifyContent="space-between"
-          >
-            <Box>{formatCurrency(dashboard.totalAmountAssigned)}</Box>
-            <IconButton
-              size="small"
-              onClick={handleToggleExpanded}
-              sx={{
-                p: 0.25,
-                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.3s ease-in-out",
-              }}
-            >
-              <ExpandMore fontSize="small" />
-            </IconButton>
-          </Stack>
-        }
-      >
-        <GoalTypeBreakdown expanded={expanded}>
-          <Stack spacing={1.25} divider={<Divider flexItem />}>
-            <GoalTypeBreakdownSection
-              label="Goal type breakdown"
-              value={formatCurrency(dashboard.totalAmountAssigned)}
-              detailRows={amountAssignedRows}
-              expanded={expanded}
-              onToggle={handleToggleExpanded}
-            />
-          </Stack>
-        </GoalTypeBreakdown>
-      </SummaryCard>
-
-      <SummaryCard
-        title="Total Amount spent"
-        value={
-          <Stack
-            direction="row"
-            alignItems="center"
-            gap={0.5}
-            justifyContent="space-between"
-          >
-            <Box>{formatCurrency(dashboard.totalAmountSpent)}</Box>
-            <IconButton
-              size="small"
-              onClick={handleToggleExpanded}
-              sx={{
-                p: 0.25,
-                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.3s ease-in-out",
-              }}
-            >
-              <ExpandMore fontSize="small" />
-            </IconButton>
-          </Stack>
-        }
-      >
-        <GoalTypeBreakdown expanded={expanded}>
-          <Stack spacing={1.25} divider={<Divider flexItem />}>
-            <GoalTypeBreakdownSection
-              label="Goal type breakdown"
-              value={formatCurrency(dashboard.totalAmountSpent)}
-              detailRows={amountSpentRows}
-              expanded={expanded}
-              onToggle={handleToggleExpanded}
-            />
-          </Stack>
-        </GoalTypeBreakdown>
-      </SummaryCard>
-
-      <SummaryCard
-        title="Total Percentage of goals met"
-        value={
-          <Stack
-            direction="row"
-            alignItems="center"
-            gap={0.5}
-            justifyContent="space-between"
-          >
-            <Box>{formatPercentage(dashboard.percentageOfGoalsMet)}</Box>
-            <IconButton
-              size="small"
-              onClick={handleToggleExpanded}
-              sx={{
-                p: 0.25,
-                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.3s ease-in-out",
-              }}
-            >
-              <ExpandMore fontSize="small" />
-            </IconButton>
-          </Stack>
-        }
-      >
-        <GoalTypeBreakdown expanded={expanded}>
-          <Stack spacing={1.25} divider={<Divider flexItem />}>
-            <GoalTypeBreakdownSection
-              label="Goal type breakdown"
-              value={formatPercentage(dashboard.percentageOfGoalsMet)}
-              detailRows={percentageRows}
-              expanded={expanded}
-              onToggle={handleToggleExpanded}
-            />
-          </Stack>
-        </GoalTypeBreakdown>
-      </SummaryCard>
+              <Box>{card.value}</Box>
+              <IconButton
+                size="small"
+                onClick={handleToggleExpanded}
+                sx={{
+                  p: 0.25,
+                  transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.3s ease-in-out",
+                }}
+              >
+                <ExpandMore fontSize="small" />
+              </IconButton>
+            </Stack>
+          }
+        >
+          <GoalTypeBreakdown expanded={expanded}>
+            <Stack spacing={1.25} divider={<Divider flexItem />}>
+              <GoalTypeBreakdownSection
+                label={card.detailLabel}
+                value={card.detailValue}
+                detailRows={card.detailRows}
+                expanded={expanded}
+                onToggle={handleToggleExpanded}
+              />
+            </Stack>
+          </GoalTypeBreakdown>
+        </SummaryCard>
+      ))}
     </Box>
   );
 };

@@ -21,9 +21,9 @@ const GoalDashboardAmountAssignedChart = function ({
     <GoalDashboardMetricChart
       title="Amount assigned"
       subtitle="No assigned amounts are available for the selected range."
-      dataKey="amountAssigned"
       label="Amount Assigned"
       accountingPeriods={accountingPeriods}
+      getValue={(accountingPeriod) => accountingPeriod.totalAmountAssigned}
       formatter={formatCurrency}
       tickFormatter={(value: number) =>
         new Intl.NumberFormat("en-US", {

@@ -1,29 +1,35 @@
 import {
+  AssignmentGoalSortOrderModel,
+  AssignmentGoalTypeModel,
   GoalDashboardBalanceEventSortOrderModel,
-  GoalDashboardBalanceEventTypeModel,
-  GoalSortOrderModel,
-  GoalTypeModel,
+  SpendingGoalSortOrderModel,
+  SpendingGoalTypeModel,
   type components,
 } from "@/framework/data/api";
 
 /**
- * Type representing a Goal.
+ * Type representing an Assignment Goal.
  */
-type Goal = components["schemas"]["GoalModel"];
+type AssignmentGoal = components["schemas"]["AssignmentGoalModel"];
 
 /**
- * Type representing a request to create a Goal.
+ * Type representing a Spending Goal.
  */
-type CreateGoalRequest = components["schemas"]["CreateGoalModel"];
+type SpendingGoal = components["schemas"]["SpendingGoalModel"];
 
 /**
- * Type representing a request to update a Goal.
+ * Type representing a request to update an Assignment Goal.
  */
-type UpdateGoalRequest = components["schemas"]["UpdateGoalModel"];
+type UpdateAssignmentGoalRequest =
+  components["schemas"]["UpdateAssignmentGoalModel"];
+
+/**
+ * Type representing a request to update a Spending Goal.
+ */
+type UpdateSpendingGoalRequest =
+  components["schemas"]["UpdateSpendingGoalModel"];
 
 type GoalDashboard = components["schemas"]["GoalDashboardModel"];
-
-type GoalDashboardGoal = components["schemas"]["GoalModel"];
 
 type GoalDashboardBalanceEvent =
   components["schemas"]["GoalDashboardBalanceEventModel"];
@@ -31,21 +37,38 @@ type GoalDashboardBalanceEvent =
 type GoalDashboardAccountingPeriodSummaryModel =
   components["schemas"]["GoalDashboardAccountingPeriodSummaryModel"];
 
-type GoalTypeSummary =
-  components["schemas"]["GoalDashboardGoalTypeSummaryModel"];
+type GoalDashboardAssignmentGoalTypeSummary =
+  components["schemas"]["GoalDashboardAssignmentGoalTypeSummaryModel"];
+
+type GoalDashboardSpendingGoalTypeSummary =
+  components["schemas"]["GoalDashboardSpendingGoalTypeSummaryModel"];
 
 /**
- * Formats the goal type to be displayed.
+ * Formats an assignment goal type for display.
  */
-const formatGoalType = function (goalType: GoalTypeModel): string {
+const formatAssignmentGoalType = function (
+  goalType: AssignmentGoalTypeModel,
+): string {
   switch (goalType) {
-    case GoalTypeModel.Monthly:
-      return "Monthly";
-    case GoalTypeModel.Rolling:
-      return "Rolling";
-    case GoalTypeModel.Savings:
-      return "Savings";
-    case GoalTypeModel.Debt:
+    case AssignmentGoalTypeModel.MonthlyTarget:
+      return "Monthly Target";
+    case AssignmentGoalTypeModel.RecurringContribution:
+      return "Recurring Contribution";
+    default:
+      return String(goalType);
+  }
+};
+
+/**
+ * Formats a spending goal type for display.
+ */
+const formatSpendingGoalType = function (
+  goalType: SpendingGoalTypeModel,
+): string {
+  switch (goalType) {
+    case SpendingGoalTypeModel.Standard:
+      return "Standard";
+    case SpendingGoalTypeModel.Debt:
       return "Debt";
     default:
       return String(goalType);
@@ -53,17 +76,20 @@ const formatGoalType = function (goalType: GoalTypeModel): string {
 };
 
 export {
-  type Goal,
+  type AssignmentGoal,
+  AssignmentGoalSortOrderModel as AssignmentGoalSortOrder,
+  AssignmentGoalTypeModel as AssignmentGoalType,
+  type SpendingGoal,
+  SpendingGoalSortOrderModel as SpendingGoalSortOrder,
+  SpendingGoalTypeModel as SpendingGoalType,
+  type UpdateAssignmentGoalRequest,
+  type UpdateSpendingGoalRequest,
   type GoalDashboard,
-  type GoalDashboardGoal,
+  type GoalDashboardAssignmentGoalTypeSummary,
   type GoalDashboardBalanceEvent,
-  type GoalDashboardAccountingPeriodSummaryModel,
-  type GoalTypeSummary,
-  type CreateGoalRequest,
-  type UpdateGoalRequest,
   GoalDashboardBalanceEventSortOrderModel as GoalDashboardBalanceEventSortOrder,
-  GoalDashboardBalanceEventTypeModel as GoalDashboardBalanceEventType,
-  GoalTypeModel as GoalType,
-  GoalSortOrderModel as GoalSortOrder,
-  formatGoalType,
+  type GoalDashboardAccountingPeriodSummaryModel,
+  type GoalDashboardSpendingGoalTypeSummary,
+  formatAssignmentGoalType,
+  formatSpendingGoalType,
 };

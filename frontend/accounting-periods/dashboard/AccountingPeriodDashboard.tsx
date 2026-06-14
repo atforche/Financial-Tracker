@@ -1,7 +1,7 @@
 import {
   type AccountingPeriodDashboard as AccountingPeriodDashboardModel,
+  type AccountingPeriodDashboardTransactionSortOrder,
   AccountingPeriodSortOrder,
-  type AccountingPeriodTransactionSortOrder,
 } from "@/accounting-periods/types";
 import { Box, Stack } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
@@ -22,7 +22,7 @@ import { rowsPerPage } from "@/framework/listframe/Constants";
 interface AccountingPeriodDashboardSearchParams {
   sort?: AccountingPeriodSortOrder;
   page?: number | string | null;
-  transactionSort?: AccountingPeriodTransactionSortOrder;
+  transactionSort?: AccountingPeriodDashboardTransactionSortOrder;
   transactionPage?: number | string | null;
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;

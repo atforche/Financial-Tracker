@@ -1,7 +1,16 @@
 "use client";
 
-import { Button, DialogActions, Stack } from "@mui/material";
-import type { Goal, GoalType, UpdateGoalRequest } from "@/goals/types";
+import {
+  type AssignmentGoal,
+  AssignmentGoalType,
+  type SpendingGoal,
+  SpendingGoalType,
+  type UpdateAssignmentGoalRequest,
+  type UpdateSpendingGoalRequest,
+  formatAssignmentGoalType,
+  formatSpendingGoalType,
+} from "@/goals/types";
+import { Box, Button, Paper, Stack } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -12,18 +21,27 @@ import {
 } from "react";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import GoalTypeEntryField from "@/goals/GoalTypeEntryField";
-import Link from "next/link";
+import FundGoalTypeEntryField from "@/funds/FundGoalTypeEntryField";
+import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
+import TransactionSection from "@/transactions/workspace/TransactionSection";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
-import updateGoal from "@/goals/workspace/updateGoal";
+import formatCurrency from "@/framework/formatCurrency";
+import updateAssignmentGoal from "@/goals/workspace/updateAssignmentGoal";
+import updateSpendingGoal from "@/goals/workspace/updateSpendingGoal";
 
 /**
  * Props for the GoalForm component.
  */
 interface UpdateGoalFormProps {
-  readonly goal: Goal;
+  readonly goal: AssignmentGoal | SpendingGoal;
   readonly redirectUrl: string;
 }
+
+const isAssignmentGoal = function (
+  goal: AssignmentGoal | SpendingGoal,
+): goal is AssignmentGoal {
+  return "goalAmount" in goal;
+};
 
 /**
  * Component that displays the form for updating a goal.
@@ -32,78 +50,222 @@ const UpdateGoalForm = function ({
   goal,
   redirectUrl,
 }: UpdateGoalFormProps): JSX.Element {
-  const [goalType, setGoalType] = useState<GoalType | null>(goal.goalType);
-  const [goalAmount, setGoalAmount] = useState<number | null>(goal.goalAmount);
+  const assignmentGoal = isAssignmentGoal(goal) ? goal : null;
+  const spendingGoal = isAssignmentGoal(goal) ? null : goal;
+  const [assignmentGoalType, setAssignmentGoalType] =
+    useState<AssignmentGoalType | null>(assignmentGoal?.type ?? null);
+  const [assignmentGoalAmount, setAssignmentGoalAmount] = useState<
+    number | null
+  >(assignmentGoal?.goalAmount ?? null);
+  const [spendingGoalType, setSpendingGoalType] =
+    useState<SpendingGoalType | null>(spendingGoal?.type ?? null);
   const formRef = useRef<HTMLDivElement | null>(null);
 
-  const [state, action, pending] = useActionState(updateGoal, {});
+  const [
+    updateAssignmentState,
+    updateAssignmentAction,
+    updateAssignmentPending,
+  ] = useActionState(updateAssignmentGoal, {});
+  const [updateSpendingState, updateSpendingAction, updateSpendingPending] =
+    useActionState(updateSpendingGoal, {});
 
   const reset = function (): void {
-    setGoalType(goal.goalType);
-    setGoalAmount(goal.goalAmount);
+    setAssignmentGoalType(assignmentGoal?.type ?? null);
+    setAssignmentGoalAmount(assignmentGoal?.goalAmount ?? null);
+    setSpendingGoalType(spendingGoal?.type ?? null);
     focusFirstEntryControl(formRef.current);
   };
 
   useEffect(() => {
-    if (state.success === true) {
+    if (
+      updateAssignmentState.success === true ||
+      updateSpendingState.success === true
+    ) {
       reset();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
+  }, [updateAssignmentState, updateSpendingState]);
 
-  let request: UpdateGoalRequest | null = null;
-  if (goalType !== null && goalAmount !== null) {
-    request = {
-      goalType,
-      goalAmount,
-    };
-  }
+  const updateAssignmentRequest: UpdateAssignmentGoalRequest | null =
+    assignmentGoalType !== null && assignmentGoalAmount !== null
+      ? {
+          assignmentGoalType,
+          goalAmount: assignmentGoalAmount,
+        }
+      : null;
+
+  const updateSpendingRequest: UpdateSpendingGoalRequest | null =
+    spendingGoalType !== null
+      ? {
+          spendingGoalType,
+        }
+      : null;
 
   return (
     <Stack ref={formRef} spacing={2}>
-      <Stack spacing={2} sx={{ maxWidth: "500px" }}>
-        <GoalTypeEntryField
-          label="Goal Type"
-          value={goalType}
-          setValue={setGoalType}
-          errorMessage={state.goalTypeErrors ?? null}
-        />
-        <CurrencyEntryField
-          label="Goal Amount"
-          value={goalAmount}
-          setValue={setGoalAmount}
-          errorMessage={state.goalAmountErrors ?? null}
-        />
-        <DialogActions>
-          <Link href="" tabIndex={-1}>
-            <Button variant="outlined" onClick={reset}>
-              Cancel
-            </Button>
-          </Link>
-          <Button
-            variant="contained"
-            loading={pending}
-            disabled={request === null}
-            onClick={() => {
-              if (request === null) {
-                return;
-              }
-              startTransition(() => {
-                action({
-                  goalId: goal.id,
-                  request,
-                  redirectUrl,
-                });
-              });
+      <Stack spacing={3} sx={{ width: "100%" }}>
+        <TransactionSection
+          title="Goal Context"
+          description="Review the fund and accounting period that this goal applies to."
+        >
+          <Box
+            sx={{
+              display: "grid",
+              gap: 2,
+              gridTemplateColumns:
+                "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
             }}
           >
-            Update
-          </Button>
-        </DialogActions>
+            <TransactionDisplayField
+              label="Accounting Period"
+              value={goal.accountingPeriodName}
+            />
+            <TransactionDisplayField label="Fund" value={goal.fundName} />
+            <TransactionDisplayField
+              label="Current Goal Type"
+              value={
+                assignmentGoal !== null
+                  ? formatAssignmentGoalType(assignmentGoal.type)
+                  : spendingGoal !== null
+                    ? formatSpendingGoalType(spendingGoal.type)
+                    : ""
+              }
+            />
+            <TransactionDisplayField
+              label={
+                assignmentGoal !== null
+                  ? "Remaining To Assign"
+                  : "Remaining To Spend"
+              }
+              value={formatCurrency(
+                assignmentGoal !== null
+                  ? assignmentGoal.remainingAmountToAssign
+                  : spendingGoal !== null
+                    ? spendingGoal.remainingAmountToSpend
+                    : 0,
+              )}
+            />
+          </Box>
+        </TransactionSection>
+
+        <TransactionSection
+          title={
+            assignmentGoal !== null
+              ? "Assignment Settings"
+              : "Spending Settings"
+          }
+          description={
+            assignmentGoal !== null
+              ? "Adjust the assignment goal behavior and the amount you want to target for this fund."
+              : "Adjust how spending against this fund should be evaluated."
+          }
+        >
+          <Stack spacing={2}>
+            {assignmentGoal !== null ? (
+              <>
+                <FundGoalTypeEntryField<AssignmentGoalType>
+                  label="Assignment Goal Type"
+                  options={[
+                    AssignmentGoalType.MonthlyTarget,
+                    AssignmentGoalType.RecurringContribution,
+                  ]}
+                  value={assignmentGoalType}
+                  setValue={setAssignmentGoalType}
+                  formatOptionLabel={formatAssignmentGoalType}
+                  errorMessage={updateAssignmentState.typeErrors ?? null}
+                />
+                <CurrencyEntryField
+                  label="Assignment Goal Amount"
+                  value={assignmentGoalAmount}
+                  setValue={setAssignmentGoalAmount}
+                  errorMessage={updateAssignmentState.goalAmountErrors ?? null}
+                />
+              </>
+            ) : (
+              <>
+                <FundGoalTypeEntryField<SpendingGoalType>
+                  label="Spending Goal Type"
+                  options={[SpendingGoalType.Standard, SpendingGoalType.Debt]}
+                  value={spendingGoalType}
+                  setValue={setSpendingGoalType}
+                  formatOptionLabel={formatSpendingGoalType}
+                  errorMessage={updateSpendingState.typeErrors ?? null}
+                />
+                <TransactionDisplayField
+                  label="Spent So Far"
+                  value={formatCurrency(spendingGoal?.totalAmountToSpend ?? 0)}
+                  helperText="Spending goals no longer edit a target amount here."
+                />
+              </>
+            )}
+          </Stack>
+        </TransactionSection>
+
         <ErrorAlert
-          errorMessage={state.errorTitle ?? null}
-          unmappedErrors={state.unmappedErrors ?? null}
+          errorMessage={
+            updateAssignmentState.errorTitle ??
+            updateSpendingState.errorTitle ??
+            null
+          }
+          unmappedErrors={
+            updateAssignmentState.unmappedErrors ??
+            updateSpendingState.unmappedErrors ??
+            null
+          }
         />
+
+        <Paper variant="outlined" sx={{ p: 2, borderRadius: 4 }}>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1.5}
+            justifyContent="flex-end"
+          >
+            <Button variant="outlined" onClick={reset}>
+              Reset
+            </Button>
+            <Button
+              variant="contained"
+              loading={updateAssignmentPending || updateSpendingPending}
+              disabled={
+                updateAssignmentRequest === null &&
+                updateSpendingRequest === null
+              }
+              onClick={() => {
+                if (
+                  updateAssignmentRequest === null &&
+                  updateSpendingRequest === null
+                ) {
+                  return;
+                }
+                startTransition(() => {
+                  if (
+                    assignmentGoal !== null &&
+                    updateAssignmentRequest !== null
+                  ) {
+                    updateAssignmentAction({
+                      goal: assignmentGoal,
+                      request: updateAssignmentRequest,
+                      redirectUrl,
+                    });
+                  } else if (
+                    spendingGoal !== null &&
+                    updateSpendingRequest !== null
+                  ) {
+                    updateSpendingAction({
+                      goal: spendingGoal,
+                      request: updateSpendingRequest,
+                      redirectUrl,
+                    });
+                  }
+                });
+              }}
+            >
+              {assignmentGoal !== null
+                ? "Update Assignment Goal"
+                : "Update Spending Goal"}
+            </Button>
+          </Stack>
+        </Paper>
       </Stack>
     </Stack>
   );

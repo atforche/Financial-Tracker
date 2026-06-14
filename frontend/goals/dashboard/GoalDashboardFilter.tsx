@@ -7,8 +7,15 @@ import {
   Paper,
   Stack,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
+import {
+  type GoalDashboardGoalType,
+  type GoalDashboardView,
+  defaultGoalDashboardView,
+} from "@/goals/dashboard/goalDashboardTypes";
 import {
   normalizeFundNames,
   shouldPersistFundNames,
@@ -21,7 +28,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AccountDashboardAccountingPeriodFilter from "@/accounts/dashboard/AccountDashboardAccountingPeriodFilter";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import GoalDashboardGoalTypeFilter from "@/goals/dashboard/GoalDashboardGoalTypeFilter";
-import type { GoalType } from "@/goals/types";
 import type { JSX } from "react";
 
 /**
@@ -33,6 +39,7 @@ interface GoalDashboardFilterProps {
   readonly defaultAccountingPeriodId: string | null;
   readonly defaultStartDate: string;
   readonly defaultEndDate: string;
+  readonly view: GoalDashboardView;
   readonly disabled?: boolean;
 }
 
@@ -43,6 +50,7 @@ const GoalDashboardFilter = function ({
   accountingPeriods,
   availableFundNames,
   defaultAccountingPeriodId,
+  view,
   disabled = false,
 }: GoalDashboardFilterProps): JSX.Element {
   const searchParams = useSearchParams();
@@ -50,7 +58,10 @@ const GoalDashboardFilter = function ({
   const router = useRouter();
 
   const pageParamName = "page";
-  const modeParamName = "mode";
+  const balanceEventPageParamName = "balanceEventPage";
+  const sortParamName = "sort";
+  const balanceEventSortParamName = "balanceEventSort";
+  const viewParamName = "view";
   const goalTypeParamName = "goalType";
   const fundNameParamName = "fundName";
   const startAccountingPeriodIdParamName = "startAccountingPeriodId";
@@ -58,6 +69,7 @@ const GoalDashboardFilter = function ({
 
   const currentGoalTypes = normalizeGoalTypes(
     searchParams.getAll(goalTypeParamName),
+    view,
   );
   const currentFundNames = normalizeFundNames(
     searchParams.getAll(fundNameParamName),
@@ -82,6 +94,7 @@ const GoalDashboardFilter = function ({
     const params = new URLSearchParams(searchParams.toString());
     updater(params);
     params.delete(pageParamName);
+    params.delete(balanceEventPageParamName);
     const nextQuery = params.toString();
     router.replace(nextQuery === "" ? pathname : `${pathname}?${nextQuery}`, {
       scroll: false,
@@ -89,17 +102,34 @@ const GoalDashboardFilter = function ({
   };
 
   const hasActiveView =
-    shouldPersistGoalTypes(currentGoalTypes) ||
+    shouldPersistGoalTypes(currentGoalTypes, view) ||
     shouldPersistFundNames(currentFundNames) ||
     currentStartAccountingPeriodId !== (defaultAccountingPeriodId ?? "") ||
     currentEndAccountingPeriodId !== (defaultAccountingPeriodId ?? "");
 
+  const handleViewChange = function (nextView: GoalDashboardView | null): void {
+    if (nextView === null || nextView === view) {
+      return;
+    }
+
+    updateParams((params) => {
+      if (nextView === defaultGoalDashboardView) {
+        params.delete(viewParamName);
+      } else {
+        params.set(viewParamName, nextView);
+      }
+      params.delete(goalTypeParamName);
+      params.delete(sortParamName);
+      params.delete(balanceEventSortParamName);
+    });
+  };
+
   const handleGoalTypeChange = function (
-    nextGoalTypes: readonly GoalType[],
+    nextGoalTypes: readonly GoalDashboardGoalType[],
   ): void {
     updateParams((params) => {
       params.delete(goalTypeParamName);
-      if (shouldPersistGoalTypes(nextGoalTypes)) {
+      if (shouldPersistGoalTypes(nextGoalTypes, view)) {
         nextGoalTypes.forEach((goalType) => {
           params.append(goalTypeParamName, goalType);
         });
@@ -162,9 +192,10 @@ const GoalDashboardFilter = function ({
     updateParams((params) => {
       params.delete(goalTypeParamName);
       params.delete(fundNameParamName);
-      params.set(modeParamName, "date");
       params.delete(startAccountingPeriodIdParamName);
       params.delete(endAccountingPeriodIdParamName);
+      params.delete(sortParamName);
+      params.delete(balanceEventSortParamName);
     });
   };
 
@@ -182,8 +213,26 @@ const GoalDashboardFilter = function ({
       }}
     >
       <Stack spacing={2}>
-        <Stack spacing={0.5}>
-          <Typography variant="h5">Goal Dashboard</Typography>
+        <Stack
+          direction={{ xs: "column", lg: "row" }}
+          spacing={1.5}
+          justifyContent="space-between"
+          alignItems={{ xs: "flex-start", lg: "center" }}
+        >
+          <Stack spacing={0.5}>
+            <Typography variant="h5">Goal Dashboard</Typography>
+          </Stack>
+          <ToggleButtonGroup
+            exclusive
+            size="small"
+            value={view}
+            onChange={(_, nextValue: GoalDashboardView | null) => {
+              handleViewChange(nextValue);
+            }}
+          >
+            <ToggleButton value="assignment">Assignment</ToggleButton>
+            <ToggleButton value="spending">Spending</ToggleButton>
+          </ToggleButtonGroup>
         </Stack>
         <Stack
           direction="row"
@@ -207,6 +256,7 @@ const GoalDashboardFilter = function ({
             disabled={disabled}
           />
           <GoalDashboardGoalTypeFilter
+            view={view}
             value={currentGoalTypes}
             onChange={handleGoalTypeChange}
             disabled={disabled}

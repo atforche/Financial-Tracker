@@ -16,6 +16,9 @@ interface ActionState {
   readonly nameErrors?: string | null;
   readonly descriptionErrors?: string | null;
   readonly accountingPeriodErrors?: string | null;
+  readonly assignmentGoalTypeErrors?: string | null;
+  readonly assignmentGoalAmountErrors?: string | null;
+  readonly spendingGoalTypeErrors?: string | null;
   readonly unmappedErrors?: string | null;
 }
 
@@ -43,6 +46,9 @@ const createFund = async function (
       let nameErrorMessage = null;
       let descriptionErrorMessage = null;
       let accountingPeriodErrorMessage = null;
+      let assignmentGoalTypeErrorMessage = null;
+      let assignmentGoalAmountErrorMessage = null;
+      let spendingGoalTypeErrorMessage = null;
       const unmappedErrors: (string | null)[] = [];
       for (const key of Object.keys(error.errors ?? {})) {
         if (
@@ -61,6 +67,27 @@ const createFund = async function (
           accountingPeriodErrorMessage = formatErrors(
             error.errors?.[key] ?? null,
           );
+        } else if (
+          key.toUpperCase() ===
+          nameof<CreateFundRequest>("assignmentGoalType").toUpperCase()
+        ) {
+          assignmentGoalTypeErrorMessage = formatErrors(
+            error.errors?.[key] ?? null,
+          );
+        } else if (
+          key.toUpperCase() ===
+          nameof<CreateFundRequest>("assignmentGoalAmount").toUpperCase()
+        ) {
+          assignmentGoalAmountErrorMessage = formatErrors(
+            error.errors?.[key] ?? null,
+          );
+        } else if (
+          key.toUpperCase() ===
+          nameof<CreateFundRequest>("spendingGoalType").toUpperCase()
+        ) {
+          spendingGoalTypeErrorMessage = formatErrors(
+            error.errors?.[key] ?? null,
+          );
         } else {
           unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
         }
@@ -70,6 +97,9 @@ const createFund = async function (
         nameErrors: nameErrorMessage,
         descriptionErrors: descriptionErrorMessage,
         accountingPeriodErrors: accountingPeriodErrorMessage,
+        assignmentGoalTypeErrors: assignmentGoalTypeErrorMessage,
+        assignmentGoalAmountErrors: assignmentGoalAmountErrorMessage,
+        spendingGoalTypeErrors: spendingGoalTypeErrorMessage,
         unmappedErrors: unmappedErrors.join(", ") || null,
       };
     }

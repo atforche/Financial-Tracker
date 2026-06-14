@@ -1,22 +1,16 @@
 "use client";
 
-import {
-  Box,
-  Button,
-  IconButton,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Button, IconButton, Paper, Stack, Typography } from "@mui/material";
 import {
   type GoalDashboardBalanceEvent,
-  GoalDashboardBalanceEventSortOrder,
-  GoalDashboardBalanceEventType,
-} from "@/goals/types";
+  type GoalDashboardView,
+  defaultGoalDashboardView,
+} from "@/goals/dashboard/goalDashboardTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import { GoalDashboardBalanceEventSortOrder } from "@/goals/types";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
@@ -29,26 +23,31 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 });
 
-const formatBalanceEventType = function (
-  type: GoalDashboardBalanceEventType,
-): string {
-  return type === GoalDashboardBalanceEventType.Assignment
-    ? "Assignment"
-    : "Spending";
-};
-
 /**
  * Props for the GoalDashboardBalanceEventListFrame component.
  */
 interface GoalDashboardBalanceEventListFrameProps {
+  readonly view: GoalDashboardView;
   readonly data: GoalDashboardBalanceEvent[] | null;
   readonly totalCount: number | null;
 }
+
+const getResetRoute = function (
+  pathname: string,
+  view: GoalDashboardView,
+): string {
+  if (view === defaultGoalDashboardView) {
+    return pathname;
+  }
+
+  return `${pathname}?view=${view}`;
+};
 
 /**
  * Presents the paged balance-event table for the Goals dashboard.
  */
 const GoalDashboardBalanceEventListFrame = function ({
+  view,
   data,
   totalCount,
 }: GoalDashboardBalanceEventListFrameProps): JSX.Element {
@@ -92,6 +91,7 @@ const GoalDashboardBalanceEventListFrame = function ({
       }),
     );
   };
+
   const hasActiveFilters =
     searchParams.getAll(goalTypeParamName).length > 0 ||
     searchParams.getAll(fundNameParamName).length > 0 ||
@@ -170,40 +170,6 @@ const GoalDashboardBalanceEventListFrame = function ({
       minWidth: 130,
     },
     {
-      name: "type",
-      headerContent: "Type",
-      getBodyContent: (balanceEvent): JSX.Element => (
-        <Box
-          component="span"
-          sx={{
-            color:
-              balanceEvent.type === GoalDashboardBalanceEventType.Assignment
-                ? "info.dark"
-                : "warning.dark",
-            fontWeight: 600,
-          }}
-        >
-          {formatBalanceEventType(balanceEvent.type)}
-        </Box>
-      ),
-      sortType:
-        currentSort === GoalDashboardBalanceEventSortOrder.Type
-          ? ColumnSortType.Ascending
-          : currentSort === GoalDashboardBalanceEventSortOrder.TypeDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(GoalDashboardBalanceEventSortOrder.Type);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(GoalDashboardBalanceEventSortOrder.TypeDescending);
-        } else {
-          setSort(null);
-        }
-      },
-      minWidth: 110,
-    },
-    {
       name: "amount",
       headerContent: "Amount",
       getBodyContent: (balanceEvent) => formatCurrency(balanceEvent.amount),
@@ -256,44 +222,50 @@ const GoalDashboardBalanceEventListFrame = function ({
       }}
     >
       <Stack spacing={2.5}>
-        <Typography variant="h5">Balance Events</Typography>
+        <Typography variant="h5">
+          {view === "assignment" ? "Assignment Events" : "Spending Events"}
+        </Typography>
         <ListFrame<GoalDashboardBalanceEvent>
           columns={columns}
-          getId={(balanceEvent) =>
-            `${balanceEvent.fundId}-${balanceEvent.accountingPeriodId}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
-          }
+          getId={(balanceEvent) => balanceEvent.transactionId}
           data={data ?? null}
           totalCount={totalCount ?? null}
           searchParamName="balanceEventSearch"
           pageParamName={pageParamName}
+          onRowClick={openTransactionWorkspace}
           hasActiveFilters={hasActiveFilters}
-          onRowClick={(balanceEvent) => {
-            openTransactionWorkspace(balanceEvent);
-          }}
           initialEmptyState={{
-            title: "No balance events found",
+            title:
+              view === "assignment"
+                ? "No assignment events are available"
+                : "No spending events are available",
             description:
-              "Try a different date range or accounting period to inspect goal activity.",
+              view === "assignment"
+                ? "Post or assign transactions to see assignment activity here."
+                : "Post spending transactions to see spending activity here.",
             action: (
               <Button
                 variant="contained"
                 onClick={() => {
-                  router.replace(pathname);
+                  router.replace(getResetRoute(pathname, view));
                 }}
               >
-                Reset dashboard
+                Reset filters
               </Button>
             ),
           }}
           filteredEmptyState={{
-            title: "No balance events match this dashboard filter",
+            title:
+              view === "assignment"
+                ? "No assignment events match this dashboard filter"
+                : "No spending events match this dashboard filter",
             description:
-              "Try a different fund filter or range to widen the activity feed.",
+              "Try a different fund name, goal type, or accounting period to widen the dashboard scope.",
             action: (
               <Button
                 variant="contained"
                 onClick={() => {
-                  router.replace(pathname);
+                  router.replace(getResetRoute(pathname, view));
                 }}
               >
                 Reset filters

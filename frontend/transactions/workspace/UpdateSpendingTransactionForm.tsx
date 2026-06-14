@@ -1,5 +1,6 @@
 "use client";
 
+import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { Button, Stack } from "@mui/material";
 import type { Fund, FundAmount } from "@/funds/types";
 import {
@@ -22,7 +23,6 @@ import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FundAssignmentPlanner from "@/funds/FundAssignmentPlanner";
-import type { Goal } from "@/goals/types";
 import TransactionAccountPairSection from "@/transactions/workspace/TransactionAccountPairSection";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
@@ -35,7 +35,8 @@ interface UpdateSpendingTransactionFormProps {
   readonly transactionDebitAccount: Account | null;
   readonly transactionCreditAccount: Account | null;
   readonly funds: Fund[];
-  readonly goals: Goal[];
+  readonly assignmentGoals: AssignmentGoal[];
+  readonly spendingGoals: SpendingGoal[];
   readonly redirectUrl: string;
 }
 
@@ -48,7 +49,8 @@ const UpdateSpendingTransactionForm = function ({
   transactionDebitAccount,
   transactionCreditAccount,
   funds,
-  goals,
+  assignmentGoals,
+  spendingGoals,
   redirectUrl,
 }: UpdateSpendingTransactionFormProps): JSX.Element {
   const unassignedFund =
@@ -70,7 +72,10 @@ const UpdateSpendingTransactionForm = function ({
         )
       : [],
   );
-  const currentGoals = goals.filter(
+  const currentAssignmentGoal = assignmentGoals.filter(
+    (goal) => goal.accountingPeriodId === transactionAccountingPeriod.id,
+  );
+  const currentSpendingGoal = spendingGoals.filter(
     (goal) => goal.accountingPeriodId === transactionAccountingPeriod.id,
   );
 
@@ -165,7 +170,8 @@ const UpdateSpendingTransactionForm = function ({
           title="Fund Allocation"
           tone="spending"
           funds={funds}
-          goals={currentGoals}
+          assignmentGoals={currentAssignmentGoal}
+          spendingGoals={currentSpendingGoal}
           totalAmountToAssign={amount}
           baselineValue={
             transaction.transactionType === TransactionType.Spending &&

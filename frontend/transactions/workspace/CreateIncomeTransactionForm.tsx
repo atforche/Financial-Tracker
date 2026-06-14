@@ -1,6 +1,7 @@
 "use client";
 
 import { type Account, isTrackedAccountType } from "@/accounts/types";
+import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { Button, Stack } from "@mui/material";
 import {
   CreateIncomeTransactionType,
@@ -20,7 +21,6 @@ import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FundAssignmentPlanner from "@/funds/FundAssignmentPlanner";
-import type { Goal } from "@/goals/types";
 import TransactionAccountPairSection from "@/transactions/workspace/TransactionAccountPairSection";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import createTransaction from "@/transactions/workspace/createTransaction";
@@ -32,7 +32,8 @@ interface CreateIncomeTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: Account[];
   readonly funds: Fund[];
-  readonly goals: Goal[];
+  readonly assignmentGoals: AssignmentGoal[];
+  readonly spendingGoals: SpendingGoal[];
   readonly redirectUrl: string;
 }
 
@@ -43,7 +44,8 @@ const CreateIncomeTransactionForm = function ({
   accountingPeriods,
   accounts,
   funds,
-  goals,
+  assignmentGoals,
+  spendingGoals,
   redirectUrl,
 }: CreateIncomeTransactionFormProps): JSX.Element {
   const router = useRouter();
@@ -71,7 +73,10 @@ const CreateIncomeTransactionForm = function ({
   const [sourceAccount, setSourceAccount] = useState<Account | null>(null);
   const [depositAccount, setDepositAccount] = useState<Account | null>(null);
   const [fundAssignments, setFundAssignments] = useState<FundAmount[]>([]);
-  const currentGoals = goals.filter(
+  const currentAssignmentGoals = assignmentGoals.filter(
+    (goal) => goal.accountingPeriodId === accountingPeriod?.id,
+  );
+  const currentSpendingGoals = spendingGoals.filter(
     (goal) => goal.accountingPeriodId === accountingPeriod?.id,
   );
 
@@ -186,7 +191,8 @@ const CreateIncomeTransactionForm = function ({
           title="Fund Allocation"
           tone="income"
           funds={funds}
-          goals={currentGoals}
+          assignmentGoals={currentAssignmentGoals}
+          spendingGoals={currentSpendingGoals}
           totalAmountToAssign={amount}
           baselineValue={[]}
           value={fundAssignments}
