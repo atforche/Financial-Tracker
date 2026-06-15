@@ -76,7 +76,11 @@ const CreateAccountTransactionForm = function ({
 
   useEffect(() => {
     if (state.success === true && state.transactionId !== null) {
-      const nextUrl = `${redirectUrl}${redirectUrl.includes("?") ? "&" : "?"}selectedTransactionId=${state.transactionId}`;
+      const [pathname, search = ""] = redirectUrl.split("?");
+      const params = new URLSearchParams(search);
+      params.set("selectedTransactionId", state.transactionId ?? "");
+      params.set("action", "post");
+      const nextUrl = `${pathname}?${params.toString()}`;
       router.replace(nextUrl, { scroll: false });
       reset();
     }
