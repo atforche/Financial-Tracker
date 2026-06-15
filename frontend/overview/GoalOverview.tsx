@@ -2,7 +2,6 @@ import { Paper, Stack, Typography } from "@mui/material";
 import { AccountingPeriodSortOrder } from "@/accounting-periods/types";
 import GoalDashboardSummaryCards from "@/goals/dashboard/GoalDashboardSummaryCards";
 import type { JSX } from "react";
-import { defaultGoalDashboardView } from "@/goals/dashboard/goalDashboardTypes";
 import getApiClient from "@/framework/data/getApiClient";
 
 /**
@@ -63,10 +62,14 @@ const GoalOverview = async function (): Promise<JSX.Element> {
         <Typography variant="h6" color="text.secondary">
           Current Goals ({latestAccountingPeriod.name})
         </Typography>
-        <GoalDashboardSummaryCards
-          dashboard={dashboard}
-          view={defaultGoalDashboardView}
-        />
+        <Typography variant="h6" color="text.secondary">
+          Assignment
+        </Typography>
+        <GoalDashboardSummaryCards dashboard={dashboard} view="assignment" />
+        <Typography variant="h6" color="text.secondary">
+          Spending
+        </Typography>
+        <GoalDashboardSummaryCards dashboard={dashboard} view="spending" />
       </Stack>
     </Paper>
   );

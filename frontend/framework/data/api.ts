@@ -3086,11 +3086,8 @@ export interface components {
              * @description Total amount assigned for the group.
              */
             totalAmountAssigned: number;
-            /**
-             * Format: double
-             * @description Percentage of Assignment Goals met for the group.
-             */
-            percentageOfAssignmentGoalsMet: number;
+            /** @description Percentage of Assignment Goals met for the group. */
+            percentageOfAssignmentGoalsMet: components["schemas"]["GoalPercentageMetModel"];
             /**
              * Format: double
              * @description Total amount to spend for the group.
@@ -3101,11 +3098,8 @@ export interface components {
              * @description Total amount spent for the group.
              */
             totalAmountSpent: number;
-            /**
-             * Format: double
-             * @description Percentage of Spending Goals met for the group.
-             */
-            percentageOfSpendingGoalsMet: number;
+            /** @description Percentage of Spending Goals met for the group. */
+            percentageOfSpendingGoalsMet: components["schemas"]["GoalPercentageMetModel"];
         };
         /** @description Model representing assignment goal totals grouped by assignment goal type. */
         GoalDashboardAssignmentGoalTypeSummaryModel: {
@@ -3121,11 +3115,8 @@ export interface components {
              * @description Total amount assigned for the group.
              */
             totalAmountAssigned: number;
-            /**
-             * Format: double
-             * @description Percentage of goals met for the group.
-             */
-            percentageOfGoalsMet: number;
+            /** @description Percentage of goals met for the group. */
+            percentageOfGoalsMet: components["schemas"]["GoalPercentageMetModel"];
         };
         /** @description Model representing a balance event on the Goal dashboard. */
         GoalDashboardBalanceEventModel: {
@@ -3189,11 +3180,8 @@ export interface components {
              * @description Total amount assigned across the filtered results.
              */
             totalAmountAssigned: number;
-            /**
-             * Format: double
-             * @description Percentage of Assignment Goals met across the filtered results.
-             */
-            percentageOfAssignmentGoalsMet: number;
+            /** @description Percentage of Assignment Goals met across the filtered results. */
+            percentageOfAssignmentGoalsMet: components["schemas"]["GoalPercentageMetModel"];
             /**
              * Format: double
              * @description Total amount to spend on spending goals across the filtered results.
@@ -3204,11 +3192,8 @@ export interface components {
              * @description Total amount spent on spending goals across the filtered results.
              */
             totalAmountSpent: number;
-            /**
-             * Format: double
-             * @description Percentage of Spending Goals met across the filtered results.
-             */
-            percentageOfSpendingGoalsMet: number;
+            /** @description Percentage of Spending Goals met across the filtered results. */
+            percentageOfSpendingGoalsMet: components["schemas"]["GoalPercentageMetModel"];
             /** @description Goal totals grouped by Accounting Period. */
             accountingPeriods?: null | components["schemas"]["GoalDashboardAccountingPeriodSummaryModel"][];
         };
@@ -3226,11 +3211,26 @@ export interface components {
              * @description Total amount spent for the group.
              */
             totalAmountSpent: number;
+            /** @description Percentage of goals met for the group. */
+            percentageOfGoalsMet: components["schemas"]["GoalPercentageMetModel"];
+        };
+        /** @description Model representing the percentage of a goal that have been met. */
+        GoalPercentageMetModel: {
+            /**
+             * Format: int32
+             * @description Total number of goals.
+             */
+            totalCount: number;
+            /**
+             * Format: int32
+             * @description Number of goals that have been met.
+             */
+            metCount: number;
             /**
              * Format: double
-             * @description Percentage of goals met for the group.
+             * @description Percentage of goals that have been met.
              */
-            percentageOfGoalsMet: number;
+            percentageMet: number;
         };
         /** @description Model representing a request to onboard an Account. */
         OnboardAccountModel: {

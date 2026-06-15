@@ -23,5 +23,5 @@ public class GoalDashboardSpendingGoalTypeSummaryModel
     /// <summary>
     /// Percentage of goals met for the group.
     /// </summary>
-    public required decimal PercentageOfGoalsMet { get; init; }
+    public required GoalPercentageMetModel PercentageOfGoalsMet { get; init; }
 }

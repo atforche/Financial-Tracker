@@ -180,10 +180,20 @@ public class GoalDashboardGetter(
             AvailableFundNames = availableFundNames,
             TotalAmountToAssign = totalAmountToAssign,
             TotalAmountAssigned = totalAmountAssigned,
-            PercentageOfAssignmentGoalsMet = sortedAssignmentGoals.Count == 0 ? 0 : metAssignmentGoals * 100m / sortedAssignmentGoals.Count,
+            PercentageOfAssignmentGoalsMet = new GoalPercentageMetModel
+            {
+                TotalCount = sortedAssignmentGoals.Count,
+                MetCount = metAssignmentGoals,
+                PercentageMet = sortedAssignmentGoals.Count == 0 ? 0 : metAssignmentGoals * 100m / sortedAssignmentGoals.Count,
+            },
             TotalAmountToSpend = totalAmountToSpend,
             TotalAmountSpent = totalAmountSpent,
-            PercentageOfSpendingGoalsMet = sortedSpendingGoals.Count == 0 ? 0 : metSpendingGoals * 100m / sortedSpendingGoals.Count,
+            PercentageOfSpendingGoalsMet = new GoalPercentageMetModel
+            {
+                TotalCount = sortedSpendingGoals.Count,
+                MetCount = metSpendingGoals,
+                PercentageMet = sortedSpendingGoals.Count == 0 ? 0 : metSpendingGoals * 100m / sortedSpendingGoals.Count,
+            },
             AccountingPeriods = accountingPeriodSummary,
         };
 
@@ -447,10 +457,20 @@ public class GoalDashboardGetter(
         AvailableFundNames = [],
         TotalAmountToAssign = 0,
         TotalAmountAssigned = 0,
-        PercentageOfAssignmentGoalsMet = 0,
+        PercentageOfAssignmentGoalsMet = new GoalPercentageMetModel
+        {
+            TotalCount = 0,
+            MetCount = 0,
+            PercentageMet = 0,
+        },
         TotalAmountToSpend = 0,
         TotalAmountSpent = 0,
-        PercentageOfSpendingGoalsMet = 0,
+        PercentageOfSpendingGoalsMet = new GoalPercentageMetModel
+        {
+            TotalCount = 0,
+            MetCount = 0,
+            PercentageMet = 0,
+        },
         AccountingPeriods = [],
     };
 
@@ -601,7 +621,12 @@ public class GoalDashboardGetter(
             AssignmentGoalType = GoalTypeConverter.ToModel(assignmentGoalType),
             TotalAmountToAssign = totalAmountToAssign,
             TotalAmountAssigned = totalAmountAssigned,
-            PercentageOfGoalsMet = goals.Count == 0 ? 0 : metGoals * 100m / goals.Count,
+            PercentageOfGoalsMet = new GoalPercentageMetModel
+            {
+                MetCount = metGoals,
+                TotalCount = goals.Count,
+                PercentageMet = goals.Count == 0 ? 0 : metGoals * 100m / goals.Count,
+            },
         };
     }
 
@@ -618,7 +643,12 @@ public class GoalDashboardGetter(
             SpendingGoalType = GoalTypeConverter.ToModel(spendingGoalType),
             TotalAmountToSpend = totalAmountToSpend,
             TotalAmountSpent = totalAmountSpent,
-            PercentageOfGoalsMet = goals.Count == 0 ? 0 : metGoals * 100m / goals.Count,
+            PercentageOfGoalsMet = new GoalPercentageMetModel
+            {
+                MetCount = metGoals,
+                TotalCount = goals.Count,
+                PercentageMet = goals.Count == 0 ? 0 : metGoals * 100m / goals.Count,
+            },
         };
     }
 
@@ -642,10 +672,20 @@ public class GoalDashboardGetter(
             Month = accountingPeriod.Month,
             TotalAmountToAssign = totalAmountToAssign,
             TotalAmountAssigned = totalAmountAssigned,
-            PercentageOfAssignmentGoalsMet = assignmentGoals.Count == 0 ? 0 : metAssignmentGoals * 100m / assignmentGoals.Count,
+            PercentageOfAssignmentGoalsMet = new GoalPercentageMetModel
+            {
+                MetCount = metAssignmentGoals,
+                TotalCount = assignmentGoals.Count,
+                PercentageMet = assignmentGoals.Count == 0 ? 0 : metAssignmentGoals * 100m / assignmentGoals.Count,
+            },
             TotalAmountToSpend = totalAmountToSpend,
             TotalAmountSpent = totalAmountSpent,
-            PercentageOfSpendingGoalsMet = spendingGoals.Count == 0 ? 0 : metSpendingGoals * 100m / spendingGoals.Count,
+            PercentageOfSpendingGoalsMet = new GoalPercentageMetModel
+            {
+                MetCount = metSpendingGoals,
+                TotalCount = spendingGoals.Count,
+                PercentageMet = spendingGoals.Count == 0 ? 0 : metSpendingGoals * 100m / spendingGoals.Count,
+            },
         };
     }
 

@@ -221,14 +221,13 @@ const GoalDashboardSummaryCards = function ({
           },
           {
             title: "Goals met",
-            value: formatPercentage(dashboard.percentageOfAssignmentGoalsMet),
+            value: `${dashboard.percentageOfAssignmentGoalsMet.metCount} / ${dashboard.percentageOfAssignmentGoalsMet.totalCount} (${formatPercentage(dashboard.percentageOfAssignmentGoalsMet.percentageMet)})`,
             detailLabel: "Goal type breakdown",
-            detailValue: formatPercentage(
-              dashboard.percentageOfAssignmentGoalsMet,
-            ),
+            detailValue: `${dashboard.percentageOfAssignmentGoalsMet.metCount} / ${dashboard.percentageOfAssignmentGoalsMet.totalCount} (${formatPercentage(dashboard.percentageOfAssignmentGoalsMet.percentageMet)})`,
             detailRows: getAssignmentRows(
               dashboard.assignmentGoalTypes ?? [],
-              (summary) => formatPercentage(summary.percentageOfGoalsMet),
+              (summary) =>
+                `${summary.percentageOfGoalsMet.metCount} / ${summary.percentageOfGoalsMet.totalCount} (${formatPercentage(summary.percentageOfGoalsMet.percentageMet)})`,
             ),
           },
         ]
@@ -255,14 +254,13 @@ const GoalDashboardSummaryCards = function ({
           },
           {
             title: "Goals met",
-            value: formatPercentage(dashboard.percentageOfSpendingGoalsMet),
+            value: `${dashboard.percentageOfSpendingGoalsMet.metCount} / ${dashboard.percentageOfSpendingGoalsMet.totalCount} (${formatPercentage(dashboard.percentageOfSpendingGoalsMet.percentageMet)})`,
             detailLabel: "Goal type breakdown",
-            detailValue: formatPercentage(
-              dashboard.percentageOfSpendingGoalsMet,
-            ),
+            detailValue: `${dashboard.percentageOfSpendingGoalsMet.metCount} / ${dashboard.percentageOfSpendingGoalsMet.totalCount} (${formatPercentage(dashboard.percentageOfSpendingGoalsMet.percentageMet)})`,
             detailRows: getSpendingRows(
               dashboard.spendingGoalTypes ?? [],
-              (summary) => formatPercentage(summary.percentageOfGoalsMet),
+              (summary) =>
+                `${summary.percentageOfGoalsMet.metCount} / ${summary.percentageOfGoalsMet.totalCount} (${formatPercentage(summary.percentageOfGoalsMet.percentageMet)})`,
             ),
           },
         ];

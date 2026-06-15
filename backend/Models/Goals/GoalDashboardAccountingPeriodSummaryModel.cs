@@ -38,7 +38,7 @@ public class GoalDashboardAccountingPeriodSummaryModel
     /// <summary>
     /// Percentage of Assignment Goals met for the group.
     /// </summary>
-    public required decimal PercentageOfAssignmentGoalsMet { get; init; }
+    public required GoalPercentageMetModel PercentageOfAssignmentGoalsMet { get; init; }
 
     /// <summary>
     /// Total amount to spend for the group.
@@ -53,5 +53,5 @@ public class GoalDashboardAccountingPeriodSummaryModel
     /// <summary>
     /// Percentage of Spending Goals met for the group.
     /// </summary>
-    public required decimal PercentageOfSpendingGoalsMet { get; init; }
+    public required GoalPercentageMetModel PercentageOfSpendingGoalsMet { get; init; }
 }

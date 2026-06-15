@@ -27,8 +27,8 @@ const GoalDashboardGoalsMetChart = function ({
       accountingPeriods={accountingPeriods}
       getValue={(accountingPeriod) =>
         view === "assignment"
-          ? accountingPeriod.percentageOfAssignmentGoalsMet
-          : accountingPeriod.percentageOfSpendingGoalsMet
+          ? accountingPeriod.percentageOfAssignmentGoalsMet.percentageMet
+          : accountingPeriod.percentageOfSpendingGoalsMet.percentageMet
       }
       formatter={(value: number) => `${value.toFixed(2)}%`}
       tickFormatter={(value: number) => `${value.toFixed(0)}%`}

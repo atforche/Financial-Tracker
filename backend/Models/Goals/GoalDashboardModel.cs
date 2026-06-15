@@ -53,7 +53,7 @@ public class GoalDashboardModel
     /// <summary>
     /// Percentage of Assignment Goals met across the filtered results.
     /// </summary>
-    public required decimal PercentageOfAssignmentGoalsMet { get; init; }
+    public required GoalPercentageMetModel PercentageOfAssignmentGoalsMet { get; init; }
 
     /// <summary>
     /// Total amount to spend on spending goals across the filtered results.
@@ -68,7 +68,7 @@ public class GoalDashboardModel
     /// <summary>
     /// Percentage of Spending Goals met across the filtered results.
     /// </summary>
-    public required decimal PercentageOfSpendingGoalsMet { get; init; }
+    public required GoalPercentageMetModel PercentageOfSpendingGoalsMet { get; init; }
 
     /// <summary>
     /// Goal totals grouped by Accounting Period.
