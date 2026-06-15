@@ -39,9 +39,9 @@ const CreateTransactionForm = function ({
   spendingGoals,
   redirectUrl,
 }: CreateTransactionFormProps): JSX.Element {
-  type TransactionFormKind = "income" | "spending" | "account" | "fund";
+  type TransactionFormKind = "spending" | "income" | "account" | "fund";
   const [transactionType, setTransactionType] =
-    useState<TransactionFormKind>("income");
+    useState<TransactionFormKind>("spending");
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
@@ -62,8 +62,8 @@ const CreateTransactionForm = function ({
           }}
           sx={{ flexWrap: "wrap" }}
         >
-          <ToggleButton value="income">Income</ToggleButton>
           <ToggleButton value="spending">Spending</ToggleButton>
+          <ToggleButton value="income">Income</ToggleButton>
           <ToggleButton value="account">Account</ToggleButton>
           <ToggleButton value="fund">Fund</ToggleButton>
         </ToggleButtonGroup>

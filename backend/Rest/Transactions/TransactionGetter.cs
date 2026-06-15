@@ -114,11 +114,11 @@ public class TransactionGetter(
                 .ToList();
         }
         var filteredResults = transactions.Select(transactionConverter.ToModel).ToList();
-        if (request.Sort is null or TransactionSortOrderModel.Date)
+        if (request.Sort == TransactionSortOrderModel.Date)
         {
             filteredResults = filteredResults.OrderBy(transaction => transaction.Date).ThenBy(transaction => transaction.Sequence).ToList();
         }
-        else if (request.Sort == TransactionSortOrderModel.DateDescending)
+        else if (request.Sort is null or TransactionSortOrderModel.DateDescending)
         {
             filteredResults = filteredResults.OrderByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
         }

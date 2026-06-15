@@ -448,7 +448,7 @@ const FundAssignmentPlanner = function ({
                     >
                       <Chip
                         variant="outlined"
-                        label={`${tone === "income" ? "Previous remaining to assign" : "Previous remaining to spend"} ${tone === "income" ? formatCurrency(projectedGoalRemainingAmount - assignment.amount) : formatCurrency(projectedGoalRemainingAmount + assignment.amount)}`}
+                        label={`${tone === "income" ? "Previous remaining to assign" : "Previous remaining to spend"} ${formatCurrency(projectedGoalRemainingAmount + assignment.amount)}`}
                       />
                       <Chip
                         color={
