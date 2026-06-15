@@ -94,14 +94,16 @@ public abstract class Transaction : Entity<TransactionId>
     /// <param name="asOfDate">If provided, only applies the portions of this Transaction that occurred on the specified date</param>
     /// <param name="accountId">If provided, only applies the portions of this Transaction that affect the specified account</param>
     /// <param name="reverse">If true, reverses the effects of this Transaction</param>
+    /// <param name="postingOnly">If true, only applies the posting portion of this Transaction</param>
     public FundBalance ApplyToFundBalance(
         FundBalance existingFundBalance,
         DateOnly? asOfDate = null,
         AccountId? accountId = null,
-        bool reverse = false)
+        bool reverse = false,
+        bool postingOnly = false)
     {
         FundBalance newBalance = existingFundBalance;
-        if (asOfDate == null || Date == asOfDate)
+        if (!postingOnly && (asOfDate == null || Date == asOfDate))
         {
             newBalance = AddToFundBalance(existingFundBalance, reverse);
         }

@@ -45,7 +45,7 @@ public class FundBalance
     /// Posts the provided pending amount assigned to the current posted Fund Balance
     /// </summary>
     internal FundBalance PostPendingAmountAssigned(decimal pendingAmountAssigned) =>
-        new(FundId, PostedBalance + pendingAmountAssigned, AmountAssigned, PendingAmountAssigned - pendingAmountAssigned, AmountSpent, PendingAmountSpent);
+        new(FundId, PostedBalance + pendingAmountAssigned, AmountAssigned + pendingAmountAssigned, PendingAmountAssigned - pendingAmountAssigned, AmountSpent, PendingAmountSpent);
 
     /// <summary>
     /// Adds the provided pending amount spent to the current pending Fund Balance
@@ -57,7 +57,7 @@ public class FundBalance
     /// Posts the provided pending amount spent to the current posted Fund Balance
     /// </summary>
     internal FundBalance PostPendingAmountSpent(decimal pendingAmountSpent) =>
-        new(FundId, PostedBalance - pendingAmountSpent, AmountAssigned, PendingAmountAssigned, AmountSpent, PendingAmountSpent - pendingAmountSpent);
+        new(FundId, PostedBalance - pendingAmountSpent, AmountAssigned, PendingAmountAssigned, AmountSpent + pendingAmountSpent, PendingAmountSpent - pendingAmountSpent);
 
     /// <summary>
     /// Constructs a new instance of this class

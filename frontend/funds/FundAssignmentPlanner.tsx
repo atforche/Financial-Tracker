@@ -369,10 +369,6 @@ const FundAssignmentPlanner = function ({
                       <Typography variant="subtitle1">
                         Assignment {index + 1}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Suggested amount:{" "}
-                        {formatCurrency(getSuggestedAmount(index))}
-                      </Typography>
                     </Box>
                     <IconButton
                       aria-label="Delete fund assignment"
@@ -452,32 +448,22 @@ const FundAssignmentPlanner = function ({
                     >
                       <Chip
                         variant="outlined"
-                        label={`${tone === "income" ? "Remaining to assign" : "Remaining to spend"} ${formatCurrency(projectedGoalRemainingAmount - assignment.amount)}`}
+                        label={`${tone === "income" ? "Previous remaining to assign" : "Previous remaining to spend"} ${tone === "income" ? formatCurrency(projectedGoalRemainingAmount - assignment.amount) : formatCurrency(projectedGoalRemainingAmount + assignment.amount)}`}
                       />
                       <Chip
                         color={
-                          projectedGoalRemainingAmount <= 0
-                            ? "success"
-                            : "default"
+                          tone === "income"
+                            ? projectedGoalRemainingAmount <= 0
+                              ? "success"
+                              : "default"
+                            : projectedGoalRemainingAmount >= 0
+                              ? "success"
+                              : "error"
                         }
                         label={`${tone === "income" ? "New remaining to assign" : "New remaining to spend"} ${formatCurrency(projectedGoalRemainingAmount)}`}
                       />
                     </Stack>
                   )}
-
-                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                    <Button
-                      variant="text"
-                      onClick={() => {
-                        updateAssignment(index, {
-                          ...assignment,
-                          amount: getSuggestedAmount(index),
-                        });
-                      }}
-                    >
-                      Use Suggested Amount
-                    </Button>
-                  </Stack>
                 </Stack>
               </Paper>
             );

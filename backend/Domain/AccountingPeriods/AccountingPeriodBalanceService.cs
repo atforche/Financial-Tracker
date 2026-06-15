@@ -223,7 +223,7 @@ public class AccountingPeriodBalanceService(
                         closingFundBalance.PendingAmountAssigned,
                         closingFundBalance.AmountSpent,
                         closingFundBalance.PendingAmountSpent)
-                    : transaction.ApplyToFundBalance(closingFundBalance, accountId: accountId);
+                    : transaction.ApplyToFundBalance(closingFundBalance, accountId: accountId, postingOnly: true);
                 fundBalanceHistory.Update(
                     openingFundBalance,
                     closingFundBalance,
@@ -284,7 +284,7 @@ public class AccountingPeriodBalanceService(
                             closingFundBalance.PendingAmountAssigned,
                             closingFundBalance.AmountSpent,
                             closingFundBalance.PendingAmountSpent)
-                        : transaction.ApplyToFundBalance(closingFundBalance, accountId: account.Id, reverse: true);
+                        : transaction.ApplyToFundBalance(closingFundBalance, accountId: account.Id, reverse: true, postingOnly: true);
                     fundBalanceHistory.Update(
                         openingFundBalance,
                         closingFundBalance,
