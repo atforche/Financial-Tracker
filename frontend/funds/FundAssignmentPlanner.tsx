@@ -96,6 +96,9 @@ const FundAssignmentPlanner = function ({
         (assignment) => assignment.fundId === fund.id,
       ),
   );
+  const alphabetizedAvailableFunds = [...availableFunds].sort((left, right) =>
+    left.name.localeCompare(right.name),
+  );
 
   const applyAssignments = function (nextAssignments: FundAmount[]): void {
     setValue(
@@ -187,7 +190,7 @@ const FundAssignmentPlanner = function ({
     return left.name.localeCompare(right.name);
   };
 
-  const getSuggestedAmount = function (index: number): number {
+  const getTransactionRemainingAmount = function (index: number): number {
     if (totalAmountToAssign === null) {
       return explicitFundAssignments[index]?.amount ?? 0;
     }
@@ -201,6 +204,42 @@ const FundAssignmentPlanner = function ({
     return Math.max(totalAmountToAssign - amountAssignedElsewhere, 0);
   };
 
+  const getSuggestedAmount = function (index: number, fundId?: string): number {
+    const transactionRemainingAmount = getTransactionRemainingAmount(index);
+
+    if (tone === "income" && typeof fundId === "string" && fundId !== "") {
+      const goalRemainingAmount =
+        getGoalRemainingBeforeCurrentAssignment(fundId);
+
+      if (goalRemainingAmount !== null) {
+        return Math.min(
+          transactionRemainingAmount,
+          Math.max(goalRemainingAmount, 0),
+        );
+      }
+    }
+
+    return transactionRemainingAmount;
+  };
+
+  const getNextAvailableFund = function (): Fund | null {
+    if (tone === "income") {
+      const fundWithRemainingGoal = alphabetizedAvailableFunds.find((fund) => {
+        const goalRemainingAmount = getGoalRemainingBeforeCurrentAssignment(
+          fund.id,
+        );
+
+        return goalRemainingAmount !== null && goalRemainingAmount > 0;
+      });
+
+      if (typeof fundWithRemainingGoal !== "undefined") {
+        return fundWithRemainingGoal;
+      }
+    }
+
+    return alphabetizedAvailableFunds[0] ?? null;
+  };
+
   const updateAssignment = function (
     index: number,
     nextAssignment: FundAmount,
@@ -211,13 +250,15 @@ const FundAssignmentPlanner = function ({
   };
 
   const addAssignment = function (): void {
-    const nextFund = availableFunds[0] ?? null;
+    const nextFund = getNextAvailableFund();
     const nextAssignments = [
       ...explicitFundAssignments,
       {
         fundId: nextFund?.id ?? "",
         fundName: nextFund?.name ?? "",
-        amount: remainingAmount ?? 0,
+        amount: nextFund
+          ? getSuggestedAmount(explicitFundAssignments.length, nextFund.id)
+          : (remainingAmount ?? 0),
       },
     ];
     applyAssignments(nextAssignments);
@@ -406,7 +447,7 @@ const FundAssignmentPlanner = function ({
                           amount:
                             assignment.amount > 0
                               ? assignment.amount
-                              : getSuggestedAmount(index),
+                              : getSuggestedAmount(index, newValue?.id),
                         });
                       }}
                       filter={(fund) =>

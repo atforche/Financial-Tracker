@@ -263,7 +263,7 @@ public abstract class TransactionService(
         {
             exceptions = exceptions.Append(new InvalidFundAmountException("Duplicate Funds are not allowed in fund assignments"));
         }
-        if (fundAssignments.Sum(fundAmount => fundAmount.Amount) > amount)
+        if (Math.Round(fundAssignments.Sum(fundAmount => fundAmount.Amount), 2) > amount)
         {
             exceptions = exceptions.Append(new InvalidFundAmountException("Sum of fund assignment amounts cannot exceed total transaction amount"));
         }
