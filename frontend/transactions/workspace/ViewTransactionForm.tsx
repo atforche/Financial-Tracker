@@ -11,8 +11,6 @@ import TransactionFundPathViewSection from "@/transactions/workspace/Transaction
 interface ViewTransactionFormProps {
   readonly transaction: Transaction;
   readonly transactionAccountingPeriod: AccountingPeriod;
-  readonly transactionDebitFund: Fund | null;
-  readonly transactionCreditFund: Fund | null;
   readonly funds: Fund[];
 }
 
@@ -22,8 +20,6 @@ interface ViewTransactionFormProps {
 const ViewTransactionForm = function ({
   transaction,
   transactionAccountingPeriod,
-  transactionDebitFund,
-  transactionCreditFund,
   funds,
 }: ViewTransactionFormProps): JSX.Element {
   return (
@@ -80,8 +76,8 @@ const ViewTransactionForm = function ({
           description="Review the source fund and destination fund for this transfer."
           leftLabel="Debit From"
           rightLabel="Credit To"
-          leftFund={transactionDebitFund}
-          rightFund={transactionCreditFund}
+          leftFund={transaction.debitFund}
+          rightFund={transaction.creditFund}
         />
       ) : null}
 

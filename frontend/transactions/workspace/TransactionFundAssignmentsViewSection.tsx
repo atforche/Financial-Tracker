@@ -1,19 +1,20 @@
 import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
-import type { Fund, FundAmount } from "@/funds/types";
 import {
   getAssignedFundAmount,
-  getExplicitFundAssignments,
   getRemainingFundAmount,
   getUnassignedFund,
 } from "@/funds/fundAssignment";
+import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
+import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
+import type { TransactionFund } from "@/transactions/types";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface TransactionFundAssignmentsViewSectionProps {
   readonly funds: Fund[];
   readonly amount: number;
-  readonly fundAssignments: FundAmount[];
+  readonly fundAssignments: TransactionFund[];
   readonly tone: "income" | "spending";
 }
 
@@ -27,9 +28,10 @@ const TransactionFundAssignmentsViewSection = function ({
   tone,
 }: TransactionFundAssignmentsViewSectionProps): JSX.Element {
   const unassignedFund = getUnassignedFund(funds);
-  const explicitFundAssignments = getExplicitFundAssignments(
-    unassignedFund,
-    fundAssignments,
+  const explicitFundAssignments = fundAssignments.filter(
+    (fundAssignment) =>
+      fundAssignment.fundId !== unassignedFund?.id &&
+      fundAssignment.fundName !== "Unassigned",
   );
   const assignedAmount = getAssignedFundAmount(unassignedFund, fundAssignments);
   const remainingAmount = getRemainingFundAmount(
@@ -102,7 +104,7 @@ const TransactionFundAssignmentsViewSection = function ({
                 variant="outlined"
                 sx={{ borderRadius: 3, p: { xs: 2, md: 2.5 } }}
               >
-                <Stack spacing={0.5}>
+                <Stack spacing={1}>
                   <Typography variant="subtitle1">
                     {assignment.fundName}
                   </Typography>
@@ -112,6 +114,14 @@ const TransactionFundAssignmentsViewSection = function ({
                   <Typography variant="h6">
                     {formatCurrency(assignment.amount)}
                   </Typography>
+                  <TransactionBalanceDetails
+                    previousPostedBalance={formatCurrency(
+                      assignment.previousFundBalance.postedBalance,
+                    )}
+                    newPostedBalance={formatCurrency(
+                      assignment.newFundBalance.postedBalance,
+                    )}
+                  />
                 </Stack>
               </Paper>
             ))}

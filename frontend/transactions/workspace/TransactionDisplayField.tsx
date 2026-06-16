@@ -1,10 +1,10 @@
+import type { JSX, ReactNode } from "react";
 import { Stack, TextField, Typography } from "@mui/material";
-import type { JSX } from "react";
 
 interface TransactionDisplayFieldProps {
   readonly label: string;
   readonly value: string;
-  readonly helperText?: string | null;
+  readonly helperText?: ReactNode;
 }
 
 /**
@@ -15,6 +15,16 @@ const TransactionDisplayField = function ({
   value,
   helperText = null,
 }: TransactionDisplayFieldProps): JSX.Element {
+  let resolvedHelperText = helperText;
+
+  if (typeof helperText === "string") {
+    resolvedHelperText = (
+      <Typography variant="caption" color="text.secondary" sx={{ px: 1.75 }}>
+        {helperText}
+      </Typography>
+    );
+  }
+
   return (
     <Stack spacing={0.75}>
       <TextField
@@ -27,11 +37,7 @@ const TransactionDisplayField = function ({
           },
         }}
       />
-      {helperText !== null ? (
-        <Typography variant="caption" color="text.secondary" sx={{ px: 1.75 }}>
-          {helperText}
-        </Typography>
-      ) : null}
+      {resolvedHelperText}
     </Stack>
   );
 };

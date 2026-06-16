@@ -205,8 +205,6 @@ const TransactionWorkspaceActions = function ({
           <ViewTransactionForm
             transaction={selectedTransaction}
             transactionAccountingPeriod={selectedTransactionAccountingPeriod}
-            transactionDebitFund={selectedTransactionDebitFund}
-            transactionCreditFund={selectedTransactionCreditFund}
             funds={funds}
           />
         ) : null}

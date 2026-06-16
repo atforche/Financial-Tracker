@@ -54,6 +54,11 @@ type TransactionDashboardPeriodSummary =
 type TransactionAccount = components["schemas"]["TransactionAccountModel"];
 
 /**
+ * Type representing a Transaction Fund.
+ */
+type TransactionFund = components["schemas"]["TransactionFundModel"];
+
+/**
  * Type representing the request to create a transaction.
  */
 type CreateTransactionRequest = components["schemas"]["CreateTransactionModel"];
@@ -259,6 +264,7 @@ export {
   type TransactionDashboardPeriodSummary,
   type TransactionDashboardTransactionTypeSummary,
   type TransactionAccount,
+  type TransactionFund,
   type CreateTransactionRequest,
   type UpdateTransactionRequest,
   type PostTransactionRequest,

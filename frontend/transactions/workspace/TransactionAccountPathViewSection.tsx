@@ -1,9 +1,10 @@
 import { Box } from "@mui/material";
 import type { JSX } from "react";
 import type { TransactionAccount } from "@/transactions/types";
+import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
-import dayjs from "dayjs";
+import formatCurrency from "@/framework/formatCurrency";
 
 interface TransactionAccountPathViewSectionProps {
   readonly title: string;
@@ -14,14 +15,8 @@ interface TransactionAccountPathViewSectionProps {
   readonly rightAccount: TransactionAccount | null;
 }
 
-const formatPostedDate = function (postedDate: string | null): string {
-  return postedDate === null
-    ? "Not posted"
-    : dayjs(postedDate).format("MMMM D, YYYY");
-};
-
 /**
- * Displays the read-only account path for a transaction, including posted dates.
+ * Displays the read-only account path for a transaction.
  */
 const TransactionAccountPathViewSection = function ({
   title,
@@ -45,18 +40,32 @@ const TransactionAccountPathViewSection = function ({
           label={leftLabel}
           value={leftAccount?.accountName ?? "None"}
           helperText={
-            leftAccount !== null
-              ? `Posted: ${formatPostedDate(leftAccount.postedDate)}`
-              : null
+            leftAccount !== null ? (
+              <TransactionBalanceDetails
+                previousPostedBalance={formatCurrency(
+                  leftAccount.previousAccountBalance.postedBalance,
+                )}
+                newPostedBalance={formatCurrency(
+                  leftAccount.newAccountBalance.postedBalance,
+                )}
+              />
+            ) : null
           }
         />
         <TransactionDisplayField
           label={rightLabel}
           value={rightAccount?.accountName ?? "None"}
           helperText={
-            rightAccount !== null
-              ? `Posted: ${formatPostedDate(rightAccount.postedDate)}`
-              : null
+            rightAccount !== null ? (
+              <TransactionBalanceDetails
+                previousPostedBalance={formatCurrency(
+                  rightAccount.previousAccountBalance.postedBalance,
+                )}
+                newPostedBalance={formatCurrency(
+                  rightAccount.newAccountBalance.postedBalance,
+                )}
+              />
+            ) : null
           }
         />
       </Box>
