@@ -2,6 +2,10 @@
 
 import { Alert, Button, DialogActions, Stack } from "@mui/material";
 import {
+  ComboBoxEntryField,
+  type ComboBoxOption,
+} from "@/framework/forms/ComboBoxEntryField";
+import {
   type JSX,
   startTransition,
   useActionState,
@@ -34,6 +38,17 @@ const CreateAccountingPeriodForm = function ({
   const [month, setMonth] = useState<number | null>(null);
   const formRef = useRef<HTMLDivElement | null>(null);
   const [state, action, pending] = useActionState(createAccountingPeriod, {});
+  const monthOptions: ComboBoxOption<number>[] = Array.from(
+    { length: 12 },
+    (_, index) => ({
+      label: new Date(2024, index, 1).toLocaleString("en", {
+        month: "long",
+      }),
+      value: index + 1,
+    }),
+  );
+  const selectedMonthOption =
+    monthOptions.find((option) => option.value === month) ?? null;
 
   const reset = function (): void {
     setYear(null);
@@ -67,10 +82,13 @@ const CreateAccountingPeriodForm = function ({
         setValue={setYear}
         errorMessage={state.yearErrors ?? null}
       />
-      <IntegerEntryField
+      <ComboBoxEntryField<number>
         label="Month"
-        value={month}
-        setValue={setMonth}
+        options={monthOptions}
+        value={selectedMonthOption}
+        setValue={(value) => {
+          setMonth(value?.value ?? null);
+        }}
         errorMessage={state.monthErrors ?? null}
       />
       <DialogActions>
