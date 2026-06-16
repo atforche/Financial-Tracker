@@ -15,7 +15,6 @@ public class AccountingPeriodBalanceService(
     IFundRepository fundRepository,
     IAssignmentGoalRepository assignmentGoalRepository,
     ISpendingGoalRepository spendingGoalRepository,
-    ITransactionRepository transactionRepository,
     AccountBalanceService accountBalanceService,
     FundBalanceService fundBalanceService)
 {
@@ -142,32 +141,6 @@ public class AccountingPeriodBalanceService(
         {
             FundBalance openingBalance = fundBalanceHistory.GetOpeningFundBalance();
             FundBalance closingBalance = transaction.ApplyToFundBalance(fundBalanceHistory.GetClosingFundBalance());
-            fundBalanceHistory.Update(
-                openingBalance,
-                closingBalance,
-                assignmentGoalRepository.GetByFundAndAccountingPeriod(fundBalanceHistory.Fund.Id, fundBalanceHistory.AccountingPeriod.Id),
-                spendingGoalRepository.GetByFundAndAccountingPeriod(fundBalanceHistory.Fund.Id, fundBalanceHistory.AccountingPeriod.Id));
-        }
-    }
-
-    /// <summary>
-    /// Updates the Accounting Period Balances for an updated Transaction
-    /// </summary>
-    internal void UpdateTransaction(Transaction updatedTransaction)
-    {
-        AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(updatedTransaction.AccountingPeriodId);
-        foreach (AccountingPeriodFundBalanceHistory fundBalanceHistory in GetAffectedFundBalanceHistories(balanceHistory, updatedTransaction, null))
-        {
-            // When we update a transaction, the existing affects of old version of the transaction have already
-            // been incorporated into the current balances. So the easiest way to update the balances is to
-            // simply recalculate the entire accounting period.
-            FundBalance openingBalance = fundBalanceHistory.GetOpeningFundBalance();
-            FundBalance closingBalance = openingBalance;
-            foreach (Transaction transaction in transactionRepository.GetAllByAccountingPeriod(fundBalanceHistory.AccountingPeriod.Id)
-                .Where(transaction => transaction.GetAllAffectedFundIds(null).Contains(fundBalanceHistory.Fund.Id)))
-            {
-                closingBalance = transaction.ApplyToFundBalance(closingBalance);
-            }
             fundBalanceHistory.Update(
                 openingBalance,
                 closingBalance,

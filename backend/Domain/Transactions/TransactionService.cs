@@ -57,9 +57,7 @@ public abstract class TransactionService(
     /// </summary>
     protected void AddTransaction(Transaction transaction)
     {
-        accountingPeriodBalanceService.AddTransaction(transaction);
-        accountBalanceService.AddTransaction(transaction);
-        fundBalanceService.AddTransaction(transaction);
+        AddTransactionToBalanceHistories(transaction);
         transactionRepository.Add(transaction);
     }
 
@@ -89,16 +87,25 @@ public abstract class TransactionService(
     /// <summary>
     /// Updates the properties of an existing Transaction based on an UpdateTransactionRequest
     /// </summary>
-    protected void UpdateTransaction(Transaction transaction, UpdateTransactionRequest request)
+    protected void UpdateTransaction(
+        Transaction transaction,
+        UpdateTransactionRequest request,
+        Action? updateAdditionalProperties = null)
     {
+        RemoveTransactionFromBalanceHistories(transaction);
+
+        DateOnly oldDate = transaction.Date;
         transaction.Date = request.TransactionDate;
+        if (oldDate != request.TransactionDate)
+        {
+            transaction.Sequence = TransactionRepository.GetNextSequenceForDate(request.TransactionDate);
+        }
         transaction.Location = request.Location;
         transaction.Description = request.Description;
         transaction.Amount = request.Amount;
+        updateAdditionalProperties?.Invoke();
 
-        accountingPeriodBalanceService.UpdateTransaction(transaction);
-        accountBalanceService.UpdateTransaction(transaction);
-        fundBalanceService.UpdateTransaction(transaction);
+        AddTransactionToBalanceHistories(transaction);
     }
 
     /// <summary>
@@ -196,10 +203,28 @@ public abstract class TransactionService(
     /// </summary>
     protected void DeleteTransaction(Transaction transaction)
     {
+        RemoveTransactionFromBalanceHistories(transaction);
+        TransactionRepository.Delete(transaction);
+    }
+
+    /// <summary>
+    /// Adds a Transaction's effects to all balance histories.
+    /// </summary>
+    private void AddTransactionToBalanceHistories(Transaction transaction)
+    {
+        accountingPeriodBalanceService.AddTransaction(transaction);
+        accountBalanceService.AddTransaction(transaction);
+        fundBalanceService.AddTransaction(transaction);
+    }
+
+    /// <summary>
+    /// Removes a Transaction's effects from all balance histories.
+    /// </summary>
+    private void RemoveTransactionFromBalanceHistories(Transaction transaction)
+    {
         accountingPeriodBalanceService.DeleteTransaction(transaction);
         accountBalanceService.DeleteTransaction(transaction);
         fundBalanceService.DeleteTransaction(transaction);
-        TransactionRepository.Delete(transaction);
     }
 
     /// <summary>

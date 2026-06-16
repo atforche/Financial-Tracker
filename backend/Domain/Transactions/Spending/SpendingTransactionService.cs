@@ -65,8 +65,10 @@ public class SpendingTransactionService(
         {
             return false;
         }
-        transaction.UpdateFundAssignments(request.FundAssignments);
-        UpdateTransaction(transaction, request);
+        UpdateTransaction(
+            transaction,
+            request,
+            () => transaction.UpdateFundAssignments(request.FundAssignments));
         return true;
     }
 

@@ -60,17 +60,6 @@ public class FundBalanceService(
     }
 
     /// <summary>
-    /// Updates the Fund Balances for an updated Transaction
-    /// </summary>
-    internal void UpdateTransaction(Transaction transaction)
-    {
-        foreach (FundId fund in transaction.GetAllAffectedFundIds(null))
-        {
-            UpdateExistingBalanceHistory(transaction, fund);
-        }
-    }
-
-    /// <summary>
     /// Updates the Account Balances for a newly posted Transaction
     /// </summary>
     internal void PostTransaction(Transaction transaction, AccountId accountId)
@@ -137,7 +126,7 @@ public class FundBalanceService(
     /// </summary>
     private void AddNewBalanceHistory(Transaction transaction, FundId fund, DateOnly date)
     {
-        int sequence = fundBalanceHistoryRepository.GetNextSequenceForFundAndDate(fund, date);
+        int sequence = GetSequenceForTransaction(fund, transaction, date);
         FundBalance existingBalance = GetExistingFundBalanceAsOf(fund, date, sequence);
         var newBalanceHistory = new FundBalanceHistory(
             fund,
@@ -216,6 +205,16 @@ public class FundBalanceService(
             existingBalance = updatedBalance;
         }
     }
+
+    /// <summary>
+    /// Gets the balance history sequence number for the provided Transaction.
+    /// </summary>
+    /// <remarks>
+    /// This keeps rebuilt balance history entries in transaction-sequence order when an updated transaction is removed and re-added on the same date.
+    /// </remarks>
+    private int GetSequenceForTransaction(FundId fundId, Transaction transaction, DateOnly date) =>
+        fundBalanceHistoryRepository.GetAllHistoriesLaterThan(fundId, date, 0)
+            .Count(history => history.Date == date && transactionRepository.GetById(history.TransactionId).Sequence < transaction.Sequence) + 1;
 
     /// <summary>
     /// Gets the existing Fund Balance for the specified Fund ID as of the provided date and sequence number

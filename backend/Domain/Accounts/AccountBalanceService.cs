@@ -7,7 +7,8 @@ namespace Domain.Accounts;
 /// </summary>
 public class AccountBalanceService(
     IAccountRepository accountRepository,
-    IAccountBalanceHistoryRepository accountBalanceHistoryRepository)
+    IAccountBalanceHistoryRepository accountBalanceHistoryRepository,
+    ITransactionRepository transactionRepository)
 {
     /// <summary>
     /// Gets the current balance for the provided Account
@@ -60,17 +61,6 @@ public class AccountBalanceService(
         foreach (AccountId accountId in newTransaction.GetAllAffectedAccountIds())
         {
             AddNewBalanceHistory(newTransaction, accountId, newTransaction.Date);
-        }
-    }
-
-    /// <summary>
-    /// Updates the Account Balances for an updated Transaction
-    /// </summary>
-    internal void UpdateTransaction(Transaction transaction)
-    {
-        foreach (AccountId accountId in transaction.GetAllAffectedAccountIds())
-        {
-            UpdateExistingBalanceHistory(transaction, accountId);
         }
     }
 
@@ -133,7 +123,7 @@ public class AccountBalanceService(
     /// </summary>
     private void AddNewBalanceHistory(Transaction transaction, AccountId accountId, DateOnly date)
     {
-        int sequence = accountBalanceHistoryRepository.GetNextSequenceForAccountAndDate(accountId, date);
+        int sequence = GetSequenceForTransaction(accountId, transaction, date);
         Account account = accountRepository.GetById(accountId);
         AccountBalance existingBalance = GetExistingAccountBalanceAsOf(account, date, sequence);
         var newBalanceHistory = new AccountBalanceHistory(
@@ -192,6 +182,16 @@ public class AccountBalanceService(
             history.Update(updatedBalance);
         }
     }
+
+    /// <summary>
+    /// Gets the balance history sequence number for the provided Transaction.
+    /// </summary>
+    /// <remarks>
+    /// This keeps rebuilt balance history entries in transaction-sequence order when an updated transaction is removed and re-added on the same date.
+    /// </remarks>
+    private int GetSequenceForTransaction(AccountId accountId, Transaction transaction, DateOnly date) =>
+        accountBalanceHistoryRepository.GetAllHistoriesLaterThan(accountId, date, 0)
+            .Count(history => history.Date == date && transactionRepository.GetById(history.TransactionId).Sequence < transaction.Sequence) + 1;
 
     /// <summary>
     /// Gets the existing Account Balance for the specified Account as of the provided date and sequence number
