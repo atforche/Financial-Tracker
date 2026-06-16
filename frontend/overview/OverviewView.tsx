@@ -11,19 +11,8 @@ import getApiClient from "@/framework/data/getApiClient";
 /**
  * Loads all data required by the overview page.
  */
-const getOverviewData = async function (
-  searchParams: Promise<{ page?: string | string[] }>,
-): Promise<OverviewData> {
+const getOverviewData = async function (): Promise<OverviewData> {
   const apiClient = getApiClient();
-  const resolvedSearchParams = await searchParams;
-  const requestedPage = Number.parseInt(
-    Array.isArray(resolvedSearchParams.page)
-      ? (resolvedSearchParams.page[0] ?? "1")
-      : (resolvedSearchParams.page ?? "1"),
-    10,
-  );
-  const currentPage =
-    Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const accountSummaryPromise = apiClient.GET("/accounts/summary");
   const fundSummaryPromise = apiClient.GET("/funds/summary");
   const openAccountingPeriodsPromise = apiClient.GET(
@@ -49,16 +38,6 @@ const getOverviewData = async function (
       },
     },
   });
-  const transactionsPromise = apiClient.GET("/transactions/unposted", {
-    params: {
-      query: {
-        Search: "",
-        Sort: null,
-        Limit: 10,
-        Offset: (currentPage - 1) * 10,
-      },
-    },
-  });
   const fundsPromise = apiClient.GET("/funds", {
     params: {
       query: {
@@ -77,7 +56,6 @@ const getOverviewData = async function (
     { data: accountingPeriods },
     { data: accounts },
     { data: funds },
-    { data: transactions },
   ] = await Promise.all([
     accountSummaryPromise,
     fundSummaryPromise,
@@ -85,7 +63,6 @@ const getOverviewData = async function (
     accountingPeriodsPromise,
     accountsPromise,
     fundsPromise,
-    transactionsPromise,
   ]);
 
   if (
@@ -94,13 +71,10 @@ const getOverviewData = async function (
     typeof openAccountingPeriods === "undefined" ||
     typeof accountingPeriods === "undefined" ||
     typeof accounts === "undefined" ||
-    typeof funds === "undefined" ||
-    typeof transactions === "undefined"
+    typeof funds === "undefined"
   ) {
     throw new Error("Failed to fetch overview data");
   }
-
-  const unpostedTransactions = transactions.items;
 
   return {
     accountSummary,
@@ -110,22 +84,14 @@ const getOverviewData = async function (
     totalAccountingPeriods: accountingPeriods.totalCount,
     totalAccounts: accounts.totalCount,
     totalFunds: funds.totalCount,
-    unpostedTransactions,
-    unpostedTransactionTotalCount: transactions.totalCount,
   };
 };
-
-interface OverviewViewProps {
-  readonly searchParams: Promise<{ page?: string | string[] }>;
-}
 
 /**
  * Component that displays the Overview view.
  */
-const OverviewView = async function ({
-  searchParams,
-}: OverviewViewProps): Promise<JSX.Element> {
-  const data = await getOverviewData(searchParams);
+const OverviewView = async function (): Promise<JSX.Element> {
+  const data = await getOverviewData();
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
@@ -170,8 +136,7 @@ const OverviewView = async function ({
       </Box>
 
       <TransactionOverview
-        transactions={data.unpostedTransactions}
-        totalCount={data.unpostedTransactionTotalCount}
+        currentAccountingPeriod={data.currentAccountingPeriod}
       />
     </Stack>
   );
