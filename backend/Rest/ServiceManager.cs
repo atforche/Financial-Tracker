@@ -36,6 +36,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<FundSummaryGetter>();
 
         _ = serviceCollection.AddScoped<AssignmentGoalGetter>();
+        _ = serviceCollection.AddScoped<CurrentGoalsGetter>();
         _ = serviceCollection.AddScoped<GoalConverter>();
         _ = serviceCollection.AddScoped<GoalTrendsGetter>();
         _ = serviceCollection.AddScoped<SpendingGoalGetter>();

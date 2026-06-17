@@ -63,6 +63,7 @@ const goalTrendsSearchParamsToSearchParams = function (
 };
 
 const routes = {
+  current: (): Route => "/goals/current",
   index: (searchParams: GoalTrendsSearchParams): Route =>
     pathWithSearchParams(
       "/goals/trends",

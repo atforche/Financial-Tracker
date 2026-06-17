@@ -18,6 +18,7 @@ public sealed class GoalController(
     AssignmentGoalGetter assignmentGoalGetter,
     AssignmentGoalRepository assignmentGoalRepository,
     AssignmentGoalService assignmentGoalService,
+    CurrentGoalsGetter currentGoalsGetter,
     SpendingGoalGetter spendingGoalGetter,
     SpendingGoalRepository spendingGoalRepository,
     SpendingGoalService spendingGoalService,
@@ -155,6 +156,13 @@ public sealed class GoalController(
 
         return Ok(goals);
     }
+
+    /// <summary>
+    /// Retrieves current snapshot data for Goals.
+    /// </summary>
+    [HttpGet("current")]
+    [ProducesResponseType(typeof(CurrentGoalsModel), StatusCodes.Status200OK)]
+    public IActionResult GetCurrent() => Ok(currentGoalsGetter.Get());
 
     /// <summary>
     /// Retrieves the Goal trends that matches the specified criteria.

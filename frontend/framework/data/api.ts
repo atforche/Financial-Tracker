@@ -873,6 +873,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/goals/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves current snapshot data for Goals. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CurrentGoalsModel"];
+                        "application/json": components["schemas"]["CurrentGoalsModel"];
+                        "text/json": components["schemas"]["CurrentGoalsModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/goals/trends": {
         parameters: {
             query?: never;
@@ -3047,6 +3085,106 @@ export interface components {
             summary: components["schemas"]["FundSummaryModel"];
             /** @description Current snapshot for each Fund. */
             funds: components["schemas"]["CurrentFundModel"][];
+        };
+        /** @description Model representing a recent balance event for a current Goal progress section. */
+        CurrentGoalBalanceEventModel: {
+            /**
+             * Format: uuid
+             * @description Transaction that produced this balance event.
+             */
+            transactionId: string;
+            /**
+             * Format: date
+             * @description Effective date of the balance event.
+             */
+            date: string;
+            /** @description Whether the transaction has been posted to the fund. */
+            isPosted: boolean;
+            /**
+             * Format: double
+             * @description Amount associated with the balance event.
+             */
+            amount: number;
+        };
+        /** @description Model representing the current goal snapshot for a single Fund. */
+        CurrentGoalModel: {
+            /**
+             * Format: uuid
+             * @description Fund identifier.
+             */
+            fundId: string;
+            /** @description Fund name. */
+            fundName: string;
+            assignmentGoal: null | components["schemas"]["CurrentGoalProgressModel"];
+            spendingGoal: null | components["schemas"]["CurrentGoalProgressModel"];
+        };
+        /** @description Model representing a current goal progress section. */
+        CurrentGoalProgressModel: {
+            /**
+             * Format: uuid
+             * @description Goal identifier.
+             */
+            goalId: string;
+            /**
+             * Format: double
+             * @description Current target amount for this goal.
+             */
+            targetAmount: number;
+            /**
+             * Format: double
+             * @description Current progress amount for this goal.
+             */
+            currentAmount: number;
+            /** @description Whether the goal is currently met. */
+            isGoalMet: boolean;
+            /**
+             * Format: date
+             * @description Effective date for the most recent balance event affecting this goal.
+             */
+            lastBalanceEventDate: null | string;
+            /** @description Most recent balance events affecting this goal. */
+            recentBalanceEvents: components["schemas"]["CurrentGoalBalanceEventModel"][];
+        };
+        /** @description Model representing the current Goals page response. */
+        CurrentGoalsModel: {
+            /**
+             * Format: uuid
+             * @description Latest Accounting Period identifier, when available.
+             */
+            accountingPeriodId: null | string;
+            /** @description Latest Accounting Period name, when available. */
+            accountingPeriodName: null | string;
+            /** @description Current aggregate goal summary for the latest Accounting Period. */
+            summary: components["schemas"]["CurrentGoalsSummaryModel"];
+            /** @description Current per-fund goal snapshot rows. */
+            goals: components["schemas"]["CurrentGoalModel"][];
+        };
+        /** @description Model representing aggregate current-goal totals for the latest Accounting Period. */
+        CurrentGoalsSummaryModel: {
+            /**
+             * Format: double
+             * @description Total amount to assign across current assignment goals.
+             */
+            totalAmountToAssign: number;
+            /**
+             * Format: double
+             * @description Total amount assigned across current assignment goals.
+             */
+            totalAmountAssigned: number;
+            /** @description Percentage of current assignment goals met. */
+            percentageOfAssignmentGoalsMet: components["schemas"]["GoalPercentageMetModel"];
+            /**
+             * Format: double
+             * @description Total amount to spend across current spending goals.
+             */
+            totalAmountToSpend: number;
+            /**
+             * Format: double
+             * @description Total amount spent across current spending goals.
+             */
+            totalAmountSpent: number;
+            /** @description Percentage of current spending goals met. */
+            percentageOfSpendingGoalsMet: components["schemas"]["GoalPercentageMetModel"];
         };
         FundAmountModel: {
             /** Format: uuid */

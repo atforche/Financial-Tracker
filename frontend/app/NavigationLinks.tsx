@@ -123,9 +123,14 @@ const links: NavigationLink[] = [
   },
   {
     name: "Goals",
-    href: goalRoutes.trends({}),
+    href: goalRoutes.current(),
     icon: <EmojiEvents />,
     childLinks: [
+      {
+        name: "Current",
+        href: goalRoutes.current(),
+        icon: <Today />,
+      },
       {
         name: "Trends",
         href: goalRoutes.trends({}),

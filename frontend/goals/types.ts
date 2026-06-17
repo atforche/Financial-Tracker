@@ -29,6 +29,15 @@ type UpdateAssignmentGoalRequest =
 type UpdateSpendingGoalRequest =
   components["schemas"]["UpdateSpendingGoalModel"];
 
+type CurrentGoals = components["schemas"]["CurrentGoalsModel"];
+
+type CurrentGoal = components["schemas"]["CurrentGoalModel"];
+
+type CurrentGoalProgress = components["schemas"]["CurrentGoalProgressModel"];
+
+type CurrentGoalBalanceEvent =
+  components["schemas"]["CurrentGoalBalanceEventModel"];
+
 type GoalTrends = components["schemas"]["GoalTrendsModel"];
 
 type GoalTrendsBalanceEvent =
@@ -81,6 +90,10 @@ export {
   AssignmentGoalTypeModel as AssignmentGoalType,
   type SpendingGoal,
   SpendingGoalSortOrderModel as SpendingGoalSortOrder,
+  type CurrentGoals,
+  type CurrentGoal,
+  type CurrentGoalBalanceEvent,
+  type CurrentGoalProgress,
   SpendingGoalTypeModel as SpendingGoalType,
   type UpdateAssignmentGoalRequest,
   type UpdateSpendingGoalRequest,
