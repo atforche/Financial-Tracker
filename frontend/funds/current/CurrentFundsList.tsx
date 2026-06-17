@@ -1,13 +1,6 @@
 "use client";
 
 import {
-  AccountTrendsBalanceEventType,
-  AccountType,
-  type CurrentAccount,
-  type CurrentAccountBalanceEvent,
-  type CurrentAccounts,
-} from "@/accounts/types";
-import {
   Box,
   Collapse,
   Divider,
@@ -16,17 +9,23 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import {
+  type CurrentFund,
+  type CurrentFundBalanceEvent,
+  type CurrentFunds,
+  FundTrendsBalanceEventType,
+} from "@/funds/types";
 import { type JSX, useState } from "react";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-import accountRoutes from "@/accounts/routes";
 import formatCurrency from "@/framework/formatCurrency";
+import fundRoutes from "@/funds/routes";
 import routes from "@/transactions/routes";
 import { useRouter } from "next/navigation";
 
-interface CurrentAccountsListProps {
-  readonly current: CurrentAccounts;
+interface CurrentFundsListProps {
+  readonly current: CurrentFunds;
 }
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -36,76 +35,61 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 const formatEventType = function (
-  balanceEvent: CurrentAccountBalanceEvent,
+  balanceEvent: CurrentFundBalanceEvent,
 ): string {
   const baseLabel =
-    balanceEvent.type === AccountTrendsBalanceEventType.Debit
-      ? "Debit"
-      : "Credit";
+    balanceEvent.type === FundTrendsBalanceEventType.Debit ? "Debit" : "Credit";
   return balanceEvent.isPosted
     ? baseLabel
     : `Pending ${baseLabel.toLowerCase()}`;
 };
 
-const getEventColor = function (
-  balanceEvent: CurrentAccountBalanceEvent,
-): string {
-  return balanceEvent.type === AccountTrendsBalanceEventType.Debit
+const getEventColor = function (balanceEvent: CurrentFundBalanceEvent): string {
+  return balanceEvent.type === FundTrendsBalanceEventType.Debit
     ? "warning.dark"
     : "info.dark";
 };
 
-const getAccountTint = function (account: CurrentAccount): string {
-  switch (account.type) {
-    case AccountType.CreditCard:
-    case AccountType.Debt:
-      return "rgba(180, 83, 9, 0.08)";
-    case AccountType.Investment:
-    case AccountType.Retirement:
-      return "rgba(21, 128, 61, 0.08)";
-    case AccountType.Escrow:
-      return "rgba(8, 145, 178, 0.08)";
-    case AccountType.Standard:
-      return "rgba(12, 74, 110, 0.06)";
-    default:
-      return "rgba(12, 74, 110, 0.06)";
-  }
+const getFundTint = function (fund: CurrentFund): string {
+  return fund.name === "Unassigned"
+    ? "rgba(14, 116, 144, 0.07)"
+    : "rgba(16, 185, 129, 0.08)";
 };
 
 /**
- * Displays a list of current accounts with expandable balance events.
+ * Displays a list of current funds with expandable recent balance events.
  */
-const CurrentAccountsList = function ({
+const CurrentFundsList = function ({
   current,
-}: CurrentAccountsListProps): JSX.Element {
+}: CurrentFundsListProps): JSX.Element {
   const router = useRouter();
-  const [expandedAccountIds, setExpandedAccountIds] = useState<string[]>([]);
+  const [expandedFundIds, setExpandedFundIds] = useState<string[]>([]);
 
-  const toggleAccount = function (accountId: string): void {
-    setExpandedAccountIds((currentAccountIds) =>
-      currentAccountIds.includes(accountId)
-        ? currentAccountIds.filter((id) => id !== accountId)
-        : [...currentAccountIds, accountId],
+  const toggleFund = function (fundId: string): void {
+    setExpandedFundIds((currentFundIds) =>
+      currentFundIds.includes(fundId)
+        ? currentFundIds.filter((id) => id !== fundId)
+        : [...currentFundIds, fundId],
     );
   };
 
-  const openAccountWorkspace = function (account: CurrentAccount): void {
-    router.push(accountRoutes.workspace({ selectedAccountId: account.id }));
+  const openFundWorkspace = function (fund: CurrentFund): void {
+    router.push(fundRoutes.workspace({ selectedFundId: fund.id }));
   };
 
   const openTransactionWorkspace = function (
-    account: CurrentAccount,
-    balanceEvent: CurrentAccountBalanceEvent,
+    fund: CurrentFund,
+    balanceEvent: CurrentFundBalanceEvent,
   ): void {
     router.push(
       routes.workspace({
-        accountIds: [account.id],
+        fundIds: [fund.id],
         selectedTransactionId: balanceEvent.transactionId,
       }),
     );
   };
 
-  if (current.accounts.length === 0) {
+  if (current.funds.length === 0) {
     return (
       <Paper
         sx={{
@@ -114,11 +98,11 @@ const CurrentAccountsList = function ({
           borderRadius: 3,
           p: { xs: 2, md: 2.5 },
           background:
-            "linear-gradient(180deg, rgba(12,74,110,0.04) 0%, rgba(255,255,255,0.98) 100%)",
+            "linear-gradient(180deg, rgba(16,185,129,0.04) 0%, rgba(255,255,255,0.98) 100%)",
         }}
       >
         <Typography color="text.secondary">
-          Current account cards will appear here once accounts have been added.
+          Current fund cards will appear here once funds have been added.
         </Typography>
       </Paper>
     );
@@ -132,19 +116,19 @@ const CurrentAccountsList = function ({
         gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
       }}
     >
-      {current.accounts.map((account) => {
-        const isExpanded = expandedAccountIds.includes(account.id);
-        const { lastBalanceEventDate } = account;
+      {current.funds.map((fund) => {
+        const isExpanded = expandedFundIds.includes(fund.id);
+        const { lastBalanceEventDate } = fund;
 
         return (
           <Paper
-            key={account.id}
+            key={fund.id}
             sx={{
               border: "1px solid",
               borderColor: "divider",
               borderRadius: 3,
               p: 2,
-              background: `linear-gradient(180deg, ${getAccountTint(account)} 0%, rgba(255,255,255,0.98) 42%)`,
+              background: `linear-gradient(180deg, ${getFundTint(fund)} 0%, rgba(255,255,255,0.98) 42%)`,
               boxShadow: "0 10px 26px rgba(15, 23, 42, 0.04)",
             }}
           >
@@ -152,7 +136,7 @@ const CurrentAccountsList = function ({
               <Stack direction="row" justifyContent="space-between" gap={2}>
                 <Stack spacing={0.75} sx={{ minWidth: 0 }}>
                   <Typography variant="h6" noWrap>
-                    {account.name}
+                    {fund.name}
                   </Typography>
                 </Stack>
                 <Stack direction="row" alignItems="flex-start" spacing={0.5}>
@@ -160,23 +144,23 @@ const CurrentAccountsList = function ({
                     size="small"
                     color="primary"
                     onClick={() => {
-                      openAccountWorkspace(account);
+                      openFundWorkspace(fund);
                     }}
-                    sx={{ backgroundColor: "rgba(12, 74, 110, 0.06)" }}
-                    aria-label={`Open ${account.name}`}
+                    sx={{ backgroundColor: "rgba(16, 185, 129, 0.08)" }}
+                    aria-label={`Open ${fund.name}`}
                   >
                     <ArrowForwardOutlined fontSize="small" color="action" />
                   </IconButton>
                   <IconButton
                     size="small"
                     onClick={() => {
-                      toggleAccount(account.id);
+                      toggleFund(fund.id);
                     }}
                     sx={{ backgroundColor: "rgba(15, 23, 42, 0.04)" }}
                     aria-label={
                       isExpanded
-                        ? `Collapse ${account.name} balance events`
-                        : `Expand ${account.name} balance events`
+                        ? `Collapse ${fund.name} balance events`
+                        : `Expand ${fund.name} balance events`
                     }
                   >
                     {isExpanded ? (
@@ -195,7 +179,7 @@ const CurrentAccountsList = function ({
                   Current Balance
                 </Typography>
                 <Typography variant="h4">
-                  {formatCurrency(account.currentBalance.postedBalance)}
+                  {formatCurrency(fund.currentBalance.postedBalance)}
                 </Typography>
               </Stack>
               <Box
@@ -217,28 +201,23 @@ const CurrentAccountsList = function ({
               <Collapse in={isExpanded} timeout="auto" unmountOnExit>
                 <Stack spacing={1.25}>
                   <Divider />
-                  {account.recentBalanceEvents.length === 0 ? (
+                  {fund.recentBalanceEvents.length === 0 ? (
                     <Typography variant="body2" color="text.secondary">
-                      No recent balance events are available for this account.
+                      No recent balance events are available for this fund.
                     </Typography>
                   ) : (
-                    <Stack spacing={1}>
-                      {account.recentBalanceEvents.map((balanceEvent) => (
+                    <Stack spacing={0.25}>
+                      {fund.recentBalanceEvents.map((balanceEvent, index) => (
                         <Box
-                          key={`${account.id}-${balanceEvent.transactionId}-${balanceEvent.type}`}
-                          sx={{
-                            borderRadius: 2,
-                            px: 1.25,
-                            py: 1,
-                            backgroundColor: "rgba(248, 250, 252, 0.92)",
-                            border: "1px solid rgba(148, 163, 184, 0.18)",
-                          }}
+                          key={`${fund.id}-${balanceEvent.transactionId}-${index}`}
                         >
+                          {index === 0 ? null : <Divider />}
                           <Stack
                             direction="row"
                             justifyContent="space-between"
                             alignItems="center"
                             gap={1.5}
+                            sx={{ py: 1 }}
                           >
                             <Stack spacing={0.25} sx={{ minWidth: 0 }}>
                               <Typography variant="body2" fontWeight={600}>
@@ -268,13 +247,10 @@ const CurrentAccountsList = function ({
                                 size="small"
                                 color="primary"
                                 onClick={() => {
-                                  openTransactionWorkspace(
-                                    account,
-                                    balanceEvent,
-                                  );
+                                  openTransactionWorkspace(fund, balanceEvent);
                                 }}
                                 sx={{
-                                  backgroundColor: "rgba(12, 74, 110, 0.06)",
+                                  backgroundColor: "rgba(16, 185, 129, 0.08)",
                                 }}
                                 aria-label={`Open transaction ${balanceEvent.transactionId}`}
                               >
@@ -299,4 +275,4 @@ const CurrentAccountsList = function ({
   );
 };
 
-export default CurrentAccountsList;
+export default CurrentFundsList;

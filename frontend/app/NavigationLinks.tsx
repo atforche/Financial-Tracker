@@ -101,9 +101,14 @@ const links: NavigationLink[] = [
   },
   {
     name: "Funds",
-    href: fundRoutes.trends({}),
+    href: fundRoutes.current(),
     icon: <Assessment />,
     childLinks: [
+      {
+        name: "Current",
+        href: fundRoutes.current(),
+        icon: <Today />,
+      },
       {
         name: "Trends",
         href: fundRoutes.trends({}),

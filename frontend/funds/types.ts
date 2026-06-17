@@ -18,6 +18,22 @@ type Fund = components["schemas"]["FundModel"];
 type FundSummary = components["schemas"]["FundSummaryModel"];
 
 /**
+ * Type representing the current Funds response.
+ */
+type CurrentFunds = components["schemas"]["CurrentFundsModel"];
+
+/**
+ * Type representing a Fund card on the current Funds page.
+ */
+type CurrentFund = components["schemas"]["CurrentFundModel"];
+
+/**
+ * Type representing a recent balance event on the current Funds page.
+ */
+type CurrentFundBalanceEvent =
+  components["schemas"]["CurrentFundBalanceEventModel"];
+
+/**
  * Type representing the Funds trends response.
  */
 type FundTrends = components["schemas"]["FundTrendsModel"];
@@ -91,6 +107,9 @@ const hasIncompleteFundAssignments = function (
 export {
   type Fund,
   type FundSummary,
+  type CurrentFunds,
+  type CurrentFund,
+  type CurrentFundBalanceEvent,
   type FundTrends,
   type FundTrendsFund,
   type FundTrendsBalanceEvent,

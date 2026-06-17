@@ -1197,6 +1197,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/funds/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves current snapshot data for Funds. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CurrentFundsModel"];
+                        "application/json": components["schemas"]["CurrentFundsModel"];
+                        "text/json": components["schemas"]["CurrentFundsModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/funds/trends": {
         parameters: {
             query?: never;
@@ -2961,6 +2999,54 @@ export interface components {
             summary: components["schemas"]["AccountSummaryModel"];
             /** @description Current snapshot for each Account. */
             accounts: components["schemas"]["CurrentAccountModel"][];
+        };
+        /** @description Model representing a recent balance event for the current Funds page. */
+        CurrentFundBalanceEventModel: {
+            /**
+             * Format: uuid
+             * @description Transaction that produced this balance event.
+             */
+            transactionId: string;
+            /**
+             * Format: date
+             * @description Effective date of the balance event.
+             */
+            date: string;
+            /** @description Type of balance event. */
+            type: components["schemas"]["FundTrendsBalanceEventTypeModel"];
+            /** @description Whether the transaction has been posted to the fund. */
+            isPosted: boolean;
+            /**
+             * Format: double
+             * @description Amount associated with the balance event.
+             */
+            amount: number;
+        };
+        /** @description Model representing a Fund on the current Funds page. */
+        CurrentFundModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Fund.
+             */
+            id: string;
+            /** @description Name for the Fund. */
+            name: string;
+            /** @description Current balance for the Fund. */
+            currentBalance: components["schemas"]["FundBalanceModel"];
+            /**
+             * Format: date
+             * @description Effective date for the most recent balance event affecting the Fund.
+             */
+            lastBalanceEventDate: null | string;
+            /** @description Most recent balance events affecting the Fund. */
+            recentBalanceEvents: components["schemas"]["CurrentFundBalanceEventModel"][];
+        };
+        /** @description Model representing the current Funds page response. */
+        CurrentFundsModel: {
+            /** @description Current aggregate summary for all Funds. */
+            summary: components["schemas"]["FundSummaryModel"];
+            /** @description Current snapshot for each Fund. */
+            funds: components["schemas"]["CurrentFundModel"][];
         };
         FundAmountModel: {
             /** Format: uuid */

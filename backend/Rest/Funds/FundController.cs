@@ -20,6 +20,7 @@ public sealed class FundController(
     UnitOfWork unitOfWork,
     AccountingPeriodConverter accountingPeriodConverter,
     FundConverter fundConverter,
+    CurrentFundsGetter currentFundsGetter,
     FundTrendsGetter fundTrendsGetter,
     FundGetter fundGetter,
     FundSummaryGetter fundSummaryGetter,
@@ -60,6 +61,13 @@ public sealed class FundController(
     [HttpGet("summary")]
     [ProducesResponseType(typeof(FundSummaryModel), StatusCodes.Status200OK)]
     public IActionResult GetSummary() => Ok(fundSummaryGetter.Get());
+
+    /// <summary>
+    /// Retrieves current snapshot data for Funds.
+    /// </summary>
+    [HttpGet("current")]
+    [ProducesResponseType(typeof(CurrentFundsModel), StatusCodes.Status200OK)]
+    public IActionResult GetCurrent() => Ok(currentFundsGetter.Get());
 
     /// <summary>
     /// Retrieves trends data for Funds across a range of Accounting Periods.
