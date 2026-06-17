@@ -145,9 +145,14 @@ const links: NavigationLink[] = [
   },
   {
     name: "Transactions",
-    href: transactionRoutes.trends({}),
+    href: transactionRoutes.current(),
     icon: <ReceiptLong />,
     childLinks: [
+      {
+        name: "Current",
+        href: transactionRoutes.current(),
+        icon: <Today />,
+      },
       {
         name: "Trends",
         href: transactionRoutes.trends({}),

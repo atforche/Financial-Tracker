@@ -2,10 +2,10 @@ import { redirect } from "next/navigation";
 import routes from "@/transactions/routes";
 
 /**
- * Redirects to the transactions trends.
+ * Redirects to the transactions current page.
  */
 const TransactionsIndexPage = function (): never {
-  redirect(routes.trends({}));
+  redirect(routes.current());
 };
 
 export const dynamic = "force-dynamic";

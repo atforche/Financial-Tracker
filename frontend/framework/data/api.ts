@@ -167,6 +167,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/transactions/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves current snapshot data for Transactions. */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Optional sort to apply to the not-fully-posted transactions. */
+                    UnpostedTransactionSort?: components["schemas"]["TransactionSortOrderModel"];
+                    /** @description Maximum number of not-fully-posted transactions to return. */
+                    UnpostedTransactionLimit?: number;
+                    /** @description Number of not-fully-posted transactions to skip. */
+                    UnpostedTransactionOffset?: number;
+                    /** @description Optional sort to apply to the fully posted transactions. */
+                    PostedTransactionSort?: components["schemas"]["TransactionSortOrderModel"];
+                    /** @description Maximum number of fully posted transactions to return. */
+                    PostedTransactionLimit?: number;
+                    /** @description Number of fully posted transactions to skip. */
+                    PostedTransactionOffset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CurrentTransactionsModel"];
+                        "application/json": components["schemas"]["CurrentTransactionsModel"];
+                        "text/json": components["schemas"]["CurrentTransactionsModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/transactions/trends": {
         parameters: {
             query?: never;
@@ -3185,6 +3236,22 @@ export interface components {
             totalAmountSpent: number;
             /** @description Percentage of current spending goals met. */
             percentageOfSpendingGoalsMet: components["schemas"]["GoalPercentageMetModel"];
+        };
+        /** @description Model representing the current Transactions page response. */
+        CurrentTransactionsModel: {
+            /**
+             * Format: uuid
+             * @description Latest Accounting Period identifier, when available.
+             */
+            accountingPeriodId: null | string;
+            /** @description Latest Accounting Period name, when available. */
+            accountingPeriodName: null | string;
+            /** @description Summary counts and amounts for each Transaction Type in the current Accounting Period. */
+            transactionTypes: components["schemas"]["TransactionTrendsTransactionTypeSummaryModel"][];
+            /** @description Transactions in the current Accounting Period that are not fully posted. */
+            unpostedTransactions: components["schemas"]["CollectionModelOfTransactionModel"];
+            /** @description Transactions in the current Accounting Period that are fully posted. */
+            postedTransactions: components["schemas"]["CollectionModelOfTransactionModel"];
         };
         FundAmountModel: {
             /** Format: uuid */

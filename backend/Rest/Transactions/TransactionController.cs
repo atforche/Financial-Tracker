@@ -21,6 +21,7 @@ public sealed class TransactionController(
     UnitOfWork unitOfWork,
     AccountConverter accountConverter,
     AccountingPeriodConverter accountingPeriodConverter,
+    CurrentTransactionsGetter currentTransactionsGetter,
     TransactionTrendsGetter transactionTrendsGetter,
     TransactionGetter transactionGetter,
     TransactionRepository transactionRepository,
@@ -115,6 +116,14 @@ public sealed class TransactionController(
             TotalCount = transactions.Count,
         });
     }
+
+    /// <summary>
+    /// Retrieves current snapshot data for Transactions.
+    /// </summary>
+    [HttpGet("current")]
+    [ProducesResponseType(typeof(CurrentTransactionsModel), StatusCodes.Status200OK)]
+    public IActionResult GetCurrent([FromQuery] CurrentTransactionsQueryParameterModel queryParameters) =>
+        Ok(currentTransactionsGetter.Get(queryParameters));
 
     /// <summary>
     /// Retrieves trends data for Transactions across a range of Accounting Periods or dates.

@@ -30,6 +30,8 @@ type Transaction = components["schemas"]["TransactionModel"];
  */
 type TransactionTrends = components["schemas"]["TransactionTrendsModel"];
 
+type CurrentTransactions = components["schemas"]["CurrentTransactionsModel"];
+
 /**
  * Type representing a Transaction trends summary by type.
  */
@@ -260,6 +262,7 @@ const getPostedTransactionAccounts = function (
 export {
   type Transaction,
   type TransactionTrends,
+  type CurrentTransactions,
   type TransactionTrendsDateSummary,
   type TransactionTrendsPeriodSummary,
   type TransactionTrendsTransactionTypeSummary,
