@@ -135,12 +135,8 @@ const CreateFundTransactionForm = function ({
           rightFund={creditFund}
           setLeftFund={setDebitFund}
           setRightFund={setCreditFund}
-          leftFilter={(fund) =>
-            fund.name !== "Unassigned" && fund.id !== creditFund?.id
-          }
-          rightFilter={(fund) =>
-            fund.name !== "Unassigned" && fund.id !== debitFund?.id
-          }
+          leftFilter={(fund) => fund.id !== creditFund?.id}
+          rightFilter={(fund) => fund.id !== debitFund?.id}
         />
         <ErrorAlert
           errorMessage={state.errorTitle ?? null}
