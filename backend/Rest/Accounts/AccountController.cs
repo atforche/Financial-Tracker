@@ -18,6 +18,7 @@ public sealed class AccountController(
     UnitOfWork unitOfWork,
     AccountingPeriodConverter accountingPeriodConverter,
     AccountService accountService,
+    CurrentAccountsGetter currentAccountsGetter,
     AccountTrendsGetter accountTrendsGetter,
     AccountGetter accountGetter,
     AccountSummaryGetter accountSummaryGetter,
@@ -58,6 +59,13 @@ public sealed class AccountController(
     [HttpGet("summary")]
     [ProducesResponseType(typeof(AccountSummaryModel), StatusCodes.Status200OK)]
     public IActionResult GetSummary() => Ok(accountSummaryGetter.Get());
+
+    /// <summary>
+    /// Retrieves current snapshot data for Accounts.
+    /// </summary>
+    [HttpGet("current")]
+    [ProducesResponseType(typeof(CurrentAccountsModel), StatusCodes.Status200OK)]
+    public IActionResult GetCurrent() => Ok(currentAccountsGetter.Get());
 
     /// <summary>
     /// Retrieves trends data for Accounts across a range of Accounting Periods.

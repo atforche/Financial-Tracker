@@ -23,6 +23,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<CurrentAccountingPeriodGetter>();
 
         _ = serviceCollection.AddScoped<AccountConverter>();
+        _ = serviceCollection.AddScoped<CurrentAccountsGetter>();
         _ = serviceCollection.AddScoped<AccountTrendsGetter>();
         _ = serviceCollection.AddScoped<AccountGetter>();
         _ = serviceCollection.AddScoped<AccountSummaryGetter>();

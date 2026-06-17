@@ -1624,6 +1624,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/accounts/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves current snapshot data for Accounts. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CurrentAccountsModel"];
+                        "application/json": components["schemas"]["CurrentAccountsModel"];
+                        "text/json": components["schemas"]["CurrentAccountsModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/accounts/trends": {
         parameters: {
             query?: never;
@@ -2858,6 +2896,28 @@ export interface components {
              */
             amount: number;
         };
+        /** @description Model representing a recent balance event for the current Accounts page. */
+        CurrentAccountBalanceEventModel: {
+            /**
+             * Format: uuid
+             * @description Transaction that produced this balance event.
+             */
+            transactionId: string;
+            /**
+             * Format: date
+             * @description Effective date of the balance event.
+             */
+            date: string;
+            /** @description Type of balance event. */
+            type: components["schemas"]["AccountTrendsBalanceEventTypeModel"];
+            /** @description Whether the transaction has been posted to the account. */
+            isPosted: boolean;
+            /**
+             * Format: double
+             * @description Amount associated with the balance event.
+             */
+            amount: number;
+        };
         /** @description Model representing the current Accounting Period response. */
         CurrentAccountingPeriodModel: {
             accountingPeriod?: null | components["schemas"]["AccountingPeriodModel"];
@@ -2873,6 +2933,34 @@ export interface components {
              * @description Total spending for the current Accounting Period.
              */
             totalSpending: number;
+        };
+        /** @description Model representing an Account on the current Accounts page. */
+        CurrentAccountModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Account.
+             */
+            id: string;
+            /** @description Name for the Account. */
+            name: string;
+            /** @description Type for the Account. */
+            type: components["schemas"]["AccountTypeModel"];
+            /** @description Current balance for the Account. */
+            currentBalance: components["schemas"]["AccountBalanceModel"];
+            /**
+             * Format: date
+             * @description Effective date for the most recent balance event affecting the Account.
+             */
+            lastBalanceEventDate: null | string;
+            /** @description Most recent balance events affecting the Account. */
+            recentBalanceEvents: components["schemas"]["CurrentAccountBalanceEventModel"][];
+        };
+        /** @description Model representing the current Accounts page response. */
+        CurrentAccountsModel: {
+            /** @description Current aggregate summary for all Accounts. */
+            summary: components["schemas"]["AccountSummaryModel"];
+            /** @description Current snapshot for each Account. */
+            accounts: components["schemas"]["CurrentAccountModel"][];
         };
         FundAmountModel: {
             /** Format: uuid */

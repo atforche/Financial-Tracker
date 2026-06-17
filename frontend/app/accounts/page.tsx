@@ -2,10 +2,10 @@ import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
 
 /**
- * Redirects to the accounts trends.
+ * Redirects to the accounts current page.
  */
 const AccountsIndexPage = function (): never {
-  redirect(routes.trends({}));
+  redirect(routes.current());
 };
 
 export const dynamic = "force-dynamic";

@@ -79,9 +79,14 @@ const links: NavigationLink[] = [
   },
   {
     name: "Accounts",
-    href: accountRoutes.trends({}),
+    href: accountRoutes.current(),
     icon: <AccountBalance />,
     childLinks: [
+      {
+        name: "Current",
+        href: accountRoutes.current(),
+        icon: <Today />,
+      },
       {
         name: "Trends",
         href: accountRoutes.trends({}),
