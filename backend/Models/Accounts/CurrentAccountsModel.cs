@@ -6,7 +6,12 @@ namespace Models.Accounts;
 public class CurrentAccountsModel
 {
     /// <summary>
-    /// Current aggregate summary for all Accounts.
+    /// Available Account Names for the current snapshot filters.
+    /// </summary>
+    public required IReadOnlyCollection<string> AvailableAccountNames { get; init; }
+
+    /// <summary>
+    /// Current aggregate summary for the matching Accounts.
     /// </summary>
     public required AccountSummaryModel Summary { get; init; }
 

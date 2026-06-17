@@ -16,6 +16,16 @@ public class CurrentTransactionsModel
     public required string? AccountingPeriodName { get; init; }
 
     /// <summary>
+    /// Available Account Names for the current snapshot filters.
+    /// </summary>
+    public required IReadOnlyCollection<string> AvailableAccountNames { get; init; }
+
+    /// <summary>
+    /// Available Fund Names for the current snapshot filters.
+    /// </summary>
+    public required IReadOnlyCollection<string> AvailableFundNames { get; init; }
+
+    /// <summary>
     /// Summary counts and amounts for each Transaction Type in the current Accounting Period.
     /// </summary>
     public required IReadOnlyCollection<TransactionTrendsTransactionTypeSummaryModel> TransactionTypes { get; init; }

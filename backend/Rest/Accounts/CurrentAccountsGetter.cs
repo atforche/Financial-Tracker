@@ -21,11 +21,38 @@ public class CurrentAccountsGetter(
     /// <summary>
     /// Retrieves the current Accounts page data.
     /// </summary>
-    public CurrentAccountsModel Get()
+    public CurrentAccountsModel Get(CurrentAccountsQueryParameterModel request)
     {
-        var accounts = accountRepository.GetAll()
-            .OrderBy(account => account.Name)
+        HashSet<AccountType>? accountTypes = null;
+        if (request.AccountType is { Count: > 0 } requestAccountTypes)
+        {
+            accountTypes = [];
+            foreach (AccountTypeModel requestAccountType in requestAccountTypes)
+            {
+                if (AccountTypeConverter.TryToDomain(requestAccountType, out AccountType? accountType))
+                {
+                    _ = accountTypes.Add(accountType.Value);
+                }
+            }
+        }
+
+        HashSet<string>? requestedAccountNames = NormalizeNames(request.AccountName);
+
+        var baseAccounts = accountRepository.GetAll()
+            .Where(account => accountTypes == null || accountTypes.Contains(account.Type))
+            .OrderBy(account => account.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(account => account.Id.Value)
+            .ToList();
+
+        var availableAccountNames = baseAccounts
+            .Select(account => account.Name)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        HashSet<string>? applicableAccountNames = GetApplicableNames(requestedAccountNames, availableAccountNames);
+        var accounts = baseAccounts
+            .Where(account => applicableAccountNames == null || applicableAccountNames.Contains(account.Name))
             .ToList();
 
         var balanceEventsByAccountId = transactionRepository.GetAll()
@@ -37,13 +64,45 @@ public class CurrentAccountsGetter(
 
         return new CurrentAccountsModel
         {
-            Summary = accountSummaryGetter.Get(),
+            AvailableAccountNames = availableAccountNames,
+            Summary = accountSummaryGetter.Get(accounts),
             Accounts = accounts
                 .Select(account => ToModel(
                     account,
                     balanceEventsByAccountId.GetValueOrDefault(account.Id.Value) ?? []))
                 .ToList(),
         };
+    }
+
+    private static HashSet<string>? NormalizeNames(IReadOnlyCollection<string>? names)
+    {
+        if (names is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        var normalizedNames = names
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Select(name => name.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return normalizedNames.Count == 0 ? null : normalizedNames;
+    }
+
+    private static HashSet<string>? GetApplicableNames(
+        IReadOnlySet<string>? requestedNames,
+        IReadOnlyCollection<string> availableNames)
+    {
+        if (requestedNames == null)
+        {
+            return null;
+        }
+
+        var applicableNames = availableNames
+            .Where(requestedNames.Contains)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return applicableNames.Count == 0 ? null : applicableNames;
     }
 
     private CurrentAccountModel ToModel(

@@ -6,7 +6,12 @@ namespace Models.Funds;
 public class CurrentFundsModel
 {
     /// <summary>
-    /// Current aggregate summary for all Funds.
+    /// Available Fund Names for the current snapshot filters.
+    /// </summary>
+    public required IReadOnlyCollection<string> AvailableFundNames { get; init; }
+
+    /// <summary>
+    /// Current aggregate summary for the matching Funds.
     /// </summary>
     public required FundSummaryModel Summary { get; init; }
 

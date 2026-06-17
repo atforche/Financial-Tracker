@@ -67,7 +67,8 @@ public sealed class FundController(
     /// </summary>
     [HttpGet("current")]
     [ProducesResponseType(typeof(CurrentFundsModel), StatusCodes.Status200OK)]
-    public IActionResult GetCurrent() => Ok(currentFundsGetter.Get());
+    public IActionResult GetCurrent([FromQuery] CurrentFundsQueryParameterModel queryParameters) =>
+        Ok(currentFundsGetter.Get(queryParameters));
 
     /// <summary>
     /// Retrieves trends data for Funds across a range of Accounting Periods.

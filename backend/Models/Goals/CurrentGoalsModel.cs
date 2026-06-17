@@ -16,6 +16,11 @@ public class CurrentGoalsModel
     public required string? AccountingPeriodName { get; init; }
 
     /// <summary>
+    /// Available Fund Names for the current snapshot filters.
+    /// </summary>
+    public required IReadOnlyCollection<string> AvailableFundNames { get; init; }
+
+    /// <summary>
     /// Current aggregate goal summary for the latest Accounting Period.
     /// </summary>
     public required CurrentGoalsSummaryModel Summary { get; init; }

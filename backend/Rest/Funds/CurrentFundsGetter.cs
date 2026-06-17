@@ -20,11 +20,24 @@ public class CurrentFundsGetter(
     /// <summary>
     /// Retrieves the current Funds page data.
     /// </summary>
-    public CurrentFundsModel Get()
+    public CurrentFundsModel Get(CurrentFundsQueryParameterModel request)
     {
-        var funds = fundRepository.GetAll()
-            .OrderBy(fund => fund.Name)
+        HashSet<string>? requestedFundNames = NormalizeNames(request.FundName);
+
+        var baseFunds = fundRepository.GetAll()
+            .OrderBy(fund => fund.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(fund => fund.Id.Value)
+            .ToList();
+
+        var availableFundNames = baseFunds
+            .Select(fund => fund.Name)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        HashSet<string>? applicableFundNames = GetApplicableNames(requestedFundNames, availableFundNames);
+        var funds = baseFunds
+            .Where(fund => applicableFundNames == null || applicableFundNames.Contains(fund.Name))
             .ToList();
 
         var balanceEventsByFundId = transactionRepository.GetAll()
@@ -36,13 +49,45 @@ public class CurrentFundsGetter(
 
         return new CurrentFundsModel
         {
-            Summary = fundSummaryGetter.Get(),
+            AvailableFundNames = availableFundNames,
+            Summary = fundSummaryGetter.Get(funds),
             Funds = funds
                 .Select(fund => ToModel(
                     fund,
                     balanceEventsByFundId.GetValueOrDefault(fund.Id.Value) ?? []))
                 .ToList(),
         };
+    }
+
+    private static HashSet<string>? NormalizeNames(IReadOnlyCollection<string>? names)
+    {
+        if (names is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        var normalizedNames = names
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Select(name => name.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return normalizedNames.Count == 0 ? null : normalizedNames;
+    }
+
+    private static HashSet<string>? GetApplicableNames(
+        IReadOnlySet<string>? requestedNames,
+        IReadOnlyCollection<string> availableNames)
+    {
+        if (requestedNames == null)
+        {
+            return null;
+        }
+
+        var applicableNames = availableNames
+            .Where(requestedNames.Contains)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return applicableNames.Count == 0 ? null : applicableNames;
     }
 
     private CurrentFundModel ToModel(

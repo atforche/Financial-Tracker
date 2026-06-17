@@ -21,7 +21,7 @@ public class CurrentGoalsGetter(
     /// <summary>
     /// Retrieves the current Goals page data.
     /// </summary>
-    public CurrentGoalsModel Get()
+    public CurrentGoalsModel Get(CurrentGoalsQueryParameterModel request)
     {
         AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetLatestAccountingPeriod();
         if (accountingPeriod is null)
@@ -29,10 +29,41 @@ public class CurrentGoalsGetter(
             return CreateEmptyResult();
         }
 
+        HashSet<string>? requestedFundNames = NormalizeNames(request.FundName);
+
         var assignmentGoals = assignmentGoalRepository.GetAllByAccountingPeriod(accountingPeriod.Id)
-            .ToDictionary(goal => goal.Fund.Id.Value);
+            .ToList();
         var spendingGoals = spendingGoalRepository.GetAllByAccountingPeriod(accountingPeriod.Id)
+            .ToList();
+
+        var availableFundNames = assignmentGoals
+            .Select(goal => goal.Fund.Name)
+            .Concat(spendingGoals.Select(goal => goal.Fund.Name))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        HashSet<string>? applicableFundNames = GetApplicableNames(requestedFundNames, availableFundNames);
+
+        var assignmentGoalsByFundId = assignmentGoals
             .ToDictionary(goal => goal.Fund.Id.Value);
+        var spendingGoalsByFundId = spendingGoals
+            .ToDictionary(goal => goal.Fund.Id.Value);
+
+        var includedFundIds = assignmentGoals
+            .Where(goal => applicableFundNames == null || applicableFundNames.Contains(goal.Fund.Name))
+            .Select(goal => goal.Fund.Id.Value)
+            .Concat(
+                spendingGoals
+                    .Where(goal => applicableFundNames == null || applicableFundNames.Contains(goal.Fund.Name))
+                    .Select(goal => goal.Fund.Id.Value))
+            .Distinct()
+            .OrderBy(
+                fundId => assignmentGoalsByFundId.TryGetValue(fundId, out AssignmentGoal? assignmentGoal)
+                    ? assignmentGoal.Fund.Name
+                    : spendingGoalsByFundId[fundId].Fund.Name,
+                StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
         IReadOnlyCollection<Transaction> transactions = transactionRepository.GetAllByAccountingPeriod(accountingPeriod.Id);
         var assignmentEventsByFundId = transactions
@@ -44,58 +75,53 @@ public class CurrentGoalsGetter(
             .GroupBy(balanceEvent => balanceEvent.FundId)
             .ToDictionary(grouping => grouping.Key, grouping => SortBalanceEvents(grouping.ToList()));
 
-        var fundIds = assignmentGoals.Keys
-            .Concat(spendingGoals.Keys)
-            .Distinct()
-            .OrderBy(
-                fundId => assignmentGoals.TryGetValue(fundId, out AssignmentGoal? assignmentGoal)
-                    ? assignmentGoal.Fund.Name
-                    : spendingGoals[fundId].Fund.Name,
-                StringComparer.OrdinalIgnoreCase)
+        var includedAssignmentGoals = includedFundIds
+            .Select(fundId => assignmentGoalsByFundId.GetValueOrDefault(fundId))
+            .Where(goal => goal is not null)
+            .Cast<AssignmentGoal>()
+            .ToList();
+        var includedSpendingGoals = includedFundIds
+            .Select(fundId => spendingGoalsByFundId.GetValueOrDefault(fundId))
+            .Where(goal => goal is not null)
+            .Cast<SpendingGoal>()
             .ToList();
 
-        var assignmentGoalList = assignmentGoals.Values
-            .OrderBy(goal => goal.Fund.Name, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-        var spendingGoalList = spendingGoals.Values
-            .OrderBy(goal => goal.Fund.Name, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-
-        int metAssignmentGoals = assignmentGoalList.Count(goal => goal.IsGoalMet);
-        int metSpendingGoals = spendingGoalList.Count(goal => goal.IsGoalMet);
+        int metAssignmentGoals = includedAssignmentGoals.Count(goal => goal.IsGoalMet);
+        int metSpendingGoals = includedSpendingGoals.Count(goal => goal.IsGoalMet);
 
         return new CurrentGoalsModel
         {
             AccountingPeriodId = accountingPeriod.Id.Value,
             AccountingPeriodName = accountingPeriod.Name,
+            AvailableFundNames = availableFundNames,
             Summary = new CurrentGoalsSummaryModel
             {
-                TotalAmountToAssign = assignmentGoalList.Sum(goal => goal.TotalAmountToAssign),
-                TotalAmountAssigned = assignmentGoalList.Sum(goal => goal.TotalAmountAssigned),
+                TotalAmountToAssign = includedAssignmentGoals.Sum(goal => goal.TotalAmountToAssign),
+                TotalAmountAssigned = includedAssignmentGoals.Sum(goal => goal.TotalAmountAssigned),
                 PercentageOfAssignmentGoalsMet = new GoalPercentageMetModel
                 {
-                    TotalCount = assignmentGoalList.Count,
+                    TotalCount = includedAssignmentGoals.Count,
                     MetCount = metAssignmentGoals,
-                    PercentageMet = assignmentGoalList.Count == 0
+                    PercentageMet = includedAssignmentGoals.Count == 0
                         ? 0
-                        : metAssignmentGoals * 100m / assignmentGoalList.Count,
+                        : metAssignmentGoals * 100m / includedAssignmentGoals.Count,
                 },
-                TotalAmountToSpend = spendingGoalList.Sum(goal => goal.TotalAmountToSpend),
-                TotalAmountSpent = spendingGoalList.Sum(goal => goal.TotalAmountSpent),
+                TotalAmountToSpend = includedSpendingGoals.Sum(goal => goal.TotalAmountToSpend),
+                TotalAmountSpent = includedSpendingGoals.Sum(goal => goal.TotalAmountSpent),
                 PercentageOfSpendingGoalsMet = new GoalPercentageMetModel
                 {
-                    TotalCount = spendingGoalList.Count,
+                    TotalCount = includedSpendingGoals.Count,
                     MetCount = metSpendingGoals,
-                    PercentageMet = spendingGoalList.Count == 0
+                    PercentageMet = includedSpendingGoals.Count == 0
                         ? 0
-                        : metSpendingGoals * 100m / spendingGoalList.Count,
+                        : metSpendingGoals * 100m / includedSpendingGoals.Count,
                 },
             },
-            Goals = fundIds
+            Goals = includedFundIds
                 .Select(fundId =>
                 {
-                    AssignmentGoal? assignmentGoal = assignmentGoals.GetValueOrDefault(fundId);
-                    SpendingGoal? spendingGoal = spendingGoals.GetValueOrDefault(fundId);
+                    AssignmentGoal? assignmentGoal = assignmentGoalsByFundId.GetValueOrDefault(fundId);
+                    SpendingGoal? spendingGoal = spendingGoalsByFundId.GetValueOrDefault(fundId);
                     string fundName = assignmentGoal?.Fund.Name ?? spendingGoal?.Fund.Name ?? string.Empty;
 
                     return new CurrentGoalModel
@@ -124,10 +150,42 @@ public class CurrentGoalsGetter(
         };
     }
 
+    private static HashSet<string>? NormalizeNames(IReadOnlyCollection<string>? names)
+    {
+        if (names is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        var normalizedNames = names
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Select(name => name.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return normalizedNames.Count == 0 ? null : normalizedNames;
+    }
+
+    private static HashSet<string>? GetApplicableNames(
+        IReadOnlySet<string>? requestedNames,
+        IReadOnlyCollection<string> availableNames)
+    {
+        if (requestedNames == null)
+        {
+            return null;
+        }
+
+        var applicableNames = availableNames
+            .Where(requestedNames.Contains)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return applicableNames.Count == 0 ? null : applicableNames;
+    }
+
     private static CurrentGoalsModel CreateEmptyResult() => new()
     {
         AccountingPeriodId = null,
         AccountingPeriodName = null,
+        AvailableFundNames = [],
         Summary = new CurrentGoalsSummaryModel
         {
             TotalAmountToAssign = 0,

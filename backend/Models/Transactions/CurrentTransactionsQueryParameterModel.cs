@@ -6,6 +6,21 @@ namespace Models.Transactions;
 public class CurrentTransactionsQueryParameterModel
 {
     /// <summary>
+    /// Optional Transaction Type filters to apply to the current snapshot.
+    /// </summary>
+    public IReadOnlyCollection<TransactionTypeModel>? TransactionType { get; init; }
+
+    /// <summary>
+    /// Optional Account Name filters to apply to the current snapshot.
+    /// </summary>
+    public IReadOnlyCollection<string>? AccountName { get; init; }
+
+    /// <summary>
+    /// Optional Fund Name filters to apply to the current snapshot.
+    /// </summary>
+    public IReadOnlyCollection<string>? FundName { get; init; }
+
+    /// <summary>
     /// Optional sort to apply to the not-fully-posted transactions.
     /// </summary>
     public TransactionSortOrderModel? UnpostedTransactionSort { get; init; }

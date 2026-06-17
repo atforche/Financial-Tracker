@@ -24,10 +24,30 @@ public class CurrentTransactionsGetter(
             return CreateEmptyResult();
         }
 
-        var transactions = transactionRepository
+        HashSet<TransactionType>? transactionTypes = null;
+        if (request.TransactionType is { Count: > 0 } requestTransactionTypes)
+        {
+            transactionTypes = requestTransactionTypes
+                .Select(TransactionTypeConverter.ToDomain)
+                .ToHashSet();
+        }
+
+        HashSet<string>? requestedAccountNames = NormalizeNames(request.AccountName);
+        HashSet<string>? requestedFundNames = NormalizeNames(request.FundName);
+
+        var baseTransactions = transactionRepository
             .GetAllByAccountingPeriod(accountingPeriod.Id)
+            .Where(transaction => transactionTypes == null || transactionTypes.Contains(transaction.Type))
             .Select(transactionConverter.ToModel)
             .ToList();
+
+        List<string> availableAccountNames = GetAvailableAccountNames(baseTransactions);
+        List<string> availableFundNames = GetAvailableFundNames(baseTransactions);
+
+        List<TransactionModel> transactions = ApplyFilters(
+            baseTransactions,
+            GetApplicableNames(requestedAccountNames, availableAccountNames),
+            GetApplicableNames(requestedFundNames, availableFundNames));
 
         List<TransactionModel> unpostedTransactions = SortTransactions(
             transactions.Where(transaction => !IsFullyPosted(transaction)).ToList(),
@@ -40,6 +60,8 @@ public class CurrentTransactionsGetter(
         {
             AccountingPeriodId = accountingPeriod.Id.Value,
             AccountingPeriodName = accountingPeriod.Name,
+            AvailableAccountNames = availableAccountNames,
+            AvailableFundNames = availableFundNames,
             TransactionTypes = BuildTransactionTypeSummaries(transactions),
             UnpostedTransactions = new CollectionModel<TransactionModel>
             {
@@ -64,6 +86,8 @@ public class CurrentTransactionsGetter(
     {
         AccountingPeriodId = null,
         AccountingPeriodName = null,
+        AvailableAccountNames = [],
+        AvailableFundNames = [],
         TransactionTypes = [],
         UnpostedTransactions = new CollectionModel<TransactionModel>
         {
@@ -76,6 +100,133 @@ public class CurrentTransactionsGetter(
             TotalCount = 0,
         },
     };
+
+    private static HashSet<string>? NormalizeNames(IReadOnlyCollection<string>? names)
+    {
+        if (names is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        var normalizedNames = names
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Select(name => name.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return normalizedNames.Count == 0 ? null : normalizedNames;
+    }
+
+    private static HashSet<string>? GetApplicableNames(
+        IReadOnlySet<string>? requestedNames,
+        IReadOnlyCollection<string> availableNames)
+    {
+        if (requestedNames == null)
+        {
+            return null;
+        }
+
+        var applicableNames = availableNames
+            .Where(requestedNames.Contains)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return applicableNames.Count == 0 ? null : applicableNames;
+    }
+
+    private static List<string> GetAvailableAccountNames(IReadOnlyCollection<TransactionModel> transactions) => transactions
+        .SelectMany(GetAccountNamesForTransaction)
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .Order(StringComparer.OrdinalIgnoreCase)
+        .ToList();
+
+    private static List<string> GetAvailableFundNames(IReadOnlyCollection<TransactionModel> transactions) => transactions
+        .SelectMany(GetFundNamesForTransaction)
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .Order(StringComparer.OrdinalIgnoreCase)
+        .ToList();
+
+    private static List<TransactionModel> ApplyFilters(
+        IReadOnlyCollection<TransactionModel> transactions,
+        HashSet<string>? accountNames,
+        HashSet<string>? fundNames)
+    {
+        IEnumerable<TransactionModel> filteredTransactions = transactions;
+
+        if (accountNames != null)
+        {
+            filteredTransactions = filteredTransactions.Where(transaction => GetAccountNamesForTransaction(transaction).Any(accountNames.Contains));
+        }
+
+        if (fundNames != null)
+        {
+            filteredTransactions = filteredTransactions.Where(transaction => GetFundNamesForTransaction(transaction).Any(fundNames.Contains));
+        }
+
+        return filteredTransactions.ToList();
+    }
+
+    private static List<string> GetAccountNamesForTransaction(TransactionModel transaction)
+    {
+        List<string> accountNames = [];
+        switch (transaction)
+        {
+            case SpendingTransactionModel spendingTransaction:
+                accountNames.Add(spendingTransaction.DebitAccount.AccountName);
+                if (spendingTransaction.CreditAccount is not null)
+                {
+                    accountNames.Add(spendingTransaction.CreditAccount.AccountName);
+                }
+                break;
+            case IncomeTransactionModel incomeTransaction:
+                accountNames.Add(incomeTransaction.CreditAccount.AccountName);
+                if (incomeTransaction.DebitAccount is not null)
+                {
+                    accountNames.Add(incomeTransaction.DebitAccount.AccountName);
+                }
+                break;
+            case AccountTransactionModel accountTransaction:
+                if (accountTransaction.DebitAccount is not null)
+                {
+                    accountNames.Add(accountTransaction.DebitAccount.AccountName);
+                }
+                if (accountTransaction.CreditAccount is not null)
+                {
+                    accountNames.Add(accountTransaction.CreditAccount.AccountName);
+                }
+                break;
+            default:
+                break;
+        }
+
+        return accountNames;
+    }
+
+    private static List<string> GetFundNamesForTransaction(TransactionModel transaction)
+    {
+        List<string> fundNames = [];
+        switch (transaction)
+        {
+            case SpendingTransactionModel spendingTransaction:
+                fundNames.AddRange(spendingTransaction.FundAssignments.Select(fundAmount => fundAmount.FundName));
+                break;
+            case IncomeTransactionModel incomeTransaction:
+                fundNames.AddRange(incomeTransaction.FundAssignments.Select(fundAmount => fundAmount.FundName));
+                break;
+            case FundTransactionModel fundTransaction:
+                if (fundTransaction.DebitFund is not null)
+                {
+                    fundNames.Add(fundTransaction.DebitFund.FundName);
+                }
+                if (fundTransaction.CreditFund is not null)
+                {
+                    fundNames.Add(fundTransaction.CreditFund.FundName);
+                }
+                break;
+            default:
+                break;
+        }
+
+        return fundNames;
+    }
 
     private static List<TransactionTrendsTransactionTypeSummaryModel> BuildTransactionTypeSummaries(
         IReadOnlyCollection<TransactionModel> transactions) => transactions

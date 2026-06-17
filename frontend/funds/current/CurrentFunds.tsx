@@ -1,12 +1,26 @@
-import { Box, Stack, Typography } from "@mui/material";
+import {
+  normalizeRequestedFundNames,
+  shouldPersistFundNames,
+} from "@/funds/trends/fundNameFilter";
+import CurrentFundsFilter from "@/funds/current/CurrentFundsFilter";
 import CurrentFundsList from "@/funds/current/CurrentFundsList";
 import type { CurrentFunds as CurrentFundsModel } from "@/funds/types";
 import CurrentFundsSummaryCard from "@/funds/current/CurrentFundsSummaryCard";
 import type { JSX } from "react";
+import { Stack } from "@mui/material";
 import getApiClient from "@/framework/data/getApiClient";
+
+interface CurrentFundsSearchParams {
+  fundName?: string | readonly string[];
+}
+
+interface CurrentFundsProps {
+  readonly searchParams: Promise<CurrentFundsSearchParams>;
+}
 
 const createEmptyCurrent = function (): CurrentFundsModel {
   return {
+    availableFundNames: [],
     summary: {
       totalTrackedBalance: 0,
       totalAssignedBalance: 0,
@@ -19,49 +33,42 @@ const createEmptyCurrent = function (): CurrentFundsModel {
 /**
  * Component that displays the current Funds snapshot.
  */
-const CurrentFunds = async function (): Promise<JSX.Element> {
+const CurrentFunds = async function ({
+  searchParams,
+}: CurrentFundsProps): Promise<JSX.Element> {
+  const { fundName } = await searchParams;
+  const currentFundNames = normalizeRequestedFundNames(
+    Array.isArray(fundName)
+      ? fundName
+      : typeof fundName === "string"
+        ? [fundName]
+        : [],
+  );
+
   const apiClient = getApiClient();
   const current: CurrentFundsModel =
-    (await apiClient.GET("/funds/current")).data ?? createEmptyCurrent();
+    (
+      await apiClient.GET("/funds/current", {
+        params: {
+          query: {
+            ...(shouldPersistFundNames(currentFundNames)
+              ? { FundName: [...currentFundNames] }
+              : {}),
+          },
+        },
+      })
+    ).data ?? createEmptyCurrent();
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
-      <Box
-        sx={{
-          maxWidth: 1440,
-          width: "100%",
-          border: "1px solid",
-          borderColor: "divider",
-          borderRadius: 3,
-          px: { xs: 2, md: 3 },
-          py: { xs: 2.5, md: 3 },
-          background:
-            "linear-gradient(135deg, rgba(15,23,42,0.05) 0%, rgba(255,255,255,0.96) 42%, rgba(16,185,129,0.08) 100%)",
-        }}
-      >
-        <Stack spacing={1}>
-          <Typography
-            variant="overline"
-            sx={{
-              color: "text.secondary",
-              letterSpacing: 1.4,
-              fontWeight: 700,
-            }}
-          >
-            Funds
-          </Typography>
-          <Typography variant="h5">Current Funds</Typography>
-          <Typography color="text.secondary">
-            {current.funds.length === 0
-              ? "No funds are available yet."
-              : "Snapshot of current fund balances and recent balance activity."}
-          </Typography>
-        </Stack>
-      </Box>
+      <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
+        <CurrentFundsFilter availableFundNames={current.availableFundNames} />
+      </Stack>
       <CurrentFundsSummaryCard current={current} />
       <CurrentFundsList current={current} />
     </Stack>
   );
 };
 
+export type { CurrentFundsSearchParams };
 export default CurrentFunds;

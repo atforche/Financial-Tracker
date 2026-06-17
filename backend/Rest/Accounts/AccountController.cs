@@ -65,7 +65,8 @@ public sealed class AccountController(
     /// </summary>
     [HttpGet("current")]
     [ProducesResponseType(typeof(CurrentAccountsModel), StatusCodes.Status200OK)]
-    public IActionResult GetCurrent() => Ok(currentAccountsGetter.Get());
+    public IActionResult GetCurrent([FromQuery] CurrentAccountsQueryParameterModel queryParameters) =>
+        Ok(currentAccountsGetter.Get(queryParameters));
 
     /// <summary>
     /// Retrieves trends data for Accounts across a range of Accounting Periods.

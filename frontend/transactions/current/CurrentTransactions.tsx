@@ -1,11 +1,25 @@
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import type {
   CurrentTransactions as CurrentTransactionsModel,
   TransactionSortOrder,
+  TransactionType,
 } from "@/transactions/types";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  normalizeRequestedAccountNames,
+  shouldPersistAccountNames,
+} from "@/accounts/trends/accountNameFilter";
+import {
+  normalizeRequestedFundNames,
+  shouldPersistFundNames,
+} from "@/funds/trends/fundNameFilter";
+import {
+  normalizeTransactionTypes,
+  shouldPersistTransactionTypes,
+} from "@/transactions/trends/transactionTypeFilter";
 import CurrentTransactionListFrame from "@/transactions/current/CurrentTransactionListFrame";
 import CurrentTransactionsByTypeCard from "@/transactions/current/CurrentTransactionsByTypeCard";
+import CurrentTransactionsFilter from "@/transactions/current/CurrentTransactionsFilter";
 import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
 import routes from "@/transactions/routes";
@@ -15,6 +29,9 @@ import { rowsPerPage } from "@/framework/listframe/Constants";
  * Search parameters for the CurrentTransactions component.
  */
 interface CurrentTransactionsSearchParams {
+  transactionType?: TransactionType | readonly TransactionType[];
+  accountName?: string | readonly string[];
+  fundName?: string | readonly string[];
   unpostedTransactionSort?: TransactionSortOrder;
   unpostedTransactionPage?: number | string | null;
   postedTransactionSort?: TransactionSortOrder;
@@ -32,6 +49,8 @@ const createEmptyCurrent = function (): CurrentTransactionsModel {
   return {
     accountingPeriodId: null,
     accountingPeriodName: null,
+    availableAccountNames: [],
+    availableFundNames: [],
     transactionTypes: [],
     unpostedTransactions: {
       items: [],
@@ -51,11 +70,36 @@ const CurrentTransactions = async function ({
   searchParams,
 }: CurrentTransactionsProps): Promise<JSX.Element> {
   const {
+    transactionType,
+    accountName,
+    fundName,
     unpostedTransactionSort,
     unpostedTransactionPage,
     postedTransactionSort,
     postedTransactionPage,
   } = await searchParams;
+
+  const currentTransactionTypes = normalizeTransactionTypes(
+    Array.isArray(transactionType)
+      ? transactionType
+      : typeof transactionType === "string"
+        ? [transactionType]
+        : [],
+  );
+  const currentAccountNames = normalizeRequestedAccountNames(
+    Array.isArray(accountName)
+      ? accountName
+      : typeof accountName === "string"
+        ? [accountName]
+        : [],
+  );
+  const currentFundNames = normalizeRequestedFundNames(
+    Array.isArray(fundName)
+      ? fundName
+      : typeof fundName === "string"
+        ? [fundName]
+        : [],
+  );
 
   const apiClient = getApiClient();
   const current: CurrentTransactionsModel =
@@ -63,6 +107,15 @@ const CurrentTransactions = async function ({
       await apiClient.GET("/transactions/current", {
         params: {
           query: {
+            ...(shouldPersistTransactionTypes(currentTransactionTypes)
+              ? { TransactionType: [...currentTransactionTypes] }
+              : {}),
+            ...(shouldPersistAccountNames(currentAccountNames)
+              ? { AccountName: [...currentAccountNames] }
+              : {}),
+            ...(shouldPersistFundNames(currentFundNames)
+              ? { FundName: [...currentFundNames] }
+              : {}),
             ...(typeof unpostedTransactionSort === "string"
               ? { UnpostedTransactionSort: unpostedTransactionSort }
               : {}),
@@ -84,38 +137,12 @@ const CurrentTransactions = async function ({
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
-      <Box
-        sx={{
-          maxWidth: 1440,
-          width: "100%",
-          border: "1px solid",
-          borderColor: "divider",
-          borderRadius: 3,
-          px: { xs: 2, md: 3 },
-          py: { xs: 2.5, md: 3 },
-          background:
-            "linear-gradient(135deg, rgba(2,132,199,0.10) 0%, rgba(255,255,255,0.97) 46%, rgba(249,115,22,0.08) 100%)",
-        }}
-      >
-        <Stack spacing={1}>
-          <Typography
-            variant="overline"
-            sx={{
-              color: "text.secondary",
-              letterSpacing: 1.4,
-              fontWeight: 700,
-            }}
-          >
-            Transactions
-          </Typography>
-          <Typography variant="h5">Current Transactions</Typography>
-          <Typography color="text.secondary">
-            {current.accountingPeriodName === null
-              ? "No current accounting period is available to show transaction activity yet."
-              : `Snapshot of transaction activity for ${current.accountingPeriodName}.`}
-          </Typography>
-        </Stack>
-      </Box>
+      <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
+        <CurrentTransactionsFilter
+          availableAccountNames={current.availableAccountNames}
+          availableFundNames={current.availableFundNames}
+        />
+      </Stack>
       <CurrentTransactionsByTypeCard current={current} />
       <CurrentTransactionListFrame
         title="Needs Posting"

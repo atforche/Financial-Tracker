@@ -162,7 +162,8 @@ public sealed class GoalController(
     /// </summary>
     [HttpGet("current")]
     [ProducesResponseType(typeof(CurrentGoalsModel), StatusCodes.Status200OK)]
-    public IActionResult GetCurrent() => Ok(currentGoalsGetter.Get());
+    public IActionResult GetCurrent([FromQuery] CurrentGoalsQueryParameterModel queryParameters) =>
+        Ok(currentGoalsGetter.Get(queryParameters));
 
     /// <summary>
     /// Retrieves the Goal trends that matches the specified criteria.

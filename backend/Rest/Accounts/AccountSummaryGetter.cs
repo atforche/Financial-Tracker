@@ -11,14 +11,19 @@ public class AccountSummaryGetter(IAccountRepository accountRepository, AccountC
     /// <summary>
     /// Gets summary balances for all Accounts.
     /// </summary>
-    public AccountSummaryModel Get()
+    public AccountSummaryModel Get() => Get(accountRepository.GetAll().ToList());
+
+    /// <summary>
+    /// Gets summary balances for the provided Accounts.
+    /// </summary>
+    public AccountSummaryModel Get(IReadOnlyCollection<Account> accounts)
     {
         decimal totalBalance = 0;
         decimal totalTrackedBalance = 0;
         decimal totalUntrackedBalance = 0;
         Dictionary<AccountType, decimal> balancesByAccountType = [];
 
-        foreach (Account account in accountRepository.GetAll())
+        foreach (Account account in accounts)
         {
             AccountModel accountModel = accountConverter.ToModel(account);
             decimal postedBalance = account.Type.IsDebt() ? -accountModel.CurrentBalance.PostedBalance : accountModel.CurrentBalance.PostedBalance;
@@ -33,6 +38,7 @@ public class AccountSummaryGetter(IAccountRepository accountRepository, AccountC
             }
             balancesByAccountType[account.Type] = balancesByAccountType.GetValueOrDefault(account.Type) + postedBalance;
         }
+
         return new AccountSummaryModel
         {
             TotalBalance = totalBalance,

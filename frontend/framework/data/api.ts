@@ -178,6 +178,12 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    /** @description Optional Transaction Type filters to apply to the current snapshot. */
+                    TransactionType?: components["schemas"]["TransactionTypeModel"][];
+                    /** @description Optional Account Name filters to apply to the current snapshot. */
+                    AccountName?: string[];
+                    /** @description Optional Fund Name filters to apply to the current snapshot. */
+                    FundName?: string[];
                     /** @description Optional sort to apply to the not-fully-posted transactions. */
                     UnpostedTransactionSort?: components["schemas"]["TransactionSortOrderModel"];
                     /** @description Maximum number of not-fully-posted transactions to return. */
@@ -934,7 +940,10 @@ export interface paths {
         /** Retrieves current snapshot data for Goals. */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Optional Fund Name filters to apply to the current snapshot. */
+                    FundName?: string[];
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -1296,7 +1305,10 @@ export interface paths {
         /** Retrieves current snapshot data for Funds. */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Optional Fund Name filters to apply to the current snapshot. */
+                    FundName?: string[];
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -1761,7 +1773,12 @@ export interface paths {
         /** Retrieves current snapshot data for Accounts. */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Optional Account Type filters to apply to the current snapshot. */
+                    AccountType?: components["schemas"]["AccountTypeModel"][];
+                    /** @description Optional Account Name filters to apply to the current snapshot. */
+                    AccountName?: string[];
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -3084,7 +3101,9 @@ export interface components {
         };
         /** @description Model representing the current Accounts page response. */
         CurrentAccountsModel: {
-            /** @description Current aggregate summary for all Accounts. */
+            /** @description Available Account Names for the current snapshot filters. */
+            availableAccountNames: string[];
+            /** @description Current aggregate summary for the matching Accounts. */
             summary: components["schemas"]["AccountSummaryModel"];
             /** @description Current snapshot for each Account. */
             accounts: components["schemas"]["CurrentAccountModel"][];
@@ -3132,7 +3151,9 @@ export interface components {
         };
         /** @description Model representing the current Funds page response. */
         CurrentFundsModel: {
-            /** @description Current aggregate summary for all Funds. */
+            /** @description Available Fund Names for the current snapshot filters. */
+            availableFundNames: string[];
+            /** @description Current aggregate summary for the matching Funds. */
             summary: components["schemas"]["FundSummaryModel"];
             /** @description Current snapshot for each Fund. */
             funds: components["schemas"]["CurrentFundModel"][];
@@ -3205,6 +3226,8 @@ export interface components {
             accountingPeriodId: null | string;
             /** @description Latest Accounting Period name, when available. */
             accountingPeriodName: null | string;
+            /** @description Available Fund Names for the current snapshot filters. */
+            availableFundNames: string[];
             /** @description Current aggregate goal summary for the latest Accounting Period. */
             summary: components["schemas"]["CurrentGoalsSummaryModel"];
             /** @description Current per-fund goal snapshot rows. */
@@ -3246,6 +3269,10 @@ export interface components {
             accountingPeriodId: null | string;
             /** @description Latest Accounting Period name, when available. */
             accountingPeriodName: null | string;
+            /** @description Available Account Names for the current snapshot filters. */
+            availableAccountNames: string[];
+            /** @description Available Fund Names for the current snapshot filters. */
+            availableFundNames: string[];
             /** @description Summary counts and amounts for each Transaction Type in the current Accounting Period. */
             transactionTypes: components["schemas"]["TransactionTrendsTransactionTypeSummaryModel"][];
             /** @description Transactions in the current Accounting Period that are not fully posted. */

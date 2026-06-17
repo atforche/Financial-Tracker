@@ -1,14 +1,29 @@
-import { Box, Stack, Typography } from "@mui/material";
+import {
+  normalizeFundNames,
+  normalizeRequestedFundNames,
+  shouldPersistFundNames,
+} from "@/funds/trends/fundNameFilter";
+import CurrentGoalsFilter from "@/goals/current/CurrentGoalsFilter";
 import CurrentGoalsList from "@/goals/current/CurrentGoalsList";
 import type { CurrentGoals as CurrentGoalsModel } from "@/goals/types";
 import CurrentGoalsSummaryCards from "@/goals/current/CurrentGoalsSummaryCards";
 import type { JSX } from "react";
+import { Stack } from "@mui/material";
 import getApiClient from "@/framework/data/getApiClient";
+
+interface CurrentGoalsSearchParams {
+  fundName?: string | readonly string[];
+}
+
+interface CurrentGoalsProps {
+  readonly searchParams: Promise<CurrentGoalsSearchParams>;
+}
 
 const createEmptyCurrent = function (): CurrentGoalsModel {
   return {
     accountingPeriodId: null,
     accountingPeriodName: null,
+    availableFundNames: [],
     summary: {
       totalAmountToAssign: 0,
       totalAmountAssigned: 0,
@@ -32,49 +47,47 @@ const createEmptyCurrent = function (): CurrentGoalsModel {
 /**
  * Component that displays the current Goals snapshot.
  */
-const CurrentGoals = async function (): Promise<JSX.Element> {
+const CurrentGoals = async function ({
+  searchParams,
+}: CurrentGoalsProps): Promise<JSX.Element> {
+  const { fundName } = await searchParams;
+  const currentFundNames = normalizeRequestedFundNames(
+    Array.isArray(fundName)
+      ? fundName
+      : typeof fundName === "string"
+        ? [fundName]
+        : [],
+  );
+
   const apiClient = getApiClient();
   const current: CurrentGoalsModel =
-    (await apiClient.GET("/goals/current")).data ?? createEmptyCurrent();
+    (
+      await apiClient.GET("/goals/current", {
+        params: {
+          query: {
+            ...(shouldPersistFundNames(currentFundNames)
+              ? { FundName: [...currentFundNames] }
+              : {}),
+          },
+        },
+      })
+    ).data ?? createEmptyCurrent();
+
+  const availableFundNames = normalizeFundNames(
+    current.availableFundNames,
+    current.availableFundNames,
+  );
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
-      <Box
-        sx={{
-          maxWidth: 1440,
-          width: "100%",
-          border: "1px solid",
-          borderColor: "divider",
-          borderRadius: 3,
-          px: { xs: 2, md: 3 },
-          py: { xs: 2.5, md: 3 },
-          background:
-            "linear-gradient(135deg, rgba(15,23,42,0.05) 0%, rgba(255,255,255,0.96) 42%, rgba(245,158,11,0.10) 100%)",
-        }}
-      >
-        <Stack spacing={1}>
-          <Typography
-            variant="overline"
-            sx={{
-              color: "text.secondary",
-              letterSpacing: 1.4,
-              fontWeight: 700,
-            }}
-          >
-            Goals
-          </Typography>
-          <Typography variant="h5">Current Goals</Typography>
-          <Typography color="text.secondary">
-            {current.accountingPeriodName === null
-              ? "No current accounting period is available to show goal progress yet."
-              : `Snapshot of goal progress and recent goal activity for ${current.accountingPeriodName}.`}
-          </Typography>
-        </Stack>
-      </Box>
+      <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
+        <CurrentGoalsFilter availableFundNames={availableFundNames} />
+      </Stack>
       <CurrentGoalsSummaryCards current={current} />
       <CurrentGoalsList current={current} />
     </Stack>
   );
 };
 
+export type { CurrentGoalsSearchParams };
 export default CurrentGoals;
