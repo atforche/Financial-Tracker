@@ -1918,6 +1918,51 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/accounting-periods/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves snapshot data for the current Accounting Period. */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Optional sort to apply to the matching transactions. */
+                    TransactionSort?: components["schemas"]["AccountingPeriodTrendsTransactionSortOrderModel"];
+                    /** @description Maximum number of transactions to return. */
+                    TransactionLimit?: number;
+                    /** @description Number of transactions to skip. */
+                    TransactionOffset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CurrentAccountingPeriodModel"];
+                        "application/json": components["schemas"]["CurrentAccountingPeriodModel"];
+                        "text/json": components["schemas"]["CurrentAccountingPeriodModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/accounting-periods/trends": {
         parameters: {
             query?: never;
@@ -2812,6 +2857,22 @@ export interface components {
              * @description Amount for the Transaction.
              */
             amount: number;
+        };
+        /** @description Model representing the current Accounting Period response. */
+        CurrentAccountingPeriodModel: {
+            accountingPeriod?: null | components["schemas"]["AccountingPeriodModel"];
+            /** @description Matching transactions for the current Accounting Period page. */
+            transactions: components["schemas"]["CollectionModelOfTransactionModel"];
+            /**
+             * Format: double
+             * @description Total income for the current Accounting Period.
+             */
+            totalIncome: number;
+            /**
+             * Format: double
+             * @description Total spending for the current Accounting Period.
+             */
+            totalSpending: number;
         };
         FundAmountModel: {
             /** Format: uuid */

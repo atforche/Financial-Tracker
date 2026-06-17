@@ -20,6 +20,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<AccountingPeriodConverter>();
         _ = serviceCollection.AddScoped<AccountingPeriodGetter>();
         _ = serviceCollection.AddScoped<AccountingPeriodTrendsGetter>();
+        _ = serviceCollection.AddScoped<CurrentAccountingPeriodGetter>();
 
         _ = serviceCollection.AddScoped<AccountConverter>();
         _ = serviceCollection.AddScoped<AccountTrendsGetter>();

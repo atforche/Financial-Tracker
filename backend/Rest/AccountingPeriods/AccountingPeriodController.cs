@@ -18,7 +18,8 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountingPeriodConverter accountingPeriodConverter,
     AccountingPeriodTrendsGetter accountingPeriodTrendsGetter,
     AccountingPeriodGetter accountingPeriodGetter,
-    AccountingPeriodService accountingPeriodService) : ControllerBase
+    AccountingPeriodService accountingPeriodService,
+    CurrentAccountingPeriodGetter accountingPeriodCurrentGetter) : ControllerBase
 {
     /// <summary>
     /// Retrieves the Accounting Period that matches the provided ID
@@ -47,6 +48,14 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     [ProducesResponseType(typeof(CollectionModel<AccountingPeriodModel>), StatusCodes.Status200OK)]
     public IActionResult GetMany([FromQuery] AccountingPeriodQueryParameterModel queryParameters) =>
         Ok(accountingPeriodGetter.Get(queryParameters));
+
+    /// <summary>
+    /// Retrieves snapshot data for the current Accounting Period.
+    /// </summary>
+    [HttpGet("current")]
+    [ProducesResponseType(typeof(CurrentAccountingPeriodModel), StatusCodes.Status200OK)]
+    public IActionResult GetCurrent([FromQuery] CurrentAccountingPeriodQueryParameterModel queryParameters) =>
+        Ok(accountingPeriodCurrentGetter.Get(queryParameters));
 
     /// <summary>
     /// Retrieves trends data for Accounting Periods across a range of Accounting Periods.

@@ -11,6 +11,12 @@ import dayjs, { type Dayjs } from "dayjs";
 type AccountingPeriod = components["schemas"]["AccountingPeriodModel"];
 
 /**
+ * Type representing the current Accounting Period response.
+ */
+type CurrentAccountingPeriod =
+  components["schemas"]["CurrentAccountingPeriodModel"];
+
+/**
  * Type representing the Accounting Periods trends response.
  */
 type AccountingPeriodTrends =
@@ -60,6 +66,7 @@ const getDefaultDate = function (
 
 export {
   type AccountingPeriod,
+  type CurrentAccountingPeriod,
   type AccountingPeriodTrends,
   type CreateAccountingPeriodRequest,
   type AccountingPeriodIdentifier,

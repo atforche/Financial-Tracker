@@ -8,6 +8,7 @@ import {
   GridView,
   ReceiptLong,
   Timeline,
+  Today,
   Workspaces,
 } from "@mui/icons-material";
 import {
@@ -56,9 +57,14 @@ const links: NavigationLink[] = [
   { name: "Overview", href: "/", icon: <GridView /> },
   {
     name: "Accounting Periods",
-    href: accountingPeriodRoutes.trends({}),
+    href: accountingPeriodRoutes.current({}),
     icon: <CalendarMonth />,
     childLinks: [
+      {
+        name: "Current",
+        href: accountingPeriodRoutes.current({}),
+        icon: <Today />,
+      },
       {
         name: "Trends",
         href: accountingPeriodRoutes.trends({}),
@@ -164,7 +170,6 @@ const NavigationLinks = function (): JSX.Element {
       <Divider />
       <List>
         {links.map((link) => {
-          // Regular links without children
           if (!link.childLinks) {
             return (
               <Link
@@ -184,7 +189,6 @@ const NavigationLinks = function (): JSX.Element {
             );
           }
 
-          // Links with children
           const isExpanded = expandedLinkName === link.name;
           const isSelected =
             pathname === link.href ||
