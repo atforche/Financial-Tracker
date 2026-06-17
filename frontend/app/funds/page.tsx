@@ -2,10 +2,10 @@ import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 
 /**
- * Redirects to the funds dashboard.
+ * Redirects to the funds trends.
  */
 const FundsIndexPage = function (): never {
-  redirect(routes.dashboard({}));
+  redirect(routes.trends({}));
 };
 
 export const dynamic = "force-dynamic";

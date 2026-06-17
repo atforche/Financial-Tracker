@@ -21,7 +21,7 @@ public sealed class GoalController(
     SpendingGoalGetter spendingGoalGetter,
     SpendingGoalRepository spendingGoalRepository,
     SpendingGoalService spendingGoalService,
-    GoalDashboardGetter goalDashboardGetter,
+    GoalTrendsGetter goalTrendsGetter,
     GoalConverter goalConverter) : ControllerBase
 {
     /// <summary>
@@ -157,24 +157,24 @@ public sealed class GoalController(
     }
 
     /// <summary>
-    /// Retrieves the Goal dashboard that matches the specified criteria.
+    /// Retrieves the Goal trends that matches the specified criteria.
     /// </summary>
-    [HttpGet("dashboard")]
-    [ProducesResponseType(typeof(GoalDashboardModel), StatusCodes.Status200OK)]
+    [HttpGet("trends")]
+    [ProducesResponseType(typeof(GoalTrendsModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetDashboard([FromQuery] GoalDashboardQueryParameterModel queryParameters)
+    public IActionResult GetTrends([FromQuery] GoalTrendsQueryParameterModel queryParameters)
     {
-        if (!goalDashboardGetter.TryGet(queryParameters, out GoalDashboardModel? dashboard, out Dictionary<string, string[]> errors))
+        if (!goalTrendsGetter.TryGet(queryParameters, out GoalTrendsModel? trends, out Dictionary<string, string[]> errors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
-                Title = "Unable to retrieve Goal dashboard.",
+                Title = "Unable to retrieve Goal trends.",
                 Errors = errors,
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
 
-        return Ok(dashboard);
+        return Ok(trends);
     }
 
     /// <summary>

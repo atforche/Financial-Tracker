@@ -18,7 +18,7 @@ public sealed class AccountController(
     UnitOfWork unitOfWork,
     AccountingPeriodConverter accountingPeriodConverter,
     AccountService accountService,
-    AccountDashboardGetter accountDashboardGetter,
+    AccountTrendsGetter accountTrendsGetter,
     AccountGetter accountGetter,
     AccountSummaryGetter accountSummaryGetter,
     AccountConverter accountConverter) : ControllerBase
@@ -60,23 +60,23 @@ public sealed class AccountController(
     public IActionResult GetSummary() => Ok(accountSummaryGetter.Get());
 
     /// <summary>
-    /// Retrieves dashboard data for Accounts across a range of Accounting Periods.
+    /// Retrieves trends data for Accounts across a range of Accounting Periods.
     /// </summary>
-    [HttpGet("dashboard")]
-    [ProducesResponseType(typeof(AccountDashboardModel), StatusCodes.Status200OK)]
+    [HttpGet("trends")]
+    [ProducesResponseType(typeof(AccountTrendsModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetDashboard([FromQuery] AccountDashboardQueryParameterModel queryParameters)
+    public IActionResult GetTrends([FromQuery] AccountTrendsQueryParameterModel queryParameters)
     {
-        if (!accountDashboardGetter.TryGet(queryParameters, out AccountDashboardModel? dashboard, out Dictionary<string, string[]> errors))
+        if (!accountTrendsGetter.TryGet(queryParameters, out AccountTrendsModel? trends, out Dictionary<string, string[]> errors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
-                Title = "Unable to retrieve Account dashboard.",
+                Title = "Unable to retrieve Account trends.",
                 Errors = errors,
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
-        return Ok(dashboard);
+        return Ok(trends);
     }
 
     /// <summary>

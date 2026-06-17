@@ -1,9 +1,9 @@
 import {
-  AccountDashboardBalanceEventSortOrderModel,
-  AccountDashboardBalanceEventTypeModel,
-  AccountDashboardModeModel,
-  AccountDashboardSortOrderModel,
   AccountSortOrderModel,
+  AccountTrendsBalanceEventSortOrderModel,
+  AccountTrendsBalanceEventTypeModel,
+  AccountTrendsModeModel,
+  AccountTrendsSortOrderModel,
   AccountTypeModel,
   type components,
 } from "@/framework/data/api";
@@ -19,33 +19,32 @@ type Account = components["schemas"]["AccountModel"];
 type AccountSummary = components["schemas"]["AccountSummaryModel"];
 
 /**
- * Type representing the Accounts dashboard response.
+ * Type representing the Accounts trends response.
  */
-type AccountDashboard = components["schemas"]["AccountDashboardModel"];
+type AccountTrends = components["schemas"]["AccountTrendsModel"];
 
 /**
- * Type representing a row in the Accounts dashboard account table.
+ * Type representing a row in the Accounts trends account table.
  */
-type AccountDashboardAccount =
-  components["schemas"]["AccountDashboardAccountModel"];
+type AccountTrendsAccount = components["schemas"]["AccountTrendsAccountModel"];
 
 /**
- * Type representing a row in the Accounts dashboard balance event table.
+ * Type representing a row in the Accounts trends balance event table.
  */
-type AccountDashboardBalanceEvent =
-  components["schemas"]["AccountDashboardBalanceEventModel"];
+type AccountTrendsBalanceEvent =
+  components["schemas"]["AccountTrendsBalanceEventModel"];
 
 /**
- * Type representing a period summary in the Accounts dashboard response.
+ * Type representing a period summary in the Accounts trends response.
  */
-type AccountDashboardPeriodSummary =
-  components["schemas"]["AccountDashboardPeriodSummaryModel"];
+type AccountTrendsPeriodSummary =
+  components["schemas"]["AccountTrendsPeriodSummaryModel"];
 
 /**
- * Type representing a date summary in the Accounts dashboard response.
+ * Type representing a date summary in the Accounts trends response.
  */
-type AccountDashboardDateSummary =
-  components["schemas"]["AccountDashboardDateSummaryModel"];
+type AccountTrendsDateSummary =
+  components["schemas"]["AccountTrendsDateSummaryModel"];
 
 /**
  * Type representing an Account Type balance summary.
@@ -141,20 +140,20 @@ const formatAccountType = function (accountType: AccountTypeModel): string {
 export {
   type Account,
   type AccountSummary,
-  type AccountDashboard,
-  type AccountDashboardAccount,
-  type AccountDashboardBalanceEvent,
-  type AccountDashboardDateSummary,
-  type AccountDashboardPeriodSummary,
+  type AccountTrends,
+  type AccountTrendsAccount,
+  type AccountTrendsBalanceEvent,
+  type AccountTrendsDateSummary,
+  type AccountTrendsPeriodSummary,
   type AccountTypeBalance,
   type AccountIdentifier,
   type CreateAccountRequest,
   type OnboardAccountRequest,
   type UpdateAccountRequest,
-  AccountDashboardBalanceEventSortOrderModel as AccountDashboardBalanceEventSortOrder,
-  AccountDashboardBalanceEventTypeModel as AccountDashboardBalanceEventType,
-  AccountDashboardModeModel as AccountDashboardMode,
-  AccountDashboardSortOrderModel as AccountDashboardSortOrder,
+  AccountTrendsBalanceEventSortOrderModel as AccountTrendsBalanceEventSortOrder,
+  AccountTrendsBalanceEventTypeModel as AccountTrendsBalanceEventType,
+  AccountTrendsModeModel as AccountTrendsMode,
+  AccountTrendsSortOrderModel as AccountTrendsSortOrder,
   AccountSortOrderModel as AccountSortOrder,
   AccountTypeModel as AccountType,
   isTrackedAccountType,

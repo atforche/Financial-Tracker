@@ -1,6 +1,6 @@
 import { Paper, Stack, Typography } from "@mui/material";
 import { AccountingPeriodSortOrder } from "@/accounting-periods/types";
-import GoalDashboardSummaryCards from "@/goals/dashboard/GoalDashboardSummaryCards";
+import GoalTrendsSummaryCards from "@/goals/trends/GoalTrendsSummaryCards";
 import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
 
@@ -39,7 +39,7 @@ const GoalOverview = async function (): Promise<JSX.Element> {
     );
   }
 
-  const { data: dashboard } = await apiClient.GET("/goals/dashboard", {
+  const { data: trends } = await apiClient.GET("/goals/trends", {
     params: {
       query: {
         AssignmentGoalLimit: 10,
@@ -52,7 +52,7 @@ const GoalOverview = async function (): Promise<JSX.Element> {
     },
   });
 
-  if (typeof dashboard === "undefined") {
+  if (typeof trends === "undefined") {
     throw new Error("Failed to load goal overview data");
   }
 
@@ -65,11 +65,11 @@ const GoalOverview = async function (): Promise<JSX.Element> {
         <Typography variant="h6" color="text.secondary">
           Assignment
         </Typography>
-        <GoalDashboardSummaryCards dashboard={dashboard} view="assignment" />
+        <GoalTrendsSummaryCards trends={trends} view="assignment" />
         <Typography variant="h6" color="text.secondary">
           Spending
         </Typography>
-        <GoalDashboardSummaryCards dashboard={dashboard} view="spending" />
+        <GoalTrendsSummaryCards trends={trends} view="spending" />
       </Stack>
     </Paper>
   );

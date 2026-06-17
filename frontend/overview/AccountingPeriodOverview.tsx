@@ -1,14 +1,14 @@
 import {
-  type AccountingPeriodDashboard,
   AccountingPeriodSortOrder,
+  type AccountingPeriodTrends,
 } from "@/accounting-periods/types";
 import { Paper, Stack, Typography } from "@mui/material";
-import AccountingPeriodDashboardIncomeSpendingCard from "@/accounting-periods/dashboard/AccountingPeriodDashboardIncomeSpendingCard";
-import AccountingPeriodDashboardSummaryCards from "@/accounting-periods/dashboard/AccountingPeriodDashboardSummaryCards";
+import AccountingPeriodTrendsIncomeSpendingCard from "@/accounting-periods/trends/AccountingPeriodTrendsIncomeSpendingCard";
+import AccountingPeriodTrendsSummaryCards from "@/accounting-periods/trends/AccountingPeriodTrendsSummaryCards";
 import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
 
-const createEmptyDashboard = function (): AccountingPeriodDashboard {
+const createEmptyTrends = function (): AccountingPeriodTrends {
   return {
     accountingPeriods: { items: [], totalCount: 0 },
     transactions: { items: [], totalCount: 0 },
@@ -36,11 +36,11 @@ const AccountingPeriodOverview = async function (): Promise<JSX.Element> {
   const latestAccountingPeriod =
     accountingPeriodsResponse.data?.items[0] ?? null;
 
-  const dashboard =
+  const trends =
     latestAccountingPeriod === null
-      ? createEmptyDashboard()
+      ? createEmptyTrends()
       : ((
-          await apiClient.GET("/accounting-periods/dashboard", {
+          await apiClient.GET("/accounting-periods/trends", {
             params: {
               query: {
                 Limit: 10,
@@ -50,7 +50,7 @@ const AccountingPeriodOverview = async function (): Promise<JSX.Element> {
               },
             },
           })
-        ).data ?? createEmptyDashboard());
+        ).data ?? createEmptyTrends());
 
   return (
     <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
@@ -62,8 +62,8 @@ const AccountingPeriodOverview = async function (): Promise<JSX.Element> {
             : " None available"}
         </Typography>
         <Stack spacing={2}>
-          <AccountingPeriodDashboardSummaryCards dashboard={dashboard} />
-          <AccountingPeriodDashboardIncomeSpendingCard dashboard={dashboard} />
+          <AccountingPeriodTrendsSummaryCards trends={trends} />
+          <AccountingPeriodTrendsIncomeSpendingCard trends={trends} />
         </Stack>
       </Stack>
     </Paper>

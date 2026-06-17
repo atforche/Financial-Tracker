@@ -19,26 +19,26 @@ public static class ServiceManager
     {
         _ = serviceCollection.AddScoped<AccountingPeriodConverter>();
         _ = serviceCollection.AddScoped<AccountingPeriodGetter>();
-        _ = serviceCollection.AddScoped<AccountingPeriodDashboardGetter>();
+        _ = serviceCollection.AddScoped<AccountingPeriodTrendsGetter>();
 
         _ = serviceCollection.AddScoped<AccountConverter>();
-        _ = serviceCollection.AddScoped<AccountDashboardGetter>();
+        _ = serviceCollection.AddScoped<AccountTrendsGetter>();
         _ = serviceCollection.AddScoped<AccountGetter>();
         _ = serviceCollection.AddScoped<AccountSummaryGetter>();
 
         _ = serviceCollection.AddScoped<FundAmountConverter>();
         _ = serviceCollection.AddScoped<FundConverter>();
-        _ = serviceCollection.AddScoped<FundDashboardGetter>();
+        _ = serviceCollection.AddScoped<FundTrendsGetter>();
         _ = serviceCollection.AddScoped<FundGetter>();
         _ = serviceCollection.AddScoped<FundSummaryGetter>();
 
         _ = serviceCollection.AddScoped<AssignmentGoalGetter>();
         _ = serviceCollection.AddScoped<GoalConverter>();
-        _ = serviceCollection.AddScoped<GoalDashboardGetter>();
+        _ = serviceCollection.AddScoped<GoalTrendsGetter>();
         _ = serviceCollection.AddScoped<SpendingGoalGetter>();
 
         _ = serviceCollection.AddScoped<TransactionConverter>();
-        _ = serviceCollection.AddScoped<TransactionDashboardGetter>();
+        _ = serviceCollection.AddScoped<TransactionTrendsGetter>();
         _ = serviceCollection.AddScoped<TransactionGetter>();
         _ = serviceCollection.AddScoped<TransactionRequestConverter>();
     }

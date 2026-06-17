@@ -1,7 +1,7 @@
 import {
   AssignmentGoalSortOrderModel,
   AssignmentGoalTypeModel,
-  GoalDashboardBalanceEventSortOrderModel,
+  GoalTrendsBalanceEventSortOrderModel,
   SpendingGoalSortOrderModel,
   SpendingGoalTypeModel,
   type components,
@@ -29,19 +29,19 @@ type UpdateAssignmentGoalRequest =
 type UpdateSpendingGoalRequest =
   components["schemas"]["UpdateSpendingGoalModel"];
 
-type GoalDashboard = components["schemas"]["GoalDashboardModel"];
+type GoalTrends = components["schemas"]["GoalTrendsModel"];
 
-type GoalDashboardBalanceEvent =
-  components["schemas"]["GoalDashboardBalanceEventModel"];
+type GoalTrendsBalanceEvent =
+  components["schemas"]["GoalTrendsBalanceEventModel"];
 
-type GoalDashboardAccountingPeriodSummaryModel =
-  components["schemas"]["GoalDashboardAccountingPeriodSummaryModel"];
+type GoalTrendsAccountingPeriodSummaryModel =
+  components["schemas"]["GoalTrendsAccountingPeriodSummaryModel"];
 
-type GoalDashboardAssignmentGoalTypeSummary =
-  components["schemas"]["GoalDashboardAssignmentGoalTypeSummaryModel"];
+type GoalTrendsAssignmentGoalTypeSummary =
+  components["schemas"]["GoalTrendsAssignmentGoalTypeSummaryModel"];
 
-type GoalDashboardSpendingGoalTypeSummary =
-  components["schemas"]["GoalDashboardSpendingGoalTypeSummaryModel"];
+type GoalTrendsSpendingGoalTypeSummary =
+  components["schemas"]["GoalTrendsSpendingGoalTypeSummaryModel"];
 
 /**
  * Formats an assignment goal type for display.
@@ -84,12 +84,12 @@ export {
   SpendingGoalTypeModel as SpendingGoalType,
   type UpdateAssignmentGoalRequest,
   type UpdateSpendingGoalRequest,
-  type GoalDashboard,
-  type GoalDashboardAssignmentGoalTypeSummary,
-  type GoalDashboardBalanceEvent,
-  GoalDashboardBalanceEventSortOrderModel as GoalDashboardBalanceEventSortOrder,
-  type GoalDashboardAccountingPeriodSummaryModel,
-  type GoalDashboardSpendingGoalTypeSummary,
+  type GoalTrends,
+  type GoalTrendsAssignmentGoalTypeSummary,
+  type GoalTrendsBalanceEvent,
+  GoalTrendsBalanceEventSortOrderModel as GoalTrendsBalanceEventSortOrder,
+  type GoalTrendsAccountingPeriodSummaryModel,
+  type GoalTrendsSpendingGoalTypeSummary,
   formatAssignmentGoalType,
   formatSpendingGoalType,
 };

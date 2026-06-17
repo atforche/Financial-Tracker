@@ -5,8 +5,8 @@ import {
   CreateTransactionModelCreateIncomeTransactionModelType,
   CreateTransactionModelCreateSpendingTransactionModelType,
   TransactionAccountTypeModel,
-  TransactionDashboardModeModel,
   TransactionSortOrderModel,
+  TransactionTrendsModeModel,
   TransactionTypeModel,
   UpdateTransactionModelUpdateAccountTransactionModelType,
   UpdateTransactionModelUpdateFundTransactionModelType,
@@ -26,27 +26,27 @@ import {
 type Transaction = components["schemas"]["TransactionModel"];
 
 /**
- * Type representing the Transaction dashboard response.
+ * Type representing the Transaction trends response.
  */
-type TransactionDashboard = components["schemas"]["TransactionDashboardModel"];
+type TransactionTrends = components["schemas"]["TransactionTrendsModel"];
 
 /**
- * Type representing a Transaction dashboard summary by type.
+ * Type representing a Transaction trends summary by type.
  */
-type TransactionDashboardTransactionTypeSummary =
-  components["schemas"]["TransactionDashboardTransactionTypeSummaryModel"];
+type TransactionTrendsTransactionTypeSummary =
+  components["schemas"]["TransactionTrendsTransactionTypeSummaryModel"];
 
 /**
- * Type representing a Transaction dashboard summary by date.
+ * Type representing a Transaction trends summary by date.
  */
-type TransactionDashboardDateSummary =
-  components["schemas"]["TransactionDashboardDateSummaryModel"];
+type TransactionTrendsDateSummary =
+  components["schemas"]["TransactionTrendsDateSummaryModel"];
 
 /**
- * Type representing a Transaction dashboard summary by accounting period.
+ * Type representing a Transaction trends summary by accounting period.
  */
-type TransactionDashboardPeriodSummary =
-  components["schemas"]["TransactionDashboardPeriodSummaryModel"];
+type TransactionTrendsPeriodSummary =
+  components["schemas"]["TransactionTrendsPeriodSummaryModel"];
 
 /**
  * Type representing a Transaction Account.
@@ -259,16 +259,16 @@ const getPostedTransactionAccounts = function (
 
 export {
   type Transaction,
-  type TransactionDashboard,
-  type TransactionDashboardDateSummary,
-  type TransactionDashboardPeriodSummary,
-  type TransactionDashboardTransactionTypeSummary,
+  type TransactionTrends,
+  type TransactionTrendsDateSummary,
+  type TransactionTrendsPeriodSummary,
+  type TransactionTrendsTransactionTypeSummary,
   type TransactionAccount,
   type TransactionFund,
   type CreateTransactionRequest,
   type UpdateTransactionRequest,
   type PostTransactionRequest,
-  TransactionDashboardModeModel as TransactionDashboardMode,
+  TransactionTrendsModeModel as TransactionTrendsMode,
   TransactionSortOrderModel as TransactionSortOrder,
   TransactionAccountTypeModel as TransactionAccountType,
   TransactionTypeModel as TransactionType,

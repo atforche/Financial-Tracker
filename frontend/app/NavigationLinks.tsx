@@ -53,12 +53,12 @@ const links: NavigationLink[] = [
   { name: "Overview", href: "/", icon: <GridView /> },
   {
     name: "Accounting Periods",
-    href: accountingPeriodRoutes.dashboard({}),
+    href: accountingPeriodRoutes.trends({}),
     icon: <CalendarMonth />,
     childLinks: [
       {
-        name: "Dashboard",
-        href: accountingPeriodRoutes.dashboard({}),
+        name: "Trends",
+        href: accountingPeriodRoutes.trends({}),
       },
       {
         name: "Workspace",
@@ -68,12 +68,12 @@ const links: NavigationLink[] = [
   },
   {
     name: "Accounts",
-    href: accountRoutes.dashboard({}),
+    href: accountRoutes.trends({}),
     icon: <AccountBalance />,
     childLinks: [
       {
-        name: "Dashboard",
-        href: accountRoutes.dashboard({}),
+        name: "Trends",
+        href: accountRoutes.trends({}),
       },
       {
         name: "Workspace",
@@ -83,12 +83,12 @@ const links: NavigationLink[] = [
   },
   {
     name: "Funds",
-    href: fundRoutes.dashboard({}),
+    href: fundRoutes.trends({}),
     icon: <Assessment />,
     childLinks: [
       {
-        name: "Dashboard",
-        href: fundRoutes.dashboard({}),
+        name: "Trends",
+        href: fundRoutes.trends({}),
       },
       {
         name: "Workspace",
@@ -98,12 +98,12 @@ const links: NavigationLink[] = [
   },
   {
     name: "Goals",
-    href: goalRoutes.dashboard({}),
+    href: goalRoutes.trends({}),
     icon: <EmojiEvents />,
     childLinks: [
       {
-        name: "Dashboard",
-        href: goalRoutes.dashboard({}),
+        name: "Trends",
+        href: goalRoutes.trends({}),
       },
       {
         name: "Workspace",
@@ -113,12 +113,12 @@ const links: NavigationLink[] = [
   },
   {
     name: "Transactions",
-    href: transactionRoutes.dashboard({}),
+    href: transactionRoutes.trends({}),
     icon: <ReceiptLong />,
     childLinks: [
       {
-        name: "Dashboard",
-        href: transactionRoutes.dashboard({}),
+        name: "Trends",
+        href: transactionRoutes.trends({}),
       },
       {
         name: "Workspace",

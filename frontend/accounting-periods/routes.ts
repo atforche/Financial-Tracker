@@ -1,4 +1,4 @@
-import type { AccountingPeriodDashboardSearchParams } from "@/accounting-periods/dashboard/AccountingPeriodDashboard";
+import type { AccountingPeriodTrendsSearchParams } from "@/accounting-periods/trends/AccountingPeriodTrends";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import type { Route } from "next";
 import { objectToSearchParams } from "@/framework/routes";
@@ -50,9 +50,9 @@ const pathWithSearchParams = function (
  * App routes related to accounting periods.
  */
 const routes = {
-  dashboard: (searchParams: AccountingPeriodDashboardSearchParams): Route =>
+  trends: (searchParams: AccountingPeriodTrendsSearchParams): Route =>
     pathWithSearchParams(
-      "/accounting-periods/dashboard",
+      "/accounting-periods/trends",
       objectToSearchParams(searchParams),
     ),
   workspace: (searchParams: AccountingPeriodWorkspaceSearchParams): Route =>

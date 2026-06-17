@@ -20,7 +20,7 @@ public sealed class FundController(
     UnitOfWork unitOfWork,
     AccountingPeriodConverter accountingPeriodConverter,
     FundConverter fundConverter,
-    FundDashboardGetter fundDashboardGetter,
+    FundTrendsGetter fundTrendsGetter,
     FundGetter fundGetter,
     FundSummaryGetter fundSummaryGetter,
     FundRepository fundRepository,
@@ -62,23 +62,23 @@ public sealed class FundController(
     public IActionResult GetSummary() => Ok(fundSummaryGetter.Get());
 
     /// <summary>
-    /// Retrieves dashboard data for Funds across a range of Accounting Periods.
+    /// Retrieves trends data for Funds across a range of Accounting Periods.
     /// </summary>
-    [HttpGet("dashboard")]
-    [ProducesResponseType(typeof(FundDashboardModel), StatusCodes.Status200OK)]
+    [HttpGet("trends")]
+    [ProducesResponseType(typeof(FundTrendsModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetDashboard([FromQuery] FundDashboardQueryParameterModel queryParameters)
+    public IActionResult GetTrends([FromQuery] FundTrendsQueryParameterModel queryParameters)
     {
-        if (!fundDashboardGetter.TryGet(queryParameters, out FundDashboardModel? dashboard, out Dictionary<string, string[]> errors))
+        if (!fundTrendsGetter.TryGet(queryParameters, out FundTrendsModel? trends, out Dictionary<string, string[]> errors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
-                Title = "Unable to retrieve Fund dashboard.",
+                Title = "Unable to retrieve Fund trends.",
                 Errors = errors,
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
-        return Ok(dashboard);
+        return Ok(trends);
     }
 
     /// <summary>

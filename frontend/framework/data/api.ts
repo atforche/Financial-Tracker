@@ -167,14 +167,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/transactions/dashboard": {
+    "/transactions/trends": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Retrieves dashboard data for Transactions across a range of Accounting Periods or dates. */
+        /** Retrieves trends data for Transactions across a range of Accounting Periods or dates. */
         get: {
             parameters: {
                 query?: {
@@ -186,11 +186,11 @@ export interface paths {
                     StartAccountingPeriodId?: string;
                     /** @description ID for the last Accounting Period in the requested range. */
                     EndAccountingPeriodId?: string;
-                    /** @description Optional Transaction Type filters to apply to the dashboard. */
+                    /** @description Optional Transaction Type filters to apply to the trends. */
                     TransactionType?: components["schemas"]["TransactionTypeModel"][];
-                    /** @description Optional Account Name filters to apply to the dashboard. */
+                    /** @description Optional Account Name filters to apply to the trends. */
                     AccountName?: string[];
-                    /** @description Optional Fund Name filters to apply to the dashboard. */
+                    /** @description Optional Fund Name filters to apply to the trends. */
                     FundName?: string[];
                     /** @description Optional sort to apply to the matching Transactions. */
                     Sort?: components["schemas"]["TransactionSortOrderModel"];
@@ -211,9 +211,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["TransactionDashboardModel"];
-                        "application/json": components["schemas"]["TransactionDashboardModel"];
-                        "text/json": components["schemas"]["TransactionDashboardModel"];
+                        "text/plain": components["schemas"]["TransactionTrendsModel"];
+                        "application/json": components["schemas"]["TransactionTrendsModel"];
+                        "text/json": components["schemas"]["TransactionTrendsModel"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -873,14 +873,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/goals/dashboard": {
+    "/goals/trends": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Retrieves the Goal dashboard that matches the specified criteria. */
+        /** Retrieves the Goal trends that matches the specified criteria. */
         get: {
             parameters: {
                 query?: {
@@ -888,20 +888,20 @@ export interface paths {
                     StartAccountingPeriodId?: string;
                     /** @description ID for the last Accounting Period in the requested range. */
                     EndAccountingPeriodId?: string;
-                    /** @description Optional Assignment Goal Type filters to apply to the dashboard. */
+                    /** @description Optional Assignment Goal Type filters to apply to the trends. */
                     AssignmentGoalType?: components["schemas"]["AssignmentGoalTypeModel"][];
-                    /** @description Optional Spending Goal Type filters to apply to the dashboard. */
+                    /** @description Optional Spending Goal Type filters to apply to the trends. */
                     SpendingGoalType?: components["schemas"]["SpendingGoalTypeModel"][];
-                    /** @description Optional Fund Name filters to apply to the dashboard. */
+                    /** @description Optional Fund Name filters to apply to the trends. */
                     FundName?: string[];
                     /** @description Optional sort to apply to the matching Assignment Goals. */
                     AssignmentSort?: components["schemas"]["AssignmentGoalSortOrderModel"];
                     /** @description Optional sort to apply to the matching Spending Goals. */
                     SpendingSort?: components["schemas"]["SpendingGoalSortOrderModel"];
                     /** @description Optional sort to apply to the matching Assignment Goal balance events. */
-                    AssignmentBalanceEventSort?: components["schemas"]["GoalDashboardBalanceEventSortOrderModel"];
+                    AssignmentBalanceEventSort?: components["schemas"]["GoalTrendsBalanceEventSortOrderModel"];
                     /** @description Optional sort to apply to the matching Spending Goal balance events. */
-                    SpendingBalanceEventSort?: components["schemas"]["GoalDashboardBalanceEventSortOrderModel"];
+                    SpendingBalanceEventSort?: components["schemas"]["GoalTrendsBalanceEventSortOrderModel"];
                     /** @description Maximum number of Assignment Goal results to return. */
                     AssignmentGoalLimit?: number;
                     /** @description Number of Assignment Goal results to skip. */
@@ -931,9 +931,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["GoalDashboardModel"];
-                        "application/json": components["schemas"]["GoalDashboardModel"];
-                        "text/json": components["schemas"]["GoalDashboardModel"];
+                        "text/plain": components["schemas"]["GoalTrendsModel"];
+                        "application/json": components["schemas"]["GoalTrendsModel"];
+                        "text/json": components["schemas"]["GoalTrendsModel"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -1197,14 +1197,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/funds/dashboard": {
+    "/funds/trends": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Retrieves dashboard data for Funds across a range of Accounting Periods. */
+        /** Retrieves trends data for Funds across a range of Accounting Periods. */
         get: {
             parameters: {
                 query?: {
@@ -1216,12 +1216,12 @@ export interface paths {
                     StartAccountingPeriodId?: string;
                     /** @description ID for the last Accounting Period in the requested range. */
                     EndAccountingPeriodId?: string;
-                    /** @description Optional Fund Name filters to apply to the dashboard. */
+                    /** @description Optional Fund Name filters to apply to the trends. */
                     FundName?: string[];
                     /** @description Optional sort to apply to the matching Funds. */
-                    Sort?: components["schemas"]["FundDashboardSortOrderModel"];
+                    Sort?: components["schemas"]["FundTrendsSortOrderModel"];
                     /** @description Optional sort to apply to the matching balance events. */
-                    BalanceEventSort?: components["schemas"]["FundDashboardBalanceEventSortOrderModel"];
+                    BalanceEventSort?: components["schemas"]["FundTrendsBalanceEventSortOrderModel"];
                     /** @description Maximum number of results to return */
                     Limit?: number;
                     /** @description Number of results to skip */
@@ -1243,9 +1243,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["FundDashboardModel"];
-                        "application/json": components["schemas"]["FundDashboardModel"];
-                        "text/json": components["schemas"]["FundDashboardModel"];
+                        "text/plain": components["schemas"]["FundTrendsModel"];
+                        "application/json": components["schemas"]["FundTrendsModel"];
+                        "text/json": components["schemas"]["FundTrendsModel"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -1624,14 +1624,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/accounts/dashboard": {
+    "/accounts/trends": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Retrieves dashboard data for Accounts across a range of Accounting Periods. */
+        /** Retrieves trends data for Accounts across a range of Accounting Periods. */
         get: {
             parameters: {
                 query?: {
@@ -1643,14 +1643,14 @@ export interface paths {
                     StartAccountingPeriodId?: string;
                     /** @description ID for the last Accounting Period in the requested range. */
                     EndAccountingPeriodId?: string;
-                    /** @description Optional Account Type filters to apply to the dashboard. */
+                    /** @description Optional Account Type filters to apply to the trends. */
                     AccountType?: components["schemas"]["AccountTypeModel"][];
-                    /** @description Optional Account Name filters to apply to the dashboard. */
+                    /** @description Optional Account Name filters to apply to the trends. */
                     AccountName?: string[];
                     /** @description Optional sort to apply to the matching Accounts. */
-                    Sort?: components["schemas"]["AccountDashboardSortOrderModel"];
+                    Sort?: components["schemas"]["AccountTrendsSortOrderModel"];
                     /** @description Optional sort to apply to the matching balance events. */
-                    BalanceEventSort?: components["schemas"]["AccountDashboardBalanceEventSortOrderModel"];
+                    BalanceEventSort?: components["schemas"]["AccountTrendsBalanceEventSortOrderModel"];
                     /** @description Maximum number of results to return */
                     Limit?: number;
                     /** @description Number of results to skip */
@@ -1672,9 +1672,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["AccountDashboardModel"];
-                        "application/json": components["schemas"]["AccountDashboardModel"];
-                        "text/json": components["schemas"]["AccountDashboardModel"];
+                        "text/plain": components["schemas"]["AccountTrendsModel"];
+                        "application/json": components["schemas"]["AccountTrendsModel"];
+                        "text/json": components["schemas"]["AccountTrendsModel"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -1918,14 +1918,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/accounting-periods/dashboard": {
+    "/accounting-periods/trends": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Retrieves dashboard data for Accounting Periods across a range of Accounting Periods. */
+        /** Retrieves trends data for Accounting Periods across a range of Accounting Periods. */
         get: {
             parameters: {
                 query?: {
@@ -1936,7 +1936,7 @@ export interface paths {
                     /** @description Optional sort to apply to the matching Accounting Periods. */
                     Sort?: components["schemas"]["AccountingPeriodSortOrderModel"];
                     /** @description Optional sort to apply to the matching transactions. */
-                    TransactionSort?: components["schemas"]["AccountingPeriodDashboardTransactionSortOrderModel"];
+                    TransactionSort?: components["schemas"]["AccountingPeriodTrendsTransactionSortOrderModel"];
                     /** @description Maximum number of Accounting Periods to return. */
                     Limit?: number;
                     /** @description Number of Accounting Periods to skip. */
@@ -1958,9 +1958,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["AccountingPeriodDashboardModel"];
-                        "application/json": components["schemas"]["AccountingPeriodDashboardModel"];
-                        "text/json": components["schemas"]["AccountingPeriodDashboardModel"];
+                        "text/plain": components["schemas"]["AccountingPeriodTrendsModel"];
+                        "application/json": components["schemas"]["AccountingPeriodTrendsModel"];
+                        "text/json": components["schemas"]["AccountingPeriodTrendsModel"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -2152,8 +2152,97 @@ export interface components {
              */
             pendingCreditAmount: number;
         };
-        /** @description Model representing an Account row within the dashboard response. */
-        AccountDashboardAccountModel: {
+        /** @description Model representing an Accounting Period */
+        AccountingPeriodModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Accounting Period
+             */
+            id: string;
+            /** @description Name of the Accounting Period */
+            name: string;
+            /**
+             * Format: int32
+             * @description Year for the Accounting Period
+             */
+            year: number;
+            /**
+             * Format: int32
+             * @description Month for the Accounting Period
+             */
+            month: number;
+            /** @description True if the Accounting Period is open, false otherwise */
+            isOpen: boolean;
+            /**
+             * Format: double
+             * @description Opening balance for the Accounting Period
+             */
+            openingBalance: number;
+            /**
+             * Format: double
+             * @description Closing balance for the Accounting Period
+             */
+            closingBalance: number;
+        };
+        /** @enum {unknown} */
+        AccountingPeriodSortOrderModel: AccountingPeriodSortOrderModel | null;
+        /** @description Model representing the Accounting Period trends response. */
+        AccountingPeriodTrendsModel: {
+            /** @description Matching Accounting Periods for the requested trends page. */
+            accountingPeriods: components["schemas"]["CollectionModelOfAccountingPeriodModel"];
+            /** @description Matching transactions for the requested trends page. */
+            transactions: components["schemas"]["CollectionModelOfTransactionModel"];
+            /**
+             * Format: double
+             * @description Total income over the requested range.
+             */
+            totalIncome: number;
+            /**
+             * Format: double
+             * @description Total spending over the requested range.
+             */
+            totalSpending: number;
+        };
+        /** @enum {unknown} */
+        AccountingPeriodTrendsTransactionSortOrderModel: AccountingPeriodTrendsTransactionSortOrderModel | null;
+        /** @description Model representing an Account */
+        AccountModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Account
+             */
+            id: string;
+            /** @description Name for the Account */
+            name: string;
+            /** @description Type for the Account */
+            type: components["schemas"]["AccountTypeModel"];
+            /** @description Current Balance for the Account */
+            currentBalance: components["schemas"]["AccountBalanceModel"];
+        };
+        /** @enum {unknown} */
+        AccountSortOrderModel: AccountSortOrderModel | null;
+        /** @description Model representing summary balances for Accounts. */
+        AccountSummaryModel: {
+            /**
+             * Format: double
+             * @description Sum of the posted balances for all Accounts.
+             */
+            totalBalance: number;
+            /**
+             * Format: double
+             * @description Sum of the posted balances for tracked Accounts.
+             */
+            totalTrackedBalance: number;
+            /**
+             * Format: double
+             * @description Sum of the posted balances for untracked Accounts.
+             */
+            totalUntrackedBalance: number;
+            /** @description Breakdown of total posted balances by Account Type. */
+            balanceByAccountType: components["schemas"]["AccountTypeBalanceModel"][];
+        };
+        /** @description Model representing an Account row within the trends response. */
+        AccountTrendsAccountModel: {
             /**
              * Format: uuid
              * @description ID for the Account.
@@ -2174,8 +2263,8 @@ export interface components {
              */
             endingBalance: number;
         };
-        /** @description Model representing a balance event on the Account dashboard. */
-        AccountDashboardBalanceEventModel: {
+        /** @description Model representing a balance event on the Account trends. */
+        AccountTrendsBalanceEventModel: {
             /**
              * Format: uuid
              * @description Transaction that produced this balance event.
@@ -2201,7 +2290,7 @@ export interface components {
             /** @description Name of the Accounting Period containing the balance event. */
             accountingPeriodName: string;
             /** @description Type of balance event. */
-            type: components["schemas"]["AccountDashboardBalanceEventTypeModel"];
+            type: components["schemas"]["AccountTrendsBalanceEventTypeModel"];
             /** @description Whether the transaction has been posted to the account. */
             isPosted: boolean;
             /**
@@ -2211,14 +2300,14 @@ export interface components {
             amount: number;
         };
         /** @enum {unknown} */
-        AccountDashboardBalanceEventSortOrderModel: AccountDashboardBalanceEventSortOrderModel | null;
+        AccountTrendsBalanceEventSortOrderModel: AccountTrendsBalanceEventSortOrderModel | null;
         /**
-         * @description Type of balance event on the Account dashboard.
+         * @description Type of balance event on the Account trends.
          * @enum {unknown}
          */
-        AccountDashboardBalanceEventTypeModel: AccountDashboardBalanceEventTypeModel;
-        /** @description Model representing top-level dashboard balances for a specific date. */
-        AccountDashboardDateSummaryModel: {
+        AccountTrendsBalanceEventTypeModel: AccountTrendsBalanceEventTypeModel;
+        /** @description Model representing top-level trends balances for a specific date. */
+        AccountTrendsDateSummaryModel: {
             /**
              * Format: date
              * @description Date for this summary.
@@ -2242,15 +2331,15 @@ export interface components {
             /** @description Total balances grouped by Account Type. */
             balanceByAccountType: components["schemas"]["AccountTypeBalanceModel"][];
         };
-        /** @description Model representing the Account dashboard response. */
-        AccountDashboardModel: {
-            /** @description Time mode used to build the dashboard response. */
-            mode: components["schemas"]["AccountDashboardModeModel"];
-            /** @description Matching Accounts for the requested dashboard page. */
-            accounts: components["schemas"]["CollectionModelOfAccountDashboardAccountModel"];
-            /** @description Matching balance events for the requested dashboard page. */
-            balanceEvents: components["schemas"]["CollectionModelOfAccountDashboardBalanceEventModel"];
-            /** @description Available Account Names for the current dashboard scope before account-name filtering. */
+        /** @description Model representing the Account trends response. */
+        AccountTrendsModel: {
+            /** @description Time mode used to build the trends response. */
+            mode: components["schemas"]["AccountTrendsModeModel"];
+            /** @description Matching Accounts for the requested trends page. */
+            accounts: components["schemas"]["CollectionModelOfAccountTrendsAccountModel"];
+            /** @description Matching balance events for the requested trends page. */
+            balanceEvents: components["schemas"]["CollectionModelOfAccountTrendsBalanceEventModel"];
+            /** @description Available Account Names for the current trends scope before account-name filtering. */
             availableAccountNames: string[];
             /**
              * Format: double
@@ -2263,17 +2352,17 @@ export interface components {
              */
             totalSpending: number;
             /** @description Summary balances for each Accounting Period in the requested range. */
-            accountingPeriods?: null | components["schemas"]["AccountDashboardPeriodSummaryModel"][];
+            accountingPeriods?: null | components["schemas"]["AccountTrendsPeriodSummaryModel"][];
             /** @description Summary balances for each date in the requested range. */
-            dates?: null | components["schemas"]["AccountDashboardDateSummaryModel"][];
+            dates?: null | components["schemas"]["AccountTrendsDateSummaryModel"][];
         };
         /**
-         * @description Enum representing the time mode used to build the Account dashboard response.
+         * @description Enum representing the time mode used to build the Account trends response.
          * @enum {unknown}
          */
-        AccountDashboardModeModel: AccountDashboardModeModel;
-        /** @description Model representing top-level dashboard balances for a specific Accounting Period. */
-        AccountDashboardPeriodSummaryModel: {
+        AccountTrendsModeModel: AccountTrendsModeModel;
+        /** @description Model representing top-level trends balances for a specific Accounting Period. */
+        AccountTrendsPeriodSummaryModel: {
             /**
              * Format: uuid
              * @description ID for the Accounting Period.
@@ -2327,96 +2416,7 @@ export interface components {
             closingBalanceByAccountType: components["schemas"]["AccountTypeBalanceModel"][];
         };
         /** @enum {unknown} */
-        AccountDashboardSortOrderModel: AccountDashboardSortOrderModel | null;
-        /** @description Model representing the Accounting Period dashboard response. */
-        AccountingPeriodDashboardModel: {
-            /** @description Matching Accounting Periods for the requested dashboard page. */
-            accountingPeriods: components["schemas"]["CollectionModelOfAccountingPeriodModel"];
-            /** @description Matching transactions for the requested dashboard page. */
-            transactions: components["schemas"]["CollectionModelOfTransactionModel"];
-            /**
-             * Format: double
-             * @description Total income over the requested range.
-             */
-            totalIncome: number;
-            /**
-             * Format: double
-             * @description Total spending over the requested range.
-             */
-            totalSpending: number;
-        };
-        /** @enum {unknown} */
-        AccountingPeriodDashboardTransactionSortOrderModel: AccountingPeriodDashboardTransactionSortOrderModel | null;
-        /** @description Model representing an Accounting Period */
-        AccountingPeriodModel: {
-            /**
-             * Format: uuid
-             * @description ID for the Accounting Period
-             */
-            id: string;
-            /** @description Name of the Accounting Period */
-            name: string;
-            /**
-             * Format: int32
-             * @description Year for the Accounting Period
-             */
-            year: number;
-            /**
-             * Format: int32
-             * @description Month for the Accounting Period
-             */
-            month: number;
-            /** @description True if the Accounting Period is open, false otherwise */
-            isOpen: boolean;
-            /**
-             * Format: double
-             * @description Opening balance for the Accounting Period
-             */
-            openingBalance: number;
-            /**
-             * Format: double
-             * @description Closing balance for the Accounting Period
-             */
-            closingBalance: number;
-        };
-        /** @enum {unknown} */
-        AccountingPeriodSortOrderModel: AccountingPeriodSortOrderModel | null;
-        /** @description Model representing an Account */
-        AccountModel: {
-            /**
-             * Format: uuid
-             * @description ID for the Account
-             */
-            id: string;
-            /** @description Name for the Account */
-            name: string;
-            /** @description Type for the Account */
-            type: components["schemas"]["AccountTypeModel"];
-            /** @description Current Balance for the Account */
-            currentBalance: components["schemas"]["AccountBalanceModel"];
-        };
-        /** @enum {unknown} */
-        AccountSortOrderModel: AccountSortOrderModel | null;
-        /** @description Model representing summary balances for Accounts. */
-        AccountSummaryModel: {
-            /**
-             * Format: double
-             * @description Sum of the posted balances for all Accounts.
-             */
-            totalBalance: number;
-            /**
-             * Format: double
-             * @description Sum of the posted balances for tracked Accounts.
-             */
-            totalTrackedBalance: number;
-            /**
-             * Format: double
-             * @description Sum of the posted balances for untracked Accounts.
-             */
-            totalUntrackedBalance: number;
-            /** @description Breakdown of total posted balances by Account Type. */
-            balanceByAccountType: components["schemas"]["AccountTypeBalanceModel"][];
-        };
+        AccountTrendsSortOrderModel: AccountTrendsSortOrderModel | null;
         /** @description Model representing the total posted balance for an Account Type. */
         AccountTypeBalanceModel: {
             /** @description Account Type for this balance total. */
@@ -2498,26 +2498,6 @@ export interface components {
          */
         AssignmentGoalTypeModel: AssignmentGoalTypeModel;
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
-        CollectionModelOfAccountDashboardAccountModel: {
-            /** @description The collection of items. */
-            items: components["schemas"]["AccountDashboardAccountModel"][];
-            /**
-             * Format: int32
-             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
-             */
-            totalCount: number;
-        };
-        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
-        CollectionModelOfAccountDashboardBalanceEventModel: {
-            /** @description The collection of items. */
-            items: components["schemas"]["AccountDashboardBalanceEventModel"][];
-            /**
-             * Format: int32
-             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
-             */
-            totalCount: number;
-        };
-        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfAccountingPeriodModel: {
             /** @description The collection of items. */
             items: components["schemas"]["AccountingPeriodModel"][];
@@ -2538,29 +2518,29 @@ export interface components {
             totalCount: number;
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfAccountTrendsAccountModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["AccountTrendsAccountModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfAccountTrendsBalanceEventModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["AccountTrendsBalanceEventModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfAssignmentGoalModel: {
             /** @description The collection of items. */
             items: components["schemas"]["AssignmentGoalModel"][];
-            /**
-             * Format: int32
-             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
-             */
-            totalCount: number;
-        };
-        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
-        CollectionModelOfFundDashboardBalanceEventModel: {
-            /** @description The collection of items. */
-            items: components["schemas"]["FundDashboardBalanceEventModel"][];
-            /**
-             * Format: int32
-             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
-             */
-            totalCount: number;
-        };
-        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
-        CollectionModelOfFundDashboardFundModel: {
-            /** @description The collection of items. */
-            items: components["schemas"]["FundDashboardFundModel"][];
             /**
              * Format: int32
              * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
@@ -2578,9 +2558,29 @@ export interface components {
             totalCount: number;
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
-        CollectionModelOfGoalDashboardBalanceEventModel: {
+        CollectionModelOfFundTrendsBalanceEventModel: {
             /** @description The collection of items. */
-            items: components["schemas"]["GoalDashboardBalanceEventModel"][];
+            items: components["schemas"]["FundTrendsBalanceEventModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfFundTrendsFundModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["FundTrendsFundModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfGoalTrendsBalanceEventModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["GoalTrendsBalanceEventModel"][];
             /**
              * Format: int32
              * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
@@ -2855,8 +2855,42 @@ export interface components {
              */
             pendingAmountSpent: number;
         };
-        /** @description Model representing a balance event on the Fund dashboard. */
-        FundDashboardBalanceEventModel: {
+        /** @description Model representing a Fund */
+        FundModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Fund
+             */
+            id: string;
+            /** @description Name for the Fund */
+            name: string;
+            /** @description Description for the Fund */
+            description: string;
+            /** @description Current Balance for the Fund */
+            currentBalance: components["schemas"]["FundBalanceModel"];
+        };
+        /** @enum {unknown} */
+        FundSortOrderModel: FundSortOrderModel | null;
+        /** @description Model representing summary balances for Funds. */
+        FundSummaryModel: {
+            /**
+             * Format: double
+             * @description Sum of the posted balances for all Funds.
+             */
+            totalTrackedBalance: number;
+            /**
+             * Format: double
+             * @description Sum of the posted balances for all Funds except the unassigned Fund.
+             */
+            totalAssignedBalance: number;
+            /**
+             * Format: double
+             * @description Posted balance of the unassigned Fund.
+             */
+            totalUnassignedBalance: number;
+        };
+        /** @description Model representing a balance event on the Fund trends. */
+        FundTrendsBalanceEventModel: {
             /**
              * Format: uuid
              * @description Transaction that produced this balance event.
@@ -2882,7 +2916,7 @@ export interface components {
             /** @description Name of the Accounting Period containing the balance event. */
             accountingPeriodName: string;
             /** @description Type of balance event. */
-            type: components["schemas"]["FundDashboardBalanceEventTypeModel"];
+            type: components["schemas"]["FundTrendsBalanceEventTypeModel"];
             /** @description Whether the transaction has been posted to the fund. */
             isPosted: boolean;
             /**
@@ -2892,14 +2926,14 @@ export interface components {
             amount: number;
         };
         /** @enum {unknown} */
-        FundDashboardBalanceEventSortOrderModel: FundDashboardBalanceEventSortOrderModel | null;
+        FundTrendsBalanceEventSortOrderModel: FundTrendsBalanceEventSortOrderModel | null;
         /**
-         * @description Type of balance event on the Fund dashboard.
+         * @description Type of balance event on the Fund trends.
          * @enum {unknown}
          */
-        FundDashboardBalanceEventTypeModel: FundDashboardBalanceEventTypeModel;
-        /** @description Model representing top-level dashboard balances for a specific date. */
-        FundDashboardDateSummaryModel: {
+        FundTrendsBalanceEventTypeModel: FundTrendsBalanceEventTypeModel;
+        /** @description Model representing top-level trends balances for a specific date. */
+        FundTrendsDateSummaryModel: {
             /**
              * Format: date
              * @description Date for this summary.
@@ -2921,8 +2955,8 @@ export interface components {
              */
             unassignedBalance: number;
         };
-        /** @description Model representing a Fund row within the dashboard response. */
-        FundDashboardFundModel: {
+        /** @description Model representing a Fund row within the trends response. */
+        FundTrendsFundModel: {
             /**
              * Format: uuid
              * @description ID for the Fund.
@@ -2941,20 +2975,20 @@ export interface components {
              */
             endingBalance: number;
         };
-        /** @description Model representing the Fund dashboard response. */
-        FundDashboardModel: {
-            /** @description Time mode used to build the dashboard response. */
-            mode: components["schemas"]["FundDashboardModeModel"];
-            /** @description Matching Funds for the requested dashboard page. */
-            funds: components["schemas"]["CollectionModelOfFundDashboardFundModel"];
-            /** @description Matching balance events for the requested dashboard page. */
-            balanceEvents: components["schemas"]["CollectionModelOfFundDashboardBalanceEventModel"];
-            /** @description Available Fund Names for the current dashboard scope before fund-name filtering. */
+        /** @description Model representing the Fund trends response. */
+        FundTrendsModel: {
+            /** @description Time mode used to build the trends response. */
+            mode: components["schemas"]["FundTrendsModeModel"];
+            /** @description Matching Funds for the requested trends page. */
+            funds: components["schemas"]["CollectionModelOfFundTrendsFundModel"];
+            /** @description Matching balance events for the requested trends page. */
+            balanceEvents: components["schemas"]["CollectionModelOfFundTrendsBalanceEventModel"];
+            /** @description Available Fund Names for the current trends scope before fund-name filtering. */
             availableFundNames: string[];
             /** @description Summary balances for each Accounting Period in the requested range. */
-            accountingPeriods?: null | components["schemas"]["FundDashboardPeriodSummaryModel"][];
+            accountingPeriods?: null | components["schemas"]["FundTrendsPeriodSummaryModel"][];
             /** @description Summary balances for each date in the requested range. */
-            dates?: null | components["schemas"]["FundDashboardDateSummaryModel"][];
+            dates?: null | components["schemas"]["FundTrendsDateSummaryModel"][];
             /**
              * Format: double
              * @description Total amount assigned to funds from income transactions in the requested range.
@@ -2967,12 +3001,12 @@ export interface components {
             totalAmountSpent: number;
         };
         /**
-         * @description Enum representing the time mode used to build the Fund dashboard response.
+         * @description Enum representing the time mode used to build the Fund trends response.
          * @enum {unknown}
          */
-        FundDashboardModeModel: FundDashboardModeModel;
-        /** @description Model representing top-level dashboard balances for a specific Accounting Period. */
-        FundDashboardPeriodSummaryModel: {
+        FundTrendsModeModel: FundTrendsModeModel;
+        /** @description Model representing top-level trends balances for a specific Accounting Period. */
+        FundTrendsPeriodSummaryModel: {
             /**
              * Format: uuid
              * @description ID for the Accounting Period.
@@ -3022,43 +3056,27 @@ export interface components {
             unassignedClosingBalance: number;
         };
         /** @enum {unknown} */
-        FundDashboardSortOrderModel: FundDashboardSortOrderModel | null;
-        /** @description Model representing a Fund */
-        FundModel: {
+        FundTrendsSortOrderModel: FundTrendsSortOrderModel | null;
+        /** @description Model representing the percentage of a goal that have been met. */
+        GoalPercentageMetModel: {
             /**
-             * Format: uuid
-             * @description ID for the Fund
+             * Format: int32
+             * @description Total number of goals.
              */
-            id: string;
-            /** @description Name for the Fund */
-            name: string;
-            /** @description Description for the Fund */
-            description: string;
-            /** @description Current Balance for the Fund */
-            currentBalance: components["schemas"]["FundBalanceModel"];
-        };
-        /** @enum {unknown} */
-        FundSortOrderModel: FundSortOrderModel | null;
-        /** @description Model representing summary balances for Funds. */
-        FundSummaryModel: {
+            totalCount: number;
+            /**
+             * Format: int32
+             * @description Number of goals that have been met.
+             */
+            metCount: number;
             /**
              * Format: double
-             * @description Sum of the posted balances for all Funds.
+             * @description Percentage of goals that have been met.
              */
-            totalTrackedBalance: number;
-            /**
-             * Format: double
-             * @description Sum of the posted balances for all Funds except the unassigned Fund.
-             */
-            totalAssignedBalance: number;
-            /**
-             * Format: double
-             * @description Posted balance of the unassigned Fund.
-             */
-            totalUnassignedBalance: number;
+            percentageMet: number;
         };
         /** @description Model representing Goal totals grouped by Accounting Period. */
-        GoalDashboardAccountingPeriodSummaryModel: {
+        GoalTrendsAccountingPeriodSummaryModel: {
             /**
              * Format: uuid
              * @description ID for the Accounting Period.
@@ -3102,7 +3120,7 @@ export interface components {
             percentageOfSpendingGoalsMet: components["schemas"]["GoalPercentageMetModel"];
         };
         /** @description Model representing assignment goal totals grouped by assignment goal type. */
-        GoalDashboardAssignmentGoalTypeSummaryModel: {
+        GoalTrendsAssignmentGoalTypeSummaryModel: {
             /** @description Assignment Goal Type for the group. */
             assignmentGoalType: components["schemas"]["AssignmentGoalTypeModel"];
             /**
@@ -3118,8 +3136,8 @@ export interface components {
             /** @description Percentage of goals met for the group. */
             percentageOfGoalsMet: components["schemas"]["GoalPercentageMetModel"];
         };
-        /** @description Model representing a balance event on the Goal dashboard. */
-        GoalDashboardBalanceEventModel: {
+        /** @description Model representing a balance event on the Goal trends. */
+        GoalTrendsBalanceEventModel: {
             /**
              * Format: uuid
              * @description Transaction that produced this balance event.
@@ -3153,22 +3171,22 @@ export interface components {
             amount: number;
         };
         /** @enum {unknown} */
-        GoalDashboardBalanceEventSortOrderModel: GoalDashboardBalanceEventSortOrderModel | null;
-        /** @description Model representing the Goal dashboard response. */
-        GoalDashboardModel: {
-            /** @description Matching Goals for the requested dashboard page. */
+        GoalTrendsBalanceEventSortOrderModel: GoalTrendsBalanceEventSortOrderModel | null;
+        /** @description Model representing the Goal trends response. */
+        GoalTrendsModel: {
+            /** @description Matching Goals for the requested trends page. */
             assignmentGoals: components["schemas"]["CollectionModelOfAssignmentGoalModel"];
-            /** @description Matching balance events for Assignment Goals for the requested dashboard page. */
-            assignmentBalanceEvents: components["schemas"]["CollectionModelOfGoalDashboardBalanceEventModel"];
+            /** @description Matching balance events for Assignment Goals for the requested trends page. */
+            assignmentBalanceEvents: components["schemas"]["CollectionModelOfGoalTrendsBalanceEventModel"];
             /** @description Assignment Goal totals grouped by Goal Type. */
-            assignmentGoalTypes?: null | components["schemas"]["GoalDashboardAssignmentGoalTypeSummaryModel"][];
-            /** @description Matching Spending Goals for the requested dashboard page. */
+            assignmentGoalTypes?: null | components["schemas"]["GoalTrendsAssignmentGoalTypeSummaryModel"][];
+            /** @description Matching Spending Goals for the requested trends page. */
             spendingGoals: components["schemas"]["CollectionModelOfSpendingGoalModel"];
-            /** @description Matching balance events for Spending Goals for the requested dashboard page. */
-            spendingBalanceEvents: components["schemas"]["CollectionModelOfGoalDashboardBalanceEventModel"];
+            /** @description Matching balance events for Spending Goals for the requested trends page. */
+            spendingBalanceEvents: components["schemas"]["CollectionModelOfGoalTrendsBalanceEventModel"];
             /** @description Spending Goal totals grouped by SpendingGoal Type. */
-            spendingGoalTypes?: null | components["schemas"]["GoalDashboardSpendingGoalTypeSummaryModel"][];
-            /** @description Available Fund names for the current dashboard scope before Fund-name filtering. */
+            spendingGoalTypes?: null | components["schemas"]["GoalTrendsSpendingGoalTypeSummaryModel"][];
+            /** @description Available Fund names for the current trends scope before Fund-name filtering. */
             availableFundNames: string[];
             /**
              * Format: double
@@ -3195,10 +3213,10 @@ export interface components {
             /** @description Percentage of Spending Goals met across the filtered results. */
             percentageOfSpendingGoalsMet: components["schemas"]["GoalPercentageMetModel"];
             /** @description Goal totals grouped by Accounting Period. */
-            accountingPeriods?: null | components["schemas"]["GoalDashboardAccountingPeriodSummaryModel"][];
+            accountingPeriods?: null | components["schemas"]["GoalTrendsAccountingPeriodSummaryModel"][];
         };
         /** @description Model representing spending goal totals grouped by spending goal type. */
-        GoalDashboardSpendingGoalTypeSummaryModel: {
+        GoalTrendsSpendingGoalTypeSummaryModel: {
             /** @description Spending Goal Type for the group. */
             spendingGoalType: components["schemas"]["SpendingGoalTypeModel"];
             /**
@@ -3213,24 +3231,6 @@ export interface components {
             totalAmountSpent: number;
             /** @description Percentage of goals met for the group. */
             percentageOfGoalsMet: components["schemas"]["GoalPercentageMetModel"];
-        };
-        /** @description Model representing the percentage of a goal that have been met. */
-        GoalPercentageMetModel: {
-            /**
-             * Format: int32
-             * @description Total number of goals.
-             */
-            totalCount: number;
-            /**
-             * Format: int32
-             * @description Number of goals that have been met.
-             */
-            metCount: number;
-            /**
-             * Format: double
-             * @description Percentage of goals that have been met.
-             */
-            percentageMet: number;
         };
         /** @description Model representing a request to onboard an Account. */
         OnboardAccountModel: {
@@ -3374,91 +3374,6 @@ export interface components {
          * @enum {unknown}
          */
         TransactionAccountTypeModel: TransactionAccountTypeModel;
-        /** @description Model representing summary counts and amounts for a specific date. */
-        TransactionDashboardDateSummaryModel: {
-            /**
-             * Format: date
-             * @description Date for this summary.
-             */
-            date: string;
-            /**
-             * Format: int32
-             * @description Total count of transactions for this date.
-             */
-            totalCount: number;
-            /**
-             * Format: double
-             * @description Total amount of transactions for this date.
-             */
-            totalAmount: number;
-        };
-        /** @description Model representing the Transaction dashboard response. */
-        TransactionDashboardModel: {
-            /** @description Time mode used to build the dashboard response. */
-            mode: components["schemas"]["TransactionDashboardModeModel"];
-            /** @description Matching Transactions for the requested dashboard page. */
-            transactions: components["schemas"]["CollectionModelOfTransactionModel"];
-            /** @description Available Account Names for the current dashboard scope before account-name filtering. */
-            availableAccountNames: string[];
-            /** @description Available Fund Names for the current dashboard scope before fund-name filtering. */
-            availableFundNames: string[];
-            /** @description Summary counts and amounts for each Transaction Type in the requested range. */
-            transactionTypes: components["schemas"]["TransactionDashboardTransactionTypeSummaryModel"][];
-            /** @description Summary counts and amounts for each Accounting Period in the requested range. */
-            accountingPeriods?: null | components["schemas"]["TransactionDashboardPeriodSummaryModel"][];
-            /** @description Summary counts and amounts for each date in the requested range. */
-            dates?: null | components["schemas"]["TransactionDashboardDateSummaryModel"][];
-        };
-        /**
-         * @description Enum representing the time mode used to build the Transaction dashboard response.
-         * @enum {unknown}
-         */
-        TransactionDashboardModeModel: TransactionDashboardModeModel;
-        /** @description Model representing summary counts and amounts for a specific Accounting Period. */
-        TransactionDashboardPeriodSummaryModel: {
-            /**
-             * Format: uuid
-             * @description ID for the Accounting Period.
-             */
-            accountingPeriodId: string;
-            /** @description Name for the Accounting Period. */
-            accountingPeriodName: string;
-            /**
-             * Format: int32
-             * @description Year for the Accounting Period.
-             */
-            year: number;
-            /**
-             * Format: int32
-             * @description Month for the Accounting Period.
-             */
-            month: number;
-            /**
-             * Format: int32
-             * @description Total count of transactions for this Accounting Period.
-             */
-            totalCount: number;
-            /**
-             * Format: double
-             * @description Total amount of transactions for this Accounting Period.
-             */
-            totalAmount: number;
-        };
-        /** @description Model representing summary counts and amounts for a specific Transaction Type. */
-        TransactionDashboardTransactionTypeSummaryModel: {
-            /** @description Transaction type for this summary. */
-            transactionType: components["schemas"]["TransactionTypeModel"];
-            /**
-             * Format: int32
-             * @description Total count of transactions for this type.
-             */
-            totalCount: number;
-            /**
-             * Format: double
-             * @description Total amount of transactions for this type.
-             */
-            totalAmount: number;
-        };
         /** @description Model representing a fund referenced by a transaction. */
         TransactionFundModel: {
             /**
@@ -3650,6 +3565,91 @@ export interface components {
         };
         /** @enum {unknown} */
         TransactionSortOrderModel: TransactionSortOrderModel | null;
+        /** @description Model representing summary counts and amounts for a specific date. */
+        TransactionTrendsDateSummaryModel: {
+            /**
+             * Format: date
+             * @description Date for this summary.
+             */
+            date: string;
+            /**
+             * Format: int32
+             * @description Total count of transactions for this date.
+             */
+            totalCount: number;
+            /**
+             * Format: double
+             * @description Total amount of transactions for this date.
+             */
+            totalAmount: number;
+        };
+        /** @description Model representing the Transaction trends response. */
+        TransactionTrendsModel: {
+            /** @description Time mode used to build the trends response. */
+            mode: components["schemas"]["TransactionTrendsModeModel"];
+            /** @description Matching Transactions for the requested trends page. */
+            transactions: components["schemas"]["CollectionModelOfTransactionModel"];
+            /** @description Available Account Names for the current trends scope before account-name filtering. */
+            availableAccountNames: string[];
+            /** @description Available Fund Names for the current trends scope before fund-name filtering. */
+            availableFundNames: string[];
+            /** @description Summary counts and amounts for each Transaction Type in the requested range. */
+            transactionTypes: components["schemas"]["TransactionTrendsTransactionTypeSummaryModel"][];
+            /** @description Summary counts and amounts for each Accounting Period in the requested range. */
+            accountingPeriods?: null | components["schemas"]["TransactionTrendsPeriodSummaryModel"][];
+            /** @description Summary counts and amounts for each date in the requested range. */
+            dates?: null | components["schemas"]["TransactionTrendsDateSummaryModel"][];
+        };
+        /**
+         * @description Enum representing the time mode used to build the Transaction trends response.
+         * @enum {unknown}
+         */
+        TransactionTrendsModeModel: TransactionTrendsModeModel;
+        /** @description Model representing summary counts and amounts for a specific Accounting Period. */
+        TransactionTrendsPeriodSummaryModel: {
+            /**
+             * Format: uuid
+             * @description ID for the Accounting Period.
+             */
+            accountingPeriodId: string;
+            /** @description Name for the Accounting Period. */
+            accountingPeriodName: string;
+            /**
+             * Format: int32
+             * @description Year for the Accounting Period.
+             */
+            year: number;
+            /**
+             * Format: int32
+             * @description Month for the Accounting Period.
+             */
+            month: number;
+            /**
+             * Format: int32
+             * @description Total count of transactions for this Accounting Period.
+             */
+            totalCount: number;
+            /**
+             * Format: double
+             * @description Total amount of transactions for this Accounting Period.
+             */
+            totalAmount: number;
+        };
+        /** @description Model representing summary counts and amounts for a specific Transaction Type. */
+        TransactionTrendsTransactionTypeSummaryModel: {
+            /** @description Transaction type for this summary. */
+            transactionType: components["schemas"]["TransactionTypeModel"];
+            /**
+             * Format: int32
+             * @description Total count of transactions for this type.
+             */
+            totalCount: number;
+            /**
+             * Format: double
+             * @description Total amount of transactions for this type.
+             */
+            totalAmount: number;
+        };
         /**
          * @description Enum representing the different transaction types exposed by the REST API.
          * @enum {unknown}
@@ -3783,39 +3783,17 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
-export enum AccountDashboardBalanceEventSortOrderModel {
-    AccountName = "AccountName",
-    AccountNameDescending = "AccountNameDescending",
-    AccountingPeriodName = "AccountingPeriodName",
-    AccountingPeriodNameDescending = "AccountingPeriodNameDescending",
+export enum AccountingPeriodSortOrderModel {
     Date = "Date",
     DateDescending = "DateDescending",
-    Type = "Type",
-    TypeDescending = "TypeDescending",
-    Amount = "Amount",
-    AmountDescending = "AmountDescending"
-}
-export enum AccountDashboardBalanceEventTypeModel {
-    Debit = "Debit",
-    Credit = "Credit"
-}
-export enum AccountDashboardModeModel {
-    AccountingPeriod = "AccountingPeriod",
-    Date = "Date"
-}
-export enum AccountDashboardSortOrderModel {
-    Name = "Name",
-    NameDescending = "NameDescending",
-    Type = "Type",
-    TypeDescending = "TypeDescending",
+    IsOpen = "IsOpen",
+    IsOpenDescending = "IsOpenDescending",
     OpeningBalance = "OpeningBalance",
     OpeningBalanceDescending = "OpeningBalanceDescending",
     ClosingBalance = "ClosingBalance",
-    ClosingBalanceDescending = "ClosingBalanceDescending",
-    NetChange = "NetChange",
-    NetChangeDescending = "NetChangeDescending"
+    ClosingBalanceDescending = "ClosingBalanceDescending"
 }
-export enum AccountingPeriodDashboardTransactionSortOrderModel {
+export enum AccountingPeriodTrendsTransactionSortOrderModel {
     Date = "Date",
     DateDescending = "DateDescending",
     AccountingPeriod = "AccountingPeriod",
@@ -3829,16 +3807,6 @@ export enum AccountingPeriodDashboardTransactionSortOrderModel {
     Amount = "Amount",
     AmountDescending = "AmountDescending"
 }
-export enum AccountingPeriodSortOrderModel {
-    Date = "Date",
-    DateDescending = "DateDescending",
-    IsOpen = "IsOpen",
-    IsOpenDescending = "IsOpenDescending",
-    OpeningBalance = "OpeningBalance",
-    OpeningBalanceDescending = "OpeningBalanceDescending",
-    ClosingBalance = "ClosingBalance",
-    ClosingBalanceDescending = "ClosingBalanceDescending"
-}
 export enum AccountSortOrderModel {
     Name = "Name",
     NameDescending = "NameDescending",
@@ -3846,6 +3814,38 @@ export enum AccountSortOrderModel {
     TypeDescending = "TypeDescending",
     PostedBalance = "PostedBalance",
     PostedBalanceDescending = "PostedBalanceDescending"
+}
+export enum AccountTrendsBalanceEventSortOrderModel {
+    AccountName = "AccountName",
+    AccountNameDescending = "AccountNameDescending",
+    AccountingPeriodName = "AccountingPeriodName",
+    AccountingPeriodNameDescending = "AccountingPeriodNameDescending",
+    Date = "Date",
+    DateDescending = "DateDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    Amount = "Amount",
+    AmountDescending = "AmountDescending"
+}
+export enum AccountTrendsBalanceEventTypeModel {
+    Debit = "Debit",
+    Credit = "Credit"
+}
+export enum AccountTrendsModeModel {
+    AccountingPeriod = "AccountingPeriod",
+    Date = "Date"
+}
+export enum AccountTrendsSortOrderModel {
+    Name = "Name",
+    NameDescending = "NameDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    OpeningBalance = "OpeningBalance",
+    OpeningBalanceDescending = "OpeningBalanceDescending",
+    ClosingBalance = "ClosingBalance",
+    ClosingBalanceDescending = "ClosingBalanceDescending",
+    NetChange = "NetChange",
+    NetChangeDescending = "NetChangeDescending"
 }
 export enum AccountTypeModel {
     Standard = "Standard",
@@ -3887,7 +3887,15 @@ export enum CreateTransactionModelCreateIncomeTransactionModelType {
 export enum CreateTransactionModelCreateSpendingTransactionModelType {
     Spending = "Spending"
 }
-export enum FundDashboardBalanceEventSortOrderModel {
+export enum FundSortOrderModel {
+    Name = "Name",
+    NameDescending = "NameDescending",
+    Description = "Description",
+    DescriptionDescending = "DescriptionDescending",
+    Balance = "Balance",
+    BalanceDescending = "BalanceDescending"
+}
+export enum FundTrendsBalanceEventSortOrderModel {
     FundName = "FundName",
     FundNameDescending = "FundNameDescending",
     AccountingPeriodName = "AccountingPeriodName",
@@ -3899,15 +3907,15 @@ export enum FundDashboardBalanceEventSortOrderModel {
     Amount = "Amount",
     AmountDescending = "AmountDescending"
 }
-export enum FundDashboardBalanceEventTypeModel {
+export enum FundTrendsBalanceEventTypeModel {
     Debit = "Debit",
     Credit = "Credit"
 }
-export enum FundDashboardModeModel {
+export enum FundTrendsModeModel {
     AccountingPeriod = "AccountingPeriod",
     Date = "Date"
 }
-export enum FundDashboardSortOrderModel {
+export enum FundTrendsSortOrderModel {
     Name = "Name",
     NameDescending = "NameDescending",
     OpeningBalance = "OpeningBalance",
@@ -3917,15 +3925,7 @@ export enum FundDashboardSortOrderModel {
     NetChange = "NetChange",
     NetChangeDescending = "NetChangeDescending"
 }
-export enum FundSortOrderModel {
-    Name = "Name",
-    NameDescending = "NameDescending",
-    Description = "Description",
-    DescriptionDescending = "DescriptionDescending",
-    Balance = "Balance",
-    BalanceDescending = "BalanceDescending"
-}
-export enum GoalDashboardBalanceEventSortOrderModel {
+export enum GoalTrendsBalanceEventSortOrderModel {
     FundName = "FundName",
     FundNameDescending = "FundNameDescending",
     AccountingPeriodName = "AccountingPeriodName",
@@ -3959,10 +3959,6 @@ export enum TransactionAccountTypeModel {
     Debit = "Debit",
     Credit = "Credit"
 }
-export enum TransactionDashboardModeModel {
-    AccountingPeriod = "AccountingPeriod",
-    Date = "Date"
-}
 export enum TransactionModelAccountTransactionModelType {
     Account = "Account"
 }
@@ -3988,6 +3984,10 @@ export enum TransactionSortOrderModel {
     CreditToDescending = "CreditToDescending",
     Amount = "Amount",
     AmountDescending = "AmountDescending"
+}
+export enum TransactionTrendsModeModel {
+    AccountingPeriod = "AccountingPeriod",
+    Date = "Date"
 }
 export enum TransactionTypeModel {
     Spending = "Spending",

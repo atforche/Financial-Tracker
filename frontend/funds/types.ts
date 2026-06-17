@@ -1,9 +1,9 @@
 import {
-  FundDashboardBalanceEventSortOrderModel,
-  FundDashboardBalanceEventTypeModel,
-  FundDashboardModeModel,
-  FundDashboardSortOrderModel,
   FundSortOrderModel,
+  FundTrendsBalanceEventSortOrderModel,
+  FundTrendsBalanceEventTypeModel,
+  FundTrendsModeModel,
+  FundTrendsSortOrderModel,
   type components,
 } from "@/framework/data/api";
 
@@ -18,32 +18,32 @@ type Fund = components["schemas"]["FundModel"];
 type FundSummary = components["schemas"]["FundSummaryModel"];
 
 /**
- * Type representing the Funds dashboard response.
+ * Type representing the Funds trends response.
  */
-type FundDashboard = components["schemas"]["FundDashboardModel"];
+type FundTrends = components["schemas"]["FundTrendsModel"];
 
 /**
- * Type representing a row in the Funds dashboard fund table.
+ * Type representing a row in the Funds trends fund table.
  */
-type FundDashboardFund = components["schemas"]["FundDashboardFundModel"];
+type FundTrendsFund = components["schemas"]["FundTrendsFundModel"];
 
 /**
- * Type representing a row in the Funds dashboard balance event table.
+ * Type representing a row in the Funds trends balance event table.
  */
-type FundDashboardBalanceEvent =
-  components["schemas"]["FundDashboardBalanceEventModel"];
+type FundTrendsBalanceEvent =
+  components["schemas"]["FundTrendsBalanceEventModel"];
 
 /**
- * Type representing a period summary in the Funds dashboard response.
+ * Type representing a period summary in the Funds trends response.
  */
-type FundDashboardPeriodSummary =
-  components["schemas"]["FundDashboardPeriodSummaryModel"];
+type FundTrendsPeriodSummary =
+  components["schemas"]["FundTrendsPeriodSummaryModel"];
 
 /**
- * Type representing a date summary in the Funds dashboard response.
+ * Type representing a date summary in the Funds trends response.
  */
-type FundDashboardDateSummary =
-  components["schemas"]["FundDashboardDateSummaryModel"];
+type FundTrendsDateSummary =
+  components["schemas"]["FundTrendsDateSummaryModel"];
 
 /**
  * Interface representing a Fund identifier with its ID and name.
@@ -91,20 +91,20 @@ const hasIncompleteFundAssignments = function (
 export {
   type Fund,
   type FundSummary,
-  type FundDashboard,
-  type FundDashboardFund,
-  type FundDashboardBalanceEvent,
-  type FundDashboardDateSummary,
-  type FundDashboardPeriodSummary,
+  type FundTrends,
+  type FundTrendsFund,
+  type FundTrendsBalanceEvent,
+  type FundTrendsDateSummary,
+  type FundTrendsPeriodSummary,
   type FundIdentifier,
   type CreateFundRequest,
   type OnboardFundRequest,
   type UpdateFundRequest,
   type FundAmount,
-  FundDashboardBalanceEventSortOrderModel as FundDashboardBalanceEventSortOrder,
-  FundDashboardBalanceEventTypeModel as FundDashboardBalanceEventType,
-  FundDashboardModeModel as FundDashboardMode,
-  FundDashboardSortOrderModel as FundDashboardSortOrder,
+  FundTrendsBalanceEventSortOrderModel as FundTrendsBalanceEventSortOrder,
+  FundTrendsBalanceEventTypeModel as FundTrendsBalanceEventType,
+  FundTrendsModeModel as FundTrendsMode,
+  FundTrendsSortOrderModel as FundTrendsSortOrder,
   FundSortOrderModel as FundSortOrder,
   hasIncompleteFundAssignments,
 };

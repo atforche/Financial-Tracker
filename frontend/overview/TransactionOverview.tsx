@@ -1,7 +1,7 @@
 import { Paper, Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
-import TransactionDashboardByTypeCard from "@/transactions/dashboard/TransactionDashboardByTypeCard";
+import TransactionTrendsByTypeCard from "@/transactions/trends/TransactionTrendsByTypeCard";
 import getApiClient from "@/framework/data/getApiClient";
 
 interface TransactionOverviewProps {
@@ -31,7 +31,7 @@ const TransactionOverview = async function ({
   }
 
   const apiClient = getApiClient();
-  const { data: dashboard } = await apiClient.GET("/transactions/dashboard", {
+  const { data: trends } = await apiClient.GET("/transactions/trends", {
     params: {
       query: {
         Limit: 10,
@@ -42,7 +42,7 @@ const TransactionOverview = async function ({
     },
   });
 
-  if (typeof dashboard === "undefined") {
+  if (typeof trends === "undefined") {
     throw new Error("Failed to load transaction overview data");
   }
 
@@ -52,7 +52,7 @@ const TransactionOverview = async function ({
         <Typography variant="h6" color="text.secondary">
           Current Transactions ({currentAccountingPeriod.name})
         </Typography>
-        <TransactionDashboardByTypeCard dashboard={dashboard} />
+        <TransactionTrendsByTypeCard trends={trends} />
       </Stack>
     </Paper>
   );

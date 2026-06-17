@@ -1,5 +1,5 @@
 import type { Route } from "next";
-import type { TransactionDashboardSearchParams } from "@/transactions/dashboard/TransactionDashboard";
+import type { TransactionTrendsSearchParams } from "@/transactions/trends/TransactionTrends";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import { objectToSearchParams } from "@/framework/routes";
 
@@ -26,8 +26,8 @@ const appendRepeatedSearchParam = function (
   }
 };
 
-const transactionDashboardSearchParamsToSearchParams = function (
-  searchParams: TransactionDashboardSearchParams,
+const transactionTrendsSearchParamsToSearchParams = function (
+  searchParams: TransactionTrendsSearchParams,
 ): URLSearchParams {
   const { transactionType, accountName, fundName, ...remainingSearchParams } =
     searchParams;
@@ -64,10 +64,10 @@ const pathWithSearchParams = function (
  * App routes related to accounting periods.
  */
 const routes = {
-  dashboard: (searchParams: TransactionDashboardSearchParams): Route =>
+  trends: (searchParams: TransactionTrendsSearchParams): Route =>
     pathWithSearchParams(
-      "/transactions/dashboard",
-      transactionDashboardSearchParamsToSearchParams(searchParams),
+      "/transactions/trends",
+      transactionTrendsSearchParamsToSearchParams(searchParams),
     ),
   workspace: (searchParams: TransactionWorkspaceSearchParams): Route =>
     pathWithSearchParams(

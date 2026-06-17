@@ -1,6 +1,6 @@
 import {
-  AccountingPeriodDashboardTransactionSortOrderModel,
   AccountingPeriodSortOrderModel,
+  AccountingPeriodTrendsTransactionSortOrderModel,
   type components,
 } from "@/framework/data/api";
 import dayjs, { type Dayjs } from "dayjs";
@@ -11,10 +11,10 @@ import dayjs, { type Dayjs } from "dayjs";
 type AccountingPeriod = components["schemas"]["AccountingPeriodModel"];
 
 /**
- * Type representing the Accounting Periods dashboard response.
+ * Type representing the Accounting Periods trends response.
  */
-type AccountingPeriodDashboard =
-  components["schemas"]["AccountingPeriodDashboardModel"];
+type AccountingPeriodTrends =
+  components["schemas"]["AccountingPeriodTrendsModel"];
 
 /**
  * Interface representing an identifier for an Accounting Period.
@@ -60,12 +60,12 @@ const getDefaultDate = function (
 
 export {
   type AccountingPeriod,
-  type AccountingPeriodDashboard,
+  type AccountingPeriodTrends,
   type CreateAccountingPeriodRequest,
   type AccountingPeriodIdentifier,
   getMinimumDate,
   getMaximumDate,
   getDefaultDate,
   AccountingPeriodSortOrderModel as AccountingPeriodSortOrder,
-  AccountingPeriodDashboardTransactionSortOrderModel as AccountingPeriodDashboardTransactionSortOrder,
+  AccountingPeriodTrendsTransactionSortOrderModel as AccountingPeriodTrendsTransactionSortOrder,
 };

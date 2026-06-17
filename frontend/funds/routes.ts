@@ -1,4 +1,4 @@
-import type { FundDashboardSearchParams } from "@/funds/dashboard/FundDashboard";
+import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { Route } from "next";
 import { objectToSearchParams } from "@/framework/routes";
@@ -25,8 +25,8 @@ const appendRepeatedSearchParam = function (
   }
 };
 
-const fundDashboardSearchParamsToSearchParams = function (
-  searchParams: FundDashboardSearchParams,
+const fundTrendsSearchParamsToSearchParams = function (
+  searchParams: FundTrendsSearchParams,
 ): URLSearchParams {
   const { fundName, ...remainingSearchParams } = searchParams;
   const params = objectToSearchParams(remainingSearchParams);
@@ -46,10 +46,10 @@ const pathWithSearchParams = function (
  * App routes related to funds.
  */
 const routes = {
-  dashboard: (searchParams: FundDashboardSearchParams): Route =>
+  trends: (searchParams: FundTrendsSearchParams): Route =>
     pathWithSearchParams(
-      "/funds/dashboard",
-      fundDashboardSearchParamsToSearchParams(searchParams),
+      "/funds/trends",
+      fundTrendsSearchParamsToSearchParams(searchParams),
     ),
   workspace: (searchParams: FundWorkspaceSearchParams): Route =>
     pathWithSearchParams(

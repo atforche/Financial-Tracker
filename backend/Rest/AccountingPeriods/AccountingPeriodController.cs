@@ -16,7 +16,7 @@ namespace Rest.AccountingPeriods;
 public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountingPeriodRepository accountingPeriodRepository,
     AccountingPeriodConverter accountingPeriodConverter,
-    AccountingPeriodDashboardGetter accountingPeriodDashboardGetter,
+    AccountingPeriodTrendsGetter accountingPeriodTrendsGetter,
     AccountingPeriodGetter accountingPeriodGetter,
     AccountingPeriodService accountingPeriodService) : ControllerBase
 {
@@ -49,23 +49,23 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         Ok(accountingPeriodGetter.Get(queryParameters));
 
     /// <summary>
-    /// Retrieves dashboard data for Accounting Periods across a range of Accounting Periods.
+    /// Retrieves trends data for Accounting Periods across a range of Accounting Periods.
     /// </summary>
-    [HttpGet("dashboard")]
-    [ProducesResponseType(typeof(AccountingPeriodDashboardModel), StatusCodes.Status200OK)]
+    [HttpGet("trends")]
+    [ProducesResponseType(typeof(AccountingPeriodTrendsModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetDashboard([FromQuery] AccountingPeriodDashboardQueryParameterModel queryParameters)
+    public IActionResult GetTrends([FromQuery] AccountingPeriodTrendsQueryParameterModel queryParameters)
     {
-        if (!accountingPeriodDashboardGetter.TryGet(queryParameters, out AccountingPeriodDashboardModel? dashboard, out Dictionary<string, string[]> errors))
+        if (!accountingPeriodTrendsGetter.TryGet(queryParameters, out AccountingPeriodTrendsModel? trends, out Dictionary<string, string[]> errors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
-                Title = "Unable to retrieve Accounting Period dashboard.",
+                Title = "Unable to retrieve Accounting Period trends.",
                 Errors = errors,
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
         }
-        return Ok(dashboard);
+        return Ok(trends);
     }
 
     /// <summary>

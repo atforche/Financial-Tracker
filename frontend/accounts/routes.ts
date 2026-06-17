@@ -1,11 +1,11 @@
-import type { AccountDashboardSearchParams } from "@/accounts/dashboard/AccountDashboard";
+import type { AccountTrendsSearchParams } from "@/accounts/trends/AccountTrends";
 import type { AccountType } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
 import type { Route } from "next";
 import { objectToSearchParams } from "@/framework/routes";
 
 const isAccountTypeArray = function (
-  value: AccountDashboardSearchParams["accountType"],
+  value: AccountTrendsSearchParams["accountType"],
 ): value is readonly AccountType[] {
   return Array.isArray(value);
 };
@@ -32,8 +32,8 @@ const appendRepeatedSearchParam = function (
   }
 };
 
-const accountDashboardSearchParamsToSearchParams = function (
-  searchParams: AccountDashboardSearchParams,
+const accountTrendsSearchParamsToSearchParams = function (
+  searchParams: AccountTrendsSearchParams,
 ): URLSearchParams {
   const { accountType, accountName, ...remainingSearchParams } = searchParams;
   const params = objectToSearchParams(remainingSearchParams);
@@ -59,10 +59,10 @@ const pathWithSearchParams = function (
  * App routes related to accounts.
  */
 const routes = {
-  dashboard: (searchParams: AccountDashboardSearchParams): Route =>
+  trends: (searchParams: AccountTrendsSearchParams): Route =>
     pathWithSearchParams(
-      "/accounts/dashboard",
-      accountDashboardSearchParamsToSearchParams(searchParams),
+      "/accounts/trends",
+      accountTrendsSearchParamsToSearchParams(searchParams),
     ),
   workspace: (searchParams: AccountWorkspaceSearchParams): Route =>
     pathWithSearchParams(
