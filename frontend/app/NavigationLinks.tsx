@@ -7,6 +7,8 @@ import {
   EmojiEvents,
   GridView,
   ReceiptLong,
+  Timeline,
+  Workspaces,
 } from "@mui/icons-material";
 import {
   Box,
@@ -44,6 +46,7 @@ interface NavigationLink {
 interface NavigationChildLink {
   name: string;
   href: Route;
+  icon: JSX.Element;
 }
 
 /**
@@ -59,10 +62,12 @@ const links: NavigationLink[] = [
       {
         name: "Trends",
         href: accountingPeriodRoutes.trends({}),
+        icon: <Timeline />,
       },
       {
         name: "Workspace",
         href: accountingPeriodRoutes.workspace({}),
+        icon: <Workspaces />,
       },
     ],
   },
@@ -74,10 +79,12 @@ const links: NavigationLink[] = [
       {
         name: "Trends",
         href: accountRoutes.trends({}),
+        icon: <Timeline />,
       },
       {
         name: "Workspace",
         href: accountRoutes.workspace({}),
+        icon: <Workspaces />,
       },
     ],
   },
@@ -89,10 +96,12 @@ const links: NavigationLink[] = [
       {
         name: "Trends",
         href: fundRoutes.trends({}),
+        icon: <Timeline />,
       },
       {
         name: "Workspace",
         href: fundRoutes.workspace({}),
+        icon: <Workspaces />,
       },
     ],
   },
@@ -104,10 +113,12 @@ const links: NavigationLink[] = [
       {
         name: "Trends",
         href: goalRoutes.trends({}),
+        icon: <Timeline />,
       },
       {
         name: "Workspace",
         href: goalRoutes.workspace({}),
+        icon: <Workspaces />,
       },
     ],
   },
@@ -119,10 +130,12 @@ const links: NavigationLink[] = [
       {
         name: "Trends",
         href: transactionRoutes.trends({}),
+        icon: <Timeline />,
       },
       {
         name: "Workspace",
         href: transactionRoutes.workspace({}),
+        icon: <Workspaces />,
       },
     ],
   },
@@ -228,6 +241,9 @@ const NavigationLinks = function (): JSX.Element {
                           selected={pathname === childLink.href}
                           sx={{ pl: 7.5 }}
                         >
+                          <ListItemIcon sx={{ minWidth: 36 }}>
+                            {childLink.icon}
+                          </ListItemIcon>
                           <ListItemText primary={childLink.name} />
                         </ListItemButton>
                       </ListItem>
