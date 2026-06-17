@@ -31,7 +31,6 @@ interface CurrentGoalsListProps {
 
 interface GoalProgressSummaryProps {
   readonly label: string;
-  readonly accentColor: string;
   readonly progress: CurrentGoalProgress | null;
 }
 
@@ -51,10 +50,12 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 const getProgressPercent = function (
   progress: CurrentGoalProgress | null,
 ): number {
-  if (progress === null || progress.targetAmount <= 0) {
+  if (progress === null) {
     return 0;
   }
-
+  if (progress.targetAmount === 0) {
+    return 100;
+  }
   return Math.min((progress.currentAmount / progress.targetAmount) * 100, 100);
 };
 
@@ -71,9 +72,17 @@ const formatLastEvent = function (
   )}`;
 };
 
+const getProgressBarColor = function (
+  progress: CurrentGoalProgress | null,
+): string {
+  if (progress === null) {
+    return "rgba(148, 163, 184, 0.9)";
+  }
+  return progress.isGoalMet ? "#16a34a" : "#dc2626";
+};
+
 const GoalProgressSummary = function ({
   label,
-  accentColor,
   progress,
 }: GoalProgressSummaryProps): JSX.Element {
   return (
@@ -97,7 +106,7 @@ const GoalProgressSummary = function ({
           backgroundColor: "rgba(226, 232, 240, 0.75)",
           "& .MuiLinearProgress-bar": {
             borderRadius: 999,
-            backgroundColor: accentColor,
+            backgroundColor: getProgressBarColor(progress),
           },
         }}
       />
@@ -318,12 +327,10 @@ const CurrentGoalsList = function ({
               </Stack>
               <GoalProgressSummary
                 label="Assignment"
-                accentColor="#f59e0b"
                 progress={goal.assignmentGoal}
               />
               <GoalProgressSummary
                 label="Spending"
-                accentColor="#0ea5e9"
                 progress={goal.spendingGoal}
               />
               <Collapse in={isExpanded} timeout="auto" unmountOnExit>
