@@ -168,9 +168,6 @@ const CreateIncomeTransactionForm = function ({
           setAccountingPeriod={setAccountingPeriod}
           date={date ?? defaultDate}
           setDate={setDate}
-          locationLabel={sourceAccount === null ? "Source Location" : null}
-          locationValue={sourceLocation}
-          setLocationValue={sourceAccount === null ? setSourceLocation : null}
           descriptionValue={description}
           setDescriptionValue={setDescription}
           amount={amount}
@@ -181,11 +178,16 @@ const CreateIncomeTransactionForm = function ({
           description="Choose which tracked account receives the income and either the untracked source account or a source location."
           accounts={accounts}
           leftLabel="Source Account"
-          rightLabel="Deposit To"
+          rightLabel="Destination Account"
           leftAccount={sourceAccount}
           rightAccount={depositAccount}
           setLeftAccount={onSourceAccountChange}
           setRightAccount={setDepositAccount}
+          leftLocationLabel={sourceAccount === null ? "Source Location" : null}
+          leftLocationValue={sourceLocation}
+          setLeftLocationValue={
+            sourceAccount === null ? setSourceLocation : null
+          }
           leftFilter={(account) => {
             const selectedAccount = getAccountById(account.id);
             return (

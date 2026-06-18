@@ -22,30 +22,11 @@ const ViewTransactionForm = function ({
   transactionAccountingPeriod,
   funds,
 }: ViewTransactionFormProps): JSX.Element {
-  const locationDetails =
-    transaction.transactionType === TransactionType.Income &&
-    "sourceLocation" in transaction &&
-    transaction.sourceLocation !== null
-      ? {
-          label: "Source Location",
-          value: transaction.sourceLocation,
-        }
-      : transaction.transactionType === TransactionType.Spending &&
-          "destinationLocation" in transaction &&
-          transaction.destinationLocation !== null
-        ? {
-            label: "Destination Location",
-            value: transaction.destinationLocation,
-          }
-        : null;
-
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
       <TransactionDetailsViewSection
         accountingPeriod={transactionAccountingPeriod}
         date={transaction.date}
-        locationLabel={locationDetails?.label ?? null}
-        locationValue={locationDetails?.value ?? null}
         description={transaction.description}
         amount={transaction.amount}
       />
@@ -83,6 +64,28 @@ const ViewTransactionForm = function ({
           }
           leftAccount={transaction.debitAccount ?? null}
           rightAccount={transaction.creditAccount ?? null}
+          leftLocationLabel={
+            transaction.transactionType === TransactionType.Income
+              ? "Source Location"
+              : null
+          }
+          leftLocationValue={
+            transaction.transactionType === TransactionType.Income &&
+            "sourceLocation" in transaction
+              ? transaction.sourceLocation
+              : null
+          }
+          rightLocationLabel={
+            transaction.transactionType === TransactionType.Spending
+              ? "Destination Location"
+              : null
+          }
+          rightLocationValue={
+            transaction.transactionType === TransactionType.Spending &&
+            "destinationLocation" in transaction
+              ? transaction.destinationLocation
+              : null
+          }
         />
       ) : null}
 

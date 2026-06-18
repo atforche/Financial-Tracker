@@ -172,13 +172,6 @@ const CreateSpendingTransactionForm = function ({
           setAccountingPeriod={setAccountingPeriod}
           date={date ?? defaultDate}
           setDate={setDate}
-          locationLabel={
-            destinationAccount === null ? "Destination Location" : null
-          }
-          locationValue={destinationLocation}
-          setLocationValue={
-            destinationAccount === null ? setDestinationLocation : null
-          }
           descriptionValue={description}
           setDescriptionValue={setDescription}
           amount={amount}
@@ -188,12 +181,19 @@ const CreateSpendingTransactionForm = function ({
           title="Money Flow"
           description="Choose the tracked account being charged and either the untracked destination account or a destination location."
           accounts={accounts}
-          leftLabel="Spend From"
-          rightLabel="Pay To"
+          leftLabel="Source Account"
+          rightLabel="Destination Account"
           leftAccount={paymentAccount}
           rightAccount={destinationAccount}
           setLeftAccount={setPaymentAccount}
           setRightAccount={onDestinationAccountChange}
+          rightLocationLabel={
+            destinationAccount === null ? "Destination Location" : null
+          }
+          rightLocationValue={destinationLocation}
+          setRightLocationValue={
+            destinationAccount === null ? setDestinationLocation : null
+          }
           leftFilter={(account) => {
             const selectedAccount = getAccountById(account.id);
             return (

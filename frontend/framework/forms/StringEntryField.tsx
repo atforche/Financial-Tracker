@@ -7,7 +7,7 @@ import { TextField } from "@mui/material";
 interface StringEntryFieldProps {
   readonly label: string;
   readonly value: string;
-  readonly setValue: (newValue: string) => void;
+  readonly setValue: ((newValue: string) => void) | null;
   readonly errorMessage?: string | null;
 }
 
@@ -26,7 +26,7 @@ const StringEntryField = function ({
       variant="outlined"
       value={value}
       onChange={(event) => {
-        setValue(event.target.value);
+        setValue?.(event.target.value);
       }}
       error={errorMessage !== null}
       helperText={errorMessage ?? null}

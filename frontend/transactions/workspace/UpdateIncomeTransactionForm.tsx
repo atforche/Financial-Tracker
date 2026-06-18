@@ -57,8 +57,9 @@ const UpdateIncomeTransactionForm = function ({
     funds.find((fund) => fund.name === "Unassigned") ?? null;
   const formRef = useRef<HTMLDivElement | null>(null);
 
-  const sourceLocation = transaction.transactionType === TransactionType.Income &&
-      "sourceLocation" in transaction
+  const sourceLocation =
+    transaction.transactionType === TransactionType.Income &&
+    "sourceLocation" in transaction
       ? (transaction.sourceLocation ?? "")
       : "";
 
@@ -151,11 +152,6 @@ const UpdateIncomeTransactionForm = function ({
           setAccountingPeriod={null}
           date={date}
           setDate={setDate}
-          locationLabel={
-            transactionDebitAccount === null ? "Source Location" : null
-          }
-          locationValue={sourceLocation}
-          setLocationValue={null}
           descriptionValue={description}
           setDescriptionValue={setDescription}
           amount={amount}
@@ -173,6 +169,10 @@ const UpdateIncomeTransactionForm = function ({
           rightAccount={transactionCreditAccount}
           setLeftAccount={null}
           setRightAccount={null}
+          leftLocationLabel={
+            transactionDebitAccount === null ? "Source Location" : null
+          }
+          leftLocationValue={sourceLocation}
         />
         <FundAssignmentPlanner
           title="Fund Allocation"
