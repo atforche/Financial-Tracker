@@ -19,6 +19,11 @@ public record CreateSpendingTransactionRequest : CreateTransactionRequest
     public required Account? CreditAccount { get; init; }
 
     /// <summary>
+    /// External location where the money for this Spending Transaction was spent (if not an account).
+    /// </summary>
+    public required string? DestinationLocation { get; init; }
+
+    /// <summary>
     /// Fund Assignments for this Spending Transaction
     /// </summary>
     public required IReadOnlyCollection<FundAmount> FundAssignments { get; init; }

@@ -19,6 +19,11 @@ public record CreateIncomeTransactionRequest : CreateTransactionRequest
     public required Account? DebitAccount { get; init; }
 
     /// <summary>
+    /// External location where the money for this Income Transaction came from (if not an account).
+    /// </summary>
+    public required string? SourceLocation { get; init; }
+
+    /// <summary>
     /// Fund assignments for the amount of this Income Transaction
     /// </summary>
     public required IReadOnlyCollection<FundAmount> FundAssignments { get; init; }

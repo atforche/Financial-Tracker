@@ -285,10 +285,6 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Location")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("Sequence")
                         .HasColumnType("INTEGER");
 
@@ -370,6 +366,10 @@ namespace Data.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("IncomeTransaction_DebitPostedDate");
 
+                    b.Property<string>("SourceLocation")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("IncomeTransaction_SourceLocation");
+
                     b.HasIndex("CreditAccountId");
 
                     b.HasIndex("DebitAccountId");
@@ -396,6 +396,10 @@ namespace Data.Migrations
                     b.Property<DateOnly?>("DebitPostedDate")
                         .HasColumnType("TEXT")
                         .HasColumnName("SpendingTransaction_DebitPostedDate");
+
+                    b.Property<string>("DestinationLocation")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("SpendingTransaction_DestinationLocation");
 
                     b.HasIndex("CreditAccountId");
 

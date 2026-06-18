@@ -22,12 +22,30 @@ const ViewTransactionForm = function ({
   transactionAccountingPeriod,
   funds,
 }: ViewTransactionFormProps): JSX.Element {
+  const locationDetails =
+    transaction.transactionType === TransactionType.Income &&
+    "sourceLocation" in transaction &&
+    transaction.sourceLocation !== null
+      ? {
+          label: "Source Location",
+          value: transaction.sourceLocation,
+        }
+      : transaction.transactionType === TransactionType.Spending &&
+          "destinationLocation" in transaction &&
+          transaction.destinationLocation !== null
+        ? {
+            label: "Destination Location",
+            value: transaction.destinationLocation,
+          }
+        : null;
+
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
       <TransactionDetailsViewSection
         accountingPeriod={transactionAccountingPeriod}
         date={transaction.date}
-        location={transaction.location}
+        locationLabel={locationDetails?.label ?? null}
+        locationValue={locationDetails?.value ?? null}
         description={transaction.description}
         amount={transaction.amount}
       />

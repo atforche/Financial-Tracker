@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20260614203142_InitialCreate")]
+    [Migration("20260618015540_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -288,10 +288,6 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Location")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("Sequence")
                         .HasColumnType("INTEGER");
 
@@ -373,6 +369,10 @@ namespace Data.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("IncomeTransaction_DebitPostedDate");
 
+                    b.Property<string>("SourceLocation")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("IncomeTransaction_SourceLocation");
+
                     b.HasIndex("CreditAccountId");
 
                     b.HasIndex("DebitAccountId");
@@ -399,6 +399,10 @@ namespace Data.Migrations
                     b.Property<DateOnly?>("DebitPostedDate")
                         .HasColumnType("TEXT")
                         .HasColumnName("SpendingTransaction_DebitPostedDate");
+
+                    b.Property<string>("DestinationLocation")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("SpendingTransaction_DestinationLocation");
 
                     b.HasIndex("CreditAccountId");
 

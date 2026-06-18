@@ -35,6 +35,11 @@ public class IncomeTransaction : Transaction
     public DateOnly? DebitPostedDate { get; internal set; }
 
     /// <summary>
+    /// External location where the money for this Income Transaction came from (if not an account).
+    /// </summary>
+    public string? SourceLocation { get; private set; }
+
+    /// <summary>
     /// Fund assignments for this Income Transaction
     /// </summary>
     public IReadOnlyCollection<FundAmount> FundAssignments => _fundAssignments;
@@ -104,6 +109,7 @@ public class IncomeTransaction : Transaction
     {
         CreditAccountId = request.CreditAccount.Id;
         DebitAccountId = request.DebitAccount?.Id;
+        SourceLocation = request.SourceLocation;
         UpdateFundAssignments(request.FundAssignments);
     }
 

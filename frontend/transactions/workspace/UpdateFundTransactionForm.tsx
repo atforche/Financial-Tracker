@@ -43,7 +43,6 @@ const UpdateFundTransactionForm = function ({
 }: UpdateFundTransactionFormProps): JSX.Element {
   const formRef = useRef<HTMLDivElement | null>(null);
   const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
-  const [location, setLocation] = useState<string>(transaction.location);
   const [description, setDescription] = useState<string>(
     transaction.description,
   );
@@ -53,7 +52,6 @@ const UpdateFundTransactionForm = function ({
 
   const reset = function (): void {
     setDate(dayjs(transaction.date));
-    setLocation(transaction.location);
     setDescription(transaction.description);
     setAmount(transaction.amount);
     focusFirstEntryControl(formRef.current);
@@ -67,17 +65,10 @@ const UpdateFundTransactionForm = function ({
   }, [state]);
 
   let request: UpdateTransactionRequest | null = null;
-  if (
-    date !== null &&
-    location !== "" &&
-    description !== "" &&
-    amount !== null &&
-    amount > 0
-  ) {
+  if (date !== null && description !== "" && amount !== null && amount > 0) {
     request = {
       type: UpdateFundTransactionType.Fund,
       date: date.format("YYYY-MM-DD"),
-      location,
       description,
       amount,
     };
@@ -92,8 +83,6 @@ const UpdateFundTransactionForm = function ({
           setAccountingPeriod={null}
           date={date}
           setDate={setDate}
-          location={location}
-          setLocation={setLocation}
           descriptionValue={description}
           setDescriptionValue={setDescription}
           amount={amount}

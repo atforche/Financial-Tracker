@@ -24,11 +24,6 @@ public abstract class CreateTransactionModel
     public required DateOnly Date { get; init; }
 
     /// <summary>
-    /// Location for the Transaction.
-    /// </summary>
-    public required string Location { get; init; }
-
-    /// <summary>
     /// Description for the Transaction.
     /// </summary>
     public required string Description { get; init; }
@@ -55,6 +50,11 @@ public sealed class CreateSpendingTransactionModel : CreateTransactionModel
     public Guid? CreditAccountId { get; init; }
 
     /// <summary>
+    /// Optional destination location for the spending transaction.
+    /// </summary>
+    public string? DestinationLocation { get; init; }
+
+    /// <summary>
     /// Fund assignments for the spending transaction.
     /// </summary>
     public required IReadOnlyCollection<CreateFundAmountModel> FundAssignments { get; init; }
@@ -69,6 +69,11 @@ public sealed class CreateIncomeTransactionModel : CreateTransactionModel
     /// Optional debit account for the income transaction.
     /// </summary>
     public Guid? DebitAccountId { get; init; }
+
+    /// <summary>
+    /// Optional source location for the income transaction.
+    /// </summary>
+    public string? SourceLocation { get; init; }
 
     /// <summary>
     /// Credit account for the income transaction.

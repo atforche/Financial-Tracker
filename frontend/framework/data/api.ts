@@ -2924,8 +2924,6 @@ export interface components {
              * @description Date for the Transaction.
              */
             date: string;
-            /** @description Location for the Transaction. */
-            location: string;
             /** @description Description for the Transaction. */
             description: string;
             /**
@@ -2958,8 +2956,6 @@ export interface components {
              * @description Date for the Transaction.
              */
             date: string;
-            /** @description Location for the Transaction. */
-            location: string;
             /** @description Description for the Transaction. */
             description: string;
             /**
@@ -2977,6 +2973,8 @@ export interface components {
              * @description Optional debit account for the income transaction.
              */
             debitAccountId?: null | string;
+            /** @description Optional source location for the income transaction. */
+            sourceLocation?: null | string;
             /**
              * Format: uuid
              * @description Credit account for the income transaction.
@@ -2994,8 +2992,6 @@ export interface components {
              * @description Date for the Transaction.
              */
             date: string;
-            /** @description Location for the Transaction. */
-            location: string;
             /** @description Description for the Transaction. */
             description: string;
             /**
@@ -3018,6 +3014,8 @@ export interface components {
              * @description Optional credit account for the spending transaction.
              */
             creditAccountId?: null | string;
+            /** @description Optional destination location for the spending transaction. */
+            destinationLocation?: null | string;
             /** @description Fund assignments for the spending transaction. */
             fundAssignments: components["schemas"]["CreateFundAmountModel"][];
             /**
@@ -3030,8 +3028,6 @@ export interface components {
              * @description Date for the Transaction.
              */
             date: string;
-            /** @description Location for the Transaction. */
-            location: string;
             /** @description Description for the Transaction. */
             description: string;
             /**
@@ -3892,8 +3888,6 @@ export interface components {
              * @description Sequence number for the Transaction.
              */
             sequence: number;
-            /** @description Location for the Transaction. */
-            location: string;
             /** @description Description for the Transaction. */
             description: string;
             /**
@@ -3934,8 +3928,6 @@ export interface components {
              * @description Sequence number for the Transaction.
              */
             sequence: number;
-            /** @description Location for the Transaction. */
-            location: string;
             /** @description Description for the Transaction. */
             description: string;
             /**
@@ -3949,6 +3941,8 @@ export interface components {
             /** @enum {string} */
             type?: TransactionModelIncomeTransactionModelType;
             debitAccount?: null | components["schemas"]["TransactionAccountModel"];
+            /** @description Optional source location for the transaction. */
+            sourceLocation?: null | string;
             /** @description Credit account for the transaction. */
             creditAccount: components["schemas"]["TransactionAccountModel"];
             /** @description Fund assignments for the transaction. */
@@ -3977,8 +3971,6 @@ export interface components {
              * @description Sequence number for the Transaction.
              */
             sequence: number;
-            /** @description Location for the Transaction. */
-            location: string;
             /** @description Description for the Transaction. */
             description: string;
             /**
@@ -3994,6 +3986,8 @@ export interface components {
             /** @description Debit account for the transaction. */
             debitAccount: components["schemas"]["TransactionAccountModel"];
             creditAccount?: null | components["schemas"]["TransactionAccountModel"];
+            /** @description Optional destination location for the transaction. */
+            destinationLocation?: null | string;
             /** @description Fund assignments for the transaction. */
             fundAssignments: components["schemas"]["TransactionFundModel"][];
             /**
@@ -4020,8 +4014,6 @@ export interface components {
              * @description Sequence number for the Transaction.
              */
             sequence: number;
-            /** @description Location for the Transaction. */
-            location: string;
             /** @description Description for the Transaction. */
             description: string;
             /**
@@ -4160,8 +4152,6 @@ export interface components {
              * @description Date for the Transaction.
              */
             date: string;
-            /** @description Location for the Transaction. */
-            location: string;
             /** @description Description for the Transaction. */
             description: string;
             /**
@@ -4179,8 +4169,6 @@ export interface components {
              * @description Date for the Transaction.
              */
             date: string;
-            /** @description Location for the Transaction. */
-            location: string;
             /** @description Description for the Transaction. */
             description: string;
             /**
@@ -4200,8 +4188,6 @@ export interface components {
              * @description Date for the Transaction.
              */
             date: string;
-            /** @description Location for the Transaction. */
-            location: string;
             /** @description Description for the Transaction. */
             description: string;
             /**
@@ -4221,8 +4207,6 @@ export interface components {
              * @description Date for the Transaction.
              */
             date: string;
-            /** @description Location for the Transaction. */
-            location: string;
             /** @description Description for the Transaction. */
             description: string;
             /**
@@ -4265,12 +4249,12 @@ export enum AccountingPeriodTrendsTransactionSortOrderModel {
     DateDescending = "DateDescending",
     AccountingPeriod = "AccountingPeriod",
     AccountingPeriodDescending = "AccountingPeriodDescending",
-    Location = "Location",
-    LocationDescending = "LocationDescending",
-    DebitFrom = "DebitFrom",
-    DebitFromDescending = "DebitFromDescending",
-    CreditTo = "CreditTo",
-    CreditToDescending = "CreditToDescending",
+    Description = "Description",
+    DescriptionDescending = "DescriptionDescending",
+    Source = "Source",
+    SourceDescending = "SourceDescending",
+    Destination = "Destination",
+    DestinationDescending = "DestinationDescending",
     Amount = "Amount",
     AmountDescending = "AmountDescending"
 }
@@ -4443,12 +4427,12 @@ export enum TransactionSortOrderModel {
     DateDescending = "DateDescending",
     AccountingPeriod = "AccountingPeriod",
     AccountingPeriodDescending = "AccountingPeriodDescending",
-    Location = "Location",
-    LocationDescending = "LocationDescending",
-    DebitFrom = "DebitFrom",
-    DebitFromDescending = "DebitFromDescending",
-    CreditTo = "CreditTo",
-    CreditToDescending = "CreditToDescending",
+    Description = "Description",
+    DescriptionDescending = "DescriptionDescending",
+    Source = "Source",
+    SourceDescending = "SourceDescending",
+    Destination = "Destination",
+    DestinationDescending = "DestinationDescending",
     Amount = "Amount",
     AmountDescending = "AmountDescending"
 }

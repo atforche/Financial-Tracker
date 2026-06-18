@@ -16,9 +16,12 @@ import formatCurrency from "@/framework/formatCurrency";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
-const getDebitFrom = function (transaction: Transaction): string {
-  if ("debitAccount" in transaction) {
-    return transaction.debitAccount?.accountName ?? "";
+const getSource = function (transaction: Transaction): string {
+  if ("debitAccount" in transaction && transaction.debitAccount !== null) {
+    return transaction.debitAccount.accountName;
+  }
+  if ("sourceLocation" in transaction && transaction.sourceLocation !== null) {
+    return transaction.sourceLocation;
   }
   if ("debitFund" in transaction) {
     return transaction.debitFund.fundName;
@@ -26,9 +29,15 @@ const getDebitFrom = function (transaction: Transaction): string {
   return "";
 };
 
-const getCreditTo = function (transaction: Transaction): string {
-  if ("creditAccount" in transaction) {
-    return transaction.creditAccount?.accountName ?? "";
+const getDestination = function (transaction: Transaction): string {
+  if ("creditAccount" in transaction && transaction.creditAccount !== null) {
+    return transaction.creditAccount.accountName;
+  }
+  if (
+    "destinationLocation" in transaction &&
+    transaction.destinationLocation !== null
+  ) {
+    return transaction.destinationLocation;
   }
   if ("creditFund" in transaction) {
     return transaction.creditFund.fundName;
@@ -170,22 +179,22 @@ const AccountingPeriodTrendsTransactionListFrame = function ({
       minWidth: 165,
     },
     {
-      name: "location",
-      headerContent: "Location",
-      getBodyContent: (transaction: Transaction) => transaction.location,
+      name: "description",
+      headerContent: "Description",
+      getBodyContent: (transaction: Transaction) => transaction.description,
       sortType:
-        currentSort === AccountingPeriodTrendsTransactionSortOrder.Location
+        currentSort === AccountingPeriodTrendsTransactionSortOrder.Description
           ? ColumnSortType.Ascending
           : currentSort ===
-              AccountingPeriodTrendsTransactionSortOrder.LocationDescending
+              AccountingPeriodTrendsTransactionSortOrder.DescriptionDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodTrendsTransactionSortOrder.Location);
+          setSort(AccountingPeriodTrendsTransactionSortOrder.Description);
         } else if (sortType === ColumnSortType.Descending) {
           setSort(
-            AccountingPeriodTrendsTransactionSortOrder.LocationDescending,
+            AccountingPeriodTrendsTransactionSortOrder.DescriptionDescending,
           );
         } else {
           setSort(null);
@@ -194,23 +203,21 @@ const AccountingPeriodTrendsTransactionListFrame = function ({
       minWidth: 150,
     },
     {
-      name: "debitFrom",
-      headerContent: "Debit From",
-      getBodyContent: getDebitFrom,
+      name: "source",
+      headerContent: "Source",
+      getBodyContent: getSource,
       sortType:
-        currentSort === AccountingPeriodTrendsTransactionSortOrder.DebitFrom
+        currentSort === AccountingPeriodTrendsTransactionSortOrder.Source
           ? ColumnSortType.Ascending
           : currentSort ===
-              AccountingPeriodTrendsTransactionSortOrder.DebitFromDescending
+              AccountingPeriodTrendsTransactionSortOrder.SourceDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodTrendsTransactionSortOrder.DebitFrom);
+          setSort(AccountingPeriodTrendsTransactionSortOrder.Source);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(
-            AccountingPeriodTrendsTransactionSortOrder.DebitFromDescending,
-          );
+          setSort(AccountingPeriodTrendsTransactionSortOrder.SourceDescending);
         } else {
           setSort(null);
         }
@@ -218,22 +225,22 @@ const AccountingPeriodTrendsTransactionListFrame = function ({
       minWidth: 100,
     },
     {
-      name: "creditTo",
-      headerContent: "Credit To",
-      getBodyContent: getCreditTo,
+      name: "destination",
+      headerContent: "Destination",
+      getBodyContent: getDestination,
       sortType:
-        currentSort === AccountingPeriodTrendsTransactionSortOrder.CreditTo
+        currentSort === AccountingPeriodTrendsTransactionSortOrder.Destination
           ? ColumnSortType.Ascending
           : currentSort ===
-              AccountingPeriodTrendsTransactionSortOrder.CreditToDescending
+              AccountingPeriodTrendsTransactionSortOrder.DestinationDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodTrendsTransactionSortOrder.CreditTo);
+          setSort(AccountingPeriodTrendsTransactionSortOrder.Destination);
         } else if (sortType === ColumnSortType.Descending) {
           setSort(
-            AccountingPeriodTrendsTransactionSortOrder.CreditToDescending,
+            AccountingPeriodTrendsTransactionSortOrder.DestinationDescending,
           );
         } else {
           setSort(null);

@@ -100,7 +100,6 @@ public abstract class TransactionService(
         {
             transaction.Sequence = TransactionRepository.GetNextSequenceForDate(request.TransactionDate);
         }
-        transaction.Location = request.Location;
         transaction.Description = request.Description;
         transaction.Amount = request.Amount;
         updateAdditionalProperties?.Invoke();

@@ -12,9 +12,12 @@ import formatCurrency from "@/framework/formatCurrency";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
-const getDebitFrom = function (transaction: Transaction): string {
-  if ("debitAccount" in transaction) {
-    return transaction.debitAccount?.accountName ?? "";
+const getSource = function (transaction: Transaction): string {
+  if ("debitAccount" in transaction && transaction.debitAccount !== null) {
+    return transaction.debitAccount.accountName;
+  }
+  if ("sourceLocation" in transaction && transaction.sourceLocation !== null) {
+    return transaction.sourceLocation;
   }
   if ("debitFund" in transaction) {
     return transaction.debitFund.fundName;
@@ -22,9 +25,15 @@ const getDebitFrom = function (transaction: Transaction): string {
   return "";
 };
 
-const getCreditTo = function (transaction: Transaction): string {
-  if ("creditAccount" in transaction) {
-    return transaction.creditAccount?.accountName ?? "";
+const getDestination = function (transaction: Transaction): string {
+  if ("creditAccount" in transaction && transaction.creditAccount !== null) {
+    return transaction.creditAccount.accountName;
+  }
+  if (
+    "destinationLocation" in transaction &&
+    transaction.destinationLocation !== null
+  ) {
+    return transaction.destinationLocation;
   }
   if ("creditFund" in transaction) {
     return transaction.creditFund.fundName;
@@ -41,7 +50,6 @@ const getAccountIds = function (transaction: Transaction): string[] {
   if ("creditAccount" in transaction && transaction.creditAccount !== null) {
     accountIds.add(transaction.creditAccount.accountId);
   }
-
   return Array.from(accountIds);
 };
 
@@ -174,20 +182,20 @@ const TransactionTrendsListFrame = function ({
       minWidth: 165,
     },
     {
-      name: "location",
-      headerContent: "Location",
-      getBodyContent: (transaction: Transaction) => transaction.location,
+      name: "description",
+      headerContent: "Description",
+      getBodyContent: (transaction: Transaction) => transaction.description,
       sortType:
-        currentSort === TransactionSortOrder.Location
+        currentSort === TransactionSortOrder.Description
           ? ColumnSortType.Ascending
-          : currentSort === TransactionSortOrder.LocationDescending
+          : currentSort === TransactionSortOrder.DescriptionDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSortOrder.Location);
+          setSort(TransactionSortOrder.Description);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSortOrder.LocationDescending);
+          setSort(TransactionSortOrder.DescriptionDescending);
         } else {
           setSort(null);
         }
@@ -195,20 +203,20 @@ const TransactionTrendsListFrame = function ({
       minWidth: 150,
     },
     {
-      name: "debitFrom",
-      headerContent: "Debit From",
-      getBodyContent: getDebitFrom,
+      name: "source",
+      headerContent: "Source",
+      getBodyContent: getSource,
       sortType:
-        currentSort === TransactionSortOrder.DebitFrom
+        currentSort === TransactionSortOrder.Source
           ? ColumnSortType.Ascending
-          : currentSort === TransactionSortOrder.DebitFromDescending
+          : currentSort === TransactionSortOrder.SourceDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSortOrder.DebitFrom);
+          setSort(TransactionSortOrder.Source);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSortOrder.DebitFromDescending);
+          setSort(TransactionSortOrder.SourceDescending);
         } else {
           setSort(null);
         }
@@ -216,20 +224,20 @@ const TransactionTrendsListFrame = function ({
       minWidth: 170,
     },
     {
-      name: "creditTo",
-      headerContent: "Credit To",
-      getBodyContent: getCreditTo,
+      name: "destination",
+      headerContent: "Destination",
+      getBodyContent: getDestination,
       sortType:
-        currentSort === TransactionSortOrder.CreditTo
+        currentSort === TransactionSortOrder.Destination
           ? ColumnSortType.Ascending
-          : currentSort === TransactionSortOrder.CreditToDescending
+          : currentSort === TransactionSortOrder.DestinationDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSortOrder.CreditTo);
+          setSort(TransactionSortOrder.Destination);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSortOrder.CreditToDescending);
+          setSort(TransactionSortOrder.DestinationDescending);
         } else {
           setSort(null);
         }

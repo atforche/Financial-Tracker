@@ -35,6 +35,11 @@ public class SpendingTransaction : Transaction
     public DateOnly? CreditPostedDate { get; internal set; }
 
     /// <summary>
+    /// External location where the money for this Spending Transaction was spent (if not an account).
+    /// </summary>
+    public string? DestinationLocation { get; private set; }
+
+    /// <summary>
     /// Fund assignments for this Spending Transaction
     /// </summary>
     public IReadOnlyCollection<FundAmount> FundAssignments => _fundAssignments;
@@ -104,6 +109,7 @@ public class SpendingTransaction : Transaction
     {
         DebitAccountId = request.DebitAccount.Id;
         CreditAccountId = request.CreditAccount?.Id;
+        DestinationLocation = request.DestinationLocation;
         UpdateFundAssignments(request.FundAssignments);
     }
 

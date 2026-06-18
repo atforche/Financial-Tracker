@@ -191,6 +191,14 @@ public class IncomeTransactionService(
         {
             exceptions = exceptions.Append(new InvalidAccountException("Income Transactions cannot debit a tracked account"));
         }
+        if (request.DebitAccount == null && string.IsNullOrWhiteSpace(request.SourceLocation))
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("Income Transactions must have either a Debit Account or a Source Location"));
+        }
+        if (request.DebitAccount != null && !string.IsNullOrWhiteSpace(request.SourceLocation))
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("Income Transactions cannot have both a Debit Account and a Source Location"));
+        }
         return !exceptions.Any();
     }
 }

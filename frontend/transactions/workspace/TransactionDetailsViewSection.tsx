@@ -9,7 +9,8 @@ import formatCurrency from "@/framework/formatCurrency";
 interface TransactionDetailsViewSectionProps {
   readonly accountingPeriod: AccountingPeriod;
   readonly date: string;
-  readonly location: string;
+  readonly locationLabel?: string | null;
+  readonly locationValue?: string | null;
   readonly description: string;
   readonly amount: number;
 }
@@ -20,7 +21,8 @@ interface TransactionDetailsViewSectionProps {
 const TransactionDetailsViewSection = function ({
   accountingPeriod,
   date,
-  location,
+  locationLabel = null,
+  locationValue = null,
   description,
   amount,
 }: TransactionDetailsViewSectionProps): JSX.Element {
@@ -45,7 +47,14 @@ const TransactionDetailsViewSection = function ({
           label="Date"
           value={dayjs(date).format("MMMM D, YYYY")}
         />
-        <TransactionDisplayField label="Location" value={location} />
+        {locationLabel !== null &&
+        locationValue !== null &&
+        locationValue !== "" ? (
+          <TransactionDisplayField
+            label={locationLabel}
+            value={locationValue}
+          />
+        ) : null}
         <TransactionDisplayField
           label="Amount"
           value={formatCurrency(amount)}

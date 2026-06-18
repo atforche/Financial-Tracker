@@ -51,7 +51,6 @@ const CreateFundTransactionForm = function ({
       ? dayjs(`${accountingPeriod.year}-${accountingPeriod.month}-01`)
       : null;
   const [date, setDate] = useState<Dayjs | null>(null);
-  const [location, setLocation] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [amount, setAmount] = useState<number | null>(null);
   const [debitFund, setDebitFund] = useState<Fund | null>(null);
@@ -66,7 +65,6 @@ const CreateFundTransactionForm = function ({
         : null,
     );
     setDate(null);
-    setLocation("");
     setDescription("");
     setAmount(null);
     setDebitFund(null);
@@ -90,7 +88,6 @@ const CreateFundTransactionForm = function ({
   if (
     accountingPeriod !== null &&
     (date !== null || defaultDate !== null) &&
-    location !== "" &&
     description !== "" &&
     amount !== null &&
     amount > 0 &&
@@ -101,7 +98,6 @@ const CreateFundTransactionForm = function ({
       accountingPeriodId: accountingPeriod.id,
       date:
         date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
-      location,
       description,
       amount,
       debitFundId: debitFund?.id ?? "",
@@ -118,8 +114,6 @@ const CreateFundTransactionForm = function ({
           setAccountingPeriod={setAccountingPeriod}
           date={date ?? defaultDate}
           setDate={setDate}
-          location={location}
-          setLocation={setLocation}
           descriptionValue={description}
           setDescriptionValue={setDescription}
           amount={amount}

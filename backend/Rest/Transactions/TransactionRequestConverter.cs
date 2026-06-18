@@ -110,11 +110,11 @@ public sealed class TransactionRequestConverter(
         {
             AccountingPeriodId = accountingPeriod.Id,
             TransactionDate = model.Date,
-            Location = model.Location,
             Description = model.Description,
             Amount = model.Amount,
             DebitAccount = debitAccount,
             CreditAccount = creditAccount,
+            DestinationLocation = model.DestinationLocation,
             FundAssignments = fundAssignments,
         };
     }
@@ -141,11 +141,11 @@ public sealed class TransactionRequestConverter(
         {
             AccountingPeriodId = accountingPeriod.Id,
             TransactionDate = model.Date,
-            Location = model.Location,
             Description = model.Description,
             Amount = model.Amount,
             CreditAccount = creditAccount,
             DebitAccount = debitAccount,
+            SourceLocation = model.SourceLocation,
             FundAssignments = fundAssignments,
         };
     }
@@ -169,7 +169,6 @@ public sealed class TransactionRequestConverter(
         {
             AccountingPeriodId = accountingPeriod.Id,
             TransactionDate = model.Date,
-            Location = model.Location,
             Description = model.Description,
             Amount = model.Amount,
             DebitAccount = debitAccount,
@@ -194,7 +193,6 @@ public sealed class TransactionRequestConverter(
         {
             AccountingPeriodId = accountingPeriod.Id,
             TransactionDate = model.Date,
-            Location = model.Location,
             Description = model.Description,
             Amount = model.Amount,
             DebitFund = debitFund,
@@ -211,7 +209,6 @@ public sealed class TransactionRequestConverter(
         return new UpdateSpendingTransactionRequest
         {
             TransactionDate = model.Date,
-            Location = model.Location,
             Description = model.Description,
             Amount = model.Amount,
             FundAssignments = fundAssignments,
@@ -227,7 +224,6 @@ public sealed class TransactionRequestConverter(
         return new UpdateIncomeTransactionRequest
         {
             TransactionDate = model.Date,
-            Location = model.Location,
             Description = model.Description,
             Amount = model.Amount,
             FundAssignments = fundAssignments,
@@ -238,7 +234,6 @@ public sealed class TransactionRequestConverter(
         new()
         {
             TransactionDate = model.Date,
-            Location = model.Location,
             Description = model.Description,
             Amount = model.Amount,
         };
@@ -247,7 +242,6 @@ public sealed class TransactionRequestConverter(
         new()
         {
             TransactionDate = model.Date,
-            Location = model.Location,
             Description = model.Description,
             Amount = model.Amount,
         };

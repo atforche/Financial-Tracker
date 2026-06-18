@@ -52,6 +52,7 @@ const CreateSpendingTransactionForm = function ({
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
   const formRef = useRef<HTMLDivElement | null>(null);
+
   const getAccountById = function (accountId: string): Account | null {
     return accounts.find((account) => account.id === accountId) ?? null;
   };
@@ -67,7 +68,7 @@ const CreateSpendingTransactionForm = function ({
       ? dayjs(`${accountingPeriod.year}-${accountingPeriod.month}-01`)
       : null;
   const [date, setDate] = useState<Dayjs | null>(null);
-  const [location, setLocation] = useState<string>("");
+  const [destinationLocation, setDestinationLocation] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [amount, setAmount] = useState<number | null>(null);
   const [paymentAccount, setPaymentAccount] = useState<Account | null>(null);
@@ -91,7 +92,7 @@ const CreateSpendingTransactionForm = function ({
         : null,
     );
     setDate(null);
-    setLocation("");
+    setDestinationLocation("");
     setDescription("");
     setAmount(null);
     setPaymentAccount(null);
@@ -120,15 +121,24 @@ const CreateSpendingTransactionForm = function ({
     );
   };
 
+  const onDestinationAccountChange = function (account: Account | null): void {
+    setDestinationAccount(account);
+    if (account !== null) {
+      setDestinationLocation("");
+    }
+  };
+
+  const normalizedDestinationLocation = destinationLocation.trim();
+
   let request: CreateTransactionRequest | null = null;
   if (
     accountingPeriod !== null &&
     (date !== null || defaultDate !== null) &&
-    location !== "" &&
     description !== "" &&
     amount !== null &&
     amount > 0 &&
     paymentAccount !== null &&
+    (destinationAccount !== null || normalizedDestinationLocation !== "") &&
     isSpendingTransactionComplete(fundAssignments)
   ) {
     request = {
@@ -136,11 +146,14 @@ const CreateSpendingTransactionForm = function ({
       accountingPeriodId: accountingPeriod.id,
       date:
         date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
-      location,
       description,
       amount,
       debitAccountId: paymentAccount.id,
       creditAccountId: destinationAccount?.id ?? null,
+      destinationLocation:
+        destinationAccount === null
+          ? normalizedDestinationLocation || null
+          : null,
       fundAssignments: fundAssignments
         .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
         .map((fundAmount) => ({
@@ -159,8 +172,13 @@ const CreateSpendingTransactionForm = function ({
           setAccountingPeriod={setAccountingPeriod}
           date={date ?? defaultDate}
           setDate={setDate}
-          location={location}
-          setLocation={setLocation}
+          locationLabel={
+            destinationAccount === null ? "Destination Location" : null
+          }
+          locationValue={destinationLocation}
+          setLocationValue={
+            destinationAccount === null ? setDestinationLocation : null
+          }
           descriptionValue={description}
           setDescriptionValue={setDescription}
           amount={amount}
@@ -168,14 +186,14 @@ const CreateSpendingTransactionForm = function ({
         />
         <TransactionAccountPairSection
           title="Money Flow"
-          description="Choose the tracked account being charged and optionally the untracked destination account."
+          description="Choose the tracked account being charged and either the untracked destination account or a destination location."
           accounts={accounts}
           leftLabel="Spend From"
           rightLabel="Pay To"
           leftAccount={paymentAccount}
           rightAccount={destinationAccount}
           setLeftAccount={setPaymentAccount}
-          setRightAccount={setDestinationAccount}
+          setRightAccount={onDestinationAccountChange}
           leftFilter={(account) => {
             const selectedAccount = getAccountById(account.id);
             return (

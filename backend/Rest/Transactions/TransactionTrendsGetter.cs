@@ -327,12 +327,12 @@ public class TransactionTrendsGetter(
             TransactionSortOrderModel.DateDescending => transactions.OrderByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
             TransactionSortOrderModel.AccountingPeriod => transactions.OrderBy(transaction => transaction.AccountingPeriodName).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
             TransactionSortOrderModel.AccountingPeriodDescending => transactions.OrderByDescending(transaction => transaction.AccountingPeriodName).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
-            TransactionSortOrderModel.Location => transactions.OrderBy(transaction => transaction.Location).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
-            TransactionSortOrderModel.LocationDescending => transactions.OrderByDescending(transaction => transaction.Location).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
-            TransactionSortOrderModel.DebitFrom => transactions.OrderBy(GetDebitFrom).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
-            TransactionSortOrderModel.DebitFromDescending => transactions.OrderByDescending(GetDebitFrom).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
-            TransactionSortOrderModel.CreditTo => transactions.OrderBy(GetCreditTo).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
-            TransactionSortOrderModel.CreditToDescending => transactions.OrderByDescending(GetCreditTo).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
+            TransactionSortOrderModel.Description => transactions.OrderBy(transaction => transaction.Description).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
+            TransactionSortOrderModel.DescriptionDescending => transactions.OrderByDescending(transaction => transaction.Description).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
+            TransactionSortOrderModel.Source => transactions.OrderBy(GetSource).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
+            TransactionSortOrderModel.SourceDescending => transactions.OrderByDescending(GetSource).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
+            TransactionSortOrderModel.Destination => transactions.OrderBy(GetDestination).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
+            TransactionSortOrderModel.DestinationDescending => transactions.OrderByDescending(GetDestination).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
             TransactionSortOrderModel.Amount => transactions.OrderBy(transaction => transaction.Amount).ThenBy(transaction => transaction.Date).ThenBy(transaction => transaction.Sequence).ToList(),
             TransactionSortOrderModel.AmountDescending => transactions.OrderByDescending(transaction => transaction.Amount).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList(),
             _ => transactions,
@@ -409,18 +409,18 @@ public class TransactionTrendsGetter(
         _ => [],
     };
 
-    private static string? GetDebitFrom(TransactionModel transaction) => transaction switch
+    private static string? GetSource(TransactionModel transaction) => transaction switch
     {
         SpendingTransactionModel spendingTransaction => spendingTransaction.DebitAccount.AccountName,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.DebitAccount?.AccountName,
+        IncomeTransactionModel incomeTransaction => incomeTransaction.DebitAccount?.AccountName ?? incomeTransaction.SourceLocation,
         AccountTransactionModel accountTransaction => accountTransaction.DebitAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.DebitFund?.FundName,
         _ => null,
     };
 
-    private static string? GetCreditTo(TransactionModel transaction) => transaction switch
+    private static string? GetDestination(TransactionModel transaction) => transaction switch
     {
-        SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName,
+        SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName ?? spendingTransaction.DestinationLocation,
         IncomeTransactionModel incomeTransaction => incomeTransaction.CreditAccount.AccountName,
         AccountTransactionModel accountTransaction => accountTransaction.CreditAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,

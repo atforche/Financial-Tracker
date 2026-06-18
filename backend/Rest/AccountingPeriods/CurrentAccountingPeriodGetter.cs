@@ -104,33 +104,33 @@ public class CurrentAccountingPeriodGetter(
                 .OrderByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.Location => transactions
-                .OrderBy(transaction => transaction.Location)
+            AccountingPeriodTrendsTransactionSortOrderModel.Description => transactions
+                .OrderBy(transaction => transaction.Description)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.LocationDescending => transactions
-                .OrderByDescending(transaction => transaction.Location)
+            AccountingPeriodTrendsTransactionSortOrderModel.DescriptionDescending => transactions
+                .OrderByDescending(transaction => transaction.Description)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.DebitFrom => transactions
-                .OrderBy(GetDebitFrom)
+            AccountingPeriodTrendsTransactionSortOrderModel.Source => transactions
+                .OrderBy(GetSource)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.DebitFromDescending => transactions
-                .OrderByDescending(GetDebitFrom)
+            AccountingPeriodTrendsTransactionSortOrderModel.SourceDescending => transactions
+                .OrderByDescending(GetSource)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.CreditTo => transactions
-                .OrderBy(GetCreditTo)
+            AccountingPeriodTrendsTransactionSortOrderModel.Destination => transactions
+                .OrderBy(GetDestination)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.CreditToDescending => transactions
-                .OrderByDescending(GetCreditTo)
+            AccountingPeriodTrendsTransactionSortOrderModel.DestinationDescending => transactions
+                .OrderByDescending(GetDestination)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
@@ -147,18 +147,18 @@ public class CurrentAccountingPeriodGetter(
             _ => transactions,
         };
 
-    private static string? GetDebitFrom(TransactionModel transaction) => transaction switch
+    private static string? GetSource(TransactionModel transaction) => transaction switch
     {
         SpendingTransactionModel spendingTransaction => spendingTransaction.DebitAccount.AccountName,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.DebitAccount?.AccountName,
+        IncomeTransactionModel incomeTransaction => incomeTransaction.DebitAccount?.AccountName ?? incomeTransaction.SourceLocation,
         AccountTransactionModel accountTransaction => accountTransaction.DebitAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.DebitFund?.FundName,
         _ => null,
     };
 
-    private static string? GetCreditTo(TransactionModel transaction) => transaction switch
+    private static string? GetDestination(TransactionModel transaction) => transaction switch
     {
-        SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName,
+        SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName ?? spendingTransaction.DestinationLocation,
         IncomeTransactionModel incomeTransaction => incomeTransaction.CreditAccount.AccountName,
         AccountTransactionModel accountTransaction => accountTransaction.CreditAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,

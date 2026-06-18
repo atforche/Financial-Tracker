@@ -119,20 +119,20 @@ const TransactionWorkspaceListFrame = function ({
       minWidth: 125,
     },
     {
-      name: "location",
-      headerContent: "Location",
-      getBodyContent: (transaction: Transaction) => transaction.location,
+      name: "description",
+      headerContent: "Description",
+      getBodyContent: (transaction: Transaction) => transaction.description,
       sortType:
-        currentSort === TransactionSortOrder.Location
+        currentSort === TransactionSortOrder.Description
           ? ColumnSortType.Ascending
-          : currentSort === TransactionSortOrder.LocationDescending
+          : currentSort === TransactionSortOrder.DescriptionDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType: ColumnSortType | null): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSortOrder.Location);
+          setSort(TransactionSortOrder.Description);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSortOrder.LocationDescending);
+          setSort(TransactionSortOrder.DescriptionDescending);
         } else {
           setSort(null);
         }

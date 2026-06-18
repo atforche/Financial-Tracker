@@ -181,7 +181,6 @@ namespace Data.Migrations
                     AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Date = table.Column<DateOnly>(type: "TEXT", nullable: false),
                     Sequence = table.Column<int>(type: "INTEGER", nullable: false),
-                    Location = table.Column<string>(type: "TEXT", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
                     Amount = table.Column<decimal>(type: "TEXT", nullable: false),
                     AccountTransaction_DebitAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
@@ -194,10 +193,12 @@ namespace Data.Migrations
                     IncomeTransaction_CreditPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     IncomeTransaction_DebitAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
                     IncomeTransaction_DebitPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+                    IncomeTransaction_SourceLocation = table.Column<string>(type: "TEXT", nullable: true),
                     SpendingTransaction_DebitAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
                     SpendingTransaction_DebitPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     SpendingTransaction_CreditAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    SpendingTransaction_CreditPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true)
+                    SpendingTransaction_CreditPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+                    SpendingTransaction_DestinationLocation = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {

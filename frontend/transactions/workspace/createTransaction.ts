@@ -4,12 +4,8 @@ import type { CreateTransactionRequest } from "@/transactions/types";
 import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
-import nameof from "@/framework/data/nameof";
 import { revalidatePath } from "next/cache";
 
-/**
- * Interface representing the state of creating a transaction.
- */
 interface ActionState {
   readonly success?: boolean;
   readonly transactionId?: string | null;
@@ -17,6 +13,8 @@ interface ActionState {
   readonly accountingPeriodErrors?: string | null;
   readonly dateErrors?: string | null;
   readonly locationErrors?: string | null;
+  readonly sourceLocationErrors?: string | null;
+  readonly destinationLocationErrors?: string | null;
   readonly descriptionErrors?: string | null;
   readonly amountErrors?: string | null;
   readonly debitAccountErrors?: string | null;
@@ -49,35 +47,28 @@ const createTransaction = async function (
       let accountingPeriodErrors = null;
       let dateErrors = null;
       let locationErrors = null;
+      let sourceLocationErrors = null;
+      let destinationLocationErrors = null;
       let descriptionErrors = null;
       let amountErrors = null;
       const unmappedErrors: (string | null)[] = [];
 
       for (const key of Object.keys(error.errors ?? {})) {
-        if (
-          key.toUpperCase() ===
-          nameof<CreateTransactionRequest>("accountingPeriodId").toUpperCase()
-        ) {
+        const normalizedKey = key.toUpperCase();
+
+        if (normalizedKey === "ACCOUNTINGPERIODID") {
           accountingPeriodErrors = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateTransactionRequest>("date").toUpperCase()
-        ) {
+        } else if (normalizedKey === "DATE") {
           dateErrors = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateTransactionRequest>("location").toUpperCase()
-        ) {
+        } else if (normalizedKey === "LOCATION") {
           locationErrors = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateTransactionRequest>("description").toUpperCase()
-        ) {
+        } else if (normalizedKey === "SOURCELOCATION") {
+          sourceLocationErrors = formatErrors(error.errors?.[key] ?? null);
+        } else if (normalizedKey === "DESTINATIONLOCATION") {
+          destinationLocationErrors = formatErrors(error.errors?.[key] ?? null);
+        } else if (normalizedKey === "DESCRIPTION") {
           descriptionErrors = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateTransactionRequest>("amount").toUpperCase()
-        ) {
+        } else if (normalizedKey === "AMOUNT") {
           amountErrors = formatErrors(error.errors?.[key] ?? null);
         } else {
           unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
@@ -88,6 +79,8 @@ const createTransaction = async function (
         accountingPeriodErrors,
         dateErrors,
         locationErrors,
+        sourceLocationErrors,
+        destinationLocationErrors,
         descriptionErrors,
         amountErrors,
         unmappedErrors: unmappedErrors.filter(Boolean).join(", ") || null,

@@ -26,34 +26,34 @@ public enum TransactionSortOrderModel
     AccountingPeriodDescending,
 
     /// <summary>
-    /// Transactions are sorted by location in ascending order
+    /// Transactions are sorted by description in ascending order
     /// </summary>
-    Location,
+    Description,
 
     /// <summary>
-    /// Transactions are sorted by location in descending order
+    /// Transactions are sorted by description in descending order
     /// </summary>
-    LocationDescending,
+    DescriptionDescending,
 
     /// <summary>
-    /// Transactions are sorted by debit from in ascending order
+    /// Transactions are sorted by source in ascending order
     /// </summary>
-    DebitFrom,
+    Source,
 
     /// <summary>
-    /// Transactions are sorted by debit from in descending order
+    /// Transactions are sorted by source in descending order
     /// </summary>
-    DebitFromDescending,
+    SourceDescending,
 
     /// <summary>
-    /// Transactions are sorted by credit to in ascending order
+    /// Transactions are sorted by destination in ascending order
     /// </summary>
-    CreditTo,
+    Destination,
 
     /// <summary>
-    /// Transactions are sorted by credit to in descending order
+    /// Transactions are sorted by destination in descending order
     /// </summary>
-    CreditToDescending,
+    DestinationDescending,
 
     /// <summary>
     /// Transactions are sorted by amount in ascending order

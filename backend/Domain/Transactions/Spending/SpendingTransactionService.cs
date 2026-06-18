@@ -212,6 +212,14 @@ public class SpendingTransactionService(
         {
             exceptions = exceptions.Append(new InvalidAccountException("Spending Transactions cannot credit a tracked account"));
         }
+        if (request.DebitAccount == null && string.IsNullOrWhiteSpace(request.DestinationLocation))
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("Spending Transactions must have either a Debit Account or a Destination Location"));
+        }
+        if (request.DebitAccount != null && !string.IsNullOrWhiteSpace(request.DestinationLocation))
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("Spending Transactions cannot have both a Debit Account and a Destination Location"));
+        }
         return !exceptions.Any();
     }
 }

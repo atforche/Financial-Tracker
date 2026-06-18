@@ -33,11 +33,6 @@ public abstract class Transaction : Entity<TransactionId>
     public int Sequence { get; internal set; }
 
     /// <summary>
-    /// Location for this Transaction
-    /// </summary>
-    public string Location { get; internal set; }
-
-    /// <summary>
     /// Description for this Transaction
     /// </summary>
     public string Description { get; internal set; }
@@ -132,7 +127,6 @@ public abstract class Transaction : Entity<TransactionId>
         AccountingPeriodId = request.AccountingPeriodId;
         Date = request.TransactionDate;
         Sequence = sequence;
-        Location = request.Location;
         Description = request.Description;
         Amount = request.Amount;
     }
@@ -143,7 +137,6 @@ public abstract class Transaction : Entity<TransactionId>
     protected Transaction() : base()
     {
         AccountingPeriodId = null!;
-        Location = null!;
         Description = null!;
     }
 

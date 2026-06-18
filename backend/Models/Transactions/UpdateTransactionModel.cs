@@ -19,11 +19,6 @@ public abstract class UpdateTransactionModel
     public required DateOnly Date { get; init; }
 
     /// <summary>
-    /// Location for the Transaction.
-    /// </summary>
-    public required string Location { get; init; }
-
-    /// <summary>
     /// Description for the Transaction.
     /// </summary>
     public required string Description { get; init; }

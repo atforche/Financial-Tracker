@@ -43,11 +43,6 @@ public abstract class TransactionModel
     public required int Sequence { get; init; }
 
     /// <summary>
-    /// Location for the Transaction.
-    /// </summary>
-    public required string Location { get; init; }
-
-    /// <summary>
     /// Description for the Transaction.
     /// </summary>
     public required string Description { get; init; }
@@ -74,6 +69,11 @@ public sealed class SpendingTransactionModel : TransactionModel
     public TransactionAccountModel? CreditAccount { get; init; }
 
     /// <summary>
+    /// Optional destination location for the transaction.
+    /// </summary>
+    public string? DestinationLocation { get; init; }
+
+    /// <summary>
     /// Fund assignments for the transaction.
     /// </summary>
     public required IReadOnlyCollection<TransactionFundModel> FundAssignments { get; init; }
@@ -88,6 +88,11 @@ public sealed class IncomeTransactionModel : TransactionModel
     /// Optional debit account for the transaction.
     /// </summary>
     public TransactionAccountModel? DebitAccount { get; init; }
+
+    /// <summary>
+    /// Optional source location for the transaction.
+    /// </summary>
+    public string? SourceLocation { get; init; }
 
     /// <summary>
     /// Credit account for the transaction.

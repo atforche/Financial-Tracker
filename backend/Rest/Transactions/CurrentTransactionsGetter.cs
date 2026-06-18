@@ -300,33 +300,33 @@ public class CurrentTransactionsGetter(
                 .OrderByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            TransactionSortOrderModel.Location => transactions
-                .OrderBy(transaction => transaction.Location)
+            TransactionSortOrderModel.Description => transactions
+                .OrderBy(transaction => transaction.Description)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            TransactionSortOrderModel.LocationDescending => transactions
-                .OrderByDescending(transaction => transaction.Location)
+            TransactionSortOrderModel.DescriptionDescending => transactions
+                .OrderByDescending(transaction => transaction.Description)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            TransactionSortOrderModel.DebitFrom => transactions
-                .OrderBy(GetDebitFrom)
+            TransactionSortOrderModel.Source => transactions
+                .OrderBy(GetSource)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            TransactionSortOrderModel.DebitFromDescending => transactions
-                .OrderByDescending(GetDebitFrom)
+            TransactionSortOrderModel.SourceDescending => transactions
+                .OrderByDescending(GetSource)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            TransactionSortOrderModel.CreditTo => transactions
-                .OrderBy(GetCreditTo)
+            TransactionSortOrderModel.Destination => transactions
+                .OrderBy(GetDestination)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            TransactionSortOrderModel.CreditToDescending => transactions
-                .OrderByDescending(GetCreditTo)
+            TransactionSortOrderModel.DestinationDescending => transactions
+                .OrderByDescending(GetDestination)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
@@ -343,18 +343,18 @@ public class CurrentTransactionsGetter(
             _ => transactions,
         };
 
-    private static string? GetDebitFrom(TransactionModel transaction) => transaction switch
+    private static string? GetSource(TransactionModel transaction) => transaction switch
     {
         SpendingTransactionModel spendingTransaction => spendingTransaction.DebitAccount.AccountName,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.DebitAccount?.AccountName,
+        IncomeTransactionModel incomeTransaction => incomeTransaction.DebitAccount?.AccountName ?? incomeTransaction.SourceLocation,
         AccountTransactionModel accountTransaction => accountTransaction.DebitAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.DebitFund?.FundName,
         _ => null,
     };
 
-    private static string? GetCreditTo(TransactionModel transaction) => transaction switch
+    private static string? GetDestination(TransactionModel transaction) => transaction switch
     {
-        SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName,
+        SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName ?? spendingTransaction.DestinationLocation,
         IncomeTransactionModel incomeTransaction => incomeTransaction.CreditAccount.AccountName,
         AccountTransactionModel accountTransaction => accountTransaction.CreditAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,

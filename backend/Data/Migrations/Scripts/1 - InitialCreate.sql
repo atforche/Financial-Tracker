@@ -95,7 +95,6 @@ CREATE TABLE "Transactions" (
     "AccountingPeriodId" TEXT NOT NULL,
     "Date" TEXT NOT NULL,
     "Sequence" INTEGER NOT NULL,
-    "Location" TEXT NOT NULL,
     "Description" TEXT NOT NULL,
     "Amount" TEXT NOT NULL,
     "AccountTransaction_DebitAccountId" TEXT NULL,
@@ -108,10 +107,12 @@ CREATE TABLE "Transactions" (
     "IncomeTransaction_CreditPostedDate" TEXT NULL,
     "IncomeTransaction_DebitAccountId" TEXT NULL,
     "IncomeTransaction_DebitPostedDate" TEXT NULL,
+    "IncomeTransaction_SourceLocation" TEXT NULL,
     "SpendingTransaction_DebitAccountId" TEXT NULL,
     "SpendingTransaction_DebitPostedDate" TEXT NULL,
     "SpendingTransaction_CreditAccountId" TEXT NULL,
     "SpendingTransaction_CreditPostedDate" TEXT NULL,
+    "SpendingTransaction_DestinationLocation" TEXT NULL,
     CONSTRAINT "FK_Transactions_Accounts_AccountTransaction_CreditAccountId" FOREIGN KEY ("AccountTransaction_CreditAccountId") REFERENCES "Accounts" ("Id"),
     CONSTRAINT "FK_Transactions_Accounts_AccountTransaction_DebitAccountId" FOREIGN KEY ("AccountTransaction_DebitAccountId") REFERENCES "Accounts" ("Id"),
     CONSTRAINT "FK_Transactions_Accounts_IncomeTransaction_CreditAccountId" FOREIGN KEY ("IncomeTransaction_CreditAccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
@@ -213,7 +214,7 @@ CREATE INDEX "IX_Transactions_SpendingTransaction_CreditAccountId" ON "Transacti
 CREATE INDEX "IX_Transactions_SpendingTransaction_DebitAccountId" ON "Transactions" ("SpendingTransaction_DebitAccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260614203142_InitialCreate', '10.0.2');
+VALUES ('20260618015540_InitialCreate', '10.0.2');
 
 COMMIT;
 

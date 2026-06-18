@@ -20,8 +20,9 @@ interface TransactionDetailsSectionProps {
     | null;
   readonly date: Dayjs | null;
   readonly setDate: (date: Dayjs | null) => void;
-  readonly location: string;
-  readonly setLocation: (location: string) => void;
+  readonly locationLabel?: string | null;
+  readonly locationValue?: string;
+  readonly setLocationValue?: ((location: string) => void) | null;
   readonly descriptionValue: string;
   readonly setDescriptionValue: (description: string) => void;
   readonly amount: number | null;
@@ -37,8 +38,9 @@ const TransactionDetailsSection = function ({
   setAccountingPeriod,
   date,
   setDate,
-  location,
-  setLocation,
+  locationLabel = null,
+  locationValue = "",
+  setLocationValue = null,
   descriptionValue,
   setDescriptionValue,
   amount,
@@ -70,11 +72,13 @@ const TransactionDetailsSection = function ({
           minDate={accountingPeriod ? getMinimumDate(accountingPeriod) : null}
           maxDate={accountingPeriod ? getMaximumDate(accountingPeriod) : null}
         />
-        <StringEntryField
-          label="Location"
-          value={location}
-          setValue={setLocation}
-        />
+        {locationLabel !== null && setLocationValue !== null ? (
+          <StringEntryField
+            label={locationLabel}
+            value={locationValue}
+            setValue={setLocationValue}
+          />
+        ) : null}
         <CurrencyEntryField
           label="Amount"
           value={amount}

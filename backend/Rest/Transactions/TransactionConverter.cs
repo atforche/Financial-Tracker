@@ -40,13 +40,13 @@ public sealed class TransactionConverter(
                 AccountingPeriodName = accountingPeriodRepository.GetById(transaction.AccountingPeriodId).PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
                 Date = transaction.Date,
                 Sequence = transaction.Sequence,
-                Location = transaction.Location,
                 Description = transaction.Description,
                 Amount = transaction.Amount,
                 DebitAccount = BuildAccountModel(transaction, spendingTransaction.DebitAccountId, spendingTransaction.DebitPostedDate, TransactionAccountTypeModel.Debit),
                 CreditAccount = spendingTransaction.CreditAccountId != null
                     ? BuildAccountModel(transaction, spendingTransaction.CreditAccountId, spendingTransaction.CreditPostedDate, TransactionAccountTypeModel.Credit)
                     : null,
+                DestinationLocation = spendingTransaction.DestinationLocation,
                 FundAssignments = spendingTransaction.FundAssignments.Select(fundAmount => BuildFundModel(transaction, fundAmount)).ToList(),
             },
             IncomeTransaction incomeTransaction => new IncomeTransactionModel
@@ -57,12 +57,12 @@ public sealed class TransactionConverter(
                 AccountingPeriodName = accountingPeriodRepository.GetById(transaction.AccountingPeriodId).PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
                 Date = transaction.Date,
                 Sequence = transaction.Sequence,
-                Location = transaction.Location,
                 Description = transaction.Description,
                 Amount = transaction.Amount,
                 DebitAccount = incomeTransaction.DebitAccountId != null
                     ? BuildAccountModel(transaction, incomeTransaction.DebitAccountId, incomeTransaction.DebitPostedDate, TransactionAccountTypeModel.Debit)
                     : null,
+                SourceLocation = incomeTransaction.SourceLocation,
                 CreditAccount = BuildAccountModel(transaction, incomeTransaction.CreditAccountId, incomeTransaction.CreditPostedDate, TransactionAccountTypeModel.Credit),
                 FundAssignments = incomeTransaction.FundAssignments.Select(fundAmount => BuildFundModel(transaction, fundAmount)).ToList(),
             },
@@ -74,7 +74,6 @@ public sealed class TransactionConverter(
                 AccountingPeriodName = accountingPeriodRepository.GetById(transaction.AccountingPeriodId).PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
                 Date = transaction.Date,
                 Sequence = transaction.Sequence,
-                Location = transaction.Location,
                 Description = transaction.Description,
                 Amount = transaction.Amount,
                 DebitAccount = accountTransaction.DebitAccountId != null
@@ -92,7 +91,6 @@ public sealed class TransactionConverter(
                 AccountingPeriodName = accountingPeriodRepository.GetById(transaction.AccountingPeriodId).PeriodStartDate.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
                 Date = transaction.Date,
                 Sequence = transaction.Sequence,
-                Location = transaction.Location,
                 Description = transaction.Description,
                 Amount = transaction.Amount,
                 DebitFund = BuildFundModel(transaction, new FundAmount

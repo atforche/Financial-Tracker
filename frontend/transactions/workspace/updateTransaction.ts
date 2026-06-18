@@ -4,17 +4,15 @@ import type { UpdateTransactionRequest } from "@/transactions/types";
 import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
-import nameof from "@/framework/data/nameof";
 import { revalidatePath } from "next/cache";
 
-/**
- * Interface representing the state of updating a transaction.
- */
 interface ActionState {
   readonly success?: boolean;
   readonly errorTitle?: string | null;
   readonly dateErrors?: string | null;
   readonly locationErrors?: string | null;
+  readonly sourceLocationErrors?: string | null;
+  readonly destinationLocationErrors?: string | null;
   readonly descriptionErrors?: string | null;
   readonly amountErrors?: string | null;
   readonly debitAccountErrors?: string | null;
@@ -52,29 +50,25 @@ const updateTransaction = async function (
     if (isApiError(error)) {
       let dateErrors = null;
       let locationErrors = null;
+      let sourceLocationErrors = null;
+      let destinationLocationErrors = null;
       let descriptionErrors = null;
       let amountErrors = null;
       const unmappedErrors: (string | null)[] = [];
       for (const key of Object.keys(error.errors ?? {})) {
-        if (
-          key.toUpperCase() ===
-          nameof<UpdateTransactionRequest>("date").toUpperCase()
-        ) {
+        const normalizedKey = key.toUpperCase();
+
+        if (normalizedKey === "DATE") {
           dateErrors = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<UpdateTransactionRequest>("location").toUpperCase()
-        ) {
+        } else if (normalizedKey === "LOCATION") {
           locationErrors = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<UpdateTransactionRequest>("description").toUpperCase()
-        ) {
+        } else if (normalizedKey === "SOURCELOCATION") {
+          sourceLocationErrors = formatErrors(error.errors?.[key] ?? null);
+        } else if (normalizedKey === "DESTINATIONLOCATION") {
+          destinationLocationErrors = formatErrors(error.errors?.[key] ?? null);
+        } else if (normalizedKey === "DESCRIPTION") {
           descriptionErrors = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<UpdateTransactionRequest>("amount").toUpperCase()
-        ) {
+        } else if (normalizedKey === "AMOUNT") {
           amountErrors = formatErrors(error.errors?.[key] ?? null);
         } else {
           unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
@@ -84,6 +78,8 @@ const updateTransaction = async function (
         errorTitle: error.title ?? null,
         dateErrors,
         locationErrors,
+        sourceLocationErrors,
+        destinationLocationErrors,
         descriptionErrors,
         amountErrors,
         unmappedErrors: unmappedErrors.filter(Boolean).join(", ") || null,

@@ -52,6 +52,7 @@ const CreateIncomeTransactionForm = function ({
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
   const formRef = useRef<HTMLDivElement | null>(null);
+
   const getAccountById = function (accountId: string): Account | null {
     return accounts.find((account) => account.id === accountId) ?? null;
   };
@@ -67,7 +68,7 @@ const CreateIncomeTransactionForm = function ({
       ? dayjs(`${accountingPeriod.year}-${accountingPeriod.month}-01`)
       : null;
   const [date, setDate] = useState<Dayjs | null>(null);
-  const [location, setLocation] = useState<string>("");
+  const [sourceLocation, setSourceLocation] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [amount, setAmount] = useState<number | null>(null);
   const [sourceAccount, setSourceAccount] = useState<Account | null>(null);
@@ -89,7 +90,7 @@ const CreateIncomeTransactionForm = function ({
         : null,
     );
     setDate(null);
-    setLocation("");
+    setSourceLocation("");
     setDescription("");
     setAmount(null);
     setSourceAccount(null);
@@ -118,15 +119,24 @@ const CreateIncomeTransactionForm = function ({
     );
   };
 
+  const onSourceAccountChange = function (account: Account | null): void {
+    setSourceAccount(account);
+    if (account !== null) {
+      setSourceLocation("");
+    }
+  };
+
+  const normalizedSourceLocation = sourceLocation.trim();
+
   let request: CreateTransactionRequest | null = null;
   if (
     accountingPeriod !== null &&
     (date !== null || defaultDate !== null) &&
-    location !== "" &&
     description !== "" &&
     amount !== null &&
     amount > 0 &&
     depositAccount !== null &&
+    (sourceAccount !== null || normalizedSourceLocation !== "") &&
     isIncomeTransactionComplete(fundAssignments)
   ) {
     request = {
@@ -134,10 +144,11 @@ const CreateIncomeTransactionForm = function ({
       accountingPeriodId: accountingPeriod.id,
       date:
         date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
-      location,
       description,
       amount,
       debitAccountId: sourceAccount?.id ?? null,
+      sourceLocation:
+        sourceAccount === null ? normalizedSourceLocation || null : null,
       creditAccountId: depositAccount.id,
       fundAssignments: fundAssignments
         .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
@@ -157,8 +168,9 @@ const CreateIncomeTransactionForm = function ({
           setAccountingPeriod={setAccountingPeriod}
           date={date ?? defaultDate}
           setDate={setDate}
-          location={location}
-          setLocation={setLocation}
+          locationLabel={sourceAccount === null ? "Source Location" : null}
+          locationValue={sourceLocation}
+          setLocationValue={sourceAccount === null ? setSourceLocation : null}
           descriptionValue={description}
           setDescriptionValue={setDescription}
           amount={amount}
@@ -166,13 +178,13 @@ const CreateIncomeTransactionForm = function ({
         />
         <TransactionAccountPairSection
           title="Money Flow"
-          description="Choose which tracked account receives the income and optionally the untracked account where the money came from."
+          description="Choose which tracked account receives the income and either the untracked source account or a source location."
           accounts={accounts}
           leftLabel="Source Account"
           rightLabel="Deposit To"
           leftAccount={sourceAccount}
           rightAccount={depositAccount}
-          setLeftAccount={setSourceAccount}
+          setLeftAccount={onSourceAccountChange}
           setRightAccount={setDepositAccount}
           leftFilter={(account) => {
             const selectedAccount = getAccountById(account.id);

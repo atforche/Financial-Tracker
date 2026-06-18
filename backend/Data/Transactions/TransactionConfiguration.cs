@@ -56,6 +56,9 @@ internal sealed class TransactionConfiguration :
         builder.Property(t => t.CreditPostedDate)
             .HasColumnName("SpendingTransaction_CreditPostedDate");
 
+        builder.Property(t => t.DestinationLocation)
+            .HasColumnName("SpendingTransaction_DestinationLocation");
+
         builder.OwnsMany(t => t.FundAssignments, fundAssignment =>
         {
             fundAssignment.ToTable("SpendingTransactionFundAssignments");
@@ -85,6 +88,9 @@ internal sealed class TransactionConfiguration :
 
         builder.Property(t => t.DebitPostedDate)
             .HasColumnName("IncomeTransaction_DebitPostedDate");
+
+        builder.Property(t => t.SourceLocation)
+            .HasColumnName("IncomeTransaction_SourceLocation");
 
         builder.OwnsMany(t => t.FundAssignments, fundAssignment =>
         {

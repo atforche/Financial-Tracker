@@ -56,8 +56,13 @@ const UpdateIncomeTransactionForm = function ({
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
   const formRef = useRef<HTMLDivElement | null>(null);
+
+  const sourceLocation = transaction.transactionType === TransactionType.Income &&
+      "sourceLocation" in transaction
+      ? (transaction.sourceLocation ?? "")
+      : "";
+
   const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
-  const [location, setLocation] = useState<string>(transaction.location);
   const [description, setDescription] = useState<string>(
     transaction.description,
   );
@@ -83,7 +88,6 @@ const UpdateIncomeTransactionForm = function ({
 
   const reset = function (): void {
     setDate(dayjs(transaction.date));
-    setLocation(transaction.location);
     setDescription(transaction.description);
     setAmount(transaction.amount);
     setFundAssignments(
@@ -113,19 +117,20 @@ const UpdateIncomeTransactionForm = function ({
     );
   };
 
+  const normalizedSourceLocation = sourceLocation.trim();
+
   let request: UpdateTransactionRequest | null = null;
   if (
     date !== null &&
-    location !== "" &&
     description !== "" &&
     amount !== null &&
     amount > 0 &&
+    (transactionDebitAccount !== null || normalizedSourceLocation !== "") &&
     isIncomeTransactionComplete(fundAssignments)
   ) {
     request = {
       type: UpdateIncomeTransactionType.Income,
       date: date.format("YYYY-MM-DD"),
-      location,
       description,
       amount,
       fundAssignments: fundAssignments
@@ -146,8 +151,11 @@ const UpdateIncomeTransactionForm = function ({
           setAccountingPeriod={null}
           date={date}
           setDate={setDate}
-          location={location}
-          setLocation={setLocation}
+          locationLabel={
+            transactionDebitAccount === null ? "Source Location" : null
+          }
+          locationValue={sourceLocation}
+          setLocationValue={null}
           descriptionValue={description}
           setDescriptionValue={setDescription}
           amount={amount}
@@ -155,7 +163,7 @@ const UpdateIncomeTransactionForm = function ({
         />
         <TransactionAccountPairSection
           title="Money Flow"
-          description="Choose which tracked account receives the income and optionally the untracked account where the money came from."
+          description="Review the tracked deposit account and the original source for this income transaction."
           accounts={[transactionDebitAccount, transactionCreditAccount].filter(
             (account): account is Account => account !== null,
           )}

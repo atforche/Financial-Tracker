@@ -56,8 +56,13 @@ const UpdateSpendingTransactionForm = function ({
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
   const formRef = useRef<HTMLDivElement | null>(null);
+
+  const destinationLocation = transaction.transactionType === TransactionType.Spending &&
+      "destinationLocation" in transaction
+      ? (transaction.destinationLocation ?? "")
+      : "";
+
   const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
-  const [location, setLocation] = useState<string>(transaction.location);
   const [description, setDescription] = useState<string>(
     transaction.description,
   );
@@ -72,10 +77,10 @@ const UpdateSpendingTransactionForm = function ({
         )
       : [],
   );
-  const currentAssignmentGoal = assignmentGoals.filter(
+  const currentAssignmentGoals = assignmentGoals.filter(
     (goal) => goal.accountingPeriodId === transactionAccountingPeriod.id,
   );
-  const currentSpendingGoal = spendingGoals.filter(
+  const currentSpendingGoals = spendingGoals.filter(
     (goal) => goal.accountingPeriodId === transactionAccountingPeriod.id,
   );
 
@@ -83,7 +88,6 @@ const UpdateSpendingTransactionForm = function ({
 
   const reset = function (): void {
     setDate(dayjs(transaction.date));
-    setLocation(transaction.location);
     setDescription(transaction.description);
     setAmount(transaction.amount);
     setFundAssignments(
@@ -113,19 +117,21 @@ const UpdateSpendingTransactionForm = function ({
     );
   };
 
+  const normalizedDestinationLocation = destinationLocation.trim();
+
   let request: UpdateTransactionRequest | null = null;
   if (
     date !== null &&
-    location !== "" &&
     description !== "" &&
     amount !== null &&
     amount > 0 &&
+    (transactionCreditAccount !== null ||
+      normalizedDestinationLocation !== "") &&
     isSpendingTransactionComplete(fundAssignments)
   ) {
     request = {
       type: UpdateSpendingTransactionType.Spending,
       date: date.format("YYYY-MM-DD"),
-      location,
       description,
       amount,
       fundAssignments: fundAssignments
@@ -146,8 +152,11 @@ const UpdateSpendingTransactionForm = function ({
           setAccountingPeriod={null}
           date={date}
           setDate={setDate}
-          location={location}
-          setLocation={setLocation}
+          locationLabel={
+            transactionCreditAccount === null ? "Destination Location" : null
+          }
+          locationValue={destinationLocation}
+          setLocationValue={null}
           descriptionValue={description}
           setDescriptionValue={setDescription}
           amount={amount}
@@ -155,7 +164,7 @@ const UpdateSpendingTransactionForm = function ({
         />
         <TransactionAccountPairSection
           title="Money Flow"
-          description="Choose which tracked account is being charged and optionally the untracked destination account."
+          description="Review the tracked payment account and the destination for this spending transaction."
           accounts={[transactionDebitAccount, transactionCreditAccount].filter(
             (account): account is Account => account !== null,
           )}
@@ -170,8 +179,8 @@ const UpdateSpendingTransactionForm = function ({
           title="Fund Allocation"
           tone="spending"
           funds={funds}
-          assignmentGoals={currentAssignmentGoal}
-          spendingGoals={currentSpendingGoal}
+          assignmentGoals={currentAssignmentGoals}
+          spendingGoals={currentSpendingGoals}
           totalAmountToAssign={amount}
           baselineValue={
             transaction.transactionType === TransactionType.Spending &&
