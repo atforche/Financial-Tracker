@@ -1,5 +1,3 @@
-using Domain.Funds;
-
 namespace Domain.Transactions.Income;
 
 /// <summary>
@@ -8,7 +6,17 @@ namespace Domain.Transactions.Income;
 public record UpdateIncomeTransactionRequest : UpdateTransactionRequest
 {
     /// <summary>
-    /// Fund Assignments for this Income Transaction
+    /// Income lines for this income transaction.
     /// </summary>
-    public required IReadOnlyCollection<FundAmount> FundAssignments { get; init; }
+    public required IReadOnlyCollection<IncomeLine> IncomeLines { get; init; }
+
+    /// <summary>
+    /// Income deductions for this income transaction.
+    /// </summary>
+    public required IReadOnlyCollection<IncomeDeduction> IncomeDeductions { get; init; }
+
+    /// <summary>
+    /// Income destinations for this income transaction.
+    /// </summary>
+    public required IReadOnlyCollection<IncomeDestination> IncomeDestinations { get; init; }
 }

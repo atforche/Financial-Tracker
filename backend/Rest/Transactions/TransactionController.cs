@@ -384,7 +384,7 @@ public sealed class TransactionController(
     private static string? GetSource(TransactionModel transaction) => transaction switch
     {
         SpendingTransactionModel spendingTransaction => spendingTransaction.DebitAccount.AccountName,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.DebitAccount?.AccountName ?? incomeTransaction.SourceLocation,
+        IncomeTransactionModel incomeTransaction => incomeTransaction.SourceAccount?.AccountName ?? incomeTransaction.SourceLocation,
         AccountTransactionModel accountTransaction => accountTransaction.DebitAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.DebitFund?.FundName,
         _ => null,
@@ -393,7 +393,7 @@ public sealed class TransactionController(
     private static string? GetDestination(TransactionModel transaction) => transaction switch
     {
         SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName ?? spendingTransaction.DestinationLocation,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.CreditAccount.AccountName,
+        IncomeTransactionModel incomeTransaction => string.Join(", ", incomeTransaction.IncomeDestinations.Select(destination => destination.Account.AccountName).Distinct(StringComparer.OrdinalIgnoreCase)),
         AccountTransactionModel accountTransaction => accountTransaction.CreditAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,
         _ => null,
@@ -408,11 +408,13 @@ public sealed class TransactionController(
             InvalidFundAmountException => model switch
             {
                 CreateSpendingTransactionModel => nameof(CreateSpendingTransactionModel.FundAssignments),
-                CreateIncomeTransactionModel => nameof(CreateIncomeTransactionModel.FundAssignments),
+                CreateIncomeTransactionModel => nameof(CreateIncomeTransactionModel.IncomeDestinations),
                 _ => string.Empty
             },
             InvalidFundException invalidFundException when invalidFundException.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase) => nameof(CreateFundTransactionModel.DebitFundId),
             InvalidFundException invalidFundException when invalidFundException.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase) => nameof(CreateFundTransactionModel.CreditFundId),
+            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("source", StringComparison.InvariantCultureIgnoreCase) => "SourceAccountId",
+            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("destination", StringComparison.InvariantCultureIgnoreCase) => "IncomeDestinations",
             InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase) => "DebitAccount",
             InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase) => "CreditAccount",
             _ => string.Empty
@@ -426,9 +428,11 @@ public sealed class TransactionController(
             InvalidFundAmountException => model switch
             {
                 UpdateSpendingTransactionModel => nameof(UpdateSpendingTransactionModel.FundAssignments),
-                UpdateIncomeTransactionModel => nameof(UpdateIncomeTransactionModel.FundAssignments),
+                UpdateIncomeTransactionModel => nameof(UpdateIncomeTransactionModel.IncomeDestinations),
                 _ => string.Empty
             },
+            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("source", StringComparison.InvariantCultureIgnoreCase) => "SourceAccountId",
+            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("destination", StringComparison.InvariantCultureIgnoreCase) => "IncomeDestinations",
             InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase) => "DebitAccount",
             InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase) => "CreditAccount",
             _ => string.Empty

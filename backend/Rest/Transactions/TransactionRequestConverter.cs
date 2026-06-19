@@ -124,16 +124,20 @@ public sealed class TransactionRequestConverter(
         CreateIncomeTransactionModel model,
         Dictionary<string, string[]> errors)
     {
-        if (!TryGetAccount(model.CreditAccountId, nameof(CreateIncomeTransactionModel.CreditAccountId), errors, out Account? creditAccount))
+        Account? sourceAccount = null;
+        if (model.SourceAccountId != null && !TryGetAccount(model.SourceAccountId.Value, nameof(CreateIncomeTransactionModel.SourceAccountId), errors, out sourceAccount))
         {
             return null;
         }
-        Account? debitAccount = null;
-        if (model.DebitAccountId != null && !TryGetAccount(model.DebitAccountId.Value, nameof(CreateIncomeTransactionModel.DebitAccountId), errors, out debitAccount))
+        if (!TryGetIncomeLines(model.IncomeLines, out IReadOnlyCollection<IncomeLine>? incomeLines))
         {
             return null;
         }
-        if (!TryGetFundAmounts(model.FundAssignments, nameof(CreateIncomeTransactionModel.FundAssignments), errors, out IReadOnlyCollection<FundAmount>? fundAssignments))
+        if (!TryGetIncomeDeductions(model.IncomeDeductions, out IReadOnlyCollection<IncomeDeduction>? incomeDeductions))
+        {
+            return null;
+        }
+        if (!TryGetIncomeDestinations(model.IncomeDestinations, nameof(CreateIncomeTransactionModel.IncomeDestinations), errors, out IReadOnlyCollection<IncomeDestination>? incomeDestinations))
         {
             return null;
         }
@@ -143,10 +147,11 @@ public sealed class TransactionRequestConverter(
             TransactionDate = model.Date,
             Description = model.Description,
             Amount = model.Amount,
-            CreditAccount = creditAccount,
-            DebitAccount = debitAccount,
+            SourceAccount = sourceAccount,
             SourceLocation = model.SourceLocation,
-            FundAssignments = fundAssignments,
+            IncomeLines = incomeLines,
+            IncomeDeductions = incomeDeductions,
+            IncomeDestinations = incomeDestinations,
         };
     }
 
@@ -217,7 +222,15 @@ public sealed class TransactionRequestConverter(
 
     private UpdateIncomeTransactionRequest? BuildIncomeUpdateRequest(UpdateIncomeTransactionModel model, Dictionary<string, string[]> errors)
     {
-        if (!TryGetFundAmounts(model.FundAssignments, nameof(UpdateIncomeTransactionModel.FundAssignments), errors, out IReadOnlyCollection<FundAmount>? fundAssignments))
+        if (!TryGetIncomeLines(model.IncomeLines, out IReadOnlyCollection<IncomeLine>? incomeLines))
+        {
+            return null;
+        }
+        if (!TryGetIncomeDeductions(model.IncomeDeductions, out IReadOnlyCollection<IncomeDeduction>? incomeDeductions))
+        {
+            return null;
+        }
+        if (!TryGetIncomeDestinations(model.IncomeDestinations, nameof(UpdateIncomeTransactionModel.IncomeDestinations), errors, out IReadOnlyCollection<IncomeDestination>? incomeDestinations))
         {
             return null;
         }
@@ -226,7 +239,9 @@ public sealed class TransactionRequestConverter(
             TransactionDate = model.Date,
             Description = model.Description,
             Amount = model.Amount,
-            FundAssignments = fundAssignments,
+            IncomeLines = incomeLines,
+            IncomeDeductions = incomeDeductions,
+            IncomeDestinations = incomeDestinations,
         };
     }
 
@@ -297,6 +312,104 @@ public sealed class TransactionRequestConverter(
         }
 
         fundAmounts = resolvedFundAmounts;
+        return true;
+    }
+
+    private static bool TryGetIncomeLines(
+        IReadOnlyCollection<CreateIncomeLineModel> models,
+        [NotNullWhen(true)] out IReadOnlyCollection<IncomeLine>? incomeLines)
+    {
+        incomeLines = models.Select(model => new IncomeLine(model.Description, model.Amount)).ToList();
+        return true;
+    }
+
+    private static bool TryGetIncomeLines(
+        IReadOnlyCollection<UpdateIncomeLineModel> models,
+        [NotNullWhen(true)] out IReadOnlyCollection<IncomeLine>? incomeLines)
+    {
+        incomeLines = models.Select(model => new IncomeLine(model.Description, model.Amount)).ToList();
+        return true;
+    }
+
+    private static bool TryGetIncomeDeductions(
+        IReadOnlyCollection<CreateIncomeDeductionModel> models,
+        [NotNullWhen(true)] out IReadOnlyCollection<IncomeDeduction>? incomeDeductions)
+    {
+        incomeDeductions = models.Select(model => new IncomeDeduction(model.Description, model.Amount)).ToList();
+        return true;
+    }
+
+    private static bool TryGetIncomeDeductions(
+        IReadOnlyCollection<UpdateIncomeDeductionModel> models,
+        [NotNullWhen(true)] out IReadOnlyCollection<IncomeDeduction>? incomeDeductions)
+    {
+        incomeDeductions = models.Select(model => new IncomeDeduction(model.Description, model.Amount)).ToList();
+        return true;
+    }
+
+    private bool TryGetIncomeDestinations(
+        IReadOnlyCollection<CreateIncomeDestinationModel> models,
+        string errorKeyPrefix,
+        Dictionary<string, string[]> errors,
+        [NotNullWhen(true)] out IReadOnlyCollection<IncomeDestination>? incomeDestinations)
+    {
+        List<IncomeDestination> resolvedDestinations = [];
+
+        foreach ((int index, CreateIncomeDestinationModel model) in models.Index())
+        {
+            if (!TryGetIncomeDestination(model.AccountId, model.Amount, model.FundAssignments, $"{errorKeyPrefix}[{index}]", errors, out IncomeDestination? destination))
+            {
+                incomeDestinations = null;
+                return false;
+            }
+            resolvedDestinations.Add(destination);
+        }
+
+        incomeDestinations = resolvedDestinations;
+        return true;
+    }
+
+    private bool TryGetIncomeDestinations(
+        IReadOnlyCollection<UpdateIncomeDestinationModel> models,
+        string errorKeyPrefix,
+        Dictionary<string, string[]> errors,
+        [NotNullWhen(true)] out IReadOnlyCollection<IncomeDestination>? incomeDestinations)
+    {
+        List<IncomeDestination> resolvedDestinations = [];
+
+        foreach ((int index, UpdateIncomeDestinationModel model) in models.Index())
+        {
+            if (!TryGetIncomeDestination(model.AccountId, model.Amount, model.FundAssignments, $"{errorKeyPrefix}[{index}]", errors, out IncomeDestination? destination))
+            {
+                incomeDestinations = null;
+                return false;
+            }
+            resolvedDestinations.Add(destination);
+        }
+
+        incomeDestinations = resolvedDestinations;
+        return true;
+    }
+
+    private bool TryGetIncomeDestination(
+        Guid accountId,
+        decimal amount,
+        IReadOnlyCollection<CreateFundAmountModel> fundAssignmentModels,
+        string errorKeyPrefix,
+        Dictionary<string, string[]> errors,
+        [NotNullWhen(true)] out IncomeDestination? destination)
+    {
+        destination = null;
+        if (!TryGetAccount(accountId, $"{errorKeyPrefix}.AccountId", errors, out Account? account))
+        {
+            return false;
+        }
+        if (!TryGetFundAmounts(fundAssignmentModels, $"{errorKeyPrefix}.FundAssignments", errors, out IReadOnlyCollection<FundAmount>? fundAssignments))
+        {
+            return false;
+        }
+
+        destination = new IncomeDestination(account, amount, null, fundAssignments);
         return true;
     }
 }

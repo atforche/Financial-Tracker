@@ -59,12 +59,34 @@ public sealed class TransactionConverter(
                 Sequence = transaction.Sequence,
                 Description = transaction.Description,
                 Amount = transaction.Amount,
-                DebitAccount = incomeTransaction.DebitAccountId != null
-                    ? BuildAccountModel(transaction, incomeTransaction.DebitAccountId, incomeTransaction.DebitPostedDate, TransactionAccountTypeModel.Debit)
+                SourceAccount = incomeTransaction.SourceAccountId != null
+                    ? BuildAccountModel(transaction, incomeTransaction.SourceAccountId, incomeTransaction.SourcePostedDate, TransactionAccountTypeModel.Debit)
                     : null,
                 SourceLocation = incomeTransaction.SourceLocation,
-                CreditAccount = BuildAccountModel(transaction, incomeTransaction.CreditAccountId, incomeTransaction.CreditPostedDate, TransactionAccountTypeModel.Credit),
-                FundAssignments = incomeTransaction.FundAssignments.Select(fundAmount => BuildFundModel(transaction, fundAmount)).ToList(),
+                TrackedIncomeAmount = incomeTransaction.TrackedIncomeAmount,
+                IncomeLines = incomeTransaction.IncomeLines
+                    .Select(line => new IncomeLineModel
+                    {
+                        Description = line.Description,
+                        Amount = line.Amount,
+                    })
+                    .ToList(),
+                IncomeDeductions = incomeTransaction.IncomeDeductions
+                    .Select(deduction => new IncomeDeductionModel
+                    {
+                        Description = deduction.Description,
+                        Amount = deduction.Amount,
+                    })
+                    .ToList(),
+                IncomeDestinations = incomeTransaction.IncomeDestinations
+                    .Select(destination => new IncomeDestinationModel
+                    {
+                        Account = BuildAccountModel(transaction, destination.Account.Id, destination.PostedDate, TransactionAccountTypeModel.Credit),
+                        Amount = destination.Amount,
+                        PostedDate = destination.PostedDate,
+                        FundAssignments = destination.FundAssignments.Select(fundAmount => BuildFundModel(transaction, fundAmount)).ToList(),
+                    })
+                    .ToList(),
             },
             AccountTransaction accountTransaction => new AccountTransactionModel
             {

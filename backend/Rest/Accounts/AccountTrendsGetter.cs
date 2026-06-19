@@ -597,9 +597,11 @@ public class AccountTrendsGetter(
         {
             foreach (Transaction transaction in transactionRepository.GetAllByAccountingPeriod(accountingPeriodId))
             {
-                if (transaction is IncomeTransaction incomeTransaction && filteredAccountIds.Contains(incomeTransaction.CreditAccountId))
+                if (transaction is IncomeTransaction incomeTransaction)
                 {
-                    totalIncome += transaction.Amount;
+                    totalIncome += incomeTransaction.IncomeDestinations
+                        .Where(destination => filteredAccountIds.Contains(destination.Account.Id))
+                        .Sum(destination => destination.Amount);
                 }
                 if (transaction is SpendingTransaction spendingTransaction && filteredAccountIds.Contains(spendingTransaction.DebitAccountId))
                 {
@@ -617,10 +619,9 @@ public class AccountTrendsGetter(
 
         foreach (IncomeTransaction transaction in transactionRepository.GetAllIncomeTransactionsByDateRange(startDate, endDate).OfType<IncomeTransaction>())
         {
-            if (filteredAccountIds.Contains(transaction.CreditAccountId))
-            {
-                totalIncome += transaction.Amount;
-            }
+            totalIncome += transaction.IncomeDestinations
+                .Where(destination => filteredAccountIds.Contains(destination.Account.Id) && destination.PostedDate != null && destination.PostedDate >= startDate && destination.PostedDate <= endDate)
+                .Sum(destination => destination.Amount);
         }
         foreach (SpendingTransaction transaction in transactionRepository.GetAllSpendingTransactionsByDateRange(startDate, endDate).OfType<SpendingTransaction>())
         {
@@ -687,31 +688,36 @@ public class AccountTrendsGetter(
 
                 break;
             case IncomeTransaction incomeTransaction:
-                if (incomeTransaction.DebitAccountId != null)
+                if (incomeTransaction.SourceAccountId != null)
                 {
                     foreach (AccountTrendsBalanceEventRow balanceEvent in BuildBalanceEvents(
                         transaction,
                         accountsById,
                         accountingPeriodsById,
                         accountTypes,
-                        incomeTransaction.DebitAccountId,
-                        incomeTransaction.DebitPostedDate,
-                        AccountTrendsBalanceEventTypeModel.Debit))
+                        incomeTransaction.SourceAccountId,
+                        incomeTransaction.SourcePostedDate,
+                        AccountTrendsBalanceEventTypeModel.Debit,
+                        transaction.Amount))
                     {
                         yield return balanceEvent;
                     }
                 }
 
-                foreach (AccountTrendsBalanceEventRow balanceEvent in BuildBalanceEvents(
-                    transaction,
-                    accountsById,
-                    accountingPeriodsById,
-                    accountTypes,
-                    incomeTransaction.CreditAccountId,
-                    incomeTransaction.CreditPostedDate,
-                    AccountTrendsBalanceEventTypeModel.Credit))
+                foreach (IncomeDestination destination in incomeTransaction.IncomeDestinations)
                 {
-                    yield return balanceEvent;
+                    foreach (AccountTrendsBalanceEventRow balanceEvent in BuildBalanceEvents(
+                        transaction,
+                        accountsById,
+                        accountingPeriodsById,
+                        accountTypes,
+                        destination.Account.Id,
+                        destination.PostedDate,
+                        AccountTrendsBalanceEventTypeModel.Credit,
+                        destination.Amount))
+                    {
+                        yield return balanceEvent;
+                    }
                 }
 
                 break;
@@ -759,7 +765,8 @@ public class AccountTrendsGetter(
         IReadOnlySet<AccountType>? accountTypes,
         AccountId? accountId,
         DateOnly? postedDate,
-        AccountTrendsBalanceEventTypeModel type)
+        AccountTrendsBalanceEventTypeModel type,
+        decimal? amountOverride = null)
     {
         if (accountId == null)
         {
@@ -789,7 +796,7 @@ public class AccountTrendsGetter(
             accountingPeriod.Name,
             type,
             postedDate != null,
-            transaction.Amount,
+            amountOverride ?? transaction.Amount,
             transaction.Date,
             transaction.Sequence,
             transaction.Id.Value);

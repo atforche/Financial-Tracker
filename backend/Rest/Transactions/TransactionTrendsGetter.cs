@@ -396,7 +396,7 @@ public class TransactionTrendsGetter(
     private static IEnumerable<string> GetAccountNamesForTransaction(TransactionModel transaction) => transaction switch
     {
         SpendingTransactionModel spendingTransaction => new List<string?> { spendingTransaction.DebitAccount.AccountName, spendingTransaction.CreditAccount?.AccountName }.Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name!),
-        IncomeTransactionModel incomeTransaction => new List<string?> { incomeTransaction.DebitAccount?.AccountName, incomeTransaction.CreditAccount.AccountName }.Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name!),
+        IncomeTransactionModel incomeTransaction => new List<string?> { incomeTransaction.SourceAccount?.AccountName }.Concat(incomeTransaction.IncomeDestinations.Select(destination => destination.Account.AccountName)).Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name!),
         AccountTransactionModel accountTransaction => new List<string?> { accountTransaction.DebitAccount?.AccountName, accountTransaction.CreditAccount?.AccountName }.Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name!),
         _ => [],
     };
@@ -404,7 +404,7 @@ public class TransactionTrendsGetter(
     private static IEnumerable<string> GetFundNamesForTransaction(TransactionModel transaction) => transaction switch
     {
         SpendingTransactionModel spendingTransaction => spendingTransaction.FundAssignments.Select(fundAssignment => fundAssignment.FundName),
-        IncomeTransactionModel incomeTransaction => incomeTransaction.FundAssignments.Select(fundAssignment => fundAssignment.FundName),
+        IncomeTransactionModel incomeTransaction => incomeTransaction.IncomeDestinations.SelectMany(destination => destination.FundAssignments).Select(fundAssignment => fundAssignment.FundName),
         FundTransactionModel fundTransaction => [fundTransaction.DebitFund.FundName, fundTransaction.CreditFund.FundName],
         _ => [],
     };
@@ -412,7 +412,7 @@ public class TransactionTrendsGetter(
     private static string? GetSource(TransactionModel transaction) => transaction switch
     {
         SpendingTransactionModel spendingTransaction => spendingTransaction.DebitAccount.AccountName,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.DebitAccount?.AccountName ?? incomeTransaction.SourceLocation,
+        IncomeTransactionModel incomeTransaction => incomeTransaction.SourceAccount?.AccountName ?? incomeTransaction.SourceLocation,
         AccountTransactionModel accountTransaction => accountTransaction.DebitAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.DebitFund?.FundName,
         _ => null,
@@ -421,7 +421,7 @@ public class TransactionTrendsGetter(
     private static string? GetDestination(TransactionModel transaction) => transaction switch
     {
         SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName ?? spendingTransaction.DestinationLocation,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.CreditAccount.AccountName,
+        IncomeTransactionModel incomeTransaction => string.Join(", ", incomeTransaction.IncomeDestinations.Select(destination => destination.Account.AccountName).Distinct(StringComparer.OrdinalIgnoreCase)),
         AccountTransactionModel accountTransaction => accountTransaction.CreditAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,
         _ => null,

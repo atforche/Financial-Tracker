@@ -1,5 +1,4 @@
 using Domain.Accounts;
-using Domain.Funds;
 
 namespace Domain.Transactions.Income;
 
@@ -9,14 +8,9 @@ namespace Domain.Transactions.Income;
 public record CreateIncomeTransactionRequest : CreateTransactionRequest
 {
     /// <summary>
-    /// Credit Account for this Income Transaction
+    /// Source Account for this Income Transaction
     /// </summary>
-    public required Account CreditAccount { get; init; }
-
-    /// <summary>
-    /// Debit Account for this Income Transaction
-    /// </summary>
-    public required Account? DebitAccount { get; init; }
+    public required Account? SourceAccount { get; init; }
 
     /// <summary>
     /// External location where the money for this Income Transaction came from (if not an account).
@@ -24,7 +18,17 @@ public record CreateIncomeTransactionRequest : CreateTransactionRequest
     public required string? SourceLocation { get; init; }
 
     /// <summary>
-    /// Fund assignments for the amount of this Income Transaction
+    /// Income lines for this income transaction.
     /// </summary>
-    public required IReadOnlyCollection<FundAmount> FundAssignments { get; init; }
+    public required IReadOnlyCollection<IncomeLine> IncomeLines { get; init; }
+
+    /// <summary>
+    /// Income deductions for this income transaction.
+    /// </summary>
+    public required IReadOnlyCollection<IncomeDeduction> IncomeDeductions { get; init; }
+
+    /// <summary>
+    /// Income destinations for this income transaction.
+    /// </summary>
+    public required IReadOnlyCollection<IncomeDestination> IncomeDestinations { get; init; }
 }

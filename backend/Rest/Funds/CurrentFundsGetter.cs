@@ -139,17 +139,20 @@ public class CurrentFundsGetter(
 
                 yield break;
             case IncomeTransaction incomeTransaction:
-                foreach (FundAmount fundAssignment in incomeTransaction.FundAssignments)
+                foreach (IncomeDestination destination in incomeTransaction.IncomeDestinations)
                 {
-                    yield return new CurrentFundBalanceEventRow(
-                        fundAssignment.FundId,
-                        incomeTransaction.Date,
-                        FundTrendsBalanceEventTypeModel.Credit,
-                        true,
-                        fundAssignment.Amount,
-                        transaction.Date,
-                        transaction.Sequence,
-                        transaction.Id.Value);
+                    foreach (FundAmount fundAssignment in destination.FundAssignments)
+                    {
+                        yield return new CurrentFundBalanceEventRow(
+                            fundAssignment.FundId,
+                            destination.PostedDate ?? incomeTransaction.Date,
+                            FundTrendsBalanceEventTypeModel.Credit,
+                            destination.PostedDate != null,
+                            fundAssignment.Amount,
+                            transaction.Date,
+                            transaction.Sequence,
+                            transaction.Id.Value);
+                    }
                 }
 
                 yield break;

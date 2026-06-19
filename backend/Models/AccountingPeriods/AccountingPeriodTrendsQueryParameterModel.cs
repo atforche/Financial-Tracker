@@ -1,3 +1,5 @@
+using Models.Transactions;
+
 namespace Models.AccountingPeriods;
 
 /// <summary>
@@ -23,7 +25,7 @@ public class AccountingPeriodTrendsQueryParameterModel
     /// <summary>
     /// Optional sort to apply to the matching transactions.
     /// </summary>
-    public AccountingPeriodTrendsTransactionSortOrderModel? TransactionSort { get; init; }
+    public TransactionSortOrderModel? TransactionSort { get; init; }
 
     /// <summary>
     /// Maximum number of Accounting Periods to return.

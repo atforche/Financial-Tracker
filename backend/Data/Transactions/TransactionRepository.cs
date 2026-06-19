@@ -34,7 +34,7 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
         databaseContext.Transactions.OfType<SpendingTransaction>()
             .Any(t => t.DebitAccountId == account.Id || t.CreditAccountId == account.Id) ||
         databaseContext.Transactions.OfType<IncomeTransaction>()
-            .Any(t => t.DebitAccountId == account.Id || t.CreditAccountId == account.Id) ||
+            .Any(t => t.SourceAccountId == account.Id || t.IncomeDestinations.Any(d => d.Account.Id == account.Id)) ||
         databaseContext.Transactions.OfType<AccountTransaction>()
             .Any(t => t.DebitAccountId == account.Id || t.CreditAccountId == account.Id);
 
@@ -45,7 +45,7 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> GetAllIncomeTransactionsByDateRange(DateOnly startDate, DateOnly endDate) =>
         databaseContext.Transactions.OfType<IncomeTransaction>()
-            .Where(t => t.CreditPostedDate != null && t.CreditPostedDate >= startDate && t.CreditPostedDate <= endDate)
+            .Where(t => t.IncomeDestinations.Any(d => d.PostedDate != null && d.PostedDate >= startDate && d.PostedDate <= endDate))
             .ToList();
 
     /// <inheritdoc/>
@@ -59,7 +59,7 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
         databaseContext.Transactions.OfType<SpendingTransaction>()
             .Any(t => t.FundAssignments.Any(f => f.FundId == fundId)) ||
         databaseContext.Transactions.OfType<IncomeTransaction>()
-            .Any(t => t.FundAssignments.Any(f => f.FundId == fundId)) ||
+            .Any(t => t.IncomeDestinations.Any(d => d.FundAssignments.Any(f => f.FundId == fundId))) ||
         databaseContext.Transactions.OfType<FundTransaction>()
             .Any(t => (t.DebitFundId == fundId) || (t.CreditFundId == fundId));
 
@@ -96,7 +96,7 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
         var transactionsList = transactions.ToList();
         return transactionsList.Where(transaction =>
             (transaction is SpendingTransaction spendingTransaction && (spendingTransaction.DebitAccountId == accountId || spendingTransaction.CreditAccountId == accountId)) ||
-            (transaction is IncomeTransaction incomeTransaction && (incomeTransaction.DebitAccountId == accountId || incomeTransaction.CreditAccountId == accountId)) ||
+            (transaction is IncomeTransaction incomeTransaction && (incomeTransaction.SourceAccountId == accountId || incomeTransaction.IncomeDestinations.Any(d => d.Account.Id == accountId))) ||
             (transaction is AccountTransaction accountTransaction && (accountTransaction.DebitAccountId == accountId || accountTransaction.CreditAccountId == accountId)))
             .ToList();
     }
@@ -114,7 +114,7 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
         var transactionsList = transactions.ToList();
         return transactionsList.Where(transaction =>
             (transaction is SpendingTransaction spendingTransaction && spendingTransaction.FundAssignments.Any(f => f.FundId == fundId)) ||
-            (transaction is IncomeTransaction incomeTransaction && incomeTransaction.FundAssignments.Any(f => f.FundId == fundId)) ||
+            (transaction is IncomeTransaction incomeTransaction && incomeTransaction.IncomeDestinations.Any(d => d.FundAssignments.Any(f => f.FundId == fundId))) ||
             (transaction is FundTransaction fundTransaction && (fundTransaction.DebitFundId == fundId || fundTransaction.CreditFundId == fundId)))
             .ToList();
     }
@@ -128,7 +128,9 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
             .Concat(
                 databaseContext.Transactions
                     .OfType<IncomeTransaction>()
-                    .Where(transaction => transaction.DebitPostedDate == null || transaction.CreditPostedDate == null)
+                    .Where(transaction =>
+                        (transaction.SourceAccountId != null && transaction.SourcePostedDate == null) ||
+                        transaction.IncomeDestinations.Any(destination => destination.PostedDate == null))
                     .Cast<Transaction>()).ToList()
             .Concat(
                 databaseContext.Transactions

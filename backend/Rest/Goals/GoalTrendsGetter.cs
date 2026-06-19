@@ -377,7 +377,7 @@ public class GoalTrendsGetter(
             case IncomeTransaction incomeTransaction:
                 foreach (GoalTrendsBalanceEventRow balanceEvent in BuildBalanceEventsByFundAssignments(
                     transaction,
-                    incomeTransaction.FundAssignments,
+                    incomeTransaction.IncomeDestinations.SelectMany(destination => destination.FundAssignments).ToList(),
                     incomeTransaction.Date,
                     fundsById,
                     accountingPeriodsById,

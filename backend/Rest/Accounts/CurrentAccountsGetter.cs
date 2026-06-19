@@ -165,28 +165,31 @@ public class CurrentAccountsGetter(
 
                 yield break;
             case IncomeTransaction incomeTransaction:
-                if (incomeTransaction.DebitAccountId != null)
+                if (incomeTransaction.SourceAccountId != null)
                 {
                     yield return new CurrentAccountBalanceEventRow(
-                        incomeTransaction.DebitAccountId,
-                        incomeTransaction.DebitPostedDate ?? transaction.Date,
+                        incomeTransaction.SourceAccountId,
+                        incomeTransaction.SourcePostedDate ?? transaction.Date,
                         AccountTrendsBalanceEventTypeModel.Debit,
-                        incomeTransaction.DebitPostedDate != null,
+                        incomeTransaction.SourcePostedDate != null,
                         transaction.Amount,
                         transaction.Date,
                         transaction.Sequence,
                         transaction.Id.Value);
                 }
 
-                yield return new CurrentAccountBalanceEventRow(
-                    incomeTransaction.CreditAccountId,
-                    incomeTransaction.CreditPostedDate ?? transaction.Date,
-                    AccountTrendsBalanceEventTypeModel.Credit,
-                    incomeTransaction.CreditPostedDate != null,
-                    transaction.Amount,
-                    transaction.Date,
-                    transaction.Sequence,
-                    transaction.Id.Value);
+                foreach (IncomeDestination destination in incomeTransaction.IncomeDestinations)
+                {
+                    yield return new CurrentAccountBalanceEventRow(
+                        destination.Account.Id,
+                        destination.PostedDate ?? transaction.Date,
+                        AccountTrendsBalanceEventTypeModel.Credit,
+                        destination.PostedDate != null,
+                        destination.Amount,
+                        transaction.Date,
+                        transaction.Sequence,
+                        transaction.Id.Value);
+                }
 
                 yield break;
             case AccountTransaction accountTransaction:

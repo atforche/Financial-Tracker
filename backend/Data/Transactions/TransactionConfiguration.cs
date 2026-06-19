@@ -73,33 +73,55 @@ internal sealed class TransactionConfiguration :
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<IncomeTransaction> builder)
     {
-        builder.Property(t => t.CreditAccountId)
-            .HasColumnName("IncomeTransaction_CreditAccountId")
-            .HasConversion(id => id.Value, value => new AccountId(value));
-        builder.HasOne<Account>().WithMany().HasForeignKey(t => t.CreditAccountId);
-
-        builder.Property(t => t.CreditPostedDate)
-            .HasColumnName("IncomeTransaction_CreditPostedDate");
-
-        builder.Property(t => t.DebitAccountId)
-            .HasColumnName("IncomeTransaction_DebitAccountId")
+        builder.Property(t => t.SourceAccountId)
+            .HasColumnName("IncomeTransaction_SourceAccountId")
             .HasConversion(id => id == null ? (Guid?)null : id.Value, value => value == null ? null : new AccountId(value.Value));
-        builder.HasOne<Account>().WithMany().HasForeignKey(t => t.DebitAccountId);
+        builder.HasOne<Account>().WithMany().HasForeignKey(t => t.SourceAccountId);
 
-        builder.Property(t => t.DebitPostedDate)
-            .HasColumnName("IncomeTransaction_DebitPostedDate");
+        builder.Property(t => t.SourcePostedDate)
+            .HasColumnName("IncomeTransaction_SourcePostedDate");
 
         builder.Property(t => t.SourceLocation)
             .HasColumnName("IncomeTransaction_SourceLocation");
 
-        builder.OwnsMany(t => t.FundAssignments, fundAssignment =>
+        builder.OwnsMany(t => t.IncomeLines, incomeLine =>
         {
-            fundAssignment.ToTable("IncomeTransactionFundAssignments");
-            fundAssignment.Property<int>("Id");
-            fundAssignment.HasKey("Id");
-            fundAssignment.Property(f => f.FundId)
-                .HasConversion(fundId => fundId.Value, value => new FundId(value));
+            incomeLine.ToTable("IncomeTransactionIncomeLines");
+            incomeLine.WithOwner().HasForeignKey("IncomeTransactionId");
+            incomeLine.Property<int>("Id");
+            incomeLine.HasKey("Id");
         });
+        builder.Navigation(t => t.IncomeLines).AutoInclude();
+
+        builder.OwnsMany(t => t.IncomeDeductions, incomeDeduction =>
+        {
+            incomeDeduction.ToTable("IncomeTransactionIncomeDeductions");
+            incomeDeduction.WithOwner().HasForeignKey("IncomeTransactionId");
+            incomeDeduction.Property<int>("Id");
+            incomeDeduction.HasKey("Id");
+        });
+        builder.Navigation(t => t.IncomeDeductions).AutoInclude();
+
+        builder.OwnsMany(t => t.IncomeDestinations, incomeDestinationBuilder =>
+        {
+            incomeDestinationBuilder.ToTable("IncomeTransactionIncomeDestinations");
+            incomeDestinationBuilder.WithOwner().HasForeignKey("IncomeTransactionId");
+            incomeDestinationBuilder.Property<int>("Id");
+            incomeDestinationBuilder.HasKey("Id");
+            incomeDestinationBuilder.HasOne(d => d.Account).WithMany().HasForeignKey("AccountId");
+
+            incomeDestinationBuilder.OwnsMany(d => d.FundAssignments, fundAssignmentBuilder =>
+            {
+                fundAssignmentBuilder.ToTable("IncomeTransactionIncomeDestinationFundAssignments");
+                fundAssignmentBuilder.WithOwner().HasForeignKey("IncomeDestinationId");
+                fundAssignmentBuilder.Property<int>("Id");
+                fundAssignmentBuilder.HasKey("Id");
+                fundAssignmentBuilder.Property(f => f.FundId)
+                    .HasConversion(fundId => fundId.Value, value => new FundId(value));
+            });
+            incomeDestinationBuilder.Navigation(d => d.FundAssignments).AutoInclude();
+        });
+        builder.Navigation(t => t.IncomeDestinations).AutoInclude();
     }
 
     /// <inheritdoc/>

@@ -96,8 +96,8 @@ public class TransactionGetter(
                     (accountIds.Contains(spendingTransaction.DebitAccountId) ||
                     (spendingTransaction.CreditAccountId != null && accountIds.Contains(spendingTransaction.CreditAccountId)))) ||
                 (transaction is IncomeTransaction incomeTransaction &&
-                    ((incomeTransaction.DebitAccountId != null && accountIds.Contains(incomeTransaction.DebitAccountId)) ||
-                    accountIds.Contains(incomeTransaction.CreditAccountId))) ||
+                    ((incomeTransaction.SourceAccountId != null && accountIds.Contains(incomeTransaction.SourceAccountId)) ||
+                    incomeTransaction.IncomeDestinations.Any(destination => accountIds.Contains(destination.Account.Id)))) ||
                 (transaction is AccountTransaction accountTransaction &&
                     ((accountTransaction.DebitAccountId != null && accountIds.Contains(accountTransaction.DebitAccountId)) ||
                     (accountTransaction.CreditAccountId != null && accountIds.Contains(accountTransaction.CreditAccountId)))))
@@ -110,7 +110,7 @@ public class TransactionGetter(
                     ((fundTransaction.DebitFundId != null && fundIds.Contains(fundTransaction.DebitFundId)) ||
                     (fundTransaction.CreditFundId != null && fundIds.Contains(fundTransaction.CreditFundId)))) ||
                 (transaction is SpendingTransaction spendingTransaction && spendingTransaction.FundAssignments.Any(fundAssignment => fundIds.Contains(fundAssignment.FundId))) ||
-                (transaction is IncomeTransaction incomeTransaction && incomeTransaction.FundAssignments.Any(fundAssignment => fundIds.Contains(fundAssignment.FundId))))
+                (transaction is IncomeTransaction incomeTransaction && incomeTransaction.IncomeDestinations.Any(destination => destination.FundAssignments.Any(fundAssignment => fundIds.Contains(fundAssignment.FundId)))))
                 .ToList();
         }
         var filteredResults = transactions.Select(transactionConverter.ToModel).ToList();
@@ -174,7 +174,7 @@ public class TransactionGetter(
     private static string? GetSource(TransactionModel transaction) => transaction switch
     {
         SpendingTransactionModel spendingTransaction => spendingTransaction.DebitAccount.AccountName,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.DebitAccount?.AccountName ?? incomeTransaction.SourceLocation,
+        IncomeTransactionModel incomeTransaction => incomeTransaction.SourceAccount?.AccountName ?? incomeTransaction.SourceLocation,
         AccountTransactionModel accountTransaction => accountTransaction.DebitAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.DebitFund?.FundName,
         _ => null,
@@ -183,7 +183,7 @@ public class TransactionGetter(
     private static string? GetDestination(TransactionModel transaction) => transaction switch
     {
         SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName ?? spendingTransaction.DestinationLocation,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.CreditAccount?.AccountName,
+        IncomeTransactionModel incomeTransaction => string.Join(", ", incomeTransaction.IncomeDestinations.Select(destination => destination.Account.AccountName).Distinct(StringComparer.OrdinalIgnoreCase)),
         AccountTransactionModel accountTransaction => accountTransaction.CreditAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,
         _ => null,

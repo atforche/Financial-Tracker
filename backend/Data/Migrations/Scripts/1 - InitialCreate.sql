@@ -103,11 +103,10 @@ CREATE TABLE "Transactions" (
     "AccountTransaction_CreditPostedDate" TEXT NULL,
     "FundTransaction_DebitFundId" TEXT NULL,
     "FundTransaction_CreditFundId" TEXT NULL,
-    "IncomeTransaction_CreditAccountId" TEXT NULL,
-    "IncomeTransaction_CreditPostedDate" TEXT NULL,
-    "IncomeTransaction_DebitAccountId" TEXT NULL,
-    "IncomeTransaction_DebitPostedDate" TEXT NULL,
+    "IncomeTransaction_SourceAccountId" TEXT NULL,
+    "IncomeTransaction_SourcePostedDate" TEXT NULL,
     "IncomeTransaction_SourceLocation" TEXT NULL,
+    "TrackedIncomeAmount" TEXT NULL,
     "SpendingTransaction_DebitAccountId" TEXT NULL,
     "SpendingTransaction_DebitPostedDate" TEXT NULL,
     "SpendingTransaction_CreditAccountId" TEXT NULL,
@@ -115,8 +114,7 @@ CREATE TABLE "Transactions" (
     "SpendingTransaction_DestinationLocation" TEXT NULL,
     CONSTRAINT "FK_Transactions_Accounts_AccountTransaction_CreditAccountId" FOREIGN KEY ("AccountTransaction_CreditAccountId") REFERENCES "Accounts" ("Id"),
     CONSTRAINT "FK_Transactions_Accounts_AccountTransaction_DebitAccountId" FOREIGN KEY ("AccountTransaction_DebitAccountId") REFERENCES "Accounts" ("Id"),
-    CONSTRAINT "FK_Transactions_Accounts_IncomeTransaction_CreditAccountId" FOREIGN KEY ("IncomeTransaction_CreditAccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
-    CONSTRAINT "FK_Transactions_Accounts_IncomeTransaction_DebitAccountId" FOREIGN KEY ("IncomeTransaction_DebitAccountId") REFERENCES "Accounts" ("Id"),
+    CONSTRAINT "FK_Transactions_Accounts_IncomeTransaction_SourceAccountId" FOREIGN KEY ("IncomeTransaction_SourceAccountId") REFERENCES "Accounts" ("Id"),
     CONSTRAINT "FK_Transactions_Accounts_SpendingTransaction_CreditAccountId" FOREIGN KEY ("SpendingTransaction_CreditAccountId") REFERENCES "Accounts" ("Id"),
     CONSTRAINT "FK_Transactions_Accounts_SpendingTransaction_DebitAccountId" FOREIGN KEY ("SpendingTransaction_DebitAccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
     CONSTRAINT "FK_Transactions_Funds_FundTransaction_CreditFundId" FOREIGN KEY ("FundTransaction_CreditFundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE,
@@ -151,12 +149,30 @@ CREATE TABLE "AccountingPeriodFundBalanceHistory" (
     CONSTRAINT "FK_AccountingPeriodFundBalanceHistory_Funds_FundId" FOREIGN KEY ("FundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE "IncomeTransactionFundAssignments" (
-    "Id" INTEGER NOT NULL CONSTRAINT "PK_IncomeTransactionFundAssignments" PRIMARY KEY AUTOINCREMENT,
-    "FundId" TEXT NOT NULL,
+CREATE TABLE "IncomeTransactionIncomeDeductions" (
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_IncomeTransactionIncomeDeductions" PRIMARY KEY AUTOINCREMENT,
+    "Description" TEXT NOT NULL,
     "Amount" TEXT NOT NULL,
     "IncomeTransactionId" TEXT NOT NULL,
-    CONSTRAINT "FK_IncomeTransactionFundAssignments_Transactions_IncomeTransactionId" FOREIGN KEY ("IncomeTransactionId") REFERENCES "Transactions" ("Id") ON DELETE CASCADE
+    CONSTRAINT "FK_IncomeTransactionIncomeDeductions_Transactions_IncomeTransactionId" FOREIGN KEY ("IncomeTransactionId") REFERENCES "Transactions" ("Id") ON DELETE CASCADE
+);
+
+CREATE TABLE "IncomeTransactionIncomeDestinations" (
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_IncomeTransactionIncomeDestinations" PRIMARY KEY AUTOINCREMENT,
+    "AccountId" TEXT NOT NULL,
+    "Amount" TEXT NOT NULL,
+    "PostedDate" TEXT NULL,
+    "IncomeTransactionId" TEXT NOT NULL,
+    CONSTRAINT "FK_IncomeTransactionIncomeDestinations_Accounts_AccountId" FOREIGN KEY ("AccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
+    CONSTRAINT "FK_IncomeTransactionIncomeDestinations_Transactions_IncomeTransactionId" FOREIGN KEY ("IncomeTransactionId") REFERENCES "Transactions" ("Id") ON DELETE CASCADE
+);
+
+CREATE TABLE "IncomeTransactionIncomeLines" (
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_IncomeTransactionIncomeLines" PRIMARY KEY AUTOINCREMENT,
+    "Description" TEXT NOT NULL,
+    "Amount" TEXT NOT NULL,
+    "IncomeTransactionId" TEXT NOT NULL,
+    CONSTRAINT "FK_IncomeTransactionIncomeLines_Transactions_IncomeTransactionId" FOREIGN KEY ("IncomeTransactionId") REFERENCES "Transactions" ("Id") ON DELETE CASCADE
 );
 
 CREATE TABLE "SpendingTransactionFundAssignments" (
@@ -165,6 +181,14 @@ CREATE TABLE "SpendingTransactionFundAssignments" (
     "Amount" TEXT NOT NULL,
     "SpendingTransactionId" TEXT NOT NULL,
     CONSTRAINT "FK_SpendingTransactionFundAssignments_Transactions_SpendingTransactionId" FOREIGN KEY ("SpendingTransactionId") REFERENCES "Transactions" ("Id") ON DELETE CASCADE
+);
+
+CREATE TABLE "IncomeTransactionIncomeDestinationFundAssignments" (
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_IncomeTransactionIncomeDestinationFundAssignments" PRIMARY KEY AUTOINCREMENT,
+    "FundId" TEXT NOT NULL,
+    "Amount" TEXT NOT NULL,
+    "IncomeDestinationId" INTEGER NOT NULL,
+    CONSTRAINT "FK_IncomeTransactionIncomeDestinationFundAssignments_IncomeTransactionIncomeDestinations_IncomeDestinationId" FOREIGN KEY ("IncomeDestinationId") REFERENCES "IncomeTransactionIncomeDestinations" ("Id") ON DELETE CASCADE
 );
 
 CREATE INDEX "IX_AccountBalanceHistories_AccountId" ON "AccountBalanceHistories" ("AccountId");
@@ -191,7 +215,15 @@ CREATE INDEX "IX_AssignmentGoals_FundId" ON "AssignmentGoals" ("FundId");
 
 CREATE UNIQUE INDEX "IX_Funds_Name" ON "Funds" ("Name");
 
-CREATE INDEX "IX_IncomeTransactionFundAssignments_IncomeTransactionId" ON "IncomeTransactionFundAssignments" ("IncomeTransactionId");
+CREATE INDEX "IX_IncomeTransactionIncomeDeductions_IncomeTransactionId" ON "IncomeTransactionIncomeDeductions" ("IncomeTransactionId");
+
+CREATE INDEX "IX_IncomeTransactionIncomeDestinationFundAssignments_IncomeDestinationId" ON "IncomeTransactionIncomeDestinationFundAssignments" ("IncomeDestinationId");
+
+CREATE INDEX "IX_IncomeTransactionIncomeDestinations_AccountId" ON "IncomeTransactionIncomeDestinations" ("AccountId");
+
+CREATE INDEX "IX_IncomeTransactionIncomeDestinations_IncomeTransactionId" ON "IncomeTransactionIncomeDestinations" ("IncomeTransactionId");
+
+CREATE INDEX "IX_IncomeTransactionIncomeLines_IncomeTransactionId" ON "IncomeTransactionIncomeLines" ("IncomeTransactionId");
 
 CREATE INDEX "IX_SpendingGoals_FundId" ON "SpendingGoals" ("FundId");
 
@@ -205,16 +237,14 @@ CREATE INDEX "IX_Transactions_FundTransaction_CreditFundId" ON "Transactions" ("
 
 CREATE INDEX "IX_Transactions_FundTransaction_DebitFundId" ON "Transactions" ("FundTransaction_DebitFundId");
 
-CREATE INDEX "IX_Transactions_IncomeTransaction_CreditAccountId" ON "Transactions" ("IncomeTransaction_CreditAccountId");
-
-CREATE INDEX "IX_Transactions_IncomeTransaction_DebitAccountId" ON "Transactions" ("IncomeTransaction_DebitAccountId");
+CREATE INDEX "IX_Transactions_IncomeTransaction_SourceAccountId" ON "Transactions" ("IncomeTransaction_SourceAccountId");
 
 CREATE INDEX "IX_Transactions_SpendingTransaction_CreditAccountId" ON "Transactions" ("SpendingTransaction_CreditAccountId");
 
 CREATE INDEX "IX_Transactions_SpendingTransaction_DebitAccountId" ON "Transactions" ("SpendingTransaction_DebitAccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260618015540_InitialCreate', '10.0.2');
+VALUES ('20260619004910_InitialCreate', '10.0.2');
 
 COMMIT;
 

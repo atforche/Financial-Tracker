@@ -89,57 +89,57 @@ public class CurrentAccountingPeriodGetter(
 
     private static List<TransactionModel> SortTransactions(
         List<TransactionModel> transactions,
-        AccountingPeriodTrendsTransactionSortOrderModel? sort) => sort switch
+        TransactionSortOrderModel? sort) => sort switch
         {
-            null or AccountingPeriodTrendsTransactionSortOrderModel.Date => transactions
+            null or TransactionSortOrderModel.Date => transactions
                 .OrderBy(transaction => transaction.Date)
                 .ThenBy(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.DateDescending => transactions
+            TransactionSortOrderModel.DateDescending => transactions
                 .OrderByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.AccountingPeriod or
-            AccountingPeriodTrendsTransactionSortOrderModel.AccountingPeriodDescending => transactions
+            TransactionSortOrderModel.AccountingPeriod or
+            TransactionSortOrderModel.AccountingPeriodDescending => transactions
                 .OrderByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.Description => transactions
+            TransactionSortOrderModel.Description => transactions
                 .OrderBy(transaction => transaction.Description)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.DescriptionDescending => transactions
+            TransactionSortOrderModel.DescriptionDescending => transactions
                 .OrderByDescending(transaction => transaction.Description)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.Source => transactions
+            TransactionSortOrderModel.Source => transactions
                 .OrderBy(GetSource)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.SourceDescending => transactions
+            TransactionSortOrderModel.SourceDescending => transactions
                 .OrderByDescending(GetSource)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.Destination => transactions
+            TransactionSortOrderModel.Destination => transactions
                 .OrderBy(GetDestination)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.DestinationDescending => transactions
+            TransactionSortOrderModel.DestinationDescending => transactions
                 .OrderByDescending(GetDestination)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.Amount => transactions
+            TransactionSortOrderModel.Amount => transactions
                 .OrderBy(transaction => transaction.Amount)
                 .ThenBy(transaction => transaction.Date)
                 .ThenBy(transaction => transaction.Sequence)
                 .ToList(),
-            AccountingPeriodTrendsTransactionSortOrderModel.AmountDescending => transactions
+            TransactionSortOrderModel.AmountDescending => transactions
                 .OrderByDescending(transaction => transaction.Amount)
                 .ThenByDescending(transaction => transaction.Date)
                 .ThenByDescending(transaction => transaction.Sequence)
@@ -150,7 +150,7 @@ public class CurrentAccountingPeriodGetter(
     private static string? GetSource(TransactionModel transaction) => transaction switch
     {
         SpendingTransactionModel spendingTransaction => spendingTransaction.DebitAccount.AccountName,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.DebitAccount?.AccountName ?? incomeTransaction.SourceLocation,
+        IncomeTransactionModel incomeTransaction => incomeTransaction.SourceAccount?.AccountName ?? incomeTransaction.SourceLocation,
         AccountTransactionModel accountTransaction => accountTransaction.DebitAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.DebitFund?.FundName,
         _ => null,
@@ -159,7 +159,7 @@ public class CurrentAccountingPeriodGetter(
     private static string? GetDestination(TransactionModel transaction) => transaction switch
     {
         SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName ?? spendingTransaction.DestinationLocation,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.CreditAccount.AccountName,
+        IncomeTransactionModel incomeTransaction => string.Join(", ", incomeTransaction.IncomeDestinations.Select(destination => destination.Account.AccountName).Distinct(StringComparer.OrdinalIgnoreCase)),
         AccountTransactionModel accountTransaction => accountTransaction.CreditAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,
         _ => null,

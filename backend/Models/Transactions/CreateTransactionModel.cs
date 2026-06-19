@@ -61,14 +61,67 @@ public sealed class CreateSpendingTransactionModel : CreateTransactionModel
 }
 
 /// <summary>
+/// Model representing an income line in a create income transaction request.
+/// </summary>
+public sealed class CreateIncomeLineModel
+{
+    /// <summary>
+    /// Description for the income line.
+    /// </summary>
+    public required string Description { get; init; }
+
+    /// <summary>
+    /// Amount for the income line.
+    /// </summary>
+    public required decimal Amount { get; init; }
+}
+
+/// <summary>
+/// Model representing an income deduction in a create income transaction request.
+/// </summary>
+public sealed class CreateIncomeDeductionModel
+{
+    /// <summary>
+    /// Description for the income deduction.
+    /// </summary>
+    public required string Description { get; init; }
+
+    /// <summary>
+    /// Amount for the income deduction.
+    /// </summary>
+    public required decimal Amount { get; init; }
+}
+
+/// <summary>
+/// Model representing an income destination in a create income transaction request.
+/// </summary>
+public sealed class CreateIncomeDestinationModel
+{
+    /// <summary>
+    /// Destination account for the income transaction.
+    /// </summary>
+    public required Guid AccountId { get; init; }
+
+    /// <summary>
+    /// Amount directed to the destination account.
+    /// </summary>
+    public required decimal Amount { get; init; }
+
+    /// <summary>
+    /// Fund assignments for the destination account.
+    /// </summary>
+    public required IReadOnlyCollection<CreateFundAmountModel> FundAssignments { get; init; }
+}
+
+/// <summary>
 /// Model representing a request to create an income transaction.
 /// </summary>
 public sealed class CreateIncomeTransactionModel : CreateTransactionModel
 {
     /// <summary>
-    /// Optional debit account for the income transaction.
+    /// Optional source account for the income transaction.
     /// </summary>
-    public Guid? DebitAccountId { get; init; }
+    public Guid? SourceAccountId { get; init; }
 
     /// <summary>
     /// Optional source location for the income transaction.
@@ -76,14 +129,19 @@ public sealed class CreateIncomeTransactionModel : CreateTransactionModel
     public string? SourceLocation { get; init; }
 
     /// <summary>
-    /// Credit account for the income transaction.
+    /// Income lines for the income transaction.
     /// </summary>
-    public required Guid CreditAccountId { get; init; }
+    public required IReadOnlyCollection<CreateIncomeLineModel> IncomeLines { get; init; }
 
     /// <summary>
-    /// Fund assignments for the income transaction.
+    /// Income deductions for the income transaction.
     /// </summary>
-    public required IReadOnlyCollection<CreateFundAmountModel> FundAssignments { get; init; }
+    public required IReadOnlyCollection<CreateIncomeDeductionModel> IncomeDeductions { get; init; }
+
+    /// <summary>
+    /// Income destinations for the income transaction.
+    /// </summary>
+    public required IReadOnlyCollection<CreateIncomeDestinationModel> IncomeDestinations { get; init; }
 }
 
 /// <summary>

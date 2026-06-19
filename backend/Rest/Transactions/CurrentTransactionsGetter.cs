@@ -177,11 +177,11 @@ public class CurrentTransactionsGetter(
                 }
                 break;
             case IncomeTransactionModel incomeTransaction:
-                accountNames.Add(incomeTransaction.CreditAccount.AccountName);
-                if (incomeTransaction.DebitAccount is not null)
+                if (incomeTransaction.SourceAccount is not null)
                 {
-                    accountNames.Add(incomeTransaction.DebitAccount.AccountName);
+                    accountNames.Add(incomeTransaction.SourceAccount.AccountName);
                 }
+                accountNames.AddRange(incomeTransaction.IncomeDestinations.Select(destination => destination.Account.AccountName));
                 break;
             case AccountTransactionModel accountTransaction:
                 if (accountTransaction.DebitAccount is not null)
@@ -209,7 +209,7 @@ public class CurrentTransactionsGetter(
                 fundNames.AddRange(spendingTransaction.FundAssignments.Select(fundAmount => fundAmount.FundName));
                 break;
             case IncomeTransactionModel incomeTransaction:
-                fundNames.AddRange(incomeTransaction.FundAssignments.Select(fundAmount => fundAmount.FundName));
+                fundNames.AddRange(incomeTransaction.IncomeDestinations.SelectMany(destination => destination.FundAssignments).Select(fundAmount => fundAmount.FundName));
                 break;
             case FundTransactionModel fundTransaction:
                 if (fundTransaction.DebitFund is not null)
@@ -260,11 +260,11 @@ public class CurrentTransactionsGetter(
                 }
                 break;
             case IncomeTransactionModel incomeTransaction:
-                if (incomeTransaction.DebitAccount is not null)
+                if (incomeTransaction.SourceAccount is not null)
                 {
-                    accounts.Add(incomeTransaction.DebitAccount);
+                    accounts.Add(incomeTransaction.SourceAccount);
                 }
-                accounts.Add(incomeTransaction.CreditAccount);
+                accounts.AddRange(incomeTransaction.IncomeDestinations.Select(destination => destination.Account));
                 break;
             case AccountTransactionModel accountTransaction:
                 if (accountTransaction.DebitAccount is not null)
@@ -346,7 +346,7 @@ public class CurrentTransactionsGetter(
     private static string? GetSource(TransactionModel transaction) => transaction switch
     {
         SpendingTransactionModel spendingTransaction => spendingTransaction.DebitAccount.AccountName,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.DebitAccount?.AccountName ?? incomeTransaction.SourceLocation,
+        IncomeTransactionModel incomeTransaction => incomeTransaction.SourceAccount?.AccountName ?? incomeTransaction.SourceLocation,
         AccountTransactionModel accountTransaction => accountTransaction.DebitAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.DebitFund?.FundName,
         _ => null,
@@ -355,7 +355,7 @@ public class CurrentTransactionsGetter(
     private static string? GetDestination(TransactionModel transaction) => transaction switch
     {
         SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName ?? spendingTransaction.DestinationLocation,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.CreditAccount.AccountName,
+        IncomeTransactionModel incomeTransaction => string.Join(", ", incomeTransaction.IncomeDestinations.Select(destination => destination.Account.AccountName).Distinct(StringComparer.OrdinalIgnoreCase)),
         AccountTransactionModel accountTransaction => accountTransaction.CreditAccount?.AccountName,
         FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,
         _ => null,

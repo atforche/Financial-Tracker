@@ -41,14 +41,77 @@ public sealed class UpdateSpendingTransactionModel : UpdateTransactionModel
 }
 
 /// <summary>
+/// Model representing an income line in an update income transaction request.
+/// </summary>
+public sealed class UpdateIncomeLineModel
+{
+    /// <summary>
+    /// Description for the income line.
+    /// </summary>
+    public required string Description { get; init; }
+
+    /// <summary>
+    /// Amount for the income line.
+    /// </summary>
+    public required decimal Amount { get; init; }
+}
+
+/// <summary>
+/// Model representing an income deduction in an update income transaction request.
+/// </summary>
+public sealed class UpdateIncomeDeductionModel
+{
+    /// <summary>
+    /// Description for the income deduction.
+    /// </summary>
+    public required string Description { get; init; }
+
+    /// <summary>
+    /// Amount for the income deduction.
+    /// </summary>
+    public required decimal Amount { get; init; }
+}
+
+/// <summary>
+/// Model representing an income destination in an update income transaction request.
+/// </summary>
+public sealed class UpdateIncomeDestinationModel
+{
+    /// <summary>
+    /// Destination account for the income transaction.
+    /// </summary>
+    public required Guid AccountId { get; init; }
+
+    /// <summary>
+    /// Amount directed to the destination account.
+    /// </summary>
+    public required decimal Amount { get; init; }
+
+    /// <summary>
+    /// Fund assignments for the destination account.
+    /// </summary>
+    public required IReadOnlyCollection<CreateFundAmountModel> FundAssignments { get; init; }
+}
+
+/// <summary>
 /// Model representing a request to update an income transaction.
 /// </summary>
 public sealed class UpdateIncomeTransactionModel : UpdateTransactionModel
 {
     /// <summary>
-    /// Fund assignments for the income transaction.
+    /// Income lines for the income transaction.
     /// </summary>
-    public required IReadOnlyCollection<CreateFundAmountModel> FundAssignments { get; init; }
+    public required IReadOnlyCollection<UpdateIncomeLineModel> IncomeLines { get; init; }
+
+    /// <summary>
+    /// Income deductions for the income transaction.
+    /// </summary>
+    public required IReadOnlyCollection<UpdateIncomeDeductionModel> IncomeDeductions { get; init; }
+
+    /// <summary>
+    /// Income destinations for the income transaction.
+    /// </summary>
+    public required IReadOnlyCollection<UpdateIncomeDestinationModel> IncomeDestinations { get; init; }
 }
 
 /// <summary>

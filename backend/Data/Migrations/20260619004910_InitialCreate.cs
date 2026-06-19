@@ -189,11 +189,10 @@ namespace Data.Migrations
                     AccountTransaction_CreditPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     FundTransaction_DebitFundId = table.Column<Guid>(type: "TEXT", nullable: true),
                     FundTransaction_CreditFundId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    IncomeTransaction_CreditAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    IncomeTransaction_CreditPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
-                    IncomeTransaction_DebitAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    IncomeTransaction_DebitPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+                    IncomeTransaction_SourceAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    IncomeTransaction_SourcePostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     IncomeTransaction_SourceLocation = table.Column<string>(type: "TEXT", nullable: true),
+                    TrackedIncomeAmount = table.Column<decimal>(type: "TEXT", nullable: true),
                     SpendingTransaction_DebitAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
                     SpendingTransaction_DebitPostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     SpendingTransaction_CreditAccountId = table.Column<Guid>(type: "TEXT", nullable: true),
@@ -214,14 +213,8 @@ namespace Data.Migrations
                         principalTable: "Accounts",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Transactions_Accounts_IncomeTransaction_CreditAccountId",
-                        column: x => x.IncomeTransaction_CreditAccountId,
-                        principalTable: "Accounts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Transactions_Accounts_IncomeTransaction_DebitAccountId",
-                        column: x => x.IncomeTransaction_DebitAccountId,
+                        name: "FK_Transactions_Accounts_IncomeTransaction_SourceAccountId",
+                        column: x => x.IncomeTransaction_SourceAccountId,
                         principalTable: "Accounts",
                         principalColumn: "Id");
                     table.ForeignKey(
@@ -322,20 +315,69 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "IncomeTransactionFundAssignments",
+                name: "IncomeTransactionIncomeDeductions",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    FundId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Description = table.Column<string>(type: "TEXT", nullable: false),
                     Amount = table.Column<decimal>(type: "TEXT", nullable: false),
                     IncomeTransactionId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_IncomeTransactionFundAssignments", x => x.Id);
+                    table.PrimaryKey("PK_IncomeTransactionIncomeDeductions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_IncomeTransactionFundAssignments_Transactions_IncomeTransactionId",
+                        name: "FK_IncomeTransactionIncomeDeductions_Transactions_IncomeTransactionId",
+                        column: x => x.IncomeTransactionId,
+                        principalTable: "Transactions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "IncomeTransactionIncomeDestinations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    AccountId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    PostedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+                    IncomeTransactionId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IncomeTransactionIncomeDestinations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_IncomeTransactionIncomeDestinations_Accounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_IncomeTransactionIncomeDestinations_Transactions_IncomeTransactionId",
+                        column: x => x.IncomeTransactionId,
+                        principalTable: "Transactions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "IncomeTransactionIncomeLines",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Description = table.Column<string>(type: "TEXT", nullable: false),
+                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    IncomeTransactionId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IncomeTransactionIncomeLines", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_IncomeTransactionIncomeLines_Transactions_IncomeTransactionId",
                         column: x => x.IncomeTransactionId,
                         principalTable: "Transactions",
                         principalColumn: "Id",
@@ -359,6 +401,27 @@ namespace Data.Migrations
                         name: "FK_SpendingTransactionFundAssignments_Transactions_SpendingTransactionId",
                         column: x => x.SpendingTransactionId,
                         principalTable: "Transactions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "IncomeTransactionIncomeDestinationFundAssignments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    FundId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    IncomeDestinationId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IncomeTransactionIncomeDestinationFundAssignments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_IncomeTransactionIncomeDestinationFundAssignments_IncomeTransactionIncomeDestinations_IncomeDestinationId",
+                        column: x => x.IncomeDestinationId,
+                        principalTable: "IncomeTransactionIncomeDestinations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -426,8 +489,28 @@ namespace Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_IncomeTransactionFundAssignments_IncomeTransactionId",
-                table: "IncomeTransactionFundAssignments",
+                name: "IX_IncomeTransactionIncomeDeductions_IncomeTransactionId",
+                table: "IncomeTransactionIncomeDeductions",
+                column: "IncomeTransactionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IncomeTransactionIncomeDestinationFundAssignments_IncomeDestinationId",
+                table: "IncomeTransactionIncomeDestinationFundAssignments",
+                column: "IncomeDestinationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IncomeTransactionIncomeDestinations_AccountId",
+                table: "IncomeTransactionIncomeDestinations",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IncomeTransactionIncomeDestinations_IncomeTransactionId",
+                table: "IncomeTransactionIncomeDestinations",
+                column: "IncomeTransactionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IncomeTransactionIncomeLines_IncomeTransactionId",
+                table: "IncomeTransactionIncomeLines",
                 column: "IncomeTransactionId");
 
             migrationBuilder.CreateIndex(
@@ -461,14 +544,9 @@ namespace Data.Migrations
                 column: "FundTransaction_DebitFundId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_IncomeTransaction_CreditAccountId",
+                name: "IX_Transactions_IncomeTransaction_SourceAccountId",
                 table: "Transactions",
-                column: "IncomeTransaction_CreditAccountId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Transactions_IncomeTransaction_DebitAccountId",
-                table: "Transactions",
-                column: "IncomeTransaction_DebitAccountId");
+                column: "IncomeTransaction_SourceAccountId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Transactions_SpendingTransaction_CreditAccountId",
@@ -500,7 +578,13 @@ namespace Data.Migrations
                 name: "FundBalanceHistories");
 
             migrationBuilder.DropTable(
-                name: "IncomeTransactionFundAssignments");
+                name: "IncomeTransactionIncomeDeductions");
+
+            migrationBuilder.DropTable(
+                name: "IncomeTransactionIncomeDestinationFundAssignments");
+
+            migrationBuilder.DropTable(
+                name: "IncomeTransactionIncomeLines");
 
             migrationBuilder.DropTable(
                 name: "SpendingGoals");
@@ -512,10 +596,13 @@ namespace Data.Migrations
                 name: "AccountingPeriodBalanceHistories");
 
             migrationBuilder.DropTable(
-                name: "Transactions");
+                name: "IncomeTransactionIncomeDestinations");
 
             migrationBuilder.DropTable(
                 name: "AccountingPeriods");
+
+            migrationBuilder.DropTable(
+                name: "Transactions");
 
             migrationBuilder.DropTable(
                 name: "Accounts");
