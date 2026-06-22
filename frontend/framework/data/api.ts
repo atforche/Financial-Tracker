@@ -2112,7 +2112,7 @@ export interface paths {
             parameters: {
                 query?: {
                     /** @description Optional sort to apply to the matching transactions. */
-                    TransactionSort?: components["schemas"]["AccountingPeriodTrendsTransactionSortOrderModel"];
+                    TransactionSort?: components["schemas"]["TransactionSortOrderModel"];
                     /** @description Maximum number of transactions to return. */
                     TransactionLimit?: number;
                     /** @description Number of transactions to skip. */
@@ -2163,7 +2163,7 @@ export interface paths {
                     /** @description Optional sort to apply to the matching Accounting Periods. */
                     Sort?: components["schemas"]["AccountingPeriodSortOrderModel"];
                     /** @description Optional sort to apply to the matching transactions. */
-                    TransactionSort?: components["schemas"]["AccountingPeriodTrendsTransactionSortOrderModel"];
+                    TransactionSort?: components["schemas"]["TransactionSortOrderModel"];
                     /** @description Maximum number of Accounting Periods to return. */
                     Limit?: number;
                     /** @description Number of Accounting Periods to skip. */
@@ -2419,19 +2419,14 @@ export interface components {
             accountingPeriods: components["schemas"]["CollectionModelOfAccountingPeriodModel"];
             /** @description Matching transactions for the requested trends page. */
             transactions: components["schemas"]["CollectionModelOfTransactionModel"];
-            /**
-             * Format: double
-             * @description Total income over the requested range.
-             */
-            totalIncome: number;
+            /** @description Total income over the requested range. */
+            totalIncome: components["schemas"]["IncomeAmountModel"];
             /**
              * Format: double
              * @description Total spending over the requested range.
              */
             totalSpending: number;
         };
-        /** @enum {unknown} */
-        AccountingPeriodTrendsTransactionSortOrderModel: AccountingPeriodTrendsTransactionSortOrderModel | null;
         /** @description Model representing an Account */
         AccountModel: {
             /**
@@ -2467,6 +2462,28 @@ export interface components {
             totalUntrackedBalance: number;
             /** @description Breakdown of total posted balances by Account Type. */
             balanceByAccountType: components["schemas"]["AccountTypeBalanceModel"][];
+        };
+        /** @description Model representing a destination of an account transaction response. */
+        AccountTransactionDestinationModel: {
+            account?: null | components["schemas"]["TransactionAccountModel"];
+            /** @description Optional location for the destination. */
+            location?: null | string;
+            /**
+             * Format: double
+             * @description Amount directed to this destination.
+             */
+            amount: number;
+            /**
+             * Format: date
+             * @description Posted date for this destination.
+             */
+            postedDate: null | string;
+        };
+        /** @description Model representing the source of an account transaction response. */
+        AccountTransactionSourceModel: {
+            account?: null | components["schemas"]["TransactionAccountModel"];
+            /** @description Optional location for the source. */
+            location?: null | string;
         };
         /** @description Model representing an Account row within the trends response. */
         AccountTrendsAccountModel: {
@@ -2568,11 +2585,8 @@ export interface components {
             balanceEvents: components["schemas"]["CollectionModelOfAccountTrendsBalanceEventModel"];
             /** @description Available Account Names for the current trends scope before account-name filtering. */
             availableAccountNames: string[];
-            /**
-             * Format: double
-             * @description Total income over the requested range.
-             */
-            totalIncome: number;
+            /** @description Total income over the requested range. */
+            totalIncome: components["schemas"]["IncomeAmountModel"];
             /**
              * Format: double
              * @description Total spending over the requested range.
@@ -2864,6 +2878,31 @@ export interface components {
              */
             dateOpened: string;
         };
+        /** @description Model representing a destination of an account transaction create request. */
+        CreateAccountTransactionDestinationModel: {
+            /**
+             * Format: uuid
+             * @description Optional account ID for the destination account.
+             */
+            accountId?: null | string;
+            /** @description Optional location for the destination. */
+            location?: null | string;
+            /**
+             * Format: double
+             * @description Amount directed to this destination.
+             */
+            amount: number;
+        };
+        /** @description Model representing the source of an account transaction create request. */
+        CreateAccountTransactionSourceModel: {
+            /**
+             * Format: uuid
+             * @description Optional account ID for the source account.
+             */
+            accountId?: null | string;
+            /** @description Optional location for the source. */
+            location?: null | string;
+        };
         /** @description Model representing a request to create a Fund Amount */
         CreateFundAmountModel: {
             /**
@@ -2898,22 +2937,111 @@ export interface components {
             /** @description Spending goal behavior for the Fund. */
             spendingGoalType: components["schemas"]["SpendingGoalTypeModel"];
         };
+        /** @description Model representing a destination of a fund transaction create request. */
+        CreateFundTransactionDestinationModel: {
+            /**
+             * Format: uuid
+             * @description Fund ID for the destination fund.
+             */
+            fundId: string;
+            /**
+             * Format: double
+             * @description Amount directed to this destination fund.
+             */
+            amount: number;
+        };
+        /** @description Model representing the source of a fund transaction create request. */
+        CreateFundTransactionSourceModel: {
+            /**
+             * Format: uuid
+             * @description Fund ID for the source fund.
+             */
+            fundId: string;
+        };
+        /** @description Model representing an income deduction in a create income transaction request. */
+        CreateIncomeDeductionModel: {
+            /** @description Description for the income deduction. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the income deduction.
+             */
+            amount: number;
+        };
+        /** @description Model representing an income line in a create income transaction request. */
+        CreateIncomeLineModel: {
+            /** @description Description for the income line. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the income line.
+             */
+            amount: number;
+        };
+        /** @description Model representing a destination of an income transaction create request. */
+        CreateIncomeTransactionDestinationModel: {
+            /**
+             * Format: uuid
+             * @description Account ID for the destination account.
+             */
+            accountId: string;
+            /**
+             * Format: double
+             * @description Amount directed to this destination.
+             */
+            amount: number;
+            /** @description Fund assignments for this destination. */
+            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
+        };
+        /** @description Model representing the source of an income transaction create request. */
+        CreateIncomeTransactionSourceModel: {
+            /**
+             * Format: uuid
+             * @description Optional account ID for the income source.
+             */
+            accountId?: null | string;
+            /** @description Optional location for the income source. */
+            location?: null | string;
+            /** @description Income lines for the source. */
+            incomeLines: components["schemas"]["CreateIncomeLineModel"][];
+            /** @description Income deductions for the source. */
+            incomeDeductions: components["schemas"]["CreateIncomeDeductionModel"][];
+        };
+        /** @description Model representing a destination of a spending transaction create request. */
+        CreateSpendingTransactionDestinationModel: {
+            /**
+             * Format: uuid
+             * @description Optional account ID for the destination account.
+             */
+            accountId?: null | string;
+            /** @description Optional location for the destination. */
+            location?: null | string;
+            /**
+             * Format: double
+             * @description Amount directed to this destination.
+             */
+            amount: number;
+            /** @description Fund assignments for this destination. */
+            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
+        };
+        /** @description Model representing the source of a spending transaction create request. */
+        CreateSpendingTransactionSourceModel: {
+            /**
+             * Format: uuid
+             * @description Account ID for the source account.
+             */
+            accountId: string;
+        };
         /** @description Model representing a request to create a Transaction. */
         CreateTransactionModel: components["schemas"]["CreateTransactionModelCreateSpendingTransactionModel"] | components["schemas"]["CreateTransactionModelCreateIncomeTransactionModel"] | components["schemas"]["CreateTransactionModelCreateAccountTransactionModel"] | components["schemas"]["CreateTransactionModelCreateFundTransactionModel"];
         /** @description Model representing a request to create an account transaction. */
         CreateTransactionModelCreateAccountTransactionModel: {
             /** @enum {string} */
             type?: CreateTransactionModelCreateAccountTransactionModelType;
-            /**
-             * Format: uuid
-             * @description Optional debit account for the account transaction.
-             */
-            debitAccountId?: null | string;
-            /**
-             * Format: uuid
-             * @description Optional credit account for the account transaction.
-             */
-            creditAccountId?: null | string;
+            /** @description Source for the account transaction. */
+            source: components["schemas"]["CreateAccountTransactionSourceModel"];
+            /** @description Destinations for the account transaction. */
+            destinations: components["schemas"]["CreateAccountTransactionDestinationModel"][];
             /**
              * Format: uuid
              * @description Accounting Period for the Transaction.
@@ -2936,16 +3064,10 @@ export interface components {
         CreateTransactionModelCreateFundTransactionModel: {
             /** @enum {string} */
             type?: CreateTransactionModelCreateFundTransactionModelType;
-            /**
-             * Format: uuid
-             * @description Debit fund for the fund transaction.
-             */
-            debitFundId: string;
-            /**
-             * Format: uuid
-             * @description Credit fund for the fund transaction.
-             */
-            creditFundId: string;
+            /** @description Source for the fund transaction. */
+            source: components["schemas"]["CreateFundTransactionSourceModel"];
+            /** @description Destinations for the fund transaction. */
+            destinations: components["schemas"]["CreateFundTransactionDestinationModel"][];
             /**
              * Format: uuid
              * @description Accounting Period for the Transaction.
@@ -2968,20 +3090,10 @@ export interface components {
         CreateTransactionModelCreateIncomeTransactionModel: {
             /** @enum {string} */
             type?: CreateTransactionModelCreateIncomeTransactionModelType;
-            /**
-             * Format: uuid
-             * @description Optional debit account for the income transaction.
-             */
-            debitAccountId?: null | string;
-            /** @description Optional source location for the income transaction. */
-            sourceLocation?: null | string;
-            /**
-             * Format: uuid
-             * @description Credit account for the income transaction.
-             */
-            creditAccountId: string;
-            /** @description Fund assignments for the income transaction. */
-            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
+            /** @description Source for the income transaction. */
+            source: components["schemas"]["CreateIncomeTransactionSourceModel"];
+            /** @description Destinations for the income transaction. */
+            destinations: components["schemas"]["CreateIncomeTransactionDestinationModel"][];
             /**
              * Format: uuid
              * @description Accounting Period for the Transaction.
@@ -3004,20 +3116,10 @@ export interface components {
         CreateTransactionModelCreateSpendingTransactionModel: {
             /** @enum {string} */
             type?: CreateTransactionModelCreateSpendingTransactionModelType;
-            /**
-             * Format: uuid
-             * @description Debit account for the spending transaction.
-             */
-            debitAccountId: string;
-            /**
-             * Format: uuid
-             * @description Optional credit account for the spending transaction.
-             */
-            creditAccountId?: null | string;
-            /** @description Optional destination location for the spending transaction. */
-            destinationLocation?: null | string;
-            /** @description Fund assignments for the spending transaction. */
-            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
+            /** @description Source for the spending transaction. */
+            source: components["schemas"]["CreateSpendingTransactionSourceModel"];
+            /** @description Destinations for the spending transaction. */
+            destinations: components["schemas"]["CreateSpendingTransactionDestinationModel"][];
             /**
              * Format: uuid
              * @description Accounting Period for the Transaction.
@@ -3063,11 +3165,8 @@ export interface components {
             accountingPeriod?: null | components["schemas"]["AccountingPeriodModel"];
             /** @description Matching transactions for the current Accounting Period page. */
             transactions: components["schemas"]["CollectionModelOfTransactionModel"];
-            /**
-             * Format: double
-             * @description Total income for the current Accounting Period.
-             */
-            totalIncome: number;
+            /** @description Total income for the current Accounting Period. */
+            totalIncome: components["schemas"]["IncomeAmountModel"];
             /**
              * Format: double
              * @description Total spending for the current Accounting Period.
@@ -3351,6 +3450,16 @@ export interface components {
              * @description Posted balance of the unassigned Fund.
              */
             totalUnassignedBalance: number;
+        };
+        /** @description Model representing a destination of a fund transaction response. */
+        FundTransactionDestinationModel: {
+            /** @description Fund for the destination. */
+            fund: components["schemas"]["TransactionFundModel"];
+        };
+        /** @description Model representing the source of a fund transaction response. */
+        FundTransactionSourceModel: {
+            /** @description Fund for the source. */
+            fund: components["schemas"]["TransactionFundModel"];
         };
         /** @description Model representing a balance event on the Fund trends. */
         FundTrendsBalanceEventModel: {
@@ -3695,6 +3804,71 @@ export interface components {
             /** @description Percentage of goals met for the group. */
             percentageOfGoalsMet: components["schemas"]["GoalPercentageMetModel"];
         };
+        /** @description Model representing an income amount. */
+        IncomeAmountModel: {
+            /**
+             * Format: double
+             * @description The total amount of income.
+             */
+            total: number;
+            /**
+             * Format: double
+             * @description The tracked portion of the income.
+             */
+            tracked: number;
+            /**
+             * Format: double
+             * @description The untracked portion of the income.
+             */
+            untracked: number;
+        };
+        /** @description Model representing an income deduction on an income transaction. */
+        IncomeDeductionModel: {
+            /** @description Description for the income deduction. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the income deduction.
+             */
+            amount: number;
+        };
+        /** @description Model representing an income line on an income transaction. */
+        IncomeLineModel: {
+            /** @description Description for the income line. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the income line.
+             */
+            amount: number;
+        };
+        /** @description Model representing a destination of an income transaction response. */
+        IncomeTransactionDestinationModel: {
+            /** @description Account for the destination. */
+            account: components["schemas"]["TransactionAccountModel"];
+            /**
+             * Format: double
+             * @description Amount directed to this destination.
+             */
+            amount: number;
+            /**
+             * Format: date
+             * @description Posted date for this destination.
+             */
+            postedDate: null | string;
+            /** @description Fund assignments for this destination. */
+            fundAssignments: components["schemas"]["TransactionFundModel"][];
+        };
+        /** @description Model representing the source of an income transaction response. */
+        IncomeTransactionSourceModel: {
+            account?: null | components["schemas"]["TransactionAccountModel"];
+            /** @description Optional location for the source. */
+            location?: null | string;
+            /** @description Income lines for the source. */
+            incomeLines: components["schemas"]["IncomeLineModel"][];
+            /** @description Income deductions for the source. */
+            incomeDeductions: components["schemas"]["IncomeDeductionModel"][];
+        };
         /** @description Model representing a request to onboard an Account. */
         OnboardAccountModel: {
             /** @description Name for the Account */
@@ -3809,6 +3983,29 @@ export interface components {
          * @enum {unknown}
          */
         SpendingGoalTypeModel: SpendingGoalTypeModel;
+        /** @description Model representing a destination of a spending transaction response. */
+        SpendingTransactionDestinationModel: {
+            account?: null | components["schemas"]["TransactionAccountModel"];
+            /** @description Optional location for the destination. */
+            location?: null | string;
+            /**
+             * Format: double
+             * @description Amount directed to this destination.
+             */
+            amount: number;
+            /**
+             * Format: date
+             * @description Posted date for this destination.
+             */
+            postedDate: null | string;
+            /** @description Fund assignments for this destination. */
+            fundAssignments: components["schemas"]["TransactionFundModel"][];
+        };
+        /** @description Model representing the source of a spending transaction response. */
+        SpendingTransactionSourceModel: {
+            /** @description Account for the source. */
+            account: components["schemas"]["TransactionAccountModel"];
+        };
         /** @description Model representing a Transaction Account */
         TransactionAccountModel: {
             /**
@@ -3862,8 +4059,10 @@ export interface components {
         TransactionModelAccountTransactionModel: {
             /** @enum {string} */
             type?: TransactionModelAccountTransactionModelType;
-            debitAccount?: null | components["schemas"]["TransactionAccountModel"];
-            creditAccount?: null | components["schemas"]["TransactionAccountModel"];
+            /** @description Source for the account transaction. */
+            source: components["schemas"]["AccountTransactionSourceModel"];
+            /** @description Destinations for the account transaction. */
+            destinations: components["schemas"]["AccountTransactionDestinationModel"][];
             /**
              * Format: uuid
              * @description ID for the Transaction.
@@ -3900,10 +4099,10 @@ export interface components {
         TransactionModelFundTransactionModel: {
             /** @enum {string} */
             type?: TransactionModelFundTransactionModelType;
-            /** @description Debit fund for the transaction. */
-            debitFund: components["schemas"]["TransactionFundModel"];
-            /** @description Credit fund for the transaction. */
-            creditFund: components["schemas"]["TransactionFundModel"];
+            /** @description Source for the fund transaction. */
+            source: components["schemas"]["FundTransactionSourceModel"];
+            /** @description Destinations for the fund transaction. */
+            destinations: components["schemas"]["FundTransactionDestinationModel"][];
             /**
              * Format: uuid
              * @description ID for the Transaction.
@@ -3940,13 +4139,15 @@ export interface components {
         TransactionModelIncomeTransactionModel: {
             /** @enum {string} */
             type?: TransactionModelIncomeTransactionModelType;
-            debitAccount?: null | components["schemas"]["TransactionAccountModel"];
-            /** @description Optional source location for the transaction. */
-            sourceLocation?: null | string;
-            /** @description Credit account for the transaction. */
-            creditAccount: components["schemas"]["TransactionAccountModel"];
-            /** @description Fund assignments for the transaction. */
-            fundAssignments: components["schemas"]["TransactionFundModel"][];
+            /** @description Source for the income transaction. */
+            source: components["schemas"]["IncomeTransactionSourceModel"];
+            /**
+             * Format: double
+             * @description Total tracked amount for the income transaction.
+             */
+            trackedAmount: number;
+            /** @description Destinations for the income transaction. */
+            destinations: components["schemas"]["IncomeTransactionDestinationModel"][];
             /**
              * Format: uuid
              * @description ID for the Transaction.
@@ -3983,13 +4184,10 @@ export interface components {
         TransactionModelSpendingTransactionModel: {
             /** @enum {string} */
             type?: TransactionModelSpendingTransactionModelType;
-            /** @description Debit account for the transaction. */
-            debitAccount: components["schemas"]["TransactionAccountModel"];
-            creditAccount?: null | components["schemas"]["TransactionAccountModel"];
-            /** @description Optional destination location for the transaction. */
-            destinationLocation?: null | string;
-            /** @description Fund assignments for the transaction. */
-            fundAssignments: components["schemas"]["TransactionFundModel"][];
+            /** @description Source for the spending transaction. */
+            source: components["schemas"]["SpendingTransactionSourceModel"];
+            /** @description Destinations for the spending transaction. */
+            destinations: components["schemas"]["SpendingTransactionDestinationModel"][];
             /**
              * Format: uuid
              * @description ID for the Transaction.
@@ -4119,6 +4317,31 @@ export interface components {
             /** @description Name for the Account */
             name: string;
         };
+        /** @description Model representing a destination of an account transaction update request. */
+        UpdateAccountTransactionDestinationModel: {
+            /**
+             * Format: uuid
+             * @description Optional account ID for the destination account.
+             */
+            accountId?: null | string;
+            /** @description Optional location for the destination. */
+            location?: null | string;
+            /**
+             * Format: double
+             * @description Amount directed to this destination.
+             */
+            amount: number;
+        };
+        /** @description Model representing the source of an account transaction update request. */
+        UpdateAccountTransactionSourceModel: {
+            /**
+             * Format: uuid
+             * @description Optional account ID for the source account.
+             */
+            accountId?: null | string;
+            /** @description Optional location for the source. */
+            location?: null | string;
+        };
         /** @description Model representing a request to update an Assignment Goal */
         UpdateAssignmentGoalModel: {
             /** @description Assignment goal type for the Goal */
@@ -4136,10 +4359,105 @@ export interface components {
             /** @description Description for the Fund */
             description: string;
         };
+        /** @description Model representing a destination of a fund transaction update request. */
+        UpdateFundTransactionDestinationModel: {
+            /**
+             * Format: uuid
+             * @description Fund ID for the destination fund.
+             */
+            fundId: string;
+            /**
+             * Format: double
+             * @description Amount directed to this destination fund.
+             */
+            amount: number;
+        };
+        /** @description Model representing the source of a fund transaction update request. */
+        UpdateFundTransactionSourceModel: {
+            /**
+             * Format: uuid
+             * @description Fund ID for the source fund.
+             */
+            fundId: string;
+        };
+        /** @description Model representing an income deduction in an update income transaction request. */
+        UpdateIncomeDeductionModel: {
+            /** @description Description for the income deduction. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the income deduction.
+             */
+            amount: number;
+        };
+        /** @description Model representing an income line in an update income transaction request. */
+        UpdateIncomeLineModel: {
+            /** @description Description for the income line. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the income line.
+             */
+            amount: number;
+        };
+        /** @description Model representing a destination of an income transaction update request. */
+        UpdateIncomeTransactionDestinationModel: {
+            /**
+             * Format: uuid
+             * @description Account ID for the destination account.
+             */
+            accountId: string;
+            /**
+             * Format: double
+             * @description Amount directed to this destination.
+             */
+            amount: number;
+            /** @description Fund assignments for this destination. */
+            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
+        };
+        /** @description Model representing the source of an income transaction update request. */
+        UpdateIncomeTransactionSourceModel: {
+            /**
+             * Format: uuid
+             * @description Optional account ID for the income source.
+             */
+            accountId?: null | string;
+            /** @description Optional location for the income source. */
+            location?: null | string;
+            /** @description Income lines for the source. */
+            incomeLines: components["schemas"]["UpdateIncomeLineModel"][];
+            /** @description Income deductions for the source. */
+            incomeDeductions: components["schemas"]["UpdateIncomeDeductionModel"][];
+        };
         /** @description Model representing a request to update a Spending Goal */
         UpdateSpendingGoalModel: {
             /** @description Spending goal type for the Spending Goal */
             spendingGoalType: components["schemas"]["SpendingGoalTypeModel"];
+        };
+        /** @description Model representing a destination of a spending transaction update request. */
+        UpdateSpendingTransactionDestinationModel: {
+            /**
+             * Format: uuid
+             * @description Optional account ID for the destination account.
+             */
+            accountId?: null | string;
+            /** @description Optional location for the destination. */
+            location?: null | string;
+            /**
+             * Format: double
+             * @description Amount directed to this destination.
+             */
+            amount: number;
+            /** @description Fund assignments for this destination. */
+            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
+        };
+        /** @description Model representing the source of a spending transaction update request. */
+        UpdateSpendingTransactionSourceModel: {
+            /**
+             * Format: uuid
+             * @description Account ID for the source account.
+             */
+            accountId: string;
         };
         /** @description Model representing a request to update a Transaction. */
         UpdateTransactionModel: components["schemas"]["UpdateTransactionModelUpdateSpendingTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateIncomeTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateAccountTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateFundTransactionModel"];
@@ -4147,6 +4465,10 @@ export interface components {
         UpdateTransactionModelUpdateAccountTransactionModel: {
             /** @enum {string} */
             type?: UpdateTransactionModelUpdateAccountTransactionModelType;
+            /** @description Source for the account transaction. */
+            source: components["schemas"]["UpdateAccountTransactionSourceModel"];
+            /** @description Destinations for the account transaction. */
+            destinations: components["schemas"]["UpdateAccountTransactionDestinationModel"][];
             /**
              * Format: date
              * @description Date for the Transaction.
@@ -4164,6 +4486,10 @@ export interface components {
         UpdateTransactionModelUpdateFundTransactionModel: {
             /** @enum {string} */
             type?: UpdateTransactionModelUpdateFundTransactionModelType;
+            /** @description Source for the fund transaction. */
+            source: components["schemas"]["UpdateFundTransactionSourceModel"];
+            /** @description Destinations for the fund transaction. */
+            destinations: components["schemas"]["UpdateFundTransactionDestinationModel"][];
             /**
              * Format: date
              * @description Date for the Transaction.
@@ -4181,8 +4507,12 @@ export interface components {
         UpdateTransactionModelUpdateIncomeTransactionModel: {
             /** @enum {string} */
             type?: UpdateTransactionModelUpdateIncomeTransactionModelType;
-            /** @description Fund assignments for the income transaction. */
-            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
+            /** @description Source for the income transaction. */
+            source: components["schemas"]["UpdateIncomeTransactionSourceModel"];
+            /** @description Destinations for the income transaction. */
+            destinations: components["schemas"]["UpdateIncomeTransactionDestinationModel"][];
+            /** @description Backwards-compatible alias for the income destinations collection. */
+            incomeDestinations?: null | components["schemas"]["UpdateIncomeTransactionDestinationModel"][];
             /**
              * Format: date
              * @description Date for the Transaction.
@@ -4200,8 +4530,12 @@ export interface components {
         UpdateTransactionModelUpdateSpendingTransactionModel: {
             /** @enum {string} */
             type?: UpdateTransactionModelUpdateSpendingTransactionModelType;
-            /** @description Fund assignments for the spending transaction. */
-            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
+            /** @description Source for the spending transaction. */
+            source: components["schemas"]["UpdateSpendingTransactionSourceModel"];
+            /** @description Destinations for the spending transaction. */
+            destinations: components["schemas"]["UpdateSpendingTransactionDestinationModel"][];
+            /** @description Flattened view of fund assignments across all destinations. */
+            fundAssignments?: null | components["schemas"]["CreateFundAmountModel"][];
             /**
              * Format: date
              * @description Date for the Transaction.
@@ -4243,20 +4577,6 @@ export enum AccountingPeriodSortOrderModel {
     OpeningBalanceDescending = "OpeningBalanceDescending",
     ClosingBalance = "ClosingBalance",
     ClosingBalanceDescending = "ClosingBalanceDescending"
-}
-export enum AccountingPeriodTrendsTransactionSortOrderModel {
-    Date = "Date",
-    DateDescending = "DateDescending",
-    AccountingPeriod = "AccountingPeriod",
-    AccountingPeriodDescending = "AccountingPeriodDescending",
-    Description = "Description",
-    DescriptionDescending = "DescriptionDescending",
-    Source = "Source",
-    SourceDescending = "SourceDescending",
-    Destination = "Destination",
-    DestinationDescending = "DestinationDescending",
-    Amount = "Amount",
-    AmountDescending = "AmountDescending"
 }
 export enum AccountSortOrderModel {
     Name = "Name",
@@ -4407,8 +4727,8 @@ export enum SpendingGoalTypeModel {
     Debt = "Debt"
 }
 export enum TransactionAccountTypeModel {
-    Debit = "Debit",
-    Credit = "Credit"
+    Source = "Source",
+    Destination = "Destination"
 }
 export enum TransactionModelAccountTransactionModelType {
     Account = "Account"

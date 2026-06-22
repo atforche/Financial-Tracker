@@ -1,7 +1,14 @@
 "use client";
 
-import { Button, IconButton, Paper, Stack, Typography } from "@mui/material";
-import { type Transaction, TransactionSortOrder } from "@/transactions/types";
+import { IconButton, Paper, Stack, Typography } from "@mui/material";
+import {
+  type Transaction,
+  TransactionSortOrder,
+  getTransactionAccountIds,
+  getTransactionDestinationLabel,
+  getTransactionFundIds,
+  getTransactionSourceLabel,
+} from "@/transactions/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -25,69 +32,6 @@ interface CurrentTransactionListFrameProps {
   readonly emptyAction?: JSX.Element | null;
 }
 
-const getSource = function (transaction: Transaction): string {
-  if ("debitAccount" in transaction && transaction.debitAccount !== null) {
-    return transaction.debitAccount.accountName;
-  }
-  if ("sourceLocation" in transaction && transaction.sourceLocation !== null) {
-    return transaction.sourceLocation;
-  }
-  if ("debitFund" in transaction) {
-    return transaction.debitFund.fundName;
-  }
-  return "";
-};
-
-const getDestination = function (transaction: Transaction): string {
-  if ("creditAccount" in transaction && transaction.creditAccount !== null) {
-    return transaction.creditAccount.accountName;
-  }
-  if (
-    "destinationLocation" in transaction &&
-    transaction.destinationLocation !== null
-  ) {
-    return transaction.destinationLocation;
-  }
-  if ("creditFund" in transaction) {
-    return transaction.creditFund.fundName;
-  }
-  return "";
-};
-
-const getAccountIds = function (transaction: Transaction): string[] {
-  const accountIds = new Set<string>();
-
-  if ("debitAccount" in transaction && transaction.debitAccount !== null) {
-    accountIds.add(transaction.debitAccount.accountId);
-  }
-  if ("creditAccount" in transaction && transaction.creditAccount !== null) {
-    accountIds.add(transaction.creditAccount.accountId);
-  }
-
-  return Array.from(accountIds);
-};
-
-const getFundIds = function (transaction: Transaction): string[] {
-  const fundIds = new Set<string>();
-
-  if ("debitFund" in transaction) {
-    fundIds.add(transaction.debitFund.fundId);
-  }
-  if ("creditFund" in transaction) {
-    fundIds.add(transaction.creditFund.fundId);
-  }
-  if ("fundAssignments" in transaction) {
-    transaction.fundAssignments.forEach((fundAssignment) => {
-      fundIds.add(fundAssignment.fundId);
-    });
-  }
-
-  return Array.from(fundIds);
-};
-
-/**
- * Presents a paged transaction table for the current Transactions page.
- */
 const CurrentTransactionListFrame = function ({
   title,
   description,
@@ -124,8 +68,8 @@ const CurrentTransactionListFrame = function ({
     router.push(
       routes.workspace({
         accountingPeriodIds: [transaction.accountingPeriodId],
-        accountIds: getAccountIds(transaction),
-        fundIds: getFundIds(transaction),
+        accountIds: getTransactionAccountIds(transaction),
+        fundIds: getTransactionFundIds(transaction),
         selectedTransactionId: transaction.id,
       }),
     );
@@ -135,14 +79,14 @@ const CurrentTransactionListFrame = function ({
     {
       name: "date",
       headerContent: "Date",
-      getBodyContent: (transaction: Transaction) => transaction.date,
+      getBodyContent: (transaction) => transaction.date,
       sortType:
         currentSort === TransactionSortOrder.Date
           ? ColumnSortType.Ascending
           : currentSort === TransactionSortOrder.DateDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType: ColumnSortType | null): void => {
+      onSort: (sortType) => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.Date);
         } else if (sortType === ColumnSortType.Descending) {
@@ -156,14 +100,14 @@ const CurrentTransactionListFrame = function ({
     {
       name: "description",
       headerContent: "Description",
-      getBodyContent: (transaction: Transaction) => transaction.description,
+      getBodyContent: (transaction) => transaction.description,
       sortType:
         currentSort === TransactionSortOrder.Description
           ? ColumnSortType.Ascending
           : currentSort === TransactionSortOrder.DescriptionDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType: ColumnSortType | null): void => {
+      onSort: (sortType) => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.Description);
         } else if (sortType === ColumnSortType.Descending) {
@@ -177,14 +121,14 @@ const CurrentTransactionListFrame = function ({
     {
       name: "source",
       headerContent: "Source",
-      getBodyContent: getSource,
+      getBodyContent: getTransactionSourceLabel,
       sortType:
         currentSort === TransactionSortOrder.Source
           ? ColumnSortType.Ascending
           : currentSort === TransactionSortOrder.SourceDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType: ColumnSortType | null): void => {
+      onSort: (sortType) => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.Source);
         } else if (sortType === ColumnSortType.Descending) {
@@ -198,14 +142,14 @@ const CurrentTransactionListFrame = function ({
     {
       name: "destination",
       headerContent: "Destination",
-      getBodyContent: getDestination,
+      getBodyContent: getTransactionDestinationLabel,
       sortType:
         currentSort === TransactionSortOrder.Destination
           ? ColumnSortType.Ascending
           : currentSort === TransactionSortOrder.DestinationDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType: ColumnSortType | null): void => {
+      onSort: (sortType) => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.Destination);
         } else if (sortType === ColumnSortType.Descending) {
@@ -219,15 +163,14 @@ const CurrentTransactionListFrame = function ({
     {
       name: "amount",
       headerContent: "Amount",
-      getBodyContent: (transaction: Transaction) =>
-        formatCurrency(transaction.amount),
+      getBodyContent: (transaction) => formatCurrency(transaction.amount),
       sortType:
         currentSort === TransactionSortOrder.Amount
           ? ColumnSortType.Ascending
           : currentSort === TransactionSortOrder.AmountDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType: ColumnSortType | null): void => {
+      onSort: (sortType) => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.Amount);
         } else if (sortType === ColumnSortType.Descending) {
@@ -261,54 +204,35 @@ const CurrentTransactionListFrame = function ({
     },
   ];
 
-  const hasSortState =
-    searchParams.has(sortParamName) || searchParams.has(pageParamName);
-
   return (
     <Paper
       sx={{
         border: "1px solid",
         borderColor: "divider",
-        p: { xs: 2, md: 2.5 },
+        borderRadius: 3,
+        overflow: "hidden",
       }}
     >
-      <Stack spacing={2.5}>
-        <Stack spacing={0.75}>
-          <Typography variant="h5">{title}</Typography>
-          <Typography color="text.secondary">{description}</Typography>
-        </Stack>
-        <ListFrame<Transaction>
-          columns={columns}
-          getId={(transaction) => transaction.id}
-          data={data}
-          totalCount={totalCount}
-          searchParamName={searchParamName}
-          pageParamName={pageParamName}
-          hasActiveFilters={false}
-          onRowClick={(transaction) => {
-            openTransactionWorkspace(transaction);
-          }}
-          initialEmptyState={{
-            title: emptyTitle,
-            description: emptyDescription,
-            action: hasSortState ? (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  const params = new URLSearchParams(searchParams.toString());
-                  params.delete(sortParamName);
-                  params.delete(pageParamName);
-                  router.replace(`${pathname}?${params.toString()}`);
-                }}
-              >
-                Reset sorting
-              </Button>
-            ) : (
-              (emptyAction ?? null)
-            ),
-          }}
-        />
+      <Stack spacing={0.5} sx={{ px: 2.5, pt: 2.5 }}>
+        <Typography variant="h6">{title}</Typography>
+        <Typography variant="body2" color="text.secondary">
+          {description}
+        </Typography>
       </Stack>
+      <ListFrame<Transaction>
+        columns={columns}
+        getId={(transaction) => transaction.id}
+        data={data}
+        totalCount={totalCount}
+        pageParamName={pageParamName}
+        searchParamName={searchParamName}
+        onRowClick={openTransactionWorkspace}
+        initialEmptyState={{
+          title: emptyTitle,
+          description: emptyDescription,
+          action: emptyAction ?? null,
+        }}
+      />
     </Paper>
   );
 };

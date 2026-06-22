@@ -2,7 +2,8 @@
 
 import { type Account, isTrackedAccountType } from "@/accounts/types";
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
-import { Button, Stack } from "@mui/material";
+import { AddCircleOutline } from "@mui/icons-material";
+import { Button, Stack, Typography } from "@mui/material";
 import {
   CreateSpendingTransactionType,
   type CreateTransactionRequest,
@@ -20,12 +21,13 @@ import {
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import FundAssignmentPlanner from "@/funds/FundAssignmentPlanner";
-import TransactionAccountPairSection from "@/transactions/workspace/TransactionAccountPairSection";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import createTransaction from "@/transactions/workspace/createTransaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
+import TransactionSection from "@/transactions/workspace/TransactionSection";
 import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
+import SpendingTransactionDestinationFrame from "@/transactions/workspace/SpendingTransactionDestinationFrame";
+import SpendingTransactionSourceFrame from "@/transactions/workspace/SpendingTransactionSourceFrame";
 import { useRouter } from "next/navigation";
 
 interface CreateSpendingTransactionFormProps {
@@ -36,6 +38,29 @@ interface CreateSpendingTransactionFormProps {
   readonly spendingGoals: SpendingGoal[];
   readonly redirectUrl: string;
 }
+
+interface SpendingDestinationDraft {
+  readonly account: Account | null;
+  readonly location: string;
+  readonly amount: number | null;
+  readonly fundAssignments: FundAmount[];
+}
+
+const createEmptyDestination = function (): SpendingDestinationDraft {
+  return {
+    account: null,
+    location: "",
+    amount: null,
+    fundAssignments: [],
+  };
+};
+
+const formatDestinationTotal = function (value: number): string {
+  return value.toLocaleString([], {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
 
 /**
  * Displays the dedicated create form for spending transactions.
@@ -53,10 +78,6 @@ const CreateSpendingTransactionForm = function ({
     funds.find((fund) => fund.name === "Unassigned") ?? null;
   const formRef = useRef<HTMLDivElement | null>(null);
 
-  const getAccountById = function (accountId: string): Account | null {
-    return accounts.find((account) => account.id === accountId) ?? null;
-  };
-
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(
       accountingPeriods.length > 0
@@ -68,14 +89,12 @@ const CreateSpendingTransactionForm = function ({
       ? dayjs(`${accountingPeriod.year}-${accountingPeriod.month}-01`)
       : null;
   const [date, setDate] = useState<Dayjs | null>(null);
-  const [destinationLocation, setDestinationLocation] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [amount, setAmount] = useState<number | null>(null);
-  const [paymentAccount, setPaymentAccount] = useState<Account | null>(null);
-  const [destinationAccount, setDestinationAccount] = useState<Account | null>(
-    null,
-  );
-  const [fundAssignments, setFundAssignments] = useState<FundAmount[]>([]);
+  const [sourceAccount, setSourceAccount] = useState<Account | null>(null);
+  const [destinations, setDestinations] = useState<SpendingDestinationDraft[]>([
+    createEmptyDestination(),
+  ]);
   const currentAssignmentGoals = assignmentGoals.filter(
     (goal) => goal.accountingPeriodId === accountingPeriod?.id,
   );
@@ -92,12 +111,10 @@ const CreateSpendingTransactionForm = function ({
         : null,
     );
     setDate(null);
-    setDestinationLocation("");
     setDescription("");
     setAmount(null);
-    setPaymentAccount(null);
-    setDestinationAccount(null);
-    setFundAssignments([]);
+    setSourceAccount(null);
+    setDestinations([createEmptyDestination()]);
     focusFirstEntryControl(formRef.current);
   };
 
@@ -111,24 +128,44 @@ const CreateSpendingTransactionForm = function ({
       router.replace(nextUrl, { scroll: false });
       reset();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [redirectUrl, router, state]);
 
-  const onAmountChange = function (newAmount: number | null): void {
-    setAmount(newAmount);
-    setFundAssignments(
-      updateUnassignedFundAmount(unassignedFund, newAmount, fundAssignments),
+  const updateDestination = function (
+    index: number,
+    recipe: (current: SpendingDestinationDraft) => SpendingDestinationDraft,
+  ): void {
+    setDestinations((currentDestinations) =>
+      currentDestinations.map((currentDestination, currentIndex) =>
+        currentIndex === index ? recipe(currentDestination) : currentDestination,
+      ),
     );
   };
 
-  const onDestinationAccountChange = function (account: Account | null): void {
-    setDestinationAccount(account);
-    if (account !== null) {
-      setDestinationLocation("");
-    }
+  const syncDestinationFundAssignments = function (
+    destinationAmount: number | null,
+    fundAssignments: FundAmount[],
+  ): FundAmount[] {
+    return updateUnassignedFundAmount(
+      unassignedFund,
+      destinationAmount,
+      fundAssignments,
+    );
   };
 
-  const normalizedDestinationLocation = destinationLocation.trim();
+  const destinationTotal = destinations.reduce(
+    (total, destination) => total + (destination.amount ?? 0),
+    0,
+  );
+
+  const areDestinationsComplete = destinations.every((destination) => {
+    const normalizedLocation = destination.location.trim();
+    return (
+      destination.amount !== null &&
+      destination.amount > 0 &&
+      (destination.account !== null || normalizedLocation !== "") &&
+      isSpendingTransactionComplete(destination.fundAssignments)
+    );
+  });
 
   let request: CreateTransactionRequest | null = null;
   if (
@@ -137,9 +174,10 @@ const CreateSpendingTransactionForm = function ({
     description !== "" &&
     amount !== null &&
     amount > 0 &&
-    paymentAccount !== null &&
-    (destinationAccount !== null || normalizedDestinationLocation !== "") &&
-    isSpendingTransactionComplete(fundAssignments)
+    sourceAccount !== null &&
+    destinations.length > 0 &&
+    destinationTotal === amount &&
+    areDestinationsComplete
   ) {
     request = {
       type: CreateSpendingTransactionType.Spending,
@@ -148,18 +186,23 @@ const CreateSpendingTransactionForm = function ({
         date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
       description,
       amount,
-      debitAccountId: paymentAccount.id,
-      creditAccountId: destinationAccount?.id ?? null,
-      destinationLocation:
-        destinationAccount === null
-          ? normalizedDestinationLocation || null
-          : null,
-      fundAssignments: fundAssignments
-        .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
-        .map((fundAmount) => ({
-          fundId: fundAmount.fundId,
-          amount: fundAmount.amount,
-        })),
+      source: {
+        accountId: sourceAccount.id,
+      },
+      destinations: destinations.map((destination) => ({
+        accountId: destination.account?.id ?? null,
+        location:
+          destination.account === null
+            ? destination.location.trim() || null
+            : null,
+        amount: destination.amount ?? 0,
+        fundAssignments: destination.fundAssignments
+          .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
+          .map((fundAmount) => ({
+            fundId: fundAmount.fundId,
+            amount: fundAmount.amount,
+          })),
+      })),
     };
   }
 
@@ -175,53 +218,120 @@ const CreateSpendingTransactionForm = function ({
           descriptionValue={description}
           setDescriptionValue={setDescription}
           amount={amount}
-          setAmount={onAmountChange}
+          setAmount={setAmount}
         />
-        <TransactionAccountPairSection
-          title="Money Flow"
-          description="Choose the tracked account being charged and either the untracked destination account or a destination location."
-          accounts={accounts}
-          leftLabel="Source Account"
-          rightLabel="Destination Account"
-          leftAccount={paymentAccount}
-          rightAccount={destinationAccount}
-          setLeftAccount={setPaymentAccount}
-          setRightAccount={onDestinationAccountChange}
-          rightLocationLabel={
-            destinationAccount === null ? "Destination Location" : null
-          }
-          rightLocationValue={destinationLocation}
-          setRightLocationValue={
-            destinationAccount === null ? setDestinationLocation : null
-          }
-          leftFilter={(account) => {
-            const selectedAccount = getAccountById(account.id);
-            return (
-              selectedAccount !== null &&
-              isTrackedAccountType(selectedAccount.type) &&
-              account.id !== destinationAccount?.id
-            );
-          }}
-          rightFilter={(account) => {
-            const selectedAccount = getAccountById(account.id);
-            return (
-              selectedAccount !== null &&
-              !isTrackedAccountType(selectedAccount.type) &&
-              account.id !== paymentAccount?.id
-            );
-          }}
-        />
-        <FundAssignmentPlanner
-          title="Fund Allocation"
-          tone="spending"
-          funds={funds}
-          assignmentGoals={currentAssignmentGoals}
-          spendingGoals={currentSpendingGoals}
-          totalAmountToAssign={amount}
-          baselineValue={[]}
-          value={fundAssignments}
-          setValue={setFundAssignments}
-        />
+        <TransactionSection
+          title="Spending Flow"
+          description="Build one spending source and one or more destinations. The destination amounts should add up to the transaction amount."
+        >
+          <Stack spacing={2}>
+            <SpendingTransactionSourceFrame
+              accounts={accounts}
+              account={sourceAccount}
+              setAccount={setSourceAccount}
+              filter={(account) => {
+                const selectedAccount =
+                  accounts.find((candidate) => candidate.id === account.id) ?? null;
+                return (
+                  selectedAccount !== null &&
+                  isTrackedAccountType(selectedAccount.type)
+                );
+              }}
+            />
+            {destinations.map((destination, index) => (
+              <SpendingTransactionDestinationFrame
+                key={`spending-destination-${index}`}
+                index={index}
+                accounts={accounts}
+                funds={funds}
+                assignmentGoals={currentAssignmentGoals}
+                spendingGoals={currentSpendingGoals}
+                account={destination.account}
+                setAccount={(account) => {
+                  updateDestination(index, (currentDestination) => ({
+                    ...currentDestination,
+                    account,
+                    location: account === null ? currentDestination.location : "",
+                  }));
+                }}
+                location={destination.location}
+                setLocation={(location) => {
+                  updateDestination(index, (currentDestination) => ({
+                    ...currentDestination,
+                    location,
+                  }));
+                }}
+                amount={destination.amount}
+                setAmount={(nextAmount) => {
+                  updateDestination(index, (currentDestination) => ({
+                    ...currentDestination,
+                    amount: nextAmount,
+                    fundAssignments: syncDestinationFundAssignments(
+                      nextAmount,
+                      currentDestination.fundAssignments,
+                    ),
+                  }));
+                }}
+                fundAssignments={destination.fundAssignments}
+                setFundAssignments={(fundAssignments) => {
+                  updateDestination(index, (currentDestination) => ({
+                    ...currentDestination,
+                    fundAssignments,
+                  }));
+                }}
+                filter={(account) => {
+                  const selectedAccount =
+                    accounts.find((candidate) => candidate.id === account.id) ?? null;
+                  const accountUsedElsewhere = destinations.some(
+                    (currentDestination, currentIndex) =>
+                      currentIndex !== index &&
+                      currentDestination.account?.id === account.id,
+                  );
+                  return (
+                    selectedAccount !== null &&
+                    !isTrackedAccountType(selectedAccount.type) &&
+                    account.id !== sourceAccount?.id &&
+                    !accountUsedElsewhere
+                  );
+                }}
+                onRemove={
+                  destinations.length > 1
+                    ? () => {
+                        setDestinations((currentDestinations) =>
+                          currentDestinations.filter(
+                            (_, currentIndex) => currentIndex !== index,
+                          ),
+                        );
+                      }
+                    : null
+                }
+              />
+            ))}
+            <Button
+              variant="outlined"
+              startIcon={<AddCircleOutline />}
+              onClick={() => {
+                setDestinations((currentDestinations) => [
+                  ...currentDestinations,
+                  createEmptyDestination(),
+                ]);
+              }}
+              sx={{ alignSelf: "flex-start" }}
+            >
+              Add Destination
+            </Button>
+            <Typography
+              variant="body2"
+              color={
+                amount !== null && destinationTotal !== amount
+                  ? "error.main"
+                  : "text.secondary"
+              }
+            >
+              Destination total: ${formatDestinationTotal(destinationTotal)}
+            </Typography>
+          </Stack>
+        </TransactionSection>
         <ErrorAlert
           errorMessage={state.errorTitle ?? null}
           unmappedErrors={state.unmappedErrors ?? null}

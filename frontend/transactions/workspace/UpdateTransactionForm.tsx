@@ -11,12 +11,10 @@ import UpdateFundTransactionForm from "@/transactions/workspace/UpdateFundTransa
 import UpdateIncomeTransactionForm from "@/transactions/workspace/UpdateIncomeTransactionForm";
 import UpdateSpendingTransactionForm from "@/transactions/workspace/UpdateSpendingTransactionForm";
 
-/**
- * Props for the UpdateTransactionForm component.
- */
 interface UpdateTransactionFormProps {
   readonly transaction: Transaction;
   readonly transactionAccountingPeriod: AccountingPeriod;
+  readonly accounts: Account[];
   readonly transactionDebitAccount: Account | null;
   readonly transactionCreditAccount: Account | null;
   readonly transactionDebitFund: Fund | null;
@@ -33,6 +31,7 @@ interface UpdateTransactionFormProps {
 const UpdateTransactionForm = function ({
   transaction,
   transactionAccountingPeriod,
+  accounts,
   transactionDebitAccount,
   transactionCreditAccount,
   transactionDebitFund,
@@ -62,8 +61,7 @@ const UpdateTransactionForm = function ({
       <UpdateSpendingTransactionForm
         transaction={transaction}
         transactionAccountingPeriod={transactionAccountingPeriod}
-        transactionDebitAccount={transactionDebitAccount}
-        transactionCreditAccount={transactionCreditAccount}
+        accounts={accounts}
         funds={funds}
         assignmentGoals={assignmentGoals}
         spendingGoals={spendingGoals}

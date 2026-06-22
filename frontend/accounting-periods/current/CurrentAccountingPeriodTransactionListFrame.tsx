@@ -12,77 +12,20 @@ import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import type { Transaction } from "@/transactions/types";
+import {
+  getTransactionAccountIds,
+  getTransactionDestinationLabel,
+  getTransactionFundIds,
+  getTransactionSourceLabel,
+} from "@/transactions/types";
 import formatCurrency from "@/framework/formatCurrency";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
-
-const getSource = function (transaction: Transaction): string {
-  if ("debitAccount" in transaction && transaction.debitAccount !== null) {
-    return transaction.debitAccount.accountName;
-  }
-  if ("sourceLocation" in transaction && transaction.sourceLocation !== null) {
-    return transaction.sourceLocation;
-  }
-  if ("debitFund" in transaction) {
-    return transaction.debitFund.fundName;
-  }
-  return "";
-};
-
-const getDestination = function (transaction: Transaction): string {
-  if ("creditAccount" in transaction && transaction.creditAccount !== null) {
-    return transaction.creditAccount.accountName;
-  }
-  if (
-    "destinationLocation" in transaction &&
-    transaction.destinationLocation !== null
-  ) {
-    return transaction.destinationLocation;
-  }
-  if ("creditFund" in transaction) {
-    return transaction.creditFund.fundName;
-  }
-  return "";
-};
-
-const getAccountIds = function (transaction: Transaction): string[] {
-  const accountIds = new Set<string>();
-
-  if ("debitAccount" in transaction && transaction.debitAccount !== null) {
-    accountIds.add(transaction.debitAccount.accountId);
-  }
-  if ("creditAccount" in transaction && transaction.creditAccount !== null) {
-    accountIds.add(transaction.creditAccount.accountId);
-  }
-
-  return Array.from(accountIds);
-};
-
-const getFundIds = function (transaction: Transaction): string[] {
-  const fundIds = new Set<string>();
-
-  if ("debitFund" in transaction) {
-    fundIds.add(transaction.debitFund.fundId);
-  }
-  if ("creditFund" in transaction) {
-    fundIds.add(transaction.creditFund.fundId);
-  }
-  if ("fundAssignments" in transaction) {
-    transaction.fundAssignments.forEach((fundAssignment) => {
-      fundIds.add(fundAssignment.fundId);
-    });
-  }
-
-  return Array.from(fundIds);
-};
 
 interface CurrentAccountingPeriodTransactionListFrameProps {
   readonly current: CurrentAccountingPeriod;
 }
 
-/**
- * Presents the paged transaction table for the current Accounting Period.
- */
 const CurrentAccountingPeriodTransactionListFrame = function ({
   current,
 }: CurrentAccountingPeriodTransactionListFrameProps): JSX.Element {
@@ -117,8 +60,8 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
     router.push(
       routes.workspace({
         accountingPeriodIds: [transaction.accountingPeriodId],
-        accountIds: getAccountIds(transaction),
-        fundIds: getFundIds(transaction),
+        accountIds: getTransactionAccountIds(transaction),
+        fundIds: getTransactionFundIds(transaction),
         selectedTransactionId: transaction.id,
       }),
     );
@@ -128,7 +71,7 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
     {
       name: "date",
       headerContent: "Date",
-      getBodyContent: (transaction: Transaction) => transaction.date,
+      getBodyContent: (transaction) => transaction.date,
       sortType:
         currentSort === AccountingPeriodTrendsTransactionSortOrder.Date
           ? ColumnSortType.Ascending
@@ -136,7 +79,7 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
               AccountingPeriodTrendsTransactionSortOrder.DateDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType: ColumnSortType | null): void => {
+      onSort: (sortType) => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(AccountingPeriodTrendsTransactionSortOrder.Date);
         } else if (sortType === ColumnSortType.Descending) {
@@ -150,7 +93,7 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
     {
       name: "description",
       headerContent: "Description",
-      getBodyContent: (transaction: Transaction) => transaction.description,
+      getBodyContent: (transaction) => transaction.description,
       sortType:
         currentSort === AccountingPeriodTrendsTransactionSortOrder.Description
           ? ColumnSortType.Ascending
@@ -158,7 +101,7 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
               AccountingPeriodTrendsTransactionSortOrder.DescriptionDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType: ColumnSortType | null): void => {
+      onSort: (sortType) => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(AccountingPeriodTrendsTransactionSortOrder.Description);
         } else if (sortType === ColumnSortType.Descending) {
@@ -174,7 +117,7 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
     {
       name: "source",
       headerContent: "Source",
-      getBodyContent: getSource,
+      getBodyContent: getTransactionSourceLabel,
       sortType:
         currentSort === AccountingPeriodTrendsTransactionSortOrder.Source
           ? ColumnSortType.Ascending
@@ -182,7 +125,7 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
               AccountingPeriodTrendsTransactionSortOrder.SourceDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType: ColumnSortType | null): void => {
+      onSort: (sortType) => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(AccountingPeriodTrendsTransactionSortOrder.Source);
         } else if (sortType === ColumnSortType.Descending) {
@@ -196,7 +139,7 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
     {
       name: "destination",
       headerContent: "Destination",
-      getBodyContent: getDestination,
+      getBodyContent: getTransactionDestinationLabel,
       sortType:
         currentSort === AccountingPeriodTrendsTransactionSortOrder.Destination
           ? ColumnSortType.Ascending
@@ -204,7 +147,7 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
               AccountingPeriodTrendsTransactionSortOrder.DestinationDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType: ColumnSortType | null): void => {
+      onSort: (sortType) => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(AccountingPeriodTrendsTransactionSortOrder.Destination);
         } else if (sortType === ColumnSortType.Descending) {
@@ -220,8 +163,7 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
     {
       name: "amount",
       headerContent: "Amount",
-      getBodyContent: (transaction: Transaction) =>
-        formatCurrency(transaction.amount),
+      getBodyContent: (transaction) => formatCurrency(transaction.amount),
       sortType:
         currentSort === AccountingPeriodTrendsTransactionSortOrder.Amount
           ? ColumnSortType.Ascending
@@ -229,7 +171,7 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
               AccountingPeriodTrendsTransactionSortOrder.AmountDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType: ColumnSortType | null): void => {
+      onSort: (sortType) => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(AccountingPeriodTrendsTransactionSortOrder.Amount);
         } else if (sortType === ColumnSortType.Descending) {
@@ -244,7 +186,7 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
     {
       name: "actions",
       headerContent: "",
-      getBodyContent: (transaction: Transaction) => (
+      getBodyContent: (transaction) => (
         <IconButton
           size="small"
           color="primary"
@@ -268,55 +210,46 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
       sx={{
         border: "1px solid",
         borderColor: "divider",
-        p: { xs: 2, md: 2.5 },
+        borderRadius: 3,
+        overflow: "hidden",
       }}
     >
-      <Stack spacing={2.5}>
-        <Typography variant="h5">Transactions</Typography>
-        <ListFrame<Transaction>
-          columns={columns}
-          getId={(transaction) => transaction.id}
-          data={current.transactions.items}
-          onRowClick={(transaction) => {
-            openTransactionWorkspace(transaction);
-          }}
-          totalCount={current.transactions.totalCount}
-          searchParamName={searchParamName}
-          pageParamName={pageParamName}
-          initialEmptyState={{
-            title: "No transactions found",
-            description:
-              accountingPeriod === null
-                ? "No current accounting period is available for transaction tracking."
-                : `No transactions were recorded for ${accountingPeriod.name}.`,
-            action: (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  router.push(routes.workspace({ action: "create" }));
-                }}
-              >
-                Create transaction
-              </Button>
-            ),
-          }}
-          filteredEmptyState={{
-            title: "No transactions match this search",
-            description:
-              "Try a different description, account, fund, or amount to find the transaction you need.",
-            action: (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  router.replace(pathname);
-                }}
-              >
-                Reset search
-              </Button>
-            ),
-          }}
-        />
+      <Stack spacing={0.5} sx={{ px: 2.5, pt: 2.5 }}>
+        <Typography variant="h6">
+          {accountingPeriod === null
+            ? "Transactions"
+            : `Transactions in ${accountingPeriod.name}`}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {accountingPeriod === null
+            ? "Review the current accounting period transactions."
+            : `Review all transactions currently assigned to ${accountingPeriod.name}.`}
+        </Typography>
       </Stack>
+      <ListFrame<Transaction>
+        columns={columns}
+        getId={(transaction) => transaction.id}
+        data={current.transactions.items}
+        totalCount={current.transactions.totalCount}
+        pageParamName={pageParamName}
+        searchParamName={searchParamName}
+        onRowClick={openTransactionWorkspace}
+        initialEmptyState={{
+          title: "No transactions in this period",
+          description:
+            "Add or move transactions into this accounting period to see them here.",
+          action: (
+            <Button
+              variant="outlined"
+              onClick={() => {
+                router.push(routes.workspace({}));
+              }}
+            >
+              Open Transaction Workspace
+            </Button>
+          ),
+        }}
+      />
     </Paper>
   );
 };

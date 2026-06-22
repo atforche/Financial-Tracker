@@ -26,9 +26,6 @@ import UnpostTransactionForm from "@/transactions/workspace/UnpostTransactionFor
 import UpdateTransactionForm from "@/transactions/workspace/UpdateTransactionForm";
 import ViewTransactionForm from "@/transactions/workspace/ViewTransactionForm";
 
-/**
- * Props for the TransactionWorkspaceActions component.
- */
 interface TransactionWorkspaceActionsProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: Account[];
@@ -39,9 +36,6 @@ interface TransactionWorkspaceActionsProps {
   readonly requestedAction: TransactionWorkspaceAction | null;
 }
 
-/**
- * Gets the available actions for the provided transaction.
- */
 const getAvailableActions = function (
   selectedTransaction: Transaction | null,
 ): readonly TransactionWorkspaceAction[] {
@@ -226,6 +220,7 @@ const TransactionWorkspaceActions = function ({
           <UpdateTransactionForm
             transaction={selectedTransaction}
             transactionAccountingPeriod={selectedTransactionAccountingPeriod}
+            accounts={accounts}
             transactionDebitAccount={selectedTransactionDebitAccount}
             transactionCreditAccount={selectedTransactionCreditAccount}
             transactionDebitFund={selectedTransactionDebitFund}
