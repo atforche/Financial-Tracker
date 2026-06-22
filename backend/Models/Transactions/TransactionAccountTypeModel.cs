@@ -6,12 +6,12 @@ namespace Models.Transactions;
 public enum TransactionAccountTypeModel
 {
     /// <summary>
-    /// Debit
+    /// Source
     /// </summary>
-    Debit,
+    Source,
 
     /// <summary>
-    /// Credit
+    /// Destination
     /// </summary>
-    Credit
+    Destination
 }

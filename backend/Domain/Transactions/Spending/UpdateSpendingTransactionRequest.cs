@@ -1,5 +1,3 @@
-using Domain.Funds;
-
 namespace Domain.Transactions.Spending;
 
 /// <summary>
@@ -8,7 +6,12 @@ namespace Domain.Transactions.Spending;
 public record UpdateSpendingTransactionRequest : UpdateTransactionRequest
 {
     /// <summary>
-    /// Fund Assignments for this Spending Transaction
+    /// Source for this Spending Transaction
     /// </summary>
-    public required IReadOnlyCollection<FundAmount> FundAssignments { get; init; }
+    public required SpendingTransactionSource Source { get; init; }
+
+    /// <summary>
+    /// Destinations for this Spending Transaction
+    /// </summary>
+    public required IReadOnlyCollection<SpendingTransactionDestination> Destinations { get; init; }
 }

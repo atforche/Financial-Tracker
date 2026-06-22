@@ -68,11 +68,16 @@ public abstract class TransactionService(
         Transaction transaction,
         UpdateTransactionRequest request,
         IReadOnlyCollection<Account> accounts,
+        IReadOnlyCollection<Fund> funds,
         out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
         AccountingPeriod accountingPeriod = AccountingPeriodRepository.GetById(transaction.AccountingPeriodId);
+        if (!ValidateAccountingPeriod(accounts, funds, accountingPeriod, out IEnumerable<Exception> accountingPeriodExceptions))
+        {
+            exceptions = exceptions.Concat(accountingPeriodExceptions);
+        }
         if (!ValidateDate(accountingPeriod, accounts, request.TransactionDate, out IEnumerable<Exception> dateExceptions))
         {
             exceptions = exceptions.Concat(dateExceptions);

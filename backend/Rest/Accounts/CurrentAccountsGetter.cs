@@ -141,44 +141,46 @@ public class CurrentAccountsGetter(
         {
             case SpendingTransaction spendingTransaction:
                 yield return new CurrentAccountBalanceEventRow(
-                    spendingTransaction.DebitAccountId,
-                    spendingTransaction.DebitPostedDate ?? transaction.Date,
+                    spendingTransaction.Source.Account.Id,
+                    spendingTransaction.Source.PostedDate ?? transaction.Date,
                     AccountTrendsBalanceEventTypeModel.Debit,
-                    spendingTransaction.DebitPostedDate != null,
+                    spendingTransaction.Source.PostedDate != null,
                     transaction.Amount,
                     transaction.Date,
                     transaction.Sequence,
                     transaction.Id.Value);
-
-                if (spendingTransaction.CreditAccountId != null)
+                foreach (SpendingTransactionDestination destination in spendingTransaction.Destinations)
                 {
-                    yield return new CurrentAccountBalanceEventRow(
-                        spendingTransaction.CreditAccountId,
-                        spendingTransaction.CreditPostedDate ?? transaction.Date,
-                        AccountTrendsBalanceEventTypeModel.Credit,
-                        spendingTransaction.CreditPostedDate != null,
-                        transaction.Amount,
-                        transaction.Date,
-                        transaction.Sequence,
-                        transaction.Id.Value);
+                    if (destination.Account != null)
+                    {
+                        yield return new CurrentAccountBalanceEventRow(
+                            destination.Account.Id,
+                            destination.PostedDate ?? transaction.Date,
+                            AccountTrendsBalanceEventTypeModel.Credit,
+                            destination.PostedDate != null,
+                            destination.Amount,
+                            transaction.Date,
+                            transaction.Sequence,
+                            transaction.Id.Value);
+                    }
                 }
 
                 yield break;
             case IncomeTransaction incomeTransaction:
-                if (incomeTransaction.SourceAccountId != null)
+                if (incomeTransaction.Source.Account != null)
                 {
                     yield return new CurrentAccountBalanceEventRow(
-                        incomeTransaction.SourceAccountId,
-                        incomeTransaction.SourcePostedDate ?? transaction.Date,
+                        incomeTransaction.Source.Account.Id,
+                        incomeTransaction.Source.PostedDate ?? transaction.Date,
                         AccountTrendsBalanceEventTypeModel.Debit,
-                        incomeTransaction.SourcePostedDate != null,
+                        incomeTransaction.Source.PostedDate != null,
                         transaction.Amount,
                         transaction.Date,
                         transaction.Sequence,
                         transaction.Id.Value);
                 }
 
-                foreach (IncomeDestination destination in incomeTransaction.IncomeDestinations)
+                foreach (IncomeTransactionDestination destination in incomeTransaction.Destinations)
                 {
                     yield return new CurrentAccountBalanceEventRow(
                         destination.Account.Id,
@@ -193,30 +195,32 @@ public class CurrentAccountsGetter(
 
                 yield break;
             case AccountTransaction accountTransaction:
-                if (accountTransaction.DebitAccountId != null)
+                if (accountTransaction.Source.Account != null)
                 {
                     yield return new CurrentAccountBalanceEventRow(
-                        accountTransaction.DebitAccountId,
-                        accountTransaction.DebitPostedDate ?? transaction.Date,
+                        accountTransaction.Source.Account.Id,
+                        accountTransaction.Source.PostedDate ?? transaction.Date,
                         AccountTrendsBalanceEventTypeModel.Debit,
-                        accountTransaction.DebitPostedDate != null,
+                        accountTransaction.Source.PostedDate != null,
                         transaction.Amount,
                         transaction.Date,
                         transaction.Sequence,
                         transaction.Id.Value);
                 }
-
-                if (accountTransaction.CreditAccountId != null)
+                foreach (AccountTransactionDestination destination in accountTransaction.Destinations)
                 {
-                    yield return new CurrentAccountBalanceEventRow(
-                        accountTransaction.CreditAccountId,
-                        accountTransaction.CreditPostedDate ?? transaction.Date,
-                        AccountTrendsBalanceEventTypeModel.Credit,
-                        accountTransaction.CreditPostedDate != null,
-                        transaction.Amount,
-                        transaction.Date,
-                        transaction.Sequence,
-                        transaction.Id.Value);
+                    if (destination.Account != null)
+                    {
+                        yield return new CurrentAccountBalanceEventRow(
+                            destination.Account.Id,
+                            destination.PostedDate ?? transaction.Date,
+                            AccountTrendsBalanceEventTypeModel.Credit,
+                            destination.PostedDate != null,
+                            transaction.Amount,
+                            transaction.Date,
+                            transaction.Sequence,
+                            transaction.Id.Value);
+                    }
                 }
 
                 yield break;

@@ -12,58 +12,41 @@ namespace Domain.Transactions.Spending;
 /// </remarks>
 public class SpendingTransaction : Transaction
 {
-    private readonly List<FundAmount> _fundAssignments = [];
+    private readonly List<SpendingTransactionDestination> _destinations = [];
 
     /// <summary>
-    /// Debit Account ID for this Spending Transaction
+    /// Source for this Spending Transaction
     /// </summary>
-    public AccountId DebitAccountId { get; private set; }
+    public SpendingTransactionSource Source { get; private set; }
 
     /// <summary>
-    /// Posted Date for the Debit Account of this Spending Transaction
+    /// Destinations for this Spending Transaction
     /// </summary>
-    public DateOnly? DebitPostedDate { get; internal set; }
-
-    /// <summary>
-    /// Credit Account ID for this Spending Transaction
-    /// </summary>
-    public AccountId? CreditAccountId { get; private set; }
-
-    /// <summary>
-    /// Posted Date for the Credit Account of this Spending Transaction
-    /// </summary>
-    public DateOnly? CreditPostedDate { get; internal set; }
-
-    /// <summary>
-    /// External location where the money for this Spending Transaction was spent (if not an account).
-    /// </summary>
-    public string? DestinationLocation { get; private set; }
-
-    /// <summary>
-    /// Fund assignments for this Spending Transaction
-    /// </summary>
-    public IReadOnlyCollection<FundAmount> FundAssignments => _fundAssignments;
+    public IReadOnlyCollection<SpendingTransactionDestination> Destinations => _destinations;
 
     /// <inheritdoc/>
     public override IEnumerable<AccountId> GetAllAffectedAccountIds()
     {
-        yield return DebitAccountId;
-        if (CreditAccountId != null)
+        yield return Source.Account.Id;
+        foreach (AccountId? accountId in Destinations.Select(d => d.Account?.Id))
         {
-            yield return CreditAccountId;
+            if (accountId != null)
+            {
+                yield return accountId;
+            }
         }
     }
 
     /// <inheritdoc/>
     public override DateOnly? GetPostedDateForAccount(AccountId accountId)
     {
-        if (accountId == DebitAccountId)
+        if (accountId == Source.Account.Id)
         {
-            return DebitPostedDate;
+            return Source.PostedDate;
         }
-        if (accountId == CreditAccountId)
+        if (Destinations.Any(d => d.Account?.Id == accountId))
         {
-            return CreditPostedDate;
+            return Destinations.First(d => d.Account?.Id == accountId).PostedDate;
         }
         return null;
     }
@@ -71,9 +54,13 @@ public class SpendingTransaction : Transaction
     /// <inheritdoc/>
     public override IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId)
     {
-        if (accountId == null || accountId == DebitAccountId)
+        if (accountId == null)
         {
-            return _fundAssignments.Select(f => f.FundId);
+            return Destinations.SelectMany(d => d.FundAssignments).Select(f => f.FundId);
+        }
+        if (Destinations.Any(d => d.Account?.Id == accountId))
+        {
+            return Destinations.First(d => d.Account?.Id == accountId).FundAssignments.Select(f => f.FundId);
         }
         return [];
     }
@@ -85,19 +72,42 @@ public class SpendingTransaction : Transaction
         : this(request, sequence, TransactionType.Spending) { }
 
     /// <summary>
-    /// Updates the fund assignments for this Spending Transaction
+    /// Updates the spending source for this Spending Transaction
     /// </summary>
-    internal void UpdateFundAssignments(IReadOnlyCollection<FundAmount> fundAssignments)
+    internal void UpdateSpendingSource(SpendingTransactionSource source) => Source = source;
+
+    /// <summary>
+    /// Updates the spending destinations for this Spending Transaction
+    /// </summary>
+    internal void UpdateSpendingDestinations(IReadOnlyCollection<SpendingTransactionDestination> destinations)
     {
-        _fundAssignments.Clear();
-        _fundAssignments.AddRange(fundAssignments);
-        if (Amount != _fundAssignments.Sum(f => f.Amount))
+        _destinations.Clear();
+        _destinations.AddRange(destinations);
+    }
+
+    /// <summary>
+    /// Sets the posted date for a specific account affected by this transaction.
+    /// </summary>
+    internal void SetPostedDate(AccountId accountId, DateOnly? postedDate)
+    {
+        if (accountId == Source.Account.Id)
         {
-            _fundAssignments.Add(new FundAmount
-            {
-                FundId = Fund.UnassignedFundId,
-                Amount = Amount - _fundAssignments.Sum(f => f.Amount)
-            });
+            Source.PostedDate = postedDate;
+            return;
+        }
+        SpendingTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Account?.Id == accountId);
+        _ = (destination?.PostedDate = postedDate);
+    }
+
+    /// <summary>
+    /// Clears all posted dates for this transaction.
+    /// </summary>
+    internal void ClearPostedDates()
+    {
+        Source.PostedDate = null;
+        foreach (SpendingTransactionDestination destination in _destinations)
+        {
+            destination.PostedDate = null;
         }
     }
 
@@ -107,10 +117,8 @@ public class SpendingTransaction : Transaction
     protected SpendingTransaction(CreateSpendingTransactionRequest request, int sequence, TransactionType type)
         : base(request, sequence, type)
     {
-        DebitAccountId = request.DebitAccount.Id;
-        CreditAccountId = request.CreditAccount?.Id;
-        DestinationLocation = request.DestinationLocation;
-        UpdateFundAssignments(request.FundAssignments);
+        Source = request.Source;
+        UpdateSpendingDestinations(request.Destinations);
     }
 
     /// <summary>
@@ -119,19 +127,20 @@ public class SpendingTransaction : Transaction
     protected SpendingTransaction()
         : base()
     {
-        DebitAccountId = null!;
+        Source = null!;
     }
 
     /// <inheritdoc/>
     protected override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
-        if (existingAccountBalance.Account.Id == DebitAccountId)
+        SpendingTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Account?.Id == existingAccountBalance.Account.Id);
+        if (destination != null)
+        {
+            return existingAccountBalance.AddNewPendingCreditAmount(reverse ? -destination.Amount : destination.Amount);
+        }
+        if (existingAccountBalance.Account.Id == Source.Account.Id)
         {
             return existingAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
-        }
-        if (existingAccountBalance.Account.Id == CreditAccountId)
-        {
-            return existingAccountBalance.AddNewPendingCreditAmount(reverse ? -Amount : Amount);
         }
         return existingAccountBalance;
     }
@@ -139,13 +148,14 @@ public class SpendingTransaction : Transaction
     /// <inheritdoc/>
     protected override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
-        if (existingAccountBalance.Account.Id == DebitAccountId)
+        SpendingTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Account?.Id == existingAccountBalance.Account.Id);
+        if (destination != null)
+        {
+            return existingAccountBalance.PostPendingCreditAmount(reverse ? -destination.Amount : destination.Amount);
+        }
+        if (existingAccountBalance.Account.Id == Source.Account?.Id)
         {
             return existingAccountBalance.PostPendingDebitAmount(reverse ? -Amount : Amount);
-        }
-        if (existingAccountBalance.Account.Id == CreditAccountId)
-        {
-            return existingAccountBalance.PostPendingCreditAmount(reverse ? -Amount : Amount);
         }
         return existingAccountBalance;
     }
@@ -153,22 +163,30 @@ public class SpendingTransaction : Transaction
     /// <inheritdoc/>
     protected override FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse)
     {
-        FundAmount? fundAmount = _fundAssignments.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
-        if (fundAmount == null)
+        var fundAmounts = _destinations.SelectMany(d => d.FundAssignments)
+            .Where(fundAmount => fundAmount.FundId == existingFundBalance.FundId)
+            .ToList();
+        if (fundAmounts.Count == 0)
         {
             return existingFundBalance;
         }
-        return existingFundBalance.AddNewPendingAmountSpent(reverse ? -fundAmount.Amount : fundAmount.Amount);
+        decimal amount = fundAmounts.Sum(f => f.Amount);
+        return existingFundBalance.AddNewPendingAmountSpent(reverse ? -amount : amount);
     }
 
     /// <inheritdoc/>
     protected override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse)
     {
-        FundAmount? fundAmount = _fundAssignments.SingleOrDefault(f => f.FundId == existingFundBalance.FundId);
-        if (fundAmount == null || accountId != DebitAccountId)
+        if (Source.Account.Id != accountId)
         {
+            // The fund assignments for a spending transaction post when the source account posts
             return existingFundBalance;
         }
-        return existingFundBalance.PostPendingAmountSpent(reverse ? -fundAmount.Amount : fundAmount.Amount);
+        var fundAmounts = _destinations
+            .SelectMany(d => d.FundAssignments)
+            .Where(fundAmount => fundAmount.FundId == existingFundBalance.FundId)
+            .ToList();
+        decimal amount = fundAmounts.Sum(f => f.Amount);
+        return existingFundBalance.PostPendingAmountSpent(reverse ? -amount : amount);
     }
 }

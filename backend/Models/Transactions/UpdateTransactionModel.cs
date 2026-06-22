@@ -30,14 +30,61 @@ public abstract class UpdateTransactionModel
 }
 
 /// <summary>
+/// Model representing the source of a spending transaction update request.
+/// </summary>
+public sealed class UpdateSpendingTransactionSourceModel
+{
+    /// <summary>
+    /// Account ID for the source account.
+    /// </summary>
+    public required Guid AccountId { get; init; }
+}
+
+/// <summary>
+/// Model representing a destination of a spending transaction update request.
+/// </summary>
+public sealed class UpdateSpendingTransactionDestinationModel
+{
+    /// <summary>
+    /// Optional account ID for the destination account.
+    /// </summary>
+    public Guid? AccountId { get; init; }
+
+    /// <summary>
+    /// Optional location for the destination.
+    /// </summary>
+    public string? Location { get; init; }
+
+    /// <summary>
+    /// Amount directed to this destination.
+    /// </summary>
+    public required decimal Amount { get; init; }
+
+    /// <summary>
+    /// Fund assignments for this destination.
+    /// </summary>
+    public required IReadOnlyCollection<CreateFundAmountModel> FundAssignments { get; init; }
+}
+
+/// <summary>
 /// Model representing a request to update a spending transaction.
 /// </summary>
 public sealed class UpdateSpendingTransactionModel : UpdateTransactionModel
 {
     /// <summary>
-    /// Fund assignments for the spending transaction.
+    /// Source for the spending transaction.
     /// </summary>
-    public required IReadOnlyCollection<CreateFundAmountModel> FundAssignments { get; init; }
+    public required UpdateSpendingTransactionSourceModel Source { get; init; }
+
+    /// <summary>
+    /// Destinations for the spending transaction.
+    /// </summary>
+    public required IReadOnlyCollection<UpdateSpendingTransactionDestinationModel> Destinations { get; init; }
+
+    /// <summary>
+    /// Flattened view of fund assignments across all destinations.
+    /// </summary>
+    public IReadOnlyCollection<CreateFundAmountModel> FundAssignments => Destinations.SelectMany(destination => destination.FundAssignments).ToList();
 }
 
 /// <summary>
@@ -73,22 +120,48 @@ public sealed class UpdateIncomeDeductionModel
 }
 
 /// <summary>
-/// Model representing an income destination in an update income transaction request.
+/// Model representing the source of an income transaction update request.
 /// </summary>
-public sealed class UpdateIncomeDestinationModel
+public sealed class UpdateIncomeTransactionSourceModel
 {
     /// <summary>
-    /// Destination account for the income transaction.
+    /// Optional account ID for the income source.
+    /// </summary>
+    public Guid? AccountId { get; init; }
+
+    /// <summary>
+    /// Optional location for the income source.
+    /// </summary>
+    public string? Location { get; init; }
+
+    /// <summary>
+    /// Income lines for the source.
+    /// </summary>
+    public required IReadOnlyCollection<UpdateIncomeLineModel> IncomeLines { get; init; }
+
+    /// <summary>
+    /// Income deductions for the source.
+    /// </summary>
+    public required IReadOnlyCollection<UpdateIncomeDeductionModel> IncomeDeductions { get; init; }
+}
+
+/// <summary>
+/// Model representing a destination of an income transaction update request.
+/// </summary>
+public sealed class UpdateIncomeTransactionDestinationModel
+{
+    /// <summary>
+    /// Account ID for the destination account.
     /// </summary>
     public required Guid AccountId { get; init; }
 
     /// <summary>
-    /// Amount directed to the destination account.
+    /// Amount directed to this destination.
     /// </summary>
     public required decimal Amount { get; init; }
 
     /// <summary>
-    /// Fund assignments for the destination account.
+    /// Fund assignments for this destination.
     /// </summary>
     public required IReadOnlyCollection<CreateFundAmountModel> FundAssignments { get; init; }
 }
@@ -99,19 +172,56 @@ public sealed class UpdateIncomeDestinationModel
 public sealed class UpdateIncomeTransactionModel : UpdateTransactionModel
 {
     /// <summary>
-    /// Income lines for the income transaction.
+    /// Source for the income transaction.
     /// </summary>
-    public required IReadOnlyCollection<UpdateIncomeLineModel> IncomeLines { get; init; }
+    public required UpdateIncomeTransactionSourceModel Source { get; init; }
 
     /// <summary>
-    /// Income deductions for the income transaction.
+    /// Destinations for the income transaction.
     /// </summary>
-    public required IReadOnlyCollection<UpdateIncomeDeductionModel> IncomeDeductions { get; init; }
+    public required IReadOnlyCollection<UpdateIncomeTransactionDestinationModel> Destinations { get; init; }
 
     /// <summary>
-    /// Income destinations for the income transaction.
+    /// Backwards-compatible alias for the income destinations collection.
     /// </summary>
-    public required IReadOnlyCollection<UpdateIncomeDestinationModel> IncomeDestinations { get; init; }
+    public IReadOnlyCollection<UpdateIncomeTransactionDestinationModel> IncomeDestinations => Destinations;
+}
+
+/// <summary>
+/// Model representing the source of an account transaction update request.
+/// </summary>
+public sealed class UpdateAccountTransactionSourceModel
+{
+    /// <summary>
+    /// Optional account ID for the source account.
+    /// </summary>
+    public Guid? AccountId { get; init; }
+
+    /// <summary>
+    /// Optional location for the source.
+    /// </summary>
+    public string? Location { get; init; }
+}
+
+/// <summary>
+/// Model representing a destination of an account transaction update request.
+/// </summary>
+public sealed class UpdateAccountTransactionDestinationModel
+{
+    /// <summary>
+    /// Optional account ID for the destination account.
+    /// </summary>
+    public Guid? AccountId { get; init; }
+
+    /// <summary>
+    /// Optional location for the destination.
+    /// </summary>
+    public string? Location { get; init; }
+
+    /// <summary>
+    /// Amount directed to this destination.
+    /// </summary>
+    public required decimal Amount { get; init; }
 }
 
 /// <summary>
@@ -119,6 +229,42 @@ public sealed class UpdateIncomeTransactionModel : UpdateTransactionModel
 /// </summary>
 public sealed class UpdateAccountTransactionModel : UpdateTransactionModel
 {
+    /// <summary>
+    /// Source for the account transaction.
+    /// </summary>
+    public required UpdateAccountTransactionSourceModel Source { get; init; }
+
+    /// <summary>
+    /// Destinations for the account transaction.
+    /// </summary>
+    public required IReadOnlyCollection<UpdateAccountTransactionDestinationModel> Destinations { get; init; }
+}
+
+/// <summary>
+/// Model representing the source of a fund transaction update request.
+/// </summary>
+public sealed class UpdateFundTransactionSourceModel
+{
+    /// <summary>
+    /// Fund ID for the source fund.
+    /// </summary>
+    public required Guid FundId { get; init; }
+}
+
+/// <summary>
+/// Model representing a destination of a fund transaction update request.
+/// </summary>
+public sealed class UpdateFundTransactionDestinationModel
+{
+    /// <summary>
+    /// Fund ID for the destination fund.
+    /// </summary>
+    public required Guid FundId { get; init; }
+
+    /// <summary>
+    /// Amount directed to this destination fund.
+    /// </summary>
+    public required decimal Amount { get; init; }
 }
 
 /// <summary>
@@ -126,4 +272,13 @@ public sealed class UpdateAccountTransactionModel : UpdateTransactionModel
 /// </summary>
 public sealed class UpdateFundTransactionModel : UpdateTransactionModel
 {
+    /// <summary>
+    /// Source for the fund transaction.
+    /// </summary>
+    public required UpdateFundTransactionSourceModel Source { get; init; }
+
+    /// <summary>
+    /// Destinations for the fund transaction.
+    /// </summary>
+    public required IReadOnlyCollection<UpdateFundTransactionDestinationModel> Destinations { get; init; }
 }

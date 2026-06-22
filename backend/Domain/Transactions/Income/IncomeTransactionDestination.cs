@@ -4,42 +4,42 @@ using Domain.Funds;
 namespace Domain.Transactions.Income;
 
 /// <summary>
-/// Individual income destination for an income transaction.
+/// Value object representing the destination of money for an income transaction.
 /// </summary>
-public class IncomeDestination
+public class IncomeTransactionDestination
 {
     private readonly List<FundAmount> _fundAssignments = [];
 
     /// <summary>
-    /// Account for this income destination.
+    /// Account for this income transaction destination.
     /// </summary>
     public Account Account { get; private set; }
 
     /// <summary>
-    /// Amount for this income destination.
+    /// Posted Date for this income transaction destination.
+    /// </summary>
+    public DateOnly? PostedDate { get; internal set; }
+
+    /// <summary>
+    /// Amount for this income transaction destination.
     /// </summary>
     public decimal Amount { get; private set; }
 
     /// <summary>
-    /// Posted Date for this income destination.
-    /// </summary>
-    public DateOnly? PostedDate { get; private set; }
-
-    /// <summary>
-    /// Fund assignments for this income destination.
+    /// Fund assignments for this income transaction destination.
     /// </summary>
     public IReadOnlyCollection<FundAmount> FundAssignments => _fundAssignments;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public IncomeDestination(Account account, decimal amount, DateOnly? postedDate, IEnumerable<FundAmount> fundAssignments)
+    public IncomeTransactionDestination(Account account, decimal amount, DateOnly? postedDate, IEnumerable<FundAmount> fundAssignments)
     {
         Account = account;
         Amount = amount;
         PostedDate = postedDate;
         _fundAssignments.AddRange(fundAssignments);
-        if (Amount != _fundAssignments.Sum(f => f.Amount))
+        if (Account.Type.IsTracked() && Amount != _fundAssignments.Sum(f => f.Amount))
         {
             _fundAssignments.Add(new FundAmount
             {
@@ -52,7 +52,7 @@ public class IncomeDestination
     /// <summary>
     /// Constructs a new default instance of this class
     /// </summary>
-    private IncomeDestination()
+    private IncomeTransactionDestination()
     {
         Account = null!;
     }

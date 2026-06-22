@@ -361,9 +361,18 @@ public class GoalTrendsGetter(
         switch (transaction)
         {
             case SpendingTransaction spendingTransaction:
+                var spendingAssignments = spendingTransaction.Destinations
+                    .SelectMany(destination => destination.FundAssignments)
+                    .GroupBy(fa => fa.FundId)
+                    .Select(group => new FundAmount
+                    {
+                        FundId = group.Key,
+                        Amount = group.Sum(fa => fa.Amount)
+                    })
+                    .ToList();
                 foreach (GoalTrendsBalanceEventRow balanceEvent in BuildBalanceEventsByFundAssignments(
                     transaction,
-                    spendingTransaction.FundAssignments,
+                    spendingAssignments,
                     spendingTransaction.Date,
                     fundsById,
                     accountingPeriodsById,
@@ -375,9 +384,18 @@ public class GoalTrendsGetter(
 
                 break;
             case IncomeTransaction incomeTransaction:
+                var incomeAssignments = incomeTransaction.Destinations
+                    .SelectMany(destination => destination.FundAssignments)
+                    .GroupBy(fa => fa.FundId)
+                    .Select(group => new FundAmount
+                    {
+                        FundId = group.Key,
+                        Amount = group.Sum(fa => fa.Amount)
+                    })
+                    .ToList();
                 foreach (GoalTrendsBalanceEventRow balanceEvent in BuildBalanceEventsByFundAssignments(
                     transaction,
-                    incomeTransaction.IncomeDestinations.SelectMany(destination => destination.FundAssignments).ToList(),
+                    incomeAssignments,
                     incomeTransaction.Date,
                     fundsById,
                     accountingPeriodsById,

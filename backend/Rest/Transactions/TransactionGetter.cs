@@ -2,10 +2,6 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
-using Domain.Transactions.Accounts;
-using Domain.Transactions.Funds;
-using Domain.Transactions.Income;
-using Domain.Transactions.Spending;
 using Models;
 using Models.Transactions;
 using Rest.AccountingPeriods;
@@ -48,7 +44,7 @@ public class TransactionGetter(
                 accountingPeriodIds.Add(accountingPeriod.Id);
             }
         }
-        List<AccountId> accountIds = [];
+        List<string> accountNames = [];
         foreach (Guid accountId in request.AccountIds ?? [])
         {
             if (!accountConverter.TryToDomain(accountId, out Account? account))
@@ -59,10 +55,10 @@ public class TransactionGetter(
             }
             else
             {
-                accountIds.Add(account.Id);
+                accountNames.Add(account.Name);
             }
         }
-        List<FundId> fundIds = [];
+        List<string> fundNames = [];
         foreach (Guid fundId in request.FundIds ?? [])
         {
             if (!fundConverter.TryToDomain(fundId, out Fund? fund))
@@ -73,47 +69,31 @@ public class TransactionGetter(
             }
             else
             {
-                fundIds.Add(fund.Id);
+                fundNames.Add(fund.Name);
             }
         }
 
-        List<Transaction> transactions = [];
+        List<TransactionModel> transactions = [];
         if (accountingPeriodIds.Count == 0)
         {
-            transactions = transactionRepository.GetAll().ToList();
+            transactions = transactionRepository.GetAll().Select(transactionConverter.ToModel).ToList();
         }
         else
         {
             foreach (AccountingPeriodId accountingPeriodId in accountingPeriodIds)
             {
-                transactions.AddRange(transactionRepository.GetAllByAccountingPeriod(accountingPeriodId));
+                transactions.AddRange(transactionRepository.GetAllByAccountingPeriod(accountingPeriodId).Select(transactionConverter.ToModel));
             }
         }
-        if (accountIds.Count > 0)
+        if (accountNames.Count > 0)
         {
-            transactions = transactions.Where(transaction =>
-                (transaction is SpendingTransaction spendingTransaction &&
-                    (accountIds.Contains(spendingTransaction.DebitAccountId) ||
-                    (spendingTransaction.CreditAccountId != null && accountIds.Contains(spendingTransaction.CreditAccountId)))) ||
-                (transaction is IncomeTransaction incomeTransaction &&
-                    ((incomeTransaction.SourceAccountId != null && accountIds.Contains(incomeTransaction.SourceAccountId)) ||
-                    incomeTransaction.IncomeDestinations.Any(destination => accountIds.Contains(destination.Account.Id)))) ||
-                (transaction is AccountTransaction accountTransaction &&
-                    ((accountTransaction.DebitAccountId != null && accountIds.Contains(accountTransaction.DebitAccountId)) ||
-                    (accountTransaction.CreditAccountId != null && accountIds.Contains(accountTransaction.CreditAccountId)))))
-                .ToList();
+            transactions = transactions.Where(transaction => GetAccountNamesForTransaction(transaction).Any(accountNames.Contains)).ToList();
         }
-        if (fundIds.Count > 0)
+        if (fundNames.Count > 0)
         {
-            transactions = transactions.Where(transaction =>
-                (transaction is FundTransaction fundTransaction &&
-                    ((fundTransaction.DebitFundId != null && fundIds.Contains(fundTransaction.DebitFundId)) ||
-                    (fundTransaction.CreditFundId != null && fundIds.Contains(fundTransaction.CreditFundId)))) ||
-                (transaction is SpendingTransaction spendingTransaction && spendingTransaction.FundAssignments.Any(fundAssignment => fundIds.Contains(fundAssignment.FundId))) ||
-                (transaction is IncomeTransaction incomeTransaction && incomeTransaction.IncomeDestinations.Any(destination => destination.FundAssignments.Any(fundAssignment => fundIds.Contains(fundAssignment.FundId)))))
-                .ToList();
+            transactions = transactions.Where(transaction => GetFundNamesForTransaction(transaction).Any(fundNames.Contains)).ToList();
         }
-        var filteredResults = transactions.Select(transactionConverter.ToModel).ToList();
+        var filteredResults = transactions.ToList();
         if (request.Sort == TransactionSortOrderModel.Date)
         {
             filteredResults = filteredResults.OrderBy(transaction => transaction.Date).ThenBy(transaction => transaction.Sequence).ToList();
@@ -171,21 +151,43 @@ public class TransactionGetter(
         return true;
     }
 
+    private static IEnumerable<string> GetAccountNamesForTransaction(TransactionModel transaction) => transaction switch
+    {
+        SpendingTransactionModel spendingTransaction => spendingTransaction.Destinations.Select(destination => destination.Account?.AccountName)
+            .Append(spendingTransaction.Source.Account?.AccountName)
+            .Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name!),
+        IncomeTransactionModel incomeTransaction => incomeTransaction.Destinations.Select(destination => destination.Account?.AccountName)
+            .Append(incomeTransaction.Source.Account?.AccountName)
+            .Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name!),
+        AccountTransactionModel accountTransaction => accountTransaction.Destinations.Select(destination => destination.Account?.AccountName)
+            .Append(accountTransaction.Source.Account?.AccountName)
+            .Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name!),
+        _ => [],
+    };
+
+    private static IEnumerable<string> GetFundNamesForTransaction(TransactionModel transaction) => transaction switch
+    {
+        SpendingTransactionModel spendingTransaction => spendingTransaction.Destinations.SelectMany(destination => destination.FundAssignments).Select(fundAssignment => fundAssignment.FundName),
+        IncomeTransactionModel incomeTransaction => incomeTransaction.Destinations.SelectMany(destination => destination.FundAssignments).Select(fundAssignment => fundAssignment.FundName),
+        FundTransactionModel fundTransaction => fundTransaction.Destinations.Select(destination => destination.Fund.FundName).Append(fundTransaction.Source.Fund.FundName),
+        _ => [],
+    };
+
     private static string? GetSource(TransactionModel transaction) => transaction switch
     {
-        SpendingTransactionModel spendingTransaction => spendingTransaction.DebitAccount.AccountName,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.SourceAccount?.AccountName ?? incomeTransaction.SourceLocation,
-        AccountTransactionModel accountTransaction => accountTransaction.DebitAccount?.AccountName,
-        FundTransactionModel fundTransaction => fundTransaction.DebitFund?.FundName,
+        SpendingTransactionModel spendingTransaction => spendingTransaction.Source.Account.AccountName,
+        IncomeTransactionModel incomeTransaction => incomeTransaction.Source.Account?.AccountName ?? incomeTransaction.Source.Location,
+        AccountTransactionModel accountTransaction => accountTransaction.Source.Account?.AccountName ?? accountTransaction.Source.Location,
+        FundTransactionModel fundTransaction => fundTransaction.Source.Fund?.FundName,
         _ => null,
     };
 
     private static string? GetDestination(TransactionModel transaction) => transaction switch
     {
-        SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName ?? spendingTransaction.DestinationLocation,
-        IncomeTransactionModel incomeTransaction => string.Join(", ", incomeTransaction.IncomeDestinations.Select(destination => destination.Account.AccountName).Distinct(StringComparer.OrdinalIgnoreCase)),
-        AccountTransactionModel accountTransaction => accountTransaction.CreditAccount?.AccountName,
-        FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,
+        SpendingTransactionModel spendingTransaction => string.Join(", ", spendingTransaction.Destinations.Select(destination => destination.Account?.AccountName ?? destination.Location).Distinct(StringComparer.OrdinalIgnoreCase)),
+        IncomeTransactionModel incomeTransaction => string.Join(", ", incomeTransaction.Destinations.Select(destination => destination.Account?.AccountName).Distinct(StringComparer.OrdinalIgnoreCase)),
+        AccountTransactionModel accountTransaction => string.Join(", ", accountTransaction.Destinations.Select(destination => destination.Account?.AccountName ?? destination.Location).Distinct(StringComparer.OrdinalIgnoreCase)),
+        FundTransactionModel fundTransaction => string.Join(", ", fundTransaction.Destinations.Select(destination => destination.Fund?.FundName).Distinct(StringComparer.OrdinalIgnoreCase)),
         _ => null,
     };
 }

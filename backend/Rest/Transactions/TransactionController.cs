@@ -383,19 +383,19 @@ public sealed class TransactionController(
 
     private static string? GetSource(TransactionModel transaction) => transaction switch
     {
-        SpendingTransactionModel spendingTransaction => spendingTransaction.DebitAccount.AccountName,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.SourceAccount?.AccountName ?? incomeTransaction.SourceLocation,
-        AccountTransactionModel accountTransaction => accountTransaction.DebitAccount?.AccountName,
-        FundTransactionModel fundTransaction => fundTransaction.DebitFund?.FundName,
+        SpendingTransactionModel spendingTransaction => spendingTransaction.Source.Account.AccountName,
+        IncomeTransactionModel incomeTransaction => incomeTransaction.Source.Account?.AccountName ?? incomeTransaction.Source.Location,
+        AccountTransactionModel accountTransaction => accountTransaction.Source.Account?.AccountName ?? accountTransaction.Source.Location,
+        FundTransactionModel fundTransaction => fundTransaction.Source.Fund?.FundName,
         _ => null,
     };
 
     private static string? GetDestination(TransactionModel transaction) => transaction switch
     {
-        SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName ?? spendingTransaction.DestinationLocation,
-        IncomeTransactionModel incomeTransaction => string.Join(", ", incomeTransaction.IncomeDestinations.Select(destination => destination.Account.AccountName).Distinct(StringComparer.OrdinalIgnoreCase)),
-        AccountTransactionModel accountTransaction => accountTransaction.CreditAccount?.AccountName,
-        FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,
+        SpendingTransactionModel spendingTransaction => string.Join(", ", spendingTransaction.Destinations.Select(destination => destination.Account?.AccountName ?? destination.Location).Distinct(StringComparer.OrdinalIgnoreCase)),
+        IncomeTransactionModel incomeTransaction => string.Join(", ", incomeTransaction.Destinations.Select(destination => destination.Account?.AccountName).Distinct(StringComparer.OrdinalIgnoreCase)),
+        AccountTransactionModel accountTransaction => string.Join(", ", accountTransaction.Destinations.Select(destination => destination.Account?.AccountName ?? destination.Location).Distinct(StringComparer.OrdinalIgnoreCase)),
+        FundTransactionModel fundTransaction => string.Join(", ", fundTransaction.Destinations.Select(destination => destination.Fund?.FundName).Distinct(StringComparer.OrdinalIgnoreCase)),
         _ => null,
     };
 
@@ -407,12 +407,12 @@ public sealed class TransactionController(
             InvalidAmountException => nameof(CreateTransactionModel.Amount),
             InvalidFundAmountException => model switch
             {
-                CreateSpendingTransactionModel => nameof(CreateSpendingTransactionModel.FundAssignments),
-                CreateIncomeTransactionModel => nameof(CreateIncomeTransactionModel.IncomeDestinations),
+                CreateSpendingTransactionModel => nameof(CreateSpendingTransactionModel.Destinations),
+                CreateIncomeTransactionModel => nameof(CreateIncomeTransactionModel.Destinations),
                 _ => string.Empty
             },
-            InvalidFundException invalidFundException when invalidFundException.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase) => nameof(CreateFundTransactionModel.DebitFundId),
-            InvalidFundException invalidFundException when invalidFundException.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase) => nameof(CreateFundTransactionModel.CreditFundId),
+            InvalidFundException invalidFundException when invalidFundException.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase) => nameof(CreateFundTransactionModel.Source),
+            InvalidFundException invalidFundException when invalidFundException.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase) => nameof(CreateFundTransactionModel.Destinations),
             InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("source", StringComparison.InvariantCultureIgnoreCase) => "SourceAccountId",
             InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("destination", StringComparison.InvariantCultureIgnoreCase) => "IncomeDestinations",
             InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase) => "DebitAccount",

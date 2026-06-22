@@ -7,6 +7,7 @@ using Domain.Transactions.Income;
 using Domain.Transactions.Spending;
 using Models;
 using Models.Accounts;
+using Models.Transactions;
 using Rest.AccountingPeriods;
 
 namespace Rest.Accounts;
@@ -148,7 +149,7 @@ public class AccountTrendsGetter(
             GetApplicableAccountNames(requestedAccountNames, availableAccountNames));
         balanceEvents = SortBalanceEvents(balanceEvents, request.BalanceEventSort);
         filteredRows = SortRows(filteredRows, request.Sort);
-        (decimal totalIncome, decimal totalSpending) = GetTransactionTotalsForAccountingPeriods(
+        (IncomeAmountModel totalIncome, decimal totalSpending) = GetTransactionTotalsForAccountingPeriods(
             filteredRows.Select(row => row.Id).ToList(),
             accountingPeriods);
         results = new AccountTrendsModel
@@ -223,7 +224,7 @@ public class AccountTrendsGetter(
             GetApplicableAccountNames(requestedAccountNames, availableAccountNames));
         balanceEvents = SortBalanceEvents(balanceEvents, request.BalanceEventSort);
         filteredRows = SortRows(filteredRows, request.Sort);
-        (decimal totalIncome, decimal totalSpending) = GetTransactionTotalsForDates(
+        (IncomeAmountModel totalIncome, decimal totalSpending) = GetTransactionTotalsForDates(
             filteredRows.Select(row => row.Id).ToList(),
             request.StartDate.Value,
             request.EndDate.Value);
@@ -279,7 +280,12 @@ public class AccountTrendsGetter(
             TotalCount = 0,
         },
         AvailableAccountNames = [],
-        TotalIncome = 0,
+        TotalIncome = new IncomeAmountModel
+        {
+            Total = 0,
+            Tracked = 0,
+            Untracked = 0
+        },
         TotalSpending = 0,
         AccountingPeriods = null,
         Dates = null,
@@ -588,9 +594,10 @@ public class AccountTrendsGetter(
             accountTypes,
             effectiveDate => effectiveDate >= startDate && effectiveDate <= endDate);
 
-    private (decimal TotalIncome, decimal TotalSpending) GetTransactionTotalsForAccountingPeriods(List<AccountId> filteredAccountIds, IReadOnlyList<AccountingPeriod> accountingPeriods)
+    private (IncomeAmountModel TotalIncome, decimal TotalSpending) GetTransactionTotalsForAccountingPeriods(List<AccountId> filteredAccountIds, IReadOnlyList<AccountingPeriod> accountingPeriods)
     {
-        decimal totalIncome = 0;
+        decimal totalTrackedSpending = 0;
+        decimal totalUntrackedSpending = 0;
         decimal totalSpending = 0;
 
         foreach (AccountingPeriodId accountingPeriodId in accountingPeriods.Select(accountingPeriod => accountingPeriod.Id).ToHashSet())
@@ -599,38 +606,61 @@ public class AccountTrendsGetter(
             {
                 if (transaction is IncomeTransaction incomeTransaction)
                 {
-                    totalIncome += incomeTransaction.IncomeDestinations
-                        .Where(destination => filteredAccountIds.Contains(destination.Account.Id))
+                    totalTrackedSpending += incomeTransaction.Destinations
+                        .Where(destination => filteredAccountIds.Contains(destination.Account.Id) && destination.Account.Type.IsTracked())
+                        .Sum(destination => destination.Amount);
+                    totalUntrackedSpending += incomeTransaction.Destinations
+                        .Where(destination => filteredAccountIds.Contains(destination.Account.Id) && !destination.Account.Type.IsTracked())
                         .Sum(destination => destination.Amount);
                 }
-                if (transaction is SpendingTransaction spendingTransaction && filteredAccountIds.Contains(spendingTransaction.DebitAccountId))
+                if (transaction is SpendingTransaction spendingTransaction &&
+                    spendingTransaction.Source.Account != null &&
+                    filteredAccountIds.Contains(spendingTransaction.Source.Account.Id))
                 {
                     totalSpending += transaction.Amount;
                 }
             }
         }
-        return (totalIncome, totalSpending);
+        return (
+            new IncomeAmountModel
+            {
+                Total = totalTrackedSpending + totalUntrackedSpending,
+                Tracked = totalTrackedSpending,
+                Untracked = totalUntrackedSpending
+            },
+            totalSpending);
     }
 
-    private (decimal TotalIncome, decimal TotalSpending) GetTransactionTotalsForDates(List<AccountId> filteredAccountIds, DateOnly startDate, DateOnly endDate)
+    private (IncomeAmountModel TotalIncome, decimal TotalSpending) GetTransactionTotalsForDates(List<AccountId> filteredAccountIds, DateOnly startDate, DateOnly endDate)
     {
-        decimal totalIncome = 0;
+        decimal totalTrackedIncome = 0;
+        decimal totalUntrackedIncome = 0;
         decimal totalSpending = 0;
 
         foreach (IncomeTransaction transaction in transactionRepository.GetAllIncomeTransactionsByDateRange(startDate, endDate).OfType<IncomeTransaction>())
         {
-            totalIncome += transaction.IncomeDestinations
-                .Where(destination => filteredAccountIds.Contains(destination.Account.Id) && destination.PostedDate != null && destination.PostedDate >= startDate && destination.PostedDate <= endDate)
+            totalTrackedIncome += transaction.Destinations
+                .Where(destination => filteredAccountIds.Contains(destination.Account.Id) && destination.Account.Type.IsTracked() && destination.PostedDate != null && destination.PostedDate >= startDate && destination.PostedDate <= endDate)
+                .Sum(destination => destination.Amount);
+            totalUntrackedIncome += transaction.Destinations
+                .Where(destination => filteredAccountIds.Contains(destination.Account.Id) && !destination.Account.Type.IsTracked() && destination.PostedDate != null && destination.PostedDate >= startDate && destination.PostedDate <= endDate)
                 .Sum(destination => destination.Amount);
         }
         foreach (SpendingTransaction transaction in transactionRepository.GetAllSpendingTransactionsByDateRange(startDate, endDate).OfType<SpendingTransaction>())
         {
-            if (filteredAccountIds.Contains(transaction.DebitAccountId))
+            if (transaction.Source.Account != null && filteredAccountIds.Contains(transaction.Source.Account.Id))
             {
                 totalSpending += transaction.Amount;
             }
         }
-        return (totalIncome, totalSpending);
+        return (
+            new IncomeAmountModel
+            {
+                Total = totalTrackedIncome + totalUntrackedIncome,
+                Tracked = totalTrackedIncome,
+                Untracked = totalUntrackedIncome
+            },
+            totalSpending);
     }
 
     private List<AccountTrendsBalanceEventRow> BuildBalanceEvents(
@@ -659,52 +689,57 @@ public class AccountTrendsGetter(
         switch (transaction)
         {
             case SpendingTransaction spendingTransaction:
-                foreach (AccountTrendsBalanceEventRow balanceEvent in BuildBalanceEvents(
-                    transaction,
-                    accountsById,
-                    accountingPeriodsById,
-                    accountTypes,
-                    spendingTransaction.DebitAccountId,
-                    spendingTransaction.DebitPostedDate,
-                    AccountTrendsBalanceEventTypeModel.Debit))
-                {
-                    yield return balanceEvent;
-                }
-
-                if (spendingTransaction.CreditAccountId != null)
+                if (spendingTransaction.Source.Account != null)
                 {
                     foreach (AccountTrendsBalanceEventRow balanceEvent in BuildBalanceEvents(
                         transaction,
                         accountsById,
                         accountingPeriodsById,
                         accountTypes,
-                        spendingTransaction.CreditAccountId,
-                        spendingTransaction.CreditPostedDate,
-                        AccountTrendsBalanceEventTypeModel.Credit))
+                        spendingTransaction.Source.Account.Id,
+                        spendingTransaction.Source.PostedDate,
+                        AccountTrendsBalanceEventTypeModel.Debit))
                     {
                         yield return balanceEvent;
+                    }
+                }
+                foreach (SpendingTransactionDestination destination in spendingTransaction.Destinations)
+                {
+                    if (destination.Account != null)
+                    {
+                        foreach (AccountTrendsBalanceEventRow balanceEvent in BuildBalanceEvents(
+                            transaction,
+                            accountsById,
+                            accountingPeriodsById,
+                            accountTypes,
+                            destination.Account.Id,
+                            destination.PostedDate,
+                            AccountTrendsBalanceEventTypeModel.Credit,
+                            destination.Amount))
+                        {
+                            yield return balanceEvent;
+                        }
                     }
                 }
 
                 break;
             case IncomeTransaction incomeTransaction:
-                if (incomeTransaction.SourceAccountId != null)
+                if (incomeTransaction.Source.Account != null)
                 {
                     foreach (AccountTrendsBalanceEventRow balanceEvent in BuildBalanceEvents(
                         transaction,
                         accountsById,
                         accountingPeriodsById,
                         accountTypes,
-                        incomeTransaction.SourceAccountId,
-                        incomeTransaction.SourcePostedDate,
+                        incomeTransaction.Source.Account.Id,
+                        incomeTransaction.Source.PostedDate,
                         AccountTrendsBalanceEventTypeModel.Debit,
                         transaction.Amount))
                     {
                         yield return balanceEvent;
                     }
                 }
-
-                foreach (IncomeDestination destination in incomeTransaction.IncomeDestinations)
+                foreach (IncomeTransactionDestination destination in incomeTransaction.Destinations)
                 {
                     foreach (AccountTrendsBalanceEventRow balanceEvent in BuildBalanceEvents(
                         transaction,
@@ -722,33 +757,36 @@ public class AccountTrendsGetter(
 
                 break;
             case AccountTransaction accountTransaction:
-                if (accountTransaction.DebitAccountId != null)
+                if (accountTransaction.Source.Account != null)
                 {
                     foreach (AccountTrendsBalanceEventRow balanceEvent in BuildBalanceEvents(
                         transaction,
                         accountsById,
                         accountingPeriodsById,
                         accountTypes,
-                        accountTransaction.DebitAccountId,
-                        accountTransaction.DebitPostedDate,
+                        accountTransaction.Source.Account.Id,
+                        accountTransaction.Source.PostedDate,
                         AccountTrendsBalanceEventTypeModel.Debit))
                     {
                         yield return balanceEvent;
                     }
                 }
-
-                if (accountTransaction.CreditAccountId != null)
+                foreach (AccountTransactionDestination destination in accountTransaction.Destinations)
                 {
-                    foreach (AccountTrendsBalanceEventRow balanceEvent in BuildBalanceEvents(
-                        transaction,
-                        accountsById,
-                        accountingPeriodsById,
-                        accountTypes,
-                        accountTransaction.CreditAccountId,
-                        accountTransaction.CreditPostedDate,
-                        AccountTrendsBalanceEventTypeModel.Credit))
+                    if (destination.Account != null)
                     {
-                        yield return balanceEvent;
+                        foreach (AccountTrendsBalanceEventRow balanceEvent in BuildBalanceEvents(
+                            transaction,
+                            accountsById,
+                            accountingPeriodsById,
+                            accountTypes,
+                            destination.Account.Id,
+                            destination.PostedDate,
+                            AccountTrendsBalanceEventTypeModel.Credit,
+                            destination.Amount))
+                        {
+                            yield return balanceEvent;
+                        }
                     }
                 }
 

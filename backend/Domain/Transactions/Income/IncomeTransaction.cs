@@ -12,53 +12,31 @@ namespace Domain.Transactions.Income;
 /// </remarks>
 public class IncomeTransaction : Transaction
 {
-    private readonly List<IncomeLine> _incomeLines = [];
-    private readonly List<IncomeDeduction> _incomeDeductions = [];
-    private readonly List<IncomeDestination> _incomeDestinations = [];
+    private readonly List<IncomeTransactionDestination> _destinations = [];
 
     /// <summary>
-    /// Source Account ID for this Income Transaction
+    /// Source for this Income Transaction
     /// </summary>
-    public AccountId? SourceAccountId { get; private set; }
+    public IncomeTransactionSource Source { get; private set; }
 
     /// <summary>
-    /// Posted Date for the Source Account of this Income Transaction
+    /// Total tracked amount for this Income Transaction
     /// </summary>
-    public DateOnly? SourcePostedDate { get; internal set; }
+    public decimal TrackedAmount { get; private set; }
 
     /// <summary>
-    /// External location where the money for this Income Transaction came from (if not an account).
+    /// Destinations for this Income Transaction
     /// </summary>
-    public string? SourceLocation { get; private set; }
-
-    /// <summary>
-    /// Total tracked income amount for this Income Transaction
-    /// </summary>
-    public decimal TrackedIncomeAmount { get; private set; }
-
-    /// <summary>
-    /// Income Lines for this Income Transaction
-    /// </summary>
-    public IReadOnlyCollection<IncomeLine> IncomeLines => _incomeLines;
-
-    /// <summary>
-    /// Income Deductions for this Income Transaction
-    /// </summary>
-    public IReadOnlyCollection<IncomeDeduction> IncomeDeductions => _incomeDeductions;
-
-    /// <summary>
-    /// Income Destinations for this Income Transaction
-    /// </summary>
-    public IReadOnlyCollection<IncomeDestination> IncomeDestinations => _incomeDestinations;
+    public IReadOnlyCollection<IncomeTransactionDestination> Destinations => _destinations;
 
     /// <inheritdoc/>
     public override IEnumerable<AccountId> GetAllAffectedAccountIds()
     {
-        if (SourceAccountId != null)
+        if (Source.Account?.Id != null)
         {
-            yield return SourceAccountId;
+            yield return Source.Account.Id;
         }
-        foreach (AccountId accountId in IncomeDestinations.Select(d => d.Account.Id))
+        foreach (AccountId accountId in Destinations.Select(d => d.Account.Id))
         {
             yield return accountId;
         }
@@ -67,13 +45,13 @@ public class IncomeTransaction : Transaction
     /// <inheritdoc/>
     public override DateOnly? GetPostedDateForAccount(AccountId accountId)
     {
-        if (accountId == SourceAccountId)
+        if (accountId == Source.Account?.Id)
         {
-            return SourcePostedDate;
+            return Source.PostedDate;
         }
-        else if (IncomeDestinations.Any(d => d.Account.Id == accountId))
+        if (Destinations.Any(d => d.Account.Id == accountId))
         {
-            return IncomeDestinations.First(d => d.Account.Id == accountId).PostedDate;
+            return Destinations.First(d => d.Account.Id == accountId).PostedDate;
         }
         return null;
     }
@@ -83,11 +61,11 @@ public class IncomeTransaction : Transaction
     {
         if (accountId == null)
         {
-            return IncomeDestinations.SelectMany(d => d.FundAssignments).Select(f => f.FundId);
+            return Destinations.SelectMany(d => d.FundAssignments).Select(f => f.FundId);
         }
-        if (IncomeDestinations.Any(d => d.Account.Id == accountId))
+        if (Destinations.Any(d => d.Account.Id == accountId))
         {
-            return IncomeDestinations.First(d => d.Account.Id == accountId).FundAssignments.Select(f => f.FundId);
+            return Destinations.First(d => d.Account.Id == accountId).FundAssignments.Select(f => f.FundId);
         }
         return [];
     }
@@ -99,16 +77,54 @@ public class IncomeTransaction : Transaction
         : this(request, sequence, TransactionType.Income) { }
 
     /// <summary>
+    /// Updates the income source for this income transaction.
+    /// </summary>
+    internal void UpdateIncomeSource(IncomeTransactionSource incomeSource) => Source = incomeSource;
+
+    /// <summary>
+    /// Updates the income destinations for this income transaction.
+    /// </summary>
+    internal void UpdateIncomeDestinations(IReadOnlyCollection<IncomeTransactionDestination> incomeDestinations)
+    {
+        _destinations.Clear();
+        _destinations.AddRange(incomeDestinations);
+        TrackedAmount = Destinations.Where(d => d.Account.Type.IsTracked()).Sum(d => d.Amount);
+    }
+
+    /// <summary>
+    /// Sets the posted date for a specific account affected by this transaction.
+    /// </summary>
+    internal void SetPostedDate(AccountId accountId, DateOnly? postedDate)
+    {
+        if (accountId == Source.Account?.Id)
+        {
+            Source.PostedDate = postedDate;
+            return;
+        }
+        IncomeTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Account.Id == accountId);
+        _ = (destination?.PostedDate = postedDate);
+    }
+
+    /// <summary>
+    /// Clears all posted dates for this transaction.
+    /// </summary>
+    internal void ClearPostedDates()
+    {
+        Source.PostedDate = null;
+        foreach (IncomeTransactionDestination destination in _destinations)
+        {
+            destination.PostedDate = null;
+        }
+    }
+
+    /// <summary>
     /// Constructs a new instance of this class with an explicit TransactionType
     /// </summary>
     protected IncomeTransaction(CreateIncomeTransactionRequest request, int sequence, TransactionType type)
         : base(request, sequence, type)
     {
-        SourceAccountId = request.SourceAccount?.Id;
-        SourceLocation = request.SourceLocation;
-        UpdateIncomeLines(request.IncomeLines);
-        UpdateIncomeDeductions(request.IncomeDeductions);
-        UpdateIncomeDestinations(request.IncomeDestinations);
+        Source = request.Source;
+        UpdateIncomeDestinations(request.Destinations);
     }
 
     /// <summary>
@@ -117,76 +133,18 @@ public class IncomeTransaction : Transaction
     protected IncomeTransaction()
         : base()
     {
-    }
-
-    /// <summary>
-    /// Updates the income lines for this income transaction.
-    /// </summary>
-    internal void UpdateIncomeLines(IReadOnlyCollection<IncomeLine> incomeLines)
-    {
-        _incomeLines.Clear();
-        _incomeLines.AddRange(incomeLines.Select(line => new IncomeLine(line.Description, line.Amount)));
-    }
-
-    /// <summary>
-    /// Updates the income deductions for this income transaction.
-    /// </summary>
-    internal void UpdateIncomeDeductions(IReadOnlyCollection<IncomeDeduction> incomeDeductions)
-    {
-        _incomeDeductions.Clear();
-        _incomeDeductions.AddRange(incomeDeductions.Select(deduction => new IncomeDeduction(deduction.Description, deduction.Amount)));
-    }
-
-    /// <summary>
-    /// Updates the income destinations for this income transaction.
-    /// </summary>
-    internal void UpdateIncomeDestinations(IReadOnlyCollection<IncomeDestination> incomeDestinations)
-    {
-        _incomeDestinations.Clear();
-        _incomeDestinations.AddRange(incomeDestinations.Select(destination =>
-            new IncomeDestination(destination.Account, destination.Amount, destination.PostedDate, destination.FundAssignments)));
-        TrackedIncomeAmount = IncomeDestinations.Where(d => d.Account.Type.IsTracked()).Sum(d => d.Amount);
-    }
-
-    /// <summary>
-    /// Sets the posted date for a specific account affected by this transaction.
-    /// </summary>
-    internal void SetPostedDate(AccountId accountId, DateOnly? postedDate)
-    {
-        if (accountId == SourceAccountId)
-        {
-            SourcePostedDate = postedDate;
-            return;
-        }
-        int index = _incomeDestinations.FindIndex(d => d.Account.Id == accountId);
-        if (index != -1)
-        {
-            IncomeDestination destination = _incomeDestinations[index];
-            _incomeDestinations[index] = new IncomeDestination(destination.Account, destination.Amount, postedDate, destination.FundAssignments);
-        }
-    }
-
-    /// <summary>
-    /// Clears all posted dates for this transaction.
-    /// </summary>
-    internal void ClearPostedDates()
-    {
-        SourcePostedDate = null;
-        foreach ((int i, IncomeDestination destination) in _incomeDestinations.Index())
-        {
-            _incomeDestinations[i] = new IncomeDestination(destination.Account, destination.Amount, null, destination.FundAssignments);
-        }
+        Source = null!;
     }
 
     /// <inheritdoc/>
     protected override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
-        IncomeDestination? destination = _incomeDestinations.FirstOrDefault(d => d.Account.Id == existingAccountBalance.Account.Id);
+        IncomeTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Account.Id == existingAccountBalance.Account.Id);
         if (destination != null)
         {
             return existingAccountBalance.AddNewPendingCreditAmount(reverse ? -destination.Amount : destination.Amount);
         }
-        if (existingAccountBalance.Account.Id == SourceAccountId)
+        if (existingAccountBalance.Account.Id == Source.Account?.Id)
         {
             return existingAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
         }
@@ -196,12 +154,12 @@ public class IncomeTransaction : Transaction
     /// <inheritdoc/>
     protected override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
-        IncomeDestination? destination = _incomeDestinations.FirstOrDefault(d => d.Account.Id == existingAccountBalance.Account.Id);
+        IncomeTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Account.Id == existingAccountBalance.Account.Id);
         if (destination != null)
         {
             return existingAccountBalance.PostPendingCreditAmount(reverse ? -destination.Amount : destination.Amount);
         }
-        if (existingAccountBalance.Account.Id == SourceAccountId)
+        if (existingAccountBalance.Account.Id == Source.Account?.Id)
         {
             return existingAccountBalance.PostPendingDebitAmount(reverse ? -Amount : Amount);
         }
@@ -211,7 +169,7 @@ public class IncomeTransaction : Transaction
     /// <inheritdoc/>
     protected override FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse)
     {
-        var fundAmounts = IncomeDestinations.SelectMany(d => d.FundAssignments)
+        var fundAmounts = _destinations.SelectMany(d => d.FundAssignments)
             .Where(fundAmount => fundAmount.FundId == existingFundBalance.FundId)
             .ToList();
         if (fundAmounts.Count == 0)
@@ -225,7 +183,7 @@ public class IncomeTransaction : Transaction
     /// <inheritdoc/>
     protected override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse)
     {
-        var fundAmounts = IncomeDestinations.Where(d => d.Account.Id == accountId)
+        var fundAmounts = _destinations.Where(d => d.Account.Id == accountId)
             .SelectMany(d => d.FundAssignments)
             .Where(fundAmount => fundAmount.FundId == existingFundBalance.FundId)
             .ToList();

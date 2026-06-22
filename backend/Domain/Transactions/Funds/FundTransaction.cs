@@ -7,19 +7,22 @@ namespace Domain.Transactions.Funds;
 /// Entity class representing a fund transaction.
 /// </summary>
 /// <remarks>
-/// A fund transaction represents money moving between two funds. It can not affect accounts.
+/// A fund transaction represents money moving from one fund to one or more other funds.
+/// It can not affect accounts.
 /// </remarks>
 public class FundTransaction : Transaction
 {
-    /// <summary>
-    /// Debit Fund ID for this Fund Transaction
-    /// </summary>
-    public FundId DebitFundId { get; private set; }
+    private readonly List<FundTransactionDestination> _destinations = [];
 
     /// <summary>
-    /// Credit Fund ID for this Fund Transaction
+    /// Source for this Fund Transaction
     /// </summary>
-    public FundId CreditFundId { get; private set; }
+    public FundTransactionSource Source { get; private set; }
+
+    /// <summary>
+    /// Destinations for this Fund Transaction
+    /// </summary>
+    public IReadOnlyCollection<FundTransactionDestination> Destinations => _destinations;
 
     /// <inheritdoc/>
     public override IEnumerable<AccountId> GetAllAffectedAccountIds() => [];
@@ -34,7 +37,7 @@ public class FundTransaction : Transaction
         {
             return [];
         }
-        return [DebitFundId, CreditFundId];
+        return [Source.Fund.Id, .. Destinations.Select(destination => destination.Fund.Id)];
     }
 
     /// <summary>
@@ -43,8 +46,22 @@ public class FundTransaction : Transaction
     internal FundTransaction(CreateFundTransactionRequest request, int sequence)
         : base(request, sequence, TransactionType.Fund)
     {
-        DebitFundId = request.DebitFund.Id;
-        CreditFundId = request.CreditFund.Id;
+        Source = request.Source;
+        UpdateFundDestinations(request.Destinations);
+    }
+
+    /// <summary>
+    /// Updates the fund transaction source for this fund transaction.
+    /// </summary>
+    internal void UpdateFundSource(FundTransactionSource source) => Source = source;
+
+    /// <summary>
+    /// Updates the fund transaction destinations for this fund transaction.
+    /// </summary>
+    internal void UpdateFundDestinations(IReadOnlyCollection<FundTransactionDestination> destinations)
+    {
+        _destinations.Clear();
+        _destinations.AddRange(destinations);
     }
 
     /// <summary>
@@ -53,8 +70,7 @@ public class FundTransaction : Transaction
     protected FundTransaction()
         : base()
     {
-        DebitFundId = null!;
-        CreditFundId = null!;
+        Source = null!;
     }
 
     /// <inheritdoc/>
@@ -67,15 +83,16 @@ public class FundTransaction : Transaction
     protected override FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse)
     {
         FundBalance newBalance = existingFundBalance;
-        if (existingFundBalance.FundId == DebitFundId)
+        if (existingFundBalance.FundId == Source.Fund.Id)
         {
             newBalance = newBalance.AddNewPendingAmountAssigned(reverse ? Amount : -Amount);
             newBalance = newBalance.PostPendingAmountAssigned(reverse ? Amount : -Amount);
         }
-        else if (existingFundBalance.FundId == CreditFundId)
+        FundTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Fund.Id == existingFundBalance.FundId);
+        if (destination != null)
         {
-            newBalance = newBalance.AddNewPendingAmountAssigned(reverse ? -Amount : Amount);
-            newBalance = newBalance.PostPendingAmountAssigned(reverse ? -Amount : Amount);
+            newBalance = newBalance.AddNewPendingAmountAssigned(reverse ? -destination.Amount : destination.Amount);
+            newBalance = newBalance.PostPendingAmountAssigned(reverse ? -destination.Amount : destination.Amount);
         }
         return newBalance;
     }

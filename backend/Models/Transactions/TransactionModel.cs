@@ -54,29 +54,61 @@ public abstract class TransactionModel
 }
 
 /// <summary>
+/// Model representing the source of a spending transaction response.
+/// </summary>
+public sealed class SpendingTransactionSourceModel
+{
+    /// <summary>
+    /// Account for the source.
+    /// </summary>
+    public required TransactionAccountModel Account { get; init; }
+}
+
+/// <summary>
+/// Model representing a destination of a spending transaction response.
+/// </summary>
+public sealed class SpendingTransactionDestinationModel
+{
+    /// <summary>
+    /// Optional account for the destination.
+    /// </summary>
+    public TransactionAccountModel? Account { get; init; }
+
+    /// <summary>
+    /// Optional location for the destination.
+    /// </summary>
+    public string? Location { get; init; }
+
+    /// <summary>
+    /// Amount directed to this destination.
+    /// </summary>
+    public required decimal Amount { get; init; }
+
+    /// <summary>
+    /// Posted date for this destination.
+    /// </summary>
+    public required DateOnly? PostedDate { get; init; }
+
+    /// <summary>
+    /// Fund assignments for this destination.
+    /// </summary>
+    public required IReadOnlyCollection<TransactionFundModel> FundAssignments { get; init; }
+}
+
+/// <summary>
 /// Model representing a spending transaction.
 /// </summary>
 public sealed class SpendingTransactionModel : TransactionModel
 {
     /// <summary>
-    /// Debit account for the transaction.
+    /// Source for the spending transaction.
     /// </summary>
-    public required TransactionAccountModel DebitAccount { get; init; }
+    public required SpendingTransactionSourceModel Source { get; init; }
 
     /// <summary>
-    /// Optional credit account for the transaction.
+    /// Destinations for the spending transaction.
     /// </summary>
-    public TransactionAccountModel? CreditAccount { get; init; }
-
-    /// <summary>
-    /// Optional destination location for the transaction.
-    /// </summary>
-    public string? DestinationLocation { get; init; }
-
-    /// <summary>
-    /// Fund assignments for the transaction.
-    /// </summary>
-    public required IReadOnlyCollection<TransactionFundModel> FundAssignments { get; init; }
+    public required IReadOnlyCollection<SpendingTransactionDestinationModel> Destinations { get; init; }
 }
 
 /// <summary>
@@ -112,27 +144,53 @@ public sealed class IncomeDeductionModel
 }
 
 /// <summary>
-/// Model representing an income destination on an income transaction.
+/// Model representing the source of an income transaction response.
 /// </summary>
-public sealed class IncomeDestinationModel
+public sealed class IncomeTransactionSourceModel
 {
     /// <summary>
-    /// Destination account for the income transaction.
+    /// Optional account for the source.
+    /// </summary>
+    public TransactionAccountModel? Account { get; init; }
+
+    /// <summary>
+    /// Optional location for the source.
+    /// </summary>
+    public string? Location { get; init; }
+
+    /// <summary>
+    /// Income lines for the source.
+    /// </summary>
+    public required IReadOnlyCollection<IncomeLineModel> IncomeLines { get; init; }
+
+    /// <summary>
+    /// Income deductions for the source.
+    /// </summary>
+    public required IReadOnlyCollection<IncomeDeductionModel> IncomeDeductions { get; init; }
+}
+
+/// <summary>
+/// Model representing a destination of an income transaction response.
+/// </summary>
+public sealed class IncomeTransactionDestinationModel
+{
+    /// <summary>
+    /// Account for the destination.
     /// </summary>
     public required TransactionAccountModel Account { get; init; }
 
     /// <summary>
-    /// Amount directed to the destination account.
+    /// Amount directed to this destination.
     /// </summary>
     public required decimal Amount { get; init; }
 
     /// <summary>
-    /// Posted date for the destination account.
+    /// Posted date for this destination.
     /// </summary>
     public required DateOnly? PostedDate { get; init; }
 
     /// <summary>
-    /// Fund assignments for the destination account.
+    /// Fund assignments for this destination.
     /// </summary>
     public required IReadOnlyCollection<TransactionFundModel> FundAssignments { get; init; }
 }
@@ -143,34 +201,61 @@ public sealed class IncomeDestinationModel
 public sealed class IncomeTransactionModel : TransactionModel
 {
     /// <summary>
-    /// Optional source account for the transaction.
+    /// Source for the income transaction.
     /// </summary>
-    public TransactionAccountModel? SourceAccount { get; init; }
+    public required IncomeTransactionSourceModel Source { get; init; }
 
     /// <summary>
-    /// Optional source location for the transaction.
+    /// Total tracked amount for the income transaction.
     /// </summary>
-    public string? SourceLocation { get; init; }
+    public required decimal TrackedAmount { get; init; }
 
     /// <summary>
-    /// Total tracked income amount for the transaction.
+    /// Destinations for the income transaction.
     /// </summary>
-    public required decimal TrackedIncomeAmount { get; init; }
+    public required IReadOnlyCollection<IncomeTransactionDestinationModel> Destinations { get; init; }
+}
+
+/// <summary>
+/// Model representing the source of an account transaction response.
+/// </summary>
+public sealed class AccountTransactionSourceModel
+{
+    /// <summary>
+    /// Optional account for the source.
+    /// </summary>
+    public TransactionAccountModel? Account { get; init; }
 
     /// <summary>
-    /// Income lines for the transaction.
+    /// Optional location for the source.
     /// </summary>
-    public required IReadOnlyCollection<IncomeLineModel> IncomeLines { get; init; }
+    public string? Location { get; init; }
+}
+
+/// <summary>
+/// Model representing a destination of an account transaction response.
+/// </summary>
+public sealed class AccountTransactionDestinationModel
+{
+    /// <summary>
+    /// Optional account for the destination.
+    /// </summary>
+    public TransactionAccountModel? Account { get; init; }
 
     /// <summary>
-    /// Income deductions for the transaction.
+    /// Optional location for the destination.
     /// </summary>
-    public required IReadOnlyCollection<IncomeDeductionModel> IncomeDeductions { get; init; }
+    public string? Location { get; init; }
 
     /// <summary>
-    /// Income destinations for the transaction.
+    /// Amount directed to this destination.
     /// </summary>
-    public required IReadOnlyCollection<IncomeDestinationModel> IncomeDestinations { get; init; }
+    public required decimal Amount { get; init; }
+
+    /// <summary>
+    /// Posted date for this destination.
+    /// </summary>
+    public required DateOnly? PostedDate { get; init; }
 }
 
 /// <summary>
@@ -179,14 +264,36 @@ public sealed class IncomeTransactionModel : TransactionModel
 public sealed class AccountTransactionModel : TransactionModel
 {
     /// <summary>
-    /// Optional debit account for the transaction.
+    /// Source for the account transaction.
     /// </summary>
-    public TransactionAccountModel? DebitAccount { get; init; }
+    public required AccountTransactionSourceModel Source { get; init; }
 
     /// <summary>
-    /// Optional credit account for the transaction.
+    /// Destinations for the account transaction.
     /// </summary>
-    public TransactionAccountModel? CreditAccount { get; init; }
+    public required IReadOnlyCollection<AccountTransactionDestinationModel> Destinations { get; init; }
+}
+
+/// <summary>
+/// Model representing the source of a fund transaction response.
+/// </summary>
+public sealed class FundTransactionSourceModel
+{
+    /// <summary>
+    /// Fund for the source.
+    /// </summary>
+    public required TransactionFundModel Fund { get; init; }
+}
+
+/// <summary>
+/// Model representing a destination of a fund transaction response.
+/// </summary>
+public sealed class FundTransactionDestinationModel
+{
+    /// <summary>
+    /// Fund for the destination.
+    /// </summary>
+    public required TransactionFundModel Fund { get; init; }
 }
 
 /// <summary>
@@ -195,12 +302,12 @@ public sealed class AccountTransactionModel : TransactionModel
 public sealed class FundTransactionModel : TransactionModel
 {
     /// <summary>
-    /// Debit fund for the transaction.
+    /// Source for the fund transaction.
     /// </summary>
-    public required TransactionFundModel DebitFund { get; init; }
+    public required FundTransactionSourceModel Source { get; init; }
 
     /// <summary>
-    /// Credit fund for the transaction.
+    /// Destinations for the fund transaction.
     /// </summary>
-    public required TransactionFundModel CreditFund { get; init; }
+    public required IReadOnlyCollection<FundTransactionDestinationModel> Destinations { get; init; }
 }

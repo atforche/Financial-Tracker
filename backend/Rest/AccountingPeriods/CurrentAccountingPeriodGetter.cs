@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Domain.Accounts;
 using Domain.Transactions;
 using Domain.Transactions.Income;
 using Domain.Transactions.Spending;
@@ -30,7 +31,7 @@ public class CurrentAccountingPeriodGetter(
         }
 
         var transactions = transactionRepository.GetAllByAccountingPeriod(accountingPeriod.Id).ToList();
-        (decimal totalIncome, decimal totalSpending) = GetTransactionTotals(transactions);
+        (IncomeAmountModel totalIncome, decimal totalSpending) = GetTransactionTotals(transactions);
         List<TransactionModel> transactionModels = SortTransactions(
             transactions.Select(transactionConverter.ToModel).ToList(),
             request.TransactionSort);
@@ -56,7 +57,12 @@ public class CurrentAccountingPeriodGetter(
             Items = [],
             TotalCount = 0,
         },
-        TotalIncome = 0,
+        TotalIncome = new IncomeAmountModel
+        {
+            Total = 0,
+            Tracked = 0,
+            Untracked = 0
+        },
         TotalSpending = 0,
     };
 
@@ -66,17 +72,25 @@ public class CurrentAccountingPeriodGetter(
         .Skip(request.TransactionOffset ?? 0)
         .Take(request.TransactionLimit ?? int.MaxValue);
 
-    private static (decimal TotalIncome, decimal TotalSpending) GetTransactionTotals(
+    private static (IncomeAmountModel TotalIncome, decimal TotalSpending) GetTransactionTotals(
         IReadOnlyCollection<Transaction> transactions)
     {
-        decimal totalIncome = 0;
+        decimal trackedIncome = 0;
+        decimal untrackedIncome = 0;
         decimal totalSpending = 0;
 
         foreach (Transaction transaction in transactions)
         {
-            if (transaction is IncomeTransaction)
+            if (transaction is IncomeTransaction incomeTransaction)
             {
-                totalIncome += transaction.Amount;
+                if (incomeTransaction.Source.Account != null && incomeTransaction.Source.Account.Type.IsTracked())
+                {
+                    trackedIncome += transaction.Amount;
+                }
+                else
+                {
+                    untrackedIncome += transaction.Amount;
+                }
             }
             else if (transaction is SpendingTransaction)
             {
@@ -84,7 +98,14 @@ public class CurrentAccountingPeriodGetter(
             }
         }
 
-        return (totalIncome, totalSpending);
+        return (
+            new IncomeAmountModel
+            {
+                Total = trackedIncome + untrackedIncome,
+                Tracked = trackedIncome,
+                Untracked = untrackedIncome
+            },
+            totalSpending);
     }
 
     private static List<TransactionModel> SortTransactions(
@@ -149,19 +170,19 @@ public class CurrentAccountingPeriodGetter(
 
     private static string? GetSource(TransactionModel transaction) => transaction switch
     {
-        SpendingTransactionModel spendingTransaction => spendingTransaction.DebitAccount.AccountName,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.SourceAccount?.AccountName ?? incomeTransaction.SourceLocation,
-        AccountTransactionModel accountTransaction => accountTransaction.DebitAccount?.AccountName,
-        FundTransactionModel fundTransaction => fundTransaction.DebitFund?.FundName,
+        SpendingTransactionModel spendingTransaction => spendingTransaction.Source.Account.AccountName,
+        IncomeTransactionModel incomeTransaction => incomeTransaction.Source.Account?.AccountName ?? incomeTransaction.Source.Location,
+        AccountTransactionModel accountTransaction => accountTransaction.Source.Account?.AccountName ?? accountTransaction.Source.Location,
+        FundTransactionModel fundTransaction => fundTransaction.Source.Fund?.FundName,
         _ => null,
     };
 
     private static string? GetDestination(TransactionModel transaction) => transaction switch
     {
-        SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName ?? spendingTransaction.DestinationLocation,
-        IncomeTransactionModel incomeTransaction => string.Join(", ", incomeTransaction.IncomeDestinations.Select(destination => destination.Account.AccountName).Distinct(StringComparer.OrdinalIgnoreCase)),
-        AccountTransactionModel accountTransaction => accountTransaction.CreditAccount?.AccountName,
-        FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,
+        SpendingTransactionModel spendingTransaction => string.Join(", ", spendingTransaction.Destinations.Select(destination => destination.Account?.AccountName ?? destination.Location).Distinct(StringComparer.OrdinalIgnoreCase)),
+        IncomeTransactionModel incomeTransaction => string.Join(", ", incomeTransaction.Destinations.Select(destination => destination.Account?.AccountName).Distinct(StringComparer.OrdinalIgnoreCase)),
+        AccountTransactionModel accountTransaction => string.Join(", ", accountTransaction.Destinations.Select(destination => destination.Account?.AccountName ?? destination.Location).Distinct(StringComparer.OrdinalIgnoreCase)),
+        FundTransactionModel fundTransaction => string.Join(", ", fundTransaction.Destinations.Select(destination => destination.Fund?.FundName).Distinct(StringComparer.OrdinalIgnoreCase)),
         _ => null,
     };
 }

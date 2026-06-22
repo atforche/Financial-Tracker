@@ -6,17 +6,12 @@ namespace Domain.Transactions.Income;
 public record UpdateIncomeTransactionRequest : UpdateTransactionRequest
 {
     /// <summary>
-    /// Income lines for this income transaction.
+    /// Source for this Income Transaction
     /// </summary>
-    public required IReadOnlyCollection<IncomeLine> IncomeLines { get; init; }
+    public required IncomeTransactionSource Source { get; init; }
 
     /// <summary>
-    /// Income deductions for this income transaction.
+    /// Destinations for this Income Transaction
     /// </summary>
-    public required IReadOnlyCollection<IncomeDeduction> IncomeDeductions { get; init; }
-
-    /// <summary>
-    /// Income destinations for this income transaction.
-    /// </summary>
-    public required IReadOnlyCollection<IncomeDestination> IncomeDestinations { get; init; }
+    public required IReadOnlyCollection<IncomeTransactionDestination> Destinations { get; init; }
 }

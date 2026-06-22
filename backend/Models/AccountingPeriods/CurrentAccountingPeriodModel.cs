@@ -20,7 +20,7 @@ public class CurrentAccountingPeriodModel
     /// <summary>
     /// Total income for the current Accounting Period.
     /// </summary>
-    public required decimal TotalIncome { get; init; }
+    public required IncomeAmountModel TotalIncome { get; init; }
 
     /// <summary>
     /// Total spending for the current Accounting Period.

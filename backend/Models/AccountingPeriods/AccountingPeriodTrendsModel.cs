@@ -20,7 +20,7 @@ public class AccountingPeriodTrendsModel
     /// <summary>
     /// Total income over the requested range.
     /// </summary>
-    public required decimal TotalIncome { get; init; }
+    public required IncomeAmountModel TotalIncome { get; init; }
 
     /// <summary>
     /// Total spending over the requested range.

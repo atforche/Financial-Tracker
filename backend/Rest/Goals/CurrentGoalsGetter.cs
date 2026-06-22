@@ -242,7 +242,7 @@ public class CurrentGoalsGetter(
             yield break;
         }
 
-        foreach (IncomeDestination destination in incomeTransaction.IncomeDestinations)
+        foreach (IncomeTransactionDestination destination in incomeTransaction.Destinations)
         {
             foreach (FundAmount fundAssignment in destination.FundAssignments)
             {
@@ -266,16 +266,19 @@ public class CurrentGoalsGetter(
             yield break;
         }
 
-        foreach (FundAmount fundAssignment in spendingTransaction.FundAssignments)
+        foreach (SpendingTransactionDestination destination in spendingTransaction.Destinations)
         {
-            yield return new CurrentGoalBalanceEventRow(
-                fundAssignment.FundId.Value,
-                spendingTransaction.Date,
-                true,
-                fundAssignment.Amount,
-                transaction.Date,
-                transaction.Sequence,
-                transaction.Id.Value);
+            foreach (FundAmount fundAssignment in destination.FundAssignments)
+            {
+                yield return new CurrentGoalBalanceEventRow(
+                    fundAssignment.FundId.Value,
+                    spendingTransaction.Date,
+                    true,
+                    fundAssignment.Amount,
+                    transaction.Date,
+                    transaction.Sequence,
+                    transaction.Id.Value);
+            }
         }
     }
 

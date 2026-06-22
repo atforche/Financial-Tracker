@@ -310,12 +310,10 @@ public class TransactionTrendsGetter(
         {
             filteredTransactions = filteredTransactions.Where(transaction => GetAccountNamesForTransaction(transaction).Any(accountNames.Contains));
         }
-
         if (fundNames != null)
         {
             filteredTransactions = filteredTransactions.Where(transaction => GetFundNamesForTransaction(transaction).Any(fundNames.Contains));
         }
-
         return filteredTransactions.ToList();
     }
 
@@ -395,35 +393,41 @@ public class TransactionTrendsGetter(
 
     private static IEnumerable<string> GetAccountNamesForTransaction(TransactionModel transaction) => transaction switch
     {
-        SpendingTransactionModel spendingTransaction => new List<string?> { spendingTransaction.DebitAccount.AccountName, spendingTransaction.CreditAccount?.AccountName }.Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name!),
-        IncomeTransactionModel incomeTransaction => new List<string?> { incomeTransaction.SourceAccount?.AccountName }.Concat(incomeTransaction.IncomeDestinations.Select(destination => destination.Account.AccountName)).Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name!),
-        AccountTransactionModel accountTransaction => new List<string?> { accountTransaction.DebitAccount?.AccountName, accountTransaction.CreditAccount?.AccountName }.Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name!),
+        SpendingTransactionModel spendingTransaction => spendingTransaction.Destinations.Select(destination => destination.Account?.AccountName)
+            .Append(spendingTransaction.Source.Account?.AccountName)
+            .Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name!),
+        IncomeTransactionModel incomeTransaction => incomeTransaction.Destinations.Select(destination => destination.Account?.AccountName)
+            .Append(incomeTransaction.Source.Account?.AccountName)
+            .Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name!),
+        AccountTransactionModel accountTransaction => accountTransaction.Destinations.Select(destination => destination.Account?.AccountName)
+            .Append(accountTransaction.Source.Account?.AccountName)
+            .Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name!),
         _ => [],
     };
 
     private static IEnumerable<string> GetFundNamesForTransaction(TransactionModel transaction) => transaction switch
     {
-        SpendingTransactionModel spendingTransaction => spendingTransaction.FundAssignments.Select(fundAssignment => fundAssignment.FundName),
-        IncomeTransactionModel incomeTransaction => incomeTransaction.IncomeDestinations.SelectMany(destination => destination.FundAssignments).Select(fundAssignment => fundAssignment.FundName),
-        FundTransactionModel fundTransaction => [fundTransaction.DebitFund.FundName, fundTransaction.CreditFund.FundName],
+        SpendingTransactionModel spendingTransaction => spendingTransaction.Destinations.SelectMany(destination => destination.FundAssignments).Select(fundAssignment => fundAssignment.FundName),
+        IncomeTransactionModel incomeTransaction => incomeTransaction.Destinations.SelectMany(destination => destination.FundAssignments).Select(fundAssignment => fundAssignment.FundName),
+        FundTransactionModel fundTransaction => fundTransaction.Destinations.Select(destination => destination.Fund.FundName).Append(fundTransaction.Source.Fund.FundName),
         _ => [],
     };
 
     private static string? GetSource(TransactionModel transaction) => transaction switch
     {
-        SpendingTransactionModel spendingTransaction => spendingTransaction.DebitAccount.AccountName,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.SourceAccount?.AccountName ?? incomeTransaction.SourceLocation,
-        AccountTransactionModel accountTransaction => accountTransaction.DebitAccount?.AccountName,
-        FundTransactionModel fundTransaction => fundTransaction.DebitFund?.FundName,
+        SpendingTransactionModel spendingTransaction => spendingTransaction.Source.Account.AccountName,
+        IncomeTransactionModel incomeTransaction => incomeTransaction.Source.Account?.AccountName ?? incomeTransaction.Source.Location,
+        AccountTransactionModel accountTransaction => accountTransaction.Source.Account?.AccountName ?? accountTransaction.Source.Location,
+        FundTransactionModel fundTransaction => fundTransaction.Source.Fund?.FundName,
         _ => null,
     };
 
     private static string? GetDestination(TransactionModel transaction) => transaction switch
     {
-        SpendingTransactionModel spendingTransaction => spendingTransaction.CreditAccount?.AccountName ?? spendingTransaction.DestinationLocation,
-        IncomeTransactionModel incomeTransaction => string.Join(", ", incomeTransaction.IncomeDestinations.Select(destination => destination.Account.AccountName).Distinct(StringComparer.OrdinalIgnoreCase)),
-        AccountTransactionModel accountTransaction => accountTransaction.CreditAccount?.AccountName,
-        FundTransactionModel fundTransaction => fundTransaction.CreditFund?.FundName,
+        SpendingTransactionModel spendingTransaction => string.Join(", ", spendingTransaction.Destinations.Select(destination => destination.Account?.AccountName ?? destination.Location).Distinct(StringComparer.OrdinalIgnoreCase)),
+        IncomeTransactionModel incomeTransaction => string.Join(", ", incomeTransaction.Destinations.Select(destination => destination.Account?.AccountName).Distinct(StringComparer.OrdinalIgnoreCase)),
+        AccountTransactionModel accountTransaction => string.Join(", ", accountTransaction.Destinations.Select(destination => destination.Account?.AccountName ?? destination.Location).Distinct(StringComparer.OrdinalIgnoreCase)),
+        FundTransactionModel fundTransaction => string.Join(", ", fundTransaction.Destinations.Select(destination => destination.Fund?.FundName).Distinct(StringComparer.OrdinalIgnoreCase)),
         _ => null,
     };
 }

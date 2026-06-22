@@ -27,7 +27,7 @@ public sealed class TransactionConverter(
     TransactionRepository transactionRepository)
 {
     /// <summary>
-    /// Maps the provided Transaction to a Transaction Model
+    /// Maps the provided Transaction to a Transaction Model.
     /// </summary>
     public TransactionModel ToModel(Transaction transaction)
         => transaction switch
@@ -42,12 +42,22 @@ public sealed class TransactionConverter(
                 Sequence = transaction.Sequence,
                 Description = transaction.Description,
                 Amount = transaction.Amount,
-                DebitAccount = BuildAccountModel(transaction, spendingTransaction.DebitAccountId, spendingTransaction.DebitPostedDate, TransactionAccountTypeModel.Debit),
-                CreditAccount = spendingTransaction.CreditAccountId != null
-                    ? BuildAccountModel(transaction, spendingTransaction.CreditAccountId, spendingTransaction.CreditPostedDate, TransactionAccountTypeModel.Credit)
-                    : null,
-                DestinationLocation = spendingTransaction.DestinationLocation,
-                FundAssignments = spendingTransaction.FundAssignments.Select(fundAmount => BuildFundModel(transaction, fundAmount)).ToList(),
+                Source = new SpendingTransactionSourceModel
+                {
+                    Account = BuildAccountModel(transaction, spendingTransaction.Source.Account.Id, spendingTransaction.Source.PostedDate, TransactionAccountTypeModel.Source),
+                },
+                Destinations = spendingTransaction.Destinations
+                    .Select(destination => new SpendingTransactionDestinationModel
+                    {
+                        Account = destination.Account != null
+                            ? BuildAccountModel(transaction, destination.Account.Id, destination.PostedDate, TransactionAccountTypeModel.Destination)
+                            : null,
+                        Location = destination.Location,
+                        Amount = destination.Amount,
+                        PostedDate = destination.PostedDate,
+                        FundAssignments = destination.FundAssignments.Select(fundAmount => BuildFundModel(transaction, fundAmount)).ToList(),
+                    })
+                    .ToList(),
             },
             IncomeTransaction incomeTransaction => new IncomeTransactionModel
             {
@@ -59,29 +69,32 @@ public sealed class TransactionConverter(
                 Sequence = transaction.Sequence,
                 Description = transaction.Description,
                 Amount = transaction.Amount,
-                SourceAccount = incomeTransaction.SourceAccountId != null
-                    ? BuildAccountModel(transaction, incomeTransaction.SourceAccountId, incomeTransaction.SourcePostedDate, TransactionAccountTypeModel.Debit)
-                    : null,
-                SourceLocation = incomeTransaction.SourceLocation,
-                TrackedIncomeAmount = incomeTransaction.TrackedIncomeAmount,
-                IncomeLines = incomeTransaction.IncomeLines
-                    .Select(line => new IncomeLineModel
+                Source = new IncomeTransactionSourceModel
+                {
+                    Account = incomeTransaction.Source.Account != null
+                        ? BuildAccountModel(transaction, incomeTransaction.Source.Account.Id, incomeTransaction.Source.PostedDate, TransactionAccountTypeModel.Source)
+                        : null,
+                    Location = incomeTransaction.Source.Location,
+                    IncomeLines = incomeTransaction.Source.IncomeLines
+                        .Select(line => new IncomeLineModel
+                        {
+                            Description = line.Description,
+                            Amount = line.Amount,
+                        })
+                        .ToList(),
+                    IncomeDeductions = incomeTransaction.Source.IncomeDeductions
+                        .Select(deduction => new IncomeDeductionModel
+                        {
+                            Description = deduction.Description,
+                            Amount = deduction.Amount,
+                        })
+                        .ToList(),
+                },
+                TrackedAmount = incomeTransaction.TrackedAmount,
+                Destinations = incomeTransaction.Destinations
+                    .Select(destination => new IncomeTransactionDestinationModel
                     {
-                        Description = line.Description,
-                        Amount = line.Amount,
-                    })
-                    .ToList(),
-                IncomeDeductions = incomeTransaction.IncomeDeductions
-                    .Select(deduction => new IncomeDeductionModel
-                    {
-                        Description = deduction.Description,
-                        Amount = deduction.Amount,
-                    })
-                    .ToList(),
-                IncomeDestinations = incomeTransaction.IncomeDestinations
-                    .Select(destination => new IncomeDestinationModel
-                    {
-                        Account = BuildAccountModel(transaction, destination.Account.Id, destination.PostedDate, TransactionAccountTypeModel.Credit),
+                        Account = BuildAccountModel(transaction, destination.Account.Id, destination.PostedDate, TransactionAccountTypeModel.Destination),
                         Amount = destination.Amount,
                         PostedDate = destination.PostedDate,
                         FundAssignments = destination.FundAssignments.Select(fundAmount => BuildFundModel(transaction, fundAmount)).ToList(),
@@ -98,12 +111,24 @@ public sealed class TransactionConverter(
                 Sequence = transaction.Sequence,
                 Description = transaction.Description,
                 Amount = transaction.Amount,
-                DebitAccount = accountTransaction.DebitAccountId != null
-                    ? BuildAccountModel(transaction, accountTransaction.DebitAccountId, accountTransaction.DebitPostedDate, TransactionAccountTypeModel.Debit)
-                    : null,
-                CreditAccount = accountTransaction.CreditAccountId != null
-                    ? BuildAccountModel(transaction, accountTransaction.CreditAccountId, accountTransaction.CreditPostedDate, TransactionAccountTypeModel.Credit)
-                    : null,
+                Source = new AccountTransactionSourceModel
+                {
+                    Account = accountTransaction.Source.Account != null
+                        ? BuildAccountModel(transaction, accountTransaction.Source.Account.Id, accountTransaction.Source.PostedDate, TransactionAccountTypeModel.Source)
+                        : null,
+                    Location = accountTransaction.Source.Location,
+                },
+                Destinations = accountTransaction.Destinations
+                    .Select(destination => new AccountTransactionDestinationModel
+                    {
+                        Account = destination.Account != null
+                            ? BuildAccountModel(transaction, destination.Account.Id, destination.PostedDate, TransactionAccountTypeModel.Destination)
+                            : null,
+                        Location = destination.Location,
+                        Amount = destination.Amount,
+                        PostedDate = destination.PostedDate,
+                    })
+                    .ToList(),
             },
             FundTransaction fundTransaction => new FundTransactionModel
             {
@@ -115,29 +140,34 @@ public sealed class TransactionConverter(
                 Sequence = transaction.Sequence,
                 Description = transaction.Description,
                 Amount = transaction.Amount,
-                DebitFund = BuildFundModel(transaction, new FundAmount
+                Source = new FundTransactionSourceModel
                 {
-                    FundId = fundTransaction.DebitFundId,
-                    Amount = transaction.Amount
-                }),
-                CreditFund = BuildFundModel(transaction, new FundAmount
-                {
-                    FundId = fundTransaction.CreditFundId,
-                    Amount = transaction.Amount
-                }),
+                    Fund = BuildFundModel(transaction, new FundAmount
+                    {
+                        FundId = fundTransaction.Source.Fund.Id,
+                        Amount = transaction.Amount
+                    })
+                },
+                Destinations = fundTransaction.Destinations
+                    .Select(destination => new FundTransactionDestinationModel
+                    {
+                        Fund = BuildFundModel(transaction, new FundAmount
+                        {
+                            FundId = destination.Fund.Id,
+                            Amount = destination.Amount,
+                        })
+                    })
+                    .ToList(),
             },
             _ => throw new InvalidOperationException($"Unrecognized transaction type: {transaction.GetType().Name}")
         };
 
     /// <summary>
-    /// Attempts to map the provided ID to a Transaction
+    /// Attempts to map the provided ID to a Transaction.
     /// </summary>
     public bool TryToDomain(Guid transactionId, [NotNullWhen(true)] out Transaction? transaction) =>
         transactionRepository.TryGetById(transactionId, out transaction);
 
-    /// <summary>
-    /// Builds a single TransactionAccountModel for the given account on the given transaction
-    /// </summary>
     private TransactionAccountModel BuildAccountModel(
         Transaction transaction,
         AccountId accountId,
@@ -157,9 +187,6 @@ public sealed class TransactionConverter(
         };
     }
 
-    /// <summary>
-    /// Builds a single TransactionFundModel for the given fund.
-    /// </summary>
     private TransactionFundModel BuildFundModel(Transaction transaction, FundAmount fundAmount)
     {
         Fund fund = fundRepository.GetById(fundAmount.FundId);

@@ -13,7 +13,6 @@ public class SpendingTransactionService(
     AccountBalanceService accountBalanceService,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
-    IAccountRepository accountRepository,
     IAccountingPeriodRepository accountingPeriodRepository,
     IFundRepository fundRepository,
     ITransactionRepository transactionRepository) :
@@ -34,10 +33,7 @@ public class SpendingTransactionService(
     {
         transaction = null;
 
-        if (!ValidateCreate(
-                request,
-                new List<Account?> { request.DebitAccount, request.CreditAccount }.OfType<Account>().ToList(),
-                out exceptions))
+        if (!ValidateCreate(request, GetAccounts(request), out exceptions))
         {
             return false;
         }
@@ -55,20 +51,18 @@ public class SpendingTransactionService(
         UpdateSpendingTransactionRequest request,
         out IEnumerable<Exception> exceptions)
     {
-        Account debitAccount = accountRepository.GetById(transaction.DebitAccountId);
-        Account? creditAccount = transaction.CreditAccountId != null ? accountRepository.GetById(transaction.CreditAccountId) : null;
-        if (!ValidateUpdate(
-                transaction,
-                request,
-                new List<Account?> { debitAccount, creditAccount }.OfType<Account>().ToList(),
-                out exceptions))
+        if (!ValidateUpdate(transaction, request, GetAccounts(transaction, request), out exceptions))
         {
             return false;
         }
         UpdateTransaction(
             transaction,
             request,
-            () => transaction.UpdateFundAssignments(request.FundAssignments));
+            () =>
+            {
+                transaction.UpdateSpendingSource(request.Source);
+                transaction.UpdateSpendingDestinations(request.Destinations);
+            });
         return true;
     }
 
@@ -85,14 +79,7 @@ public class SpendingTransactionService(
         {
             return false;
         }
-        if (accountId == transaction.DebitAccountId)
-        {
-            transaction.DebitPostedDate = postedDate;
-        }
-        else if (accountId == transaction.CreditAccountId)
-        {
-            transaction.CreditPostedDate = postedDate;
-        }
+        transaction.SetPostedDate(accountId, postedDate);
         PostTransaction(transaction, accountId);
         return true;
     }
@@ -107,8 +94,7 @@ public class SpendingTransactionService(
             return false;
         }
         UnpostTransaction(transaction);
-        transaction.DebitPostedDate = null;
-        transaction.CreditPostedDate = null;
+        transaction.ClearPostedDates();
         return true;
     }
 
@@ -136,16 +122,24 @@ public class SpendingTransactionService(
         _ = ValidateCreate(
             request,
             accounts,
-            request.FundAssignments.Select(fundAmount => fundRepository.GetById(fundAmount.FundId)).ToList(),
+            GetFunds(request),
             out exceptions);
 
-        if (!ValidateAccount(request, out IEnumerable<Exception> accountExceptions))
+        if (request.Source.PostedDate.HasValue || request.Destinations.Any(destination => destination.PostedDate.HasValue))
+        {
+            exceptions = exceptions.Append(new InvalidDateException("Posted dates cannot be set directly when creating a spending transaction"));
+        }
+        if (!ValidateAccount(request.Source, request.Destinations, out IEnumerable<Exception> accountExceptions))
         {
             exceptions = exceptions.Concat(accountExceptions);
         }
-        if (!ValidateFundAssignments(request.Amount, request.FundAssignments, out IEnumerable<Exception> fundAssignmentExceptions))
+        if (!ValidateAmounts(request.Amount, request.Destinations, out IEnumerable<Exception> amountExceptions))
         {
-            exceptions = exceptions.Concat(fundAssignmentExceptions);
+            exceptions = exceptions.Concat(amountExceptions);
+        }
+        if (!ValidateDestinationFundAssignments(request.Destinations, out IEnumerable<Exception> destinationFundAssignmentExceptions))
+        {
+            exceptions = exceptions.Concat(destinationFundAssignmentExceptions);
         }
         return !exceptions.Any();
     }
@@ -159,15 +153,27 @@ public class SpendingTransactionService(
         IReadOnlyCollection<Account> accounts,
         out IEnumerable<Exception> exceptions)
     {
-        _ = base.ValidateUpdate(transaction, request, accounts, out exceptions);
+        _ = ValidateUpdate(transaction, request, accounts, GetFunds(request), out exceptions);
 
-        if (transaction.DebitPostedDate.HasValue || transaction.CreditPostedDate.HasValue)
+        if (transaction.Source.PostedDate.HasValue || transaction.Destinations.Any(destination => destination.PostedDate.HasValue))
         {
             exceptions = exceptions.Append(new UnableToUpdateException("Transaction has already been posted and cannot be updated"));
         }
-        if (!ValidateFundAssignments(request.Amount, request.FundAssignments, out IEnumerable<Exception> fundAssignmentExceptions))
+        if (request.Source.PostedDate.HasValue || request.Destinations.Any(destination => destination.PostedDate.HasValue))
         {
-            exceptions = exceptions.Concat(fundAssignmentExceptions);
+            exceptions = exceptions.Append(new UnableToUpdateException("Posted dates cannot be set directly when updating a spending transaction"));
+        }
+        if (!ValidateAccount(request.Source, request.Destinations, out IEnumerable<Exception> accountExceptions))
+        {
+            exceptions = exceptions.Concat(accountExceptions);
+        }
+        if (!ValidateAmounts(request.Amount, request.Destinations, out IEnumerable<Exception> amountExceptions))
+        {
+            exceptions = exceptions.Concat(amountExceptions);
+        }
+        if (!ValidateDestinationFundAssignments(request.Destinations, out IEnumerable<Exception> destinationFundAssignmentExceptions))
+        {
+            exceptions = exceptions.Concat(destinationFundAssignmentExceptions);
         }
         return !exceptions.Any();
     }
@@ -196,30 +202,112 @@ public class SpendingTransactionService(
     /// <summary>
     /// Validates the Account for this Spending Transaction
     /// </summary>
-    private static bool ValidateAccount(CreateSpendingTransactionRequest request, out IEnumerable<Exception> exceptions)
+    private static bool ValidateAccount(
+        SpendingTransactionSource source,
+        IReadOnlyCollection<SpendingTransactionDestination> destinations,
+        out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
-        if (!request.DebitAccount.Type.IsTracked())
+        if (!source.Account.Type.IsTracked())
         {
             exceptions = exceptions.Append(new InvalidAccountException("Spending Transactions must debit a tracked account"));
         }
-        if (request.CreditAccount?.Id == request.DebitAccount.Id)
+        foreach (SpendingTransactionDestination destination in destinations)
         {
-            exceptions = exceptions.Append(new InvalidAccountException("Debit and Credit Accounts cannot be the same"));
-        }
-        if (request.CreditAccount != null && request.CreditAccount.Type.IsTracked())
-        {
-            exceptions = exceptions.Append(new InvalidAccountException("Spending Transactions cannot credit a tracked account"));
-        }
-        if (request.DebitAccount == null && string.IsNullOrWhiteSpace(request.DestinationLocation))
-        {
-            exceptions = exceptions.Append(new InvalidAccountException("Spending Transactions must have either a Debit Account or a Destination Location"));
-        }
-        if (request.DebitAccount != null && !string.IsNullOrWhiteSpace(request.DestinationLocation))
-        {
-            exceptions = exceptions.Append(new InvalidAccountException("Spending Transactions cannot have both a Debit Account and a Destination Location"));
+            if (destination.Account == null && string.IsNullOrWhiteSpace(destination.Location))
+            {
+                exceptions = exceptions.Append(new InvalidAccountException("Spending Transactions must have either a Destination Account or a Destination Location"));
+            }
+            if (destination.Account != null && !string.IsNullOrWhiteSpace(destination.Location))
+            {
+                exceptions = exceptions.Append(new InvalidAccountException("Spending Transactions cannot have both a Destination Account and a Destination Location"));
+            }
+            if (destination.Account != null && destination.Account.Type.IsTracked())
+            {
+                exceptions = exceptions.Append(new InvalidAccountException("Spending Transactions cannot credit a tracked account"));
+            }
+            if (destination.Account?.Id == source.Account?.Id)
+            {
+                exceptions = exceptions.Append(new InvalidAccountException("Source and destination accounts cannot be the same"));
+            }
         }
         return !exceptions.Any();
     }
+
+    private static bool ValidateAmounts(
+        decimal amount,
+        IReadOnlyCollection<SpendingTransactionDestination> destinations,
+        out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (destinations.Count == 0)
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("Spending Transactions must have at least one spending destination"));
+        }
+        if (destinations.Any(destination => destination.Amount <= 0))
+        {
+            exceptions = exceptions.Append(new InvalidAmountException("Spending destination amounts must be positive"));
+        }
+        var destinationAccountIds = destinations
+            .Where(destination => destination.Account != null)
+            .Select(destination => destination.Account!.Id)
+            .ToList();
+        if (destinationAccountIds.Distinct().Count() != destinationAccountIds.Count)
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("Duplicate destination accounts are not allowed"));
+        }
+        var destinationLocations = destinations
+            .Where(destination => !string.IsNullOrWhiteSpace(destination.Location))
+            .Select(destination => destination.Location)
+            .ToList();
+        if (destinationLocations.Distinct().Count() != destinationLocations.Count)
+        {
+            exceptions = exceptions.Append(new InvalidAccountException("Duplicate destination locations are not allowed"));
+        }
+        if (destinations.Sum(destination => destination.Amount) != amount)
+        {
+            exceptions = exceptions.Append(new InvalidAmountException("Spending destination amounts must equal the transaction amount"));
+        }
+        return !exceptions.Any();
+    }
+
+    private bool ValidateDestinationFundAssignments(IReadOnlyCollection<SpendingTransactionDestination> destinations, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        foreach (SpendingTransactionDestination destination in destinations)
+        {
+            if (!ValidateFundAssignments(destination.Amount, destination.FundAssignments, out IEnumerable<Exception> fundAssignmentExceptions))
+            {
+                exceptions = exceptions.Concat(fundAssignmentExceptions);
+            }
+        }
+        return !exceptions.Any();
+    }
+
+    private static List<Account> GetAccounts(CreateSpendingTransactionRequest request) =>
+        new List<Account?> { request.Source.Account }
+            .Concat(request.Destinations.Select(destination => destination.Account))
+            .OfType<Account>()
+            .ToList();
+
+    private static List<Account> GetAccounts(SpendingTransaction transaction, UpdateSpendingTransactionRequest request) =>
+        new List<Account?> { transaction.Source.Account }
+            .Concat(request.Destinations.Select(destination => destination.Account))
+            .OfType<Account>()
+            .ToList();
+
+    private List<Fund> GetFunds(CreateSpendingTransactionRequest request) =>
+        request.Destinations
+            .SelectMany(destination => destination.FundAssignments)
+            .Select(fundAmount => fundRepository.GetById(fundAmount.FundId))
+            .ToList();
+
+    private List<Fund> GetFunds(UpdateSpendingTransactionRequest request) =>
+        request.Destinations
+            .SelectMany(destination => destination.FundAssignments)
+            .Select(fundAmount => fundRepository.GetById(fundAmount.FundId))
+            .ToList();
 }

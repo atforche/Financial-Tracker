@@ -15,49 +15,45 @@ namespace Domain.Transactions.Accounts;
 /// </remarks>
 public class AccountTransaction : Transaction
 {
-    /// <summary>
-    /// Debit Account ID for this Account Transaction
-    /// </summary>
-    public AccountId? DebitAccountId { get; private set; }
+    private readonly List<AccountTransactionDestination> _destinations = [];
 
     /// <summary>
-    /// Posted Date for the Debit Account of this Account Transaction
+    /// Source for this Account Transaction
     /// </summary>
-    public DateOnly? DebitPostedDate { get; internal set; }
+    public AccountTransactionSource Source { get; private set; }
 
     /// <summary>
-    /// Credit Account ID for this Account Transaction
+    /// Destinations for this Account Transaction
     /// </summary>
-    public AccountId? CreditAccountId { get; private set; }
-
-    /// <summary>
-    /// Posted Date for the Credit Account of this Account Transaction
-    /// </summary>
-    public DateOnly? CreditPostedDate { get; internal set; }
+    public IReadOnlyList<AccountTransactionDestination> Destinations => _destinations;
 
     /// <inheritdoc/>
     public override IEnumerable<AccountId> GetAllAffectedAccountIds()
     {
-        if (DebitAccountId != null)
+        if (Source.Account != null)
         {
-            yield return DebitAccountId;
+            yield return Source.Account.Id;
         }
-        if (CreditAccountId != null)
+        foreach (AccountId? accountId in Destinations.Select(d => d.Account?.Id))
         {
-            yield return CreditAccountId;
+            if (accountId != null)
+            {
+                yield return accountId;
+            }
         }
     }
 
     /// <inheritdoc/>
     public override DateOnly? GetPostedDateForAccount(AccountId accountId)
     {
-        if (accountId == DebitAccountId)
+        if (Source.Account != null && accountId == Source.Account.Id)
         {
-            return DebitPostedDate;
+            return Source.PostedDate;
         }
-        else if (accountId == CreditAccountId)
+        AccountTransactionDestination? destination = Destinations.FirstOrDefault(d => d.Account != null && d.Account.Id == accountId);
+        if (destination != null)
         {
-            return CreditPostedDate;
+            return destination.PostedDate;
         }
         return null;
     }
@@ -71,8 +67,48 @@ public class AccountTransaction : Transaction
     internal AccountTransaction(CreateAccountTransactionRequest request, int sequence)
         : base(request, sequence, TransactionType.Account)
     {
-        DebitAccountId = request.DebitAccount?.Id;
-        CreditAccountId = request.CreditAccount?.Id;
+        Source = request.Source;
+        UpdateAccountDestinations(request.Destinations);
+    }
+
+    /// <summary>
+    /// Updates the account transaction source for this account transaction.
+    /// </summary>
+    internal void UpdateAccountSource(AccountTransactionSource source) => Source = source;
+
+    /// <summary>
+    /// Updates the account transaction destinations for this account transaction.
+    /// </summary>
+    internal void UpdateAccountDestinations(IReadOnlyCollection<AccountTransactionDestination> destinations)
+    {
+        _destinations.Clear();
+        _destinations.AddRange(destinations);
+    }
+
+    /// <summary>
+    /// Sets the posted date for a specific account affected by this transaction.
+    /// </summary>
+    internal void SetPostedDate(AccountId accountId, DateOnly? postedDate)
+    {
+        if (accountId == Source.Account?.Id)
+        {
+            Source.PostedDate = postedDate;
+            return;
+        }
+        AccountTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Account?.Id == accountId);
+        _ = (destination?.PostedDate = postedDate);
+    }
+
+    /// <summary>
+    /// Clears all posted dates for this transaction.
+    /// </summary>
+    internal void ClearPostedDates()
+    {
+        Source.PostedDate = null;
+        foreach (AccountTransactionDestination destination in _destinations)
+        {
+            destination.PostedDate = null;
+        }
     }
 
     /// <summary>
@@ -81,36 +117,37 @@ public class AccountTransaction : Transaction
     protected AccountTransaction()
         : base()
     {
+        Source = null!;
     }
 
     /// <inheritdoc/>
     protected override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
-        AccountBalance newAccountBalance = existingAccountBalance;
-        if (existingAccountBalance.Account.Id == DebitAccountId)
+        AccountTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Account?.Id == existingAccountBalance.Account.Id);
+        if (destination != null)
         {
-            newAccountBalance = newAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
+            return existingAccountBalance.AddNewPendingCreditAmount(reverse ? -destination.Amount : destination.Amount);
         }
-        else if (existingAccountBalance.Account.Id == CreditAccountId)
+        if (existingAccountBalance.Account.Id == Source.Account?.Id)
         {
-            newAccountBalance = newAccountBalance.AddNewPendingCreditAmount(reverse ? -Amount : Amount);
+            return existingAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
         }
-        return newAccountBalance;
+        return existingAccountBalance;
     }
 
     /// <inheritdoc/>
     protected override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
-        AccountBalance newAccountBalance = existingAccountBalance;
-        if (existingAccountBalance.Account.Id == DebitAccountId)
+        AccountTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Account?.Id == existingAccountBalance.Account.Id);
+        if (destination != null)
         {
-            newAccountBalance = newAccountBalance.PostPendingDebitAmount(reverse ? -Amount : Amount);
+            return existingAccountBalance.PostPendingCreditAmount(reverse ? -destination.Amount : destination.Amount);
         }
-        else if (existingAccountBalance.Account.Id == CreditAccountId)
+        if (existingAccountBalance.Account.Id == Source.Account?.Id)
         {
-            newAccountBalance = newAccountBalance.PostPendingCreditAmount(reverse ? -Amount : Amount);
+            return existingAccountBalance.PostPendingDebitAmount(reverse ? -Amount : Amount);
         }
-        return newAccountBalance;
+        return existingAccountBalance;
     }
 
     /// <inheritdoc/>

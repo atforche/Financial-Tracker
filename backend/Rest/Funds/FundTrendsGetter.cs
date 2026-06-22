@@ -560,14 +560,15 @@ public class FundTrendsGetter(
             {
                 if (transaction is IncomeTransaction incomeTransaction)
                 {
-                    totalAmountAssigned += incomeTransaction.IncomeDestinations
+                    totalAmountAssigned += incomeTransaction.Destinations
                         .SelectMany(destination => destination.FundAssignments)
                         .Where(fundAssignment => filteredFundIds.Contains(fundAssignment.FundId.Value))
                         .Sum(fundAssignment => fundAssignment.Amount);
                 }
                 if (transaction is SpendingTransaction spendingTransaction)
                 {
-                    totalAmountSpent += spendingTransaction.FundAssignments
+                    totalAmountSpent += spendingTransaction.Destinations
+                        .SelectMany(destination => destination.FundAssignments)
                         .Where(fundAssignment => filteredFundIds.Contains(fundAssignment.FundId.Value))
                         .Sum(fundAssignment => fundAssignment.Amount);
                 }
@@ -586,14 +587,15 @@ public class FundTrendsGetter(
 
         foreach (IncomeTransaction transaction in transactionRepository.GetAllIncomeTransactionsByDateRange(startDate, endDate).OfType<IncomeTransaction>())
         {
-            totalAmountAssigned += transaction.IncomeDestinations
+            totalAmountAssigned += transaction.Destinations
                 .SelectMany(destination => destination.FundAssignments)
                 .Where(fundAssignment => filteredFundIds.Contains(fundAssignment.FundId.Value))
                 .Sum(fundAssignment => fundAssignment.Amount);
         }
         foreach (SpendingTransaction transaction in transactionRepository.GetAllSpendingTransactionsByDateRange(startDate, endDate).OfType<SpendingTransaction>())
         {
-            totalAmountSpent += transaction.FundAssignments
+            totalAmountSpent += transaction.Destinations
+                .SelectMany(destination => destination.FundAssignments)
                 .Where(fundAssignment => filteredFundIds.Contains(fundAssignment.FundId.Value))
                 .Sum(fundAssignment => fundAssignment.Amount);
         }
@@ -623,7 +625,7 @@ public class FundTrendsGetter(
             case SpendingTransaction spendingTransaction:
                 foreach (FundTrendsBalanceEventRow balanceEvent in BuildBalanceEventsByFundAssignments(
                     transaction,
-                    spendingTransaction.FundAssignments,
+                    spendingTransaction.Destinations.SelectMany(destination => destination.FundAssignments).ToList(),
                     spendingTransaction.Date,
                     fundsById,
                     accountingPeriodsById,
@@ -636,7 +638,7 @@ public class FundTrendsGetter(
             case IncomeTransaction incomeTransaction:
                 foreach (FundTrendsBalanceEventRow balanceEvent in BuildBalanceEventsByFundAssignments(
                     transaction,
-                    incomeTransaction.IncomeDestinations.SelectMany(destination => destination.FundAssignments).ToList(),
+                    incomeTransaction.Destinations.SelectMany(destination => destination.FundAssignments).ToList(),
                     incomeTransaction.Date,
                     fundsById,
                     accountingPeriodsById,

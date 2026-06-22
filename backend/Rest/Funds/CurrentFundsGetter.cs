@@ -124,22 +124,25 @@ public class CurrentFundsGetter(
         switch (transaction)
         {
             case SpendingTransaction spendingTransaction:
-                foreach (FundAmount fundAssignment in spendingTransaction.FundAssignments)
+                foreach (SpendingTransactionDestination destination in spendingTransaction.Destinations)
                 {
-                    yield return new CurrentFundBalanceEventRow(
-                        fundAssignment.FundId,
-                        spendingTransaction.Date,
-                        FundTrendsBalanceEventTypeModel.Debit,
-                        true,
-                        fundAssignment.Amount,
-                        transaction.Date,
-                        transaction.Sequence,
-                        transaction.Id.Value);
+                    foreach (FundAmount fundAssignment in destination.FundAssignments)
+                    {
+                        yield return new CurrentFundBalanceEventRow(
+                            fundAssignment.FundId,
+                            spendingTransaction.Date,
+                            FundTrendsBalanceEventTypeModel.Debit,
+                            true,
+                            fundAssignment.Amount,
+                            transaction.Date,
+                            transaction.Sequence,
+                            transaction.Id.Value);
+                    }
                 }
 
                 yield break;
             case IncomeTransaction incomeTransaction:
-                foreach (IncomeDestination destination in incomeTransaction.IncomeDestinations)
+                foreach (IncomeTransactionDestination destination in incomeTransaction.Destinations)
                 {
                     foreach (FundAmount fundAssignment in destination.FundAssignments)
                     {

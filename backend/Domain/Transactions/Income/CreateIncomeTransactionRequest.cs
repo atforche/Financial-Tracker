@@ -1,5 +1,3 @@
-using Domain.Accounts;
-
 namespace Domain.Transactions.Income;
 
 /// <summary>
@@ -8,27 +6,12 @@ namespace Domain.Transactions.Income;
 public record CreateIncomeTransactionRequest : CreateTransactionRequest
 {
     /// <summary>
-    /// Source Account for this Income Transaction
+    /// Source for this Income Transaction
     /// </summary>
-    public required Account? SourceAccount { get; init; }
+    public required IncomeTransactionSource Source { get; init; }
 
     /// <summary>
-    /// External location where the money for this Income Transaction came from (if not an account).
+    /// Destinations for this Income Transaction
     /// </summary>
-    public required string? SourceLocation { get; init; }
-
-    /// <summary>
-    /// Income lines for this income transaction.
-    /// </summary>
-    public required IReadOnlyCollection<IncomeLine> IncomeLines { get; init; }
-
-    /// <summary>
-    /// Income deductions for this income transaction.
-    /// </summary>
-    public required IReadOnlyCollection<IncomeDeduction> IncomeDeductions { get; init; }
-
-    /// <summary>
-    /// Income destinations for this income transaction.
-    /// </summary>
-    public required IReadOnlyCollection<IncomeDestination> IncomeDestinations { get; init; }
+    public required IReadOnlyCollection<IncomeTransactionDestination> Destinations { get; init; }
 }
