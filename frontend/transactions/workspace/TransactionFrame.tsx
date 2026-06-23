@@ -1,6 +1,6 @@
+import { IconButton, Paper, Stack, Typography } from "@mui/material";
 import type { JSX, ReactNode } from "react";
 import DeleteOutline from "@mui/icons-material/DeleteOutline";
-import { IconButton, Paper, Stack, Typography } from "@mui/material";
 
 interface TransactionFrameProps {
   readonly title: string;

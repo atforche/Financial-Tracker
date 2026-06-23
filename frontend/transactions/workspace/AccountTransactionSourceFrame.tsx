@@ -1,28 +1,33 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
 import AccountEntryField from "@/accounts/AccountEntryField";
 import type { JSX } from "react";
+import StringEntryField from "@/framework/forms/StringEntryField";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 
-interface SpendingTransactionSourceFrameProps {
+interface AccountTransactionSourceFrameProps {
   readonly accounts: Account[];
   readonly account: Account | null;
   readonly setAccount: ((account: Account | null) => void) | null;
+  readonly location: string;
+  readonly setLocation: ((location: string) => void) | null;
   readonly filter?: ((account: AccountIdentifier) => boolean) | null;
 }
 
 /**
- * Displays the source frame for a spending transaction.
+ * Displays the source frame for an account transaction.
  */
-const SpendingTransactionSourceFrame = function ({
+const AccountTransactionSourceFrame = function ({
   accounts,
   account,
   setAccount,
+  location,
+  setLocation,
   filter = null,
-}: SpendingTransactionSourceFrameProps): JSX.Element {
+}: AccountTransactionSourceFrameProps): JSX.Element {
   return (
     <TransactionFrame
-      title="SpendingTransactionSource"
-      description="Choose the tracked account that the spending will come from."
+      title="Transfer Source"
+      description="Choose the source account or provide the source location for this transfer."
     >
       <AccountEntryField
         label="Source Account"
@@ -41,8 +46,13 @@ const SpendingTransactionSourceFrame = function ({
         }
         filter={filter}
       />
+      <StringEntryField
+        label="Source Location"
+        value={location}
+        setValue={account === null ? setLocation : null}
+      />
     </TransactionFrame>
   );
 };
 
-export default SpendingTransactionSourceFrame;
+export default AccountTransactionSourceFrame;

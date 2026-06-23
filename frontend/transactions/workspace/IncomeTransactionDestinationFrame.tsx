@@ -5,10 +5,11 @@ import AccountEntryField from "@/accounts/AccountEntryField";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import FundAssignmentPlanner from "@/funds/FundAssignmentPlanner";
 import type { JSX } from "react";
-import StringEntryField from "@/framework/forms/StringEntryField";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 
-interface SpendingTransactionDestinationFrameProps {
+const emptyFundAmounts: FundAmount[] = [];
+
+interface IncomeTransactionDestinationFrameProps {
   readonly index: number;
   readonly accounts: Account[];
   readonly funds: Fund[];
@@ -16,8 +17,6 @@ interface SpendingTransactionDestinationFrameProps {
   readonly spendingGoals: SpendingGoal[];
   readonly account: Account | null;
   readonly setAccount: ((account: Account | null) => void) | null;
-  readonly location: string;
-  readonly setLocation: ((location: string) => void) | null;
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly fundAssignments: FundAmount[];
@@ -27,12 +26,10 @@ interface SpendingTransactionDestinationFrameProps {
   readonly onRemove?: (() => void) | null;
 }
 
-const emptyFundAssignments: FundAmount[] = [];
-
 /**
- * Displays a destination frame for one spending destination.
+ * Displays a destination frame for one income destination.
  */
-const SpendingTransactionDestinationFrame = function ({
+const IncomeTransactionDestinationFrame = function ({
   index,
   accounts,
   funds,
@@ -40,24 +37,22 @@ const SpendingTransactionDestinationFrame = function ({
   spendingGoals,
   account,
   setAccount,
-  location,
-  setLocation,
   amount,
   setAmount,
   fundAssignments,
   setFundAssignments,
-  baselineFundAssignments = emptyFundAssignments,
+  baselineFundAssignments = emptyFundAmounts,
   filter = null,
   onRemove = null,
-}: SpendingTransactionDestinationFrameProps): JSX.Element {
+}: IncomeTransactionDestinationFrameProps): JSX.Element {
   return (
     <TransactionFrame
-      title={`SpendingTransactionDestination ${index + 1}`}
-      description="Capture where this portion of the spending goes and how it should be funded."
+      title={`Income Destination ${index + 1}`}
+      description="Capture which tracked account receives this portion of the income and how it should be allocated."
       onRemove={onRemove}
     >
       <AccountEntryField
-        label="Destination Account"
+        label="Deposit Account"
         options={accounts}
         value={account}
         setValue={
@@ -73,11 +68,6 @@ const SpendingTransactionDestinationFrame = function ({
         }
         filter={filter}
       />
-      <StringEntryField
-        label="Destination Location"
-        value={location}
-        setValue={account === null ? setLocation : null}
-      />
       <CurrencyEntryField
         label="Destination Amount"
         value={amount}
@@ -85,7 +75,7 @@ const SpendingTransactionDestinationFrame = function ({
       />
       <FundAssignmentPlanner
         title="Fund Assignments"
-        tone="spending"
+        tone="income"
         funds={funds}
         assignmentGoals={assignmentGoals}
         spendingGoals={spendingGoals}
@@ -98,4 +88,4 @@ const SpendingTransactionDestinationFrame = function ({
   );
 };
 
-export default SpendingTransactionDestinationFrame;
+export default IncomeTransactionDestinationFrame;

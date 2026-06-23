@@ -12,7 +12,11 @@ const createEmptyTrends = function (): AccountingPeriodTrends {
   return {
     accountingPeriods: { items: [], totalCount: 0 },
     transactions: { items: [], totalCount: 0 },
-    totalIncome: 0,
+    totalIncome: {
+      total: 0,
+      tracked: 0,
+      untracked: 0,
+    },
     totalSpending: 0,
   };
 };

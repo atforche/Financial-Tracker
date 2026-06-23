@@ -43,20 +43,9 @@ const PostTransactionForm = function ({
     }),
   );
   const postedAccounts = getPostedTransactionAccounts(transaction).map(
-    (account) => {
-      const matchingAccount =
-        "debitAccount" in transaction &&
-        transaction.debitAccount?.accountId === account.accountId
-          ? transaction.debitAccount
-          : "creditAccount" in transaction &&
-              transaction.creditAccount?.accountId === account.accountId
-            ? transaction.creditAccount
-            : null;
-      return {
-        ...account,
-        postedDate: matchingAccount?.postedDate ?? null,
-      };
-    },
+    (account) => ({
+      ...account,
+    }),
   );
   const accountPostings: AccountPostingState[] = [
     ...postableAccounts,

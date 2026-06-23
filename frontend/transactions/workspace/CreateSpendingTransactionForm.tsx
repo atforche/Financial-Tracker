@@ -2,7 +2,6 @@
 
 import { type Account, isTrackedAccountType } from "@/accounts/types";
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
-import { AddCircleOutline } from "@mui/icons-material";
 import { Button, Stack, Typography } from "@mui/material";
 import {
   CreateSpendingTransactionType,
@@ -20,14 +19,15 @@ import {
 } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import { AddCircleOutline } from "@mui/icons-material";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
-import createTransaction from "@/transactions/workspace/createTransaction";
-import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
-import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
 import SpendingTransactionDestinationFrame from "@/transactions/workspace/SpendingTransactionDestinationFrame";
 import SpendingTransactionSourceFrame from "@/transactions/workspace/SpendingTransactionSourceFrame";
+import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
+import TransactionSection from "@/transactions/workspace/TransactionSection";
+import createTransaction from "@/transactions/workspace/createTransaction";
+import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
+import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
 import { useRouter } from "next/navigation";
 
 interface CreateSpendingTransactionFormProps {
@@ -128,6 +128,7 @@ const CreateSpendingTransactionForm = function ({
       router.replace(nextUrl, { scroll: false });
       reset();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [redirectUrl, router, state]);
 
   const updateDestination = function (
@@ -136,7 +137,9 @@ const CreateSpendingTransactionForm = function ({
   ): void {
     setDestinations((currentDestinations) =>
       currentDestinations.map((currentDestination, currentIndex) =>
-        currentIndex === index ? recipe(currentDestination) : currentDestination,
+        currentIndex === index
+          ? recipe(currentDestination)
+          : currentDestination,
       ),
     );
   };
@@ -231,7 +234,8 @@ const CreateSpendingTransactionForm = function ({
               setAccount={setSourceAccount}
               filter={(account) => {
                 const selectedAccount =
-                  accounts.find((candidate) => candidate.id === account.id) ?? null;
+                  accounts.find((candidate) => candidate.id === account.id) ??
+                  null;
                 return (
                   selectedAccount !== null &&
                   isTrackedAccountType(selectedAccount.type)
@@ -251,7 +255,8 @@ const CreateSpendingTransactionForm = function ({
                   updateDestination(index, (currentDestination) => ({
                     ...currentDestination,
                     account,
-                    location: account === null ? currentDestination.location : "",
+                    location:
+                      account === null ? currentDestination.location : "",
                   }));
                 }}
                 location={destination.location}
@@ -281,7 +286,8 @@ const CreateSpendingTransactionForm = function ({
                 }}
                 filter={(account) => {
                   const selectedAccount =
-                    accounts.find((candidate) => candidate.id === account.id) ?? null;
+                    accounts.find((candidate) => candidate.id === account.id) ??
+                    null;
                   const accountUsedElsewhere = destinations.some(
                     (currentDestination, currentIndex) =>
                       currentIndex !== index &&
@@ -296,7 +302,7 @@ const CreateSpendingTransactionForm = function ({
                 }}
                 onRemove={
                   destinations.length > 1
-                    ? () => {
+                    ? (): void => {
                         setDestinations((currentDestinations) =>
                           currentDestinations.filter(
                             (_, currentIndex) => currentIndex !== index,

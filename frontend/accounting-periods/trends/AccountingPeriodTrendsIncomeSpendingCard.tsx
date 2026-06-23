@@ -10,15 +10,83 @@ interface AccountingPeriodTrendsIncomeSpendingCardProps {
   readonly trends: AccountingPeriodTrends;
 }
 
+interface AmountBarProps {
+  readonly ratio: number;
+  readonly color: string;
+  readonly height?: number;
+}
+
+interface IncomeBreakdownRowProps {
+  readonly label: string;
+  readonly amount: number;
+  readonly ratio: number;
+  readonly color: string;
+}
+
+const AmountBar = function ({
+  ratio,
+  color,
+  height = 16,
+}: AmountBarProps): JSX.Element {
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        height,
+        borderRadius: 1,
+        backgroundColor: "divider",
+        overflow: "hidden",
+      }}
+    >
+      <Box
+        sx={{
+          width: `${Math.round(ratio * 100)}%`,
+          height: "100%",
+          backgroundColor: color,
+          transition: "width 0.2s ease",
+        }}
+      />
+    </Box>
+  );
+};
+
+const IncomeBreakdownRow = function ({
+  label,
+  amount,
+  ratio,
+  color,
+}: IncomeBreakdownRowProps): JSX.Element {
+  return (
+    <Stack spacing={1}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Typography variant="body2" color="text.secondary">
+          {label}
+        </Typography>
+        <Typography variant="body2" fontWeight={600} color={color}>
+          {formatCurrency(amount)}
+        </Typography>
+      </Stack>
+      <AmountBar ratio={ratio} color={color} height={12} />
+    </Stack>
+  );
+};
+
 /**
  * Component that displays total income and spending for the Accounting Periods trends.
  */
 const AccountingPeriodTrendsIncomeSpendingCard = function ({
   trends,
 }: AccountingPeriodTrendsIncomeSpendingCardProps): JSX.Element {
-  const maxAmount = Math.max(trends.totalIncome, trends.totalSpending, 1);
-  const incomeRatio = trends.totalIncome / maxAmount;
+  const totalIncome = trends.totalIncome.total;
+  const trackedIncome = trends.totalIncome.tracked;
+  const untrackedIncome = trends.totalIncome.untracked;
+  const maxAmount = Math.max(totalIncome, trends.totalSpending, 1);
+  const incomeRatio = totalIncome / maxAmount;
   const spendingRatio = trends.totalSpending / maxAmount;
+  const trackedIncomeRatio =
+    totalIncome === 0 ? 0 : trackedIncome / totalIncome;
+  const untrackedIncomeRatio =
+    totalIncome === 0 ? 0 : untrackedIncome / totalIncome;
 
   return (
     <SummaryCard title="Income vs. spending">
@@ -30,27 +98,24 @@ const AccountingPeriodTrendsIncomeSpendingCard = function ({
         >
           <Typography color="text.secondary">Total income</Typography>
           <Typography fontWeight={600} color="success.main">
-            {formatCurrency(trends.totalIncome)}
+            {formatCurrency(totalIncome)}
           </Typography>
         </Stack>
-        <Box
-          sx={{
-            width: "100%",
-            height: 16,
-            borderRadius: 1,
-            backgroundColor: "divider",
-            overflow: "hidden",
-          }}
-        >
-          <Box
-            sx={{
-              width: `${Math.round(incomeRatio * 100)}%`,
-              height: "100%",
-              backgroundColor: "success.main",
-              transition: "width 0.2s ease",
-            }}
+        <AmountBar ratio={incomeRatio} color="success.main" />
+        <Stack spacing={1.5} sx={{ pl: 2 }}>
+          <IncomeBreakdownRow
+            label="Tracked income"
+            amount={trackedIncome}
+            ratio={trackedIncomeRatio}
+            color="success.main"
           />
-        </Box>
+          <IncomeBreakdownRow
+            label="Untracked income"
+            amount={untrackedIncome}
+            ratio={untrackedIncomeRatio}
+            color="success.main"
+          />
+        </Stack>
         <Stack
           direction="row"
           justifyContent="space-between"
@@ -61,24 +126,7 @@ const AccountingPeriodTrendsIncomeSpendingCard = function ({
             {formatCurrency(trends.totalSpending)}
           </Typography>
         </Stack>
-        <Box
-          sx={{
-            width: "100%",
-            height: 16,
-            borderRadius: 1,
-            backgroundColor: "divider",
-            overflow: "hidden",
-          }}
-        >
-          <Box
-            sx={{
-              width: `${Math.round(spendingRatio * 100)}%`,
-              height: "100%",
-              backgroundColor: "error.main",
-              transition: "width 0.2s ease",
-            }}
-          />
-        </Box>
+        <AmountBar ratio={spendingRatio} color="error.main" />
       </Stack>
     </SummaryCard>
   );

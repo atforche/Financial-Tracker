@@ -32,6 +32,9 @@ interface CurrentTransactionListFrameProps {
   readonly emptyAction?: JSX.Element | null;
 }
 
+/**
+ * List frame that displays transactions for the current page.
+ */
 const CurrentTransactionListFrame = function ({
   title,
   description,
@@ -86,7 +89,7 @@ const CurrentTransactionListFrame = function ({
           : currentSort === TransactionSortOrder.DateDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType) => {
+      onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.Date);
         } else if (sortType === ColumnSortType.Descending) {
@@ -107,7 +110,7 @@ const CurrentTransactionListFrame = function ({
           : currentSort === TransactionSortOrder.DescriptionDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType) => {
+      onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.Description);
         } else if (sortType === ColumnSortType.Descending) {
@@ -128,7 +131,7 @@ const CurrentTransactionListFrame = function ({
           : currentSort === TransactionSortOrder.SourceDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType) => {
+      onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.Source);
         } else if (sortType === ColumnSortType.Descending) {
@@ -149,7 +152,7 @@ const CurrentTransactionListFrame = function ({
           : currentSort === TransactionSortOrder.DestinationDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType) => {
+      onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.Destination);
         } else if (sortType === ColumnSortType.Descending) {
@@ -170,7 +173,7 @@ const CurrentTransactionListFrame = function ({
           : currentSort === TransactionSortOrder.AmountDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType) => {
+      onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.Amount);
         } else if (sortType === ColumnSortType.Descending) {

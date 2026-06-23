@@ -15,10 +15,6 @@ interface UpdateTransactionFormProps {
   readonly transaction: Transaction;
   readonly transactionAccountingPeriod: AccountingPeriod;
   readonly accounts: Account[];
-  readonly transactionDebitAccount: Account | null;
-  readonly transactionCreditAccount: Account | null;
-  readonly transactionDebitFund: Fund | null;
-  readonly transactionCreditFund: Fund | null;
   readonly funds: Fund[];
   readonly assignmentGoals: AssignmentGoal[];
   readonly spendingGoals: SpendingGoal[];
@@ -32,10 +28,6 @@ const UpdateTransactionForm = function ({
   transaction,
   transactionAccountingPeriod,
   accounts,
-  transactionDebitAccount,
-  transactionCreditAccount,
-  transactionDebitFund,
-  transactionCreditFund,
   funds,
   assignmentGoals,
   spendingGoals,
@@ -46,8 +38,7 @@ const UpdateTransactionForm = function ({
       <UpdateIncomeTransactionForm
         transaction={transaction}
         transactionAccountingPeriod={transactionAccountingPeriod}
-        transactionDebitAccount={transactionDebitAccount}
-        transactionCreditAccount={transactionCreditAccount}
+        accounts={accounts}
         funds={funds}
         assignmentGoals={assignmentGoals}
         spendingGoals={spendingGoals}
@@ -75,8 +66,7 @@ const UpdateTransactionForm = function ({
       <UpdateAccountTransactionForm
         transaction={transaction}
         transactionAccountingPeriod={transactionAccountingPeriod}
-        transactionDebitAccount={transactionDebitAccount}
-        transactionCreditAccount={transactionCreditAccount}
+        accounts={accounts}
         redirectUrl={redirectUrl}
       />
     );
@@ -86,8 +76,7 @@ const UpdateTransactionForm = function ({
     <UpdateFundTransactionForm
       transaction={transaction}
       transactionAccountingPeriod={transactionAccountingPeriod}
-      transactionDebitFund={transactionDebitFund}
-      transactionCreditFund={transactionCreditFund}
+      funds={funds}
       redirectUrl={redirectUrl}
     />
   );

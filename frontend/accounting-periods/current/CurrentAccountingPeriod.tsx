@@ -1,13 +1,11 @@
-import type {
-  AccountingPeriodTrendsTransactionSortOrder,
-  CurrentAccountingPeriod as CurrentAccountingPeriodModel,
-} from "@/accounting-periods/types";
 import { Stack, Typography } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import AccountingPeriodCurrentIncomeSpendingCard from "@/accounting-periods/current/CurrentAccountingPeriodIncomeSpendingCard";
 import AccountingPeriodCurrentSummaryCards from "@/accounting-periods/current/CurrentAccountingPeriodSummaryCards";
 import AccountingPeriodCurrentTransactionListFrame from "@/accounting-periods/current/CurrentAccountingPeriodTransactionListFrame";
+import type { CurrentAccountingPeriod as CurrentAccountingPeriodModel } from "@/accounting-periods/types";
 import type { JSX } from "react";
+import type { TransactionSortOrder } from "@/transactions/types";
 import getApiClient from "@/framework/data/getApiClient";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
@@ -15,7 +13,7 @@ import { rowsPerPage } from "@/framework/listframe/Constants";
  * Search parameters for the CurrentAccountingPeriod component.
  */
 interface CurrentAccountingPeriodSearchParams {
-  transactionSort?: AccountingPeriodTrendsTransactionSortOrder;
+  transactionSort?: TransactionSortOrder;
   transactionPage?: number | string | null;
 }
 
@@ -33,7 +31,11 @@ const createEmptyCurrent = function (): CurrentAccountingPeriodModel {
       items: [],
       totalCount: 0,
     },
-    totalIncome: 0,
+    totalIncome: {
+      total: 0,
+      tracked: 0,
+      untracked: 0,
+    },
     totalSpending: 0,
   };
 };

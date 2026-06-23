@@ -24,6 +24,9 @@ interface TransactionTrendsListFrameProps {
   readonly totalCount: number | null;
 }
 
+/**
+ * List frame that displays transactions for the trends page.
+ */
 const TransactionTrendsListFrame = function ({
   data,
   totalCount,
@@ -92,7 +95,7 @@ const TransactionTrendsListFrame = function ({
           : currentSort === TransactionSortOrder.DateDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType) => {
+      onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.Date);
         } else if (sortType === ColumnSortType.Descending) {
@@ -113,7 +116,7 @@ const TransactionTrendsListFrame = function ({
           : currentSort === TransactionSortOrder.AccountingPeriodDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType) => {
+      onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.AccountingPeriod);
         } else if (sortType === ColumnSortType.Descending) {
@@ -134,7 +137,7 @@ const TransactionTrendsListFrame = function ({
           : currentSort === TransactionSortOrder.DescriptionDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType) => {
+      onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.Description);
         } else if (sortType === ColumnSortType.Descending) {
@@ -155,7 +158,7 @@ const TransactionTrendsListFrame = function ({
           : currentSort === TransactionSortOrder.SourceDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType) => {
+      onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.Source);
         } else if (sortType === ColumnSortType.Descending) {
@@ -176,7 +179,7 @@ const TransactionTrendsListFrame = function ({
           : currentSort === TransactionSortOrder.DestinationDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType) => {
+      onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.Destination);
         } else if (sortType === ColumnSortType.Descending) {
@@ -197,7 +200,7 @@ const TransactionTrendsListFrame = function ({
           : currentSort === TransactionSortOrder.AmountDescending
             ? ColumnSortType.Descending
             : null,
-      onSort: (sortType) => {
+      onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(TransactionSortOrder.Amount);
         } else if (sortType === ColumnSortType.Descending) {

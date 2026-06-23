@@ -10,14 +10,17 @@ import {
   asIncomeTransaction,
   asSpendingTransaction,
 } from "@/transactions/types";
+import { Box, Stack } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
-import { Stack } from "@mui/material";
 import TransactionAccountPathViewSection from "@/transactions/workspace/TransactionAccountPathViewSection";
 import TransactionDetailsViewSection from "@/transactions/workspace/TransactionDetailsViewSection";
+import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
 import TransactionFundAssignmentsViewSection from "@/transactions/workspace/TransactionFundAssignmentsViewSection";
 import TransactionFundPathViewSection from "@/transactions/workspace/TransactionFundPathViewSection";
+import TransactionSection from "@/transactions/workspace/TransactionSection";
+import formatCurrency from "@/framework/formatCurrency";
 
 interface ViewTransactionFormProps {
   readonly transaction: Transaction;
@@ -25,39 +28,132 @@ interface ViewTransactionFormProps {
   readonly funds: Fund[];
 }
 
+const renderIncomeSourceView = function (
+  transaction: IncomeTransaction,
+): JSX.Element {
+  const grossAmount = transaction.source.incomeLines.reduce(
+    (total, line) => total + line.amount,
+    0,
+  );
+  const deductionAmount = transaction.source.incomeDeductions.reduce(
+    (total, deduction) => total + deduction.amount,
+    0,
+  );
+
+  return (
+    <TransactionSection
+      title="Income Breakdown"
+      description="Review the gross income lines and deductions captured for this source."
+    >
+      <Box
+        sx={{
+          display: "grid",
+          gap: 2,
+          gridTemplateColumns:
+            "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
+        }}
+      >
+        <TransactionDisplayField
+          label="Gross Income"
+          value={formatCurrency(grossAmount)}
+        />
+        <TransactionDisplayField
+          label="Deductions"
+          value={formatCurrency(deductionAmount)}
+        />
+        <TransactionDisplayField
+          label="Net Income"
+          value={formatCurrency(transaction.amount)}
+        />
+      </Box>
+      <Stack spacing={2}>
+        {transaction.source.incomeLines.map((line, index) => (
+          <Box
+            key={`income-line-${index}`}
+            sx={{
+              display: "grid",
+              gap: 2,
+              gridTemplateColumns: {
+                xs: "1fr",
+                md: "minmax(0, 1.8fr) minmax(180px, 1fr)",
+              },
+            }}
+          >
+            <TransactionDisplayField
+              label={`Income Line ${index + 1}`}
+              value={line.description}
+            />
+            <TransactionDisplayField
+              label="Amount"
+              value={formatCurrency(line.amount)}
+            />
+          </Box>
+        ))}
+        {transaction.source.incomeDeductions.map((deduction, index) => (
+          <Box
+            key={`income-deduction-${index}`}
+            sx={{
+              display: "grid",
+              gap: 2,
+              gridTemplateColumns: {
+                xs: "1fr",
+                md: "minmax(0, 1.8fr) minmax(180px, 1fr)",
+              },
+            }}
+          >
+            <TransactionDisplayField
+              label={`Deduction ${index + 1}`}
+              value={deduction.description}
+            />
+            <TransactionDisplayField
+              label="Amount"
+              value={formatCurrency(deduction.amount)}
+            />
+          </Box>
+        ))}
+      </Stack>
+    </TransactionSection>
+  );
+};
+
 const renderIncomeView = function (
   transaction: IncomeTransaction,
   funds: Fund[],
 ): JSX.Element[] {
-  return transaction.destinations.flatMap((destination, index) => {
-    const title =
-      transaction.destinations.length === 1
-        ? "Money Flow"
-        : `Money Flow ${index + 1}`;
-    const destinationSection = (
-      <TransactionAccountPathViewSection
-        key={`income-path-${index}`}
-        title={title}
-        description="Review which tracked account receives this portion of the income and where the money originated."
-        leftLabel="Source Account"
-        rightLabel="Deposit To"
-        leftAccount={transaction.source.account ?? null}
-        rightAccount={destination.account}
-        leftLocationLabel={transaction.source.account === null ? "Source Location" : null}
-        leftLocationValue={transaction.source.location ?? null}
-      />
-    );
-    const fundSection = (
-      <TransactionFundAssignmentsViewSection
-        key={`income-funds-${index}`}
-        funds={funds}
-        amount={destination.amount}
-        fundAssignments={destination.fundAssignments}
-        tone="income"
-      />
-    );
-    return [destinationSection, fundSection];
-  });
+  return [
+    renderIncomeSourceView(transaction),
+    ...transaction.destinations.flatMap((destination, index) => {
+      const title =
+        transaction.destinations.length === 1
+          ? "Money Flow"
+          : `Money Flow ${index + 1}`;
+      const destinationSection = (
+        <TransactionAccountPathViewSection
+          key={`income-path-${index}`}
+          title={title}
+          description="Review which tracked account receives this portion of the income and where the money originated."
+          leftLabel="Source Account"
+          rightLabel="Deposit To"
+          leftAccount={transaction.source.account ?? null}
+          rightAccount={destination.account}
+          leftLocationLabel={
+            transaction.source.account === null ? "Source Location" : null
+          }
+          leftLocationValue={transaction.source.location ?? null}
+        />
+      );
+      const fundSection = (
+        <TransactionFundAssignmentsViewSection
+          key={`income-funds-${index}`}
+          funds={funds}
+          amount={destination.amount}
+          fundAssignments={destination.fundAssignments}
+          tone="income"
+        />
+      );
+      return [destinationSection, fundSection];
+    }),
+  ];
 };
 
 const renderSpendingView = function (
@@ -78,7 +174,9 @@ const renderSpendingView = function (
         rightLabel="Pay To"
         leftAccount={transaction.source.account}
         rightAccount={destination.account ?? null}
-        rightLocationLabel={destination.account === null ? "Destination Location" : null}
+        rightLocationLabel={
+          destination.account === null ? "Destination Location" : null
+        }
         rightLocationValue={destination.location ?? null}
       />
     );
@@ -111,9 +209,13 @@ const renderAccountView = function (
       rightLabel="Destination"
       leftAccount={transaction.source.account ?? null}
       rightAccount={destination.account ?? null}
-      leftLocationLabel={transaction.source.account === null ? "Source Location" : null}
+      leftLocationLabel={
+        transaction.source.account === null ? "Source Location" : null
+      }
       leftLocationValue={transaction.source.location ?? null}
-      rightLocationLabel={destination.account === null ? "Destination Location" : null}
+      rightLocationLabel={
+        destination.account === null ? "Destination Location" : null
+      }
       rightLocationValue={destination.location ?? null}
     />
   ));

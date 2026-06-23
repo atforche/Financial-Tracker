@@ -104,38 +104,6 @@ const TransactionWorkspaceActions = function ({
         (period) => period.id === selectedTransaction.accountingPeriodId,
       ) ?? null)
     : null;
-  const selectedTransactionDebitAccount =
-    selectedTransaction === null
-      ? null
-      : (accounts.find(
-          (account) =>
-            "debitAccount" in selectedTransaction &&
-            account.id === selectedTransaction.debitAccount?.accountId,
-        ) ?? null);
-  const selectedTransactionCreditAccount =
-    selectedTransaction === null
-      ? null
-      : (accounts.find(
-          (account) =>
-            "creditAccount" in selectedTransaction &&
-            account.id === selectedTransaction.creditAccount?.accountId,
-        ) ?? null);
-  const selectedTransactionDebitFund =
-    selectedTransaction === null
-      ? null
-      : (funds.find(
-          (fund) =>
-            "debitFund" in selectedTransaction &&
-            fund.id === selectedTransaction.debitFund.fundId,
-        ) ?? null);
-  const selectedTransactionCreditFund =
-    selectedTransaction === null
-      ? null
-      : (funds.find(
-          (fund) =>
-            "creditFund" in selectedTransaction &&
-            fund.id === selectedTransaction.creditFund.fundId,
-        ) ?? null);
 
   return (
     <Paper
@@ -221,10 +189,6 @@ const TransactionWorkspaceActions = function ({
             transaction={selectedTransaction}
             transactionAccountingPeriod={selectedTransactionAccountingPeriod}
             accounts={accounts}
-            transactionDebitAccount={selectedTransactionDebitAccount}
-            transactionCreditAccount={selectedTransactionCreditAccount}
-            transactionDebitFund={selectedTransactionDebitFund}
-            transactionCreditFund={selectedTransactionCreditFund}
             funds={funds}
             assignmentGoals={assignmentGoals}
             spendingGoals={spendingGoals}

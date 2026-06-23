@@ -61,38 +61,57 @@ const summarizeValues = function (values: string[]): string {
   return `${meaningfulValues[0] ?? ""} +${meaningfulValues.length - 1} more`;
 };
 
+/**
+ * Converts the provided transaction to a spending transaction.
+ */
 const asSpendingTransaction = function (
   transaction: Transaction,
 ): SpendingTransaction | null {
   return transaction.transactionType === TransactionTypeModel.Spending
-    ? (transaction as SpendingTransaction)
+    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+      (transaction as SpendingTransaction)
     : null;
 };
 
+/**
+ * Converts the provided transaction to an income transaction.
+ */
 const asIncomeTransaction = function (
   transaction: Transaction,
 ): IncomeTransaction | null {
   return transaction.transactionType === TransactionTypeModel.Income
-    ? (transaction as IncomeTransaction)
+    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+      (transaction as IncomeTransaction)
     : null;
 };
 
+/**
+ * Converts the provided transaction to an account transaction.
+ */
 const asAccountTransaction = function (
   transaction: Transaction,
 ): AccountTransaction | null {
   return transaction.transactionType === TransactionTypeModel.Account
-    ? (transaction as AccountTransaction)
+    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+      (transaction as AccountTransaction)
     : null;
 };
 
+/**
+ * Converts the provided transaction to a fund transaction.
+ */
 const asFundTransaction = function (
   transaction: Transaction,
 ): FundTransaction | null {
   return transaction.transactionType === TransactionTypeModel.Fund
-    ? (transaction as FundTransaction)
+    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+      (transaction as FundTransaction)
     : null;
 };
 
+/**
+ * Gets the source label for the provided transaction.
+ */
 const getTransactionSourceLabel = function (transaction: Transaction): string {
   const spendingTransaction = asSpendingTransaction(transaction);
   if (spendingTransaction !== null) {
@@ -125,6 +144,9 @@ const getTransactionSourceLabel = function (transaction: Transaction): string {
   return "";
 };
 
+/**
+ * Gets the destination label for the provided transaction.
+ */
 const getTransactionDestinationLabel = function (
   transaction: Transaction,
 ): string {
@@ -132,7 +154,8 @@ const getTransactionDestinationLabel = function (
   if (spendingTransaction !== null) {
     return summarizeValues(
       spendingTransaction.destinations.map(
-        (destination) => destination.account?.accountName ?? destination.location ?? "",
+        (destination) =>
+          destination.account?.accountName ?? destination.location ?? "",
       ),
     );
   }
@@ -150,7 +173,8 @@ const getTransactionDestinationLabel = function (
   if (accountTransaction !== null) {
     return summarizeValues(
       accountTransaction.destinations.map(
-        (destination) => destination.account?.accountName ?? destination.location ?? "",
+        (destination) =>
+          destination.account?.accountName ?? destination.location ?? "",
       ),
     );
   }
@@ -158,17 +182,24 @@ const getTransactionDestinationLabel = function (
   const fundTransaction = asFundTransaction(transaction);
   if (fundTransaction !== null) {
     return summarizeValues(
-      fundTransaction.destinations.map((destination) => destination.fund.fundName),
+      fundTransaction.destinations.map(
+        (destination) => destination.fund.fundName,
+      ),
     );
   }
 
   return "";
 };
 
+/**
+ * Gets the account IDs involved in the provided transaction.
+ */
 const getTransactionAccountIds = function (transaction: Transaction): string[] {
   const accountIds = new Set<string>();
 
-  const addAccount = function (account: TransactionAccount | null | undefined): void {
+  const addAccount = function (
+    account: TransactionAccount | null | undefined,
+  ): void {
     if (account !== null && typeof account !== "undefined") {
       accountIds.add(account.accountId);
     }
@@ -203,6 +234,9 @@ const getTransactionAccountIds = function (transaction: Transaction): string[] {
   return Array.from(accountIds);
 };
 
+/**
+ * Gets the fund IDs involved in the provided transaction.
+ */
 const getTransactionFundIds = function (transaction: Transaction): string[] {
   const fundIds = new Set<string>();
 
@@ -248,7 +282,9 @@ const collectTransactionPostingAccounts = function (
 ): TransactionPostingAccount[] {
   const accounts = new Map<string, TransactionPostingAccount>();
 
-  const addAccount = function (account: TransactionAccount | null | undefined): void {
+  const addAccount = function (
+    account: TransactionAccount | null | undefined,
+  ): void {
     if (account === null || typeof account === "undefined") {
       return;
     }
@@ -288,6 +324,9 @@ const collectTransactionPostingAccounts = function (
   return Array.from(accounts.values());
 };
 
+/**
+ * Determines if the provided transaction is an income transaction.
+ */
 const isIncomeTransaction = function (
   debitAccount: Account | null,
   creditAccount: Account | null,
@@ -309,12 +348,18 @@ const isIncomeTransaction = function (
   return true;
 };
 
+/**
+ * Determines if the provided income transaction is complete.
+ */
 const isIncomeTransactionComplete = function (
   incomeFundAssignments: FundAmount[],
 ): boolean {
   return !hasIncompleteFundAssignments(incomeFundAssignments);
 };
 
+/**
+ * Determines if the provided transaction is a spending transaction.
+ */
 const isSpendingTransaction = function (
   debitAccount: Account | null,
   creditAccount: Account | null,
@@ -336,6 +381,9 @@ const isSpendingTransaction = function (
   return true;
 };
 
+/**
+ * Determines if the provided spending transaction is complete.
+ */
 const isSpendingTransactionComplete = function (
   spendingFundAssignments: FundAmount[],
 ): boolean {
@@ -348,6 +396,9 @@ const isSpendingTransactionComplete = function (
   );
 };
 
+/**
+ * Determines if the provided transaction is an account transaction.
+ */
 const isAccountTransaction = function (
   debitAccount: Account | null,
   creditAccount: Account | null,
@@ -372,6 +423,9 @@ const isAccountTransaction = function (
   return false;
 };
 
+/**
+ * Determines if the provided transaction is a fund transaction.
+ */
 const isFundTransaction = function (
   debitAccount: Account | null,
   creditAccount: Account | null,
@@ -384,6 +438,9 @@ const isFundTransaction = function (
   return debitFund !== null && creditFund !== null;
 };
 
+/**
+ * Determines if the provided fund transaction is complete.
+ */
 const isFundTransactionComplete = function (
   debitFund: Fund | null,
   creditFund: Fund | null,
@@ -391,6 +448,9 @@ const isFundTransactionComplete = function (
   return debitFund !== null && creditFund !== null;
 };
 
+/**
+ * Gets the accounts involved in the provided transaction that have not been posted.
+ */
 const getPostableTransactionAccounts = function (
   transaction: Transaction,
 ): { accountId: string; accountName: string }[] {
@@ -402,14 +462,18 @@ const getPostableTransactionAccounts = function (
     }));
 };
 
+/**
+ * Gets the accounts involved in the provided transaction that have been posted.
+ */
 const getPostedTransactionAccounts = function (
   transaction: Transaction,
-): { accountId: string; accountName: string }[] {
+): { accountId: string; accountName: string; postedDate: string | null }[] {
   return collectTransactionPostingAccounts(transaction)
     .filter((account) => account.postedDate !== null)
     .map((account) => ({
       accountId: account.accountId,
       accountName: account.accountName,
+      postedDate: account.postedDate,
     }));
 };
 

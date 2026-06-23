@@ -2,8 +2,6 @@
 
 import { type Account, isTrackedAccountType } from "@/accounts/types";
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
-import type { components } from "@/framework/data/api";
-import { AddCircleOutline } from "@mui/icons-material";
 import { Button, Stack, Typography } from "@mui/material";
 import type { Fund, FundAmount } from "@/funds/types";
 import {
@@ -23,14 +21,16 @@ import {
 } from "@/transactions/types";
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import { AddCircleOutline } from "@mui/icons-material";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
-import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
-import updateTransaction from "@/transactions/workspace/updateTransaction";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
-import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
 import SpendingTransactionDestinationFrame from "@/transactions/workspace/SpendingTransactionDestinationFrame";
 import SpendingTransactionSourceFrame from "@/transactions/workspace/SpendingTransactionSourceFrame";
+import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
+import TransactionSection from "@/transactions/workspace/TransactionSection";
+import type { components } from "@/framework/data/api";
+import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
+import updateTransaction from "@/transactions/workspace/updateTransaction";
+import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
 
 interface UpdateSpendingTransactionFormProps {
   readonly transaction: Transaction;
@@ -90,7 +90,8 @@ const UpdateSpendingTransactionForm = function ({
   const formRef = useRef<HTMLDivElement | null>(null);
   const spendingTransaction: SpendingTransactionModel | null =
     transaction.transactionType === TransactionType.Spending
-      ? (transaction as SpendingTransactionModel)
+      ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+        (transaction as SpendingTransactionModel)
       : null;
 
   const buildDestinationDraft = function (
@@ -122,13 +123,14 @@ const UpdateSpendingTransactionForm = function ({
     };
   };
 
-  const buildDestinationsFromTransaction = function (): SpendingDestinationDraft[] {
-    if (spendingTransaction === null) {
-      return [createEmptyDestination()];
-    }
+  const buildDestinationsFromTransaction =
+    function (): SpendingDestinationDraft[] {
+      if (spendingTransaction === null) {
+        return [createEmptyDestination()];
+      }
 
-    return spendingTransaction.destinations.map(buildDestinationDraft);
-  };
+      return spendingTransaction.destinations.map(buildDestinationDraft);
+    };
 
   const buildSourceAccountFromTransaction = function (): Account | null {
     if (spendingTransaction === null) {
@@ -137,13 +139,16 @@ const UpdateSpendingTransactionForm = function ({
 
     return (
       accounts.find(
-        (account) => account.id === spendingTransaction.source.account.accountId,
+        (account) =>
+          account.id === spendingTransaction.source.account.accountId,
       ) ?? null
     );
   };
 
   const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
-  const [description, setDescription] = useState<string>(transaction.description);
+  const [description, setDescription] = useState<string>(
+    transaction.description,
+  );
   const [amount, setAmount] = useState<number | null>(transaction.amount);
   const [sourceAccount, setSourceAccount] = useState<Account | null>(
     buildSourceAccountFromTransaction(),
@@ -173,6 +178,7 @@ const UpdateSpendingTransactionForm = function ({
     if (state.success === true) {
       reset();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
   const updateDestination = function (
@@ -181,7 +187,9 @@ const UpdateSpendingTransactionForm = function ({
   ): void {
     setDestinations((currentDestinations) =>
       currentDestinations.map((currentDestination, currentIndex) =>
-        currentIndex === index ? recipe(currentDestination) : currentDestination,
+        currentIndex === index
+          ? recipe(currentDestination)
+          : currentDestination,
       ),
     );
   };
@@ -274,7 +282,8 @@ const UpdateSpendingTransactionForm = function ({
               setAccount={setSourceAccount}
               filter={(account) => {
                 const selectedAccount =
-                  accounts.find((candidate) => candidate.id === account.id) ?? null;
+                  accounts.find((candidate) => candidate.id === account.id) ??
+                  null;
                 return (
                   selectedAccount !== null &&
                   isTrackedAccountType(selectedAccount.type)
@@ -294,7 +303,8 @@ const UpdateSpendingTransactionForm = function ({
                   updateDestination(index, (currentDestination) => ({
                     ...currentDestination,
                     account,
-                    location: account === null ? currentDestination.location : "",
+                    location:
+                      account === null ? currentDestination.location : "",
                   }));
                 }}
                 location={destination.location}
@@ -325,7 +335,8 @@ const UpdateSpendingTransactionForm = function ({
                 baselineFundAssignments={destination.baselineFundAssignments}
                 filter={(account) => {
                   const selectedAccount =
-                    accounts.find((candidate) => candidate.id === account.id) ?? null;
+                    accounts.find((candidate) => candidate.id === account.id) ??
+                    null;
                   const accountUsedElsewhere = destinations.some(
                     (currentDestination, currentIndex) =>
                       currentIndex !== index &&
@@ -340,7 +351,7 @@ const UpdateSpendingTransactionForm = function ({
                 }}
                 onRemove={
                   destinations.length > 1
-                    ? () => {
+                    ? (): void => {
                         setDestinations((currentDestinations) =>
                           currentDestinations.filter(
                             (_, currentIndex) => currentIndex !== index,

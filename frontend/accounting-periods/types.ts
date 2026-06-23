@@ -1,6 +1,5 @@
 import {
   AccountingPeriodSortOrderModel,
-  AccountingPeriodTrendsTransactionSortOrderModel,
   type components,
 } from "@/framework/data/api";
 import dayjs, { type Dayjs } from "dayjs";
@@ -74,5 +73,4 @@ export {
   getMaximumDate,
   getDefaultDate,
   AccountingPeriodSortOrderModel as AccountingPeriodSortOrder,
-  AccountingPeriodTrendsTransactionSortOrderModel as AccountingPeriodTrendsTransactionSortOrder,
 };

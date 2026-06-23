@@ -1,7 +1,6 @@
 import {
   AccountingPeriodSortOrder,
   type AccountingPeriodTrends as AccountingPeriodTrendsModel,
-  type AccountingPeriodTrendsTransactionSortOrder,
 } from "@/accounting-periods/types";
 import { Box, Stack } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
@@ -13,6 +12,7 @@ import AccountingPeriodTrendsListFrame from "@/accounting-periods/trends/Account
 import AccountingPeriodTrendsSummaryCards from "@/accounting-periods/trends/AccountingPeriodTrendsSummaryCards";
 import AccountingPeriodTrendsTransactionListFrame from "@/accounting-periods/trends/AccountingPeriodTrendsTransactionListFrame";
 import type { JSX } from "react";
+import type { TransactionSortOrder } from "@/transactions/types";
 import getApiClient from "@/framework/data/getApiClient";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
@@ -22,7 +22,7 @@ import { rowsPerPage } from "@/framework/listframe/Constants";
 interface AccountingPeriodTrendsSearchParams {
   sort?: AccountingPeriodSortOrder;
   page?: number | string | null;
-  transactionSort?: AccountingPeriodTrendsTransactionSortOrder;
+  transactionSort?: TransactionSortOrder;
   transactionPage?: number | string | null;
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;
@@ -45,7 +45,11 @@ const createEmptyTrends = function (): AccountingPeriodTrendsModel {
       items: [],
       totalCount: 0,
     },
-    totalIncome: 0,
+    totalIncome: {
+      total: 0,
+      tracked: 0,
+      untracked: 0,
+    },
     totalSpending: 0,
   };
 };
