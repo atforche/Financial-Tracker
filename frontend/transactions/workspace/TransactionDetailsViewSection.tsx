@@ -1,6 +1,6 @@
+import type { JSX, ReactNode } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import { Box } from "@mui/material";
-import type { JSX } from "react";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
 import dayjs from "dayjs";
@@ -11,6 +11,7 @@ interface TransactionDetailsViewSectionProps {
   readonly date: string;
   readonly description: string;
   readonly amount: number;
+  readonly headerAction?: ReactNode;
 }
 
 /**
@@ -21,11 +22,13 @@ const TransactionDetailsViewSection = function ({
   date,
   description,
   amount,
+  headerAction,
 }: TransactionDetailsViewSectionProps): JSX.Element {
   return (
     <TransactionSection
       title="Transaction Details"
       description="Review the high level information captured for this transaction."
+      headerAction={headerAction}
     >
       <Box
         sx={{

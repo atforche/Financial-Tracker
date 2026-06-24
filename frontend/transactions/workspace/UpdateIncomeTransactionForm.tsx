@@ -32,9 +32,9 @@ import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import IncomeTransactionDestinationFrame from "@/transactions/workspace/IncomeTransactionDestinationFrame";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
-import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import updateTransaction from "@/transactions/workspace/updateTransaction";
 import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
+import { useRouter } from "next/navigation";
 
 interface UpdateIncomeTransactionFormProps {
   readonly transaction: Transaction;
@@ -194,6 +194,7 @@ const UpdateIncomeTransactionForm = function ({
     (goal) => goal.accountingPeriodId === transactionAccountingPeriod.id,
   );
 
+  const router = useRouter();
   const [state, action, pending] = useActionState(updateTransaction, {});
 
   const reset = function (): void {
@@ -205,30 +206,13 @@ const UpdateIncomeTransactionForm = function ({
     setIncomeLines(buildIncomeLinesFromTransaction());
     setIncomeDeductions(buildIncomeDeductionsFromTransaction());
     setDestinations(buildDestinationsFromTransaction());
-    focusFirstEntryControl(formRef.current);
   };
 
   useEffect(() => {
     if (state.success === true) {
-      setDate(dayjs(transaction.date));
-      setSourceLocation(incomeTransaction?.source.location ?? "");
-      setDescription(transaction.description);
-      setAmount(transaction.amount);
-      setSourceAccount(buildSourceAccountFromTransaction());
-      setIncomeLines(buildIncomeLinesFromTransaction());
-      setIncomeDeductions(buildIncomeDeductionsFromTransaction());
-      setDestinations(buildDestinationsFromTransaction());
-      focusFirstEntryControl(formRef.current);
+      router.replace(redirectUrl, { scroll: false });
     }
-  }, [
-    buildDestinationsFromTransaction,
-    buildIncomeDeductionsFromTransaction,
-    buildIncomeLinesFromTransaction,
-    buildSourceAccountFromTransaction,
-    incomeTransaction,
-    state,
-    transaction,
-  ]);
+  }, [redirectUrl, router, state.success]);
 
   const onSourceAccountChange = function (account: Account | null): void {
     setSourceAccount(account);

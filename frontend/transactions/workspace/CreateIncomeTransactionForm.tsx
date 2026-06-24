@@ -138,25 +138,14 @@ const CreateIncomeTransactionForm = function ({
       const [pathname, search = ""] = redirectUrl.split("?");
       const params = new URLSearchParams(search);
       params.set("selectedTransactionId", state.transactionId ?? "");
-      params.set("action", "post");
-      const nextUrl = `${pathname}?${params.toString()}`;
+      const query = params.toString();
+      const nextUrl =
+        query === ""
+          ? `${pathname}/${state.transactionId ?? ""}`
+          : `${pathname}/${state.transactionId ?? ""}?${query}`;
       router.replace(nextUrl, { scroll: false });
-      setAccountingPeriod(
-        accountingPeriods.length > 0
-          ? (accountingPeriods[accountingPeriods.length - 1] ?? null)
-          : null,
-      );
-      setDate(null);
-      setSourceLocation("");
-      setDescription("");
-      setAmount(null);
-      setSourceAccount(null);
-      setIncomeLines([createEmptyAmountItem()]);
-      setIncomeDeductions([]);
-      setDestinations([createEmptyDestination()]);
-      focusFirstEntryControl(formRef.current);
     }
-  }, [accountingPeriods, redirectUrl, router, state]);
+  }, [redirectUrl, router, state]);
 
   const onSourceAccountChange = function (account: Account | null): void {
     setSourceAccount(account);

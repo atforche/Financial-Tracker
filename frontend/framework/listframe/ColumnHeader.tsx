@@ -25,12 +25,15 @@ const ColumnHeader = function <T>({
     <TableCell
       key={column.name}
       align={column.alignment ?? "left"}
-      sx={{
-        maxWidth: column.maxWidth ?? defaultColumnWidth,
-        minWidth: column.minWidth,
-        backgroundColor: "primary.main",
-        color: "white",
-      }}
+      sx={[
+        {
+          maxWidth: column.maxWidth ?? defaultColumnWidth,
+          minWidth: column.minWidth,
+          backgroundColor: "primary.main",
+          color: "white",
+        },
+        column.sx ?? false,
+      ]}
     >
       {(column.sortType ?? null) !== null || column.onSort ? (
         <TableSortLabel

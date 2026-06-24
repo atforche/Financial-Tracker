@@ -168,10 +168,7 @@ const CurrentTransactions = async function ({
         }
         emptyAction={
           current.accountingPeriodName === null ? null : (
-            <Button
-              variant="contained"
-              href={routes.workspace({ action: "create" })}
-            >
+            <Button variant="contained" href={routes.workspaceCreate({})}>
               Create transaction
             </Button>
           )

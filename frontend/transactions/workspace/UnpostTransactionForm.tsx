@@ -1,11 +1,25 @@
 "use client";
 
-import { Button, DialogActions, Stack, Typography } from "@mui/material";
-import { type JSX, startTransition, useActionState } from "react";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  Typography,
+} from "@mui/material";
+import {
+  type JSX,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import Link from "next/link";
 import type { Transaction } from "@/transactions/types";
 import unpostTransaction from "@/transactions/workspace/unpostTransaction";
+import { useRouter } from "next/navigation";
 
 /**
  * Props for the UnpostTransactionForm component.
@@ -16,25 +30,67 @@ interface UnpostTransactionFormProps {
 }
 
 /**
- * Component that displays the form for unposting a transaction.
+ * Component that displays the action for unposting a transaction.
  */
 const UnpostTransactionForm = function ({
   transaction,
   redirectUrl,
 }: UnpostTransactionFormProps): JSX.Element {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState(unpostTransaction, {});
 
+  useEffect(() => {
+    if (state.success === true) {
+      router.replace(redirectUrl, { scroll: false });
+    }
+  }, [redirectUrl, router, state.success]);
+
   return (
-    <Stack spacing={2}>
-      <Stack spacing={2} sx={{ maxWidth: "600px" }}>
-        <Typography>
-          Are you sure you want to unpost this transaction from all posted
-          accounts?
-        </Typography>
+    <>
+      <Button
+        variant="outlined"
+        onClick={() => {
+          setOpen(true);
+        }}
+      >
+        Unpost
+      </Button>
+      <Dialog
+        open={open}
+        onClose={
+          pending
+            ? // eslint-disable-next-line no-undefined
+              undefined
+            : (): void => {
+                setOpen(false);
+              }
+        }
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Unpost Transaction</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            <Typography>
+              Are you sure you want to unpost this transaction from all posted
+              accounts?
+            </Typography>
+            <ErrorAlert
+              errorMessage={state.errorTitle ?? null}
+              unmappedErrors={state.unmappedErrors ?? null}
+            />
+          </Stack>
+        </DialogContent>
         <DialogActions>
-          <Link href={redirectUrl} tabIndex={-1}>
-            <Button variant="outlined">Cancel</Button>
-          </Link>
+          <Button
+            disabled={pending}
+            onClick={() => {
+              setOpen(false);
+            }}
+          >
+            Cancel
+          </Button>
           <Button
             variant="contained"
             loading={pending}
@@ -47,12 +103,8 @@ const UnpostTransactionForm = function ({
             Unpost
           </Button>
         </DialogActions>
-        <ErrorAlert
-          errorMessage={state.errorTitle ?? null}
-          unmappedErrors={state.unmappedErrors ?? null}
-        />
-      </Stack>
-    </Stack>
+      </Dialog>
+    </>
   );
 };
 

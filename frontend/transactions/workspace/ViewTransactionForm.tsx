@@ -1,32 +1,98 @@
+"use client";
+
 import {
   type AccountTransaction,
   type FundTransaction,
   type IncomeTransaction,
   type SpendingTransaction,
   type Transaction,
+  type TransactionAccount,
   TransactionType,
   asAccountTransaction,
   asFundTransaction,
   asIncomeTransaction,
   asSpendingTransaction,
+  getPostableTransactionAccounts,
+  getPostedTransactionAccounts,
 } from "@/transactions/types";
-import { Box, Stack } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
+import type { JSX, ReactNode } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import DeleteTransactionForm from "@/transactions/workspace/DeleteTransactionForm";
 import type { Fund } from "@/funds/types";
-import type { JSX } from "react";
+import Link from "next/link";
 import TransactionAccountPathViewSection from "@/transactions/workspace/TransactionAccountPathViewSection";
+import TransactionAccountPostAction from "@/transactions/workspace/TransactionAccountPostAction";
 import TransactionDetailsViewSection from "@/transactions/workspace/TransactionDetailsViewSection";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
 import TransactionFundAssignmentsViewSection from "@/transactions/workspace/TransactionFundAssignmentsViewSection";
 import TransactionFundPathViewSection from "@/transactions/workspace/TransactionFundPathViewSection";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
+import UnpostTransactionForm from "@/transactions/workspace/UnpostTransactionForm";
+import dayjs from "dayjs";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface ViewTransactionFormProps {
   readonly transaction: Transaction;
   readonly transactionAccountingPeriod: AccountingPeriod;
   readonly funds: Fund[];
+  readonly currentUrl: string;
+  readonly workspaceUrl: string;
+  readonly editUrl: string;
 }
+
+interface AccountHelperContentContext {
+  readonly transaction: Transaction;
+  readonly currentUrl: string;
+}
+
+const createAccountHelperContentGetter = function ({
+  transaction,
+  currentUrl,
+}: AccountHelperContentContext): (account: TransactionAccount) => ReactNode {
+  const postableAccountIds = new Set(
+    getPostableTransactionAccounts(transaction).map(
+      (account) => account.accountId,
+    ),
+  );
+  const postedAccountsById = new Map(
+    getPostedTransactionAccounts(transaction).map((account) => [
+      account.accountId,
+      account.postedDate,
+    ]),
+  );
+  const renderedPostActions = new Set<string>();
+
+  return function accountHelperContent(account: TransactionAccount): ReactNode {
+    const postedDate = postedAccountsById.get(account.accountId) ?? null;
+
+    if (postedDate !== null) {
+      return (
+        <Typography variant="caption" color="text.secondary" sx={{ px: 1.75 }}>
+          Posted on {dayjs(postedDate).format("MMMM D, YYYY")}
+        </Typography>
+      );
+    }
+
+    if (
+      !postableAccountIds.has(account.accountId) ||
+      renderedPostActions.has(account.accountId)
+    ) {
+      return null;
+    }
+
+    renderedPostActions.add(account.accountId);
+    return (
+      <TransactionAccountPostAction
+        transactionId={transaction.id}
+        accountId={account.accountId}
+        accountName={account.accountName}
+        defaultDate={transaction.date}
+        redirectUrl={currentUrl}
+      />
+    );
+  };
+};
 
 const renderIncomeSourceView = function (
   transaction: IncomeTransaction,
@@ -45,7 +111,7 @@ const renderIncomeSourceView = function (
       title="Income Breakdown"
       description="Review the gross income lines and deductions captured for this source."
     >
-      <Box
+      <Stack
         sx={{
           display: "grid",
           gap: 2,
@@ -65,10 +131,10 @@ const renderIncomeSourceView = function (
           label="Net Income"
           value={formatCurrency(transaction.amount)}
         />
-      </Box>
+      </Stack>
       <Stack spacing={2}>
         {transaction.source.incomeLines.map((line, index) => (
-          <Box
+          <Stack
             key={`income-line-${index}`}
             sx={{
               display: "grid",
@@ -87,10 +153,10 @@ const renderIncomeSourceView = function (
               label="Amount"
               value={formatCurrency(line.amount)}
             />
-          </Box>
+          </Stack>
         ))}
         {transaction.source.incomeDeductions.map((deduction, index) => (
-          <Box
+          <Stack
             key={`income-deduction-${index}`}
             sx={{
               display: "grid",
@@ -109,7 +175,7 @@ const renderIncomeSourceView = function (
               label="Amount"
               value={formatCurrency(deduction.amount)}
             />
-          </Box>
+          </Stack>
         ))}
       </Stack>
     </TransactionSection>
@@ -119,6 +185,7 @@ const renderIncomeSourceView = function (
 const renderIncomeView = function (
   transaction: IncomeTransaction,
   funds: Fund[],
+  getAccountHelperContent: (account: TransactionAccount) => ReactNode,
 ): JSX.Element[] {
   return [
     renderIncomeSourceView(transaction),
@@ -140,6 +207,7 @@ const renderIncomeView = function (
             transaction.source.account === null ? "Source Location" : null
           }
           leftLocationValue={transaction.source.location ?? null}
+          getAccountHelperContent={getAccountHelperContent}
         />
       );
       const fundSection = (
@@ -159,6 +227,7 @@ const renderIncomeView = function (
 const renderSpendingView = function (
   transaction: SpendingTransaction,
   funds: Fund[],
+  getAccountHelperContent: (account: TransactionAccount) => ReactNode,
 ): JSX.Element[] {
   return transaction.destinations.flatMap((destination, index) => {
     const title =
@@ -178,6 +247,7 @@ const renderSpendingView = function (
           destination.account === null ? "Destination Location" : null
         }
         rightLocationValue={destination.location ?? null}
+        getAccountHelperContent={getAccountHelperContent}
       />
     );
     const fundSection = (
@@ -195,6 +265,7 @@ const renderSpendingView = function (
 
 const renderAccountView = function (
   transaction: AccountTransaction,
+  getAccountHelperContent: (account: TransactionAccount) => ReactNode,
 ): JSX.Element[] {
   return transaction.destinations.map((destination, index) => (
     <TransactionAccountPathViewSection
@@ -217,6 +288,7 @@ const renderAccountView = function (
         destination.account === null ? "Destination Location" : null
       }
       rightLocationValue={destination.location ?? null}
+      getAccountHelperContent={getAccountHelperContent}
     />
   ));
 };
@@ -246,11 +318,19 @@ const ViewTransactionForm = function ({
   transaction,
   transactionAccountingPeriod,
   funds,
+  currentUrl,
+  workspaceUrl,
+  editUrl,
 }: ViewTransactionFormProps): JSX.Element {
   const spendingTransaction = asSpendingTransaction(transaction);
   const incomeTransaction = asIncomeTransaction(transaction);
   const accountTransaction = asAccountTransaction(transaction);
   const fundTransaction = asFundTransaction(transaction);
+  const postedAccountCount = getPostedTransactionAccounts(transaction).length;
+  const getAccountHelperContent = createAccountHelperContentGetter({
+    transaction,
+    currentUrl,
+  });
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
@@ -259,21 +339,42 @@ const ViewTransactionForm = function ({
         date={transaction.date}
         description={transaction.description}
         amount={transaction.amount}
+        headerAction={
+          <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
+            <Button component={Link} href={editUrl} variant="contained">
+              Edit
+            </Button>
+            {postedAccountCount > 0 ? (
+              <UnpostTransactionForm
+                transaction={transaction}
+                redirectUrl={currentUrl}
+              />
+            ) : null}
+            <DeleteTransactionForm
+              transaction={transaction}
+              redirectUrl={workspaceUrl}
+            />
+          </Stack>
+        }
       />
 
       {transaction.transactionType === TransactionType.Spending &&
       spendingTransaction !== null
-        ? renderSpendingView(spendingTransaction, funds)
+        ? renderSpendingView(
+            spendingTransaction,
+            funds,
+            getAccountHelperContent,
+          )
         : null}
 
       {transaction.transactionType === TransactionType.Income &&
       incomeTransaction !== null
-        ? renderIncomeView(incomeTransaction, funds)
+        ? renderIncomeView(incomeTransaction, funds, getAccountHelperContent)
         : null}
 
       {transaction.transactionType === TransactionType.Account &&
       accountTransaction !== null
-        ? renderAccountView(accountTransaction)
+        ? renderAccountView(accountTransaction, getAccountHelperContent)
         : null}
 
       {transaction.transactionType === TransactionType.Fund &&

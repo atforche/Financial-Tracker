@@ -1,11 +1,21 @@
 "use client";
 
-import { Button, Checkbox, Paper, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Checkbox,
+  Paper,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { type Transaction, TransactionSortOrder } from "@/transactions/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
+import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
 import tryParseEnum from "@/framework/data/tryParseEnum";
@@ -30,6 +40,8 @@ const TransactionWorkspaceListFrame = function ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  const theme = useTheme();
+  const shouldOpenDetailsPage = useMediaQuery(theme.breakpoints.down("xl"));
 
   const accountingPeriodIdsParamName = "accountingPeriodIds";
   const accountIdsParamName = "accountIds";
@@ -43,7 +55,10 @@ const TransactionWorkspaceListFrame = function ({
   ): void {
     const params = new URLSearchParams(searchParams.toString());
     update(params);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    const query = params.toString();
+    router.replace(query === "" ? pathname : `${pathname}?${query}`, {
+      scroll: false,
+    });
   };
 
   const setSort = function (sort: TransactionSortOrder | null): void {
@@ -70,32 +85,52 @@ const TransactionWorkspaceListFrame = function ({
     });
   };
 
+  const openTransaction = function (transactionId: string): void {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set(selectedTransactionIdParamName, transactionId);
+    const query = params.toString();
+    router.push(
+      query === ""
+        ? `${pathname}/${transactionId}`
+        : `${pathname}/${transactionId}?${query}`,
+      { scroll: false },
+    );
+  };
+
   const currentSort = tryParseEnum(
     TransactionSortOrder,
     searchParams.get(sortParamName) ?? "",
   );
+  const createQuery = searchParams.toString();
+  const createUrl =
+    createQuery === ""
+      ? `${pathname}/create`
+      : `${pathname}/create?${createQuery}`;
 
   const columns: ColumnDefinition<Transaction>[] = [
     {
       name: "selected",
       headerContent: "",
       getBodyContent: (transaction) => (
-        <Checkbox
-          checked={selectedTransactionId === transaction.id}
-          onClick={(event) => {
-            event.stopPropagation();
-            toggleSelection(transaction.id);
-          }}
-          slotProps={{
-            input: {
-              "aria-label": `Select ${transaction.id}`,
-            },
-          }}
-        />
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <Checkbox
+            checked={selectedTransactionId === transaction.id}
+            onClick={(event) => {
+              event.stopPropagation();
+              toggleSelection(transaction.id);
+            }}
+            slotProps={{
+              input: {
+                "aria-label": `Select ${transaction.id}`,
+              },
+            }}
+          />
+        </Box>
       ),
       alignment: "center",
       minWidth: 0,
       maxWidth: 0,
+      sx: { display: { xs: "none", xl: "table-cell" } },
     },
     {
       name: "date",
@@ -162,6 +197,27 @@ const TransactionWorkspaceListFrame = function ({
       alignment: "right",
       minWidth: 150,
     },
+    {
+      name: "open",
+      headerContent: "",
+      getBodyContent: () => (
+        <Box
+          sx={{
+            alignItems: "center",
+            color: "text.secondary",
+            display: "flex",
+            justifyContent: "center",
+            minHeight: 40,
+          }}
+        >
+          <KeyboardArrowRight fontSize="small" />
+        </Box>
+      ),
+      alignment: "center",
+      minWidth: 0,
+      maxWidth: 0,
+      sx: { display: { xs: "table-cell", xl: "none" } },
+    },
   ];
 
   return (
@@ -174,9 +230,24 @@ const TransactionWorkspaceListFrame = function ({
       }}
     >
       <Stack spacing={2.5}>
-        <Typography variant="h6" color="text.secondary">
-          Transactions
-        </Typography>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={1.5}
+          justifyContent="space-between"
+          alignItems={{ xs: "stretch", sm: "center" }}
+        >
+          <Typography variant="h6" color="text.secondary">
+            Transactions
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => {
+              router.push(createUrl);
+            }}
+          >
+            Create Transaction
+          </Button>
+        </Stack>
         <ListFrame<Transaction>
           columns={columns}
           getId={(transaction) => transaction.id}
@@ -184,6 +255,16 @@ const TransactionWorkspaceListFrame = function ({
           totalCount={totalCount ?? null}
           searchParamName=""
           pageParamName={pageParamName}
+          onRowClick={(transaction) => {
+            if (shouldOpenDetailsPage) {
+              openTransaction(transaction.id);
+              return;
+            }
+            toggleSelection(transaction.id);
+          }}
+          isRowSelected={(transaction) =>
+            transaction.id === selectedTransactionId
+          }
           initialEmptyState={{
             title: "No transactions found",
             description: "No transactions have been recorded yet.",

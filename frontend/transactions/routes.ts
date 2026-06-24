@@ -75,6 +75,27 @@ const routes = {
       "/transactions/workspace",
       transactionWorkspaceSearchParamsToSearchParams(searchParams),
     ),
+  workspaceCreate: (searchParams: TransactionWorkspaceSearchParams): Route =>
+    pathWithSearchParams(
+      "/transactions/workspace/create",
+      transactionWorkspaceSearchParamsToSearchParams(searchParams),
+    ),
+  workspaceDetail: (
+    transactionId: string,
+    searchParams: TransactionWorkspaceSearchParams,
+  ): Route =>
+    pathWithSearchParams(
+      `/transactions/workspace/${transactionId}`,
+      transactionWorkspaceSearchParamsToSearchParams(searchParams),
+    ),
+  workspaceEdit: (
+    transactionId: string,
+    searchParams: TransactionWorkspaceSearchParams,
+  ): Route =>
+    pathWithSearchParams(
+      `/transactions/workspace/${transactionId}/edit`,
+      transactionWorkspaceSearchParamsToSearchParams(searchParams),
+    ),
 };
 
 export default routes;

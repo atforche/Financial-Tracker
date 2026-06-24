@@ -5,6 +5,7 @@ interface TransactionSectionProps {
   readonly title: string;
   readonly description: string;
   readonly children: ReactNode;
+  readonly headerAction?: ReactNode;
 }
 
 /**
@@ -14,6 +15,7 @@ const TransactionSection = function ({
   title,
   description,
   children,
+  headerAction,
 }: TransactionSectionProps): JSX.Element {
   return (
     <Paper
@@ -24,11 +26,19 @@ const TransactionSection = function ({
       }}
     >
       <Stack spacing={2.5}>
-        <Stack spacing={0.5}>
-          <Typography variant="h6">{title}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            {description}
-          </Typography>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={1.5}
+          justifyContent="space-between"
+          alignItems={{ xs: "stretch", sm: "flex-start" }}
+        >
+          <Stack spacing={0.5}>
+            <Typography variant="h6">{title}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {description}
+            </Typography>
+          </Stack>
+          {headerAction ?? null}
         </Stack>
         {children}
       </Stack>

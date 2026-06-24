@@ -129,10 +129,13 @@ const ListFrame = function <T>({
                             className="list-frame-table-cell"
                             key={`${getId(item)}-${column.name}`}
                             align={column.alignment ?? "left"}
-                            sx={{
-                              paddingTop: "8px",
-                              paddingBottom: "8px",
-                            }}
+                            sx={[
+                              {
+                                paddingTop: "8px",
+                                paddingBottom: "8px",
+                              },
+                              column.sx ?? false,
+                            ]}
                           >
                             {column.getBodyContent(item)}
                           </TableCell>
@@ -155,6 +158,7 @@ const ListFrame = function <T>({
                             <TableCell
                               className="list-frame-table-cell"
                               key={`skeleton-${index}-${cellIndex}`}
+                              sx={columns[cellIndex]?.sx}
                             />
                           ))}
                       </TableRow>

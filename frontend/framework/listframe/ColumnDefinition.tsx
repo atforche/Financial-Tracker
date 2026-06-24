@@ -1,5 +1,8 @@
+import type { SxProps, Theme } from "@mui/material/styles";
 import type ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
+
+type ColumnSx = Exclude<SxProps<Theme>, readonly unknown[]>;
 
 /**
  * Interface representing a column definition for a list frame.
@@ -14,6 +17,7 @@ interface ColumnDefinition<T> {
   readonly alignment?: "center" | "left" | "right";
   readonly maxWidth?: number;
   readonly minWidth?: number;
+  readonly sx?: ColumnSx | null;
 }
 
 export default ColumnDefinition;

@@ -1,23 +1,13 @@
-import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
-import { Box, Stack } from "@mui/material";
-import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
+import Link from "next/link";
 import type { TransactionSortOrder } from "@/transactions/types";
-import TransactionWorkspaceActions from "@/transactions/workspace/TransactionWorkspaceActions";
 import TransactionWorkspaceFilter from "@/transactions/workspace/TransactionWorkspaceFilter";
 import TransactionWorkspaceListFrame from "@/transactions/workspace/TransactionWorkspaceListFrame";
-import getApiClient from "@/framework/data/getApiClient";
+import ViewTransactionForm from "@/transactions/workspace/ViewTransactionForm";
+import { getTransactionWorkspaceListData } from "@/transactions/workspace/getTransactionWorkspaceData";
 import { redirect } from "next/navigation";
 import routes from "@/transactions/routes";
-import { rowsPerPage } from "@/framework/listframe/Constants";
-
-type TransactionWorkspaceAction =
-  | "view"
-  | "create"
-  | "update"
-  | "post"
-  | "unpost"
-  | "delete";
 
 /**
  * Search parameters supported by the Transactions workspace.
@@ -29,7 +19,6 @@ interface TransactionWorkspaceSearchParams {
   sort?: TransactionSortOrder;
   page?: number | string | null;
   selectedTransactionId?: string;
-  action?: TransactionWorkspaceAction;
 }
 
 /**
@@ -39,191 +28,87 @@ interface TransactionWorkspaceProps {
   readonly searchParams: Promise<TransactionWorkspaceSearchParams>;
 }
 
-const toRepeatedSearchParam = function (
-  value: string | string[] | undefined,
-): string[] | null {
-  if (Array.isArray(value)) {
-    return value;
-  }
-
-  return typeof value === "string" ? [value] : null;
-};
-
 /**
- * Displays the transaction workspace with list-backed inline actions.
+ * Renders the main transaction workspace, including filters, transaction list, and transaction details.
  */
 const TransactionWorkspace = async function ({
   searchParams,
 }: TransactionWorkspaceProps): Promise<JSX.Element> {
+  const resolvedSearchParams = await searchParams;
+  const { sort, selectedTransactionId, page } = resolvedSearchParams;
   const {
-    accountingPeriodIds,
-    accountIds,
-    fundIds,
-    sort,
-    page,
-    selectedTransactionId,
-    action,
-  } = await searchParams;
-  const apiClient = getApiClient();
-  const currentPage = normalizePageValue(page);
-  const normalizedAccountingPeriodIds =
-    toRepeatedSearchParam(accountingPeriodIds);
-  const normalizedAccountIds = toRepeatedSearchParam(accountIds);
-  const normalizedFundIds = toRepeatedSearchParam(fundIds);
+    openAccountingPeriods,
+    allAccountingPeriods,
+    accounts,
+    funds,
+    currentPage,
+    normalizedAccountingPeriodIds,
+    normalizedAccountIds,
+    normalizedFundIds,
+    transactions,
+    selectedTransaction,
+    displayedTransactions,
+  } = await getTransactionWorkspaceListData(resolvedSearchParams);
 
-  const openAccountingPeriodsPromise = apiClient.GET(
-    "/accounting-periods/open",
-  );
-  const accountsPromise = apiClient.GET("/accounts");
-  const fundsPromise = apiClient.GET("/funds");
-  const transactionsPromise = apiClient.GET("/transactions", {
-    params: {
-      query: {
-        ...(normalizedAccountingPeriodIds !== null
-          ? { AccountingPeriodIds: normalizedAccountingPeriodIds }
-          : {}),
-        ...(normalizedAccountIds !== null
-          ? { AccountIds: normalizedAccountIds }
-          : {}),
-        ...(normalizedFundIds !== null ? { FundIds: normalizedFundIds } : {}),
-        Sort: sort ?? null,
-        Limit: rowsPerPage,
-        Offset: getPageOffset(currentPage),
-      },
-    },
-  });
-
-  const [
-    { data: openAccountingPeriods },
-    { data: accounts },
-    { data: funds },
-    { data: transactions },
-  ] = await Promise.all([
-    openAccountingPeriodsPromise,
-    accountsPromise,
-    fundsPromise,
-    transactionsPromise,
-  ]);
-
-  if (typeof openAccountingPeriods === "undefined") {
-    throw new Error("Failed to fetch open accounting periods");
-  }
-  if (typeof accounts === "undefined") {
-    throw new Error("Failed to fetch accounts");
-  }
-  if (typeof funds === "undefined") {
-    throw new Error("Failed to fetch funds");
-  }
-  if (typeof transactions === "undefined") {
-    throw new Error("Failed to fetch transactions");
-  }
-
-  let assignmentGoals: AssignmentGoal[] = [];
-  if (openAccountingPeriods.length > 0) {
-    const { data: matchingGoals } = await apiClient.GET(
-      "/goals/assignment/many",
-      {
-        params: {
-          query: {
-            AccountingPeriodIds: openAccountingPeriods.map(
-              (period) => period.id,
-            ),
-          },
-        },
-      },
-    );
-
-    if (typeof matchingGoals === "undefined") {
-      throw new Error("Failed to fetch goals");
-    }
-
-    assignmentGoals = matchingGoals.items;
-  }
-
-  let spendingGoals: SpendingGoal[] = [];
-  if (openAccountingPeriods.length > 0) {
-    const { data: matchingGoals } = await apiClient.GET(
-      "/goals/spending/many",
-      {
-        params: {
-          query: {
-            AccountingPeriodIds: openAccountingPeriods.map(
-              (period) => period.id,
-            ),
-          },
-        },
-      },
-    );
-
-    if (typeof matchingGoals === "undefined") {
-      throw new Error("Failed to fetch goals");
-    }
-
-    spendingGoals = matchingGoals.items;
-  }
-
-  const selectedTransactionById =
-    typeof selectedTransactionId === "string"
-      ? ((
-          await apiClient.GET("/transactions/{transactionId}", {
-            params: {
-              path: {
-                transactionId: selectedTransactionId,
-              },
-            },
-          })
-        ).data ?? null)
-      : null;
-
-  const selectedTransaction =
-    selectedTransactionById ??
-    transactions.items.find(
-      (transaction) => transaction.id === selectedTransactionId,
-    ) ??
-    null;
-  const displayedTransactions =
-    selectedTransaction !== null &&
-    !transactions.items.some(
-      (transaction) => transaction.id === selectedTransaction.id,
-    )
-      ? [selectedTransaction, ...transactions.items].slice(0, rowsPerPage)
-      : transactions.items;
+  const baseWorkspaceSearchParams: TransactionWorkspaceSearchParams = {
+    ...(normalizedAccountingPeriodIds !== null
+      ? { accountingPeriodIds: normalizedAccountingPeriodIds }
+      : {}),
+    ...(normalizedAccountIds !== null
+      ? { accountIds: normalizedAccountIds }
+      : {}),
+    ...(normalizedFundIds !== null ? { fundIds: normalizedFundIds } : {}),
+    ...(typeof sort !== "undefined" ? { sort } : {}),
+    ...(typeof page !== "undefined" ? { page: currentPage } : {}),
+  };
 
   if (
     typeof selectedTransactionId === "string" &&
     selectedTransaction === null
   ) {
-    redirect(
-      routes.workspace({
-        ...(normalizedAccountingPeriodIds !== null
-          ? { accountingPeriodIds: normalizedAccountingPeriodIds }
-          : {}),
-        ...(normalizedAccountIds !== null
-          ? { accountIds: normalizedAccountIds }
-          : {}),
-        ...(normalizedFundIds !== null ? { fundIds: normalizedFundIds } : {}),
-        ...(typeof sort !== "undefined" ? { sort } : {}),
-        ...(typeof page !== "undefined" ? { page: currentPage } : {}),
-        ...(typeof action !== "undefined" ? { action } : {}),
-      }),
-    );
+    redirect(routes.workspace(baseWorkspaceSearchParams));
   }
+
+  const selectedTransactionAccountingPeriod =
+    selectedTransaction === null
+      ? null
+      : (allAccountingPeriods.find(
+          (period) => period.id === selectedTransaction.accountingPeriodId,
+        ) ?? null);
+  const selectedWorkspaceSearchParams: TransactionWorkspaceSearchParams =
+    selectedTransaction === null
+      ? baseWorkspaceSearchParams
+      : {
+          ...baseWorkspaceSearchParams,
+          selectedTransactionId: selectedTransaction.id,
+        };
+  const workspaceUrl = routes.workspace(selectedWorkspaceSearchParams);
+  const createUrl = routes.workspaceCreate(baseWorkspaceSearchParams);
+  const editUrl =
+    selectedTransaction === null
+      ? null
+      : routes.workspaceEdit(
+          selectedTransaction.id,
+          selectedWorkspaceSearchParams,
+        );
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
       <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
         <TransactionWorkspaceFilter
           accountingPeriods={openAccountingPeriods}
-          accounts={accounts.items}
-          funds={funds.items}
+          accounts={accounts}
+          funds={funds}
         />
       </Stack>
       <Box
         sx={{
           display: "grid",
           gap: 3,
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(min(100%, 600px), 1fr))",
+          gridTemplateColumns: {
+            xs: "1fr",
+            xl: "minmax(0, 1fr) minmax(0, 1fr)",
+          },
         }}
       >
         <TransactionWorkspaceListFrame
@@ -231,19 +116,50 @@ const TransactionWorkspace = async function ({
           totalCount={transactions.totalCount}
           selectedTransactionId={selectedTransaction?.id ?? null}
         />
-        <TransactionWorkspaceActions
-          accountingPeriods={openAccountingPeriods}
-          accounts={accounts.items}
-          funds={funds.items}
-          assignmentGoals={assignmentGoals}
-          spendingGoals={spendingGoals}
-          selectedTransaction={selectedTransaction}
-          requestedAction={action ?? null}
-        />
+        <Box sx={{ display: { xs: "none", xl: "block" } }}>
+          {selectedTransaction !== null &&
+          selectedTransactionAccountingPeriod !== null &&
+          editUrl !== null ? (
+            <ViewTransactionForm
+              transaction={selectedTransaction}
+              transactionAccountingPeriod={selectedTransactionAccountingPeriod}
+              funds={funds}
+              currentUrl={workspaceUrl}
+              workspaceUrl={workspaceUrl}
+              editUrl={editUrl}
+            />
+          ) : (
+            <Paper
+              variant="outlined"
+              sx={{
+                borderRadius: 4,
+                p: { xs: 2.5, md: 3 },
+              }}
+            >
+              <Stack spacing={2.5}>
+                <Stack spacing={0.5}>
+                  <Typography variant="h6">Transaction Details</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Select a transaction to review its details, post any tracked
+                    account activity, or make changes.
+                  </Typography>
+                </Stack>
+                <Link
+                  href={createUrl}
+                  style={{ alignSelf: "flex-start", textDecoration: "none" }}
+                >
+                  <Button component="span" variant="contained">
+                    Create Transaction
+                  </Button>
+                </Link>
+              </Stack>
+            </Paper>
+          )}
+        </Box>
       </Box>
     </Stack>
   );
 };
 
-export type { TransactionWorkspaceAction, TransactionWorkspaceSearchParams };
+export type { TransactionWorkspaceSearchParams };
 export default TransactionWorkspace;

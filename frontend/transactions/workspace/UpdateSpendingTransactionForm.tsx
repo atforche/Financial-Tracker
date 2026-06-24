@@ -28,9 +28,9 @@ import SpendingTransactionSourceFrame from "@/transactions/workspace/SpendingTra
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
 import type { components } from "@/framework/data/api";
-import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import updateTransaction from "@/transactions/workspace/updateTransaction";
 import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
+import { useRouter } from "next/navigation";
 
 interface UpdateSpendingTransactionFormProps {
   readonly transaction: Transaction;
@@ -163,6 +163,7 @@ const UpdateSpendingTransactionForm = function ({
     (goal) => goal.accountingPeriodId === transactionAccountingPeriod.id,
   );
 
+  const router = useRouter();
   const [state, action, pending] = useActionState(updateTransaction, {});
 
   const reset = function (): void {
@@ -171,15 +172,13 @@ const UpdateSpendingTransactionForm = function ({
     setAmount(transaction.amount);
     setSourceAccount(buildSourceAccountFromTransaction());
     setDestinations(buildDestinationsFromTransaction());
-    focusFirstEntryControl(formRef.current);
   };
 
   useEffect(() => {
     if (state.success === true) {
-      reset();
+      router.replace(redirectUrl, { scroll: false });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
+  }, [redirectUrl, router, state.success]);
 
   const updateDestination = function (
     index: number,

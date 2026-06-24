@@ -25,8 +25,8 @@ import FundTransactionDestinationFrame from "@/transactions/workspace/FundTransa
 import FundTransactionSourceFrame from "@/transactions/workspace/FundTransactionSourceFrame";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
-import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import updateTransaction from "@/transactions/workspace/updateTransaction";
+import { useRouter } from "next/navigation";
 
 interface UpdateFundTransactionFormProps {
   readonly transaction: Transaction;
@@ -106,6 +106,7 @@ const UpdateFundTransactionForm = function ({
     buildDestinationsFromTransaction(),
   );
 
+  const router = useRouter();
   const [state, action, pending] = useActionState(updateTransaction, {});
 
   const reset = function (): void {
@@ -114,15 +115,13 @@ const UpdateFundTransactionForm = function ({
     setAmount(transaction.amount);
     setSourceFund(buildSourceFundFromTransaction());
     setDestinations(buildDestinationsFromTransaction());
-    focusFirstEntryControl(formRef.current);
   };
 
   useEffect(() => {
     if (state.success === true) {
-      reset();
+      router.replace(redirectUrl, { scroll: false });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
+  }, [redirectUrl, router, state.success]);
 
   const updateDestination = function (
     index: number,

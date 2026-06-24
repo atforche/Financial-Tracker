@@ -26,6 +26,7 @@ interface CreateTransactionFormProps {
   readonly assignmentGoals: AssignmentGoal[];
   readonly spendingGoals: SpendingGoal[];
   readonly redirectUrl: string;
+  readonly showHeading?: boolean;
 }
 
 /**
@@ -38,6 +39,7 @@ const CreateTransactionForm = function ({
   assignmentGoals,
   spendingGoals,
   redirectUrl,
+  showHeading = true,
 }: CreateTransactionFormProps): JSX.Element {
   type TransactionFormKind = "spending" | "income" | "account" | "fund";
   const [transactionType, setTransactionType] =
@@ -45,12 +47,14 @@ const CreateTransactionForm = function ({
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
-      <Stack spacing={0.5}>
-        <Typography variant="h5">Create Transaction</Typography>
-        <Typography variant="body2" color="text.secondary">
-          Choose the transaction type, then complete the matching form.
-        </Typography>
-      </Stack>
+      {showHeading ? (
+        <Stack spacing={0.5}>
+          <Typography variant="h5">Create Transaction</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Choose the transaction type, then complete the matching form.
+          </Typography>
+        </Stack>
+      ) : null}
       <Stack spacing={1}>
         <ToggleButtonGroup
           value={transactionType}

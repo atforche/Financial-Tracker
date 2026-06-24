@@ -1,6 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
+import type { JSX, ReactNode } from "react";
 import ArrowForward from "@mui/icons-material/ArrowForward";
-import type { JSX } from "react";
 import type { TransactionAccount } from "@/transactions/types";
 import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
@@ -18,6 +18,7 @@ interface TransactionAccountPathViewSectionProps {
   readonly leftLocationValue?: string | null;
   readonly rightLocationLabel?: string | null;
   readonly rightLocationValue?: string | null;
+  readonly getAccountHelperContent?: (account: TransactionAccount) => ReactNode;
 }
 
 /**
@@ -34,6 +35,7 @@ const TransactionAccountPathViewSection = function ({
   leftLocationValue = null,
   rightLocationLabel = null,
   rightLocationValue = null,
+  getAccountHelperContent,
 }: TransactionAccountPathViewSectionProps): JSX.Element {
   const leftHasLocationValue =
     leftLocationLabel !== null &&
@@ -48,20 +50,26 @@ const TransactionAccountPathViewSection = function ({
     label: string,
     account: TransactionAccount | null,
   ): JSX.Element {
+    const helperContent =
+      account === null ? null : (getAccountHelperContent?.(account) ?? null);
+
     return (
       <TransactionDisplayField
         label={label}
         value={account?.accountName ?? "None"}
         helperText={
           account !== null ? (
-            <TransactionBalanceDetails
-              previousPostedBalance={formatCurrency(
-                account.previousAccountBalance.postedBalance,
-              )}
-              newPostedBalance={formatCurrency(
-                account.newAccountBalance.postedBalance,
-              )}
-            />
+            <Stack spacing={1.25}>
+              <TransactionBalanceDetails
+                previousPostedBalance={formatCurrency(
+                  account.previousAccountBalance.postedBalance,
+                )}
+                newPostedBalance={formatCurrency(
+                  account.newAccountBalance.postedBalance,
+                )}
+              />
+              {helperContent}
+            </Stack>
           ) : null
         }
       />
