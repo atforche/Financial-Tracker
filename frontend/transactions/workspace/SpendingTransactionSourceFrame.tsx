@@ -21,7 +21,7 @@ const SpendingTransactionSourceFrame = function ({
 }: SpendingTransactionSourceFrameProps): JSX.Element {
   return (
     <TransactionFrame
-      title="SpendingTransactionSource"
+      title="Source"
       description="Choose the tracked account that the spending will come from."
     >
       <AccountEntryField

@@ -18,7 +18,6 @@ import { useRouter } from "next/navigation";
 interface TransactionAccountPostActionProps {
   readonly transactionId: string;
   readonly accountId: string;
-  readonly accountName: string;
   readonly defaultDate: string;
   readonly redirectUrl: string;
 }
@@ -29,7 +28,6 @@ interface TransactionAccountPostActionProps {
 const TransactionAccountPostAction = function ({
   transactionId,
   accountId,
-  accountName,
   defaultDate,
   redirectUrl,
 }: TransactionAccountPostActionProps): JSX.Element {
@@ -52,10 +50,7 @@ const TransactionAccountPostAction = function ({
         };
 
   return (
-    <Stack spacing={1.25} sx={{ px: 1.75 }}>
-      <Typography variant="caption" color="text.secondary">
-        Post {accountName} to update the account ledger for this transaction.
-      </Typography>
+    <Stack spacing={1.25} sx={{ paddingTop: 2 }}>
       <Stack
         direction={{ xs: "column", sm: "row" }}
         spacing={1.5}

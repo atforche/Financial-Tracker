@@ -15,12 +15,16 @@ import {
   getPostableTransactionAccounts,
   getPostedTransactionAccounts,
 } from "@/transactions/types";
-import { Button, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import type { JSX, ReactNode } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import DeleteTransactionForm from "@/transactions/workspace/DeleteTransactionForm";
+import EastOutlined from "@mui/icons-material/EastOutlined";
 import type { Fund } from "@/funds/types";
 import Link from "next/link";
+import SouthOutlined from "@mui/icons-material/SouthOutlined";
+import SpendingTransactionDestinationViewFrame from "@/transactions/workspace/SpendingTransactionDestinationViewFrame";
+import SpendingTransactionSourceViewFrame from "@/transactions/workspace/SpendingTransactionSourceViewFrame";
 import TransactionAccountPathViewSection from "@/transactions/workspace/TransactionAccountPathViewSection";
 import TransactionAccountPostAction from "@/transactions/workspace/TransactionAccountPostAction";
 import TransactionDetailsViewSection from "@/transactions/workspace/TransactionDetailsViewSection";
@@ -65,7 +69,6 @@ const createAccountHelperContentGetter = function ({
 
   return function accountHelperContent(account: TransactionAccount): ReactNode {
     const postedDate = postedAccountsById.get(account.accountId) ?? null;
-
     if (postedDate !== null) {
       return (
         <Typography variant="caption" color="text.secondary" sx={{ px: 1.75 }}>
@@ -73,20 +76,17 @@ const createAccountHelperContentGetter = function ({
         </Typography>
       );
     }
-
     if (
       !postableAccountIds.has(account.accountId) ||
       renderedPostActions.has(account.accountId)
     ) {
       return null;
     }
-
     renderedPostActions.add(account.accountId);
     return (
       <TransactionAccountPostAction
         transactionId={transaction.id}
         accountId={account.accountId}
-        accountName={account.accountName}
         defaultDate={transaction.date}
         redirectUrl={currentUrl}
       />
@@ -229,38 +229,76 @@ const renderSpendingView = function (
   funds: Fund[],
   getAccountHelperContent: (account: TransactionAccount) => ReactNode,
 ): JSX.Element[] {
-  return transaction.destinations.flatMap((destination, index) => {
-    const title =
-      transaction.destinations.length === 1
-        ? "Money Flow"
-        : `Money Flow ${index + 1}`;
-    const destinationSection = (
-      <TransactionAccountPathViewSection
-        key={`spending-path-${index}`}
-        title={title}
-        description="Review which tracked account is charged and where this portion of the money was paid."
-        leftLabel="Spend From"
-        rightLabel="Pay To"
-        leftAccount={transaction.source.account}
-        rightAccount={destination.account ?? null}
-        rightLocationLabel={
-          destination.account === null ? "Destination Location" : null
-        }
-        rightLocationValue={destination.location ?? null}
-        getAccountHelperContent={getAccountHelperContent}
-      />
-    );
-    const fundSection = (
-      <TransactionFundAssignmentsViewSection
-        key={`spending-funds-${index}`}
+  const sourceFrame = (
+    <SpendingTransactionSourceViewFrame
+      account={transaction.source.account}
+      helperContent={getAccountHelperContent(transaction.source.account)}
+    />
+  );
+  const destinationFrames = transaction.destinations.map(
+    (destination, index) => (
+      <SpendingTransactionDestinationViewFrame
+        key={`spending-destination-${index}`}
+        index={index}
         funds={funds}
+        account={destination.account ?? null}
+        location={destination.location ?? null}
         amount={destination.amount}
         fundAssignments={destination.fundAssignments}
-        tone="spending"
+        helperContent={
+          destination.account === null ||
+          typeof destination.account === "undefined"
+            ? null
+            : getAccountHelperContent(destination.account)
+        }
       />
-    );
-    return [destinationSection, fundSection];
-  });
+    ),
+  );
+
+  return [
+    <TransactionSection
+      key="spending-flow"
+      title="Money Flow"
+      description="Review how money moves from the source account into each destination."
+    >
+      <Box
+        sx={{
+          display: "grid",
+          gap: 2,
+          alignItems: "start",
+          gridTemplateColumns: {
+            xs: "1fr",
+            lg: "minmax(280px, 0.95fr) auto minmax(320px, 1.15fr)",
+          },
+        }}
+      >
+        {sourceFrame}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: { lg: 88 },
+            color: "text.secondary",
+          }}
+        >
+          <EastOutlined
+            sx={{
+              display: { xs: "none", lg: "block" },
+              fontSize: 40,
+            }}
+          />
+          <SouthOutlined
+            sx={{
+              display: { xs: "block", lg: "none" },
+              fontSize: 32,
+            }}
+          />
+        </Box>
+        <Stack spacing={2}>{destinationFrames}</Stack>
+      </Box>
+    </TransactionSection>,
+  ];
 };
 
 const renderAccountView = function (
