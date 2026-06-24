@@ -7,7 +7,7 @@ import {
   type Transaction,
   getPostableTransactionAccounts,
   getPostedTransactionAccounts,
-} from "@/transactions/types";
+} from "@/transactions/transaction";
 import dayjs, { type Dayjs } from "dayjs";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";

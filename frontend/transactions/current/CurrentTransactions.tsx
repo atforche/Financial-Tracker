@@ -3,7 +3,7 @@ import type {
   CurrentTransactions as CurrentTransactionsModel,
   TransactionSortOrder,
   TransactionType,
-} from "@/transactions/types";
+} from "@/transactions/transaction";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import {
   normalizeRequestedAccountNames,

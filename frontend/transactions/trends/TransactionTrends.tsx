@@ -4,7 +4,7 @@ import {
   TransactionTrendsMode,
   type TransactionTrends as TransactionTrendsModel,
   type TransactionType,
-} from "@/transactions/types";
+} from "@/transactions/transaction";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import {
   normalizeRequestedAccountNames,

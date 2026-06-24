@@ -17,7 +17,7 @@ import {
   useState,
 } from "react";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import type { Transaction } from "@/transactions/types";
+import type { Transaction } from "@/transactions/transaction";
 import unpostTransaction from "@/transactions/workspace/unpostTransaction";
 import { useRouter } from "next/navigation";
 

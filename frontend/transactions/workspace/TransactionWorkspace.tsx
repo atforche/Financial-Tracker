@@ -1,7 +1,7 @@
 import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
 import Link from "next/link";
-import type { TransactionSortOrder } from "@/transactions/types";
+import type { TransactionSortOrder } from "@/transactions/transaction";
 import TransactionWorkspaceFilter from "@/transactions/workspace/TransactionWorkspaceFilter";
 import TransactionWorkspaceListFrame from "@/transactions/workspace/TransactionWorkspaceListFrame";
 import ViewTransactionForm from "@/transactions/workspace/ViewTransactionForm";

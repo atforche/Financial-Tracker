@@ -3,7 +3,7 @@ import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Fund } from "@/funds/types";
-import type { Transaction } from "@/transactions/types";
+import type { Transaction } from "@/transactions/transaction";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import getApiClient from "@/framework/data/getApiClient";
 import { rowsPerPage } from "@/framework/listframe/Constants";

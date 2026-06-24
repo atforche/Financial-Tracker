@@ -5,38 +5,34 @@ import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { Button, Stack, Typography } from "@mui/material";
 import type { Fund, FundAmount } from "@/funds/types";
 import {
-  type IncomeTransaction,
-  type Transaction,
-  UpdateIncomeTransactionType,
-  type UpdateTransactionRequest,
-  asIncomeTransaction,
-  isIncomeTransactionComplete,
-} from "@/transactions/types";
-import IncomeTransactionSourceFrame, {
-  type IncomeAmountItemDraft,
-  createEmptyAmountItem,
-} from "@/transactions/workspace/IncomeTransactionSourceFrame";
-import {
   type JSX,
   startTransition,
   useActionState,
-  useCallback,
   useEffect,
   useRef,
   useState,
 } from "react";
+import {
+  type Transaction,
+  TransactionType,
+  UpdateSpendingTransactionType,
+  type UpdateTransactionRequest,
+  isSpendingTransactionComplete,
+} from "@/transactions/transaction";
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import { AddCircleOutline } from "@mui/icons-material";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import IncomeTransactionDestinationFrame from "@/transactions/workspace/IncomeTransactionDestinationFrame";
+import SpendingTransactionDestinationFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFrame";
+import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
+import type { components } from "@/framework/data/api";
 import updateTransaction from "@/transactions/workspace/updateTransaction";
 import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
 import { useRouter } from "next/navigation";
 
-interface UpdateIncomeTransactionFormProps {
+interface UpdateSpendingTransactionFormProps {
   readonly transaction: Transaction;
   readonly transactionAccountingPeriod: AccountingPeriod;
   readonly accounts: Account[];
@@ -46,26 +42,31 @@ interface UpdateIncomeTransactionFormProps {
   readonly redirectUrl: string;
 }
 
-interface IncomeDestinationDraft {
+interface SpendingDestinationDraft {
   readonly account: Account | null;
+  readonly location: string;
   readonly amount: number | null;
   readonly fundAssignments: FundAmount[];
   readonly baselineFundAssignments: FundAmount[];
 }
 
-type IncomeTransactionDestinationModel =
-  IncomeTransaction["destinations"][number];
+type SpendingTransactionModel =
+  components["schemas"]["TransactionModelSpendingTransactionModel"];
 
-const createEmptyDestination = function (): IncomeDestinationDraft {
+type SpendingTransactionDestinationModel =
+  components["schemas"]["SpendingTransactionDestinationModel"];
+
+const createEmptyDestination = function (): SpendingDestinationDraft {
   return {
     account: null,
+    location: "",
     amount: null,
     fundAssignments: [],
     baselineFundAssignments: [],
   };
 };
 
-const formatTotal = function (value: number): string {
+const formatDestinationTotal = function (value: number): string {
   return value.toLocaleString([], {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -73,9 +74,9 @@ const formatTotal = function (value: number): string {
 };
 
 /**
- * Displays the dedicated update form for income transactions.
+ * Displays the dedicated update form for spending transactions.
  */
-const UpdateIncomeTransactionForm = function ({
+const UpdateSpendingTransactionForm = function ({
   transaction,
   transactionAccountingPeriod,
   accounts,
@@ -83,94 +84,68 @@ const UpdateIncomeTransactionForm = function ({
   assignmentGoals,
   spendingGoals,
   redirectUrl,
-}: UpdateIncomeTransactionFormProps): JSX.Element {
+}: UpdateSpendingTransactionFormProps): JSX.Element {
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
   const formRef = useRef<HTMLDivElement | null>(null);
-  const incomeTransaction: IncomeTransaction | null =
-    asIncomeTransaction(transaction);
+  const spendingTransaction: SpendingTransactionModel | null =
+    transaction.transactionType === TransactionType.Spending
+      ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+        (transaction as SpendingTransactionModel)
+      : null;
 
-  const getAccountById = useCallback(
-    (accountId: string): Account | null =>
-      accounts.find((account) => account.id === accountId) ?? null,
-    [accounts],
-  );
+  const buildDestinationDraft = function (
+    destination: SpendingTransactionDestinationModel,
+  ): SpendingDestinationDraft {
+    const baselineFundAssignments = destination.fundAssignments.map(
+      (fundAssignment) => ({
+        fundId: fundAssignment.fundId,
+        fundName: fundAssignment.fundName,
+        amount: fundAssignment.amount,
+      }),
+    );
 
-  const buildSourceAccountFromTransaction = useCallback((): Account | null => {
-    if (
-      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-      incomeTransaction === null ||
-      incomeTransaction.source.account === null ||
-      typeof incomeTransaction.source.account === "undefined"
-    ) {
-      return null;
-    }
-    return getAccountById(incomeTransaction.source.account.accountId);
-  }, [incomeTransaction, getAccountById]);
-
-  const buildIncomeLinesFromTransaction =
-    useCallback((): IncomeAmountItemDraft[] => {
-      if (incomeTransaction === null) {
-        return [createEmptyAmountItem()];
-      }
-      return incomeTransaction.source.incomeLines.length > 0
-        ? incomeTransaction.source.incomeLines.map((line) => ({
-            description: line.description,
-            amount: line.amount,
-          }))
-        : [createEmptyAmountItem()];
-    }, [incomeTransaction]);
-
-  const buildIncomeDeductionsFromTransaction =
-    useCallback((): IncomeAmountItemDraft[] => {
-      if (incomeTransaction === null) {
-        return [];
-      }
-      return incomeTransaction.source.incomeDeductions.map((deduction) => ({
-        description: deduction.description,
-        amount: deduction.amount,
-      }));
-    }, [incomeTransaction]);
-
-  const buildDestinationDraft = useCallback(
-    (
-      destination: IncomeTransactionDestinationModel,
-    ): IncomeDestinationDraft => {
-      const baselineFundAssignments = destination.fundAssignments.map(
-        (fundAssignment) => ({
-          fundId: fundAssignment.fundId,
-          fundName: fundAssignment.fundName,
-          amount: fundAssignment.amount,
-        }),
-      );
-
-      return {
-        account: getAccountById(destination.account.accountId),
-        amount: destination.amount,
-        fundAssignments: updateUnassignedFundAmount(
-          unassignedFund,
-          destination.amount,
-          baselineFundAssignments,
-        ),
+    return {
+      account:
+        destination.account === null
+          ? null
+          : (accounts.find(
+              (account) => account.id === destination.account?.accountId,
+            ) ?? null),
+      location: destination.location ?? "",
+      amount: destination.amount,
+      fundAssignments: updateUnassignedFundAmount(
+        unassignedFund,
+        destination.amount,
         baselineFundAssignments,
-      };
-    },
-    [getAccountById, unassignedFund],
-  );
+      ),
+      baselineFundAssignments,
+    };
+  };
 
   const buildDestinationsFromTransaction =
-    useCallback((): IncomeDestinationDraft[] => {
-      if (incomeTransaction === null) {
+    function (): SpendingDestinationDraft[] {
+      if (spendingTransaction === null) {
         return [createEmptyDestination()];
       }
 
-      return incomeTransaction.destinations.map(buildDestinationDraft);
-    }, [incomeTransaction, buildDestinationDraft]);
+      return spendingTransaction.destinations.map(buildDestinationDraft);
+    };
+
+  const buildSourceAccountFromTransaction = function (): Account | null {
+    if (spendingTransaction === null) {
+      return null;
+    }
+
+    return (
+      accounts.find(
+        (account) =>
+          account.id === spendingTransaction.source.account.accountId,
+      ) ?? null
+    );
+  };
 
   const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
-  const [sourceLocation, setSourceLocation] = useState<string>(
-    incomeTransaction?.source.location ?? "",
-  );
   const [description, setDescription] = useState<string>(
     transaction.description,
   );
@@ -178,13 +153,7 @@ const UpdateIncomeTransactionForm = function ({
   const [sourceAccount, setSourceAccount] = useState<Account | null>(
     buildSourceAccountFromTransaction(),
   );
-  const [incomeLines, setIncomeLines] = useState<IncomeAmountItemDraft[]>(
-    buildIncomeLinesFromTransaction(),
-  );
-  const [incomeDeductions, setIncomeDeductions] = useState<
-    IncomeAmountItemDraft[]
-  >(buildIncomeDeductionsFromTransaction());
-  const [destinations, setDestinations] = useState<IncomeDestinationDraft[]>(
+  const [destinations, setDestinations] = useState<SpendingDestinationDraft[]>(
     buildDestinationsFromTransaction(),
   );
   const currentAssignmentGoals = assignmentGoals.filter(
@@ -199,12 +168,9 @@ const UpdateIncomeTransactionForm = function ({
 
   const reset = function (): void {
     setDate(dayjs(transaction.date));
-    setSourceLocation(incomeTransaction?.source.location ?? "");
     setDescription(transaction.description);
     setAmount(transaction.amount);
     setSourceAccount(buildSourceAccountFromTransaction());
-    setIncomeLines(buildIncomeLinesFromTransaction());
-    setIncomeDeductions(buildIncomeDeductionsFromTransaction());
     setDestinations(buildDestinationsFromTransaction());
   };
 
@@ -214,16 +180,9 @@ const UpdateIncomeTransactionForm = function ({
     }
   }, [redirectUrl, router, state.success]);
 
-  const onSourceAccountChange = function (account: Account | null): void {
-    setSourceAccount(account);
-    if (account !== null) {
-      setSourceLocation("");
-    }
-  };
-
   const updateDestination = function (
     index: number,
-    recipe: (current: IncomeDestinationDraft) => IncomeDestinationDraft,
+    recipe: (current: SpendingDestinationDraft) => SpendingDestinationDraft,
   ): void {
     setDestinations((currentDestinations) =>
       currentDestinations.map((currentDestination, currentIndex) =>
@@ -245,74 +204,47 @@ const UpdateIncomeTransactionForm = function ({
     );
   };
 
-  const normalizedSourceLocation = sourceLocation.trim();
-  const sourceNetAmount =
-    incomeLines.reduce((total, line) => total + (line.amount ?? 0), 0) -
-    incomeDeductions.reduce(
-      (total, deduction) => total + (deduction.amount ?? 0),
-      0,
-    );
   const destinationTotal = destinations.reduce(
     (total, destination) => total + (destination.amount ?? 0),
     0,
   );
-  const areIncomeLinesComplete =
-    incomeLines.length > 0 &&
-    incomeLines.every(
-      (line) =>
-        line.description.trim() !== "" &&
-        line.amount !== null &&
-        line.amount > 0,
-    );
-  const areIncomeDeductionsComplete = incomeDeductions.every(
-    (deduction) =>
-      deduction.description.trim() !== "" &&
-      deduction.amount !== null &&
-      deduction.amount > 0,
-  );
-  const areDestinationsComplete = destinations.every(
-    (destination) =>
-      destination.account !== null &&
+
+  const areDestinationsComplete = destinations.every((destination) => {
+    const normalizedLocation = destination.location.trim();
+    return (
       destination.amount !== null &&
       destination.amount > 0 &&
-      isIncomeTransactionComplete(destination.fundAssignments),
-  );
+      (destination.account !== null || normalizedLocation !== "") &&
+      isSpendingTransactionComplete(destination.fundAssignments)
+    );
+  });
 
   let request: UpdateTransactionRequest | null = null;
   if (
-    incomeTransaction !== null &&
+    spendingTransaction !== null &&
     date !== null &&
     description !== "" &&
     amount !== null &&
     amount > 0 &&
-    (sourceAccount !== null || normalizedSourceLocation !== "") &&
+    sourceAccount !== null &&
     destinations.length > 0 &&
-    sourceNetAmount === amount &&
     destinationTotal === amount &&
-    areIncomeLinesComplete &&
-    areIncomeDeductionsComplete &&
     areDestinationsComplete
   ) {
     request = {
-      type: UpdateIncomeTransactionType.Income,
+      type: UpdateSpendingTransactionType.Spending,
       date: date.format("YYYY-MM-DD"),
       description,
       amount,
       source: {
-        accountId: sourceAccount?.id ?? null,
-        location:
-          sourceAccount === null ? normalizedSourceLocation || null : null,
-        incomeLines: incomeLines.map((line) => ({
-          description: line.description.trim(),
-          amount: line.amount ?? 0,
-        })),
-        incomeDeductions: incomeDeductions.map((deduction) => ({
-          description: deduction.description.trim(),
-          amount: deduction.amount ?? 0,
-        })),
+        accountId: sourceAccount.id,
       },
       destinations: destinations.map((destination) => ({
-        accountId: destination.account?.id ?? "",
+        accountId: destination.account?.id ?? null,
+        location:
+          destination.account === null
+            ? destination.location.trim() || null
+            : null,
         amount: destination.amount ?? 0,
         fundAssignments: destination.fundAssignments
           .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
@@ -339,31 +271,27 @@ const UpdateIncomeTransactionForm = function ({
           setAmount={setAmount}
         />
         <TransactionSection
-          title="Income Flow"
-          description="Edit the source and each tracked destination. The net source amount and destination amounts should both add up to the transaction amount."
+          title="Spending Flow"
+          description="Edit the spending source and each destination. The destination amounts should add up to the transaction amount."
         >
           <Stack spacing={2}>
-            <IncomeTransactionSourceFrame
+            <SpendingTransactionSourceFrame
               accounts={accounts}
               account={sourceAccount}
-              setAccount={onSourceAccountChange}
-              location={sourceLocation}
-              setLocation={setSourceLocation}
-              incomeLines={incomeLines}
-              setIncomeLines={setIncomeLines}
-              incomeDeductions={incomeDeductions}
-              setIncomeDeductions={setIncomeDeductions}
+              setAccount={setSourceAccount}
               filter={(account) => {
-                const selectedAccount = getAccountById(account.id);
+                const selectedAccount =
+                  accounts.find((candidate) => candidate.id === account.id) ??
+                  null;
                 return (
                   selectedAccount !== null &&
-                  !isTrackedAccountType(selectedAccount.type)
+                  isTrackedAccountType(selectedAccount.type)
                 );
               }}
             />
             {destinations.map((destination, index) => (
-              <IncomeTransactionDestinationFrame
-                key={`income-destination-${index}`}
+              <SpendingTransactionDestinationFrame
+                key={`spending-destination-${index}`}
                 index={index}
                 accounts={accounts}
                 funds={funds}
@@ -374,6 +302,15 @@ const UpdateIncomeTransactionForm = function ({
                   updateDestination(index, (currentDestination) => ({
                     ...currentDestination,
                     account,
+                    location:
+                      account === null ? currentDestination.location : "",
+                  }));
+                }}
+                location={destination.location}
+                setLocation={(location) => {
+                  updateDestination(index, (currentDestination) => ({
+                    ...currentDestination,
+                    location,
                   }));
                 }}
                 amount={destination.amount}
@@ -396,7 +333,9 @@ const UpdateIncomeTransactionForm = function ({
                 }}
                 baselineFundAssignments={destination.baselineFundAssignments}
                 filter={(account) => {
-                  const selectedAccount = getAccountById(account.id);
+                  const selectedAccount =
+                    accounts.find((candidate) => candidate.id === account.id) ??
+                    null;
                   const accountUsedElsewhere = destinations.some(
                     (currentDestination, currentIndex) =>
                       currentIndex !== index &&
@@ -404,7 +343,8 @@ const UpdateIncomeTransactionForm = function ({
                   );
                   return (
                     selectedAccount !== null &&
-                    isTrackedAccountType(selectedAccount.type) &&
+                    !isTrackedAccountType(selectedAccount.type) &&
+                    account.id !== sourceAccount?.id &&
                     !accountUsedElsewhere
                   );
                 }}
@@ -437,22 +377,12 @@ const UpdateIncomeTransactionForm = function ({
             <Typography
               variant="body2"
               color={
-                amount !== null && sourceNetAmount !== amount
-                  ? "error.main"
-                  : "text.secondary"
-              }
-            >
-              Source net total: ${formatTotal(sourceNetAmount)}
-            </Typography>
-            <Typography
-              variant="body2"
-              color={
                 amount !== null && destinationTotal !== amount
                   ? "error.main"
                   : "text.secondary"
               }
             >
-              Destination total: ${formatTotal(destinationTotal)}
+              Destination total: ${formatDestinationTotal(destinationTotal)}
             </Typography>
           </Stack>
         </TransactionSection>
@@ -481,7 +411,7 @@ const UpdateIncomeTransactionForm = function ({
               });
             }}
           >
-            Update Income Transaction
+            Update Spending Transaction
           </Button>
         </Stack>
       </Stack>
@@ -489,4 +419,4 @@ const UpdateIncomeTransactionForm = function ({
   );
 };
 
-export default UpdateIncomeTransactionForm;
+export default UpdateSpendingTransactionForm;

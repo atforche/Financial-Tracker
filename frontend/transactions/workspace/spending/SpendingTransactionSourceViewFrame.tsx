@@ -1,6 +1,6 @@
 import type { JSX, ReactNode } from "react";
 import { Stack } from "@mui/material";
-import type { TransactionAccount } from "@/transactions/types";
+import type { TransactionAccount } from "@/transactions/transaction";
 import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";

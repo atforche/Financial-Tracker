@@ -28,7 +28,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AccountTrendsAccountingPeriodFilter from "@/accounts/trends/AccountTrendsAccountingPeriodFilter";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import type { TransactionType } from "@/transactions/types";
+import type { TransactionType } from "@/transactions/transaction";
 
 /**
  * Trends filter mode values used in the Transactions view URL.

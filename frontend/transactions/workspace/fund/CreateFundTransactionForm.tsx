@@ -1,14 +1,10 @@
 "use client";
 
-import { type Account, isTrackedAccountType } from "@/accounts/types";
-import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { Button, Stack, Typography } from "@mui/material";
 import {
-  CreateSpendingTransactionType,
+  CreateFundTransactionType,
   type CreateTransactionRequest,
-  isSpendingTransactionComplete,
-} from "@/transactions/types";
-import type { Fund, FundAmount } from "@/funds/types";
+} from "@/transactions/transaction";
 import {
   type JSX,
   startTransition,
@@ -21,41 +17,34 @@ import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import { AddCircleOutline } from "@mui/icons-material";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import SpendingTransactionDestinationFrame from "@/transactions/workspace/SpendingTransactionDestinationFrame";
-import SpendingTransactionSourceFrame from "@/transactions/workspace/SpendingTransactionSourceFrame";
+import type { Fund } from "@/funds/types";
+import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
+import FundTransactionSourceFrame from "@/transactions/workspace/fund/FundTransactionSourceFrame";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
 import createTransaction from "@/transactions/workspace/createTransaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
-import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
 import { useRouter } from "next/navigation";
 
-interface CreateSpendingTransactionFormProps {
+interface CreateFundTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
-  readonly accounts: Account[];
   readonly funds: Fund[];
-  readonly assignmentGoals: AssignmentGoal[];
-  readonly spendingGoals: SpendingGoal[];
   readonly redirectUrl: string;
 }
 
-interface SpendingDestinationDraft {
-  readonly account: Account | null;
-  readonly location: string;
+interface FundDestinationDraft {
+  readonly fund: Fund | null;
   readonly amount: number | null;
-  readonly fundAssignments: FundAmount[];
 }
 
-const createEmptyDestination = function (): SpendingDestinationDraft {
+const createEmptyDestination = function (): FundDestinationDraft {
   return {
-    account: null,
-    location: "",
+    fund: null,
     amount: null,
-    fundAssignments: [],
   };
 };
 
-const formatDestinationTotal = function (value: number): string {
+const formatTotal = function (value: number): string {
   return value.toLocaleString([], {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -63,21 +52,15 @@ const formatDestinationTotal = function (value: number): string {
 };
 
 /**
- * Displays the dedicated create form for spending transactions.
+ * Displays the dedicated create form for fund transfer transactions.
  */
-const CreateSpendingTransactionForm = function ({
+const CreateFundTransactionForm = function ({
   accountingPeriods,
-  accounts,
   funds,
-  assignmentGoals,
-  spendingGoals,
   redirectUrl,
-}: CreateSpendingTransactionFormProps): JSX.Element {
+}: CreateFundTransactionFormProps): JSX.Element {
   const router = useRouter();
-  const unassignedFund =
-    funds.find((fund) => fund.name === "Unassigned") ?? null;
   const formRef = useRef<HTMLDivElement | null>(null);
-
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(
       accountingPeriods.length > 0
@@ -91,16 +74,10 @@ const CreateSpendingTransactionForm = function ({
   const [date, setDate] = useState<Dayjs | null>(null);
   const [description, setDescription] = useState<string>("");
   const [amount, setAmount] = useState<number | null>(null);
-  const [sourceAccount, setSourceAccount] = useState<Account | null>(null);
-  const [destinations, setDestinations] = useState<SpendingDestinationDraft[]>([
+  const [sourceFund, setSourceFund] = useState<Fund | null>(null);
+  const [destinations, setDestinations] = useState<FundDestinationDraft[]>([
     createEmptyDestination(),
   ]);
-  const currentAssignmentGoals = assignmentGoals.filter(
-    (goal) => goal.accountingPeriodId === accountingPeriod?.id,
-  );
-  const currentSpendingGoals = spendingGoals.filter(
-    (goal) => goal.accountingPeriodId === accountingPeriod?.id,
-  );
 
   const [state, action, pending] = useActionState(createTransaction, {});
 
@@ -113,7 +90,7 @@ const CreateSpendingTransactionForm = function ({
     setDate(null);
     setDescription("");
     setAmount(null);
-    setSourceAccount(null);
+    setSourceFund(null);
     setDestinations([createEmptyDestination()]);
     focusFirstEntryControl(formRef.current);
   };
@@ -134,7 +111,7 @@ const CreateSpendingTransactionForm = function ({
 
   const updateDestination = function (
     index: number,
-    recipe: (current: SpendingDestinationDraft) => SpendingDestinationDraft,
+    recipe: (current: FundDestinationDraft) => FundDestinationDraft,
   ): void {
     setDestinations((currentDestinations) =>
       currentDestinations.map((currentDestination, currentIndex) =>
@@ -145,31 +122,22 @@ const CreateSpendingTransactionForm = function ({
     );
   };
 
-  const syncDestinationFundAssignments = function (
-    destinationAmount: number | null,
-    fundAssignments: FundAmount[],
-  ): FundAmount[] {
-    return updateUnassignedFundAmount(
-      unassignedFund,
-      destinationAmount,
-      fundAssignments,
-    );
-  };
-
   const destinationTotal = destinations.reduce(
     (total, destination) => total + (destination.amount ?? 0),
     0,
   );
-
-  const areDestinationsComplete = destinations.every((destination) => {
-    const normalizedLocation = destination.location.trim();
-    return (
+  const destinationFundIds = destinations
+    .map((destination) => destination.fund?.id ?? null)
+    .filter((fundId): fundId is string => fundId !== null);
+  const hasUniqueDestinationFunds =
+    new Set(destinationFundIds).size === destinationFundIds.length;
+  const areDestinationsComplete = destinations.every(
+    (destination) =>
+      destination.fund !== null &&
       destination.amount !== null &&
       destination.amount > 0 &&
-      (destination.account !== null || normalizedLocation !== "") &&
-      isSpendingTransactionComplete(destination.fundAssignments)
-    );
-  });
+      destination.fund.id !== sourceFund?.id,
+  );
 
   let request: CreateTransactionRequest | null = null;
   if (
@@ -178,34 +146,25 @@ const CreateSpendingTransactionForm = function ({
     description !== "" &&
     amount !== null &&
     amount > 0 &&
-    sourceAccount !== null &&
+    sourceFund !== null &&
     destinations.length > 0 &&
     destinationTotal === amount &&
+    hasUniqueDestinationFunds &&
     areDestinationsComplete
   ) {
     request = {
-      type: CreateSpendingTransactionType.Spending,
+      type: CreateFundTransactionType.Fund,
       accountingPeriodId: accountingPeriod.id,
       date:
         date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
       description,
       amount,
       source: {
-        accountId: sourceAccount.id,
+        fundId: sourceFund.id,
       },
       destinations: destinations.map((destination) => ({
-        accountId: destination.account?.id ?? null,
-        location:
-          destination.account === null
-            ? destination.location.trim() || null
-            : null,
+        fundId: destination.fund?.id ?? "",
         amount: destination.amount ?? 0,
-        fundAssignments: destination.fundAssignments
-          .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
-          .map((fundAmount) => ({
-            fundId: fundAmount.fundId,
-            amount: fundAmount.amount,
-          })),
       })),
     };
   }
@@ -225,46 +184,30 @@ const CreateSpendingTransactionForm = function ({
           setAmount={setAmount}
         />
         <TransactionSection
-          title="Spending Flow"
-          description="Build one spending source and one or more destinations. The destination amounts should add up to the transaction amount."
+          title="Transfer Flow"
+          description="Build one source and one or more destination funds. The destination amounts should add up to the transaction amount."
         >
           <Stack spacing={2}>
-            <SpendingTransactionSourceFrame
-              accounts={accounts}
-              account={sourceAccount}
-              setAccount={setSourceAccount}
-              filter={(account) => {
-                const selectedAccount =
-                  accounts.find((candidate) => candidate.id === account.id) ??
-                  null;
-                return (
-                  selectedAccount !== null &&
-                  isTrackedAccountType(selectedAccount.type)
-                );
-              }}
+            <FundTransactionSourceFrame
+              funds={funds}
+              fund={sourceFund}
+              setFund={setSourceFund}
+              filter={(fund) =>
+                !destinations.some(
+                  (destination) => destination.fund?.id === fund.id,
+                )
+              }
             />
             {destinations.map((destination, index) => (
-              <SpendingTransactionDestinationFrame
-                key={`spending-destination-${index}`}
+              <FundTransactionDestinationFrame
+                key={`fund-destination-${index}`}
                 index={index}
-                accounts={accounts}
                 funds={funds}
-                assignmentGoals={currentAssignmentGoals}
-                spendingGoals={currentSpendingGoals}
-                account={destination.account}
-                setAccount={(account) => {
+                fund={destination.fund}
+                setFund={(fund) => {
                   updateDestination(index, (currentDestination) => ({
                     ...currentDestination,
-                    account,
-                    location:
-                      account === null ? currentDestination.location : "",
-                  }));
-                }}
-                location={destination.location}
-                setLocation={(location) => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    location,
+                    fund,
                   }));
                 }}
                 amount={destination.amount}
@@ -272,34 +215,15 @@ const CreateSpendingTransactionForm = function ({
                   updateDestination(index, (currentDestination) => ({
                     ...currentDestination,
                     amount: nextAmount,
-                    fundAssignments: syncDestinationFundAssignments(
-                      nextAmount,
-                      currentDestination.fundAssignments,
-                    ),
                   }));
                 }}
-                fundAssignments={destination.fundAssignments}
-                setFundAssignments={(fundAssignments) => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    fundAssignments,
-                  }));
-                }}
-                filter={(account) => {
-                  const selectedAccount =
-                    accounts.find((candidate) => candidate.id === account.id) ??
-                    null;
-                  const accountUsedElsewhere = destinations.some(
+                filter={(fund) => {
+                  const fundUsedElsewhere = destinations.some(
                     (currentDestination, currentIndex) =>
                       currentIndex !== index &&
-                      currentDestination.account?.id === account.id,
+                      currentDestination.fund?.id === fund.id,
                   );
-                  return (
-                    selectedAccount !== null &&
-                    !isTrackedAccountType(selectedAccount.type) &&
-                    account.id !== sourceAccount?.id &&
-                    !accountUsedElsewhere
-                  );
+                  return !fundUsedElsewhere && fund.id !== sourceFund?.id;
                 }}
                 onRemove={
                   destinations.length > 1
@@ -335,7 +259,7 @@ const CreateSpendingTransactionForm = function ({
                   : "text.secondary"
               }
             >
-              Destination total: ${formatDestinationTotal(destinationTotal)}
+              Destination total: ${formatTotal(destinationTotal)}
             </Typography>
           </Stack>
         </TransactionSection>
@@ -364,7 +288,7 @@ const CreateSpendingTransactionForm = function ({
               });
             }}
           >
-            Create Spending Transaction
+            Create Fund Transfer
           </Button>
         </Stack>
       </Stack>
@@ -372,4 +296,4 @@ const CreateSpendingTransactionForm = function ({
   );
 };
 
-export default CreateSpendingTransactionForm;
+export default CreateFundTransactionForm;

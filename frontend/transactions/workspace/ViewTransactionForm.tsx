@@ -14,7 +14,7 @@ import {
   asSpendingTransaction,
   getPostableTransactionAccounts,
   getPostedTransactionAccounts,
-} from "@/transactions/types";
+} from "@/transactions/transaction";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import type { JSX, ReactNode } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
@@ -23,8 +23,8 @@ import EastOutlined from "@mui/icons-material/EastOutlined";
 import type { Fund } from "@/funds/types";
 import Link from "next/link";
 import SouthOutlined from "@mui/icons-material/SouthOutlined";
-import SpendingTransactionDestinationViewFrame from "@/transactions/workspace/SpendingTransactionDestinationViewFrame";
-import SpendingTransactionSourceViewFrame from "@/transactions/workspace/SpendingTransactionSourceViewFrame";
+import SpendingTransactionDestinationViewFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationViewFrame";
+import SpendingTransactionSourceViewFrame from "@/transactions/workspace/spending/SpendingTransactionSourceViewFrame";
 import TransactionAccountPathViewSection from "@/transactions/workspace/TransactionAccountPathViewSection";
 import TransactionAccountPostAction from "@/transactions/workspace/TransactionAccountPostAction";
 import TransactionDetailsViewSection from "@/transactions/workspace/TransactionDetailsViewSection";

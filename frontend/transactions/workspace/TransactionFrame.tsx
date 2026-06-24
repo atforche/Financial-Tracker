@@ -4,8 +4,8 @@ import DeleteOutline from "@mui/icons-material/DeleteOutline";
 
 interface TransactionFrameProps {
   readonly title: string;
-  readonly description: string;
   readonly children: ReactNode;
+  readonly description?: string | null;
   readonly onRemove?: (() => void) | null;
 }
 
@@ -14,8 +14,8 @@ interface TransactionFrameProps {
  */
 const TransactionFrame = function ({
   title,
-  description,
   children,
+  description = null,
   onRemove = null,
 }: TransactionFrameProps): JSX.Element {
   return (

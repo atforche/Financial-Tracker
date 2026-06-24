@@ -1,11 +1,14 @@
 "use client";
 
-import { type Account, isTrackedAccountType } from "@/accounts/types";
-import { Button, Stack, Typography } from "@mui/material";
 import {
-  CreateAccountTransactionType,
-  type CreateTransactionRequest,
-} from "@/transactions/types";
+  type AccountDestinationDraft,
+  buildDestinationAccountFilter,
+  buildRequest,
+  buildSourceAccountFilter,
+  createEmptyDestination,
+  createEmptySource,
+} from "@/transactions/workspace/account/createOrUpdateAccountTransaction";
+import { Button, Stack, Typography } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -15,42 +18,49 @@ import {
   useState,
 } from "react";
 import dayjs, { type Dayjs } from "dayjs";
-import AccountTransactionDestinationFrame from "@/transactions/workspace/AccountTransactionDestinationFrame";
-import AccountTransactionSourceFrame from "@/transactions/workspace/AccountTransactionSourceFrame";
+import type { Account } from "@/accounts/types";
+import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFormFrame";
+import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFormFrame";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import { AddCircleOutline } from "@mui/icons-material";
+import type { CreateTransactionRequest } from "@/transactions/transaction";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
 import createTransaction from "@/transactions/workspace/createTransaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
+import formatCurrency from "@/framework/formatCurrency";
 import { useRouter } from "next/navigation";
 
+/**
+ * Props for the CreateAccountTransactionForm component.
+ */
 interface CreateAccountTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: Account[];
   readonly redirectUrl: string;
 }
 
-interface AccountDestinationDraft {
-  readonly account: Account | null;
-  readonly location: string;
-  readonly amount: number | null;
-}
-
-const createEmptyDestination = function (): AccountDestinationDraft {
-  return {
-    account: null,
-    location: "",
-    amount: null,
-  };
+/**
+ * Gets the default accounting period from a list of accounting periods.
+ */
+const getDefaultAccountingPeriod = function (
+  accountingPeriods: AccountingPeriod[],
+): AccountingPeriod | null {
+  return accountingPeriods.length > 0
+    ? (accountingPeriods[accountingPeriods.length - 1] ?? null)
+    : null;
 };
 
-const formatTotal = function (value: number): string {
-  return value.toLocaleString([], {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+/**
+ * Gets the default date from an accounting period.
+ */
+const getDefaultDate = function (
+  accountingPeriod: AccountingPeriod | null,
+): Dayjs | null {
+  return accountingPeriod !== null
+    ? dayjs(`${accountingPeriod.year}-${accountingPeriod.month}-01`)
+    : null;
 };
 
 /**
@@ -63,21 +73,15 @@ const CreateAccountTransactionForm = function ({
 }: CreateAccountTransactionFormProps): JSX.Element {
   const router = useRouter();
   const formRef = useRef<HTMLDivElement | null>(null);
+
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(
-      accountingPeriods.length > 0
-        ? (accountingPeriods[accountingPeriods.length - 1] ?? null)
-        : null,
+      getDefaultAccountingPeriod(accountingPeriods),
     );
-  const defaultDate =
-    accountingPeriod !== null
-      ? dayjs(`${accountingPeriod.year}-${accountingPeriod.month}-01`)
-      : null;
+  const defaultDate = getDefaultDate(accountingPeriod);
   const [date, setDate] = useState<Dayjs | null>(null);
   const [description, setDescription] = useState<string>("");
-  const [amount, setAmount] = useState<number | null>(null);
-  const [sourceAccount, setSourceAccount] = useState<Account | null>(null);
-  const [sourceLocation, setSourceLocation] = useState<string>("");
+  const [source, setSource] = useState(createEmptySource());
   const [destinations, setDestinations] = useState<AccountDestinationDraft[]>([
     createEmptyDestination(),
   ]);
@@ -85,16 +89,10 @@ const CreateAccountTransactionForm = function ({
   const [state, action, pending] = useActionState(createTransaction, {});
 
   const reset = function (): void {
-    setAccountingPeriod(
-      accountingPeriods.length > 0
-        ? (accountingPeriods[accountingPeriods.length - 1] ?? null)
-        : null,
-    );
+    setAccountingPeriod(getDefaultAccountingPeriod(accountingPeriods));
     setDate(null);
     setDescription("");
-    setAmount(null);
-    setSourceAccount(null);
-    setSourceLocation("");
+    setSource(createEmptySource());
     setDestinations([createEmptyDestination()]);
     focusFirstEntryControl(formRef.current);
   };
@@ -126,89 +124,19 @@ const CreateAccountTransactionForm = function ({
     );
   };
 
-  const normalizedSourceLocation = sourceLocation.trim();
-  const sourceHasAccount = sourceAccount !== null;
-  const sourceIsTracked =
-    sourceAccount !== null && isTrackedAccountType(sourceAccount.type);
   const destinationTotal = destinations.reduce(
     (total, destination) => total + (destination.amount ?? 0),
     0,
   );
-  const destinationAccountIds = destinations
-    .map((destination) => destination.account?.id ?? null)
-    .filter((accountId): accountId is string => accountId !== null);
-  const destinationLocations = destinations
-    .map((destination) => destination.location.trim())
-    .filter((location) => location !== "");
-  const hasUniqueDestinationAccounts =
-    new Set(destinationAccountIds).size === destinationAccountIds.length;
-  const hasUniqueDestinationLocations =
-    new Set(destinationLocations).size === destinationLocations.length;
-  const hasValidSource =
-    (sourceHasAccount && normalizedSourceLocation === "") ||
-    (!sourceHasAccount && normalizedSourceLocation !== "");
-  const areDestinationsComplete = destinations.every((destination) => {
-    const normalizedLocation = destination.location.trim();
-    const hasAccount = destination.account !== null;
-    const hasLocation = normalizedLocation !== "";
-    const destinationIsTracked =
-      destination.account !== null &&
-      isTrackedAccountType(destination.account.type);
 
-    if (destination.amount === null || destination.amount <= 0) {
-      return false;
-    }
-    if ((hasAccount && hasLocation) || (!hasAccount && !hasLocation)) {
-      return false;
-    }
-    if (destination.account?.id === sourceAccount?.id) {
-      return false;
-    }
-    if (sourceIsTracked) {
-      return hasAccount && destinationIsTracked;
-    }
-    if (!sourceHasAccount) {
-      return !hasAccount || !destinationIsTracked;
-    }
-    return !hasAccount || !destinationIsTracked;
-  });
-
-  let request: CreateTransactionRequest | null = null;
-  if (
-    accountingPeriod !== null &&
-    (date !== null || defaultDate !== null) &&
-    description !== "" &&
-    amount !== null &&
-    amount > 0 &&
-    hasValidSource &&
-    destinations.length > 0 &&
-    destinationTotal === amount &&
-    hasUniqueDestinationAccounts &&
-    hasUniqueDestinationLocations &&
-    areDestinationsComplete
-  ) {
-    request = {
-      type: CreateAccountTransactionType.Account,
-      accountingPeriodId: accountingPeriod.id,
-      date:
-        date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
-      description,
-      amount,
-      source: {
-        accountId: sourceAccount?.id ?? null,
-        location:
-          sourceAccount === null ? normalizedSourceLocation || null : null,
-      },
-      destinations: destinations.map((destination) => ({
-        accountId: destination.account?.id ?? null,
-        location:
-          destination.account === null
-            ? destination.location.trim() || null
-            : null,
-        amount: destination.amount ?? 0,
-      })),
-    };
-  }
+  const request: CreateTransactionRequest | null = buildRequest(
+    accountingPeriod,
+    date,
+    defaultDate,
+    description,
+    source,
+    destinations,
+  );
 
   return (
     <Stack ref={formRef} spacing={3}>
@@ -221,8 +149,6 @@ const CreateAccountTransactionForm = function ({
           setDate={setDate}
           descriptionValue={description}
           setDescriptionValue={setDescription}
-          amount={amount}
-          setAmount={setAmount}
         />
         <TransactionSection
           title="Transfer Flow"
@@ -231,25 +157,28 @@ const CreateAccountTransactionForm = function ({
           <Stack spacing={2}>
             <AccountTransactionSourceFrame
               accounts={accounts}
-              account={sourceAccount}
+              account={source.account}
               setAccount={(account) => {
-                setSourceAccount(account);
-                if (account !== null) {
-                  setSourceLocation("");
-                }
+                setSource((currentSource) => ({
+                  ...currentSource,
+                  account,
+                  location: account === null ? currentSource.location : "",
+                }));
               }}
-              location={sourceLocation}
-              setLocation={setSourceLocation}
-              filter={(account) => {
-                const selectedAccount =
-                  accounts.find((candidate) => candidate.id === account.id) ??
-                  null;
-                return (
-                  selectedAccount !== null &&
-                  !destinations.some(
-                    (destination) => destination.account?.id === account.id,
-                  )
-                );
+              location={source.location}
+              setLocation={(location) => {
+                setSource((currentSource) => ({
+                  ...currentSource,
+                  location,
+                }));
+              }}
+              accountFilter={buildSourceAccountFilter(accounts, destinations)}
+              amount={source.amount}
+              setAmount={(nextAmount) => {
+                setSource((currentSource) => ({
+                  ...currentSource,
+                  amount: nextAmount,
+                }));
               }}
             />
             {destinations.map((destination, index) => (
@@ -280,26 +209,12 @@ const CreateAccountTransactionForm = function ({
                     amount: nextAmount,
                   }));
                 }}
-                filter={(account) => {
-                  const selectedAccount =
-                    accounts.find((candidate) => candidate.id === account.id) ??
-                    null;
-                  const accountUsedElsewhere = destinations.some(
-                    (currentDestination, currentIndex) =>
-                      currentIndex !== index &&
-                      currentDestination.account?.id === account.id,
-                  );
-                  if (selectedAccount === null || accountUsedElsewhere) {
-                    return false;
-                  }
-                  if (account.id === sourceAccount?.id) {
-                    return false;
-                  }
-                  if (sourceIsTracked) {
-                    return isTrackedAccountType(selectedAccount.type);
-                  }
-                  return !isTrackedAccountType(selectedAccount.type);
-                }}
+                accountFilter={buildDestinationAccountFilter(
+                  accounts,
+                  destinations,
+                  index,
+                  source.account,
+                )}
                 onRemove={
                   destinations.length > 1
                     ? (): void => {
@@ -329,12 +244,12 @@ const CreateAccountTransactionForm = function ({
             <Typography
               variant="body2"
               color={
-                amount !== null && destinationTotal !== amount
+                source.amount !== null && destinationTotal !== source.amount
                   ? "error.main"
                   : "text.secondary"
               }
             >
-              Destination total: ${formatTotal(destinationTotal)}
+              Destination total: {formatCurrency(destinationTotal)}
             </Typography>
           </Stack>
         </TransactionSection>
@@ -363,7 +278,7 @@ const CreateAccountTransactionForm = function ({
               });
             }}
           >
-            Create Account Transaction
+            Create
           </Button>
         </Stack>
       </Stack>

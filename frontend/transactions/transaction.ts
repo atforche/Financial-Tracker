@@ -1,6 +1,4 @@
-import { type Account, isTrackedAccountType } from "@/accounts/types";
 import {
-  CreateTransactionModelCreateAccountTransactionModelType,
   CreateTransactionModelCreateFundTransactionModelType,
   CreateTransactionModelCreateIncomeTransactionModelType,
   CreateTransactionModelCreateSpendingTransactionModelType,
@@ -8,7 +6,6 @@ import {
   TransactionSortOrderModel,
   TransactionTrendsModeModel,
   TransactionTypeModel,
-  UpdateTransactionModelUpdateAccountTransactionModelType,
   UpdateTransactionModelUpdateFundTransactionModelType,
   UpdateTransactionModelUpdateIncomeTransactionModelType,
   UpdateTransactionModelUpdateSpendingTransactionModelType,
@@ -39,8 +36,6 @@ type SpendingTransaction =
   components["schemas"]["TransactionModelSpendingTransactionModel"];
 type IncomeTransaction =
   components["schemas"]["TransactionModelIncomeTransactionModel"];
-type AccountTransaction =
-  components["schemas"]["TransactionModelAccountTransactionModel"];
 type FundTransaction =
   components["schemas"]["TransactionModelFundTransactionModel"];
 
@@ -62,15 +57,45 @@ const summarizeValues = function (values: string[]): string {
 };
 
 /**
+ * Determines if the provided transaction is a spending transaction.
+ */
+const isSpendingTransaction = function (
+  transaction: Transaction,
+): transaction is SpendingTransaction {
+  return transaction.transactionType === TransactionTypeModel.Spending;
+};
+
+/**
  * Converts the provided transaction to a spending transaction.
  */
 const asSpendingTransaction = function (
   transaction: Transaction,
 ): SpendingTransaction | null {
-  return transaction.transactionType === TransactionTypeModel.Spending
-    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-      (transaction as SpendingTransaction)
-    : null;
+  return isSpendingTransaction(transaction) ? transaction : null;
+};
+
+/**
+ * Determines if the provided spending transaction is complete.
+ */
+const isSpendingTransactionComplete = function (
+  spendingFundAssignments: FundAmount[],
+): boolean {
+  return (
+    !hasIncompleteFundAssignments(spendingFundAssignments) &&
+    spendingFundAssignments.every(
+      (fundAmount) =>
+        fundAmount.fundName !== "Unassigned" || fundAmount.amount === 0,
+    )
+  );
+};
+
+/**
+ * Determines if the provided transaction is an income transaction.
+ */
+const isIncomeTransaction = function (
+  transaction: Transaction,
+): transaction is IncomeTransaction {
+  return transaction.transactionType === TransactionTypeModel.Income;
 };
 
 /**
@@ -79,22 +104,25 @@ const asSpendingTransaction = function (
 const asIncomeTransaction = function (
   transaction: Transaction,
 ): IncomeTransaction | null {
-  return transaction.transactionType === TransactionTypeModel.Income
-    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-      (transaction as IncomeTransaction)
-    : null;
+  return isIncomeTransaction(transaction) ? transaction : null;
 };
 
 /**
- * Converts the provided transaction to an account transaction.
+ * Determines if the provided income transaction is complete.
  */
-const asAccountTransaction = function (
+const isIncomeTransactionComplete = function (
+  incomeFundAssignments: FundAmount[],
+): boolean {
+  return !hasIncompleteFundAssignments(incomeFundAssignments);
+};
+
+/**
+ * Determines if the provided transaction is a fund transaction.
+ */
+const isFundTransaction = function (
   transaction: Transaction,
-): AccountTransaction | null {
-  return transaction.transactionType === TransactionTypeModel.Account
-    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-      (transaction as AccountTransaction)
-    : null;
+): transaction is FundTransaction {
+  return transaction.transactionType === TransactionTypeModel.Fund;
 };
 
 /**
@@ -103,10 +131,17 @@ const asAccountTransaction = function (
 const asFundTransaction = function (
   transaction: Transaction,
 ): FundTransaction | null {
-  return transaction.transactionType === TransactionTypeModel.Fund
-    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-      (transaction as FundTransaction)
-    : null;
+  return isFundTransaction(transaction) ? transaction : null;
+};
+
+/**
+ * Determines if the provided fund transaction is complete.
+ */
+const isFundTransactionComplete = function (
+  debitFund: Fund | null,
+  creditFund: Fund | null,
+): boolean {
+  return debitFund !== null && creditFund !== null;
 };
 
 /**
@@ -325,130 +360,6 @@ const collectTransactionPostingAccounts = function (
 };
 
 /**
- * Determines if the provided transaction is an income transaction.
- */
-const isIncomeTransaction = function (
-  debitAccount: Account | null,
-  creditAccount: Account | null,
-  debitFund: Fund | null,
-  creditFund: Fund | null,
-): boolean {
-  if (debitFund !== null || creditFund !== null) {
-    return false;
-  }
-  if (debitAccount === null && creditAccount === null) {
-    return false;
-  }
-  if (creditAccount === null || !isTrackedAccountType(creditAccount.type)) {
-    return false;
-  }
-  if (debitAccount !== null && isTrackedAccountType(debitAccount.type)) {
-    return false;
-  }
-  return true;
-};
-
-/**
- * Determines if the provided income transaction is complete.
- */
-const isIncomeTransactionComplete = function (
-  incomeFundAssignments: FundAmount[],
-): boolean {
-  return !hasIncompleteFundAssignments(incomeFundAssignments);
-};
-
-/**
- * Determines if the provided transaction is a spending transaction.
- */
-const isSpendingTransaction = function (
-  debitAccount: Account | null,
-  creditAccount: Account | null,
-  debitFund: Fund | null,
-  creditFund: Fund | null,
-): boolean {
-  if (debitFund !== null || creditFund !== null) {
-    return false;
-  }
-  if (debitAccount === null && creditAccount === null) {
-    return false;
-  }
-  if (creditAccount !== null && isTrackedAccountType(creditAccount.type)) {
-    return false;
-  }
-  if (debitAccount === null || !isTrackedAccountType(debitAccount.type)) {
-    return false;
-  }
-  return true;
-};
-
-/**
- * Determines if the provided spending transaction is complete.
- */
-const isSpendingTransactionComplete = function (
-  spendingFundAssignments: FundAmount[],
-): boolean {
-  return (
-    !hasIncompleteFundAssignments(spendingFundAssignments) &&
-    spendingFundAssignments.every(
-      (fundAmount) =>
-        fundAmount.fundName !== "Unassigned" || fundAmount.amount === 0,
-    )
-  );
-};
-
-/**
- * Determines if the provided transaction is an account transaction.
- */
-const isAccountTransaction = function (
-  debitAccount: Account | null,
-  creditAccount: Account | null,
-  debitFund: Fund | null,
-  creditFund: Fund | null,
-): boolean {
-  if (debitFund !== null || creditFund !== null) {
-    return false;
-  }
-  if (debitAccount !== null && creditAccount !== null) {
-    return (
-      isTrackedAccountType(debitAccount.type) ===
-      isTrackedAccountType(creditAccount.type)
-    );
-  }
-  if (debitAccount !== null) {
-    return !isTrackedAccountType(debitAccount.type);
-  }
-  if (creditAccount !== null) {
-    return !isTrackedAccountType(creditAccount.type);
-  }
-  return false;
-};
-
-/**
- * Determines if the provided transaction is a fund transaction.
- */
-const isFundTransaction = function (
-  debitAccount: Account | null,
-  creditAccount: Account | null,
-  debitFund: Fund | null,
-  creditFund: Fund | null,
-): boolean {
-  if (debitAccount !== null || creditAccount !== null) {
-    return false;
-  }
-  return debitFund !== null && creditFund !== null;
-};
-
-/**
- * Determines if the provided fund transaction is complete.
- */
-const isFundTransactionComplete = function (
-  debitFund: Fund | null,
-  creditFund: Fund | null,
-): boolean {
-  return debitFund !== null && creditFund !== null;
-};
-
-/**
  * Gets the accounts involved in the provided transaction that have not been posted.
  */
 const getPostableTransactionAccounts = function (
@@ -491,17 +402,14 @@ export {
   type PostTransactionRequest,
   type SpendingTransaction,
   type IncomeTransaction,
-  type AccountTransaction,
   type FundTransaction,
   TransactionTrendsModeModel as TransactionTrendsMode,
   TransactionSortOrderModel as TransactionSortOrder,
   TransactionAccountTypeModel as TransactionAccountType,
   TransactionTypeModel as TransactionType,
-  CreateTransactionModelCreateAccountTransactionModelType as CreateAccountTransactionType,
   CreateTransactionModelCreateFundTransactionModelType as CreateFundTransactionType,
   CreateTransactionModelCreateIncomeTransactionModelType as CreateIncomeTransactionType,
   CreateTransactionModelCreateSpendingTransactionModelType as CreateSpendingTransactionType,
-  UpdateTransactionModelUpdateAccountTransactionModelType as UpdateAccountTransactionType,
   UpdateTransactionModelUpdateFundTransactionModelType as UpdateFundTransactionType,
   UpdateTransactionModelUpdateIncomeTransactionModelType as UpdateIncomeTransactionType,
   UpdateTransactionModelUpdateSpendingTransactionModelType as UpdateSpendingTransactionType,
@@ -509,12 +417,10 @@ export {
   isIncomeTransactionComplete,
   isSpendingTransaction,
   isSpendingTransactionComplete,
-  isAccountTransaction,
   isFundTransaction,
   isFundTransactionComplete,
   asSpendingTransaction,
   asIncomeTransaction,
-  asAccountTransaction,
   asFundTransaction,
   getTransactionSourceLabel,
   getTransactionDestinationLabel,

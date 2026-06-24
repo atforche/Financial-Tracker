@@ -26,7 +26,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AccountTrendsAccountNameFilter from "@/accounts/trends/AccountTrendsAccountNameFilter";
 import FundTrendsFundNameFilter from "@/funds/trends/FundTrendsFundNameFilter";
 import type { JSX } from "react";
-import type { TransactionType } from "@/transactions/types";
+import type { TransactionType } from "@/transactions/transaction";
 
 interface CurrentTransactionsFilterProps {
   readonly availableAccountNames: readonly string[];

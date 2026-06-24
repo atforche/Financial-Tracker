@@ -1,29 +1,35 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
 import AccountEntryField from "@/accounts/AccountEntryField";
+import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
+import { Typography } from "@mui/material";
 
-interface AccountTransactionSourceFrameProps {
+interface AccountTransactionSourceFormFrameProps {
   readonly accounts: Account[];
   readonly account: Account | null;
   readonly setAccount: ((account: Account | null) => void) | null;
   readonly location: string;
   readonly setLocation: ((location: string) => void) | null;
-  readonly filter?: ((account: AccountIdentifier) => boolean) | null;
+  readonly amount: number | null;
+  readonly setAmount: ((amount: number | null) => void) | null;
+  readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
 }
 
 /**
- * Displays the source frame for an account transaction.
+ * Displays a form frame for an account transaction source.
  */
-const AccountTransactionSourceFrame = function ({
+const AccountTransactionSourceFormFrame = function ({
   accounts,
   account,
   setAccount,
   location,
   setLocation,
-  filter = null,
-}: AccountTransactionSourceFrameProps): JSX.Element {
+  accountFilter = null,
+  amount,
+  setAmount,
+}: AccountTransactionSourceFormFrameProps): JSX.Element {
   return (
     <TransactionFrame
       title="Transfer Source"
@@ -44,15 +50,17 @@ const AccountTransactionSourceFrame = function ({
                 );
               }
         }
-        filter={filter}
+        filter={accountFilter}
       />
+      <Typography variant="subtitle1">Or</Typography>
       <StringEntryField
         label="Source Location"
         value={location}
         setValue={account === null ? setLocation : null}
       />
+      <CurrencyEntryField label="Amount" value={amount} setValue={setAmount} />
     </TransactionFrame>
   );
 };
 
-export default AccountTransactionSourceFrame;
+export default AccountTransactionSourceFormFrame;

@@ -1,13 +1,6 @@
 "use client";
 
 import { type Account, isTrackedAccountType } from "@/accounts/types";
-import {
-  type AccountTransaction,
-  type Transaction,
-  UpdateAccountTransactionType,
-  type UpdateTransactionRequest,
-  asAccountTransaction,
-} from "@/transactions/types";
 import { Button, Stack, Typography } from "@mui/material";
 import {
   type JSX,
@@ -17,47 +10,31 @@ import {
   useRef,
   useState,
 } from "react";
+import type {
+  Transaction,
+  UpdateTransactionRequest,
+} from "@/transactions/transaction";
 import dayjs, { type Dayjs } from "dayjs";
-import AccountTransactionDestinationFrame from "@/transactions/workspace/AccountTransactionDestinationFrame";
-import AccountTransactionSourceFrame from "@/transactions/workspace/AccountTransactionSourceFrame";
+import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFormFrame";
+import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFormFrame";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import { AddCircleOutline } from "@mui/icons-material";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
+import formatCurrency from "@/framework/formatCurrency";
 import updateTransaction from "@/transactions/workspace/updateTransaction";
 import { useRouter } from "next/navigation";
 
+/**
+ * Props for the UpdateAccountTransactionForm component.
+ */
 interface UpdateAccountTransactionFormProps {
   readonly transaction: Transaction;
   readonly transactionAccountingPeriod: AccountingPeriod;
   readonly accounts: Account[];
   readonly redirectUrl: string;
 }
-
-interface AccountDestinationDraft {
-  readonly account: Account | null;
-  readonly location: string;
-  readonly amount: number | null;
-}
-
-type AccountTransactionDestinationModel =
-  AccountTransaction["destinations"][number];
-
-const createEmptyDestination = function (): AccountDestinationDraft {
-  return {
-    account: null,
-    location: "",
-    amount: null,
-  };
-};
-
-const formatTotal = function (value: number): string {
-  return value.toLocaleString([], {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-};
 
 /**
  * Displays the dedicated update form for account transactions.
@@ -263,7 +240,7 @@ const UpdateAccountTransactionForm = function ({
               }}
               location={sourceLocation}
               setLocation={setSourceLocation}
-              filter={(account) => {
+              accountFilter={(account) => {
                 const selectedAccount =
                   accounts.find((candidate) => candidate.id === account.id) ??
                   null;
@@ -303,7 +280,7 @@ const UpdateAccountTransactionForm = function ({
                     amount: nextAmount,
                   }));
                 }}
-                filter={(account) => {
+                accountFilter={(account) => {
                   const selectedAccount =
                     accounts.find((candidate) => candidate.id === account.id) ??
                     null;
@@ -357,7 +334,7 @@ const UpdateAccountTransactionForm = function ({
                   : "text.secondary"
               }
             >
-              Destination total: ${formatTotal(destinationTotal)}
+              Destination total: {formatCurrency(destinationTotal)}
             </Typography>
           </Stack>
         </TransactionSection>

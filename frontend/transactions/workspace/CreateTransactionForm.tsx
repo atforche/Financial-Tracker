@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import CreateAccountTransactionForm from "@/transactions/workspace/CreateAccountTransactionForm";
+import CreateAccountTransactionForm from "@/transactions/workspace/account/CreateAccountTransactionForm";
 import CreateFundTransactionForm from "@/transactions/workspace/CreateFundTransactionForm";
 import CreateIncomeTransactionForm from "@/transactions/workspace/CreateIncomeTransactionForm";
 import CreateSpendingTransactionForm from "@/transactions/workspace/CreateSpendingTransactionForm";

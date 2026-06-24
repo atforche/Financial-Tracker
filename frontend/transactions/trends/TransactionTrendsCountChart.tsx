@@ -15,7 +15,7 @@ import { Box, Paper, Stack, Typography } from "@mui/material";
 import type {
   TransactionTrendsDateSummary,
   TransactionTrendsPeriodSummary,
-} from "@/transactions/types";
+} from "@/transactions/transaction";
 import type { JSX } from "react";
 import dayjs from "dayjs";
 

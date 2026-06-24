@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import type { JSX } from "react";
 import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
-import type { TransactionFund } from "@/transactions/types";
+import type { TransactionFund } from "@/transactions/transaction";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
 import formatCurrency from "@/framework/formatCurrency";
 

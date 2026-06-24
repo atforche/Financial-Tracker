@@ -3,7 +3,7 @@
 import { Box, Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
 import SummaryCard from "@/framework/view/SummaryCard";
-import type { TransactionTrends } from "@/transactions/types";
+import type { TransactionTrends } from "@/transactions/transaction";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface TransactionTrendsByTypeCardProps {

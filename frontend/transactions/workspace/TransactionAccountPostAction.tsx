@@ -11,7 +11,7 @@ import {
 import dayjs, { type Dayjs } from "dayjs";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import type { PostTransactionRequest } from "@/transactions/types";
+import type { PostTransactionRequest } from "@/transactions/transaction";
 import postTransaction from "@/transactions/workspace/postTransaction";
 import { useRouter } from "next/navigation";
 

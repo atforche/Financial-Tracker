@@ -10,7 +10,10 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { type Transaction, TransactionSortOrder } from "@/transactions/types";
+import {
+  type Transaction,
+  TransactionSortOrder,
+} from "@/transactions/transaction";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";

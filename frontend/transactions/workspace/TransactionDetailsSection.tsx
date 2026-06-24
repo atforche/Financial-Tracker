@@ -5,13 +5,15 @@ import {
 } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
 import { Box } from "@mui/material";
-import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import type { Dayjs } from "dayjs";
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
 
+/**
+ * Props for the TransactionDetailsSection component.
+ */
 interface TransactionDetailsSectionProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
@@ -22,12 +24,10 @@ interface TransactionDetailsSectionProps {
   readonly setDate: (date: Dayjs | null) => void;
   readonly descriptionValue: string;
   readonly setDescriptionValue: (description: string) => void;
-  readonly amount: number | null;
-  readonly setAmount: (amount: number | null) => void;
 }
 
 /**
- * Displays the shared date, amount, and memo fields for transaction forms.
+ * Displays the shared date, accounting period, and description fields for transaction forms.
  */
 const TransactionDetailsSection = function ({
   accountingPeriods,
@@ -37,8 +37,6 @@ const TransactionDetailsSection = function ({
   setDate,
   descriptionValue,
   setDescriptionValue,
-  amount,
-  setAmount,
 }: TransactionDetailsSectionProps): JSX.Element {
   return (
     <TransactionSection
@@ -65,11 +63,6 @@ const TransactionDetailsSection = function ({
           setValue={setDate}
           minDate={accountingPeriod ? getMinimumDate(accountingPeriod) : null}
           maxDate={accountingPeriod ? getMaximumDate(accountingPeriod) : null}
-        />
-        <CurrencyEntryField
-          label="Amount"
-          value={amount}
-          setValue={setAmount}
         />
       </Box>
       <StringEntryField

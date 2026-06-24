@@ -7,7 +7,7 @@ import {
   UpdateFundTransactionType,
   type UpdateTransactionRequest,
   asFundTransaction,
-} from "@/transactions/types";
+} from "@/transactions/transaction";
 import {
   type JSX,
   startTransition,
@@ -21,8 +21,8 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import { AddCircleOutline } from "@mui/icons-material";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import type { Fund } from "@/funds/types";
-import FundTransactionDestinationFrame from "@/transactions/workspace/FundTransactionDestinationFrame";
-import FundTransactionSourceFrame from "@/transactions/workspace/FundTransactionSourceFrame";
+import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
+import FundTransactionSourceFrame from "@/transactions/workspace/fund/FundTransactionSourceFrame";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
 import updateTransaction from "@/transactions/workspace/updateTransaction";

@@ -7,12 +7,12 @@ import {
   CreateIncomeTransactionType,
   type CreateTransactionRequest,
   isIncomeTransactionComplete,
-} from "@/transactions/types";
+} from "@/transactions/transaction";
 import type { Fund, FundAmount } from "@/funds/types";
 import IncomeTransactionSourceFrame, {
   type IncomeAmountItemDraft,
   createEmptyAmountItem,
-} from "@/transactions/workspace/IncomeTransactionSourceFrame";
+} from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
 import {
   type JSX,
   startTransition,
@@ -25,7 +25,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import { AddCircleOutline } from "@mui/icons-material";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import IncomeTransactionDestinationFrame from "@/transactions/workspace/IncomeTransactionDestinationFrame";
+import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFrame";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
 import createTransaction from "@/transactions/workspace/createTransaction";

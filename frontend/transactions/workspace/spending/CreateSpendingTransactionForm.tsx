@@ -3,6 +3,11 @@
 import { type Account, isTrackedAccountType } from "@/accounts/types";
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { Button, Stack, Typography } from "@mui/material";
+import {
+  CreateSpendingTransactionType,
+  type CreateTransactionRequest,
+  isSpendingTransactionComplete,
+} from "@/transactions/transaction";
 import type { Fund, FundAmount } from "@/funds/types";
 import {
   type JSX,
@@ -12,29 +17,22 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  type Transaction,
-  TransactionType,
-  UpdateSpendingTransactionType,
-  type UpdateTransactionRequest,
-  isSpendingTransactionComplete,
-} from "@/transactions/types";
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import { AddCircleOutline } from "@mui/icons-material";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import SpendingTransactionDestinationFrame from "@/transactions/workspace/SpendingTransactionDestinationFrame";
-import SpendingTransactionSourceFrame from "@/transactions/workspace/SpendingTransactionSourceFrame";
+import SpendingTransactionDestinationFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFrame";
+import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
-import type { components } from "@/framework/data/api";
-import updateTransaction from "@/transactions/workspace/updateTransaction";
+import createTransaction from "@/transactions/workspace/createTransaction";
+import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
+import formatCurrency from "@/framework/formatCurrency";
 import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
 import { useRouter } from "next/navigation";
 
-interface UpdateSpendingTransactionFormProps {
-  readonly transaction: Transaction;
-  readonly transactionAccountingPeriod: AccountingPeriod;
+interface CreateSpendingTransactionFormProps {
+  readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: Account[];
   readonly funds: Fund[];
   readonly assignmentGoals: AssignmentGoal[];
@@ -47,14 +45,7 @@ interface SpendingDestinationDraft {
   readonly location: string;
   readonly amount: number | null;
   readonly fundAssignments: FundAmount[];
-  readonly baselineFundAssignments: FundAmount[];
 }
-
-type SpendingTransactionModel =
-  components["schemas"]["TransactionModelSpendingTransactionModel"];
-
-type SpendingTransactionDestinationModel =
-  components["schemas"]["SpendingTransactionDestinationModel"];
 
 const createEmptyDestination = function (): SpendingDestinationDraft {
   return {
@@ -62,123 +53,78 @@ const createEmptyDestination = function (): SpendingDestinationDraft {
     location: "",
     amount: null,
     fundAssignments: [],
-    baselineFundAssignments: [],
   };
 };
 
-const formatDestinationTotal = function (value: number): string {
-  return value.toLocaleString([], {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-};
-
 /**
- * Displays the dedicated update form for spending transactions.
+ * Displays the dedicated create form for spending transactions.
  */
-const UpdateSpendingTransactionForm = function ({
-  transaction,
-  transactionAccountingPeriod,
+const CreateSpendingTransactionForm = function ({
+  accountingPeriods,
   accounts,
   funds,
   assignmentGoals,
   spendingGoals,
   redirectUrl,
-}: UpdateSpendingTransactionFormProps): JSX.Element {
+}: CreateSpendingTransactionFormProps): JSX.Element {
+  const router = useRouter();
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
   const formRef = useRef<HTMLDivElement | null>(null);
-  const spendingTransaction: SpendingTransactionModel | null =
-    transaction.transactionType === TransactionType.Spending
-      ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-        (transaction as SpendingTransactionModel)
+
+  const [accountingPeriod, setAccountingPeriod] =
+    useState<AccountingPeriod | null>(
+      accountingPeriods.length > 0
+        ? (accountingPeriods[accountingPeriods.length - 1] ?? null)
+        : null,
+    );
+  const defaultDate =
+    accountingPeriod !== null
+      ? dayjs(`${accountingPeriod.year}-${accountingPeriod.month}-01`)
       : null;
-
-  const buildDestinationDraft = function (
-    destination: SpendingTransactionDestinationModel,
-  ): SpendingDestinationDraft {
-    const baselineFundAssignments = destination.fundAssignments.map(
-      (fundAssignment) => ({
-        fundId: fundAssignment.fundId,
-        fundName: fundAssignment.fundName,
-        amount: fundAssignment.amount,
-      }),
-    );
-
-    return {
-      account:
-        destination.account === null
-          ? null
-          : (accounts.find(
-              (account) => account.id === destination.account?.accountId,
-            ) ?? null),
-      location: destination.location ?? "",
-      amount: destination.amount,
-      fundAssignments: updateUnassignedFundAmount(
-        unassignedFund,
-        destination.amount,
-        baselineFundAssignments,
-      ),
-      baselineFundAssignments,
-    };
-  };
-
-  const buildDestinationsFromTransaction =
-    function (): SpendingDestinationDraft[] {
-      if (spendingTransaction === null) {
-        return [createEmptyDestination()];
-      }
-
-      return spendingTransaction.destinations.map(buildDestinationDraft);
-    };
-
-  const buildSourceAccountFromTransaction = function (): Account | null {
-    if (spendingTransaction === null) {
-      return null;
-    }
-
-    return (
-      accounts.find(
-        (account) =>
-          account.id === spendingTransaction.source.account.accountId,
-      ) ?? null
-    );
-  };
-
-  const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
-  const [description, setDescription] = useState<string>(
-    transaction.description,
-  );
-  const [amount, setAmount] = useState<number | null>(transaction.amount);
-  const [sourceAccount, setSourceAccount] = useState<Account | null>(
-    buildSourceAccountFromTransaction(),
-  );
-  const [destinations, setDestinations] = useState<SpendingDestinationDraft[]>(
-    buildDestinationsFromTransaction(),
-  );
+  const [date, setDate] = useState<Dayjs | null>(null);
+  const [description, setDescription] = useState<string>("");
+  const [amount, setAmount] = useState<number | null>(null);
+  const [sourceAccount, setSourceAccount] = useState<Account | null>(null);
+  const [destinations, setDestinations] = useState<SpendingDestinationDraft[]>([
+    createEmptyDestination(),
+  ]);
   const currentAssignmentGoals = assignmentGoals.filter(
-    (goal) => goal.accountingPeriodId === transactionAccountingPeriod.id,
+    (goal) => goal.accountingPeriodId === accountingPeriod?.id,
   );
   const currentSpendingGoals = spendingGoals.filter(
-    (goal) => goal.accountingPeriodId === transactionAccountingPeriod.id,
+    (goal) => goal.accountingPeriodId === accountingPeriod?.id,
   );
 
-  const router = useRouter();
-  const [state, action, pending] = useActionState(updateTransaction, {});
+  const [state, action, pending] = useActionState(createTransaction, {});
 
   const reset = function (): void {
-    setDate(dayjs(transaction.date));
-    setDescription(transaction.description);
-    setAmount(transaction.amount);
-    setSourceAccount(buildSourceAccountFromTransaction());
-    setDestinations(buildDestinationsFromTransaction());
+    setAccountingPeriod(
+      accountingPeriods.length > 0
+        ? (accountingPeriods[accountingPeriods.length - 1] ?? null)
+        : null,
+    );
+    setDate(null);
+    setDescription("");
+    setAmount(null);
+    setSourceAccount(null);
+    setDestinations([createEmptyDestination()]);
+    focusFirstEntryControl(formRef.current);
   };
 
   useEffect(() => {
-    if (state.success === true) {
-      router.replace(redirectUrl, { scroll: false });
+    if (state.success === true && state.transactionId !== null) {
+      const [pathname, search = ""] = redirectUrl.split("?");
+      const params = new URLSearchParams(search);
+      params.set("selectedTransactionId", state.transactionId ?? "");
+      const query = params.toString();
+      const nextUrl =
+        query === ""
+          ? `${pathname}/${state.transactionId ?? ""}`
+          : `${pathname}/${state.transactionId ?? ""}?${query}`;
+      router.replace(nextUrl, { scroll: false });
     }
-  }, [redirectUrl, router, state.success]);
+  }, [redirectUrl, router, state]);
 
   const updateDestination = function (
     index: number,
@@ -219,10 +165,10 @@ const UpdateSpendingTransactionForm = function ({
     );
   });
 
-  let request: UpdateTransactionRequest | null = null;
+  let request: CreateTransactionRequest | null = null;
   if (
-    spendingTransaction !== null &&
-    date !== null &&
+    accountingPeriod !== null &&
+    (date !== null || defaultDate !== null) &&
     description !== "" &&
     amount !== null &&
     amount > 0 &&
@@ -232,8 +178,10 @@ const UpdateSpendingTransactionForm = function ({
     areDestinationsComplete
   ) {
     request = {
-      type: UpdateSpendingTransactionType.Spending,
-      date: date.format("YYYY-MM-DD"),
+      type: CreateSpendingTransactionType.Spending,
+      accountingPeriodId: accountingPeriod.id,
+      date:
+        date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
       description,
       amount,
       source: {
@@ -260,10 +208,10 @@ const UpdateSpendingTransactionForm = function ({
     <Stack ref={formRef} spacing={3}>
       <Stack spacing={3} sx={{ width: "100%" }}>
         <TransactionDetailsSection
-          accountingPeriods={[transactionAccountingPeriod]}
-          accountingPeriod={transactionAccountingPeriod}
-          setAccountingPeriod={null}
-          date={date}
+          accountingPeriods={accountingPeriods}
+          accountingPeriod={accountingPeriod}
+          setAccountingPeriod={setAccountingPeriod}
+          date={date ?? defaultDate}
           setDate={setDate}
           descriptionValue={description}
           setDescriptionValue={setDescription}
@@ -272,7 +220,7 @@ const UpdateSpendingTransactionForm = function ({
         />
         <TransactionSection
           title="Spending Flow"
-          description="Edit the spending source and each destination. The destination amounts should add up to the transaction amount."
+          description="Build one spending source and one or more destinations. The destination amounts should add up to the transaction amount."
         >
           <Stack spacing={2}>
             <SpendingTransactionSourceFrame
@@ -331,7 +279,6 @@ const UpdateSpendingTransactionForm = function ({
                     fundAssignments,
                   }));
                 }}
-                baselineFundAssignments={destination.baselineFundAssignments}
                 filter={(account) => {
                   const selectedAccount =
                     accounts.find((candidate) => candidate.id === account.id) ??
@@ -382,7 +329,7 @@ const UpdateSpendingTransactionForm = function ({
                   : "text.secondary"
               }
             >
-              Destination total: ${formatDestinationTotal(destinationTotal)}
+              Destination total: {formatCurrency(destinationTotal)}
             </Typography>
           </Stack>
         </TransactionSection>
@@ -407,11 +354,11 @@ const UpdateSpendingTransactionForm = function ({
                 return;
               }
               startTransition(() => {
-                action({ transactionId: transaction.id, redirectUrl, request });
+                action({ redirectUrl, request });
               });
             }}
           >
-            Update Spending Transaction
+            Create Spending Transaction
           </Button>
         </Stack>
       </Stack>
@@ -419,4 +366,4 @@ const UpdateSpendingTransactionForm = function ({
   );
 };
 
-export default UpdateSpendingTransactionForm;
+export default CreateSpendingTransactionForm;

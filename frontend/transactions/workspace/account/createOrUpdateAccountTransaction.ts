@@ -1,0 +1,225 @@
+import {
+  type Account,
+  type AccountIdentifier,
+  isTrackedAccountType,
+} from "@/accounts/types";
+import {
+  CreateTransactionModelCreateAccountTransactionModelType,
+  UpdateTransactionModelUpdateAccountTransactionModelType,
+} from "@/framework/data/api";
+import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { CreateTransactionRequest } from "@/transactions/transaction";
+import type { Dayjs } from "dayjs";
+
+/**
+ * Interface representing a potentially unfinished account transaction source.
+ */
+interface AccountSourceDraft {
+  readonly account: Account | null;
+  readonly location: string;
+  readonly amount: number | null;
+}
+
+/**
+ * Interface representing a potentially unfinished account transaction destination.
+ */
+interface AccountDestinationDraft {
+  readonly account: Account | null;
+  readonly location: string;
+  readonly amount: number | null;
+}
+
+/**
+ * Creates an empty source draft.
+ */
+const createEmptySource = function (): AccountSourceDraft {
+  return {
+    account: null,
+    location: "",
+    amount: null,
+  };
+};
+
+/**
+ * Creates an empty destination draft.
+ */
+const createEmptyDestination = function (): AccountDestinationDraft {
+  return {
+    account: null,
+    location: "",
+    amount: null,
+  };
+};
+
+/**
+ * Validates the source of a transaction.
+ */
+const validateSource = function (
+  sourceAccount: Account | null,
+  sourceLocation: string,
+  amount: number | null,
+): boolean {
+  const hasAccount = sourceAccount !== null;
+  const hasLocation = sourceLocation.trim() !== "";
+  if (!hasAccount && !hasLocation) {
+    return false;
+  }
+  return amount !== null && amount > 0;
+};
+
+/**
+ * Validates a destination draft.
+ */
+const validateDestination = function (
+  destination: AccountDestinationDraft,
+  sourceAccount: Account | null,
+): boolean {
+  const normalizedLocation = destination.location.trim();
+  const hasAccount = destination.account !== null;
+  const hasLocation = normalizedLocation !== "";
+  const destinationIsTracked =
+    destination.account !== null &&
+    isTrackedAccountType(destination.account.type);
+
+  if (destination.amount === null || destination.amount <= 0) {
+    return false;
+  }
+  if ((hasAccount && hasLocation) || (!hasAccount && !hasLocation)) {
+    return false;
+  }
+  if (destination.account?.id === sourceAccount?.id) {
+    return false;
+  }
+  if (sourceAccount !== null && isTrackedAccountType(sourceAccount.type)) {
+    return hasAccount && destinationIsTracked;
+  }
+  if (sourceAccount === null) {
+    return !hasAccount || !destinationIsTracked;
+  }
+  return !hasAccount || !destinationIsTracked;
+};
+
+/**
+ * Builds a create transaction request from the provided parameters.
+ */
+const buildRequest = function (
+  accountingPeriod: AccountingPeriod | null,
+  date: Dayjs | null,
+  defaultDate: Dayjs | null,
+  description: string,
+  source: AccountSourceDraft,
+  destinations: AccountDestinationDraft[],
+): CreateTransactionRequest | null {
+  const hasValidSource = validateSource(
+    source.account,
+    source.location,
+    source.amount,
+  );
+  const destinationTotal = destinations.reduce(
+    (total, destination) => total + (destination.amount ?? 0),
+    0,
+  );
+  const hasUniqueDestinationAccounts =
+    new Set(destinations.map((d) => d.account?.id ?? null)).size ===
+    destinations.length;
+  const hasUniqueDestinationLocations =
+    new Set(destinations.map((d) => d.location.trim() || null)).size ===
+    destinations.length;
+  const areDestinationsComplete = destinations.every((d) =>
+    validateDestination(d, source.account),
+  );
+  if (
+    accountingPeriod !== null &&
+    (date !== null || defaultDate !== null) &&
+    description !== "" &&
+    hasValidSource &&
+    destinations.length > 0 &&
+    destinationTotal === source.amount &&
+    hasUniqueDestinationAccounts &&
+    hasUniqueDestinationLocations &&
+    areDestinationsComplete
+  ) {
+    const request = {
+      type: CreateTransactionModelCreateAccountTransactionModelType.Account,
+      accountingPeriodId: accountingPeriod.id,
+      date:
+        date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
+      description,
+      amount: source.amount,
+      source: {
+        accountId: source.account?.id ?? null,
+        location:
+          source.account === null ? source.location.trim() || null : null,
+      },
+      destinations: destinations.map((destination) => ({
+        accountId: destination.account?.id ?? null,
+        location:
+          destination.account === null
+            ? destination.location.trim() || null
+            : null,
+        amount: destination.amount ?? 0,
+      })),
+    };
+    return request;
+  }
+  return null;
+};
+
+/**
+ * Builds a filter callback for the source account dropdown.
+ */
+const buildSourceAccountFilter = function (
+  accounts: Account[],
+  destinations: AccountDestinationDraft[],
+) {
+  return function (account: AccountIdentifier): boolean {
+    const selectedAccount =
+      accounts.find((candidate) => candidate.id === account.id) ?? null;
+    return (
+      selectedAccount !== null &&
+      !destinations.some(
+        (destination) => destination.account?.id === account.id,
+      )
+    );
+  };
+};
+
+/**
+ * Builds a filter callback for the destination account dropdown.
+ */
+const buildDestinationAccountFilter = function (
+  accounts: Account[],
+  destinations: AccountDestinationDraft[],
+  index: number,
+  sourceAccount: Account | null,
+) {
+  return function (account: AccountIdentifier): boolean {
+    const selectedAccount =
+      accounts.find((candidate) => candidate.id === account.id) ?? null;
+    const accountUsedElsewhere = destinations.some(
+      (currentDestination, currentIndex) =>
+        currentIndex !== index && currentDestination.account?.id === account.id,
+    );
+    if (selectedAccount === null || accountUsedElsewhere) {
+      return false;
+    }
+    if (account.id === sourceAccount?.id) {
+      return false;
+    }
+    if (sourceAccount !== null && isTrackedAccountType(sourceAccount.type)) {
+      return isTrackedAccountType(selectedAccount.type);
+    }
+    return !isTrackedAccountType(selectedAccount.type);
+  };
+};
+
+export type { AccountDestinationDraft };
+export {
+  CreateTransactionModelCreateAccountTransactionModelType as CreateAccountTransactionType,
+  UpdateTransactionModelUpdateAccountTransactionModelType as UpdateAccountTransactionType,
+  buildRequest,
+  buildSourceAccountFilter,
+  buildDestinationAccountFilter,
+  createEmptyDestination,
+  createEmptySource,
+};

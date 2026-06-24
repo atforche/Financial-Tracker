@@ -5,7 +5,7 @@ import AccountingPeriodCurrentSummaryCards from "@/accounting-periods/current/Cu
 import AccountingPeriodCurrentTransactionListFrame from "@/accounting-periods/current/CurrentAccountingPeriodTransactionListFrame";
 import type { CurrentAccountingPeriod as CurrentAccountingPeriodModel } from "@/accounting-periods/types";
 import type { JSX } from "react";
-import type { TransactionSortOrder } from "@/transactions/types";
+import type { TransactionSortOrder } from "@/transactions/transaction";
 import getApiClient from "@/framework/data/getApiClient";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
-import { type Transaction, TransactionType } from "@/transactions/types";
+import { type Transaction, TransactionType } from "@/transactions/transaction";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Fund } from "@/funds/types";

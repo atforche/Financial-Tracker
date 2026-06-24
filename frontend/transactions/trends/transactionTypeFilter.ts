@@ -1,4 +1,4 @@
-import { TransactionType } from "@/transactions/types";
+import { TransactionType } from "@/transactions/transaction";
 
 const transactionTypeValues = Object.values(
   TransactionType,

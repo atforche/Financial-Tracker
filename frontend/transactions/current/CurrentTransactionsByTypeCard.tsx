@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Stack, Typography } from "@mui/material";
-import type { CurrentTransactions } from "@/transactions/types";
+import type { CurrentTransactions } from "@/transactions/transaction";
 import type { JSX } from "react";
 import SummaryCard from "@/framework/view/SummaryCard";
 import formatCurrency from "@/framework/formatCurrency";

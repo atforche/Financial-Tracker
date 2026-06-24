@@ -12,7 +12,7 @@ import AccountingPeriodTrendsListFrame from "@/accounting-periods/trends/Account
 import AccountingPeriodTrendsSummaryCards from "@/accounting-periods/trends/AccountingPeriodTrendsSummaryCards";
 import AccountingPeriodTrendsTransactionListFrame from "@/accounting-periods/trends/AccountingPeriodTrendsTransactionListFrame";
 import type { JSX } from "react";
-import type { TransactionSortOrder } from "@/transactions/types";
+import type { TransactionSortOrder } from "@/transactions/transaction";
 import getApiClient from "@/framework/data/getApiClient";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 

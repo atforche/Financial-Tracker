@@ -8,7 +8,7 @@ import {
   getTransactionDestinationLabel,
   getTransactionFundIds,
   getTransactionSourceLabel,
-} from "@/transactions/types";
+} from "@/transactions/transaction";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriodTrends } from "@/accounting-periods/types";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";

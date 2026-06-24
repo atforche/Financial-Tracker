@@ -1,6 +1,9 @@
 import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
 import type { JSX, ReactNode } from "react";
-import type { TransactionAccount, TransactionFund } from "@/transactions/types";
+import type {
+  TransactionAccount,
+  TransactionFund,
+} from "@/transactions/transaction";
 import {
   getAssignedFundAmount,
   getRemainingFundAmount,

@@ -7,7 +7,7 @@ import {
 import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
 import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
-import type { TransactionFund } from "@/transactions/types";
+import type { TransactionFund } from "@/transactions/transaction";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
 import formatCurrency from "@/framework/formatCurrency";
 
