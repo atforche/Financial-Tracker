@@ -2,9 +2,9 @@
 
 import {
   type AssignmentGoal,
-  AssignmentGoalType,
+  type AssignmentGoalType,
   type SpendingGoal,
-  SpendingGoalType,
+  type SpendingGoalType,
   type UpdateAssignmentGoalRequest,
   type UpdateSpendingGoalRequest,
   formatAssignmentGoalType,
@@ -19,9 +19,9 @@ import {
   useRef,
   useState,
 } from "react";
-import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
+import AssignmentGoalSetupSection from "@/funds/workspace/AssignmentGoalSetupSection";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import FundGoalTypeEntryField from "@/funds/FundGoalTypeEntryField";
+import SpendingGoalSetupSection from "@/funds/workspace/SpendingGoalSetupSection";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
@@ -148,58 +148,22 @@ const UpdateGoalForm = function ({
           </Box>
         </TransactionSection>
 
-        <TransactionSection
-          title={
-            assignmentGoal !== null
-              ? "Assignment Settings"
-              : "Spending Settings"
-          }
-          description={
-            assignmentGoal !== null
-              ? "Adjust the assignment goal behavior and the amount you want to target for this fund."
-              : "Adjust how spending against this fund should be evaluated."
-          }
-        >
-          <Stack spacing={2}>
-            {assignmentGoal !== null ? (
-              <>
-                <FundGoalTypeEntryField<AssignmentGoalType>
-                  label="Assignment Goal Type"
-                  options={[
-                    AssignmentGoalType.MonthlyTarget,
-                    AssignmentGoalType.RecurringContribution,
-                  ]}
-                  value={assignmentGoalType}
-                  setValue={setAssignmentGoalType}
-                  formatOptionLabel={formatAssignmentGoalType}
-                  errorMessage={updateAssignmentState.typeErrors ?? null}
-                />
-                <CurrencyEntryField
-                  label="Assignment Goal Amount"
-                  value={assignmentGoalAmount}
-                  setValue={setAssignmentGoalAmount}
-                  errorMessage={updateAssignmentState.goalAmountErrors ?? null}
-                />
-              </>
-            ) : (
-              <>
-                <FundGoalTypeEntryField<SpendingGoalType>
-                  label="Spending Goal Type"
-                  options={[SpendingGoalType.Standard, SpendingGoalType.Debt]}
-                  value={spendingGoalType}
-                  setValue={setSpendingGoalType}
-                  formatOptionLabel={formatSpendingGoalType}
-                  errorMessage={updateSpendingState.typeErrors ?? null}
-                />
-                <TransactionDisplayField
-                  label="Spent So Far"
-                  value={formatCurrency(spendingGoal?.totalAmountToSpend ?? 0)}
-                  helperText="Spending goals no longer edit a target amount here."
-                />
-              </>
-            )}
-          </Stack>
-        </TransactionSection>
+        {assignmentGoal !== null ? (
+          <AssignmentGoalSetupSection
+            value={assignmentGoalType}
+            setValue={setAssignmentGoalType}
+            amount={assignmentGoalAmount}
+            setAmount={setAssignmentGoalAmount}
+            typeErrorMessage={updateAssignmentState.typeErrors ?? null}
+            amountErrorMessage={updateAssignmentState.goalAmountErrors ?? null}
+          />
+        ) : (
+          <SpendingGoalSetupSection
+            value={spendingGoalType}
+            setValue={setSpendingGoalType}
+            typeErrorMessage={updateSpendingState.typeErrors ?? null}
+          />
+        )}
 
         <ErrorAlert
           errorMessage={

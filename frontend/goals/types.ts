@@ -69,6 +69,22 @@ const formatAssignmentGoalType = function (
 };
 
 /**
+ * Describes how an assignment goal type behaves.
+ */
+const describeAssignmentGoalType = function (
+  goalType: AssignmentGoalTypeModel,
+): string {
+  switch (goalType) {
+    case AssignmentGoalTypeModel.MonthlyTarget:
+      return "Ensure that you always have a certain amount available to spend during the period.";
+    case AssignmentGoalTypeModel.RecurringContribution:
+      return "Always assign a fixed amount to the fund regardless of the opening balance.";
+    default:
+      return String(goalType);
+  }
+};
+
+/**
  * Formats a spending goal type for display.
  */
 const formatSpendingGoalType = function (
@@ -79,6 +95,22 @@ const formatSpendingGoalType = function (
       return "Standard";
     case SpendingGoalTypeModel.Debt:
       return "Debt";
+    default:
+      return String(goalType);
+  }
+};
+
+/**
+ * Describes how a spending goal type behaves.
+ */
+const describeSpendingGoalType = function (
+  goalType: SpendingGoalTypeModel,
+): string {
+  switch (goalType) {
+    case SpendingGoalTypeModel.Standard:
+      return "Treats the fund like a normal spending category. Spending stays on track as long as you do not spend more than the money available in the fund.";
+    case SpendingGoalTypeModel.Debt:
+      return "Treats the fund like debt payoff. The goal is met only when all money available to the fund has been applied toward the debt.";
     default:
       return String(goalType);
   }
@@ -104,5 +136,7 @@ export {
   type GoalTrendsAccountingPeriodSummaryModel,
   type GoalTrendsSpendingGoalTypeSummary,
   formatAssignmentGoalType,
+  describeAssignmentGoalType,
   formatSpendingGoalType,
+  describeSpendingGoalType,
 };

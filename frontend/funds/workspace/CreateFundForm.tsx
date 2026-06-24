@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  AssignmentGoalType,
-  SpendingGoalType,
-  formatAssignmentGoalType,
-  formatSpendingGoalType,
-} from "@/goals/types";
+import { AssignmentGoalType, SpendingGoalType } from "@/goals/types";
 import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import {
   type JSX,
@@ -17,10 +12,10 @@ import {
 } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
+import AssignmentGoalSetupSection from "@/funds/workspace/AssignmentGoalSetupSection";
 import type { CreateFundRequest } from "@/funds/types";
-import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import FundGoalTypeEntryField from "@/funds/FundGoalTypeEntryField";
+import SpendingGoalSetupSection from "@/funds/workspace/SpendingGoalSetupSection";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import createFund from "@/funds/workspace/createFund";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
@@ -141,42 +136,20 @@ const CreateFundForm = function ({
         </Stack>
       </Paper>
 
-      <Paper variant="outlined" sx={{ p: { xs: 2.5, sm: 3 }, borderRadius: 4 }}>
-        <Stack spacing={2.5}>
-          <Stack spacing={0.5}>
-            <Typography variant="h6">Goal Setup</Typography>
-            <Typography variant="body2" color="text.secondary">
-              Define the target behavior for funding this category and how its
-              spending should be treated.
-            </Typography>
-          </Stack>
-          <FundGoalTypeEntryField
-            label="Assignment Goal Type"
-            options={[
-              AssignmentGoalType.MonthlyTarget,
-              AssignmentGoalType.RecurringContribution,
-            ]}
-            value={assignmentGoalType}
-            setValue={setAssignmentGoalType}
-            formatOptionLabel={formatAssignmentGoalType}
-            errorMessage={state.assignmentGoalTypeErrors ?? null}
-          />
-          <CurrencyEntryField
-            label="Assignment Goal Amount"
-            value={assignmentGoalAmount}
-            setValue={setAssignmentGoalAmount}
-            errorMessage={state.assignmentGoalAmountErrors ?? null}
-          />
-          <FundGoalTypeEntryField
-            label="Spending Goal Type"
-            options={[SpendingGoalType.Standard, SpendingGoalType.Debt]}
-            value={spendingGoalType}
-            setValue={setSpendingGoalType}
-            formatOptionLabel={formatSpendingGoalType}
-            errorMessage={state.spendingGoalTypeErrors ?? null}
-          />
-        </Stack>
-      </Paper>
+      <AssignmentGoalSetupSection
+        value={assignmentGoalType}
+        setValue={setAssignmentGoalType}
+        amount={assignmentGoalAmount}
+        setAmount={setAssignmentGoalAmount}
+        typeErrorMessage={state.assignmentGoalTypeErrors ?? null}
+        amountErrorMessage={state.assignmentGoalAmountErrors ?? null}
+      />
+
+      <SpendingGoalSetupSection
+        value={spendingGoalType}
+        setValue={setSpendingGoalType}
+        typeErrorMessage={state.spendingGoalTypeErrors ?? null}
+      />
 
       <ErrorAlert
         errorMessage={state.errorTitle ?? null}
