@@ -1,16 +1,23 @@
 "use client";
 
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
-import { type Transaction, TransactionType } from "@/transactions/transaction";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
-import UpdateAccountTransactionForm from "@/transactions/workspace/UpdateAccountTransactionForm";
-import UpdateFundTransactionForm from "@/transactions/workspace/UpdateFundTransactionForm";
-import UpdateIncomeTransactionForm from "@/transactions/workspace/UpdateIncomeTransactionForm";
-import UpdateSpendingTransactionForm from "@/transactions/workspace/UpdateSpendingTransactionForm";
+import type { Transaction } from "@/transactions/transaction";
+import UpdateAccountTransactionForm from "@/transactions/workspace/account/UpdateAccountTransactionForm";
+import UpdateFundTransactionForm from "@/transactions/workspace/fund/UpdateFundTransactionForm";
+import UpdateIncomeTransactionForm from "@/transactions/workspace/income/UpdateIncomeTransactionForm";
+import UpdateSpendingTransactionForm from "@/transactions/workspace/spending/UpdateSpendingTransactionForm";
+import { isAccountTransaction } from "@/transactions/accountTransaction";
+import { isFundTransaction } from "@/transactions/fundTransaction";
+import { isIncomeTransaction } from "@/transactions/incomeTransaction";
+import { isSpendingTransaction } from "@/transactions/spendingTransaction";
 
+/**
+ * Props for the UpdateTransactionForm component.
+ */
 interface UpdateTransactionFormProps {
   readonly transaction: Transaction;
   readonly transactionAccountingPeriod: AccountingPeriod;
@@ -32,8 +39,8 @@ const UpdateTransactionForm = function ({
   assignmentGoals,
   spendingGoals,
   redirectUrl,
-}: UpdateTransactionFormProps): JSX.Element {
-  if (transaction.transactionType === TransactionType.Income) {
+}: UpdateTransactionFormProps): JSX.Element | null {
+  if (isIncomeTransaction(transaction)) {
     return (
       <UpdateIncomeTransactionForm
         transaction={transaction}
@@ -46,8 +53,7 @@ const UpdateTransactionForm = function ({
       />
     );
   }
-
-  if (transaction.transactionType === TransactionType.Spending) {
+  if (isSpendingTransaction(transaction)) {
     return (
       <UpdateSpendingTransactionForm
         transaction={transaction}
@@ -60,8 +66,7 @@ const UpdateTransactionForm = function ({
       />
     );
   }
-
-  if (transaction.transactionType === TransactionType.Account) {
+  if (isAccountTransaction(transaction)) {
     return (
       <UpdateAccountTransactionForm
         transaction={transaction}
@@ -71,15 +76,17 @@ const UpdateTransactionForm = function ({
       />
     );
   }
-
-  return (
-    <UpdateFundTransactionForm
-      transaction={transaction}
-      transactionAccountingPeriod={transactionAccountingPeriod}
-      funds={funds}
-      redirectUrl={redirectUrl}
-    />
-  );
+  if (isFundTransaction(transaction)) {
+    return (
+      <UpdateFundTransactionForm
+        transaction={transaction}
+        transactionAccountingPeriod={transactionAccountingPeriod}
+        funds={funds}
+        redirectUrl={redirectUrl}
+      />
+    );
+  }
+  return null;
 };
 
 export default UpdateTransactionForm;

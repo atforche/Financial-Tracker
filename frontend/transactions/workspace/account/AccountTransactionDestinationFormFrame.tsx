@@ -6,6 +6,9 @@ import StringEntryField from "@/framework/forms/StringEntryField";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 import Typography from "@mui/material/Typography";
 
+/**
+ * Props for the AccountTransactionDestinationFormFrame component.
+ */
 interface AccountTransactionDestinationFrameProps {
   readonly index: number;
   readonly accounts: Account[];

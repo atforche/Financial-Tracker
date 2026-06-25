@@ -1,21 +1,10 @@
 import {
-  CreateTransactionModelCreateFundTransactionModelType,
-  CreateTransactionModelCreateIncomeTransactionModelType,
-  CreateTransactionModelCreateSpendingTransactionModelType,
   TransactionAccountTypeModel,
   TransactionSortOrderModel,
   TransactionTrendsModeModel,
   TransactionTypeModel,
-  UpdateTransactionModelUpdateFundTransactionModelType,
-  UpdateTransactionModelUpdateIncomeTransactionModelType,
-  UpdateTransactionModelUpdateSpendingTransactionModelType,
   type components,
 } from "@/framework/data/api";
-import {
-  type Fund,
-  type FundAmount,
-  hasIncompleteFundAssignments,
-} from "@/funds/types";
 
 type Transaction = components["schemas"]["TransactionModel"];
 type TransactionTrends = components["schemas"]["TransactionTrendsModel"];
@@ -32,13 +21,6 @@ type CreateTransactionRequest = components["schemas"]["CreateTransactionModel"];
 type UpdateTransactionRequest = components["schemas"]["UpdateTransactionModel"];
 type PostTransactionRequest = components["schemas"]["PostTransactionModel"];
 
-type SpendingTransaction =
-  components["schemas"]["TransactionModelSpendingTransactionModel"];
-type IncomeTransaction =
-  components["schemas"]["TransactionModelIncomeTransactionModel"];
-type FundTransaction =
-  components["schemas"]["TransactionModelFundTransactionModel"];
-
 interface TransactionPostingAccount {
   readonly accountId: string;
   readonly accountName: string;
@@ -54,94 +36,6 @@ const summarizeValues = function (values: string[]): string {
     return meaningfulValues[0] ?? "";
   }
   return `${meaningfulValues[0] ?? ""} +${meaningfulValues.length - 1} more`;
-};
-
-/**
- * Determines if the provided transaction is a spending transaction.
- */
-const isSpendingTransaction = function (
-  transaction: Transaction,
-): transaction is SpendingTransaction {
-  return transaction.transactionType === TransactionTypeModel.Spending;
-};
-
-/**
- * Converts the provided transaction to a spending transaction.
- */
-const asSpendingTransaction = function (
-  transaction: Transaction,
-): SpendingTransaction | null {
-  return isSpendingTransaction(transaction) ? transaction : null;
-};
-
-/**
- * Determines if the provided spending transaction is complete.
- */
-const isSpendingTransactionComplete = function (
-  spendingFundAssignments: FundAmount[],
-): boolean {
-  return (
-    !hasIncompleteFundAssignments(spendingFundAssignments) &&
-    spendingFundAssignments.every(
-      (fundAmount) =>
-        fundAmount.fundName !== "Unassigned" || fundAmount.amount === 0,
-    )
-  );
-};
-
-/**
- * Determines if the provided transaction is an income transaction.
- */
-const isIncomeTransaction = function (
-  transaction: Transaction,
-): transaction is IncomeTransaction {
-  return transaction.transactionType === TransactionTypeModel.Income;
-};
-
-/**
- * Converts the provided transaction to an income transaction.
- */
-const asIncomeTransaction = function (
-  transaction: Transaction,
-): IncomeTransaction | null {
-  return isIncomeTransaction(transaction) ? transaction : null;
-};
-
-/**
- * Determines if the provided income transaction is complete.
- */
-const isIncomeTransactionComplete = function (
-  incomeFundAssignments: FundAmount[],
-): boolean {
-  return !hasIncompleteFundAssignments(incomeFundAssignments);
-};
-
-/**
- * Determines if the provided transaction is a fund transaction.
- */
-const isFundTransaction = function (
-  transaction: Transaction,
-): transaction is FundTransaction {
-  return transaction.transactionType === TransactionTypeModel.Fund;
-};
-
-/**
- * Converts the provided transaction to a fund transaction.
- */
-const asFundTransaction = function (
-  transaction: Transaction,
-): FundTransaction | null {
-  return isFundTransaction(transaction) ? transaction : null;
-};
-
-/**
- * Determines if the provided fund transaction is complete.
- */
-const isFundTransactionComplete = function (
-  debitFund: Fund | null,
-  creditFund: Fund | null,
-): boolean {
-  return debitFund !== null && creditFund !== null;
 };
 
 /**
@@ -400,28 +294,10 @@ export {
   type CreateTransactionRequest,
   type UpdateTransactionRequest,
   type PostTransactionRequest,
-  type SpendingTransaction,
-  type IncomeTransaction,
-  type FundTransaction,
   TransactionTrendsModeModel as TransactionTrendsMode,
   TransactionSortOrderModel as TransactionSortOrder,
   TransactionAccountTypeModel as TransactionAccountType,
   TransactionTypeModel as TransactionType,
-  CreateTransactionModelCreateFundTransactionModelType as CreateFundTransactionType,
-  CreateTransactionModelCreateIncomeTransactionModelType as CreateIncomeTransactionType,
-  CreateTransactionModelCreateSpendingTransactionModelType as CreateSpendingTransactionType,
-  UpdateTransactionModelUpdateFundTransactionModelType as UpdateFundTransactionType,
-  UpdateTransactionModelUpdateIncomeTransactionModelType as UpdateIncomeTransactionType,
-  UpdateTransactionModelUpdateSpendingTransactionModelType as UpdateSpendingTransactionType,
-  isIncomeTransaction,
-  isIncomeTransactionComplete,
-  isSpendingTransaction,
-  isSpendingTransactionComplete,
-  isFundTransaction,
-  isFundTransactionComplete,
-  asSpendingTransaction,
-  asIncomeTransaction,
-  asFundTransaction,
   getTransactionSourceLabel,
   getTransactionDestinationLabel,
   getTransactionAccountIds,

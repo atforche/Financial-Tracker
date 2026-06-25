@@ -3,12 +3,19 @@ import {
   type AccountIdentifier,
   isTrackedAccountType,
 } from "@/accounts/types";
+import type {
+  AccountTransaction,
+  AccountTransactionDestination,
+} from "@/transactions/accountTransaction";
 import {
   CreateTransactionModelCreateAccountTransactionModelType,
   UpdateTransactionModelUpdateAccountTransactionModelType,
 } from "@/framework/data/api";
+import type {
+  CreateTransactionRequest,
+  UpdateTransactionRequest,
+} from "@/transactions/transaction";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import type { CreateTransactionRequest } from "@/transactions/transaction";
 import type { Dayjs } from "dayjs";
 
 /**
@@ -100,21 +107,16 @@ const validateDestination = function (
 };
 
 /**
- * Builds a create transaction request from the provided parameters.
+ * Validates the entire transaction request.
  */
-const buildRequest = function (
+const validateRequest = function (
   accountingPeriod: AccountingPeriod | null,
   date: Dayjs | null,
   defaultDate: Dayjs | null,
   description: string,
   source: AccountSourceDraft,
   destinations: AccountDestinationDraft[],
-): CreateTransactionRequest | null {
-  const hasValidSource = validateSource(
-    source.account,
-    source.location,
-    source.amount,
-  );
+): boolean {
   const destinationTotal = destinations.reduce(
     (total, destination) => total + (destination.amount ?? 0),
     0,
@@ -128,24 +130,47 @@ const buildRequest = function (
   const areDestinationsComplete = destinations.every((d) =>
     validateDestination(d, source.account),
   );
-  if (
+  return (
     accountingPeriod !== null &&
     (date !== null || defaultDate !== null) &&
     description !== "" &&
-    hasValidSource &&
+    validateSource(source.account, source.location, source.amount) &&
     destinations.length > 0 &&
     destinationTotal === source.amount &&
     hasUniqueDestinationAccounts &&
     hasUniqueDestinationLocations &&
     areDestinationsComplete
+  );
+};
+
+/**
+ * Builds a create transaction request from the provided parameters.
+ */
+const buildCreateRequest = function (
+  accountingPeriod: AccountingPeriod | null,
+  date: Dayjs | null,
+  defaultDate: Dayjs | null,
+  description: string,
+  source: AccountSourceDraft,
+  destinations: AccountDestinationDraft[],
+): CreateTransactionRequest | null {
+  if (
+    validateRequest(
+      accountingPeriod,
+      date,
+      defaultDate,
+      description,
+      source,
+      destinations,
+    )
   ) {
-    const request = {
+    return {
       type: CreateTransactionModelCreateAccountTransactionModelType.Account,
-      accountingPeriodId: accountingPeriod.id,
+      accountingPeriodId: accountingPeriod?.id ?? "",
       date:
         date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
       description,
-      amount: source.amount,
+      amount: source.amount ?? 0,
       source: {
         accountId: source.account?.id ?? null,
         location:
@@ -160,7 +185,49 @@ const buildRequest = function (
         amount: destination.amount ?? 0,
       })),
     };
-    return request;
+  }
+  return null;
+};
+
+/**
+ * Builds an update transaction request from the provided parameters.
+ */
+const buildUpdateRequest = function (
+  accountingPeriod: AccountingPeriod | null,
+  date: Dayjs | null,
+  description: string,
+  source: AccountSourceDraft,
+  destinations: AccountDestinationDraft[],
+): UpdateTransactionRequest | null {
+  if (
+    validateRequest(
+      accountingPeriod,
+      date,
+      null,
+      description,
+      source,
+      destinations,
+    )
+  ) {
+    return {
+      type: UpdateTransactionModelUpdateAccountTransactionModelType.Account,
+      date: date?.format("YYYY-MM-DD") ?? "",
+      description,
+      amount: source.amount ?? 0,
+      source: {
+        accountId: source.account?.id ?? null,
+        location:
+          source.account === null ? source.location.trim() || null : null,
+      },
+      destinations: destinations.map((destination) => ({
+        accountId: destination.account?.id ?? null,
+        location:
+          destination.account === null
+            ? destination.location.trim() || null
+            : null,
+        amount: destination.amount ?? 0,
+      })),
+    };
   }
   return null;
 };
@@ -213,13 +280,58 @@ const buildDestinationAccountFilter = function (
   };
 };
 
-export type { AccountDestinationDraft };
+/**
+ * Gets the source from the provided account transaction.
+ */
+const getSourceFromTransaction = function (
+  transaction: AccountTransaction,
+  accounts: Account[],
+): AccountSourceDraft {
+  return {
+    account:
+      typeof transaction.source.account !== "undefined" &&
+      transaction.source.account !== null
+        ? (accounts.find(
+            (account) => account.id === transaction.source.account?.accountId,
+          ) ?? null)
+        : null,
+    location: transaction.source.location ?? "",
+    amount: transaction.amount,
+  };
+};
+
+/**
+ * Gets the collection of destinations from the provided account transaction.
+ */
+const getDestinationsFromTransaction = function (
+  transaction: AccountTransaction,
+  accounts: Account[],
+): AccountDestinationDraft[] {
+  return transaction.destinations.map(
+    (destination: AccountTransactionDestination) => ({
+      account:
+        destination.account !== null &&
+        typeof destination.account !== "undefined"
+          ? (accounts.find(
+              (account) => account.id === destination.account.accountId,
+            ) ?? null)
+          : null,
+      location: destination.location ?? "",
+      amount: destination.amount,
+    }),
+  );
+};
+
+export type { AccountDestinationDraft, AccountSourceDraft };
 export {
   CreateTransactionModelCreateAccountTransactionModelType as CreateAccountTransactionType,
   UpdateTransactionModelUpdateAccountTransactionModelType as UpdateAccountTransactionType,
-  buildRequest,
+  buildCreateRequest,
+  buildUpdateRequest,
   buildSourceAccountFilter,
   buildDestinationAccountFilter,
   createEmptyDestination,
   createEmptySource,
+  getSourceFromTransaction,
+  getDestinationsFromTransaction,
 };

@@ -2,16 +2,13 @@
 
 import {
   type AccountDestinationDraft,
-  buildDestinationAccountFilter,
-  buildRequest,
-  buildSourceAccountFilter,
+  type AccountSourceDraft,
+  buildCreateRequest,
   createEmptyDestination,
   createEmptySource,
 } from "@/transactions/workspace/account/createOrUpdateAccountTransaction";
-import { Button, Stack, Typography } from "@mui/material";
 import {
   type JSX,
-  startTransition,
   useActionState,
   useEffect,
   useRef,
@@ -19,17 +16,11 @@ import {
 } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import type { Account } from "@/accounts/types";
-import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFormFrame";
-import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFormFrame";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import { AddCircleOutline } from "@mui/icons-material";
+import CreateOrUpdateAccountTransactionForm from "@/transactions/workspace/account/CreateOrUpdateAccountTransactionForm";
 import type { CreateTransactionRequest } from "@/transactions/transaction";
-import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
 import createTransaction from "@/transactions/workspace/createTransaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
-import formatCurrency from "@/framework/formatCurrency";
 import { useRouter } from "next/navigation";
 
 /**
@@ -81,7 +72,7 @@ const CreateAccountTransactionForm = function ({
   const defaultDate = getDefaultDate(accountingPeriod);
   const [date, setDate] = useState<Dayjs | null>(null);
   const [description, setDescription] = useState<string>("");
-  const [source, setSource] = useState(createEmptySource());
+  const [source, setSource] = useState<AccountSourceDraft>(createEmptySource());
   const [destinations, setDestinations] = useState<AccountDestinationDraft[]>([
     createEmptyDestination(),
   ]);
@@ -111,25 +102,7 @@ const CreateAccountTransactionForm = function ({
     }
   }, [redirectUrl, router, state]);
 
-  const updateDestination = function (
-    index: number,
-    recipe: (current: AccountDestinationDraft) => AccountDestinationDraft,
-  ): void {
-    setDestinations((currentDestinations) =>
-      currentDestinations.map((currentDestination, currentIndex) =>
-        currentIndex === index
-          ? recipe(currentDestination)
-          : currentDestination,
-      ),
-    );
-  };
-
-  const destinationTotal = destinations.reduce(
-    (total, destination) => total + (destination.amount ?? 0),
-    0,
-  );
-
-  const request: CreateTransactionRequest | null = buildRequest(
+  const request: CreateTransactionRequest | null = buildCreateRequest(
     accountingPeriod,
     date,
     defaultDate,
@@ -139,150 +112,31 @@ const CreateAccountTransactionForm = function ({
   );
 
   return (
-    <Stack ref={formRef} spacing={3}>
-      <Stack spacing={3} sx={{ width: "100%" }}>
-        <TransactionDetailsSection
-          accountingPeriods={accountingPeriods}
-          accountingPeriod={accountingPeriod}
-          setAccountingPeriod={setAccountingPeriod}
-          date={date ?? defaultDate}
-          setDate={setDate}
-          descriptionValue={description}
-          setDescriptionValue={setDescription}
-        />
-        <TransactionSection
-          title="Transfer Flow"
-          description="Build one source and one or more destinations. The destination amounts should add up to the transaction amount."
-        >
-          <Stack spacing={2}>
-            <AccountTransactionSourceFrame
-              accounts={accounts}
-              account={source.account}
-              setAccount={(account) => {
-                setSource((currentSource) => ({
-                  ...currentSource,
-                  account,
-                  location: account === null ? currentSource.location : "",
-                }));
-              }}
-              location={source.location}
-              setLocation={(location) => {
-                setSource((currentSource) => ({
-                  ...currentSource,
-                  location,
-                }));
-              }}
-              accountFilter={buildSourceAccountFilter(accounts, destinations)}
-              amount={source.amount}
-              setAmount={(nextAmount) => {
-                setSource((currentSource) => ({
-                  ...currentSource,
-                  amount: nextAmount,
-                }));
-              }}
-            />
-            {destinations.map((destination, index) => (
-              <AccountTransactionDestinationFrame
-                key={`account-destination-${index}`}
-                index={index}
-                accounts={accounts}
-                account={destination.account}
-                setAccount={(account) => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    account,
-                    location:
-                      account === null ? currentDestination.location : "",
-                  }));
-                }}
-                location={destination.location}
-                setLocation={(location) => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    location,
-                  }));
-                }}
-                amount={destination.amount}
-                setAmount={(nextAmount) => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    amount: nextAmount,
-                  }));
-                }}
-                accountFilter={buildDestinationAccountFilter(
-                  accounts,
-                  destinations,
-                  index,
-                  source.account,
-                )}
-                onRemove={
-                  destinations.length > 1
-                    ? (): void => {
-                        setDestinations((currentDestinations) =>
-                          currentDestinations.filter(
-                            (_, currentIndex) => currentIndex !== index,
-                          ),
-                        );
-                      }
-                    : null
-                }
-              />
-            ))}
-            <Button
-              variant="outlined"
-              startIcon={<AddCircleOutline />}
-              onClick={() => {
-                setDestinations((currentDestinations) => [
-                  ...currentDestinations,
-                  createEmptyDestination(),
-                ]);
-              }}
-              sx={{ alignSelf: "flex-start" }}
-            >
-              Add Destination
-            </Button>
-            <Typography
-              variant="body2"
-              color={
-                source.amount !== null && destinationTotal !== source.amount
-                  ? "error.main"
-                  : "text.secondary"
-              }
-            >
-              Destination total: {formatCurrency(destinationTotal)}
-            </Typography>
-          </Stack>
-        </TransactionSection>
-        <ErrorAlert
-          errorMessage={state.errorTitle ?? null}
-          unmappedErrors={state.unmappedErrors ?? null}
-        />
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          justifyContent="flex-end"
-        >
-          <Button variant="outlined" onClick={reset}>
-            Reset
-          </Button>
-          <Button
-            variant="contained"
-            loading={pending}
-            disabled={request === null}
-            onClick={() => {
-              if (request === null) {
-                return;
-              }
-              startTransition(() => {
-                action({ redirectUrl, request });
-              });
-            }}
-          >
-            Create
-          </Button>
-        </Stack>
-      </Stack>
-    </Stack>
+    <CreateOrUpdateAccountTransactionForm<CreateTransactionRequest>
+      formRef={formRef}
+      accounts={accounts}
+      accountingPeriods={accountingPeriods}
+      accountingPeriod={accountingPeriod}
+      setAccountingPeriod={setAccountingPeriod}
+      date={date}
+      setDate={setDate}
+      defaultDate={defaultDate}
+      description={description}
+      setDescription={setDescription}
+      source={source}
+      setSource={setSource}
+      destinations={destinations}
+      setDestinations={setDestinations}
+      transferFlowDescription="Build one source and one or more destinations. The destination amounts should add up to the transaction amount."
+      submitLabel="Create"
+      state={state}
+      pending={pending}
+      request={request}
+      onReset={reset}
+      onSubmit={(nextRequest) => {
+        action({ redirectUrl, request: nextRequest });
+      }}
+    />
   );
 };
 

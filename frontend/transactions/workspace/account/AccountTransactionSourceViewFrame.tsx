@@ -5,6 +5,9 @@ import type { TransactionAccount } from "@/transactions/transaction";
 import TransactionAccountViewDisplay from "@/transactions/workspace/TransactionAccountViewDisplay";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 
+/**
+ * Props for the AccountTransactionSourceViewFrame component.
+ */
 interface AccountTransactionSourceViewFrameProps {
   readonly account: TransactionAccount | null;
   readonly location: string;
