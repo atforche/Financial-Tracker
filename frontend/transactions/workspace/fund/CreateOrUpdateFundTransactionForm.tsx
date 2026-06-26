@@ -1,12 +1,5 @@
 "use client";
 
-import {
-  type AccountDestinationDraft,
-  type AccountSourceDraft,
-  buildDestinationAccountFilter,
-  buildSourceAccountFilter,
-  createEmptyDestination,
-} from "@/transactions/workspace/account/helpers";
 import { Button, Stack, Typography } from "@mui/material";
 import {
   type Dispatch,
@@ -15,21 +8,28 @@ import {
   type SetStateAction,
   startTransition,
 } from "react";
-import type { Account } from "@/accounts/types";
-import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFormFrame";
-import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFormFrame";
+import {
+  type FundDestinationDraft,
+  type FundSourceDraft,
+  buildDestinationFundFilter,
+  buildSourceFundFilter,
+  createEmptyDestination,
+} from "@/transactions/workspace/fund/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import { AddCircleOutline } from "@mui/icons-material";
 import type { Dayjs } from "dayjs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import type { Fund } from "@/funds/types";
+import FundTransactionDestinationFormFrame from "@/transactions/workspace/fund/FundTransactionDestinationFormFrame";
+import FundTransactionSourceFormFrame from "@/transactions/workspace/fund/FundTransactionSourceFormFrame";
 import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
 import formatCurrency from "@/framework/formatCurrency";
 
 /**
- * Represents the state of the account transaction form.
+ * Represents the state of the fund transaction form.
  */
-interface AccountTransactionFormState {
+interface FundTransactionFormState {
   readonly success?: boolean;
   readonly transactionId?: string | null;
   readonly errorTitle?: string | null;
@@ -37,11 +37,11 @@ interface AccountTransactionFormState {
 }
 
 /**
- * Props for the CreateOrUpdateAccountTransactionForm component.
+ * Props for the CreateOrUpdateFundTransactionForm component.
  */
-interface CreateOrUpdateAccountTransactionFormProps<RequestPayload> {
+interface CreateOrUpdateFundTransactionFormProps<RequestPayload> {
   readonly formRef?: RefObject<HTMLDivElement | null>;
-  readonly accounts: Account[];
+  readonly funds: Fund[];
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
   readonly setAccountingPeriod?: Dispatch<
@@ -52,13 +52,13 @@ interface CreateOrUpdateAccountTransactionFormProps<RequestPayload> {
   readonly defaultDate: Dayjs | null;
   readonly description: string;
   readonly setDescription: Dispatch<SetStateAction<string>>;
-  readonly source: AccountSourceDraft;
-  readonly setSource: Dispatch<SetStateAction<AccountSourceDraft>>;
-  readonly destinations: AccountDestinationDraft[];
-  readonly setDestinations: Dispatch<SetStateAction<AccountDestinationDraft[]>>;
+  readonly source: FundSourceDraft;
+  readonly setSource: Dispatch<SetStateAction<FundSourceDraft>>;
+  readonly destinations: FundDestinationDraft[];
+  readonly setDestinations: Dispatch<SetStateAction<FundDestinationDraft[]>>;
   readonly transferFlowDescription: string;
   readonly submitLabel: string;
-  readonly state: AccountTransactionFormState;
+  readonly state: FundTransactionFormState;
   readonly pending: boolean;
   readonly request: RequestPayload | null;
   readonly onReset: () => void;
@@ -66,11 +66,11 @@ interface CreateOrUpdateAccountTransactionFormProps<RequestPayload> {
 }
 
 /**
- * Displays the shared account transaction form layout used by create and update flows.
+ * Displays the shared fund transaction form layout used by create and update flows.
  */
-const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
+const CreateOrUpdateFundTransactionForm = function <RequestPayload>({
   formRef,
-  accounts,
+  funds,
   accountingPeriods,
   accountingPeriod,
   setAccountingPeriod = null,
@@ -90,10 +90,10 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
   request,
   onReset,
   onSubmit,
-}: CreateOrUpdateAccountTransactionFormProps<RequestPayload>): JSX.Element {
+}: CreateOrUpdateFundTransactionFormProps<RequestPayload>): JSX.Element {
   const updateDestination = function (
     index: number,
-    recipe: (current: AccountDestinationDraft) => AccountDestinationDraft,
+    recipe: (current: FundDestinationDraft) => FundDestinationDraft,
   ): void {
     setDestinations((currentDestinations) =>
       currentDestinations.map((currentDestination, currentIndex) =>
@@ -126,26 +126,18 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
           description={transferFlowDescription}
         >
           <Stack spacing={2}>
-            <AccountTransactionSourceFrame
-              accounts={accounts}
-              account={source.account}
-              setAccount={(account): void => {
+            <FundTransactionSourceFormFrame
+              funds={funds}
+              fund={source.fund}
+              setFund={(fund): void => {
                 setSource((currentSource) => ({
                   ...currentSource,
-                  account,
-                  location: account === null ? currentSource.location : "",
+                  fund,
                 }));
               }}
-              location={source.location}
-              setLocation={(location): void => {
-                setSource((currentSource) => ({
-                  ...currentSource,
-                  location,
-                }));
-              }}
-              accountFilter={buildSourceAccountFilter(accounts, destinations)}
+              filter={buildSourceFundFilter(destinations)}
               amount={source.amount}
-              setAmount={(nextAmount): void => {
+              setAmount={(nextAmount: number | null): void => {
                 setSource((currentSource) => ({
                   ...currentSource,
                   amount: nextAmount,
@@ -153,38 +145,28 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
               }}
             />
             {destinations.map((destination, index) => (
-              <AccountTransactionDestinationFrame
-                key={`account-destination-${index}`}
+              <FundTransactionDestinationFormFrame
+                key={`fund-destination-${index}`}
                 index={index}
-                accounts={accounts}
-                account={destination.account}
-                setAccount={(account): void => {
+                funds={funds}
+                fund={destination.fund}
+                setFund={(fund): void => {
                   updateDestination(index, (currentDestination) => ({
                     ...currentDestination,
-                    account,
-                    location:
-                      account === null ? currentDestination.location : "",
-                  }));
-                }}
-                location={destination.location}
-                setLocation={(location): void => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    location,
+                    fund,
                   }));
                 }}
                 amount={destination.amount}
-                setAmount={(nextAmount): void => {
+                setAmount={(nextAmount: number | null): void => {
                   updateDestination(index, (currentDestination) => ({
                     ...currentDestination,
                     amount: nextAmount,
                   }));
                 }}
-                accountFilter={buildDestinationAccountFilter(
-                  accounts,
+                filter={buildDestinationFundFilter(
                   destinations,
                   index,
-                  source.account,
+                  source.fund,
                 )}
                 onRemove={
                   destinations.length > 1
@@ -257,4 +239,4 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
   );
 };
 
-export default CreateOrUpdateAccountTransactionForm;
+export default CreateOrUpdateFundTransactionForm;

@@ -6,14 +6,8 @@ import {
   buildUpdateRequest,
   getDestinationsFromTransaction,
   getSourceFromTransaction,
-} from "@/transactions/workspace/account/createOrUpdateAccountTransaction";
-import {
-  type JSX,
-  useActionState,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+} from "@/transactions/workspace/account/helpers";
+import { type JSX, useActionState, useEffect, useRef, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import type { Account } from "@/accounts/types";
 import type { AccountTransaction } from "@/transactions/accountTransaction";
@@ -43,8 +37,8 @@ const UpdateAccountTransactionForm = function ({
   accounts,
   redirectUrl,
 }: UpdateAccountTransactionFormProps): JSX.Element {
-  const formRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
+  const formRef = useRef<HTMLDivElement | null>(null);
 
   const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
   const [description, setDescription] = useState<string>(
@@ -98,7 +92,7 @@ const UpdateAccountTransactionForm = function ({
       destinations={destinations}
       setDestinations={setDestinations}
       transferFlowDescription="Edit the source and each destination. The destination amounts should add up to the transaction amount."
-      submitLabel="Update Account Transaction"
+      submitLabel="Update"
       state={state}
       pending={pending}
       request={request}

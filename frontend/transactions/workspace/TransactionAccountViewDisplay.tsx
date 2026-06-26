@@ -1,8 +1,11 @@
 import { Stack, TextField } from "@mui/material";
 import type { JSX } from "react";
 import type { TransactionAccount } from "@/transactions/transaction";
-import TransactionBalanceDetails from "./TransactionBalanceDetails";
+import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
 
+/**
+ * Props for the TransactionAccountViewDisplay component.
+ */
 interface TransactionAccountViewDisplayProps {
   readonly account: TransactionAccount;
 }

@@ -6,19 +6,18 @@ import {
   buildCreateRequest,
   createEmptyDestination,
   createEmptySource,
-} from "@/transactions/workspace/account/createOrUpdateAccountTransaction";
+} from "@/transactions/workspace/account/helpers";
+import { type JSX, useActionState, useEffect, useRef, useState } from "react";
 import {
-  type JSX,
-  useActionState,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import dayjs, { type Dayjs } from "dayjs";
+  getDefaultAccountingPeriod,
+  getDefaultDate,
+  redirectWithSelectedTransaction,
+} from "@/transactions/workspace/helpers";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateOrUpdateAccountTransactionForm from "@/transactions/workspace/account/CreateOrUpdateAccountTransactionForm";
 import type { CreateTransactionRequest } from "@/transactions/transaction";
+import type { Dayjs } from "dayjs";
 import createTransaction from "@/transactions/workspace/createTransaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import { useRouter } from "next/navigation";
@@ -31,28 +30,6 @@ interface CreateAccountTransactionFormProps {
   readonly accounts: Account[];
   readonly redirectUrl: string;
 }
-
-/**
- * Gets the default accounting period from a list of accounting periods.
- */
-const getDefaultAccountingPeriod = function (
-  accountingPeriods: AccountingPeriod[],
-): AccountingPeriod | null {
-  return accountingPeriods.length > 0
-    ? (accountingPeriods[accountingPeriods.length - 1] ?? null)
-    : null;
-};
-
-/**
- * Gets the default date from an accounting period.
- */
-const getDefaultDate = function (
-  accountingPeriod: AccountingPeriod | null,
-): Dayjs | null {
-  return accountingPeriod !== null
-    ? dayjs(`${accountingPeriod.year}-${accountingPeriod.month}-01`)
-    : null;
-};
 
 /**
  * Displays the dedicated create form for account transactions.
@@ -90,15 +67,10 @@ const CreateAccountTransactionForm = function ({
 
   useEffect(() => {
     if (state.success === true && state.transactionId !== null) {
-      const [pathname, search = ""] = redirectUrl.split("?");
-      const params = new URLSearchParams(search);
-      params.set("selectedTransactionId", state.transactionId ?? "");
-      const query = params.toString();
-      const nextUrl =
-        query === ""
-          ? `${pathname}/${state.transactionId ?? ""}`
-          : `${pathname}/${state.transactionId ?? ""}?${query}`;
-      router.replace(nextUrl, { scroll: false });
+      router.replace(
+        redirectWithSelectedTransaction(redirectUrl, state.transactionId ?? ""),
+        { scroll: false },
+      );
     }
   }, [redirectUrl, router, state]);
 

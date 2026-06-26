@@ -59,7 +59,7 @@ const createEmptyDestination = function (): AccountDestinationDraft {
 };
 
 /**
- * Validates the source of a transaction.
+ * Validates the source of an account transaction.
  */
 const validateSource = function (
   sourceAccount: Account | null,
@@ -107,7 +107,7 @@ const validateDestination = function (
 };
 
 /**
- * Validates the entire transaction request.
+ * Validates the entire account transaction request.
  */
 const validateRequest = function (
   accountingPeriod: AccountingPeriod | null,
@@ -313,7 +313,7 @@ const getDestinationsFromTransaction = function (
         destination.account !== null &&
         typeof destination.account !== "undefined"
           ? (accounts.find(
-              (account) => account.id === destination.account.accountId,
+              (account) => account.id === destination.account?.accountId,
             ) ?? null)
           : null,
       location: destination.location ?? "",

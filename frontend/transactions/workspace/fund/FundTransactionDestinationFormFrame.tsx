@@ -4,7 +4,10 @@ import FundEntryField from "@/funds/FundEntryField";
 import type { JSX } from "react";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 
-interface FundTransactionDestinationFrameProps {
+/**
+ * Props for the FundTransactionDestinationFormFrame component.
+ */
+interface FundTransactionDestinationFormFrameProps {
   readonly index: number;
   readonly funds: Fund[];
   readonly fund: Fund | null;
@@ -16,9 +19,9 @@ interface FundTransactionDestinationFrameProps {
 }
 
 /**
- * Displays a destination frame for one fund transaction destination.
+ * Displays a form frame for one fund transaction destination.
  */
-const FundTransactionDestinationFrame = function ({
+const FundTransactionDestinationFormFrame = function ({
   index,
   funds,
   fund,
@@ -27,10 +30,10 @@ const FundTransactionDestinationFrame = function ({
   setAmount,
   filter = null,
   onRemove = null,
-}: FundTransactionDestinationFrameProps): JSX.Element {
+}: FundTransactionDestinationFormFrameProps): JSX.Element {
   return (
     <TransactionFrame
-      title={`Transfer Destination ${index + 1}`}
+      title={`Destination ${index + 1}`}
       description="Capture where this portion of the transfer is going."
       onRemove={onRemove}
     >
@@ -59,4 +62,4 @@ const FundTransactionDestinationFrame = function ({
   );
 };
 
-export default FundTransactionDestinationFrame;
+export default FundTransactionDestinationFormFrame;
