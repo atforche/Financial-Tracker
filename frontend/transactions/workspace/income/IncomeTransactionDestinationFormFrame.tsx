@@ -10,9 +10,9 @@ import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 const emptyFundAmounts: FundAmount[] = [];
 
 /**
- * Props for the IncomeTransactionDestinationFrame component.
+ * Props for the IncomeTransactionDestinationFormFrame component.
  */
-interface IncomeTransactionDestinationFrameProps {
+interface IncomeTransactionDestinationFormFrameProps {
   readonly index: number;
   readonly accounts: Account[];
   readonly funds: Fund[];
@@ -32,7 +32,7 @@ interface IncomeTransactionDestinationFrameProps {
 /**
  * Displays a destination frame for one income destination.
  */
-const IncomeTransactionDestinationFrame = function ({
+const IncomeTransactionDestinationFormFrame = function ({
   index,
   accounts,
   funds,
@@ -47,7 +47,7 @@ const IncomeTransactionDestinationFrame = function ({
   baselineFundAssignments = emptyFundAmounts,
   filter = null,
   onRemove = null,
-}: IncomeTransactionDestinationFrameProps): JSX.Element {
+}: IncomeTransactionDestinationFormFrameProps): JSX.Element {
   return (
     <TransactionFrame
       title={`Income Destination ${index + 1}`}
@@ -91,4 +91,4 @@ const IncomeTransactionDestinationFrame = function ({
   );
 };
 
-export default IncomeTransactionDestinationFrame;
+export default IncomeTransactionDestinationFormFrame;

@@ -11,6 +11,9 @@ import type { TransactionFund } from "@/transactions/transaction";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
 import formatCurrency from "@/framework/formatCurrency";
 
+/**
+ * Props for the TransactionFundAssignmentsViewSection component.
+ */
 interface TransactionFundAssignmentsViewSectionProps {
   readonly funds: Fund[];
   readonly amount: number;
@@ -115,12 +118,10 @@ const TransactionFundAssignmentsViewSection = function ({
                     {formatCurrency(assignment.amount)}
                   </Typography>
                   <TransactionBalanceDetails
-                    previousPostedBalance={formatCurrency(
-                      assignment.previousFundBalance.postedBalance,
-                    )}
-                    newPostedBalance={formatCurrency(
-                      assignment.newFundBalance.postedBalance,
-                    )}
+                    previousPostedBalance={
+                      assignment.previousFundBalance.postedBalance
+                    }
+                    newPostedBalance={assignment.newFundBalance.postedBalance}
                   />
                 </Stack>
               </Paper>

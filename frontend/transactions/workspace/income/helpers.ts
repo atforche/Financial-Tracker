@@ -7,7 +7,10 @@ import {
   CreateTransactionModelCreateIncomeTransactionModelType,
   UpdateTransactionModelUpdateIncomeTransactionModelType,
 } from "@/framework/data/api";
-import type { CreateTransactionRequest, UpdateTransactionRequest } from "@/transactions/transaction";
+import type {
+  CreateTransactionRequest,
+  UpdateTransactionRequest,
+} from "@/transactions/transaction";
 import { type FundAmount, hasIncompleteFundAssignments } from "@/funds/types";
 import type {
   IncomeTransaction,
@@ -400,11 +403,13 @@ const getDestinationsFromTransaction = function (
         fundName: assignment.fundName,
         amount: assignment.amount,
       })),
-      baselineFundAssignments: destination.fundAssignments.map((assignment) => ({
-        fundId: assignment.fundId,
-        fundName: assignment.fundName,
-        amount: assignment.amount,
-      })),
+      baselineFundAssignments: destination.fundAssignments.map(
+        (assignment) => ({
+          fundId: assignment.fundId,
+          fundName: assignment.fundName,
+          amount: assignment.amount,
+        }),
+      ),
     }),
   );
 };
