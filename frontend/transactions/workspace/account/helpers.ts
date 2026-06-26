@@ -61,17 +61,13 @@ const createEmptyDestination = function (): AccountDestinationDraft {
 /**
  * Validates the source of an account transaction.
  */
-const validateSource = function (
-  sourceAccount: Account | null,
-  sourceLocation: string,
-  amount: number | null,
-): boolean {
-  const hasAccount = sourceAccount !== null;
-  const hasLocation = sourceLocation.trim() !== "";
+const validateSource = function (source: AccountSourceDraft): boolean {
+  const hasAccount = source.account !== null;
+  const hasLocation = source.location.trim() !== "";
   if (!hasAccount && !hasLocation) {
     return false;
   }
-  return amount !== null && amount > 0;
+  return source.amount !== null && source.amount > 0;
 };
 
 /**
@@ -134,7 +130,7 @@ const validateRequest = function (
     accountingPeriod !== null &&
     (date !== null || defaultDate !== null) &&
     description !== "" &&
-    validateSource(source.account, source.location, source.amount) &&
+    validateSource(source) &&
     destinations.length > 0 &&
     destinationTotal === source.amount &&
     hasUniqueDestinationAccounts &&

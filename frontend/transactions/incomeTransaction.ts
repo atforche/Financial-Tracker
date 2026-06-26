@@ -8,6 +8,12 @@ type IncomeTransaction =
   components["schemas"]["TransactionModelIncomeTransactionModel"];
 
 /**
+ * Type representing a destination of an income transaction.
+ */
+type IncomeTransactionDestination =
+  components["schemas"]["TransactionModelIncomeTransactionModel"]["destinations"][number];
+
+/**
  * Determines if the provided transaction is an income transaction.
  */
 const isIncomeTransaction = function (
@@ -25,5 +31,5 @@ const asIncomeTransaction = function (
   return isIncomeTransaction(transaction) ? transaction : null;
 };
 
-export type { IncomeTransaction };
+export type { IncomeTransaction, IncomeTransactionDestination };
 export { isIncomeTransaction, asIncomeTransaction };

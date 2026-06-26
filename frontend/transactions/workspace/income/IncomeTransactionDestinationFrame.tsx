@@ -9,6 +9,9 @@ import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 
 const emptyFundAmounts: FundAmount[] = [];
 
+/**
+ * Props for the IncomeTransactionDestinationFrame component.
+ */
 interface IncomeTransactionDestinationFrameProps {
   readonly index: number;
   readonly accounts: Account[];

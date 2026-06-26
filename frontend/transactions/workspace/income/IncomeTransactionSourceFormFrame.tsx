@@ -1,41 +1,35 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
 import { AddCircleOutline, DeleteOutline } from "@mui/icons-material";
 import { Box, Button, IconButton, Stack, Typography } from "@mui/material";
+import {
+  type IncomeDeductionDraft,
+  type IncomeLineDraft,
+  createEmptyDeduction,
+  createEmptyLine,
+} from "@/transactions/workspace/income/helpers";
 import AccountEntryField from "@/accounts/AccountEntryField";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 
-interface IncomeAmountItemDraft {
-  readonly description: string;
-  readonly amount: number | null;
-}
-
+/**
+ * Props for the IncomeTransactionSourceFrame component.
+ */
 interface IncomeTransactionSourceFrameProps {
   readonly accounts: Account[];
   readonly account: Account | null;
   readonly setAccount: ((account: Account | null) => void) | null;
-  readonly location: string;
+  readonly location: string | null;
   readonly setLocation: ((location: string) => void) | null;
-  readonly incomeLines: IncomeAmountItemDraft[];
-  readonly setIncomeLines: (incomeLines: IncomeAmountItemDraft[]) => void;
-  readonly incomeDeductions: IncomeAmountItemDraft[];
+  readonly incomeLines: IncomeLineDraft[];
+  readonly setIncomeLines: (incomeLines: IncomeLineDraft[]) => void;
+  readonly incomeDeductions: IncomeDeductionDraft[];
   readonly setIncomeDeductions: (
-    incomeDeductions: IncomeAmountItemDraft[],
+    incomeDeductions: IncomeDeductionDraft[],
   ) => void;
-  readonly filter?: ((account: AccountIdentifier) => boolean) | null;
+  readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
 }
-
-/**
- * Creates an empty draft row for an income line or deduction.
- */
-const createEmptyAmountItem = function (): IncomeAmountItemDraft {
-  return {
-    description: "",
-    amount: null,
-  };
-};
 
 /**
  * Displays the source frame for an income transaction.
@@ -50,13 +44,15 @@ const IncomeTransactionSourceFrame = function ({
   setIncomeLines,
   incomeDeductions,
   setIncomeDeductions,
-  filter = null,
+  accountFilter = null,
 }: IncomeTransactionSourceFrameProps): JSX.Element {
-  const updateItem = function (
-    items: IncomeAmountItemDraft[],
-    setItems: (nextItems: IncomeAmountItemDraft[]) => void,
+  const updateItem = function <
+    T extends IncomeLineDraft | IncomeDeductionDraft,
+  >(
+    items: T[],
+    setItems: (nextItems: T[]) => void,
     index: number,
-    recipe: (current: IncomeAmountItemDraft) => IncomeAmountItemDraft,
+    recipe: (current: T) => T,
   ): void {
     setItems(
       items.map((item, itemIndex) =>
@@ -65,13 +61,16 @@ const IncomeTransactionSourceFrame = function ({
     );
   };
 
-  const renderAmountItems = function (
+  const renderLinesAndDeductions = function <
+    T extends IncomeLineDraft | IncomeDeductionDraft,
+  >(
     title: string,
     description: string,
-    items: IncomeAmountItemDraft[],
-    setItems: (nextItems: IncomeAmountItemDraft[]) => void,
+    items: T[],
+    setItems: (nextItems: T[]) => void,
     addLabel: string,
     allowEmpty: boolean,
+    createEmptyItem: () => T,
   ): JSX.Element {
     return (
       <Stack spacing={1.5}>
@@ -128,7 +127,7 @@ const IncomeTransactionSourceFrame = function ({
                     (_, itemIndex) => itemIndex !== index,
                   );
                   if (nextItems.length === 0 && !allowEmpty) {
-                    setItems([createEmptyAmountItem()]);
+                    setItems([createEmptyItem()]);
                     return;
                   }
                   setItems(nextItems);
@@ -143,7 +142,7 @@ const IncomeTransactionSourceFrame = function ({
           variant="outlined"
           startIcon={<AddCircleOutline />}
           onClick={() => {
-            setItems([...items, createEmptyAmountItem()]);
+            setItems([...items, createEmptyItem()]);
           }}
           sx={{ alignSelf: "flex-start" }}
         >
@@ -173,32 +172,34 @@ const IncomeTransactionSourceFrame = function ({
                 );
               }
         }
-        filter={filter}
+        filter={accountFilter}
       />
       <StringEntryField
         label="Source Location"
         value={location}
         setValue={account === null ? setLocation : null}
       />
-      {renderAmountItems(
+      {renderLinesAndDeductions(
         "Income Lines",
         "Add the gross income amounts that make up this transaction.",
         incomeLines,
         setIncomeLines,
         "Add Income Line",
         false,
+        createEmptyLine,
       )}
-      {renderAmountItems(
+      {renderLinesAndDeductions(
         "Income Deductions",
         "Add optional deductions withheld before the income is deposited.",
         incomeDeductions,
         setIncomeDeductions,
         "Add Deduction",
         true,
+        createEmptyDeduction,
       )}
     </TransactionFrame>
   );
 };
 
-export { createEmptyAmountItem, type IncomeAmountItemDraft };
+export type { IncomeLineDraft, IncomeDeductionDraft };
 export default IncomeTransactionSourceFrame;

@@ -6,7 +6,7 @@ import { TextField } from "@mui/material";
  */
 interface StringEntryFieldProps {
   readonly label: string;
-  readonly value: string;
+  readonly value: string | null;
   readonly setValue?: ((newValue: string) => void) | null;
   readonly errorMessage?: string | null;
 }
