@@ -71,7 +71,7 @@ const validateSource = function (source: AccountSourceDraft): boolean {
 };
 
 /**
- * Validates a destination draft.
+ * Validates the destination of an account transaction.
  */
 const validateDestination = function (
   destination: AccountDestinationDraft,
