@@ -8,6 +8,12 @@ type SpendingTransaction =
   components["schemas"]["TransactionModelSpendingTransactionModel"];
 
 /**
+ * Type representing a spending transaction destination.
+ */
+type SpendingTransactionDestination =
+  components["schemas"]["TransactionModelSpendingTransactionModel"]["destinations"][number];
+
+/**
  * Determines if the provided transaction is a spending transaction.
  */
 const isSpendingTransaction = function (
@@ -25,5 +31,5 @@ const asSpendingTransaction = function (
   return isSpendingTransaction(transaction) ? transaction : null;
 };
 
-export type { SpendingTransaction };
+export type { SpendingTransaction, SpendingTransactionDestination };
 export { isSpendingTransaction, asSpendingTransaction };
