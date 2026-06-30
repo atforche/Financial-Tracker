@@ -4,13 +4,14 @@ import { Box } from "@mui/material";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
 import dayjs from "dayjs";
-import formatCurrency from "@/framework/formatCurrency";
 
+/**
+ * Props for the TransactionDetailsViewSection component.
+ */
 interface TransactionDetailsViewSectionProps {
   readonly accountingPeriod: AccountingPeriod;
   readonly date: string;
   readonly description: string;
-  readonly amount: number;
   readonly headerAction?: ReactNode;
 }
 
@@ -21,7 +22,6 @@ const TransactionDetailsViewSection = function ({
   accountingPeriod,
   date,
   description,
-  amount,
   headerAction,
 }: TransactionDetailsViewSectionProps): JSX.Element {
   return (
@@ -45,10 +45,6 @@ const TransactionDetailsViewSection = function ({
         <TransactionDisplayField
           label="Date"
           value={dayjs(date).format("MMMM D, YYYY")}
-        />
-        <TransactionDisplayField
-          label="Amount"
-          value={formatCurrency(amount)}
         />
       </Box>
       <TransactionDisplayField label="Description" value={description} />

@@ -1,5 +1,4 @@
 import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
-import type { JSX, ReactNode } from "react";
 import type {
   TransactionAccount,
   TransactionFund,
@@ -10,6 +9,9 @@ import {
   getUnassignedFund,
 } from "@/funds/fundAssignment";
 import type { Fund } from "@/funds/types";
+import type { JSX } from "react";
+import type { SpendingTransaction } from "@/transactions/spendingTransaction";
+import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
 import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
@@ -19,26 +21,26 @@ import formatCurrency from "@/framework/formatCurrency";
  * Props for the SpendingTransactionDestinationViewFrame component.
  */
 interface SpendingTransactionDestinationViewFrameProps {
+  readonly transaction: SpendingTransaction;
   readonly index: number;
   readonly funds: Fund[];
   readonly account: TransactionAccount | null;
   readonly location: string | null;
   readonly amount: number;
   readonly fundAssignments: TransactionFund[];
-  readonly helperContent?: ReactNode;
 }
 
 /**
  * Displays the read-only destination frame for one spending destination.
  */
 const SpendingTransactionDestinationViewFrame = function ({
+  transaction,
   index,
   funds,
   account,
   location,
   amount,
   fundAssignments,
-  helperContent = null,
 }: SpendingTransactionDestinationViewFrameProps): JSX.Element {
   const unassignedFund = getUnassignedFund(funds);
   const explicitFundAssignments = fundAssignments.filter(
@@ -57,23 +59,14 @@ const SpendingTransactionDestinationViewFrame = function ({
   return (
     <TransactionFrame title={`Destination ${index + 1}`} description="">
       <Stack spacing={2}>
-        <TransactionDisplayField
-          label="Account"
-          value={account?.accountName ?? "None"}
-          helperText={
-            account === null ? null : (
-              <Stack spacing={1.25}>
-                <TransactionBalanceDetails
-                  previousPostedBalance={
-                    account.previousAccountBalance.postedBalance
-                  }
-                  newPostedBalance={account.newAccountBalance.postedBalance}
-                />
-                {helperContent}
-              </Stack>
-            )
-          }
-        />
+        {account === null ? (
+          <TransactionDisplayField label="Account" value="None" />
+        ) : (
+          <TransactionAccountViewFrame
+            transaction={transaction}
+            account={account}
+          />
+        )}
 
         {hasLocation ? (
           <>

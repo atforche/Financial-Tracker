@@ -1,41 +1,30 @@
-import type { JSX, ReactNode } from "react";
-import { Stack } from "@mui/material";
+import type { JSX } from "react";
+import type { SpendingTransaction } from "@/transactions/spendingTransaction";
 import type { TransactionAccount } from "@/transactions/transaction";
-import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
-import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
+import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 
 /**
  * Props for the SpendingTransactionSourceViewFrame component.
  */
 interface SpendingTransactionSourceViewFrameProps {
+  readonly transaction: SpendingTransaction;
   readonly account: TransactionAccount;
-  readonly helperContent?: ReactNode;
 }
 
 /**
  * Displays the read-only source frame for a spending transaction.
  */
 const SpendingTransactionSourceViewFrame = function ({
+  transaction,
   account,
-  helperContent = null,
 }: SpendingTransactionSourceViewFrameProps): JSX.Element {
   return (
     <TransactionFrame title="Source" description="">
-      <TransactionDisplayField
+      <TransactionAccountViewFrame
+        transaction={transaction}
+        account={account}
         label="Source Account"
-        value={account.accountName}
-        helperText={
-          <Stack spacing={1.25}>
-            <TransactionBalanceDetails
-              previousPostedBalance={
-                account.previousAccountBalance.postedBalance
-              }
-              newPostedBalance={account.newAccountBalance.postedBalance}
-            />
-            {helperContent}
-          </Stack>
-        }
       />
     </TransactionFrame>
   );

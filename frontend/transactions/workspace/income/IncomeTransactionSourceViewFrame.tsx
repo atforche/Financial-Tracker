@@ -1,6 +1,7 @@
 import type {
   IncomeDeduction,
   IncomeLine,
+  IncomeTransaction,
 } from "@/transactions/incomeTransaction";
 import { Box } from "@mui/material";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
@@ -8,13 +9,14 @@ import IncomeTransactionItemSection from "@/transactions/workspace/income/Income
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import type { TransactionAccount } from "@/transactions/transaction";
-import TransactionAccountViewDisplay from "@/transactions/workspace/TransactionAccountViewDisplay";
+import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 
 /**
  * Props for the IncomeTransactionSourceViewFrame component.
  */
 interface IncomeTransactionSourceViewFrameProps {
+  readonly transaction: IncomeTransaction;
   readonly account: TransactionAccount | null;
   readonly location: string | null;
   readonly incomeLines: IncomeLine[];
@@ -25,6 +27,7 @@ interface IncomeTransactionSourceViewFrameProps {
  * Displays a view frame for an income transaction source.
  */
 const IncomeTransactionSourceViewFrame = function ({
+  transaction,
   account,
   location,
   incomeLines,
@@ -42,7 +45,12 @@ const IncomeTransactionSourceViewFrame = function ({
 
   return (
     <TransactionFrame title="Income Source">
-      {account !== null && <TransactionAccountViewDisplay account={account} />}
+      {account === null ? null : (
+        <TransactionAccountViewFrame
+          transaction={transaction}
+          account={account}
+        />
+      )}
       {(location ?? "") !== "" && (
         <StringEntryField label="Source Location" value={location} />
       )}
