@@ -6,6 +6,9 @@ import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import { revalidatePath } from "next/cache";
 
+/**
+ * Interface representing the state of creating a transaction.
+ */
 interface ActionState {
   readonly success?: boolean;
   readonly transactionId?: string | null;

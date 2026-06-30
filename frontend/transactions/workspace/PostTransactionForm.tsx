@@ -2,13 +2,15 @@
 
 import { Button, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState, useState } from "react";
-import {
-  type PostTransactionRequest,
-  type Transaction,
-  getPostableTransactionAccounts,
-  getPostedTransactionAccounts,
+import type {
+  PostTransactionRequest,
+  Transaction,
 } from "@/transactions/transaction";
 import dayjs, { type Dayjs } from "dayjs";
+import {
+  getPostableTransactionAccounts,
+  getPostedTransactionAccounts,
+} from "@/transactions/postingHelpers";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
@@ -178,5 +180,4 @@ const PostTransactionForm = function ({
   );
 };
 
-export { getPostableTransactionAccounts };
 export default PostTransactionForm;

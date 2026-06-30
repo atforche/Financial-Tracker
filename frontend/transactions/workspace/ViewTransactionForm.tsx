@@ -2,39 +2,50 @@
 
 import {
   type AccountTransaction,
+  asAccountTransaction,
+} from "@/transactions/accountTransaction";
+import { Box, Button, Stack, Typography } from "@mui/material";
+import {
   type FundTransaction,
+  asFundTransaction,
+} from "@/transactions/fundTransaction";
+import {
   type IncomeTransaction,
+  asIncomeTransaction,
+} from "@/transactions/incomeTransaction";
+import type { JSX, ReactNode } from "react";
+import {
   type SpendingTransaction,
+  asSpendingTransaction,
+} from "@/transactions/spendingTransaction";
+import {
   type Transaction,
   type TransactionAccount,
   TransactionType,
-  asAccountTransaction,
-  asFundTransaction,
-  asIncomeTransaction,
-  asSpendingTransaction,
+} from "@/transactions/transaction";
+import {
   getPostableTransactionAccounts,
   getPostedTransactionAccounts,
-} from "@/transactions/transaction";
-import { Box, Button, Stack, Typography } from "@mui/material";
-import type { JSX, ReactNode } from "react";
+} from "@/transactions/postingHelpers";
+import AccountTransactionDestinationViewFrame from "@/transactions/workspace/account/AccountTransactionDestinationViewFrame";
+import AccountTransactionSourceViewFrame from "@/transactions/workspace/account/AccountTransactionSourceViewFrame";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import DeleteTransactionForm from "@/transactions/workspace/DeleteTransactionForm";
 import EastOutlined from "@mui/icons-material/EastOutlined";
 import type { Fund } from "@/funds/types";
+import FundTransactionDestinationViewFrame from "@/transactions/workspace/fund/FundTransactionDestinationViewFrame";
+import FundTransactionSourceViewFrame from "@/transactions/workspace/fund/FundTransactionSourceViewFrame";
+import IncomeTransactionDestinationViewFrame from "@/transactions/workspace/income/IncomeTransactionDestinationViewFrame";
+import IncomeTransactionSourceViewFrame from "@/transactions/workspace/income/IncomeTransactionSourceViewFrame";
 import Link from "next/link";
 import SouthOutlined from "@mui/icons-material/SouthOutlined";
 import SpendingTransactionDestinationViewFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationViewFrame";
 import SpendingTransactionSourceViewFrame from "@/transactions/workspace/spending/SpendingTransactionSourceViewFrame";
-import TransactionAccountPathViewSection from "@/transactions/workspace/TransactionAccountPathViewSection";
 import TransactionAccountPostAction from "@/transactions/workspace/TransactionAccountPostAction";
 import TransactionDetailsViewSection from "@/transactions/workspace/TransactionDetailsViewSection";
-import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
-import TransactionFundAssignmentsViewSection from "@/transactions/workspace/TransactionFundAssignmentsViewSection";
-import TransactionFundPathViewSection from "@/transactions/workspace/TransactionFundPathViewSection";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
 import UnpostTransactionForm from "@/transactions/workspace/UnpostTransactionForm";
 import dayjs from "dayjs";
-import formatCurrency from "@/framework/formatCurrency";
 
 interface ViewTransactionFormProps {
   readonly transaction: Transaction;
@@ -94,173 +105,21 @@ const createAccountHelperContentGetter = function ({
   };
 };
 
-const renderIncomeSourceView = function (
-  transaction: IncomeTransaction,
-): JSX.Element {
-  const grossAmount = transaction.source.incomeLines.reduce(
-    (total, line) => total + line.amount,
-    0,
-  );
-  const deductionAmount = transaction.source.incomeDeductions.reduce(
-    (total, deduction) => total + deduction.amount,
-    0,
-  );
+interface TransactionFlowSectionProps {
+  readonly title: string;
+  readonly description: string;
+  readonly sourceFrame: JSX.Element;
+  readonly destinationFrames: JSX.Element[];
+}
 
+const TransactionFlowSection = function ({
+  title,
+  description,
+  sourceFrame,
+  destinationFrames,
+}: TransactionFlowSectionProps): JSX.Element {
   return (
-    <TransactionSection
-      title="Income Breakdown"
-      description="Review the gross income lines and deductions captured for this source."
-    >
-      <Stack
-        sx={{
-          display: "grid",
-          gap: 2,
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
-        }}
-      >
-        <TransactionDisplayField
-          label="Gross Income"
-          value={formatCurrency(grossAmount)}
-        />
-        <TransactionDisplayField
-          label="Deductions"
-          value={formatCurrency(deductionAmount)}
-        />
-        <TransactionDisplayField
-          label="Net Income"
-          value={formatCurrency(transaction.amount)}
-        />
-      </Stack>
-      <Stack spacing={2}>
-        {transaction.source.incomeLines.map((line, index) => (
-          <Stack
-            key={`income-line-${index}`}
-            sx={{
-              display: "grid",
-              gap: 2,
-              gridTemplateColumns: {
-                xs: "1fr",
-                md: "minmax(0, 1.8fr) minmax(180px, 1fr)",
-              },
-            }}
-          >
-            <TransactionDisplayField
-              label={`Income Line ${index + 1}`}
-              value={line.description}
-            />
-            <TransactionDisplayField
-              label="Amount"
-              value={formatCurrency(line.amount)}
-            />
-          </Stack>
-        ))}
-        {transaction.source.incomeDeductions.map((deduction, index) => (
-          <Stack
-            key={`income-deduction-${index}`}
-            sx={{
-              display: "grid",
-              gap: 2,
-              gridTemplateColumns: {
-                xs: "1fr",
-                md: "minmax(0, 1.8fr) minmax(180px, 1fr)",
-              },
-            }}
-          >
-            <TransactionDisplayField
-              label={`Deduction ${index + 1}`}
-              value={deduction.description}
-            />
-            <TransactionDisplayField
-              label="Amount"
-              value={formatCurrency(deduction.amount)}
-            />
-          </Stack>
-        ))}
-      </Stack>
-    </TransactionSection>
-  );
-};
-
-const renderIncomeView = function (
-  transaction: IncomeTransaction,
-  funds: Fund[],
-  getAccountHelperContent: (account: TransactionAccount) => ReactNode,
-): JSX.Element[] {
-  return [
-    renderIncomeSourceView(transaction),
-    ...transaction.destinations.flatMap((destination, index) => {
-      const title =
-        transaction.destinations.length === 1
-          ? "Money Flow"
-          : `Money Flow ${index + 1}`;
-      const destinationSection = (
-        <TransactionAccountPathViewSection
-          key={`income-path-${index}`}
-          title={title}
-          description="Review which tracked account receives this portion of the income and where the money originated."
-          leftLabel="Source Account"
-          rightLabel="Deposit To"
-          leftAccount={transaction.source.account ?? null}
-          rightAccount={destination.account}
-          leftLocationLabel={
-            transaction.source.account === null ? "Source Location" : null
-          }
-          leftLocationValue={transaction.source.location ?? null}
-          getAccountHelperContent={getAccountHelperContent}
-        />
-      );
-      const fundSection = (
-        <TransactionFundAssignmentsViewSection
-          key={`income-funds-${index}`}
-          funds={funds}
-          amount={destination.amount}
-          fundAssignments={destination.fundAssignments}
-          tone="income"
-        />
-      );
-      return [destinationSection, fundSection];
-    }),
-  ];
-};
-
-const renderSpendingView = function (
-  transaction: SpendingTransaction,
-  funds: Fund[],
-  getAccountHelperContent: (account: TransactionAccount) => ReactNode,
-): JSX.Element[] {
-  const sourceFrame = (
-    <SpendingTransactionSourceViewFrame
-      account={transaction.source.account}
-      helperContent={getAccountHelperContent(transaction.source.account)}
-    />
-  );
-  const destinationFrames = transaction.destinations.map(
-    (destination, index) => (
-      <SpendingTransactionDestinationViewFrame
-        key={`spending-destination-${index}`}
-        index={index}
-        funds={funds}
-        account={destination.account ?? null}
-        location={destination.location ?? null}
-        amount={destination.amount}
-        fundAssignments={destination.fundAssignments}
-        helperContent={
-          destination.account === null ||
-          typeof destination.account === "undefined"
-            ? null
-            : getAccountHelperContent(destination.account)
-        }
-      />
-    ),
-  );
-
-  return [
-    <TransactionSection
-      key="spending-flow"
-      title="Money Flow"
-      description="Review how money moves from the source account into each destination."
-    >
+    <TransactionSection title={title} description={description}>
       <Box
         sx={{
           display: "grid",
@@ -297,56 +156,124 @@ const renderSpendingView = function (
         </Box>
         <Stack spacing={2}>{destinationFrames}</Stack>
       </Box>
-    </TransactionSection>,
-  ];
+    </TransactionSection>
+  );
+};
+
+const renderIncomeView = function (
+  transaction: IncomeTransaction,
+  funds: Fund[],
+): JSX.Element {
+  return (
+    <TransactionFlowSection
+      title="Income Flow"
+      description="Review how this income source flows into its destination accounts and fund assignments."
+      sourceFrame={
+        <IncomeTransactionSourceViewFrame
+          account={transaction.source.account ?? null}
+          location={transaction.source.location ?? null}
+          incomeLines={transaction.source.incomeLines}
+          incomeDeductions={transaction.source.incomeDeductions}
+        />
+      }
+      destinationFrames={transaction.destinations.map((destination, index) => (
+        <IncomeTransactionDestinationViewFrame
+          key={`income-destination-${index}`}
+          index={index}
+          funds={funds}
+          account={destination.account}
+          amount={destination.amount}
+          fundAssignments={destination.fundAssignments}
+        />
+      ))}
+    />
+  );
+};
+
+const renderSpendingView = function (
+  transaction: SpendingTransaction,
+  funds: Fund[],
+  getAccountHelperContent: (account: TransactionAccount) => ReactNode,
+): JSX.Element {
+  return (
+    <TransactionFlowSection
+      title="Spending Flow"
+      description="Review how money moves from the source account into each destination."
+      sourceFrame={
+        <SpendingTransactionSourceViewFrame
+          account={transaction.source.account}
+          helperContent={getAccountHelperContent(transaction.source.account)}
+        />
+      }
+      destinationFrames={transaction.destinations.map((destination, index) => (
+        <SpendingTransactionDestinationViewFrame
+          key={`spending-destination-${index}`}
+          index={index}
+          funds={funds}
+          account={destination.account ?? null}
+          location={destination.location ?? null}
+          amount={destination.amount}
+          fundAssignments={destination.fundAssignments}
+          helperContent={
+            destination.account === null ||
+            typeof destination.account === "undefined"
+              ? null
+              : getAccountHelperContent(destination.account)
+          }
+        />
+      ))}
+    />
+  );
 };
 
 const renderAccountView = function (
   transaction: AccountTransaction,
-  getAccountHelperContent: (account: TransactionAccount) => ReactNode,
-): JSX.Element[] {
-  return transaction.destinations.map((destination, index) => (
-    <TransactionAccountPathViewSection
-      key={`account-path-${index}`}
-      title={
-        transaction.destinations.length === 1
-          ? "Transfer Path"
-          : `Transfer Path ${index + 1}`
-      }
+): JSX.Element {
+  return (
+    <TransactionFlowSection
+      title="Transfer Flow"
       description="Review the source and destination for this account transfer."
-      leftLabel="Source"
-      rightLabel="Destination"
-      leftAccount={transaction.source.account ?? null}
-      rightAccount={destination.account ?? null}
-      leftLocationLabel={
-        transaction.source.account === null ? "Source Location" : null
+      sourceFrame={
+        <AccountTransactionSourceViewFrame
+          account={transaction.source.account ?? null}
+          location={transaction.source.location ?? ""}
+          amount={transaction.amount}
+        />
       }
-      leftLocationValue={transaction.source.location ?? null}
-      rightLocationLabel={
-        destination.account === null ? "Destination Location" : null
-      }
-      rightLocationValue={destination.location ?? null}
-      getAccountHelperContent={getAccountHelperContent}
+      destinationFrames={transaction.destinations.map((destination, index) => (
+        <AccountTransactionDestinationViewFrame
+          key={`account-destination-${index}`}
+          index={index}
+          account={destination.account ?? null}
+          location={destination.location ?? ""}
+          amount={destination.amount}
+        />
+      ))}
     />
-  ));
+  );
 };
 
-const renderFundView = function (transaction: FundTransaction): JSX.Element[] {
-  return transaction.destinations.map((destination, index) => (
-    <TransactionFundPathViewSection
-      key={`fund-path-${index}`}
-      title={
-        transaction.destinations.length === 1
-          ? "Transfer Path"
-          : `Transfer Path ${index + 1}`
-      }
+const renderFundView = function (transaction: FundTransaction): JSX.Element {
+  return (
+    <TransactionFlowSection
+      title="Transfer Flow"
       description="Review the source fund and destination fund for this transfer."
-      leftLabel="Source Fund"
-      rightLabel="Destination Fund"
-      leftFund={transaction.source.fund}
-      rightFund={destination.fund}
+      sourceFrame={
+        <FundTransactionSourceViewFrame
+          fund={transaction.source.fund}
+          amount={transaction.amount}
+        />
+      }
+      destinationFrames={transaction.destinations.map((destination, index) => (
+        <FundTransactionDestinationViewFrame
+          key={`fund-destination-${index}`}
+          index={index}
+          fund={destination.fund}
+          amount={destination.fund.newFundBalance.postedBalance}
+        />
+      ))}
     />
-  ));
+  );
 };
 
 /**
@@ -407,12 +334,12 @@ const ViewTransactionForm = function ({
 
       {transaction.transactionType === TransactionType.Income &&
       incomeTransaction !== null
-        ? renderIncomeView(incomeTransaction, funds, getAccountHelperContent)
+        ? renderIncomeView(incomeTransaction, funds)
         : null}
 
       {transaction.transactionType === TransactionType.Account &&
       accountTransaction !== null
-        ? renderAccountView(accountTransaction, getAccountHelperContent)
+        ? renderAccountView(accountTransaction)
         : null}
 
       {transaction.transactionType === TransactionType.Fund &&

@@ -3,6 +3,9 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import type { JSX } from "react";
 import Link from "next/link";
 
+/**
+ * Props for the TransactionWorkspacePageHeader component.
+ */
 interface TransactionWorkspacePageHeaderProps {
   readonly backHref: string;
   readonly title: string;

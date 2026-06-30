@@ -4,11 +4,15 @@ import { IconButton, Paper, Stack, Typography } from "@mui/material";
 import {
   type Transaction,
   TransactionSortOrder,
-  getTransactionAccountIds,
-  getTransactionDestinationLabel,
-  getTransactionFundIds,
-  getTransactionSourceLabel,
 } from "@/transactions/transaction";
+import {
+  getTransactionAccountIds,
+  getTransactionFundIds,
+} from "@/transactions/postingHelpers";
+import {
+  getTransactionDestinationLabel,
+  getTransactionSourceLabel,
+} from "@/transactions/current/helpers";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -19,6 +23,9 @@ import formatCurrency from "@/framework/formatCurrency";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
+/**
+ * Props for the CurrentTransactionListFrame component.
+ */
 interface CurrentTransactionListFrameProps {
   readonly title: string;
   readonly description: string;

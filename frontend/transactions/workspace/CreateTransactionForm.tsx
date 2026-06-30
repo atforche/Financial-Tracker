@@ -11,9 +11,9 @@ import {
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateAccountTransactionForm from "@/transactions/workspace/account/CreateAccountTransactionForm";
-import CreateFundTransactionForm from "@/transactions/workspace/CreateFundTransactionForm";
-import CreateIncomeTransactionForm from "@/transactions/workspace/CreateIncomeTransactionForm";
-import CreateSpendingTransactionForm from "@/transactions/workspace/CreateSpendingTransactionForm";
+import CreateFundTransactionForm from "@/transactions/workspace/fund/CreateFundTransactionForm";
+import CreateIncomeTransactionForm from "@/transactions/workspace/income/CreateIncomeTransactionForm";
+import CreateSpendingTransactionForm from "@/transactions/workspace/spending/CreateSpendingTransactionForm";
 import type { Fund } from "@/funds/types";
 
 /**

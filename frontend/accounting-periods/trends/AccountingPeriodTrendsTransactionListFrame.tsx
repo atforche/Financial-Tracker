@@ -4,11 +4,15 @@ import { Button, IconButton, Paper, Stack, Typography } from "@mui/material";
 import {
   type Transaction,
   TransactionSortOrder,
-  getTransactionAccountIds,
-  getTransactionDestinationLabel,
-  getTransactionFundIds,
-  getTransactionSourceLabel,
 } from "@/transactions/transaction";
+import {
+  getTransactionAccountIds,
+  getTransactionFundIds,
+} from "@/transactions/postingHelpers";
+import {
+  getTransactionDestinationLabel,
+  getTransactionSourceLabel,
+} from "@/transactions/current/helpers";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriodTrends } from "@/accounting-periods/types";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";

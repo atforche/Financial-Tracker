@@ -4,8 +4,10 @@ import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalan
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
 import type { TransactionFund } from "@/transactions/transaction";
 import TransactionSection from "@/transactions/workspace/TransactionSection";
-import formatCurrency from "@/framework/formatCurrency";
 
+/**
+ * Props for the TransactionFundPathViewSection component.
+ */
 interface TransactionFundPathViewSectionProps {
   readonly title: string;
   readonly description: string;
@@ -42,12 +44,10 @@ const TransactionFundPathViewSection = function ({
           helperText={
             leftFund !== null ? (
               <TransactionBalanceDetails
-                previousPostedBalance={formatCurrency(
-                  leftFund.previousFundBalance.postedBalance,
-                )}
-                newPostedBalance={formatCurrency(
-                  leftFund.newFundBalance.postedBalance,
-                )}
+                previousPostedBalance={
+                  leftFund.previousFundBalance.postedBalance
+                }
+                newPostedBalance={leftFund.newFundBalance.postedBalance}
               />
             ) : null
           }
@@ -58,12 +58,10 @@ const TransactionFundPathViewSection = function ({
           helperText={
             rightFund !== null ? (
               <TransactionBalanceDetails
-                previousPostedBalance={formatCurrency(
-                  rightFund.previousFundBalance.postedBalance,
-                )}
-                newPostedBalance={formatCurrency(
-                  rightFund.newFundBalance.postedBalance,
-                )}
+                previousPostedBalance={
+                  rightFund.previousFundBalance.postedBalance
+                }
+                newPostedBalance={rightFund.newFundBalance.postedBalance}
               />
             ) : null
           }
