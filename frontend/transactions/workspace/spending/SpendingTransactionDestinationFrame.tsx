@@ -8,6 +8,9 @@ import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 
+/**
+ * Props for the SpendingTransactionDestinationFrame component.
+ */
 interface SpendingTransactionDestinationFrameProps {
   readonly index: number;
   readonly accounts: Account[];
@@ -16,7 +19,7 @@ interface SpendingTransactionDestinationFrameProps {
   readonly spendingGoals: SpendingGoal[];
   readonly account: Account | null;
   readonly setAccount: ((account: Account | null) => void) | null;
-  readonly location: string;
+  readonly location: string | null;
   readonly setLocation: ((location: string) => void) | null;
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;

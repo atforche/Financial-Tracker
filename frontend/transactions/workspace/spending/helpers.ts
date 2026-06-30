@@ -1,11 +1,21 @@
-import { type Account, type AccountIdentifier, isTrackedAccountType } from "@/accounts/types";
+import {
+  type Account,
+  type AccountIdentifier,
+  isTrackedAccountType,
+} from "@/accounts/types";
 import {
   CreateTransactionModelCreateSpendingTransactionModelType,
   UpdateTransactionModelUpdateSpendingTransactionModelType,
 } from "@/framework/data/api";
-import type { CreateTransactionRequest, UpdateTransactionRequest } from "@/transactions/transaction";
+import type {
+  CreateTransactionRequest,
+  UpdateTransactionRequest,
+} from "@/transactions/transaction";
 import { type FundAmount, hasIncompleteFundAssignments } from "@/funds/types";
-import type { SpendingTransaction, SpendingTransactionDestination } from "@/transactions/spendingTransaction";
+import type {
+  SpendingTransaction,
+  SpendingTransactionDestination,
+} from "@/transactions/spendingTransaction";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 
@@ -36,7 +46,7 @@ const createEmptySource = function (): SpendingSourceDraft {
     account: null,
     amount: null,
   };
-}
+};
 
 /**
  * Creates an empty destination draft.
@@ -49,7 +59,7 @@ const createEmptyDestination = function (): SpendingDestinationDraft {
     fundAssignments: [],
     baselineFundAssignments: [],
   };
-}
+};
 
 /**
  * Validates the source of a spending transaction.
@@ -62,7 +72,7 @@ const validateSource = function (source: SpendingSourceDraft): boolean {
     return false;
   }
   return source.amount !== null && source.amount > 0;
-}
+};
 
 /**
  * Validates the destination of a spending transaction.
@@ -83,8 +93,7 @@ const validateDestination = function (
   if (destination.account?.id === sourceAccount?.id) {
     return false;
   }
-  if (hasAccount && isTrackedAccountType(destination.account.type))
-  {
+  if (hasAccount && isTrackedAccountType(destination.account.type)) {
     return false;
   }
   if (!hasAccount && destination.fundAssignments.length > 0) {
@@ -111,19 +120,23 @@ const validateRequest = function (
     (total, destination) => total + (destination.amount ?? 0),
     0,
   );
-  return accountingPeriod !== null &&
+  return (
+    accountingPeriod !== null &&
     (date !== null || defaultDate !== null) &&
     description !== "" &&
     validateSource(source) &&
     destinations.length > 0 &&
-    destinations.every(destination => validateDestination(destination, source.account)) &&
-    source.amount === destinationTotal;
-}
+    destinations.every((destination) =>
+      validateDestination(destination, source.account),
+    ) &&
+    source.amount === destinationTotal
+  );
+};
 
 /**
  * Builds the create transaction request object from .
  */
-const buildCreateRequest = function(
+const buildCreateRequest = function (
   accountingPeriod: AccountingPeriod | null,
   date: Dayjs | null,
   defaultDate: Dayjs | null,
@@ -131,14 +144,22 @@ const buildCreateRequest = function(
   source: SpendingSourceDraft,
   destinations: SpendingDestinationDraft[],
 ): CreateTransactionRequest | null {
-  if (!validateRequest(accountingPeriod, date, defaultDate, description, source, destinations)) {
+  if (
+    !validateRequest(
+      accountingPeriod,
+      date,
+      defaultDate,
+      description,
+      source,
+      destinations,
+    )
+  ) {
     return null;
   }
   return {
     type: CreateTransactionModelCreateSpendingTransactionModelType.Spending,
     accountingPeriodId: accountingPeriod?.id ?? "",
-    date:
-      date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
+    date: date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
     description,
     amount: source.amount ?? 0,
     source: {
@@ -148,7 +169,7 @@ const buildCreateRequest = function(
       accountId: destination.account?.id ?? null,
       location:
         destination.account === null
-          ? destination.location?.trim() ?? null
+          ? (destination.location?.trim() ?? null)
           : null,
       amount: destination.amount ?? 0,
       fundAssignments: destination.fundAssignments
@@ -164,21 +185,28 @@ const buildCreateRequest = function(
 /**
  * Builds the update transaction request object from the provided parameters.
  */
-const buildUpdateRequest = function(
+const buildUpdateRequest = function (
   accountingPeriod: AccountingPeriod | null,
   date: Dayjs | null,
-  defaultDate: Dayjs | null,
   description: string,
   source: SpendingSourceDraft,
   destinations: SpendingDestinationDraft[],
 ): UpdateTransactionRequest | null {
-  if (!validateRequest(accountingPeriod, date, defaultDate, description, source, destinations)) {
+  if (
+    !validateRequest(
+      accountingPeriod,
+      date,
+      null,
+      description,
+      source,
+      destinations,
+    )
+  ) {
     return null;
   }
   return {
     type: UpdateTransactionModelUpdateSpendingTransactionModelType.Spending,
-    date:
-      date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
+    date: date?.format("YYYY-MM-DD") ?? "",
     description,
     amount: source.amount ?? 0,
     source: {
@@ -188,7 +216,7 @@ const buildUpdateRequest = function(
       accountId: destination.account?.id ?? null,
       location:
         destination.account === null
-          ? destination.location?.trim() ?? null
+          ? (destination.location?.trim() ?? null)
           : null,
       amount: destination.amount ?? 0,
       fundAssignments: destination.fundAssignments
@@ -255,9 +283,10 @@ const getSourceFromTransaction = function (
   accounts: Account[],
 ): SpendingSourceDraft {
   return {
-    account: accounts.find(
-      (account) => account.id === transaction.source.account.accountId,
-    ) ?? null,
+    account:
+      accounts.find(
+        (account) => account.id === transaction.source.account.accountId,
+      ) ?? null,
     amount: transaction.amount,
   };
 };
@@ -293,10 +322,7 @@ const getDestinationsFromTransaction = function (
   );
 };
 
-export type {
-  SpendingSourceDraft,
-  SpendingDestinationDraft,
-}
+export type { SpendingSourceDraft, SpendingDestinationDraft };
 export {
   CreateTransactionModelCreateSpendingTransactionModelType as CreateSpendingTransactionType,
   UpdateTransactionModelUpdateSpendingTransactionModelType as UpdateSpendingTransactionType,

@@ -7,8 +7,7 @@ import type { JSX } from "react";
 
 interface GoalTrendsGoalsMetChartProps {
   readonly accountingPeriods:
-    | readonly GoalTrendsAccountingPeriodSummaryModel[]
-    | null;
+    readonly GoalTrendsAccountingPeriodSummaryModel[] | null;
   readonly view: GoalTrendsView;
 }
 

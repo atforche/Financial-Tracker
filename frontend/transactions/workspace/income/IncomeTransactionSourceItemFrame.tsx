@@ -16,10 +16,7 @@ import StringEntryField from "@/framework/forms/StringEntryField";
  * Type representing an item under the source of an income transaction.
  */
 type IncomeTransactionSourceItem =
-  | IncomeLine
-  | IncomeDeduction
-  | IncomeLineDraft
-  | IncomeDeductionDraft;
+  IncomeLine | IncomeDeduction | IncomeLineDraft | IncomeDeductionDraft;
 
 /**
  * Props for the IncomeTransactionSourceItemFrame component.

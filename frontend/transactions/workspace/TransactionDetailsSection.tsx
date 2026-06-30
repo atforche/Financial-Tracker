@@ -18,8 +18,7 @@ interface TransactionDetailsSectionProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
   readonly setAccountingPeriod:
-    | ((accountingPeriod: AccountingPeriod | null) => void)
-    | null;
+    ((accountingPeriod: AccountingPeriod | null) => void) | null;
   readonly date: Dayjs | null;
   readonly setDate: (date: Dayjs | null) => void;
   readonly descriptionValue: string;

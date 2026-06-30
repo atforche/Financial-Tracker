@@ -15,6 +15,9 @@ import TransactionDisplayField from "@/transactions/workspace/TransactionDisplay
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 import formatCurrency from "@/framework/formatCurrency";
 
+/**
+ * Props for the SpendingTransactionDestinationViewFrame component.
+ */
 interface SpendingTransactionDestinationViewFrameProps {
   readonly index: number;
   readonly funds: Fund[];
@@ -61,12 +64,10 @@ const SpendingTransactionDestinationViewFrame = function ({
             account === null ? null : (
               <Stack spacing={1.25}>
                 <TransactionBalanceDetails
-                  previousPostedBalance={formatCurrency(
-                    account.previousAccountBalance.postedBalance,
-                  )}
-                  newPostedBalance={formatCurrency(
-                    account.newAccountBalance.postedBalance,
-                  )}
+                  previousPostedBalance={
+                    account.previousAccountBalance.postedBalance
+                  }
+                  newPostedBalance={account.newAccountBalance.postedBalance}
                 />
                 {helperContent}
               </Stack>
@@ -157,12 +158,12 @@ const SpendingTransactionDestinationViewFrame = function ({
                       justifyContent="space-between"
                     >
                       <TransactionBalanceDetails
-                        previousPostedBalance={formatCurrency(
-                          assignment.previousFundBalance.postedBalance,
-                        )}
-                        newPostedBalance={formatCurrency(
-                          assignment.newFundBalance.postedBalance,
-                        )}
+                        previousPostedBalance={
+                          assignment.previousFundBalance.postedBalance
+                        }
+                        newPostedBalance={
+                          assignment.newFundBalance.postedBalance
+                        }
                       />
                     </Stack>
                   </Stack>

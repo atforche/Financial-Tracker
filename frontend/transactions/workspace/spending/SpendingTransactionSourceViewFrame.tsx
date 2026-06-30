@@ -4,8 +4,10 @@ import type { TransactionAccount } from "@/transactions/transaction";
 import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
-import formatCurrency from "@/framework/formatCurrency";
 
+/**
+ * Props for the SpendingTransactionSourceViewFrame component.
+ */
 interface SpendingTransactionSourceViewFrameProps {
   readonly account: TransactionAccount;
   readonly helperContent?: ReactNode;
@@ -26,12 +28,10 @@ const SpendingTransactionSourceViewFrame = function ({
         helperText={
           <Stack spacing={1.25}>
             <TransactionBalanceDetails
-              previousPostedBalance={formatCurrency(
-                account.previousAccountBalance.postedBalance,
-              )}
-              newPostedBalance={formatCurrency(
-                account.newAccountBalance.postedBalance,
-              )}
+              previousPostedBalance={
+                account.previousAccountBalance.postedBalance
+              }
+              newPostedBalance={account.newAccountBalance.postedBalance}
             />
             {helperContent}
           </Stack>

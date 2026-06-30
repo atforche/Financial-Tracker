@@ -12,11 +12,9 @@ interface FundEntryFieldProps {
   readonly setValue: ((newValue: FundIdentifier | null) => void) | null;
   readonly filter: ((fund: FundIdentifier) => boolean) | null;
   readonly getOptionSecondaryLabel?:
-    | ((fund: FundIdentifier) => string | null)
-    | null;
+    ((fund: FundIdentifier) => string | null) | null;
   readonly sortComparator?:
-    | ((left: FundIdentifier, right: FundIdentifier) => number)
-    | null;
+    ((left: FundIdentifier, right: FundIdentifier) => number) | null;
   readonly autoFocus?: boolean;
 }
 

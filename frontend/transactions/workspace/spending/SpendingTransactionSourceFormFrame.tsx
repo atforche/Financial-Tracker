@@ -1,24 +1,32 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
 import AccountEntryField from "@/accounts/AccountEntryField";
+import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { JSX } from "react";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 
-interface SpendingTransactionSourceFrameProps {
+/**
+ * Props for the SpendingTransactionSourceFormFrame component.
+ */
+interface SpendingTransactionSourceFormFrameProps {
   readonly accounts: Account[];
   readonly account: Account | null;
   readonly setAccount: ((account: Account | null) => void) | null;
-  readonly filter?: ((account: AccountIdentifier) => boolean) | null;
+  readonly amount: number | null;
+  readonly setAmount: ((amount: number | null) => void) | null;
+  readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
 }
 
 /**
  * Displays the source frame for a spending transaction.
  */
-const SpendingTransactionSourceFrame = function ({
+const SpendingTransactionSourceFormFrame = function ({
   accounts,
   account,
   setAccount,
-  filter = null,
-}: SpendingTransactionSourceFrameProps): JSX.Element {
+  amount,
+  setAmount,
+  accountFilter = null,
+}: SpendingTransactionSourceFormFrameProps): JSX.Element {
   return (
     <TransactionFrame
       title="Source"
@@ -39,10 +47,11 @@ const SpendingTransactionSourceFrame = function ({
                 );
               }
         }
-        filter={filter}
+        filter={accountFilter}
       />
+      <CurrencyEntryField label="Amount" value={amount} setValue={setAmount} />
     </TransactionFrame>
   );
 };
 
-export default SpendingTransactionSourceFrame;
+export default SpendingTransactionSourceFormFrame;

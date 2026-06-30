@@ -8,8 +8,7 @@ import formatCurrency from "@/framework/formatCurrency";
 
 interface GoalTrendsGoalAmountChartProps {
   readonly accountingPeriods:
-    | readonly GoalTrendsAccountingPeriodSummaryModel[]
-    | null;
+    readonly GoalTrendsAccountingPeriodSummaryModel[] | null;
   readonly view: GoalTrendsView;
 }
 

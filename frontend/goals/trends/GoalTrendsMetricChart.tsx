@@ -19,8 +19,7 @@ interface GoalTrendsMetricChartProps {
   readonly subtitle: string;
   readonly label: string;
   readonly accountingPeriods:
-    | readonly GoalTrendsAccountingPeriodSummaryModel[]
-    | null;
+    readonly GoalTrendsAccountingPeriodSummaryModel[] | null;
   readonly getValue: (
     accountingPeriod: GoalTrendsAccountingPeriodSummaryModel,
   ) => number;
