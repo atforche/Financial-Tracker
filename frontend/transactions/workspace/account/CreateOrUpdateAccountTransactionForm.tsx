@@ -7,29 +7,21 @@ import {
   buildSourceAccountFilter,
   createEmptyDestination,
 } from "@/transactions/workspace/account/helpers";
-import { Button, Stack, Typography } from "@mui/material";
-import {
-  type Dispatch,
-  type JSX,
-  type RefObject,
-  type SetStateAction,
-  startTransition,
-} from "react";
+import { Button, Typography } from "@mui/material";
+import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
 import type { Account } from "@/accounts/types";
 import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFormFrame";
 import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFormFrame";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import { AddCircleOutline } from "@mui/icons-material";
+import CreateOrUpdateTransactionForm from "@/transactions/workspace/CreateOrUpdateTransactionForm";
 import type { Dayjs } from "dayjs";
-import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
 import formatCurrency from "@/framework/formatCurrency";
 
 /**
  * Represents the state of the account transaction form.
  */
-interface AccountTransactionFormState {
+interface TransactionFormState {
   readonly success?: boolean;
   readonly transactionId?: string | null;
   readonly errorTitle?: string | null;
@@ -40,7 +32,7 @@ interface AccountTransactionFormState {
  * Props for the CreateOrUpdateAccountTransactionForm component.
  */
 interface CreateOrUpdateAccountTransactionFormProps<RequestPayload> {
-  readonly formRef?: RefObject<HTMLDivElement | null>;
+  readonly formRef: RefObject<HTMLDivElement | null>;
   readonly accounts: Account[];
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
@@ -58,7 +50,7 @@ interface CreateOrUpdateAccountTransactionFormProps<RequestPayload> {
   readonly setDestinations: Dispatch<SetStateAction<AccountDestinationDraft[]>>;
   readonly transferFlowDescription: string;
   readonly submitLabel: string;
-  readonly state: AccountTransactionFormState;
+  readonly state: TransactionFormState;
   readonly pending: boolean;
   readonly request: RequestPayload | null;
   readonly onReset: () => void;
@@ -110,150 +102,128 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
   );
 
   return (
-    <Stack ref={formRef} spacing={3}>
-      <Stack spacing={3} sx={{ width: "100%" }}>
-        <TransactionDetailsSection
-          accountingPeriods={accountingPeriods}
-          accountingPeriod={accountingPeriod}
-          setAccountingPeriod={setAccountingPeriod}
-          date={date ?? defaultDate}
-          setDate={setDate}
-          descriptionValue={description}
-          setDescriptionValue={setDescription}
+    <CreateOrUpdateTransactionForm
+      formRef={formRef}
+      accountingPeriods={accountingPeriods}
+      accountingPeriod={accountingPeriod}
+      setAccountingPeriod={setAccountingPeriod}
+      date={date}
+      setDate={setDate}
+      defaultDate={defaultDate}
+      description={description}
+      setDescription={setDescription}
+      flowTitle="Transfer Flow"
+      flowDescription={transferFlowDescription}
+      sourceContent={
+        <AccountTransactionSourceFrame
+          accounts={accounts}
+          account={source.account}
+          setAccount={(account): void => {
+            setSource((currentSource) => ({
+              ...currentSource,
+              account,
+              location: account === null ? currentSource.location : "",
+            }));
+          }}
+          location={source.location}
+          setLocation={(location): void => {
+            setSource((currentSource) => ({
+              ...currentSource,
+              location,
+            }));
+          }}
+          accountFilter={buildSourceAccountFilter(accounts, destinations)}
+          amount={source.amount}
+          setAmount={(nextAmount): void => {
+            setSource((currentSource) => ({
+              ...currentSource,
+              amount: nextAmount,
+            }));
+          }}
         />
-        <TransactionSection
-          title="Transfer Flow"
-          description={transferFlowDescription}
-        >
-          <Stack spacing={2}>
-            <AccountTransactionSourceFrame
+      }
+      destinationContent={
+        <>
+          {destinations.map((destination, index) => (
+            <AccountTransactionDestinationFrame
+              key={`account-destination-${index}`}
+              index={index}
               accounts={accounts}
-              account={source.account}
+              account={destination.account}
               setAccount={(account): void => {
-                setSource((currentSource) => ({
-                  ...currentSource,
+                updateDestination(index, (currentDestination) => ({
+                  ...currentDestination,
                   account,
-                  location: account === null ? currentSource.location : "",
+                  location: account === null ? currentDestination.location : "",
                 }));
               }}
-              location={source.location}
+              location={destination.location}
               setLocation={(location): void => {
-                setSource((currentSource) => ({
-                  ...currentSource,
+                updateDestination(index, (currentDestination) => ({
+                  ...currentDestination,
                   location,
                 }));
               }}
-              accountFilter={buildSourceAccountFilter(accounts, destinations)}
-              amount={source.amount}
+              amount={destination.amount}
               setAmount={(nextAmount): void => {
-                setSource((currentSource) => ({
-                  ...currentSource,
+                updateDestination(index, (currentDestination) => ({
+                  ...currentDestination,
                   amount: nextAmount,
                 }));
               }}
+              accountFilter={buildDestinationAccountFilter(
+                accounts,
+                destinations,
+                index,
+                source.account,
+              )}
+              onRemove={
+                destinations.length > 1
+                  ? (): void => {
+                      setDestinations((currentDestinations) =>
+                        currentDestinations.filter(
+                          (_, currentIndex) => currentIndex !== index,
+                        ),
+                      );
+                    }
+                  : null
+              }
             />
-            {destinations.map((destination, index) => (
-              <AccountTransactionDestinationFrame
-                key={`account-destination-${index}`}
-                index={index}
-                accounts={accounts}
-                account={destination.account}
-                setAccount={(account): void => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    account,
-                    location:
-                      account === null ? currentDestination.location : "",
-                  }));
-                }}
-                location={destination.location}
-                setLocation={(location): void => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    location,
-                  }));
-                }}
-                amount={destination.amount}
-                setAmount={(nextAmount): void => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    amount: nextAmount,
-                  }));
-                }}
-                accountFilter={buildDestinationAccountFilter(
-                  accounts,
-                  destinations,
-                  index,
-                  source.account,
-                )}
-                onRemove={
-                  destinations.length > 1
-                    ? (): void => {
-                        setDestinations((currentDestinations) =>
-                          currentDestinations.filter(
-                            (_, currentIndex) => currentIndex !== index,
-                          ),
-                        );
-                      }
-                    : null
-                }
-              />
-            ))}
-            <Button
-              variant="outlined"
-              startIcon={<AddCircleOutline />}
-              onClick={(): void => {
-                setDestinations((currentDestinations) => [
-                  ...currentDestinations,
-                  createEmptyDestination(),
-                ]);
-              }}
-              sx={{ alignSelf: "flex-start" }}
-            >
-              Add Destination
-            </Button>
-            <Typography
-              variant="body2"
-              color={
-                source.amount !== null && destinationTotal !== source.amount
-                  ? "error.main"
-                  : "text.secondary"
-              }
-            >
-              Destination total: {formatCurrency(destinationTotal)}
-            </Typography>
-          </Stack>
-        </TransactionSection>
-        <ErrorAlert
-          errorMessage={state.errorTitle ?? null}
-          unmappedErrors={state.unmappedErrors ?? null}
-        />
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          justifyContent="flex-end"
-        >
-          <Button variant="outlined" onClick={onReset}>
-            Reset
-          </Button>
+          ))}
           <Button
-            variant="contained"
-            loading={pending}
-            disabled={request === null}
+            variant="outlined"
+            startIcon={<AddCircleOutline />}
             onClick={(): void => {
-              if (request === null) {
-                return;
-              }
-              startTransition(() => {
-                onSubmit(request);
-              });
+              setDestinations((currentDestinations) => [
+                ...currentDestinations,
+                createEmptyDestination(),
+              ]);
             }}
+            sx={{ alignSelf: "flex-start" }}
           >
-            {submitLabel}
+            Add Destination
           </Button>
-        </Stack>
-      </Stack>
-    </Stack>
+        </>
+      }
+      flowFooterContent={
+        <Typography
+          variant="body2"
+          color={
+            source.amount !== null && destinationTotal !== source.amount
+              ? "error.main"
+              : "text.secondary"
+          }
+        >
+          Destination total: {formatCurrency(destinationTotal)}
+        </Typography>
+      }
+      submitLabel={submitLabel}
+      state={state}
+      pending={pending}
+      request={request}
+      onReset={onReset}
+      onSubmit={onSubmit}
+    />
   );
 };
 

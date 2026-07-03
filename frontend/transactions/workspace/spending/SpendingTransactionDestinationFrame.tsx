@@ -1,11 +1,10 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import type { Fund, FundAmount } from "@/funds/types";
-import AccountEntryField from "@/accounts/AccountEntryField";
+import AccountOrLocationEntryFrame from "@/transactions/workspace/AccountOrLocationEntryFrame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import FundAssignmentPlanner from "@/funds/FundAssignmentPlanner";
 import type { JSX } from "react";
-import StringEntryField from "@/framework/forms/StringEntryField";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 
 /**
@@ -59,27 +58,15 @@ const SpendingTransactionDestinationFrame = function ({
       description="Capture where this portion of the spending goes and how it should be funded."
       onRemove={onRemove}
     >
-      <AccountEntryField
-        label="Destination Account"
-        options={accounts}
-        value={account}
-        setValue={
-          setAccount === null
-            ? null
-            : (nextValue): void => {
-                setAccount(
-                  accounts.find(
-                    (candidate) => candidate.id === nextValue?.id,
-                  ) ?? null,
-                );
-              }
-        }
-        filter={filter}
-      />
-      <StringEntryField
-        label="Destination Location"
-        value={location}
-        setValue={account === null ? setLocation : null}
+      <AccountOrLocationEntryFrame
+        accountCaption="Destination Account"
+        accounts={accounts}
+        account={account}
+        setAccount={setAccount}
+        locationCaption="Destination Location"
+        location={location}
+        setLocation={setLocation}
+        accountFilter={filter}
       />
       <CurrencyEntryField
         label="Destination Amount"

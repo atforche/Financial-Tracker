@@ -1,10 +1,8 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
-import AccountEntryField from "@/accounts/AccountEntryField";
+import AccountOrLocationEntryFrame from "@/transactions/workspace/AccountOrLocationEntryFrame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { JSX } from "react";
-import StringEntryField from "@/framework/forms/StringEntryField";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
-import Typography from "@mui/material/Typography";
 
 /**
  * Props for the AccountTransactionDestinationFormFrame component.
@@ -43,28 +41,15 @@ const AccountTransactionDestinationFormFrame = function ({
       description="Capture where this portion of the transfer is going."
       onRemove={onRemove}
     >
-      <AccountEntryField
-        label="Account"
-        options={accounts}
-        value={account}
-        setValue={
-          setAccount === null
-            ? null
-            : (nextValue): void => {
-                setAccount(
-                  accounts.find(
-                    (candidate) => candidate.id === nextValue?.id,
-                  ) ?? null,
-                );
-              }
-        }
-        filter={accountFilter}
-      />
-      <Typography variant="subtitle1">Or</Typography>
-      <StringEntryField
-        label="Location"
-        value={location}
-        setValue={account === null ? setLocation : null}
+      <AccountOrLocationEntryFrame
+        accountCaption="Account"
+        accounts={accounts}
+        account={account}
+        setAccount={setAccount}
+        locationCaption="Location"
+        location={location}
+        setLocation={setLocation}
+        accountFilter={accountFilter}
       />
       <CurrencyEntryField label="Amount" value={amount} setValue={setAmount} />
     </TransactionFrame>

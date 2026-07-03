@@ -30,6 +30,7 @@ const StringEntryField = function ({
       }}
       error={errorMessage !== null}
       helperText={errorMessage ?? null}
+      sx={{ width: "100%" }}
     />
   );
 };

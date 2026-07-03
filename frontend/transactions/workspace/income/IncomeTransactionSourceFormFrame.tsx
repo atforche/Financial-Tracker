@@ -5,10 +5,9 @@ import {
   createEmptyDeduction,
   createEmptyLine,
 } from "@/transactions/workspace/income/helpers";
-import AccountEntryField from "@/accounts/AccountEntryField";
+import AccountOrLocationEntryFrame from "@/transactions/workspace/AccountOrLocationEntryFrame";
 import IncomeTransactionItemSection from "@/transactions/workspace/income/IncomeTransactionSourceItemFrame";
 import type { JSX } from "react";
-import StringEntryField from "@/framework/forms/StringEntryField";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 
 /**
@@ -49,27 +48,15 @@ const IncomeTransactionSourceFrame = function ({
       title="Income Source"
       description="Choose where the income originated and capture the gross lines and deductions that produce the net transaction amount."
     >
-      <AccountEntryField
-        label="Source Account"
-        options={accounts}
-        value={account}
-        setValue={
-          setAccount === null
-            ? null
-            : (nextValue): void => {
-                setAccount(
-                  accounts.find(
-                    (candidate) => candidate.id === nextValue?.id,
-                  ) ?? null,
-                );
-              }
-        }
-        filter={accountFilter}
-      />
-      <StringEntryField
-        label="Source Location"
-        value={location}
-        setValue={account === null ? setLocation : null}
+      <AccountOrLocationEntryFrame
+        accountCaption="Source Account"
+        accounts={accounts}
+        account={account}
+        setAccount={setAccount}
+        locationCaption="Source Location"
+        location={location}
+        setLocation={setLocation}
+        accountFilter={accountFilter}
       />
       <IncomeTransactionItemSection
         title="Income Lines"

@@ -1,14 +1,8 @@
 "use client";
 
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
-import { Button, Stack, Typography } from "@mui/material";
-import {
-  type Dispatch,
-  type JSX,
-  type RefObject,
-  type SetStateAction,
-  startTransition,
-} from "react";
+import { Button, Typography } from "@mui/material";
+import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
 import type { Fund, FundAmount } from "@/funds/types";
 import {
   type SpendingDestinationDraft,
@@ -20,19 +14,17 @@ import {
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import { AddCircleOutline } from "@mui/icons-material";
+import CreateOrUpdateTransactionForm from "@/transactions/workspace/CreateOrUpdateTransactionForm";
 import type { Dayjs } from "dayjs";
-import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import SpendingTransactionDestinationFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFrame";
 import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFormFrame";
-import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
 import formatCurrency from "@/framework/formatCurrency";
 import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
 
 /**
  * Represents the state of the spending transaction form.
  */
-interface SpendingTransactionFormState {
+interface TransactionFormState {
   readonly success?: boolean;
   readonly transactionId?: string | null;
   readonly errorTitle?: string | null;
@@ -43,7 +35,7 @@ interface SpendingTransactionFormState {
  * Props for the CreateOrUpdateSpendingTransactionForm component.
  */
 interface CreateOrUpdateSpendingTransactionFormProps<RequestPayload> {
-  readonly formRef?: RefObject<HTMLDivElement | null>;
+  readonly formRef: RefObject<HTMLDivElement | null>;
   readonly accounts: Account[];
   readonly funds: Fund[];
   readonly assignmentGoals: AssignmentGoal[];
@@ -66,7 +58,7 @@ interface CreateOrUpdateSpendingTransactionFormProps<RequestPayload> {
   >;
   readonly spendingFlowDescription: string;
   readonly submitLabel: string;
-  readonly state: SpendingTransactionFormState;
+  readonly state: TransactionFormState;
   readonly pending: boolean;
   readonly request: RequestPayload | null;
   readonly onReset: () => void;
@@ -141,157 +133,135 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
   );
 
   return (
-    <Stack ref={formRef} spacing={3}>
-      <Stack spacing={3} sx={{ width: "100%" }}>
-        <TransactionDetailsSection
-          accountingPeriods={accountingPeriods}
-          accountingPeriod={accountingPeriod}
-          setAccountingPeriod={setAccountingPeriod}
-          date={date ?? defaultDate}
-          setDate={setDate}
-          descriptionValue={description}
-          setDescriptionValue={setDescription}
+    <CreateOrUpdateTransactionForm
+      formRef={formRef}
+      accountingPeriods={accountingPeriods}
+      accountingPeriod={accountingPeriod}
+      setAccountingPeriod={setAccountingPeriod}
+      date={date}
+      setDate={setDate}
+      defaultDate={defaultDate}
+      description={description}
+      setDescription={setDescription}
+      flowTitle="Spending Flow"
+      flowDescription={spendingFlowDescription}
+      sourceContent={
+        <SpendingTransactionSourceFrame
+          accounts={accounts}
+          account={source.account}
+          setAccount={(account): void => {
+            setSource((currentSource) => ({
+              ...currentSource,
+              account,
+            }));
+          }}
+          amount={source.amount}
+          setAmount={(amount): void => {
+            setSource((currentSource) => ({
+              ...currentSource,
+              amount,
+            }));
+          }}
+          accountFilter={buildSourceAccountFilter(accounts, destinations)}
         />
-        <TransactionSection
-          title="Spending Flow"
-          description={spendingFlowDescription}
-        >
-          <Stack spacing={2}>
-            <SpendingTransactionSourceFrame
+      }
+      destinationContent={
+        <>
+          {destinations.map((destination, index) => (
+            <SpendingTransactionDestinationFrame
+              key={`spending-destination-${index}`}
+              index={index}
               accounts={accounts}
-              account={source.account}
+              funds={funds}
+              assignmentGoals={currentAssignmentGoals}
+              spendingGoals={currentSpendingGoals}
+              account={destination.account}
               setAccount={(account): void => {
-                setSource((currentSource) => ({
-                  ...currentSource,
+                updateDestination(index, (currentDestination) => ({
+                  ...currentDestination,
                   account,
+                  location: account === null ? currentDestination.location : "",
                 }));
               }}
-              amount={source.amount}
-              setAmount={(amount): void => {
-                setSource((currentSource) => ({
-                  ...currentSource,
-                  amount,
+              location={destination.location}
+              setLocation={(location): void => {
+                updateDestination(index, (currentDestination) => ({
+                  ...currentDestination,
+                  location,
                 }));
               }}
-              accountFilter={buildSourceAccountFilter(accounts, destinations)}
+              amount={destination.amount}
+              setAmount={(nextAmount): void => {
+                updateDestination(index, (currentDestination) => ({
+                  ...currentDestination,
+                  amount: nextAmount,
+                  fundAssignments: syncDestinationFundAssignments(
+                    nextAmount,
+                    currentDestination.fundAssignments,
+                  ),
+                }));
+              }}
+              fundAssignments={destination.fundAssignments}
+              setFundAssignments={(fundAssignments): void => {
+                updateDestination(index, (currentDestination) => ({
+                  ...currentDestination,
+                  fundAssignments,
+                }));
+              }}
+              baselineFundAssignments={destination.baselineFundAssignments}
+              filter={buildDestinationAccountFilter(
+                accounts,
+                destinations,
+                index,
+                source.account,
+              )}
+              onRemove={
+                destinations.length > 1
+                  ? (): void => {
+                      setDestinations((currentDestinations) =>
+                        currentDestinations.filter(
+                          (_, currentIndex) => currentIndex !== index,
+                        ),
+                      );
+                    }
+                  : null
+              }
             />
-            {destinations.map((destination, index) => (
-              <SpendingTransactionDestinationFrame
-                key={`spending-destination-${index}`}
-                index={index}
-                accounts={accounts}
-                funds={funds}
-                assignmentGoals={currentAssignmentGoals}
-                spendingGoals={currentSpendingGoals}
-                account={destination.account}
-                setAccount={(account): void => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    account,
-                    location:
-                      account === null ? currentDestination.location : "",
-                  }));
-                }}
-                location={destination.location}
-                setLocation={(location): void => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    location,
-                  }));
-                }}
-                amount={destination.amount}
-                setAmount={(nextAmount): void => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    amount: nextAmount,
-                    fundAssignments: syncDestinationFundAssignments(
-                      nextAmount,
-                      currentDestination.fundAssignments,
-                    ),
-                  }));
-                }}
-                fundAssignments={destination.fundAssignments}
-                setFundAssignments={(fundAssignments): void => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    fundAssignments,
-                  }));
-                }}
-                baselineFundAssignments={destination.baselineFundAssignments}
-                filter={buildDestinationAccountFilter(
-                  accounts,
-                  destinations,
-                  index,
-                  source.account,
-                )}
-                onRemove={
-                  destinations.length > 1
-                    ? (): void => {
-                        setDestinations((currentDestinations) =>
-                          currentDestinations.filter(
-                            (_, currentIndex) => currentIndex !== index,
-                          ),
-                        );
-                      }
-                    : null
-                }
-              />
-            ))}
-            <Button
-              variant="outlined"
-              startIcon={<AddCircleOutline />}
-              onClick={(): void => {
-                setDestinations((currentDestinations) => [
-                  ...currentDestinations,
-                  createEmptyDestination(),
-                ]);
-              }}
-              sx={{ alignSelf: "flex-start" }}
-            >
-              Add Destination
-            </Button>
-            <Typography
-              variant="body2"
-              color={
-                source.amount !== null && destinationTotal !== source.amount
-                  ? "error.main"
-                  : "text.secondary"
-              }
-            >
-              Destination total: {formatCurrency(destinationTotal)}
-            </Typography>
-          </Stack>
-        </TransactionSection>
-        <ErrorAlert
-          errorMessage={state.errorTitle ?? null}
-          unmappedErrors={state.unmappedErrors ?? null}
-        />
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          justifyContent="flex-end"
-        >
-          <Button variant="outlined" onClick={onReset}>
-            Reset
-          </Button>
+          ))}
           <Button
-            variant="contained"
-            loading={pending}
-            disabled={request === null}
+            variant="outlined"
+            startIcon={<AddCircleOutline />}
             onClick={(): void => {
-              if (request === null) {
-                return;
-              }
-              startTransition(() => {
-                onSubmit(request);
-              });
+              setDestinations((currentDestinations) => [
+                ...currentDestinations,
+                createEmptyDestination(),
+              ]);
             }}
+            sx={{ alignSelf: "flex-start" }}
           >
-            {submitLabel}
+            Add Destination
           </Button>
-        </Stack>
-      </Stack>
-    </Stack>
+        </>
+      }
+      flowFooterContent={
+        <Typography
+          variant="body2"
+          color={
+            source.amount !== null && destinationTotal !== source.amount
+              ? "error.main"
+              : "text.secondary"
+          }
+        >
+          Destination total: {formatCurrency(destinationTotal)}
+        </Typography>
+      }
+      submitLabel={submitLabel}
+      state={state}
+      pending={pending}
+      request={request}
+      onReset={onReset}
+      onSubmit={onSubmit}
+    />
   );
 };
 

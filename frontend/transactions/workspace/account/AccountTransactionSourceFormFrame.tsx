@@ -1,10 +1,8 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
-import AccountEntryField from "@/accounts/AccountEntryField";
+import AccountOrLocationEntryFrame from "@/transactions/workspace/AccountOrLocationEntryFrame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { JSX } from "react";
-import StringEntryField from "@/framework/forms/StringEntryField";
 import TransactionFrame from "@/transactions/workspace/TransactionFrame";
-import { Typography } from "@mui/material";
 
 /**
  * Props for the AccountTransactionSourceFormFrame component.
@@ -38,28 +36,15 @@ const AccountTransactionSourceFormFrame = function ({
       title="Transfer Source"
       description="Choose the source account or provide the source location for this transfer."
     >
-      <AccountEntryField
-        label="Source Account"
-        options={accounts}
-        value={account}
-        setValue={
-          setAccount === null
-            ? null
-            : (nextValue): void => {
-                setAccount(
-                  accounts.find(
-                    (candidate) => candidate.id === nextValue?.id,
-                  ) ?? null,
-                );
-              }
-        }
-        filter={accountFilter}
-      />
-      <Typography variant="subtitle1">Or</Typography>
-      <StringEntryField
-        label="Source Location"
-        value={location}
-        setValue={account === null ? setLocation : null}
+      <AccountOrLocationEntryFrame
+        accountCaption="Source Account"
+        accounts={accounts}
+        account={account}
+        setAccount={setAccount}
+        locationCaption="Source Location"
+        location={location}
+        setLocation={setLocation}
+        accountFilter={accountFilter}
       />
       <CurrencyEntryField label="Amount" value={amount} setValue={setAmount} />
     </TransactionFrame>

@@ -2,13 +2,7 @@
 
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { Button, Stack, Typography } from "@mui/material";
-import {
-  type Dispatch,
-  type JSX,
-  type RefObject,
-  type SetStateAction,
-  startTransition,
-} from "react";
+import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
 import type { Fund, FundAmount } from "@/funds/types";
 import {
   type IncomeDestinationDraft,
@@ -21,19 +15,17 @@ import {
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import { AddCircleOutline } from "@mui/icons-material";
+import CreateOrUpdateTransactionForm from "@/transactions/workspace/CreateOrUpdateTransactionForm";
 import type { Dayjs } from "dayjs";
-import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFormFrame";
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFormFrame";
-import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
 import formatCurrency from "@/framework/formatCurrency";
 import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
 
 /**
  * Represents the state of the income transaction form.
  */
-interface IncomeTransactionFormState {
+interface TransactionFormState {
   readonly success?: boolean;
   readonly transactionId?: string | null;
   readonly errorTitle?: string | null;
@@ -44,7 +36,7 @@ interface IncomeTransactionFormState {
  * Props for the CreateOrUpdateIncomeTransactionForm component.
  */
 interface CreateOrUpdateIncomeTransactionFormProps<RequestPayload> {
-  readonly formRef?: RefObject<HTMLDivElement | null>;
+  readonly formRef: RefObject<HTMLDivElement | null>;
   readonly accounts: Account[];
   readonly funds: Fund[];
   readonly assignmentGoals: AssignmentGoal[];
@@ -65,7 +57,7 @@ interface CreateOrUpdateIncomeTransactionFormProps<RequestPayload> {
   readonly setDestinations: Dispatch<SetStateAction<IncomeDestinationDraft[]>>;
   readonly incomeFlowDescription: string;
   readonly submitLabel: string;
-  readonly state: IncomeTransactionFormState;
+  readonly state: TransactionFormState;
   readonly pending: boolean;
   readonly request: RequestPayload | null;
   readonly onReset: () => void;
@@ -140,166 +132,147 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
   };
 
   return (
-    <Stack ref={formRef} spacing={3}>
-      <Stack spacing={3} sx={{ width: "100%" }}>
-        <TransactionDetailsSection
-          accountingPeriods={accountingPeriods}
-          accountingPeriod={accountingPeriod}
-          setAccountingPeriod={setAccountingPeriod}
-          date={date ?? defaultDate}
-          setDate={setDate}
-          descriptionValue={description}
-          setDescriptionValue={setDescription}
+    <CreateOrUpdateTransactionForm
+      formRef={formRef}
+      accountingPeriods={accountingPeriods}
+      accountingPeriod={accountingPeriod}
+      setAccountingPeriod={setAccountingPeriod}
+      date={date}
+      setDate={setDate}
+      defaultDate={defaultDate}
+      description={description}
+      setDescription={setDescription}
+      flowTitle="Income Flow"
+      flowDescription={incomeFlowDescription}
+      sourceContent={
+        <IncomeTransactionSourceFrame
+          accounts={accounts}
+          account={source.account}
+          setAccount={(account): void => {
+            setSource((currentSource) => ({
+              ...currentSource,
+              account,
+              location: account === null ? currentSource.location : null,
+            }));
+          }}
+          location={source.location}
+          setLocation={(location): void => {
+            setSource((currentSource) => ({
+              ...currentSource,
+              location,
+            }));
+          }}
+          incomeLines={source.incomeLines}
+          setIncomeLines={(incomeLines): void => {
+            setSource((currentSource) => ({
+              ...currentSource,
+              incomeLines,
+            }));
+          }}
+          incomeDeductions={source.incomeDeductions}
+          setIncomeDeductions={(incomeDeductions): void => {
+            setSource((currentSource) => ({
+              ...currentSource,
+              incomeDeductions,
+            }));
+          }}
+          accountFilter={buildSourceAccountFilter(accounts, destinations)}
         />
-        <TransactionSection
-          title="Income Flow"
-          description={incomeFlowDescription}
-        >
-          <Stack spacing={2}>
-            <IncomeTransactionSourceFrame
+      }
+      destinationContent={
+        <>
+          {destinations.map((destination, index) => (
+            <IncomeTransactionDestinationFrame
+              key={`income-destination-${index}`}
+              index={index}
               accounts={accounts}
-              account={source.account}
+              funds={funds}
+              assignmentGoals={currentAssignmentGoals}
+              spendingGoals={currentSpendingGoals}
+              account={destination.account}
               setAccount={(account): void => {
-                setSource((currentSource) => ({
-                  ...currentSource,
+                updateDestination(index, (currentDestination) => ({
+                  ...currentDestination,
                   account,
-                  location: account === null ? currentSource.location : null,
                 }));
               }}
-              location={source.location}
-              setLocation={(location): void => {
-                setSource((currentSource) => ({
-                  ...currentSource,
-                  location,
+              amount={destination.amount}
+              setAmount={(nextAmount): void => {
+                updateDestination(index, (currentDestination) => ({
+                  ...currentDestination,
+                  amount: nextAmount,
+                  fundAssignments: syncDestinationFundAssignments(
+                    nextAmount,
+                    currentDestination.fundAssignments,
+                  ),
                 }));
               }}
-              incomeLines={source.incomeLines}
-              setIncomeLines={(incomeLines): void => {
-                setSource((currentSource) => ({
-                  ...currentSource,
-                  incomeLines,
+              fundAssignments={destination.fundAssignments}
+              setFundAssignments={(fundAssignments): void => {
+                updateDestination(index, (currentDestination) => ({
+                  ...currentDestination,
+                  fundAssignments,
                 }));
               }}
-              incomeDeductions={source.incomeDeductions}
-              setIncomeDeductions={(incomeDeductions): void => {
-                setSource((currentSource) => ({
-                  ...currentSource,
-                  incomeDeductions,
-                }));
-              }}
-              accountFilter={buildSourceAccountFilter(accounts, destinations)}
+              baselineFundAssignments={destination.baselineFundAssignments}
+              filter={buildDestinationAccountFilter(
+                accounts,
+                destinations,
+                index,
+                source.account,
+              )}
+              onRemove={
+                destinations.length > 1
+                  ? (): void => {
+                      setDestinations((currentDestinations) =>
+                        currentDestinations.filter(
+                          (_, currentIndex) => currentIndex !== index,
+                        ),
+                      );
+                    }
+                  : null
+              }
             />
-            {destinations.map((destination, index) => (
-              <IncomeTransactionDestinationFrame
-                key={`income-destination-${index}`}
-                index={index}
-                accounts={accounts}
-                funds={funds}
-                assignmentGoals={currentAssignmentGoals}
-                spendingGoals={currentSpendingGoals}
-                account={destination.account}
-                setAccount={(account): void => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    account,
-                  }));
-                }}
-                amount={destination.amount}
-                setAmount={(nextAmount): void => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    amount: nextAmount,
-                    fundAssignments: syncDestinationFundAssignments(
-                      nextAmount,
-                      currentDestination.fundAssignments,
-                    ),
-                  }));
-                }}
-                fundAssignments={destination.fundAssignments}
-                setFundAssignments={(fundAssignments): void => {
-                  updateDestination(index, (currentDestination) => ({
-                    ...currentDestination,
-                    fundAssignments,
-                  }));
-                }}
-                baselineFundAssignments={destination.baselineFundAssignments}
-                filter={buildDestinationAccountFilter(
-                  accounts,
-                  destinations,
-                  index,
-                  source.account,
-                )}
-                onRemove={
-                  destinations.length > 1
-                    ? (): void => {
-                        setDestinations((currentDestinations) =>
-                          currentDestinations.filter(
-                            (_, currentIndex) => currentIndex !== index,
-                          ),
-                        );
-                      }
-                    : null
-                }
-              />
-            ))}
-            <Button
-              variant="outlined"
-              startIcon={<AddCircleOutline />}
-              onClick={(): void => {
-                setDestinations((currentDestinations) => [
-                  ...currentDestinations,
-                  createEmptyDestination(),
-                ]);
-              }}
-              sx={{ alignSelf: "flex-start" }}
-            >
-              Add Destination
-            </Button>
-            <Typography variant="body2" color="text.secondary">
-              Source net total: {formatCurrency(sourceNetAmount)}
-            </Typography>
-            <Typography
-              variant="body2"
-              color={
-                destinationTotal !== sourceNetAmount
-                  ? "error.main"
-                  : "text.secondary"
-              }
-            >
-              Destination total: {formatCurrency(destinationTotal)}
-            </Typography>
-          </Stack>
-        </TransactionSection>
-        <ErrorAlert
-          errorMessage={state.errorTitle ?? null}
-          unmappedErrors={state.unmappedErrors ?? null}
-        />
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          justifyContent="flex-end"
-        >
-          <Button variant="outlined" onClick={onReset}>
-            Reset
-          </Button>
+          ))}
           <Button
-            variant="contained"
-            loading={pending}
-            disabled={request === null}
+            variant="outlined"
+            startIcon={<AddCircleOutline />}
             onClick={(): void => {
-              if (request === null) {
-                return;
-              }
-              startTransition(() => {
-                onSubmit(request);
-              });
+              setDestinations((currentDestinations) => [
+                ...currentDestinations,
+                createEmptyDestination(),
+              ]);
             }}
+            sx={{ alignSelf: "flex-start" }}
           >
-            {submitLabel}
+            Add Destination
           </Button>
+        </>
+      }
+      flowFooterContent={
+        <Stack spacing={1}>
+          <Typography variant="body2" color="text.secondary">
+            Source net total: {formatCurrency(sourceNetAmount)}
+          </Typography>
+          <Typography
+            variant="body2"
+            color={
+              destinationTotal !== sourceNetAmount
+                ? "error.main"
+                : "text.secondary"
+            }
+          >
+            Destination total: {formatCurrency(destinationTotal)}
+          </Typography>
         </Stack>
-      </Stack>
-    </Stack>
+      }
+      submitLabel={submitLabel}
+      state={state}
+      pending={pending}
+      request={request}
+      onReset={onReset}
+      onSubmit={onSubmit}
+    />
   );
 };
 

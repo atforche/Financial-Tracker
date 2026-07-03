@@ -38,38 +38,40 @@ const TransactionDetailsSection = function ({
   setDescriptionValue,
 }: TransactionDetailsSectionProps): JSX.Element {
   return (
-    <TransactionSection
-      title="Transaction Details"
-      description="Specify the high level information about the transaction."
-    >
-      <Box
-        sx={{
-          display: "grid",
-          gap: 2,
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
-        }}
+    <Box sx={{ maxWidth: 1200, width: "100%" }}>
+      <TransactionSection
+        title="Transaction Details"
+        description="Specify the high level information about the transaction."
       >
-        <AccountingPeriodEntryField
-          label="Accounting Period"
-          options={accountingPeriods}
-          value={accountingPeriod}
-          setValue={setAccountingPeriod}
+        <Box
+          sx={{
+            display: "grid",
+            gap: 2,
+            gridTemplateColumns:
+              "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
+          }}
+        >
+          <AccountingPeriodEntryField
+            label="Accounting Period"
+            options={accountingPeriods}
+            value={accountingPeriod}
+            setValue={setAccountingPeriod}
+          />
+          <DateEntryField
+            label="Date"
+            value={date}
+            setValue={setDate}
+            minDate={accountingPeriod ? getMinimumDate(accountingPeriod) : null}
+            maxDate={accountingPeriod ? getMaximumDate(accountingPeriod) : null}
+          />
+        </Box>
+        <StringEntryField
+          label="Description"
+          value={descriptionValue}
+          setValue={setDescriptionValue}
         />
-        <DateEntryField
-          label="Date"
-          value={date}
-          setValue={setDate}
-          minDate={accountingPeriod ? getMinimumDate(accountingPeriod) : null}
-          maxDate={accountingPeriod ? getMaximumDate(accountingPeriod) : null}
-        />
-      </Box>
-      <StringEntryField
-        label="Description"
-        value={descriptionValue}
-        setValue={setDescriptionValue}
-      />
-    </TransactionSection>
+      </TransactionSection>
+    </Box>
   );
 };
 
