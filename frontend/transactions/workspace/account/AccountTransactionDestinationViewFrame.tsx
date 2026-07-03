@@ -4,7 +4,7 @@ import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import type { TransactionAccount } from "@/transactions/transaction";
 import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
-import TransactionFrame from "@/transactions/workspace/TransactionFrame";
+import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
  * Props for the AccountTransactionDestinationViewFrame component.
@@ -28,7 +28,7 @@ const AccountTransactionDestinationViewFrame = function ({
   amount,
 }: AccountTransactionDestinationViewFrameProps): JSX.Element {
   return (
-    <TransactionFrame title={`Destination ${index + 1}`}>
+    <TransactionSourceOrDestinationFrame title={`Destination ${index + 1}`}>
       {account === null ? null : (
         <TransactionAccountViewFrame
           transaction={transaction}
@@ -39,7 +39,7 @@ const AccountTransactionDestinationViewFrame = function ({
         <StringEntryField label="Location" value={location} />
       )}
       <CurrencyEntryField label="Amount" value={amount} />
-    </TransactionFrame>
+    </TransactionSourceOrDestinationFrame>
   );
 };
 

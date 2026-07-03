@@ -7,14 +7,14 @@ import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEnt
 import { Box } from "@mui/material";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import type { Dayjs } from "dayjs";
+import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
 
 /**
- * Props for the TransactionDetailsSection component.
+ * Props for the TransactionDetailsFrame component.
  */
-interface TransactionDetailsSectionProps {
+interface TransactionDetailsFrameProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
   readonly setAccountingPeriod:
@@ -28,7 +28,7 @@ interface TransactionDetailsSectionProps {
 /**
  * Displays the shared date, accounting period, and description fields for transaction forms.
  */
-const TransactionDetailsSection = function ({
+const TransactionDetailsFrame = function ({
   accountingPeriods,
   accountingPeriod,
   setAccountingPeriod,
@@ -36,13 +36,10 @@ const TransactionDetailsSection = function ({
   setDate,
   descriptionValue,
   setDescriptionValue,
-}: TransactionDetailsSectionProps): JSX.Element {
+}: TransactionDetailsFrameProps): JSX.Element {
   return (
     <Box sx={{ maxWidth: 1200, width: "100%" }}>
-      <TransactionSection
-        title="Transaction Details"
-        description="Specify the high level information about the transaction."
-      >
+      <Frame title="Details" color="info">
         <Box
           sx={{
             display: "grid",
@@ -70,9 +67,9 @@ const TransactionDetailsSection = function ({
           value={descriptionValue}
           setValue={setDescriptionValue}
         />
-      </TransactionSection>
+      </Frame>
     </Box>
   );
 };
 
-export default TransactionDetailsSection;
+export default TransactionDetailsFrame;

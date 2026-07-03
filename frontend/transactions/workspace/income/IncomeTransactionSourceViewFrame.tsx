@@ -10,7 +10,7 @@ import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import type { TransactionAccount } from "@/transactions/transaction";
 import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
-import TransactionFrame from "@/transactions/workspace/TransactionFrame";
+import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
  * Props for the IncomeTransactionSourceViewFrame component.
@@ -44,7 +44,7 @@ const IncomeTransactionSourceViewFrame = function ({
   const netAmount = grossAmount - deductionAmount;
 
   return (
-    <TransactionFrame title="Income Source">
+    <TransactionSourceOrDestinationFrame title="Income Source">
       {account === null ? null : (
         <TransactionAccountViewFrame
           transaction={transaction}
@@ -78,7 +78,7 @@ const IncomeTransactionSourceViewFrame = function ({
         description="Amounts withheld before the income was deposited."
         items={incomeDeductions}
       />
-    </TransactionFrame>
+    </TransactionSourceOrDestinationFrame>
   );
 };
 

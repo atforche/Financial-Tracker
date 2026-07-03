@@ -48,7 +48,6 @@ interface CreateOrUpdateAccountTransactionFormProps<RequestPayload> {
   readonly setSource: Dispatch<SetStateAction<AccountSourceDraft>>;
   readonly destinations: AccountDestinationDraft[];
   readonly setDestinations: Dispatch<SetStateAction<AccountDestinationDraft[]>>;
-  readonly transferFlowDescription: string;
   readonly submitLabel: string;
   readonly state: TransactionFormState;
   readonly pending: boolean;
@@ -75,7 +74,6 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
   setSource,
   destinations,
   setDestinations,
-  transferFlowDescription,
   submitLabel,
   state,
   pending,
@@ -112,8 +110,6 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
       defaultDate={defaultDate}
       description={description}
       setDescription={setDescription}
-      flowTitle="Transfer Flow"
-      flowDescription={transferFlowDescription}
       sourceContent={
         <AccountTransactionSourceFrame
           accounts={accounts}

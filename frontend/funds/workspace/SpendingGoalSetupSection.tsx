@@ -4,9 +4,9 @@ import {
   describeSpendingGoalType,
   formatSpendingGoalType,
 } from "@/goals/types";
+import Frame from "@/framework/view/Frame";
 import FundGoalTypeEntryField from "@/funds/FundGoalTypeEntryField";
 import type { JSX } from "react";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
 
 interface SpendingGoalSetupSectionProps {
   readonly value: SpendingGoalType | null;
@@ -23,10 +23,7 @@ const SpendingGoalSetupSection = function ({
   typeErrorMessage = null,
 }: SpendingGoalSetupSectionProps): JSX.Element {
   return (
-    <TransactionSection
-      title="Spending Goal Setup"
-      description="Choose how money should be spent from this fund."
-    >
+    <Frame title="Spending Goal Setup">
       <Stack spacing={2}>
         <FundGoalTypeEntryField<SpendingGoalType>
           label="Spending Goal Type"
@@ -61,7 +58,7 @@ const SpendingGoalSetupSection = function ({
           </Stack>
         </Box>
       </Stack>
-    </TransactionSection>
+    </Frame>
   );
 };
 

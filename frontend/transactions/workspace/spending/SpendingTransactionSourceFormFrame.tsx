@@ -2,7 +2,7 @@ import type { Account, AccountIdentifier } from "@/accounts/types";
 import AccountEntryField from "@/accounts/AccountEntryField";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { JSX } from "react";
-import TransactionFrame from "@/transactions/workspace/TransactionFrame";
+import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
  * Props for the SpendingTransactionSourceFormFrame component.
@@ -28,10 +28,7 @@ const SpendingTransactionSourceFormFrame = function ({
   accountFilter = null,
 }: SpendingTransactionSourceFormFrameProps): JSX.Element {
   return (
-    <TransactionFrame
-      title="Source"
-      description="Choose the tracked account that the spending will come from."
-    >
+    <TransactionSourceOrDestinationFrame title="Source">
       <AccountEntryField
         label="Source Account"
         options={accounts}
@@ -50,7 +47,7 @@ const SpendingTransactionSourceFormFrame = function ({
         filter={accountFilter}
       />
       <CurrencyEntryField label="Amount" value={amount} setValue={setAmount} />
-    </TransactionFrame>
+    </TransactionSourceOrDestinationFrame>
   );
 };
 

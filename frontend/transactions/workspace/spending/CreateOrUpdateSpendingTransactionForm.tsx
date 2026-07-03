@@ -16,8 +16,8 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import { AddCircleOutline } from "@mui/icons-material";
 import CreateOrUpdateTransactionForm from "@/transactions/workspace/CreateOrUpdateTransactionForm";
 import type { Dayjs } from "dayjs";
-import SpendingTransactionDestinationFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFrame";
-import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFormFrame";
+import SpendingTransactionDestinationFormFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFormFrame";
+import SpendingTransactionSourceFormFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFormFrame";
 import formatCurrency from "@/framework/formatCurrency";
 import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
 
@@ -56,7 +56,6 @@ interface CreateOrUpdateSpendingTransactionFormProps<RequestPayload> {
   readonly setDestinations: Dispatch<
     SetStateAction<SpendingDestinationDraft[]>
   >;
-  readonly spendingFlowDescription: string;
   readonly submitLabel: string;
   readonly state: TransactionFormState;
   readonly pending: boolean;
@@ -86,7 +85,6 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
   setSource,
   destinations,
   setDestinations,
-  spendingFlowDescription,
   submitLabel,
   state,
   pending,
@@ -143,10 +141,8 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
       defaultDate={defaultDate}
       description={description}
       setDescription={setDescription}
-      flowTitle="Spending Flow"
-      flowDescription={spendingFlowDescription}
       sourceContent={
-        <SpendingTransactionSourceFrame
+        <SpendingTransactionSourceFormFrame
           accounts={accounts}
           account={source.account}
           setAccount={(account): void => {
@@ -168,7 +164,7 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
       destinationContent={
         <>
           {destinations.map((destination, index) => (
-            <SpendingTransactionDestinationFrame
+            <SpendingTransactionDestinationFormFrame
               key={`spending-destination-${index}`}
               index={index}
               accounts={accounts}

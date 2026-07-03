@@ -14,7 +14,7 @@ import type { SpendingTransaction } from "@/transactions/spendingTransaction";
 import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
 import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
-import TransactionFrame from "@/transactions/workspace/TransactionFrame";
+import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 import formatCurrency from "@/framework/formatCurrency";
 
 /**
@@ -57,7 +57,7 @@ const SpendingTransactionDestinationViewFrame = function ({
   const hasLocation = account === null && (location ?? "").trim() !== "";
 
   return (
-    <TransactionFrame title={`Destination ${index + 1}`} description="">
+    <TransactionSourceOrDestinationFrame title={`Destination ${index + 1}`}>
       <Stack spacing={2}>
         {account === null ? (
           <TransactionDisplayField label="Account" value="None" />
@@ -166,7 +166,7 @@ const SpendingTransactionDestinationViewFrame = function ({
           )}
         </Stack>
       </Stack>
-    </TransactionFrame>
+    </TransactionSourceOrDestinationFrame>
   );
 };
 

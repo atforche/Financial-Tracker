@@ -23,7 +23,7 @@ import Link from "next/link";
 import SpendingTransactionDestinationViewFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationViewFrame";
 import SpendingTransactionSourceViewFrame from "@/transactions/workspace/spending/SpendingTransactionSourceViewFrame";
 import TransactionDetailsViewSection from "@/transactions/workspace/TransactionDetailsViewSection";
-import TransactionFlowSection from "@/transactions/workspace/TransactionFlowSection";
+import TransactionSourceDestinationLayout from "@/transactions/workspace/TransactionSourceDestinationLayout";
 import UnpostTransactionForm from "@/transactions/workspace/UnpostTransactionForm";
 
 /**
@@ -82,9 +82,7 @@ const ViewTransactionForm = function ({
 
       {transaction.transactionType === TransactionType.Spending &&
       spendingTransaction !== null ? (
-        <TransactionFlowSection
-          title="Spending Flow"
-          description="Review how money moves from the source account into each destination."
+        <TransactionSourceDestinationLayout
           sourceFrame={
             <SpendingTransactionSourceViewFrame
               transaction={spendingTransaction}
@@ -110,9 +108,7 @@ const ViewTransactionForm = function ({
 
       {transaction.transactionType === TransactionType.Income &&
       incomeTransaction !== null ? (
-        <TransactionFlowSection
-          title="Income Flow"
-          description="Review how this income source flows into its destination accounts and fund assignments."
+        <TransactionSourceDestinationLayout
           sourceFrame={
             <IncomeTransactionSourceViewFrame
               transaction={incomeTransaction}
@@ -140,9 +136,7 @@ const ViewTransactionForm = function ({
 
       {transaction.transactionType === TransactionType.Account &&
       accountTransaction !== null ? (
-        <TransactionFlowSection
-          title="Transfer Flow"
-          description="Review the source and destination for this account transfer."
+        <TransactionSourceDestinationLayout
           sourceFrame={
             <AccountTransactionSourceViewFrame
               transaction={accountTransaction}
@@ -168,9 +162,7 @@ const ViewTransactionForm = function ({
 
       {transaction.transactionType === TransactionType.Fund &&
       fundTransaction !== null ? (
-        <TransactionFlowSection
-          title="Transfer Flow"
-          description="Review the source fund and destination fund for this transfer."
+        <TransactionSourceDestinationLayout
           sourceFrame={
             <FundTransactionSourceViewFrame
               fund={fundTransaction.source.fund}

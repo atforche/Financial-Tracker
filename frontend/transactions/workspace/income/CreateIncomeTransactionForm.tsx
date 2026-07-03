@@ -110,7 +110,6 @@ const CreateIncomeTransactionForm = function ({
       setSource={setSource}
       destinations={destinations}
       setDestinations={setDestinations}
-      incomeFlowDescription="Build one income source and one or more tracked destinations. The net source amount and destination amounts should both add up to the transaction amount."
       submitLabel="Create Income Transaction"
       state={state}
       pending={pending}

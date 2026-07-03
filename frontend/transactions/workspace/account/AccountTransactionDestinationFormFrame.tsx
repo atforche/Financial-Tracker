@@ -2,7 +2,7 @@ import type { Account, AccountIdentifier } from "@/accounts/types";
 import AccountOrLocationEntryFrame from "@/transactions/workspace/AccountOrLocationEntryFrame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { JSX } from "react";
-import TransactionFrame from "@/transactions/workspace/TransactionFrame";
+import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
  * Props for the AccountTransactionDestinationFormFrame component.
@@ -36,9 +36,8 @@ const AccountTransactionDestinationFormFrame = function ({
   onRemove = null,
 }: AccountTransactionDestinationFrameProps): JSX.Element {
   return (
-    <TransactionFrame
+    <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
-      description="Capture where this portion of the transfer is going."
       onRemove={onRemove}
     >
       <AccountOrLocationEntryFrame
@@ -52,7 +51,7 @@ const AccountTransactionDestinationFormFrame = function ({
         accountFilter={accountFilter}
       />
       <CurrencyEntryField label="Amount" value={amount} setValue={setAmount} />
-    </TransactionFrame>
+    </TransactionSourceOrDestinationFrame>
   );
 };
 

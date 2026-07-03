@@ -13,8 +13,8 @@ import {
 } from "@/transactions/postingHelpers";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import Frame from "@/framework/view/Frame";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
 import postTransaction from "@/transactions/workspace/postTransaction";
 
 interface AccountPostingState {
@@ -78,10 +78,7 @@ const PostTransactionForm = function ({
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
-      <TransactionSection
-        title="Account Posting"
-        description="Specify the posting date for each affected account."
-      >
+      <Frame title="Account Posting">
         <Stack spacing={2}>
           {accountPostings.length === 0 ? (
             <Typography>
@@ -171,7 +168,7 @@ const PostTransactionForm = function ({
             })
           )}
         </Stack>
-      </TransactionSection>
+      </Frame>
       <ErrorAlert
         errorMessage={state.errorTitle ?? null}
         unmappedErrors={state.unmappedErrors ?? null}

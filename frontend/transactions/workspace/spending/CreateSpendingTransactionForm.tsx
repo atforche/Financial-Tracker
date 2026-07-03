@@ -111,7 +111,6 @@ const CreateSpendingTransactionForm = function ({
       setSource={setSource}
       destinations={destinations}
       setDestinations={setDestinations}
-      spendingFlowDescription="Build one spending source and one or more destinations. The destination amounts should add up to the transaction amount."
       submitLabel="Create"
       state={state}
       pending={pending}

@@ -99,7 +99,6 @@ const CreateAccountTransactionForm = function ({
       setSource={setSource}
       destinations={destinations}
       setDestinations={setDestinations}
-      transferFlowDescription="Build one source and one or more destinations. The destination amounts should add up to the transaction amount."
       submitLabel="Create"
       state={state}
       pending={pending}

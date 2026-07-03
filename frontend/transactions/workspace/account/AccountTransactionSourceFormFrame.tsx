@@ -2,7 +2,7 @@ import type { Account, AccountIdentifier } from "@/accounts/types";
 import AccountOrLocationEntryFrame from "@/transactions/workspace/AccountOrLocationEntryFrame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { JSX } from "react";
-import TransactionFrame from "@/transactions/workspace/TransactionFrame";
+import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
  * Props for the AccountTransactionSourceFormFrame component.
@@ -32,10 +32,7 @@ const AccountTransactionSourceFormFrame = function ({
   setAmount,
 }: AccountTransactionSourceFormFrameProps): JSX.Element {
   return (
-    <TransactionFrame
-      title="Transfer Source"
-      description="Choose the source account or provide the source location for this transfer."
-    >
+    <TransactionSourceOrDestinationFrame title="Transfer Source">
       <AccountOrLocationEntryFrame
         accountCaption="Source Account"
         accounts={accounts}
@@ -47,7 +44,7 @@ const AccountTransactionSourceFormFrame = function ({
         accountFilter={accountFilter}
       />
       <CurrencyEntryField label="Amount" value={amount} setValue={setAmount} />
-    </TransactionFrame>
+    </TransactionSourceOrDestinationFrame>
   );
 };
 

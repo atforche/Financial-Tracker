@@ -55,7 +55,6 @@ interface CreateOrUpdateIncomeTransactionFormProps<RequestPayload> {
   readonly setSource: Dispatch<SetStateAction<IncomeSourceDraft>>;
   readonly destinations: IncomeDestinationDraft[];
   readonly setDestinations: Dispatch<SetStateAction<IncomeDestinationDraft[]>>;
-  readonly incomeFlowDescription: string;
   readonly submitLabel: string;
   readonly state: TransactionFormState;
   readonly pending: boolean;
@@ -85,7 +84,6 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
   setSource,
   destinations,
   setDestinations,
-  incomeFlowDescription,
   submitLabel,
   state,
   pending,
@@ -142,8 +140,6 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
       defaultDate={defaultDate}
       description={description}
       setDescription={setDescription}
-      flowTitle="Income Flow"
-      flowDescription={incomeFlowDescription}
       sourceContent={
         <IncomeTransactionSourceFrame
           accounts={accounts}

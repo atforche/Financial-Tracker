@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import type { SpendingTransaction } from "@/transactions/spendingTransaction";
 import type { TransactionAccount } from "@/transactions/transaction";
 import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
-import TransactionFrame from "@/transactions/workspace/TransactionFrame";
+import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
  * Props for the SpendingTransactionSourceViewFrame component.
@@ -20,13 +20,13 @@ const SpendingTransactionSourceViewFrame = function ({
   account,
 }: SpendingTransactionSourceViewFrameProps): JSX.Element {
   return (
-    <TransactionFrame title="Source" description="">
+    <TransactionSourceOrDestinationFrame title="Source">
       <TransactionAccountViewFrame
         transaction={transaction}
         account={account}
         label="Source Account"
       />
-    </TransactionFrame>
+    </TransactionSourceOrDestinationFrame>
   );
 };
 

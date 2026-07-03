@@ -1,12 +1,11 @@
 import type { Fund, FundIdentifier } from "@/funds/types";
 import { Box } from "@mui/material";
+import Frame from "@/framework/view/Frame";
 import FundEntryField from "@/funds/FundEntryField";
 import type { JSX } from "react";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
 
 interface TransactionFundPairSectionProps {
   readonly title: string;
-  readonly description: string;
   readonly funds: Fund[];
   readonly leftLabel: string;
   readonly rightLabel: string;
@@ -23,7 +22,6 @@ interface TransactionFundPairSectionProps {
  */
 const TransactionFundPairSection = function ({
   title,
-  description,
   funds,
   leftLabel,
   rightLabel,
@@ -35,7 +33,7 @@ const TransactionFundPairSection = function ({
   rightFilter = null,
 }: TransactionFundPairSectionProps): JSX.Element {
   return (
-    <TransactionSection title={title} description={description}>
+    <Frame title={title}>
       <Box
         sx={{
           display: "grid",
@@ -75,7 +73,7 @@ const TransactionFundPairSection = function ({
           filter={rightFilter}
         />
       </Box>
-    </TransactionSection>
+    </Frame>
   );
 };
 

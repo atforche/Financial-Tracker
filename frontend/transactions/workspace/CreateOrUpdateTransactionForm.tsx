@@ -12,8 +12,8 @@ import {
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import TransactionDetailsSection from "@/transactions/workspace/TransactionDetailsSection";
-import TransactionFlowSection from "@/transactions/workspace/TransactionFlowSection";
+import TransactionDetailsFrame from "@/transactions/workspace/TransactionDetailsFrame";
+import TransactionSourceDestinationLayout from "@/transactions/workspace/TransactionSourceDestinationLayout";
 
 /**
  * Represents the shared status displayed by transaction create/update forms.
@@ -40,8 +40,6 @@ interface CreateOrUpdateTransactionFormProps<RequestPayload> {
   readonly defaultDate: Dayjs | null;
   readonly description: string;
   readonly setDescription: Dispatch<SetStateAction<string>>;
-  readonly flowTitle: string;
-  readonly flowDescription: string;
   readonly sourceContent: JSX.Element;
   readonly destinationContent: ReactNode;
   readonly flowFooterContent?: ReactNode;
@@ -66,8 +64,6 @@ const CreateOrUpdateTransactionForm = function <RequestPayload>({
   defaultDate,
   description,
   setDescription,
-  flowTitle,
-  flowDescription,
   sourceContent,
   destinationContent,
   flowFooterContent = null,
@@ -81,7 +77,7 @@ const CreateOrUpdateTransactionForm = function <RequestPayload>({
   return (
     <Stack ref={formRef} spacing={3}>
       <Stack spacing={3} sx={{ width: "100%" }}>
-        <TransactionDetailsSection
+        <TransactionDetailsFrame
           accountingPeriods={accountingPeriods}
           accountingPeriod={accountingPeriod}
           setAccountingPeriod={setAccountingPeriod}
@@ -90,9 +86,7 @@ const CreateOrUpdateTransactionForm = function <RequestPayload>({
           descriptionValue={description}
           setDescriptionValue={setDescription}
         />
-        <TransactionFlowSection
-          title={flowTitle}
-          description={flowDescription}
+        <TransactionSourceDestinationLayout
           sourceFrame={sourceContent}
           destinationFrames={[
             <Stack key="destination-content" spacing={2}>

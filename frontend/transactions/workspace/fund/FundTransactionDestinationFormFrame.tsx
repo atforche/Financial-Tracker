@@ -2,7 +2,7 @@ import type { Fund, FundIdentifier } from "@/funds/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import FundEntryField from "@/funds/FundEntryField";
 import type { JSX } from "react";
-import TransactionFrame from "@/transactions/workspace/TransactionFrame";
+import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
  * Props for the FundTransactionDestinationFormFrame component.
@@ -32,9 +32,8 @@ const FundTransactionDestinationFormFrame = function ({
   onRemove = null,
 }: FundTransactionDestinationFormFrameProps): JSX.Element {
   return (
-    <TransactionFrame
+    <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
-      description="Capture where this portion of the transfer is going."
       onRemove={onRemove}
     >
       <FundEntryField
@@ -58,7 +57,7 @@ const FundTransactionDestinationFormFrame = function ({
         value={amount}
         setValue={setAmount}
       />
-    </TransactionFrame>
+    </TransactionSourceOrDestinationFrame>
   );
 };
 

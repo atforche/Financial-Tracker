@@ -5,12 +5,12 @@ import AccountOrLocationEntryFrame from "@/transactions/workspace/AccountOrLocat
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import FundAssignmentPlanner from "@/funds/FundAssignmentPlanner";
 import type { JSX } from "react";
-import TransactionFrame from "@/transactions/workspace/TransactionFrame";
+import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
- * Props for the SpendingTransactionDestinationFrame component.
+ * Props for the SpendingTransactionDestinationFormFrame component.
  */
-interface SpendingTransactionDestinationFrameProps {
+interface SpendingTransactionDestinationFormFrameProps {
   readonly index: number;
   readonly accounts: Account[];
   readonly funds: Fund[];
@@ -34,7 +34,7 @@ const emptyFundAssignments: FundAmount[] = [];
 /**
  * Displays a destination frame for one spending destination.
  */
-const SpendingTransactionDestinationFrame = function ({
+const SpendingTransactionDestinationFormFrame = function ({
   index,
   accounts,
   funds,
@@ -51,11 +51,10 @@ const SpendingTransactionDestinationFrame = function ({
   baselineFundAssignments = emptyFundAssignments,
   filter = null,
   onRemove = null,
-}: SpendingTransactionDestinationFrameProps): JSX.Element {
+}: SpendingTransactionDestinationFormFrameProps): JSX.Element {
   return (
-    <TransactionFrame
-      title={`SpendingTransactionDestination ${index + 1}`}
-      description="Capture where this portion of the spending goes and how it should be funded."
+    <TransactionSourceOrDestinationFrame
+      title={`Destination ${index + 1}`}
       onRemove={onRemove}
     >
       <AccountOrLocationEntryFrame
@@ -84,8 +83,8 @@ const SpendingTransactionDestinationFrame = function ({
         value={fundAssignments}
         setValue={setFundAssignments}
       />
-    </TransactionFrame>
+    </TransactionSourceOrDestinationFrame>
   );
 };
 
-export default SpendingTransactionDestinationFrame;
+export default SpendingTransactionDestinationFormFrame;

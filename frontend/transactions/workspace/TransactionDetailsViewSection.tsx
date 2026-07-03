@@ -1,8 +1,8 @@
 import type { JSX, ReactNode } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import { Box } from "@mui/material";
+import Frame from "@/framework/view/Frame";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
 import dayjs from "dayjs";
 
 /**
@@ -25,11 +25,7 @@ const TransactionDetailsViewSection = function ({
   headerAction,
 }: TransactionDetailsViewSectionProps): JSX.Element {
   return (
-    <TransactionSection
-      title="Transaction Details"
-      description="Review the high level information captured for this transaction."
-      headerAction={headerAction}
-    >
+    <Frame title="Transaction Details" headerAction={headerAction} color="info">
       <Box
         sx={{
           display: "grid",
@@ -48,7 +44,7 @@ const TransactionDetailsViewSection = function ({
         />
       </Box>
       <TransactionDisplayField label="Description" value={description} />
-    </TransactionSection>
+    </Frame>
   );
 };
 

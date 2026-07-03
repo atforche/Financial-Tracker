@@ -21,9 +21,9 @@ import {
 } from "react";
 import AssignmentGoalSetupSection from "@/funds/workspace/AssignmentGoalSetupSection";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import Frame from "@/framework/view/Frame";
 import SpendingGoalSetupSection from "@/funds/workspace/SpendingGoalSetupSection";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import formatCurrency from "@/framework/formatCurrency";
 import updateAssignmentGoal from "@/goals/workspace/updateAssignmentGoal";
@@ -104,10 +104,7 @@ const UpdateGoalForm = function ({
   return (
     <Stack ref={formRef} spacing={2}>
       <Stack spacing={3} sx={{ width: "100%" }}>
-        <TransactionSection
-          title="Goal Context"
-          description="Review the fund and accounting period that this goal applies to."
-        >
+        <Frame title="Goal Context">
           <Box
             sx={{
               display: "grid",
@@ -146,7 +143,7 @@ const UpdateGoalForm = function ({
               )}
             />
           </Box>
-        </TransactionSection>
+        </Frame>
 
         {assignmentGoal !== null ? (
           <AssignmentGoalSetupSection

@@ -4,11 +4,11 @@ import {
   getRemainingFundAmount,
   getUnassignedFund,
 } from "@/funds/fundAssignment";
+import Frame from "@/framework/view/Frame";
 import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
 import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
 import type { TransactionFund } from "@/transactions/transaction";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
 import formatCurrency from "@/framework/formatCurrency";
 
 /**
@@ -44,9 +44,9 @@ const TransactionFundAssignmentsViewSection = function ({
   );
 
   return (
-    <TransactionSection
+    <Frame
       title="Fund Allocation"
-      description="Review how this transaction is allocated across funds."
+      color={tone === "income" ? "success" : "warning"}
     >
       <Stack spacing={2.5}>
         <Stack
@@ -129,7 +129,7 @@ const TransactionFundAssignmentsViewSection = function ({
           </Box>
         )}
       </Stack>
-    </TransactionSection>
+    </Frame>
   );
 };
 

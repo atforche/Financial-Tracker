@@ -8,7 +8,7 @@ import {
 import AccountOrLocationEntryFrame from "@/transactions/workspace/AccountOrLocationEntryFrame";
 import IncomeTransactionItemSection from "@/transactions/workspace/income/IncomeTransactionSourceItemFrame";
 import type { JSX } from "react";
-import TransactionFrame from "@/transactions/workspace/TransactionFrame";
+import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
  * Props for the IncomeTransactionSourceFrame component.
@@ -44,10 +44,7 @@ const IncomeTransactionSourceFrame = function ({
   accountFilter = null,
 }: IncomeTransactionSourceFrameProps): JSX.Element {
   return (
-    <TransactionFrame
-      title="Income Source"
-      description="Choose where the income originated and capture the gross lines and deductions that produce the net transaction amount."
-    >
+    <TransactionSourceOrDestinationFrame title="Income Source">
       <AccountOrLocationEntryFrame
         accountCaption="Source Account"
         accounts={accounts}
@@ -76,7 +73,7 @@ const IncomeTransactionSourceFrame = function ({
         addLabel="Add Deduction"
         allowEmpty
       />
-    </TransactionFrame>
+    </TransactionSourceOrDestinationFrame>
   );
 };
 

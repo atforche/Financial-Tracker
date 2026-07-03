@@ -103,7 +103,6 @@ const UpdateIncomeTransactionForm = function ({
       setSource={setSource}
       destinations={destinations}
       setDestinations={setDestinations}
-      incomeFlowDescription="Edit the source and each tracked destination. The net source amount and destination amounts should both add up to the transaction amount."
       submitLabel="Update Income Transaction"
       state={state}
       pending={pending}

@@ -102,7 +102,6 @@ const UpdateSpendingTransactionForm = function ({
       setSource={setSource}
       destinations={destinations}
       setDestinations={setDestinations}
-      spendingFlowDescription="Edit the spending source and each destination. The destination amounts should add up to the transaction amount."
       submitLabel="Update"
       state={state}
       pending={pending}

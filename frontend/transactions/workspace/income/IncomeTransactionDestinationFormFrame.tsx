@@ -5,7 +5,7 @@ import AccountEntryField from "@/accounts/AccountEntryField";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import FundAssignmentPlanner from "@/funds/FundAssignmentPlanner";
 import type { JSX } from "react";
-import TransactionFrame from "@/transactions/workspace/TransactionFrame";
+import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 const emptyFundAmounts: FundAmount[] = [];
 
@@ -49,9 +49,8 @@ const IncomeTransactionDestinationFormFrame = function ({
   onRemove = null,
 }: IncomeTransactionDestinationFormFrameProps): JSX.Element {
   return (
-    <TransactionFrame
-      title={`Income Destination ${index + 1}`}
-      description="Capture which tracked account receives this portion of the income and how it should be allocated."
+    <TransactionSourceOrDestinationFrame
+      title={`Destination ${index + 1}`}
       onRemove={onRemove}
     >
       <AccountEntryField
@@ -87,7 +86,7 @@ const IncomeTransactionDestinationFormFrame = function ({
         value={fundAssignments}
         setValue={setFundAssignments}
       />
-    </TransactionFrame>
+    </TransactionSourceOrDestinationFrame>
   );
 };
 

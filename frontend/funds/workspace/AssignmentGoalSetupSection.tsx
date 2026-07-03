@@ -5,9 +5,9 @@ import {
 } from "@/goals/types";
 import { Box, Stack, Typography } from "@mui/material";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
+import Frame from "@/framework/view/Frame";
 import FundGoalTypeEntryField from "@/funds/FundGoalTypeEntryField";
 import type { JSX } from "react";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
 
 interface AssignmentGoalSetupSectionProps {
   readonly value: AssignmentGoalType | null;
@@ -46,10 +46,7 @@ const AssignmentGoalSetupSection = function ({
   amountErrorMessage = null,
 }: AssignmentGoalSetupSectionProps): JSX.Element {
   return (
-    <TransactionSection
-      title="Assignment Goal Setup"
-      description="Choose how this fund should be funded."
-    >
+    <Frame title="Assignment Goal Setup">
       <Stack spacing={2}>
         <FundGoalTypeEntryField<AssignmentGoalType>
           label="Assignment Goal Type"
@@ -99,7 +96,7 @@ const AssignmentGoalSetupSection = function ({
           </Typography>
         </Stack>
       </Stack>
-    </TransactionSection>
+    </Frame>
   );
 };
 

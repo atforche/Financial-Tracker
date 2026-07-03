@@ -1,16 +1,15 @@
 import { Box } from "@mui/material";
+import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
 import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
 import type { TransactionFund } from "@/transactions/transaction";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
 
 /**
  * Props for the TransactionFundPathViewSection component.
  */
 interface TransactionFundPathViewSectionProps {
   readonly title: string;
-  readonly description: string;
   readonly leftLabel: string;
   readonly rightLabel: string;
   readonly leftFund: TransactionFund | null;
@@ -22,14 +21,13 @@ interface TransactionFundPathViewSectionProps {
  */
 const TransactionFundPathViewSection = function ({
   title,
-  description,
   leftLabel,
   rightLabel,
   leftFund,
   rightFund,
 }: TransactionFundPathViewSectionProps): JSX.Element {
   return (
-    <TransactionSection title={title} description={description}>
+    <Frame title={title}>
       <Box
         sx={{
           display: "grid",
@@ -67,7 +65,7 @@ const TransactionFundPathViewSection = function ({
           }
         />
       </Box>
-    </TransactionSection>
+    </Frame>
   );
 };
 

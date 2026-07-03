@@ -91,7 +91,6 @@ const UpdateAccountTransactionForm = function ({
       setSource={setSource}
       destinations={destinations}
       setDestinations={setDestinations}
-      transferFlowDescription="Edit the source and each destination. The destination amounts should add up to the transaction amount."
       submitLabel="Update"
       state={state}
       pending={pending}

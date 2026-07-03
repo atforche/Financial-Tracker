@@ -7,8 +7,8 @@ import type { Fund } from "@/funds/types";
 import type { IncomeTransaction } from "@/transactions/incomeTransaction";
 import type { JSX } from "react";
 import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
-import TransactionFrame from "@/transactions/workspace/TransactionFrame";
 import TransactionFundAssignmentsViewSection from "@/transactions/workspace/TransactionFundAssignmentsViewSection";
+import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
  * Props for the IncomeTransactionDestinationViewFrame component.
@@ -34,7 +34,9 @@ const IncomeTransactionDestinationViewFrame = function ({
   fundAssignments,
 }: IncomeTransactionDestinationViewFrameProps): JSX.Element {
   return (
-    <TransactionFrame title={`Income Destination ${index + 1}`}>
+    <TransactionSourceOrDestinationFrame
+      title={`Income Destination ${index + 1}`}
+    >
       {account === null ? null : (
         <TransactionAccountViewFrame
           transaction={transaction}
@@ -48,7 +50,7 @@ const IncomeTransactionDestinationViewFrame = function ({
         fundAssignments={fundAssignments}
         tone="income"
       />
-    </TransactionFrame>
+    </TransactionSourceOrDestinationFrame>
   );
 };
 

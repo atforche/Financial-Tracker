@@ -2,7 +2,7 @@ import type { Fund, FundIdentifier } from "@/funds/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import FundEntryField from "@/funds/FundEntryField";
 import type { JSX } from "react";
-import TransactionFrame from "@/transactions/workspace/TransactionFrame";
+import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
  * Props for the FundTransactionSourceFormFrame component.
@@ -28,10 +28,7 @@ const FundTransactionSourceFormFrame = function ({
   setAmount,
 }: FundTransactionSourceFormFrameProps): JSX.Element {
   return (
-    <TransactionFrame
-      title="Transfer Source"
-      description="Choose the source fund for this transfer."
-    >
+    <TransactionSourceOrDestinationFrame title="Transfer Source">
       <FundEntryField
         label="Source Fund"
         options={funds}
@@ -49,7 +46,7 @@ const FundTransactionSourceFormFrame = function ({
         filter={filter}
       />
       <CurrencyEntryField label="Amount" value={amount} setValue={setAmount} />
-    </TransactionFrame>
+    </TransactionSourceOrDestinationFrame>
   );
 };
 
