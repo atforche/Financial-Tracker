@@ -12,6 +12,10 @@ import {
   createEmptyDestination,
   getNetIncomeAmount,
 } from "@/transactions/workspace/income/helpers";
+import {
+  appendDestinationWithAutofilledAmount,
+  syncDestinationAmountsToSource,
+} from "@/transactions/workspace/helpers";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import { AddCircleOutline } from "@mui/icons-material";
@@ -129,6 +133,20 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
     );
   };
 
+  const setDestinationAmount = function (
+    destination: IncomeDestinationDraft,
+    amount: number | null,
+  ): IncomeDestinationDraft {
+    return {
+      ...destination,
+      amount,
+      fundAssignments: syncDestinationFundAssignments(
+        amount,
+        destination.fundAssignments,
+      ),
+    };
+  };
+
   return (
     <CreateOrUpdateTransactionForm
       formRef={formRef}
@@ -160,17 +178,41 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
           }}
           incomeLines={source.incomeLines}
           setIncomeLines={(incomeLines): void => {
+            const nextSource = {
+              ...source,
+              incomeLines,
+            };
             setSource((currentSource) => ({
               ...currentSource,
               incomeLines,
             }));
+            setDestinations((currentDestinations) =>
+              syncDestinationAmountsToSource(
+                currentDestinations,
+                sourceNetAmount,
+                getNetIncomeAmount(nextSource),
+                setDestinationAmount,
+              ),
+            );
           }}
           incomeDeductions={source.incomeDeductions}
           setIncomeDeductions={(incomeDeductions): void => {
+            const nextSource = {
+              ...source,
+              incomeDeductions,
+            };
             setSource((currentSource) => ({
               ...currentSource,
               incomeDeductions,
             }));
+            setDestinations((currentDestinations) =>
+              syncDestinationAmountsToSource(
+                currentDestinations,
+                sourceNetAmount,
+                getNetIncomeAmount(nextSource),
+                setDestinationAmount,
+              ),
+            );
           }}
           accountFilter={buildSourceAccountFilter(accounts, destinations)}
         />
@@ -194,14 +236,9 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
               }}
               amount={destination.amount}
               setAmount={(nextAmount): void => {
-                updateDestination(index, (currentDestination) => ({
-                  ...currentDestination,
-                  amount: nextAmount,
-                  fundAssignments: syncDestinationFundAssignments(
-                    nextAmount,
-                    currentDestination.fundAssignments,
-                  ),
-                }));
+                updateDestination(index, (currentDestination) =>
+                  setDestinationAmount(currentDestination, nextAmount),
+                );
               }}
               fundAssignments={destination.fundAssignments}
               setFundAssignments={(fundAssignments): void => {
@@ -234,10 +271,14 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
             variant="outlined"
             startIcon={<AddCircleOutline />}
             onClick={(): void => {
-              setDestinations((currentDestinations) => [
-                ...currentDestinations,
-                createEmptyDestination(),
-              ]);
+              setDestinations((currentDestinations) =>
+                appendDestinationWithAutofilledAmount(
+                  currentDestinations,
+                  createEmptyDestination(),
+                  sourceNetAmount,
+                  setDestinationAmount,
+                ),
+              );
             }}
             sx={{ alignSelf: "flex-start" }}
           >

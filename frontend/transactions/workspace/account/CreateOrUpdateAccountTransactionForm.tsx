@@ -9,6 +9,10 @@ import {
 } from "@/transactions/workspace/account/helpers";
 import { Button, Typography } from "@mui/material";
 import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
+import {
+  appendDestinationWithAutofilledAmount,
+  syncDestinationAmountsToSource,
+} from "@/transactions/workspace/helpers";
 import type { Account } from "@/accounts/types";
 import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFormFrame";
 import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFormFrame";
@@ -81,6 +85,16 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
   onReset,
   onSubmit,
 }: CreateOrUpdateAccountTransactionFormProps<RequestPayload>): JSX.Element {
+  const setDestinationAmount = function (
+    destination: AccountDestinationDraft,
+    amount: number | null,
+  ): AccountDestinationDraft {
+    return {
+      ...destination,
+      amount,
+    };
+  };
+
   const updateDestination = function (
     index: number,
     recipe: (current: AccountDestinationDraft) => AccountDestinationDraft,
@@ -135,6 +149,14 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
               ...currentSource,
               amount: nextAmount,
             }));
+            setDestinations((currentDestinations) =>
+              syncDestinationAmountsToSource(
+                currentDestinations,
+                source.amount,
+                nextAmount,
+                setDestinationAmount,
+              ),
+            );
           }}
         />
       }
@@ -190,10 +212,14 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
             variant="outlined"
             startIcon={<AddCircleOutline />}
             onClick={(): void => {
-              setDestinations((currentDestinations) => [
-                ...currentDestinations,
-                createEmptyDestination(),
-              ]);
+              setDestinations((currentDestinations) =>
+                appendDestinationWithAutofilledAmount(
+                  currentDestinations,
+                  createEmptyDestination(),
+                  source.amount,
+                  setDestinationAmount,
+                ),
+              );
             }}
             sx={{ alignSelf: "flex-start" }}
           >

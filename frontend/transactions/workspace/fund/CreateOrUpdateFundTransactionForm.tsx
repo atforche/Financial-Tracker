@@ -9,6 +9,10 @@ import {
   buildSourceFundFilter,
   createEmptyDestination,
 } from "@/transactions/workspace/fund/helpers";
+import {
+  appendDestinationWithAutofilledAmount,
+  syncDestinationAmountsToSource,
+} from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import { AddCircleOutline } from "@mui/icons-material";
 import CreateOrUpdateTransactionForm from "@/transactions/workspace/CreateOrUpdateTransactionForm";
@@ -81,6 +85,16 @@ const CreateOrUpdateFundTransactionForm = function <RequestPayload>({
   onReset,
   onSubmit,
 }: CreateOrUpdateFundTransactionFormProps<RequestPayload>): JSX.Element {
+  const setDestinationAmount = function (
+    destination: FundDestinationDraft,
+    amount: number | null,
+  ): FundDestinationDraft {
+    return {
+      ...destination,
+      amount,
+    };
+  };
+
   const updateDestination = function (
     index: number,
     recipe: (current: FundDestinationDraft) => FundDestinationDraft,
@@ -127,6 +141,14 @@ const CreateOrUpdateFundTransactionForm = function <RequestPayload>({
               ...currentSource,
               amount: nextAmount,
             }));
+            setDestinations((currentDestinations) =>
+              syncDestinationAmountsToSource(
+                currentDestinations,
+                source.amount,
+                nextAmount,
+                setDestinationAmount,
+              ),
+            );
           }}
         />
       }
@@ -173,10 +195,14 @@ const CreateOrUpdateFundTransactionForm = function <RequestPayload>({
             variant="outlined"
             startIcon={<AddCircleOutline />}
             onClick={(): void => {
-              setDestinations((currentDestinations) => [
-                ...currentDestinations,
-                createEmptyDestination(),
-              ]);
+              setDestinations((currentDestinations) =>
+                appendDestinationWithAutofilledAmount(
+                  currentDestinations,
+                  createEmptyDestination(),
+                  source.amount,
+                  setDestinationAmount,
+                ),
+              );
             }}
             sx={{ alignSelf: "flex-start" }}
           >
