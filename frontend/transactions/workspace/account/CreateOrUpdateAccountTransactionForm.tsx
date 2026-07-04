@@ -7,7 +7,6 @@ import {
   buildSourceAccountFilter,
   createEmptyDestination,
 } from "@/transactions/workspace/account/helpers";
-import { Button, Typography } from "@mui/material";
 import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
 import {
   appendDestinationWithAutofilledAmount,
@@ -17,10 +16,8 @@ import type { Account } from "@/accounts/types";
 import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFormFrame";
 import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFormFrame";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import { AddCircleOutline } from "@mui/icons-material";
 import CreateOrUpdateTransactionForm from "@/transactions/workspace/CreateOrUpdateTransactionForm";
 import type { Dayjs } from "dayjs";
-import formatCurrency from "@/framework/formatCurrency";
 
 /**
  * Represents the state of the account transaction form.
@@ -113,6 +110,17 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
     0,
   );
 
+  const addDestination = function (): void {
+    setDestinations((currentDestinations) =>
+      appendDestinationWithAutofilledAmount(
+        currentDestinations,
+        createEmptyDestination(),
+        source.amount,
+        setDestinationAmount,
+      ),
+    );
+  };
+
   return (
     <CreateOrUpdateTransactionForm
       formRef={formRef}
@@ -189,6 +197,7 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
                   amount: nextAmount,
                 }));
               }}
+              onAdd={index === 0 ? addDestination : null}
               accountFilter={buildDestinationAccountFilter(
                 accounts,
                 destinations,
@@ -208,37 +217,10 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
               }
             />
           ))}
-          <Button
-            variant="outlined"
-            startIcon={<AddCircleOutline />}
-            onClick={(): void => {
-              setDestinations((currentDestinations) =>
-                appendDestinationWithAutofilledAmount(
-                  currentDestinations,
-                  createEmptyDestination(),
-                  source.amount,
-                  setDestinationAmount,
-                ),
-              );
-            }}
-            sx={{ alignSelf: "flex-start" }}
-          >
-            Add Destination
-          </Button>
         </>
       }
-      flowFooterContent={
-        <Typography
-          variant="body2"
-          color={
-            source.amount !== null && destinationTotal !== source.amount
-              ? "error.main"
-              : "text.secondary"
-          }
-        >
-          Destination total: {formatCurrency(destinationTotal)}
-        </Typography>
-      }
+      sourceAmount={source.amount}
+      destinationAmount={destinationTotal}
       submitLabel={submitLabel}
       state={state}
       pending={pending}

@@ -1,7 +1,8 @@
+import { Button, IconButton, Stack } from "@mui/material";
 import type { JSX, ReactNode } from "react";
+import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
 import DeleteOutline from "@mui/icons-material/DeleteOutline";
 import Frame from "@/framework/view/Frame";
-import { IconButton } from "@mui/material";
 
 /**
  * Props for the TransactionFrame component.
@@ -9,6 +10,7 @@ import { IconButton } from "@mui/material";
 interface TransactionSourceOrDestinationFrameProps {
   readonly title: string;
   readonly children: ReactNode;
+  readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
 }
 
@@ -18,16 +20,31 @@ interface TransactionSourceOrDestinationFrameProps {
 const TransactionSourceOrDestinationFrame = function ({
   title,
   children,
+  onAdd = null,
   onRemove = null,
 }: TransactionSourceOrDestinationFrameProps): JSX.Element {
   return (
     <Frame
       title={title}
       headerContent={
-        onRemove === null ? null : (
-          <IconButton size="small" color="error" onClick={onRemove}>
-            <DeleteOutline fontSize="small" />
-          </IconButton>
+        onAdd === null && onRemove === null ? null : (
+          <Stack direction="row" spacing={1} alignItems="center">
+            {onAdd === null ? null : (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<AddCircleOutline />}
+                onClick={onAdd}
+              >
+                Add Destination
+              </Button>
+            )}
+            {onRemove === null ? null : (
+              <IconButton size="small" color="error" onClick={onRemove}>
+                <DeleteOutline fontSize="small" />
+              </IconButton>
+            )}
+          </Stack>
         )
       }
     >

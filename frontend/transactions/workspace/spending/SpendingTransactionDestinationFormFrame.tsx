@@ -26,6 +26,7 @@ interface SpendingTransactionDestinationFormFrameProps {
   readonly setFundAssignments: (fundAssignments: FundAmount[]) => void;
   readonly baselineFundAssignments?: FundAmount[];
   readonly filter?: ((account: AccountIdentifier) => boolean) | null;
+  readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
 }
 
@@ -50,11 +51,13 @@ const SpendingTransactionDestinationFormFrame = function ({
   setFundAssignments,
   baselineFundAssignments = emptyFundAssignments,
   filter = null,
+  onAdd = null,
   onRemove = null,
 }: SpendingTransactionDestinationFormFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
+      onAdd={onAdd}
       onRemove={onRemove}
     >
       <AccountOrLocationEntryFrame

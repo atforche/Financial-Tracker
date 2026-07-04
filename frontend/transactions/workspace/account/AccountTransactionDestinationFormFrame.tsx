@@ -17,6 +17,7 @@ interface AccountTransactionDestinationFrameProps {
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
+  readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
 }
 
@@ -33,11 +34,13 @@ const AccountTransactionDestinationFormFrame = function ({
   amount,
   setAmount,
   accountFilter = null,
+  onAdd = null,
   onRemove = null,
 }: AccountTransactionDestinationFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
+      onAdd={onAdd}
       onRemove={onRemove}
     >
       <AccountOrLocationEntryFrame

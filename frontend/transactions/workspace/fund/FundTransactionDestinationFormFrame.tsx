@@ -15,6 +15,7 @@ interface FundTransactionDestinationFormFrameProps {
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly filter?: ((fund: FundIdentifier) => boolean) | null;
+  readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
 }
 
@@ -29,11 +30,13 @@ const FundTransactionDestinationFormFrame = function ({
   amount,
   setAmount,
   filter = null,
+  onAdd = null,
   onRemove = null,
 }: FundTransactionDestinationFormFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
+      onAdd={onAdd}
       onRemove={onRemove}
     >
       <FundEntryField

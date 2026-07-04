@@ -14,6 +14,7 @@ import type { Dayjs } from "dayjs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import TransactionDetailsFrame from "@/transactions/workspace/TransactionDetailsFrame";
 import TransactionSourceDestinationLayout from "@/transactions/workspace/TransactionSourceDestinationLayout";
+import TransactionSourceDestinationSummary from "@/transactions/workspace/TransactionSourceDestinationSummary";
 
 /**
  * Represents the shared status displayed by transaction create/update forms.
@@ -42,7 +43,8 @@ interface CreateOrUpdateTransactionFormProps<RequestPayload> {
   readonly setDescription: Dispatch<SetStateAction<string>>;
   readonly sourceContent: JSX.Element;
   readonly destinationContent: ReactNode;
-  readonly flowFooterContent?: ReactNode;
+  readonly sourceAmount?: number | null;
+  readonly destinationAmount?: number;
   readonly submitLabel: string;
   readonly state: TransactionFormState;
   readonly pending: boolean;
@@ -66,7 +68,8 @@ const CreateOrUpdateTransactionForm = function <RequestPayload>({
   setDescription,
   sourceContent,
   destinationContent,
-  flowFooterContent = null,
+  sourceAmount,
+  destinationAmount,
   submitLabel,
   state,
   pending,
@@ -94,7 +97,12 @@ const CreateOrUpdateTransactionForm = function <RequestPayload>({
             </Stack>,
           ]}
         />
-        {flowFooterContent}
+        {typeof destinationAmount === "number" ? (
+          <TransactionSourceDestinationSummary
+            sourceAmount={sourceAmount ?? 0}
+            destinationAmount={destinationAmount}
+          />
+        ) : null}
         <ErrorAlert
           errorMessage={state.errorTitle ?? null}
           unmappedErrors={state.unmappedErrors ?? null}
