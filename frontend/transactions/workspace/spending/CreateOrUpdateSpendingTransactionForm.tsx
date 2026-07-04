@@ -19,7 +19,7 @@ import type { Dayjs } from "dayjs";
 import SpendingTransactionDestinationFormFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFormFrame";
 import SpendingTransactionSourceFormFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFormFrame";
 import formatCurrency from "@/framework/formatCurrency";
-import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
+import { updateUnassignedFundAmount } from "@/funds/assignmentPlanner/helpers";
 
 /**
  * Represents the state of the spending transaction form.

@@ -13,7 +13,7 @@ type FrameColor =
 interface FrameProps {
   readonly title: string;
   readonly children: ReactNode;
-  readonly headerAction?: ReactNode;
+  readonly headerContent?: ReactNode;
   readonly color?: FrameColor;
 }
 
@@ -56,7 +56,7 @@ const getAccentColor = function (
 const Frame = function ({
   title,
   children,
-  headerAction,
+  headerContent,
   color = "primary",
 }: FrameProps): JSX.Element {
   return (
@@ -106,7 +106,7 @@ const Frame = function ({
               {title}
             </Typography>
           </Stack>
-          <Box sx={{ color: "text.primary" }}>{headerAction ?? null}</Box>
+          <Box sx={{ color: "text.primary" }}>{headerContent ?? null}</Box>
         </Stack>
         <Stack spacing={2.5} sx={{ p: { xs: 2.5, md: 3 } }}>
           {children}

@@ -23,7 +23,7 @@ const TransactionSourceOrDestinationFrame = function ({
   return (
     <Frame
       title={title}
-      headerAction={
+      headerContent={
         onRemove === null ? null : (
           <IconButton size="small" color="error" onClick={onRemove}>
             <DeleteOutline fontSize="small" />

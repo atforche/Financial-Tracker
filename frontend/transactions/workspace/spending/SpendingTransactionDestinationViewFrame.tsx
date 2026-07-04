@@ -6,8 +6,7 @@ import type {
 import {
   getAssignedFundAmount,
   getRemainingFundAmount,
-  getUnassignedFund,
-} from "@/funds/fundAssignment";
+} from "@/funds/assignmentPlanner/helpers";
 import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
 import type { SpendingTransaction } from "@/transactions/spendingTransaction";
@@ -16,6 +15,7 @@ import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalan
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 import formatCurrency from "@/framework/formatCurrency";
+import { getUnassignedFund } from "@/funds/helpers";
 
 /**
  * Props for the SpendingTransactionDestinationViewFrame component.

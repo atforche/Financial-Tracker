@@ -11,13 +11,14 @@ import type {
   CreateTransactionRequest,
   UpdateTransactionRequest,
 } from "@/transactions/transaction";
-import { type FundAmount, hasIncompleteFundAssignments } from "@/funds/types";
 import type {
   IncomeTransaction,
   IncomeTransactionDestination,
 } from "@/transactions/incomeTransaction";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
+import type { FundAmount } from "@/funds/types";
+import { hasIncompleteFundAssignments } from "@/funds/helpers";
 
 /**
  * Interface representing a potentially unfinished income line item.

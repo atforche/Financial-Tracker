@@ -12,7 +12,7 @@ interface TransactionDetailsViewSectionProps {
   readonly accountingPeriod: AccountingPeriod;
   readonly date: string;
   readonly description: string;
-  readonly headerAction?: ReactNode;
+  readonly headerContent?: ReactNode;
 }
 
 /**
@@ -22,10 +22,14 @@ const TransactionDetailsViewSection = function ({
   accountingPeriod,
   date,
   description,
-  headerAction,
+  headerContent,
 }: TransactionDetailsViewSectionProps): JSX.Element {
   return (
-    <Frame title="Transaction Details" headerAction={headerAction} color="info">
+    <Frame
+      title="Transaction Details"
+      headerContent={headerContent}
+      color="info"
+    >
       <Box
         sx={{
           display: "grid",

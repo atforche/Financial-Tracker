@@ -20,7 +20,7 @@ import type { Dayjs } from "dayjs";
 import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFormFrame";
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFormFrame";
 import formatCurrency from "@/framework/formatCurrency";
-import { updateUnassignedFundAmount } from "@/funds/fundAssignment";
+import { updateUnassignedFundAmount } from "@/funds/assignmentPlanner/helpers";
 
 /**
  * Represents the state of the income transaction form.

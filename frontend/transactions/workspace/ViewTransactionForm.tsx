@@ -61,7 +61,7 @@ const ViewTransactionForm = function ({
         accountingPeriod={transactionAccountingPeriod}
         date={transaction.date}
         description={transaction.description}
-        headerAction={
+        headerContent={
           <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
             <Button component={Link} href={editUrl} variant="contained">
               Edit

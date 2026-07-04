@@ -3,7 +3,7 @@ import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import type { Fund, FundAmount } from "@/funds/types";
 import AccountEntryField from "@/accounts/AccountEntryField";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
-import FundAssignmentPlanner from "@/funds/FundAssignmentPlanner";
+import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
 import type { JSX } from "react";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 

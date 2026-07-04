@@ -2,14 +2,14 @@ import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
 import {
   getAssignedFundAmount,
   getRemainingFundAmount,
-  getUnassignedFund,
-} from "@/funds/fundAssignment";
+} from "@/funds/assignmentPlanner/helpers";
 import Frame from "@/framework/view/Frame";
 import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
 import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
 import type { TransactionFund } from "@/transactions/transaction";
 import formatCurrency from "@/framework/formatCurrency";
+import { getUnassignedFund } from "@/funds/helpers";
 
 /**
  * Props for the TransactionFundAssignmentsViewSection component.
