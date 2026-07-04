@@ -6,6 +6,8 @@ import {
   buildDestinationAccountFilter,
   buildSourceAccountFilter,
   createEmptyDestination,
+  validateDestination,
+  validateSource,
 } from "@/transactions/workspace/account/helpers";
 import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
 import {
@@ -121,6 +123,8 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
     );
   };
 
+  const sourceIsValid = validateSource(source);
+
   return (
     <CreateOrUpdateTransactionForm
       formRef={formRef}
@@ -134,6 +138,7 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
       setDescription={setDescription}
       sourceContent={
         <AccountTransactionSourceFrame
+          color={sourceIsValid ? "info" : "error"}
           accounts={accounts}
           account={source.account}
           setAccount={(account): void => {
@@ -173,6 +178,11 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
           {destinations.map((destination, index) => (
             <AccountTransactionDestinationFrame
               key={`account-destination-${index}`}
+              color={
+                validateDestination(destination, source.account)
+                  ? "info"
+                  : "error"
+              }
               index={index}
               accounts={accounts}
               account={destination.account}
@@ -221,6 +231,7 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
       }
       sourceAmount={source.amount}
       destinationAmount={destinationTotal}
+      destinationCount={destinations.length}
       submitLabel={submitLabel}
       state={state}
       pending={pending}

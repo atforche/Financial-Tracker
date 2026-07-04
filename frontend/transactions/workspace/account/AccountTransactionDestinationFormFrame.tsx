@@ -1,6 +1,7 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
 import AccountOrLocationEntryFrame from "@/transactions/workspace/AccountOrLocationEntryFrame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
+import type { FrameColor } from "@/framework/view/Frame";
 import type { JSX } from "react";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
@@ -19,6 +20,7 @@ interface AccountTransactionDestinationFrameProps {
   readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
   readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
+  readonly color?: FrameColor;
 }
 
 /**
@@ -36,12 +38,14 @@ const AccountTransactionDestinationFormFrame = function ({
   accountFilter = null,
   onAdd = null,
   onRemove = null,
+  color = "info",
 }: AccountTransactionDestinationFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
       onAdd={onAdd}
       onRemove={onRemove}
+      color={color}
     >
       <AccountOrLocationEntryFrame
         accountCaption="Account"

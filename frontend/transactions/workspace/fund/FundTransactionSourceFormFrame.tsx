@@ -1,5 +1,6 @@
 import type { Fund, FundIdentifier } from "@/funds/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
+import type { FrameColor } from "@/framework/view/Frame";
 import FundEntryField from "@/funds/FundEntryField";
 import type { JSX } from "react";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
@@ -14,6 +15,7 @@ interface FundTransactionSourceFormFrameProps {
   readonly filter?: ((fund: FundIdentifier) => boolean) | null;
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
+  readonly color?: FrameColor;
 }
 
 /**
@@ -26,9 +28,10 @@ const FundTransactionSourceFormFrame = function ({
   filter = null,
   amount,
   setAmount,
+  color = "info",
 }: FundTransactionSourceFormFrameProps): JSX.Element {
   return (
-    <TransactionSourceOrDestinationFrame title="Transfer Source">
+    <TransactionSourceOrDestinationFrame title="Source" color={color}>
       <FundEntryField
         label="Source Fund"
         options={funds}

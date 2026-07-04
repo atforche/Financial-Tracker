@@ -1,19 +1,16 @@
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import type { Fund, FundAmount, FundIdentifier } from "@/funds/types";
 import formatCurrency from "@/framework/formatCurrency";
-import { getUnassignedFund } from "@/funds/helpers";
+import { isUnassignedFund } from "@/funds/helpers";
 
 /**
  * Returns the explicit assignments, excluding the automatic unassigned remainder.
  */
 const getExplicitFundAssignments = function (
-  unassignedFund: Fund | null,
   fundAmounts: readonly FundAmount[],
 ): FundAmount[] {
   return fundAmounts.filter(
-    (fundAmount) =>
-      fundAmount.fundId !== unassignedFund?.id &&
-      fundAmount.fundName !== "Unassigned",
+    (fundAmount) => !isUnassignedFund(fundAmount.fundName),
   );
 };
 
@@ -21,10 +18,9 @@ const getExplicitFundAssignments = function (
  * Sums the amounts explicitly assigned to named funds.
  */
 const getAssignedFundAmount = function (
-  unassignedFund: Fund | null,
   fundAmounts: readonly FundAmount[],
 ): number {
-  return getExplicitFundAssignments(unassignedFund, fundAmounts).reduce(
+  return getExplicitFundAssignments(fundAmounts).reduce(
     (acc, fundAmount) => acc + fundAmount.amount,
     0,
   );
@@ -34,16 +30,13 @@ const getAssignedFundAmount = function (
  * Calculates the amount that remains unassigned after explicit allocations.
  */
 const getRemainingFundAmount = function (
-  unassignedFund: Fund | null,
   totalAmountToAssign: number | null,
   fundAmounts: readonly FundAmount[],
 ): number | null {
   if (totalAmountToAssign === null) {
     return null;
   }
-  return (
-    totalAmountToAssign - getAssignedFundAmount(unassignedFund, fundAmounts)
-  );
+  return totalAmountToAssign - getAssignedFundAmount(fundAmounts);
 };
 
 /**
@@ -54,10 +47,7 @@ const updateUnassignedFundAmount = function (
   totalAmountToAssign: number | null,
   fundAmounts: readonly FundAmount[],
 ): FundAmount[] {
-  const assignedFundAmounts = getExplicitFundAssignments(
-    unassignedFund,
-    fundAmounts,
-  );
+  const assignedFundAmounts = getExplicitFundAssignments(fundAmounts);
   if (totalAmountToAssign === null || unassignedFund === null) {
     return assignedFundAmounts;
   }
@@ -82,15 +72,11 @@ const getAvailableFundsToAssign = function (
   funds: readonly Fund[],
   fundAmounts: readonly FundAmount[],
 ): Fund[] {
-  const unassignedFund = getUnassignedFund(funds);
-  const explicitAssignments = getExplicitFundAssignments(
-    unassignedFund,
-    fundAmounts,
-  );
+  const explicitAssignments = getExplicitFundAssignments(fundAmounts);
   return funds
     .filter(
       (fund) =>
-        fund.id !== unassignedFund?.id &&
+        !isUnassignedFund(fund.name) &&
         !explicitAssignments.some(
           (assignment) => assignment.fundId === fund.id,
         ),
@@ -222,12 +208,8 @@ const getTransactionRemainingAmount = function (
   totalAmountToAssign: number | null,
   value: FundAmount[],
   index: number,
-  unassignedFund: Fund | null,
 ): number {
-  const explicitFundAssignments = getExplicitFundAssignments(
-    unassignedFund,
-    value,
-  );
+  const explicitFundAssignments = getExplicitFundAssignments(value);
   if (totalAmountToAssign === null) {
     return explicitFundAssignments[index]?.amount ?? 0;
   }
@@ -244,7 +226,6 @@ const getTransactionRemainingAmount = function (
  */
 const getSuggestedAmount = function (
   tone: "income" | "spending",
-  funds: Fund[],
   value: FundAmount[],
   assignmentGoals: readonly AssignmentGoal[],
   spendingGoals: readonly SpendingGoal[],
@@ -253,12 +234,10 @@ const getSuggestedAmount = function (
   fundId: string,
   totalAmountToAssign: number | null,
 ): number {
-  const unassignedFund = getUnassignedFund(funds);
   const transactionRemainingAmount = getTransactionRemainingAmount(
     totalAmountToAssign,
     value,
     index,
-    unassignedFund,
   );
   if (tone === "income" && typeof fundId === "string" && fundId !== "") {
     const goalRemainingAmount = getGoalRemainingBeforeCurrentAssignment(

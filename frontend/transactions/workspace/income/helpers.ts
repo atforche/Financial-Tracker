@@ -15,6 +15,10 @@ import type {
   IncomeTransaction,
   IncomeTransactionDestination,
 } from "@/transactions/incomeTransaction";
+import {
+  validateDetails,
+  validateSummary,
+} from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import type { FundAmount } from "@/funds/types";
@@ -164,6 +168,22 @@ const validateSource = function (source: IncomeSourceDraft): boolean {
 };
 
 /**
+ * Validates the fund assignments for an income destination.
+ */
+const validateFundAssignments = function (
+  destination: IncomeDestinationDraft,
+): boolean {
+  return (
+    !hasIncompleteFundAssignments(destination.fundAssignments) &&
+    destination.amount !== null &&
+    destination.fundAssignments.reduce(
+      (total, assignment) => total + assignment.amount,
+      0,
+    ) <= destination.amount
+  );
+};
+
+/**
  * Validates the destination of an income transaction.
  */
 const validateDestination = function (
@@ -173,7 +193,7 @@ const validateDestination = function (
     destination.account !== null &&
     destination.amount !== null &&
     destination.amount > 0 &&
-    !hasIncompleteFundAssignments(destination.fundAssignments)
+    validateFundAssignments(destination)
   );
 };
 
@@ -193,13 +213,14 @@ const validateRequest = function (
     0,
   );
   return (
-    accountingPeriod !== null &&
-    (date !== null || defaultDate !== null) &&
-    description !== "" &&
+    validateDetails(accountingPeriod, date, defaultDate, description) &&
     validateSource(source) &&
-    destinations.length > 0 &&
     destinations.every(validateDestination) &&
-    getNetIncomeAmount(source) === destinationTotal
+    validateSummary(
+      getNetIncomeAmount(source),
+      destinationTotal,
+      destinations.length,
+    )
   );
 };
 
@@ -435,4 +456,7 @@ export {
   getDestinationsFromTransaction,
   getNetIncomeAmount,
   getSourceFromTransaction,
+  validateFundAssignments,
+  validateDestination,
+  validateSource,
 };

@@ -36,12 +36,8 @@ const TransactionFundAssignmentsViewSection = function ({
       fundAssignment.fundId !== unassignedFund?.id &&
       fundAssignment.fundName !== "Unassigned",
   );
-  const assignedAmount = getAssignedFundAmount(unassignedFund, fundAssignments);
-  const remainingAmount = getRemainingFundAmount(
-    unassignedFund,
-    amount,
-    fundAssignments,
-  );
+  const assignedAmount = getAssignedFundAmount(fundAssignments);
+  const remainingAmount = getRemainingFundAmount(amount, fundAssignments);
 
   return (
     <Frame

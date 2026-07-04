@@ -6,6 +6,7 @@ import {
   createEmptyLine,
 } from "@/transactions/workspace/income/helpers";
 import AccountOrLocationEntryFrame from "@/transactions/workspace/AccountOrLocationEntryFrame";
+import type { FrameColor } from "@/framework/view/Frame";
 import IncomeTransactionItemSection from "@/transactions/workspace/income/IncomeTransactionSourceItemFrame";
 import type { JSX } from "react";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
@@ -26,6 +27,7 @@ interface IncomeTransactionSourceFrameProps {
     incomeDeductions: IncomeDeductionDraft[],
   ) => void;
   readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
+  readonly color?: FrameColor;
 }
 
 /**
@@ -42,9 +44,10 @@ const IncomeTransactionSourceFrame = function ({
   incomeDeductions,
   setIncomeDeductions,
   accountFilter = null,
+  color = "info",
 }: IncomeTransactionSourceFrameProps): JSX.Element {
   return (
-    <TransactionSourceOrDestinationFrame title="Income Source">
+    <TransactionSourceOrDestinationFrame title="Source" color={color}>
       <AccountOrLocationEntryFrame
         accountCaption="Source Account"
         accounts={accounts}

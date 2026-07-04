@@ -9,6 +9,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import Frame, { type FrameColor } from "@/framework/view/Frame";
 import type { Fund, FundAmount } from "@/funds/types";
 import {
   getAssignedFundAmount,
@@ -22,7 +23,6 @@ import {
   updateUnassignedFundAmount,
 } from "@/funds/assignmentPlanner/helpers";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
-import Frame from "@/framework/view/Frame";
 import FundEntryField from "@/funds/FundEntryField";
 import type { JSX } from "react";
 import formatCurrency from "@/framework/formatCurrency";
@@ -45,6 +45,7 @@ interface FundAssignmentPlannerProps {
   readonly baselineValue?: FundAmount[];
   readonly value: FundAmount[];
   readonly setValue: (newValue: FundAmount[]) => void;
+  readonly color?: FrameColor;
 }
 
 /**
@@ -60,18 +61,12 @@ const FundAssignmentPlanner = function ({
   baselineValue = emptyFundAmounts,
   value,
   setValue,
+  color = "info",
 }: FundAssignmentPlannerProps): JSX.Element {
   const unassignedFund = getUnassignedFund(funds);
-  const explicitFundAssignments = getExplicitFundAssignments(
-    unassignedFund,
-    value,
-  );
-  const assignedAmount = getAssignedFundAmount(unassignedFund, value);
-  const remainingAmount = getRemainingFundAmount(
-    unassignedFund,
-    totalAmountToAssign,
-    value,
-  );
+  const explicitFundAssignments = getExplicitFundAssignments(value);
+  const assignedAmount = getAssignedFundAmount(value);
+  const remainingAmount = getRemainingFundAmount(totalAmountToAssign, value);
   const availableFunds = getAvailableFundsToAssign(funds, value);
   const applyAssignments = function (nextAssignments: FundAmount[]): void {
     setValue(
@@ -107,7 +102,7 @@ const FundAssignmentPlanner = function ({
   return (
     <Frame
       title={title}
-      color="success"
+      color={color}
       headerContent={
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
           <Chip label={`Total ${formatCurrency(totalAmountToAssign ?? 0)}`} />
@@ -176,7 +171,6 @@ const FundAssignmentPlanner = function ({
                                 ? assignment.amount
                                 : getSuggestedAmount(
                                     tone,
-                                    funds,
                                     value,
                                     assignmentGoals,
                                     spendingGoals,

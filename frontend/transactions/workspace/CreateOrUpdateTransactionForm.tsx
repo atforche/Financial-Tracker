@@ -9,6 +9,10 @@ import {
   type SetStateAction,
   startTransition,
 } from "react";
+import {
+  validateDetails,
+  validateSummary,
+} from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
@@ -45,6 +49,7 @@ interface CreateOrUpdateTransactionFormProps<RequestPayload> {
   readonly destinationContent: ReactNode;
   readonly sourceAmount?: number | null;
   readonly destinationAmount?: number;
+  readonly destinationCount: number;
   readonly submitLabel: string;
   readonly state: TransactionFormState;
   readonly pending: boolean;
@@ -70,6 +75,7 @@ const CreateOrUpdateTransactionForm = function <RequestPayload>({
   destinationContent,
   sourceAmount,
   destinationAmount,
+  destinationCount,
   submitLabel,
   state,
   pending,
@@ -77,6 +83,18 @@ const CreateOrUpdateTransactionForm = function <RequestPayload>({
   onReset,
   onSubmit,
 }: CreateOrUpdateTransactionFormProps<RequestPayload>): JSX.Element {
+  const detailsAreValid = validateDetails(
+    accountingPeriod,
+    date,
+    defaultDate,
+    description,
+  );
+  const summaryIsValid = validateSummary(
+    sourceAmount,
+    destinationAmount ?? 0,
+    destinationCount,
+  );
+
   return (
     <Stack ref={formRef} spacing={3}>
       <Stack spacing={3} sx={{ width: "100%" }}>
@@ -88,6 +106,7 @@ const CreateOrUpdateTransactionForm = function <RequestPayload>({
           setDate={setDate}
           descriptionValue={description}
           setDescriptionValue={setDescription}
+          color={detailsAreValid ? "info" : "error"}
         />
         <TransactionSourceDestinationLayout
           sourceFrame={sourceContent}
@@ -101,6 +120,7 @@ const CreateOrUpdateTransactionForm = function <RequestPayload>({
           <TransactionSourceDestinationSummary
             sourceAmount={sourceAmount ?? 0}
             destinationAmount={destinationAmount}
+            isValid={summaryIsValid}
           />
         ) : null}
         <ErrorAlert

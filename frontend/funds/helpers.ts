@@ -1,10 +1,17 @@
 import type { Fund, FundAmount } from "@/funds/types";
 
 /**
+ * Determines if a given fund name corresponds to the special "Unassigned" fund.
+ */
+const isUnassignedFund = function (fundName: string): boolean {
+  return fundName === "Unassigned";
+};
+
+/**
  * Gets the special unassigned fund when it exists.
  */
 const getUnassignedFund = function (funds: readonly Fund[]): Fund | null {
-  return funds.find((fund) => fund.name === "Unassigned") ?? null;
+  return funds.find((fund) => isUnassignedFund(fund.name)) ?? null;
 };
 
 /**
@@ -18,8 +25,8 @@ const hasIncompleteFundAssignments = function (
       fundAmount.fundId === "" ||
       fundAmount.fundName === "" ||
       fundAmount.amount < 0 ||
-      (fundAmount.amount === 0 && fundAmount.fundName !== "Unassigned"),
+      (fundAmount.amount === 0 && !isUnassignedFund(fundAmount.fundName)),
   );
 };
 
-export { hasIncompleteFundAssignments, getUnassignedFund };
+export { isUnassignedFund, hasIncompleteFundAssignments, getUnassignedFund };

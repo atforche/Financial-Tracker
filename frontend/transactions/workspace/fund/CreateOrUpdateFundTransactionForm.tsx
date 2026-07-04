@@ -7,6 +7,8 @@ import {
   buildDestinationFundFilter,
   buildSourceFundFilter,
   createEmptyDestination,
+  validateDestination,
+  validateSource,
 } from "@/transactions/workspace/fund/helpers";
 import {
   appendDestinationWithAutofilledAmount,
@@ -121,6 +123,8 @@ const CreateOrUpdateFundTransactionForm = function <RequestPayload>({
     );
   };
 
+  const sourceIsValid = validateSource(source);
+
   return (
     <CreateOrUpdateTransactionForm
       formRef={formRef}
@@ -134,6 +138,7 @@ const CreateOrUpdateFundTransactionForm = function <RequestPayload>({
       setDescription={setDescription}
       sourceContent={
         <FundTransactionSourceFormFrame
+          color={sourceIsValid ? "info" : "error"}
           funds={funds}
           fund={source.fund}
           setFund={(fund): void => {
@@ -165,6 +170,9 @@ const CreateOrUpdateFundTransactionForm = function <RequestPayload>({
           {destinations.map((destination, index) => (
             <FundTransactionDestinationFormFrame
               key={`fund-destination-${index}`}
+              color={
+                validateDestination(destination, source.fund) ? "info" : "error"
+              }
               index={index}
               funds={funds}
               fund={destination.fund}
@@ -204,6 +212,7 @@ const CreateOrUpdateFundTransactionForm = function <RequestPayload>({
       }
       sourceAmount={source.amount}
       destinationAmount={destinationTotal}
+      destinationCount={destinations.length}
       submitLabel={submitLabel}
       state={state}
       pending={pending}

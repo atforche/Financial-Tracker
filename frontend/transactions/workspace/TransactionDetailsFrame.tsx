@@ -3,11 +3,11 @@ import {
   getMaximumDate,
   getMinimumDate,
 } from "@/accounting-periods/types";
+import Frame, { type FrameColor } from "@/framework/view/Frame";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
 import { Box } from "@mui/material";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import type { Dayjs } from "dayjs";
-import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 
@@ -23,6 +23,7 @@ interface TransactionDetailsFrameProps {
   readonly setDate: (date: Dayjs | null) => void;
   readonly descriptionValue: string;
   readonly setDescriptionValue: (description: string) => void;
+  readonly color?: FrameColor;
 }
 
 /**
@@ -36,10 +37,11 @@ const TransactionDetailsFrame = function ({
   setDate,
   descriptionValue,
   setDescriptionValue,
+  color = "info",
 }: TransactionDetailsFrameProps): JSX.Element {
   return (
     <Box sx={{ maxWidth: 1200, width: "100%" }}>
-      <Frame title="Details" color="info">
+      <Frame title="Details" color={color}>
         <Box
           sx={{
             display: "grid",

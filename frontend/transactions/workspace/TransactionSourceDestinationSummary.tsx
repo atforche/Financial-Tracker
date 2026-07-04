@@ -9,6 +9,7 @@ import formatCurrency from "@/framework/formatCurrency";
 interface TransactionSourceDestinationSummaryProps {
   readonly sourceAmount: number;
   readonly destinationAmount: number;
+  readonly isValid: boolean;
 }
 
 /**
@@ -17,10 +18,11 @@ interface TransactionSourceDestinationSummaryProps {
 const TransactionSourceDestinationSummary = function ({
   sourceAmount,
   destinationAmount,
+  isValid,
 }: TransactionSourceDestinationSummaryProps): JSX.Element {
   const difference = sourceAmount - destinationAmount;
   const isBalanced = difference === 0;
-  const summaryColor: FrameColor = isBalanced ? "success" : "error";
+  const summaryColor: FrameColor = isValid ? "info" : "error";
   const summaryCards = [
     {
       label: "Source Total",

@@ -15,6 +15,10 @@ import type {
   CreateTransactionRequest,
   UpdateTransactionRequest,
 } from "@/transactions/transaction";
+import {
+  validateDetails,
+  validateSummary,
+} from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 
@@ -127,12 +131,9 @@ const validateRequest = function (
     validateDestination(d, source.account),
   );
   return (
-    accountingPeriod !== null &&
-    (date !== null || defaultDate !== null) &&
-    description !== "" &&
+    validateDetails(accountingPeriod, date, defaultDate, description) &&
     validateSource(source) &&
-    destinations.length > 0 &&
-    destinationTotal === source.amount &&
+    validateSummary(source.amount, destinationTotal, destinations.length) &&
     hasUniqueDestinationAccounts &&
     hasUniqueDestinationLocations &&
     areDestinationsComplete
@@ -330,4 +331,6 @@ export {
   createEmptySource,
   getSourceFromTransaction,
   getDestinationsFromTransaction,
+  validateDestination,
+  validateSource,
 };

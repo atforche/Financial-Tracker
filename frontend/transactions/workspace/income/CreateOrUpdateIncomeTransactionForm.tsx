@@ -10,6 +10,9 @@ import {
   buildSourceAccountFilter,
   createEmptyDestination,
   getNetIncomeAmount,
+  validateDestination,
+  validateFundAssignments,
+  validateSource,
 } from "@/transactions/workspace/income/helpers";
 import {
   appendDestinationWithAutofilledAmount,
@@ -155,6 +158,8 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
     );
   };
 
+  const sourceIsValid = validateSource(source);
+
   return (
     <CreateOrUpdateTransactionForm
       formRef={formRef}
@@ -168,6 +173,7 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
       setDescription={setDescription}
       sourceContent={
         <IncomeTransactionSourceFrame
+          color={sourceIsValid ? "info" : "error"}
           accounts={accounts}
           account={source.account}
           setAccount={(account): void => {
@@ -230,6 +236,8 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
           {destinations.map((destination, index) => (
             <IncomeTransactionDestinationFrame
               key={`income-destination-${index}`}
+              color={validateDestination(destination) ? "info" : "error"}
+              fundAssignmentsValid={validateFundAssignments(destination)}
               index={index}
               accounts={accounts}
               funds={funds}
@@ -280,6 +288,7 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
       }
       sourceAmount={sourceNetAmount}
       destinationAmount={destinationTotal}
+      destinationCount={destinations.length}
       submitLabel={submitLabel}
       state={state}
       pending={pending}

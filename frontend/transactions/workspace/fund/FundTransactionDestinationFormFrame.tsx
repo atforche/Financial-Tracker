@@ -1,5 +1,6 @@
 import type { Fund, FundIdentifier } from "@/funds/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
+import type { FrameColor } from "@/framework/view/Frame";
 import FundEntryField from "@/funds/FundEntryField";
 import type { JSX } from "react";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
@@ -17,6 +18,7 @@ interface FundTransactionDestinationFormFrameProps {
   readonly filter?: ((fund: FundIdentifier) => boolean) | null;
   readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
+  readonly color?: FrameColor;
 }
 
 /**
@@ -32,12 +34,14 @@ const FundTransactionDestinationFormFrame = function ({
   filter = null,
   onAdd = null,
   onRemove = null,
+  color = "info",
 }: FundTransactionDestinationFormFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
       onAdd={onAdd}
       onRemove={onRemove}
+      color={color}
     >
       <FundEntryField
         label="Destination Fund"

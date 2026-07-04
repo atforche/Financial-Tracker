@@ -9,6 +9,9 @@ import {
   buildDestinationAccountFilter,
   buildSourceAccountFilter,
   createEmptyDestination,
+  validateDestination,
+  validateFundAssignments,
+  validateSource,
 } from "@/transactions/workspace/spending/helpers";
 import {
   appendDestinationWithAutofilledAmount,
@@ -156,6 +159,8 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
     );
   };
 
+  const sourceIsValid = validateSource(source);
+
   return (
     <CreateOrUpdateTransactionForm
       formRef={formRef}
@@ -169,6 +174,7 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
       setDescription={setDescription}
       sourceContent={
         <SpendingTransactionSourceFormFrame
+          color={sourceIsValid ? "info" : "error"}
           accounts={accounts}
           account={source.account}
           setAccount={(account): void => {
@@ -200,6 +206,12 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
           {destinations.map((destination, index) => (
             <SpendingTransactionDestinationFormFrame
               key={`spending-destination-${index}`}
+              color={
+                validateDestination(destination, source.account)
+                  ? "info"
+                  : "error"
+              }
+              fundAssignmentsValid={validateFundAssignments(destination)}
               index={index}
               accounts={accounts}
               funds={funds}
@@ -258,6 +270,7 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
       }
       sourceAmount={source.amount}
       destinationAmount={destinationTotal}
+      destinationCount={destinations.length}
       submitLabel={submitLabel}
       state={state}
       pending={pending}

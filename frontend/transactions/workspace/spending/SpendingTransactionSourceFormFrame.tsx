@@ -1,6 +1,7 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
 import AccountEntryField from "@/accounts/AccountEntryField";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
+import type { FrameColor } from "@/framework/view/Frame";
 import type { JSX } from "react";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
@@ -14,6 +15,7 @@ interface SpendingTransactionSourceFormFrameProps {
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
+  readonly color?: FrameColor;
 }
 
 /**
@@ -26,9 +28,10 @@ const SpendingTransactionSourceFormFrame = function ({
   amount,
   setAmount,
   accountFilter = null,
+  color = "info",
 }: SpendingTransactionSourceFormFrameProps): JSX.Element {
   return (
-    <TransactionSourceOrDestinationFrame title="Source">
+    <TransactionSourceOrDestinationFrame title="Source" color={color}>
       <AccountEntryField
         label="Source Account"
         options={accounts}

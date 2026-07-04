@@ -3,6 +3,7 @@ import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import type { Fund, FundAmount } from "@/funds/types";
 import AccountEntryField from "@/accounts/AccountEntryField";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
+import type { FrameColor } from "@/framework/view/Frame";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
 import type { JSX } from "react";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
@@ -28,6 +29,8 @@ interface IncomeTransactionDestinationFormFrameProps {
   readonly filter?: ((account: AccountIdentifier) => boolean) | null;
   readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
+  readonly color?: FrameColor;
+  readonly fundAssignmentsValid?: boolean;
 }
 
 /**
@@ -49,12 +52,15 @@ const IncomeTransactionDestinationFormFrame = function ({
   filter = null,
   onAdd = null,
   onRemove = null,
+  color = "info",
+  fundAssignmentsValid = true,
 }: IncomeTransactionDestinationFormFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
       onAdd={onAdd}
       onRemove={onRemove}
+      color={color}
     >
       <AccountEntryField
         label="Deposit Account"
@@ -81,6 +87,7 @@ const IncomeTransactionDestinationFormFrame = function ({
       <FundAssignmentPlanner
         title="Fund Assignments"
         tone="income"
+        color={fundAssignmentsValid ? "info" : "error"}
         funds={funds}
         assignmentGoals={assignmentGoals}
         spendingGoals={spendingGoals}

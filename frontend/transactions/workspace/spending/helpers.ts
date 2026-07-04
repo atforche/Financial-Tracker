@@ -15,9 +15,14 @@ import type {
   SpendingTransaction,
   SpendingTransactionDestination,
 } from "@/transactions/spendingTransaction";
+import {
+  validateDetails,
+  validateSummary,
+} from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import type { FundAmount } from "@/funds/types";
+import { getExplicitFundAssignments } from "@/funds/assignmentPlanner/helpers";
 import { hasIncompleteFundAssignments } from "@/funds/helpers";
 
 /**
@@ -76,6 +81,21 @@ const validateSource = function (source: SpendingSourceDraft): boolean {
 };
 
 /**
+ * Validates the fund assignments for a spending destination.
+ */
+const validateFundAssignments = function (
+  destination: SpendingDestinationDraft,
+): boolean {
+  return (
+    !hasIncompleteFundAssignments(destination.fundAssignments) &&
+    getExplicitFundAssignments(destination.fundAssignments).reduce(
+      (total, assignment) => total + assignment.amount,
+      0,
+    ) === (destination.amount ?? 0)
+  );
+};
+
+/**
  * Validates the destination of a spending transaction.
  */
 const validateDestination = function (
@@ -91,16 +111,13 @@ const validateDestination = function (
   if ((hasAccount && hasLocation) || (!hasAccount && !hasLocation)) {
     return false;
   }
-  if (destination.account?.id === sourceAccount?.id) {
+  if (sourceAccount !== null && destination.account?.id === sourceAccount.id) {
     return false;
   }
   if (hasAccount && isTrackedAccountType(destination.account.type)) {
     return false;
   }
-  if (!hasAccount && destination.fundAssignments.length > 0) {
-    return false;
-  }
-  if (hasAccount && hasIncompleteFundAssignments(destination.fundAssignments)) {
+  if (!validateFundAssignments(destination)) {
     return false;
   }
   return true;
@@ -122,15 +139,12 @@ const validateRequest = function (
     0,
   );
   return (
-    accountingPeriod !== null &&
-    (date !== null || defaultDate !== null) &&
-    description !== "" &&
+    validateDetails(accountingPeriod, date, defaultDate, description) &&
     validateSource(source) &&
-    destinations.length > 0 &&
     destinations.every((destination) =>
       validateDestination(destination, source.account),
     ) &&
-    source.amount === destinationTotal
+    validateSummary(source.amount, destinationTotal, destinations.length)
   );
 };
 
@@ -173,12 +187,12 @@ const buildCreateRequest = function (
           ? (destination.location?.trim() ?? null)
           : null,
       amount: destination.amount ?? 0,
-      fundAssignments: destination.fundAssignments
-        .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
-        .map((fundAmount) => ({
-          fundId: fundAmount.fundId,
-          amount: fundAmount.amount,
-        })),
+      fundAssignments: getExplicitFundAssignments(
+        destination.fundAssignments,
+      ).map((fundAmount) => ({
+        fundId: fundAmount.fundId,
+        amount: fundAmount.amount,
+      })),
     })),
   };
 };
@@ -220,12 +234,12 @@ const buildUpdateRequest = function (
           ? (destination.location?.trim() ?? null)
           : null,
       amount: destination.amount ?? 0,
-      fundAssignments: destination.fundAssignments
-        .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
-        .map((fundAmount) => ({
-          fundId: fundAmount.fundId,
-          amount: fundAmount.amount,
-        })),
+      fundAssignments: getExplicitFundAssignments(
+        destination.fundAssignments,
+      ).map((fundAmount) => ({
+        fundId: fundAmount.fundId,
+        amount: fundAmount.amount,
+      })),
     })),
   };
 };
@@ -335,4 +349,7 @@ export {
   createEmptyDestination,
   getDestinationsFromTransaction,
   getSourceFromTransaction,
+  validateFundAssignments,
+  validateDestination,
+  validateSource,
 };

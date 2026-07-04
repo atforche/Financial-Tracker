@@ -7,7 +7,6 @@ import {
   getAssignedFundAmount,
   getRemainingFundAmount,
 } from "@/funds/assignmentPlanner/helpers";
-import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
 import type { SpendingTransaction } from "@/transactions/spendingTransaction";
 import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
@@ -15,7 +14,7 @@ import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalan
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 import formatCurrency from "@/framework/formatCurrency";
-import { getUnassignedFund } from "@/funds/helpers";
+import { isUnassignedFund } from "@/funds/helpers";
 
 /**
  * Props for the SpendingTransactionDestinationViewFrame component.
@@ -23,7 +22,6 @@ import { getUnassignedFund } from "@/funds/helpers";
 interface SpendingTransactionDestinationViewFrameProps {
   readonly transaction: SpendingTransaction;
   readonly index: number;
-  readonly funds: Fund[];
   readonly account: TransactionAccount | null;
   readonly location: string | null;
   readonly amount: number;
@@ -36,24 +34,16 @@ interface SpendingTransactionDestinationViewFrameProps {
 const SpendingTransactionDestinationViewFrame = function ({
   transaction,
   index,
-  funds,
   account,
   location,
   amount,
   fundAssignments,
 }: SpendingTransactionDestinationViewFrameProps): JSX.Element {
-  const unassignedFund = getUnassignedFund(funds);
   const explicitFundAssignments = fundAssignments.filter(
-    (fundAssignment) =>
-      fundAssignment.fundId !== unassignedFund?.id &&
-      fundAssignment.fundName !== "Unassigned",
+    (fundAssignment) => !isUnassignedFund(fundAssignment.fundName),
   );
-  const assignedAmount = getAssignedFundAmount(unassignedFund, fundAssignments);
-  const remainingAmount = getRemainingFundAmount(
-    unassignedFund,
-    amount,
-    fundAssignments,
-  );
+  const assignedAmount = getAssignedFundAmount(fundAssignments);
+  const remainingAmount = getRemainingFundAmount(amount, fundAssignments);
   const hasLocation = account === null && (location ?? "").trim() !== "";
 
   return (

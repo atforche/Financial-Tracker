@@ -47,6 +47,38 @@ interface AmountedDestinationDraft {
 }
 
 /**
+ * Validates the shared transaction details section.
+ */
+const validateDetails = function (
+  accountingPeriod: AccountingPeriod | null,
+  date: Dayjs | null,
+  defaultDate: Dayjs | null,
+  description: string,
+): boolean {
+  return (
+    accountingPeriod !== null &&
+    (date !== null || defaultDate !== null) &&
+    description.trim() !== ""
+  );
+};
+
+/**
+ * Validates the shared transaction summary section.
+ */
+const validateSummary = function (
+  sourceAmount: number | null | undefined,
+  destinationAmount: number,
+  destinationCount: number,
+): boolean {
+  return (
+    sourceAmount !== null &&
+    typeof sourceAmount !== "undefined" &&
+    destinationCount > 0 &&
+    sourceAmount === destinationAmount
+  );
+};
+
+/**
  * Updates the sole destination amount when it is still effectively mirroring
  * the source amount.
  */
@@ -106,4 +138,6 @@ export {
   redirectWithSelectedTransaction,
   syncDestinationAmountsToSource,
   appendDestinationWithAutofilledAmount,
+  validateDetails,
+  validateSummary,
 };

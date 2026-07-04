@@ -95,7 +95,6 @@ const ViewTransactionForm = function ({
                 key={`spending-destination-${index}`}
                 transaction={spendingTransaction}
                 index={index}
-                funds={funds}
                 account={destination.account ?? null}
                 location={destination.location ?? null}
                 amount={destination.amount}
