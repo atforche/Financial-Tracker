@@ -52,7 +52,7 @@ const ComboBoxEntryField = function <T>({
       options={options}
       inputValue={inputValue}
       value={value}
-      disabled={setValue === null}
+      readOnly={setValue === null}
       isOptionEqualToValue={(option, selectedValue) =>
         option.label === selectedValue.label
       }

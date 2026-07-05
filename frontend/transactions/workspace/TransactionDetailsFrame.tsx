@@ -4,11 +4,11 @@ import {
   getMinimumDate,
 } from "@/accounting-periods/types";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
+import type { JSX, ReactNode } from "react";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
 import { Box } from "@mui/material";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import type { Dayjs } from "dayjs";
-import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 
 /**
@@ -20,9 +20,10 @@ interface TransactionDetailsFrameProps {
   readonly setAccountingPeriod:
     ((accountingPeriod: AccountingPeriod | null) => void) | null;
   readonly date: Dayjs | null;
-  readonly setDate: (date: Dayjs | null) => void;
+  readonly setDate: ((date: Dayjs | null) => void) | null;
   readonly descriptionValue: string;
-  readonly setDescriptionValue: (description: string) => void;
+  readonly setDescriptionValue: ((description: string) => void) | null;
+  readonly headerContent?: ReactNode;
   readonly color?: FrameColor;
 }
 
@@ -37,11 +38,12 @@ const TransactionDetailsFrame = function ({
   setDate,
   descriptionValue,
   setDescriptionValue,
+  headerContent,
   color = "info",
 }: TransactionDetailsFrameProps): JSX.Element {
   return (
     <Box sx={{ maxWidth: 1200, width: "100%" }}>
-      <Frame title="Details" color={color}>
+      <Frame title="Details" color={color} headerContent={headerContent}>
         <Box
           sx={{
             display: "grid",

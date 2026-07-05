@@ -1,30 +1,29 @@
 "use client";
 
-/* eslint-disable sort-imports */
-
-import type { AccountingPeriod } from "@/accounting-periods/types";
 import { Button, Stack } from "@mui/material";
-import type { Fund } from "@/funds/types";
-import type { JSX } from "react";
 import { type Transaction, TransactionType } from "@/transactions/transaction";
-import { asAccountTransaction } from "@/transactions/accountTransaction";
-import { asFundTransaction } from "@/transactions/fundTransaction";
-import { asIncomeTransaction } from "@/transactions/incomeTransaction";
-import { asSpendingTransaction } from "@/transactions/spendingTransaction";
-import { getPostedTransactionAccounts } from "@/transactions/postingHelpers";
 import AccountTransactionDestinationViewFrame from "@/transactions/workspace/account/AccountTransactionDestinationViewFrame";
 import AccountTransactionSourceViewFrame from "@/transactions/workspace/account/AccountTransactionSourceViewFrame";
+import type { AccountingPeriod } from "@/accounting-periods/types";
 import DeleteTransactionForm from "@/transactions/workspace/DeleteTransactionForm";
+import type { Fund } from "@/funds/types";
 import FundTransactionDestinationViewFrame from "@/transactions/workspace/fund/FundTransactionDestinationViewFrame";
 import FundTransactionSourceViewFrame from "@/transactions/workspace/fund/FundTransactionSourceViewFrame";
 import IncomeTransactionDestinationViewFrame from "@/transactions/workspace/income/IncomeTransactionDestinationViewFrame";
 import IncomeTransactionSourceViewFrame from "@/transactions/workspace/income/IncomeTransactionSourceViewFrame";
+import type { JSX } from "react";
 import Link from "next/link";
 import SpendingTransactionDestinationViewFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationViewFrame";
 import SpendingTransactionSourceViewFrame from "@/transactions/workspace/spending/SpendingTransactionSourceViewFrame";
-import TransactionDetailsViewSection from "@/transactions/workspace/TransactionDetailsViewSection";
+import TransactionDetailsFrame from "@/transactions/workspace/TransactionDetailsFrame";
 import TransactionSourceDestinationLayout from "@/transactions/workspace/TransactionSourceDestinationLayout";
 import UnpostTransactionForm from "@/transactions/workspace/UnpostTransactionForm";
+import { asAccountTransaction } from "@/transactions/accountTransaction";
+import { asFundTransaction } from "@/transactions/fundTransaction";
+import { asIncomeTransaction } from "@/transactions/incomeTransaction";
+import { asSpendingTransaction } from "@/transactions/spendingTransaction";
+import dayjs from "dayjs";
+import { getPostedTransactionAccounts } from "@/transactions/postingHelpers";
 
 /**
  * Props for the ViewTransactionForm component.
@@ -57,10 +56,14 @@ const ViewTransactionForm = function ({
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
-      <TransactionDetailsViewSection
+      <TransactionDetailsFrame
+        accountingPeriods={[]}
         accountingPeriod={transactionAccountingPeriod}
-        date={transaction.date}
-        description={transaction.description}
+        setAccountingPeriod={null}
+        date={dayjs(transaction.date)}
+        setDate={null}
+        descriptionValue={transaction.description}
+        setDescriptionValue={null}
         headerContent={
           <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
             <Button component={Link} href={editUrl} variant="contained">
