@@ -1,11 +1,11 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import type { Fund, FundAmount } from "@/funds/types";
-import AccountOrLocationEntryFrame from "@/transactions/workspace/AccountOrLocationEntryFrame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
 import type { JSX } from "react";
+import TransactionAccountOrLocationFrame from "@/transactions/workspace/TransactionAccountOrLocationFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
@@ -66,7 +66,7 @@ const SpendingTransactionDestinationFormFrame = function ({
       onRemove={onRemove}
       color={color}
     >
-      <AccountOrLocationEntryFrame
+      <TransactionAccountOrLocationFrame
         accountCaption="Destination Account"
         accounts={accounts}
         account={account}

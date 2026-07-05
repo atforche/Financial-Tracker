@@ -5,10 +5,10 @@ import {
   createEmptyDeduction,
   createEmptyLine,
 } from "@/transactions/workspace/income/helpers";
-import AccountOrLocationEntryFrame from "@/transactions/workspace/AccountOrLocationEntryFrame";
 import type { FrameColor } from "@/framework/view/Frame";
 import IncomeTransactionItemSection from "@/transactions/workspace/income/IncomeTransactionSourceItemFrame";
 import type { JSX } from "react";
+import TransactionAccountOrLocationFrame from "@/transactions/workspace/TransactionAccountOrLocationFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
@@ -48,7 +48,7 @@ const IncomeTransactionSourceFrame = function ({
 }: IncomeTransactionSourceFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame title="Source" color={color}>
-      <AccountOrLocationEntryFrame
+      <TransactionAccountOrLocationFrame
         accountCaption="Source Account"
         accounts={accounts}
         account={account}

@@ -1,8 +1,8 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
-import AccountOrLocationEntryFrame from "@/transactions/workspace/AccountOrLocationEntryFrame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
 import type { JSX } from "react";
+import TransactionAccountOrLocationFrame from "@/transactions/workspace/TransactionAccountOrLocationFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
@@ -47,7 +47,7 @@ const AccountTransactionDestinationFormFrame = function ({
       onRemove={onRemove}
       color={color}
     >
-      <AccountOrLocationEntryFrame
+      <TransactionAccountOrLocationFrame
         accountCaption="Account"
         accounts={accounts}
         account={account}

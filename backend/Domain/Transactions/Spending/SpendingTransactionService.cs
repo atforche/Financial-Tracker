@@ -266,7 +266,7 @@ public class SpendingTransactionService(
         {
             exceptions = exceptions.Append(new InvalidAccountException("Duplicate destination locations are not allowed"));
         }
-        if (destinations.Sum(destination => destination.Amount) != amount)
+        if (Math.Round(destinations.Sum(destination => destination.Amount), 2) != amount)
         {
             exceptions = exceptions.Append(new InvalidAmountException("Spending destination amounts must equal the transaction amount"));
         }

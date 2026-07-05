@@ -69,7 +69,7 @@ const TransactionWorkspaceDetailPage = async function ({
   }
 
   return (
-    <Stack spacing={3} sx={{ maxWidth: 1200, width: "100%" }}>
+    <Stack spacing={3} sx={{ width: "100%" }}>
       <TransactionWorkspacePageHeader
         backHref={workspaceUrl}
         title="Transaction Details"

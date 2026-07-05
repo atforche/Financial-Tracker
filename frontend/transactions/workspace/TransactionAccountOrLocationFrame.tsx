@@ -5,9 +5,9 @@ import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 
 /**
- * Props for the AccountOrLocationEntryFrame component.
+ * Props for the TransactionAccountOrLocationFrame component.
  */
-interface AccountOrLocationEntryFrameProps {
+interface TransactionAccountOrLocationFrameProps {
   readonly accountCaption: string;
   readonly accounts: Account[];
   readonly account: Account | null;
@@ -21,7 +21,7 @@ interface AccountOrLocationEntryFrameProps {
 /**
  * Displays a shared framed account-or-location entry block for transaction forms.
  */
-const AccountOrLocationEntryFrame = function ({
+const TransactionAccountOrLocationFrame = function ({
   accountCaption,
   accounts,
   account,
@@ -30,7 +30,7 @@ const AccountOrLocationEntryFrame = function ({
   location,
   setLocation,
   accountFilter = null,
-}: AccountOrLocationEntryFrameProps): JSX.Element {
+}: TransactionAccountOrLocationFrameProps): JSX.Element {
   return (
     <Stack
       direction={{ xs: "column", md: "row" }}
@@ -75,4 +75,4 @@ const AccountOrLocationEntryFrame = function ({
   );
 };
 
-export default AccountOrLocationEntryFrame;
+export default TransactionAccountOrLocationFrame;
