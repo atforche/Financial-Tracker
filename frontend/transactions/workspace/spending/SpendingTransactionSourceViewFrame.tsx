@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import type { SpendingTransaction } from "@/transactions/spendingTransaction";
-import type { TransactionAccount } from "@/transactions/transaction";
+import type { TransactionAccountDraft } from "@/transactions/transaction";
 import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
@@ -9,7 +9,7 @@ import TransactionSourceOrDestinationFrame from "@/transactions/workspace/Transa
  */
 interface SpendingTransactionSourceViewFrameProps {
   readonly transaction: SpendingTransaction;
-  readonly account: TransactionAccount;
+  readonly account: TransactionAccountDraft | null;
 }
 
 /**

@@ -9,6 +9,7 @@ import {
 } from "@/framework/data/api";
 import type {
   CreateTransactionRequest,
+  TransactionAccountDraft,
   TransactionFund,
   UpdateTransactionRequest,
 } from "@/transactions/transaction";
@@ -27,12 +28,13 @@ import {
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
+import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/transactionAccountDraft";
 
 /**
  * Interface representing a potentially unfinished spending transaction source.
  */
 interface SpendingSourceDraft {
-  readonly account: Account | null;
+  readonly account: TransactionAccountDraft | null;
   readonly amount: number | null;
 }
 
@@ -40,7 +42,7 @@ interface SpendingSourceDraft {
  * Interface representing a potentially unfinished spending transaction destination.
  */
 interface SpendingDestinationDraft {
-  readonly account: Account | null;
+  readonly account: TransactionAccountDraft | null;
   readonly location: string | null;
   readonly amount: number | null;
   readonly fundAssignments: FundAssignmentDraft[];
@@ -77,7 +79,10 @@ const validateSource = function (source: SpendingSourceDraft): boolean {
   if (source.account === null) {
     return false;
   }
-  if (!isTrackedAccountType(source.account.type)) {
+  if (
+    source.account.accountType === null ||
+    !isTrackedAccountType(source.account.accountType)
+  ) {
     return false;
   }
   return source.amount !== null && source.amount > 0;
@@ -103,7 +108,7 @@ const validateFundAssignments = function (
  */
 const validateDestination = function (
   destination: SpendingDestinationDraft,
-  sourceAccount: Account | null,
+  sourceAccount: TransactionAccountDraft | null,
 ): boolean {
   const normalizedLocation = destination.location?.trim() ?? "";
   const hasAccount = destination.account !== null;
@@ -114,10 +119,17 @@ const validateDestination = function (
   if ((hasAccount && hasLocation) || (!hasAccount && !hasLocation)) {
     return false;
   }
-  if (sourceAccount !== null && destination.account?.id === sourceAccount.id) {
+  if (
+    sourceAccount !== null &&
+    destination.account?.accountId === sourceAccount.accountId
+  ) {
     return false;
   }
-  if (hasAccount && isTrackedAccountType(destination.account.type)) {
+  if (
+    hasAccount &&
+    destination.account.accountType !== null &&
+    isTrackedAccountType(destination.account.accountType)
+  ) {
     return false;
   }
   if (!validateFundAssignments(destination)) {
@@ -181,10 +193,10 @@ const buildCreateRequest = function (
     description,
     amount: source.amount ?? 0,
     source: {
-      accountId: source.account?.id ?? "",
+      accountId: source.account?.accountId ?? "",
     },
     destinations: destinations.map((destination) => ({
-      accountId: destination.account?.id ?? null,
+      accountId: destination.account?.accountId ?? null,
       location:
         destination.account === null
           ? (destination.location?.trim() ?? null)
@@ -228,10 +240,10 @@ const buildUpdateRequest = function (
     description,
     amount: source.amount ?? 0,
     source: {
-      accountId: source.account?.id ?? "",
+      accountId: source.account?.accountId ?? "",
     },
     destinations: destinations.map((destination) => ({
-      accountId: destination.account?.id ?? null,
+      accountId: destination.account?.accountId ?? null,
       location:
         destination.account === null
           ? (destination.location?.trim() ?? null)
@@ -260,7 +272,7 @@ const buildSourceAccountFilter = function (
     return (
       selectedAccount !== null &&
       !destinations.some(
-        (destination) => destination.account?.id === account.id,
+        (destination) => destination.account?.accountId === account.id,
       ) &&
       isTrackedAccountType(selectedAccount.type)
     );
@@ -274,19 +286,20 @@ const buildDestinationAccountFilter = function (
   accounts: Account[],
   destinations: SpendingDestinationDraft[],
   index: number,
-  sourceAccount: Account | null,
+  sourceAccount: TransactionAccountDraft | null,
 ) {
   return function (account: AccountIdentifier): boolean {
     const selectedAccount =
       accounts.find((candidate) => candidate.id === account.id) ?? null;
     const accountUsedElsewhere = destinations.some(
       (currentDestination, currentIndex) =>
-        currentIndex !== index && currentDestination.account?.id === account.id,
+        currentIndex !== index &&
+        currentDestination.account?.accountId === account.id,
     );
     if (selectedAccount === null || accountUsedElsewhere) {
       return false;
     }
-    if (account.id === sourceAccount?.id) {
+    if (account.id === sourceAccount?.accountId) {
       return false;
     }
     return !isTrackedAccountType(selectedAccount.type);
@@ -298,13 +311,11 @@ const buildDestinationAccountFilter = function (
  */
 const getSourceFromTransaction = function (
   transaction: SpendingTransaction,
-  accounts: Account[],
 ): SpendingSourceDraft {
   return {
-    account:
-      accounts.find(
-        (account) => account.id === transaction.source.account.accountId,
-      ) ?? null,
+    account: getTransactionAccountDraftFromTransactionAccount(
+      transaction.source.account,
+    ),
     amount: transaction.amount,
   };
 };
@@ -345,14 +356,12 @@ const getFundAssignmentFromTransactionFund = (
  */
 const getDestinationsFromTransaction = function (
   transaction: SpendingTransaction,
-  accounts: Account[],
 ): SpendingDestinationDraft[] {
   return transaction.destinations.map(
     (destination: SpendingTransactionDestination) => ({
-      account:
-        accounts.find(
-          (account) => account.id === destination.account?.accountId,
-        ) ?? null,
+      account: getTransactionAccountDraftFromTransactionAccount(
+        destination.account,
+      ),
       location: destination.location ?? null,
       amount: destination.amount,
       fundAssignments: destination.fundAssignments.map(

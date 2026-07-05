@@ -1,4 +1,8 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
+import type {
+  Transaction,
+  TransactionAccountDraft,
+} from "@/transactions/transaction";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
 import type { JSX } from "react";
@@ -10,8 +14,10 @@ import TransactionSourceOrDestinationFrame from "@/transactions/workspace/Transa
  */
 interface AccountTransactionSourceFormFrameProps {
   readonly accounts: Account[];
-  readonly account: Account | null;
-  readonly setAccount: ((account: Account | null) => void) | null;
+  readonly transaction?: Transaction | null;
+  readonly account: TransactionAccountDraft | null;
+  readonly setAccount:
+    ((account: TransactionAccountDraft | null) => void) | null;
   readonly location: string;
   readonly setLocation: ((location: string) => void) | null;
   readonly amount: number | null;
@@ -25,6 +31,7 @@ interface AccountTransactionSourceFormFrameProps {
  */
 const AccountTransactionSourceFormFrame = function ({
   accounts,
+  transaction = null,
   account,
   setAccount,
   location,
@@ -37,14 +44,16 @@ const AccountTransactionSourceFormFrame = function ({
   return (
     <TransactionSourceOrDestinationFrame title="Source" color={color}>
       <TransactionAccountOrLocationFrame
-        accountCaption="Source Account"
         accounts={accounts}
+        transaction={transaction}
         account={account}
         setAccount={setAccount}
+        accountCaption="Source Account"
         locationCaption="Source Location"
         location={location}
         setLocation={setLocation}
         accountFilter={accountFilter}
+        balanceChange={amount === null ? null : -amount}
       />
       <CurrencyEntryField label="Amount" value={amount} setValue={setAmount} />
     </TransactionSourceOrDestinationFrame>

@@ -27,6 +27,7 @@ import type { Fund } from "@/funds/types";
 import type { SpendingGoal } from "@/goals/types";
 import SpendingTransactionDestinationFormFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFormFrame";
 import SpendingTransactionSourceFormFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFormFrame";
+import type { TransactionAccountDraft } from "@/transactions/transaction";
 
 /**
  * Represents the state of the spending transaction form.
@@ -157,6 +158,17 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
     );
   };
 
+  const setDestinationAccount = function (
+    index: number,
+    account: TransactionAccountDraft | null,
+  ): void {
+    updateDestination(index, (currentDestination) => ({
+      ...currentDestination,
+      account,
+      location: account === null ? currentDestination.location : "",
+    }));
+  };
+
   const sourceIsValid = validateSource(source);
 
   return (
@@ -174,6 +186,7 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
         <SpendingTransactionSourceFormFrame
           color={sourceIsValid ? "info" : "error"}
           accounts={accounts}
+          transaction={null}
           account={source.account}
           setAccount={(account): void => {
             setSource((currentSource) => ({
@@ -214,13 +227,10 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
               accounts={accounts}
               funds={funds}
               spendingGoals={currentSpendingGoals}
+              transaction={null}
               account={destination.account}
               setAccount={(account): void => {
-                updateDestination(index, (currentDestination) => ({
-                  ...currentDestination,
-                  account,
-                  location: account === null ? currentDestination.location : "",
-                }));
+                setDestinationAccount(index, account);
               }}
               location={destination.location}
               setLocation={(location): void => {

@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Stack, TextField, Typography } from "@mui/material";
+import type { Account, AccountIdentifier } from "@/accounts/types";
+import { Button, Stack, Typography } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -11,67 +12,58 @@ import {
 import type {
   PostTransactionRequest,
   Transaction,
-  TransactionAccount,
+  TransactionAccountDraft,
 } from "@/transactions/transaction";
 import dayjs, { type Dayjs } from "dayjs";
 import {
-  getPostableTransactionAccounts,
-  getPostedTransactionAccounts,
-} from "@/transactions/postingHelpers";
+  getSelectedTransactionAccountDraft,
+  setTransactionAccountDraftBalanceChange,
+} from "@/transactions/workspace/transactionAccountDraft";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import AccountEntryField from "@/accounts/AccountEntryField";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
-import { asAccountTransaction } from "@/transactions/accountTransaction";
-import { asIncomeTransaction } from "@/transactions/incomeTransaction";
-import { asSpendingTransaction } from "@/transactions/spendingTransaction";
 import postTransaction from "@/transactions/workspace/postTransaction";
 
 /**
  * Props for the TransactionAccountViewFrame component.
  */
 interface TransactionAccountViewFrameProps {
-  readonly transaction: Transaction;
-  readonly account: TransactionAccount;
+  readonly accounts?: Account[];
+  readonly transaction?: Transaction | null;
+  readonly account: TransactionAccountDraft | null;
+  readonly setAccount?:
+    ((account: TransactionAccountDraft | null) => void) | null;
+  readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
   readonly label?: string;
+  readonly balanceChange?: number | null;
 }
+
+const emptyAccounts: Account[] = [];
 
 /**
  * Displays a transaction account and, when applicable, its posting controls.
  */
 const TransactionAccountViewFrame = function ({
-  transaction,
+  accounts = emptyAccounts,
+  transaction = null,
   account,
+  setAccount = null,
+  accountFilter = null,
   label = "Account",
+  balanceChange = null,
 }: TransactionAccountViewFrameProps): JSX.Element {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
+  const [date, setDate] = useState<Dayjs | null>(dayjs(transaction?.date));
   const [state, action, pending] = useActionState(postTransaction, {});
-  const postedAccountsById = new Map(
-    getPostedTransactionAccounts(transaction).map((postedAccount) => [
-      postedAccount.accountId,
-      postedAccount.postedDate,
-    ]),
-  );
-  const postableAccountIds = new Set(
-    getPostableTransactionAccounts(transaction).map(
-      (postableAccount) => postableAccount.accountId,
-    ),
-  );
 
   const currentSearch = searchParams.toString();
   const redirectUrl =
     currentSearch === "" ? pathname : `${pathname}?${currentSearch}`;
-  const postedDate = postedAccountsById.get(account.accountId) ?? null;
-  const canPost =
-    postedDate === null &&
-    postableAccountIds.has(account.accountId) &&
-    (asSpendingTransaction(transaction) !== null ||
-      asIncomeTransaction(transaction) !== null ||
-      asAccountTransaction(transaction) !== null);
 
   useEffect(() => {
     if (state.success === true) {
@@ -80,16 +72,24 @@ const TransactionAccountViewFrame = function ({
   }, [redirectUrl, router, state.success]);
 
   useEffect(() => {
-    setDate(dayjs(transaction.date));
-  }, [transaction.date, account.accountId]);
+    setDate(dayjs(transaction?.date));
+  }, [transaction?.date, account?.accountId]);
 
   const request: PostTransactionRequest | null =
     date === null
       ? null
       : {
-          accountId: account.accountId,
+          accountId: account?.accountId ?? "",
           date: date.format("YYYY-MM-DD"),
         };
+
+  const postedDate = account?.postedDate ?? null;
+
+  const displayedAccount =
+    postedDate === null
+      ? setTransactionAccountDraftBalanceChange(account, balanceChange)
+      : account;
+  const newBalanceLabel = postedDate === null ? "Projected" : "New";
 
   let helperContent = null;
   if (postedDate !== null) {
@@ -98,7 +98,7 @@ const TransactionAccountViewFrame = function ({
         Posted on {dayjs(postedDate).format("MMMM D, YYYY")}
       </Typography>
     );
-  } else if (canPost) {
+  } else if (setAccount === null) {
     helperContent = (
       <Stack spacing={1.25} sx={{ paddingTop: 2 }}>
         <Stack
@@ -123,7 +123,7 @@ const TransactionAccountViewFrame = function ({
               }
               startTransition(() => {
                 action({
-                  transactionId: transaction.id,
+                  transactionId: transaction?.id ?? "",
                   redirectUrl,
                   request,
                 });
@@ -148,19 +148,33 @@ const TransactionAccountViewFrame = function ({
 
   return (
     <Stack spacing={0.75}>
-      <TextField
+      <AccountEntryField
         label={label}
-        value={account.accountName}
-        variant="outlined"
-        slotProps={{
-          input: {
-            readOnly: true,
-          },
+        options={accounts}
+        value={{
+          id: displayedAccount?.accountId ?? "",
+          name: displayedAccount?.accountName ?? "",
         }}
+        setValue={
+          setAccount === null
+            ? null
+            : (nextValue: AccountIdentifier | null): void => {
+                setAccount(
+                  getSelectedTransactionAccountDraft(
+                    accounts,
+                    nextValue,
+                    account,
+                    balanceChange,
+                  ),
+                );
+              }
+        }
+        filter={accountFilter}
       />
       <TransactionBalanceDetails
-        previousPostedBalance={account.previousAccountBalance.postedBalance}
-        newPostedBalance={account.newAccountBalance.postedBalance}
+        previousPostedBalance={displayedAccount?.previousAccountBalance ?? 0}
+        newPostedBalance={displayedAccount?.newAccountBalance ?? 0}
+        newBalanceLabel={newBalanceLabel}
       />
       {helperContent}
     </Stack>

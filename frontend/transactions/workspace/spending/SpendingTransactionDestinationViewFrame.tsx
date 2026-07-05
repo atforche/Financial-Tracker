@@ -1,6 +1,6 @@
 import { Stack, Typography } from "@mui/material";
 import type {
-  TransactionAccount,
+  TransactionAccountDraft,
   TransactionFund,
 } from "@/transactions/transaction";
 import type { Fund } from "@/funds/types";
@@ -21,7 +21,7 @@ interface SpendingTransactionDestinationViewFrameProps {
   readonly index: number;
   readonly funds: Fund[];
   readonly spendingGoals: SpendingGoal[];
-  readonly account: TransactionAccount | null;
+  readonly account: TransactionAccountDraft | null;
   readonly location: string | null;
   readonly amount: number;
   readonly fundAssignments: TransactionFund[];

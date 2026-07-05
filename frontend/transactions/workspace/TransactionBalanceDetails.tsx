@@ -2,9 +2,13 @@ import { Chip, Stack } from "@mui/material";
 import type { JSX } from "react";
 import formatCurrency from "@/framework/formatCurrency";
 
+/**
+ * Props for the TransactionBalanceDetails component.
+ */
 interface TransactionBalanceDetailsProps {
   readonly previousPostedBalance: number;
   readonly newPostedBalance: number;
+  readonly newBalanceLabel?: string;
 }
 
 /**
@@ -13,6 +17,7 @@ interface TransactionBalanceDetailsProps {
 const TransactionBalanceDetails = function ({
   previousPostedBalance,
   newPostedBalance,
+  newBalanceLabel = "New",
 }: TransactionBalanceDetailsProps): JSX.Element {
   return (
     <Stack
@@ -28,7 +33,7 @@ const TransactionBalanceDetails = function ({
         variant="outlined"
       />
       <Chip
-        label={`New ${formatCurrency(newPostedBalance)}`}
+        label={`${newBalanceLabel} ${formatCurrency(newPostedBalance)}`}
         size="small"
         color="primary"
         variant="outlined"

@@ -9,6 +9,7 @@ import {
 } from "@/framework/data/api";
 import type {
   CreateTransactionRequest,
+  TransactionAccountDraft,
   TransactionFund,
   UpdateTransactionRequest,
 } from "@/transactions/transaction";
@@ -23,6 +24,7 @@ import {
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
+import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/transactionAccountDraft";
 import { hasIncompleteFundAssignments } from "@/funds/helpers";
 
 /**
@@ -45,7 +47,7 @@ interface IncomeDeductionDraft {
  * Interface representing a potentially unfinished income transaction source.
  */
 interface IncomeSourceDraft {
-  readonly account: Account | null;
+  readonly account: TransactionAccountDraft | null;
   readonly location: string | null;
   readonly incomeLines: IncomeLineDraft[];
   readonly incomeDeductions: IncomeDeductionDraft[];
@@ -55,7 +57,7 @@ interface IncomeSourceDraft {
  * Interface representing a potentially unfinished income transaction destination.
  */
 interface IncomeDestinationDraft {
-  readonly account: Account | null;
+  readonly account: TransactionAccountDraft | null;
   readonly amount: number | null;
   readonly fundAssignments: FundAssignmentDraft[];
   readonly baselineFundAssignments: FundAssignmentDraft[];
@@ -255,7 +257,7 @@ const buildCreateRequest = function (
     description,
     amount: getNetIncomeAmount(source),
     source: {
-      accountId: source.account?.id ?? null,
+      accountId: source.account?.accountId ?? null,
       location:
         source.account === null ? (source.location?.trim() ?? null) : null,
       incomeLines: source.incomeLines.map((line) => ({
@@ -268,7 +270,7 @@ const buildCreateRequest = function (
       })),
     },
     destinations: destinations.map((destination) => ({
-      accountId: destination.account?.id ?? "",
+      accountId: destination.account?.accountId ?? "",
       amount: destination.amount ?? 0,
       fundAssignments: destination.fundAssignments
         .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
@@ -309,7 +311,7 @@ const buildUpdateRequest = function (
     description,
     amount: getNetIncomeAmount(source),
     source: {
-      accountId: source.account?.id ?? null,
+      accountId: source.account?.accountId ?? null,
       location:
         source.account === null ? (source.location?.trim() ?? null) : null,
       incomeLines: source.incomeLines.map((line) => ({
@@ -322,7 +324,7 @@ const buildUpdateRequest = function (
       })),
     },
     destinations: destinations.map((destination) => ({
-      accountId: destination.account?.id ?? "",
+      accountId: destination.account?.accountId ?? "",
       amount: destination.amount ?? 0,
       fundAssignments: destination.fundAssignments
         .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
@@ -347,7 +349,7 @@ const buildSourceAccountFilter = function (
     return (
       selectedAccount !== null &&
       !destinations.some(
-        (destination) => destination.account?.id === account.id,
+        (destination) => destination.account?.accountId === account.id,
       ) &&
       !isTrackedAccountType(selectedAccount.type)
     );
@@ -361,19 +363,20 @@ const buildDestinationAccountFilter = function (
   accounts: Account[],
   destinations: IncomeDestinationDraft[],
   index: number,
-  sourceAccount: Account | null,
+  sourceAccount: TransactionAccountDraft | null,
 ) {
   return function (account: AccountIdentifier): boolean {
     const selectedAccount =
       accounts.find((candidate) => candidate.id === account.id) ?? null;
     const accountUsedElsewhere = destinations.some(
       (currentDestination, currentIndex) =>
-        currentIndex !== index && currentDestination.account?.id === account.id,
+        currentIndex !== index &&
+        currentDestination.account?.accountId === account.id,
     );
     if (selectedAccount === null || accountUsedElsewhere) {
       return false;
     }
-    if (account.id === sourceAccount?.id) {
+    if (account.id === sourceAccount?.accountId) {
       return false;
     }
     return true;
@@ -385,16 +388,11 @@ const buildDestinationAccountFilter = function (
  */
 const getSourceFromTransaction = function (
   transaction: IncomeTransaction,
-  accounts: Account[],
 ): IncomeSourceDraft {
   return {
-    account:
-      typeof transaction.source.account !== "undefined" &&
-      transaction.source.account !== null
-        ? (accounts.find(
-            (account) => account.id === transaction.source.account?.accountId,
-          ) ?? null)
-        : null,
+    account: getTransactionAccountDraftFromTransactionAccount(
+      transaction.source.account,
+    ),
     location: transaction.source.location ?? "",
     incomeLines: transaction.source.incomeLines.map((line) => ({
       description: line.description,
@@ -441,14 +439,12 @@ const getFundAssignmentFromTransactionFund = (
  */
 const getDestinationsFromTransaction = function (
   transaction: IncomeTransaction,
-  accounts: Account[],
 ): IncomeDestinationDraft[] {
   return transaction.destinations.map(
     (destination: IncomeTransactionDestination) => ({
-      account:
-        accounts.find(
-          (account) => account.id === destination.account.accountId,
-        ) ?? null,
+      account: getTransactionAccountDraftFromTransactionAccount(
+        destination.account,
+      ),
       amount: destination.amount,
       fundAssignments: destination.fundAssignments.map(
         getFundAssignmentFromTransactionFund,

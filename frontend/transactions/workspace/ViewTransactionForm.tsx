@@ -25,6 +25,7 @@ import { asIncomeTransaction } from "@/transactions/incomeTransaction";
 import { asSpendingTransaction } from "@/transactions/spendingTransaction";
 import dayjs from "dayjs";
 import { getPostedTransactionAccounts } from "@/transactions/postingHelpers";
+import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/transactionAccountDraft";
 
 /**
  * Props for the ViewTransactionForm component.
@@ -94,7 +95,11 @@ const ViewTransactionForm = function ({
           sourceFrame={
             <SpendingTransactionSourceViewFrame
               transaction={spendingTransaction}
-              account={spendingTransaction.source.account}
+              account={
+                getTransactionAccountDraftFromTransactionAccount(
+                  spendingTransaction.source.account,
+                ) ?? null
+              }
             />
           }
           destinationFrames={spendingTransaction.destinations.map(
@@ -105,7 +110,9 @@ const ViewTransactionForm = function ({
                 index={index}
                 funds={funds}
                 spendingGoals={spendingGoals}
-                account={destination.account ?? null}
+                account={getTransactionAccountDraftFromTransactionAccount(
+                  destination.account,
+                )}
                 location={destination.location ?? null}
                 amount={destination.amount}
                 fundAssignments={destination.fundAssignments}
@@ -121,7 +128,9 @@ const ViewTransactionForm = function ({
           sourceFrame={
             <IncomeTransactionSourceViewFrame
               transaction={incomeTransaction}
-              account={incomeTransaction.source.account ?? null}
+              account={getTransactionAccountDraftFromTransactionAccount(
+                incomeTransaction.source.account,
+              )}
               location={incomeTransaction.source.location ?? null}
               incomeLines={incomeTransaction.source.incomeLines}
               incomeDeductions={incomeTransaction.source.incomeDeductions}
@@ -135,7 +144,9 @@ const ViewTransactionForm = function ({
                 index={index}
                 funds={funds}
                 assignmentGoals={assignmentGoals}
-                account={destination.account}
+                account={getTransactionAccountDraftFromTransactionAccount(
+                  destination.account,
+                )}
                 amount={destination.amount}
                 fundAssignments={destination.fundAssignments}
               />
@@ -150,7 +161,9 @@ const ViewTransactionForm = function ({
           sourceFrame={
             <AccountTransactionSourceViewFrame
               transaction={accountTransaction}
-              account={accountTransaction.source.account ?? null}
+              account={getTransactionAccountDraftFromTransactionAccount(
+                accountTransaction.source.account,
+              )}
               location={accountTransaction.source.location ?? ""}
               amount={accountTransaction.amount}
             />
@@ -161,7 +174,9 @@ const ViewTransactionForm = function ({
                 key={`account-destination-${index}`}
                 transaction={accountTransaction}
                 index={index}
-                account={destination.account ?? null}
+                account={getTransactionAccountDraftFromTransactionAccount(
+                  destination.account,
+                )}
                 location={destination.location ?? ""}
                 amount={destination.amount}
               />

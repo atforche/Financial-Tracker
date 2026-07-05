@@ -13,6 +13,7 @@ import {
 } from "@/framework/data/api";
 import type {
   CreateTransactionRequest,
+  TransactionAccountDraft,
   UpdateTransactionRequest,
 } from "@/transactions/transaction";
 import {
@@ -21,23 +22,30 @@ import {
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
+import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/transactionAccountDraft";
 
 /**
  * Interface representing a potentially unfinished account transaction source.
  */
 interface AccountSourceDraft {
-  readonly account: Account | null;
+  readonly account: TransactionAccountDraft | null;
   readonly location: string;
   readonly amount: number | null;
+  readonly postedDate: string | null;
+  readonly previousAccountBalance: number | null;
+  readonly newAccountBalance: number | null;
 }
 
 /**
  * Interface representing a potentially unfinished account transaction destination.
  */
 interface AccountDestinationDraft {
-  readonly account: Account | null;
+  readonly account: TransactionAccountDraft | null;
   readonly location: string;
   readonly amount: number | null;
+  readonly postedDate: string | null;
+  readonly previousAccountBalance: number | null;
+  readonly newAccountBalance: number | null;
 }
 
 /**
@@ -48,6 +56,9 @@ const createEmptySource = function (): AccountSourceDraft {
     account: null,
     location: "",
     amount: null,
+    postedDate: null,
+    previousAccountBalance: null,
+    newAccountBalance: null,
   };
 };
 
@@ -59,6 +70,9 @@ const createEmptyDestination = function (): AccountDestinationDraft {
     account: null,
     location: "",
     amount: null,
+    postedDate: null,
+    previousAccountBalance: null,
+    newAccountBalance: null,
   };
 };
 
@@ -79,14 +93,16 @@ const validateSource = function (source: AccountSourceDraft): boolean {
  */
 const validateDestination = function (
   destination: AccountDestinationDraft,
-  sourceAccount: Account | null,
+  sourceAccount: TransactionAccountDraft | null,
 ): boolean {
   const normalizedLocation = destination.location.trim();
   const hasAccount = destination.account !== null;
   const hasLocation = normalizedLocation !== "";
   const destinationIsTracked =
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     destination.account !== null &&
-    isTrackedAccountType(destination.account.type);
+    destination.account.accountType !== null &&
+    isTrackedAccountType(destination.account.accountType);
 
   if (destination.amount === null || destination.amount <= 0) {
     return false;
@@ -94,10 +110,15 @@ const validateDestination = function (
   if ((hasAccount && hasLocation) || (!hasAccount && !hasLocation)) {
     return false;
   }
-  if (destination.account?.id === sourceAccount?.id) {
+  if (destination.account?.accountId === sourceAccount?.accountId) {
     return false;
   }
-  if (sourceAccount !== null && isTrackedAccountType(sourceAccount.type)) {
+  if (
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+    sourceAccount !== null &&
+    sourceAccount.accountType !== null &&
+    isTrackedAccountType(sourceAccount.accountType)
+  ) {
     return hasAccount && destinationIsTracked;
   }
   if (sourceAccount === null) {
@@ -122,7 +143,7 @@ const validateRequest = function (
     0,
   );
   const hasUniqueDestinationAccounts =
-    new Set(destinations.map((d) => d.account?.id ?? null)).size ===
+    new Set(destinations.map((d) => d.account?.accountId ?? null)).size ===
     destinations.length;
   const hasUniqueDestinationLocations =
     new Set(destinations.map((d) => d.location.trim() || null)).size ===
@@ -169,12 +190,12 @@ const buildCreateRequest = function (
       description,
       amount: source.amount ?? 0,
       source: {
-        accountId: source.account?.id ?? null,
+        accountId: source.account?.accountId ?? null,
         location:
           source.account === null ? source.location.trim() || null : null,
       },
       destinations: destinations.map((destination) => ({
-        accountId: destination.account?.id ?? null,
+        accountId: destination.account?.accountId ?? null,
         location:
           destination.account === null
             ? destination.location.trim() || null
@@ -212,12 +233,12 @@ const buildUpdateRequest = function (
       description,
       amount: source.amount ?? 0,
       source: {
-        accountId: source.account?.id ?? null,
+        accountId: source.account?.accountId ?? null,
         location:
           source.account === null ? source.location.trim() || null : null,
       },
       destinations: destinations.map((destination) => ({
-        accountId: destination.account?.id ?? null,
+        accountId: destination.account?.accountId ?? null,
         location:
           destination.account === null
             ? destination.location.trim() || null
@@ -242,7 +263,7 @@ const buildSourceAccountFilter = function (
     return (
       selectedAccount !== null &&
       !destinations.some(
-        (destination) => destination.account?.id === account.id,
+        (destination) => destination.account?.accountId === account.id,
       )
     );
   };
@@ -255,22 +276,28 @@ const buildDestinationAccountFilter = function (
   accounts: Account[],
   destinations: AccountDestinationDraft[],
   index: number,
-  sourceAccount: Account | null,
+  sourceAccount: TransactionAccountDraft | null,
 ) {
   return function (account: AccountIdentifier): boolean {
     const selectedAccount =
       accounts.find((candidate) => candidate.id === account.id) ?? null;
     const accountUsedElsewhere = destinations.some(
       (currentDestination, currentIndex) =>
-        currentIndex !== index && currentDestination.account?.id === account.id,
+        currentIndex !== index &&
+        currentDestination.account?.accountId === account.id,
     );
     if (selectedAccount === null || accountUsedElsewhere) {
       return false;
     }
-    if (account.id === sourceAccount?.id) {
+    if (account.id === sourceAccount?.accountId) {
       return false;
     }
-    if (sourceAccount !== null && isTrackedAccountType(sourceAccount.type)) {
+    if (
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+      sourceAccount !== null &&
+      sourceAccount.accountType !== null &&
+      isTrackedAccountType(sourceAccount.accountType)
+    ) {
       return isTrackedAccountType(selectedAccount.type);
     }
     return !isTrackedAccountType(selectedAccount.type);
@@ -282,18 +309,18 @@ const buildDestinationAccountFilter = function (
  */
 const getSourceFromTransaction = function (
   transaction: AccountTransaction,
-  accounts: Account[],
 ): AccountSourceDraft {
   return {
-    account:
-      typeof transaction.source.account !== "undefined" &&
-      transaction.source.account !== null
-        ? (accounts.find(
-            (account) => account.id === transaction.source.account?.accountId,
-          ) ?? null)
-        : null,
+    account: getTransactionAccountDraftFromTransactionAccount(
+      transaction.source.account,
+    ),
     location: transaction.source.location ?? "",
     amount: transaction.amount,
+    postedDate: transaction.source.account?.postedDate ?? null,
+    previousAccountBalance:
+      transaction.source.account?.previousAccountBalance.postedBalance ?? null,
+    newAccountBalance:
+      transaction.source.account?.newAccountBalance.postedBalance ?? null,
   };
 };
 
@@ -302,19 +329,19 @@ const getSourceFromTransaction = function (
  */
 const getDestinationsFromTransaction = function (
   transaction: AccountTransaction,
-  accounts: Account[],
 ): AccountDestinationDraft[] {
   return transaction.destinations.map(
     (destination: AccountTransactionDestination) => ({
-      account:
-        destination.account !== null &&
-        typeof destination.account !== "undefined"
-          ? (accounts.find(
-              (account) => account.id === destination.account?.accountId,
-            ) ?? null)
-          : null,
+      account: getTransactionAccountDraftFromTransactionAccount(
+        destination.account,
+      ),
       location: destination.location ?? "",
       amount: destination.amount,
+      postedDate: destination.account?.postedDate ?? null,
+      previousAccountBalance:
+        destination.account?.previousAccountBalance.postedBalance ?? null,
+      newAccountBalance:
+        destination.account?.newAccountBalance.postedBalance ?? null,
     }),
   );
 };

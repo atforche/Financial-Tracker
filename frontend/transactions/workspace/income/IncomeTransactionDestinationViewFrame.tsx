@@ -1,5 +1,5 @@
 import type {
-  TransactionAccount,
+  TransactionAccountDraft,
   TransactionFund,
 } from "@/transactions/transaction";
 import type { AssignmentGoal } from "@/goals/types";
@@ -20,7 +20,7 @@ interface IncomeTransactionDestinationViewFrameProps {
   readonly index: number;
   readonly funds: Fund[];
   readonly assignmentGoals: AssignmentGoal[];
-  readonly account: TransactionAccount | null;
+  readonly account: TransactionAccountDraft | null;
   readonly amount: number | null;
   readonly fundAssignments: TransactionFund[];
 }

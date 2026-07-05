@@ -1,5 +1,8 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
-import AccountEntryField from "@/accounts/AccountEntryField";
+import type {
+  Transaction,
+  TransactionAccountDraft,
+} from "@/transactions/transaction";
 import type { AssignmentGoal } from "@/goals/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
@@ -7,6 +10,7 @@ import type { Fund } from "@/funds/types";
 import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 import IncomeFundAssignmentPlanner from "@/funds/assignmentPlanner/IncomeFundAssignmentPlanner";
 import type { JSX } from "react";
+import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 const emptyFundAmounts: FundAssignmentDraft[] = [];
@@ -19,8 +23,10 @@ interface IncomeTransactionDestinationFormFrameProps {
   readonly accounts: Account[];
   readonly funds: Fund[];
   readonly assignmentGoals: AssignmentGoal[];
-  readonly account: Account | null;
-  readonly setAccount: ((account: Account | null) => void) | null;
+  readonly transaction?: Transaction | null;
+  readonly account: TransactionAccountDraft | null;
+  readonly setAccount:
+    ((account: TransactionAccountDraft | null) => void) | null;
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly fundAssignments: FundAssignmentDraft[];
@@ -41,6 +47,7 @@ const IncomeTransactionDestinationFormFrame = function ({
   accounts,
   funds,
   assignmentGoals,
+  transaction = null,
   account,
   setAccount,
   amount,
@@ -61,22 +68,14 @@ const IncomeTransactionDestinationFormFrame = function ({
       onRemove={onRemove}
       color={color}
     >
-      <AccountEntryField
+      <TransactionAccountViewFrame
+        accounts={accounts}
+        transaction={transaction}
+        account={account}
+        setAccount={setAccount}
+        accountFilter={filter}
         label="Deposit Account"
-        options={accounts}
-        value={account}
-        setValue={
-          setAccount === null
-            ? null
-            : (nextValue): void => {
-                setAccount(
-                  accounts.find(
-                    (candidate) => candidate.id === nextValue?.id,
-                  ) ?? null,
-                );
-              }
-        }
-        filter={filter}
+        balanceChange={amount}
       />
       <CurrencyEntryField
         label="Destination Amount"

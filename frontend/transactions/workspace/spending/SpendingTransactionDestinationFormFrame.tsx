@@ -1,4 +1,8 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
+import type {
+  Transaction,
+  TransactionAccountDraft,
+} from "@/transactions/transaction";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
 import type { Fund } from "@/funds/types";
@@ -17,8 +21,10 @@ interface SpendingTransactionDestinationFormFrameProps {
   readonly accounts: Account[];
   readonly funds: Fund[];
   readonly spendingGoals: SpendingGoal[];
-  readonly account: Account | null;
-  readonly setAccount: ((account: Account | null) => void) | null;
+  readonly transaction?: Transaction | null;
+  readonly account: TransactionAccountDraft | null;
+  readonly setAccount:
+    ((account: TransactionAccountDraft | null) => void) | null;
   readonly location: string | null;
   readonly setLocation: ((location: string) => void) | null;
   readonly amount: number | null;
@@ -43,6 +49,7 @@ const SpendingTransactionDestinationFormFrame = function ({
   accounts,
   funds,
   spendingGoals,
+  transaction = null,
   account,
   setAccount,
   location,
@@ -66,14 +73,16 @@ const SpendingTransactionDestinationFormFrame = function ({
       color={color}
     >
       <TransactionAccountOrLocationFrame
-        accountCaption="Destination Account"
         accounts={accounts}
+        transaction={transaction}
         account={account}
         setAccount={setAccount}
+        accountCaption="Destination Account"
         locationCaption="Destination Location"
         location={location}
         setLocation={setLocation}
         accountFilter={filter}
+        balanceChange={amount}
       />
       <CurrencyEntryField
         label="Destination Amount"

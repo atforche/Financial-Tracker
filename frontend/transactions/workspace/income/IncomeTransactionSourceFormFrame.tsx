@@ -4,7 +4,12 @@ import {
   type IncomeLineDraft,
   createEmptyDeduction,
   createEmptyLine,
+  getNetIncomeAmount,
 } from "@/transactions/workspace/income/helpers";
+import type {
+  Transaction,
+  TransactionAccountDraft,
+} from "@/transactions/transaction";
 import type { FrameColor } from "@/framework/view/Frame";
 import IncomeTransactionItemSection from "@/transactions/workspace/income/IncomeTransactionSourceItemFrame";
 import type { JSX } from "react";
@@ -16,8 +21,10 @@ import TransactionSourceOrDestinationFrame from "@/transactions/workspace/Transa
  */
 interface IncomeTransactionSourceFrameProps {
   readonly accounts: Account[];
-  readonly account: Account | null;
-  readonly setAccount: ((account: Account | null) => void) | null;
+  readonly transaction?: Transaction | null;
+  readonly account: TransactionAccountDraft | null;
+  readonly setAccount:
+    ((account: TransactionAccountDraft | null) => void) | null;
   readonly location: string | null;
   readonly setLocation: ((location: string) => void) | null;
   readonly incomeLines: IncomeLineDraft[];
@@ -35,6 +42,7 @@ interface IncomeTransactionSourceFrameProps {
  */
 const IncomeTransactionSourceFrame = function ({
   accounts,
+  transaction = null,
   account,
   setAccount,
   location,
@@ -46,17 +54,26 @@ const IncomeTransactionSourceFrame = function ({
   accountFilter = null,
   color = "info",
 }: IncomeTransactionSourceFrameProps): JSX.Element {
+  const balanceChange = -getNetIncomeAmount({
+    account,
+    location,
+    incomeLines,
+    incomeDeductions,
+  });
+
   return (
     <TransactionSourceOrDestinationFrame title="Source" color={color}>
       <TransactionAccountOrLocationFrame
-        accountCaption="Source Account"
         accounts={accounts}
+        transaction={transaction}
         account={account}
         setAccount={setAccount}
+        accountCaption="Source Account"
         locationCaption="Source Location"
         location={location}
         setLocation={setLocation}
         accountFilter={accountFilter}
+        balanceChange={balanceChange}
       />
       <IncomeTransactionItemSection
         title="Income Lines"

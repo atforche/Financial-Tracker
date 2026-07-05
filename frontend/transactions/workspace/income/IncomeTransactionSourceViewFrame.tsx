@@ -8,7 +8,7 @@ import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import IncomeTransactionItemSection from "@/transactions/workspace/income/IncomeTransactionSourceItemFrame";
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import type { TransactionAccount } from "@/transactions/transaction";
+import type { TransactionAccountDraft } from "@/transactions/transaction";
 import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
@@ -17,7 +17,7 @@ import TransactionSourceOrDestinationFrame from "@/transactions/workspace/Transa
  */
 interface IncomeTransactionSourceViewFrameProps {
   readonly transaction: IncomeTransaction;
-  readonly account: TransactionAccount | null;
+  readonly account: TransactionAccountDraft | null;
   readonly location: string | null;
   readonly incomeLines: IncomeLine[];
   readonly incomeDeductions: IncomeDeduction[];

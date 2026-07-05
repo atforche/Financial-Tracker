@@ -1,8 +1,12 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
-import AccountEntryField from "@/accounts/AccountEntryField";
+import type {
+  Transaction,
+  TransactionAccountDraft,
+} from "@/transactions/transaction";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
 import type { JSX } from "react";
+import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
@@ -10,8 +14,10 @@ import TransactionSourceOrDestinationFrame from "@/transactions/workspace/Transa
  */
 interface SpendingTransactionSourceFormFrameProps {
   readonly accounts: Account[];
-  readonly account: Account | null;
-  readonly setAccount: ((account: Account | null) => void) | null;
+  readonly transaction?: Transaction | null;
+  readonly account: TransactionAccountDraft | null;
+  readonly setAccount:
+    ((account: TransactionAccountDraft | null) => void) | null;
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
@@ -23,6 +29,7 @@ interface SpendingTransactionSourceFormFrameProps {
  */
 const SpendingTransactionSourceFormFrame = function ({
   accounts,
+  transaction = null,
   account,
   setAccount,
   amount,
@@ -32,22 +39,14 @@ const SpendingTransactionSourceFormFrame = function ({
 }: SpendingTransactionSourceFormFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame title="Source" color={color}>
-      <AccountEntryField
+      <TransactionAccountViewFrame
+        accounts={accounts}
+        transaction={transaction}
+        account={account}
+        setAccount={setAccount}
+        accountFilter={accountFilter}
         label="Source Account"
-        options={accounts}
-        value={account}
-        setValue={
-          setAccount === null
-            ? null
-            : (nextValue): void => {
-                setAccount(
-                  accounts.find(
-                    (candidate) => candidate.id === nextValue?.id,
-                  ) ?? null,
-                );
-              }
-        }
-        filter={accountFilter}
+        balanceChange={amount === null ? null : -amount}
       />
       <CurrencyEntryField label="Amount" value={amount} setValue={setAmount} />
     </TransactionSourceOrDestinationFrame>

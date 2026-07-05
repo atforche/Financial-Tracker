@@ -20,6 +20,7 @@ import AccountTransactionSourceFrame from "@/transactions/workspace/account/Acco
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateOrUpdateTransactionForm from "@/transactions/workspace/CreateOrUpdateTransactionForm";
 import type { Dayjs } from "dayjs";
+import type { TransactionAccountDraft } from "@/transactions/transaction";
 
 /**
  * Represents the state of the account transaction form.
@@ -123,6 +124,27 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
     );
   };
 
+  const setSourceAccount = function (
+    account: TransactionAccountDraft | null,
+  ): void {
+    setSource((currentSource) => ({
+      ...currentSource,
+      account,
+      location: account === null ? currentSource.location : "",
+    }));
+  };
+
+  const setDestinationAccount = function (
+    index: number,
+    account: TransactionAccountDraft | null,
+  ): void {
+    updateDestination(index, (currentDestination) => ({
+      ...currentDestination,
+      account,
+      location: account === null ? currentDestination.location : "",
+    }));
+  };
+
   const sourceIsValid = validateSource(source);
 
   return (
@@ -140,14 +162,9 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
         <AccountTransactionSourceFrame
           color={sourceIsValid ? "info" : "error"}
           accounts={accounts}
+          transaction={null}
           account={source.account}
-          setAccount={(account): void => {
-            setSource((currentSource) => ({
-              ...currentSource,
-              account,
-              location: account === null ? currentSource.location : "",
-            }));
-          }}
+          setAccount={setSourceAccount}
           location={source.location}
           setLocation={(location): void => {
             setSource((currentSource) => ({
@@ -185,13 +202,10 @@ const CreateOrUpdateAccountTransactionForm = function <RequestPayload>({
               }
               index={index}
               accounts={accounts}
+              transaction={null}
               account={destination.account}
               setAccount={(account): void => {
-                updateDestination(index, (currentDestination) => ({
-                  ...currentDestination,
-                  account,
-                  location: account === null ? currentDestination.location : "",
-                }));
+                setDestinationAccount(index, account);
               }}
               location={destination.location}
               setLocation={(location): void => {

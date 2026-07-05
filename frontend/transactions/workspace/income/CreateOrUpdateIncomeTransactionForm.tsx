@@ -28,6 +28,7 @@ import type { Dayjs } from "dayjs";
 import type { Fund } from "@/funds/types";
 import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFormFrame";
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFormFrame";
+import type { TransactionAccountDraft } from "@/transactions/transaction";
 
 /**
  * Represents the state of the income transaction form.
@@ -156,6 +157,16 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
     );
   };
 
+  const setSourceAccount = function (
+    account: TransactionAccountDraft | null,
+  ): void {
+    setSource((currentSource) => ({
+      ...currentSource,
+      account,
+      location: account === null ? currentSource.location : null,
+    }));
+  };
+
   const sourceIsValid = validateSource(source);
 
   return (
@@ -173,14 +184,9 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
         <IncomeTransactionSourceFrame
           color={sourceIsValid ? "info" : "error"}
           accounts={accounts}
+          transaction={null}
           account={source.account}
-          setAccount={(account): void => {
-            setSource((currentSource) => ({
-              ...currentSource,
-              account,
-              location: account === null ? currentSource.location : null,
-            }));
-          }}
+          setAccount={setSourceAccount}
           location={source.location}
           setLocation={(location): void => {
             setSource((currentSource) => ({
@@ -240,6 +246,7 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
               accounts={accounts}
               funds={funds}
               assignmentGoals={currentAssignmentGoals}
+              transaction={null}
               account={destination.account}
               setAccount={(account): void => {
                 updateDestination(index, (currentDestination) => ({
