@@ -1,6 +1,5 @@
 "use client";
 
-import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import {
   type IncomeDestinationDraft,
   type IncomeSourceDraft,
@@ -12,6 +11,7 @@ import { type JSX, useActionState, useEffect, useRef, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { AssignmentGoal } from "@/goals/types";
 import CreateOrUpdateIncomeTransactionForm from "@/transactions/workspace/income/CreateOrUpdateIncomeTransactionForm";
 import type { Fund } from "@/funds/types";
 import type { IncomeTransaction } from "@/transactions/incomeTransaction";
@@ -29,7 +29,6 @@ interface UpdateIncomeTransactionFormProps {
   readonly accounts: Account[];
   readonly funds: Fund[];
   readonly assignmentGoals: AssignmentGoal[];
-  readonly spendingGoals: SpendingGoal[];
   readonly redirectUrl: string;
 }
 
@@ -42,7 +41,6 @@ const UpdateIncomeTransactionForm = function ({
   accounts,
   funds,
   assignmentGoals,
-  spendingGoals,
   redirectUrl,
 }: UpdateIncomeTransactionFormProps): JSX.Element {
   const router = useRouter();
@@ -90,7 +88,6 @@ const UpdateIncomeTransactionForm = function ({
       accounts={accounts}
       funds={funds}
       assignmentGoals={assignmentGoals}
-      spendingGoals={spendingGoals}
       accountingPeriods={[transactionAccountingPeriod]}
       accountingPeriod={transactionAccountingPeriod}
       setAccountingPeriod={null}

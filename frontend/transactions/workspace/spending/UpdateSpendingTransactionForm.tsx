@@ -1,6 +1,5 @@
 "use client";
 
-import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { type JSX, useActionState, useEffect, useRef, useState } from "react";
 import {
   type SpendingDestinationDraft,
@@ -14,6 +13,7 @@ import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateOrUpdateSpendingTransactionForm from "@/transactions/workspace/spending/CreateOrUpdateSpendingTransactionForm";
 import type { Fund } from "@/funds/types";
+import type { SpendingGoal } from "@/goals/types";
 import type { SpendingTransaction } from "@/transactions/spendingTransaction";
 import type { UpdateTransactionRequest } from "@/transactions/transaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
@@ -28,7 +28,6 @@ interface UpdateSpendingTransactionFormProps {
   readonly transactionAccountingPeriod: AccountingPeriod;
   readonly accounts: Account[];
   readonly funds: Fund[];
-  readonly assignmentGoals: AssignmentGoal[];
   readonly spendingGoals: SpendingGoal[];
   readonly redirectUrl: string;
 }
@@ -41,7 +40,6 @@ const UpdateSpendingTransactionForm = function ({
   transactionAccountingPeriod,
   accounts,
   funds,
-  assignmentGoals,
   spendingGoals,
   redirectUrl,
 }: UpdateSpendingTransactionFormProps): JSX.Element {
@@ -88,7 +86,6 @@ const UpdateSpendingTransactionForm = function ({
       formRef={formRef}
       accounts={accounts}
       funds={funds}
-      assignmentGoals={assignmentGoals}
       spendingGoals={spendingGoals}
       accountingPeriods={[transactionAccountingPeriod]}
       accountingPeriod={transactionAccountingPeriod}

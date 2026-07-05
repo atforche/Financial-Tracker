@@ -1,16 +1,46 @@
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
-import type { Fund, FundAmount, FundIdentifier } from "@/funds/types";
+import type { Fund, FundIdentifier } from "@/funds/types";
 import formatCurrency from "@/framework/formatCurrency";
 import { isUnassignedFund } from "@/funds/helpers";
+
+/**
+ * Represents the goal balance of a fund assignment draft.
+ */
+interface FundAssignmentGoalBalance {
+  readonly remainingAmountToAssignIncludingPending: number;
+  readonly remainingAmountToSpendIncludingPending: number;
+}
+
+/**
+ * Represents a draft of a fund assignment.
+ */
+interface FundAssignmentDraft {
+  readonly fundId: string;
+  readonly fundName: string;
+  readonly amount: number;
+  readonly previousFundBalance: number;
+  readonly newFundBalance: number;
+  readonly previousGoalBalance: FundAssignmentGoalBalance;
+  readonly newGoalBalance: FundAssignmentGoalBalance;
+}
+
+/**
+ * Represents a goal associated with a fund assignment.
+ */
+interface FundAssignmentGoal {
+  readonly fundId: string;
+  readonly remainingAmountToAssignIncludingPending?: number;
+  readonly remainingAmountToSpendIncludingPending?: number;
+}
 
 /**
  * Returns the explicit assignments, excluding the automatic unassigned remainder.
  */
 const getExplicitFundAssignments = function (
-  fundAmounts: readonly FundAmount[],
-): FundAmount[] {
-  return fundAmounts.filter(
-    (fundAmount) => !isUnassignedFund(fundAmount.fundName),
+  fundAssignments: readonly FundAssignmentDraft[],
+): FundAssignmentDraft[] {
+  return fundAssignments.filter(
+    (fundAssignment) => !isUnassignedFund(fundAssignment.fundName),
   );
 };
 
@@ -18,10 +48,10 @@ const getExplicitFundAssignments = function (
  * Sums the amounts explicitly assigned to named funds.
  */
 const getAssignedFundAmount = function (
-  fundAmounts: readonly FundAmount[],
+  fundAssignments: readonly FundAssignmentDraft[],
 ): number {
-  return getExplicitFundAssignments(fundAmounts).reduce(
-    (acc, fundAmount) => acc + fundAmount.amount,
+  return getExplicitFundAssignments(fundAssignments).reduce(
+    (acc, fundAssignment) => acc + fundAssignment.amount,
     0,
   );
 };
@@ -31,12 +61,13 @@ const getAssignedFundAmount = function (
  */
 const getRemainingFundAmount = function (
   totalAmountToAssign: number | null,
-  fundAmounts: readonly FundAmount[],
+  fundAssignments: readonly FundAssignmentDraft[],
 ): number | null {
   if (totalAmountToAssign === null) {
     return null;
   }
-  return totalAmountToAssign - getAssignedFundAmount(fundAmounts);
+
+  return totalAmountToAssign - getAssignedFundAmount(fundAssignments);
 };
 
 /**
@@ -45,23 +76,35 @@ const getRemainingFundAmount = function (
 const updateUnassignedFundAmount = function (
   unassignedFund: Fund | null,
   totalAmountToAssign: number | null,
-  fundAmounts: readonly FundAmount[],
-): FundAmount[] {
-  const assignedFundAmounts = getExplicitFundAssignments(fundAmounts);
+  fundAssignments: readonly FundAssignmentDraft[],
+): FundAssignmentDraft[] {
+  const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
   if (totalAmountToAssign === null || unassignedFund === null) {
-    return assignedFundAmounts;
+    return explicitFundAssignments;
   }
-  const assignedAmount = assignedFundAmounts.reduce(
-    (acc, fundAmount) => acc + fundAmount.amount,
+
+  const assignedAmount = explicitFundAssignments.reduce(
+    (acc, fundAssignment) => acc + fundAssignment.amount,
     0,
   );
+
   return [
     {
       fundId: unassignedFund.id,
       fundName: unassignedFund.name,
       amount: Math.max(totalAmountToAssign - assignedAmount, 0),
+      previousFundBalance: 0,
+      newFundBalance: 0,
+      previousGoalBalance: {
+        remainingAmountToAssignIncludingPending: 0,
+        remainingAmountToSpendIncludingPending: 0,
+      },
+      newGoalBalance: {
+        remainingAmountToAssignIncludingPending: 0,
+        remainingAmountToSpendIncludingPending: 0,
+      },
     },
-    ...assignedFundAmounts,
+    ...explicitFundAssignments,
   ];
 };
 
@@ -70,9 +113,9 @@ const updateUnassignedFundAmount = function (
  */
 const getAvailableFundsToAssign = function (
   funds: readonly Fund[],
-  fundAmounts: readonly FundAmount[],
+  fundAssignments: readonly FundAssignmentDraft[],
 ): Fund[] {
-  const explicitAssignments = getExplicitFundAssignments(fundAmounts);
+  const explicitAssignments = getExplicitFundAssignments(fundAssignments);
   return funds
     .filter(
       (fund) =>
@@ -85,119 +128,116 @@ const getAvailableFundsToAssign = function (
 };
 
 /**
- * Determines the remaining amount for a goal before the current assignment is applied.
+ * Determines the remaining goal amount for a fund before the current assignment is applied.
  */
-const getGoalRemainingBeforeCurrentAssignment = function (
-  tone: "income" | "spending",
+const getGoalRemainingAmount = function (
+  goalRemainingAmount: number | null | undefined,
+  baselineFundAssignments: readonly FundAssignmentDraft[],
   fundId: string,
-  assignmentGoals: readonly AssignmentGoal[],
-  spendingGoals: readonly SpendingGoal[],
-  baselineValue: readonly FundAmount[],
 ): number | null {
-  const goal =
-    tone === "income"
-      ? assignmentGoals.find(
-          (assignmentGoal) => assignmentGoal.fundId === fundId,
-        )
-      : spendingGoals.find((spendingGoal) => spendingGoal.fundId === fundId);
-  if (typeof goal === "undefined") {
+  if (
+    goalRemainingAmount === null ||
+    typeof goalRemainingAmount === "undefined"
+  ) {
     return null;
   }
   const baselineAssignedAmount =
-    baselineValue.find((assignment) => assignment.fundId === fundId)?.amount ??
-    0;
-  return "remainingAmountToAssignIncludingPending" in goal
-    ? goal.remainingAmountToAssignIncludingPending + baselineAssignedAmount
-    : goal.remainingAmountToSpendIncludingPending + baselineAssignedAmount;
+    baselineFundAssignments.find((assignment) => assignment.fundId === fundId)
+      ?.amount ?? 0;
+  return goalRemainingAmount + baselineAssignedAmount;
+};
+
+/**
+ * Gets the remaining amount for an income goal.
+ */
+const getIncomeGoalRemainingAmount = function (
+  fundId: string,
+  assignmentGoals: AssignmentGoal[],
+  baselineFundAssignments: readonly FundAssignmentDraft[],
+): number | null {
+  const goal = assignmentGoals.find(
+    (assignmentGoal) => assignmentGoal.fundId === fundId,
+  );
+  return getGoalRemainingAmount(
+    goal?.remainingAmountToAssignIncludingPending,
+    baselineFundAssignments,
+    fundId,
+  );
+};
+
+/**
+ * Gets the remaining amount for a spending goal.
+ */
+const getSpendingGoalRemainingAmount = function (
+  fundId: string,
+  spendingGoals: SpendingGoal[],
+  baselineFundAssignments: readonly FundAssignmentDraft[],
+): number | null {
+  const goal = spendingGoals.find(
+    (spendingGoal) => spendingGoal.fundId === fundId,
+  );
+  return getGoalRemainingAmount(
+    goal?.remainingAmountToSpendIncludingPending,
+    baselineFundAssignments,
+    fundId,
+  );
 };
 
 /**
  * Computes the projected remaining amount for a goal after applying a specific assignment amount.
  */
 const getProjectedGoalRemainingAmount = function (
-  tone: "income" | "spending",
-  fundId: string,
-  assignmentGoals: readonly AssignmentGoal[],
-  spendingGoals: readonly SpendingGoal[],
-  baselineValue: readonly FundAmount[],
+  goalRemainingAmount: number | null,
   amount: number,
 ): number | null {
-  const goalRemainingBeforeCurrentAssignment =
-    getGoalRemainingBeforeCurrentAssignment(
-      tone,
-      fundId,
-      assignmentGoals,
-      spendingGoals,
-      baselineValue,
-    );
-  if (goalRemainingBeforeCurrentAssignment === null) {
+  if (goalRemainingAmount === null) {
     return null;
   }
-  return goalRemainingBeforeCurrentAssignment - amount;
+
+  return goalRemainingAmount - amount;
 };
 
 /**
  * Gets the secondary label for the provided fund option.
  */
 const getFundOptionSecondaryLabel = function (
-  tone: "income" | "spending",
-  fundId: string,
-  assignmentGoals: readonly AssignmentGoal[],
-  spendingGoals: readonly SpendingGoal[],
-  baselineValue: readonly FundAmount[],
-): string | null {
-  const goalRemainingAmount = getGoalRemainingBeforeCurrentAssignment(
-    tone,
-    fundId,
-    assignmentGoals,
-    spendingGoals,
-    baselineValue,
-  );
+  prefix: string,
+  goalRemainingAmount: number | null,
+): string {
   if (goalRemainingAmount === null) {
     return "No goal";
   }
-  return tone === "income"
-    ? `Remaining to assign ${formatCurrency(goalRemainingAmount)}`
-    : `Remaining to spend ${formatCurrency(goalRemainingAmount)}`;
+
+  return `${prefix} ${formatCurrency(goalRemainingAmount)}`;
 };
 
 /**
  * Sorts funds by their remaining amount.
  */
 const sortFundsByRemainingAmount = function (
-  tone: "income" | "spending",
   left: FundIdentifier,
   right: FundIdentifier,
-  assignmentGoals: readonly AssignmentGoal[],
-  spendingGoals: readonly SpendingGoal[],
-  baselineValue: readonly FundAmount[],
+  getRemainingAmount: (fundId: string) => number | null,
 ): number {
-  const leftRemainingAmount = getGoalRemainingBeforeCurrentAssignment(
-    tone,
-    left.id,
-    assignmentGoals,
-    spendingGoals,
-    baselineValue,
-  );
-  const rightRemainingAmount = getGoalRemainingBeforeCurrentAssignment(
-    tone,
-    right.id,
-    assignmentGoals,
-    spendingGoals,
-    baselineValue,
-  );
+  const leftRemainingAmount = getRemainingAmount(left.id);
+  const rightRemainingAmount = getRemainingAmount(right.id);
+
   if (leftRemainingAmount === null && rightRemainingAmount === null) {
     return left.name.localeCompare(right.name);
   }
+
   if (leftRemainingAmount === null) {
     return 1;
   }
+
   if (rightRemainingAmount === null) {
     return -1;
   }
+
   if (leftRemainingAmount !== rightRemainingAmount) {
     return rightRemainingAmount - leftRemainingAmount;
   }
+
   return left.name.localeCompare(right.name);
 };
 
@@ -206,65 +246,60 @@ const sortFundsByRemainingAmount = function (
  */
 const getTransactionRemainingAmount = function (
   totalAmountToAssign: number | null,
-  value: FundAmount[],
+  fundAssignments: readonly FundAssignmentDraft[],
   index: number,
 ): number {
-  const explicitFundAssignments = getExplicitFundAssignments(value);
+  const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
   if (totalAmountToAssign === null) {
     return explicitFundAssignments[index]?.amount ?? 0;
   }
+
   const amountAssignedElsewhere = explicitFundAssignments.reduce(
     (acc, assignment, assignmentIndex) =>
       assignmentIndex === index ? acc : acc + assignment.amount,
     0,
   );
+
   return Math.max(totalAmountToAssign - amountAssignedElsewhere, 0);
 };
 
 /**
- * Gets the suggested amount to assign to a fund based on the remaining transaction amount and the fund's goal.
+ * Gets the suggested amount to assign to a fund.
  */
 const getSuggestedAmount = function (
-  tone: "income" | "spending",
-  value: FundAmount[],
-  assignmentGoals: readonly AssignmentGoal[],
-  spendingGoals: readonly SpendingGoal[],
-  baselineValue: readonly FundAmount[],
-  index: number,
-  fundId: string,
   totalAmountToAssign: number | null,
+  fundAssignments: readonly FundAssignmentDraft[],
+  index: number,
+  maximumAmount: number | null = null,
 ): number {
   const transactionRemainingAmount = getTransactionRemainingAmount(
     totalAmountToAssign,
-    value,
+    fundAssignments,
     index,
   );
-  if (tone === "income" && typeof fundId === "string" && fundId !== "") {
-    const goalRemainingAmount = getGoalRemainingBeforeCurrentAssignment(
-      tone,
-      fundId,
-      assignmentGoals,
-      spendingGoals,
-      baselineValue,
-    );
-    if (goalRemainingAmount !== null) {
-      return Math.min(
-        transactionRemainingAmount,
-        Math.max(goalRemainingAmount, 0),
-      );
-    }
+
+  if (maximumAmount === null) {
+    return transactionRemainingAmount;
   }
-  return transactionRemainingAmount;
+
+  return Math.min(transactionRemainingAmount, Math.max(maximumAmount, 0));
 };
 
+export type {
+  FundAssignmentDraft,
+  FundAssignmentGoal,
+  FundAssignmentGoalBalance,
+};
 export {
   getAssignedFundAmount,
-  getExplicitFundAssignments,
-  getRemainingFundAmount,
-  updateUnassignedFundAmount,
   getAvailableFundsToAssign,
-  getSuggestedAmount,
-  getProjectedGoalRemainingAmount,
+  getExplicitFundAssignments,
   getFundOptionSecondaryLabel,
+  getIncomeGoalRemainingAmount,
+  getSpendingGoalRemainingAmount,
+  getProjectedGoalRemainingAmount,
+  getRemainingFundAmount,
+  getSuggestedAmount,
   sortFundsByRemainingAmount,
+  updateUnassignedFundAmount,
 };

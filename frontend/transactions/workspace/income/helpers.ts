@@ -9,6 +9,7 @@ import {
 } from "@/framework/data/api";
 import type {
   CreateTransactionRequest,
+  TransactionFund,
   UpdateTransactionRequest,
 } from "@/transactions/transaction";
 import type {
@@ -21,7 +22,7 @@ import {
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
-import type { FundAmount } from "@/funds/types";
+import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 import { hasIncompleteFundAssignments } from "@/funds/helpers";
 
 /**
@@ -56,8 +57,8 @@ interface IncomeSourceDraft {
 interface IncomeDestinationDraft {
   readonly account: Account | null;
   readonly amount: number | null;
-  readonly fundAssignments: FundAmount[];
-  readonly baselineFundAssignments: FundAmount[];
+  readonly fundAssignments: FundAssignmentDraft[];
+  readonly baselineFundAssignments: FundAssignmentDraft[];
 }
 
 /**
@@ -407,6 +408,35 @@ const getSourceFromTransaction = function (
 };
 
 /**
+ * Gets a fund assignment draft from the provided transaction fund.
+ */
+const getFundAssignmentFromTransactionFund = (
+  assignment: TransactionFund,
+): FundAssignmentDraft => ({
+  fundId: assignment.fundId,
+  fundName: assignment.fundName,
+  amount: assignment.amount,
+  previousFundBalance: assignment.previousFundBalance.postedBalance,
+  newFundBalance: assignment.newFundBalance.postedBalance,
+  previousGoalBalance: {
+    remainingAmountToAssignIncludingPending:
+      assignment.previousFundBalance.amountAssigned +
+      assignment.previousFundBalance.pendingAmountAssigned,
+    remainingAmountToSpendIncludingPending:
+      assignment.previousFundBalance.amountSpent +
+      assignment.previousFundBalance.pendingAmountSpent,
+  },
+  newGoalBalance: {
+    remainingAmountToAssignIncludingPending:
+      assignment.newFundBalance.amountAssigned +
+      assignment.newFundBalance.pendingAmountAssigned,
+    remainingAmountToSpendIncludingPending:
+      assignment.newFundBalance.amountSpent +
+      assignment.newFundBalance.pendingAmountSpent,
+  },
+});
+
+/**
  * Gets the collection of destinations from the provided income transaction.
  */
 const getDestinationsFromTransaction = function (
@@ -420,17 +450,11 @@ const getDestinationsFromTransaction = function (
           (account) => account.id === destination.account.accountId,
         ) ?? null,
       amount: destination.amount,
-      fundAssignments: destination.fundAssignments.map((assignment) => ({
-        fundId: assignment.fundId,
-        fundName: assignment.fundName,
-        amount: assignment.amount,
-      })),
+      fundAssignments: destination.fundAssignments.map(
+        getFundAssignmentFromTransactionFund,
+      ),
       baselineFundAssignments: destination.fundAssignments.map(
-        (assignment) => ({
-          fundId: assignment.fundId,
-          fundName: assignment.fundName,
-          amount: assignment.amount,
-        }),
+        getFundAssignmentFromTransactionFund,
       ),
     }),
   );
@@ -454,6 +478,7 @@ export {
   createEmptySource,
   createEmptyDestination,
   getDestinationsFromTransaction,
+  getFundAssignmentFromTransactionFund,
   getNetIncomeAmount,
   getSourceFromTransaction,
   validateFundAssignments,

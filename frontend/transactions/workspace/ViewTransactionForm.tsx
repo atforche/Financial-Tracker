@@ -1,5 +1,6 @@
 "use client";
 
+import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { Button, Stack } from "@mui/material";
 import { type Transaction, TransactionType } from "@/transactions/transaction";
 import AccountTransactionDestinationViewFrame from "@/transactions/workspace/account/AccountTransactionDestinationViewFrame";
@@ -32,6 +33,8 @@ interface ViewTransactionFormProps {
   readonly transaction: Transaction;
   readonly transactionAccountingPeriod: AccountingPeriod;
   readonly funds: Fund[];
+  readonly assignmentGoals: AssignmentGoal[];
+  readonly spendingGoals: SpendingGoal[];
   readonly currentUrl: string;
   readonly workspaceUrl: string;
   readonly editUrl: string;
@@ -44,6 +47,8 @@ const ViewTransactionForm = function ({
   transaction,
   transactionAccountingPeriod,
   funds,
+  assignmentGoals,
+  spendingGoals,
   currentUrl,
   workspaceUrl,
   editUrl,
@@ -98,6 +103,8 @@ const ViewTransactionForm = function ({
                 key={`spending-destination-${index}`}
                 transaction={spendingTransaction}
                 index={index}
+                funds={funds}
+                spendingGoals={spendingGoals}
                 account={destination.account ?? null}
                 location={destination.location ?? null}
                 amount={destination.amount}
@@ -127,6 +134,7 @@ const ViewTransactionForm = function ({
                 transaction={incomeTransaction}
                 index={index}
                 funds={funds}
+                assignmentGoals={assignmentGoals}
                 account={destination.account}
                 amount={destination.amount}
                 fundAssignments={destination.fundAssignments}

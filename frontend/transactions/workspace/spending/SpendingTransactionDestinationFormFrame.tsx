@@ -1,10 +1,11 @@
 import type { Account, AccountIdentifier } from "@/accounts/types";
-import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
-import type { Fund, FundAmount } from "@/funds/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
-import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
+import type { Fund } from "@/funds/types";
+import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 import type { JSX } from "react";
+import SpendingFundAssignmentPlanner from "@/funds/assignmentPlanner/SpendingFundAssignmentPlanner";
+import type { SpendingGoal } from "@/goals/types";
 import TransactionAccountOrLocationFrame from "@/transactions/workspace/TransactionAccountOrLocationFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
@@ -15,7 +16,6 @@ interface SpendingTransactionDestinationFormFrameProps {
   readonly index: number;
   readonly accounts: Account[];
   readonly funds: Fund[];
-  readonly assignmentGoals: AssignmentGoal[];
   readonly spendingGoals: SpendingGoal[];
   readonly account: Account | null;
   readonly setAccount: ((account: Account | null) => void) | null;
@@ -23,9 +23,9 @@ interface SpendingTransactionDestinationFormFrameProps {
   readonly setLocation: ((location: string) => void) | null;
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
-  readonly fundAssignments: FundAmount[];
-  readonly setFundAssignments: (fundAssignments: FundAmount[]) => void;
-  readonly baselineFundAssignments?: FundAmount[];
+  readonly fundAssignments: FundAssignmentDraft[];
+  readonly setFundAssignments: (fundAssignments: FundAssignmentDraft[]) => void;
+  readonly baselineFundAssignments?: FundAssignmentDraft[];
   readonly filter?: ((account: AccountIdentifier) => boolean) | null;
   readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
@@ -33,7 +33,7 @@ interface SpendingTransactionDestinationFormFrameProps {
   readonly fundAssignmentsValid?: boolean;
 }
 
-const emptyFundAssignments: FundAmount[] = [];
+const emptyFundAssignments: FundAssignmentDraft[] = [];
 
 /**
  * Displays a destination frame for one spending destination.
@@ -42,7 +42,6 @@ const SpendingTransactionDestinationFormFrame = function ({
   index,
   accounts,
   funds,
-  assignmentGoals,
   spendingGoals,
   account,
   setAccount,
@@ -81,17 +80,14 @@ const SpendingTransactionDestinationFormFrame = function ({
         value={amount}
         setValue={setAmount}
       />
-      <FundAssignmentPlanner
-        title="Fund Assignments"
-        tone="spending"
-        color={fundAssignmentsValid ? "info" : "error"}
+      <SpendingFundAssignmentPlanner
         funds={funds}
-        assignmentGoals={assignmentGoals}
         spendingGoals={spendingGoals}
         totalAmountToAssign={amount}
-        baselineValue={baselineFundAssignments}
-        value={fundAssignments}
-        setValue={setFundAssignments}
+        fundAssignments={fundAssignments}
+        setFundAssignments={setFundAssignments}
+        baselineFundAssignments={baselineFundAssignments}
+        frameColor={fundAssignmentsValid ? "info" : "error"}
       />
     </TransactionSourceOrDestinationFrame>
   );

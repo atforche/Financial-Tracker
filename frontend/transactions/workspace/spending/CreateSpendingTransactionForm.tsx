@@ -1,6 +1,5 @@
 "use client";
 
-import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { type JSX, useActionState, useEffect, useRef, useState } from "react";
 import {
   type SpendingDestinationDraft,
@@ -20,6 +19,7 @@ import CreateOrUpdateSpendingTransactionForm from "@/transactions/workspace/spen
 import type { CreateTransactionRequest } from "@/transactions/transaction";
 import type { Dayjs } from "dayjs";
 import type { Fund } from "@/funds/types";
+import type { SpendingGoal } from "@/goals/types";
 import createTransaction from "@/transactions/workspace/createTransaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import { useRouter } from "next/navigation";
@@ -31,7 +31,6 @@ interface CreateSpendingTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: Account[];
   readonly funds: Fund[];
-  readonly assignmentGoals: AssignmentGoal[];
   readonly spendingGoals: SpendingGoal[];
   readonly redirectUrl: string;
 }
@@ -43,7 +42,6 @@ const CreateSpendingTransactionForm = function ({
   accountingPeriods,
   accounts,
   funds,
-  assignmentGoals,
   spendingGoals,
   redirectUrl,
 }: CreateSpendingTransactionFormProps): JSX.Element {
@@ -97,7 +95,6 @@ const CreateSpendingTransactionForm = function ({
       formRef={formRef}
       accounts={accounts}
       funds={funds}
-      assignmentGoals={assignmentGoals}
       spendingGoals={spendingGoals}
       accountingPeriods={accountingPeriods}
       accountingPeriod={accountingPeriod}

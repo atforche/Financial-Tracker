@@ -1,8 +1,10 @@
 "use client";
 
-import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
-import type { Fund, FundAmount } from "@/funds/types";
+import {
+  type FundAssignmentDraft,
+  updateUnassignedFundAmount,
+} from "@/funds/assignmentPlanner/helpers";
 import {
   type SpendingDestinationDraft,
   type SpendingSourceDraft,
@@ -21,9 +23,10 @@ import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateOrUpdateTransactionForm from "@/transactions/workspace/CreateOrUpdateTransactionForm";
 import type { Dayjs } from "dayjs";
+import type { Fund } from "@/funds/types";
+import type { SpendingGoal } from "@/goals/types";
 import SpendingTransactionDestinationFormFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFormFrame";
 import SpendingTransactionSourceFormFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFormFrame";
-import { updateUnassignedFundAmount } from "@/funds/assignmentPlanner/helpers";
 
 /**
  * Represents the state of the spending transaction form.
@@ -42,7 +45,6 @@ interface CreateOrUpdateSpendingTransactionFormProps<RequestPayload> {
   readonly formRef: RefObject<HTMLDivElement | null>;
   readonly accounts: Account[];
   readonly funds: Fund[];
-  readonly assignmentGoals: AssignmentGoal[];
   readonly spendingGoals: SpendingGoal[];
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
@@ -75,7 +77,6 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
   formRef,
   accounts,
   funds,
-  assignmentGoals,
   spendingGoals,
   accountingPeriods,
   accountingPeriod,
@@ -98,9 +99,6 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
 }: CreateOrUpdateSpendingTransactionFormProps<RequestPayload>): JSX.Element {
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
-  const currentAssignmentGoals = assignmentGoals.filter(
-    (goal) => goal.accountingPeriodId === accountingPeriod?.id,
-  );
   const currentSpendingGoals = spendingGoals.filter(
     (goal) => goal.accountingPeriodId === accountingPeriod?.id,
   );
@@ -120,8 +118,8 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
 
   const syncDestinationFundAssignments = function (
     destinationAmount: number | null,
-    fundAssignments: FundAmount[],
-  ): FundAmount[] {
+    fundAssignments: FundAssignmentDraft[],
+  ): FundAssignmentDraft[] {
     return updateUnassignedFundAmount(
       unassignedFund,
       destinationAmount,
@@ -215,7 +213,6 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
               index={index}
               accounts={accounts}
               funds={funds}
-              assignmentGoals={currentAssignmentGoals}
               spendingGoals={currentSpendingGoals}
               account={destination.account}
               setAccount={(account): void => {

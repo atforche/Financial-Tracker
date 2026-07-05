@@ -48,7 +48,6 @@ const UpdateTransactionForm = function ({
         accounts={accounts}
         funds={funds}
         assignmentGoals={assignmentGoals}
-        spendingGoals={spendingGoals}
         redirectUrl={redirectUrl}
       />
     );
@@ -60,7 +59,6 @@ const UpdateTransactionForm = function ({
         transactionAccountingPeriod={transactionAccountingPeriod}
         accounts={accounts}
         funds={funds}
-        assignmentGoals={assignmentGoals}
         spendingGoals={spendingGoals}
         redirectUrl={redirectUrl}
       />

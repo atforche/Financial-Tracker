@@ -1,8 +1,10 @@
 "use client";
 
-import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
-import type { Fund, FundAmount } from "@/funds/types";
+import {
+  type FundAssignmentDraft,
+  updateUnassignedFundAmount,
+} from "@/funds/assignmentPlanner/helpers";
 import {
   type IncomeDestinationDraft,
   type IncomeSourceDraft,
@@ -20,11 +22,12 @@ import {
 } from "@/transactions/workspace/helpers";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { AssignmentGoal } from "@/goals/types";
 import CreateOrUpdateTransactionForm from "@/transactions/workspace/CreateOrUpdateTransactionForm";
 import type { Dayjs } from "dayjs";
+import type { Fund } from "@/funds/types";
 import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFormFrame";
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFormFrame";
-import { updateUnassignedFundAmount } from "@/funds/assignmentPlanner/helpers";
 
 /**
  * Represents the state of the income transaction form.
@@ -44,7 +47,6 @@ interface CreateOrUpdateIncomeTransactionFormProps<RequestPayload> {
   readonly accounts: Account[];
   readonly funds: Fund[];
   readonly assignmentGoals: AssignmentGoal[];
-  readonly spendingGoals: SpendingGoal[];
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
   readonly setAccountingPeriod?: Dispatch<
@@ -75,7 +77,6 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
   accounts,
   funds,
   assignmentGoals,
-  spendingGoals,
   accountingPeriods,
   accountingPeriod,
   setAccountingPeriod = null,
@@ -100,9 +101,6 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
   const currentAssignmentGoals = assignmentGoals.filter(
     (goal) => goal.accountingPeriodId === accountingPeriod?.id,
   );
-  const currentSpendingGoals = spendingGoals.filter(
-    (goal) => goal.accountingPeriodId === accountingPeriod?.id,
-  );
   const sourceNetAmount = getNetIncomeAmount(source);
   const destinationTotal = destinations.reduce(
     (total, destination) => total + (destination.amount ?? 0),
@@ -124,8 +122,8 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
 
   const syncDestinationFundAssignments = function (
     destinationAmount: number | null,
-    fundAssignments: FundAmount[],
-  ): FundAmount[] {
+    fundAssignments: FundAssignmentDraft[],
+  ): FundAssignmentDraft[] {
     return updateUnassignedFundAmount(
       unassignedFund,
       destinationAmount,
@@ -242,7 +240,6 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
               accounts={accounts}
               funds={funds}
               assignmentGoals={currentAssignmentGoals}
-              spendingGoals={currentSpendingGoals}
               account={destination.account}
               setAccount={(account): void => {
                 updateDestination(index, (currentDestination) => ({

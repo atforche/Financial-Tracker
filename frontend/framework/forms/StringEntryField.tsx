@@ -24,7 +24,7 @@ const StringEntryField = function ({
     <TextField
       label={label}
       variant="outlined"
-      value={value}
+      value={value ?? ""}
       onChange={(event) => {
         setValue?.(event.target.value);
       }}

@@ -9,6 +9,7 @@ import {
 } from "@/framework/data/api";
 import type {
   CreateTransactionRequest,
+  TransactionFund,
   UpdateTransactionRequest,
 } from "@/transactions/transaction";
 import type {
@@ -16,14 +17,16 @@ import type {
   SpendingTransactionDestination,
 } from "@/transactions/spendingTransaction";
 import {
+  hasIncompleteFundAssignments,
+  isUnassignedFund,
+} from "@/funds/helpers";
+import {
   validateDetails,
   validateSummary,
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
-import type { FundAmount } from "@/funds/types";
-import { getExplicitFundAssignments } from "@/funds/assignmentPlanner/helpers";
-import { hasIncompleteFundAssignments } from "@/funds/helpers";
+import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 
 /**
  * Interface representing a potentially unfinished spending transaction source.
@@ -40,8 +43,8 @@ interface SpendingDestinationDraft {
   readonly account: Account | null;
   readonly location: string | null;
   readonly amount: number | null;
-  readonly fundAssignments: FundAmount[];
-  readonly baselineFundAssignments: FundAmount[];
+  readonly fundAssignments: FundAssignmentDraft[];
+  readonly baselineFundAssignments: FundAssignmentDraft[];
 }
 
 /**
@@ -88,10 +91,10 @@ const validateFundAssignments = function (
 ): boolean {
   return (
     !hasIncompleteFundAssignments(destination.fundAssignments) &&
-    getExplicitFundAssignments(destination.fundAssignments).reduce(
-      (total, assignment) => total + assignment.amount,
-      0,
-    ) === (destination.amount ?? 0)
+    destination.fundAssignments
+      .filter((assignment) => !isUnassignedFund(assignment.fundName))
+      .reduce((total, assignment) => total + assignment.amount, 0) ===
+      (destination.amount ?? 0)
   );
 };
 
@@ -187,12 +190,12 @@ const buildCreateRequest = function (
           ? (destination.location?.trim() ?? null)
           : null,
       amount: destination.amount ?? 0,
-      fundAssignments: getExplicitFundAssignments(
-        destination.fundAssignments,
-      ).map((fundAmount) => ({
-        fundId: fundAmount.fundId,
-        amount: fundAmount.amount,
-      })),
+      fundAssignments: destination.fundAssignments
+        .filter((fundAmount) => !isUnassignedFund(fundAmount.fundName))
+        .map((fundAmount) => ({
+          fundId: fundAmount.fundId,
+          amount: fundAmount.amount,
+        })),
     })),
   };
 };
@@ -234,12 +237,12 @@ const buildUpdateRequest = function (
           ? (destination.location?.trim() ?? null)
           : null,
       amount: destination.amount ?? 0,
-      fundAssignments: getExplicitFundAssignments(
-        destination.fundAssignments,
-      ).map((fundAmount) => ({
-        fundId: fundAmount.fundId,
-        amount: fundAmount.amount,
-      })),
+      fundAssignments: destination.fundAssignments
+        .filter((fundAmount) => !isUnassignedFund(fundAmount.fundName))
+        .map((fundAmount) => ({
+          fundId: fundAmount.fundId,
+          amount: fundAmount.amount,
+        })),
     })),
   };
 };
@@ -307,6 +310,37 @@ const getSourceFromTransaction = function (
 };
 
 /**
+ * Gets a fund assignment draft from the provided transaction fund.
+ */
+const getFundAssignmentFromTransactionFund = (
+  assignment: TransactionFund,
+): FundAssignmentDraft => ({
+  fundId: assignment.fundId,
+  fundName: assignment.fundName,
+  amount: assignment.amount,
+  previousFundBalance: assignment.previousFundBalance.postedBalance,
+  newFundBalance: assignment.newFundBalance.postedBalance,
+  previousGoalBalance: {
+    remainingAmountToAssignIncludingPending:
+      assignment.previousFundBalance.amountAssigned +
+      assignment.previousFundBalance.pendingAmountAssigned,
+    remainingAmountToSpendIncludingPending:
+      assignment.previousFundBalance.postedBalance +
+      assignment.previousFundBalance.pendingAmountAssigned -
+      assignment.previousFundBalance.pendingAmountSpent,
+  },
+  newGoalBalance: {
+    remainingAmountToAssignIncludingPending:
+      assignment.newFundBalance.amountAssigned +
+      assignment.newFundBalance.pendingAmountAssigned,
+    remainingAmountToSpendIncludingPending:
+      assignment.newFundBalance.postedBalance +
+      assignment.newFundBalance.pendingAmountAssigned -
+      assignment.newFundBalance.pendingAmountSpent,
+  },
+});
+
+/**
  * Gets the collection of destinations from the provided spending transaction.
  */
 const getDestinationsFromTransaction = function (
@@ -321,17 +355,11 @@ const getDestinationsFromTransaction = function (
         ) ?? null,
       location: destination.location ?? null,
       amount: destination.amount,
-      fundAssignments: destination.fundAssignments.map((assignment) => ({
-        fundId: assignment.fundId,
-        fundName: assignment.fundName,
-        amount: assignment.amount,
-      })),
+      fundAssignments: destination.fundAssignments.map(
+        getFundAssignmentFromTransactionFund,
+      ),
       baselineFundAssignments: destination.fundAssignments.map(
-        (assignment) => ({
-          fundId: assignment.fundId,
-          fundName: assignment.fundName,
-          amount: assignment.amount,
-        }),
+        getFundAssignmentFromTransactionFund,
       ),
     }),
   );
@@ -348,6 +376,7 @@ export {
   createEmptySource,
   createEmptyDestination,
   getDestinationsFromTransaction,
+  getFundAssignmentFromTransactionFund,
   getSourceFromTransaction,
   validateFundAssignments,
   validateDestination,

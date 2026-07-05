@@ -41,6 +41,8 @@ const TransactionWorkspace = async function ({
     allAccountingPeriods,
     accounts,
     funds,
+    assignmentGoals,
+    spendingGoals,
     currentPage,
     normalizedAccountingPeriodIds,
     normalizedAccountIds,
@@ -124,6 +126,8 @@ const TransactionWorkspace = async function ({
               transaction={selectedTransaction}
               transactionAccountingPeriod={selectedTransactionAccountingPeriod}
               funds={funds}
+              assignmentGoals={assignmentGoals}
+              spendingGoals={spendingGoals}
               currentUrl={workspaceUrl}
               workspaceUrl={workspaceUrl}
               editUrl={editUrl}

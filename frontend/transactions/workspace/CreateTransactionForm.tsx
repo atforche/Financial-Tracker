@@ -79,7 +79,6 @@ const CreateTransactionForm = function ({
           accounts={accounts}
           funds={funds}
           assignmentGoals={assignmentGoals}
-          spendingGoals={spendingGoals}
           redirectUrl={redirectUrl}
         />
       ) : null}
@@ -88,7 +87,6 @@ const CreateTransactionForm = function ({
           accountingPeriods={accountingPeriods}
           accounts={accounts}
           funds={funds}
-          assignmentGoals={assignmentGoals}
           spendingGoals={spendingGoals}
           redirectUrl={redirectUrl}
         />
