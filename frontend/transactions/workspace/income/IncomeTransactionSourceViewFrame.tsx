@@ -9,7 +9,7 @@ import IncomeTransactionItemSection from "@/transactions/workspace/income/Income
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import type { TransactionAccountDraft } from "@/transactions/transaction";
-import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
+import TransactionAccountFrame from "@/transactions/workspace/TransactionAccountFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
@@ -46,10 +46,7 @@ const IncomeTransactionSourceViewFrame = function ({
   return (
     <TransactionSourceOrDestinationFrame title="Income Source">
       {account === null ? null : (
-        <TransactionAccountViewFrame
-          transaction={transaction}
-          account={account}
-        />
+        <TransactionAccountFrame transaction={transaction} account={account} />
       )}
       {(location ?? "") !== "" && (
         <StringEntryField label="Source Location" value={location} />

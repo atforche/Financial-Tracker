@@ -3,7 +3,7 @@ import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import type { TransactionAccountDraft } from "@/transactions/transaction";
-import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
+import TransactionAccountFrame from "@/transactions/workspace/TransactionAccountFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
@@ -30,10 +30,7 @@ const AccountTransactionDestinationViewFrame = function ({
   return (
     <TransactionSourceOrDestinationFrame title={`Destination ${index + 1}`}>
       {account === null ? null : (
-        <TransactionAccountViewFrame
-          transaction={transaction}
-          account={account}
-        />
+        <TransactionAccountFrame transaction={transaction} account={account} />
       )}
       {location !== "" && (
         <StringEntryField label="Location" value={location} />

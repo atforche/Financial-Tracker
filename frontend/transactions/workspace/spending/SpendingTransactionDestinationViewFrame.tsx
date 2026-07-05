@@ -8,7 +8,7 @@ import type { JSX } from "react";
 import SpendingFundAssignmentPlanner from "@/funds/assignmentPlanner/SpendingFundAssignmentPlanner";
 import type { SpendingGoal } from "@/goals/types";
 import type { SpendingTransaction } from "@/transactions/spendingTransaction";
-import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
+import TransactionAccountFrame from "@/transactions/workspace/TransactionAccountFrame";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 import { getFundAssignmentFromTransactionFund } from "@/transactions/workspace/spending/helpers";
@@ -47,7 +47,7 @@ const SpendingTransactionDestinationViewFrame = function ({
         {account === null ? (
           <TransactionDisplayField label="Account" value="None" />
         ) : (
-          <TransactionAccountViewFrame
+          <TransactionAccountFrame
             transaction={transaction}
             account={account}
           />

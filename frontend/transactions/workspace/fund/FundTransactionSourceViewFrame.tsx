@@ -1,7 +1,7 @@
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { JSX } from "react";
 import type { TransactionFundDraft } from "@/transactions/transaction";
-import TransactionFundViewDisplay from "@/transactions/workspace/TransactionFundViewDisplay";
+import TransactionFundFrame from "@/transactions/workspace/TransactionFundFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
@@ -21,7 +21,7 @@ const FundTransactionSourceViewFrame = function ({
 }: FundTransactionSourceViewFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame title="Source">
-      <TransactionFundViewDisplay fund={fund} />
+      <TransactionFundFrame fund={fund} />
       <CurrencyEntryField label="Amount" value={amount} />
     </TransactionSourceOrDestinationFrame>
   );

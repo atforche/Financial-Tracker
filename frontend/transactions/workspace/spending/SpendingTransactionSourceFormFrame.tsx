@@ -6,7 +6,7 @@ import type {
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
 import type { JSX } from "react";
-import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
+import TransactionAccountFrame from "@/transactions/workspace/TransactionAccountFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
@@ -39,7 +39,7 @@ const SpendingTransactionSourceFormFrame = function ({
 }: SpendingTransactionSourceFormFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame title="Source" color={color}>
-      <TransactionAccountViewFrame
+      <TransactionAccountFrame
         accounts={accounts}
         transaction={transaction}
         account={account}

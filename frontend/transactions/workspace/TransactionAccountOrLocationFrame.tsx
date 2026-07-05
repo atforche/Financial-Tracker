@@ -6,7 +6,7 @@ import type {
 } from "@/transactions/transaction";
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
+import TransactionAccountFrame from "@/transactions/workspace/TransactionAccountFrame";
 
 /**
  * Props for the TransactionAccountOrLocationFrame component.
@@ -47,7 +47,7 @@ const TransactionAccountOrLocationFrame = function ({
       alignItems={{ xs: "stretch", md: "flex-start" }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <TransactionAccountViewFrame
+        <TransactionAccountFrame
           accounts={accounts}
           transaction={transaction}
           account={account}

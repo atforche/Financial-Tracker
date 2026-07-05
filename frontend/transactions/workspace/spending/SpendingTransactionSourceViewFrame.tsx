@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import type { SpendingTransaction } from "@/transactions/spendingTransaction";
 import type { TransactionAccountDraft } from "@/transactions/transaction";
-import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
+import TransactionAccountFrame from "@/transactions/workspace/TransactionAccountFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
@@ -21,7 +21,7 @@ const SpendingTransactionSourceViewFrame = function ({
 }: SpendingTransactionSourceViewFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame title="Source">
-      <TransactionAccountViewFrame
+      <TransactionAccountFrame
         transaction={transaction}
         account={account}
         label="Source Account"

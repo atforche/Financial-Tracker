@@ -8,7 +8,7 @@ import type { Fund } from "@/funds/types";
 import IncomeFundAssignmentPlanner from "@/funds/assignmentPlanner/IncomeFundAssignmentPlanner";
 import type { IncomeTransaction } from "@/transactions/incomeTransaction";
 import type { JSX } from "react";
-import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
+import TransactionAccountFrame from "@/transactions/workspace/TransactionAccountFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 import { getFundAssignmentFromTransactionFund } from "@/transactions/workspace/income/helpers";
 
@@ -42,10 +42,7 @@ const IncomeTransactionDestinationViewFrame = function ({
       title={`Income Destination ${index + 1}`}
     >
       {account === null ? null : (
-        <TransactionAccountViewFrame
-          transaction={transaction}
-          account={account}
-        />
+        <TransactionAccountFrame transaction={transaction} account={account} />
       )}
       <CurrencyEntryField label="Destination Amount" value={amount} />
       <IncomeFundAssignmentPlanner

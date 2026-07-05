@@ -10,7 +10,7 @@ import type { Fund } from "@/funds/types";
 import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 import IncomeFundAssignmentPlanner from "@/funds/assignmentPlanner/IncomeFundAssignmentPlanner";
 import type { JSX } from "react";
-import TransactionAccountViewFrame from "@/transactions/workspace/TransactionAccountViewFrame";
+import TransactionAccountFrame from "@/transactions/workspace/TransactionAccountFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 const emptyFundAmounts: FundAssignmentDraft[] = [];
@@ -68,7 +68,7 @@ const IncomeTransactionDestinationFormFrame = function ({
       onRemove={onRemove}
       color={color}
     >
-      <TransactionAccountViewFrame
+      <TransactionAccountFrame
         accounts={accounts}
         transaction={transaction}
         account={account}

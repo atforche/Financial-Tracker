@@ -10,9 +10,9 @@ import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalan
 import type { TransactionFundDraft } from "@/transactions/transaction";
 
 /**
- * Props for the TransactionFundViewDisplay component.
+ * Props for the TransactionFundFrame component.
  */
-interface TransactionFundViewDisplayProps {
+interface TransactionFundFrameProps {
   readonly funds?: Fund[];
   readonly fund: TransactionFundDraft | null;
   readonly setFund?: ((fund: TransactionFundDraft | null) => void) | null;
@@ -26,14 +26,14 @@ const emptyFunds: Fund[] = [];
 /**
  * Displays a transaction fund in a workspace view.
  */
-const TransactionFundViewDisplay = function ({
+const TransactionFundFrame = function ({
   funds = emptyFunds,
   fund,
   setFund = null,
   fundFilter = null,
   label = "Fund",
   balanceChange = null,
-}: TransactionFundViewDisplayProps): JSX.Element {
+}: TransactionFundFrameProps): JSX.Element {
   const displayedFund = setTransactionFundDraftBalanceChange(
     fund,
     balanceChange,
@@ -76,4 +76,4 @@ const TransactionFundViewDisplay = function ({
   );
 };
 
-export default TransactionFundViewDisplay;
+export default TransactionFundFrame;

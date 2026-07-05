@@ -27,9 +27,9 @@ import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalan
 import postTransaction from "@/transactions/workspace/postTransaction";
 
 /**
- * Props for the TransactionAccountViewFrame component.
+ * Props for the TransactionAccountFrame component.
  */
-interface TransactionAccountViewFrameProps {
+interface TransactionAccountFrameProps {
   readonly accounts?: Account[];
   readonly transaction?: Transaction | null;
   readonly account: TransactionAccountDraft | null;
@@ -45,7 +45,7 @@ const emptyAccounts: Account[] = [];
 /**
  * Displays a transaction account and, when applicable, its posting controls.
  */
-const TransactionAccountViewFrame = function ({
+const TransactionAccountFrame = function ({
   accounts = emptyAccounts,
   transaction = null,
   account,
@@ -53,7 +53,7 @@ const TransactionAccountViewFrame = function ({
   accountFilter = null,
   label = "Account",
   balanceChange = null,
-}: TransactionAccountViewFrameProps): JSX.Element {
+}: TransactionAccountFrameProps): JSX.Element {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -181,4 +181,4 @@ const TransactionAccountViewFrame = function ({
   );
 };
 
-export default TransactionAccountViewFrame;
+export default TransactionAccountFrame;
