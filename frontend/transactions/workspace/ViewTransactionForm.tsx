@@ -26,6 +26,7 @@ import { asSpendingTransaction } from "@/transactions/spendingTransaction";
 import dayjs from "dayjs";
 import { getPostedTransactionAccounts } from "@/transactions/postingHelpers";
 import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/transactionAccountDraft";
+import { getTransactionFundDraftFromTransactionFund } from "@/transactions/workspace/transactionFundDraft";
 
 /**
  * Props for the ViewTransactionForm component.
@@ -190,7 +191,9 @@ const ViewTransactionForm = function ({
         <TransactionSourceDestinationLayout
           sourceFrame={
             <FundTransactionSourceViewFrame
-              fund={fundTransaction.source.fund}
+              fund={getTransactionFundDraftFromTransactionFund(
+                fundTransaction.source.fund,
+              )}
               amount={fundTransaction.amount}
             />
           }
@@ -199,7 +202,9 @@ const ViewTransactionForm = function ({
               <FundTransactionDestinationViewFrame
                 key={`fund-destination-${index}`}
                 index={index}
-                fund={destination.fund}
+                fund={getTransactionFundDraftFromTransactionFund(
+                  destination.fund,
+                )}
                 amount={destination.fund.newFundBalance.postedBalance}
               />
             ),

@@ -1,8 +1,9 @@
 import type { Fund, FundIdentifier } from "@/funds/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
-import FundEntryField from "@/funds/FundEntryField";
 import type { JSX } from "react";
+import type { TransactionFundDraft } from "@/transactions/transaction";
+import TransactionFundViewDisplay from "@/transactions/workspace/TransactionFundViewDisplay";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
@@ -10,8 +11,8 @@ import TransactionSourceOrDestinationFrame from "@/transactions/workspace/Transa
  */
 interface FundTransactionSourceFormFrameProps {
   readonly funds: Fund[];
-  readonly fund: Fund | null;
-  readonly setFund: ((fund: Fund | null) => void) | null;
+  readonly fund: TransactionFundDraft | null;
+  readonly setFund: ((fund: TransactionFundDraft | null) => void) | null;
   readonly filter?: ((fund: FundIdentifier) => boolean) | null;
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
@@ -32,21 +33,13 @@ const FundTransactionSourceFormFrame = function ({
 }: FundTransactionSourceFormFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame title="Source" color={color}>
-      <FundEntryField
+      <TransactionFundViewDisplay
+        funds={funds}
+        fund={fund}
+        setFund={setFund}
+        fundFilter={filter}
         label="Source Fund"
-        options={funds}
-        value={fund}
-        setValue={
-          setFund === null
-            ? null
-            : (nextValue): void => {
-                setFund(
-                  funds.find((candidate) => candidate.id === nextValue?.id) ??
-                    null,
-                );
-              }
-        }
-        filter={filter}
+        balanceChange={amount === null ? null : -amount}
       />
       <CurrencyEntryField label="Amount" value={amount} setValue={setAmount} />
     </TransactionSourceOrDestinationFrame>

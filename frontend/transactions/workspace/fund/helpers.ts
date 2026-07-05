@@ -4,22 +4,24 @@ import {
 } from "@/framework/data/api";
 import type {
   CreateTransactionRequest,
+  TransactionFundDraft,
   UpdateTransactionRequest,
 } from "@/transactions/transaction";
-import type { Fund, FundIdentifier } from "@/funds/types";
 import {
   validateDetails,
   validateSummary,
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
+import type { FundIdentifier } from "@/funds/types";
 import type { FundTransaction } from "@/transactions/fundTransaction";
+import { getTransactionFundDraftFromTransactionFund } from "@/transactions/workspace/transactionFundDraft";
 
 /**
  * Interface representing a potentially unfinished fund transaction source.
  */
 interface FundSourceDraft {
-  readonly fund: Fund | null;
+  readonly fund: TransactionFundDraft | null;
   readonly amount: number | null;
 }
 
@@ -27,7 +29,7 @@ interface FundSourceDraft {
  * Interface representing a potentially unfinished fund transaction destination.
  */
 interface FundDestinationDraft {
-  readonly fund: Fund | null;
+  readonly fund: TransactionFundDraft | null;
   readonly amount: number | null;
 }
 
@@ -63,13 +65,13 @@ const validateSource = function (source: FundSourceDraft): boolean {
  */
 const validateDestination = function (
   destination: FundDestinationDraft,
-  sourceFund: Fund | null,
+  sourceFund: TransactionFundDraft | null,
 ): boolean {
   return (
     destination.fund !== null &&
     destination.amount !== null &&
     destination.amount > 0 &&
-    destination.fund.id !== sourceFund?.id
+    destination.fund.fundId !== sourceFund?.fundId
   );
 };
 
@@ -89,7 +91,7 @@ const validateRequest = function (
     0,
   );
   const destinationFundIds = destinations
-    .map((destination) => destination.fund?.id ?? null)
+    .map((destination) => destination.fund?.fundId ?? null)
     .filter((fundId): fundId is string => fundId !== null);
   const hasUniqueDestinationFunds =
     new Set(destinationFundIds).size === destinationFundIds.length;
@@ -135,10 +137,10 @@ const buildCreateRequest = function (
       description,
       amount: source.amount ?? 0,
       source: {
-        fundId: source.fund?.id ?? "",
+        fundId: source.fund?.fundId ?? "",
       },
       destinations: destinations.map((destination) => ({
-        fundId: destination.fund?.id ?? "",
+        fundId: destination.fund?.fundId ?? "",
         amount: destination.amount ?? 0,
       })),
     };
@@ -172,10 +174,10 @@ const buildUpdateRequest = function (
       description,
       amount: source.amount ?? 0,
       source: {
-        fundId: source.fund?.id ?? "",
+        fundId: source.fund?.fundId ?? "",
       },
       destinations: destinations.map((destination) => ({
-        fundId: destination.fund?.id ?? "",
+        fundId: destination.fund?.fundId ?? "",
         amount: destination.amount ?? 0,
       })),
     };
@@ -191,7 +193,7 @@ const buildSourceFundFilter = function (
 ): (fund: FundIdentifier) => boolean {
   return function (fund: FundIdentifier): boolean {
     return !destinations.some(
-      (destination) => destination.fund?.id === fund.id,
+      (destination) => destination.fund?.fundId === fund.id,
     );
   };
 };
@@ -202,17 +204,17 @@ const buildSourceFundFilter = function (
 const buildDestinationFundFilter = function (
   destinations: FundDestinationDraft[],
   index: number,
-  sourceFund: Fund | null,
+  sourceFund: TransactionFundDraft | null,
 ): (fund: FundIdentifier) => boolean {
   return function (fund: FundIdentifier): boolean {
     const fundUsedElsewhere = destinations.some(
       (currentDestination, currentIndex) =>
-        currentIndex !== index && currentDestination.fund?.id === fund.id,
+        currentIndex !== index && currentDestination.fund?.fundId === fund.id,
     );
     if (fundUsedElsewhere) {
       return false;
     }
-    return fund.id !== sourceFund?.id;
+    return fund.id !== sourceFund?.fundId;
   };
 };
 
@@ -221,11 +223,9 @@ const buildDestinationFundFilter = function (
  */
 const getSourceFromTransaction = function (
   transaction: FundTransaction,
-  funds: Fund[],
 ): FundSourceDraft {
   return {
-    fund:
-      funds.find((fund) => fund.id === transaction.source.fund.fundId) ?? null,
+    fund: getTransactionFundDraftFromTransactionFund(transaction.source.fund),
     amount: transaction.amount,
   };
 };
@@ -235,10 +235,9 @@ const getSourceFromTransaction = function (
  */
 const getDestinationsFromTransaction = function (
   transaction: FundTransaction,
-  funds: Fund[],
 ): FundDestinationDraft[] {
   return transaction.destinations.map((destination) => ({
-    fund: funds.find((fund) => fund.id === destination.fund.fundId) ?? null,
+    fund: getTransactionFundDraftFromTransactionFund(destination.fund),
     amount: destination.fund.amount,
   }));
 };

@@ -34,6 +34,16 @@ interface TransactionAccountDraft {
   readonly newAccountBalance: number | null;
 }
 
+/**
+ * Interface representing a draft of a transaction fund.
+ */
+interface TransactionFundDraft {
+  readonly fundId: string | null;
+  readonly fundName: string | null;
+  readonly previousFundBalance: number | null;
+  readonly newFundBalance: number | null;
+}
+
 export {
   type Transaction,
   type TransactionTrends,
@@ -47,6 +57,7 @@ export {
   type UpdateTransactionRequest,
   type PostTransactionRequest,
   type TransactionAccountDraft,
+  type TransactionFundDraft,
   TransactionTrendsModeModel as TransactionTrendsMode,
   TransactionSortOrderModel as TransactionSortOrder,
   TransactionAccountTypeModel as TransactionAccountType,

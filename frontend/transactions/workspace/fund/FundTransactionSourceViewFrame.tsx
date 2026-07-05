@@ -1,6 +1,6 @@
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { JSX } from "react";
-import type { TransactionFund } from "@/transactions/transaction";
+import type { TransactionFundDraft } from "@/transactions/transaction";
 import TransactionFundViewDisplay from "@/transactions/workspace/TransactionFundViewDisplay";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
@@ -8,7 +8,7 @@ import TransactionSourceOrDestinationFrame from "@/transactions/workspace/Transa
  * Props for the FundTransactionSourceViewFrame component.
  */
 interface FundTransactionSourceViewFrameProps {
-  readonly fund: TransactionFund;
+  readonly fund: TransactionFundDraft | null;
   readonly amount: number | null;
 }
 

@@ -45,10 +45,10 @@ const UpdateFundTransactionForm = function ({
     transaction.description,
   );
   const [source, setSource] = useState<FundSourceDraft>(
-    getSourceFromTransaction(transaction, funds),
+    getSourceFromTransaction(transaction),
   );
   const [destinations, setDestinations] = useState<FundDestinationDraft[]>(
-    getDestinationsFromTransaction(transaction, funds),
+    getDestinationsFromTransaction(transaction),
   );
 
   const [state, action, pending] = useActionState(updateTransaction, {});
@@ -56,8 +56,8 @@ const UpdateFundTransactionForm = function ({
   const reset = function (): void {
     setDate(dayjs(transaction.date));
     setDescription(transaction.description);
-    setSource(getSourceFromTransaction(transaction, funds));
-    setDestinations(getDestinationsFromTransaction(transaction, funds));
+    setSource(getSourceFromTransaction(transaction));
+    setDestinations(getDestinationsFromTransaction(transaction));
     focusFirstEntryControl(formRef.current);
   };
 
