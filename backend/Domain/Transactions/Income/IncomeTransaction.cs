@@ -61,11 +61,11 @@ public class IncomeTransaction : Transaction
     {
         if (accountId == null)
         {
-            return Destinations.SelectMany(d => d.FundAssignments).Select(f => f.FundId);
+            return Destinations.SelectMany(d => d.FundAssignments).Select(f => f.FundId).Distinct();
         }
         if (Destinations.Any(d => d.Account.Id == accountId))
         {
-            return Destinations.First(d => d.Account.Id == accountId).FundAssignments.Select(f => f.FundId);
+            return Destinations.First(d => d.Account.Id == accountId).FundAssignments.Select(f => f.FundId).Distinct();
         }
         return [];
     }

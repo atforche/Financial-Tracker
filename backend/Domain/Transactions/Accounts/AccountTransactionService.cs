@@ -97,8 +97,8 @@ public class AccountTransactionService(
         {
             return false;
         }
-        transaction.ClearPostedDates();
         UnpostTransaction(transaction);
+        transaction.ClearPostedDates();
         return true;
     }
 

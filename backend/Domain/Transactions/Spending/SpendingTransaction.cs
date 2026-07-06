@@ -56,11 +56,22 @@ public class SpendingTransaction : Transaction
     {
         if (accountId == null)
         {
-            return Destinations.SelectMany(d => d.FundAssignments).Select(f => f.FundId);
+            return Destinations
+                .SelectMany(d => d.FundAssignments)
+                .Select(f => f.FundId)
+                .Distinct();
+        }
+        if (accountId == Source.Account.Id)
+        {
+            return Destinations
+                .Where(d => d.Account == null)
+                .SelectMany(d => d.FundAssignments)
+                .Select(f => f.FundId)
+                .Distinct();
         }
         if (Destinations.Any(d => d.Account?.Id == accountId))
         {
-            return Destinations.First(d => d.Account?.Id == accountId).FundAssignments.Select(f => f.FundId);
+            return Destinations.First(d => d.Account?.Id == accountId).FundAssignments.Select(f => f.FundId).Distinct();
         }
         return [];
     }
@@ -177,16 +188,20 @@ public class SpendingTransaction : Transaction
     /// <inheritdoc/>
     protected override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse)
     {
-        if (Source.Account.Id != accountId)
+        IEnumerable<FundAmount> fundAmounts = accountId == Source.Account.Id
+            ? _destinations
+                .Where(d => d.Account == null)
+                .SelectMany(d => d.FundAssignments)
+            : _destinations
+                .Where(d => d.Account?.Id == accountId)
+                .SelectMany(d => d.FundAssignments);
+
+        fundAmounts = fundAmounts.Where(fundAmount => fundAmount.FundId == existingFundBalance.FundId);
+        decimal amount = fundAmounts.Sum(f => f.Amount);
+        if (amount == 0)
         {
-            // The fund assignments for a spending transaction post when the source account posts
             return existingFundBalance;
         }
-        var fundAmounts = _destinations
-            .SelectMany(d => d.FundAssignments)
-            .Where(fundAmount => fundAmount.FundId == existingFundBalance.FundId)
-            .ToList();
-        decimal amount = fundAmounts.Sum(f => f.Amount);
         return existingFundBalance.PostPendingAmountSpent(reverse ? -amount : amount);
     }
 }
