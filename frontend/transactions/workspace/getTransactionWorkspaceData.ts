@@ -26,8 +26,6 @@ interface TransactionWorkspaceListData extends TransactionWorkspaceReferenceData
     readonly items: Transaction[];
     readonly totalCount: number;
   };
-  readonly selectedTransaction: Transaction | null;
-  readonly displayedTransactions: Transaction[];
 }
 
 const toRepeatedSearchParam = function (
@@ -155,14 +153,7 @@ const getTransactionById = async function (
 const getTransactionWorkspaceListData = async function (
   searchParams: TransactionWorkspaceSearchParams,
 ): Promise<TransactionWorkspaceListData> {
-  const {
-    accountingPeriodIds,
-    accountIds,
-    fundIds,
-    sort,
-    page,
-    selectedTransactionId,
-  } = searchParams;
+  const { accountingPeriodIds, accountIds, fundIds, sort, page } = searchParams;
   const apiClient = getApiClient();
   const currentPage = normalizePageValue(page);
   const normalizedAccountingPeriodIds =
@@ -186,45 +177,15 @@ const getTransactionWorkspaceListData = async function (
       },
     },
   });
-  const selectedTransactionPromise =
-    typeof selectedTransactionId === "string"
-      ? apiClient.GET("/transactions/{transactionId}", {
-          params: {
-            path: {
-              transactionId: selectedTransactionId,
-            },
-          },
-        })
-      : Promise.resolve({ data: null });
 
-  const [
-    referenceData,
-    { data: transactions },
-    { data: selectedTransactionById },
-  ] = await Promise.all([
+  const [referenceData, { data: transactions }] = await Promise.all([
     getTransactionWorkspaceReferenceData(),
     transactionsPromise,
-    selectedTransactionPromise,
   ]);
 
   if (typeof transactions === "undefined") {
     throw new Error("Failed to fetch transactions");
   }
-
-  const selectedTransaction =
-    selectedTransactionById ??
-    transactions.items.find(
-      (transaction) => transaction.id === selectedTransactionId,
-    ) ??
-    null;
-
-  const displayedTransactions =
-    selectedTransaction !== null &&
-    !transactions.items.some(
-      (transaction) => transaction.id === selectedTransaction.id,
-    )
-      ? [selectedTransaction, ...transactions.items].slice(0, rowsPerPage)
-      : transactions.items;
 
   return {
     ...referenceData,
@@ -233,8 +194,6 @@ const getTransactionWorkspaceListData = async function (
     normalizedAccountIds,
     normalizedFundIds,
     transactions,
-    selectedTransaction,
-    displayedTransactions,
   };
 };
 
