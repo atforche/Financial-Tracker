@@ -15,11 +15,11 @@ import {
 } from "@/transactions/workspace/helpers";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import CreateOrUpdateSpendingTransactionForm from "@/transactions/workspace/spending/CreateOrUpdateSpendingTransactionForm";
 import type { CreateTransactionRequest } from "@/transactions/transaction";
 import type { Dayjs } from "dayjs";
 import type { Fund } from "@/funds/types";
 import type { SpendingGoal } from "@/goals/types";
+import SpendingTransactionForm from "@/transactions/workspace/spending/SpendingTransactionForm";
 import createTransaction from "@/transactions/workspace/createTransaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import { useRouter } from "next/navigation";
@@ -91,7 +91,7 @@ const CreateSpendingTransactionForm = function ({
   );
 
   return (
-    <CreateOrUpdateSpendingTransactionForm<CreateTransactionRequest>
+    <SpendingTransactionForm<CreateTransactionRequest>
       formRef={formRef}
       accounts={accounts}
       funds={funds}

@@ -10,9 +10,9 @@ import TransactionAccountFrame from "@/transactions/workspace/TransactionAccount
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
- * Props for the SpendingTransactionSourceFormFrame component.
+ * Props for the SpendingTransactionSourceFrame component.
  */
-interface SpendingTransactionSourceFormFrameProps {
+interface SpendingTransactionSourceFrameProps {
   readonly accounts: Account[];
   readonly transaction?: Transaction | null;
   readonly account: TransactionAccountDraft | null;
@@ -22,12 +22,13 @@ interface SpendingTransactionSourceFormFrameProps {
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
   readonly color?: FrameColor;
+  readonly readOnly?: boolean;
 }
 
 /**
  * Displays the source frame for a spending transaction.
  */
-const SpendingTransactionSourceFormFrame = function ({
+const SpendingTransactionSourceFrame = function ({
   accounts,
   transaction = null,
   account,
@@ -36,21 +37,26 @@ const SpendingTransactionSourceFormFrame = function ({
   setAmount,
   accountFilter = null,
   color = "info",
-}: SpendingTransactionSourceFormFrameProps): JSX.Element {
+  readOnly = false,
+}: SpendingTransactionSourceFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame title="Source" color={color}>
       <TransactionAccountFrame
         accounts={accounts}
         transaction={transaction}
         account={account}
-        setAccount={setAccount}
+        setAccount={readOnly ? null : setAccount}
         accountFilter={accountFilter}
         label="Source Account"
         balanceChange={amount === null ? null : -amount}
       />
-      <CurrencyEntryField label="Amount" value={amount} setValue={setAmount} />
+      <CurrencyEntryField
+        label="Amount"
+        value={amount}
+        setValue={readOnly ? null : setAmount}
+      />
     </TransactionSourceOrDestinationFrame>
   );
 };
 
-export default SpendingTransactionSourceFormFrame;
+export default SpendingTransactionSourceFrame;

@@ -15,11 +15,11 @@ import {
   syncDestinationAmountsToSource,
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import CreateOrUpdateTransactionForm from "@/transactions/workspace/CreateOrUpdateTransactionForm";
 import type { Dayjs } from "dayjs";
 import type { Fund } from "@/funds/types";
-import FundTransactionDestinationFormFrame from "@/transactions/workspace/fund/FundTransactionDestinationFormFrame";
-import FundTransactionSourceFormFrame from "@/transactions/workspace/fund/FundTransactionSourceFormFrame";
+import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
+import FundTransactionSourceFrame from "@/transactions/workspace/fund/FundTransactionSourceFrame";
+import TransactionForm from "@/transactions/workspace/TransactionForm";
 
 /**
  * Represents the state of the fund transaction form.
@@ -32,9 +32,9 @@ interface TransactionFormState {
 }
 
 /**
- * Props for the CreateOrUpdateFundTransactionForm component.
+ * Props for the FundTransactionForm component.
  */
-interface CreateOrUpdateFundTransactionFormProps<RequestPayload> {
+interface FundTransactionFormProps<RequestPayload> {
   readonly formRef: RefObject<HTMLDivElement | null>;
   readonly funds: Fund[];
   readonly accountingPeriods: AccountingPeriod[];
@@ -62,7 +62,7 @@ interface CreateOrUpdateFundTransactionFormProps<RequestPayload> {
 /**
  * Displays the shared fund transaction form layout used by create and update flows.
  */
-const CreateOrUpdateFundTransactionForm = function <RequestPayload>({
+const FundTransactionForm = function <RequestPayload>({
   formRef,
   funds,
   accountingPeriods,
@@ -83,7 +83,7 @@ const CreateOrUpdateFundTransactionForm = function <RequestPayload>({
   request,
   onReset,
   onSubmit,
-}: CreateOrUpdateFundTransactionFormProps<RequestPayload>): JSX.Element {
+}: FundTransactionFormProps<RequestPayload>): JSX.Element {
   const setDestinationAmount = function (
     destination: FundDestinationDraft,
     amount: number | null,
@@ -126,7 +126,7 @@ const CreateOrUpdateFundTransactionForm = function <RequestPayload>({
   const sourceIsValid = validateSource(source);
 
   return (
-    <CreateOrUpdateTransactionForm
+    <TransactionForm
       formRef={formRef}
       accountingPeriods={accountingPeriods}
       accountingPeriod={accountingPeriod}
@@ -137,7 +137,7 @@ const CreateOrUpdateFundTransactionForm = function <RequestPayload>({
       description={description}
       setDescription={setDescription}
       sourceContent={
-        <FundTransactionSourceFormFrame
+        <FundTransactionSourceFrame
           color={sourceIsValid ? "info" : "error"}
           funds={funds}
           fund={source.fund}
@@ -168,7 +168,7 @@ const CreateOrUpdateFundTransactionForm = function <RequestPayload>({
       destinationContent={
         <>
           {destinations.map((destination, index) => (
-            <FundTransactionDestinationFormFrame
+            <FundTransactionDestinationFrame
               key={`fund-destination-${index}`}
               color={
                 validateDestination(destination, source.fund) ? "info" : "error"
@@ -223,4 +223,4 @@ const CreateOrUpdateFundTransactionForm = function <RequestPayload>({
   );
 };
 
-export default CreateOrUpdateFundTransactionForm;
+export default FundTransactionForm;

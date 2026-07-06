@@ -10,9 +10,9 @@ import {
 import { type JSX, useActionState, useEffect, useRef, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import CreateOrUpdateFundTransactionForm from "@/transactions/workspace/fund/CreateOrUpdateFundTransactionForm";
 import type { Fund } from "@/funds/types";
 import type { FundTransaction } from "@/transactions/fundTransaction";
+import FundTransactionForm from "@/transactions/workspace/fund/FundTransactionForm";
 import type { UpdateTransactionRequest } from "@/transactions/transaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import updateTransaction from "@/transactions/workspace/updateTransaction";
@@ -76,7 +76,7 @@ const UpdateFundTransactionForm = function ({
   );
 
   return (
-    <CreateOrUpdateFundTransactionForm<UpdateTransactionRequest>
+    <FundTransactionForm<UpdateTransactionRequest>
       formRef={formRef}
       funds={funds}
       accountingPeriods={[transactionAccountingPeriod]}

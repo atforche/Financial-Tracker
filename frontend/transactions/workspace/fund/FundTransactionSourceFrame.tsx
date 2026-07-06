@@ -7,9 +7,9 @@ import TransactionFundFrame from "@/transactions/workspace/TransactionFundFrame"
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
- * Props for the FundTransactionSourceFormFrame component.
+ * Props for the FundTransactionSourceFrame component.
  */
-interface FundTransactionSourceFormFrameProps {
+interface FundTransactionSourceFrameProps {
   readonly funds: Fund[];
   readonly fund: TransactionFundDraft | null;
   readonly setFund: ((fund: TransactionFundDraft | null) => void) | null;
@@ -17,12 +17,13 @@ interface FundTransactionSourceFormFrameProps {
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly color?: FrameColor;
+  readonly readOnly?: boolean;
 }
 
 /**
  * Displays the form frame for a fund transaction source.
  */
-const FundTransactionSourceFormFrame = function ({
+const FundTransactionSourceFrame = function ({
   funds,
   fund,
   setFund,
@@ -30,20 +31,25 @@ const FundTransactionSourceFormFrame = function ({
   amount,
   setAmount,
   color = "info",
-}: FundTransactionSourceFormFrameProps): JSX.Element {
+  readOnly = false,
+}: FundTransactionSourceFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame title="Source" color={color}>
       <TransactionFundFrame
         funds={funds}
         fund={fund}
-        setFund={setFund}
+        setFund={readOnly ? null : setFund}
         fundFilter={filter}
         label="Source Fund"
         balanceChange={amount === null ? null : -amount}
       />
-      <CurrencyEntryField label="Amount" value={amount} setValue={setAmount} />
+      <CurrencyEntryField
+        label="Amount"
+        value={amount}
+        setValue={readOnly ? null : setAmount}
+      />
     </TransactionSourceOrDestinationFrame>
   );
 };
 
-export default FundTransactionSourceFormFrame;
+export default FundTransactionSourceFrame;

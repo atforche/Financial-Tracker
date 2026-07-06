@@ -27,12 +27,13 @@ interface AccountTransactionDestinationFrameProps {
   readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
   readonly color?: FrameColor;
+  readonly readOnly?: boolean;
 }
 
 /**
  * Displays a form frame for an account transaction destination.
  */
-const AccountTransactionDestinationFormFrame = function ({
+const AccountTransactionDestinationFrame = function ({
   index,
   accounts,
   transaction = null,
@@ -46,29 +47,35 @@ const AccountTransactionDestinationFormFrame = function ({
   onAdd = null,
   onRemove = null,
   color = "info",
+  readOnly = false,
 }: AccountTransactionDestinationFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
-      onAdd={onAdd}
-      onRemove={onRemove}
+      onAdd={readOnly ? null : onAdd}
+      onRemove={readOnly ? null : onRemove}
       color={color}
     >
       <TransactionAccountOrLocationFrame
         accounts={accounts}
         transaction={transaction}
         account={account}
-        setAccount={setAccount}
+        setAccount={readOnly ? null : setAccount}
         accountCaption="Account"
         locationCaption="Location"
         location={location}
-        setLocation={setLocation}
+        setLocation={readOnly ? null : setLocation}
         accountFilter={accountFilter}
         balanceChange={amount}
+        readOnly={readOnly}
       />
-      <CurrencyEntryField label="Amount" value={amount} setValue={setAmount} />
+      <CurrencyEntryField
+        label="Amount"
+        value={amount}
+        setValue={readOnly ? null : setAmount}
+      />
     </TransactionSourceOrDestinationFrame>
   );
 };
 
-export default AccountTransactionDestinationFormFrame;
+export default AccountTransactionDestinationFrame;

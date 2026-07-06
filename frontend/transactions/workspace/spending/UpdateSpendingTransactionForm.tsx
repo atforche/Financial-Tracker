@@ -11,10 +11,10 @@ import {
 import dayjs, { type Dayjs } from "dayjs";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import CreateOrUpdateSpendingTransactionForm from "@/transactions/workspace/spending/CreateOrUpdateSpendingTransactionForm";
 import type { Fund } from "@/funds/types";
 import type { SpendingGoal } from "@/goals/types";
 import type { SpendingTransaction } from "@/transactions/spendingTransaction";
+import SpendingTransactionForm from "@/transactions/workspace/spending/SpendingTransactionForm";
 import type { UpdateTransactionRequest } from "@/transactions/transaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import updateTransaction from "@/transactions/workspace/updateTransaction";
@@ -82,7 +82,7 @@ const UpdateSpendingTransactionForm = function ({
   );
 
   return (
-    <CreateOrUpdateSpendingTransactionForm<UpdateTransactionRequest>
+    <SpendingTransactionForm<UpdateTransactionRequest>
       formRef={formRef}
       accounts={accounts}
       funds={funds}

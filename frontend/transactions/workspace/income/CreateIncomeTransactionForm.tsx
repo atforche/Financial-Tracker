@@ -16,10 +16,10 @@ import {
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { AssignmentGoal } from "@/goals/types";
-import CreateOrUpdateIncomeTransactionForm from "@/transactions/workspace/income/CreateOrUpdateIncomeTransactionForm";
 import type { CreateTransactionRequest } from "@/transactions/transaction";
 import type { Dayjs } from "dayjs";
 import type { Fund } from "@/funds/types";
+import IncomeTransactionForm from "@/transactions/workspace/income/IncomeTransactionForm";
 import createTransaction from "@/transactions/workspace/createTransaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import { useRouter } from "next/navigation";
@@ -90,7 +90,7 @@ const CreateIncomeTransactionForm = function ({
   );
 
   return (
-    <CreateOrUpdateIncomeTransactionForm<CreateTransactionRequest>
+    <IncomeTransactionForm<CreateTransactionRequest>
       formRef={formRef}
       accounts={accounts}
       funds={funds}

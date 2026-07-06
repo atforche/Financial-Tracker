@@ -14,10 +14,10 @@ import {
   redirectWithSelectedTransaction,
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import CreateOrUpdateFundTransactionForm from "@/transactions/workspace/fund/CreateOrUpdateFundTransactionForm";
 import type { CreateTransactionRequest } from "@/transactions/transaction";
 import type { Dayjs } from "dayjs";
 import type { Fund } from "@/funds/types";
+import FundTransactionForm from "@/transactions/workspace/fund/FundTransactionForm";
 import createTransaction from "@/transactions/workspace/createTransaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import { useRouter } from "next/navigation";
@@ -84,7 +84,7 @@ const CreateFundTransactionForm = function ({
   );
 
   return (
-    <CreateOrUpdateFundTransactionForm<CreateTransactionRequest>
+    <FundTransactionForm<CreateTransactionRequest>
       formRef={formRef}
       funds={funds}
       accountingPeriods={accountingPeriods}

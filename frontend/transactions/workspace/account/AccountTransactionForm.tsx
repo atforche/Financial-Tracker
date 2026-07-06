@@ -1,37 +1,29 @@
 "use client";
 
-import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
 import {
-  type FundAssignmentDraft,
-  updateUnassignedFundAmount,
-} from "@/funds/assignmentPlanner/helpers";
-import {
-  type IncomeDestinationDraft,
-  type IncomeSourceDraft,
+  type AccountDestinationDraft,
+  type AccountSourceDraft,
   buildDestinationAccountFilter,
   buildSourceAccountFilter,
   createEmptyDestination,
-  getNetIncomeAmount,
   validateDestination,
-  validateFundAssignments,
   validateSource,
-} from "@/transactions/workspace/income/helpers";
+} from "@/transactions/workspace/account/helpers";
+import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
 import {
   appendDestinationWithAutofilledAmount,
   syncDestinationAmountsToSource,
 } from "@/transactions/workspace/helpers";
 import type { Account } from "@/accounts/types";
+import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFrame";
+import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFrame";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import type { AssignmentGoal } from "@/goals/types";
-import CreateOrUpdateTransactionForm from "@/transactions/workspace/CreateOrUpdateTransactionForm";
 import type { Dayjs } from "dayjs";
-import type { Fund } from "@/funds/types";
-import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFormFrame";
-import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFormFrame";
 import type { TransactionAccountDraft } from "@/transactions/transaction";
+import TransactionForm from "@/transactions/workspace/TransactionForm";
 
 /**
- * Represents the state of the income transaction form.
+ * Represents the state of the account transaction form.
  */
 interface TransactionFormState {
   readonly success?: boolean;
@@ -41,13 +33,11 @@ interface TransactionFormState {
 }
 
 /**
- * Props for the CreateOrUpdateIncomeTransactionForm component.
+ * Props for the AccountTransactionForm component.
  */
-interface CreateOrUpdateIncomeTransactionFormProps<RequestPayload> {
+interface AccountTransactionFormProps<RequestPayload> {
   readonly formRef: RefObject<HTMLDivElement | null>;
   readonly accounts: Account[];
-  readonly funds: Fund[];
-  readonly assignmentGoals: AssignmentGoal[];
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
   readonly setAccountingPeriod?: Dispatch<
@@ -58,10 +48,10 @@ interface CreateOrUpdateIncomeTransactionFormProps<RequestPayload> {
   readonly defaultDate: Dayjs | null;
   readonly description: string;
   readonly setDescription: Dispatch<SetStateAction<string>>;
-  readonly source: IncomeSourceDraft;
-  readonly setSource: Dispatch<SetStateAction<IncomeSourceDraft>>;
-  readonly destinations: IncomeDestinationDraft[];
-  readonly setDestinations: Dispatch<SetStateAction<IncomeDestinationDraft[]>>;
+  readonly source: AccountSourceDraft;
+  readonly setSource: Dispatch<SetStateAction<AccountSourceDraft>>;
+  readonly destinations: AccountDestinationDraft[];
+  readonly setDestinations: Dispatch<SetStateAction<AccountDestinationDraft[]>>;
   readonly submitLabel: string;
   readonly state: TransactionFormState;
   readonly pending: boolean;
@@ -71,13 +61,11 @@ interface CreateOrUpdateIncomeTransactionFormProps<RequestPayload> {
 }
 
 /**
- * Displays the shared income transaction form layout used by create and update flows.
+ * Displays the shared account transaction form layout used by create and update flows.
  */
-const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
+const AccountTransactionForm = function <RequestPayload>({
   formRef,
   accounts,
-  funds,
-  assignmentGoals,
   accountingPeriods,
   accountingPeriod,
   setAccountingPeriod = null,
@@ -96,21 +84,20 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
   request,
   onReset,
   onSubmit,
-}: CreateOrUpdateIncomeTransactionFormProps<RequestPayload>): JSX.Element {
-  const unassignedFund =
-    funds.find((fund) => fund.name === "Unassigned") ?? null;
-  const currentAssignmentGoals = assignmentGoals.filter(
-    (goal) => goal.accountingPeriodId === accountingPeriod?.id,
-  );
-  const sourceNetAmount = getNetIncomeAmount(source);
-  const destinationTotal = destinations.reduce(
-    (total, destination) => total + (destination.amount ?? 0),
-    0,
-  );
+}: AccountTransactionFormProps<RequestPayload>): JSX.Element {
+  const setDestinationAmount = function (
+    destination: AccountDestinationDraft,
+    amount: number | null,
+  ): AccountDestinationDraft {
+    return {
+      ...destination,
+      amount,
+    };
+  };
 
   const updateDestination = function (
     index: number,
-    recipe: (current: IncomeDestinationDraft) => IncomeDestinationDraft,
+    recipe: (current: AccountDestinationDraft) => AccountDestinationDraft,
   ): void {
     setDestinations((currentDestinations) =>
       currentDestinations.map((currentDestination, currentIndex) =>
@@ -121,37 +108,17 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
     );
   };
 
-  const syncDestinationFundAssignments = function (
-    destinationAmount: number | null,
-    fundAssignments: FundAssignmentDraft[],
-  ): FundAssignmentDraft[] {
-    return updateUnassignedFundAmount(
-      unassignedFund,
-      destinationAmount,
-      fundAssignments,
-    );
-  };
-
-  const setDestinationAmount = function (
-    destination: IncomeDestinationDraft,
-    amount: number | null,
-  ): IncomeDestinationDraft {
-    return {
-      ...destination,
-      amount,
-      fundAssignments: syncDestinationFundAssignments(
-        amount,
-        destination.fundAssignments,
-      ),
-    };
-  };
+  const destinationTotal = destinations.reduce(
+    (total, destination) => total + (destination.amount ?? 0),
+    0,
+  );
 
   const addDestination = function (): void {
     setDestinations((currentDestinations) =>
       appendDestinationWithAutofilledAmount(
         currentDestinations,
         createEmptyDestination(),
-        sourceNetAmount,
+        source.amount,
         setDestinationAmount,
       ),
     );
@@ -163,14 +130,25 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
     setSource((currentSource) => ({
       ...currentSource,
       account,
-      location: account === null ? currentSource.location : null,
+      location: account === null ? currentSource.location : "",
+    }));
+  };
+
+  const setDestinationAccount = function (
+    index: number,
+    account: TransactionAccountDraft | null,
+  ): void {
+    updateDestination(index, (currentDestination) => ({
+      ...currentDestination,
+      account,
+      location: account === null ? currentDestination.location : "",
     }));
   };
 
   const sourceIsValid = validateSource(source);
 
   return (
-    <CreateOrUpdateTransactionForm
+    <TransactionForm
       formRef={formRef}
       accountingPeriods={accountingPeriods}
       accountingPeriod={accountingPeriod}
@@ -181,7 +159,7 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
       description={description}
       setDescription={setDescription}
       sourceContent={
-        <IncomeTransactionSourceFrame
+        <AccountTransactionSourceFrame
           color={sourceIsValid ? "info" : "error"}
           accounts={accounts}
           transaction={null}
@@ -194,82 +172,57 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
               location,
             }));
           }}
-          incomeLines={source.incomeLines}
-          setIncomeLines={(incomeLines): void => {
-            const nextSource = {
-              ...source,
-              incomeLines,
-            };
-            setSource((currentSource) => ({
-              ...currentSource,
-              incomeLines,
-            }));
-            setDestinations((currentDestinations) =>
-              syncDestinationAmountsToSource(
-                currentDestinations,
-                sourceNetAmount,
-                getNetIncomeAmount(nextSource),
-                setDestinationAmount,
-              ),
-            );
-          }}
-          incomeDeductions={source.incomeDeductions}
-          setIncomeDeductions={(incomeDeductions): void => {
-            const nextSource = {
-              ...source,
-              incomeDeductions,
-            };
-            setSource((currentSource) => ({
-              ...currentSource,
-              incomeDeductions,
-            }));
-            setDestinations((currentDestinations) =>
-              syncDestinationAmountsToSource(
-                currentDestinations,
-                sourceNetAmount,
-                getNetIncomeAmount(nextSource),
-                setDestinationAmount,
-              ),
-            );
-          }}
           accountFilter={buildSourceAccountFilter(accounts, destinations)}
+          amount={source.amount}
+          setAmount={(nextAmount): void => {
+            setSource((currentSource) => ({
+              ...currentSource,
+              amount: nextAmount,
+            }));
+            setDestinations((currentDestinations) =>
+              syncDestinationAmountsToSource(
+                currentDestinations,
+                source.amount,
+                nextAmount,
+                setDestinationAmount,
+              ),
+            );
+          }}
         />
       }
       destinationContent={
         <>
           {destinations.map((destination, index) => (
-            <IncomeTransactionDestinationFrame
-              key={`income-destination-${index}`}
-              color={validateDestination(destination) ? "info" : "error"}
-              fundAssignmentsValid={validateFundAssignments(destination)}
+            <AccountTransactionDestinationFrame
+              key={`account-destination-${index}`}
+              color={
+                validateDestination(destination, source.account)
+                  ? "info"
+                  : "error"
+              }
               index={index}
               accounts={accounts}
-              funds={funds}
-              assignmentGoals={currentAssignmentGoals}
               transaction={null}
               account={destination.account}
               setAccount={(account): void => {
+                setDestinationAccount(index, account);
+              }}
+              location={destination.location}
+              setLocation={(location): void => {
                 updateDestination(index, (currentDestination) => ({
                   ...currentDestination,
-                  account,
+                  location,
                 }));
               }}
               amount={destination.amount}
               setAmount={(nextAmount): void => {
-                updateDestination(index, (currentDestination) =>
-                  setDestinationAmount(currentDestination, nextAmount),
-                );
-              }}
-              fundAssignments={destination.fundAssignments}
-              setFundAssignments={(fundAssignments): void => {
                 updateDestination(index, (currentDestination) => ({
                   ...currentDestination,
-                  fundAssignments,
+                  amount: nextAmount,
                 }));
               }}
-              baselineFundAssignments={destination.baselineFundAssignments}
               onAdd={index === 0 ? addDestination : null}
-              filter={buildDestinationAccountFilter(
+              accountFilter={buildDestinationAccountFilter(
                 accounts,
                 destinations,
                 index,
@@ -290,7 +243,7 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
           ))}
         </>
       }
-      sourceAmount={sourceNetAmount}
+      sourceAmount={source.amount}
       destinationAmount={destinationTotal}
       destinationCount={destinations.length}
       submitLabel={submitLabel}
@@ -303,4 +256,4 @@ const CreateOrUpdateIncomeTransactionForm = function <RequestPayload>({
   );
 };
 
-export default CreateOrUpdateIncomeTransactionForm;
+export default AccountTransactionForm;

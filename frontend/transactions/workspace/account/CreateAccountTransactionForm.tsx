@@ -14,8 +14,8 @@ import {
   redirectWithSelectedTransaction,
 } from "@/transactions/workspace/helpers";
 import type { Account } from "@/accounts/types";
+import AccountTransactionForm from "@/transactions/workspace/account/AccountTransactionForm";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import CreateOrUpdateAccountTransactionForm from "@/transactions/workspace/account/CreateOrUpdateAccountTransactionForm";
 import type { CreateTransactionRequest } from "@/transactions/transaction";
 import type { Dayjs } from "dayjs";
 import createTransaction from "@/transactions/workspace/createTransaction";
@@ -84,7 +84,7 @@ const CreateAccountTransactionForm = function ({
   );
 
   return (
-    <CreateOrUpdateAccountTransactionForm<CreateTransactionRequest>
+    <AccountTransactionForm<CreateTransactionRequest>
       formRef={formRef}
       accounts={accounts}
       accountingPeriods={accountingPeriods}

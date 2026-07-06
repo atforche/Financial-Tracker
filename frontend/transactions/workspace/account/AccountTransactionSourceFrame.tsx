@@ -10,9 +10,9 @@ import TransactionAccountOrLocationFrame from "@/transactions/workspace/Transact
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
- * Props for the AccountTransactionSourceFormFrame component.
+ * Props for the AccountTransactionSourceFrame component.
  */
-interface AccountTransactionSourceFormFrameProps {
+interface AccountTransactionSourceFrameProps {
   readonly accounts: Account[];
   readonly transaction?: Transaction | null;
   readonly account: TransactionAccountDraft | null;
@@ -24,12 +24,13 @@ interface AccountTransactionSourceFormFrameProps {
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
   readonly color?: FrameColor;
+  readonly readOnly?: boolean;
 }
 
 /**
  * Displays a form frame for an account transaction source.
  */
-const AccountTransactionSourceFormFrame = function ({
+const AccountTransactionSourceFrame = function ({
   accounts,
   transaction = null,
   account,
@@ -40,24 +41,30 @@ const AccountTransactionSourceFormFrame = function ({
   amount,
   setAmount,
   color = "info",
-}: AccountTransactionSourceFormFrameProps): JSX.Element {
+  readOnly = false,
+}: AccountTransactionSourceFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame title="Source" color={color}>
       <TransactionAccountOrLocationFrame
         accounts={accounts}
         transaction={transaction}
         account={account}
-        setAccount={setAccount}
+        setAccount={readOnly ? null : setAccount}
         accountCaption="Source Account"
         locationCaption="Source Location"
         location={location}
-        setLocation={setLocation}
+        setLocation={readOnly ? null : setLocation}
         accountFilter={accountFilter}
         balanceChange={amount === null ? null : -amount}
+        readOnly={readOnly}
       />
-      <CurrencyEntryField label="Amount" value={amount} setValue={setAmount} />
+      <CurrencyEntryField
+        label="Amount"
+        value={amount}
+        setValue={readOnly ? null : setAmount}
+      />
     </TransactionSourceOrDestinationFrame>
   );
 };
 
-export default AccountTransactionSourceFormFrame;
+export default AccountTransactionSourceFrame;

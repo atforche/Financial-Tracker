@@ -23,6 +23,7 @@ interface TransactionAccountOrLocationFrameProps {
   readonly setLocation: ((location: string) => void) | null;
   readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
   readonly balanceChange?: number | null;
+  readonly readOnly?: boolean;
 }
 
 /**
@@ -39,7 +40,35 @@ const TransactionAccountOrLocationFrame = function ({
   setLocation,
   accountFilter = null,
   balanceChange = null,
+  readOnly = false,
 }: TransactionAccountOrLocationFrameProps): JSX.Element {
+  const hasAccount = account !== null;
+  const hasLocation = (location ?? "").trim() !== "";
+
+  if (readOnly && hasAccount && !hasLocation) {
+    return (
+      <TransactionAccountFrame
+        accounts={accounts}
+        transaction={transaction}
+        account={account}
+        setAccount={null}
+        accountFilter={accountFilter}
+        label={accountCaption}
+        balanceChange={balanceChange}
+      />
+    );
+  }
+
+  if (readOnly && !hasAccount) {
+    return (
+      <StringEntryField
+        label={locationCaption}
+        value={location}
+        setValue={null}
+      />
+    );
+  }
+
   return (
     <Stack
       direction={{ xs: "column", md: "row" }}
@@ -51,7 +80,7 @@ const TransactionAccountOrLocationFrame = function ({
           accounts={accounts}
           transaction={transaction}
           account={account}
-          setAccount={setAccount}
+          setAccount={readOnly ? null : setAccount}
           accountFilter={accountFilter}
           label={accountCaption}
           balanceChange={balanceChange}
@@ -68,7 +97,7 @@ const TransactionAccountOrLocationFrame = function ({
         <StringEntryField
           label={locationCaption}
           value={location}
-          setValue={account === null ? setLocation : null}
+          setValue={readOnly || account !== null ? null : setLocation}
         />
       </Box>
     </Stack>

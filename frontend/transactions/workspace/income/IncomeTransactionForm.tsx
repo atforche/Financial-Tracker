@@ -6,31 +6,32 @@ import {
   updateUnassignedFundAmount,
 } from "@/funds/assignmentPlanner/helpers";
 import {
-  type SpendingDestinationDraft,
-  type SpendingSourceDraft,
+  type IncomeDestinationDraft,
+  type IncomeSourceDraft,
   buildDestinationAccountFilter,
   buildSourceAccountFilter,
   createEmptyDestination,
+  getNetIncomeAmount,
   validateDestination,
   validateFundAssignments,
   validateSource,
-} from "@/transactions/workspace/spending/helpers";
+} from "@/transactions/workspace/income/helpers";
 import {
   appendDestinationWithAutofilledAmount,
   syncDestinationAmountsToSource,
 } from "@/transactions/workspace/helpers";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import CreateOrUpdateTransactionForm from "@/transactions/workspace/CreateOrUpdateTransactionForm";
+import type { AssignmentGoal } from "@/goals/types";
 import type { Dayjs } from "dayjs";
 import type { Fund } from "@/funds/types";
-import type { SpendingGoal } from "@/goals/types";
-import SpendingTransactionDestinationFormFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFormFrame";
-import SpendingTransactionSourceFormFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFormFrame";
+import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFrame";
+import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
 import type { TransactionAccountDraft } from "@/transactions/transaction";
+import TransactionForm from "@/transactions/workspace/TransactionForm";
 
 /**
- * Represents the state of the spending transaction form.
+ * Represents the state of the income transaction form.
  */
 interface TransactionFormState {
   readonly success?: boolean;
@@ -40,13 +41,13 @@ interface TransactionFormState {
 }
 
 /**
- * Props for the CreateOrUpdateSpendingTransactionForm component.
+ * Props for the IncomeTransactionForm component.
  */
-interface CreateOrUpdateSpendingTransactionFormProps<RequestPayload> {
+interface IncomeTransactionFormProps<RequestPayload> {
   readonly formRef: RefObject<HTMLDivElement | null>;
   readonly accounts: Account[];
   readonly funds: Fund[];
-  readonly spendingGoals: SpendingGoal[];
+  readonly assignmentGoals: AssignmentGoal[];
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
   readonly setAccountingPeriod?: Dispatch<
@@ -57,12 +58,10 @@ interface CreateOrUpdateSpendingTransactionFormProps<RequestPayload> {
   readonly defaultDate: Dayjs | null;
   readonly description: string;
   readonly setDescription: Dispatch<SetStateAction<string>>;
-  readonly source: SpendingSourceDraft;
-  readonly setSource: Dispatch<SetStateAction<SpendingSourceDraft>>;
-  readonly destinations: SpendingDestinationDraft[];
-  readonly setDestinations: Dispatch<
-    SetStateAction<SpendingDestinationDraft[]>
-  >;
+  readonly source: IncomeSourceDraft;
+  readonly setSource: Dispatch<SetStateAction<IncomeSourceDraft>>;
+  readonly destinations: IncomeDestinationDraft[];
+  readonly setDestinations: Dispatch<SetStateAction<IncomeDestinationDraft[]>>;
   readonly submitLabel: string;
   readonly state: TransactionFormState;
   readonly pending: boolean;
@@ -72,13 +71,13 @@ interface CreateOrUpdateSpendingTransactionFormProps<RequestPayload> {
 }
 
 /**
- * Displays the shared spending transaction form layout used by create and update flows.
+ * Displays the shared income transaction form layout used by create and update flows.
  */
-const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
+const IncomeTransactionForm = function <RequestPayload>({
   formRef,
   accounts,
   funds,
-  spendingGoals,
+  assignmentGoals,
   accountingPeriods,
   accountingPeriod,
   setAccountingPeriod = null,
@@ -97,16 +96,21 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
   request,
   onReset,
   onSubmit,
-}: CreateOrUpdateSpendingTransactionFormProps<RequestPayload>): JSX.Element {
+}: IncomeTransactionFormProps<RequestPayload>): JSX.Element {
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
-  const currentSpendingGoals = spendingGoals.filter(
+  const currentAssignmentGoals = assignmentGoals.filter(
     (goal) => goal.accountingPeriodId === accountingPeriod?.id,
+  );
+  const sourceNetAmount = getNetIncomeAmount(source);
+  const destinationTotal = destinations.reduce(
+    (total, destination) => total + (destination.amount ?? 0),
+    0,
   );
 
   const updateDestination = function (
     index: number,
-    recipe: (current: SpendingDestinationDraft) => SpendingDestinationDraft,
+    recipe: (current: IncomeDestinationDraft) => IncomeDestinationDraft,
   ): void {
     setDestinations((currentDestinations) =>
       currentDestinations.map((currentDestination, currentIndex) =>
@@ -129,9 +133,9 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
   };
 
   const setDestinationAmount = function (
-    destination: SpendingDestinationDraft,
+    destination: IncomeDestinationDraft,
     amount: number | null,
-  ): SpendingDestinationDraft {
+  ): IncomeDestinationDraft {
     return {
       ...destination,
       amount,
@@ -142,37 +146,31 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
     };
   };
 
-  const destinationTotal = destinations.reduce(
-    (total, destination) => total + (destination.amount ?? 0),
-    0,
-  );
-
   const addDestination = function (): void {
     setDestinations((currentDestinations) =>
       appendDestinationWithAutofilledAmount(
         currentDestinations,
         createEmptyDestination(),
-        source.amount,
+        sourceNetAmount,
         setDestinationAmount,
       ),
     );
   };
 
-  const setDestinationAccount = function (
-    index: number,
+  const setSourceAccount = function (
     account: TransactionAccountDraft | null,
   ): void {
-    updateDestination(index, (currentDestination) => ({
-      ...currentDestination,
+    setSource((currentSource) => ({
+      ...currentSource,
       account,
-      location: account === null ? currentDestination.location : "",
+      location: account === null ? currentSource.location : null,
     }));
   };
 
   const sourceIsValid = validateSource(source);
 
   return (
-    <CreateOrUpdateTransactionForm
+    <TransactionForm
       formRef={formRef}
       accountingPeriods={accountingPeriods}
       accountingPeriod={accountingPeriod}
@@ -183,28 +181,53 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
       description={description}
       setDescription={setDescription}
       sourceContent={
-        <SpendingTransactionSourceFormFrame
+        <IncomeTransactionSourceFrame
           color={sourceIsValid ? "info" : "error"}
           accounts={accounts}
           transaction={null}
           account={source.account}
-          setAccount={(account): void => {
+          setAccount={setSourceAccount}
+          location={source.location}
+          setLocation={(location): void => {
             setSource((currentSource) => ({
               ...currentSource,
-              account,
+              location,
             }));
           }}
-          amount={source.amount}
-          setAmount={(amount): void => {
+          incomeLines={source.incomeLines}
+          setIncomeLines={(incomeLines): void => {
+            const nextSource = {
+              ...source,
+              incomeLines,
+            };
             setSource((currentSource) => ({
               ...currentSource,
-              amount,
+              incomeLines,
             }));
             setDestinations((currentDestinations) =>
               syncDestinationAmountsToSource(
                 currentDestinations,
-                source.amount,
-                amount,
+                sourceNetAmount,
+                getNetIncomeAmount(nextSource),
+                setDestinationAmount,
+              ),
+            );
+          }}
+          incomeDeductions={source.incomeDeductions}
+          setIncomeDeductions={(incomeDeductions): void => {
+            const nextSource = {
+              ...source,
+              incomeDeductions,
+            };
+            setSource((currentSource) => ({
+              ...currentSource,
+              incomeDeductions,
+            }));
+            setDestinations((currentDestinations) =>
+              syncDestinationAmountsToSource(
+                currentDestinations,
+                sourceNetAmount,
+                getNetIncomeAmount(nextSource),
                 setDestinationAmount,
               ),
             );
@@ -215,28 +238,20 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
       destinationContent={
         <>
           {destinations.map((destination, index) => (
-            <SpendingTransactionDestinationFormFrame
-              key={`spending-destination-${index}`}
-              color={
-                validateDestination(destination, source.account)
-                  ? "info"
-                  : "error"
-              }
+            <IncomeTransactionDestinationFrame
+              key={`income-destination-${index}`}
+              color={validateDestination(destination) ? "info" : "error"}
               fundAssignmentsValid={validateFundAssignments(destination)}
               index={index}
               accounts={accounts}
               funds={funds}
-              spendingGoals={currentSpendingGoals}
+              assignmentGoals={currentAssignmentGoals}
               transaction={null}
               account={destination.account}
               setAccount={(account): void => {
-                setDestinationAccount(index, account);
-              }}
-              location={destination.location}
-              setLocation={(location): void => {
                 updateDestination(index, (currentDestination) => ({
                   ...currentDestination,
-                  location,
+                  account,
                 }));
               }}
               amount={destination.amount}
@@ -275,7 +290,7 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
           ))}
         </>
       }
-      sourceAmount={source.amount}
+      sourceAmount={sourceNetAmount}
       destinationAmount={destinationTotal}
       destinationCount={destinations.length}
       submitLabel={submitLabel}
@@ -288,4 +303,4 @@ const CreateOrUpdateSpendingTransactionForm = function <RequestPayload>({
   );
 };
 
-export default CreateOrUpdateSpendingTransactionForm;
+export default IncomeTransactionForm;

@@ -3,21 +3,37 @@
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { Button, Stack } from "@mui/material";
 import { type Transaction, TransactionType } from "@/transactions/transaction";
-import AccountTransactionDestinationViewFrame from "@/transactions/workspace/account/AccountTransactionDestinationViewFrame";
-import AccountTransactionSourceViewFrame from "@/transactions/workspace/account/AccountTransactionSourceViewFrame";
+import {
+  getDestinationsFromTransaction as getAccountDestinationsFromTransaction,
+  getSourceFromTransaction as getAccountSourceFromTransaction,
+} from "@/transactions/workspace/account/helpers";
+import {
+  getDestinationsFromTransaction as getFundDestinationsFromTransaction,
+  getSourceFromTransaction as getFundSourceFromTransaction,
+} from "@/transactions/workspace/fund/helpers";
+import {
+  getDestinationsFromTransaction as getIncomeDestinationsFromTransaction,
+  getSourceFromTransaction as getIncomeSourceFromTransaction,
+  getNetIncomeAmount,
+} from "@/transactions/workspace/income/helpers";
+import {
+  getDestinationsFromTransaction as getSpendingDestinationsFromTransaction,
+  getSourceFromTransaction as getSpendingSourceFromTransaction,
+} from "@/transactions/workspace/spending/helpers";
+import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFrame";
+import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFrame";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import DeleteTransactionForm from "@/transactions/workspace/DeleteTransactionForm";
 import type { Fund } from "@/funds/types";
-import FundTransactionDestinationViewFrame from "@/transactions/workspace/fund/FundTransactionDestinationViewFrame";
-import FundTransactionSourceViewFrame from "@/transactions/workspace/fund/FundTransactionSourceViewFrame";
-import IncomeTransactionDestinationViewFrame from "@/transactions/workspace/income/IncomeTransactionDestinationViewFrame";
-import IncomeTransactionSourceViewFrame from "@/transactions/workspace/income/IncomeTransactionSourceViewFrame";
+import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
+import FundTransactionSourceFrame from "@/transactions/workspace/fund/FundTransactionSourceFrame";
+import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFrame";
+import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
 import type { JSX } from "react";
 import Link from "next/link";
-import SpendingTransactionDestinationViewFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationViewFrame";
-import SpendingTransactionSourceViewFrame from "@/transactions/workspace/spending/SpendingTransactionSourceViewFrame";
-import TransactionDetailsFrame from "@/transactions/workspace/TransactionDetailsFrame";
-import TransactionSourceDestinationLayout from "@/transactions/workspace/TransactionSourceDestinationLayout";
+import SpendingTransactionDestinationFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFrame";
+import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
+import TransactionForm from "@/transactions/workspace/TransactionForm";
 import UnpostTransactionForm from "@/transactions/workspace/UnpostTransactionForm";
 import { asAccountTransaction } from "@/transactions/accountTransaction";
 import { asFundTransaction } from "@/transactions/fundTransaction";
@@ -25,8 +41,6 @@ import { asIncomeTransaction } from "@/transactions/incomeTransaction";
 import { asSpendingTransaction } from "@/transactions/spendingTransaction";
 import dayjs from "dayjs";
 import { getPostedTransactionAccounts } from "@/transactions/postingHelpers";
-import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/transactionAccountDraft";
-import { getTransactionFundDraftFromTransactionFund } from "@/transactions/workspace/transactionFundDraft";
 
 /**
  * Props for the ViewTransactionForm component.
@@ -42,8 +56,10 @@ interface ViewTransactionFormProps {
   readonly editUrl: string;
 }
 
+const emptyFunds: Fund[] = [];
+
 /**
- * Displays a read-only transaction detail view for the selected transaction.
+ * Displays the read-only transaction detail view using the shared transaction form shell.
  */
 const ViewTransactionForm = function ({
   transaction,
@@ -61,157 +77,223 @@ const ViewTransactionForm = function ({
   const fundTransaction = asFundTransaction(transaction);
   const postedAccountCount = getPostedTransactionAccounts(transaction).length;
 
-  return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
-      <TransactionDetailsFrame
-        accountingPeriods={[]}
-        accountingPeriod={transactionAccountingPeriod}
-        setAccountingPeriod={null}
-        date={dayjs(transaction.date)}
-        setDate={null}
-        descriptionValue={transaction.description}
-        setDescriptionValue={null}
-        headerContent={
-          <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-            <Button component={Link} href={editUrl} variant="contained">
-              Edit
-            </Button>
-            {postedAccountCount > 0 ? (
-              <UnpostTransactionForm
-                transaction={transaction}
-                redirectUrl={currentUrl}
-              />
-            ) : null}
-            <DeleteTransactionForm
-              transaction={transaction}
-              redirectUrl={workspaceUrl}
-            />
-          </Stack>
-        }
+  let sourceContent: JSX.Element | null = null;
+  let destinationContent: JSX.Element[] = [];
+  let sourceAmount: number | null = null;
+  let destinationAmount = 0;
+
+  if (
+    transaction.transactionType === TransactionType.Spending &&
+    spendingTransaction !== null
+  ) {
+    const source = getSpendingSourceFromTransaction(spendingTransaction);
+    const destinations =
+      getSpendingDestinationsFromTransaction(spendingTransaction);
+
+    sourceAmount = source.amount;
+    destinationAmount = destinations.reduce(
+      (total, destination) => total + (destination.amount ?? 0),
+      0,
+    );
+    sourceContent = (
+      <SpendingTransactionSourceFrame
+        readOnly
+        accounts={[]}
+        transaction={spendingTransaction}
+        account={source.account}
+        setAccount={null}
+        amount={source.amount}
+        setAmount={null}
       />
+    );
+    destinationContent = destinations.map((destination, index) => (
+      <SpendingTransactionDestinationFrame
+        key={`spending-destination-${index}`}
+        readOnly
+        index={index}
+        accounts={[]}
+        funds={funds}
+        spendingGoals={spendingGoals}
+        transaction={spendingTransaction}
+        account={destination.account}
+        setAccount={null}
+        location={destination.location}
+        setLocation={null}
+        amount={destination.amount}
+        setAmount={null}
+        fundAssignments={destination.fundAssignments}
+        setFundAssignments={null}
+        baselineFundAssignments={destination.baselineFundAssignments}
+      />
+    ));
+  } else if (
+    transaction.transactionType === TransactionType.Income &&
+    incomeTransaction !== null
+  ) {
+    const source = getIncomeSourceFromTransaction(incomeTransaction);
+    const destinations =
+      getIncomeDestinationsFromTransaction(incomeTransaction);
 
-      {transaction.transactionType === TransactionType.Spending &&
-      spendingTransaction !== null ? (
-        <TransactionSourceDestinationLayout
-          sourceFrame={
-            <SpendingTransactionSourceViewFrame
-              transaction={spendingTransaction}
-              account={
-                getTransactionAccountDraftFromTransactionAccount(
-                  spendingTransaction.source.account,
-                ) ?? null
-              }
-            />
-          }
-          destinationFrames={spendingTransaction.destinations.map(
-            (destination, index) => (
-              <SpendingTransactionDestinationViewFrame
-                key={`spending-destination-${index}`}
-                transaction={spendingTransaction}
-                index={index}
-                funds={funds}
-                spendingGoals={spendingGoals}
-                account={getTransactionAccountDraftFromTransactionAccount(
-                  destination.account,
-                )}
-                location={destination.location ?? null}
-                amount={destination.amount}
-                fundAssignments={destination.fundAssignments}
-              />
-            ),
-          )}
-        />
-      ) : null}
+    sourceAmount = getNetIncomeAmount(source);
+    destinationAmount = destinations.reduce(
+      (total, destination) => total + (destination.amount ?? 0),
+      0,
+    );
+    sourceContent = (
+      <IncomeTransactionSourceFrame
+        readOnly
+        accounts={[]}
+        transaction={incomeTransaction}
+        account={source.account}
+        setAccount={null}
+        location={source.location}
+        setLocation={null}
+        incomeLines={source.incomeLines}
+        setIncomeLines={null}
+        incomeDeductions={source.incomeDeductions}
+        setIncomeDeductions={null}
+      />
+    );
+    destinationContent = destinations.map((destination, index) => (
+      <IncomeTransactionDestinationFrame
+        key={`income-destination-${index}`}
+        readOnly
+        index={index}
+        accounts={[]}
+        funds={funds}
+        assignmentGoals={assignmentGoals}
+        transaction={incomeTransaction}
+        account={destination.account}
+        setAccount={null}
+        amount={destination.amount}
+        setAmount={null}
+        fundAssignments={destination.fundAssignments}
+        setFundAssignments={null}
+        baselineFundAssignments={destination.baselineFundAssignments}
+      />
+    ));
+  } else if (
+    transaction.transactionType === TransactionType.Account &&
+    accountTransaction !== null
+  ) {
+    const source = getAccountSourceFromTransaction(accountTransaction);
+    const destinations =
+      getAccountDestinationsFromTransaction(accountTransaction);
 
-      {transaction.transactionType === TransactionType.Income &&
-      incomeTransaction !== null ? (
-        <TransactionSourceDestinationLayout
-          sourceFrame={
-            <IncomeTransactionSourceViewFrame
-              transaction={incomeTransaction}
-              account={getTransactionAccountDraftFromTransactionAccount(
-                incomeTransaction.source.account,
-              )}
-              location={incomeTransaction.source.location ?? null}
-              incomeLines={incomeTransaction.source.incomeLines}
-              incomeDeductions={incomeTransaction.source.incomeDeductions}
-            />
-          }
-          destinationFrames={incomeTransaction.destinations.map(
-            (destination, index) => (
-              <IncomeTransactionDestinationViewFrame
-                key={`income-destination-${index}`}
-                transaction={incomeTransaction}
-                index={index}
-                funds={funds}
-                assignmentGoals={assignmentGoals}
-                account={getTransactionAccountDraftFromTransactionAccount(
-                  destination.account,
-                )}
-                amount={destination.amount}
-                fundAssignments={destination.fundAssignments}
-              />
-            ),
-          )}
-        />
-      ) : null}
+    sourceAmount = source.amount;
+    destinationAmount = destinations.reduce(
+      (total, destination) => total + (destination.amount ?? 0),
+      0,
+    );
+    sourceContent = (
+      <AccountTransactionSourceFrame
+        readOnly
+        accounts={[]}
+        transaction={accountTransaction}
+        account={source.account}
+        setAccount={null}
+        location={source.location}
+        setLocation={null}
+        amount={source.amount}
+        setAmount={null}
+      />
+    );
+    destinationContent = destinations.map((destination, index) => (
+      <AccountTransactionDestinationFrame
+        key={`account-destination-${index}`}
+        readOnly
+        index={index}
+        accounts={[]}
+        transaction={accountTransaction}
+        account={destination.account}
+        setAccount={null}
+        location={destination.location}
+        setLocation={null}
+        amount={destination.amount}
+        setAmount={null}
+      />
+    ));
+  } else if (
+    transaction.transactionType === TransactionType.Fund &&
+    fundTransaction !== null
+  ) {
+    const source = getFundSourceFromTransaction(fundTransaction);
+    const destinations = getFundDestinationsFromTransaction(fundTransaction);
 
-      {transaction.transactionType === TransactionType.Account &&
-      accountTransaction !== null ? (
-        <TransactionSourceDestinationLayout
-          sourceFrame={
-            <AccountTransactionSourceViewFrame
-              transaction={accountTransaction}
-              account={getTransactionAccountDraftFromTransactionAccount(
-                accountTransaction.source.account,
-              )}
-              location={accountTransaction.source.location ?? ""}
-              amount={accountTransaction.amount}
-            />
-          }
-          destinationFrames={accountTransaction.destinations.map(
-            (destination, index) => (
-              <AccountTransactionDestinationViewFrame
-                key={`account-destination-${index}`}
-                transaction={accountTransaction}
-                index={index}
-                account={getTransactionAccountDraftFromTransactionAccount(
-                  destination.account,
-                )}
-                location={destination.location ?? ""}
-                amount={destination.amount}
-              />
-            ),
-          )}
-        />
-      ) : null}
+    sourceAmount = source.amount;
+    destinationAmount = destinations.reduce(
+      (total, destination) => total + (destination.amount ?? 0),
+      0,
+    );
+    sourceContent = (
+      <FundTransactionSourceFrame
+        readOnly
+        funds={funds}
+        fund={source.fund}
+        setFund={null}
+        amount={source.amount}
+        setAmount={null}
+      />
+    );
+    destinationContent = destinations.map((destination, index) => (
+      <FundTransactionDestinationFrame
+        key={`fund-destination-${index}`}
+        readOnly
+        index={index}
+        funds={funds}
+        fund={destination.fund}
+        setFund={null}
+        amount={destination.amount}
+        setAmount={null}
+      />
+    ));
+  }
 
-      {transaction.transactionType === TransactionType.Fund &&
-      fundTransaction !== null ? (
-        <TransactionSourceDestinationLayout
-          sourceFrame={
-            <FundTransactionSourceViewFrame
-              fund={getTransactionFundDraftFromTransactionFund(
-                fundTransaction.source.fund,
-              )}
-              amount={fundTransaction.amount}
+  return (
+    <TransactionForm
+      readOnly
+      accountingPeriods={[]}
+      accountingPeriod={transactionAccountingPeriod}
+      setAccountingPeriod={null}
+      date={dayjs(transaction.date)}
+      setDate={null}
+      defaultDate={null}
+      description={transaction.description}
+      setDescription={null}
+      headerContent={
+        <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
+          <Button component={Link} href={editUrl} variant="contained">
+            Edit
+          </Button>
+          {postedAccountCount > 0 ? (
+            <UnpostTransactionForm
+              transaction={transaction}
+              redirectUrl={currentUrl}
             />
-          }
-          destinationFrames={fundTransaction.destinations.map(
-            (destination, index) => (
-              <FundTransactionDestinationViewFrame
-                key={`fund-destination-${index}`}
-                index={index}
-                fund={getTransactionFundDraftFromTransactionFund(
-                  destination.fund,
-                )}
-                amount={destination.fund.newFundBalance.postedBalance}
-              />
-            ),
-          )}
-        />
-      ) : null}
-    </Stack>
+          ) : null}
+          <DeleteTransactionForm
+            transaction={transaction}
+            redirectUrl={workspaceUrl}
+          />
+        </Stack>
+      }
+      sourceContent={
+        sourceContent ?? (
+          <FundTransactionSourceFrame
+            readOnly
+            funds={emptyFunds}
+            fund={null}
+            setFund={null}
+            amount={null}
+            setAmount={null}
+          />
+        )
+      }
+      destinationContent={destinationContent}
+      sourceAmount={sourceAmount}
+      destinationAmount={destinationAmount}
+      destinationCount={destinationContent.length}
+    />
   );
 };
 

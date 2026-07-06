@@ -11,8 +11,8 @@ import { type JSX, useActionState, useEffect, useRef, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import type { Account } from "@/accounts/types";
 import type { AccountTransaction } from "@/transactions/accountTransaction";
+import AccountTransactionForm from "@/transactions/workspace/account/AccountTransactionForm";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import CreateOrUpdateAccountTransactionForm from "@/transactions/workspace/account/CreateOrUpdateAccountTransactionForm";
 import type { UpdateTransactionRequest } from "@/transactions/transaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import updateTransaction from "@/transactions/workspace/updateTransaction";
@@ -76,7 +76,7 @@ const UpdateAccountTransactionForm = function ({
   );
 
   return (
-    <CreateOrUpdateAccountTransactionForm<UpdateTransactionRequest>
+    <AccountTransactionForm<UpdateTransactionRequest>
       formRef={formRef}
       accounts={accounts}
       accountingPeriods={[transactionAccountingPeriod]}

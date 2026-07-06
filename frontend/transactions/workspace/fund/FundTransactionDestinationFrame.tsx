@@ -7,9 +7,9 @@ import TransactionFundFrame from "@/transactions/workspace/TransactionFundFrame"
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
- * Props for the FundTransactionDestinationFormFrame component.
+ * Props for the FundTransactionDestinationFrame component.
  */
-interface FundTransactionDestinationFormFrameProps {
+interface FundTransactionDestinationFrameProps {
   readonly index: number;
   readonly funds: Fund[];
   readonly fund: TransactionFundDraft | null;
@@ -20,12 +20,13 @@ interface FundTransactionDestinationFormFrameProps {
   readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
   readonly color?: FrameColor;
+  readonly readOnly?: boolean;
 }
 
 /**
  * Displays a form frame for one fund transaction destination.
  */
-const FundTransactionDestinationFormFrame = function ({
+const FundTransactionDestinationFrame = function ({
   index,
   funds,
   fund,
@@ -36,18 +37,19 @@ const FundTransactionDestinationFormFrame = function ({
   onAdd = null,
   onRemove = null,
   color = "info",
-}: FundTransactionDestinationFormFrameProps): JSX.Element {
+  readOnly = false,
+}: FundTransactionDestinationFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
-      onAdd={onAdd}
-      onRemove={onRemove}
+      onAdd={readOnly ? null : onAdd}
+      onRemove={readOnly ? null : onRemove}
       color={color}
     >
       <TransactionFundFrame
         funds={funds}
         fund={fund}
-        setFund={setFund}
+        setFund={readOnly ? null : setFund}
         fundFilter={filter}
         label="Destination Fund"
         balanceChange={amount}
@@ -55,10 +57,10 @@ const FundTransactionDestinationFormFrame = function ({
       <CurrencyEntryField
         label="Destination Amount"
         value={amount}
-        setValue={setAmount}
+        setValue={readOnly ? null : setAmount}
       />
     </TransactionSourceOrDestinationFrame>
   );
 };
 
-export default FundTransactionDestinationFormFrame;
+export default FundTransactionDestinationFrame;
