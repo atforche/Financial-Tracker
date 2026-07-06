@@ -43,7 +43,6 @@ const TransactionWorkspaceCreatePage = async function ({
       <TransactionWorkspacePageHeader
         backHref={workspaceUrl}
         title="Create Transaction"
-        description="Choose the transaction type and complete the matching form."
       />
       <CreateTransactionForm
         accountingPeriods={openAccountingPeriods}

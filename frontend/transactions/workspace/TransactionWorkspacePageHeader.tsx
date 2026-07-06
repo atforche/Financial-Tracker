@@ -9,7 +9,6 @@ import Link from "next/link";
 interface TransactionWorkspacePageHeaderProps {
   readonly backHref: string;
   readonly title: string;
-  readonly description: string;
 }
 
 /**
@@ -18,7 +17,6 @@ interface TransactionWorkspacePageHeaderProps {
 const TransactionWorkspacePageHeader = function ({
   backHref,
   title,
-  description,
 }: TransactionWorkspacePageHeaderProps): JSX.Element {
   return (
     <Stack spacing={2.5}>
@@ -30,10 +28,7 @@ const TransactionWorkspacePageHeader = function ({
           Back to Workspace
         </Button>
       </Link>
-      <Stack spacing={0.75}>
-        <Typography variant="h4">{title}</Typography>
-        <Typography color="text.secondary">{description}</Typography>
-      </Stack>
+      <Typography variant="h4">{title}</Typography>
     </Stack>
   );
 };

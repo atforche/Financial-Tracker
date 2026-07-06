@@ -73,7 +73,6 @@ const TransactionWorkspaceDetailPage = async function ({
       <TransactionWorkspacePageHeader
         backHref={workspaceUrl}
         title="Transaction Details"
-        description="Review the transaction and manage its lifecycle from a dedicated mobile-friendly page."
       />
       <ViewTransactionForm
         transaction={transaction}

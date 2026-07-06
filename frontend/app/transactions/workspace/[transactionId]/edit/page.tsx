@@ -73,7 +73,6 @@ const TransactionWorkspaceEditPage = async function ({
       <TransactionWorkspacePageHeader
         backHref={workspaceUrl}
         title="Edit Transaction"
-        description="Update this transaction in a dedicated editor, then jump back into the workspace."
       />
       <UpdateTransactionForm
         transaction={transaction}
