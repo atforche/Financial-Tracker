@@ -149,10 +149,8 @@ const SpendingFundAssignmentPlanner = function ({
           },
           newGoalBalance: {
             remainingAmountToAssignIncludingPending: 0,
-            remainingAmountToSpendIncludingPending: Math.max(
+            remainingAmountToSpendIncludingPending:
               previousGoalBalance - assignment.amount,
-              0,
-            ),
           },
         };
       },
@@ -184,10 +182,8 @@ const SpendingFundAssignmentPlanner = function ({
           newFundBalance: assignment.previousFundBalance - (newAmount ?? 0),
           newGoalBalance: {
             remainingAmountToAssignIncludingPending: 0,
-            remainingAmountToSpendIncludingPending: Math.max(
+            remainingAmountToSpendIncludingPending:
               previousGoalBalance - (newAmount ?? 0),
-              0,
-            ),
           },
         };
       },

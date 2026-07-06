@@ -51,8 +51,8 @@ public sealed class GoalConverter(IAccountingPeriodRepository accountingPeriodRe
             TotalAmountToSpend = goal.TotalAmountToSpend,
             TotalAmountSpent = goal.TotalAmountSpent,
             TotalAmountSpentIncludingPending = goal.TotalAmountSpentIncludingPending,
-            RemainingAmountToSpend = Math.Max(goal.TotalAmountToSpend - goal.TotalAmountSpent, 0),
-            RemainingAmountToSpendIncludingPending = Math.Max(goal.TotalAmountToSpend - goal.TotalAmountSpentIncludingPending, 0),
+            RemainingAmountToSpend = goal.TotalAmountToSpend - goal.TotalAmountSpent,
+            RemainingAmountToSpendIncludingPending = goal.TotalAmountToSpend - goal.TotalAmountSpentIncludingPending,
             IsGoalMet = goal.IsGoalMet,
             IsGoalMetIncludingPending = goal.IsGoalMetIncludingPending,
         };
