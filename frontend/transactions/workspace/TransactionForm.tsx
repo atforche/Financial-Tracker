@@ -100,7 +100,7 @@ const TransactionForm = function <RequestPayload>({
 
   return (
     <Stack ref={formRef} spacing={3}>
-      <Stack spacing={3} sx={{ width: "100%" }}>
+      <Stack spacing={3} sx={{ width: "100%", maxWidth: 1800 }}>
         <TransactionDetailsFrame
           accountingPeriods={accountingPeriods}
           accountingPeriod={accountingPeriod}

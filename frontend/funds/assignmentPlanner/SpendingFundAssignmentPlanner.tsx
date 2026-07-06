@@ -228,7 +228,6 @@ const SpendingFundAssignmentPlanner = function ({
 
   return (
     <FundAssignmentPlanner
-      title="Spending Fund Assignment"
       funds={funds}
       totalAmountToAssign={totalAmountToAssign}
       fundAssignments={fundAssignments}

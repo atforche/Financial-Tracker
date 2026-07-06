@@ -5,7 +5,6 @@ import {
   Chip,
   type ChipProps,
   IconButton,
-  Paper,
   Stack,
   Typography,
 } from "@mui/material";
@@ -27,7 +26,6 @@ import formatCurrency from "@/framework/formatCurrency";
  * Props for the FundAssignmentPlanner component.
  */
 interface FundAssignmentPlannerProps {
-  readonly title: string;
   readonly funds: Fund[];
   readonly totalAmountToAssign: number | null;
   readonly fundAssignments: FundAssignmentDraft[];
@@ -53,7 +51,6 @@ interface FundAssignmentPlannerProps {
  * Displays a generic fund assignment planner.
  */
 const FundAssignmentPlanner = function ({
-  title,
   funds,
   totalAmountToAssign,
   fundAssignments,
@@ -79,7 +76,7 @@ const FundAssignmentPlanner = function ({
 
   return (
     <Frame
-      title={title}
+      title="Fund Assignments"
       color={color}
       headerContent={
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
@@ -95,79 +92,73 @@ const FundAssignmentPlanner = function ({
       <Stack spacing={2.5}>
         <Stack spacing={2}>
           {explicitFundAssignments.map((assignment, index) => (
-            <Paper
-              key={assignment.fundId || `assignment-${index}`}
-              variant="outlined"
-              sx={{ borderRadius: 3, p: { xs: 2, md: 2.5 } }}
-            >
-              <Stack spacing={2}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: { xs: "column", md: "row" },
-                    alignItems: { xs: "stretch", md: "flex-start" },
-                    gap: 2,
-                  }}
-                >
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <FundEntryField
-                      label="Fund"
-                      options={funds}
-                      value={{
-                        id: assignment.fundId,
-                        name: assignment.fundName,
-                      }}
-                      setValue={
-                        readOnly
-                          ? null
-                          : (newValue): void => {
-                              updateFund(index, newValue);
-                            }
-                      }
-                      filter={(fund) =>
-                        fund.name !== "Unassigned" &&
-                        (fund.id === assignment.fundId ||
-                          !explicitFundAssignments.some(
-                            (existingAssignment) =>
-                              existingAssignment.fundId === fund.id,
-                          ))
-                      }
-                      getOptionSecondaryLabel={getFundOptionSecondaryLabel}
-                      sortComparator={sortFunds}
-                    />
-                  </Box>
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <CurrencyEntryField
-                      label="Assigned Amount"
-                      value={assignment.amount}
-                      setValue={
-                        readOnly
-                          ? null
-                          : (newAmount): void => {
-                              updateAmount(index, newAmount);
-                            }
-                      }
-                    />
-                  </Box>
-                  {readOnly ? null : (
-                    <IconButton
-                      aria-label="Delete fund assignment"
-                      sx={{
-                        alignSelf: { xs: "flex-end", md: "flex-start" },
-                        flexShrink: 0,
-                      }}
-                      onClick={() => {
-                        deleteFundAssignment(index);
-                      }}
-                    >
-                      <DeleteOutline />
-                    </IconButton>
-                  )}
+            <Stack key={assignment.fundId || `assignment-${index}`} spacing={2}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: { xs: "column", md: "row" },
+                  alignItems: { xs: "stretch", md: "flex-start" },
+                  gap: 2,
+                }}
+              >
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <FundEntryField
+                    label="Fund"
+                    options={funds}
+                    value={{
+                      id: assignment.fundId,
+                      name: assignment.fundName,
+                    }}
+                    setValue={
+                      readOnly
+                        ? null
+                        : (newValue): void => {
+                            updateFund(index, newValue);
+                          }
+                    }
+                    filter={(fund) =>
+                      fund.name !== "Unassigned" &&
+                      (fund.id === assignment.fundId ||
+                        !explicitFundAssignments.some(
+                          (existingAssignment) =>
+                            existingAssignment.fundId === fund.id,
+                        ))
+                    }
+                    getOptionSecondaryLabel={getFundOptionSecondaryLabel}
+                    sortComparator={sortFunds}
+                  />
                 </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <CurrencyEntryField
+                    label="Assigned Amount"
+                    value={assignment.amount}
+                    setValue={
+                      readOnly
+                        ? null
+                        : (newAmount): void => {
+                            updateAmount(index, newAmount);
+                          }
+                    }
+                  />
+                </Box>
+                {readOnly ? null : (
+                  <IconButton
+                    aria-label="Delete fund assignment"
+                    sx={{
+                      alignSelf: { xs: "flex-end", md: "flex-start" },
+                      flexShrink: 0,
+                    }}
+                    onClick={() => {
+                      deleteFundAssignment(index);
+                    }}
+                  >
+                    <DeleteOutline />
+                  </IconButton>
+                )}
+              </Box>
 
-                {renderAssignmentDetails?.(assignment) ?? null}
-              </Stack>
-            </Paper>
+              {renderAssignmentDetails?.(assignment) ?? null}
+            </Stack>
           ))}
         </Stack>
 

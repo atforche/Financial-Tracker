@@ -241,7 +241,6 @@ const IncomeFundAssignmentPlanner = function ({
 
   return (
     <FundAssignmentPlanner
-      title="Income Fund Assignment"
       funds={funds}
       totalAmountToAssign={totalAmountToAssign}
       fundAssignments={fundAssignments}
