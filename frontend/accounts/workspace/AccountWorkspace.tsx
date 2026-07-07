@@ -10,8 +10,7 @@ import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
-type AccountWorkspaceAction =
-  "create" | "onboard" | "view" | "update" | "delete";
+type AccountWorkspaceAction = "create" | "onboard" | "view";
 
 /**
  * Search parameters supported by the Accounts workspace.

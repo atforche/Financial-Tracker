@@ -6,10 +6,8 @@ import type { Account } from "@/accounts/types";
 import type { AccountWorkspaceAction } from "@/accounts/workspace/AccountWorkspace";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateAccountForm from "@/accounts/workspace/CreateAccountForm";
-import DeleteAccountForm from "@/accounts/workspace/DeleteAccountForm";
 import type { JSX } from "react";
 import OnboardAccountForm from "@/accounts/workspace/OnboardAccountForm";
-import UpdateAccountForm from "@/accounts/workspace/UpdateAccountForm";
 import ViewAccountForm from "@/accounts/workspace/ViewAccountForm";
 
 /**
@@ -21,6 +19,11 @@ interface AccountWorkspaceActionsProps {
   readonly selectedAccount: Account | null;
   readonly requestedAction: AccountWorkspaceAction | null;
 }
+
+const buildUrl = function (pathname: string, params: URLSearchParams): string {
+  const query = params.toString();
+  return query === "" ? pathname : `${pathname}?${query}`;
+};
 
 /**
  * Displays the available account actions for the current workspace selection.
@@ -36,14 +39,14 @@ const AccountWorkspaceActions = function ({
   const router = useRouter();
 
   const allActions: readonly AccountWorkspaceAction[] = isInOnboardingMode
-    ? ["onboard", "view", "update", "delete"]
-    : ["create", "view", "update", "delete"];
+    ? ["onboard", "view"]
+    : ["create", "view"];
   const availableActions: readonly AccountWorkspaceAction[] =
     selectedAccount === null
       ? isInOnboardingMode
         ? ["onboard"]
         : ["create"]
-      : ["view", "update", "delete"];
+      : ["view"];
   const activeAction =
     requestedAction !== null && availableActions.includes(requestedAction)
       ? requestedAction
@@ -58,8 +61,11 @@ const AccountWorkspaceActions = function ({
       params.set("action", action);
     }
 
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    router.replace(buildUrl(pathname, params), { scroll: false });
   };
+
+  const currentParams = new URLSearchParams(searchParams.toString());
+  const currentUrl = buildUrl(pathname, currentParams);
 
   return (
     <Paper
@@ -89,11 +95,7 @@ const AccountWorkspaceActions = function ({
                 ? "Create"
                 : action === "onboard"
                   ? "Onboard"
-                  : action === "view"
-                    ? "View"
-                    : action === "update"
-                      ? "Update"
-                      : "Delete"}
+                  : "View"}
             </ToggleButton>
           ))}
         </ToggleButtonGroup>
@@ -107,13 +109,7 @@ const AccountWorkspaceActions = function ({
           <OnboardAccountForm redirectUrl={pathname} />
         ) : null}
         {activeAction === "view" && selectedAccount !== null ? (
-          <ViewAccountForm account={selectedAccount} />
-        ) : null}
-        {activeAction === "update" && selectedAccount !== null ? (
-          <UpdateAccountForm account={selectedAccount} redirectUrl={pathname} />
-        ) : null}
-        {activeAction === "delete" && selectedAccount !== null ? (
-          <DeleteAccountForm account={selectedAccount} redirectUrl={pathname} />
+          <ViewAccountForm account={selectedAccount} redirectUrl={currentUrl} />
         ) : null}
       </Stack>
     </Paper>
