@@ -94,6 +94,8 @@ const ListFrame = function <T>({
       <Paper
         sx={{
           width: "100%",
+          borderRadius: 3,
+          overflow: "hidden",
         }}
       >
         <TableContainer>
