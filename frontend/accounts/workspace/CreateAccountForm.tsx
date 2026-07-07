@@ -4,10 +4,8 @@ import type { AccountType, CreateAccountRequest } from "@/accounts/types";
 import {
   type AccountingPeriod,
   getDefaultDate,
-  getMaximumDate,
-  getMinimumDate,
 } from "@/accounting-periods/types";
-import { Button, DialogActions, Divider, Stack } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -16,12 +14,14 @@ import {
   useRef,
   useState,
 } from "react";
-import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
-import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
-import DateEntryField from "@/framework/forms/DateEntryField";
+import {
+  buildCreateRequest,
+  getNormalizedDateOpened,
+} from "@/accounts/workspace/helpers";
+import AccountDetailsFrame from "@/accounts/workspace/AccountDetailsFrame";
+import AccountOpeningFrame from "@/accounts/workspace/AccountOpeningFrame";
 import type { Dayjs } from "dayjs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import StringEntryField from "@/framework/forms/StringEntryField";
 import createAccount from "@/accounts/workspace/createAccount";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 
@@ -32,25 +32,6 @@ interface CreateAccountFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly redirectUrl: string;
 }
-
-const getNormalizedDateOpened = function (
-  accountingPeriod: AccountingPeriod | null,
-  dateOpened: Dayjs | null,
-): Dayjs | null {
-  if (accountingPeriod === null) {
-    return null;
-  }
-  const minimumDate = getMinimumDate(accountingPeriod);
-  const maximumDate = getMaximumDate(accountingPeriod);
-  if (
-    dateOpened === null ||
-    dateOpened.isBefore(minimumDate) ||
-    dateOpened.isAfter(maximumDate)
-  ) {
-    return getDefaultDate(accountingPeriod);
-  }
-  return dateOpened;
-};
 
 /**
  * Displays the inline create-account form for the workspace.
@@ -69,6 +50,8 @@ const CreateAccountForm = function ({
   const formRef = useRef<HTMLDivElement | null>(null);
 
   const [state, action, pending] = useActionState(createAccount, {});
+  const detailsAreValid = name !== "" && accountType !== null;
+  const openingIsValid = accountingPeriod !== null && dateOpened !== null;
 
   const onAccountingPeriodChange = function (
     newAccountingPeriod: AccountingPeriod | null,
@@ -93,65 +76,44 @@ const CreateAccountForm = function ({
     }
   }, [state]);
 
-  let request: CreateAccountRequest | null = null;
-  if (
-    name !== "" &&
-    accountType !== null &&
-    accountingPeriod !== null &&
-    dateOpened !== null
-  ) {
-    request = {
-      name,
-      type: accountType,
-      openingAccountingPeriodId: accountingPeriod.id,
-      dateOpened: dateOpened.format("YYYY-MM-DD"),
-    };
-  }
+  const request: CreateAccountRequest | null = buildCreateRequest(
+    name,
+    accountType,
+    accountingPeriod,
+    dateOpened,
+  );
 
   return (
-    <Stack ref={formRef} spacing={3}>
-      <Stack spacing={2.5}>
-        <StringEntryField
-          label="Name"
-          value={name}
-          setValue={setName}
-          errorMessage={state.nameErrors ?? null}
-        />
-        <AccountTypeEntryField
-          label="Type"
-          value={accountType}
-          setValue={setAccountType}
-          errorMessage={state.typeErrors ?? null}
-        />
-      </Stack>
-      <Divider flexItem />
-      <Stack spacing={2.5}>
-        <AccountingPeriodEntryField
-          label="Opening Accounting Period"
-          options={accountingPeriods}
-          value={accountingPeriod}
-          setValue={onAccountingPeriodChange}
-          errorMessage={state.accountingPeriodErrors ?? null}
-        />
-        <DateEntryField
-          label="Date Opened"
-          value={dateOpened}
-          setValue={setDateOpened}
-          errorMessage={state.dateOpenedErrors ?? null}
-          minDate={
-            accountingPeriod === null ? null : getMinimumDate(accountingPeriod)
-          }
-          maxDate={
-            accountingPeriod === null ? null : getMaximumDate(accountingPeriod)
-          }
-          disabled={accountingPeriod === null}
-        />
-      </Stack>
+    <Stack ref={formRef} spacing={3} sx={{ width: "100%", maxWidth: 1200 }}>
+      <Typography variant="h5">Create Account</Typography>
+      <AccountDetailsFrame
+        color={detailsAreValid ? "info" : "error"}
+        name={name}
+        setName={setName}
+        nameErrorMessage={state.nameErrors ?? null}
+        accountType={accountType}
+        setAccountType={setAccountType}
+        accountTypeErrorMessage={state.typeErrors ?? null}
+      />
+      <AccountOpeningFrame
+        accountingPeriods={accountingPeriods}
+        accountingPeriod={accountingPeriod}
+        setAccountingPeriod={onAccountingPeriodChange}
+        accountingPeriodErrorMessage={state.accountingPeriodErrors ?? null}
+        dateOpened={dateOpened}
+        setDateOpened={setDateOpened}
+        dateOpenedErrorMessage={state.dateOpenedErrors ?? null}
+        color={openingIsValid ? "info" : "error"}
+      />
       <ErrorAlert
         errorMessage={state.errorTitle ?? null}
         unmappedErrors={state.unmappedErrors ?? null}
       />
-      <DialogActions sx={{ px: 0, pb: 0 }}>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={1.5}
+        justifyContent="flex-end"
+      >
         <Button variant="outlined" onClick={reset}>
           Reset
         </Button>
@@ -173,7 +135,7 @@ const CreateAccountForm = function ({
         >
           Create account
         </Button>
-      </DialogActions>
+      </Stack>
     </Stack>
   );
 };
