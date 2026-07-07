@@ -90,7 +90,7 @@ const CurrentAccountsList = function ({
   };
 
   const openAccountWorkspace = function (account: CurrentAccount): void {
-    router.push(accountRoutes.workspace({ selectedAccountId: account.id }));
+    router.push(accountRoutes.workspaceDetail(account.id, {}));
   };
 
   const openTransactionWorkspace = function (

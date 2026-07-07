@@ -76,7 +76,7 @@ const AccountTrendsListFrame = function ({
   };
 
   const openAccountWorkspace = function (account: AccountTrendsAccount): void {
-    router.push(routes.workspace({ selectedAccountId: account.id }));
+    router.push(routes.workspaceDetail(account.id, {}));
   };
 
   const currentSort = tryParseEnum(

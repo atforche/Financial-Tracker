@@ -70,6 +70,14 @@ const routes = {
       "/accounts/workspace",
       objectToSearchParams(searchParams),
     ),
+  workspaceDetail: (
+    accountId: string,
+    searchParams: AccountWorkspaceSearchParams,
+  ): Route =>
+    pathWithSearchParams(
+      `/accounts/workspace/${accountId}`,
+      objectToSearchParams(searchParams),
+    ),
 };
 
 export default routes;

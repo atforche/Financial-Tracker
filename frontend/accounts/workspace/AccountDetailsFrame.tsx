@@ -1,6 +1,6 @@
 "use client";
 
-import type { Dispatch, JSX, SetStateAction } from "react";
+import type { Dispatch, JSX, ReactNode, SetStateAction } from "react";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
 import type { AccountType } from "@/accounts/types";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
@@ -18,6 +18,7 @@ interface AccountDetailsFrameProps {
   readonly accountType: AccountType | null;
   readonly setAccountType?: ((newValue: AccountType | null) => void) | null;
   readonly accountTypeErrorMessage?: string | null;
+  readonly headerContent?: ReactNode;
 }
 
 /**
@@ -31,10 +32,11 @@ const AccountDetailsFrame = function ({
   accountType,
   setAccountType = null,
   accountTypeErrorMessage = null,
+  headerContent = null,
 }: AccountDetailsFrameProps): JSX.Element {
   return (
     <Box sx={{ maxWidth: 1200, width: "100%" }}>
-      <Frame title="Details" color={color}>
+      <Frame title="Details" color={color} headerContent={headerContent}>
         <Box
           sx={{
             display: "grid",

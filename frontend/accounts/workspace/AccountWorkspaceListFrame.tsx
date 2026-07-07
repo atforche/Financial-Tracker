@@ -5,13 +5,16 @@ import {
   AccountSortOrder,
   formatAccountType,
 } from "@/accounts/types";
-import { Button, Checkbox, Paper, Stack, Typography } from "@mui/material";
+import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
+import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
+import routes from "@/accounts/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
@@ -20,7 +23,6 @@ import tryParseEnum from "@/framework/data/tryParseEnum";
 interface AccountWorkspaceListFrameProps {
   readonly data: Account[] | null;
   readonly totalCount: number | null;
-  readonly selectedAccountId: string | null;
   readonly isInOnboardingMode: boolean;
 }
 
@@ -30,7 +32,6 @@ interface AccountWorkspaceListFrameProps {
 const AccountWorkspaceListFrame = function ({
   data,
   totalCount,
-  selectedAccountId,
   isInOnboardingMode,
 }: AccountWorkspaceListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
@@ -39,7 +40,6 @@ const AccountWorkspaceListFrame = function ({
 
   const sortParamName = "sort";
   const pageParamName = "page";
-  const selectedAccountIdParamName = "selectedAccountId";
   const actionParamName = "action";
   const searchParamName = "search";
 
@@ -48,7 +48,10 @@ const AccountWorkspaceListFrame = function ({
   ): void {
     const params = new URLSearchParams(searchParams.toString());
     update(params);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    const query = params.toString();
+    router.replace(query === "" ? pathname : `${pathname}?${query}`, {
+      scroll: false,
+    });
   };
 
   const setSort = function (sort: AccountSortOrder | null): void {
@@ -62,14 +65,34 @@ const AccountWorkspaceListFrame = function ({
     });
   };
 
-  const toggleSelection = function (accountId: string): void {
+  const setAction = function (action: "create" | "onboard"): void {
     replaceSearchParams((params) => {
-      const currentlySelectedAccountId = params.get(selectedAccountIdParamName);
-      if (currentlySelectedAccountId === accountId) {
-        params.delete(selectedAccountIdParamName);
-        return;
-      }
-      params.set(selectedAccountIdParamName, accountId);
+      params.set(actionParamName, action);
+    });
+  };
+
+  const openAccount = function (accountId: string): void {
+    const params = new URLSearchParams(searchParams.toString());
+    const detailSearchParams: AccountWorkspaceSearchParams = {};
+    const sort = tryParseEnum(
+      AccountSortOrder,
+      params.get(sortParamName) ?? "",
+    );
+    const search = params.get(searchParamName);
+    const page = params.get(pageParamName);
+
+    if (search !== null) {
+      detailSearchParams.search = search;
+    }
+    if (sort !== null) {
+      detailSearchParams.sort = sort;
+    }
+    if (page !== null) {
+      detailSearchParams.page = page;
+    }
+
+    router.push(routes.workspaceDetail(accountId, detailSearchParams), {
+      scroll: false,
     });
   };
 
@@ -77,29 +100,11 @@ const AccountWorkspaceListFrame = function ({
     AccountSortOrder,
     searchParams.get(sortParamName) ?? "",
   );
+  const addActionLabel = isInOnboardingMode
+    ? "Onboard account"
+    : "Create account";
 
   const columns: ColumnDefinition<Account>[] = [
-    {
-      name: "selected",
-      headerContent: "",
-      getBodyContent: (account) => (
-        <Checkbox
-          checked={selectedAccountId === account.id}
-          onClick={(event) => {
-            event.stopPropagation();
-            toggleSelection(account.id);
-          }}
-          slotProps={{
-            input: {
-              "aria-label": `Select ${account.name}`,
-            },
-          }}
-        />
-      ),
-      alignment: "center",
-      minWidth: 0,
-      maxWidth: 0,
-    },
     {
       name: "name",
       headerContent: "Name",
@@ -163,6 +168,26 @@ const AccountWorkspaceListFrame = function ({
       alignment: "right",
       minWidth: 160,
     },
+    {
+      name: "open",
+      headerContent: "",
+      getBodyContent: () => (
+        <Box
+          sx={{
+            alignItems: "center",
+            color: "text.secondary",
+            display: "flex",
+            justifyContent: "center",
+            minHeight: 40,
+          }}
+        >
+          <KeyboardArrowRight fontSize="small" />
+        </Box>
+      ),
+      alignment: "center",
+      minWidth: 0,
+      maxWidth: 0,
+    },
   ];
 
   return (
@@ -175,9 +200,24 @@ const AccountWorkspaceListFrame = function ({
       }}
     >
       <Stack spacing={2.5}>
-        <Typography variant="h6" color="text.secondary">
-          Accounts
-        </Typography>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={1.5}
+          justifyContent="space-between"
+          alignItems={{ xs: "stretch", sm: "center" }}
+        >
+          <Typography variant="h6" color="text.secondary">
+            Accounts
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setAction(isInOnboardingMode ? "onboard" : "create");
+            }}
+          >
+            {addActionLabel}
+          </Button>
+        </Stack>
         <ListFrame<Account>
           columns={columns}
           getId={(account) => account.id}
@@ -186,9 +226,8 @@ const AccountWorkspaceListFrame = function ({
           searchParamName={searchParamName}
           pageParamName={pageParamName}
           onRowClick={(account) => {
-            toggleSelection(account.id);
+            openAccount(account.id);
           }}
-          isRowSelected={(account) => account.id === selectedAccountId}
           initialEmptyState={{
             title: "No accounts yet",
             description: isInOnboardingMode
@@ -207,13 +246,7 @@ const AccountWorkspaceListFrame = function ({
                   replaceSearchParams((params) => {
                     params.delete(searchParamName);
                     params.delete(pageParamName);
-                    params.delete(selectedAccountIdParamName);
-                    if (
-                      params.get(actionParamName) === "update" ||
-                      params.get(actionParamName) === "delete"
-                    ) {
-                      params.delete(actionParamName);
-                    }
+                    params.delete(actionParamName);
                   });
                 }}
               >
