@@ -46,6 +46,11 @@ const SearchBar = function ({
       placeholder="Search..."
       defaultValue={searchParams.get(searchParamName) ?? ""}
       onChange={handleChange}
+      fullWidth
+      sx={{
+        flex: "1 1 280px",
+        minWidth: 0,
+      }}
       slotProps={{
         input: {
           startAdornment: (
@@ -53,9 +58,6 @@ const SearchBar = function ({
               <Search />
             </InputAdornment>
           ),
-          sx: {
-            maxWidth: "500px",
-          },
         },
       }}
     />

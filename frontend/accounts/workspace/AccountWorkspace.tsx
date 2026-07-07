@@ -1,12 +1,14 @@
-import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
-import type { AccountSortOrder } from "@/accounts/types";
+import {
+  normalizeAccountTypes,
+  shouldPersistAccountTypes,
+} from "@/accounts/trends/accountTypeFilter";
+import type { AccountType } from "@/accounts/types";
 import AccountWorkspaceActions from "@/accounts/workspace/AccountWorkspaceActions";
+import AccountWorkspaceCards from "@/accounts/workspace/AccountWorkspaceCards";
 import AccountWorkspaceFilter from "@/accounts/workspace/AccountWorkspaceFilter";
-import AccountWorkspaceListFrame from "@/accounts/workspace/AccountWorkspaceListFrame";
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
 import getApiClient from "@/framework/data/getApiClient";
-import { rowsPerPage } from "@/framework/listframe/Constants";
 
 type AccountWorkspaceAction = "create" | "onboard";
 
@@ -15,8 +17,7 @@ type AccountWorkspaceAction = "create" | "onboard";
  */
 interface AccountWorkspaceSearchParams {
   search?: string;
-  sort?: AccountSortOrder;
-  page?: number | string | null;
+  accountType?: AccountType | readonly AccountType[];
   action?: AccountWorkspaceAction;
   balanceEventPage?: number | string | null;
 }
@@ -29,14 +30,20 @@ interface AccountWorkspaceProps {
 }
 
 /**
- * Displays the account workspace with list-backed actions.
+ * Displays the account workspace with card-backed navigation and actions.
  */
 const AccountWorkspace = async function ({
   searchParams,
 }: AccountWorkspaceProps): Promise<JSX.Element> {
-  const { search, sort, page, action } = await searchParams;
+  const { search, accountType, action } = await searchParams;
   const apiClient = getApiClient();
-  const currentPage = normalizePageValue(page);
+  const currentAccountTypes = normalizeAccountTypes(
+    Array.isArray(accountType)
+      ? accountType
+      : typeof accountType === "string"
+        ? [accountType]
+        : [],
+  );
 
   const anyAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
@@ -52,9 +59,6 @@ const AccountWorkspace = async function ({
     params: {
       query: {
         Search: search ?? "",
-        Sort: sort ?? null,
-        Limit: rowsPerPage,
-        Offset: getPageOffset(currentPage),
       },
     },
   });
@@ -79,14 +83,18 @@ const AccountWorkspace = async function ({
     throw new Error("Failed to fetch accounts");
   }
 
+  const filteredAccounts = shouldPersistAccountTypes(currentAccountTypes)
+    ? accounts.items.filter((account) =>
+        currentAccountTypes.includes(account.type),
+      )
+    : accounts.items;
   const isInOnboardingMode = accountingPeriod.items.length === 0;
 
   return (
-    <Stack spacing={3} sx={{ width: "100%", maxWidth: 1440 }}>
-      <AccountWorkspaceFilter />
-      <AccountWorkspaceListFrame
-        data={accounts.items}
-        totalCount={accounts.totalCount}
+    <Stack spacing={3} sx={{ width: "100%" }}>
+      <AccountWorkspaceFilter isInOnboardingMode={isInOnboardingMode} />
+      <AccountWorkspaceCards
+        data={filteredAccounts}
         isInOnboardingMode={isInOnboardingMode}
       />
       <AccountWorkspaceActions

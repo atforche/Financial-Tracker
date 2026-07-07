@@ -47,6 +47,20 @@ const accountTrendsSearchParamsToSearchParams = function (
   return params;
 };
 
+const accountWorkspaceSearchParamsToSearchParams = function (
+  searchParams: AccountWorkspaceSearchParams,
+): URLSearchParams {
+  const { accountType, ...remainingSearchParams } = searchParams;
+  const params = objectToSearchParams(remainingSearchParams);
+
+  appendRepeatedSearchParam(
+    params,
+    "accountType",
+    isAccountTypeArray(accountType) ? accountType : accountType,
+  );
+  return params;
+};
+
 const pathWithSearchParams = function (
   pathname: string,
   searchParams: URLSearchParams,
@@ -59,7 +73,6 @@ const pathWithSearchParams = function (
  * App routes related to accounts.
  */
 const routes = {
-  current: (): Route => "/accounts/current",
   trends: (searchParams: AccountTrendsSearchParams): Route =>
     pathWithSearchParams(
       "/accounts/trends",
@@ -68,7 +81,7 @@ const routes = {
   workspace: (searchParams: AccountWorkspaceSearchParams): Route =>
     pathWithSearchParams(
       "/accounts/workspace",
-      objectToSearchParams(searchParams),
+      accountWorkspaceSearchParamsToSearchParams(searchParams),
     ),
   workspaceDetail: (
     accountId: string,
@@ -76,7 +89,7 @@ const routes = {
   ): Route =>
     pathWithSearchParams(
       `/accounts/workspace/${accountId}`,
-      objectToSearchParams(searchParams),
+      accountWorkspaceSearchParamsToSearchParams(searchParams),
     ),
 };
 

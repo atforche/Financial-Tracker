@@ -101,6 +101,7 @@ const Frame = function ({
               variant="h6"
               sx={(theme) => ({
                 color: theme.palette.text.primary,
+                overflowWrap: "anywhere",
               })}
             >
               {title}
@@ -108,7 +109,7 @@ const Frame = function ({
           </Stack>
           <Box sx={{ color: "text.primary" }}>{headerContent ?? null}</Box>
         </Stack>
-        <Stack spacing={2.5} sx={{ p: { xs: 2.5, md: 3 } }}>
+        <Stack spacing={2.5} sx={{ p: { xs: 1, md: 1.5 } }}>
           {children}
         </Stack>
       </Stack>

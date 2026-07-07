@@ -28,7 +28,7 @@ const AccountWorkspaceDetailPage = async function ({
 }: AccountWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { accountId } = await params;
   const resolvedSearchParams = await searchParams;
-  const { search, sort, page, balanceEventPage } = resolvedSearchParams;
+  const { search, accountType, balanceEventPage } = resolvedSearchParams;
   const apiClient = getApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
   const { data: account } = await apiClient.GET("/accounts/{accountId}", {
@@ -41,8 +41,7 @@ const AccountWorkspaceDetailPage = async function ({
 
   const workspaceSearchParams: AccountWorkspaceSearchParams = {
     ...(typeof search !== "undefined" ? { search } : {}),
-    ...(typeof sort !== "undefined" ? { sort } : {}),
-    ...(typeof page !== "undefined" ? { page } : {}),
+    ...(typeof accountType !== "undefined" ? { accountType } : {}),
   };
   const detailSearchParams: AccountWorkspaceSearchParams = {
     ...workspaceSearchParams,

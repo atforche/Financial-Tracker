@@ -6,6 +6,7 @@ import {
   getMinimumDate,
 } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
+import type { FrameColor } from "@/framework/view/Frame";
 
 /**
  * Gets the normalized date opened for creating an account.
@@ -95,10 +96,28 @@ const buildOnboardRequest = function (
   };
 };
 
+/**
+ * Gets the account card color to display for the account type.
+ */
+const getAccountCardColor = function (
+  accountType: AccountType | null,
+): FrameColor {
+  // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
+  switch (accountType) {
+    case AccountType.CreditCard:
+      return "warning";
+    case AccountType.Debt:
+      return "error";
+    default:
+      return "primary";
+  }
+};
+
 export {
   getNormalizedDateOpened,
   validateCreateRequest,
   buildCreateRequest,
   validateOnboardRequest,
   buildOnboardRequest,
+  getAccountCardColor,
 };
