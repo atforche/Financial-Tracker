@@ -8,7 +8,7 @@ import type { JSX } from "react";
 interface AccountTypeEntryFieldProps {
   readonly label: string;
   readonly value: AccountType | null;
-  readonly setValue: (newValue: AccountType | null) => void;
+  readonly setValue?: ((newValue: AccountType | null) => void) | null;
   readonly errorMessage?: string | null;
 }
 
@@ -18,7 +18,7 @@ interface AccountTypeEntryFieldProps {
 const AccountTypeEntryField = function ({
   label,
   value,
-  setValue,
+  setValue = null,
   errorMessage = null,
 }: AccountTypeEntryFieldProps): JSX.Element {
   return (
@@ -33,9 +33,13 @@ const AccountTypeEntryField = function ({
           ? { label: "", value: null }
           : { label: formatAccountType(value), value }
       }
-      setValue={(newValue): void => {
-        setValue(newValue?.value ?? null);
-      }}
+      setValue={
+        setValue !== null
+          ? (newValue): void => {
+              setValue(newValue?.value ?? null);
+            }
+          : null
+      }
       errorMessage={errorMessage}
     />
   );

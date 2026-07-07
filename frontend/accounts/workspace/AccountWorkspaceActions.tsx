@@ -10,6 +10,7 @@ import DeleteAccountForm from "@/accounts/workspace/DeleteAccountForm";
 import type { JSX } from "react";
 import OnboardAccountForm from "@/accounts/workspace/OnboardAccountForm";
 import UpdateAccountForm from "@/accounts/workspace/UpdateAccountForm";
+import ViewAccountForm from "@/accounts/workspace/ViewAccountForm";
 
 /**
  * Props for the AccountWorkspaceActions component.
@@ -35,14 +36,14 @@ const AccountWorkspaceActions = function ({
   const router = useRouter();
 
   const allActions: readonly AccountWorkspaceAction[] = isInOnboardingMode
-    ? ["onboard", "update", "delete"]
-    : ["create", "update", "delete"];
+    ? ["onboard", "view", "update", "delete"]
+    : ["create", "view", "update", "delete"];
   const availableActions: readonly AccountWorkspaceAction[] =
     selectedAccount === null
       ? isInOnboardingMode
         ? ["onboard"]
         : ["create"]
-      : ["update", "delete"];
+      : ["view", "update", "delete"];
   const activeAction =
     requestedAction !== null && availableActions.includes(requestedAction)
       ? requestedAction
@@ -88,9 +89,11 @@ const AccountWorkspaceActions = function ({
                 ? "Create"
                 : action === "onboard"
                   ? "Onboard"
-                  : action === "update"
-                    ? "Update"
-                    : "Delete"}
+                  : action === "view"
+                    ? "View"
+                    : action === "update"
+                      ? "Update"
+                      : "Delete"}
             </ToggleButton>
           ))}
         </ToggleButtonGroup>
@@ -102,6 +105,9 @@ const AccountWorkspaceActions = function ({
         ) : null}
         {activeAction === "onboard" ? (
           <OnboardAccountForm redirectUrl={pathname} />
+        ) : null}
+        {activeAction === "view" && selectedAccount !== null ? (
+          <ViewAccountForm account={selectedAccount} />
         ) : null}
         {activeAction === "update" && selectedAccount !== null ? (
           <UpdateAccountForm account={selectedAccount} redirectUrl={pathname} />

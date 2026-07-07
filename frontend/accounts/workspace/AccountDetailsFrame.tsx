@@ -13,10 +13,10 @@ import StringEntryField from "@/framework/forms/StringEntryField";
 interface AccountDetailsFrameProps {
   readonly color?: FrameColor;
   readonly name: string;
-  readonly setName: Dispatch<SetStateAction<string>> | null;
+  readonly setName?: Dispatch<SetStateAction<string>> | null;
   readonly nameErrorMessage?: string | null;
   readonly accountType: AccountType | null;
-  readonly setAccountType: (newValue: AccountType | null) => void;
+  readonly setAccountType?: ((newValue: AccountType | null) => void) | null;
   readonly accountTypeErrorMessage?: string | null;
 }
 
@@ -26,10 +26,10 @@ interface AccountDetailsFrameProps {
 const AccountDetailsFrame = function ({
   color = "info",
   name,
-  setName,
+  setName = null,
   nameErrorMessage = null,
   accountType,
-  setAccountType,
+  setAccountType = null,
   accountTypeErrorMessage = null,
 }: AccountDetailsFrameProps): JSX.Element {
   return (

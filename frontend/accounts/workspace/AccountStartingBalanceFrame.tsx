@@ -1,8 +1,8 @@
 "use client";
 
-import { Box, Typography } from "@mui/material";
 import type { Dispatch, JSX, SetStateAction } from "react";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
+import { Box } from "@mui/material";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 
 /**
@@ -27,9 +27,6 @@ const AccountStartingBalanceFrame = function ({
   return (
     <Box sx={{ maxWidth: 1200, width: "100%" }}>
       <Frame title="Starting Balance" color={color}>
-        <Typography variant="body2" color="text.secondary">
-          Set the balance that should be carried into the workspace today.
-        </Typography>
         <CurrencyEntryField
           label="Starting Balance"
           value={value}
