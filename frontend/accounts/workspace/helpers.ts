@@ -1,4 +1,9 @@
-import { AccountType, type CreateAccountRequest } from "@/accounts/types";
+import {
+  AccountTrendsBalanceEventType,
+  AccountType,
+  type AccountWorkspaceBalanceEvent,
+  type CreateAccountRequest,
+} from "@/accounts/types";
 import {
   type AccountingPeriod,
   getDefaultDate,
@@ -113,6 +118,22 @@ const getAccountCardColor = function (
   }
 };
 
+/**
+ * Formats the type of an account balance event.
+ */
+const formatAccountBalanceEventType = function (
+  balanceEvent: AccountWorkspaceBalanceEvent,
+): string {
+  const baseLabel =
+    balanceEvent.type === AccountTrendsBalanceEventType.Debit
+      ? "Debit"
+      : "Credit";
+
+  return balanceEvent.isPosted
+    ? baseLabel
+    : `Pending ${baseLabel.toLowerCase()}`;
+};
+
 export {
   getNormalizedDateOpened,
   validateCreateRequest,
@@ -120,4 +141,5 @@ export {
   validateOnboardRequest,
   buildOnboardRequest,
   getAccountCardColor,
+  formatAccountBalanceEventType,
 };

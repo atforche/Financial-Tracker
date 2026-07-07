@@ -5,31 +5,17 @@ import {
   type AccountWorkspaceBalanceEvent,
 } from "@/accounts/types";
 import { Box, Button } from "@mui/material";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
+import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import Link from "next/link";
 import ListFrame from "@/framework/listframe/ListFrame";
+import dayjs from "dayjs";
+import { formatAccountBalanceEventType } from "@/accounts/workspace/helpers";
 import formatCurrency from "@/framework/formatCurrency";
-
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-
-const formatAccountBalanceEventType = function (
-  balanceEvent: AccountWorkspaceBalanceEvent,
-): string {
-  const baseLabel =
-    balanceEvent.type === AccountTrendsBalanceEventType.Debit
-      ? "Debit"
-      : "Credit";
-
-  return balanceEvent.isPosted
-    ? baseLabel
-    : `Pending ${baseLabel.toLowerCase()}`;
-};
+import routes from "@/transactions/routes";
 
 /**
  * Props for the AccountBalanceEventsFrame component.
@@ -48,12 +34,19 @@ const AccountBalanceEventsFrame = function ({
   totalCount,
   addTransactionHref,
 }: AccountBalanceEventsFrameProps): JSX.Element {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentQuery = searchParams.toString();
+  const returnUrl =
+    currentQuery === "" ? pathname : `${pathname}?${currentQuery}`;
+
   const columns: ColumnDefinition<AccountWorkspaceBalanceEvent>[] = [
     {
       name: "date",
       headerContent: "Event Date",
       getBodyContent: (balanceEvent) =>
-        dateFormatter.format(new Date(`${balanceEvent.date}T00:00:00`)),
+        dayjs(balanceEvent.date).format("MMMM D, YYYY"),
       minWidth: 135,
     },
     {
@@ -97,6 +90,26 @@ const AccountBalanceEventsFrame = function ({
       alignment: "right",
       minWidth: 150,
     },
+    {
+      name: "open",
+      headerContent: "",
+      getBodyContent: () => (
+        <Box
+          sx={{
+            alignItems: "center",
+            color: "text.secondary",
+            display: "flex",
+            justifyContent: "center",
+            minHeight: 40,
+          }}
+        >
+          <KeyboardArrowRight fontSize="small" />
+        </Box>
+      ),
+      alignment: "center",
+      minWidth: 0,
+      maxWidth: 0,
+    },
   ];
 
   return (
@@ -123,6 +136,14 @@ const AccountBalanceEventsFrame = function ({
           totalCount={totalCount}
           searchParamName="balanceEventSearch"
           pageParamName="balanceEventPage"
+          onRowClick={(balanceEvent) => {
+            router.push(
+              routes.workspaceDetail(balanceEvent.transactionId, {
+                returnUrl,
+              }),
+              { scroll: false },
+            );
+          }}
           hasActiveFilters={false}
           initialEmptyState={{
             title: "No balance events yet",
