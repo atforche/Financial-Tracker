@@ -1,6 +1,10 @@
 "use client";
 
 import { Box, Button, ButtonBase, Stack, Typography } from "@mui/material";
+import {
+  normalizeAccountTypes,
+  shouldPersistAccountTypes,
+} from "@/accounts/trends/accountTypeFilter";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Account } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
@@ -9,7 +13,6 @@ import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import formatCurrency from "@/framework/formatCurrency";
 import { getAccountCardColor } from "@/accounts/workspace/helpers";
-import { normalizeAccountTypes } from "@/accounts/trends/accountTypeFilter";
 import routes from "@/accounts/routes";
 
 /**
@@ -62,14 +65,12 @@ const AccountWorkspaceCards = function ({
     const accountTypes = normalizeAccountTypes(
       params.getAll(accountTypeParamName),
     );
-
     if (search !== null) {
       detailSearchParams.search = search;
     }
-    if (accountTypes.length > 0) {
+    if (accountTypes.length > 0 && shouldPersistAccountTypes(accountTypes)) {
       detailSearchParams.accountType = accountTypes;
     }
-
     router.push(routes.workspaceDetail(accountId, detailSearchParams), {
       scroll: false,
     });
