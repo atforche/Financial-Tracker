@@ -26,7 +26,7 @@ const TransactionWorkspaceEditPage = async function ({
 }: TransactionWorkspaceEditPageProps): Promise<JSX.Element> {
   const { transactionId } = await params;
   const resolvedSearchParams = await searchParams;
-  const { accountingPeriodIds, accountIds, fundIds, sort, page } =
+  const { accountingPeriodIds, accountIds, fundIds, sort, page, returnUrl } =
     resolvedSearchParams;
   const [referenceData, transaction] = await Promise.all([
     getTransactionWorkspaceReferenceData(),
@@ -41,6 +41,7 @@ const TransactionWorkspaceEditPage = async function ({
     ...(typeof fundIds !== "undefined" ? { fundIds } : {}),
     ...(typeof sort !== "undefined" ? { sort } : {}),
     ...(typeof page !== "undefined" ? { page } : {}),
+    ...(typeof returnUrl !== "undefined" ? { returnUrl } : {}),
     selectedTransactionId: transactionId,
   };
   const workspaceUrl = routes.workspace(workspaceSearchParams);
@@ -55,6 +56,7 @@ const TransactionWorkspaceEditPage = async function ({
         ...(typeof fundIds !== "undefined" ? { fundIds } : {}),
         ...(typeof sort !== "undefined" ? { sort } : {}),
         ...(typeof page !== "undefined" ? { page } : {}),
+        ...(typeof returnUrl !== "undefined" ? { returnUrl } : {}),
       }),
     );
   }
@@ -71,7 +73,7 @@ const TransactionWorkspaceEditPage = async function ({
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
       <TransactionWorkspacePageHeader
-        backHref={workspaceUrl}
+        backHref={returnUrl ?? workspaceUrl}
         title="Edit Transaction"
       />
       <UpdateTransactionForm

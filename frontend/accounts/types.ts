@@ -35,6 +35,12 @@ type CurrentAccountBalanceEvent =
   components["schemas"]["CurrentAccountBalanceEventModel"];
 
 /**
+ * Type representing a balance event on the Account workspace page.
+ */
+type AccountWorkspaceBalanceEvent =
+  components["schemas"]["AccountWorkspaceBalanceEventModel"];
+
+/**
  * Type representing the Accounts trends response.
  */
 type AccountTrends = components["schemas"]["AccountTrendsModel"];
@@ -159,6 +165,7 @@ export {
   type CurrentAccounts,
   type CurrentAccount,
   type CurrentAccountBalanceEvent,
+  type AccountWorkspaceBalanceEvent,
   type AccountTrends,
   type AccountTrendsAccount,
   type AccountTrendsBalanceEvent,

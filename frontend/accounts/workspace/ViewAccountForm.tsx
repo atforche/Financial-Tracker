@@ -1,6 +1,7 @@
 "use client";
 
-import type { Account } from "@/accounts/types";
+import type { Account, AccountWorkspaceBalanceEvent } from "@/accounts/types";
+import AccountBalanceEventsFrame from "@/accounts/workspace/AccountBalanceEventsFrame";
 import AccountCurrentBalanceFrame from "@/accounts/workspace/AccountCurrentBalanceFrame";
 import AccountDetailsFrame from "@/accounts/workspace/AccountDetailsFrame";
 import DeleteAccountForm from "@/accounts/workspace/DeleteAccountForm";
@@ -14,6 +15,9 @@ import UpdateAccountForm from "@/accounts/workspace/UpdateAccountForm";
 interface ViewAccountFormProps {
   readonly account: Account;
   readonly redirectUrl: string;
+  readonly recentBalanceEvents: AccountWorkspaceBalanceEvent[];
+  readonly recentBalanceEventCount: number;
+  readonly addTransactionHref: string;
 }
 
 /**
@@ -22,6 +26,9 @@ interface ViewAccountFormProps {
 const ViewAccountForm = function ({
   account,
   redirectUrl,
+  recentBalanceEvents,
+  recentBalanceEventCount,
+  addTransactionHref,
 }: ViewAccountFormProps): JSX.Element {
   return (
     <Stack spacing={3} sx={{ width: "100%", maxWidth: 1200 }}>
@@ -41,6 +48,11 @@ const ViewAccountForm = function ({
         }
       />
       <AccountCurrentBalanceFrame account={account} />
+      <AccountBalanceEventsFrame
+        data={recentBalanceEvents}
+        totalCount={recentBalanceEventCount}
+        addTransactionHref={addTransactionHref}
+      />
     </Stack>
   );
 };

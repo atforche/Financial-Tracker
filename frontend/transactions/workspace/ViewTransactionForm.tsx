@@ -54,6 +54,7 @@ interface ViewTransactionFormProps {
   readonly currentUrl: string;
   readonly workspaceUrl: string;
   readonly editUrl: string;
+  readonly returnUrl?: string | null;
 }
 
 const emptyFunds: Fund[] = [];
@@ -70,6 +71,7 @@ const ViewTransactionForm = function ({
   currentUrl,
   workspaceUrl,
   editUrl,
+  returnUrl = null,
 }: ViewTransactionFormProps): JSX.Element {
   const spendingTransaction = asSpendingTransaction(transaction);
   const incomeTransaction = asIncomeTransaction(transaction);
@@ -273,7 +275,7 @@ const ViewTransactionForm = function ({
           ) : null}
           <DeleteTransactionForm
             transaction={transaction}
-            redirectUrl={workspaceUrl}
+            redirectUrl={returnUrl ?? workspaceUrl}
           />
         </Stack>
       }

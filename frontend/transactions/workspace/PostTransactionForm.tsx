@@ -1,7 +1,13 @@
 "use client";
 
 import { Button, Stack, Typography } from "@mui/material";
-import { type JSX, startTransition, useActionState, useState } from "react";
+import {
+  type JSX,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
 import type {
   PostTransactionRequest,
   Transaction,
@@ -16,6 +22,7 @@ import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Frame from "@/framework/view/Frame";
 import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
 import postTransaction from "@/transactions/workspace/postTransaction";
+import { useRouter } from "next/navigation";
 
 interface AccountPostingState {
   readonly accountId: string;
@@ -38,6 +45,7 @@ const PostTransactionForm = function ({
   transaction,
   redirectUrl,
 }: PostTransactionFormProps): JSX.Element {
+  const router = useRouter();
   const postableAccounts = getPostableTransactionAccounts(transaction).map(
     (account) => ({
       ...account,
@@ -65,6 +73,12 @@ const PostTransactionForm = function ({
   );
   const [activeAccountId, setActiveAccountId] = useState<string | null>(null);
   const [state, action, pending] = useActionState(postTransaction, {});
+
+  useEffect(() => {
+    if (state.success === true) {
+      router.replace(redirectUrl, { scroll: false });
+    }
+  }, [redirectUrl, router, state.success]);
 
   const setAccountDate = function (
     accountId: string,

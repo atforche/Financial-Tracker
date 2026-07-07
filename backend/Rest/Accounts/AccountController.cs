@@ -19,6 +19,7 @@ public sealed class AccountController(
     AccountingPeriodConverter accountingPeriodConverter,
     AccountService accountService,
     CurrentAccountsGetter currentAccountsGetter,
+    AccountBalanceEventGetter accountBalanceEventGetter,
     AccountTrendsGetter accountTrendsGetter,
     AccountGetter accountGetter,
     AccountSummaryGetter accountSummaryGetter,
@@ -67,6 +68,26 @@ public sealed class AccountController(
     [ProducesResponseType(typeof(CurrentAccountsModel), StatusCodes.Status200OK)]
     public IActionResult GetCurrent([FromQuery] CurrentAccountsQueryParameterModel queryParameters) =>
         Ok(currentAccountsGetter.Get(queryParameters));
+
+    /// <summary>
+    /// Retrieves balance events for a single Account workspace.
+    /// </summary>
+    [HttpGet("{accountId}/balance-events")]
+    [ProducesResponseType(typeof(CollectionModel<AccountWorkspaceBalanceEventModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetBalanceEvents(Guid accountId, [FromQuery] AccountBalanceEventQueryParameterModel queryParameters)
+    {
+        if (!accountConverter.TryToDomain(accountId, out Account? account))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Account balance events.",
+                Errors = { [nameof(accountId)] = [$"Account with ID {accountId} not found."] },
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        return Ok(accountBalanceEventGetter.Get(account, queryParameters));
+    }
 
     /// <summary>
     /// Retrieves trends data for Accounts across a range of Accounting Periods.

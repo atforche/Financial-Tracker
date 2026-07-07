@@ -1806,6 +1806,62 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/accounts/{accountId}/balance-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves balance events for a single Account workspace. */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Maximum number of results to return. */
+                    Limit?: number;
+                    /** @description Number of results to skip. */
+                    Offset?: number;
+                };
+                header?: never;
+                path: {
+                    accountId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfAccountWorkspaceBalanceEventModel"];
+                        "application/json": components["schemas"]["CollectionModelOfAccountWorkspaceBalanceEventModel"];
+                        "text/json": components["schemas"]["CollectionModelOfAccountWorkspaceBalanceEventModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/accounts/trends": {
         parameters: {
             query?: never;
@@ -2673,6 +2729,38 @@ export interface components {
          * @enum {unknown}
          */
         AccountTypeModel: AccountTypeModel;
+        /** @description Model representing a balance event in the Account workspace. */
+        AccountWorkspaceBalanceEventModel: {
+            /**
+             * Format: uuid
+             * @description Transaction that produced this balance event.
+             */
+            transactionId: string;
+            /**
+             * Format: date
+             * @description Effective date of the balance event.
+             */
+            date: string;
+            /** @description Type of balance event. */
+            type: components["schemas"]["AccountTrendsBalanceEventTypeModel"];
+            /** @description Whether the transaction has been posted to the account. */
+            isPosted: boolean;
+            /**
+             * Format: double
+             * @description Amount associated with the balance event.
+             */
+            amount: number;
+            /**
+             * Format: double
+             * @description Account balance before the transaction affected the account.
+             */
+            previousBalance: number;
+            /**
+             * Format: double
+             * @description Account balance after the transaction affected the account.
+             */
+            newBalance: number;
+        };
         /** @description Model representing an Assignment Goal */
         AssignmentGoalModel: {
             /**
@@ -2772,6 +2860,16 @@ export interface components {
         CollectionModelOfAccountTrendsBalanceEventModel: {
             /** @description The collection of items. */
             items: components["schemas"]["AccountTrendsBalanceEventModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfAccountWorkspaceBalanceEventModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["AccountWorkspaceBalanceEventModel"][];
             /**
              * Format: int32
              * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.

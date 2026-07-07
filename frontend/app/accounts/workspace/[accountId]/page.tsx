@@ -1,4 +1,6 @@
 import { Button, Stack, Typography } from "@mui/material";
+import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import type { AccountWorkspaceBalanceEvent } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import type { JSX } from "react";
@@ -7,6 +9,8 @@ import ViewAccountForm from "@/accounts/workspace/ViewAccountForm";
 import getApiClient from "@/framework/data/getApiClient";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
+import { rowsPerPage } from "@/framework/listframe/Constants";
+import transactionRoutes from "@/transactions/routes";
 
 interface AccountWorkspaceDetailPageProps {
   readonly params: Promise<{
@@ -24,8 +28,9 @@ const AccountWorkspaceDetailPage = async function ({
 }: AccountWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { accountId } = await params;
   const resolvedSearchParams = await searchParams;
-  const { search, sort, page } = resolvedSearchParams;
+  const { search, sort, page, balanceEventPage } = resolvedSearchParams;
   const apiClient = getApiClient();
+  const currentBalanceEventPage = normalizePageValue(balanceEventPage);
   const { data: account } = await apiClient.GET("/accounts/{accountId}", {
     params: {
       path: {
@@ -39,11 +44,36 @@ const AccountWorkspaceDetailPage = async function ({
     ...(typeof sort !== "undefined" ? { sort } : {}),
     ...(typeof page !== "undefined" ? { page } : {}),
   };
+  const detailSearchParams: AccountWorkspaceSearchParams = {
+    ...workspaceSearchParams,
+    ...(typeof balanceEventPage !== "undefined" ? { balanceEventPage } : {}),
+  };
   const workspaceUrl = routes.workspace(workspaceSearchParams);
 
   if (typeof account === "undefined") {
     redirect(workspaceUrl);
   }
+
+  const { data: balanceEvents } = await apiClient.GET(
+    "/accounts/{accountId}/balance-events",
+    {
+      params: {
+        path: {
+          accountId: account.id,
+        },
+        query: {
+          Limit: rowsPerPage,
+          Offset: getPageOffset(currentBalanceEventPage),
+        },
+      },
+    },
+  );
+
+  const currentUrl = routes.workspaceDetail(account.id, detailSearchParams);
+  const addTransactionHref = transactionRoutes.workspaceCreate({
+    accountIds: [account.id],
+    returnUrl: currentUrl,
+  });
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
@@ -60,7 +90,12 @@ const AccountWorkspaceDetailPage = async function ({
       </Stack>
       <ViewAccountForm
         account={account}
-        redirectUrl={routes.workspaceDetail(account.id, workspaceSearchParams)}
+        redirectUrl={currentUrl}
+        recentBalanceEvents={
+          balanceEvents?.items ?? ([] as AccountWorkspaceBalanceEvent[])
+        }
+        recentBalanceEventCount={balanceEvents?.totalCount ?? 0}
+        addTransactionHref={addTransactionHref}
       />
     </Stack>
   );

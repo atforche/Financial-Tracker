@@ -15,6 +15,7 @@ interface TransactionWorkspaceSearchParams {
   sort?: TransactionSortOrder | null;
   page?: number | string | null;
   selectedTransactionId?: string;
+  returnUrl?: string;
 }
 
 /**

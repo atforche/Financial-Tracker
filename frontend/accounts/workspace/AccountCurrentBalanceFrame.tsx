@@ -31,7 +31,7 @@ const AccountCurrentBalanceFrame = function ({
           }}
         >
           <CurrencyEntryField
-            label="Posted Balance"
+            label="Current Balance"
             value={account.currentBalance.postedBalance}
             setValue={null}
             errorMessage={null}

@@ -18,6 +18,7 @@ interface AccountWorkspaceSearchParams {
   sort?: AccountSortOrder;
   page?: number | string | null;
   action?: AccountWorkspaceAction;
+  balanceEventPage?: number | string | null;
 }
 
 /**
