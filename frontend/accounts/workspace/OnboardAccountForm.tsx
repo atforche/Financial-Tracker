@@ -1,7 +1,14 @@
 "use client";
 
 import type { AccountType, OnboardAccountRequest } from "@/accounts/types";
-import { Button, Stack, Typography } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+} from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -16,20 +23,26 @@ import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import { buildOnboardRequest } from "@/accounts/workspace/helpers";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import onboardAccount from "@/accounts/workspace/onboardAccount";
+import { useRouter } from "next/navigation";
 
 /**
  * Props for the OnboardAccountForm component.
  */
 interface OnboardAccountFormProps {
+  readonly open: boolean;
+  readonly onClose: () => void;
   readonly redirectUrl: string;
 }
 
 /**
- * Displays the inline onboarding form for the workspace.
+ * Displays the account onboarding dialog for the workspace.
  */
 const OnboardAccountForm = function ({
+  open,
+  onClose,
   redirectUrl,
 }: OnboardAccountFormProps): JSX.Element {
+  const router = useRouter();
   const [name, setName] = useState<string>("");
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [onboardedBalance, setOnboardedBalance] = useState<number | null>(null);
@@ -54,37 +67,61 @@ const OnboardAccountForm = function ({
   useEffect(() => {
     if (state.success === true) {
       reset();
+      onClose();
+      router.replace(redirectUrl, { scroll: false });
     }
-  }, [state]);
+  }, [onClose, redirectUrl, router, state.success]);
 
   return (
-    <Stack ref={formRef} spacing={3} sx={{ width: "100%", maxWidth: 1200 }}>
-      <Typography variant="h5">Onboard Account</Typography>
-      <AccountDetailsFrame
-        color={detailsAreValid ? "info" : "error"}
-        name={name}
-        setName={setName}
-        nameErrorMessage={state.nameErrors ?? null}
-        accountType={accountType}
-        setAccountType={setAccountType}
-        accountTypeErrorMessage={state.typeErrors ?? null}
-      />
-      <AccountStartingBalanceFrame
-        value={onboardedBalance}
-        setValue={setOnboardedBalance}
-        errorMessage={state.onboardedBalanceErrors ?? null}
-        color={balanceIsValid ? "info" : "error"}
-      />
-      <ErrorAlert
-        errorMessage={state.errorTitle ?? null}
-        unmappedErrors={state.unmappedErrors ?? null}
-      />
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={1.5}
-        justifyContent="flex-end"
-      >
-        <Button variant="outlined" onClick={reset}>
+    <Dialog
+      open={open}
+      onClose={
+        pending
+          ? // eslint-disable-next-line no-undefined
+            undefined
+          : (): void => {
+              onClose();
+              reset();
+            }
+      }
+      fullWidth
+      maxWidth="md"
+    >
+      <DialogTitle>Onboard Account</DialogTitle>
+      <DialogContent>
+        <Stack ref={formRef} spacing={3} sx={{ pt: 1 }}>
+          <AccountDetailsFrame
+            color={detailsAreValid ? "info" : "error"}
+            name={name}
+            setName={setName}
+            nameErrorMessage={state.nameErrors ?? null}
+            accountType={accountType}
+            setAccountType={setAccountType}
+            accountTypeErrorMessage={state.typeErrors ?? null}
+          />
+          <AccountStartingBalanceFrame
+            value={onboardedBalance}
+            setValue={setOnboardedBalance}
+            errorMessage={state.onboardedBalanceErrors ?? null}
+            color={balanceIsValid ? "info" : "error"}
+          />
+          <ErrorAlert
+            errorMessage={state.errorTitle ?? null}
+            unmappedErrors={state.unmappedErrors ?? null}
+          />
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          disabled={pending}
+          onClick={() => {
+            onClose();
+            reset();
+          }}
+        >
+          Cancel
+        </Button>
+        <Button variant="outlined" disabled={pending} onClick={reset}>
           Reset
         </Button>
         <Button
@@ -105,8 +142,8 @@ const OnboardAccountForm = function ({
         >
           Onboard account
         </Button>
-      </Stack>
-    </Stack>
+      </DialogActions>
+    </Dialog>
   );
 };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Paper, Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { Button, Paper, Stack, Typography } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Account } from "@/accounts/types";
 import type { AccountWorkspaceAction } from "@/accounts/workspace/AccountWorkspace";
@@ -38,20 +38,6 @@ const AccountWorkspaceActions = function ({
   const pathname = usePathname();
   const router = useRouter();
 
-  const allActions: readonly AccountWorkspaceAction[] = isInOnboardingMode
-    ? ["onboard", "view"]
-    : ["create", "view"];
-  const availableActions: readonly AccountWorkspaceAction[] =
-    selectedAccount === null
-      ? isInOnboardingMode
-        ? ["onboard"]
-        : ["create"]
-      : ["view"];
-  const activeAction =
-    requestedAction !== null && availableActions.includes(requestedAction)
-      ? requestedAction
-      : availableActions[0];
-
   const setAction = function (action: AccountWorkspaceAction | null): void {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -65,54 +51,79 @@ const AccountWorkspaceActions = function ({
   };
 
   const currentParams = new URLSearchParams(searchParams.toString());
+  const dialogParams = new URLSearchParams(searchParams.toString());
+  dialogParams.delete("action");
   const currentUrl = buildUrl(pathname, currentParams);
+  const dialogRedirectUrl = buildUrl(pathname, dialogParams);
+  const isCreateDialogOpen =
+    selectedAccount === null &&
+    !isInOnboardingMode &&
+    requestedAction === "create";
+  const isOnboardDialogOpen =
+    selectedAccount === null &&
+    isInOnboardingMode &&
+    requestedAction === "onboard";
+
+  if (selectedAccount !== null) {
+    return (
+      <ViewAccountForm account={selectedAccount} redirectUrl={currentUrl} />
+    );
+  }
 
   return (
-    <Paper
-      sx={{
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 3,
-        p: { xs: 2.5, md: 3 },
-      }}
-    >
-      <Stack spacing={3}>
-        <ToggleButtonGroup
-          value={activeAction}
-          exclusive
-          onChange={(_, nextValue: AccountWorkspaceAction | null) => {
-            setAction(nextValue);
-          }}
-          sx={{ flexWrap: "wrap" }}
+    <>
+      <Paper
+        sx={{
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 3,
+          p: { xs: 2.5, md: 3 },
+        }}
+      >
+        <Stack
+          spacing={2}
+          direction={{ xs: "column", sm: "row" }}
+          justifyContent="space-between"
+          alignItems={{ xs: "stretch", sm: "center" }}
         >
-          {allActions.map((action) => (
-            <ToggleButton
-              key={action}
-              value={action}
-              disabled={!availableActions.includes(action)}
-            >
-              {action === "create"
-                ? "Create"
-                : action === "onboard"
-                  ? "Onboard"
-                  : "View"}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-        {activeAction === "create" ? (
-          <CreateAccountForm
-            accountingPeriods={accountingPeriods}
-            redirectUrl={pathname}
-          />
-        ) : null}
-        {activeAction === "onboard" ? (
-          <OnboardAccountForm redirectUrl={pathname} />
-        ) : null}
-        {activeAction === "view" && selectedAccount !== null ? (
-          <ViewAccountForm account={selectedAccount} redirectUrl={currentUrl} />
-        ) : null}
-      </Stack>
-    </Paper>
+          <Stack spacing={0.75}>
+            <Typography variant="h6">
+              {isInOnboardingMode
+                ? "Onboard Your First Account"
+                : "Add Account"}
+            </Typography>
+            <Typography color="text.secondary">
+              {isInOnboardingMode
+                ? "Start the workspace by onboarding your first account."
+                : "Create a new account without leaving the workspace."}
+            </Typography>
+          </Stack>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setAction(isInOnboardingMode ? "onboard" : "create");
+            }}
+          >
+            {isInOnboardingMode ? "Onboard account" : "Create account"}
+          </Button>
+        </Stack>
+      </Paper>
+      <CreateAccountForm
+        accountingPeriods={accountingPeriods}
+        open={isCreateDialogOpen}
+        onClose={() => {
+          setAction(null);
+        }}
+        redirectUrl={dialogRedirectUrl}
+      />
+      <OnboardAccountForm
+        open={isOnboardDialogOpen}
+        onClose={() => {
+          setAction(null);
+        }}
+        redirectUrl={dialogRedirectUrl}
+      />
+    </>
   );
 };
 

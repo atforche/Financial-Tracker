@@ -5,7 +5,14 @@ import {
   type AccountingPeriod,
   getDefaultDate,
 } from "@/accounting-periods/types";
-import { Button, Stack, Typography } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+} from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -24,22 +31,28 @@ import type { Dayjs } from "dayjs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import createAccount from "@/accounts/workspace/createAccount";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
+import { useRouter } from "next/navigation";
 
 /**
  * Props for the CreateAccountForm component.
  */
 interface CreateAccountFormProps {
   readonly accountingPeriods: AccountingPeriod[];
+  readonly open: boolean;
+  readonly onClose: () => void;
   readonly redirectUrl: string;
 }
 
 /**
- * Displays the inline create-account form for the workspace.
+ * Displays the create-account dialog for the workspace.
  */
 const CreateAccountForm = function ({
   accountingPeriods,
+  open,
+  onClose,
   redirectUrl,
 }: CreateAccountFormProps): JSX.Element {
+  const router = useRouter();
   const [name, setName] = useState<string>("");
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [accountingPeriod, setAccountingPeriod] =
@@ -73,8 +86,10 @@ const CreateAccountForm = function ({
   useEffect(() => {
     if (state.success === true) {
       reset();
+      onClose();
+      router.replace(redirectUrl, { scroll: false });
     }
-  }, [state]);
+  }, [onClose, redirectUrl, router, state.success]);
 
   const request: CreateAccountRequest | null = buildCreateRequest(
     name,
@@ -84,37 +99,59 @@ const CreateAccountForm = function ({
   );
 
   return (
-    <Stack ref={formRef} spacing={3} sx={{ width: "100%", maxWidth: 1200 }}>
-      <Typography variant="h5">Create Account</Typography>
-      <AccountDetailsFrame
-        color={detailsAreValid ? "info" : "error"}
-        name={name}
-        setName={setName}
-        nameErrorMessage={state.nameErrors ?? null}
-        accountType={accountType}
-        setAccountType={setAccountType}
-        accountTypeErrorMessage={state.typeErrors ?? null}
-      />
-      <AccountOpeningFrame
-        accountingPeriods={accountingPeriods}
-        accountingPeriod={accountingPeriod}
-        setAccountingPeriod={onAccountingPeriodChange}
-        accountingPeriodErrorMessage={state.accountingPeriodErrors ?? null}
-        dateOpened={dateOpened}
-        setDateOpened={setDateOpened}
-        dateOpenedErrorMessage={state.dateOpenedErrors ?? null}
-        color={openingIsValid ? "info" : "error"}
-      />
-      <ErrorAlert
-        errorMessage={state.errorTitle ?? null}
-        unmappedErrors={state.unmappedErrors ?? null}
-      />
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={1.5}
-        justifyContent="flex-end"
-      >
-        <Button variant="outlined" onClick={reset}>
+    <Dialog
+      open={open}
+      onClose={
+        pending
+          ? // eslint-disable-next-line no-undefined
+            undefined
+          : (): void => {
+              onClose();
+              reset();
+            }
+      }
+      fullWidth
+      maxWidth="md"
+    >
+      <DialogTitle>Create Account</DialogTitle>
+      <DialogContent>
+        <Stack ref={formRef} spacing={3} sx={{ pt: 1 }}>
+          <AccountDetailsFrame
+            color={detailsAreValid ? "info" : "error"}
+            name={name}
+            setName={setName}
+            nameErrorMessage={state.nameErrors ?? null}
+            accountType={accountType}
+            setAccountType={setAccountType}
+            accountTypeErrorMessage={state.typeErrors ?? null}
+          />
+          <AccountOpeningFrame
+            accountingPeriods={accountingPeriods}
+            accountingPeriod={accountingPeriod}
+            setAccountingPeriod={onAccountingPeriodChange}
+            accountingPeriodErrorMessage={state.accountingPeriodErrors ?? null}
+            dateOpened={dateOpened}
+            setDateOpened={setDateOpened}
+            dateOpenedErrorMessage={state.dateOpenedErrors ?? null}
+            color={openingIsValid ? "info" : "error"}
+          />
+          <ErrorAlert
+            errorMessage={state.errorTitle ?? null}
+            unmappedErrors={state.unmappedErrors ?? null}
+          />
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          disabled={pending}
+          onClick={() => {
+            onClose();
+            reset();
+          }}
+        >
+          Cancel
+        </Button>
+        <Button variant="outlined" disabled={pending} onClick={reset}>
           Reset
         </Button>
         <Button
@@ -135,8 +172,8 @@ const CreateAccountForm = function ({
         >
           Create account
         </Button>
-      </Stack>
-    </Stack>
+      </DialogActions>
+    </Dialog>
   );
 };
 
