@@ -1,14 +1,7 @@
 "use client";
 
 import type { AccountType, OnboardAccountRequest } from "@/accounts/types";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Stack,
-} from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -19,6 +12,7 @@ import {
 } from "react";
 import AccountDetailsFrame from "@/accounts/workspace/AccountDetailsFrame";
 import AccountStartingBalanceFrame from "@/accounts/workspace/AccountStartingBalanceFrame";
+import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import { buildOnboardRequest } from "@/accounts/workspace/helpers";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
@@ -86,63 +80,63 @@ const OnboardAccountForm = function ({
       }
       fullWidth
       maxWidth="md"
-    >
-      <DialogTitle>Onboard Account</DialogTitle>
-      <DialogContent>
-        <Stack ref={formRef} spacing={3} sx={{ pt: 1 }}>
-          <AccountDetailsFrame
-            color={detailsAreValid ? "info" : "error"}
-            name={name}
-            setName={setName}
-            nameErrorMessage={state.nameErrors ?? null}
-            accountType={accountType}
-            setAccountType={setAccountType}
-            accountTypeErrorMessage={state.typeErrors ?? null}
-          />
-          <AccountStartingBalanceFrame
-            value={onboardedBalance}
-            setValue={setOnboardedBalance}
-            errorMessage={state.onboardedBalanceErrors ?? null}
-            color={balanceIsValid ? "info" : "error"}
-          />
-          <ErrorAlert
-            errorMessage={state.errorTitle ?? null}
-            unmappedErrors={state.unmappedErrors ?? null}
-          />
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          disabled={pending}
-          onClick={() => {
-            onClose();
-            reset();
-          }}
-        >
-          Cancel
-        </Button>
-        <Button variant="outlined" disabled={pending} onClick={reset}>
-          Reset
-        </Button>
-        <Button
-          variant="contained"
-          loading={pending}
-          disabled={request === null}
-          onClick={() => {
-            if (request === null) {
-              return;
-            }
-            startTransition(() => {
-              action({
-                redirectUrl,
-                request,
+      title="Onboard Account"
+      actions={
+        <>
+          <Button
+            disabled={pending}
+            onClick={() => {
+              onClose();
+              reset();
+            }}
+          >
+            Cancel
+          </Button>
+          <Button variant="outlined" disabled={pending} onClick={reset}>
+            Reset
+          </Button>
+          <Button
+            variant="contained"
+            loading={pending}
+            disabled={request === null}
+            onClick={() => {
+              if (request === null) {
+                return;
+              }
+              startTransition(() => {
+                action({
+                  redirectUrl,
+                  request,
+                });
               });
-            });
-          }}
-        >
-          Onboard account
-        </Button>
-      </DialogActions>
+            }}
+          >
+            Onboard account
+          </Button>
+        </>
+      }
+    >
+      <Stack ref={formRef} spacing={3}>
+        <AccountDetailsFrame
+          color={detailsAreValid ? "info" : "error"}
+          name={name}
+          setName={setName}
+          nameErrorMessage={state.nameErrors ?? null}
+          accountType={accountType}
+          setAccountType={setAccountType}
+          accountTypeErrorMessage={state.typeErrors ?? null}
+        />
+        <AccountStartingBalanceFrame
+          value={onboardedBalance}
+          setValue={setOnboardedBalance}
+          errorMessage={state.onboardedBalanceErrors ?? null}
+          color={balanceIsValid ? "info" : "error"}
+        />
+        <ErrorAlert
+          errorMessage={state.errorTitle ?? null}
+          unmappedErrors={state.unmappedErrors ?? null}
+        />
+      </Stack>
     </Dialog>
   );
 };

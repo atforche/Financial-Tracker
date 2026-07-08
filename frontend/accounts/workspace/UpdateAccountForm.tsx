@@ -1,14 +1,7 @@
 "use client";
 
 import type { Account, UpdateAccountRequest } from "@/accounts/types";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Stack,
-} from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -17,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
@@ -92,51 +86,51 @@ const UpdateAccountForm = function ({
         }
         fullWidth
         maxWidth="sm"
+        title="Update Account"
+        actions={
+          <>
+            <Button
+              disabled={pending}
+              onClick={() => {
+                setOpen(false);
+                reset();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="outlined" disabled={pending} onClick={reset}>
+              Reset
+            </Button>
+            <Button
+              variant="contained"
+              loading={pending}
+              disabled={request === null}
+              onClick={() => {
+                if (request === null) {
+                  return;
+                }
+                startTransition(() => {
+                  action({ accountId: account.id, redirectUrl, request });
+                });
+              }}
+            >
+              Save
+            </Button>
+          </>
+        }
       >
-        <DialogTitle>Update Account</DialogTitle>
-        <DialogContent>
-          <Stack ref={formRef} spacing={3} sx={{ pt: 1 }}>
-            <StringEntryField
-              label="Name"
-              value={name}
-              setValue={setName}
-              errorMessage={state.nameErrors ?? null}
-            />
-            <ErrorAlert
-              errorMessage={state.errorTitle ?? null}
-              unmappedErrors={state.unmappedErrors ?? null}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            disabled={pending}
-            onClick={() => {
-              setOpen(false);
-              reset();
-            }}
-          >
-            Cancel
-          </Button>
-          <Button variant="outlined" disabled={pending} onClick={reset}>
-            Reset
-          </Button>
-          <Button
-            variant="contained"
-            loading={pending}
-            disabled={request === null}
-            onClick={() => {
-              if (request === null) {
-                return;
-              }
-              startTransition(() => {
-                action({ accountId: account.id, redirectUrl, request });
-              });
-            }}
-          >
-            Save
-          </Button>
-        </DialogActions>
+        <Stack ref={formRef} spacing={3}>
+          <StringEntryField
+            label="Name"
+            value={name}
+            setValue={setName}
+            errorMessage={state.nameErrors ?? null}
+          />
+          <ErrorAlert
+            errorMessage={state.errorTitle ?? null}
+            unmappedErrors={state.unmappedErrors ?? null}
+          />
+        </Stack>
       </Dialog>
     </>
   );

@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -17,6 +9,7 @@ import {
   useState,
 } from "react";
 import type { Account } from "@/accounts/types";
+import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import deleteAccount from "@/accounts/workspace/deleteAccount";
 import { useRouter } from "next/navigation";
@@ -69,45 +62,45 @@ const DeleteAccountForm = function ({
         }
         fullWidth
         maxWidth="sm"
-      >
-        <DialogTitle>Delete Account</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            <Typography>
-              Are you sure you want to delete the account &quot;{account.name}
-              &quot;?
-            </Typography>
-            <ErrorAlert
-              errorMessage={state.errorTitle ?? null}
-              unmappedErrors={state.unmappedErrors ?? null}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            disabled={pending}
-            onClick={() => {
-              setOpen(false);
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            color="error"
-            variant="contained"
-            loading={pending}
-            onClick={() => {
-              startTransition(() => {
-                action({
-                  accountId: account.id,
-                  redirectUrl,
+        title="Delete Account"
+        actions={
+          <>
+            <Button
+              disabled={pending}
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              color="error"
+              variant="contained"
+              loading={pending}
+              onClick={() => {
+                startTransition(() => {
+                  action({
+                    accountId: account.id,
+                    redirectUrl,
+                  });
                 });
-              });
-            }}
-          >
-            Delete
-          </Button>
-        </DialogActions>
+              }}
+            >
+              Delete
+            </Button>
+          </>
+        }
+      >
+        <Stack spacing={2}>
+          <Typography>
+            Are you sure you want to delete the account &quot;{account.name}
+            &quot;?
+          </Typography>
+          <ErrorAlert
+            errorMessage={state.errorTitle ?? null}
+            unmappedErrors={state.unmappedErrors ?? null}
+          />
+        </Stack>
       </Dialog>
     </>
   );

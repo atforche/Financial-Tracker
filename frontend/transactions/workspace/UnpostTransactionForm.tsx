@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -16,6 +8,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import type { Transaction } from "@/transactions/transaction";
 import unpostTransaction from "@/transactions/workspace/unpostTransaction";
@@ -68,41 +61,41 @@ const UnpostTransactionForm = function ({
         }
         fullWidth
         maxWidth="sm"
+        title="Unpost Transaction"
+        actions={
+          <>
+            <Button
+              disabled={pending}
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              loading={pending}
+              onClick={() => {
+                startTransition(() => {
+                  action({ transactionId: transaction.id, redirectUrl });
+                });
+              }}
+            >
+              Unpost
+            </Button>
+          </>
+        }
       >
-        <DialogTitle>Unpost Transaction</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            <Typography>
-              Are you sure you want to unpost this transaction from all posted
-              accounts?
-            </Typography>
-            <ErrorAlert
-              errorMessage={state.errorTitle ?? null}
-              unmappedErrors={state.unmappedErrors ?? null}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            disabled={pending}
-            onClick={() => {
-              setOpen(false);
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            loading={pending}
-            onClick={() => {
-              startTransition(() => {
-                action({ transactionId: transaction.id, redirectUrl });
-              });
-            }}
-          >
-            Unpost
-          </Button>
-        </DialogActions>
+        <Stack spacing={2}>
+          <Typography>
+            Are you sure you want to unpost this transaction from all posted
+            accounts?
+          </Typography>
+          <ErrorAlert
+            errorMessage={state.errorTitle ?? null}
+            unmappedErrors={state.unmappedErrors ?? null}
+          />
+        </Stack>
       </Dialog>
     </>
   );
