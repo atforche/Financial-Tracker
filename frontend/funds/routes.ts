@@ -46,7 +46,6 @@ const pathWithSearchParams = function (
  * App routes related to funds.
  */
 const routes = {
-  current: (): Route => "/funds/current",
   trends: (searchParams: FundTrendsSearchParams): Route =>
     pathWithSearchParams(
       "/funds/trends",

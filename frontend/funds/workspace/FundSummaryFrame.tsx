@@ -1,10 +1,10 @@
 "use client";
 
+import type { JSX, ReactNode } from "react";
 import { Box } from "@mui/material";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import Frame from "@/framework/view/Frame";
 import type { Fund } from "@/funds/types";
-import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 
 /**
@@ -12,6 +12,7 @@ import StringEntryField from "@/framework/forms/StringEntryField";
  */
 interface FundSummaryFrameProps {
   readonly fund: Fund;
+  readonly headerContent?: ReactNode;
 }
 
 /**
@@ -19,6 +20,7 @@ interface FundSummaryFrameProps {
  */
 const FundSummaryFrame = function ({
   fund,
+  headerContent,
 }: FundSummaryFrameProps): JSX.Element {
   const balanceIncludingPending =
     fund.currentBalance.postedBalance +
@@ -27,7 +29,7 @@ const FundSummaryFrame = function ({
 
   return (
     <Box sx={{ maxWidth: 1200, width: "100%" }}>
-      <Frame title="Fund Summary" color="info">
+      <Frame title="Fund Summary" color="info" headerContent={headerContent}>
         <Box
           sx={{
             display: "grid",

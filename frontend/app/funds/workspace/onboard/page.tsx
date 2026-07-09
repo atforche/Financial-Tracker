@@ -21,12 +21,9 @@ const FundWorkspaceOnboardPage = async function ({
   searchParams,
 }: FundWorkspaceOnboardPageProps): Promise<JSX.Element> {
   const resolvedSearchParams = await searchParams;
-  const { search, sort, page, selectedFundId } = resolvedSearchParams;
+  const { search } = resolvedSearchParams;
   const workspaceSearchParams: FundWorkspaceSearchParams = {
     ...(typeof search !== "undefined" ? { search } : {}),
-    ...(typeof sort !== "undefined" ? { sort } : {}),
-    ...(typeof page !== "undefined" ? { page } : {}),
-    ...(typeof selectedFundId !== "undefined" ? { selectedFundId } : {}),
   };
   const workspaceUrl = routes.workspace(workspaceSearchParams);
   const apiClient = getApiClient();

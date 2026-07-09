@@ -1,118 +1,60 @@
-import { Box, Stack } from "@mui/material";
-import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
-import type { FundSortOrder } from "@/funds/types";
-import FundWorkspaceActions from "@/funds/workspace/FundWorkspaceActions";
+import FundWorkspaceCards from "@/funds/workspace/FundWorkspaceCards";
 import FundWorkspaceFilter from "@/funds/workspace/FundWorkspaceFilter";
-import FundWorkspaceListFrame from "@/funds/workspace/FundWorkspaceListFrame";
 import type { JSX } from "react";
+import { Stack } from "@mui/material";
 import getApiClient from "@/framework/data/getApiClient";
-import { redirect } from "next/navigation";
-import routes from "@/funds/routes";
-import { rowsPerPage } from "@/framework/listframe/Constants";
-
-type FundWorkspaceAction = "update" | "delete";
 
 /**
  * Search parameters supported by the Funds workspace.
  */
 interface FundWorkspaceSearchParams {
   search?: string;
-  sort?: FundSortOrder;
-  page?: number | string | null;
-  selectedFundId?: string;
-  action?: FundWorkspaceAction;
   balanceEventPage?: number | string | null;
 }
 
-/**
- * Props for the FundWorkspace component.
- */
 interface FundWorkspaceProps {
   readonly searchParams: Promise<FundWorkspaceSearchParams>;
 }
 
 /**
- * Displays the fund workspace with list-backed inline actions.
+ * Displays the fund workspace with card-backed navigation.
  */
 const FundWorkspace = async function ({
   searchParams,
 }: FundWorkspaceProps): Promise<JSX.Element> {
-  const { search, sort, page, selectedFundId, action } = await searchParams;
+  const { search } = await searchParams;
   const apiClient = getApiClient();
-  const currentPage = normalizePageValue(page);
-
   const anyAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
-    params: {
-      query: {
-        Limit: 1,
-      },
-    },
+    params: { query: { Limit: 1 } },
   });
   const fundsPromise = apiClient.GET("/funds", {
-    params: {
-      query: {
-        Search: search ?? "",
-        Sort: sort ?? null,
-        Limit: rowsPerPage,
-        Offset: getPageOffset(currentPage),
-      },
-    },
+    params: { query: { Search: search ?? "" } },
   });
-
   const [{ data: accountingPeriod }, { data: funds }] = await Promise.all([
     anyAccountingPeriodsPromise,
     fundsPromise,
   ]);
+
   if (typeof accountingPeriod === "undefined") {
     throw new Error("Failed to fetch accounting periods");
   }
   if (typeof funds === "undefined") {
     throw new Error("Failed to fetch funds");
   }
-  funds.items = funds.items.filter((fund) => fund.name !== "Unassigned");
 
-  const selectedFund =
-    funds.items.find((fund) => fund.id === selectedFundId) ?? null;
+  const visibleFunds = funds.items.filter((fund) => fund.name !== "Unassigned");
   const isInOnboardingMode = accountingPeriod.items.length === 0;
-
-  if (typeof selectedFundId === "string" && selectedFund === null) {
-    redirect(
-      routes.workspace({
-        search: search ?? "",
-        ...(typeof sort !== "undefined" ? { sort } : {}),
-        ...(typeof page !== "undefined" ? { page: currentPage } : {}),
-        ...(typeof action !== "undefined" ? { action } : {}),
-      }),
-    );
-  }
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
-      <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
-        <FundWorkspaceFilter isInOnboardingMode={isInOnboardingMode} />
-      </Stack>
-      <Box
-        sx={{
-          display: "grid",
-          gap: 3,
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(min(100%, 600px), 1fr))",
-        }}
-      >
-        <FundWorkspaceListFrame
-          data={funds.items}
-          totalCount={funds.totalCount}
-          selectedFundId={selectedFund?.id ?? null}
-          isInOnboardingMode={isInOnboardingMode}
-        />
-        <FundWorkspaceActions
-          selectedFund={selectedFund}
-          requestedAction={action ?? null}
-        />
-      </Box>
+      <FundWorkspaceFilter isInOnboardingMode={isInOnboardingMode} />
+      <FundWorkspaceCards
+        data={visibleFunds}
+        isInOnboardingMode={isInOnboardingMode}
+      />
     </Stack>
   );
 };
 
-export type { FundWorkspaceAction, FundWorkspaceSearchParams };
+export type { FundWorkspaceSearchParams };
 export default FundWorkspace;

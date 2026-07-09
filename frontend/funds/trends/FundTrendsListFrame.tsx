@@ -70,7 +70,7 @@ const FundTrendsListFrame = function ({
   };
 
   const openFundWorkspace = function (fund: FundTrendsFund): void {
-    router.push(routes.workspace({ selectedFundId: fund.id }));
+    router.push(routes.workspaceDetail(fund.id, {}));
   };
 
   const currentSort = tryParseEnum(

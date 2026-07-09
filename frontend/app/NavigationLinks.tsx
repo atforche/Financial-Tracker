@@ -96,23 +96,18 @@ const links: NavigationLink[] = [
   },
   {
     name: "Funds",
-    href: fundRoutes.current(),
+    href: fundRoutes.workspace({}),
     icon: <Assessment />,
     childLinks: [
       {
-        name: "Current",
-        href: fundRoutes.current(),
-        icon: <Today />,
+        name: "Workspace",
+        href: fundRoutes.workspace({}),
+        icon: <Workspaces />,
       },
       {
         name: "Trends",
         href: fundRoutes.trends({}),
         icon: <Timeline />,
-      },
-      {
-        name: "Workspace",
-        href: fundRoutes.workspace({}),
-        icon: <Workspaces />,
       },
     ],
   },

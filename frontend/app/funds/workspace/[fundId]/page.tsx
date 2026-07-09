@@ -29,7 +29,7 @@ const FundWorkspaceDetailPage = async function ({
 }: FundWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { fundId } = await params;
   const resolvedSearchParams = await searchParams;
-  const { search, sort, page, balanceEventPage } = resolvedSearchParams;
+  const { search, balanceEventPage } = resolvedSearchParams;
   const apiClient = getApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
   const { data: fund } = await apiClient.GET("/funds/{fundId}", {
@@ -38,8 +38,6 @@ const FundWorkspaceDetailPage = async function ({
 
   const workspaceSearchParams: FundWorkspaceSearchParams = {
     ...(typeof search !== "undefined" ? { search } : {}),
-    ...(typeof sort !== "undefined" ? { sort } : {}),
-    ...(typeof page !== "undefined" ? { page } : {}),
   };
   const detailSearchParams: FundWorkspaceSearchParams = {
     ...workspaceSearchParams,
@@ -85,6 +83,7 @@ const FundWorkspaceDetailPage = async function ({
       </Stack>
       <ViewFundForm
         fund={fund}
+        redirectUrl={currentUrl}
         recentBalanceEvents={
           balanceEvents?.items ?? ([] as FundWorkspaceBalanceEvent[])
         }
