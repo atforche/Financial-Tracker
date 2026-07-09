@@ -57,6 +57,14 @@ const routes = {
       "/funds/workspace",
       objectToSearchParams(searchParams),
     ),
+  workspaceDetail: (
+    fundId: string,
+    searchParams: FundWorkspaceSearchParams,
+  ): Route =>
+    pathWithSearchParams(
+      `/funds/workspace/${fundId}`,
+      objectToSearchParams(searchParams),
+    ),
   workspaceCreate: (searchParams: FundWorkspaceSearchParams): Route =>
     pathWithSearchParams(
       "/funds/workspace/create",

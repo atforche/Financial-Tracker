@@ -34,6 +34,12 @@ type CurrentFundBalanceEvent =
   components["schemas"]["CurrentFundBalanceEventModel"];
 
 /**
+ * Type representing a balance event on the Fund workspace page.
+ */
+type FundWorkspaceBalanceEvent =
+  components["schemas"]["FundWorkspaceBalanceEventModel"];
+
+/**
  * Type representing the Funds trends response.
  */
 type FundTrends = components["schemas"]["FundTrendsModel"];
@@ -95,6 +101,7 @@ export {
   type CurrentFunds,
   type CurrentFund,
   type CurrentFundBalanceEvent,
+  type FundWorkspaceBalanceEvent,
   type FundTrends,
   type FundTrendsFund,
   type FundTrendsBalanceEvent,

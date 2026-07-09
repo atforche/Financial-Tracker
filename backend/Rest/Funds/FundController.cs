@@ -21,6 +21,7 @@ public sealed class FundController(
     AccountingPeriodConverter accountingPeriodConverter,
     FundConverter fundConverter,
     CurrentFundsGetter currentFundsGetter,
+    FundBalanceEventGetter fundBalanceEventGetter,
     FundTrendsGetter fundTrendsGetter,
     FundGetter fundGetter,
     FundSummaryGetter fundSummaryGetter,
@@ -69,6 +70,26 @@ public sealed class FundController(
     [ProducesResponseType(typeof(CurrentFundsModel), StatusCodes.Status200OK)]
     public IActionResult GetCurrent([FromQuery] CurrentFundsQueryParameterModel queryParameters) =>
         Ok(currentFundsGetter.Get(queryParameters));
+
+    /// <summary>
+    /// Retrieves balance events for a single Fund workspace.
+    /// </summary>
+    [HttpGet("{fundId}/balance-events")]
+    [ProducesResponseType(typeof(CollectionModel<FundWorkspaceBalanceEventModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetBalanceEvents(Guid fundId, [FromQuery] FundBalanceEventQueryParameterModel queryParameters)
+    {
+        if (!fundConverter.TryToDomain(fundId, out Fund? fund))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Fund balance events.",
+                Errors = { [nameof(fundId)] = [$"Fund with ID {fundId} not found."] },
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        return Ok(fundBalanceEventGetter.Get(fund, queryParameters));
+    }
 
     /// <summary>
     /// Retrieves trends data for Funds across a range of Accounting Periods.

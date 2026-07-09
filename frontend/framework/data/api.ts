@@ -1336,6 +1336,62 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/funds/{fundId}/balance-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves balance events for a single Fund workspace. */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Maximum number of results to return. */
+                    Limit?: number;
+                    /** @description Number of results to skip. */
+                    Offset?: number;
+                };
+                header?: never;
+                path: {
+                    fundId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfFundWorkspaceBalanceEventModel"];
+                        "application/json": components["schemas"]["CollectionModelOfFundWorkspaceBalanceEventModel"];
+                        "text/json": components["schemas"]["CollectionModelOfFundWorkspaceBalanceEventModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/funds/trends": {
         parameters: {
             query?: never;
@@ -2917,6 +2973,16 @@ export interface components {
             totalCount: number;
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfFundWorkspaceBalanceEventModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["FundWorkspaceBalanceEventModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfGoalTrendsBalanceEventModel: {
             /** @description The collection of items. */
             items: components["schemas"]["GoalTrendsBalanceEventModel"][];
@@ -3727,6 +3793,38 @@ export interface components {
         };
         /** @enum {unknown} */
         FundTrendsSortOrderModel: FundTrendsSortOrderModel | null;
+        /** @description Model representing a balance event in the Fund workspace. */
+        FundWorkspaceBalanceEventModel: {
+            /**
+             * Format: uuid
+             * @description Transaction that produced this balance event.
+             */
+            transactionId: string;
+            /**
+             * Format: date
+             * @description Effective date of the balance event.
+             */
+            date: string;
+            /** @description Type of balance event. */
+            type: components["schemas"]["FundTrendsBalanceEventTypeModel"];
+            /** @description Whether the transaction has been posted to the fund. */
+            isPosted: boolean;
+            /**
+             * Format: double
+             * @description Amount associated with the balance event.
+             */
+            amount: number;
+            /**
+             * Format: double
+             * @description Fund balance before the transaction affected the fund.
+             */
+            previousBalance: number;
+            /**
+             * Format: double
+             * @description Fund balance after the transaction affected the fund.
+             */
+            newBalance: number;
+        };
         /** @description Model representing the percentage of a goal that have been met. */
         GoalPercentageMetModel: {
             /**

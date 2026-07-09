@@ -21,6 +21,7 @@ interface FundWorkspaceSearchParams {
   page?: number | string | null;
   selectedFundId?: string;
   action?: FundWorkspaceAction;
+  balanceEventPage?: number | string | null;
 }
 
 /**
