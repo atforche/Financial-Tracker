@@ -4,12 +4,13 @@ import {
   formatAssignmentGoalType,
 } from "@/goals/types";
 import { Box, Stack, Typography } from "@mui/material";
+import Frame, { type FrameColor } from "@/framework/view/Frame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
-import Frame from "@/framework/view/Frame";
 import FundGoalTypeEntryField from "@/funds/FundGoalTypeEntryField";
 import type { JSX } from "react";
 
 interface AssignmentGoalSetupSectionProps {
+  readonly color?: FrameColor;
   readonly value: AssignmentGoalType | null;
   readonly setValue: ((newValue: AssignmentGoalType | null) => void) | null;
   readonly amount: number | null;
@@ -38,6 +39,7 @@ const getAssignmentAmountHelperText = function (
  * Renders the shared assignment goal setup section used by fund and goal forms.
  */
 const AssignmentGoalSetupSection = function ({
+  color = "primary",
   value,
   setValue,
   amount,
@@ -46,7 +48,7 @@ const AssignmentGoalSetupSection = function ({
   amountErrorMessage = null,
 }: AssignmentGoalSetupSectionProps): JSX.Element {
   return (
-    <Frame title="Assignment Goal Setup">
+    <Frame title="Assignment Goal Setup" color={color}>
       <Stack spacing={2}>
         <FundGoalTypeEntryField<AssignmentGoalType>
           label="Assignment Goal Type"

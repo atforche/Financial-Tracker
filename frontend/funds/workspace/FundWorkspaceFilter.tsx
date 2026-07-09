@@ -1,13 +1,27 @@
 "use client";
 
-import { Paper, Stack, Typography } from "@mui/material";
+import { Button, Paper, Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
+import routes from "@/funds/routes";
 
 /**
- * Renders the filter card for the Fund workspace with header and search bar.
+ * Props for the FundWorkspaceFilter component.
  */
-const FundWorkspaceFilter = function (): JSX.Element {
+interface FundWorkspaceFilterProps {
+  readonly isInOnboardingMode: boolean;
+}
+
+/**
+ * Renders the filter card for the Fund workspace with header, search bar, and primary action.
+ */
+const FundWorkspaceFilter = function ({
+  isInOnboardingMode,
+}: FundWorkspaceFilterProps): JSX.Element {
+  const addFundHref = isInOnboardingMode
+    ? routes.workspaceOnboard({})
+    : routes.workspaceCreate({});
+
   return (
     <Paper
       sx={{
@@ -24,7 +38,18 @@ const FundWorkspaceFilter = function (): JSX.Element {
         <Stack spacing={0.5}>
           <Typography variant="h5">Fund Workspace</Typography>
         </Stack>
-        <SearchBar searchParamName="search" pageParamName="page" />
+        <Stack
+          direction="row"
+          spacing={1.5}
+          useFlexGap
+          flexWrap={{ xs: "wrap", md: "nowrap" }}
+          alignItems={{ xs: "stretch", md: "center" }}
+        >
+          <SearchBar searchParamName="search" pageParamName="page" />
+          <Button variant="contained" href={addFundHref} sx={{ flexShrink: 0 }}>
+            {isInOnboardingMode ? "Onboard fund" : "Create fund"}
+          </Button>
+        </Stack>
       </Stack>
     </Paper>
   );

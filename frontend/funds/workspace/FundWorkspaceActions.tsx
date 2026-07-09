@@ -1,24 +1,18 @@
 "use client";
 
-import { Paper, Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { Button, Paper, Stack, Typography } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { AccountingPeriod } from "@/accounting-periods/types";
-import CreateFundForm from "@/funds/workspace/CreateFundForm";
 import DeleteFundForm from "@/funds/workspace/DeleteFundForm";
 import type { Fund } from "@/funds/types";
 import type { FundWorkspaceAction } from "@/funds/workspace/FundWorkspace";
 import type { JSX } from "react";
-import OnboardFundForm from "@/funds/workspace/OnboardFundForm";
 import UpdateFundForm from "@/funds/workspace/UpdateFundForm";
 
 /**
  * Props for the FundWorkspaceActions component.
  */
 interface FundWorkspaceActionsProps {
-  readonly accountingPeriods: AccountingPeriod[];
-  readonly isInOnboardingMode: boolean;
   readonly selectedFund: Fund | null;
-  readonly unassignedBalance: number | null;
   readonly requestedAction: FundWorkspaceAction | null;
 }
 
@@ -26,29 +20,12 @@ interface FundWorkspaceActionsProps {
  * Displays the available fund actions for the current workspace selection.
  */
 const FundWorkspaceActions = function ({
-  accountingPeriods,
-  isInOnboardingMode,
   selectedFund,
-  unassignedBalance,
   requestedAction,
 }: FundWorkspaceActionsProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-
-  const allActions: readonly FundWorkspaceAction[] = isInOnboardingMode
-    ? ["onboard", "update", "delete"]
-    : ["create", "update", "delete"];
-  const availableActions: readonly FundWorkspaceAction[] =
-    selectedFund === null
-      ? isInOnboardingMode
-        ? ["onboard"]
-        : ["create"]
-      : ["update", "delete"];
-  const activeAction =
-    requestedAction !== null && availableActions.includes(requestedAction)
-      ? requestedAction
-      : availableActions[0];
 
   const setAction = function (action: FundWorkspaceAction | null): void {
     const params = new URLSearchParams(searchParams.toString());
@@ -59,8 +36,33 @@ const FundWorkspaceActions = function ({
       params.set("action", action);
     }
 
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    const query = params.toString();
+    router.replace(query === "" ? pathname : `${pathname}?${query}`, {
+      scroll: false,
+    });
   };
+
+  if (selectedFund === null) {
+    return (
+      <Paper
+        sx={{
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 3,
+          p: { xs: 2.5, md: 3 },
+        }}
+      >
+        <Stack spacing={2}>
+          <Typography variant="h6">Fund Actions</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Select a fund from the workspace to update or delete it.
+          </Typography>
+        </Stack>
+      </Paper>
+    );
+  }
+
+  const activeAction = requestedAction === "delete" ? "delete" : "update";
 
   return (
     <Paper
@@ -72,48 +74,30 @@ const FundWorkspaceActions = function ({
       }}
     >
       <Stack spacing={3}>
-        <ToggleButtonGroup
-          value={activeAction}
-          exclusive
-          onChange={(_, nextValue: FundWorkspaceAction | null) => {
-            setAction(nextValue);
-          }}
-          sx={{ flexWrap: "wrap" }}
-        >
-          {allActions.map((action) => (
-            <ToggleButton
-              key={action}
-              value={action}
-              disabled={!availableActions.includes(action)}
-            >
-              {action === "create"
-                ? "Create"
-                : action === "onboard"
-                  ? "Onboard"
-                  : action === "update"
-                    ? "Update"
-                    : "Delete"}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-        {activeAction === "create" ? (
-          <CreateFundForm
-            accountingPeriods={accountingPeriods}
-            redirectUrl={pathname}
-          />
-        ) : null}
-        {activeAction === "onboard" ? (
-          <OnboardFundForm
-            redirectUrl={pathname}
-            unassignedBalance={unassignedBalance}
-          />
-        ) : null}
-        {activeAction === "update" && selectedFund !== null ? (
+        <Stack direction="row" spacing={1.5}>
+          <Button
+            variant={activeAction === "update" ? "contained" : "outlined"}
+            onClick={() => {
+              setAction("update");
+            }}
+          >
+            Update
+          </Button>
+          <Button
+            color="error"
+            variant={activeAction === "delete" ? "contained" : "outlined"}
+            onClick={() => {
+              setAction("delete");
+            }}
+          >
+            Delete
+          </Button>
+        </Stack>
+        {activeAction === "update" ? (
           <UpdateFundForm fund={selectedFund} redirectUrl={pathname} />
-        ) : null}
-        {activeAction === "delete" && selectedFund !== null ? (
+        ) : (
           <DeleteFundForm fund={selectedFund} redirectUrl={pathname} />
-        ) : null}
+        )}
       </Stack>
     </Paper>
   );

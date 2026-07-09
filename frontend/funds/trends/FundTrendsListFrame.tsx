@@ -253,12 +253,12 @@ const FundTrendsListFrame = function ({
                 onClick={() => {
                   router.push(
                     isInOnboardingMode
-                      ? routes.workspace({ action: "onboard" })
-                      : routes.workspace({ action: "create" }),
+                      ? routes.workspaceOnboard({})
+                      : routes.workspaceCreate({}),
                   );
                 }}
               >
-                {isInOnboardingMode ? "Onboard account" : "Create account"}
+                {isInOnboardingMode ? "Onboard fund" : "Create fund"}
               </Button>
             ),
           }}

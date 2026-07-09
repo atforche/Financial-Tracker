@@ -1,14 +1,15 @@
 import { Box, Stack, Typography } from "@mui/material";
+import Frame, { type FrameColor } from "@/framework/view/Frame";
 import {
   SpendingGoalType,
   describeSpendingGoalType,
   formatSpendingGoalType,
 } from "@/goals/types";
-import Frame from "@/framework/view/Frame";
 import FundGoalTypeEntryField from "@/funds/FundGoalTypeEntryField";
 import type { JSX } from "react";
 
 interface SpendingGoalSetupSectionProps {
+  readonly color?: FrameColor;
   readonly value: SpendingGoalType | null;
   readonly setValue: ((newValue: SpendingGoalType | null) => void) | null;
   readonly typeErrorMessage?: string | null;
@@ -18,12 +19,13 @@ interface SpendingGoalSetupSectionProps {
  * Renders the shared spending goal setup section used by fund and goal forms.
  */
 const SpendingGoalSetupSection = function ({
+  color = "primary",
   value,
   setValue,
   typeErrorMessage = null,
 }: SpendingGoalSetupSectionProps): JSX.Element {
   return (
-    <Frame title="Spending Goal Setup">
+    <Frame title="Spending Goal Setup" color={color}>
       <Stack spacing={2}>
         <FundGoalTypeEntryField<SpendingGoalType>
           label="Spending Goal Type"

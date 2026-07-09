@@ -10,7 +10,7 @@ import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
-type FundWorkspaceAction = "create" | "onboard" | "update" | "delete";
+type FundWorkspaceAction = "update" | "delete";
 
 /**
  * Search parameters supported by the Funds workspace.
@@ -47,9 +47,6 @@ const FundWorkspace = async function ({
       },
     },
   });
-  const openAccountingPeriodsPromise = apiClient.GET(
-    "/accounting-periods/open",
-  );
   const fundsPromise = apiClient.GET("/funds", {
     params: {
       query: {
@@ -61,20 +58,12 @@ const FundWorkspace = async function ({
     },
   });
 
-  const [
-    { data: accountingPeriod },
-    { data: openAccountingPeriods },
-    { data: funds },
-  ] = await Promise.all([
+  const [{ data: accountingPeriod }, { data: funds }] = await Promise.all([
     anyAccountingPeriodsPromise,
-    openAccountingPeriodsPromise,
     fundsPromise,
   ]);
   if (typeof accountingPeriod === "undefined") {
     throw new Error("Failed to fetch accounting periods");
-  }
-  if (typeof openAccountingPeriods === "undefined") {
-    throw new Error("Failed to fetch open accounting periods");
   }
   if (typeof funds === "undefined") {
     throw new Error("Failed to fetch funds");
@@ -99,7 +88,7 @@ const FundWorkspace = async function ({
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
       <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
-        <FundWorkspaceFilter />
+        <FundWorkspaceFilter isInOnboardingMode={isInOnboardingMode} />
       </Stack>
       <Box
         sx={{
@@ -116,13 +105,7 @@ const FundWorkspace = async function ({
           isInOnboardingMode={isInOnboardingMode}
         />
         <FundWorkspaceActions
-          accountingPeriods={openAccountingPeriods}
-          isInOnboardingMode={isInOnboardingMode}
           selectedFund={selectedFund}
-          unassignedBalance={
-            funds.items.find((fund) => fund.name === "Unassigned")
-              ?.currentBalance.postedBalance ?? null
-          }
           requestedAction={action ?? null}
         />
       </Box>

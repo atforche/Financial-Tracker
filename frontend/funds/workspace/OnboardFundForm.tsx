@@ -1,7 +1,7 @@
 "use client";
 
 import { AssignmentGoalType, SpendingGoalType } from "@/goals/types";
-import { Box, Button, Paper, Stack, Typography } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -10,15 +10,22 @@ import {
   useRef,
   useState,
 } from "react";
+import {
+  buildOnboardFundRequest,
+  validateAssignmentGoalSetup,
+  validateOnboardFundSetup,
+  validateSpendingGoalSetup,
+} from "@/funds/workspace/helpers";
 import AssignmentGoalSetupSection from "@/funds/workspace/AssignmentGoalSetupSection";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import type { OnboardFundRequest } from "@/funds/types";
+import Frame from "@/framework/view/Frame";
 import SpendingGoalSetupSection from "@/funds/workspace/SpendingGoalSetupSection";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import formatCurrency from "@/framework/formatCurrency";
 import onboardFund from "@/funds/workspace/onboardFund";
+import { useRouter } from "next/navigation";
 
 /**
  * Props for the OnboardFundForm component.
@@ -35,6 +42,7 @@ const OnboardFundForm = function ({
   redirectUrl,
   unassignedBalance,
 }: OnboardFundFormProps): JSX.Element {
+  const router = useRouter();
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [assignmentGoalType, setAssignmentGoalType] =
@@ -61,63 +69,38 @@ const OnboardFundForm = function ({
   useEffect(() => {
     if (state.success === true) {
       reset();
+      router.replace(redirectUrl, { scroll: false });
     }
-  }, [state]);
+  }, [redirectUrl, router, state.success]);
 
   const remainingUnassignedAmount =
     unassignedBalance === null
       ? null
       : unassignedBalance - (onboardedBalance ?? 0);
 
-  let request: OnboardFundRequest | null = null;
-  if (
-    name !== "" &&
-    onboardedBalance !== null &&
-    assignmentGoalType !== null &&
-    assignmentGoalAmount !== null &&
-    spendingGoalType !== null
-  ) {
-    request = {
-      name,
-      description,
-      onboardedBalance,
-      assignmentGoalType,
-      assignmentGoalAmount,
-      spendingGoalType,
-    };
-  }
+  const fundSetupIsComplete = validateOnboardFundSetup(name, onboardedBalance);
+  const assignmentGoalSetupIsComplete = validateAssignmentGoalSetup(
+    assignmentGoalType,
+    assignmentGoalAmount,
+  );
+  const spendingGoalSetupIsComplete =
+    validateSpendingGoalSetup(spendingGoalType);
+  const request = buildOnboardFundRequest(
+    name,
+    description,
+    onboardedBalance,
+    assignmentGoalType,
+    assignmentGoalAmount,
+    spendingGoalType,
+  );
 
   return (
     <Stack ref={formRef} spacing={3} sx={{ width: "100%", maxWidth: "780px" }}>
-      <Box
-        sx={{
-          px: { xs: 2.5, sm: 3 },
-          py: { xs: 2.5, sm: 3 },
-          borderRadius: 4,
-          background:
-            "linear-gradient(135deg, rgba(249,115,22,0.14) 0%, rgba(251,191,36,0.08) 100%)",
-          border: "1px solid",
-          borderColor: "divider",
-        }}
+      <Frame
+        title="Fund Setup"
+        color={fundSetupIsComplete ? "warning" : "error"}
       >
-        <Stack spacing={0.75}>
-          <Typography variant="h5">Onboard Fund</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Set the starting balance and establish the goal rules this fund
-            should follow from day one.
-          </Typography>
-        </Stack>
-      </Box>
-
-      <Paper variant="outlined" sx={{ p: { xs: 2.5, sm: 3 }, borderRadius: 4 }}>
         <Stack spacing={2.5}>
-          <Stack spacing={0.5}>
-            <Typography variant="h6">Fund Details</Typography>
-            <Typography variant="body2" color="text.secondary">
-              Capture the identity of the fund and the amount you want to seed
-              it with.
-            </Typography>
-          </Stack>
           <StringEntryField
             label="Name"
             value={name}
@@ -151,9 +134,10 @@ const OnboardFundForm = function ({
             </Typography>
           ) : null}
         </Stack>
-      </Paper>
+      </Frame>
 
       <AssignmentGoalSetupSection
+        color={assignmentGoalSetupIsComplete ? "warning" : "error"}
         value={assignmentGoalType}
         setValue={setAssignmentGoalType}
         amount={assignmentGoalAmount}
@@ -163,6 +147,7 @@ const OnboardFundForm = function ({
       />
 
       <SpendingGoalSetupSection
+        color={spendingGoalSetupIsComplete ? "warning" : "error"}
         value={spendingGoalType}
         setValue={setSpendingGoalType}
         typeErrorMessage={state.spendingGoalTypeErrors ?? null}
@@ -173,35 +158,33 @@ const OnboardFundForm = function ({
         unmappedErrors={state.unmappedErrors ?? null}
       />
 
-      <Paper variant="outlined" sx={{ p: 2, borderRadius: 4 }}>
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          justifyContent="flex-end"
-        >
-          <Button variant="outlined" onClick={reset}>
-            Reset
-          </Button>
-          <Button
-            variant="contained"
-            loading={pending}
-            disabled={request === null}
-            onClick={() => {
-              if (request === null) {
-                return;
-              }
-              startTransition(() => {
-                action({
-                  redirectUrl,
-                  request,
-                });
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={1.5}
+        justifyContent="flex-end"
+      >
+        <Button variant="outlined" onClick={reset}>
+          Reset
+        </Button>
+        <Button
+          variant="contained"
+          loading={pending}
+          disabled={request === null}
+          onClick={() => {
+            if (request === null) {
+              return;
+            }
+            startTransition(() => {
+              action({
+                redirectUrl,
+                request,
               });
-            }}
-          >
-            Onboard Fund
-          </Button>
-        </Stack>
-      </Paper>
+            });
+          }}
+        >
+          Onboard Fund
+        </Button>
+      </Stack>
     </Stack>
   );
 };

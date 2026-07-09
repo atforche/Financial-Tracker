@@ -57,6 +57,16 @@ const routes = {
       "/funds/workspace",
       objectToSearchParams(searchParams),
     ),
+  workspaceCreate: (searchParams: FundWorkspaceSearchParams): Route =>
+    pathWithSearchParams(
+      "/funds/workspace/create",
+      objectToSearchParams(searchParams),
+    ),
+  workspaceOnboard: (searchParams: FundWorkspaceSearchParams): Route =>
+    pathWithSearchParams(
+      "/funds/workspace/onboard",
+      objectToSearchParams(searchParams),
+    ),
 };
 
 export default routes;
