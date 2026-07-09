@@ -1,10 +1,13 @@
 using Data;
 using Data.Goals;
+using Domain.AccountingPeriods;
 using Domain.Exceptions;
+using Domain.Funds;
 using Domain.Goals;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Goals;
+using Rest.Funds;
 
 namespace Rest.Goals;
 
@@ -19,6 +22,9 @@ public sealed class GoalController(
     AssignmentGoalRepository assignmentGoalRepository,
     AssignmentGoalService assignmentGoalService,
     CurrentGoalsGetter currentGoalsGetter,
+    GoalBalanceEventGetter goalBalanceEventGetter,
+    IAccountingPeriodRepository accountingPeriodRepository,
+    FundConverter fundConverter,
     SpendingGoalGetter spendingGoalGetter,
     SpendingGoalRepository spendingGoalRepository,
     SpendingGoalService spendingGoalService,
@@ -164,6 +170,41 @@ public sealed class GoalController(
     [ProducesResponseType(typeof(CurrentGoalsModel), StatusCodes.Status200OK)]
     public IActionResult GetCurrent([FromQuery] CurrentGoalsQueryParameterModel queryParameters) =>
         Ok(currentGoalsGetter.Get(queryParameters));
+
+    /// <summary>
+    /// Retrieves balance events for a single Goal workspace.
+    /// </summary>
+    [HttpGet("{fundId}/balance-events")]
+    [ProducesResponseType(typeof(CollectionModel<GoalWorkspaceBalanceEventModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult GetBalanceEvents(
+        Guid fundId,
+        [FromQuery] GoalBalanceEventQueryParameterModel queryParameters)
+    {
+        if (!fundConverter.TryToDomain(fundId, out Fund? fund))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Goal balance events.",
+                Errors = { [nameof(fundId)] = [$"Fund with ID {fundId} not found."] },
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetAll()
+            .FirstOrDefault(period => period.Id.Value == queryParameters.AccountingPeriodId);
+        if (accountingPeriod is null)
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to retrieve Goal balance events.",
+                Errors = { [nameof(queryParameters.AccountingPeriodId)] = [$"Accounting Period with ID {queryParameters.AccountingPeriodId} not found."] },
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+
+        return Ok(goalBalanceEventGetter.Get(fund, accountingPeriod, queryParameters));
+    }
 
     /// <summary>
     /// Retrieves the Goal trends that matches the specified criteria.

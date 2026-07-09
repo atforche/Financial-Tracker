@@ -2,10 +2,10 @@ import { redirect } from "next/navigation";
 import routes from "@/goals/routes";
 
 /**
- * Redirects to the goals current page.
+ * Redirects to the goals workspace page.
  */
 const GoalsIndexPage = function (): never {
-  redirect(routes.current());
+  redirect(routes.workspace({}));
 };
 
 export const dynamic = "force-dynamic";

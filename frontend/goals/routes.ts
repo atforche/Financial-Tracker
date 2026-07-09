@@ -37,11 +37,9 @@ const appendRepeatedSearchParam = function (
 const goalWorkspaceSearchParamsToSearchParams = function (
   searchParams: GoalWorkspaceSearchParams,
 ): URLSearchParams {
-  const { accountingPeriodIds, fundIds, ...remainingSearchParams } =
-    searchParams;
+  const { fundIds, ...remainingSearchParams } = searchParams;
   const params = objectToSearchParams(remainingSearchParams);
 
-  appendRepeatedSearchParam(params, "accountingPeriodIds", accountingPeriodIds);
   appendRepeatedSearchParam(params, "fundIds", fundIds);
 
   return params;
@@ -63,7 +61,6 @@ const goalTrendsSearchParamsToSearchParams = function (
 };
 
 const routes = {
-  current: (): Route => "/goals/current",
   index: (searchParams: GoalTrendsSearchParams): Route =>
     pathWithSearchParams(
       "/goals/trends",
@@ -77,6 +74,14 @@ const routes = {
   workspace: (searchParams: GoalWorkspaceSearchParams): Route =>
     pathWithSearchParams(
       "/goals/workspace",
+      goalWorkspaceSearchParamsToSearchParams(searchParams),
+    ),
+  workspaceDetail: (
+    fundId: string,
+    searchParams: GoalWorkspaceSearchParams,
+  ): Route =>
+    pathWithSearchParams(
+      `/goals/workspace/${fundId}`,
       goalWorkspaceSearchParamsToSearchParams(searchParams),
     ),
 };

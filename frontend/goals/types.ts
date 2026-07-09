@@ -2,6 +2,7 @@ import {
   AssignmentGoalSortOrderModel,
   AssignmentGoalTypeModel,
   GoalTrendsBalanceEventSortOrderModel,
+  GoalWorkspaceBalanceEventTypeModel,
   SpendingGoalSortOrderModel,
   SpendingGoalTypeModel,
   type components,
@@ -42,6 +43,9 @@ type GoalTrends = components["schemas"]["GoalTrendsModel"];
 
 type GoalTrendsBalanceEvent =
   components["schemas"]["GoalTrendsBalanceEventModel"];
+
+type GoalWorkspaceBalanceEvent =
+  components["schemas"]["GoalWorkspaceBalanceEventModel"];
 
 type GoalTrendsAccountingPeriodSummaryModel =
   components["schemas"]["GoalTrendsAccountingPeriodSummaryModel"];
@@ -132,6 +136,8 @@ export {
   type GoalTrends,
   type GoalTrendsAssignmentGoalTypeSummary,
   type GoalTrendsBalanceEvent,
+  type GoalWorkspaceBalanceEvent,
+  GoalWorkspaceBalanceEventTypeModel as GoalWorkspaceBalanceEventType,
   GoalTrendsBalanceEventSortOrderModel as GoalTrendsBalanceEventSortOrder,
   type GoalTrendsAccountingPeriodSummaryModel,
   type GoalTrendsSpendingGoalTypeSummary,

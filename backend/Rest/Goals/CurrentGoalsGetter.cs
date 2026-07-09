@@ -23,13 +23,17 @@ public class CurrentGoalsGetter(
     /// </summary>
     public CurrentGoalsModel Get(CurrentGoalsQueryParameterModel request)
     {
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetLatestAccountingPeriod();
+        AccountingPeriod? accountingPeriod = request.AccountingPeriodId is Guid accountingPeriodId
+            ? accountingPeriodRepository.GetAll().FirstOrDefault(period => period.Id.Value == accountingPeriodId)
+            : accountingPeriodRepository.GetLatestAccountingPeriod();
         if (accountingPeriod is null)
         {
             return CreateEmptyResult();
         }
 
-        HashSet<string>? requestedFundNames = NormalizeNames(request.FundName);
+        HashSet<Guid>? requestedFundIds = request.FundIds is { Count: > 0 }
+            ? request.FundIds.ToHashSet()
+            : null;
 
         var assignmentGoals = assignmentGoalRepository.GetAllByAccountingPeriod(accountingPeriod.Id)
             .ToList();
@@ -43,19 +47,17 @@ public class CurrentGoalsGetter(
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        HashSet<string>? applicableFundNames = GetApplicableNames(requestedFundNames, availableFundNames);
-
         var assignmentGoalsByFundId = assignmentGoals
             .ToDictionary(goal => goal.Fund.Id.Value);
         var spendingGoalsByFundId = spendingGoals
             .ToDictionary(goal => goal.Fund.Id.Value);
 
         var includedFundIds = assignmentGoals
-            .Where(goal => applicableFundNames == null || applicableFundNames.Contains(goal.Fund.Name))
+            .Where(goal => requestedFundIds == null || requestedFundIds.Contains(goal.Fund.Id.Value))
             .Select(goal => goal.Fund.Id.Value)
             .Concat(
                 spendingGoals
-                    .Where(goal => applicableFundNames == null || applicableFundNames.Contains(goal.Fund.Name))
+                    .Where(goal => requestedFundIds == null || requestedFundIds.Contains(goal.Fund.Id.Value))
                     .Select(goal => goal.Fund.Id.Value))
             .Distinct()
             .OrderBy(
@@ -148,37 +150,6 @@ public class CurrentGoalsGetter(
                 })
                 .ToList(),
         };
-    }
-
-    private static HashSet<string>? NormalizeNames(IReadOnlyCollection<string>? names)
-    {
-        if (names is not { Count: > 0 })
-        {
-            return null;
-        }
-
-        var normalizedNames = names
-            .Where(name => !string.IsNullOrWhiteSpace(name))
-            .Select(name => name.Trim())
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        return normalizedNames.Count == 0 ? null : normalizedNames;
-    }
-
-    private static HashSet<string>? GetApplicableNames(
-        IReadOnlySet<string>? requestedNames,
-        IReadOnlyCollection<string> availableNames)
-    {
-        if (requestedNames == null)
-        {
-            return null;
-        }
-
-        var applicableNames = availableNames
-            .Where(requestedNames.Contains)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        return applicableNames.Count == 0 ? null : applicableNames;
     }
 
     private static CurrentGoalsModel CreateEmptyResult() => new()

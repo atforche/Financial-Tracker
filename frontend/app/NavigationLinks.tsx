@@ -113,23 +113,18 @@ const links: NavigationLink[] = [
   },
   {
     name: "Goals",
-    href: goalRoutes.current(),
+    href: goalRoutes.workspace({}),
     icon: <EmojiEvents />,
     childLinks: [
       {
-        name: "Current",
-        href: goalRoutes.current(),
-        icon: <Today />,
+        name: "Workspace",
+        href: goalRoutes.workspace({}),
+        icon: <Workspaces />,
       },
       {
         name: "Trends",
         href: goalRoutes.trends({}),
         icon: <Timeline />,
-      },
-      {
-        name: "Workspace",
-        href: goalRoutes.workspace({}),
-        icon: <Workspaces />,
       },
     ],
   },

@@ -83,10 +83,8 @@ const GoalTrendsListFrame = function ({
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const openGoalWorkspace = function (
-    goal: AssignmentGoal | SpendingGoal,
-  ): void {
-    router.push(routes.workspace({ selectedGoalId: goal.id, view }));
+  const openGoalWorkspace = function (): void {
+    router.push(routes.workspace({}));
   };
 
   const hasActiveFilters =
@@ -242,7 +240,7 @@ const GoalTrendsListFrame = function ({
               color="primary"
               onClick={(event) => {
                 event.stopPropagation();
-                openGoalWorkspace(goal);
+                openGoalWorkspace();
               }}
               aria-label={`Open ${goal.fundName}`}
             >
@@ -287,7 +285,7 @@ const GoalTrendsListFrame = function ({
                 <Button
                   variant="contained"
                   onClick={() => {
-                    router.push(routes.workspace({ view }));
+                    router.push(routes.workspace({}));
                   }}
                 >
                   {emptyActionLabel}
@@ -471,7 +469,7 @@ const GoalTrendsListFrame = function ({
             color="primary"
             onClick={(event) => {
               event.stopPropagation();
-              openGoalWorkspace(goal);
+              openGoalWorkspace();
             }}
             aria-label={`Open ${goal.fundName}`}
           >
@@ -516,7 +514,7 @@ const GoalTrendsListFrame = function ({
               <Button
                 variant="contained"
                 onClick={() => {
-                  router.push(routes.workspace({ view }));
+                  router.push(routes.workspace({}));
                 }}
               >
                 {emptyActionLabel}

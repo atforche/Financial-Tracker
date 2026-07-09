@@ -941,8 +941,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description Optional Fund Name filters to apply to the current snapshot. */
-                    FundName?: string[];
+                    /** @description Optional Accounting Period to display. Defaults to the latest Accounting Period. */
+                    AccountingPeriodId?: string;
+                    /** @description Optional Fund identifiers to apply to the snapshot. */
+                    FundIds?: string[];
                 };
                 header?: never;
                 path?: never;
@@ -959,6 +961,64 @@ export interface paths {
                         "text/plain": components["schemas"]["CurrentGoalsModel"];
                         "application/json": components["schemas"]["CurrentGoalsModel"];
                         "text/json": components["schemas"]["CurrentGoalsModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/goals/{fundId}/balance-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves balance events for a single Goal workspace. */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Accounting Period containing the Goal. */
+                    AccountingPeriodId?: string;
+                    /** @description Maximum number of results to return. */
+                    Limit?: number;
+                    /** @description Number of results to skip. */
+                    Offset?: number;
+                };
+                header?: never;
+                path: {
+                    fundId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfGoalWorkspaceBalanceEventModel"];
+                        "application/json": components["schemas"]["CollectionModelOfGoalWorkspaceBalanceEventModel"];
+                        "text/json": components["schemas"]["CollectionModelOfGoalWorkspaceBalanceEventModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -2993,6 +3053,16 @@ export interface components {
             totalCount: number;
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfGoalWorkspaceBalanceEventModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["GoalWorkspaceBalanceEventModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfSpendingGoalModel: {
             /** @description The collection of items. */
             items: components["schemas"]["SpendingGoalModel"][];
@@ -4000,6 +4070,33 @@ export interface components {
             /** @description Percentage of goals met for the group. */
             percentageOfGoalsMet: components["schemas"]["GoalPercentageMetModel"];
         };
+        /** @description Model representing a balance event in the Goal workspace. */
+        GoalWorkspaceBalanceEventModel: {
+            /**
+             * Format: uuid
+             * @description Transaction that produced this balance event.
+             */
+            transactionId: string;
+            /**
+             * Format: date
+             * @description Effective date of the balance event.
+             */
+            date: string;
+            /** @description Type of balance event. */
+            type: components["schemas"]["GoalWorkspaceBalanceEventTypeModel"];
+            /** @description Whether the transaction has been posted to the fund. */
+            isPosted: boolean;
+            /**
+             * Format: double
+             * @description Amount associated with the balance event.
+             */
+            amount: number;
+        };
+        /**
+         * @description Type of balance event in a Goal workspace.
+         * @enum {unknown}
+         */
+        GoalWorkspaceBalanceEventTypeModel: GoalWorkspaceBalanceEventTypeModel;
         /** @description Model representing an income amount. */
         IncomeAmountModel: {
             /**
@@ -4903,6 +5000,10 @@ export enum GoalTrendsBalanceEventSortOrderModel {
     TypeDescending = "TypeDescending",
     Amount = "Amount",
     AmountDescending = "AmountDescending"
+}
+export enum GoalWorkspaceBalanceEventTypeModel {
+    Assignment = "Assignment",
+    Spending = "Spending"
 }
 export enum SpendingGoalSortOrderModel {
     AccountingPeriod = "AccountingPeriod",
