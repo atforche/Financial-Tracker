@@ -2,8 +2,7 @@
 
 import type { Account, AccountWorkspaceBalanceEvent } from "@/accounts/types";
 import AccountBalanceEventsFrame from "@/accounts/workspace/AccountBalanceEventsFrame";
-import AccountCurrentBalanceFrame from "@/accounts/workspace/AccountCurrentBalanceFrame";
-import AccountDetailsFrame from "@/accounts/workspace/AccountDetailsFrame";
+import AccountSummaryFrame from "@/accounts/workspace/AccountSummaryFrame";
 import DeleteAccountForm from "@/accounts/workspace/DeleteAccountForm";
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
@@ -32,14 +31,8 @@ const ViewAccountForm = function ({
 }: ViewAccountFormProps): JSX.Element {
   return (
     <Stack spacing={3} sx={{ width: "100%", maxWidth: 1200 }}>
-      <AccountDetailsFrame
-        color="info"
-        name={account.name}
-        setName={null}
-        nameErrorMessage={null}
-        accountType={account.type}
-        setAccountType={null}
-        accountTypeErrorMessage={null}
+      <AccountSummaryFrame
+        account={account}
         headerContent={
           <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
             <UpdateAccountForm account={account} redirectUrl={redirectUrl} />
@@ -47,7 +40,6 @@ const ViewAccountForm = function ({
           </Stack>
         }
       />
-      <AccountCurrentBalanceFrame account={account} />
       <AccountBalanceEventsFrame
         data={recentBalanceEvents}
         totalCount={recentBalanceEventCount}

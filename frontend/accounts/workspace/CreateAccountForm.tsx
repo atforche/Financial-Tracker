@@ -4,8 +4,10 @@ import type { AccountType, CreateAccountRequest } from "@/accounts/types";
 import {
   type AccountingPeriod,
   getDefaultDate,
+  getMaximumDate,
+  getMinimumDate,
 } from "@/accounting-periods/types";
-import { Button, Stack } from "@mui/material";
+import { Box, Button, Stack } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -18,11 +20,14 @@ import {
   buildCreateRequest,
   getNormalizedDateOpened,
 } from "@/accounts/workspace/helpers";
-import AccountDetailsFrame from "@/accounts/workspace/AccountDetailsFrame";
-import AccountOpeningFrame from "@/accounts/workspace/AccountOpeningFrame";
+import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
+import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
+import DateEntryField from "@/framework/forms/DateEntryField";
 import type { Dayjs } from "dayjs";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import Frame from "@/framework/view/Frame";
+import StringEntryField from "@/framework/forms/StringEntryField";
 import createAccount from "@/accounts/workspace/createAccount";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import { useRouter } from "next/navigation";
@@ -57,8 +62,11 @@ const CreateAccountForm = function ({
   const formRef = useRef<HTMLDivElement | null>(null);
 
   const [state, action, pending] = useActionState(createAccount, {});
-  const detailsAreValid = name !== "" && accountType !== null;
-  const openingIsValid = accountingPeriod !== null && dateOpened !== null;
+  const setupIsValid =
+    name !== "" &&
+    accountType !== null &&
+    accountingPeriod !== null &&
+    dateOpened !== null;
 
   const onAccountingPeriodChange = function (
     newAccountingPeriod: AccountingPeriod | null,
@@ -143,25 +151,52 @@ const CreateAccountForm = function ({
       }
     >
       <Stack ref={formRef} spacing={3}>
-        <AccountDetailsFrame
-          color={detailsAreValid ? "info" : "error"}
-          name={name}
-          setName={setName}
-          nameErrorMessage={state.nameErrors ?? null}
-          accountType={accountType}
-          setAccountType={setAccountType}
-          accountTypeErrorMessage={state.typeErrors ?? null}
-        />
-        <AccountOpeningFrame
-          accountingPeriods={accountingPeriods}
-          accountingPeriod={accountingPeriod}
-          setAccountingPeriod={onAccountingPeriodChange}
-          accountingPeriodErrorMessage={state.accountingPeriodErrors ?? null}
-          dateOpened={dateOpened}
-          setDateOpened={setDateOpened}
-          dateOpenedErrorMessage={state.dateOpenedErrors ?? null}
-          color={openingIsValid ? "info" : "error"}
-        />
+        <Frame title="Account Setup" color={setupIsValid ? "info" : "error"}>
+          <Box
+            sx={{
+              display: "grid",
+              gap: 2,
+              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px)))",
+            }}
+          >
+            <StringEntryField
+              label="Name"
+              value={name}
+              setValue={setName}
+              errorMessage={state.nameErrors ?? null}
+            />
+            <AccountTypeEntryField
+              label="Type"
+              value={accountType}
+              setValue={setAccountType}
+              errorMessage={state.typeErrors ?? null}
+            />
+            <AccountingPeriodEntryField
+              label="Opening Accounting Period"
+              options={accountingPeriods}
+              value={accountingPeriod}
+              setValue={onAccountingPeriodChange}
+              errorMessage={state.accountingPeriodErrors ?? null}
+            />
+            <DateEntryField
+              label="Date Opened"
+              value={dateOpened}
+              setValue={setDateOpened}
+              errorMessage={state.dateOpenedErrors ?? null}
+              minDate={
+                accountingPeriod === null
+                  ? null
+                  : getMinimumDate(accountingPeriod)
+              }
+              maxDate={
+                accountingPeriod === null
+                  ? null
+                  : getMaximumDate(accountingPeriod)
+              }
+              disabled={accountingPeriod === null}
+            />
+          </Box>
+        </Frame>
         <ErrorAlert
           errorMessage={state.errorTitle ?? null}
           unmappedErrors={state.unmappedErrors ?? null}

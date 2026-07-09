@@ -1,7 +1,7 @@
 "use client";
 
 import type { AccountType, OnboardAccountRequest } from "@/accounts/types";
-import { Button, Stack } from "@mui/material";
+import { Box, Button, Stack } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -10,10 +10,12 @@ import {
   useRef,
   useState,
 } from "react";
-import AccountDetailsFrame from "@/accounts/workspace/AccountDetailsFrame";
-import AccountStartingBalanceFrame from "@/accounts/workspace/AccountStartingBalanceFrame";
+import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
+import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import Frame from "@/framework/view/Frame";
+import StringEntryField from "@/framework/forms/StringEntryField";
 import { buildOnboardRequest } from "@/accounts/workspace/helpers";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import onboardAccount from "@/accounts/workspace/onboardAccount";
@@ -42,8 +44,8 @@ const OnboardAccountForm = function ({
   const [onboardedBalance, setOnboardedBalance] = useState<number | null>(null);
   const formRef = useRef<HTMLDivElement | null>(null);
   const [state, action, pending] = useActionState(onboardAccount, {});
-  const detailsAreValid = name !== "" && accountType !== null;
-  const balanceIsValid = onboardedBalance !== null;
+  const setupIsValid =
+    name !== "" && accountType !== null && onboardedBalance !== null;
 
   const reset = function (): void {
     setName("");
@@ -117,21 +119,34 @@ const OnboardAccountForm = function ({
       }
     >
       <Stack ref={formRef} spacing={3}>
-        <AccountDetailsFrame
-          color={detailsAreValid ? "info" : "error"}
-          name={name}
-          setName={setName}
-          nameErrorMessage={state.nameErrors ?? null}
-          accountType={accountType}
-          setAccountType={setAccountType}
-          accountTypeErrorMessage={state.typeErrors ?? null}
-        />
-        <AccountStartingBalanceFrame
-          value={onboardedBalance}
-          setValue={setOnboardedBalance}
-          errorMessage={state.onboardedBalanceErrors ?? null}
-          color={balanceIsValid ? "info" : "error"}
-        />
+        <Frame title="Account Setup" color={setupIsValid ? "info" : "error"}>
+          <Box
+            sx={{
+              display: "grid",
+              gap: 2,
+              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px)))",
+            }}
+          >
+            <StringEntryField
+              label="Name"
+              value={name}
+              setValue={setName}
+              errorMessage={state.nameErrors ?? null}
+            />
+            <AccountTypeEntryField
+              label="Type"
+              value={accountType}
+              setValue={setAccountType}
+              errorMessage={state.typeErrors ?? null}
+            />
+            <CurrencyEntryField
+              label="Starting Balance"
+              value={onboardedBalance}
+              setValue={setOnboardedBalance}
+              errorMessage={state.onboardedBalanceErrors ?? null}
+            />
+          </Box>
+        </Frame>
         <ErrorAlert
           errorMessage={state.errorTitle ?? null}
           unmappedErrors={state.unmappedErrors ?? null}

@@ -67,7 +67,7 @@ const CurrencyEntryField = function ({
       value={stringValue}
       slotProps={{
         input: {
-          disabled: setValue === null,
+          readOnly: setValue === null,
           startAdornment: <InputAdornment position="start">$</InputAdornment>,
         },
       }}
