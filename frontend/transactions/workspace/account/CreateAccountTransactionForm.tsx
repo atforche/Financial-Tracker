@@ -7,20 +7,17 @@ import {
   createEmptyDestination,
   createEmptySource,
 } from "@/transactions/workspace/account/helpers";
-import { type JSX, useActionState, useEffect, useRef, useState } from "react";
+import { type JSX, useState } from "react";
 import {
   getDefaultAccountingPeriod,
   getDefaultDate,
-  redirectWithSelectedTransaction,
 } from "@/transactions/workspace/helpers";
 import type { Account } from "@/accounts/types";
 import AccountTransactionForm from "@/transactions/workspace/account/AccountTransactionForm";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { CreateTransactionRequest } from "@/transactions/transaction";
 import type { Dayjs } from "dayjs";
-import createTransaction from "@/transactions/workspace/createTransaction";
-import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
-import { useRouter } from "next/navigation";
+import { useCreateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
 /**
  * Props for the CreateAccountTransactionForm component.
@@ -39,9 +36,6 @@ const CreateAccountTransactionForm = function ({
   accounts,
   redirectUrl,
 }: CreateAccountTransactionFormProps): JSX.Element {
-  const router = useRouter();
-  const formRef = useRef<HTMLDivElement | null>(null);
-
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(
       getDefaultAccountingPeriod(accountingPeriods),
@@ -54,25 +48,18 @@ const CreateAccountTransactionForm = function ({
     createEmptyDestination(),
   ]);
 
-  const [state, action, pending] = useActionState(createTransaction, {});
-
-  const reset = function (): void {
-    setAccountingPeriod(getDefaultAccountingPeriod(accountingPeriods));
-    setDate(null);
-    setDescription("");
-    setSource(createEmptySource());
-    setDestinations([createEmptyDestination()]);
-    focusFirstEntryControl(formRef.current);
-  };
-
-  useEffect(() => {
-    if (state.success === true && state.transactionId !== null) {
-      router.replace(
-        redirectWithSelectedTransaction(redirectUrl, state.transactionId ?? ""),
-        { scroll: false },
-      );
-    }
-  }, [redirectUrl, router, state]);
+  const { formRef, state, pending, reset, submit } = useCreateTransactionEditor(
+    {
+      redirectUrl,
+      resetDraft: (): void => {
+        setAccountingPeriod(getDefaultAccountingPeriod(accountingPeriods));
+        setDate(null);
+        setDescription("");
+        setSource(createEmptySource());
+        setDestinations([createEmptyDestination()]);
+      },
+    },
+  );
 
   const request: CreateTransactionRequest | null = buildCreateRequest(
     accountingPeriod,
@@ -104,9 +91,7 @@ const CreateAccountTransactionForm = function ({
       pending={pending}
       request={request}
       onReset={reset}
-      onSubmit={(nextRequest) => {
-        action({ redirectUrl, request: nextRequest });
-      }}
+      onSubmit={submit}
     />
   );
 };

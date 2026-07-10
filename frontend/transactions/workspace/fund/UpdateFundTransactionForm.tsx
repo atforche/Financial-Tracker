@@ -7,16 +7,14 @@ import {
   getDestinationsFromTransaction,
   getSourceFromTransaction,
 } from "@/transactions/workspace/fund/helpers";
-import { type JSX, useActionState, useEffect, useRef, useState } from "react";
+import { type JSX, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Fund } from "@/funds/types";
 import type { FundTransaction } from "@/transactions/fundTransaction";
 import FundTransactionForm from "@/transactions/workspace/fund/FundTransactionForm";
 import type { UpdateTransactionRequest } from "@/transactions/transaction";
-import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
-import updateTransaction from "@/transactions/workspace/updateTransaction";
-import { useRouter } from "next/navigation";
+import { useUpdateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
 /**
  * Props for the UpdateFundTransactionForm component.
@@ -37,9 +35,6 @@ const UpdateFundTransactionForm = function ({
   funds,
   redirectUrl,
 }: UpdateFundTransactionFormProps): JSX.Element {
-  const router = useRouter();
-  const formRef = useRef<HTMLDivElement | null>(null);
-
   const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
   const [description, setDescription] = useState<string>(
     transaction.description,
@@ -51,21 +46,18 @@ const UpdateFundTransactionForm = function ({
     getDestinationsFromTransaction(transaction),
   );
 
-  const [state, action, pending] = useActionState(updateTransaction, {});
-
-  const reset = function (): void {
-    setDate(dayjs(transaction.date));
-    setDescription(transaction.description);
-    setSource(getSourceFromTransaction(transaction));
-    setDestinations(getDestinationsFromTransaction(transaction));
-    focusFirstEntryControl(formRef.current);
-  };
-
-  useEffect(() => {
-    if (state.success === true) {
-      router.replace(redirectUrl, { scroll: false });
-    }
-  }, [redirectUrl, router, state.success]);
+  const { formRef, state, pending, reset, submit } = useUpdateTransactionEditor(
+    {
+      transactionId: transaction.id,
+      redirectUrl,
+      resetDraft: (): void => {
+        setDate(dayjs(transaction.date));
+        setDescription(transaction.description);
+        setSource(getSourceFromTransaction(transaction));
+        setDestinations(getDestinationsFromTransaction(transaction));
+      },
+    },
+  );
 
   const request: UpdateTransactionRequest | null = buildUpdateRequest(
     transactionAccountingPeriod,
@@ -96,13 +88,7 @@ const UpdateFundTransactionForm = function ({
       pending={pending}
       request={request}
       onReset={reset}
-      onSubmit={(nextRequest) => {
-        action({
-          transactionId: transaction.id,
-          redirectUrl,
-          request: nextRequest,
-        });
-      }}
+      onSubmit={submit}
     />
   );
 };

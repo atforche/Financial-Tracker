@@ -1,6 +1,6 @@
 "use client";
 
-import { type JSX, useActionState, useEffect, useRef, useState } from "react";
+import { type JSX, useState } from "react";
 import {
   type SpendingDestinationDraft,
   type SpendingSourceDraft,
@@ -16,9 +16,7 @@ import type { SpendingGoal } from "@/goals/types";
 import type { SpendingTransaction } from "@/transactions/spendingTransaction";
 import SpendingTransactionForm from "@/transactions/workspace/spending/SpendingTransactionForm";
 import type { UpdateTransactionRequest } from "@/transactions/transaction";
-import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
-import updateTransaction from "@/transactions/workspace/updateTransaction";
-import { useRouter } from "next/navigation";
+import { useUpdateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
 /**
  * Props for the UpdateSpendingTransactionForm component.
@@ -43,9 +41,6 @@ const UpdateSpendingTransactionForm = function ({
   spendingGoals,
   redirectUrl,
 }: UpdateSpendingTransactionFormProps): JSX.Element {
-  const router = useRouter();
-  const formRef = useRef<HTMLDivElement | null>(null);
-
   const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
   const [description, setDescription] = useState<string>(
     transaction.description,
@@ -57,21 +52,18 @@ const UpdateSpendingTransactionForm = function ({
     getDestinationsFromTransaction(transaction),
   );
 
-  const [state, action, pending] = useActionState(updateTransaction, {});
-
-  const reset = function (): void {
-    setDate(dayjs(transaction.date));
-    setDescription(transaction.description);
-    setSource(getSourceFromTransaction(transaction));
-    setDestinations(getDestinationsFromTransaction(transaction));
-    focusFirstEntryControl(formRef.current);
-  };
-
-  useEffect(() => {
-    if (state.success === true) {
-      router.replace(redirectUrl, { scroll: false });
-    }
-  }, [redirectUrl, router, state.success]);
+  const { formRef, state, pending, reset, submit } = useUpdateTransactionEditor(
+    {
+      transactionId: transaction.id,
+      redirectUrl,
+      resetDraft: (): void => {
+        setDate(dayjs(transaction.date));
+        setDescription(transaction.description);
+        setSource(getSourceFromTransaction(transaction));
+        setDestinations(getDestinationsFromTransaction(transaction));
+      },
+    },
+  );
 
   const request: UpdateTransactionRequest | null = buildUpdateRequest(
     transactionAccountingPeriod,
@@ -104,13 +96,7 @@ const UpdateSpendingTransactionForm = function ({
       pending={pending}
       request={request}
       onReset={reset}
-      onSubmit={(nextRequest) => {
-        action({
-          transactionId: transaction.id,
-          redirectUrl,
-          request: nextRequest,
-        });
-      }}
+      onSubmit={submit}
     />
   );
 };
