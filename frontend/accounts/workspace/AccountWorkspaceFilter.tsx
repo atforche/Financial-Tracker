@@ -5,12 +5,12 @@ import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
 } from "@/accounts/trends/accountTypeFilter";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AccountTrendsAccountTypeFilter from "@/accounts/trends/AccountTrendsAccountTypeFilter";
 import type { AccountType } from "@/accounts/types";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
-import { buildUrl } from "@/framework/routes/helpers";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useSearchParams } from "next/navigation";
 
 /**
  * Props for the AccountWorkspaceFilter component.
@@ -26,8 +26,6 @@ const AccountWorkspaceFilter = function ({
   isInOnboardingMode,
 }: AccountWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
 
   const searchParamName = "search";
   const accountTypeParamName = "accountType";
@@ -37,15 +35,7 @@ const AccountWorkspaceFilter = function ({
     searchParams.getAll(accountTypeParamName),
   );
 
-  const updateParams = function (
-    updater: (params: URLSearchParams) => void,
-  ): void {
-    const params = new URLSearchParams(searchParams.toString());
-    updater(params);
-    router.replace(buildUrl(pathname, params), {
-      scroll: false,
-    });
-  };
+  const updateParams = useSearchParamUpdater([pageParamName]);
 
   const handleAccountTypeChange = function (
     nextAccountTypes: readonly AccountType[],

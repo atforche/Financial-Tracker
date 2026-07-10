@@ -1,11 +1,11 @@
 "use client";
 
 import { Button, Paper, Stack, Typography } from "@mui/material";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodTrendsAccountingPeriodFilter from "@/accounting-periods/trends/AccountingPeriodTrendsAccountingPeriodFilter";
 import type { JSX } from "react";
-import { buildUrl } from "@/framework/routes/helpers";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useSearchParams } from "next/navigation";
 
 /**
  * Props for the AccountingPeriodTrendsFilter component.
@@ -25,8 +25,6 @@ const AccountingPeriodTrendsFilter = function ({
   disabled = false,
 }: AccountingPeriodTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
 
   const pageParamName = "page";
   const modeParamName = "mode";
@@ -46,16 +44,7 @@ const AccountingPeriodTrendsFilter = function ({
     accountingPeriods.map((period, index) => [period.id, index]),
   );
 
-  const updateParams = function (
-    updater: (params: URLSearchParams) => void,
-  ): void {
-    const params = new URLSearchParams(searchParams.toString());
-    updater(params);
-    params.delete(pageParamName);
-    router.replace(buildUrl(pathname, params), {
-      scroll: false,
-    });
-  };
+  const updateParams = useSearchParamUpdater([pageParamName]);
 
   const hasActiveView =
     currentStartAccountingPeriodId !== (defaultAccountingPeriodId ?? "") ||

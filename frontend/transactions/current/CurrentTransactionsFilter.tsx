@@ -22,12 +22,12 @@ import {
   shouldPersistTransactionTypes,
   transactionTypeValues,
 } from "@/transactions/trends/transactionTypeFilter";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AccountTrendsAccountNameFilter from "@/accounts/trends/AccountTrendsAccountNameFilter";
 import FundTrendsFundNameFilter from "@/funds/trends/FundTrendsFundNameFilter";
 import type { JSX } from "react";
 import type { TransactionType } from "@/transactions/transaction";
-import { buildUrl } from "@/framework/routes/helpers";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useSearchParams } from "next/navigation";
 
 /**
  * Props for the CurrentTransactionsFilter component.
@@ -47,8 +47,6 @@ const CurrentTransactionsFilter = function ({
   disabled = false,
 }: CurrentTransactionsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
 
   const unpostedTransactionPageParamName = "unpostedTransactionPage";
   const postedTransactionPageParamName = "postedTransactionPage";
@@ -68,17 +66,10 @@ const CurrentTransactionsFilter = function ({
     availableFundNames,
   );
 
-  const updateParams = function (
-    updater: (params: URLSearchParams) => void,
-  ): void {
-    const params = new URLSearchParams(searchParams.toString());
-    updater(params);
-    params.delete(unpostedTransactionPageParamName);
-    params.delete(postedTransactionPageParamName);
-    router.replace(buildUrl(pathname, params), {
-      scroll: false,
-    });
-  };
+  const updateParams = useSearchParamUpdater([
+    unpostedTransactionPageParamName,
+    postedTransactionPageParamName,
+  ]);
 
   const handleTransactionTypeChange = function (
     nextTransactionTypes: readonly TransactionType[],

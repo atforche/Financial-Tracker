@@ -1,10 +1,11 @@
 "use client";
 
 import { InputAdornment, TextField } from "@mui/material";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { JSX } from "react";
 import { Search } from "@mui/icons-material";
 import { useDebouncedCallback } from "use-debounce";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useSearchParams } from "next/navigation";
 
 /**
  * Props for the SearchBar component.
@@ -22,20 +23,18 @@ const SearchBar = function ({
   pageParamName,
 }: SearchBarProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
+  const updateParams = useSearchParamUpdater([pageParamName]);
 
   const handleChange = useDebouncedCallback(
     (event: React.ChangeEvent<HTMLInputElement>): void => {
-      const params = new URLSearchParams(searchParams.toString());
       const { value } = event.target;
-      if (value) {
-        params.set(searchParamName, value);
-      } else {
-        params.delete(searchParamName);
-      }
-      params.delete(pageParamName);
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      updateParams((params) => {
+        if (value) {
+          params.set(searchParamName, value);
+        } else {
+          params.delete(searchParamName);
+        }
+      });
     },
     300,
   );

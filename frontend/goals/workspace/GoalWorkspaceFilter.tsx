@@ -1,12 +1,12 @@
 "use client";
 
 import { Button, Paper, Stack, Typography } from "@mui/material";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
-import { buildUrl } from "@/framework/routes/helpers";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useSearchParams } from "next/navigation";
 
 /**
  * Props for the GoalWorkspaceFilter component.
@@ -23,8 +23,6 @@ const GoalWorkspaceFilter = function ({
   accountingPeriods,
   selectedAccountingPeriodId,
 }: GoalWorkspaceFilterProps): JSX.Element {
-  const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const selectedPeriod =
     accountingPeriods.find(
@@ -33,13 +31,9 @@ const GoalWorkspaceFilter = function ({
   const searchParamName = "search";
   const balanceEventPageParamName = "balanceEventPage";
 
-  const replace = function (update: (params: URLSearchParams) => void): void {
-    const params = new URLSearchParams(searchParams.toString());
-    update(params);
-    router.replace(buildUrl(pathname, params), {
-      scroll: false,
-    });
-  };
+  const updateParams = useSearchParamUpdater([balanceEventPageParamName]);
+
+  const replace = updateParams;
 
   return (
     <Paper

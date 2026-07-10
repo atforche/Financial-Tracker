@@ -25,11 +25,12 @@ import {
   shouldPersistTransactionTypes,
   transactionTypeValues,
 } from "@/transactions/trends/transactionTypeFilter";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AccountTrendsAccountingPeriodFilter from "@/accounts/trends/AccountTrendsAccountingPeriodFilter";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { TransactionType } from "@/transactions/transaction";
-import { buildUrl } from "@/framework/routes/helpers";
+import { setTrendRangeMode } from "@/framework/routes/trendRange";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useSearchParams } from "next/navigation";
 
 /**
  * Trends filter mode values used in the Transactions view URL.
@@ -62,8 +63,6 @@ const TransactionTrendsFilter = function ({
   disabled = false,
 }: TransactionTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
 
   const pageParamName = "page";
   const modeParamName = "mode";
@@ -106,16 +105,7 @@ const TransactionTrendsFilter = function ({
     accountingPeriods.map((period, index) => [period.id, index]),
   );
 
-  const updateParams = function (
-    updater: (params: URLSearchParams) => void,
-  ): void {
-    const params = new URLSearchParams(searchParams.toString());
-    updater(params);
-    params.delete(pageParamName);
-    router.replace(buildUrl(pathname, params), {
-      scroll: false,
-    });
-  };
+  const updateParams = useSearchParamUpdater([pageParamName]);
 
   const hasActiveView =
     currentMode !== "date" ||
@@ -175,35 +165,11 @@ const TransactionTrendsFilter = function ({
     }
 
     updateParams((params) => {
-      params.set(modeParamName, nextMode);
-      if (nextMode === "date") {
-        params.delete(startAccountingPeriodIdParamName);
-        params.delete(endAccountingPeriodIdParamName);
-        params.set(
-          startDateParamName,
-          params.get(startDateParamName) ?? defaultStartDate,
-        );
-        params.set(
-          endDateParamName,
-          params.get(endDateParamName) ?? defaultEndDate,
-        );
-        return;
-      }
-
-      params.delete(startDateParamName);
-      params.delete(endDateParamName);
-      if (defaultAccountingPeriodId !== null) {
-        params.set(
-          startAccountingPeriodIdParamName,
-          params.get(startAccountingPeriodIdParamName) ??
-            defaultAccountingPeriodId,
-        );
-        params.set(
-          endAccountingPeriodIdParamName,
-          params.get(endAccountingPeriodIdParamName) ??
-            defaultAccountingPeriodId,
-        );
-      }
+      setTrendRangeMode(params, nextMode, {
+        defaultAccountingPeriodId,
+        defaultStartDate,
+        defaultEndDate,
+      });
     });
   };
 

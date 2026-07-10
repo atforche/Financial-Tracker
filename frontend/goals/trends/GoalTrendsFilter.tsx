@@ -24,12 +24,12 @@ import {
   normalizeGoalTypes,
   shouldPersistGoalTypes,
 } from "@/goals/trends/goalTypeFilter";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AccountTrendsAccountingPeriodFilter from "@/accounts/trends/AccountTrendsAccountingPeriodFilter";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import GoalTrendsGoalTypeFilter from "@/goals/trends/GoalTrendsGoalTypeFilter";
 import type { JSX } from "react";
-import { buildUrl } from "@/framework/routes/helpers";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useSearchParams } from "next/navigation";
 
 /**
  * Props for the GoalTrendsFilter component.
@@ -55,8 +55,6 @@ const GoalTrendsFilter = function ({
   disabled = false,
 }: GoalTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
 
   const pageParamName = "page";
   const balanceEventPageParamName = "balanceEventPage";
@@ -89,17 +87,10 @@ const GoalTrendsFilter = function ({
     accountingPeriods.map((period, index) => [period.id, index]),
   );
 
-  const updateParams = function (
-    updater: (params: URLSearchParams) => void,
-  ): void {
-    const params = new URLSearchParams(searchParams.toString());
-    updater(params);
-    params.delete(pageParamName);
-    params.delete(balanceEventPageParamName);
-    router.replace(buildUrl(pathname, params), {
-      scroll: false,
-    });
-  };
+  const updateParams = useSearchParamUpdater([
+    pageParamName,
+    balanceEventPageParamName,
+  ]);
 
   const hasActiveView =
     shouldPersistGoalTypes(currentGoalTypes, view) ||

@@ -9,12 +9,12 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
-import { buildUrl } from "@/framework/routes/helpers";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useSearchParams } from "next/navigation";
 
 /**
  * Props for the TransactionWorkspaceFilter component.
@@ -65,8 +65,6 @@ const TransactionWorkspaceFilter = function ({
   funds,
 }: TransactionWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
 
   const pageParamName = "page";
   const accountingPeriodParamName = "accountingPeriodIds";
@@ -86,16 +84,7 @@ const TransactionWorkspaceFilter = function ({
     funds,
   );
 
-  const updateParams = function (
-    updater: (params: URLSearchParams) => void,
-  ): void {
-    const params = new URLSearchParams(searchParams.toString());
-    updater(params);
-    params.delete(pageParamName);
-    router.replace(buildUrl(pathname, params), {
-      scroll: false,
-    });
-  };
+  const updateParams = useSearchParamUpdater([pageParamName]);
 
   const hasActiveView =
     currentAccountingPeriods.length > 0 ||
