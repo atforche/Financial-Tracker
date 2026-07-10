@@ -12,6 +12,9 @@ interface FundWorkspaceSearchParams {
   balanceEventPage?: number | string | null;
 }
 
+/**
+ * Props for the FundWorkspace component.
+ */
 interface FundWorkspaceProps {
   readonly searchParams: Promise<FundWorkspaceSearchParams>;
 }

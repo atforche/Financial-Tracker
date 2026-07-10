@@ -136,6 +136,7 @@ public class CurrentGoalsGetter(
                                 assignmentGoal.Id.Value,
                                 assignmentGoal.TotalAmountToAssign,
                                 assignmentGoal.TotalAmountAssigned,
+                                Math.Max(assignmentGoal.TotalAmountToAssign - assignmentGoal.TotalAmountAssigned, 0),
                                 assignmentGoal.IsGoalMet,
                                 assignmentEventsByFundId.GetValueOrDefault(fundId) ?? []),
                         SpendingGoal = spendingGoal is null
@@ -144,6 +145,7 @@ public class CurrentGoalsGetter(
                                 spendingGoal.Id.Value,
                                 spendingGoal.TotalAmountToSpend,
                                 spendingGoal.TotalAmountSpent,
+                                spendingGoal.TotalAmountToSpend - spendingGoal.TotalAmountSpent,
                                 spendingGoal.IsGoalMet,
                                 spendingEventsByFundId.GetValueOrDefault(fundId) ?? []),
                     };
@@ -183,12 +185,14 @@ public class CurrentGoalsGetter(
         Guid goalId,
         decimal targetAmount,
         decimal currentAmount,
+        decimal remainingAmount,
         bool isGoalMet,
         IReadOnlyList<CurrentGoalBalanceEventRow> balanceEvents) => new()
         {
             GoalId = goalId,
             TargetAmount = targetAmount,
             CurrentAmount = currentAmount,
+            RemainingAmount = remainingAmount,
             IsGoalMet = isGoalMet,
             LastBalanceEventDate = balanceEvents.Count > 0 ? balanceEvents[0].Date : null,
             RecentBalanceEvents = balanceEvents

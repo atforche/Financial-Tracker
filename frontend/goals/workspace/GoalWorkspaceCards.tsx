@@ -1,12 +1,12 @@
 "use client";
 
 import { Box, ButtonBase, Stack, Typography } from "@mui/material";
-import type { CurrentGoalProgress, CurrentGoals } from "@/goals/types";
+import type { CurrentGoals } from "@/goals/types";
 import Frame from "@/framework/view/Frame";
+import GoalProgress from "@/goals/workspace/GoalProgress";
 import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
-import formatCurrency from "@/framework/formatCurrency";
 import routes from "@/goals/routes";
 import { useSearchParams } from "next/navigation";
 
@@ -17,80 +17,22 @@ interface GoalWorkspaceCardsProps {
   readonly current: CurrentGoals;
 }
 
-const getProgressPercent = function (
-  progress: CurrentGoalProgress | null,
-): number {
-  if (progress === null) {
-    return 0;
-  }
-  if (progress.targetAmount === 0) {
-    return 100;
-  }
-  return Math.min((progress.currentAmount / progress.targetAmount) * 100, 100);
-};
-
-const GoalProgress = function ({
-  label,
-  progress,
-}: {
-  readonly label: string;
-  readonly progress: CurrentGoalProgress | null;
-}): JSX.Element {
-  const remaining =
-    progress === null
-      ? null
-      : Math.max(progress.targetAmount - progress.currentAmount, 0);
-  return (
-    <Stack spacing={0.75}>
-      <Stack direction="row" justifyContent="space-between" gap={2}>
-        <Typography variant="body2" fontWeight={700}>
-          {label}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {progress === null
-            ? "No goal"
-            : `${formatCurrency(remaining ?? 0)} remaining`}
-        </Typography>
-      </Stack>
-      <Box
-        sx={{
-          height: 8,
-          overflow: "hidden",
-          borderRadius: 999,
-          bgcolor: "action.hover",
-        }}
-      >
-        <Box
-          sx={{
-            width: `${getProgressPercent(progress)}%`,
-            height: "100%",
-            borderRadius: 999,
-            bgcolor:
-              progress?.isGoalMet === true ? "success.main" : "primary.main",
-            transition: "width 200ms ease",
-          }}
-        />
-      </Box>
-      <Typography variant="caption" color="text.secondary">
-        {progress === null
-          ? "Set up a goal"
-          : `${formatCurrency(progress.currentAmount)} of ${formatCurrency(progress.targetAmount)}`}
-      </Typography>
-    </Stack>
-  );
-};
-
-/** Displays paired goal progress as navigable workspace cards. */
+/**
+ * Displays paired goal progress as navigable workspace cards.
+ */
 const GoalWorkspaceCards = function ({
   current,
 }: GoalWorkspaceCardsProps): JSX.Element {
   const searchParams = useSearchParams();
-  const funds = current.goals;
+  const search = (searchParams.get("search") ?? "").trim().toLowerCase();
+  const funds = current.goals.filter((goal) =>
+    goal.fundName.toLowerCase().includes(search),
+  );
 
   if (funds.length === 0) {
     return (
       <Typography color="text.secondary">
-        No goals match the selected accounting period and fund filters.
+        No goals match the selected accounting period and search filters.
       </Typography>
     );
   }
@@ -114,12 +56,20 @@ const GoalWorkspaceCards = function ({
           ...(current.accountingPeriodId === null
             ? {}
             : { accountingPeriodId: current.accountingPeriodId }),
+          ...(search === "" ? {} : { search }),
         };
         const fundIds = searchParams.getAll("fundIds");
         if (fundIds.length > 0) {
           detailSearchParams.fundIds = fundIds;
         }
 
+        let goalsMet = 0;
+        if (goal.assignmentGoal?.isGoalMet === true) {
+          goalsMet += 1;
+        }
+        if (goal.spendingGoal?.isGoalMet === true) {
+          goalsMet += 1;
+        }
         return (
           <ButtonBase
             key={goal.fundId}
@@ -136,10 +86,11 @@ const GoalWorkspaceCards = function ({
             <Frame
               title={goal.fundName}
               color={
-                goal.assignmentGoal?.isGoalMet === true &&
-                goal.spendingGoal?.isGoalMet === true
+                goalsMet === 2
                   ? "success"
-                  : "warning"
+                  : goalsMet === 1
+                    ? "warning"
+                    : "error"
               }
               headerContent={
                 <KeyboardArrowRight

@@ -8,6 +8,9 @@ import {
 import FundGoalTypeEntryField from "@/funds/FundGoalTypeEntryField";
 import type { JSX } from "react";
 
+/**
+ * Props for the SpendingGoalSetupSection component.
+ */
 interface SpendingGoalSetupSectionProps {
   readonly color?: FrameColor;
   readonly value: SpendingGoalType | null;

@@ -20,7 +20,7 @@ import {
 import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Frame from "@/framework/view/Frame";
-import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
+import StringEntryField from "@/framework/forms/StringEntryField";
 import postTransaction from "@/transactions/workspace/postTransaction";
 import { useRouter } from "next/navigation";
 
@@ -128,10 +128,11 @@ const PostTransactionForm = function ({
                     spacing={2}
                     sx={{ flex: 1 }}
                   >
-                    <TransactionDisplayField
+                    <StringEntryField
                       label="Account"
                       value={account.accountName}
-                      helperText={
+                      setValue={null}
+                      errorMessage={
                         isActiveRow ? (state.accountErrors ?? null) : null
                       }
                     />

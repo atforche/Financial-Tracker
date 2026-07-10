@@ -14,7 +14,11 @@ import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
+import { buildUrl } from "@/framework/routes/helpers";
 
+/**
+ * Props for the TransactionWorkspaceFilter component.
+ */
 interface TransactionWorkspaceFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly accounts: readonly Account[];
@@ -88,8 +92,7 @@ const TransactionWorkspaceFilter = function ({
     const params = new URLSearchParams(searchParams.toString());
     updater(params);
     params.delete(pageParamName);
-    const nextQuery = params.toString();
-    router.replace(nextQuery === "" ? pathname : `${pathname}?${nextQuery}`, {
+    router.replace(buildUrl(pathname, params), {
       scroll: false,
     });
   };

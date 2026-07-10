@@ -21,6 +21,11 @@ public class CurrentGoalProgressModel
     public required decimal CurrentAmount { get; init; }
 
     /// <summary>
+    /// Remaining amount for this goal.
+    /// </summary>
+    public required decimal RemainingAmount { get; init; }
+
+    /// <summary>
     /// Whether the goal is currently met.
     /// </summary>
     public required bool IsGoalMet { get; init; }

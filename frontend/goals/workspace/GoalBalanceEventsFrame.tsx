@@ -27,7 +27,9 @@ interface GoalBalanceEventsFrameProps {
   readonly fundId: string;
 }
 
-/** Displays recent assignment and spending events within the goal workspace. */
+/**
+ * Displays recent assignment and spending events within the goal workspace.
+ */
 const GoalBalanceEventsFrame = function ({
   data,
   totalCount,

@@ -16,6 +16,7 @@ import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import ListFrame from "@/framework/listframe/ListFrame";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
+import { buildUrl } from "@/framework/routes/helpers";
 import formatCurrency from "@/framework/formatCurrency";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
@@ -50,8 +51,7 @@ const TransactionWorkspaceListFrame = function ({
   ): void {
     const params = new URLSearchParams(searchParams.toString());
     update(params);
-    const query = params.toString();
-    router.replace(query === "" ? pathname : `${pathname}?${query}`, {
+    router.replace(buildUrl(pathname, params), {
       scroll: false,
     });
   };

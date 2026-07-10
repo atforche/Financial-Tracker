@@ -11,6 +11,7 @@ interface AccountingPeriodEntryFieldProps {
   readonly value: AccountingPeriod | null;
   readonly setValue?: ((newValue: AccountingPeriod | null) => void) | null;
   readonly errorMessage?: string | null;
+  readonly size?: "small" | "medium";
 }
 
 /**
@@ -22,6 +23,7 @@ const AccountingPeriodEntryField = function ({
   value,
   setValue = null,
   errorMessage = null,
+  size = "medium",
 }: AccountingPeriodEntryFieldProps): JSX.Element {
   return (
     <ComboBoxEntryField<AccountingPeriod>
@@ -43,6 +45,7 @@ const AccountingPeriodEntryField = function ({
           : null
       }
       errorMessage={errorMessage}
+      size={size}
     />
   );
 };

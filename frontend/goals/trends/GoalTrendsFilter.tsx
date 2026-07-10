@@ -29,6 +29,7 @@ import AccountTrendsAccountingPeriodFilter from "@/accounts/trends/AccountTrends
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import GoalTrendsGoalTypeFilter from "@/goals/trends/GoalTrendsGoalTypeFilter";
 import type { JSX } from "react";
+import { buildUrl } from "@/framework/routes/helpers";
 
 /**
  * Props for the GoalTrendsFilter component.
@@ -95,8 +96,7 @@ const GoalTrendsFilter = function ({
     updater(params);
     params.delete(pageParamName);
     params.delete(balanceEventPageParamName);
-    const nextQuery = params.toString();
-    router.replace(nextQuery === "" ? pathname : `${pathname}?${nextQuery}`, {
+    router.replace(buildUrl(pathname, params), {
       scroll: false,
     });
   };

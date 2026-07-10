@@ -24,6 +24,7 @@ import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
 import routes from "@/transactions/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
+import { toRepeatedSearchParam } from "@/framework/routes/helpers";
 
 /**
  * Search parameters for the CurrentTransactions component.
@@ -80,25 +81,13 @@ const CurrentTransactions = async function ({
   } = await searchParams;
 
   const currentTransactionTypes = normalizeTransactionTypes(
-    Array.isArray(transactionType)
-      ? transactionType
-      : typeof transactionType === "string"
-        ? [transactionType]
-        : [],
+    toRepeatedSearchParam(transactionType),
   );
   const currentAccountNames = normalizeRequestedAccountNames(
-    Array.isArray(accountName)
-      ? accountName
-      : typeof accountName === "string"
-        ? [accountName]
-        : [],
+    toRepeatedSearchParam(accountName),
   );
   const currentFundNames = normalizeRequestedFundNames(
-    Array.isArray(fundName)
-      ? fundName
-      : typeof fundName === "string"
-        ? [fundName]
-        : [],
+    toRepeatedSearchParam(fundName),
   );
 
   const apiClient = getApiClient();

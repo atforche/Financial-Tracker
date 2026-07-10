@@ -7,6 +7,7 @@ import type { Fund } from "@/funds/types";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
+import { buildUrl } from "@/framework/routes/helpers";
 import formatCurrency from "@/framework/formatCurrency";
 import routes from "@/funds/routes";
 
@@ -36,8 +37,7 @@ const FundWorkspaceCards = function ({
   const clearSearch = function (): void {
     const params = new URLSearchParams(searchParams.toString());
     params.delete(searchParamName);
-    const query = params.toString();
-    router.replace(query === "" ? pathname : `${pathname}?${query}`, {
+    router.replace(buildUrl(pathname, params), {
       scroll: false,
     });
   };

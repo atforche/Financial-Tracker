@@ -9,6 +9,7 @@ import AccountWorkspaceFilter from "@/accounts/workspace/AccountWorkspaceFilter"
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
 import getApiClient from "@/framework/data/getApiClient";
+import { toRepeatedSearchParam } from "@/framework/routes/helpers";
 
 type AccountWorkspaceAction = "create" | "onboard";
 
@@ -38,11 +39,7 @@ const AccountWorkspace = async function ({
   const { search, accountType, action } = await searchParams;
   const apiClient = getApiClient();
   const currentAccountTypes = normalizeAccountTypes(
-    Array.isArray(accountType)
-      ? accountType
-      : typeof accountType === "string"
-        ? [accountType]
-        : [],
+    toRepeatedSearchParam(accountType),
   );
 
   const anyAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {

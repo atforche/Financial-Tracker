@@ -17,6 +17,9 @@ import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl
 import updateFund from "@/funds/workspace/updateFund";
 import { useRouter } from "next/navigation";
 
+/**
+ * Props for the UpdateFundForm component.
+ */
 interface UpdateFundFormProps {
   readonly fund: Fund;
   readonly redirectUrl: string;

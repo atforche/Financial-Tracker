@@ -10,6 +10,7 @@ import AccountTrendsAccountTypeFilter from "@/accounts/trends/AccountTrendsAccou
 import type { AccountType } from "@/accounts/types";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
+import { buildUrl } from "@/framework/routes/helpers";
 
 /**
  * Props for the AccountWorkspaceFilter component.
@@ -41,8 +42,7 @@ const AccountWorkspaceFilter = function ({
   ): void {
     const params = new URLSearchParams(searchParams.toString());
     updater(params);
-    const nextQuery = params.toString();
-    router.replace(nextQuery === "" ? pathname : `${pathname}?${nextQuery}`, {
+    router.replace(buildUrl(pathname, params), {
       scroll: false,
     });
   };

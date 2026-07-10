@@ -30,6 +30,7 @@ import getApiClient from "@/framework/data/getApiClient";
 import { redirect } from "next/navigation";
 import routes from "@/transactions/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
+import { toRepeatedSearchParam } from "@/framework/routes/helpers";
 
 /**
  * URL mode values used to filter the Transactions trends.
@@ -113,25 +114,13 @@ const TransactionTrends = async function ({
   const currentMode: TransactionsTrendsFilterMode =
     typeof mode === "undefined" || isInOnboardingMode ? "date" : mode;
   const currentTransactionTypes = normalizeTransactionTypes(
-    Array.isArray(transactionType)
-      ? transactionType
-      : typeof transactionType === "string"
-        ? [transactionType]
-        : [],
+    toRepeatedSearchParam(transactionType),
   );
   const currentAccountNames = normalizeRequestedAccountNames(
-    Array.isArray(accountName)
-      ? accountName
-      : typeof accountName === "string"
-        ? [accountName]
-        : [],
+    toRepeatedSearchParam(accountName),
   );
   const currentFundNames = normalizeRequestedFundNames(
-    Array.isArray(fundName)
-      ? fundName
-      : typeof fundName === "string"
-        ? [fundName]
-        : [],
+    toRepeatedSearchParam(fundName),
   );
   const currentPage = normalizePageValue(page);
 

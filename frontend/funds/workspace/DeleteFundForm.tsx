@@ -14,6 +14,9 @@ import type { Fund } from "@/funds/types";
 import deleteFund from "@/funds/workspace/deleteFund";
 import { useRouter } from "next/navigation";
 
+/**
+ * Props for the DeleteFundForm component.
+ */
 interface DeleteFundFormProps {
   readonly fund: Fund;
   readonly redirectUrl: string;

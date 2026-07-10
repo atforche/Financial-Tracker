@@ -141,6 +141,25 @@ const buildOnboardFundRequest = function (
   };
 };
 
+/**
+ * Gets the assignment amount helper text for the provided goal type.
+ */
+const getAssignmentAmountHelperText = function (
+  goalType: AssignmentGoalType | null,
+): string {
+  if (goalType === null) {
+    return "Choose the assignment behavior that matches how you want to fund this category.";
+  }
+  switch (goalType) {
+    case AssignmentGoalType.MonthlyTarget:
+      return "Enter the ending balance you want this fund to reach for the period.";
+    case AssignmentGoalType.RecurringContribution:
+      return "Enter the amount you want to assign into this fund during the period.";
+    default:
+      return goalType satisfies never;
+  }
+};
+
 export {
   validateCreateFundSetup,
   validateOnboardFundSetup,
@@ -150,4 +169,5 @@ export {
   buildCreateFundRequest,
   validateOnboardFundRequest,
   buildOnboardFundRequest,
+  getAssignmentAmountHelperText,
 };

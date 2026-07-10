@@ -7,7 +7,7 @@ import {
 import { Box, Stack } from "@mui/material";
 import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
-import TransactionDisplayField from "@/transactions/workspace/TransactionDisplayField";
+import StringEntryField from "@/framework/forms/StringEntryField";
 import UpdateGoalForm from "@/goals/workspace/UpdateGoalForm";
 import formatCurrency from "@/framework/formatCurrency";
 
@@ -20,7 +20,9 @@ interface GoalContextFrameProps {
   readonly redirectUrl: string;
 }
 
-/** Displays the read-only context for the paired goals of one fund and period. */
+/**
+ * Displays the read-only context for the paired goals of one fund and period.
+ */
 const GoalContextFrame = function ({
   assignmentGoal,
   spendingGoal,
@@ -46,13 +48,15 @@ const GoalContextFrame = function ({
               "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
           }}
         >
-          <TransactionDisplayField
+          <StringEntryField
             label="Accounting Period"
             value={assignmentGoal.accountingPeriodName ?? "Onboarded"}
+            setValue={null}
           />
-          <TransactionDisplayField
+          <StringEntryField
             label="Fund"
             value={assignmentGoal.fundName}
+            setValue={null}
           />
         </Box>
         <Box
@@ -63,25 +67,30 @@ const GoalContextFrame = function ({
               "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
           }}
         >
-          <TransactionDisplayField
+          <StringEntryField
             label="Assignment Goal Type"
             value={formatAssignmentGoalType(assignmentGoal.type)}
+            setValue={null}
           />
-          <TransactionDisplayField
+          <StringEntryField
             label="Assignment Goal Amount"
             value={formatCurrency(assignmentGoal.goalAmount)}
+            setValue={null}
           />
-          <TransactionDisplayField
+          <StringEntryField
             label="Remaining To Assign"
             value={formatCurrency(assignmentGoal.remainingAmountToAssign)}
+            setValue={null}
           />
-          <TransactionDisplayField
+          <StringEntryField
             label="Spending Goal Type"
             value={formatSpendingGoalType(spendingGoal.type)}
+            setValue={null}
           />
-          <TransactionDisplayField
+          <StringEntryField
             label="Remaining To Spend"
             value={formatCurrency(spendingGoal.remainingAmountToSpend)}
+            setValue={null}
           />
         </Box>
       </Stack>

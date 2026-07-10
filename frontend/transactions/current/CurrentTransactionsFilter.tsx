@@ -27,7 +27,11 @@ import AccountTrendsAccountNameFilter from "@/accounts/trends/AccountTrendsAccou
 import FundTrendsFundNameFilter from "@/funds/trends/FundTrendsFundNameFilter";
 import type { JSX } from "react";
 import type { TransactionType } from "@/transactions/transaction";
+import { buildUrl } from "@/framework/routes/helpers";
 
+/**
+ * Props for the CurrentTransactionsFilter component.
+ */
 interface CurrentTransactionsFilterProps {
   readonly availableAccountNames: readonly string[];
   readonly availableFundNames: readonly string[];
@@ -71,8 +75,7 @@ const CurrentTransactionsFilter = function ({
     updater(params);
     params.delete(unpostedTransactionPageParamName);
     params.delete(postedTransactionPageParamName);
-    const nextQuery = params.toString();
-    router.replace(nextQuery === "" ? pathname : `${pathname}?${nextQuery}`, {
+    router.replace(buildUrl(pathname, params), {
       scroll: false,
     });
   };

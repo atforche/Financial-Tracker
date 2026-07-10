@@ -8,7 +8,11 @@ import Frame, { type FrameColor } from "@/framework/view/Frame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import FundGoalTypeEntryField from "@/funds/FundGoalTypeEntryField";
 import type { JSX } from "react";
+import { getAssignmentAmountHelperText } from "@/funds/workspace/helpers";
 
+/**
+ * Props for the AssignmentGoalSetupSection component.
+ */
 interface AssignmentGoalSetupSectionProps {
   readonly color?: FrameColor;
   readonly value: AssignmentGoalType | null;
@@ -18,22 +22,6 @@ interface AssignmentGoalSetupSectionProps {
   readonly typeErrorMessage?: string | null;
   readonly amountErrorMessage?: string | null;
 }
-
-const getAssignmentAmountHelperText = function (
-  goalType: AssignmentGoalType | null,
-): string {
-  if (goalType === null) {
-    return "Choose the assignment behavior that matches how you want to fund this category.";
-  }
-  switch (goalType) {
-    case AssignmentGoalType.MonthlyTarget:
-      return "Enter the ending balance you want this fund to reach for the period.";
-    case AssignmentGoalType.RecurringContribution:
-      return "Enter the amount you want to assign into this fund during the period.";
-    default:
-      return goalType satisfies never;
-  }
-};
 
 /**
  * Renders the shared assignment goal setup section used by fund and goal forms.

@@ -3536,6 +3536,11 @@ export interface components {
              * @description Current progress amount for this goal.
              */
             currentAmount: number;
+            /**
+             * Format: double
+             * @description Remaining amount for this goal.
+             */
+            remainingAmount: number;
             /** @description Whether the goal is currently met. */
             isGoalMet: boolean;
             /**

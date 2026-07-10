@@ -11,6 +11,7 @@ import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountW
 import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
+import { buildUrl } from "@/framework/routes/helpers";
 import formatCurrency from "@/framework/formatCurrency";
 import { getAccountCardColor } from "@/accounts/workspace/helpers";
 import routes from "@/accounts/routes";
@@ -44,8 +45,7 @@ const AccountWorkspaceCards = function ({
     const params = new URLSearchParams(searchParams.toString());
     update(params);
 
-    const query = params.toString();
-    router.replace(query === "" ? pathname : `${pathname}?${query}`, {
+    router.replace(buildUrl(pathname, params), {
       scroll: false,
     });
   };

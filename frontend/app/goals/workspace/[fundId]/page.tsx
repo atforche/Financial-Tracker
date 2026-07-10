@@ -9,6 +9,7 @@ import getApiClient from "@/framework/data/getApiClient";
 import { redirect } from "next/navigation";
 import routes from "@/goals/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
+import { toRepeatedSearchParam } from "@/framework/routes/helpers";
 import transactionRoutes from "@/transactions/routes";
 
 /**
@@ -25,12 +26,9 @@ const GoalWorkspaceDetailPage = async function ({
   searchParams,
 }: GoalWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { fundId } = await params;
-  const { accountingPeriodId, fundIds, balanceEventPage } = await searchParams;
-  const selectedFundIds = Array.isArray(fundIds)
-    ? fundIds
-    : typeof fundIds === "string"
-      ? [fundIds]
-      : [];
+  const { accountingPeriodId, fundIds, search, balanceEventPage } =
+    await searchParams;
+  const selectedFundIds = toRepeatedSearchParam(fundIds);
   const apiClient = getApiClient();
   const { data: periods } = await apiClient.GET("/accounting-periods", {
     params: { query: { Limit: 1 } },
@@ -39,6 +37,7 @@ const GoalWorkspaceDetailPage = async function ({
   const workspaceUrl = routes.workspace({
     ...(typeof periodId === "string" ? { accountingPeriodId: periodId } : {}),
     ...(selectedFundIds.length > 0 ? { fundIds: selectedFundIds } : {}),
+    ...(typeof search === "string" ? { search } : {}),
   });
   if (typeof periodId === "undefined") {
     redirect(workspaceUrl);
@@ -77,6 +76,7 @@ const GoalWorkspaceDetailPage = async function ({
   const currentUrl = routes.workspaceDetail(fundId, {
     accountingPeriodId: periodId,
     ...(selectedFundIds.length > 0 ? { fundIds: selectedFundIds } : {}),
+    ...(typeof search === "string" ? { search } : {}),
     ...(typeof balanceEventPage === "undefined" ? {} : { balanceEventPage }),
   });
   const addTransactionHref = transactionRoutes.workspaceCreate({

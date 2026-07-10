@@ -25,6 +25,7 @@ import { normalizeGoalTypes } from "@/goals/trends/goalTypeFilter";
 import { redirect } from "next/navigation";
 import routes from "@/goals/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
+import { toRepeatedSearchParam } from "@/framework/routes/helpers";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 interface GoalTrendsSearchParams {
@@ -92,11 +93,7 @@ const GoalTrends = async function ({
     );
   }
 
-  const requestedGoalTypes = Array.isArray(goalType)
-    ? goalType
-    : typeof goalType === "string"
-      ? [goalType]
-      : [];
+  const requestedGoalTypes = toRepeatedSearchParam(goalType);
   const currentAssignmentGoalTypes =
     currentView === "assignment"
       ? normalizeGoalTypes(requestedGoalTypes, currentView)

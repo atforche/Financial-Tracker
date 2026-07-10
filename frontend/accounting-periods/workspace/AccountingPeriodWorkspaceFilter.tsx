@@ -12,7 +12,11 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
+import { buildUrl } from "@/framework/routes/helpers";
 
+/**
+ * Props for the AccountingPeriodWorkspaceFilter component.
+ */
 interface AccountingPeriodWorkspaceFilterProps {
   readonly firstAccountingPeriod: AccountingPeriod | null;
 }
@@ -99,8 +103,7 @@ const AccountingPeriodWorkspaceFilter = function ({
     const params = new URLSearchParams(searchParams.toString());
     updater(params);
     params.delete(pageParamName);
-    const nextQuery = params.toString();
-    router.replace(nextQuery === "" ? pathname : `${pathname}?${nextQuery}`, {
+    router.replace(buildUrl(pathname, params), {
       scroll: false,
     });
   };

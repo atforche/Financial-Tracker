@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodTrendsAccountingPeriodFilter from "@/accounting-periods/trends/AccountingPeriodTrendsAccountingPeriodFilter";
 import type { JSX } from "react";
+import { buildUrl } from "@/framework/routes/helpers";
 
 /**
  * Props for the AccountingPeriodTrendsFilter component.
@@ -51,8 +52,7 @@ const AccountingPeriodTrendsFilter = function ({
     const params = new URLSearchParams(searchParams.toString());
     updater(params);
     params.delete(pageParamName);
-    const nextQuery = params.toString();
-    router.replace(nextQuery === "" ? pathname : `${pathname}?${nextQuery}`, {
+    router.replace(buildUrl(pathname, params), {
       scroll: false,
     });
   };

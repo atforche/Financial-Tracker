@@ -27,6 +27,7 @@ import getApiClient from "@/framework/data/getApiClient";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
+import { toRepeatedSearchParam } from "@/framework/routes/helpers";
 
 /**
  * URL mode values used to filter the Accounts trends.
@@ -97,18 +98,10 @@ const AccountTrends = async function ({
   const currentMode: AccountsTrendsFilterMode =
     typeof mode === "undefined" || isInOnboardingMode ? "date" : mode;
   const currentAccountTypes = normalizeAccountTypes(
-    Array.isArray(accountType)
-      ? accountType
-      : typeof accountType === "string"
-        ? [accountType]
-        : [],
+    toRepeatedSearchParam(accountType),
   );
   const currentAccountNames = normalizeRequestedAccountNames(
-    Array.isArray(accountName)
-      ? accountName
-      : typeof accountName === "string"
-        ? [accountName]
-        : [],
+    toRepeatedSearchParam(accountName),
   );
   const currentPage = normalizePageValue(page);
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);

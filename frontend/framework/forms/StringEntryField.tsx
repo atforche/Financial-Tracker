@@ -25,6 +25,11 @@ const StringEntryField = function ({
       label={label}
       variant="outlined"
       value={value ?? ""}
+      slotProps={{
+        input: {
+          readOnly: setValue === null,
+        },
+      }}
       onChange={(event) => {
         setValue?.(event.target.value);
       }}

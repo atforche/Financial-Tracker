@@ -6,6 +6,7 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateAccountForm from "@/accounts/workspace/CreateAccountForm";
 import type { JSX } from "react";
 import OnboardAccountForm from "@/accounts/workspace/OnboardAccountForm";
+import { buildUrl } from "@/framework/routes/helpers";
 
 /**
  * Props for the AccountWorkspaceActions component.
@@ -15,11 +16,6 @@ interface AccountWorkspaceActionsProps {
   readonly isInOnboardingMode: boolean;
   readonly requestedAction: AccountWorkspaceAction | null;
 }
-
-const buildUrl = function (pathname: string, params: URLSearchParams): string {
-  const query = params.toString();
-  return query === "" ? pathname : `${pathname}?${query}`;
-};
 
 /**
  * Displays the dialog-backed account actions for the workspace page.

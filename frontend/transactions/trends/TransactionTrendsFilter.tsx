@@ -29,6 +29,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AccountTrendsAccountingPeriodFilter from "@/accounts/trends/AccountTrendsAccountingPeriodFilter";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { TransactionType } from "@/transactions/transaction";
+import { buildUrl } from "@/framework/routes/helpers";
 
 /**
  * Trends filter mode values used in the Transactions view URL.
@@ -111,8 +112,7 @@ const TransactionTrendsFilter = function ({
     const params = new URLSearchParams(searchParams.toString());
     updater(params);
     params.delete(pageParamName);
-    const nextQuery = params.toString();
-    router.replace(nextQuery === "" ? pathname : `${pathname}?${nextQuery}`, {
+    router.replace(buildUrl(pathname, params), {
       scroll: false,
     });
   };

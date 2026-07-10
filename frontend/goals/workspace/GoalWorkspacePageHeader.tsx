@@ -9,7 +9,9 @@ interface GoalWorkspacePageHeaderProps {
   readonly title: string;
 }
 
-/** Displays the title and return navigation for a goal workspace page. */
+/**
+ * Displays the title and return navigation for a goal workspace page.
+ */
 const GoalWorkspacePageHeader = function ({
   backHref,
   title,

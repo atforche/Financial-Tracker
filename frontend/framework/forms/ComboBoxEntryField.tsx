@@ -22,6 +22,7 @@ interface ComboBoxEntryFieldProps<T> {
   readonly setValue?: ((newValue: ComboBoxOption<T> | null) => void) | null;
   readonly errorMessage?: string | null;
   readonly autoFocus?: boolean;
+  readonly size?: "small" | "medium";
 }
 
 /**
@@ -36,6 +37,7 @@ const ComboBoxEntryField = function <T>({
   setValue = null,
   errorMessage = null,
   autoFocus = false,
+  size = "medium",
 }: ComboBoxEntryFieldProps<T>): JSX.Element {
   const hint = useRef("");
   const justSelected = useRef(false);
@@ -86,6 +88,7 @@ const ComboBoxEntryField = function <T>({
           <TextField
             {...params}
             label={label}
+            size={size}
             error={errorMessage !== null}
             autoFocus={autoFocus}
             helperText={errorMessage ?? null}

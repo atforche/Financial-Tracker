@@ -22,6 +22,7 @@ import getApiClient from "@/framework/data/getApiClient";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
+import { toRepeatedSearchParam } from "@/framework/routes/helpers";
 
 /**
  * URL mode values used to filter the Funds trends.
@@ -90,11 +91,7 @@ const FundTrends = async function ({
   const currentMode: FundsTrendsFilterMode =
     typeof mode === "undefined" || isInOnboardingMode ? "date" : mode;
   const currentFundNames = normalizeRequestedFundNames(
-    Array.isArray(fundName)
-      ? fundName
-      : typeof fundName === "string"
-        ? [fundName]
-        : [],
+    toRepeatedSearchParam(fundName),
   );
   const currentPage = normalizePageValue(page);
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
