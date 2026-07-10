@@ -9,7 +9,7 @@ import {
   shouldPersistFundNames,
 } from "@/funds/trends/fundNameFilter";
 import { AccountingPeriodSortOrder } from "@/accounting-periods/types";
-import FundTrendChart from "@/funds/trends/FundTrendChart";
+import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import FundTrendsAssignmentSpendingCard from "@/funds/trends/FundTrendsAssignmentSpendingCard";
 import FundTrendsBalanceEventListFrame from "@/funds/trends/FundTrendsBalanceEventListFrame";
 import FundTrendsChangeChart from "@/funds/trends/FundTrendsChangeChart";
@@ -205,7 +205,7 @@ const FundTrends = async function ({
           },
         }}
       >
-        <FundTrendChart
+        <BalanceTrendChart
           mode={trends.mode}
           accountingPeriods={trends.accountingPeriods ?? null}
           dates={trends.dates ?? null}

@@ -13,7 +13,6 @@ import {
   normalizeRequestedAccountNames,
   shouldPersistAccountNames,
 } from "@/accounts/trends/accountNameFilter";
-import AccountTrendChart from "@/accounts/trends/AccountTrendChart";
 import AccountTrendsBalanceEventListFrame from "@/accounts/trends/AccountTrendsBalanceEventListFrame";
 import AccountTrendsChangeChart from "@/accounts/trends/AccountTrendsChangeChart";
 import AccountTrendsFilter from "@/accounts/trends/AccountTrendsFilter";
@@ -21,6 +20,7 @@ import AccountTrendsIncomeSpendingCard from "@/accounts/trends/AccountTrendsInco
 import AccountTrendsListFrame from "@/accounts/trends/AccountTrendsListFrame";
 import AccountTrendsSummaryCards from "@/accounts/trends/AccountTrendsSummaryCards";
 import { AccountingPeriodSortOrder } from "@/accounting-periods/types";
+import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import type { JSX } from "react";
 import dayjs from "dayjs";
 import getApiClient from "@/framework/data/getApiClient";
@@ -221,7 +221,7 @@ const AccountTrends = async function ({
           },
         }}
       >
-        <AccountTrendChart
+        <BalanceTrendChart
           mode={trends.mode}
           accountingPeriods={trends.accountingPeriods ?? null}
           dates={trends.dates ?? null}

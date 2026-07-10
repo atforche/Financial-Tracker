@@ -1,9 +1,5 @@
 "use client";
 
-import type {
-  AccountTrendsDateSummary,
-  AccountTrendsPeriodSummary,
-} from "@/accounts/types";
 import {
   Area,
   AreaChart,
@@ -11,159 +7,39 @@ import {
   Line,
   ResponsiveContainer,
   Tooltip,
-  type TooltipContentProps,
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  type BalanceTrendChartMode,
+  type BalanceTrendDateSummary,
+  type BalanceTrendPeriodSummary,
+  buildBalanceTrendChartPoints,
+  compactCurrencyFormatter,
+  getTooltipChartPoint,
+} from "@/framework/charts/helpers";
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
-import dayjs from "dayjs";
 import formatCurrency from "@/framework/formatCurrency";
 
-type AccountTrendChartMode = "AccountingPeriod" | "Date";
+/**
+ * Props for the BalanceTrendChart component.
+ */
+interface BalanceTrendChartProps {
+  readonly mode: BalanceTrendChartMode;
+  readonly accountingPeriods: readonly BalanceTrendPeriodSummary[] | null;
+  readonly dates: readonly BalanceTrendDateSummary[] | null;
+}
 
 /**
- * Props for the AccountTrendChart component.
+ * Renders a balance trend from normalized date or accounting period summaries.
  */
-interface AccountTrendChartProps {
-  readonly mode: AccountTrendChartMode;
-  readonly accountingPeriods: readonly AccountTrendsPeriodSummary[] | null;
-  readonly dates: readonly AccountTrendsDateSummary[] | null;
-}
-
-interface ChartPoint {
-  readonly key: string;
-  readonly tickLabel: string;
-  readonly tooltipLabel: string;
-  readonly balance: number;
-}
-
-interface ChartPointCandidate {
-  readonly key?: unknown;
-  readonly tickLabel?: unknown;
-  readonly tooltipLabel?: unknown;
-  readonly balance?: unknown;
-}
-
-const isObject = function (
-  value: unknown,
-): value is Record<PropertyKey, unknown> {
-  return typeof value === "object" && value !== null;
-};
-
-const isChartPoint = function (value: unknown): value is ChartPoint {
-  if (!isObject(value)) {
-    return false;
-  }
-
-  const candidate: ChartPointCandidate = {
-    key: value["key"],
-    tickLabel: value["tickLabel"],
-    tooltipLabel: value["tooltipLabel"],
-    balance: value["balance"],
-  };
-
-  return (
-    typeof candidate.key === "string" &&
-    typeof candidate.tickLabel === "string" &&
-    typeof candidate.tooltipLabel === "string" &&
-    typeof candidate.balance === "number"
-  );
-};
-
-const toChartPoint = function (value: unknown): ChartPoint | null {
-  if (!isChartPoint(value)) {
-    return null;
-  }
-
-  return {
-    key: value.key,
-    tickLabel: value.tickLabel,
-    tooltipLabel: value.tooltipLabel,
-    balance: value.balance,
-  };
-};
-
-const getTooltipChartPoint = function (
-  tooltipProps: TooltipContentProps,
-): ChartPoint | null {
-  for (const payloadEntry of tooltipProps.payload) {
-    const chartPoint = toChartPoint(payloadEntry.payload);
-    if (chartPoint !== null) {
-      return chartPoint;
-    }
-  }
-
-  return null;
-};
-
-const compactCurrencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  notation: "compact",
-  maximumFractionDigits: 1,
-});
-
-const buildDateChartPoints = function (
-  dates: readonly AccountTrendsDateSummary[],
-): ChartPoint[] {
-  return dates.map((dateSummary) => ({
-    key: dateSummary.date,
-    tickLabel: dayjs(dateSummary.date).format("MMMM D"),
-    tooltipLabel: dayjs(dateSummary.date).format("MMMM D, YYYY"),
-    balance: dateSummary.totalBalance,
-  }));
-};
-
-const buildAccountingPeriodChartPoints = function (
-  accountingPeriods: readonly AccountTrendsPeriodSummary[],
-): ChartPoint[] {
-  const openingPoints = accountingPeriods.map((accountingPeriod) => ({
-    key: `${accountingPeriod.accountingPeriodId}-opening`,
-    tickLabel: dayjs(
-      new Date(accountingPeriod.year, accountingPeriod.month - 1, 1),
-    ).format("MMMM YYYY"),
-    tooltipLabel: `${accountingPeriod.accountingPeriodName} opening balance`,
-    balance: accountingPeriod.totalOpeningBalance,
-  }));
-
-  const lastAccountingPeriod = accountingPeriods.at(-1);
-  if (typeof lastAccountingPeriod === "undefined") {
-    return openingPoints;
-  }
-
-  return [
-    ...openingPoints,
-    {
-      key: `${lastAccountingPeriod.accountingPeriodId}-closing`,
-      tickLabel: "End",
-      tooltipLabel: `${lastAccountingPeriod.accountingPeriodName} closing balance`,
-      balance: lastAccountingPeriod.totalClosingBalance,
-    },
-  ];
-};
-
-const buildChartPoints = function ({
+const BalanceTrendChart = function ({
   mode,
   accountingPeriods,
   dates,
-}: AccountTrendChartProps): ChartPoint[] {
-  if (mode === "Date") {
-    return buildDateChartPoints(dates ?? []);
-  }
-
-  return buildAccountingPeriodChartPoints(accountingPeriods ?? []);
-};
-
-/**
- * Renders the balance trend for the account trends.
- */
-const AccountTrendChart = function ({
-  mode,
-  accountingPeriods,
-  dates,
-}: AccountTrendChartProps): JSX.Element {
-  const chartPoints = buildChartPoints({
+}: BalanceTrendChartProps): JSX.Element {
+  const chartPoints = buildBalanceTrendChartPoints({
     mode,
     accountingPeriods,
     dates,
@@ -274,9 +150,7 @@ const AccountTrendChart = function ({
                 width={80}
               />
               <Tooltip
-                content={(
-                  tooltipProps: TooltipContentProps,
-                ): JSX.Element | null => {
+                content={(tooltipProps): JSX.Element | null => {
                   const point = getTooltipChartPoint(tooltipProps);
                   if (!tooltipProps.active || point === null) {
                     return null;
@@ -332,4 +206,4 @@ const AccountTrendChart = function ({
   );
 };
 
-export default AccountTrendChart;
+export default BalanceTrendChart;
