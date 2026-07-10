@@ -1,16 +1,9 @@
 "use client";
 
-import { Button, Stack, Typography } from "@mui/material";
-import {
-  type JSX,
-  startTransition,
-  useActionState,
-  useEffect,
-  useState,
-} from "react";
+import { type JSX, startTransition, useActionState, useEffect } from "react";
 import type { Account } from "@/accounts/types";
-import Dialog from "@/framework/dialog/Dialog";
-import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import { Button } from "@mui/material";
+import ConfirmActionDialog from "@/framework/dialog/ConfirmActionDialog";
 import deleteAccount from "@/accounts/workspace/deleteAccount";
 import { useRouter } from "next/navigation";
 
@@ -30,7 +23,6 @@ const DeleteAccountForm = function ({
   redirectUrl,
 }: DeleteAccountFormProps): JSX.Element {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState(deleteAccount, {});
 
   useEffect(() => {
@@ -40,69 +32,30 @@ const DeleteAccountForm = function ({
   }, [redirectUrl, router, state.success]);
 
   return (
-    <>
-      <Button
-        color="error"
-        variant="outlined"
-        onClick={() => {
-          setOpen(true);
-        }}
-      >
-        Delete
-      </Button>
-      <Dialog
-        open={open}
-        onClose={
-          pending
-            ? // eslint-disable-next-line no-undefined
-              undefined
-            : (): void => {
-                setOpen(false);
-              }
-        }
-        fullWidth
-        maxWidth="sm"
-        title="Delete Account"
-        actions={
-          <>
-            <Button
-              disabled={pending}
-              onClick={() => {
-                setOpen(false);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              color="error"
-              variant="contained"
-              loading={pending}
-              onClick={() => {
-                startTransition(() => {
-                  action({
-                    accountId: account.id,
-                    redirectUrl,
-                  });
-                });
-              }}
-            >
-              Delete
-            </Button>
-          </>
-        }
-      >
-        <Stack spacing={2}>
-          <Typography>
-            Are you sure you want to delete the account &quot;{account.name}
-            &quot;?
-          </Typography>
-          <ErrorAlert
-            errorMessage={state.errorTitle ?? null}
-            unmappedErrors={state.unmappedErrors ?? null}
-          />
-        </Stack>
-      </Dialog>
-    </>
+    <ConfirmActionDialog
+      trigger={(openDialog) => (
+        <Button color="error" variant="outlined" onClick={openDialog}>
+          Delete
+        </Button>
+      )}
+      title="Delete Account"
+      confirmationCopy={
+        <>
+          Are you sure you want to delete the account &quot;{account.name}
+          &quot;?
+        </>
+      }
+      confirmLabel="Delete"
+      confirmColor="error"
+      pending={pending}
+      errorTitle={state.errorTitle}
+      unmappedErrors={state.unmappedErrors}
+      onConfirm={() => {
+        startTransition(() => {
+          action({ accountId: account.id, redirectUrl });
+        });
+      }}
+    />
   );
 };
 

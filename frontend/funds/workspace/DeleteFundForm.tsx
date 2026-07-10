@@ -1,15 +1,8 @@
 "use client";
 
-import { Button, Stack, Typography } from "@mui/material";
-import {
-  type JSX,
-  startTransition,
-  useActionState,
-  useEffect,
-  useState,
-} from "react";
-import Dialog from "@/framework/dialog/Dialog";
-import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import { type JSX, startTransition, useActionState, useEffect } from "react";
+import { Button } from "@mui/material";
+import ConfirmActionDialog from "@/framework/dialog/ConfirmActionDialog";
 import type { Fund } from "@/funds/types";
 import deleteFund from "@/funds/workspace/deleteFund";
 import { useRouter } from "next/navigation";
@@ -30,7 +23,6 @@ const DeleteFundForm = function ({
   redirectUrl,
 }: DeleteFundFormProps): JSX.Element {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState(deleteFund, {});
 
   useEffect(() => {
@@ -40,65 +32,27 @@ const DeleteFundForm = function ({
   }, [redirectUrl, router, state.success]);
 
   return (
-    <>
-      <Button
-        color="error"
-        variant="outlined"
-        onClick={() => {
-          setOpen(true);
-        }}
-      >
-        Delete
-      </Button>
-      <Dialog
-        open={open}
-        onClose={
-          pending
-            ? // eslint-disable-next-line no-undefined
-              undefined
-            : (): void => {
-                setOpen(false);
-              }
-        }
-        fullWidth
-        maxWidth="sm"
-        title="Delete Fund"
-        actions={
-          <>
-            <Button
-              disabled={pending}
-              onClick={() => {
-                setOpen(false);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              color="error"
-              variant="contained"
-              loading={pending}
-              onClick={() => {
-                startTransition(() => {
-                  action({ fundId: fund.id, redirectUrl });
-                });
-              }}
-            >
-              Delete
-            </Button>
-          </>
-        }
-      >
-        <Stack spacing={2}>
-          <Typography>
-            Are you sure you want to delete the fund &quot;{fund.name}&quot;?
-          </Typography>
-          <ErrorAlert
-            errorMessage={state.errorTitle ?? null}
-            unmappedErrors={state.unmappedErrors ?? null}
-          />
-        </Stack>
-      </Dialog>
-    </>
+    <ConfirmActionDialog
+      trigger={(openDialog) => (
+        <Button color="error" variant="outlined" onClick={openDialog}>
+          Delete
+        </Button>
+      )}
+      title="Delete Fund"
+      confirmationCopy={
+        <>Are you sure you want to delete the fund &quot;{fund.name}&quot;?</>
+      }
+      confirmLabel="Delete"
+      confirmColor="error"
+      pending={pending}
+      errorTitle={state.errorTitle}
+      unmappedErrors={state.unmappedErrors}
+      onConfirm={() => {
+        startTransition(() => {
+          action({ fundId: fund.id, redirectUrl });
+        });
+      }}
+    />
   );
 };
 

@@ -1,9 +1,9 @@
 "use client";
 
-import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import { Button } from "@mui/material";
+import ConfirmActionDialog from "@/framework/dialog/ConfirmActionDialog";
 import deleteAccountingPeriod from "@/accounting-periods/workspace/deleteAccountingPeriod";
 
 /**
@@ -23,29 +23,30 @@ const DeleteAccountingPeriodForm = function ({
 }: DeleteAccountingPeriodFormProps): JSX.Element {
   const [state, action, pending] = useActionState(deleteAccountingPeriod, {});
   return (
-    <Stack spacing={2}>
-      <Typography>
-        Are you sure you want to delete the accounting period &quot;
-        {accountingPeriod.name}&quot;?
-      </Typography>
-      <DialogActions>
-        <Button
-          variant="contained"
-          loading={pending}
-          onClick={() => {
-            startTransition(() => {
-              action({ accountingPeriodId: accountingPeriod.id, redirectUrl });
-            });
-          }}
-        >
+    <ConfirmActionDialog
+      trigger={(openDialog) => (
+        <Button color="error" variant="contained" onClick={openDialog}>
           Delete
         </Button>
-      </DialogActions>
-      <ErrorAlert
-        errorMessage={state.errorTitle ?? null}
-        unmappedErrors={state.unmappedErrors ?? null}
-      />
-    </Stack>
+      )}
+      title="Delete Accounting Period"
+      confirmationCopy={
+        <>
+          Are you sure you want to delete the accounting period &quot;
+          {accountingPeriod.name}&quot;?
+        </>
+      }
+      confirmLabel="Delete"
+      confirmColor="error"
+      pending={pending}
+      errorTitle={state.errorTitle}
+      unmappedErrors={state.unmappedErrors}
+      onConfirm={() => {
+        startTransition(() => {
+          action({ accountingPeriodId: accountingPeriod.id, redirectUrl });
+        });
+      }}
+    />
   );
 };
 

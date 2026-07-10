@@ -1,9 +1,9 @@
 "use client";
 
-import { Button, DialogActions, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import { Button } from "@mui/material";
+import ConfirmActionDialog from "@/framework/dialog/ConfirmActionDialog";
 import closeAccountingPeriod from "@/accounting-periods/workspace/closeAccountingPeriod";
 
 /**
@@ -23,29 +23,29 @@ const CloseAccountingPeriodForm = function ({
 }: CloseAccountingPeriodFormProps): JSX.Element {
   const [state, action, pending] = useActionState(closeAccountingPeriod, {});
   return (
-    <Stack spacing={2}>
-      <Typography>
-        Are you sure you want to close the accounting period &quot;
-        {accountingPeriod.name}&quot;?
-      </Typography>
-      <DialogActions>
-        <Button
-          variant="contained"
-          loading={pending}
-          onClick={() => {
-            startTransition(() => {
-              action({ accountingPeriodId: accountingPeriod.id, redirectUrl });
-            });
-          }}
-        >
+    <ConfirmActionDialog
+      trigger={(openDialog) => (
+        <Button variant="contained" onClick={openDialog}>
           Close
         </Button>
-      </DialogActions>
-      <ErrorAlert
-        errorMessage={state.errorTitle ?? null}
-        unmappedErrors={state.unmappedErrors ?? null}
-      />
-    </Stack>
+      )}
+      title="Close Accounting Period"
+      confirmationCopy={
+        <>
+          Are you sure you want to close the accounting period &quot;
+          {accountingPeriod.name}&quot;?
+        </>
+      }
+      confirmLabel="Close"
+      pending={pending}
+      errorTitle={state.errorTitle}
+      unmappedErrors={state.unmappedErrors}
+      onConfirm={() => {
+        startTransition(() => {
+          action({ accountingPeriodId: accountingPeriod.id, redirectUrl });
+        });
+      }}
+    />
   );
 };
 
