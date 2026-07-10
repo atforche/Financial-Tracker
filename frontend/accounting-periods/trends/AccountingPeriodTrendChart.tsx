@@ -15,6 +15,7 @@ import { Box, Paper, Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
 import dayjs from "dayjs";
+import formatCompactCurrency from "@/framework/formatCompactCurrency";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface AccountingPeriodTrendChartProps {
@@ -86,13 +87,6 @@ const getTooltipChartPoint = function (
 
   return null;
 };
-
-const compactCurrencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  notation: "compact",
-  maximumFractionDigits: 1,
-});
 
 const buildAccountingPeriodChartPoints = function (
   accountingPeriods: readonly AccountingPeriod[],
@@ -228,9 +222,7 @@ const AccountingPeriodTrendChart = function ({
                   fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
                   dx: -12,
                 }}
-                tickFormatter={(value: number) =>
-                  compactCurrencyFormatter.format(value)
-                }
+                tickFormatter={(value: number) => formatCompactCurrency(value)}
                 tickLine={false}
                 width={80}
               />

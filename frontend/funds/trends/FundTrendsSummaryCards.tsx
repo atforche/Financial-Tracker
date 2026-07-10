@@ -13,6 +13,7 @@ import { type JSX, type ReactNode, useState } from "react";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import SummaryCard from "@/framework/view/SummaryCard";
 import formatCurrency from "@/framework/formatCurrency";
+import formatShortDate from "@/framework/formatShortDate";
 
 interface FundTrendsSummaryCardsProps {
   readonly trends: FundTrends;
@@ -72,17 +73,12 @@ const getTrendsSnapshot = function (trends: FundTrends): TrendsSnapshot {
   const firstDate = dates.at(0);
   const lastDate = dates.at(-1);
 
-  const dateFormatter = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
   return {
     startLabel: firstDate
-      ? dateFormatter.format(new Date(`${firstDate.date}T00:00:00`))
+      ? formatShortDate(new Date(`${firstDate.date}T00:00:00`))
       : "Start",
     endLabel: lastDate
-      ? dateFormatter.format(new Date(`${lastDate.date}T00:00:00`))
+      ? formatShortDate(new Date(`${lastDate.date}T00:00:00`))
       : "End",
     totalStartingBalance: firstDate?.totalBalance ?? 0,
     totalEndingBalance: lastDate?.totalBalance ?? 0,

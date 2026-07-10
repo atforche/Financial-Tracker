@@ -14,6 +14,7 @@ import {
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
+import formatCompactCurrency from "@/framework/formatCompactCurrency";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface AccountingPeriodTrendsChangeChartProps {
@@ -94,14 +95,6 @@ const getTooltipChartPoint = function (
 
   return null;
 };
-
-const compactCurrencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  notation: "compact",
-  maximumFractionDigits: 1,
-  signDisplay: "exceptZero",
-});
 
 const formatSignedCurrency = function (value: number): string {
   if (value === 0) {
@@ -226,7 +219,7 @@ const AccountingPeriodTrendsChangeChart = function ({
                   dx: -12,
                 }}
                 tickFormatter={(value: number) =>
-                  compactCurrencyFormatter.format(value)
+                  formatCompactCurrency(value, true)
                 }
                 tickLine={false}
                 width={96}

@@ -3,6 +3,7 @@
 import type { GoalTrendsAccountingPeriodSummaryModel } from "@/goals/types";
 import GoalTrendsMetricChart from "@/goals/trends/GoalTrendsMetricChart";
 import type { JSX } from "react";
+import formatCompactCurrency from "@/framework/formatCompactCurrency";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface GoalTrendsAmountSpentChartProps {
@@ -24,15 +25,7 @@ const GoalTrendsAmountSpentChart = function ({
       accountingPeriods={accountingPeriods}
       getValue={(accountingPeriod) => accountingPeriod.totalAmountSpent}
       formatter={formatCurrency}
-      tickFormatter={(value: number) =>
-        new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-          notation: "compact",
-          maximumFractionDigits: 1,
-          signDisplay: "exceptZero",
-        }).format(value)
-      }
+      tickFormatter={(value: number) => formatCompactCurrency(value, true)}
     />
   );
 };

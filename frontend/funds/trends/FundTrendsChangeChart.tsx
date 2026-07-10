@@ -18,7 +18,9 @@ import type {
 } from "@/funds/types";
 import type { JSX } from "react";
 import dayjs from "dayjs";
+import formatCompactCurrency from "@/framework/formatCompactCurrency";
 import formatCurrency from "@/framework/formatCurrency";
+import formatLongDate from "@/framework/formatLongDate";
 
 type FundTrendsChangeChartMode = "AccountingPeriod" | "Date";
 
@@ -103,14 +105,6 @@ const getTooltipChartPoint = function (
   return null;
 };
 
-const compactCurrencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  notation: "compact",
-  maximumFractionDigits: 1,
-  signDisplay: "exceptZero",
-});
-
 const formatSignedCurrency = function (value: number): string {
   if (value === 0) {
     return formatCurrency(value);
@@ -160,7 +154,7 @@ const buildChartPoints = function (
       {
         key: dateSummary.date,
         tickLabel: dayjs(dateSummary.date).format("MMM D"),
-        tooltipLabel: dayjs(dateSummary.date).format("MMMM D, YYYY"),
+        tooltipLabel: formatLongDate(new Date(`${dateSummary.date}T00:00:00`)),
         change: 0,
         fill: getBarColor(0),
       },
@@ -175,7 +169,7 @@ const buildChartPoints = function (
     return {
       key: dateSummary.date,
       tickLabel: dayjs(dateSummary.date).format("MMM D"),
-      tooltipLabel: dayjs(dateSummary.date).format("MMMM D, YYYY"),
+      tooltipLabel: formatLongDate(new Date(`${dateSummary.date}T00:00:00`)),
       change,
       fill: getBarColor(change),
     };
@@ -275,7 +269,7 @@ const FundTrendsChangeChart = function ({
                   dx: -12,
                 }}
                 tickFormatter={(value: number) =>
-                  compactCurrencyFormatter.format(value)
+                  formatCompactCurrency(value, true)
                 }
                 tickLine={false}
                 width={96}

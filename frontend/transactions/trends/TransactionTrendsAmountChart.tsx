@@ -18,7 +18,9 @@ import type {
 } from "@/transactions/transaction";
 import type { JSX } from "react";
 import dayjs from "dayjs";
+import formatCompactCurrency from "@/framework/formatCompactCurrency";
 import formatCurrency from "@/framework/formatCurrency";
+import formatLongDate from "@/framework/formatLongDate";
 
 type TransactionTrendsAmountChartMode = "AccountingPeriod" | "Date";
 
@@ -103,14 +105,6 @@ const getTooltipChartPoint = function (
   return null;
 };
 
-const compactCurrencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  notation: "compact",
-  maximumFractionDigits: 1,
-  signDisplay: "exceptZero",
-});
-
 const formatSignedCurrency = function (value: number): string {
   if (value === 0) {
     return formatCurrency(value);
@@ -147,7 +141,7 @@ const buildChartPoints = function (
   return dates.map((dateSummary) => ({
     key: dateSummary.date,
     tickLabel: dayjs(dateSummary.date).format("MMM D"),
-    tooltipLabel: dayjs(dateSummary.date).format("MMMM D, YYYY"),
+    tooltipLabel: formatLongDate(new Date(`${dateSummary.date}T00:00:00`)),
     amount: dateSummary.totalAmount,
     fill: getBarColor(dateSummary.totalAmount),
   }));
@@ -247,7 +241,7 @@ const TransactionTrendsAmountChart = function ({
                   dx: -12,
                 }}
                 tickFormatter={(value: number) =>
-                  compactCurrencyFormatter.format(value)
+                  formatCompactCurrency(value, true)
                 }
                 tickLine={false}
                 width={96}

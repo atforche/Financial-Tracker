@@ -1,5 +1,6 @@
 import type { TooltipContentProps } from "recharts";
 import dayjs from "dayjs";
+import formatLongDate from "@/framework/formatLongDate";
 
 /**
  * Indicates whether the chart is grouped by accounting period or date.
@@ -45,16 +46,6 @@ interface BalanceTrendChartPointCandidate {
   readonly tooltipLabel?: unknown;
   readonly balance?: unknown;
 }
-
-/**
- * Formats y-axis balance values with compact US currency notation.
- */
-const compactCurrencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  notation: "compact",
-  maximumFractionDigits: 1,
-});
 
 /**
  * Determines whether a value is a non-null object.
@@ -133,7 +124,7 @@ const buildDateChartPoints = function (
   return dates.map((dateSummary) => ({
     key: dateSummary.date,
     tickLabel: dayjs(dateSummary.date).format("MMMM D"),
-    tooltipLabel: dayjs(dateSummary.date).format("MMMM D, YYYY"),
+    tooltipLabel: formatLongDate(new Date(`${dateSummary.date}T00:00:00`)),
     balance: dateSummary.totalBalance,
   }));
 };
@@ -188,11 +179,7 @@ const buildBalanceTrendChartPoints = function ({
   return buildAccountingPeriodChartPoints(accountingPeriods ?? []);
 };
 
-export {
-  buildBalanceTrendChartPoints,
-  compactCurrencyFormatter,
-  getTooltipChartPoint,
-};
+export { buildBalanceTrendChartPoints, getTooltipChartPoint };
 export type {
   BalanceTrendChartMode,
   BalanceTrendChartPoint,

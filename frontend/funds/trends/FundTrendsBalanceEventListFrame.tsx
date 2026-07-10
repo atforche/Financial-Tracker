@@ -21,14 +21,9 @@ import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
+import formatShortDate from "@/framework/formatShortDate";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
-
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
 
 const formatBalanceEventType = function (
   type: FundTrendsBalanceEventType,
@@ -130,7 +125,7 @@ const FundTrendsBalanceEventListFrame = function ({
       headerContent: "Event Date",
       getBodyContent: (balanceEvent) =>
         balanceEvent.isPosted
-          ? dateFormatter.format(new Date(`${balanceEvent.date}T00:00:00`))
+          ? formatShortDate(new Date(`${balanceEvent.date}T00:00:00`))
           : "Pending",
       sortType:
         currentSort === FundTrendsBalanceEventSortOrder.Date

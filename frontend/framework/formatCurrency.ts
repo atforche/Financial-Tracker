@@ -1,13 +1,15 @@
+const currencyNumberFormatter = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 /**
- * Formats the provided currency amount to a string with two decimal places and a dollar sign.
+ * Formats the provided USD amount with two decimal places.
  * @param amount - The currency amount to format.
  * @returns The formatted currency string.
  */
 const formatCurrency = function (amount: number): string {
-  return `$ ${amount.toLocaleString([], {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+  return `$ ${currencyNumberFormatter.format(amount)}`;
 };
 
 export default formatCurrency;
