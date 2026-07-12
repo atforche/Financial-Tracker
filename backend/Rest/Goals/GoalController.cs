@@ -32,26 +32,6 @@ public sealed class GoalController(
     GoalConverter goalConverter) : ControllerBase
 {
     /// <summary>
-    /// Retrieves the Assignment Goal that matches the provided ID
-    /// </summary>
-    [HttpGet("assignment/{goalId}")]
-    [ProducesResponseType(typeof(AssignmentGoalModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetAssignment(Guid goalId)
-    {
-        if (!assignmentGoalRepository.TryGetById(goalId, out AssignmentGoal? goal))
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Goal.",
-                Errors = { [nameof(goalId)] = new[] { $"Goal with ID {goalId} not found." } },
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-        return Ok(goalConverter.ToModel(goal));
-    }
-
-    /// <summary>
     /// Retrieves the Assignment Goal that matches the provided accounting period for the provided Fund
     /// </summary>
     [HttpGet("assignment")]
@@ -95,26 +75,6 @@ public sealed class GoalController(
         }
 
         return Ok(goals);
-    }
-
-    /// <summary>
-    /// Retrieves the Spending Goal that matches the provided ID
-    /// </summary>
-    [HttpGet("spending/{goalId}")]
-    [ProducesResponseType(typeof(SpendingGoalModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetSpending(Guid goalId)
-    {
-        if (!spendingGoalRepository.TryGetById(goalId, out SpendingGoal? goal))
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Goal.",
-                Errors = { [nameof(goalId)] = new[] { $"Goal with ID {goalId} not found." } },
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-        return Ok(goalConverter.ToModel(goal));
     }
 
     /// <summary>

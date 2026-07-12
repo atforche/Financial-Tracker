@@ -105,68 +105,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/transactions/unposted": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves unposted transactions that still affect account balances. */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Accounting Period IDs to filter the Transactions by */
-                    AccountingPeriodIds?: string[];
-                    /** @description Account IDs to filter the Transactions by */
-                    AccountIds?: string[];
-                    /** @description Fund IDs to filter the Transactions by */
-                    FundIds?: string[];
-                    /** @description Sort to apply to the results */
-                    Sort?: components["schemas"]["TransactionSortOrderModel"];
-                    /** @description Maximum number of results to return */
-                    Limit?: number;
-                    /** @description Number of results to skip */
-                    Offset?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CollectionModelOfTransactionModel"];
-                        "application/json": components["schemas"]["CollectionModelOfTransactionModel"];
-                        "text/json": components["schemas"]["CollectionModelOfTransactionModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/transactions/current": {
         parameters: {
             query?: never;
@@ -518,98 +456,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/goals/assignment/{goalId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves the Assignment Goal that matches the provided ID */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    goalId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AssignmentGoalModel"];
-                        "application/json": components["schemas"]["AssignmentGoalModel"];
-                        "text/json": components["schemas"]["AssignmentGoalModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Updates the provided Assignment Goal with the provided properties */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    goalId: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateAssignmentGoalModel"];
-                    "text/json": components["schemas"]["UpdateAssignmentGoalModel"];
-                    "application/*+json": components["schemas"]["UpdateAssignmentGoalModel"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AssignmentGoalModel"];
-                        "application/json": components["schemas"]["AssignmentGoalModel"];
-                        "text/json": components["schemas"]["AssignmentGoalModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/goals/assignment": {
         parameters: {
             query?: never;
@@ -718,98 +564,6 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/goals/spending/{goalId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves the Spending Goal that matches the provided ID */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    goalId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["SpendingGoalModel"];
-                        "application/json": components["schemas"]["SpendingGoalModel"];
-                        "text/json": components["schemas"]["SpendingGoalModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Updates the provided Spending Goal with the provided properties */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    goalId: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateSpendingGoalModel"];
-                    "text/json": components["schemas"]["UpdateSpendingGoalModel"];
-                    "application/*+json": components["schemas"]["UpdateSpendingGoalModel"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["SpendingGoalModel"];
-                        "application/json": components["schemas"]["SpendingGoalModel"];
-                        "text/json": components["schemas"]["SpendingGoalModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
         delete?: never;
         options?: never;
         head?: never;
@@ -1115,6 +869,120 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/goals/assignment/{goalId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Updates the provided Assignment Goal with the provided properties */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    goalId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateAssignmentGoalModel"];
+                    "text/json": components["schemas"]["UpdateAssignmentGoalModel"];
+                    "application/*+json": components["schemas"]["UpdateAssignmentGoalModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AssignmentGoalModel"];
+                        "application/json": components["schemas"]["AssignmentGoalModel"];
+                        "text/json": components["schemas"]["AssignmentGoalModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/goals/spending/{goalId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Updates the provided Spending Goal with the provided properties */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    goalId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateSpendingGoalModel"];
+                    "text/json": components["schemas"]["UpdateSpendingGoalModel"];
+                    "application/*+json": components["schemas"]["UpdateSpendingGoalModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SpendingGoalModel"];
+                        "application/json": components["schemas"]["SpendingGoalModel"];
+                        "text/json": components["schemas"]["SpendingGoalModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/funds/{fundId}": {
         parameters: {
             query?: never;
@@ -1355,47 +1223,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/funds/current": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves current snapshot data for Funds. */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Optional Fund Name filters to apply to the current snapshot. */
-                    FundName?: string[];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CurrentFundsModel"];
-                        "application/json": components["schemas"]["CurrentFundsModel"];
-                        "text/json": components["schemas"]["CurrentFundsModel"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/funds/{fundId}/balance-events": {
         parameters: {
             query?: never;
@@ -1501,55 +1328,6 @@ export interface paths {
                         "text/plain": components["schemas"]["FundTrendsModel"];
                         "application/json": components["schemas"]["FundTrendsModel"];
                         "text/json": components["schemas"]["FundTrendsModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/funds/unassigned": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves the unassigned Fund */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["FundModel"];
-                        "application/json": components["schemas"]["FundModel"];
-                        "text/json": components["schemas"]["FundModel"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -1879,49 +1657,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/accounts/current": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves current snapshot data for Accounts. */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Optional Account Type filters to apply to the current snapshot. */
-                    AccountType?: components["schemas"]["AccountTypeModel"][];
-                    /** @description Optional Account Name filters to apply to the current snapshot. */
-                    AccountName?: string[];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CurrentAccountsModel"];
-                        "application/json": components["schemas"]["CurrentAccountsModel"];
-                        "text/json": components["schemas"]["CurrentAccountsModel"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/accounts/{accountId}/balance-events": {
         parameters: {
             query?: never;
@@ -2102,82 +1837,6 @@ export interface paths {
             };
         };
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/accounting-periods/{accountingPeriodId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves the Accounting Period that matches the provided ID */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    accountingPeriodId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AccountingPeriodModel"];
-                        "application/json": components["schemas"]["AccountingPeriodModel"];
-                        "text/json": components["schemas"]["AccountingPeriodModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /** Deletes the Accounting Period with the provided ID */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID of the Accounting Period to delete */
-                    accountingPeriodId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
         options?: never;
         head?: never;
         patch?: never;
@@ -2519,6 +2178,47 @@ export interface paths {
             };
         };
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounting-periods/{accountingPeriodId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Deletes the Accounting Period with the provided ID */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description ID of the Accounting Period to delete */
+                    accountingPeriodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -3372,28 +3072,6 @@ export interface components {
              */
             amount: number;
         };
-        /** @description Model representing a recent balance event for the current Accounts page. */
-        CurrentAccountBalanceEventModel: {
-            /**
-             * Format: uuid
-             * @description Transaction that produced this balance event.
-             */
-            transactionId: string;
-            /**
-             * Format: date
-             * @description Effective date of the balance event.
-             */
-            date: string;
-            /** @description Type of balance event. */
-            type: components["schemas"]["AccountTrendsBalanceEventTypeModel"];
-            /** @description Whether the transaction has been posted to the account. */
-            isPosted: boolean;
-            /**
-             * Format: double
-             * @description Amount associated with the balance event.
-             */
-            amount: number;
-        };
         /** @description Model representing the current Accounting Period response. */
         CurrentAccountingPeriodModel: {
             accountingPeriod?: null | components["schemas"]["AccountingPeriodModel"];
@@ -3406,86 +3084,6 @@ export interface components {
              * @description Total spending for the current Accounting Period.
              */
             totalSpending: number;
-        };
-        /** @description Model representing an Account on the current Accounts page. */
-        CurrentAccountModel: {
-            /**
-             * Format: uuid
-             * @description ID for the Account.
-             */
-            id: string;
-            /** @description Name for the Account. */
-            name: string;
-            /** @description Type for the Account. */
-            type: components["schemas"]["AccountTypeModel"];
-            /** @description Current balance for the Account. */
-            currentBalance: components["schemas"]["AccountBalanceModel"];
-            /**
-             * Format: date
-             * @description Effective date for the most recent balance event affecting the Account.
-             */
-            lastBalanceEventDate: null | string;
-            /** @description Most recent balance events affecting the Account. */
-            recentBalanceEvents: components["schemas"]["CurrentAccountBalanceEventModel"][];
-        };
-        /** @description Model representing the current Accounts page response. */
-        CurrentAccountsModel: {
-            /** @description Available Account Names for the current snapshot filters. */
-            availableAccountNames: string[];
-            /** @description Current aggregate summary for the matching Accounts. */
-            summary: components["schemas"]["AccountSummaryModel"];
-            /** @description Current snapshot for each Account. */
-            accounts: components["schemas"]["CurrentAccountModel"][];
-        };
-        /** @description Model representing a recent balance event for the current Funds page. */
-        CurrentFundBalanceEventModel: {
-            /**
-             * Format: uuid
-             * @description Transaction that produced this balance event.
-             */
-            transactionId: string;
-            /**
-             * Format: date
-             * @description Effective date of the balance event.
-             */
-            date: string;
-            /** @description Type of balance event. */
-            type: components["schemas"]["FundTrendsBalanceEventTypeModel"];
-            /** @description Whether the transaction has been posted to the fund. */
-            isPosted: boolean;
-            /**
-             * Format: double
-             * @description Amount associated with the balance event.
-             */
-            amount: number;
-        };
-        /** @description Model representing a Fund on the current Funds page. */
-        CurrentFundModel: {
-            /**
-             * Format: uuid
-             * @description ID for the Fund.
-             */
-            id: string;
-            /** @description Name for the Fund. */
-            name: string;
-            /** @description Current balance for the Fund. */
-            currentBalance: components["schemas"]["FundBalanceModel"];
-            /**
-             * Format: date
-             * @description Effective date for the most recent balance event affecting the Fund.
-             */
-            lastBalanceEventDate: null | string;
-            /** @description Most recent balance events affecting the Fund. */
-            recentBalanceEvents: components["schemas"]["CurrentFundBalanceEventModel"][];
-        };
-        /** @description Model representing the current Funds page response. */
-        CurrentFundsModel: {
-            /** @description Available Fund Names for the current snapshot filters. */
-            availableFundNames: string[];
-            /** @description Current aggregate summary for the matching Funds. */
-            summary: components["schemas"]["FundSummaryModel"];
-            /** @description Current snapshot for each Fund. */
-            funds: components["schemas"]["CurrentFundModel"][];
         };
         /** @description Model representing a recent balance event for a current Goal progress section. */
         CurrentGoalBalanceEventModel: {

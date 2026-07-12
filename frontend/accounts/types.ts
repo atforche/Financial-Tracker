@@ -19,22 +19,6 @@ type Account = components["schemas"]["AccountModel"];
 type AccountSummary = components["schemas"]["AccountSummaryModel"];
 
 /**
- * Type representing the current Accounts response.
- */
-type CurrentAccounts = components["schemas"]["CurrentAccountsModel"];
-
-/**
- * Type representing an Account card on the current Accounts page.
- */
-type CurrentAccount = components["schemas"]["CurrentAccountModel"];
-
-/**
- * Type representing a recent balance event on the current Accounts page.
- */
-type CurrentAccountBalanceEvent =
-  components["schemas"]["CurrentAccountBalanceEventModel"];
-
-/**
  * Type representing a balance event on the Account workspace page.
  */
 type AccountWorkspaceBalanceEvent =
@@ -162,9 +146,6 @@ const formatAccountType = function (accountType: AccountTypeModel): string {
 export {
   type Account,
   type AccountSummary,
-  type CurrentAccounts,
-  type CurrentAccount,
-  type CurrentAccountBalanceEvent,
   type AccountWorkspaceBalanceEvent,
   type AccountTrends,
   type AccountTrendsAccount,

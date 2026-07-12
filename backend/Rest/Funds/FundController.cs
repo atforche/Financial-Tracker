@@ -1,5 +1,4 @@
 using Data;
-using Data.Funds;
 using Domain.AccountingPeriods;
 using Domain.Exceptions;
 using Domain.Funds;
@@ -20,12 +19,10 @@ public sealed class FundController(
     UnitOfWork unitOfWork,
     AccountingPeriodConverter accountingPeriodConverter,
     FundConverter fundConverter,
-    CurrentFundsGetter currentFundsGetter,
     FundBalanceEventGetter fundBalanceEventGetter,
     FundTrendsGetter fundTrendsGetter,
     FundGetter fundGetter,
     FundSummaryGetter fundSummaryGetter,
-    FundRepository fundRepository,
     FundService fundService) : ControllerBase
 {
     /// <summary>
@@ -62,14 +59,6 @@ public sealed class FundController(
     [HttpGet("summary")]
     [ProducesResponseType(typeof(FundSummaryModel), StatusCodes.Status200OK)]
     public IActionResult GetSummary() => Ok(fundSummaryGetter.Get());
-
-    /// <summary>
-    /// Retrieves current snapshot data for Funds.
-    /// </summary>
-    [HttpGet("current")]
-    [ProducesResponseType(typeof(CurrentFundsModel), StatusCodes.Status200OK)]
-    public IActionResult GetCurrent([FromQuery] CurrentFundsQueryParameterModel queryParameters) =>
-        Ok(currentFundsGetter.Get(queryParameters));
 
     /// <summary>
     /// Retrieves balance events for a single Fund workspace.
@@ -109,27 +98,6 @@ public sealed class FundController(
             });
         }
         return Ok(trends);
-    }
-
-    /// <summary>
-    /// Retrieves the unassigned Fund
-    /// </summary>
-    [HttpGet("unassigned")]
-    [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetUnassigned()
-    {
-        Fund? unassignedFund = fundRepository.GetUnassignedFund();
-        if (unassignedFund == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Fund.",
-                Errors = { [""] = ["The unassigned fund was not found."] },
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-        return Ok(fundConverter.ToModel(unassignedFund));
     }
 
     /// <summary>

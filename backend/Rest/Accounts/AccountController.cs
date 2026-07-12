@@ -18,7 +18,6 @@ public sealed class AccountController(
     UnitOfWork unitOfWork,
     AccountingPeriodConverter accountingPeriodConverter,
     AccountService accountService,
-    CurrentAccountsGetter currentAccountsGetter,
     AccountBalanceEventGetter accountBalanceEventGetter,
     AccountTrendsGetter accountTrendsGetter,
     AccountGetter accountGetter,
@@ -60,14 +59,6 @@ public sealed class AccountController(
     [HttpGet("summary")]
     [ProducesResponseType(typeof(AccountSummaryModel), StatusCodes.Status200OK)]
     public IActionResult GetSummary() => Ok(accountSummaryGetter.Get());
-
-    /// <summary>
-    /// Retrieves current snapshot data for Accounts.
-    /// </summary>
-    [HttpGet("current")]
-    [ProducesResponseType(typeof(CurrentAccountsModel), StatusCodes.Status200OK)]
-    public IActionResult GetCurrent([FromQuery] CurrentAccountsQueryParameterModel queryParameters) =>
-        Ok(currentAccountsGetter.Get(queryParameters));
 
     /// <summary>
     /// Retrieves balance events for a single Account workspace.

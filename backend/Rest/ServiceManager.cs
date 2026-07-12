@@ -23,7 +23,6 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<CurrentAccountingPeriodGetter>();
 
         _ = serviceCollection.AddScoped<AccountConverter>();
-        _ = serviceCollection.AddScoped<CurrentAccountsGetter>();
         _ = serviceCollection.AddScoped<AccountBalanceEventGetter>();
         _ = serviceCollection.AddScoped<AccountTrendsGetter>();
         _ = serviceCollection.AddScoped<AccountGetter>();
@@ -31,7 +30,6 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<FundAmountConverter>();
         _ = serviceCollection.AddScoped<FundConverter>();
-        _ = serviceCollection.AddScoped<CurrentFundsGetter>();
         _ = serviceCollection.AddScoped<FundBalanceEventGetter>();
         _ = serviceCollection.AddScoped<FundTrendsGetter>();
         _ = serviceCollection.AddScoped<FundGetter>();

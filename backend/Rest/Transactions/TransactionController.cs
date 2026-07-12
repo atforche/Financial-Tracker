@@ -1,5 +1,4 @@
 using Data;
-using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Exceptions;
@@ -24,7 +23,6 @@ public sealed class TransactionController(
     CurrentTransactionsGetter currentTransactionsGetter,
     TransactionTrendsGetter transactionTrendsGetter,
     TransactionGetter transactionGetter,
-    TransactionRepository transactionRepository,
     TransactionConverter transactionConverter,
     TransactionDispatcherService transactionDispatcherService,
     TransactionRequestConverter transactionRequestConverter) : ControllerBase
@@ -47,74 +45,6 @@ public sealed class TransactionController(
             });
         }
         return Ok(transactions);
-    }
-
-    /// <summary>
-    /// Retrieves unposted transactions that still affect account balances.
-    /// </summary>
-    [HttpGet("unposted")]
-    [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetUnposted([FromQuery] TransactionQueryParameterModel queryParameters)
-    {
-        var transactions = transactionRepository.GetUnposted()
-            .Select(transactionConverter.ToModel)
-            .ToList();
-
-        if (queryParameters.Sort is null or TransactionSortOrderModel.Date)
-        {
-            transactions = transactions.OrderBy(transaction => transaction.Date).ThenBy(transaction => transaction.Sequence).ToList();
-        }
-        else if (queryParameters.Sort == TransactionSortOrderModel.DateDescending)
-        {
-            transactions = transactions.OrderByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
-        }
-        else if (queryParameters.Sort == TransactionSortOrderModel.AccountingPeriod)
-        {
-            transactions = transactions.OrderBy(transaction => transaction.AccountingPeriodName).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
-        }
-        else if (queryParameters.Sort == TransactionSortOrderModel.AccountingPeriodDescending)
-        {
-            transactions = transactions.OrderByDescending(transaction => transaction.AccountingPeriodName).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
-        }
-        else if (queryParameters.Sort == TransactionSortOrderModel.Description)
-        {
-            transactions = transactions.OrderBy(transaction => transaction.Description).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
-        }
-        else if (queryParameters.Sort == TransactionSortOrderModel.DescriptionDescending)
-        {
-            transactions = transactions.OrderByDescending(transaction => transaction.Description).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
-        }
-        else if (queryParameters.Sort == TransactionSortOrderModel.Source)
-        {
-            transactions = transactions.OrderBy(GetSource).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
-        }
-        else if (queryParameters.Sort == TransactionSortOrderModel.SourceDescending)
-        {
-            transactions = transactions.OrderByDescending(GetSource).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
-        }
-        else if (queryParameters.Sort == TransactionSortOrderModel.Destination)
-        {
-            transactions = transactions.OrderBy(GetDestination).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
-        }
-        else if (queryParameters.Sort == TransactionSortOrderModel.DestinationDescending)
-        {
-            transactions = transactions.OrderByDescending(GetDestination).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
-        }
-        else if (queryParameters.Sort == TransactionSortOrderModel.Amount)
-        {
-            transactions = transactions.OrderBy(transaction => transaction.Amount).ThenBy(transaction => transaction.Date).ThenBy(transaction => transaction.Sequence).ToList();
-        }
-        else if (queryParameters.Sort == TransactionSortOrderModel.AmountDescending)
-        {
-            transactions = transactions.OrderByDescending(transaction => transaction.Amount).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ToList();
-        }
-
-        return Ok(new CollectionModel<TransactionModel>
-        {
-            Items = transactions.Skip(queryParameters.Offset ?? 0).Take(queryParameters.Limit ?? int.MaxValue).ToList(),
-            TotalCount = transactions.Count,
-        });
     }
 
     /// <summary>
@@ -380,24 +310,6 @@ public sealed class TransactionController(
         await unitOfWork.SaveChangesAsync();
         return NoContent();
     }
-
-    private static string? GetSource(TransactionModel transaction) => transaction switch
-    {
-        SpendingTransactionModel spendingTransaction => spendingTransaction.Source.Account.AccountName,
-        IncomeTransactionModel incomeTransaction => incomeTransaction.Source.Account?.AccountName ?? incomeTransaction.Source.Location,
-        AccountTransactionModel accountTransaction => accountTransaction.Source.Account?.AccountName ?? accountTransaction.Source.Location,
-        FundTransactionModel fundTransaction => fundTransaction.Source.Fund?.FundName,
-        _ => null,
-    };
-
-    private static string? GetDestination(TransactionModel transaction) => transaction switch
-    {
-        SpendingTransactionModel spendingTransaction => string.Join(", ", spendingTransaction.Destinations.Select(destination => destination.Account?.AccountName ?? destination.Location).Distinct(StringComparer.OrdinalIgnoreCase)),
-        IncomeTransactionModel incomeTransaction => string.Join(", ", incomeTransaction.Destinations.Select(destination => destination.Account?.AccountName).Distinct(StringComparer.OrdinalIgnoreCase)),
-        AccountTransactionModel accountTransaction => string.Join(", ", accountTransaction.Destinations.Select(destination => destination.Account?.AccountName ?? destination.Location).Distinct(StringComparer.OrdinalIgnoreCase)),
-        FundTransactionModel fundTransaction => string.Join(", ", fundTransaction.Destinations.Select(destination => destination.Fund?.FundName).Distinct(StringComparer.OrdinalIgnoreCase)),
-        _ => null,
-    };
 
     private static Dictionary<string, string[]> GroupCreateExceptions(CreateTransactionModel model, IEnumerable<Exception> exceptions) =>
         GroupExceptions(exceptions, exception => exception switch
