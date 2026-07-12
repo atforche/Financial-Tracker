@@ -25,9 +25,6 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     /// <summary>
     /// Sequence number for this Account Balance History
     /// </summary>
-    /// <remarks>
-    /// The sequence number is used to order multiple balance history records for the same date.
-    /// </remarks>
     public int Sequence { get; internal set; }
 
     /// <summary>
@@ -62,7 +59,6 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     /// <summary>
     /// Converts this Account Balance History to an Account Balance
     /// </summary>
-    /// <returns></returns>
     public AccountBalance ToAccountBalance() => new(Account, PostedBalance, PendingDebitAmount, PendingCreditAmount);
 
     /// <summary>

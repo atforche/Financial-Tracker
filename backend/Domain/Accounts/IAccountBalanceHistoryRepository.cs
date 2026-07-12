@@ -8,11 +8,6 @@ namespace Domain.Accounts;
 public interface IAccountBalanceHistoryRepository
 {
     /// <summary>
-    /// Gets the next sequence number for the specified Account ID and date
-    /// </summary>
-    int GetNextSequenceForAccountAndDate(AccountId accountId, DateOnly historyDate);
-
-    /// <summary>
     /// Gets the latest Account Balance History entry for the specified Account ID
     /// </summary>
     AccountBalanceHistory? GetLatestForAccount(AccountId accountId);

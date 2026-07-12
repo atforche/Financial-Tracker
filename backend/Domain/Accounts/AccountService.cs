@@ -51,8 +51,6 @@ public class AccountService(
         {
             return false;
         }
-        account = new Account(request.Name, request.Type, request.OnboardedBalance);
-        accountRepository.Add(account);
         if (request.Type.IsTracked())
         {
             Fund? unassignedFund = fundRepository.GetUnassignedFund();
@@ -63,25 +61,22 @@ public class AccountService(
                     exceptions = exceptions.Concat(unassignedFundExceptions);
                     return false;
                 }
-                fundRepository.Add(newUnassignedFund);
                 unassignedFund = newUnassignedFund;
             }
             decimal changeInUnassignedBalance = request.Type.IsDebt() ? -request.OnboardedBalance : request.OnboardedBalance;
             unassignedFund.OnboardedBalance += changeInUnassignedBalance;
         }
+        account = new Account(request.Name, request.Type, request.OnboardedBalance);
+        accountRepository.Add(account);
         return true;
     }
 
     /// <summary>
     /// Attempts to update an existing Account
     /// </summary>
-    /// <param name="account">Account to be updated</param>
-    /// <param name="name">New name for the Account</param>
-    /// <param name="exceptions">List of exceptions encountered during update</param>
-    /// <returns>True if update was successful, false otherwise</returns>
     public bool TryUpdate(Account account, string name, out IEnumerable<Exception> exceptions)
     {
-        if (!ValidateAccountName(name, out exceptions))
+        if (!ValidateAccountName(name, account, out exceptions))
         {
             return false;
         }
@@ -92,9 +87,6 @@ public class AccountService(
     /// <summary>
     /// Attempts to delete an existing Account
     /// </summary>
-    /// <param name="account">Account to be deleted</param>
-    /// <param name="exceptions">List of exceptions encountered during deletion</param>
-    /// <returns>True if deletion was successful, false otherwise</returns>
     public bool TryDelete(Account account, out IEnumerable<Exception> exceptions)
     {
         if (!ValidateDelete(account, out exceptions))
@@ -115,15 +107,15 @@ public class AccountService(
     /// <summary>
     /// Validates the name for this Account
     /// </summary>
-    private bool ValidateAccountName(string name, out IEnumerable<Exception> exceptions)
+    private bool ValidateAccountName(string name, Account? existingAccount, out IEnumerable<Exception> exceptions)
     {
         exceptions = [];
 
-        if (string.IsNullOrEmpty(name))
+        if (string.IsNullOrWhiteSpace(name))
         {
             exceptions = exceptions.Append(new InvalidNameException("Account name cannot be empty"));
         }
-        if (accountRepository.TryGetByName(name, out _))
+        if (accountRepository.TryGetByName(name, out Account? accountWithName) && accountWithName != existingAccount)
         {
             exceptions = exceptions.Append(new InvalidNameException("Account name must be unique"));
         }
@@ -137,7 +129,7 @@ public class AccountService(
     {
         exceptions = [];
 
-        if (!ValidateAccountName(request.Name, out IEnumerable<Exception> nameExceptions))
+        if (!ValidateAccountName(request.Name, null, out IEnumerable<Exception> nameExceptions))
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
@@ -149,6 +141,10 @@ public class AccountService(
         {
             exceptions = exceptions.Append(new InvalidDateException("The provided date opened is not within the provided accounting period."));
         }
+        if (!Enum.IsDefined(request.Type))
+        {
+            exceptions = exceptions.Append(new InvalidAccountTypeException());
+        }
         return !exceptions.Any();
     }
 
@@ -159,7 +155,7 @@ public class AccountService(
     {
         exceptions = [];
 
-        if (!ValidateAccountName(request.Name, out IEnumerable<Exception> nameExceptions))
+        if (!ValidateAccountName(request.Name, null, out IEnumerable<Exception> nameExceptions))
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
@@ -170,6 +166,10 @@ public class AccountService(
         if (request.OnboardedBalance < 0)
         {
             exceptions = exceptions.Append(new InvalidAmountException("Account balance cannot be negative."));
+        }
+        if (!Enum.IsDefined(request.Type))
+        {
+            exceptions = exceptions.Append(new InvalidAccountTypeException());
         }
         if (request.Type.IsTracked())
         {
