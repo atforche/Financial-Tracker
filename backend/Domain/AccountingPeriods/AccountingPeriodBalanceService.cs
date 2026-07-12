@@ -70,8 +70,7 @@ public class AccountingPeriodBalanceService(
         {
             AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
             var balance = new FundBalance(newFund.Id, 0, 0, 0, 0, 0);
-            balanceHistory.FundBalances = balanceHistory.FundBalances.Append(
-                new AccountingPeriodFundBalanceHistory(newFund, accountingPeriod, balance, balance)).ToList();
+            balanceHistory.AddFundBalance(new AccountingPeriodFundBalanceHistory(newFund, accountingPeriod, balance, balance));
             accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
         }
     }
@@ -89,7 +88,7 @@ public class AccountingPeriodBalanceService(
         while (accountingPeriod != null)
         {
             AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
-            balanceHistory.FundBalances = balanceHistory.FundBalances.Where(f => f.Fund.Id != fund.Id).ToList();
+            balanceHistory.RemoveFundBalance(fund.Id);
             accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
         }
     }
@@ -107,8 +106,7 @@ public class AccountingPeriodBalanceService(
         while (accountingPeriod != null)
         {
             AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
-            balanceHistory.AccountBalances = balanceHistory.AccountBalances.Append(
-                new AccountingPeriodAccountBalanceHistory(newAccount, accountingPeriod, 0, 0)).ToList();
+            balanceHistory.AddAccountBalance(new AccountingPeriodAccountBalanceHistory(newAccount, accountingPeriod, 0, 0));
             accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
         }
     }
@@ -126,7 +124,7 @@ public class AccountingPeriodBalanceService(
         while (accountingPeriod != null)
         {
             AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
-            balanceHistory.AccountBalances = balanceHistory.AccountBalances.Where(a => a.Account.Id != account.Id).ToList();
+            balanceHistory.RemoveAccountBalance(account.Id);
             accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
         }
     }

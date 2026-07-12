@@ -23,12 +23,16 @@ public static class ServiceManager
     {
         _ = serviceCollection.AddScoped<AccountingPeriodService>();
         _ = serviceCollection.AddScoped<AccountingPeriodBalanceService>();
+
         _ = serviceCollection.AddScoped<AccountService>();
         _ = serviceCollection.AddScoped<AccountBalanceService>();
+
         _ = serviceCollection.AddScoped<FundService>();
         _ = serviceCollection.AddScoped<FundBalanceService>();
+
         _ = serviceCollection.AddScoped<AssignmentGoalService>();
         _ = serviceCollection.AddScoped<SpendingGoalService>();
+
         _ = serviceCollection.AddScoped<SpendingTransactionService>();
         _ = serviceCollection.AddScoped<IncomeTransactionService>();
         _ = serviceCollection.AddScoped<AccountTransactionService>();

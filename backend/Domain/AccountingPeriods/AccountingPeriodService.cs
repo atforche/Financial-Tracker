@@ -43,104 +43,9 @@ public class AccountingPeriodService(
         AccountingPeriod? previousAccountingPeriod = accountingPeriodRepository.GetPreviousAccountingPeriod(accountingPeriod.Id);
         if (previousAccountingPeriod == null)
         {
-            if (fundRepository.GetUnassignedFund() == null)
-            {
-                if (!fundService.TryCreateUnassignedFund(accountingPeriod, out Fund? unassignedFund, out IEnumerable<Exception> unassignedFundExceptions))
-                {
-                    exceptions = exceptions.Concat(unassignedFundExceptions);
-                    return false;
-                }
-                fundRepository.Add(unassignedFund);
-            }
-
-            foreach (Fund fund in fundRepository.GetAll().Where(fund => !fund.IsUnassignedFund && fund.IsOnboarded))
-            {
-                AssignmentGoal? assignmentGoalPlaceholder = assignmentGoalRepository.GetByFundAndAccountingPeriod(fund.Id, null);
-                SpendingGoal? spendingGoalPlaceholder = spendingGoalRepository.GetByFundAndAccountingPeriod(fund.Id, null);
-                if (assignmentGoalPlaceholder == null || spendingGoalPlaceholder == null)
-                {
-                    exceptions = exceptions.Append(new InvalidFundException($"The onboarded fund '{fund.Name}' is missing placeholder goals."));
-                    return false;
-                }
-
-                var createAssignmentGoalRequest = new CreateAssignmentGoalRequest
-                {
-                    Fund = fund,
-                    AccountingPeriod = accountingPeriod,
-                    AssignmentGoalType = assignmentGoalPlaceholder.AssignmentGoalType,
-                    GoalAmount = assignmentGoalPlaceholder.GoalAmount,
-                };
-                if (!assignmentGoalService.TryCreate(
-                    createAssignmentGoalRequest,
-                    out AssignmentGoal? createdAssignmentGoal,
-                    out IEnumerable<Exception> createdAssignmentGoalExceptions))
-                {
-                    exceptions = exceptions.Concat(createdAssignmentGoalExceptions);
-                    return false;
-                }
-                assignmentGoalRepository.Add(createdAssignmentGoal);
-
-                var createSpendingGoalRequest = new CreateSpendingGoalRequest
-                {
-                    Fund = fund,
-                    AccountingPeriod = accountingPeriod,
-                    SpendingGoalType = spendingGoalPlaceholder.SpendingGoalType,
-                };
-                if (!spendingGoalService.TryCreate(
-                    createSpendingGoalRequest,
-                    out SpendingGoal? createdSpendingGoal,
-                    out IEnumerable<Exception> createdSpendingGoalExceptions))
-                {
-                    exceptions = exceptions.Concat(createdSpendingGoalExceptions);
-                    return false;
-                }
-                spendingGoalRepository.Add(createdSpendingGoal);
-            }
+            return TryCreateFirstAccountingPeriod(accountingPeriod, out exceptions);
         }
-        else
-        {
-            // Automatically carry over all fund assignment goals from the previous accounting period
-            foreach (AssignmentGoal assignmentGoal in assignmentGoalRepository.GetAllByAccountingPeriod(previousAccountingPeriod.Id))
-            {
-                var createAssignmentGoalRequest = new CreateAssignmentGoalRequest
-                {
-                    Fund = assignmentGoal.Fund,
-                    AccountingPeriod = accountingPeriod,
-                    AssignmentGoalType = assignmentGoal.AssignmentGoalType,
-                    GoalAmount = assignmentGoal.TotalAmountToAssign,
-                };
-                if (!assignmentGoalService.TryCreate(
-                    createAssignmentGoalRequest,
-                    out AssignmentGoal? createdAssignmentGoal,
-                    out IEnumerable<Exception> createdAssignmentGoalExceptions))
-                {
-                    exceptions = exceptions.Concat(createdAssignmentGoalExceptions);
-                    return false;
-                }
-                assignmentGoalRepository.Add(createdAssignmentGoal);
-            }
-
-            // Automatically carry over all fund spending goals from the previous accounting period
-            foreach (SpendingGoal spendingGoal in spendingGoalRepository.GetAllByAccountingPeriod(previousAccountingPeriod.Id))
-            {
-                var createSpendingGoalRequest = new CreateSpendingGoalRequest
-                {
-                    Fund = spendingGoal.Fund,
-                    AccountingPeriod = accountingPeriod,
-                    SpendingGoalType = spendingGoal.SpendingGoalType,
-                };
-                if (!spendingGoalService.TryCreate(
-                    createSpendingGoalRequest,
-                    out SpendingGoal? createdSpendingGoal,
-                    out IEnumerable<Exception> createdSpendingGoalExceptions))
-                {
-                    exceptions = exceptions.Concat(createdSpendingGoalExceptions);
-                    return false;
-                }
-                spendingGoalRepository.Add(createdSpendingGoal);
-            }
-        }
-        return true;
+        return TryCreateSubsequentAccountingPeriod(accountingPeriod, previousAccountingPeriod, out exceptions);
     }
 
     /// <summary>
@@ -292,5 +197,121 @@ public class AccountingPeriodService(
             exceptions = exceptions.Append(new UnableToDeleteException("This Accounting Period has accounts that were added during it."));
         }
         return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Attempts to create the first Accounting Period
+    /// </summary>
+    private bool TryCreateFirstAccountingPeriod(AccountingPeriod accountingPeriod, out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        if (fundRepository.GetUnassignedFund() == null)
+        {
+            if (!fundService.TryCreateUnassignedFund(accountingPeriod, out Fund? unassignedFund, out IEnumerable<Exception> unassignedFundExceptions))
+            {
+                exceptions = exceptions.Concat(unassignedFundExceptions);
+                return false;
+            }
+            fundRepository.Add(unassignedFund);
+        }
+
+        foreach (Fund fund in fundRepository.GetAll().Where(fund => !fund.IsUnassignedFund && fund.IsOnboarded))
+        {
+            AssignmentGoal? assignmentGoalPlaceholder = assignmentGoalRepository.GetByFundAndAccountingPeriod(fund.Id, null);
+            SpendingGoal? spendingGoalPlaceholder = spendingGoalRepository.GetByFundAndAccountingPeriod(fund.Id, null);
+            if (assignmentGoalPlaceholder == null || spendingGoalPlaceholder == null)
+            {
+                exceptions = exceptions.Append(new InvalidFundException($"The onboarded fund '{fund.Name}' is missing placeholder goals."));
+                return false;
+            }
+
+            var createAssignmentGoalRequest = new CreateAssignmentGoalRequest
+            {
+                Fund = fund,
+                AccountingPeriod = accountingPeriod,
+                AssignmentGoalType = assignmentGoalPlaceholder.AssignmentGoalType,
+                GoalAmount = assignmentGoalPlaceholder.GoalAmount,
+            };
+            if (!assignmentGoalService.TryCreate(
+                createAssignmentGoalRequest,
+                out AssignmentGoal? createdAssignmentGoal,
+                out IEnumerable<Exception> createdAssignmentGoalExceptions))
+            {
+                exceptions = exceptions.Concat(createdAssignmentGoalExceptions);
+                return false;
+            }
+            assignmentGoalRepository.Add(createdAssignmentGoal);
+
+            var createSpendingGoalRequest = new CreateSpendingGoalRequest
+            {
+                Fund = fund,
+                AccountingPeriod = accountingPeriod,
+                SpendingGoalType = spendingGoalPlaceholder.SpendingGoalType,
+            };
+            if (!spendingGoalService.TryCreate(
+                createSpendingGoalRequest,
+                out SpendingGoal? createdSpendingGoal,
+                out IEnumerable<Exception> createdSpendingGoalExceptions))
+            {
+                exceptions = exceptions.Concat(createdSpendingGoalExceptions);
+                return false;
+            }
+            spendingGoalRepository.Add(createdSpendingGoal);
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to create a subsequent Accounting Period
+    /// </summary>
+    private bool TryCreateSubsequentAccountingPeriod(
+        AccountingPeriod accountingPeriod,
+        AccountingPeriod previousAccountingPeriod,
+        out IEnumerable<Exception> exceptions)
+    {
+        exceptions = [];
+
+        // Automatically carry over all fund assignment goals from the previous accounting period
+        foreach (AssignmentGoal assignmentGoal in assignmentGoalRepository.GetAllByAccountingPeriod(previousAccountingPeriod.Id))
+        {
+            var createAssignmentGoalRequest = new CreateAssignmentGoalRequest
+            {
+                Fund = assignmentGoal.Fund,
+                AccountingPeriod = accountingPeriod,
+                AssignmentGoalType = assignmentGoal.AssignmentGoalType,
+                GoalAmount = assignmentGoal.TotalAmountToAssign,
+            };
+            if (!assignmentGoalService.TryCreate(
+                createAssignmentGoalRequest,
+                out AssignmentGoal? createdAssignmentGoal,
+                out IEnumerable<Exception> createdAssignmentGoalExceptions))
+            {
+                exceptions = exceptions.Concat(createdAssignmentGoalExceptions);
+                return false;
+            }
+            assignmentGoalRepository.Add(createdAssignmentGoal);
+        }
+
+        // Automatically carry over all fund spending goals from the previous accounting period
+        foreach (SpendingGoal spendingGoal in spendingGoalRepository.GetAllByAccountingPeriod(previousAccountingPeriod.Id))
+        {
+            var createSpendingGoalRequest = new CreateSpendingGoalRequest
+            {
+                Fund = spendingGoal.Fund,
+                AccountingPeriod = accountingPeriod,
+                SpendingGoalType = spendingGoal.SpendingGoalType,
+            };
+            if (!spendingGoalService.TryCreate(
+                createSpendingGoalRequest,
+                out SpendingGoal? createdSpendingGoal,
+                out IEnumerable<Exception> createdSpendingGoalExceptions))
+            {
+                exceptions = exceptions.Concat(createdSpendingGoalExceptions);
+                return false;
+            }
+            spendingGoalRepository.Add(createdSpendingGoal);
+        }
+        return true;
     }
 }
