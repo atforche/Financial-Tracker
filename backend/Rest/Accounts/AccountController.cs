@@ -1,7 +1,7 @@
 using Data;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Exceptions;
+using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Accounts;
@@ -136,15 +136,11 @@ public sealed class AccountController(
                 DateOpened = createAccountModel.DateOpened
             },
             out Account? newAccount,
-            out IEnumerable<Exception> exceptions))
+            out IEnumerable<ValidationError> validationErrors))
         {
-            errors = exceptions.GroupBy(e => e switch
-            {
-                InvalidNameException => nameof(createAccountModel.Name),
-                InvalidAccountingPeriodException => nameof(createAccountModel.OpeningAccountingPeriodId),
-                InvalidDateException => nameof(createAccountModel.DateOpened),
-                _ => string.Empty
-            }).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray());
+            errors = GroupValidationErrors(validationErrors, path => path == nameof(CreateAccountRequest.OpeningAccountingPeriod)
+                ? nameof(CreateAccountModel.OpeningAccountingPeriodId)
+                : path);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to create Account.",
@@ -186,16 +182,9 @@ public sealed class AccountController(
                 OnboardedBalance = onboardAccountModel.OnboardedBalance
             },
             out Account? newAccount,
-            out IEnumerable<Exception> exceptions))
+            out IEnumerable<ValidationError> validationErrors))
         {
-            errors = exceptions.GroupBy(exception => exception switch
-            {
-                InvalidNameException => nameof(onboardAccountModel.Name),
-                InvalidAmountException => nameof(onboardAccountModel.OnboardedBalance),
-                InvalidAccountingPeriodException => string.Empty,
-                InvalidFundException => string.Empty,
-                _ => string.Empty
-            }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray());
+            errors = GroupValidationErrors(validationErrors);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to onboard Account.",
@@ -226,13 +215,12 @@ public sealed class AccountController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!accountService.TryUpdate(accountToUpdate, updateAccountModel.Name, out IEnumerable<Exception> exceptions))
+        if (!accountService.TryUpdate(
+                accountToUpdate,
+                new UpdateAccountRequest { Name = updateAccountModel.Name },
+                out IEnumerable<ValidationError> validationErrors))
         {
-            var errors = exceptions.GroupBy(e => e switch
-            {
-                InvalidNameException => nameof(updateAccountModel.Name),
-                _ => string.Empty
-            }).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray());
+            Dictionary<string, string[]> errors = GroupValidationErrors(validationErrors);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to update Account.",
@@ -262,18 +250,23 @@ public sealed class AccountController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!accountService.TryDelete(accountToDelete, out IEnumerable<Exception> exceptions))
+        if (!accountService.TryDelete(accountToDelete, out IEnumerable<ValidationError> validationErrors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to delete Account.",
-                Errors = {
-                    { string.Empty, exceptions.Select(e => e.Message).ToArray() }
-                },
+                Errors = GroupValidationErrors(validationErrors),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
         await unitOfWork.SaveChangesAsync();
         return Ok();
     }
+
+    private static Dictionary<string, string[]> GroupValidationErrors(
+        IEnumerable<ValidationError> validationErrors,
+        Func<string, string>? resolvePath = null) =>
+        validationErrors
+            .GroupBy(error => resolvePath?.Invoke(error.Path.Value) ?? error.Path.Value)
+            .ToDictionary(grouping => grouping.Key, grouping => grouping.Select(error => error.Message).ToArray());
 }

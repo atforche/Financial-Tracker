@@ -1,8 +1,8 @@
 using Data;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Exceptions;
 using Domain.Transactions;
+using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Transactions;
@@ -130,9 +130,9 @@ public sealed class TransactionController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!transactionDispatcherService.TryCreate(createRequest, out Transaction? newTransaction, out IEnumerable<Exception> exceptions))
+        if (!transactionDispatcherService.TryCreate(createRequest, out Transaction? newTransaction, out IEnumerable<ValidationError> exceptions))
         {
-            MergeErrors(errors, GroupCreateExceptions(createTransactionModel, exceptions));
+            MergeErrors(errors, GroupValidationErrors(exceptions));
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to create Transaction.",
@@ -176,9 +176,9 @@ public sealed class TransactionController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!transactionDispatcherService.TryUpdate(transaction, updateRequest, out IEnumerable<Exception> exceptions))
+        if (!transactionDispatcherService.TryUpdate(transaction, updateRequest, out IEnumerable<ValidationError> exceptions))
         {
-            MergeErrors(errors, GroupUpdateExceptions(updateTransactionModel, exceptions));
+            MergeErrors(errors, GroupValidationErrors(exceptions));
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to update Transaction.",
@@ -218,16 +218,14 @@ public sealed class TransactionController(
         }
         if (!transactionDispatcherService.TryPost(
                 transaction,
-                account.Id,
-                postTransactionModel.Date,
-                out IEnumerable<Exception> exceptions))
+                new PostTransactionRequest
+                {
+                    AccountId = account.Id,
+                    PostedDate = postTransactionModel.Date,
+                },
+                out IEnumerable<ValidationError> exceptions))
         {
-            errors = exceptions.GroupBy(exception => exception switch
-            {
-                InvalidDateException => nameof(postTransactionModel.Date),
-                InvalidAccountException => nameof(postTransactionModel.AccountId),
-                _ => string.Empty
-            }).ToDictionary(group => group.Key, group => group.Select(exception => exception.Message).ToArray());
+            errors = GroupValidationErrors(exceptions);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to post Transaction.",
@@ -261,9 +259,9 @@ public sealed class TransactionController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!transactionDispatcherService.TryUnpost(transaction, out IEnumerable<Exception> exceptions))
+        if (!transactionDispatcherService.TryUnpost(transaction, out IEnumerable<ValidationError> exceptions))
         {
-            errors.Add("", exceptions.Select(exception => exception.Message).ToArray());
+            MergeErrors(errors, GroupValidationErrors(exceptions));
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to unpost Transaction.",
@@ -296,14 +294,12 @@ public sealed class TransactionController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!transactionDispatcherService.TryDelete(transaction, out IEnumerable<Exception> exceptions))
+        if (!transactionDispatcherService.TryDelete(transaction, out IEnumerable<ValidationError> exceptions))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to delete Transaction.",
-                Errors = {
-                    { string.Empty, exceptions.Select(e => e.Message).ToArray() }
-                },
+                Errors = GroupValidationErrors(exceptions),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
@@ -311,49 +307,16 @@ public sealed class TransactionController(
         return NoContent();
     }
 
-    private static Dictionary<string, string[]> GroupCreateExceptions(CreateTransactionModel model, IEnumerable<Exception> exceptions) =>
-        GroupExceptions(exceptions, exception => exception switch
-        {
-            InvalidAccountingPeriodException => nameof(CreateTransactionModel.AccountingPeriodId),
-            InvalidDateException => nameof(CreateTransactionModel.Date),
-            InvalidAmountException => nameof(CreateTransactionModel.Amount),
-            InvalidFundAmountException => model switch
+    private static Dictionary<string, string[]> GroupValidationErrors(IEnumerable<ValidationError> errors) =>
+        errors
+            .GroupBy(error => error.Path.Value switch
             {
-                CreateSpendingTransactionModel => nameof(CreateSpendingTransactionModel.Destinations),
-                CreateIncomeTransactionModel => nameof(CreateIncomeTransactionModel.Destinations),
-                _ => string.Empty
-            },
-            InvalidFundException invalidFundException when invalidFundException.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase) => nameof(CreateFundTransactionModel.Source),
-            InvalidFundException invalidFundException when invalidFundException.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase) => nameof(CreateFundTransactionModel.Destinations),
-            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("source", StringComparison.InvariantCultureIgnoreCase) => "SourceAccountId",
-            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("destination", StringComparison.InvariantCultureIgnoreCase) => "IncomeDestinations",
-            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase) => "DebitAccount",
-            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase) => "CreditAccount",
-            _ => string.Empty
-        });
-
-    private static Dictionary<string, string[]> GroupUpdateExceptions(UpdateTransactionModel model, IEnumerable<Exception> exceptions) =>
-        GroupExceptions(exceptions, exception => exception switch
-        {
-            InvalidDateException => nameof(UpdateTransactionModel.Date),
-            InvalidAmountException => nameof(UpdateTransactionModel.Amount),
-            InvalidFundAmountException => model switch
-            {
-                UpdateSpendingTransactionModel => nameof(UpdateSpendingTransactionModel.FundAssignments),
-                UpdateIncomeTransactionModel => nameof(UpdateIncomeTransactionModel.IncomeDestinations),
-                _ => string.Empty
-            },
-            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("source", StringComparison.InvariantCultureIgnoreCase) => "SourceAccountId",
-            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("destination", StringComparison.InvariantCultureIgnoreCase) => "IncomeDestinations",
-            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("debit", StringComparison.InvariantCultureIgnoreCase) => "DebitAccount",
-            InvalidAccountException invalidAccountException when invalidAccountException.Message.Contains("credit", StringComparison.InvariantCultureIgnoreCase) => "CreditAccount",
-            _ => string.Empty
-        });
-
-    private static Dictionary<string, string[]> GroupExceptions(IEnumerable<Exception> exceptions, Func<Exception, string> keySelector) =>
-        exceptions
-            .GroupBy(keySelector)
-            .ToDictionary(group => group.Key, group => group.Select(exception => exception.Message).ToArray());
+                nameof(CreateTransactionRequest.TransactionDate) => nameof(CreateTransactionModel.Date),
+                nameof(PostTransactionRequest.PostedDate) => nameof(PostTransactionModel.Date),
+                nameof(PostTransactionRequest.AccountId) => nameof(PostTransactionModel.AccountId),
+                _ => error.Path.Value
+            })
+            .ToDictionary(group => group.Key, group => group.Select(error => error.Message).ToArray());
 
     private static void MergeErrors(Dictionary<string, string[]> target, Dictionary<string, string[]> source)
     {

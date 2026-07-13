@@ -1,7 +1,7 @@
 using Data;
 using Data.AccountingPeriods;
 using Domain.AccountingPeriods;
-using Domain.Exceptions;
+using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.AccountingPeriods;
@@ -75,19 +75,19 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> CreateAsync(CreateAccountingPeriodModel createAccountingPeriodModel)
     {
-        if (!accountingPeriodService.TryCreate(createAccountingPeriodModel.Year, createAccountingPeriodModel.Month,
-                out AccountingPeriod? newAccountingPeriod, out IEnumerable<Exception> exceptions))
+        if (!accountingPeriodService.TryCreate(
+                new CreateAccountingPeriodRequest
+                {
+                    Year = createAccountingPeriodModel.Year,
+                    Month = createAccountingPeriodModel.Month,
+                },
+                out AccountingPeriod? newAccountingPeriod,
+                out IEnumerable<ValidationError> validationErrors))
         {
-            var serviceErrors = exceptions.GroupBy(exception => exception switch
-            {
-                InvalidYearException => nameof(createAccountingPeriodModel.Year),
-                InvalidMonthException => nameof(createAccountingPeriodModel.Month),
-                _ => string.Empty
-            }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray());
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to create Accounting Period.",
-                Errors = serviceErrors,
+                Errors = GroupValidationErrors(validationErrors),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
@@ -120,15 +120,12 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!accountingPeriodService.TryClose(accountingPeriod, out IEnumerable<Exception> exceptions))
+        if (!accountingPeriodService.TryClose(accountingPeriod, out IEnumerable<ValidationError> validationErrors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to close Accounting Period.",
-                Errors = new Dictionary<string, string[]>
-                {
-                    { string.Empty, exceptions.Select(exception => exception.Message).ToArray() }
-                },
+                Errors = GroupValidationErrors(validationErrors),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
@@ -158,15 +155,12 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!accountingPeriodService.TryReopen(accountingPeriod, out IEnumerable<Exception> exceptions))
+        if (!accountingPeriodService.TryReopen(accountingPeriod, out IEnumerable<ValidationError> validationErrors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to reopen Accounting Period.",
-                Errors = new Dictionary<string, string[]>
-                {
-                    { string.Empty, exceptions.Select(exception => exception.Message).ToArray() }
-                },
+                Errors = GroupValidationErrors(validationErrors),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
@@ -196,19 +190,21 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!accountingPeriodService.TryDelete(accountingPeriod, out IEnumerable<Exception> exceptions))
+        if (!accountingPeriodService.TryDelete(accountingPeriod, out IEnumerable<ValidationError> validationErrors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to delete Accounting Period.",
-                Errors = new Dictionary<string, string[]>
-                {
-                    { string.Empty, exceptions.Select(exception => exception.Message).ToArray() }
-                },
+                Errors = GroupValidationErrors(validationErrors),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
         await unitOfWork.SaveChangesAsync();
         return Ok();
     }
+
+    private static Dictionary<string, string[]> GroupValidationErrors(IEnumerable<ValidationError> validationErrors) =>
+        validationErrors
+            .GroupBy(error => error.Path.Value)
+            .ToDictionary(grouping => grouping.Key, grouping => grouping.Select(error => error.Message).ToArray());
 }

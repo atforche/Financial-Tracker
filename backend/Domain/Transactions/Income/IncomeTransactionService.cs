@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.Validation;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Exceptions;
 using Domain.Funds;
 
 namespace Domain.Transactions.Income;
@@ -29,11 +29,11 @@ public class IncomeTransactionService(
     public bool TryCreate(
         CreateIncomeTransactionRequest request,
         [NotNullWhen(true)] out IncomeTransaction? transaction,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
         transaction = null;
 
-        if (!ValidateCreate(request, GetAccounts(request), out exceptions))
+        if (!ValidateCreate(request, out exceptions))
         {
             return false;
         }
@@ -49,9 +49,9 @@ public class IncomeTransactionService(
     public bool TryUpdate(
         IncomeTransaction transaction,
         UpdateIncomeTransactionRequest request,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
-        if (!ValidateUpdate(transaction, request, GetAccounts(transaction, request), out exceptions))
+        if (!ValidateUpdate(transaction, request, out exceptions))
         {
             return false;
         }
@@ -71,23 +71,22 @@ public class IncomeTransactionService(
     /// </summary>
     public bool TryPost(
         IncomeTransaction transaction,
-        AccountId accountId,
-        DateOnly postedDate,
-        out IEnumerable<Exception> exceptions)
+        PostTransactionRequest request,
+        out IEnumerable<ValidationError> exceptions)
     {
-        if (!ValidatePosting(transaction, accountId, postedDate, out exceptions))
+        if (!ValidatePosting(transaction, request, out exceptions))
         {
             return false;
         }
-        transaction.SetPostedDate(accountId, postedDate);
-        PostTransaction(transaction, accountId);
+        transaction.SetPostedDate(request.AccountId, request.PostedDate);
+        PostTransaction(transaction, request.AccountId);
         return true;
     }
 
     /// <summary>
     /// Attempts to unpost an existing Income Transaction
     /// </summary>
-    public bool TryUnpost(IncomeTransaction transaction, out IEnumerable<Exception> exceptions)
+    public bool TryUnpost(IncomeTransaction transaction, out IEnumerable<ValidationError> exceptions)
     {
         if (!ValidateUnposting(transaction, out exceptions))
         {
@@ -101,7 +100,7 @@ public class IncomeTransactionService(
     /// <summary>
     /// Attempts to delete an existing Income Transaction
     /// </summary>
-    public bool TryDelete(IncomeTransaction transaction, out IEnumerable<Exception> exceptions)
+    public bool TryDelete(IncomeTransaction transaction, out IEnumerable<ValidationError> exceptions)
     {
         if (!ValidateDelete(transaction, out exceptions))
         {
@@ -114,30 +113,60 @@ public class IncomeTransactionService(
     /// <summary>
     /// Validates a request to create a new Income Transaction
     /// </summary>
-    protected bool ValidateCreate(
-        CreateIncomeTransactionRequest request,
-        IReadOnlyCollection<Account> accounts,
-        out IEnumerable<Exception> exceptions)
+    protected bool ValidateCreate(CreateIncomeTransactionRequest request, out IEnumerable<ValidationError> exceptions)
     {
         _ = ValidateCreate(
             request,
-            accounts,
-            GetFunds(request),
+            request.Source.Account,
+            new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Source)).Append(nameof(CreateIncomeTransactionRequest.Source.Account)),
+            request.Destinations.Select(destination => destination.Account).ToList(),
+            (i) => new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Destinations), i),
+            [],
+            (i) => ValidationErrorPath.Empty,
+            request.Destinations.Select(destination => destination.FundAssignments.Select(fundAssignment => fundRepository.GetById(fundAssignment.FundId)).ToList()).ToList(),
+            (i, j) => new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Destinations), i).AppendWithIndex(nameof(IncomeTransactionDestination.FundAssignments), j),
             out exceptions);
 
-        if (request.Source.PostedDate.HasValue || request.Destinations.Any(destination => destination.PostedDate.HasValue))
+        if (request.Source.PostedDate.HasValue)
         {
-            exceptions = exceptions.Append(new InvalidDateException("Posted dates cannot be set directly when creating an income transaction"));
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Source))
+                    .Append(nameof(IncomeTransactionSource.PostedDate)),
+                "Posted dates cannot be set directly when creating an income transaction"));
         }
-        if (!ValidateAccount(request.Source, request.Destinations, out IEnumerable<Exception> accountExceptions))
+        foreach ((int index, IncomeTransactionDestination destination) in request.Destinations.Index())
+        {
+            if (destination.PostedDate.HasValue)
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Destinations), index)
+                        .Append(nameof(IncomeTransactionDestination.PostedDate)),
+                    "Posted dates cannot be set directly when creating an income transaction"));
+            }
+        }
+        if (!ValidateAccount(
+                request.Source,
+                new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Source)),
+                request.Destinations,
+                (i) => new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Destinations), i),
+                out IEnumerable<ValidationError> accountExceptions))
         {
             exceptions = exceptions.Concat(accountExceptions);
         }
-        if (!ValidateIncomeStructure(request.Amount, request.Source, request.Destinations, out IEnumerable<Exception> structureExceptions))
+        if (!ValidateIncomeStructure(
+                request.Amount,
+                request.Source,
+                new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Source)),
+                request.Destinations,
+                (i) => new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Destinations), i),
+                out IEnumerable<ValidationError> structureExceptions))
         {
             exceptions = exceptions.Concat(structureExceptions);
         }
-        if (!ValidateDestinationFundAssignments(request.Destinations, out IEnumerable<Exception> fundAssignmentExceptions))
+        if (!ValidateDestinationFundAssignments(
+                request.Destinations,
+                (i) => new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Destinations), i),
+                out IEnumerable<ValidationError> fundAssignmentExceptions))
         {
             exceptions = exceptions.Concat(fundAssignmentExceptions);
         }
@@ -150,28 +179,63 @@ public class IncomeTransactionService(
     protected bool ValidateUpdate(
         IncomeTransaction transaction,
         UpdateIncomeTransactionRequest request,
-        IReadOnlyCollection<Account> accounts,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
-        _ = ValidateUpdate(transaction, request, accounts, GetFunds(request), out exceptions);
+        _ = ValidateUpdate(transaction, request,
+            request.Source.Account,
+            new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Source)).Append(nameof(CreateIncomeTransactionRequest.Source.Account)),
+            request.Destinations.Select(destination => destination.Account).ToList(),
+            (i) => new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Destinations), i),
+            [],
+            (i) => ValidationErrorPath.Empty,
+            request.Destinations.Select(destination => destination.FundAssignments.Select(fundAssignment => fundRepository.GetById(fundAssignment.FundId)).ToList()).ToList(),
+            (i, j) => new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Destinations), i).AppendWithIndex(nameof(IncomeTransactionDestination.FundAssignments), j),
+            out exceptions);
 
         if (transaction.Source.PostedDate.HasValue || transaction.Destinations.Any(destination => destination.PostedDate.HasValue))
         {
-            exceptions = exceptions.Append(new UnableToUpdateException("Transaction has already been posted and cannot be updated"));
+            exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "Transaction has already been posted and cannot be updated"));
         }
-        if (request.Source.PostedDate.HasValue || request.Destinations.Any(destination => destination.PostedDate.HasValue))
+        if (request.Source.PostedDate.HasValue)
         {
-            exceptions = exceptions.Append(new UnableToUpdateException("Posted dates cannot be set directly when updating an income transaction"));
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(UpdateIncomeTransactionRequest.Source))
+                    .Append(nameof(IncomeTransactionSource.PostedDate)),
+                "Posted dates cannot be set directly when updating an income transaction"));
         }
-        if (!ValidateAccount(request.Source, request.Destinations, out IEnumerable<Exception> accountExceptions))
+        foreach ((int index, IncomeTransactionDestination destination) in request.Destinations.Index())
+        {
+            if (destination.PostedDate.HasValue)
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    new ValidationErrorPath(nameof(UpdateIncomeTransactionRequest.Destinations), index)
+                        .Append(nameof(IncomeTransactionDestination.PostedDate)),
+                    "Posted dates cannot be set directly when updating an income transaction"));
+            }
+        }
+        if (!ValidateAccount(
+                request.Source,
+                new ValidationErrorPath(nameof(UpdateIncomeTransactionRequest.Source)),
+                request.Destinations,
+                (i) => new ValidationErrorPath(nameof(UpdateIncomeTransactionRequest.Destinations), i),
+                out IEnumerable<ValidationError> accountExceptions))
         {
             exceptions = exceptions.Concat(accountExceptions);
         }
-        if (!ValidateIncomeStructure(request.Amount, request.Source, request.Destinations, out IEnumerable<Exception> structureExceptions))
+        if (!ValidateIncomeStructure(
+                request.Amount,
+                request.Source,
+                new ValidationErrorPath(nameof(UpdateIncomeTransactionRequest.Source)),
+                request.Destinations,
+                (i) => new ValidationErrorPath(nameof(UpdateIncomeTransactionRequest.Destinations), i),
+                out IEnumerable<ValidationError> structureExceptions))
         {
             exceptions = exceptions.Concat(structureExceptions);
         }
-        if (!ValidateDestinationFundAssignments(request.Destinations, out IEnumerable<Exception> fundAssignmentExceptions))
+        if (!ValidateDestinationFundAssignments(
+                request.Destinations,
+                (i) => new ValidationErrorPath(nameof(UpdateIncomeTransactionRequest.Destinations), i),
+                out IEnumerable<ValidationError> fundAssignmentExceptions))
         {
             exceptions = exceptions.Concat(fundAssignmentExceptions);
         }
@@ -183,34 +247,45 @@ public class IncomeTransactionService(
     /// </summary>
     private static bool ValidateAccount(
         IncomeTransactionSource source,
+        ValidationErrorPath sourcePath,
         IReadOnlyCollection<IncomeTransactionDestination> destinations,
-        out IEnumerable<Exception> exceptions)
+        Func<int, ValidationErrorPath> destinationsPathBuilder,
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         if (source.Account != null && source.Account.Type.IsTracked())
         {
-            exceptions = exceptions.Append(new InvalidAccountException("Income Transactions cannot source money from a tracked account"));
+            exceptions = exceptions.Append(new ValidationError(sourcePath.Append(nameof(IncomeTransactionSource.Account)), "Income Transactions cannot source money from a tracked account"));
         }
         if (source.Account == null && string.IsNullOrWhiteSpace(source.Location))
         {
-            exceptions = exceptions.Append(new InvalidAccountException("Income Transactions must have either a Source Account or a Source Location"));
+            exceptions = exceptions.Append(new ValidationError(sourcePath.Append(nameof(IncomeTransactionSource.Account)), "Income Transactions must have either a Source Account or a Source Location"));
+            exceptions = exceptions.Append(new ValidationError(sourcePath.Append(nameof(IncomeTransactionSource.Location)), "Income Transactions must have either a Source Account or a Source Location"));
         }
         if (source.Account != null && !string.IsNullOrWhiteSpace(source.Location))
         {
-            exceptions = exceptions.Append(new InvalidAccountException("Income Transactions cannot have both a Source Account and a Source Location"));
+            exceptions = exceptions.Append(new ValidationError(sourcePath.Append(nameof(IncomeTransactionSource.Account)), "Income Transactions cannot have both a Source Account and a Source Location"));
+            exceptions = exceptions.Append(new ValidationError(sourcePath.Append(nameof(IncomeTransactionSource.Location)), "Income Transactions cannot have both a Source Account and a Source Location"));
         }
         if (destinations.Count == 0)
         {
-            exceptions = exceptions.Append(new InvalidAccountException("Income Transactions must have at least one income destination"));
+            exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(0), "Income Transactions must have at least one income destination"));
         }
-        if (destinations.All(destination => !destination.Account.Type.IsTracked()))
+        foreach ((int index, IncomeTransactionDestination destination) in destinations.Index())
         {
-            exceptions = exceptions.Append(new InvalidAccountException("Income Transactions must deposit into at least one tracked account"));
-        }
-        if (source.Account != null && destinations.Any(destination => destination.Account.Id == source.Account.Id))
-        {
-            exceptions = exceptions.Append(new InvalidAccountException("Source and destination accounts cannot be the same"));
+            if (!destination.Account.Type.IsTracked())
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    destinationsPathBuilder(index).Append(nameof(IncomeTransactionDestination.Account)),
+                    "Income Transactions must deposit into a tracked account"));
+            }
+            if (source.Account != null && destination.Account?.Id == source.Account.Id)
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    destinationsPathBuilder(index).Append(nameof(IncomeTransactionDestination.Account)),
+                    "Source and destination accounts cannot be the same"));
+            }
         }
         return !exceptions.Any();
     }
@@ -218,91 +293,86 @@ public class IncomeTransactionService(
     private static bool ValidateIncomeStructure(
         decimal amount,
         IncomeTransactionSource source,
+        ValidationErrorPath sourcePath,
         IReadOnlyCollection<IncomeTransactionDestination> destinations,
-        out IEnumerable<Exception> exceptions)
+        Func<int, ValidationErrorPath> destinationsPathBuilder,
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         if (source.IncomeLines.Count == 0)
         {
-            exceptions = exceptions.Append(new InvalidAmountException("Income Transactions must have at least one income line"));
+            exceptions = exceptions.Append(new ValidationError(sourcePath, "Income Transactions must have at least one income line"));
         }
         if (destinations.Count == 0)
         {
-            exceptions = exceptions.Append(new InvalidAmountException("Income Transactions must have at least one income destination"));
+            exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(0), "Income Transactions must have at least one income destination"));
         }
-        if (source.IncomeLines.Any(line => line.Amount <= 0))
+        foreach ((int index, IncomeLine incomeLine) in source.IncomeLines.Index())
         {
-            exceptions = exceptions.Append(new InvalidAmountException("Income line amounts must be positive"));
+            if (incomeLine.Amount <= 0)
+            {
+                exceptions = exceptions.Append(new ValidationError(sourcePath.AppendWithIndex(nameof(IncomeTransactionSource.IncomeLines), index), "Income line amounts must be positive"));
+            }
         }
-        if (source.IncomeDeductions.Any(deduction => deduction.Amount <= 0))
+        foreach ((int index, IncomeDeduction deduction) in source.IncomeDeductions.Index())
         {
-            exceptions = exceptions.Append(new InvalidAmountException("Income deduction amounts must be positive"));
+            if (deduction.Amount <= 0)
+            {
+                exceptions = exceptions.Append(new ValidationError(sourcePath.AppendWithIndex(nameof(IncomeTransactionSource.IncomeDeductions), index), "Income deduction amounts must be positive"));
+            }
         }
-        if (destinations.Any(destination => destination.Amount <= 0))
+        foreach ((int index, IncomeTransactionDestination destination) in destinations.Index())
         {
-            exceptions = exceptions.Append(new InvalidAmountException("Income destination amounts must be positive"));
-        }
-        if (destinations.Any(destination => destination.Account.Type.IsTracked() && destination.Amount != destination.FundAssignments.Sum(fundAmount => fundAmount.Amount)))
-        {
-            exceptions = exceptions.Append(new InvalidAmountException("Income destination amounts must equal the sum of their fund assignments"));
-        }
-        if (destinations.Select(destination => destination.Account.Id).Distinct().Count() != destinations.Count)
-        {
-            exceptions = exceptions.Append(new InvalidAccountException("Duplicate destination accounts are not allowed"));
+            if (destination.Amount <= 0)
+            {
+                exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(index), "Income destination amounts must be positive"));
+            }
+            if (destination.Account.Type.IsTracked() && destination.Amount != destination.FundAssignments.Sum(fundAmount => fundAmount.Amount))
+            {
+                exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(index).Append(nameof(IncomeTransactionDestination.Amount)), "Income destination amounts must equal the sum of their fund assignments"));
+            }
+            if (destinations.Index().Any(pair => pair.Item.Account == destination.Account && pair.Index != index))
+            {
+                exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(index), "Duplicate income destination accounts are not allowed"));
+            }
         }
         decimal calculatedNetAmount = source.IncomeLines.Sum(line => line.Amount) - source.IncomeDeductions.Sum(deduction => deduction.Amount);
         if (Math.Round(calculatedNetAmount, 2) != Math.Round(amount, 2))
         {
-            exceptions = exceptions.Append(new InvalidAmountException("Income lines minus deductions must equal the transaction amount"));
+            exceptions = exceptions.Append(new ValidationError(sourcePath.Append(nameof(CreateIncomeTransactionRequest.Amount)), "Income lines minus deductions must equal the transaction amount"));
         }
         decimal totalDestinationAmount = destinations.Sum(destination => destination.Amount);
         if (Math.Round(totalDestinationAmount, 2) != Math.Round(amount, 2))
         {
-            exceptions = exceptions.Append(new InvalidAmountException("Income destination amounts must equal the transaction amount"));
+            exceptions = exceptions.Append(new ValidationError(sourcePath.Append(nameof(CreateIncomeTransactionRequest.Amount)), "Income destination amounts must equal the transaction amount"));
         }
         return !exceptions.Any();
     }
 
-    private bool ValidateDestinationFundAssignments(IReadOnlyCollection<IncomeTransactionDestination> destinations, out IEnumerable<Exception> exceptions)
+    private bool ValidateDestinationFundAssignments(
+        IReadOnlyCollection<IncomeTransactionDestination> destinations,
+        Func<int, ValidationErrorPath> destinationsPathBuilder,
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
-        foreach (IncomeTransactionDestination destination in destinations)
+        foreach ((int index, IncomeTransactionDestination destination) in destinations.Index())
         {
             if (!destination.Account.Type.IsTracked() && destination.FundAssignments.Count > 0)
             {
-                exceptions = exceptions.Append(new InvalidFundAmountException("Income destination fund assignments can only be specified for tracked accounts"));
+                exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(index).Append(nameof(IncomeTransactionDestination.FundAssignments)), "Income destination fund assignments can only be specified for tracked accounts"));
             }
-            if (!ValidateFundAssignments(destination.Amount, destination.FundAssignments, out IEnumerable<Exception> fundAssignmentExceptions))
+            if (!ValidateFundAssignments(
+                    destination.Amount,
+                    destinationsPathBuilder(index).Append(nameof(IncomeTransactionDestination.Amount)),
+                    destination.FundAssignments,
+                    (i) => destinationsPathBuilder(index).AppendWithIndex(nameof(IncomeTransactionDestination.FundAssignments), i),
+                    out IEnumerable<ValidationError> fundAssignmentExceptions))
             {
                 exceptions = exceptions.Concat(fundAssignmentExceptions);
             }
         }
         return !exceptions.Any();
     }
-
-    private static List<Account> GetAccounts(CreateIncomeTransactionRequest request) =>
-        new List<Account?> { request.Source.Account }
-            .Concat(request.Destinations.Select(destination => destination.Account))
-            .OfType<Account>()
-            .ToList();
-
-    private static List<Account> GetAccounts(IncomeTransaction transaction, UpdateIncomeTransactionRequest request) =>
-        new List<Account?> { transaction.Source.Account }
-            .Concat(request.Destinations.Select(destination => destination.Account))
-            .OfType<Account>()
-            .ToList();
-
-    private List<Fund> GetFunds(CreateIncomeTransactionRequest request) =>
-        request.Destinations
-            .SelectMany(destination => destination.FundAssignments)
-            .Select(fundAmount => fundRepository.GetById(fundAmount.FundId))
-            .ToList();
-
-    private List<Fund> GetFunds(UpdateIncomeTransactionRequest request) =>
-        request.Destinations
-            .SelectMany(destination => destination.FundAssignments)
-            .Select(fundAmount => fundRepository.GetById(fundAmount.FundId))
-            .ToList();
 }

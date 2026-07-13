@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.Validation;
 using Domain.AccountingPeriods;
-using Domain.Exceptions;
 using Domain.Goals;
 using Domain.Transactions;
 
@@ -25,7 +25,7 @@ public class FundService(
     public bool TryCreate(
         CreateFundRequest request,
         [NotNullWhen(true)] out Fund? fund,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
         fund = null;
 
@@ -39,14 +39,14 @@ public class FundService(
         var assignmentGoals = new List<AssignmentGoal>();
         var spendingGoals = new List<SpendingGoal>();
         if (!TryCreateGoalsForAccountingPeriods(
-            fund,
-            GetAccountingPeriodsFrom(request.OpeningAccountingPeriod),
-            request.AssignmentGoalType,
-            request.AssignmentGoalAmount,
-            request.SpendingGoalType,
-            assignmentGoals,
-            spendingGoals,
-            out exceptions))
+                fund,
+                GetAccountingPeriodsFrom(request.OpeningAccountingPeriod),
+                request.AssignmentGoalType,
+                request.AssignmentGoalAmount,
+                request.SpendingGoalType,
+                assignmentGoals,
+                spendingGoals,
+                out exceptions))
         {
             fund = null;
             return false;
@@ -70,7 +70,7 @@ public class FundService(
     public bool TryOnboard(
         OnboardFundRequest request,
         [NotNullWhen(true)] out Fund? fund,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
         fund = null;
 
@@ -88,7 +88,7 @@ public class FundService(
                 GoalAmount = request.AssignmentGoalAmount,
             },
             out AssignmentGoal? assignmentGoal,
-            out IEnumerable<Exception> assignmentGoalExceptions))
+            out IEnumerable<ValidationError> assignmentGoalExceptions))
         {
             exceptions = assignmentGoalExceptions;
             fund = null;
@@ -102,7 +102,7 @@ public class FundService(
                 SpendingGoalType = request.SpendingGoalType,
             },
             out SpendingGoal? spendingGoal,
-            out IEnumerable<Exception> spendingGoalExceptions))
+            out IEnumerable<ValidationError> spendingGoalExceptions))
         {
             exceptions = spendingGoalExceptions;
             fund = null;
@@ -123,21 +123,21 @@ public class FundService(
     /// <summary>
     /// Attempts to update an existing Fund
     /// </summary>
-    public bool TryUpdate(Fund fund, string name, string description, out IEnumerable<Exception> exceptions)
+    public bool TryUpdate(Fund fund, UpdateFundRequest request, out IEnumerable<ValidationError> exceptions)
     {
-        if (!ValidateUpdate(fund, name, out exceptions))
+        if (!ValidateUpdate(fund, request, out exceptions))
         {
             return false;
         }
-        fund.Name = name;
-        fund.Description = description;
+        fund.Name = request.Name;
+        fund.Description = request.Description;
         return true;
     }
 
     /// <summary>
     /// Attempts to delete an existing Fund
     /// </summary>
-    public bool TryDelete(Fund fund, out IEnumerable<Exception> exceptions)
+    public bool TryDelete(Fund fund, out IEnumerable<ValidationError> exceptions)
     {
         if (!ValidateDelete(fund, out exceptions))
         {
@@ -159,14 +159,25 @@ public class FundService(
     internal bool TryCreateUnassignedFund(
         AccountingPeriod openingAccountingPeriod,
         [NotNullWhen(true)] out Fund? fund,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
         fund = null;
+        exceptions = [];
 
-        if (!ValidateCreate(Fund.UnassignedFundName, openingAccountingPeriod, out exceptions))
+        var request = new CreateFundRequest
+        {
+            Name = Fund.UnassignedFundName,
+            Description = Fund.UnassignedFundDescription,
+            OpeningAccountingPeriod = openingAccountingPeriod,
+            AssignmentGoalType = AssignmentGoalType.MonthlyTarget,
+            AssignmentGoalAmount = 1,
+            SpendingGoalType = SpendingGoalType.Standard,
+        };
+        if (!ValidateCreate(request, out exceptions))
         {
             return false;
         }
+
         fund = new Fund(openingAccountingPeriod.Id);
         accountingPeriodBalanceService.AddFund(fund);
         return true;
@@ -178,11 +189,20 @@ public class FundService(
     internal bool TryOnboardUnassignedFund(
         decimal onboardedBalance,
         [NotNullWhen(true)] out Fund? fund,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
         fund = null;
 
-        if (!ValidateOnboard(Fund.UnassignedFundName, onboardedBalance, out exceptions))
+        var request = new OnboardFundRequest
+        {
+            Name = Fund.UnassignedFundName,
+            Description = Fund.UnassignedFundDescription,
+            OnboardedBalance = onboardedBalance,
+            AssignmentGoalType = AssignmentGoalType.MonthlyTarget,
+            AssignmentGoalAmount = 1,
+            SpendingGoalType = SpendingGoalType.Standard,
+        };
+        if (!ValidateOnboard(request, out exceptions))
         {
             return false;
         }
@@ -194,17 +214,17 @@ public class FundService(
     /// <summary>
     /// Validates the name for a Fund
     /// </summary>
-    private bool ValidateName(string name, Fund? existingFund, out IEnumerable<Exception> exceptions)
+    private bool ValidateName(string name, ValidationErrorPath namePath, Fund? existingFund, out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         if (string.IsNullOrEmpty(name))
         {
-            exceptions = exceptions.Append(new InvalidNameException("Fund name cannot be empty"));
+            exceptions = exceptions.Append(new ValidationError(namePath, "Fund name cannot be empty"));
         }
         if (fundRepository.TryGetByName(name, out Fund? existingFundWithName) && existingFundWithName != existingFund)
         {
-            exceptions = exceptions.Append(new InvalidNameException("Fund name must be unique"));
+            exceptions = exceptions.Append(new ValidationError(namePath, "Fund name must be unique"));
         }
         return !exceptions.Any();
     }
@@ -212,21 +232,31 @@ public class FundService(
     /// <summary>
     /// Validates the provided request to create a fund
     /// </summary>
-    private bool ValidateCreate(CreateFundRequest request, out IEnumerable<Exception> exceptions)
+    private bool ValidateCreate(CreateFundRequest request, out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
-        if (!ValidateName(request.Name, null, out IEnumerable<Exception> nameExceptions))
+        if (!ValidateName(request.Name, new ValidationErrorPath(nameof(CreateFundRequest.Name)), null, out IEnumerable<ValidationError> nameExceptions))
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
         if (!request.OpeningAccountingPeriod.IsOpen)
         {
-            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(CreateFundRequest.OpeningAccountingPeriod)),
+                "The provided accounting period is closed."));
         }
-        if (!ValidateGoalConfiguration(request.AssignmentGoalType, request.AssignmentGoalAmount, request.SpendingGoalType, out IEnumerable<Exception> goalExceptions))
+        if (!ValidateAssignmentGoalType(request.AssignmentGoalType, new ValidationErrorPath(nameof(CreateFundRequest.AssignmentGoalType)), out IEnumerable<ValidationError> assignmentGoalTypeExceptions))
         {
-            exceptions = exceptions.Concat(goalExceptions);
+            exceptions = exceptions.Concat(assignmentGoalTypeExceptions);
+        }
+        if (!ValidateAssignmentGoalAmount(request.AssignmentGoalAmount, new ValidationErrorPath(nameof(CreateFundRequest.AssignmentGoalAmount)), out IEnumerable<ValidationError> assignmentGoalAmountExceptions))
+        {
+            exceptions = exceptions.Concat(assignmentGoalAmountExceptions);
+        }
+        if (!ValidateSpendingGoalType(request.SpendingGoalType, new ValidationErrorPath(nameof(CreateFundRequest.SpendingGoalType)), out IEnumerable<ValidationError> spendingGoalTypeExceptions))
+        {
+            exceptions = exceptions.Concat(spendingGoalTypeExceptions);
         }
         return !exceptions.Any();
     }
@@ -234,68 +264,61 @@ public class FundService(
     /// <summary>
     /// Validates the provided request to onboard a Fund.
     /// </summary>
-    private bool ValidateOnboard(OnboardFundRequest request, out IEnumerable<Exception> exceptions)
+    private bool ValidateOnboard(OnboardFundRequest request, out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
-        if (!ValidateName(request.Name, null, out IEnumerable<Exception> nameExceptions))
+        if (!ValidateName(request.Name, new ValidationErrorPath(nameof(OnboardFundRequest.Name)), null, out IEnumerable<ValidationError> nameExceptions))
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
         if (accountingPeriodRepository.GetAll().Count > 0)
         {
-            exceptions = exceptions.Append(new InvalidAccountingPeriodException("Funds can only be onboarded before any Accounting Periods have been created."));
+            exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "Funds can only be onboarded before any Accounting Periods have been created."));
         }
-        if (!ValidateGoalConfiguration(request.AssignmentGoalType, request.AssignmentGoalAmount, request.SpendingGoalType, out IEnumerable<Exception> goalExceptions))
+        if (!ValidateAssignmentGoalType(request.AssignmentGoalType, new ValidationErrorPath(nameof(OnboardFundRequest.AssignmentGoalType)), out IEnumerable<ValidationError> assignmentGoalTypeExceptions))
         {
-            exceptions = exceptions.Concat(goalExceptions);
+            exceptions = exceptions.Concat(assignmentGoalTypeExceptions);
+        }
+        if (!ValidateAssignmentGoalAmount(request.AssignmentGoalAmount, new ValidationErrorPath(nameof(OnboardFundRequest.AssignmentGoalAmount)), out IEnumerable<ValidationError> assignmentGoalAmountExceptions))
+        {
+            exceptions = exceptions.Concat(assignmentGoalAmountExceptions);
+        }
+        if (!ValidateSpendingGoalType(request.SpendingGoalType, new ValidationErrorPath(nameof(OnboardFundRequest.SpendingGoalType)), out IEnumerable<ValidationError> spendingGoalTypeExceptions))
+        {
+            exceptions = exceptions.Concat(spendingGoalTypeExceptions);
         }
         if (request.Name != Fund.UnassignedFundName)
         {
             Fund? unassignedFund = fundRepository.GetUnassignedFund();
             if (unassignedFund == null)
             {
-                exceptions = exceptions.Append(new InvalidFundException("The unassigned fund must exist before onboarding a Fund."));
+                exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "The unassigned fund must exist before onboarding a Fund."));
             }
             else if (unassignedFund.OnboardedBalance < request.OnboardedBalance)
             {
-                exceptions = exceptions.Append(new InvalidFundException("There is not enough unassigned balance to onboard this Fund."));
+                exceptions = exceptions.Append(new ValidationError(
+                    new ValidationErrorPath(nameof(OnboardFundRequest.OnboardedBalance)),
+                    "There is not enough unassigned balance to onboard this Fund."));
             }
         }
         return !exceptions.Any();
     }
 
     /// <summary>
-    /// Validates the name for a Fund during unassigned onboarding.
-    /// </summary>
-    private bool ValidateOnboard(string name, decimal onboardedBalance, out IEnumerable<Exception> exceptions)
-    {
-        var request = new OnboardFundRequest
-        {
-            Name = name,
-            Description = Fund.UnassignedFundDescription,
-            OnboardedBalance = onboardedBalance,
-            AssignmentGoalType = AssignmentGoalType.MonthlyTarget,
-            AssignmentGoalAmount = 1,
-            SpendingGoalType = SpendingGoalType.Standard,
-        };
-        return ValidateOnboard(request, out exceptions);
-    }
-
-    /// <summary>
     /// Validates the provided information to update a fund
     /// </summary>
-    private bool ValidateUpdate(Fund fund, string name, out IEnumerable<Exception> exceptions)
+    private bool ValidateUpdate(Fund fund, UpdateFundRequest request, out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
-        if (!ValidateName(name, fund, out IEnumerable<Exception> nameExceptions))
+        if (!ValidateName(request.Name, new ValidationErrorPath(nameof(UpdateFundRequest.Name)), fund, out IEnumerable<ValidationError> nameExceptions))
         {
             exceptions = exceptions.Concat(nameExceptions);
         }
         if (fund.IsUnassignedFund)
         {
-            exceptions = exceptions.Append(new UnableToUpdateException("The unassigned fund cannot be updated."));
+            exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "The unassigned fund cannot be updated."));
         }
         return !exceptions.Any();
     }
@@ -303,48 +326,70 @@ public class FundService(
     /// <summary>
     /// Validates whether a fund can be deleted
     /// </summary>
-    private bool ValidateDelete(Fund fund, out IEnumerable<Exception> exceptions)
+    private bool ValidateDelete(Fund fund, out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         if (fund.IsUnassignedFund)
         {
-            exceptions = exceptions.Append(new UnableToDeleteException("The unassigned fund cannot be deleted."));
+            exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "The unassigned fund cannot be deleted."));
         }
         if (fund.IsOnboarded && accountingPeriodRepository.GetLatestAccountingPeriod() != null)
         {
-            exceptions = exceptions.Append(new UnableToDeleteException("Cannot delete an onboarded Fund."));
+            exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "Cannot delete an onboarded Fund."));
         }
         if (transactionRepository.DoAnyTransactionsExistForFund(fund.Id))
         {
-            exceptions = exceptions.Append(new UnableToDeleteException("Cannot delete a Fund that has Transactions."));
+            exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "Cannot delete a Fund that has Transactions."));
         }
         return !exceptions.Any();
     }
 
-    private static bool ValidateGoalConfiguration(
-        AssignmentGoalType assignmentGoalType,
-        decimal assignmentGoalAmount,
-        SpendingGoalType spendingGoalType,
-        out IEnumerable<Exception> exceptions)
+    /// <summary>
+    /// Validates the provided assignment goal type.
+    /// </summary>
+    private static bool ValidateAssignmentGoalType(AssignmentGoalType assignmentGoalType, ValidationErrorPath assignmentGoalTypePath, out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         if (!Enum.IsDefined(assignmentGoalType))
         {
-            exceptions = exceptions.Append(new InvalidGoalTypeException("The provided assignment goal type is invalid."));
-        }
-        if (assignmentGoalAmount < 0)
-        {
-            exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than or equal to zero."));
-        }
-        if (!Enum.IsDefined(spendingGoalType))
-        {
-            exceptions = exceptions.Append(new InvalidGoalTypeException("The provided spending goal type is invalid."));
+            exceptions = exceptions.Append(new ValidationError(assignmentGoalTypePath, "The provided assignment goal type is invalid."));
         }
         return !exceptions.Any();
     }
 
+    /// <summary>
+    /// Validates the provided assignment goal amount.
+    /// </summary>
+    private static bool ValidateAssignmentGoalAmount(decimal assignmentGoalAmount, ValidationErrorPath assignmentGoalAmountPath, out IEnumerable<ValidationError> exceptions)
+    {
+        exceptions = [];
+
+        if (assignmentGoalAmount < 0)
+        {
+            exceptions = exceptions.Append(new ValidationError(assignmentGoalAmountPath, "Goal amount must be greater than or equal to zero."));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates the provided spending goal type.
+    /// </summary>
+    private static bool ValidateSpendingGoalType(SpendingGoalType spendingGoalType, ValidationErrorPath spendingGoalTypePath, out IEnumerable<ValidationError> exceptions)
+    {
+        exceptions = [];
+
+        if (!Enum.IsDefined(spendingGoalType))
+        {
+            exceptions = exceptions.Append(new ValidationError(spendingGoalTypePath, "The provided spending goal type is invalid."));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Gets all accounting periods that fall on or after the provided accounting period.
+    /// </summary>
     private IEnumerable<AccountingPeriod> GetAccountingPeriodsFrom(AccountingPeriod openingAccountingPeriod)
     {
         AccountingPeriod? accountingPeriod = openingAccountingPeriod;
@@ -355,6 +400,9 @@ public class FundService(
         }
     }
 
+    /// <summary>
+    /// Attempts to create assignment and spending goals for the provided accounting periods.
+    /// </summary>
     private bool TryCreateGoalsForAccountingPeriods(
         Fund fund,
         IEnumerable<AccountingPeriod> accountingPeriods,
@@ -363,7 +411,7 @@ public class FundService(
         SpendingGoalType spendingGoalType,
         List<AssignmentGoal> assignmentGoals,
         List<SpendingGoal> spendingGoals,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
@@ -378,7 +426,7 @@ public class FundService(
                     GoalAmount = assignmentGoalAmount,
                 },
                 out AssignmentGoal? assignmentGoal,
-                out IEnumerable<Exception> assignmentGoalExceptions))
+                out IEnumerable<ValidationError> assignmentGoalExceptions))
             {
                 exceptions = exceptions.Concat(assignmentGoalExceptions);
                 return false;
@@ -391,7 +439,7 @@ public class FundService(
                     SpendingGoalType = spendingGoalType,
                 },
                 out SpendingGoal? spendingGoal,
-                out IEnumerable<Exception> spendingGoalExceptions))
+                out IEnumerable<ValidationError> spendingGoalExceptions))
             {
                 exceptions = exceptions.Concat(spendingGoalExceptions);
                 return false;
@@ -400,20 +448,5 @@ public class FundService(
             spendingGoals.Add(spendingGoal);
         }
         return true;
-    }
-
-    private bool ValidateCreate(string name, AccountingPeriod openingAccountingPeriod, out IEnumerable<Exception> exceptions)
-    {
-        exceptions = [];
-
-        if (!ValidateName(name, null, out IEnumerable<Exception> nameExceptions))
-        {
-            exceptions = exceptions.Concat(nameExceptions);
-        }
-        if (!openingAccountingPeriod.IsOpen)
-        {
-            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
-        }
-        return !exceptions.Any();
     }
 }

@@ -1,8 +1,8 @@
 using Data;
 using Domain.AccountingPeriods;
-using Domain.Exceptions;
 using Domain.Funds;
 using Domain.Goals;
+using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Funds;
@@ -152,21 +152,14 @@ public sealed class FundController(
                 SpendingGoalType = spendingGoalType.Value,
             },
             out Fund? newFund,
-            out IEnumerable<Exception> exceptions))
+            out IEnumerable<ValidationError> validationErrors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to create Fund.",
-                Errors = exceptions.GroupBy(exception => exception switch
-                {
-                    InvalidNameException => nameof(createFundModel.Name),
-                    InvalidAccountingPeriodException => nameof(createFundModel.AccountingPeriodId),
-                    InvalidGoalTypeException when exception.Message.Contains("assignment", StringComparison.OrdinalIgnoreCase) => nameof(createFundModel.AssignmentGoalType),
-                    InvalidGoalTypeException => nameof(createFundModel.SpendingGoalType),
-                    InvalidFundException when exception.Message.Contains("Goal amount", StringComparison.OrdinalIgnoreCase) => nameof(createFundModel.AssignmentGoalAmount),
-                    InvalidFundException => string.Empty,
-                    _ => string.Empty,
-                }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray()),
+                Errors = GroupValidationErrors(validationErrors, path => path == nameof(CreateFundRequest.OpeningAccountingPeriod)
+                    ? nameof(CreateFundModel.AccountingPeriodId)
+                    : path),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
@@ -212,22 +205,12 @@ public sealed class FundController(
                 SpendingGoalType = spendingGoalType.Value,
             },
             out Fund? newFund,
-            out IEnumerable<Exception> exceptions))
+            out IEnumerable<ValidationError> validationErrors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to onboard Fund.",
-                Errors = exceptions.GroupBy(exception => exception switch
-                {
-                    InvalidNameException => nameof(onboardFundModel.Name),
-                    InvalidAmountException => nameof(onboardFundModel.OnboardedBalance),
-                    InvalidAccountingPeriodException => string.Empty,
-                    InvalidGoalTypeException when exception.Message.Contains("assignment", StringComparison.OrdinalIgnoreCase) => nameof(onboardFundModel.AssignmentGoalType),
-                    InvalidGoalTypeException => nameof(onboardFundModel.SpendingGoalType),
-                    InvalidFundException when exception.Message.Contains("Goal amount", StringComparison.OrdinalIgnoreCase) => nameof(onboardFundModel.AssignmentGoalAmount),
-                    InvalidFundException => string.Empty,
-                    _ => string.Empty,
-                }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray()),
+                Errors = GroupValidationErrors(validationErrors),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
@@ -254,13 +237,16 @@ public sealed class FundController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!fundService.TryUpdate(fundToUpdate, updateFundModel.Name, updateFundModel.Description, out IEnumerable<Exception> exceptions))
+        if (!fundService.TryUpdate(
+                fundToUpdate,
+                new UpdateFundRequest
+                {
+                    Name = updateFundModel.Name,
+                    Description = updateFundModel.Description,
+                },
+                out IEnumerable<ValidationError> validationErrors))
         {
-            errors = exceptions.GroupBy(e => e switch
-            {
-                InvalidNameException => nameof(updateFundModel.Name),
-                _ => string.Empty
-            }).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray());
+            errors = GroupValidationErrors(validationErrors);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to update Fund.",
@@ -290,18 +276,23 @@ public sealed class FundController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!fundService.TryDelete(fundToDelete, out IEnumerable<Exception> exceptions))
+        if (!fundService.TryDelete(fundToDelete, out IEnumerable<ValidationError> validationErrors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to delete Fund.",
-                Errors = {
-                    { string.Empty, exceptions.Select(e => e.Message).ToArray() }
-                },
+                Errors = GroupValidationErrors(validationErrors),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
         await unitOfWork.SaveChangesAsync();
         return Ok();
     }
+
+    private static Dictionary<string, string[]> GroupValidationErrors(
+        IEnumerable<ValidationError> validationErrors,
+        Func<string, string>? resolvePath = null) =>
+        validationErrors
+            .GroupBy(error => resolvePath?.Invoke(error.Path.Value) ?? error.Path.Value)
+            .ToDictionary(grouping => grouping.Key, grouping => grouping.Select(error => error.Message).ToArray());
 }

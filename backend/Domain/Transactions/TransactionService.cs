@@ -1,6 +1,6 @@
 using Domain.AccountingPeriods;
+using Domain.Validation;
 using Domain.Accounts;
-using Domain.Exceptions;
 using Domain.Funds;
 
 namespace Domain.Transactions;
@@ -30,22 +30,51 @@ public abstract class TransactionService(
     /// </summary>
     protected bool ValidateCreate(
         CreateTransactionRequest request,
-        IReadOnlyCollection<Account> accounts,
-        IReadOnlyCollection<Fund> funds,
-        out IEnumerable<Exception> exceptions)
+        Account? sourceAccount,
+        ValidationErrorPath sourceAccountPath,
+        IReadOnlyCollection<Account?> destinationAccounts,
+        Func<int, ValidationErrorPath> destinationAccountsPathBuilder,
+        IReadOnlyCollection<Fund> sourceFunds,
+        Func<int, ValidationErrorPath> sourceFundsPathBuilder,
+        IReadOnlyCollection<IReadOnlyCollection<Fund>> destinationFunds,
+        Func<int, int, ValidationErrorPath> destinationFundsPathBuilder,
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         AccountingPeriod accountingPeriod = AccountingPeriodRepository.GetById(request.AccountingPeriodId);
-        if (!ValidateAccountingPeriod(accounts, funds, accountingPeriod, out IEnumerable<Exception> accountingPeriodExceptions))
+        if (!ValidateAccountingPeriod(
+                sourceAccount,
+                sourceAccountPath,
+                destinationAccounts,
+                destinationAccountsPathBuilder,
+                sourceFunds,
+                sourceFundsPathBuilder,
+                destinationFunds,
+                destinationFundsPathBuilder,
+                accountingPeriod,
+                new ValidationErrorPath(nameof(CreateTransactionRequest.AccountingPeriodId)),
+                out IEnumerable<ValidationError> accountingPeriodExceptions))
         {
             exceptions = exceptions.Concat(accountingPeriodExceptions);
         }
-        if (!ValidateDate(accountingPeriod, accounts, request.TransactionDate, out IEnumerable<Exception> dateExceptions))
+        if (!ValidateDate(
+                accountingPeriod,
+                new ValidationErrorPath(nameof(CreateTransactionRequest.AccountingPeriodId)),
+                sourceAccount,
+                sourceAccountPath,
+                destinationAccounts,
+                destinationAccountsPathBuilder,
+                request.TransactionDate,
+                new ValidationErrorPath(nameof(CreateTransactionRequest.TransactionDate)),
+                out IEnumerable<ValidationError> dateExceptions))
         {
             exceptions = exceptions.Concat(dateExceptions);
         }
-        if (!ValidateAmount(request.Amount, out IEnumerable<Exception> amountExceptions))
+        if (!ValidateAmount(
+                request.Amount,
+                new ValidationErrorPath(nameof(CreateTransactionRequest.Amount)),
+                out IEnumerable<ValidationError> amountExceptions))
         {
             exceptions = exceptions.Concat(amountExceptions);
         }
@@ -67,22 +96,48 @@ public abstract class TransactionService(
     protected bool ValidateUpdate(
         Transaction transaction,
         UpdateTransactionRequest request,
-        IReadOnlyCollection<Account> accounts,
-        IReadOnlyCollection<Fund> funds,
-        out IEnumerable<Exception> exceptions)
+        Account? sourceAccount,
+        ValidationErrorPath sourceAccountPath,
+        IReadOnlyCollection<Account?> destinationAccounts,
+        Func<int, ValidationErrorPath> destinationAccountsPathBuilder,
+        IReadOnlyCollection<Fund> sourceFunds,
+        Func<int, ValidationErrorPath> sourceFundsPathBuilder,
+        IReadOnlyCollection<IReadOnlyCollection<Fund>> destinationFunds,
+        Func<int, int, ValidationErrorPath> destinationFundsPathBuilder,
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         AccountingPeriod accountingPeriod = AccountingPeriodRepository.GetById(transaction.AccountingPeriodId);
-        if (!ValidateAccountingPeriod(accounts, funds, accountingPeriod, out IEnumerable<Exception> accountingPeriodExceptions))
+        if (!ValidateAccountingPeriod(
+                sourceAccount,
+                sourceAccountPath,
+                destinationAccounts,
+                destinationAccountsPathBuilder,
+                sourceFunds,
+                sourceFundsPathBuilder,
+                destinationFunds,
+                destinationFundsPathBuilder,
+                accountingPeriod,
+                ValidationErrorPath.Empty,
+                out IEnumerable<ValidationError> accountingPeriodExceptions))
         {
             exceptions = exceptions.Concat(accountingPeriodExceptions);
         }
-        if (!ValidateDate(accountingPeriod, accounts, request.TransactionDate, out IEnumerable<Exception> dateExceptions))
+        if (!ValidateDate(
+                accountingPeriod,
+                ValidationErrorPath.Empty,
+                sourceAccount,
+                sourceAccountPath,
+                destinationAccounts,
+                destinationAccountsPathBuilder,
+                request.TransactionDate,
+                new ValidationErrorPath(nameof(UpdateTransactionRequest.TransactionDate)),
+                out IEnumerable<ValidationError> dateExceptions))
         {
             exceptions = exceptions.Concat(dateExceptions);
         }
-        if (!ValidateAmount(request.Amount, out IEnumerable<Exception> amountExceptions))
+        if (!ValidateAmount(request.Amount, new ValidationErrorPath(nameof(UpdateTransactionRequest.Amount)), out IEnumerable<ValidationError> amountExceptions))
         {
             exceptions = exceptions.Concat(amountExceptions);
         }
@@ -117,31 +172,32 @@ public abstract class TransactionService(
     /// </summary>
     protected bool ValidatePosting(
         Transaction transaction,
-        AccountId accountId,
-        DateOnly postedDate,
-        out IEnumerable<Exception> exceptions)
+        PostTransactionRequest request,
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
-        if (!transaction.GetAllAffectedAccountIds().Contains(accountId))
+        var accountPath = new ValidationErrorPath(nameof(PostTransactionRequest.AccountId));
+        var postedDatePath = new ValidationErrorPath(nameof(PostTransactionRequest.PostedDate));
+        if (!transaction.GetAllAffectedAccountIds().Contains(request.AccountId))
         {
-            exceptions = exceptions.Append(new InvalidAccountException("The provided account is not associated with this transaction."));
+            exceptions = exceptions.Append(new ValidationError(accountPath, "The provided account is not associated with this transaction."));
             return false;
         }
-        if (transaction.GetPostedDateForAccount(accountId) != null)
+        if (transaction.GetPostedDateForAccount(request.AccountId) != null)
         {
-            exceptions = exceptions.Append(new UnableToPostException("The Transaction has already been posted to this Account."));
+            exceptions = exceptions.Append(new ValidationError(accountPath, "The Transaction has already been posted to this Account."));
             return !exceptions.Any();
         }
-        if (postedDate < transaction.Date)
+        if (request.PostedDate < transaction.Date)
         {
-            exceptions = exceptions.Append(new InvalidDateException("The provided date is earlier than the transaction date."));
+            exceptions = exceptions.Append(new ValidationError(postedDatePath, "The provided date is earlier than the transaction date."));
         }
         AccountingPeriod accountingPeriod = AccountingPeriodRepository.GetById(transaction.AccountingPeriodId);
-        int monthDifference = Math.Abs(((accountingPeriod.Year - postedDate.Year) * 12) + accountingPeriod.Month - postedDate.Month);
+        int monthDifference = Math.Abs(((accountingPeriod.Year - request.PostedDate.Year) * 12) + accountingPeriod.Month - request.PostedDate.Month);
         if (monthDifference > 1)
         {
-            exceptions = exceptions.Append(new InvalidDateException("The provided date is not within the transaction's accounting period."));
+            exceptions = exceptions.Append(new ValidationError(postedDatePath, "The provided date is not within the transaction's accounting period."));
         }
         return !exceptions.Any();
     }
@@ -159,17 +215,17 @@ public abstract class TransactionService(
     /// <summary>
     /// Validates the unposting of this Transaction
     /// </summary>
-    protected bool ValidateUnposting(Transaction transaction, out IEnumerable<Exception> exceptions)
+    protected bool ValidateUnposting(Transaction transaction, out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         if (!AccountingPeriodRepository.GetById(transaction.AccountingPeriodId).IsOpen)
         {
-            exceptions = exceptions.Append(new UnableToUnpostException("The Transaction's Accounting Period is closed."));
+            exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "The Transaction's Accounting Period is closed."));
         }
         if (transaction.GetAllAffectedAccountIds().All(id => transaction.GetPostedDateForAccount(id) == null))
         {
-            exceptions = exceptions.Append(new UnableToUnpostException("The Transaction has not been posted to either account."));
+            exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "The Transaction has not been posted to either account."));
         }
         return !exceptions.Any();
     }
@@ -187,17 +243,17 @@ public abstract class TransactionService(
     /// <summary>
     /// Validates the deletion of this Transaction
     /// </summary>
-    protected bool ValidateDelete(Transaction transaction, out IEnumerable<Exception> exceptions)
+    protected bool ValidateDelete(Transaction transaction, out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         if (!AccountingPeriodRepository.GetById(transaction.AccountingPeriodId).IsOpen)
         {
-            exceptions = exceptions.Append(new UnableToDeleteException("The provided transaction is within a closed accounting period."));
+            exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "The provided transaction is within a closed accounting period."));
         }
         if (transaction.GetAllAffectedAccountIds().Any(id => transaction.GetPostedDateForAccount(id) != null))
         {
-            exceptions = exceptions.Append(new UnableToDeleteException("The Transaction has been posted and cannot be deleted."));
+            exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "The Transaction has been posted and cannot be deleted."));
         }
         return !exceptions.Any();
     }
@@ -234,7 +290,12 @@ public abstract class TransactionService(
     /// <summary>
     /// Validates the posted date for the provided accounting period, account, and date
     /// </summary>
-    protected static bool ValidatePostedDate(AccountingPeriod accountingPeriod, Account account, DateOnly? postedDate, out IEnumerable<Exception> exceptions)
+    protected static bool ValidatePostedDate(
+        AccountingPeriod accountingPeriod,
+        Account account,
+        DateOnly? postedDate,
+        ValidationErrorPath postedDatePath,
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
@@ -242,34 +303,48 @@ public abstract class TransactionService(
         {
             if (!accountingPeriod.IsDateInPeriod(postedDate.Value))
             {
-                exceptions = exceptions.Append(new InvalidDateException("Debit Posted Date must be within the Accounting Period"));
+                exceptions = exceptions.Append(new ValidationError(postedDatePath, "Debit Posted Date must be within the Accounting Period"));
             }
             if (account.DateOpened < postedDate)
             {
-                exceptions = exceptions.Append(new InvalidDateException("Debit Posted Date cannot be before the Transaction was added"));
+                exceptions = exceptions.Append(new ValidationError(postedDatePath, "Debit Posted Date cannot be before the Transaction was added"));
             }
         }
         return !exceptions.Any();
     }
 
     /// <summary>
-    /// Validates the fund assignments for a Transaction
+    /// Validates the fund assignments for a Transaction at the supplied request path.
     /// </summary>
-    protected virtual bool ValidateFundAssignments(decimal amount, IReadOnlyCollection<FundAmount> fundAssignments, out IEnumerable<Exception> exceptions)
+    protected virtual bool ValidateFundAssignments(
+        decimal amount,
+        ValidationErrorPath amountPath,
+        IReadOnlyCollection<FundAmount> fundAssignments,
+        Func<int, ValidationErrorPath> fundAssignmentsPathBuilder,
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
-        if (fundAssignments.Any(fundAmount => fundAmount.Amount <= 0))
+        foreach ((int index, FundAmount fundAmount) in fundAssignments.Index())
         {
-            exceptions = exceptions.Append(new InvalidFundAmountException("Fund assignment amounts must be positive"));
-        }
-        if (fundAssignments.Select(fundAmount => fundAmount.FundId).Distinct().Count() != fundAssignments.Count)
-        {
-            exceptions = exceptions.Append(new InvalidFundAmountException("Duplicate Funds are not allowed in fund assignments"));
-        }
-        if (Math.Round(fundAssignments.Sum(fundAmount => fundAmount.Amount), 2) > amount)
-        {
-            exceptions = exceptions.Append(new InvalidFundAmountException("Sum of fund assignment amounts cannot exceed total transaction amount"));
+            if (fundAmount.Amount <= 0)
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    fundAssignmentsPathBuilder(index).Append(nameof(FundAmount.Amount)),
+                    "Fund assignment amounts must be positive"));
+            }
+            if (fundAssignments.Index().Any(pair => pair.Item.FundId == fundAmount.FundId && pair.Index != index))
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    fundAssignmentsPathBuilder(index).Append(nameof(FundAmount.FundId)),
+                    "Duplicate fund assignments are not allowed"));
+            }
+            if (Math.Round(fundAssignments.Sum(fundAmount => fundAmount.Amount), 2) > amount)
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    fundAssignmentsPathBuilder(index).Append(nameof(FundAmount.Amount)),
+                    "Sum of fund assignment amounts cannot exceed total transaction amount"));
+            }
         }
         return !exceptions.Any();
     }
@@ -277,37 +352,92 @@ public abstract class TransactionService(
     /// <summary>
     /// Validates the Accounting Period for this Transaction
     /// </summary>
-    private bool ValidateAccountingPeriod(IReadOnlyCollection<Account> accounts, IReadOnlyCollection<Fund> funds, AccountingPeriod accountingPeriod, out IEnumerable<Exception> exceptions)
+    private bool ValidateAccountingPeriod(
+        Account? sourceAccount,
+        ValidationErrorPath sourceAccountPath,
+        IReadOnlyCollection<Account?> destinationAccounts,
+        Func<int, ValidationErrorPath> destinationAccountsPathBuilder,
+        IReadOnlyCollection<Fund> sourceFunds,
+        Func<int, ValidationErrorPath> sourceFundsPathBuilder,
+        IReadOnlyCollection<IReadOnlyCollection<Fund>> destinationFunds,
+        Func<int, int, ValidationErrorPath> destinationFundsPathBuilder,
+        AccountingPeriod accountingPeriod,
+        ValidationErrorPath accountingPeriodPath,
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         if (!accountingPeriod.IsOpen)
         {
-            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The Accounting Period is closed."));
+            exceptions = exceptions.Append(new ValidationError(accountingPeriodPath, "The Accounting Period is closed."));
         }
-        foreach (Account account in accounts)
+        if (!ValidateAccountForAccountingPeriod(sourceAccount, sourceAccountPath, accountingPeriod, accountingPeriodPath, out IEnumerable<ValidationError> sourceAccountValidationExceptions))
         {
-            if (account.OpeningAccountingPeriodId == null)
+            exceptions = exceptions.Concat(sourceAccountValidationExceptions);
+        }
+        foreach ((int index, Account? account) in destinationAccounts.Index())
+        {
+            if (!ValidateAccountForAccountingPeriod(account, destinationAccountsPathBuilder(index), accountingPeriod, accountingPeriodPath, out IEnumerable<ValidationError> destinationAccountValidationExceptions))
             {
-                continue;
-            }
-            AccountingPeriod accountInitialPeriod = AccountingPeriodRepository.GetById(account.OpeningAccountingPeriodId);
-            if (accountingPeriod.PeriodStartDate < accountInitialPeriod.PeriodStartDate)
-            {
-                exceptions = exceptions.Append(new InvalidAccountingPeriodException($"Account {account.Name} did not exist during the provided Accounting Period."));
+                exceptions = exceptions.Concat(destinationAccountValidationExceptions);
             }
         }
-        foreach (Fund fund in funds)
+        foreach ((int index, Fund fund) in sourceFunds.Index())
         {
-            if (fund.OpeningAccountingPeriodId == null)
+            if (!ValidateFundForAccountingPeriod(fund, sourceFundsPathBuilder(index), accountingPeriod, accountingPeriodPath, out IEnumerable<ValidationError> sourceFundValidationExceptions))
             {
-                continue;
+                exceptions = exceptions.Concat(sourceFundValidationExceptions);
             }
-            AccountingPeriod fundInitialPeriod = AccountingPeriodRepository.GetById(fund.OpeningAccountingPeriodId);
-            if (accountingPeriod.PeriodStartDate < fundInitialPeriod.PeriodStartDate)
+        }
+        foreach ((int index, IReadOnlyCollection<Fund> funds) in destinationFunds.Index())
+        {
+            foreach ((int fundIndex, Fund fund) in funds.Index())
             {
-                exceptions = exceptions.Append(new InvalidAccountingPeriodException($"Fund {fund.Name} did not exist during the provided Accounting Period."));
+                if (!ValidateFundForAccountingPeriod(fund, destinationFundsPathBuilder(index, fundIndex), accountingPeriod, accountingPeriodPath, out IEnumerable<ValidationError> destinationFundValidationExceptions))
+                {
+                    exceptions = exceptions.Concat(destinationFundValidationExceptions);
+                }
             }
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates that an account can be used within the specified accounting period.
+    /// </summary>
+    private bool ValidateAccountForAccountingPeriod(Account? account, ValidationErrorPath accountPath, AccountingPeriod accountingPeriod, ValidationErrorPath accountingPeriodPath, out IEnumerable<ValidationError> exceptions)
+    {
+        exceptions = [];
+
+        if (account?.OpeningAccountingPeriodId == null)
+        {
+            return !exceptions.Any();
+        }
+        AccountingPeriod accountInitialPeriod = AccountingPeriodRepository.GetById(account.OpeningAccountingPeriodId);
+        if (accountingPeriod.PeriodStartDate < accountInitialPeriod.PeriodStartDate)
+        {
+            exceptions = exceptions.Append(new ValidationError(accountPath, $"Account {account.Name} did not exist during the provided Accounting Period."));
+            exceptions = exceptions.Append(new ValidationError(accountingPeriodPath, $"Account {account.Name} did not exist during the provided Accounting Period."));
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates that a fund can be used within the specified accounting period.
+    /// </summary>
+    private bool ValidateFundForAccountingPeriod(Fund? fund, ValidationErrorPath fundPath, AccountingPeriod accountingPeriod, ValidationErrorPath accountingPeriodPath, out IEnumerable<ValidationError> exceptions)
+    {
+        exceptions = [];
+
+        if (fund?.OpeningAccountingPeriodId == null)
+        {
+            return !exceptions.Any();
+        }
+        AccountingPeriod fundInitialPeriod = AccountingPeriodRepository.GetById(fund.OpeningAccountingPeriodId);
+        if (accountingPeriod.PeriodStartDate < fundInitialPeriod.PeriodStartDate)
+        {
+            exceptions = exceptions.Append(new ValidationError(fundPath, $"Fund {fund.Name} did not exist during the provided Accounting Period."));
+            exceptions = exceptions.Append(new ValidationError(accountingPeriodPath, $"Fund {fund.Name} did not exist during the provided Accounting Period."));
         }
         return !exceptions.Any();
     }
@@ -317,26 +447,55 @@ public abstract class TransactionService(
     /// </summary>
     private static bool ValidateDate(
         AccountingPeriod accountingPeriod,
-        IEnumerable<Account> accounts,
+        ValidationErrorPath accountingPeriodPath,
+        Account? sourceAccount,
+        ValidationErrorPath sourceAccountPath,
+        IEnumerable<Account?> destinationAccounts,
+        Func<int, ValidationErrorPath> destinationAccountsPathBuilder,
         DateOnly date,
-        out IEnumerable<Exception> exceptions)
+        ValidationErrorPath datePath,
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         if (date == DateOnly.MinValue)
         {
-            exceptions = exceptions.Append(new InvalidDateException("The provided date is blank."));
+            exceptions = exceptions.Append(new ValidationError(datePath, "The provided date is blank."));
         }
         if (!accountingPeriod.IsDateInPeriod(date))
         {
-            exceptions = exceptions.Append(new InvalidDateException("The provided date is not within the transaction's accounting period."));
+            exceptions = exceptions.Append(new ValidationError(datePath, "The provided date is not within the transaction's accounting period."));
+            exceptions = exceptions.Append(new ValidationError(accountingPeriodPath, "The provided date is not within the transaction's accounting period."));
         }
-        foreach (Account account in accounts)
+        if (!ValidateAccountForDate(sourceAccount, sourceAccountPath, date, datePath, out IEnumerable<ValidationError> sourceAccountExceptions))
         {
-            if (date < account.DateOpened)
+            exceptions = exceptions.Concat(sourceAccountExceptions);
+        }
+        foreach ((int index, Account? account) in destinationAccounts.Index())
+        {
+            if (!ValidateAccountForDate(account, destinationAccountsPathBuilder(index), date, datePath, out IEnumerable<ValidationError> destinationAccountExceptions))
             {
-                exceptions = exceptions.Append(new InvalidDateException($"The provided date is before the account {account.Name} was created."));
+                exceptions = exceptions.Concat(destinationAccountExceptions);
             }
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates that the provided date is not before the account was created.
+    /// </summary>
+    private static bool ValidateAccountForDate(Account? account, ValidationErrorPath accountPath, DateOnly date, ValidationErrorPath datePath, out IEnumerable<ValidationError> exceptions)
+    {
+        exceptions = [];
+
+        if (account == null)
+        {
+            return true;
+        }
+        if (date < account.DateOpened)
+        {
+            exceptions = exceptions.Append(new ValidationError(accountPath, $"The provided date is before the account {account.Name} was created."));
+            exceptions = exceptions.Append(new ValidationError(datePath, $"The provided date is before the account {account.Name} was created."));
         }
         return !exceptions.Any();
     }
@@ -344,13 +503,13 @@ public abstract class TransactionService(
     /// <summary>
     /// Validates the Amount for this Transaction
     /// </summary>
-    private static bool ValidateAmount(decimal amount, out IEnumerable<Exception> exceptions)
+    private static bool ValidateAmount(decimal amount, ValidationErrorPath amountPath, out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         if (amount <= 0)
         {
-            exceptions = exceptions.Append(new InvalidAmountException("The provided amount must be greater than zero."));
+            exceptions = exceptions.Append(new ValidationError(amountPath, "The provided amount must be greater than zero."));
         }
         return !exceptions.Any();
     }

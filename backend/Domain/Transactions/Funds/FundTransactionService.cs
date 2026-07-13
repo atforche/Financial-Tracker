@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.Validation;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Exceptions;
 using Domain.Funds;
 
 namespace Domain.Transactions.Funds;
@@ -28,7 +28,7 @@ public class FundTransactionService(
     public bool TryCreate(
         CreateFundTransactionRequest request,
         [NotNullWhen(true)] out FundTransaction? transaction,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
         transaction = null;
 
@@ -48,7 +48,7 @@ public class FundTransactionService(
     public bool TryUpdate(
         FundTransaction transaction,
         UpdateFundTransactionRequest request,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
         if (!ValidateUpdate(transaction, request, out exceptions))
         {
@@ -68,7 +68,7 @@ public class FundTransactionService(
     /// <summary>
     /// Attempts to delete an existing Fund Transaction
     /// </summary>
-    public bool TryDelete(FundTransaction transaction, out IEnumerable<Exception> exceptions)
+    public bool TryDelete(FundTransaction transaction, out IEnumerable<ValidationError> exceptions)
     {
         if (!ValidateDelete(transaction, out exceptions))
         {
@@ -81,14 +81,32 @@ public class FundTransactionService(
     /// <summary>
     /// Validates a request to create a new Fund Transaction
     /// </summary>
-    private bool ValidateCreate(CreateFundTransactionRequest request, out IEnumerable<Exception> exceptions)
+    private bool ValidateCreate(CreateFundTransactionRequest request, out IEnumerable<ValidationError> exceptions)
     {
-        _ = ValidateCreate(request, [], GetFunds(request), out exceptions);
-        if (!ValidateFunds(request.Source, request.Destinations, out IEnumerable<Exception> fundExceptions))
+        _ = ValidateCreate(
+            request,
+            null,
+            ValidationErrorPath.Empty,
+            [],
+            (i) => ValidationErrorPath.Empty,
+            [request.Source.Fund],
+            (i) => new ValidationErrorPath(nameof(CreateFundTransactionRequest.Source)).Append(nameof(FundTransactionSource.Fund)),
+            request.Destinations.Select(destination => new List<Fund> { destination.Fund }).ToList(),
+            (i, j) => new ValidationErrorPath(nameof(CreateFundTransactionRequest.Destinations), i).Append(nameof(FundTransactionDestination.Fund)),
+            out exceptions);
+        if (!ValidateFunds(
+                request.Source,
+                request.Destinations,
+                (i) => new ValidationErrorPath(nameof(CreateFundTransactionRequest.Destinations), i),
+                out IEnumerable<ValidationError> fundExceptions))
         {
             exceptions = exceptions.Concat(fundExceptions);
         }
-        if (!ValidateAmounts(request.Amount, request.Destinations, out IEnumerable<Exception> amountExceptions))
+        if (!ValidateAmounts(
+                request.Amount,
+                request.Destinations,
+                (i) => new ValidationErrorPath(nameof(CreateFundTransactionRequest.Destinations), i),
+                out IEnumerable<ValidationError> amountExceptions))
         {
             exceptions = exceptions.Concat(amountExceptions);
         }
@@ -101,15 +119,34 @@ public class FundTransactionService(
     private bool ValidateUpdate(
         FundTransaction transaction,
         UpdateFundTransactionRequest request,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
-        _ = ValidateUpdate(transaction, request, [], GetFunds(request), out exceptions);
+        _ = ValidateUpdate(
+            transaction,
+            request,
+            null,
+            ValidationErrorPath.Empty,
+            [],
+            (i) => ValidationErrorPath.Empty,
+            [request.Source.Fund],
+            (i) => new ValidationErrorPath(nameof(UpdateFundTransactionRequest.Source)).Append(nameof(FundTransactionSource.Fund)),
+            request.Destinations.Select(destination => new List<Fund> { destination.Fund }).ToList(),
+            (i, j) => new ValidationErrorPath(nameof(UpdateFundTransactionRequest.Destinations), i).Append(nameof(FundTransactionDestination.Fund)),
+            out exceptions);
 
-        if (!ValidateFunds(request.Source, request.Destinations, out IEnumerable<Exception> fundExceptions))
+        if (!ValidateFunds(
+                request.Source,
+                request.Destinations,
+                (i) => new ValidationErrorPath(nameof(UpdateFundTransactionRequest.Destinations), i),
+                out IEnumerable<ValidationError> fundExceptions))
         {
             exceptions = exceptions.Concat(fundExceptions);
         }
-        if (!ValidateAmounts(request.Amount, request.Destinations, out IEnumerable<Exception> amountExceptions))
+        if (!ValidateAmounts(
+                request.Amount,
+                request.Destinations,
+                (i) => new ValidationErrorPath(nameof(UpdateFundTransactionRequest.Destinations), i),
+                out IEnumerable<ValidationError> amountExceptions))
         {
             exceptions = exceptions.Concat(amountExceptions);
         }
@@ -122,27 +159,25 @@ public class FundTransactionService(
     private static bool ValidateFunds(
         FundTransactionSource source,
         IReadOnlyCollection<FundTransactionDestination> destinations,
-        out IEnumerable<Exception> exceptions)
+        Func<int, ValidationErrorPath> destinationsPathBuilder,
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         if (destinations.Count == 0)
         {
-            exceptions = exceptions.Append(new InvalidFundException("Fund Transactions must have at least one destination fund"));
+            exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(0), "Fund Transactions must have at least one destination fund"));
         }
-        foreach (FundTransactionDestination destination in destinations)
+        foreach ((int index, FundTransactionDestination destination) in destinations.Index())
         {
             if (destination.Fund.Id == source.Fund.Id)
             {
-                exceptions = exceptions.Append(new InvalidFundException("Source and destination funds cannot be the same"));
+                exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(index).Append(nameof(FundTransactionDestination.Fund)), "Source and destination funds cannot be the same"));
             }
-        }
-        var destinationFundIds = destinations
-            .Select(destination => destination.Fund.Id)
-            .ToList();
-        if (destinationFundIds.Distinct().Count() != destinationFundIds.Count)
-        {
-            exceptions = exceptions.Append(new InvalidFundException("Duplicate destination funds are not allowed"));
+            if (destinations.Index().Any(pair => pair.Item.Fund == destination.Fund && pair.Index != index))
+            {
+                exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(index).Append(nameof(FundTransactionDestination.Fund)), "Duplicate destination funds are not allowed"));
+            }
         }
         return !exceptions.Any();
     }
@@ -150,28 +185,26 @@ public class FundTransactionService(
     private static bool ValidateAmounts(
         decimal amount,
         IReadOnlyCollection<FundTransactionDestination> destinations,
-        out IEnumerable<Exception> exceptions)
+        Func<int, ValidationErrorPath> destinationsPathBuilder,
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         if (destinations.Count == 0)
         {
-            exceptions = exceptions.Append(new InvalidFundException("Fund Transactions must have at least one destination fund"));
+            exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(0), "Fund Transactions must have at least one destination fund"));
         }
-        if (destinations.Any(destination => destination.Amount <= 0))
+        foreach ((int index, FundTransactionDestination destination) in destinations.Index())
         {
-            exceptions = exceptions.Append(new InvalidAmountException("Fund destination amounts must be positive"));
-        }
-        if (Math.Round(destinations.Sum(destination => destination.Amount), 2) != Math.Round(amount, 2))
-        {
-            exceptions = exceptions.Append(new InvalidAmountException("Fund destination amounts must equal the transaction amount"));
+            if (destination.Amount <= 0)
+            {
+                exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(index).Append(nameof(FundTransactionDestination.Amount)), "Fund destination amounts must be positive"));
+            }
+            if (Math.Round(destinations.Sum(destination => destination.Amount), 2) != Math.Round(amount, 2))
+            {
+                exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(index).Append(nameof(FundTransactionDestination.Amount)), "Fund destination amounts must equal the transaction amount"));
+            }
         }
         return !exceptions.Any();
     }
-
-    private static List<Fund> GetFunds(CreateFundTransactionRequest request) =>
-        [request.Source.Fund, .. request.Destinations.Select(destination => destination.Fund)];
-
-    private static List<Fund> GetFunds(UpdateFundTransactionRequest request) =>
-        [request.Source.Fund, .. request.Destinations.Select(destination => destination.Fund)];
 }

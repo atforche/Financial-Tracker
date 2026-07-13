@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.Validation;
 using Domain.AccountingPeriods;
-using Domain.Exceptions;
 
 namespace Domain.Goals;
 
@@ -18,7 +18,7 @@ public class AssignmentGoalService(
     public bool TryCreate(
         CreateAssignmentGoalRequest request,
         [NotNullWhen(true)] out AssignmentGoal? assignmentGoal,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
         assignmentGoal = null;
 
@@ -39,81 +39,107 @@ public class AssignmentGoalService(
     }
 
     /// <summary>
-    /// Attempts to update an existing Assignment Goal
+    /// Attempts to update an existing Assignment Goal.
     /// </summary>
     public bool TryUpdate(
         AssignmentGoal assignmentGoal,
-        AssignmentGoalType assignmentGoalType,
-        decimal goalAmount,
-        out IEnumerable<Exception> exceptions)
+        UpdateAssignmentGoalRequest request,
+        out IEnumerable<ValidationError> exceptions)
     {
-        exceptions = [];
-
-        if (!ValidateUpdate(assignmentGoal, assignmentGoalType, goalAmount, out IEnumerable<Exception> updateExceptions))
+        if (!ValidateUpdate(assignmentGoal, request, out exceptions))
         {
-            exceptions = exceptions.Concat(updateExceptions);
             return false;
         }
-        assignmentGoal.UpdateGoal(assignmentGoalType, goalAmount, GetAccountingPeriodBalanceHistory(assignmentGoal));
+
+        assignmentGoal.UpdateGoal(
+            request.AssignmentGoalType,
+            request.GoalAmount,
+            GetAccountingPeriodBalanceHistory(assignmentGoal));
         return true;
     }
 
     /// <summary>
     /// Validates the provided request to create an assignment goal
     /// </summary>
-    private bool ValidateCreate(CreateAssignmentGoalRequest request, out IEnumerable<Exception> exceptions)
+    private bool ValidateCreate(CreateAssignmentGoalRequest request, out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         if (request.Fund.IsUnassignedFund)
         {
-            exceptions = exceptions.Append(new InvalidFundException("The unassigned fund cannot have an assignment goal."));
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(CreateAssignmentGoalRequest.Fund)),
+                "The unassigned fund cannot have an assignment goal."));
         }
         if (request.AccountingPeriod == null && accountingPeriodRepository.GetLatestAccountingPeriod() != null)
         {
-            exceptions = exceptions.Append(new InvalidAccountingPeriodException("An assignment goal cannot be created without an accounting period if any accounting periods exist."));
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(CreateAssignmentGoalRequest.AccountingPeriod)),
+                "An assignment goal cannot be created without an accounting period if any accounting periods exist."));
         }
         if (request.AccountingPeriod != null && !request.AccountingPeriod.IsOpen)
         {
-            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(CreateAssignmentGoalRequest.AccountingPeriod)),
+                "The provided accounting period is closed."));
         }
         if (assignmentGoalRepository.GetByFundAndAccountingPeriod(request.Fund.Id, request.AccountingPeriod?.Id) != null)
         {
-            exceptions = exceptions.Append(new InvalidFundException("An assignment goal already exists for this fund and accounting period."));
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(CreateAssignmentGoalRequest.Fund)),
+                "An assignment goal already exists for this fund and accounting period."));
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(CreateAssignmentGoalRequest.AccountingPeriod)),
+                "An assignment goal already exists for this fund and accounting period."));
         }
         if (request.GoalAmount < 0)
         {
-            exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than or equal to zero."));
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(CreateAssignmentGoalRequest.GoalAmount)),
+                "Goal amount must be greater than or equal to zero."));
         }
         if (!Enum.IsDefined(request.AssignmentGoalType))
         {
-            exceptions = exceptions.Append(new InvalidGoalTypeException("The provided assignment goal type is invalid."));
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(CreateAssignmentGoalRequest.AssignmentGoalType)),
+                "The provided assignment goal type is invalid."));
         }
         return !exceptions.Any();
     }
 
     /// <summary>
-    /// Validates the provided information to update an assignment goal
+    /// Validates the provided request to update an Assignment Goal.
     /// </summary>
-    private bool ValidateUpdate(AssignmentGoal assignmentGoal, AssignmentGoalType assignmentGoalType, decimal goalAmount, out IEnumerable<Exception> exceptions)
+    private bool ValidateUpdate(
+        AssignmentGoal assignmentGoal,
+        UpdateAssignmentGoalRequest request,
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
-        if (!Enum.IsDefined(assignmentGoalType))
+        if (!Enum.IsDefined(request.AssignmentGoalType))
         {
-            exceptions = exceptions.Append(new InvalidGoalTypeException("The provided assignment goal type is invalid."));
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(UpdateAssignmentGoalRequest.AssignmentGoalType)),
+                "The provided assignment goal type is invalid."));
         }
         if (assignmentGoal.AccountingPeriodId == null && accountingPeriodRepository.GetLatestAccountingPeriod() != null)
         {
-            exceptions = exceptions.Append(new InvalidAccountingPeriodException("An assignment goal without an accounting period cannot be updated if any accounting periods exist."));
+            exceptions = exceptions.Append(new ValidationError(
+                ValidationErrorPath.Empty,
+                "An assignment goal without an accounting period cannot be updated if any accounting periods exist."));
         }
         if (assignmentGoal.AccountingPeriodId != null && !accountingPeriodRepository.GetById(assignmentGoal.AccountingPeriodId)?.IsOpen == true)
         {
-            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The accounting period for this assignment goal is closed."));
+            exceptions = exceptions.Append(new ValidationError(
+                ValidationErrorPath.Empty,
+                "The accounting period for this assignment goal is closed."));
         }
-        if (goalAmount < 0)
+        if (request.GoalAmount < 0)
         {
-            exceptions = exceptions.Append(new InvalidFundException("Goal amount must be greater than or equal to zero."));
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(UpdateAssignmentGoalRequest.GoalAmount)),
+                "Goal amount must be greater than or equal to zero."));
         }
         return !exceptions.Any();
     }

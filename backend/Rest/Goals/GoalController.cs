@@ -1,9 +1,9 @@
 using Data;
 using Data.Goals;
 using Domain.AccountingPeriods;
-using Domain.Exceptions;
 using Domain.Funds;
 using Domain.Goals;
+using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Goals;
@@ -223,9 +223,16 @@ public sealed class GoalController(
             });
         }
 
-        if (!assignmentGoalService.TryUpdate(goalToUpdate, assignmentGoalType.Value, updateGoalModel.GoalAmount, out IEnumerable<Exception> assignmentGoalExceptions))
+        if (!assignmentGoalService.TryUpdate(
+            goalToUpdate,
+            new UpdateAssignmentGoalRequest
+            {
+                AssignmentGoalType = assignmentGoalType.Value,
+                GoalAmount = updateGoalModel.GoalAmount,
+            },
+            out IEnumerable<ValidationError> assignmentGoalErrors))
         {
-            AddErrors(errors, assignmentGoalExceptions, nameof(updateGoalModel.AssignmentGoalType), nameof(updateGoalModel.GoalAmount));
+            AddValidationErrors(errors, assignmentGoalErrors);
         }
         if (errors.Count > 0)
         {
@@ -277,9 +284,12 @@ public sealed class GoalController(
             });
         }
 
-        if (!spendingGoalService.TryUpdate(goalToUpdate, spendingGoalType.Value, out IEnumerable<Exception> spendingGoalExceptions))
+        if (!spendingGoalService.TryUpdate(
+            goalToUpdate,
+            new UpdateSpendingGoalRequest { SpendingGoalType = spendingGoalType.Value },
+            out IEnumerable<ValidationError> spendingGoalErrors))
         {
-            AddErrors(errors, spendingGoalExceptions, nameof(updateGoalModel.SpendingGoalType), null);
+            AddValidationErrors(errors, spendingGoalErrors);
         }
         if (errors.Count > 0)
         {
@@ -296,25 +306,17 @@ public sealed class GoalController(
     }
 
     /// <summary>
-    /// Maps goal exceptions to validation errors
+    /// Adds structured validation errors to an HTTP validation response.
     /// </summary>
-    private static void AddErrors(
+    private static void AddValidationErrors(
         Dictionary<string, string[]> errors,
-        IEnumerable<Exception> exceptions,
-        string goalTypeKey,
-        string? goalAmountKey)
+        IEnumerable<ValidationError> validationErrors)
     {
-        foreach (IGrouping<string, Exception> grouping in exceptions.GroupBy(exception => exception switch
+        foreach (IGrouping<ValidationErrorPath, ValidationError> grouping in validationErrors.GroupBy(error => error.Path))
         {
-            InvalidGoalTypeException => goalTypeKey,
-            InvalidFundException invalidFundException
-                when goalAmountKey != null && invalidFundException.Message.Contains("goal amount", StringComparison.InvariantCultureIgnoreCase) => goalAmountKey,
-            _ => string.Empty,
-        }))
-        {
-            foreach (Exception exception in grouping)
+            foreach (ValidationError error in grouping)
             {
-                AddError(errors, grouping.Key, exception.Message);
+                AddError(errors, grouping.Key.ToString(), error.Message);
             }
         }
     }
