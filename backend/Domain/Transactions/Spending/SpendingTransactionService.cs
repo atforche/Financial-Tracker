@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.Validation;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Validation;
 
 namespace Domain.Transactions.Spending;
 

@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.Validation;
 using Domain.AccountingPeriods;
+using Domain.Validation;
 
 namespace Domain.Goals;
 

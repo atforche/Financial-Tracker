@@ -1,7 +1,7 @@
 using Domain.AccountingPeriods;
-using Domain.Validation;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Validation;
 
 namespace Domain.Transactions;
 

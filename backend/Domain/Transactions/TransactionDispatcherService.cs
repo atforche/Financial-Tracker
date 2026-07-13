@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.Validation;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Spending;
+using Domain.Validation;
 
 namespace Domain.Transactions;
 
