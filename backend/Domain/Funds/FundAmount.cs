@@ -1,8 +1,7 @@
 namespace Domain.Funds;
 
 /// <summary>
-/// Value object class representing a Fund Amount.
-/// A Fund Amount represents a monetary amount associated with a particular Fund.
+/// Value object class representing an amount associated with a particular Fund.
 /// </summary>
 public class FundAmount
 {

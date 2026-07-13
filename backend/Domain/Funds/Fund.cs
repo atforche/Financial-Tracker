@@ -5,11 +5,6 @@ namespace Domain.Funds;
 /// <summary>
 /// Entity class representing a Fund
 /// </summary>
-/// <remarks>
-/// A Fund represents a collection of money that the user has allocated for a specific purpose. 
-/// Funds can be used to track savings goals, monthly expenses, or any other financial goal the user may have. 
-/// Each Fund can optionally be marked as a system fund when it is managed by the application rather than by the user.
-/// </remarks>
 public class Fund : Entity<FundId>
 {
     /// <summary>

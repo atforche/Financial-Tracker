@@ -74,11 +74,21 @@ public class FundBalanceService(
         {
             if (postedDate == transaction.Date)
             {
-                UpdateExistingBalanceHistory(transaction, fund);
+                UpdateExistingBalanceHistory(transaction, fund, accountId);
             }
             else
             {
-                AddNewBalanceHistory(transaction, fund, postedDate.Value);
+                FundBalanceHistory? postedHistory = fundBalanceHistoryRepository
+                    .GetAllByTransactionId(transaction.Id)
+                    .SingleOrDefault(history => history.FundId == fund && history.Date == postedDate.Value);
+                if (postedHistory == null)
+                {
+                    AddNewBalanceHistory(transaction, fund, postedDate.Value);
+                }
+                else
+                {
+                    UpdateExistingBalanceHistory(transaction, fund, accountId, postedHistory);
+                }
             }
         }
     }
@@ -88,24 +98,40 @@ public class FundBalanceService(
     /// </summary>
     internal void UnpostTransaction(Transaction transaction)
     {
-        foreach (AccountId accountId in transaction.GetAllAffectedAccountIds())
-        {
-            IEnumerable<FundId> affectedFunds = transaction.GetAllAffectedFundIds(accountId);
-            foreach (FundId fund in affectedFunds)
+        IEnumerable<IGrouping<(FundId FundId, DateOnly PostedDate), (FundId FundId, AccountId AccountId, DateOnly PostedDate)>> postedFundAccounts = transaction.GetAllAffectedAccountIds()
+            .SelectMany(accountId =>
             {
-                FundBalanceHistory? oldPostedHistory = fundBalanceHistoryRepository
+                DateOnly? postedDate = transaction.GetPostedDateForAccount(accountId);
+                return postedDate == null
+                    ? []
+                    : transaction.GetAllAffectedFundIds(accountId)
+                        .Select(fundId => (FundId: fundId, AccountId: accountId, PostedDate: postedDate.Value));
+            })
+            .GroupBy(posting => (posting.FundId, posting.PostedDate));
+
+        foreach (IGrouping<(FundId FundId, DateOnly PostedDate), (FundId FundId, AccountId AccountId, DateOnly PostedDate)> postingGroup in postedFundAccounts)
+        {
+            if (postingGroup.Key.PostedDate == transaction.Date)
+            {
+                FundBalanceHistory existingHistory = fundBalanceHistoryRepository
                     .GetAllByTransactionId(transaction.Id)
-                    .SingleOrDefault(bh => bh.FundId == fund && bh.Date != transaction.Date);
-                if (oldPostedHistory == null)
+                    .Single(history => history.FundId == postingGroup.Key.FundId && history.Date == transaction.Date);
+                foreach (AccountId accountId in postingGroup.Select(posting => posting.AccountId))
                 {
-                    UpdateExistingBalanceHistory(transaction, fund);
+                    existingHistory.Update(transaction.ApplyToFundBalance(
+                        existingHistory.ToFundBalance(),
+                        accountId: accountId,
+                        reverse: true,
+                        postingOnly: true));
+                    UpdateLaterBalanceHistoriesForPosting(transaction, existingHistory, accountId, reverse: true);
                 }
-                else
-                {
-                    DeleteExistingBalanceHistory(transaction, oldPostedHistory);
-                    fundBalanceHistoryRepository.Delete(oldPostedHistory);
-                }
+                continue;
             }
+            FundBalanceHistory postedHistory = fundBalanceHistoryRepository
+                .GetAllByTransactionId(transaction.Id)
+                .Single(history => history.FundId == postingGroup.Key.FundId && history.Date == postingGroup.Key.PostedDate);
+            RemovePostedBalanceHistory(transaction, postedHistory, postingGroup.Select(posting => posting.AccountId));
+            fundBalanceHistoryRepository.Delete(postedHistory);
         }
     }
 
@@ -152,17 +178,63 @@ public class FundBalanceService(
     /// <summary>
     /// Updates an existing Fund Balance History entry
     /// </summary>
-    private void UpdateExistingBalanceHistory(Transaction transaction, FundId fund)
+    private void UpdateExistingBalanceHistory(
+        Transaction transaction,
+        FundId fund,
+        AccountId accountId,
+        FundBalanceHistory? historyToUpdate = null)
     {
-        FundBalanceHistory existingHistory = fundBalanceHistoryRepository.GetEarliestByTransactionId(fund, transaction.Id);
+        FundBalanceHistory existingHistory = historyToUpdate ?? fundBalanceHistoryRepository.GetEarliestByTransactionId(fund, transaction.Id);
         FundBalance existingBalance = GetExistingFundBalanceAsOf(fund, existingHistory.Date, existingHistory.Sequence);
         existingHistory.Update(transaction.ApplyToFundBalance(existingBalance, existingHistory.Date));
+        UpdateLaterBalanceHistoriesForPosting(transaction, existingHistory, accountId);
+    }
 
+    /// <summary>
+    /// Applies a posted-account delta to Fund Balance History entries after the provided entry.
+    /// </summary>
+    private void UpdateLaterBalanceHistoriesForPosting(
+        Transaction transaction,
+        FundBalanceHistory balanceHistory,
+        AccountId accountId,
+        bool reverse = false)
+    {
         foreach (FundBalanceHistory history in fundBalanceHistoryRepository
-            .GetAllHistoriesLaterThan(existingHistory.FundId, existingHistory.Date, existingHistory.Sequence))
+            .GetAllHistoriesLaterThan(balanceHistory.FundId, balanceHistory.Date, balanceHistory.Sequence))
         {
-            existingBalance = history.ToFundBalance();
-            FundBalance updatedBalance = transaction.ApplyToFundBalance(existingBalance, existingHistory.Date);
+            FundBalance updatedBalance = transaction.ApplyToFundBalance(
+                history.ToFundBalance(),
+                accountId: accountId,
+                reverse: reverse,
+                postingOnly: true);
+            history.Update(updatedBalance);
+        }
+    }
+
+    /// <summary>
+    /// Removes a posted Fund Balance History entry and reverses its posting effects from later entries.
+    /// </summary>
+    private void RemovePostedBalanceHistory(
+        Transaction transaction,
+        FundBalanceHistory deletedBalanceHistory,
+        IEnumerable<AccountId> accountIds)
+    {
+        foreach (FundBalanceHistory history in fundBalanceHistoryRepository
+            .GetAllHistoriesLaterThan(deletedBalanceHistory.FundId, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence + 1))
+        {
+            if (history.Date == deletedBalanceHistory.Date)
+            {
+                history.Sequence -= 1;
+            }
+            var updatedBalance = history.ToFundBalance();
+            foreach (AccountId accountId in accountIds)
+            {
+                updatedBalance = transaction.ApplyToFundBalance(
+                    updatedBalance,
+                    accountId: accountId,
+                    reverse: true,
+                    postingOnly: true);
+            }
             history.Update(updatedBalance);
         }
     }

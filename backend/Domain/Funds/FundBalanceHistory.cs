@@ -25,9 +25,6 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     /// <summary>
     /// Sequence number for this Fund Balance History
     /// </summary>
-    /// <remarks>
-    /// The sequence number is used to order multiple balance history records for the same date.
-    /// </remarks>
     public int Sequence { get; internal set; }
 
     /// <summary>

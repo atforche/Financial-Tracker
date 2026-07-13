@@ -9,15 +9,6 @@ namespace Data.Funds;
 public class FundBalanceHistoryRepository(DatabaseContext databaseContext) : IFundBalanceHistoryRepository
 {
     /// <inheritdoc/>
-    public int GetNextSequenceForFundAndDate(FundId fundId, DateOnly historyDate)
-    {
-        var historiesOnDate = databaseContext.FundBalanceHistories
-            .Where(history => history.FundId == fundId && history.Date == historyDate)
-            .ToList();
-        return historiesOnDate.Count == 0 ? 1 : historiesOnDate.Max(history => history.Sequence) + 1;
-    }
-
-    /// <inheritdoc/>
     public FundBalanceHistory? GetLatestForFund(FundId fundId) =>
         databaseContext.FundBalanceHistories
             .Where(history => history.FundId == fundId)

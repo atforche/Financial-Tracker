@@ -34,6 +34,7 @@ public class FundService(
             return false;
         }
         fund = new Fund(request.Name, request.Description, request.OpeningAccountingPeriod.Id);
+        fundRepository.Add(fund);
         accountingPeriodBalanceService.AddFund(fund);
 
         var assignmentGoals = new List<AssignmentGoal>();
@@ -48,11 +49,12 @@ public class FundService(
                 spendingGoals,
                 out exceptions))
         {
+            accountingPeriodBalanceService.DeleteFund(fund);
+            fundRepository.Delete(fund);
             fund = null;
             return false;
         }
 
-        fundRepository.Add(fund);
         foreach (AssignmentGoal assignmentGoal in assignmentGoals)
         {
             assignmentGoalRepository.Add(assignmentGoal);
@@ -172,7 +174,7 @@ public class FundService(
             AssignmentGoalAmount = 1,
             SpendingGoalType = SpendingGoalType.Standard,
         };
-        if (!ValidateCreate(request, out exceptions))
+        if (!ValidateCreate(request, out exceptions, allowUnassignedFund: true))
         {
             return false;
         }
@@ -201,7 +203,7 @@ public class FundService(
             AssignmentGoalAmount = 1,
             SpendingGoalType = SpendingGoalType.Standard,
         };
-        if (!ValidateOnboard(request, out exceptions))
+        if (!ValidateOnboard(request, out exceptions, allowUnassignedFund: true))
         {
             return false;
         }
@@ -217,7 +219,7 @@ public class FundService(
     {
         exceptions = [];
 
-        if (string.IsNullOrEmpty(name))
+        if (string.IsNullOrWhiteSpace(name))
         {
             exceptions = exceptions.Append(new ValidationError(namePath, "Fund name cannot be empty"));
         }
@@ -231,13 +233,22 @@ public class FundService(
     /// <summary>
     /// Validates the provided request to create a fund
     /// </summary>
-    private bool ValidateCreate(CreateFundRequest request, out IEnumerable<ValidationError> exceptions)
+    private bool ValidateCreate(
+        CreateFundRequest request,
+        out IEnumerable<ValidationError> exceptions,
+        bool allowUnassignedFund = false)
     {
         exceptions = [];
 
         if (!ValidateName(request.Name, new ValidationErrorPath(nameof(CreateFundRequest.Name)), null, out IEnumerable<ValidationError> nameExceptions))
         {
             exceptions = exceptions.Concat(nameExceptions);
+        }
+        if (!allowUnassignedFund && string.Equals(request.Name, Fund.UnassignedFundName, StringComparison.OrdinalIgnoreCase))
+        {
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(CreateFundRequest.Name)),
+                "The unassigned fund name is reserved."));
         }
         if (!request.OpeningAccountingPeriod.IsOpen)
         {
@@ -263,13 +274,22 @@ public class FundService(
     /// <summary>
     /// Validates the provided request to onboard a Fund.
     /// </summary>
-    private bool ValidateOnboard(OnboardFundRequest request, out IEnumerable<ValidationError> exceptions)
+    private bool ValidateOnboard(
+        OnboardFundRequest request,
+        out IEnumerable<ValidationError> exceptions,
+        bool allowUnassignedFund = false)
     {
         exceptions = [];
 
         if (!ValidateName(request.Name, new ValidationErrorPath(nameof(OnboardFundRequest.Name)), null, out IEnumerable<ValidationError> nameExceptions))
         {
             exceptions = exceptions.Concat(nameExceptions);
+        }
+        if (!allowUnassignedFund && string.Equals(request.Name, Fund.UnassignedFundName, StringComparison.OrdinalIgnoreCase))
+        {
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(OnboardFundRequest.Name)),
+                "The unassigned fund name is reserved."));
         }
         if (accountingPeriodRepository.GetAll().Count > 0)
         {

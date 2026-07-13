@@ -8,11 +8,6 @@ namespace Domain.Funds;
 public interface IFundBalanceHistoryRepository
 {
     /// <summary>
-    /// Gets the next sequence number for the specified Fund ID and date
-    /// </summary>
-    int GetNextSequenceForFundAndDate(FundId fundId, DateOnly historyDate);
-
-    /// <summary>
     /// Gets the latest Fund Balance History entry for the specified Fund ID
     /// </summary>
     FundBalanceHistory? GetLatestForFund(FundId fundId);
