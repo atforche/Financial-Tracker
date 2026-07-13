@@ -16,7 +16,7 @@ public class FundBalanceService(
     /// </summary>
     public FundBalance GetCurrentBalance(FundId fundId) =>
         fundBalanceHistoryRepository.GetLatestForFund(fundId)?.ToFundBalance() ??
-            new FundBalance(fundId, fundRepository.GetById(fundId).OnboardedBalance ?? 0, 0, 0, 0, 0);
+            new FundBalance(fundId, fundRepository.GetById(fundId).OnboardedBalance ?? 0, 0, 0);
 
     /// <summary>
     /// Gets the Fund Balances prior to the provided Transaction
@@ -144,16 +144,6 @@ public class FundBalanceService(
             }
             existingBalance = history.ToFundBalance();
             FundBalance updatedBalance = transaction.ApplyToFundBalance(existingBalance, date);
-            if (transactionRepository.GetById(history.TransactionId).AccountingPeriodId != transaction.AccountingPeriodId)
-            {
-                updatedBalance = new FundBalance(
-                    history.FundId,
-                    updatedBalance.PostedBalance,
-                    existingBalance.AmountAssigned,
-                    existingBalance.PendingAmountAssigned,
-                    existingBalance.AmountSpent,
-                    existingBalance.PendingAmountSpent);
-            }
             history.Update(updatedBalance);
         }
         fundBalanceHistoryRepository.Add(newBalanceHistory);
@@ -173,16 +163,6 @@ public class FundBalanceService(
         {
             existingBalance = history.ToFundBalance();
             FundBalance updatedBalance = transaction.ApplyToFundBalance(existingBalance, existingHistory.Date);
-            if (transactionRepository.GetById(history.TransactionId).AccountingPeriodId != transaction.AccountingPeriodId)
-            {
-                updatedBalance = new FundBalance(
-                    history.FundId,
-                    updatedBalance.PostedBalance,
-                    existingBalance.AmountAssigned,
-                    existingBalance.PendingAmountAssigned,
-                    existingBalance.AmountSpent,
-                    existingBalance.PendingAmountSpent);
-            }
             history.Update(updatedBalance);
         }
     }
@@ -226,6 +206,6 @@ public class FundBalanceService(
         {
             return existingHistory.ToFundBalance();
         }
-        return new FundBalance(fundId, fundRepository.GetById(fundId).OnboardedBalance ?? 0, 0, 0, 0, 0);
+        return new FundBalance(fundId, fundRepository.GetById(fundId).OnboardedBalance ?? 0, 0, 0);
     }
 }

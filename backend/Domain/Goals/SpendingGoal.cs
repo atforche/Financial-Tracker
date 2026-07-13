@@ -65,20 +65,25 @@ public class SpendingGoal : Entity<SpendingGoalId>
     /// <summary>
     /// Updates this Spending Goal
     /// </summary>
-    internal void UpdateGoal(SpendingGoalType spendingGoalType, AccountingPeriodFundBalanceHistory balanceHistory)
+    internal void UpdateGoal(
+        SpendingGoalType spendingGoalType,
+        AccountingPeriodFundBalanceHistory fundBalanceHistory,
+        AccountingPeriodGoalBalanceHistory goalBalanceHistory)
     {
         SpendingGoalType = spendingGoalType;
-        EvaluateGoal(balanceHistory);
+        EvaluateGoal(fundBalanceHistory, goalBalanceHistory);
     }
 
     /// <summary>
     /// Evaluates progress towards the spending goal
     /// </summary>
-    internal void EvaluateGoal(AccountingPeriodFundBalanceHistory balanceHistory)
+    internal void EvaluateGoal(
+        AccountingPeriodFundBalanceHistory fundBalanceHistory,
+        AccountingPeriodGoalBalanceHistory goalBalanceHistory)
     {
-        TotalAmountToSpend = balanceHistory.OpeningBalance + balanceHistory.AmountAssigned;
-        TotalAmountSpent = balanceHistory.AmountSpent;
-        TotalAmountSpentIncludingPending = TotalAmountSpent + balanceHistory.PendingAmountSpent;
+        TotalAmountToSpend = fundBalanceHistory.OpeningBalance + goalBalanceHistory.AmountAssigned;
+        TotalAmountSpent = goalBalanceHistory.AmountSpent;
+        TotalAmountSpentIncludingPending = TotalAmountSpent + goalBalanceHistory.PendingAmountSpent;
 
         IsGoalMet = SpendingGoalType switch
         {

@@ -20,10 +20,6 @@ public sealed class FundBalanceConverter
                 FundId = fund.Id.Value,
                 FundName = fund.Name,
                 PostedBalance = 0,
-                AmountAssigned = 0,
-                PendingAmountAssigned = 0,
-                AmountSpent = 0,
-                PendingAmountSpent = 0
             };
         }
         return new FundBalanceModel
@@ -31,10 +27,6 @@ public sealed class FundBalanceConverter
             FundId = fundBalance.FundId.Value,
             FundName = fund.Name,
             PostedBalance = fundBalance.PostedBalance,
-            AmountAssigned = fundBalance.AmountAssigned,
-            PendingAmountAssigned = fundBalance.PendingAmountAssigned,
-            AmountSpent = fundBalance.AmountSpent,
-            PendingAmountSpent = fundBalance.PendingAmountSpent
         };
     }
 }

@@ -36,24 +36,14 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     public decimal PostedBalance { get; private set; }
 
     /// <summary>
-    /// Amount Assigned for this Fund Balance History
+    /// Pending Debit Amount for this Fund Balance History
     /// </summary>
-    public decimal AmountAssigned { get; private set; }
+    public decimal PendingDebitAmount { get; private set; }
 
     /// <summary>
-    /// Pending Amount Assigned for this Fund Balance History
+    /// Pending Credit Amount for this Fund Balance History
     /// </summary>
-    public decimal PendingAmountAssigned { get; private set; }
-
-    /// <summary>
-    /// Amount Spent for this Fund Balance History
-    /// </summary>
-    public decimal AmountSpent { get; private set; }
-
-    /// <summary>
-    /// Pending Amount Spent for this Fund Balance History
-    /// </summary>
-    public decimal PendingAmountSpent { get; private set; }
+    public decimal PendingCreditAmount { get; private set; }
 
     /// <summary>
     /// Updates this Fund Balance History with a new Fund Balance.
@@ -65,17 +55,15 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
             throw new InvalidOperationException("Cannot update Fund Balance History with a Fund Balance for a different Fund");
         }
         PostedBalance = fundBalance.PostedBalance;
-        AmountAssigned = fundBalance.AmountAssigned;
-        PendingAmountAssigned = fundBalance.PendingAmountAssigned;
-        AmountSpent = fundBalance.AmountSpent;
-        PendingAmountSpent = fundBalance.PendingAmountSpent;
+        PendingDebitAmount = fundBalance.PendingDebitAmount;
+        PendingCreditAmount = fundBalance.PendingCreditAmount;
     }
 
     /// <summary>
     /// Converts this Fund Balance History to a Fund Balance
     /// </summary>
     /// <returns></returns>
-    public FundBalance ToFundBalance() => new(FundId, PostedBalance, AmountAssigned, PendingAmountAssigned, AmountSpent, PendingAmountSpent);
+    public FundBalance ToFundBalance() => new(FundId, PostedBalance, PendingDebitAmount, PendingCreditAmount);
 
     /// <summary>
     /// Constructs a new instance of this class

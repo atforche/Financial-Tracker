@@ -1,5 +1,4 @@
 using Domain.Funds;
-using Domain.Goals;
 
 namespace Domain.AccountingPeriods;
 
@@ -24,26 +23,6 @@ public class AccountingPeriodFundBalanceHistory : Entity<AccountingPeriodFundBal
     public decimal OpeningBalance { get; private set; }
 
     /// <summary>
-    /// Amount assigned to this Fund during the Accounting Period
-    /// </summary>
-    public decimal AmountAssigned { get; private set; }
-
-    /// <summary>
-    /// Pending amount assigned to this Fund during the Accounting Period
-    /// </summary>
-    public decimal PendingAmountAssigned { get; private set; }
-
-    /// <summary>
-    /// Amount spent from this Fund during the Accounting Period
-    /// </summary>
-    public decimal AmountSpent { get; private set; }
-
-    /// <summary>
-    /// Pending amount spent from this Fund during the Accounting Period
-    /// </summary>
-    public decimal PendingAmountSpent { get; private set; }
-
-    /// <summary>
     /// Closing Balance for this Fund Accounting Period Balance History
     /// </summary>
     public decimal ClosingBalance { get; private set; }
@@ -51,12 +30,12 @@ public class AccountingPeriodFundBalanceHistory : Entity<AccountingPeriodFundBal
     /// <summary>
     /// Gets the opening Fund Balance for this Fund Accounting Period Balance History
     /// </summary>
-    public FundBalance GetOpeningFundBalance() => new(Fund.Id, OpeningBalance, 0, 0, 0, 0);
+    public FundBalance GetOpeningFundBalance() => new(Fund.Id, OpeningBalance, 0, 0);
 
     /// <summary>
     /// Gets the closing Fund Balance for this Fund Accounting Period Balance History
     /// </summary>
-    public FundBalance GetClosingFundBalance() => new(Fund.Id, ClosingBalance, AmountAssigned, PendingAmountAssigned, AmountSpent, PendingAmountSpent);
+    public FundBalance GetClosingFundBalance() => new(Fund.Id, ClosingBalance, 0, 0);
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -72,30 +51,16 @@ public class AccountingPeriodFundBalanceHistory : Entity<AccountingPeriodFundBal
         Fund = fund;
         AccountingPeriod = accountingPeriod;
         OpeningBalance = openingBalance.PostedBalance;
-        AmountAssigned = closingBalance.AmountAssigned;
-        PendingAmountAssigned = closingBalance.PendingAmountAssigned;
-        AmountSpent = closingBalance.AmountSpent;
-        PendingAmountSpent = closingBalance.PendingAmountSpent;
         ClosingBalance = closingBalance.PostedBalance;
     }
 
     /// <summary>
     /// Updates this Fund Accounting Period Balance History
     /// </summary>
-    internal void Update(
-        FundBalance openingBalance,
-        FundBalance closingBalance,
-        AssignmentGoal? assignmentGoal,
-        SpendingGoal? spendingGoal)
+    internal void Update(FundBalance openingBalance, FundBalance closingBalance)
     {
         OpeningBalance = openingBalance.PostedBalance;
-        AmountAssigned = closingBalance.AmountAssigned;
-        PendingAmountAssigned = closingBalance.PendingAmountAssigned;
-        AmountSpent = closingBalance.AmountSpent;
-        PendingAmountSpent = closingBalance.PendingAmountSpent;
         ClosingBalance = closingBalance.PostedBalance;
-        assignmentGoal?.EvaluateGoal(this);
-        spendingGoal?.EvaluateGoal(this);
     }
 
     /// <summary>

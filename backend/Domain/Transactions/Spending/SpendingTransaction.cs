@@ -1,5 +1,6 @@
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Goals;
 
 namespace Domain.Transactions.Spending;
 
@@ -182,7 +183,7 @@ public class SpendingTransaction : Transaction
             return existingFundBalance;
         }
         decimal amount = fundAmounts.Sum(f => f.Amount);
-        return existingFundBalance.AddNewPendingAmountSpent(reverse ? -amount : amount);
+        return existingFundBalance.AddNewPendingDebitAmount(reverse ? -amount : amount);
     }
 
     /// <inheritdoc/>
@@ -202,6 +203,24 @@ public class SpendingTransaction : Transaction
         {
             return existingFundBalance;
         }
-        return existingFundBalance.PostPendingAmountSpent(reverse ? -amount : amount);
+        return existingFundBalance.PostPendingDebitAmount(reverse ? -amount : amount);
+    }
+
+    /// <inheritdoc/>
+    protected override GoalBalance AddToGoalBalance(GoalBalance existingGoalBalance, bool reverse)
+    {
+        decimal amount = _destinations.SelectMany(destination => destination.FundAssignments)
+            .Where(assignment => assignment.FundId == existingGoalBalance.FundId).Sum(assignment => assignment.Amount);
+        return amount == 0 ? existingGoalBalance : existingGoalBalance.AddNewPendingAmountSpent(reverse ? -amount : amount);
+    }
+
+    /// <inheritdoc/>
+    protected override GoalBalance PostToGoalBalance(GoalBalance existingGoalBalance, AccountId accountId, bool reverse)
+    {
+        IEnumerable<FundAmount> assignments = accountId == Source.Account.Id
+            ? _destinations.Where(destination => destination.Account == null).SelectMany(destination => destination.FundAssignments)
+            : _destinations.Where(destination => destination.Account?.Id == accountId).SelectMany(destination => destination.FundAssignments);
+        decimal amount = assignments.Where(assignment => assignment.FundId == existingGoalBalance.FundId).Sum(assignment => assignment.Amount);
+        return amount == 0 ? existingGoalBalance : existingGoalBalance.PostPendingAmountSpent(reverse ? -amount : amount);
     }
 }

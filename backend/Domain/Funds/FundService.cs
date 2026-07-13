@@ -162,7 +162,6 @@ public class FundService(
         out IEnumerable<ValidationError> exceptions)
     {
         fund = null;
-        exceptions = [];
 
         var request = new CreateFundRequest
         {

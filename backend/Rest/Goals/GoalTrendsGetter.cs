@@ -130,10 +130,10 @@ public class GoalTrendsGetter(
             request.SpendingBalanceEventSort);
 
         decimal totalAmountToAssign = sortedAssignmentGoals.Sum(goal => goal.TotalAmountToAssign);
-        decimal totalAmountAssigned = sortedAssignmentGoals.Sum(goal => GetFundBalanceHistory(goal).AmountAssigned);
+        decimal totalAmountAssigned = sortedAssignmentGoals.Sum(goal => GetGoalBalanceHistory(goal).AmountAssigned);
         int metAssignmentGoals = sortedAssignmentGoals.Count(goal => goal.IsGoalMet);
         decimal totalAmountToSpend = sortedSpendingGoals.Sum(goal => goal.TotalAmountToSpend);
-        decimal totalAmountSpent = sortedSpendingGoals.Sum(goal => GetFundBalanceHistory(goal).AmountSpent);
+        decimal totalAmountSpent = sortedSpendingGoals.Sum(goal => GetGoalBalanceHistory(goal).AmountSpent);
         int metSpendingGoals = sortedSpendingGoals.Count(goal => goal.IsGoalMet);
 
         List<GoalTrendsAssignmentGoalTypeSummaryModel> assignmentGoalTypeSummary = BuildAssignmentTypeSummary(sortedAssignmentGoals);
@@ -631,7 +631,7 @@ public class GoalTrendsGetter(
         AssignmentGoalType assignmentGoalType)
     {
         decimal totalAmountToAssign = goals.Sum(goal => goal.TotalAmountToAssign);
-        decimal totalAmountAssigned = goals.Sum(goal => GetFundBalanceHistory(goal).AmountAssigned);
+        decimal totalAmountAssigned = goals.Sum(goal => GetGoalBalanceHistory(goal).AmountAssigned);
         int metGoals = goals.Count(goal => goal.IsGoalMet);
 
         return new GoalTrendsAssignmentGoalTypeSummaryModel
@@ -653,7 +653,7 @@ public class GoalTrendsGetter(
         SpendingGoalType spendingGoalType)
     {
         decimal totalAmountToSpend = goals.Sum(goal => goal.TotalAmountToSpend);
-        decimal totalAmountSpent = goals.Sum(goal => GetFundBalanceHistory(goal).AmountSpent);
+        decimal totalAmountSpent = goals.Sum(goal => GetGoalBalanceHistory(goal).AmountSpent);
         int metGoals = goals.Count(goal => goal.IsGoalMet);
 
         return new GoalTrendsSpendingGoalTypeSummaryModel
@@ -676,10 +676,10 @@ public class GoalTrendsGetter(
         List<SpendingGoal> spendingGoals)
     {
         decimal totalAmountToAssign = assignmentGoals.Sum(goal => goal.TotalAmountToAssign);
-        decimal totalAmountAssigned = assignmentGoals.Sum(goal => GetFundBalanceHistory(goal).AmountAssigned);
+        decimal totalAmountAssigned = assignmentGoals.Sum(goal => GetGoalBalanceHistory(goal).AmountAssigned);
         int metAssignmentGoals = assignmentGoals.Count(goal => goal.IsGoalMet);
         decimal totalAmountToSpend = spendingGoals.Sum(goal => goal.TotalAmountToSpend);
-        decimal totalAmountSpent = spendingGoals.Sum(goal => GetFundBalanceHistory(goal).AmountSpent);
+        decimal totalAmountSpent = spendingGoals.Sum(goal => GetGoalBalanceHistory(goal).AmountSpent);
         int metSpendingGoals = spendingGoals.Count(goal => goal.IsGoalMet);
 
         return new GoalTrendsAccountingPeriodSummaryModel
@@ -707,17 +707,17 @@ public class GoalTrendsGetter(
         };
     }
 
-    private AccountingPeriodFundBalanceHistory GetFundBalanceHistory(AssignmentGoal goal) =>
+    private AccountingPeriodGoalBalanceHistory GetGoalBalanceHistory(AssignmentGoal goal) =>
         accountingPeriodBalanceHistoryRepository
             .GetForAccountingPeriod(goal.AccountingPeriodId ?? throw new InvalidOperationException("Assignment Goal must belong to an accounting period."))
-            .FundBalances
-            .Single(fundBalance => fundBalance.Fund.Id == goal.Fund.Id);
+            .GoalBalances
+            .Single(goalBalance => goalBalance.Fund.Id == goal.Fund.Id);
 
-    private AccountingPeriodFundBalanceHistory GetFundBalanceHistory(SpendingGoal goal) =>
+    private AccountingPeriodGoalBalanceHistory GetGoalBalanceHistory(SpendingGoal goal) =>
         accountingPeriodBalanceHistoryRepository
             .GetForAccountingPeriod(goal.AccountingPeriodId ?? throw new InvalidOperationException("Spending Goal must belong to an accounting period."))
-            .FundBalances
-            .Single(fundBalance => fundBalance.Fund.Id == goal.Fund.Id);
+            .GoalBalances
+            .Single(goalBalance => goalBalance.Fund.Id == goal.Fund.Id);
 
     private static GoalTrendsBalanceEventModel ToModel(GoalTrendsBalanceEventRow row) => new()
     {

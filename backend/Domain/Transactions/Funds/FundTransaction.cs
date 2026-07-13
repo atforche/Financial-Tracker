@@ -1,5 +1,6 @@
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Goals;
 
 namespace Domain.Transactions.Funds;
 
@@ -85,18 +86,41 @@ public class FundTransaction : Transaction
         FundBalance newBalance = existingFundBalance;
         if (existingFundBalance.FundId == Source.Fund.Id)
         {
-            newBalance = newBalance.AddNewPendingAmountAssigned(reverse ? Amount : -Amount);
-            newBalance = newBalance.PostPendingAmountAssigned(reverse ? Amount : -Amount);
+            newBalance = newBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
+            newBalance = newBalance.PostPendingDebitAmount(reverse ? -Amount : Amount);
         }
         FundTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Fund.Id == existingFundBalance.FundId);
         if (destination != null)
         {
-            newBalance = newBalance.AddNewPendingAmountAssigned(reverse ? -destination.Amount : destination.Amount);
-            newBalance = newBalance.PostPendingAmountAssigned(reverse ? -destination.Amount : destination.Amount);
+            newBalance = newBalance.AddNewPendingCreditAmount(reverse ? -destination.Amount : destination.Amount);
+            newBalance = newBalance.PostPendingCreditAmount(reverse ? -destination.Amount : destination.Amount);
         }
         return newBalance;
     }
 
     /// <inheritdoc/>
     protected override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse) => existingFundBalance;
+
+    /// <inheritdoc/>
+    protected override GoalBalance AddToGoalBalance(GoalBalance existingGoalBalance, bool reverse)
+    {
+        GoalBalance newBalance = existingGoalBalance;
+        if (existingGoalBalance.FundId == Source.Fund.Id)
+        {
+            decimal amount = reverse ? Amount : -Amount;
+            newBalance = newBalance.AddNewPendingAmountAssigned(amount);
+            newBalance = newBalance.PostPendingAmountAssigned(amount);
+        }
+        FundTransactionDestination? destination = _destinations.FirstOrDefault(destination => destination.Fund.Id == existingGoalBalance.FundId);
+        if (destination != null)
+        {
+            decimal amount = reverse ? -destination.Amount : destination.Amount;
+            newBalance = newBalance.AddNewPendingAmountAssigned(amount);
+            newBalance = newBalance.PostPendingAmountAssigned(amount);
+        }
+        return newBalance;
+    }
+
+    /// <inheritdoc/>
+    protected override GoalBalance PostToGoalBalance(GoalBalance existingGoalBalance, AccountId accountId, bool reverse) => existingGoalBalance;
 }

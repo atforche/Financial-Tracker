@@ -10,6 +10,7 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
 {
     private List<AccountingPeriodAccountBalanceHistory> _accountBalances = [];
     private List<AccountingPeriodFundBalanceHistory> _fundBalances = [];
+    private List<AccountingPeriodGoalBalanceHistory> _goalBalances = [];
 
     /// <summary>
     /// Accounting Period for this Accounting Period Balance History
@@ -45,17 +46,28 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
     }
 
     /// <summary>
+    /// Goal Balances for this Accounting Period Balance History
+    /// </summary>
+    public IReadOnlyCollection<AccountingPeriodGoalBalanceHistory> GoalBalances
+    {
+        get => _goalBalances;
+        private set => _goalBalances = value.ToList();
+    }
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     internal AccountingPeriodBalanceHistory(
         AccountingPeriod accountingPeriod,
         IEnumerable<AccountingPeriodAccountBalanceHistory> accountBalances,
-        IEnumerable<AccountingPeriodFundBalanceHistory> fundBalances)
+        IEnumerable<AccountingPeriodFundBalanceHistory> fundBalances,
+        IEnumerable<AccountingPeriodGoalBalanceHistory> goalBalances)
         : base(new AccountingPeriodBalanceHistoryId(Guid.NewGuid()))
     {
         AccountingPeriod = accountingPeriod;
         _accountBalances = accountBalances.ToList();
         _fundBalances = fundBalances.ToList();
+        _goalBalances = goalBalances.ToList();
         UpdateBalances();
     }
 
@@ -96,6 +108,16 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
     /// </summary>
     internal void RemoveFundBalance(FundId fundId) =>
         _ = _fundBalances.RemoveAll(fundBalance => fundBalance.Fund.Id == fundId);
+
+    /// <summary>
+    /// Adds a Goal Balance to this Accounting Period Balance History.
+    /// </summary>
+    internal void AddGoalBalance(AccountingPeriodGoalBalanceHistory goalBalance) => _goalBalances.Add(goalBalance);
+
+    /// <summary>
+    /// Removes the Goal Balance for the provided Fund from this Accounting Period Balance History.
+    /// </summary>
+    internal void RemoveGoalBalance(FundId fundId) => _ = _goalBalances.RemoveAll(goalBalance => goalBalance.Fund.Id == fundId);
 
     /// <summary>
     /// Constructs a new default instance of this class

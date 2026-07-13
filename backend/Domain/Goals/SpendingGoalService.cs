@@ -32,7 +32,9 @@ public class SpendingGoalService(
             request.SpendingGoalType);
         if (request.AccountingPeriod != null)
         {
-            spendingGoal.EvaluateGoal(GetAccountingPeriodBalanceHistory(spendingGoal));
+            (AccountingPeriodFundBalanceHistory fundBalanceHistory, AccountingPeriodGoalBalanceHistory goalBalanceHistory) =
+                GetAccountingPeriodBalanceHistories(spendingGoal);
+            spendingGoal.EvaluateGoal(fundBalanceHistory, goalBalanceHistory);
         }
         return true;
     }
@@ -50,7 +52,9 @@ public class SpendingGoalService(
             return false;
         }
 
-        spendingGoal.UpdateGoal(request.SpendingGoalType, GetAccountingPeriodBalanceHistory(spendingGoal));
+        (AccountingPeriodFundBalanceHistory fundBalanceHistory, AccountingPeriodGoalBalanceHistory goalBalanceHistory) =
+            GetAccountingPeriodBalanceHistories(spendingGoal);
+        spendingGoal.UpdateGoal(request.SpendingGoalType, fundBalanceHistory, goalBalanceHistory);
         return true;
     }
 
@@ -126,9 +130,14 @@ public class SpendingGoalService(
     }
 
     /// <summary>
-    /// Gets the Accounting Period Balance History for a given Spending Goal
+    /// Gets the Fund and Goal Balance Histories for a given Spending Goal
     /// </summary>
-    private AccountingPeriodFundBalanceHistory GetAccountingPeriodBalanceHistory(SpendingGoal spendingGoal) =>
-        accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(spendingGoal.AccountingPeriodId ?? throw new InvalidOperationException("Spending goal placeholder cannot be evaluated."))
-            .FundBalances.Single(fund => fund.Fund.Id == spendingGoal.Fund.Id);
+    private (AccountingPeriodFundBalanceHistory FundBalanceHistory, AccountingPeriodGoalBalanceHistory GoalBalanceHistory) GetAccountingPeriodBalanceHistories(SpendingGoal spendingGoal)
+    {
+        AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(
+            spendingGoal.AccountingPeriodId ?? throw new InvalidOperationException("Spending goal placeholder cannot be evaluated."));
+        return (
+            balanceHistory.FundBalances.Single(fund => fund.Fund.Id == spendingGoal.Fund.Id),
+            balanceHistory.GoalBalances.Single(goal => goal.Fund.Id == spendingGoal.Fund.Id));
+    }
 }

@@ -1,6 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Goals;
 
 namespace Domain.Transactions;
 
@@ -118,6 +119,41 @@ public abstract class Transaction : Entity<TransactionId>
     }
 
     /// <summary>
+    /// Applies this Transaction to the provided existing Goal Balance.
+    /// </summary>
+    /// <param name="existingGoalBalance">The existing Goal Balance to apply this Transaction to.</param>
+    /// <param name="asOfDate">If provided, only applies the portions of this Transaction that occurred on the specified date.</param>
+    /// <param name="accountId">If provided, only applies the portions of this Transaction that affect the specified account.</param>
+    /// <param name="reverse">If true, reverses the effects of this Transaction.</param>
+    /// <param name="postingOnly">If true, only applies the posting portion of this Transaction.</param>
+    public GoalBalance ApplyToGoalBalance(
+        GoalBalance existingGoalBalance,
+        DateOnly? asOfDate = null,
+        AccountId? accountId = null,
+        bool reverse = false,
+        bool postingOnly = false)
+    {
+        GoalBalance newBalance = existingGoalBalance;
+        if (!postingOnly && (asOfDate == null || Date == asOfDate))
+        {
+            newBalance = AddToGoalBalance(existingGoalBalance, reverse);
+        }
+        foreach (AccountId affectedAccountId in GetAllAffectedAccountIds())
+        {
+            if (accountId != null && affectedAccountId != accountId)
+            {
+                continue;
+            }
+            DateOnly? postedDate = GetPostedDateForAccount(affectedAccountId);
+            if (postedDate != null && (asOfDate == null || postedDate == asOfDate))
+            {
+                newBalance = PostToGoalBalance(newBalance, affectedAccountId, reverse);
+            }
+        }
+        return newBalance;
+    }
+
+    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     internal Transaction(CreateTransactionRequest request, int sequence, TransactionType type)
@@ -159,6 +195,16 @@ public abstract class Transaction : Entity<TransactionId>
     /// Posts this Transaction to the provided fund balance
     /// </summary>
     protected abstract FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse);
+
+    /// <summary>
+    /// Adds this Transaction to the provided existing Goal Balance
+    /// </summary>
+    protected abstract GoalBalance AddToGoalBalance(GoalBalance existingGoalBalance, bool reverse);
+
+    /// <summary>
+    /// Posts this Transaction to the provided Goal Balance
+    /// </summary>
+    protected abstract GoalBalance PostToGoalBalance(GoalBalance existingGoalBalance, AccountId accountId, bool reverse);
 }
 
 /// <summary>

@@ -33,7 +33,9 @@ public class AssignmentGoalService(
             request.GoalAmount);
         if (request.AccountingPeriod != null)
         {
-            assignmentGoal.EvaluateGoal(GetAccountingPeriodBalanceHistory(assignmentGoal));
+            (AccountingPeriodFundBalanceHistory fundBalanceHistory, AccountingPeriodGoalBalanceHistory goalBalanceHistory) =
+                GetAccountingPeriodBalanceHistories(assignmentGoal);
+            assignmentGoal.EvaluateGoal(fundBalanceHistory, goalBalanceHistory);
         }
         return true;
     }
@@ -51,10 +53,9 @@ public class AssignmentGoalService(
             return false;
         }
 
-        assignmentGoal.UpdateGoal(
-            request.AssignmentGoalType,
-            request.GoalAmount,
-            GetAccountingPeriodBalanceHistory(assignmentGoal));
+        (AccountingPeriodFundBalanceHistory fundBalanceHistory, AccountingPeriodGoalBalanceHistory goalBalanceHistory) =
+            GetAccountingPeriodBalanceHistories(assignmentGoal);
+        assignmentGoal.UpdateGoal(request.AssignmentGoalType, request.GoalAmount, fundBalanceHistory, goalBalanceHistory);
         return true;
     }
 
@@ -145,9 +146,14 @@ public class AssignmentGoalService(
     }
 
     /// <summary>
-    /// Gets the Accounting Period Balance History for a given Assignment Goal
+    /// Gets the Fund and Goal Balance Histories for a given Assignment Goal
     /// </summary>
-    private AccountingPeriodFundBalanceHistory GetAccountingPeriodBalanceHistory(AssignmentGoal assignmentGoal) =>
-        accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(assignmentGoal.AccountingPeriodId ?? throw new InvalidOperationException("Assignment goal placeholder cannot be evaluated."))
-            .FundBalances.Single(fund => fund.Fund.Id == assignmentGoal.Fund.Id);
+    private (AccountingPeriodFundBalanceHistory FundBalanceHistory, AccountingPeriodGoalBalanceHistory GoalBalanceHistory) GetAccountingPeriodBalanceHistories(AssignmentGoal assignmentGoal)
+    {
+        AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(
+            assignmentGoal.AccountingPeriodId ?? throw new InvalidOperationException("Assignment goal placeholder cannot be evaluated."));
+        return (
+            balanceHistory.FundBalances.Single(fund => fund.Fund.Id == assignmentGoal.Fund.Id),
+            balanceHistory.GoalBalances.Single(goal => goal.Fund.Id == assignmentGoal.Fund.Id));
+    }
 }

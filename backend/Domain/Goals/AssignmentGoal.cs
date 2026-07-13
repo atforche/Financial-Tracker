@@ -72,26 +72,32 @@ public class AssignmentGoal : Entity<AssignmentGoalId>
     /// <summary>
     /// Updates this Assignment Goal
     /// </summary>
-    internal void UpdateGoal(AssignmentGoalType assignmentGoalType, decimal goalAmount, AccountingPeriodFundBalanceHistory balanceHistory)
+    internal void UpdateGoal(
+        AssignmentGoalType assignmentGoalType,
+        decimal goalAmount,
+        AccountingPeriodFundBalanceHistory fundBalanceHistory,
+        AccountingPeriodGoalBalanceHistory goalBalanceHistory)
     {
         AssignmentGoalType = assignmentGoalType;
         GoalAmount = goalAmount;
-        EvaluateGoal(balanceHistory);
+        EvaluateGoal(fundBalanceHistory, goalBalanceHistory);
     }
 
     /// <summary>
     /// Evaluates progress towards the assignment goal
     /// </summary>
-    internal void EvaluateGoal(AccountingPeriodFundBalanceHistory balanceHistory)
+    internal void EvaluateGoal(
+        AccountingPeriodFundBalanceHistory fundBalanceHistory,
+        AccountingPeriodGoalBalanceHistory goalBalanceHistory)
     {
         TotalAmountToAssign = AssignmentGoalType switch
         {
-            AssignmentGoalType.MonthlyTarget => GoalAmount - balanceHistory.OpeningBalance,
+            AssignmentGoalType.MonthlyTarget => GoalAmount - fundBalanceHistory.OpeningBalance,
             AssignmentGoalType.RecurringContribution => GoalAmount,
             _ => throw new InvalidOperationException($"Unsupported assignment goal type '{AssignmentGoalType}'."),
         };
-        TotalAmountAssigned = balanceHistory.AmountAssigned;
-        TotalAmountAssignedIncludingPending = TotalAmountAssigned + balanceHistory.PendingAmountAssigned;
+        TotalAmountAssigned = goalBalanceHistory.AmountAssigned;
+        TotalAmountAssignedIncludingPending = TotalAmountAssigned + goalBalanceHistory.PendingAmountAssigned;
         IsGoalMet = TotalAmountAssigned >= TotalAmountToAssign;
         IsGoalMetIncludingPending = TotalAmountAssignedIncludingPending >= TotalAmountToAssign;
     }

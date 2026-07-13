@@ -32,6 +32,7 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<AssignmentGoalService>();
         _ = serviceCollection.AddScoped<SpendingGoalService>();
+        _ = serviceCollection.AddScoped<GoalBalanceService>();
 
         _ = serviceCollection.AddScoped<SpendingTransactionService>();
         _ = serviceCollection.AddScoped<IncomeTransactionService>();
