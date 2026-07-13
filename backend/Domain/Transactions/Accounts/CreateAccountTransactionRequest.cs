@@ -1,5 +1,3 @@
-using Domain.Accounts;
-
 namespace Domain.Transactions.Accounts;
 
 /// <summary>
@@ -16,9 +14,4 @@ public record CreateAccountTransactionRequest : CreateTransactionRequest
     /// Destinations for this Account Transaction
     /// </summary>
     public required IReadOnlyCollection<AccountTransactionDestination> Destinations { get; init; }
-
-    /// <summary>
-    /// Account ID of the Account that generated this transaction when it was created, or null
-    /// </summary>
-    public AccountId? GeneratedByAccountId { get; init; }
 }

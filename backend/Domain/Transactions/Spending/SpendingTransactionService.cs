@@ -180,13 +180,13 @@ public class SpendingTransactionService(
         _ = ValidateUpdate(transaction,
             request,
             request.Source.Account,
-            new ValidationErrorPath(nameof(CreateSpendingTransactionRequest.Source)).Append(nameof(SpendingTransactionSource.Account)),
+            new ValidationErrorPath(nameof(UpdateSpendingTransactionRequest.Source)).Append(nameof(SpendingTransactionSource.Account)),
             request.Destinations.Select(d => d.Account).ToList(),
-            (i) => new ValidationErrorPath(nameof(CreateSpendingTransactionRequest.Destinations), i).Append(nameof(SpendingTransactionDestination.Account)),
+            (i) => new ValidationErrorPath(nameof(UpdateSpendingTransactionRequest.Destinations), i).Append(nameof(SpendingTransactionDestination.Account)),
             [],
             (i) => ValidationErrorPath.Empty,
             request.Destinations.Select(destination => destination.FundAssignments.Select(fundAssignment => fundRepository.GetById(fundAssignment.FundId)).ToList()).ToList(),
-            (i, j) => new ValidationErrorPath(nameof(CreateSpendingTransactionRequest.Destinations), i)
+            (i, j) => new ValidationErrorPath(nameof(UpdateSpendingTransactionRequest.Destinations), i)
                 .AppendWithIndex(nameof(SpendingTransactionDestination.FundAssignments), j),
             out exceptions);
 
@@ -320,6 +320,9 @@ public class SpendingTransactionService(
         return !exceptions.Any();
     }
 
+    /// <summary>
+    /// Validates the amounts for this Spending Transaction
+    /// </summary>
     private static bool ValidateAmounts(
         decimal amount,
         IReadOnlyCollection<SpendingTransactionDestination> destinations,
@@ -362,6 +365,9 @@ public class SpendingTransactionService(
         return !exceptions.Any();
     }
 
+    /// <summary>
+    /// Validates the structure of this Spending Transaction, including its source and destinations
+    /// </summary>
     private bool ValidateDestinationFundAssignments(
         IReadOnlyCollection<SpendingTransactionDestination> destinations,
         Func<int, ValidationErrorPath> destinationsPathBuilder,

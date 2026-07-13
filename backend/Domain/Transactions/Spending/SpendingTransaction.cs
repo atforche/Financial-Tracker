@@ -7,10 +7,6 @@ namespace Domain.Transactions.Spending;
 /// <summary>
 /// Entity class representing a spending transaction.
 /// </summary>
-/// <remarks>
-/// A spending transaction represents money going out of a tracked account to some external destination. 
-/// The debit from the tracked account must be assigned to some combination of funds.
-/// </remarks>
 public class SpendingTransaction : Transaction
 {
     private readonly List<SpendingTransactionDestination> _destinations = [];

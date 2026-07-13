@@ -7,10 +7,6 @@ namespace Domain.Transactions.Funds;
 /// <summary>
 /// Entity class representing a fund transaction.
 /// </summary>
-/// <remarks>
-/// A fund transaction represents money moving from one fund to one or more other funds.
-/// It can not affect accounts.
-/// </remarks>
 public class FundTransaction : Transaction
 {
     private readonly List<FundTransactionDestination> _destinations = [];

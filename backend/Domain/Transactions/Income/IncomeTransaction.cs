@@ -7,10 +7,6 @@ namespace Domain.Transactions.Income;
 /// <summary>
 /// Entity class representing an income transaction.
 /// </summary>
-/// <remarks>
-/// An income transaction represents money coming into a tracked account from some external source.
-/// The credit to the tracked account can optionally be directly assigned to funds.
-/// </remarks>
 public class IncomeTransaction : Transaction
 {
     private readonly List<IncomeTransactionDestination> _destinations = [];

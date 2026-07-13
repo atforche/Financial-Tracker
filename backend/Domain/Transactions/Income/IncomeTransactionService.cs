@@ -155,6 +155,7 @@ public class IncomeTransactionService(
         }
         if (!ValidateIncomeStructure(
                 request.Amount,
+                new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Amount)),
                 request.Source,
                 new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Source)),
                 request.Destinations,
@@ -183,13 +184,13 @@ public class IncomeTransactionService(
     {
         _ = ValidateUpdate(transaction, request,
             request.Source.Account,
-            new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Source)).Append(nameof(CreateIncomeTransactionRequest.Source.Account)),
+            new ValidationErrorPath(nameof(UpdateIncomeTransactionRequest.Source)).Append(nameof(UpdateIncomeTransactionRequest.Source.Account)),
             request.Destinations.Select(destination => destination.Account).ToList(),
-            (i) => new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Destinations), i),
+            (i) => new ValidationErrorPath(nameof(UpdateIncomeTransactionRequest.Destinations), i),
             [],
             (i) => ValidationErrorPath.Empty,
             request.Destinations.Select(destination => destination.FundAssignments.Select(fundAssignment => fundRepository.GetById(fundAssignment.FundId)).ToList()).ToList(),
-            (i, j) => new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Destinations), i).AppendWithIndex(nameof(IncomeTransactionDestination.FundAssignments), j),
+            (i, j) => new ValidationErrorPath(nameof(UpdateIncomeTransactionRequest.Destinations), i).AppendWithIndex(nameof(IncomeTransactionDestination.FundAssignments), j),
             out exceptions);
 
         if (transaction.Source.PostedDate.HasValue || transaction.Destinations.Any(destination => destination.PostedDate.HasValue))
@@ -224,6 +225,7 @@ public class IncomeTransactionService(
         }
         if (!ValidateIncomeStructure(
                 request.Amount,
+                new ValidationErrorPath(nameof(UpdateIncomeTransactionRequest.Amount)),
                 request.Source,
                 new ValidationErrorPath(nameof(UpdateIncomeTransactionRequest.Source)),
                 request.Destinations,
@@ -290,8 +292,12 @@ public class IncomeTransactionService(
         return !exceptions.Any();
     }
 
+    /// <summary>
+    /// Validates the structure of this Income Transaction, including its income lines, deductions, and destination fund assignments
+    /// </summary>
     private static bool ValidateIncomeStructure(
         decimal amount,
+        ValidationErrorPath amountPath,
         IncomeTransactionSource source,
         ValidationErrorPath sourcePath,
         IReadOnlyCollection<IncomeTransactionDestination> destinations,
@@ -340,16 +346,19 @@ public class IncomeTransactionService(
         decimal calculatedNetAmount = source.IncomeLines.Sum(line => line.Amount) - source.IncomeDeductions.Sum(deduction => deduction.Amount);
         if (Math.Round(calculatedNetAmount, 2) != Math.Round(amount, 2))
         {
-            exceptions = exceptions.Append(new ValidationError(sourcePath.Append(nameof(CreateIncomeTransactionRequest.Amount)), "Income lines minus deductions must equal the transaction amount"));
+            exceptions = exceptions.Append(new ValidationError(amountPath, "Income lines minus deductions must equal the transaction amount"));
         }
         decimal totalDestinationAmount = destinations.Sum(destination => destination.Amount);
         if (Math.Round(totalDestinationAmount, 2) != Math.Round(amount, 2))
         {
-            exceptions = exceptions.Append(new ValidationError(sourcePath.Append(nameof(CreateIncomeTransactionRequest.Amount)), "Income destination amounts must equal the transaction amount"));
+            exceptions = exceptions.Append(new ValidationError(amountPath, "Income destination amounts must equal the transaction amount"));
         }
         return !exceptions.Any();
     }
 
+    /// <summary>
+    /// Validates the accounts for this Income Transaction
+    /// </summary>
     private bool ValidateDestinationFundAssignments(
         IReadOnlyCollection<IncomeTransactionDestination> destinations,
         Func<int, ValidationErrorPath> destinationsPathBuilder,

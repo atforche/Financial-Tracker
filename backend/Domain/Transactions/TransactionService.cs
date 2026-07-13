@@ -288,32 +288,6 @@ public abstract class TransactionService(
     }
 
     /// <summary>
-    /// Validates the posted date for the provided accounting period, account, and date
-    /// </summary>
-    protected static bool ValidatePostedDate(
-        AccountingPeriod accountingPeriod,
-        Account account,
-        DateOnly? postedDate,
-        ValidationErrorPath postedDatePath,
-        out IEnumerable<ValidationError> exceptions)
-    {
-        exceptions = [];
-
-        if (postedDate.HasValue)
-        {
-            if (!accountingPeriod.IsDateInPeriod(postedDate.Value))
-            {
-                exceptions = exceptions.Append(new ValidationError(postedDatePath, "Debit Posted Date must be within the Accounting Period"));
-            }
-            if (account.DateOpened < postedDate)
-            {
-                exceptions = exceptions.Append(new ValidationError(postedDatePath, "Debit Posted Date cannot be before the Transaction was added"));
-            }
-        }
-        return !exceptions.Any();
-    }
-
-    /// <summary>
     /// Validates the fund assignments for a Transaction at the supplied request path.
     /// </summary>
     protected virtual bool ValidateFundAssignments(

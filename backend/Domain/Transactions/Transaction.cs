@@ -28,9 +28,6 @@ public abstract class Transaction : Entity<TransactionId>
     /// <summary>
     /// Sequence number for this Transaction
     /// </summary> 
-    /// <remarks>
-    /// The sequence number is used to order multiple transactions for the same date.
-    /// </remarks>
     public int Sequence { get; internal set; }
 
     /// <summary>
@@ -56,9 +53,6 @@ public abstract class Transaction : Entity<TransactionId>
     /// <summary>
     /// Applies this Transaction to the provided existing Account Balance
     /// </summary>
-    /// <param name="existingAccountBalance">The existing Account Balance to apply this Transaction to</param>
-    /// <param name="asOfDate">If provided, only applies the portions of this Transaction that occurred on the specified date</param>
-    /// <param name="reverse">If true, reverses the effects of this Transaction</param>
     public AccountBalance ApplyToAccountBalance(
         AccountBalance existingAccountBalance,
         DateOnly? asOfDate = null,
@@ -80,17 +74,11 @@ public abstract class Transaction : Entity<TransactionId>
     /// <summary>
     /// Gets all Fund IDs affected by this Transaction for the provided account ID
     /// </summary>
-    /// <param name="accountId">If provided, only returns Fund IDs for the specified account</param>
     public abstract IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId);
 
     /// <summary>
     /// Applies this Transaction to the provided existing Fund Balance
     /// </summary>
-    /// <param name="existingFundBalance">The existing Fund Balance to apply this Transaction to</param>
-    /// <param name="asOfDate">If provided, only applies the portions of this Transaction that occurred on the specified date</param>
-    /// <param name="accountId">If provided, only applies the portions of this Transaction that affect the specified account</param>
-    /// <param name="reverse">If true, reverses the effects of this Transaction</param>
-    /// <param name="postingOnly">If true, only applies the posting portion of this Transaction</param>
     public FundBalance ApplyToFundBalance(
         FundBalance existingFundBalance,
         DateOnly? asOfDate = null,
@@ -121,11 +109,6 @@ public abstract class Transaction : Entity<TransactionId>
     /// <summary>
     /// Applies this Transaction to the provided existing Goal Balance.
     /// </summary>
-    /// <param name="existingGoalBalance">The existing Goal Balance to apply this Transaction to.</param>
-    /// <param name="asOfDate">If provided, only applies the portions of this Transaction that occurred on the specified date.</param>
-    /// <param name="accountId">If provided, only applies the portions of this Transaction that affect the specified account.</param>
-    /// <param name="reverse">If true, reverses the effects of this Transaction.</param>
-    /// <param name="postingOnly">If true, only applies the posting portion of this Transaction.</param>
     public GoalBalance ApplyToGoalBalance(
         GoalBalance existingGoalBalance,
         DateOnly? asOfDate = null,

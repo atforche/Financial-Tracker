@@ -7,13 +7,6 @@ namespace Domain.Transactions.Accounts;
 /// <summary>
 /// Entity class representing an account transaction.
 /// </summary>
-/// <remarks>
-/// An account transaction represents one of the following scenarios:
-///     1. A transaction that only debits an untracked account
-///     2. A transaction that only credits an untracked account
-///     3. A transaction that moves money between two untracked accounts
-///     4. A transaction that moves money between two tracked accounts
-/// </remarks>
 public class AccountTransaction : Transaction
 {
     private readonly List<AccountTransactionDestination> _destinations = [];

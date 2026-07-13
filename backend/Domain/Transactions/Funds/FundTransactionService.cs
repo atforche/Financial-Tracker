@@ -182,6 +182,9 @@ public class FundTransactionService(
         return !exceptions.Any();
     }
 
+    /// <summary>
+    /// Validates the amounts for this Fund Transaction
+    /// </summary>
     private static bool ValidateAmounts(
         decimal amount,
         IReadOnlyCollection<FundTransactionDestination> destinations,

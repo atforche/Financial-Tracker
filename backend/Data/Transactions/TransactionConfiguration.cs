@@ -58,6 +58,8 @@ internal sealed class TransactionConfiguration :
         builder.Property(transaction => transaction.AccountingPeriodId)
             .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
 
+        builder.HasIndex(transaction => new { transaction.Date, transaction.Sequence }).IsUnique();
+
         builder.HasDiscriminator(transaction => transaction.Type)
             .HasValue<SpendingTransaction>(TransactionType.Spending)
             .HasValue<IncomeTransaction>(TransactionType.Income)

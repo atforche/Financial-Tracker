@@ -121,6 +121,9 @@ public sealed class TransactionDispatcherService(
             _ => Fail(out exceptions, $"Unrecognized transaction type: {transaction.GetType().Name}")
         };
 
+    /// <summary>
+    /// Helper method to fail with a single exception message.
+    /// </summary>
     private static bool Fail(out IEnumerable<ValidationError> exceptions, string message)
     {
         exceptions = [new ValidationError(ValidationErrorPath.Empty, message)];

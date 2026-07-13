@@ -157,7 +157,6 @@ public sealed class TransactionRequestConverter(
             Amount = model.Amount,
             Source = source,
             Destinations = destinations,
-            GeneratedByAccountId = null,
         };
     }
 
