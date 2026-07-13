@@ -44,11 +44,21 @@ public class GoalBalanceService(
         {
             if (postedDate == transaction.Date)
             {
-                UpdateExistingBalanceHistory(transaction, fundId);
+                UpdateExistingBalanceHistory(transaction, fundId, accountId);
             }
             else
             {
-                AddNewBalanceHistory(transaction, fundId, postedDate.Value);
+                GoalBalanceHistory? postedHistory = goalBalanceHistoryRepository
+                    .GetAllByTransactionId(transaction.Id)
+                    .SingleOrDefault(history => history.FundId == fundId && history.Date == postedDate.Value);
+                if (postedHistory == null)
+                {
+                    AddNewBalanceHistory(transaction, fundId, postedDate.Value);
+                }
+                else
+                {
+                    UpdateExistingBalanceHistory(transaction, fundId, accountId, postedHistory);
+                }
             }
         }
     }
@@ -58,22 +68,40 @@ public class GoalBalanceService(
     /// </summary>
     internal void UnpostTransaction(Transaction transaction)
     {
-        foreach (AccountId accountId in transaction.GetAllAffectedAccountIds())
-        {
-            foreach (FundId fundId in GetGoalAffectedFundIds(transaction, accountId))
+        IEnumerable<IGrouping<(FundId FundId, DateOnly PostedDate), (FundId FundId, AccountId AccountId, DateOnly PostedDate)>> postedFundAccounts = transaction.GetAllAffectedAccountIds()
+            .SelectMany(accountId =>
             {
-                GoalBalanceHistory? oldPostedHistory = goalBalanceHistoryRepository.GetAllByTransactionId(transaction.Id)
-                    .SingleOrDefault(history => history.FundId == fundId && history.Date != transaction.Date);
-                if (oldPostedHistory == null)
+                DateOnly? postedDate = transaction.GetPostedDateForAccount(accountId);
+                return postedDate == null
+                    ? []
+                    : GetGoalAffectedFundIds(transaction, accountId)
+                        .Select(fundId => (FundId: fundId, AccountId: accountId, PostedDate: postedDate.Value));
+            })
+            .GroupBy(posting => (posting.FundId, posting.PostedDate));
+
+        foreach (IGrouping<(FundId FundId, DateOnly PostedDate), (FundId FundId, AccountId AccountId, DateOnly PostedDate)> postingGroup in postedFundAccounts)
+        {
+            if (postingGroup.Key.PostedDate == transaction.Date)
+            {
+                GoalBalanceHistory existingHistory = goalBalanceHistoryRepository
+                    .GetAllByTransactionId(transaction.Id)
+                    .Single(history => history.FundId == postingGroup.Key.FundId && history.Date == transaction.Date);
+                foreach (AccountId accountId in postingGroup.Select(posting => posting.AccountId))
                 {
-                    UpdateExistingBalanceHistory(transaction, fundId);
+                    existingHistory.Update(transaction.ApplyToGoalBalance(
+                        existingHistory.ToGoalBalance(),
+                        accountId: accountId,
+                        reverse: true,
+                        postingOnly: true));
+                    UpdateLaterBalanceHistoriesForPosting(transaction, existingHistory, accountId, reverse: true);
                 }
-                else
-                {
-                    DeleteExistingBalanceHistory(transaction, oldPostedHistory);
-                    goalBalanceHistoryRepository.Delete(oldPostedHistory);
-                }
+                continue;
             }
+            GoalBalanceHistory postedHistory = goalBalanceHistoryRepository
+                .GetAllByTransactionId(transaction.Id)
+                .Single(history => history.FundId == postingGroup.Key.FundId && history.Date == postingGroup.Key.PostedDate);
+            RemovePostedBalanceHistory(transaction, postedHistory, postingGroup.Select(posting => posting.AccountId));
+            goalBalanceHistoryRepository.Delete(postedHistory);
         }
     }
 
@@ -121,11 +149,15 @@ public class GoalBalanceService(
     }
 
     /// <summary>
-    /// Recalculates the earliest Goal Balance History for a Transaction and every later history.
+    /// Recalculates a Goal Balance History and applies a posted-account delta to later histories.
     /// </summary>
-    private void UpdateExistingBalanceHistory(Transaction transaction, FundId fundId)
+    private void UpdateExistingBalanceHistory(
+        Transaction transaction,
+        FundId fundId,
+        AccountId accountId,
+        GoalBalanceHistory? historyToUpdate = null)
     {
-        GoalBalanceHistory existingHistory = goalBalanceHistoryRepository.GetAllByTransactionId(transaction.Id)
+        GoalBalanceHistory existingHistory = historyToUpdate ?? goalBalanceHistoryRepository.GetAllByTransactionId(transaction.Id)
             .Where(history => history.FundId == fundId)
             .OrderBy(history => history.Date)
             .ThenBy(history => history.Sequence)
@@ -137,14 +169,61 @@ public class GoalBalanceService(
             existingHistory.Sequence);
         existingHistory.Update(transaction.ApplyToGoalBalance(existingBalance, existingHistory.Date));
 
-        foreach (GoalBalanceHistory laterHistory in goalBalanceHistoryRepository.GetAllHistoriesLaterThan(
-            fundId,
+        UpdateLaterBalanceHistoriesForPosting(transaction, existingHistory, accountId);
+    }
+
+    /// <summary>
+    /// Applies a posted-account delta to Goal Balance History entries after the provided entry.
+    /// </summary>
+    private void UpdateLaterBalanceHistoriesForPosting(
+        Transaction transaction,
+        GoalBalanceHistory balanceHistory,
+        AccountId accountId,
+        bool reverse = false)
+    {
+        foreach (GoalBalanceHistory history in goalBalanceHistoryRepository.GetAllHistoriesLaterThan(
+            balanceHistory.FundId,
             transaction.AccountingPeriodId,
-            existingHistory.Date,
-            existingHistory.Sequence))
+            balanceHistory.Date,
+            balanceHistory.Sequence))
         {
-            GoalBalance updatedBalance = transaction.ApplyToGoalBalance(laterHistory.ToGoalBalance(), existingHistory.Date);
-            laterHistory.Update(updatedBalance);
+            GoalBalance updatedBalance = transaction.ApplyToGoalBalance(
+                history.ToGoalBalance(),
+                accountId: accountId,
+                reverse: reverse,
+                postingOnly: true);
+            history.Update(updatedBalance);
+        }
+    }
+
+    /// <summary>
+    /// Removes a posted Goal Balance History entry and reverses its posting effects from later entries.
+    /// </summary>
+    private void RemovePostedBalanceHistory(
+        Transaction transaction,
+        GoalBalanceHistory deletedBalanceHistory,
+        IEnumerable<AccountId> accountIds)
+    {
+        foreach (GoalBalanceHistory history in goalBalanceHistoryRepository.GetAllHistoriesLaterThan(
+            deletedBalanceHistory.FundId,
+            deletedBalanceHistory.AccountingPeriodId,
+            deletedBalanceHistory.Date,
+            deletedBalanceHistory.Sequence + 1))
+        {
+            if (history.Date == deletedBalanceHistory.Date)
+            {
+                history.Sequence -= 1;
+            }
+            var updatedBalance = history.ToGoalBalance();
+            foreach (AccountId accountId in accountIds)
+            {
+                updatedBalance = transaction.ApplyToGoalBalance(
+                    updatedBalance,
+                    accountId: accountId,
+                    reverse: true,
+                    postingOnly: true);
+            }
+            history.Update(updatedBalance);
         }
     }
 
@@ -153,11 +232,6 @@ public class GoalBalanceService(
     /// </summary>
     private void DeleteExistingBalanceHistory(Transaction transaction, GoalBalanceHistory deletedHistory)
     {
-        GoalBalance existingBalance = GetExistingGoalBalanceAsOf(
-            deletedHistory.FundId,
-            deletedHistory.AccountingPeriodId,
-            deletedHistory.Date,
-            deletedHistory.Sequence);
         foreach (GoalBalanceHistory laterHistory in goalBalanceHistoryRepository.GetAllHistoriesLaterThan(
             deletedHistory.FundId,
             deletedHistory.AccountingPeriodId,
@@ -168,9 +242,11 @@ public class GoalBalanceService(
             {
                 laterHistory.Sequence -= 1;
             }
-            GoalBalance updatedBalance = transaction.ApplyToGoalBalance(existingBalance, deletedHistory.Date, reverse: true);
+            GoalBalance updatedBalance = transaction.ApplyToGoalBalance(
+                laterHistory.ToGoalBalance(),
+                deletedHistory.Date,
+                reverse: true);
             laterHistory.Update(updatedBalance);
-            existingBalance = updatedBalance;
         }
     }
 

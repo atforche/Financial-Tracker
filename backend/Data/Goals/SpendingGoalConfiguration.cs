@@ -20,6 +20,11 @@ internal sealed class SpendingGoalConfiguration : IEntityTypeConfiguration<Spend
         builder.HasOne(goal => goal.Fund).WithMany();
         builder.Navigation(goal => goal.Fund).AutoInclude();
 
+        builder.HasIndex("FundId", nameof(SpendingGoal.AccountingPeriodId)).IsUnique();
+        builder.HasIndex("FundId")
+            .IsUnique()
+            .HasFilter("\"AccountingPeriodId\" IS NULL");
+
         builder.Property(goal => goal.SpendingGoalType).HasConversion<string>();
 
         builder.Property(goal => goal.AccountingPeriodId)

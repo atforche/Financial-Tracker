@@ -88,6 +88,9 @@ public class SpendingGoalService(
             exceptions = exceptions.Append(new ValidationError(
                 new ValidationErrorPath(nameof(CreateSpendingGoalRequest.Fund)),
                 "A spending goal already exists for this fund and accounting period."));
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(CreateSpendingGoalRequest.AccountingPeriod)),
+                "A spending goal already exists for this fund and accounting period."));
         }
         if (!Enum.IsDefined(request.SpendingGoalType))
         {
