@@ -19,9 +19,4 @@ public class AccountModel
     /// Type for the Account
     /// </summary>
     public required AccountTypeModel Type { get; init; }
-
-    /// <summary>
-    /// Current Balance for the Account
-    /// </summary>
-    public required AccountBalanceModel CurrentBalance { get; init; }
 }
