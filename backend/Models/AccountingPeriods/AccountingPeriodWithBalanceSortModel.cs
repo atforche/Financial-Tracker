@@ -1,9 +1,9 @@
 namespace Models.AccountingPeriods;
 
 /// <summary>
-/// Enum representing the different ways Accounting Periods can be sorted
+/// Enum representing the different ways Accounting Periods with balances can be sorted
 /// </summary>
-public enum AccountingPeriodSortOrderModel
+public enum AccountingPeriodWithBalanceSortModel
 {
     /// <summary>
     /// Accounting Periods are sorted by date in ascending order

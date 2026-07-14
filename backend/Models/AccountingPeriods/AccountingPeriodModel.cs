@@ -11,11 +11,6 @@ public class AccountingPeriodModel
     public required Guid Id { get; init; }
 
     /// <summary>
-    /// Name of the Accounting Period
-    /// </summary>
-    public required string Name { get; init; }
-
-    /// <summary>
     /// Year for the Accounting Period
     /// </summary>
     public required int Year { get; init; }
@@ -26,17 +21,12 @@ public class AccountingPeriodModel
     public required int Month { get; init; }
 
     /// <summary>
+    /// Name of the Accounting Period
+    /// </summary>
+    public required string Name { get; init; }
+
+    /// <summary>
     /// True if the Accounting Period is open, false otherwise
     /// </summary>
     public required bool IsOpen { get; init; }
-
-    /// <summary>
-    /// Opening balance for the Accounting Period
-    /// </summary>
-    public required decimal OpeningBalance { get; init; }
-
-    /// <summary>
-    /// Closing balance for the Accounting Period
-    /// </summary>
-    public required decimal ClosingBalance { get; init; }
 }

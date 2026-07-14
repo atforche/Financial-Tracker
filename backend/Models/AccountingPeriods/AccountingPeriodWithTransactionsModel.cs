@@ -3,15 +3,10 @@ using Models.Transactions;
 namespace Models.AccountingPeriods;
 
 /// <summary>
-/// Model representing the current Accounting Period response.
+/// Model representing an Accounting Period with its associated transactions.
 /// </summary>
-public class CurrentAccountingPeriodModel
+public class AccountingPeriodWithTransactionsModel : AccountingPeriodWithBalanceModel
 {
-    /// <summary>
-    /// The latest Accounting Period in the system.
-    /// </summary>
-    public AccountingPeriodModel? AccountingPeriod { get; init; }
-
     /// <summary>
     /// Matching transactions for the current Accounting Period page.
     /// </summary>

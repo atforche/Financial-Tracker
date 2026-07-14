@@ -1,4 +1,4 @@
-namespace Models.Transactions;
+namespace Models;
 
 /// <summary>
 /// Model representing an income amount.
