@@ -6,11 +6,6 @@ namespace Models.Accounts;
 public class AccountBalanceModel
 {
     /// <summary>
-    /// Account ID for the Account Balance
-    /// </summary>
-    public required Guid AccountId { get; init; }
-
-    /// <summary>
     /// Posted Balance for the Account Balance
     /// </summary>
     public required decimal PostedBalance { get; init; }

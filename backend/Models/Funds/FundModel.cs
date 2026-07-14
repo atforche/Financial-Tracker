@@ -19,9 +19,4 @@ public class FundModel
     /// Description for the Fund
     /// </summary>
     public required string Description { get; init; }
-
-    /// <summary>
-    /// Current Balance for the Fund
-    /// </summary>
-    public required FundBalanceModel CurrentBalance { get; init; }
 }

@@ -1,14 +1,14 @@
 namespace Models.Funds;
 
 /// <summary>
-/// Model representing summary balances for Funds.
+/// Model representing summary fund balances.
 /// </summary>
-public class FundSummaryModel
+public class FundBalanceSummaryModel
 {
     /// <summary>
     /// Sum of the posted balances for all Funds.
     /// </summary>
-    public required decimal TotalTrackedBalance { get; init; }
+    public required decimal TotalBalance { get; init; }
 
     /// <summary>
     /// Sum of the posted balances for all Funds except the unassigned Fund.

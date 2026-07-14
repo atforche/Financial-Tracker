@@ -1,9 +1,9 @@
 namespace Models.Funds;
 
 /// <summary>
-/// Enum representing the different ways Fund trends rows can be sorted.
+/// Enum representing the different ways Funds with balance ranges can be sorted.
 /// </summary>
-public enum FundTrendsSortOrderModel
+public enum FundWithBalanceRangeSortModel
 {
     /// <summary>
     /// Funds are sorted by name in ascending order.
@@ -16,24 +16,24 @@ public enum FundTrendsSortOrderModel
     NameDescending,
 
     /// <summary>
-    /// Funds are sorted by opening balance in ascending order.
+    /// Funds are sorted by starting balance in ascending order.
     /// </summary>
-    OpeningBalance,
+    StartingBalance,
 
     /// <summary>
-    /// Funds are sorted by opening balance in descending order.
+    /// Funds are sorted by starting balance in descending order.
     /// </summary>
-    OpeningBalanceDescending,
+    StartingBalanceDescending,
 
     /// <summary>
-    /// Funds are sorted by closing balance in ascending order.
+    /// Funds are sorted by ending balance in ascending order.
     /// </summary>
-    ClosingBalance,
+    EndingBalance,
 
     /// <summary>
-    /// Funds are sorted by closing balance in descending order.
+    /// Funds are sorted by ending balance in descending order.
     /// </summary>
-    ClosingBalanceDescending,
+    EndingBalanceDescending,
 
     /// <summary>
     /// Funds are sorted by net change (closing balance - opening balance) in ascending order.

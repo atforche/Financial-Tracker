@@ -1,9 +1,9 @@
-namespace Models.Funds;
+namespace Models.BalanceEvents;
 
 /// <summary>
-/// Enum representing the different ways Fund trends balance events can be sorted.
+/// Enum representing the different ways Fund balance events can be sorted.
 /// </summary>
-public enum FundTrendsBalanceEventSortOrderModel
+public enum FundBalanceEventSortModel
 {
     /// <summary>
     /// Balance events are sorted by fund name in ascending order.

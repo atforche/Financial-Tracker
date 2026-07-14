@@ -8,12 +8,7 @@ public class FundAmountModel
     /// <summary>
     /// Fund for this Fund Amount
     /// </summary>
-    public required Guid FundId { get; init; }
-
-    /// <summary>
-    /// Name of the Fund for this Fund Amount
-    /// </summary>
-    public required string FundName { get; init; }
+    public required FundModel Fund { get; init; }
 
     /// <summary>
     /// Amount for this Fund Amount

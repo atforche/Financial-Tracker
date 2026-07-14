@@ -1,20 +1,10 @@
 namespace Models.Funds;
 
 /// <summary>
-/// Model representing a Fund row within the trends response.
+/// Model representing a Fund with a balance range.
 /// </summary>
-public class FundTrendsFundModel
+public class FundWithBalanceRangeModel : FundModel
 {
-    /// <summary>
-    /// ID for the Fund.
-    /// </summary>
-    public required Guid Id { get; init; }
-
-    /// <summary>
-    /// Name for the Fund.
-    /// </summary>
-    public required string Name { get; init; }
-
     /// <summary>
     /// Balance at the beginning of the requested range.
     /// </summary>
