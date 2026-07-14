@@ -6,6 +6,9 @@ using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Transactions;
+using Models.Transactions.Create;
+using Models.Transactions.Read;
+using Models.Transactions.Update;
 using Rest.AccountingPeriods;
 using Rest.Accounts;
 

@@ -18,9 +18,9 @@ public class BalanceEventModel
     public required Guid TransactionId { get; init; }
 
     /// <summary>
-    /// Effective date for the balance event.
+    /// Date for the balance event, or null if it's still pending.
     /// </summary>
-    public required DateOnly Date { get; init; }
+    public DateOnly? Date { get; init; }
 
     /// <summary>
     /// Type of balance event.

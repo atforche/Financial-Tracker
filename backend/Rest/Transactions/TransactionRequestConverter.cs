@@ -9,6 +9,8 @@ using Domain.Transactions.Income;
 using Domain.Transactions.Spending;
 using Models.Funds;
 using Models.Transactions;
+using Models.Transactions.Create;
+using Models.Transactions.Update;
 using Rest.Accounts;
 using Rest.Funds;
 

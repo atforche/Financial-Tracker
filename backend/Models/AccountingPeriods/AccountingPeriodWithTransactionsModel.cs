@@ -1,4 +1,4 @@
-using Models.Transactions;
+using Models.Transactions.Types;
 
 namespace Models.AccountingPeriods;
 

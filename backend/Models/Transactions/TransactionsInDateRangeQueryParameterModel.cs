@@ -1,10 +1,15 @@
 namespace Models.Transactions;
 
 /// <summary>
-/// Model representing the query parameters for getting Transactions
+/// Model representing the query parameters for getting Transactions within a specified date range.
 /// </summary>
-public class TransactionQueryParameterModel : PaginationModel
+public class TransactionsInDateRangeQueryParameterModel : PaginationModel
 {
+    /// <summary>
+    /// Date Range to filter the Transactions by
+    /// </summary>
+    public required DateRangeModel Range { get; init; }
+
     /// <summary>
     /// Filters to apply when retrieving the Transactions
     /// </summary>

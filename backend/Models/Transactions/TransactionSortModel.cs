@@ -3,7 +3,7 @@ namespace Models.Transactions;
 /// <summary>
 /// Enum representing the different ways top-level Transactions can be sorted
 /// </summary>
-public enum TransactionSortOrderModel
+public enum TransactionSortModel
 {
     /// <summary>
     /// Transactions are sorted by date in ascending order

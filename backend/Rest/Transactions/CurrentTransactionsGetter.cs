@@ -2,6 +2,7 @@ using Domain.AccountingPeriods;
 using Domain.Transactions;
 using Models;
 using Models.Transactions;
+using Models.Transactions.Read;
 
 namespace Rest.Transactions;
 

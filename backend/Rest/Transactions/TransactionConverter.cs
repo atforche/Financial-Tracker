@@ -10,6 +10,7 @@ using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Spending;
 using Models.Transactions;
+using Models.Transactions.Read;
 using Rest.Accounts;
 using Rest.Funds;
 

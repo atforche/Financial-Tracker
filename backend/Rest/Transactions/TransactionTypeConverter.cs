@@ -1,5 +1,6 @@
 using Domain.Transactions;
 using Models.Transactions;
+using Models.Transactions.Update;
 
 namespace Rest.Transactions;
 

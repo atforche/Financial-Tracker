@@ -6,6 +6,7 @@ using Domain.Transactions.Spending;
 using Models;
 using Models.AccountingPeriods;
 using Models.Transactions;
+using Models.Transactions.Read;
 using Rest.Transactions;
 
 namespace Rest.AccountingPeriods;
