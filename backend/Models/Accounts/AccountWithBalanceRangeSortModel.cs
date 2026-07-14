@@ -1,9 +1,9 @@
 namespace Models.Accounts;
 
 /// <summary>
-/// Enum representing the different ways Account trends rows can be sorted.
+/// Enum representing the different ways Accounts with balance ranges can be sorted.
 /// </summary>
-public enum AccountTrendsSortOrderModel
+public enum AccountWithBalanceRangeSortModel
 {
     /// <summary>
     /// Accounts are sorted by name in ascending order.
@@ -26,32 +26,32 @@ public enum AccountTrendsSortOrderModel
     TypeDescending,
 
     /// <summary>
-    /// Accounts are sorted by opening balance in ascending order.
+    /// Accounts are sorted by starting balance in ascending order.
     /// </summary>
-    OpeningBalance,
+    StartingBalance,
 
     /// <summary>
-    /// Accounts are sorted by opening balance in descending order.
+    /// Accounts are sorted by starting balance in descending order.
     /// </summary>
-    OpeningBalanceDescending,
+    StartingBalanceDescending,
 
     /// <summary>
-    /// Accounts are sorted by closing balance in ascending order.
+    /// Accounts are sorted by ending balance in ascending order.
     /// </summary>
-    ClosingBalance,
+    EndingBalance,
 
     /// <summary>
-    /// Accounts are sorted by closing balance in descending order.
+    /// Accounts are sorted by ending balance in descending order.
     /// </summary>
-    ClosingBalanceDescending,
+    EndingBalanceDescending,
 
     /// <summary>
-    /// Accounts are sorted by net change (closing balance - opening balance) in ascending order.
+    /// Accounts are sorted by net change (ending balance - starting balance) in ascending order.
     /// </summary>
     NetChange,
 
     /// <summary>
-    /// Accounts are sorted by net change (closing balance - opening balance) in descending order.
+    /// Accounts are sorted by net change (ending balance - starting balance) in descending order.
     /// </summary>
     NetChangeDescending,
 }

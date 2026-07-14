@@ -1,9 +1,9 @@
 namespace Models.Accounts;
 
 /// <summary>
-/// Enum representing the different ways Accounts can be sorted
+/// Enum representing the different ways an Account with balance can be sorted
 /// </summary>
-public enum AccountSortOrderModel
+public enum AccountWithBalanceSortModel
 {
     /// <summary>
     /// Accounts are sorted by name in ascending order

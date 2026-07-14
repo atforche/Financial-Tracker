@@ -1,9 +1,9 @@
-namespace Models.Accounts;
+namespace Models.BalanceEvents;
 
 /// <summary>
-/// Type of balance event on the Account trends.
+/// Model representing the type of a balance event.
 /// </summary>
-public enum AccountTrendsBalanceEventTypeModel
+public enum BalanceEventTypeModel
 {
     /// <summary>
     /// Debit balance event.

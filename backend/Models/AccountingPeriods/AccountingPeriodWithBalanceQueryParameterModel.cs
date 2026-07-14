@@ -6,14 +6,9 @@ namespace Models.AccountingPeriods;
 public class AccountingPeriodWithBalanceQueryParameterModel : PaginationModel
 {
     /// <summary>
-    /// Years to include in the results
+    /// Filter to apply to the results
     /// </summary>
-    public IReadOnlyCollection<int>? Years { get; init; }
-
-    /// <summary>
-    /// Months to include in the results
-    /// </summary>
-    public IReadOnlyCollection<int>? Months { get; init; }
+    public AccountingPeriodFilterModel? Filter { get; init; }
 
     /// <summary>
     /// Sort to apply to the results

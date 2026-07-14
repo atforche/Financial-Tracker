@@ -1,9 +1,9 @@
-namespace Models.Accounts;
+namespace Models.BalanceEvents;
 
 /// <summary>
-/// Enum representing the different ways Account trends balance events can be sorted.
+/// Enum representing the different ways Account balance events can be sorted.
 /// </summary>
-public enum AccountTrendsBalanceEventSortOrderModel
+public enum AccountBalanceEventSortModel
 {
     /// <summary>
     /// Balance events are sorted by account name in ascending order.

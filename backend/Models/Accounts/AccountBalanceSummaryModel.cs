@@ -3,7 +3,7 @@ namespace Models.Accounts;
 /// <summary>
 /// Model representing summary balances for Accounts.
 /// </summary>
-public class AccountSummaryModel
+public class AccountBalanceSummaryModel
 {
     /// <summary>
     /// Sum of the posted balances for all Accounts.
