@@ -1,4 +1,5 @@
 using Data;
+using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Transactions;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Transactions;
 using Models.Transactions.Create;
-using Models.Transactions.Read;
+using Models.Transactions.Types;
 using Models.Transactions.Update;
 using Rest.AccountingPeriods;
 using Rest.Accounts;
@@ -23,82 +24,57 @@ public sealed class TransactionController(
     UnitOfWork unitOfWork,
     AccountConverter accountConverter,
     AccountingPeriodConverter accountingPeriodConverter,
-    CurrentTransactionsGetter currentTransactionsGetter,
-    TransactionTrendsGetter transactionTrendsGetter,
-    TransactionGetter transactionGetter,
-    TransactionConverter transactionConverter,
+    TransactionRepository transactionRepository,
+    TransactionQueryService transactionQueryService,
     TransactionDispatcherService transactionDispatcherService,
     TransactionRequestConverter transactionRequestConverter) : ControllerBase
 {
     /// <summary>
-    /// Retrieves the Transactions that match the specified criteria
+    /// Retrieves Transactions matching the specified criteria.
     /// </summary>
     [HttpGet("")]
     [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetMany([FromQuery] TransactionQueryParameterModel queryParameters)
-    {
-        if (!transactionGetter.TryGet(queryParameters, out CollectionModel<TransactionModel>? transactions, out Dictionary<string, string[]> errors))
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Transactions.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        return Ok(transactions);
-    }
+    public async Task<ActionResult<CollectionModel<TransactionModel>>> GetManyAsync(
+        [FromQuery] TransactionQueryParameterModel query,
+        CancellationToken cancellationToken) =>
+        Ok(await transactionQueryService.GetAsync(query, cancellationToken));
 
     /// <summary>
-    /// Retrieves current snapshot data for Transactions.
+    /// Retrieves a Transaction by ID.
     /// </summary>
-    [HttpGet("current")]
-    [ProducesResponseType(typeof(CurrentTransactionsModel), StatusCodes.Status200OK)]
-    public IActionResult GetCurrent([FromQuery] CurrentTransactionsQueryParameterModel queryParameters) =>
-        Ok(currentTransactionsGetter.Get(queryParameters));
-
-    /// <summary>
-    /// Retrieves trends data for Transactions across a range of Accounting Periods or dates.
-    /// </summary>
-    [HttpGet("trends")]
-    [ProducesResponseType(typeof(TransactionTrendsModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetTrends([FromQuery] TransactionTrendsQueryParameterModel queryParameters)
-    {
-        if (!transactionTrendsGetter.TryGet(queryParameters, out TransactionTrendsModel? trends, out Dictionary<string, string[]> errors))
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Transaction trends.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-
-        return Ok(trends);
-    }
-
-    /// <summary>
-    /// Retrieves the Transaction with the provided ID
-    /// </summary>
-    [HttpGet("{transactionId}")]
+    [HttpGet("{transactionId:guid}")]
     [ProducesResponseType(typeof(TransactionModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult Get(Guid transactionId)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<TransactionModel>> GetAsync(Guid transactionId, CancellationToken cancellationToken)
     {
-        if (!transactionConverter.TryToDomain(transactionId, out Transaction? transaction))
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Transaction.",
-                Errors = {
-                    { nameof(transactionId), new[] { $"Transaction with ID {transactionId} was not found." } }
-                },
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        return Ok(transactionConverter.ToModel(transaction));
+        TransactionModel? model = await transactionQueryService.GetByIdAsync(transactionId, cancellationToken);
+        return model == null ? NotFound() : Ok(model);
+    }
+
+    /// <summary>
+    /// Retrieves Transactions in a date range.
+    /// </summary>
+    [HttpGet("date-range")]
+    [ProducesResponseType(typeof(TransactionsInDateRangeModel), StatusCodes.Status200OK)]
+    public async Task<ActionResult<TransactionsInDateRangeModel>> GetDateRangeAsync(
+        [FromQuery] TransactionsInDateRangeQueryParameterModel query,
+        CancellationToken cancellationToken) =>
+        Ok(await transactionQueryService.GetInDateRangeAsync(query, cancellationToken));
+
+    /// <summary>
+    /// Retrieves Transactions in an Accounting Period range.
+    /// </summary>
+    [HttpGet("accounting-period-range")]
+    [ProducesResponseType(typeof(TransactionsInAccountingPeriodRangeModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<TransactionsInAccountingPeriodRangeModel>> GetAccountingPeriodRangeAsync(
+        [FromQuery] TransactionsInAccountingPeriodRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        TransactionsInAccountingPeriodRangeModel? model = await transactionQueryService.GetInAccountingPeriodRangeAsync(query, cancellationToken);
+        return model == null
+            ? UnprocessableEntity(new ValidationProblemDetails { Title = "Unable to resolve Accounting Period range.", Status = StatusCodes.Status422UnprocessableEntity })
+            : Ok(model);
     }
 
     /// <summary>
@@ -135,7 +111,7 @@ public sealed class TransactionController(
         }
         if (!transactionDispatcherService.TryCreate(createRequest, out Transaction? newTransaction, out IEnumerable<ValidationError> exceptions))
         {
-            MergeErrors(errors, GroupValidationErrors(exceptions));
+            MergeErrors(errors, ValidationErrorHelper.GroupValidationErrors(exceptions, ResolveValidationErrorPath));
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to create Transaction.",
@@ -144,7 +120,7 @@ public sealed class TransactionController(
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(transactionConverter.ToModel(newTransaction));
+        return Ok(await transactionQueryService.GetByIdAsync(newTransaction.Id.Value));
     }
 
     /// <summary>
@@ -156,7 +132,7 @@ public sealed class TransactionController(
     public async Task<IActionResult> UpdateAsync(Guid transactionId, UpdateTransactionModel updateTransactionModel)
     {
         Dictionary<string, string[]> errors = [];
-        if (!transactionConverter.TryToDomain(transactionId, out Transaction? transaction))
+        if (!transactionRepository.TryGetById(transactionId, out Transaction? transaction))
         {
             errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
         }
@@ -181,7 +157,7 @@ public sealed class TransactionController(
         }
         if (!transactionDispatcherService.TryUpdate(transaction, updateRequest, out IEnumerable<ValidationError> exceptions))
         {
-            MergeErrors(errors, GroupValidationErrors(exceptions));
+            MergeErrors(errors, ValidationErrorHelper.GroupValidationErrors(exceptions, ResolveValidationErrorPath));
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to update Transaction.",
@@ -190,7 +166,7 @@ public sealed class TransactionController(
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(transactionConverter.ToModel(transaction));
+        return Ok(await transactionQueryService.GetByIdAsync(transactionId));
     }
 
     /// <summary>
@@ -202,7 +178,7 @@ public sealed class TransactionController(
     public async Task<IActionResult> PostAsync(Guid transactionId, PostTransactionModel postTransactionModel)
     {
         Dictionary<string, string[]> errors = [];
-        if (!transactionConverter.TryToDomain(transactionId, out Transaction? transaction))
+        if (!transactionRepository.TryGetById(transactionId, out Transaction? transaction))
         {
             errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
         }
@@ -228,7 +204,7 @@ public sealed class TransactionController(
                 },
                 out IEnumerable<ValidationError> exceptions))
         {
-            errors = GroupValidationErrors(exceptions);
+            errors = ValidationErrorHelper.GroupValidationErrors(exceptions, ResolveValidationErrorPath);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to post Transaction.",
@@ -237,7 +213,7 @@ public sealed class TransactionController(
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(transactionConverter.ToModel(transaction));
+        return Ok(await transactionQueryService.GetByIdAsync(transactionId));
     }
 
     /// <summary>
@@ -249,7 +225,7 @@ public sealed class TransactionController(
     public async Task<IActionResult> UnpostAsync(Guid transactionId)
     {
         Dictionary<string, string[]> errors = [];
-        if (!transactionConverter.TryToDomain(transactionId, out Transaction? transaction))
+        if (!transactionRepository.TryGetById(transactionId, out Transaction? transaction))
         {
             errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
         }
@@ -264,7 +240,7 @@ public sealed class TransactionController(
         }
         if (!transactionDispatcherService.TryUnpost(transaction, out IEnumerable<ValidationError> exceptions))
         {
-            MergeErrors(errors, GroupValidationErrors(exceptions));
+            MergeErrors(errors, ValidationErrorHelper.GroupValidationErrors(exceptions, ResolveValidationErrorPath));
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to unpost Transaction.",
@@ -273,7 +249,7 @@ public sealed class TransactionController(
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(transactionConverter.ToModel(transaction));
+        return Ok(await transactionQueryService.GetByIdAsync(transactionId));
     }
 
     /// <summary>
@@ -284,7 +260,7 @@ public sealed class TransactionController(
     public async Task<IActionResult> DeleteAsync(Guid transactionId)
     {
         Dictionary<string, string[]> errors = [];
-        if (!transactionConverter.TryToDomain(transactionId, out Transaction? transaction))
+        if (!transactionRepository.TryGetById(transactionId, out Transaction? transaction))
         {
             errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
         }
@@ -302,7 +278,7 @@ public sealed class TransactionController(
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to delete Transaction.",
-                Errors = GroupValidationErrors(exceptions),
+                Errors = ValidationErrorHelper.GroupValidationErrors(exceptions, ResolveValidationErrorPath),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
@@ -310,16 +286,13 @@ public sealed class TransactionController(
         return NoContent();
     }
 
-    private static Dictionary<string, string[]> GroupValidationErrors(IEnumerable<ValidationError> errors) =>
-        errors
-            .GroupBy(error => error.Path.Value switch
-            {
-                nameof(CreateTransactionRequest.TransactionDate) => nameof(CreateTransactionModel.Date),
-                nameof(PostTransactionRequest.PostedDate) => nameof(PostTransactionModel.Date),
-                nameof(PostTransactionRequest.AccountId) => nameof(PostTransactionModel.AccountId),
-                _ => error.Path.Value
-            })
-            .ToDictionary(group => group.Key, group => group.Select(error => error.Message).ToArray());
+    private static string ResolveValidationErrorPath(string path) => path switch
+    {
+        nameof(CreateTransactionRequest.TransactionDate) => nameof(CreateTransactionModel.Date),
+        nameof(PostTransactionRequest.PostedDate) => nameof(PostTransactionModel.Date),
+        nameof(PostTransactionRequest.AccountId) => nameof(PostTransactionModel.AccountId),
+        _ => path
+    };
 
     private static void MergeErrors(Dictionary<string, string[]> target, Dictionary<string, string[]> source)
     {

@@ -8,7 +8,7 @@ namespace Rest.Accounts;
 /// <summary>
 /// Converter class that handles converting Accounts to Account Models
 /// </summary>
-public sealed class AccountConverter(AccountBalanceService accountBalanceService, AccountRepository accountRepository)
+public sealed class AccountConverter(AccountRepository accountRepository)
 {
     /// <summary>
     /// Converts the provided Account to an Account Model
@@ -18,7 +18,6 @@ public sealed class AccountConverter(AccountBalanceService accountBalanceService
         Id = account.Id.Value,
         Name = account.Name,
         Type = AccountTypeConverter.ToModel(account.Type),
-        CurrentBalance = AccountBalanceConverter.ToModel(accountBalanceService.GetCurrentBalance(account))
     };
 
     /// <summary>

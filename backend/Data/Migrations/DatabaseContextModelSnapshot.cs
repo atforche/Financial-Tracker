@@ -15,7 +15,7 @@ namespace Data.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.2");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
 
             modelBuilder.Entity("Domain.AccountingPeriods.AccountingPeriod", b =>
                 {
@@ -121,7 +121,8 @@ namespace Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountId");
+                    b.HasIndex("AccountId", "Date", "Sequence")
+                        .IsUnique();
 
                     b.ToTable("AccountBalanceHistories");
                 });
@@ -158,22 +159,16 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("AmountAssigned")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("AmountSpent")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateOnly>("Date")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("FundId")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("PendingAmountAssigned")
+                    b.Property<decimal>("PendingCreditAmount")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("PendingAmountSpent")
+                    b.Property<decimal>("PendingDebitAmount")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("PostedBalance")
@@ -225,9 +220,54 @@ namespace Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FundId");
+                    b.HasIndex("FundId")
+                        .IsUnique()
+                        .HasFilter("\"AccountingPeriodId\" IS NULL");
+
+                    b.HasIndex("FundId", "AccountingPeriodId")
+                        .IsUnique();
 
                     b.ToTable("AssignmentGoals");
+                });
+
+            modelBuilder.Entity("Domain.Goals.GoalBalanceHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AccountingPeriodId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("AmountAssigned")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("AmountSpent")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("FundId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PendingAmountAssigned")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PendingAmountSpent")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Sequence")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("TransactionId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FundId", "AccountingPeriodId", "Date", "Sequence")
+                        .IsUnique();
+
+                    b.ToTable("GoalBalanceHistories");
                 });
 
             modelBuilder.Entity("Domain.Goals.SpendingGoal", b =>
@@ -262,7 +302,12 @@ namespace Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FundId");
+                    b.HasIndex("FundId")
+                        .IsUnique()
+                        .HasFilter("\"AccountingPeriodId\" IS NULL");
+
+                    b.HasIndex("FundId", "AccountingPeriodId")
+                        .IsUnique();
 
                     b.ToTable("SpendingGoals");
                 });
@@ -292,6 +337,9 @@ namespace Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Date", "Sequence")
+                        .IsUnique();
 
                     b.ToTable("Transactions");
 
@@ -400,12 +448,6 @@ namespace Data.Migrations
                             b1.Property<Guid>("AccountingPeriodId")
                                 .HasColumnType("TEXT");
 
-                            b1.Property<decimal>("AmountAssigned")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<decimal>("AmountSpent")
-                                .HasColumnType("TEXT");
-
                             b1.Property<decimal>("ClosingBalance")
                                 .HasColumnType("TEXT");
 
@@ -413,12 +455,6 @@ namespace Data.Migrations
                                 .HasColumnType("TEXT");
 
                             b1.Property<decimal>("OpeningBalance")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<decimal>("PendingAmountAssigned")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<decimal>("PendingAmountSpent")
                                 .HasColumnType("TEXT");
 
                             b1.HasKey("Id");
@@ -451,11 +487,69 @@ namespace Data.Migrations
                             b1.Navigation("Fund");
                         });
 
+                    b.OwnsMany("Domain.AccountingPeriods.AccountingPeriodGoalBalanceHistory", "GoalBalances", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("AccountingPeriodBalanceHistoryId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("AccountingPeriodId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<decimal>("AmountAssigned")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<decimal>("AmountSpent")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("FundId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<decimal>("PendingAmountAssigned")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<decimal>("PendingAmountSpent")
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("AccountingPeriodBalanceHistoryId");
+
+                            b1.HasIndex("AccountingPeriodId");
+
+                            b1.HasIndex("FundId");
+
+                            b1.ToTable("AccountingPeriodGoalBalanceHistory");
+
+                            b1.WithOwner()
+                                .HasForeignKey("AccountingPeriodBalanceHistoryId");
+
+                            b1.HasOne("Domain.AccountingPeriods.AccountingPeriod", "AccountingPeriod")
+                                .WithMany()
+                                .HasForeignKey("AccountingPeriodId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
+
+                            b1.HasOne("Domain.Funds.Fund", "Fund")
+                                .WithMany()
+                                .HasForeignKey("FundId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
+
+                            b1.Navigation("AccountingPeriod");
+
+                            b1.Navigation("Fund");
+                        });
+
                     b.Navigation("AccountBalances");
 
                     b.Navigation("AccountingPeriod");
 
                     b.Navigation("FundBalances");
+
+                    b.Navigation("GoalBalances");
                 });
 
             modelBuilder.Entity("Domain.Accounts.AccountBalanceHistory", b =>

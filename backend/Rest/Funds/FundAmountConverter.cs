@@ -12,12 +12,15 @@ public sealed class FundAmountConverter(FundConverter fundConverter, IFundReposi
     /// <summary>
     /// Converts the provided Fund Amount to a Fund Amount Model
     /// </summary>
-    public FundAmountModel ToModel(FundAmount fundAmount) => new()
+    public FundAmountModel ToModel(FundAmount fundAmount)
     {
-        FundId = fundAmount.FundId.Value,
-        FundName = fundRepository.GetById(fundAmount.FundId).Name,
-        Amount = fundAmount.Amount
-    };
+        Fund fund = fundRepository.GetById(fundAmount.FundId);
+        return new FundAmountModel
+        {
+            Fund = fundConverter.ToModel(fund),
+            Amount = fundAmount.Amount
+        };
+    }
 
     /// <summary>
     /// Attempts to convert the provided Fund Amount Model to a Fund Amount

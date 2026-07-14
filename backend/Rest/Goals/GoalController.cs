@@ -1,13 +1,10 @@
 using Data;
 using Data.Goals;
-using Domain.AccountingPeriods;
-using Domain.Funds;
 using Domain.Goals;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Goals;
-using Rest.Funds;
 
 namespace Rest.Goals;
 
@@ -18,173 +15,54 @@ namespace Rest.Goals;
 [Route("/goals")]
 public sealed class GoalController(
     UnitOfWork unitOfWork,
-    AssignmentGoalGetter assignmentGoalGetter,
     AssignmentGoalRepository assignmentGoalRepository,
     AssignmentGoalService assignmentGoalService,
-    CurrentGoalsGetter currentGoalsGetter,
-    GoalBalanceEventGetter goalBalanceEventGetter,
-    IAccountingPeriodRepository accountingPeriodRepository,
-    FundConverter fundConverter,
-    SpendingGoalGetter spendingGoalGetter,
     SpendingGoalRepository spendingGoalRepository,
     SpendingGoalService spendingGoalService,
-    GoalTrendsGetter goalTrendsGetter,
-    GoalConverter goalConverter) : ControllerBase
+    GoalQueryService goalQueryService) : ControllerBase
 {
     /// <summary>
-    /// Retrieves the Assignment Goal that matches the provided accounting period for the provided Fund
+    /// Retrieves Assignment Goals matching the specified criteria.
     /// </summary>
     [HttpGet("assignment")]
-    [ProducesResponseType(typeof(AssignmentGoalModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult Get([FromQuery] GetGoalModel getGoalModel)
-    {
-        Dictionary<string, string[]> errors = [];
-        if (!assignmentGoalRepository.TryGetByFundAndAccountingPeriod(getGoalModel.FundId, getGoalModel.AccountingPeriodId, out AssignmentGoal? goal))
-        {
-            errors.Add(nameof(getGoalModel.AccountingPeriodId), [$"Goal with Accounting Period ID {getGoalModel.AccountingPeriodId} not found."]);
-        }
-        if (errors.Count > 0 || goal == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Goal.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-        return Ok(goalConverter.ToModel(goal));
-    }
-
-    /// <summary>
-    /// Retrieves the Assignment Goals that match the specified criteria
-    /// </summary>
-    [HttpGet("assignment/many")]
     [ProducesResponseType(typeof(CollectionModel<AssignmentGoalModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetManyAssignment([FromQuery] AssignmentGoalQueryParameterModel queryParameters)
-    {
-        if (!assignmentGoalGetter.TryGet(queryParameters, out CollectionModel<AssignmentGoalModel>? goals, out Dictionary<string, string[]> errors))
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Goals.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
+    public async Task<ActionResult<CollectionModel<AssignmentGoalModel>>> GetAssignmentGoalsAsync(
+        [FromQuery] AssignmentGoalQueryParameterModel query,
+        CancellationToken cancellationToken) =>
+        Ok(await goalQueryService.GetAssignmentGoalsAsync(query, cancellationToken));
 
-        return Ok(goals);
+    /// <summary>
+    /// Retrieves an Assignment Goal by ID.
+    /// </summary>
+    [HttpGet("assignment/{goalId:guid}")]
+    [ProducesResponseType(typeof(AssignmentGoalModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AssignmentGoalModel>> GetAssignmentGoalAsync(Guid goalId, CancellationToken cancellationToken)
+    {
+        AssignmentGoalModel? model = await goalQueryService.GetAssignmentGoalByIdAsync(goalId, cancellationToken);
+        return model == null ? NotFound() : Ok(model);
     }
 
     /// <summary>
-    /// Retrieves the Spending Goal that matches the provided accounting period for the provided Fund
+    /// Retrieves Spending Goals matching the specified criteria.
     /// </summary>
     [HttpGet("spending")]
-    [ProducesResponseType(typeof(SpendingGoalModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetSpending([FromQuery] GetGoalModel getGoalModel)
-    {
-        Dictionary<string, string[]> errors = [];
-        if (!spendingGoalRepository.TryGetByFundAndAccountingPeriod(getGoalModel.FundId, getGoalModel.AccountingPeriodId, out SpendingGoal? goal))
-        {
-            errors.Add(nameof(getGoalModel.AccountingPeriodId), [$"Goal with Accounting Period ID {getGoalModel.AccountingPeriodId} not found."]);
-        }
-        if (errors.Count > 0 || goal == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Goal.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-        return Ok(goalConverter.ToModel(goal));
-    }
-
-    /// <summary>
-    /// Retrieves the Spending Goals that match the specified criteria
-    /// </summary>
-    [HttpGet("spending/many")]
     [ProducesResponseType(typeof(CollectionModel<SpendingGoalModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetManySpending([FromQuery] SpendingGoalQueryParameterModel queryParameters)
-    {
-        if (!spendingGoalGetter.TryGet(queryParameters, out CollectionModel<SpendingGoalModel>? goals, out Dictionary<string, string[]> errors))
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Goals.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-
-        return Ok(goals);
-    }
+    public async Task<ActionResult<CollectionModel<SpendingGoalModel>>> GetSpendingGoalsAsync(
+        [FromQuery] SpendingGoalQueryParameterModel query,
+        CancellationToken cancellationToken) =>
+        Ok(await goalQueryService.GetSpendingGoalsAsync(query, cancellationToken));
 
     /// <summary>
-    /// Retrieves current snapshot data for Goals.
+    /// Retrieves a Spending Goal by ID.
     /// </summary>
-    [HttpGet("current")]
-    [ProducesResponseType(typeof(CurrentGoalsModel), StatusCodes.Status200OK)]
-    public IActionResult GetCurrent([FromQuery] CurrentGoalsQueryParameterModel queryParameters) =>
-        Ok(currentGoalsGetter.Get(queryParameters));
-
-    /// <summary>
-    /// Retrieves balance events for a single Goal workspace.
-    /// </summary>
-    [HttpGet("{fundId}/balance-events")]
-    [ProducesResponseType(typeof(CollectionModel<GoalWorkspaceBalanceEventModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetBalanceEvents(
-        Guid fundId,
-        [FromQuery] GoalBalanceEventQueryParameterModel queryParameters)
+    [HttpGet("spending/{goalId:guid}")]
+    [ProducesResponseType(typeof(SpendingGoalModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<SpendingGoalModel>> GetSpendingGoalAsync(Guid goalId, CancellationToken cancellationToken)
     {
-        if (!fundConverter.TryToDomain(fundId, out Fund? fund))
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Goal balance events.",
-                Errors = { [nameof(fundId)] = [$"Fund with ID {fundId} not found."] },
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-
-        AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetAll()
-            .FirstOrDefault(period => period.Id.Value == queryParameters.AccountingPeriodId);
-        if (accountingPeriod is null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Goal balance events.",
-                Errors = { [nameof(queryParameters.AccountingPeriodId)] = [$"Accounting Period with ID {queryParameters.AccountingPeriodId} not found."] },
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-
-        return Ok(goalBalanceEventGetter.Get(fund, accountingPeriod, queryParameters));
-    }
-
-    /// <summary>
-    /// Retrieves the Goal trends that matches the specified criteria.
-    /// </summary>
-    [HttpGet("trends")]
-    [ProducesResponseType(typeof(GoalTrendsModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetTrends([FromQuery] GoalTrendsQueryParameterModel queryParameters)
-    {
-        if (!goalTrendsGetter.TryGet(queryParameters, out GoalTrendsModel? trends, out Dictionary<string, string[]> errors))
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Goal trends.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-
-        return Ok(trends);
+        SpendingGoalModel? model = await goalQueryService.GetSpendingGoalByIdAsync(goalId, cancellationToken);
+        return model == null ? NotFound() : Ok(model);
     }
 
     /// <summary>
@@ -245,7 +123,7 @@ public sealed class GoalController(
         }
 
         await unitOfWork.SaveChangesAsync();
-        return Ok(goalConverter.ToModel(goalToUpdate));
+        return Ok(await goalQueryService.GetAssignmentGoalByIdAsync(goalId));
     }
 
     /// <summary>
@@ -302,7 +180,7 @@ public sealed class GoalController(
         }
 
         await unitOfWork.SaveChangesAsync();
-        return Ok(goalConverter.ToModel(goalToUpdate));
+        return Ok(await goalQueryService.GetSpendingGoalByIdAsync(goalId));
     }
 
     /// <summary>

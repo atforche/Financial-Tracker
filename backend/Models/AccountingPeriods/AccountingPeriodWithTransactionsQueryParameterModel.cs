@@ -10,5 +10,5 @@ public class AccountingPeriodWithTransactionsQueryParameterModel : PaginationMod
     /// <summary>
     /// Optional sort to apply to the matching transactions.
     /// </summary>
-    public TransactionSortOrderModel? Sort { get; init; }
+    public TransactionSortModel? Sort { get; init; }
 }

@@ -8,7 +8,7 @@ namespace Rest.Funds;
 /// <summary>
 /// Converter class that handles converting Funds to Fund Models
 /// </summary>
-public sealed class FundConverter(FundBalanceService fundBalanceService, FundRepository fundRepository)
+public sealed class FundConverter(FundRepository fundRepository)
 {
     /// <summary>
     /// Converts the provided Fund to a Fund Model
@@ -18,7 +18,6 @@ public sealed class FundConverter(FundBalanceService fundBalanceService, FundRep
         Id = fund.Id.Value,
         Name = fund.Name,
         Description = fund.Description,
-        CurrentBalance = FundBalanceConverter.ToModel(fund, fundBalanceService.GetCurrentBalance(fund.Id))
     };
 
     /// <summary>

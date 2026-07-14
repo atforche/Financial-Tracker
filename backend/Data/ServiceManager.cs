@@ -25,21 +25,25 @@ public static class ServiceManager
     {
         _ = serviceCollection.AddDbContext<DatabaseContext>();
         _ = serviceCollection.AddScoped<UnitOfWork>();
+        _ = serviceCollection.AddScoped<FinancialRangeQueryService>();
 
         _ = serviceCollection.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
         _ = serviceCollection.AddScoped<AccountingPeriodRepository>();
+        _ = serviceCollection.AddScoped<AccountingPeriodQueryService>();
 
         _ = serviceCollection.AddScoped<IAccountingPeriodBalanceHistoryRepository, AccountingPeriodBalanceHistoryRepository>();
         _ = serviceCollection.AddScoped<AccountingPeriodBalanceHistoryRepository>();
 
         _ = serviceCollection.AddScoped<IAccountRepository, AccountRepository>();
         _ = serviceCollection.AddScoped<AccountRepository>();
+        _ = serviceCollection.AddScoped<AccountQueryService>();
 
         _ = serviceCollection.AddScoped<IAccountBalanceHistoryRepository, AccountBalanceHistoryRepository>();
         _ = serviceCollection.AddScoped<AccountBalanceHistoryRepository>();
 
         _ = serviceCollection.AddScoped<IFundRepository, FundRepository>();
         _ = serviceCollection.AddScoped<FundRepository>();
+        _ = serviceCollection.AddScoped<FundQueryService>();
 
         _ = serviceCollection.AddScoped<IFundBalanceHistoryRepository, FundBalanceHistoryRepository>();
         _ = serviceCollection.AddScoped<FundBalanceHistoryRepository>();
@@ -51,8 +55,11 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<AssignmentGoalRepository>();
         _ = serviceCollection.AddScoped<ISpendingGoalRepository, SpendingGoalRepository>();
         _ = serviceCollection.AddScoped<SpendingGoalRepository>();
+        _ = serviceCollection.AddScoped<GoalQueryService>();
 
         _ = serviceCollection.AddScoped<ITransactionRepository, TransactionRepository>();
         _ = serviceCollection.AddScoped<TransactionRepository>();
+        _ = serviceCollection.AddScoped<TransactionModelMapper>();
+        _ = serviceCollection.AddScoped<TransactionQueryService>();
     }
 }
