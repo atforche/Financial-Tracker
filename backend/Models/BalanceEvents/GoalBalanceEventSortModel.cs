@@ -1,9 +1,9 @@
-namespace Models.Goals;
+namespace Models.BalanceEvents;
 
 /// <summary>
-/// Enum representing the different ways Goal trends balance events can be sorted.
+/// Enum representing the different ways Goal balance events can be sorted.
 /// </summary>
-public enum GoalTrendsBalanceEventSortOrderModel
+public enum GoalBalanceEventSortModel
 {
     /// <summary>
     /// Balance events are sorted by fund name in ascending order.

@@ -1,3 +1,6 @@
+using Models.AccountingPeriods;
+using Models.Funds;
+
 namespace Models.Goals;
 
 /// <summary>
@@ -11,24 +14,14 @@ public class SpendingGoalModel
     public required Guid Id { get; init; }
 
     /// <summary>
-    /// Fund ID for the Spending Goal
+    /// Fund for the Spending Goal.
     /// </summary>
-    public required Guid FundId { get; init; }
+    public required FundModel Fund { get; init; }
 
     /// <summary>
-    /// Fund name for the Spending Goal
+    /// Accounting Period for the Spending Goal, when one has been created.
     /// </summary>
-    public required string FundName { get; init; }
-
-    /// <summary>
-    /// Accounting Period ID for the Spending Goal
-    /// </summary>
-    public required Guid? AccountingPeriodId { get; init; }
-
-    /// <summary>
-    /// Accounting Period name for the Spending Goal
-    /// </summary>
-    public required string? AccountingPeriodName { get; init; }
+    public required AccountingPeriodModel? AccountingPeriod { get; init; }
 
     /// <summary>
     /// Type of the Spending Goal.

@@ -3,7 +3,7 @@ namespace Models.Goals;
 /// <summary>
 /// Enum representing the different ways Assignment Goals can be sorted
 /// </summary>
-public enum AssignmentGoalSortOrderModel
+public enum AssignmentGoalSortModel
 {
     /// <summary>
     /// Assignment Goals are sorted by accounting period in ascending order

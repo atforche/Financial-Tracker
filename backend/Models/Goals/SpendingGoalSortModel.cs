@@ -3,7 +3,7 @@ namespace Models.Goals;
 /// <summary>
 /// Enum representing the different ways Spending Goals can be sorted
 /// </summary>
-public enum SpendingGoalSortOrderModel
+public enum SpendingGoalSortModel
 {
     /// <summary>
     /// Spending Goals are sorted by accounting period in ascending order
