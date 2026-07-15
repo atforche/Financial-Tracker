@@ -7,10 +7,10 @@ import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import AccountingPeriodTrendChart from "@/accounting-periods/trends/AccountingPeriodTrendChart";
 import AccountingPeriodTrendsChangeChart from "@/accounting-periods/trends/AccountingPeriodTrendsChangeChart";
 import AccountingPeriodTrendsFilter from "@/accounting-periods/trends/AccountingPeriodTrendsFilter";
-import AccountingPeriodTrendsIncomeSpendingCard from "@/accounting-periods/trends/AccountingPeriodTrendsIncomeSpendingCard";
 import AccountingPeriodTrendsListFrame from "@/accounting-periods/trends/AccountingPeriodTrendsListFrame";
 import AccountingPeriodTrendsSummaryCards from "@/accounting-periods/trends/AccountingPeriodTrendsSummaryCards";
 import AccountingPeriodTrendsTransactionListFrame from "@/accounting-periods/trends/AccountingPeriodTrendsTransactionListFrame";
+import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
 import type {
   Transaction,
@@ -137,7 +137,7 @@ const AccountingPeriodTrends = async function ({
       <AccountingPeriodTrendsSummaryCards
         accountingPeriods={trends.accountingPeriods.items}
       />
-      <AccountingPeriodTrendsIncomeSpendingCard
+      <IncomeSpendingCard
         totalIncome={trends.totalIncome}
         totalSpending={trends.totalSpending}
       />

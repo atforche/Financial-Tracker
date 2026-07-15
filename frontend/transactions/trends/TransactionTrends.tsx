@@ -19,10 +19,10 @@ import {
 } from "@/transactions/trends/transactionTypeFilter";
 import type { JSX } from "react";
 import TransactionTrendsAmountChart from "@/transactions/trends/TransactionTrendsAmountChart";
-import TransactionTrendsByTypeCard from "@/transactions/trends/TransactionTrendsByTypeCard";
 import TransactionTrendsCountChart from "@/transactions/trends/TransactionTrendsCountChart";
 import TransactionTrendsFilter from "@/transactions/trends/TransactionTrendsFilter";
 import TransactionTrendsListFrame from "@/transactions/trends/TransactionTrendsListFrame";
+import TransactionsByTypeCard from "@/transactions/TransactionsByTypeCard";
 import dayjs from "dayjs";
 import getApiClient from "@/framework/data/getApiClient";
 import { redirect } from "next/navigation";
@@ -275,7 +275,7 @@ const TransactionTrends = async function ({
           defaultEndDate={defaultEndDate.format("YYYY-MM-DD")}
         />
       </Stack>
-      <TransactionTrendsByTypeCard
+      <TransactionsByTypeCard
         transactionTypes={summaryData?.transactionTypes ?? []}
       />
       <Box

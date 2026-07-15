@@ -18,10 +18,10 @@ import {
 import AccountTrendsBalanceEventListFrame from "@/accounts/trends/AccountTrendsBalanceEventListFrame";
 import AccountTrendsChangeChart from "@/accounts/trends/AccountTrendsChangeChart";
 import AccountTrendsFilter from "@/accounts/trends/AccountTrendsFilter";
-import AccountTrendsIncomeSpendingCard from "@/accounts/trends/AccountTrendsIncomeSpendingCard";
 import AccountTrendsListFrame from "@/accounts/trends/AccountTrendsListFrame";
 import AccountTrendsSummaryCards from "@/accounts/trends/AccountTrendsSummaryCards";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
+import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
 import dayjs from "dayjs";
 import getApiClient from "@/framework/data/getApiClient";
@@ -239,7 +239,7 @@ const AccountTrends = async function ({
         accountingPeriods={periodSummaries}
         dates={dateSummaries}
       />
-      <AccountTrendsIncomeSpendingCard
+      <IncomeSpendingCard
         totalIncome={trends.totalIncome}
         totalSpending={trends.totalSpending}
       />

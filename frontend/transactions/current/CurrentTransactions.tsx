@@ -19,7 +19,6 @@ import {
   shouldPersistTransactionTypes,
 } from "@/transactions/trends/transactionTypeFilter";
 import CurrentTransactionListFrame from "@/transactions/current/CurrentTransactionListFrame";
-import CurrentTransactionsByTypeCard from "@/transactions/current/CurrentTransactionsByTypeCard";
 import CurrentTransactionsFilter from "@/transactions/current/CurrentTransactionsFilter";
 import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
@@ -31,6 +30,7 @@ import {
   getTransactionAccountIds,
   getTransactionFundIds,
 } from "@/transactions/postingHelpers";
+import TransactionsByTypeCard from "@/transactions/TransactionsByTypeCard";
 
 /**
  * Search parameters for the CurrentTransactions component.
@@ -219,7 +219,7 @@ const CurrentTransactions = async function ({
           availableFundNames={current.availableFundNames}
         />
       </Stack>
-      <CurrentTransactionsByTypeCard
+      <TransactionsByTypeCard
         transactionTypes={current.transactionTypes}
       />
       <CurrentTransactionListFrame

@@ -1,9 +1,12 @@
 import { Paper, Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
-import TransactionTrendsByTypeCard from "@/transactions/trends/TransactionTrendsByTypeCard";
+import TransactionsByTypeCard from "@/transactions/TransactionsByTypeCard";
 import getApiClient from "@/framework/data/getApiClient";
 
+/**
+ * Props for the TransactionOverview component.
+ */
 interface TransactionOverviewProps {
   readonly currentAccountingPeriod: AccountingPeriod | null;
 }
@@ -52,7 +55,7 @@ const TransactionOverview = async function ({
         <Typography variant="h6" color="text.secondary">
           Current Transactions ({currentAccountingPeriod.name})
         </Typography>
-        <TransactionTrendsByTypeCard transactionTypes={data.transactionTypes} />
+        <TransactionsByTypeCard transactionTypes={data.transactionTypes} />
       </Stack>
     </Paper>
   );

@@ -1,5 +1,6 @@
 import type { JSX, ReactNode } from "react";
-import { Paper, Stack, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
+import Frame from "@/framework/view/Frame";
 
 /**
  * Props for the SummaryCard component.
@@ -21,17 +22,8 @@ const SummaryCard = function ({
   children,
 }: SummaryCardProps): JSX.Element {
   return (
-    <Paper
-      sx={{
-        p: 2,
-        border: "1px solid",
-        borderColor: "divider",
-      }}
-    >
+    <Frame title={title}>
       <Stack spacing={0.75}>
-        <Typography variant="overline" color="text.secondary">
-          {title}
-        </Typography>
         {typeof value !== "undefined" && (
           <Typography variant="h4">{value}</Typography>
         )}
@@ -42,7 +34,7 @@ const SummaryCard = function ({
           </Typography>
         )}
       </Stack>
-    </Paper>
+    </Frame>
   );
 };
 

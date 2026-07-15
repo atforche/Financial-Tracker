@@ -1,6 +1,6 @@
 import { Paper, Stack, Typography } from "@mui/material";
-import AccountingPeriodTrendsIncomeSpendingCard from "@/accounting-periods/trends/AccountingPeriodTrendsIncomeSpendingCard";
 import AccountingPeriodTrendsSummaryCards from "@/accounting-periods/trends/AccountingPeriodTrendsSummaryCards";
+import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
 
@@ -31,11 +31,6 @@ const AccountingPeriodOverview = async function (): Promise<JSX.Element> {
         });
   const range = rangeResponse?.data;
   const periods = range?.accountingPeriods.items ?? [];
-  const totalIncome = range?.totalIncome ?? {
-    total: 0,
-    tracked: 0,
-    untracked: 0,
-  };
   return (
     <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
       <Stack spacing={2}>
@@ -47,9 +42,9 @@ const AccountingPeriodOverview = async function (): Promise<JSX.Element> {
         </Typography>
         <Stack spacing={2}>
           <AccountingPeriodTrendsSummaryCards accountingPeriods={periods} />
-          <AccountingPeriodTrendsIncomeSpendingCard
-            totalIncome={totalIncome}
-            totalSpending={range?.totalSpending ?? 0}
+          <IncomeSpendingCard
+            totalIncome={range?.totalIncome}
+            totalSpending={range?.totalSpending}
           />
         </Stack>
       </Stack>

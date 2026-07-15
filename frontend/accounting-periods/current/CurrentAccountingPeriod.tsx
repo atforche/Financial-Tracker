@@ -1,9 +1,9 @@
 import { AccountingPeriodSort, type AccountingPeriodWithTransactions } from "@/accounting-periods/types";
 import { Stack, Typography } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
-import AccountingPeriodCurrentIncomeSpendingCard from "@/accounting-periods/current/CurrentAccountingPeriodIncomeSpendingCard";
 import AccountingPeriodCurrentSummaryCards from "@/accounting-periods/current/CurrentAccountingPeriodSummaryCards";
 import AccountingPeriodCurrentTransactionListFrame from "@/accounting-periods/current/CurrentAccountingPeriodTransactionListFrame";
+import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
 import type { TransactionSort } from "@/transactions/types";
 import getApiClient from "@/framework/data/getApiClient";
@@ -76,7 +76,7 @@ const CurrentAccountingPeriod = async function ({
         </Typography>
       </Stack>
       <AccountingPeriodCurrentSummaryCards current={current} />
-      <AccountingPeriodCurrentIncomeSpendingCard current={current} />
+      <IncomeSpendingCard totalIncome={current?.totalIncome} totalSpending={current?.totalSpending} />
       <AccountingPeriodCurrentTransactionListFrame current={current} />
     </Stack>
   );

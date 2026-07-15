@@ -49,7 +49,6 @@ const eslintConfig = defineConfig([
 
     rules: {
       // base eslint rules
-      complexity: ["error", { max: 30 }],
       "func-names": "off",
       "id-length": "off",
       "max-lines-per-function": "off",
@@ -65,6 +64,7 @@ const eslintConfig = defineConfig([
       "max-lines": "off",
       complexity: "off",
       "no-continue": "off",
+      "no-undefined": "off",
 
       // import rules
       "import/no-deprecated": "error",
