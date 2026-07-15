@@ -219,16 +219,9 @@ const CurrentTransactions = async function ({
           availableFundNames={current.availableFundNames}
         />
       </Stack>
-      <TransactionsByTypeCard
-        transactionTypes={current.transactionTypes}
-      />
+      <TransactionsByTypeCard transactionTypes={current.transactionTypes} />
       <CurrentTransactionListFrame
         title="Needs Posting"
-        description={
-          current.accountingPeriodName === null
-            ? "Transactions that still need posting will appear here once a current accounting period exists."
-            : `Transactions in ${current.accountingPeriodName} that are not fully posted yet.`
-        }
         data={current.unpostedTransactions.items}
         totalCount={current.unpostedTransactions.totalCount}
         sortParamName="unpostedTransactionSort"
@@ -254,11 +247,6 @@ const CurrentTransactions = async function ({
       />
       <CurrentTransactionListFrame
         title="Posted Transactions"
-        description={
-          current.accountingPeriodName === null
-            ? "Fully posted transactions will appear here once a current accounting period exists."
-            : `Transactions in ${current.accountingPeriodName} that are fully posted.`
-        }
         data={current.postedTransactions.items}
         totalCount={current.postedTransactions.totalCount}
         sortParamName="postedTransactionSort"

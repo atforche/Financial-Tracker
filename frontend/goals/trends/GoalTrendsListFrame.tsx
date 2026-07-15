@@ -15,13 +15,14 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
 import routes from "@/goals/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
  * Props for the GoalTrendsListFrame component.
@@ -32,17 +33,6 @@ interface GoalTrendsListFrameProps {
   readonly totalCount: number | null;
   readonly isInOnboardingMode: boolean;
 }
-
-const getResetRoute = function (
-  pathname: string,
-  view: GoalTrendsView,
-): string {
-  if (view === defaultGoalTrendsView) {
-    return pathname;
-  }
-
-  return `${pathname}?view=${view}`;
-};
 
 /**
  * Presents the paged goal table for the Goals trends.
@@ -63,24 +53,23 @@ const GoalTrendsListFrame = function ({
   const fundNameParamName = "fundName";
   const startAccountingPeriodIdParamName = "startAccountingPeriodId";
   const endAccountingPeriodIdParamName = "endAccountingPeriodId";
+  const updateParams = useSearchParamUpdater([pageParamName]);
 
   const setSort = function (sort: string | null): void {
-    const params = new URLSearchParams(searchParams.toString());
-    if (sort === null) {
-      params.delete(sortParamName);
-    } else {
-      params.set(sortParamName, sort);
-    }
-    params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    updateParams((params) => {
+      if (sort === null) {
+        params.delete(sortParamName);
+      } else {
+        params.set(sortParamName, sort);
+      }
+    });
   };
 
   const setFundNameFilter = function (fundName: string): void {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete(fundNameParamName);
-    params.append(fundNameParamName, fundName);
-    params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    updateParams((params) => {
+      params.delete(fundNameParamName);
+      params.append(fundNameParamName, fundName);
+    });
   };
 
   const openGoalWorkspace = function (): void {
@@ -108,68 +97,37 @@ const GoalTrendsListFrame = function ({
       searchParams.get(sortParamName) ?? "",
     );
 
+    const getSortProps = createColumnSortProps(currentSort, setSort);
+
     const columns: ColumnDefinition<AssignmentGoal>[] = [
       {
         name: "accountingPeriod",
         headerContent: "Accounting Period",
         getBodyContent: (goal) => goal.accountingPeriod?.name ?? "Ongoing",
-        sortType:
-          currentSort === AssignmentGoalSort.AccountingPeriod
-            ? ColumnSortType.Ascending
-            : currentSort === AssignmentGoalSort.AccountingPeriodDescending
-              ? ColumnSortType.Descending
-              : null,
-        onSort: (sortType): void => {
-          if (sortType === ColumnSortType.Ascending) {
-            setSort(AssignmentGoalSort.AccountingPeriod);
-          } else if (sortType === ColumnSortType.Descending) {
-            setSort(AssignmentGoalSort.AccountingPeriodDescending);
-          } else {
-            setSort(null);
-          }
-        },
+        ...getSortProps(
+          AssignmentGoalSort.AccountingPeriod,
+          AssignmentGoalSort.AccountingPeriodDescending,
+        ),
         minWidth: 170,
       },
       {
         name: "fund",
         headerContent: "Fund",
         getBodyContent: (goal) => goal.fund.name,
-        sortType:
-          currentSort === AssignmentGoalSort.Fund
-            ? ColumnSortType.Ascending
-            : currentSort === AssignmentGoalSort.FundDescending
-              ? ColumnSortType.Descending
-              : null,
-        onSort: (sortType): void => {
-          if (sortType === ColumnSortType.Ascending) {
-            setSort(AssignmentGoalSort.Fund);
-          } else if (sortType === ColumnSortType.Descending) {
-            setSort(AssignmentGoalSort.FundDescending);
-          } else {
-            setSort(null);
-          }
-        },
+        ...getSortProps(
+          AssignmentGoalSort.Fund,
+          AssignmentGoalSort.FundDescending,
+        ),
         minWidth: 160,
       },
       {
         name: "totalAmountToAssign",
         headerContent: "Total Amount To Assign",
         getBodyContent: (goal) => formatCurrency(goal.totalAmountToAssign),
-        sortType:
-          currentSort === AssignmentGoalSort.TotalAmountToAssign
-            ? ColumnSortType.Ascending
-            : currentSort === AssignmentGoalSort.TotalAmountToAssignDescending
-              ? ColumnSortType.Descending
-              : null,
-        onSort: (sortType): void => {
-          if (sortType === ColumnSortType.Ascending) {
-            setSort(AssignmentGoalSort.TotalAmountToAssign);
-          } else if (sortType === ColumnSortType.Descending) {
-            setSort(AssignmentGoalSort.TotalAmountToAssignDescending);
-          } else {
-            setSort(null);
-          }
-        },
+        ...getSortProps(
+          AssignmentGoalSort.TotalAmountToAssign,
+          AssignmentGoalSort.TotalAmountToAssignDescending,
+        ),
         alignment: "right",
         minWidth: 140,
       },
@@ -177,21 +135,10 @@ const GoalTrendsListFrame = function ({
         name: "totalAmountAssigned",
         headerContent: "Total Amount Assigned",
         getBodyContent: (goal) => formatCurrency(goal.totalAmountAssigned),
-        sortType:
-          currentSort === AssignmentGoalSort.TotalAmountAssigned
-            ? ColumnSortType.Ascending
-            : currentSort === AssignmentGoalSort.TotalAmountAssignedDescending
-              ? ColumnSortType.Descending
-              : null,
-        onSort: (sortType): void => {
-          if (sortType === ColumnSortType.Ascending) {
-            setSort(AssignmentGoalSort.TotalAmountAssigned);
-          } else if (sortType === ColumnSortType.Descending) {
-            setSort(AssignmentGoalSort.TotalAmountAssignedDescending);
-          } else {
-            setSort(null);
-          }
-        },
+        ...getSortProps(
+          AssignmentGoalSort.TotalAmountAssigned,
+          AssignmentGoalSort.TotalAmountAssignedDescending,
+        ),
         alignment: "right",
         minWidth: 190,
       },
@@ -199,21 +146,10 @@ const GoalTrendsListFrame = function ({
         name: "isMet",
         headerContent: "Is Goal Met?",
         getBodyContent: (goal) => (goal.isGoalMet ? "Yes" : "No"),
-        sortType:
-          currentSort === AssignmentGoalSort.IsMet
-            ? ColumnSortType.Ascending
-            : currentSort === AssignmentGoalSort.IsMetDescending
-              ? ColumnSortType.Descending
-              : null,
-        onSort: (sortType): void => {
-          if (sortType === ColumnSortType.Ascending) {
-            setSort(AssignmentGoalSort.IsMet);
-          } else if (sortType === ColumnSortType.Descending) {
-            setSort(AssignmentGoalSort.IsMetDescending);
-          } else {
-            setSort(null);
-          }
-        },
+        ...getSortProps(
+          AssignmentGoalSort.IsMet,
+          AssignmentGoalSort.IsMetDescending,
+        ),
         alignment: "center",
         minWidth: 120,
       },
@@ -253,61 +189,56 @@ const GoalTrendsListFrame = function ({
     ];
 
     return (
-      <Paper
-        sx={{
-          border: "1px solid",
-          borderColor: "divider",
-          p: { xs: 2, md: 2.5 },
+      <ListFrame<AssignmentGoal>
+        title="Assignment Goals"
+        columns={columns}
+        getId={(goal) => goal.id}
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+        data={data as AssignmentGoal[] | null}
+        totalCount={totalCount ?? null}
+        searchParamName="search"
+        pageParamName={pageParamName}
+        onRowClick={(goal: AssignmentGoal): void => {
+          setFundNameFilter(goal.fund.name);
         }}
-      >
-        <Stack spacing={2.5}>
-          <Typography variant="h5">Assignment Goals</Typography>
-          <ListFrame<AssignmentGoal>
-            columns={columns}
-            getId={(goal) => goal.id}
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            data={data as AssignmentGoal[] | null}
-            totalCount={totalCount ?? null}
-            searchParamName="search"
-            pageParamName={pageParamName}
-            onRowClick={(goal: AssignmentGoal): void => {
-              setFundNameFilter(goal.fund.name);
-            }}
-            hasActiveFilters={hasActiveFilters}
-            initialEmptyState={{
-              title: "No assignment goals have been added",
-              description: isInOnboardingMode
-                ? emptyDescription
-                : "Create a new assignment goal to start tracking funding progress.",
-              action: (
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    router.push(routes.workspace({}));
-                  }}
-                >
-                  {emptyActionLabel}
-                </Button>
-              ),
-            }}
-            filteredEmptyState={{
-              title: "No assignment goals match this trends filter",
-              description:
-                "Try a different fund name, goal type, or accounting period to widen the trends scope.",
-              action: (
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    router.replace(getResetRoute(pathname, view));
-                  }}
-                >
-                  Reset filters
-                </Button>
-              ),
-            }}
-          />
-        </Stack>
-      </Paper>
+        hasActiveFilters={hasActiveFilters}
+        initialEmptyState={{
+          title: "No assignment goals have been added",
+          description: isInOnboardingMode
+            ? emptyDescription
+            : "Create a new assignment goal to start tracking funding progress.",
+          action: (
+            <Button
+              variant="contained"
+              onClick={() => {
+                router.push(routes.workspace({}));
+              }}
+            >
+              {emptyActionLabel}
+            </Button>
+          ),
+        }}
+        filteredEmptyState={{
+          title: "No assignment goals match this trends filter",
+          description:
+            "Try a different fund name, goal type, or accounting period to widen the trends scope.",
+          action: (
+            <Button
+              variant="contained"
+              onClick={() => {
+                updateParams((params) => {
+                  [...params.keys()].forEach((key) => params.delete(key));
+                  if (view !== defaultGoalTrendsView) {
+                    params.set("view", view);
+                  }
+                });
+              }}
+            >
+              Reset filters
+            </Button>
+          ),
+        }}
+      />
     );
   }
 
@@ -316,89 +247,41 @@ const GoalTrendsListFrame = function ({
     searchParams.get(sortParamName) ?? "",
   );
 
+  const getSortProps = createColumnSortProps(currentSort, setSort);
+
   const columns: ColumnDefinition<SpendingGoal>[] = [
     {
       name: "accountingPeriod",
       headerContent: "Accounting Period",
       getBodyContent: (goal) => goal.accountingPeriod?.name ?? "Ongoing",
-      sortType:
-        currentSort === SpendingGoalSort.AccountingPeriod
-          ? ColumnSortType.Ascending
-          : currentSort === SpendingGoalSort.AccountingPeriodDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(SpendingGoalSort.AccountingPeriod);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(SpendingGoalSort.AccountingPeriodDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        SpendingGoalSort.AccountingPeriod,
+        SpendingGoalSort.AccountingPeriodDescending,
+      ),
       minWidth: 170,
     },
     {
       name: "fund",
       headerContent: "Fund",
       getBodyContent: (goal) => goal.fund.name,
-      sortType:
-        currentSort === SpendingGoalSort.Fund
-          ? ColumnSortType.Ascending
-          : currentSort === SpendingGoalSort.FundDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(SpendingGoalSort.Fund);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(SpendingGoalSort.FundDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(SpendingGoalSort.Fund, SpendingGoalSort.FundDescending),
       minWidth: 160,
     },
     {
       name: "goalType",
       headerContent: "Goal Type",
       getBodyContent: (goal) => formatSpendingGoalType(goal.type),
-      sortType:
-        currentSort === SpendingGoalSort.Type
-          ? ColumnSortType.Ascending
-          : currentSort === SpendingGoalSort.TypeDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(SpendingGoalSort.Type);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(SpendingGoalSort.TypeDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(SpendingGoalSort.Type, SpendingGoalSort.TypeDescending),
       minWidth: 160,
     },
     {
       name: "totalAmountToSpend",
       headerContent: "Amount To Spend",
       getBodyContent: (goal) => formatCurrency(goal.totalAmountToSpend),
-      sortType:
-        currentSort === SpendingGoalSort.TotalAmountToSpend
-          ? ColumnSortType.Ascending
-          : currentSort === SpendingGoalSort.TotalAmountToSpendDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(SpendingGoalSort.TotalAmountToSpend);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(SpendingGoalSort.TotalAmountToSpendDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        SpendingGoalSort.TotalAmountToSpend,
+        SpendingGoalSort.TotalAmountToSpendDescending,
+      ),
       alignment: "right",
       minWidth: 160,
     },
@@ -406,21 +289,10 @@ const GoalTrendsListFrame = function ({
       name: "totalAmountSpent",
       headerContent: "Amount Spent",
       getBodyContent: (goal) => formatCurrency(goal.totalAmountSpent),
-      sortType:
-        currentSort === SpendingGoalSort.TotalAmountSpent
-          ? ColumnSortType.Ascending
-          : currentSort === SpendingGoalSort.TotalAmountSpentDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(SpendingGoalSort.TotalAmountSpent);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(SpendingGoalSort.TotalAmountSpentDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        SpendingGoalSort.TotalAmountSpent,
+        SpendingGoalSort.TotalAmountSpentDescending,
+      ),
       alignment: "right",
       minWidth: 180,
     },
@@ -428,21 +300,7 @@ const GoalTrendsListFrame = function ({
       name: "isMet",
       headerContent: "Is Goal Met?",
       getBodyContent: (goal) => (goal.isGoalMet ? "Yes" : "No"),
-      sortType:
-        currentSort === SpendingGoalSort.IsMet
-          ? ColumnSortType.Ascending
-          : currentSort === SpendingGoalSort.IsMetDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(SpendingGoalSort.IsMet);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(SpendingGoalSort.IsMetDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(SpendingGoalSort.IsMet, SpendingGoalSort.IsMetDescending),
       alignment: "center",
       minWidth: 120,
     },
@@ -482,61 +340,56 @@ const GoalTrendsListFrame = function ({
   ];
 
   return (
-    <Paper
-      sx={{
-        border: "1px solid",
-        borderColor: "divider",
-        p: { xs: 2, md: 2.5 },
+    <ListFrame<SpendingGoal>
+      title="Spending Goals"
+      columns={columns}
+      getId={(goal) => goal.id}
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+      data={data as SpendingGoal[] | null}
+      totalCount={totalCount ?? null}
+      searchParamName="search"
+      pageParamName={pageParamName}
+      onRowClick={(goal: SpendingGoal): void => {
+        setFundNameFilter(goal.fund.name);
       }}
-    >
-      <Stack spacing={2.5}>
-        <Typography variant="h5">Spending Goals</Typography>
-        <ListFrame<SpendingGoal>
-          columns={columns}
-          getId={(goal) => goal.id}
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-          data={data as SpendingGoal[] | null}
-          totalCount={totalCount ?? null}
-          searchParamName="search"
-          pageParamName={pageParamName}
-          onRowClick={(goal: SpendingGoal): void => {
-            setFundNameFilter(goal.fund.name);
-          }}
-          hasActiveFilters={hasActiveFilters}
-          initialEmptyState={{
-            title: "No spending goals have been added",
-            description: isInOnboardingMode
-              ? emptyDescription
-              : "Create a new spending goal to start tracking spending progress.",
-            action: (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  router.push(routes.workspace({}));
-                }}
-              >
-                {emptyActionLabel}
-              </Button>
-            ),
-          }}
-          filteredEmptyState={{
-            title: "No spending goals match this trends filter",
-            description:
-              "Try a different fund name, goal type, or accounting period to widen the trends scope.",
-            action: (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  router.replace(getResetRoute(pathname, view));
-                }}
-              >
-                Reset filters
-              </Button>
-            ),
-          }}
-        />
-      </Stack>
-    </Paper>
+      hasActiveFilters={hasActiveFilters}
+      initialEmptyState={{
+        title: "No spending goals have been added",
+        description: isInOnboardingMode
+          ? emptyDescription
+          : "Create a new spending goal to start tracking spending progress.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              router.push(routes.workspace({}));
+            }}
+          >
+            {emptyActionLabel}
+          </Button>
+        ),
+      }}
+      filteredEmptyState={{
+        title: "No spending goals match this trends filter",
+        description:
+          "Try a different fund name, goal type, or accounting period to widen the trends scope.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              updateParams((params) => {
+                [...params.keys()].forEach((key) => params.delete(key));
+                if (view !== defaultGoalTrendsView) {
+                  params.set("view", view);
+                }
+              });
+            }}
+          >
+            Reset filters
+          </Button>
+        ),
+      }}
+    />
   );
 };
 

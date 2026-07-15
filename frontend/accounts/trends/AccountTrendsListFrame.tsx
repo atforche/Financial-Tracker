@@ -18,13 +18,14 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
 import routes from "@/accounts/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
  * Props for the AccountTrendsListFrame component.
@@ -56,26 +57,25 @@ const AccountTrendsListFrame = function ({
   const endAccountingPeriodIdParamName = "endAccountingPeriodId";
   const startDateParamName = "startDate";
   const endDateParamName = "endDate";
+  const updateParams = useSearchParamUpdater([pageParamName]);
 
   const setSort = function (
     sort: AccountWithBalanceRangeSortValue | null,
   ): void {
-    const params = new URLSearchParams(searchParams.toString());
-    if (sort === null) {
-      params.delete(sortParamName);
-    } else {
-      params.set(sortParamName, sort);
-    }
-    params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    updateParams((params) => {
+      if (sort === null) {
+        params.delete(sortParamName);
+      } else {
+        params.set(sortParamName, sort);
+      }
+    });
   };
 
   const setAccountNameFilter = function (accountName: string): void {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete(accountNameParamName);
-    params.append(accountNameParamName, accountName);
-    params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    updateParams((params) => {
+      params.delete(accountNameParamName);
+      params.append(accountNameParamName, accountName);
+    });
   };
 
   const openAccountWorkspace = function (
@@ -97,67 +97,35 @@ const AccountTrendsListFrame = function ({
     searchParams.has(startDateParamName) ||
     searchParams.has(endDateParamName);
 
+  const getSortProps = createColumnSortProps(currentSort, setSort);
+
   const columns: ColumnDefinition<AccountWithBalanceRange>[] = [
     {
       name: "name",
       headerContent: "Name",
       getBodyContent: (account) => account.name,
-      sortType:
-        currentSort === AccountWithBalanceRangeSort.Name
-          ? ColumnSortType.Ascending
-          : currentSort === AccountWithBalanceRangeSort.NameDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountWithBalanceRangeSort.Name);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountWithBalanceRangeSort.NameDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        AccountWithBalanceRangeSort.Name,
+        AccountWithBalanceRangeSort.NameDescending,
+      ),
     },
     {
       name: "type",
       headerContent: "Type",
       getBodyContent: (account) => formatAccountType(account.type),
-      sortType:
-        currentSort === AccountWithBalanceRangeSort.Type
-          ? ColumnSortType.Ascending
-          : currentSort === AccountWithBalanceRangeSort.TypeDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountWithBalanceRangeSort.Type);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountWithBalanceRangeSort.TypeDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        AccountWithBalanceRangeSort.Type,
+        AccountWithBalanceRangeSort.TypeDescending,
+      ),
     },
     {
       name: "startingBalance",
       headerContent: "Starting Balance",
       getBodyContent: (account) => formatCurrency(account.startingBalance),
-      sortType:
-        currentSort === AccountWithBalanceRangeSort.StartingBalance
-          ? ColumnSortType.Ascending
-          : currentSort ===
-              AccountWithBalanceRangeSort.StartingBalanceDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountWithBalanceRangeSort.StartingBalance);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountWithBalanceRangeSort.StartingBalanceDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        AccountWithBalanceRangeSort.StartingBalance,
+        AccountWithBalanceRangeSort.StartingBalanceDescending,
+      ),
       alignment: "right",
       minWidth: 140,
     },
@@ -165,21 +133,10 @@ const AccountTrendsListFrame = function ({
       name: "endingBalance",
       headerContent: "Ending Balance",
       getBodyContent: (account) => formatCurrency(account.endingBalance),
-      sortType:
-        currentSort === AccountWithBalanceRangeSort.EndingBalance
-          ? ColumnSortType.Ascending
-          : currentSort === AccountWithBalanceRangeSort.EndingBalanceDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountWithBalanceRangeSort.EndingBalance);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountWithBalanceRangeSort.EndingBalanceDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        AccountWithBalanceRangeSort.EndingBalance,
+        AccountWithBalanceRangeSort.EndingBalanceDescending,
+      ),
       alignment: "right",
       minWidth: 140,
     },
@@ -204,21 +161,10 @@ const AccountTrendsListFrame = function ({
           </Box>
         );
       },
-      sortType:
-        currentSort === AccountWithBalanceRangeSort.NetChange
-          ? ColumnSortType.Ascending
-          : currentSort === AccountWithBalanceRangeSort.NetChangeDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountWithBalanceRangeSort.NetChange);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountWithBalanceRangeSort.NetChangeDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        AccountWithBalanceRangeSort.NetChange,
+        AccountWithBalanceRangeSort.NetChangeDescending,
+      ),
       alignment: "right",
       minWidth: 160,
     },
@@ -258,64 +204,56 @@ const AccountTrendsListFrame = function ({
   ];
 
   return (
-    <Paper
-      sx={{
-        border: "1px solid",
-        borderColor: "divider",
-        p: { xs: 2, md: 2.5 },
+    <ListFrame<AccountWithBalanceRange>
+      title="Accounts"
+      columns={columns}
+      getId={(account) => account.id}
+      data={data ?? null}
+      totalCount={totalCount ?? null}
+      searchParamName="search"
+      pageParamName={pageParamName}
+      onRowClick={(account: AccountWithBalanceRange): void => {
+        setAccountNameFilter(account.name);
       }}
-    >
-      <Stack spacing={2.5}>
-        <Typography variant="h5">Accounts</Typography>
-        <ListFrame<AccountWithBalanceRange>
-          columns={columns}
-          getId={(account) => account.id}
-          data={data ?? null}
-          totalCount={totalCount ?? null}
-          searchParamName="search"
-          pageParamName={pageParamName}
-          onRowClick={(account: AccountWithBalanceRange): void => {
-            setAccountNameFilter(account.name);
-          }}
-          hasActiveFilters={hasActiveFilters}
-          initialEmptyState={{
-            title: "No accounts have been added",
-            description: isInOnboardingMode
-              ? "Onboard a new account to start tracking balances."
-              : "Create a new account to start tracking balances.",
-            action: (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  router.push(
-                    isInOnboardingMode
-                      ? routes.workspace({ action: "onboard" })
-                      : routes.workspace({ action: "create" }),
-                  );
-                }}
-              >
-                {isInOnboardingMode ? "Onboard account" : "Create account"}
-              </Button>
-            ),
-          }}
-          filteredEmptyState={{
-            title: "No accounts match this trends filter",
-            description:
-              "Try a different account type, account name, or date range to widen the trends scope.",
-            action: (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  router.replace(pathname);
-                }}
-              >
-                Reset filters
-              </Button>
-            ),
-          }}
-        />
-      </Stack>
-    </Paper>
+      hasActiveFilters={hasActiveFilters}
+      initialEmptyState={{
+        title: "No accounts have been added",
+        description: isInOnboardingMode
+          ? "Onboard a new account to start tracking balances."
+          : "Create a new account to start tracking balances.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              router.push(
+                isInOnboardingMode
+                  ? routes.workspace({ action: "onboard" })
+                  : routes.workspace({ action: "create" }),
+              );
+            }}
+          >
+            {isInOnboardingMode ? "Onboard account" : "Create account"}
+          </Button>
+        ),
+      }}
+      filteredEmptyState={{
+        title: "No accounts match this trends filter",
+        description:
+          "Try a different account type, account name, or date range to widen the trends scope.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              updateParams((params) => {
+                [...params.keys()].forEach((key) => params.delete(key));
+              });
+            }}
+          >
+            Reset filters
+          </Button>
+        ),
+      }}
+    />
   );
 };
 

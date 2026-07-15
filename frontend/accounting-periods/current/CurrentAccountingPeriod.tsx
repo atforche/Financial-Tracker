@@ -1,4 +1,7 @@
-import { AccountingPeriodSort, type AccountingPeriodWithTransactions } from "@/accounting-periods/types";
+import {
+  AccountingPeriodSort,
+  type AccountingPeriodWithTransactions,
+} from "@/accounting-periods/types";
 import { Stack, Typography } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import AccountingPeriodCurrentSummaryCards from "@/accounting-periods/current/CurrentAccountingPeriodSummaryCards";
@@ -37,7 +40,11 @@ const CurrentAccountingPeriod = async function ({
   const apiClient = getApiClient();
   const { data: accountingPeriods } = await apiClient.GET(
     "/accounting-periods",
-    { params: { query: { Sort: AccountingPeriodSort.DateDescending, Limit: 1 } } },
+    {
+      params: {
+        query: { Sort: AccountingPeriodSort.DateDescending, Limit: 1 },
+      },
+    },
   );
   const currentAccountingPeriod = accountingPeriods?.items[0] ?? null;
   let current: AccountingPeriodWithTransactions | null = null;
@@ -76,8 +83,11 @@ const CurrentAccountingPeriod = async function ({
         </Typography>
       </Stack>
       <AccountingPeriodCurrentSummaryCards current={current} />
-      <IncomeSpendingCard totalIncome={current?.totalIncome} totalSpending={current?.totalSpending} />
-      <AccountingPeriodCurrentTransactionListFrame current={current} />
+      <IncomeSpendingCard
+        totalIncome={current?.totalIncome}
+        totalSpending={current?.totalSpending}
+      />
+      <AccountingPeriodCurrentTransactionListFrame accountingPeriod={current} />
     </Stack>
   );
 };

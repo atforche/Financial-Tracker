@@ -1,7 +1,8 @@
 "use client";
 
 import { Paper, Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import CloseAccountingPeriodForm from "@/accounting-periods/workspace/CloseAccountingPeriodForm";
@@ -27,9 +28,8 @@ const AccountingPeriodWorkspaceActions = function ({
   selectedAccountingPeriod,
   requestedAction,
 }: AccountingPeriodWorkspaceActionsProps): JSX.Element {
-  const searchParams = useSearchParams();
   const pathname = usePathname();
-  const router = useRouter();
+  const updateParams = useSearchParamUpdater([]);
 
   const allActions: readonly AccountingPeriodWorkspaceAction[] = [
     "create",
@@ -51,13 +51,13 @@ const AccountingPeriodWorkspaceActions = function ({
   const setAction = function (
     action: AccountingPeriodWorkspaceAction | null,
   ): void {
-    const params = new URLSearchParams(searchParams.toString());
-    if (action === null) {
-      params.delete("action");
-    } else {
-      params.set("action", action);
-    }
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    updateParams((params) => {
+      if (action === null) {
+        params.delete("action");
+      } else {
+        params.set("action", action);
+      }
+    });
   };
 
   return (

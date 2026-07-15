@@ -1,12 +1,13 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { AccountWorkspaceAction } from "@/accounts/workspace/AccountWorkspace";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateAccountForm from "@/accounts/workspace/CreateAccountForm";
 import type { JSX } from "react";
 import OnboardAccountForm from "@/accounts/workspace/OnboardAccountForm";
 import { buildUrl } from "@/framework/routes/helpers";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
  * Props for the AccountWorkspaceActions component.
@@ -27,18 +28,16 @@ const AccountWorkspaceActions = function ({
 }: AccountWorkspaceActionsProps): JSX.Element {
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const router = useRouter();
+  const updateParams = useSearchParamUpdater([]);
 
   const setAction = function (action: AccountWorkspaceAction | null): void {
-    const params = new URLSearchParams(searchParams.toString());
-
-    if (action === null) {
-      params.delete("action");
-    } else {
-      params.set("action", action);
-    }
-
-    router.replace(buildUrl(pathname, params), { scroll: false });
+    updateParams((params) => {
+      if (action === null) {
+        params.delete("action");
+      } else {
+        params.set("action", action);
+      }
+    });
   };
 
   const dialogParams = new URLSearchParams(searchParams.toString());

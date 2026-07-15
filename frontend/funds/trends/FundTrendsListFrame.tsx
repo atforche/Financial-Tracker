@@ -16,13 +16,14 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
 import routes from "@/funds/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
  * Props for the FundTrendsListFrame component.
@@ -53,24 +54,23 @@ const FundTrendsListFrame = function ({
   const endAccountingPeriodIdParamName = "endAccountingPeriodId";
   const startDateParamName = "startDate";
   const endDateParamName = "endDate";
+  const updateParams = useSearchParamUpdater([pageParamName]);
 
   const setSort = function (sort: FundWithBalanceRangeSortValue | null): void {
-    const params = new URLSearchParams(searchParams.toString());
-    if (sort === null) {
-      params.delete(sortParamName);
-    } else {
-      params.set(sortParamName, sort);
-    }
-    params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    updateParams((params) => {
+      if (sort === null) {
+        params.delete(sortParamName);
+      } else {
+        params.set(sortParamName, sort);
+      }
+    });
   };
 
   const setFundNameFilter = function (fundName: string): void {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete(fundNameParamName);
-    params.append(fundNameParamName, fundName);
-    params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    updateParams((params) => {
+      params.delete(fundNameParamName);
+      params.append(fundNameParamName, fundName);
+    });
   };
 
   const openFundWorkspace = function (fund: FundWithBalanceRange): void {
@@ -89,46 +89,26 @@ const FundTrendsListFrame = function ({
     searchParams.has(startDateParamName) ||
     searchParams.has(endDateParamName);
 
+  const getSortProps = createColumnSortProps(currentSort, setSort);
+
   const columns: ColumnDefinition<FundWithBalanceRange>[] = [
     {
       name: "name",
       headerContent: "Name",
       getBodyContent: (fund) => fund.name,
-      sortType:
-        currentSort === FundWithBalanceRangeSort.Name
-          ? ColumnSortType.Ascending
-          : currentSort === FundWithBalanceRangeSort.NameDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(FundWithBalanceRangeSort.Name);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(FundWithBalanceRangeSort.NameDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        FundWithBalanceRangeSort.Name,
+        FundWithBalanceRangeSort.NameDescending,
+      ),
     },
     {
       name: "startingBalance",
       headerContent: "Starting Balance",
       getBodyContent: (fund) => formatCurrency(fund.startingBalance),
-      sortType:
-        currentSort === FundWithBalanceRangeSort.StartingBalance
-          ? ColumnSortType.Ascending
-          : currentSort === FundWithBalanceRangeSort.StartingBalanceDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(FundWithBalanceRangeSort.StartingBalance);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(FundWithBalanceRangeSort.StartingBalanceDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        FundWithBalanceRangeSort.StartingBalance,
+        FundWithBalanceRangeSort.StartingBalanceDescending,
+      ),
       alignment: "right",
       minWidth: 140,
     },
@@ -136,21 +116,10 @@ const FundTrendsListFrame = function ({
       name: "endingBalance",
       headerContent: "Ending Balance",
       getBodyContent: (fund) => formatCurrency(fund.endingBalance),
-      sortType:
-        currentSort === FundWithBalanceRangeSort.EndingBalance
-          ? ColumnSortType.Ascending
-          : currentSort === FundWithBalanceRangeSort.EndingBalanceDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(FundWithBalanceRangeSort.EndingBalance);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(FundWithBalanceRangeSort.EndingBalanceDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        FundWithBalanceRangeSort.EndingBalance,
+        FundWithBalanceRangeSort.EndingBalanceDescending,
+      ),
       alignment: "right",
       minWidth: 140,
     },
@@ -172,21 +141,10 @@ const FundTrendsListFrame = function ({
           </Box>
         );
       },
-      sortType:
-        currentSort === FundWithBalanceRangeSort.NetChange
-          ? ColumnSortType.Ascending
-          : currentSort === FundWithBalanceRangeSort.NetChangeDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(FundWithBalanceRangeSort.NetChange);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(FundWithBalanceRangeSort.NetChangeDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        FundWithBalanceRangeSort.NetChange,
+        FundWithBalanceRangeSort.NetChangeDescending,
+      ),
       alignment: "right",
       minWidth: 160,
     },
@@ -226,64 +184,56 @@ const FundTrendsListFrame = function ({
   ];
 
   return (
-    <Paper
-      sx={{
-        border: "1px solid",
-        borderColor: "divider",
-        p: { xs: 2, md: 2.5 },
+    <ListFrame<FundWithBalanceRange>
+      title="Funds"
+      columns={columns}
+      getId={(fund) => fund.id}
+      data={data ?? null}
+      totalCount={totalCount ?? null}
+      searchParamName="search"
+      pageParamName={pageParamName}
+      onRowClick={(fund: FundWithBalanceRange): void => {
+        setFundNameFilter(fund.name);
       }}
-    >
-      <Stack spacing={2.5}>
-        <Typography variant="h5">Funds</Typography>
-        <ListFrame<FundWithBalanceRange>
-          columns={columns}
-          getId={(fund) => fund.id}
-          data={data ?? null}
-          totalCount={totalCount ?? null}
-          searchParamName="search"
-          pageParamName={pageParamName}
-          onRowClick={(fund: FundWithBalanceRange): void => {
-            setFundNameFilter(fund.name);
-          }}
-          hasActiveFilters={hasActiveFilters}
-          initialEmptyState={{
-            title: "No funds have been added",
-            description: isInOnboardingMode
-              ? "Onboard a new fund to start tracking balances."
-              : "Create a new fund to start tracking balances.",
-            action: (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  router.push(
-                    isInOnboardingMode
-                      ? routes.workspaceOnboard({})
-                      : routes.workspaceCreate({}),
-                  );
-                }}
-              >
-                {isInOnboardingMode ? "Onboard fund" : "Create fund"}
-              </Button>
-            ),
-          }}
-          filteredEmptyState={{
-            title: "No accounts match this trends filter",
-            description:
-              "Try a different account type, account name, or date range to widen the trends scope.",
-            action: (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  router.replace(pathname);
-                }}
-              >
-                Reset filters
-              </Button>
-            ),
-          }}
-        />
-      </Stack>
-    </Paper>
+      hasActiveFilters={hasActiveFilters}
+      initialEmptyState={{
+        title: "No funds have been added",
+        description: isInOnboardingMode
+          ? "Onboard a new fund to start tracking balances."
+          : "Create a new fund to start tracking balances.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              router.push(
+                isInOnboardingMode
+                  ? routes.workspaceOnboard({})
+                  : routes.workspaceCreate({}),
+              );
+            }}
+          >
+            {isInOnboardingMode ? "Onboard fund" : "Create fund"}
+          </Button>
+        ),
+      }}
+      filteredEmptyState={{
+        title: "No accounts match this trends filter",
+        description:
+          "Try a different account type, account name, or date range to widen the trends scope.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              updateParams((params) => {
+                [...params.keys()].forEach((key) => params.delete(key));
+              });
+            }}
+          >
+            Reset filters
+          </Button>
+        ),
+      }}
+    />
   );
 };
 

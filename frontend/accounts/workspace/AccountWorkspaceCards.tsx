@@ -5,13 +5,13 @@ import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
 } from "@/accounts/trends/accountTypeFilter";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
 import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
-import { buildUrl } from "@/framework/routes/helpers";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import formatCurrency from "@/framework/formatCurrency";
 import { getAccountCardColor } from "@/accounts/workspace/helpers";
 import routes from "@/accounts/routes";
@@ -36,22 +36,11 @@ const AccountWorkspaceCards = function ({
   isInOnboardingMode,
 }: AccountWorkspaceCardsProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
   const router = useRouter();
-
-  const replaceSearchParams = function (
-    update: (params: URLSearchParams) => void,
-  ): void {
-    const params = new URLSearchParams(searchParams.toString());
-    update(params);
-
-    router.replace(buildUrl(pathname, params), {
-      scroll: false,
-    });
-  };
+  const updateParams = useSearchParamUpdater([]);
 
   const clearFilters = function (): void {
-    replaceSearchParams((params) => {
+    updateParams((params) => {
       params.delete(searchParamName);
       params.delete(accountTypeParamName);
       params.delete(actionParamName);

@@ -1,8 +1,9 @@
 "use client";
 
 import "@/framework/listframe/ListFrame.css";
+import Frame, { type FrameColor } from "@/framework/view/Frame";
+import type { JSX, ReactNode } from "react";
 import {
-  Box,
   Paper,
   Stack,
   Table,
@@ -14,11 +15,11 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnHeader from "@/framework/listframe/ColumnHeader";
-import type { JSX } from "react";
 import { rowsPerPage } from "@/framework/listframe/Constants";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useSearchParams } from "next/navigation";
 
 /** Height of each row in the list frame. */
 const listFrameRowHeight = 50;
@@ -36,11 +37,14 @@ interface EmptyStateDefinition {
  * Props for the ListFrame component.
  */
 interface ListFrameProps<T> {
+  readonly title: string;
+  readonly headerContent?: ReactNode;
+  readonly color?: FrameColor;
   readonly columns: ColumnDefinition<T>[];
   readonly getId: (item: T) => string;
   readonly data: T[] | null;
   readonly totalCount: number | null;
-  readonly searchParamName: string;
+  readonly searchParamName?: string;
   readonly pageParamName: string;
   readonly onRowClick?: (item: T) => void;
   readonly isRowSelected?: (item: T) => boolean;
@@ -53,6 +57,9 @@ interface ListFrameProps<T> {
  * Component that presents a generic list frame with a table structure.
  */
 const ListFrame = function <T>({
+  title,
+  headerContent,
+  color = "primary",
   columns,
   getId,
   data,
@@ -66,9 +73,11 @@ const ListFrame = function <T>({
   filteredEmptyState,
 }: ListFrameProps<T>): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
-  const currentSearch = searchParams.get(searchParamName);
+  const updateParams = useSearchParamUpdater([]);
+  const currentSearch =
+    typeof searchParamName === "string"
+      ? searchParams.get(searchParamName)
+      : null;
   const currentPage = searchParams.get(pageParamName);
   const isFiltered =
     typeof hasActiveFilters === "boolean"
@@ -90,7 +99,7 @@ const ListFrame = function <T>({
   }
 
   return (
-    <Box>
+    <Frame title={title} headerContent={headerContent} color={color}>
       <Paper
         sx={{
           width: "100%",
@@ -205,16 +214,14 @@ const ListFrame = function <T>({
             rowsPerPage={rowsPerPage}
             page={currentPage === null ? 0 : parseInt(currentPage, 10) - 1}
             onPageChange={(_, newPage) => {
-              const params = new URLSearchParams(searchParams.toString());
-              params.set(pageParamName, (newPage + 1).toString());
-              router.replace(`${pathname}?${params.toString()}`, {
-                scroll: false,
+              updateParams((params) => {
+                params.set(pageParamName, (newPage + 1).toString());
               });
             }}
           />
         ) : null}
       </Paper>
-    </Box>
+    </Frame>
   );
 };
 

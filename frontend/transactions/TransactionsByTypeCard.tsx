@@ -32,7 +32,9 @@ const TransactionsByTypeCard = function ({
   if (transactionTypes.length === 0) {
     return (
       <SummaryCard title="Transactions by type">
-        <Typography color="text.secondary">No transaction type summaries are available.</Typography>
+        <Typography color="text.secondary">
+          No transaction type summaries are available.
+        </Typography>
       </SummaryCard>
     );
   }
@@ -47,7 +49,9 @@ const TransactionsByTypeCard = function ({
               justifyContent="space-between"
               alignItems="center"
             >
-              <Typography fontWeight={600}>{summary.transactionType}</Typography>
+              <Typography fontWeight={600}>
+                {summary.transactionType}
+              </Typography>
               <Typography color="text.secondary">
                 {summary.totalCount.toLocaleString()} transactions
               </Typography>

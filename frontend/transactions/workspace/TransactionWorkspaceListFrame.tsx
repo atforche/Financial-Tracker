@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, Paper, Stack, Typography } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import {
   type Transaction,
   TransactionSort,
@@ -12,12 +12,12 @@ import {
 } from "@/transactions/current/helpers";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import ListFrame from "@/framework/listframe/ListFrame";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
-import { buildUrl } from "@/framework/routes/helpers";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import formatCurrency from "@/framework/formatCurrency";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
@@ -47,18 +47,10 @@ const TransactionWorkspaceListFrame = function ({
   const sortParamName = "sort";
   const pageParamName = "page";
 
-  const replaceSearchParams = function (
-    update: (params: URLSearchParams) => void,
-  ): void {
-    const params = new URLSearchParams(searchParams.toString());
-    update(params);
-    router.replace(buildUrl(pathname, params), {
-      scroll: false,
-    });
-  };
+  const updateParams = useSearchParamUpdater([]);
 
   const setSort = function (sort: TransactionSortValue | null): void {
-    replaceSearchParams((params) => {
+    updateParams((params) => {
       if (sort === null) {
         params.delete(sortParamName);
       } else {
@@ -94,89 +86,41 @@ const TransactionWorkspaceListFrame = function ({
       ? `${pathname}/create`
       : `${pathname}/create?${createQuery}`;
 
+  const getSortProps = createColumnSortProps(currentSort, setSort);
+
   const columns: ColumnDefinition<Transaction>[] = [
     {
       name: "date",
       headerContent: "Date",
       getBodyContent: (transaction: Transaction) => transaction.date,
-      sortType:
-        currentSort === TransactionSort.Date
-          ? ColumnSortType.Ascending
-          : currentSort === TransactionSort.DateDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType: ColumnSortType | null): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSort.Date);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSort.DateDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(TransactionSort.Date, TransactionSort.DateDescending),
       minWidth: 125,
     },
     {
       name: "description",
       headerContent: "Description",
       getBodyContent: (transaction: Transaction) => transaction.description,
-      sortType:
-        currentSort === TransactionSort.Description
-          ? ColumnSortType.Ascending
-          : currentSort === TransactionSort.DescriptionDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType: ColumnSortType | null): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSort.Description);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSort.DescriptionDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        TransactionSort.Description,
+        TransactionSort.DescriptionDescending,
+      ),
       minWidth: 150,
     },
     {
       name: "source",
       headerContent: "Source",
       getBodyContent: getTransactionSourceLabel,
-      sortType:
-        currentSort === TransactionSort.Source
-          ? ColumnSortType.Ascending
-          : currentSort === TransactionSort.SourceDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType: ColumnSortType | null): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSort.Source);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSort.SourceDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(TransactionSort.Source, TransactionSort.SourceDescending),
       minWidth: 170,
     },
     {
       name: "destination",
       headerContent: "Destination",
       getBodyContent: getTransactionDestinationLabel,
-      sortType:
-        currentSort === TransactionSort.Destination
-          ? ColumnSortType.Ascending
-          : currentSort === TransactionSort.DestinationDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType: ColumnSortType | null): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSort.Destination);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSort.DestinationDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        TransactionSort.Destination,
+        TransactionSort.DestinationDescending,
+      ),
       minWidth: 170,
     },
     {
@@ -184,21 +128,7 @@ const TransactionWorkspaceListFrame = function ({
       headerContent: "Amount",
       getBodyContent: (transaction: Transaction) =>
         formatCurrency(transaction.amount),
-      sortType:
-        currentSort === TransactionSort.Amount
-          ? ColumnSortType.Ascending
-          : currentSort === TransactionSort.AmountDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType: ColumnSortType | null): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSort.Amount);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSort.AmountDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(TransactionSort.Amount, TransactionSort.AmountDescending),
       alignment: "right",
       minWidth: 150,
     },
@@ -225,73 +155,52 @@ const TransactionWorkspaceListFrame = function ({
   ];
 
   return (
-    <Paper
-      sx={{
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 3,
-        p: { xs: 2, md: 2.5 },
-      }}
-    >
-      <Stack spacing={2.5}>
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          justifyContent="space-between"
-          alignItems={{ xs: "stretch", sm: "center" }}
+    <ListFrame<Transaction>
+      title="Transactions"
+      headerContent={
+        <Button
+          variant="contained"
+          onClick={() => {
+            router.push(createUrl);
+          }}
         >
-          <Typography variant="h6" color="text.secondary">
-            Transactions
-          </Typography>
+          Create Transaction
+        </Button>
+      }
+      columns={columns}
+      getId={(transaction) => transaction.id}
+      data={data ?? null}
+      totalCount={totalCount ?? null}
+      pageParamName={pageParamName}
+      onRowClick={(transaction) => {
+        openTransaction(transaction.id);
+      }}
+      initialEmptyState={{
+        title: "No transactions found",
+        description: "No transactions have been recorded yet.",
+        action: null,
+      }}
+      filteredEmptyState={{
+        title: "No transactions match this search",
+        description:
+          "Try a different description, amount, date, or account name, or clear the current search to see all matching transactions.",
+        action: (
           <Button
             variant="contained"
             onClick={() => {
-              router.push(createUrl);
+              updateParams((params) => {
+                params.delete(accountingPeriodIdsParamName);
+                params.delete(accountIdsParamName);
+                params.delete(fundIdsParamName);
+                params.delete(pageParamName);
+              });
             }}
           >
-            Create Transaction
+            Clear search
           </Button>
-        </Stack>
-        <ListFrame<Transaction>
-          columns={columns}
-          getId={(transaction) => transaction.id}
-          data={data ?? null}
-          totalCount={totalCount ?? null}
-          searchParamName=""
-          pageParamName={pageParamName}
-          onRowClick={(transaction) => {
-            openTransaction(transaction.id);
-          }}
-          initialEmptyState={{
-            title: "No transactions found",
-            description: "No transactions have been recorded yet.",
-            action: null,
-          }}
-          filteredEmptyState={{
-            title: "No transactions match this search",
-            description:
-              "Try a different description, amount, date, or account name, or clear the current search to see all matching transactions.",
-            action: (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  const params = new URLSearchParams(searchParams.toString());
-                  params.delete(accountingPeriodIdsParamName);
-                  params.delete(accountIdsParamName);
-                  params.delete(fundIdsParamName);
-                  params.delete(pageParamName);
-                  router.replace(`${pathname}?${params.toString()}`, {
-                    scroll: false,
-                  });
-                }}
-              >
-                Clear search
-              </Button>
-            ),
-          }}
-        />
-      </Stack>
-    </Paper>
+        ),
+      }}
+    />
   );
 };
 

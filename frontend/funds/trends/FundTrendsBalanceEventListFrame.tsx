@@ -17,13 +17,14 @@ import { BalanceEventTypeModel } from "@/framework/data/api";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
 import formatShortDate from "@/framework/formatShortDate";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 const formatBalanceEventType = function (type: BalanceEventTypeModel): string {
   return type === BalanceEventTypeModel.Debit ? "Debit" : "Credit";
@@ -59,15 +60,16 @@ const FundTrendsBalanceEventListFrame = function ({
   const startDateParamName = "startDate";
   const endDateParamName = "endDate";
 
+  const updateParams = useSearchParamUpdater([pageParamName]);
+
   const setSort = function (sort: FundBalanceEventSortValue | null): void {
-    const params = new URLSearchParams(searchParams.toString());
-    if (sort === null) {
-      params.delete(sortParamName);
-    } else {
-      params.set(sortParamName, sort);
-    }
-    params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    updateParams((params) => {
+      if (sort === null) {
+        params.delete(sortParamName);
+      } else {
+        params.set(sortParamName, sort);
+      }
+    });
   };
 
   const currentSort = tryParseEnum(
@@ -94,26 +96,17 @@ const FundTrendsBalanceEventListFrame = function ({
     searchParams.has(startDateParamName) ||
     searchParams.has(endDateParamName);
 
+  const getSortProps = createColumnSortProps(currentSort, setSort);
+
   const columns: ColumnDefinition<FundWorkspaceBalanceEvent>[] = [
     {
       name: "fundName",
       headerContent: "Fund",
       getBodyContent: (balanceEvent) => balanceEvent.fund.name,
-      sortType:
-        currentSort === FundBalanceEventSort.FundName
-          ? ColumnSortType.Ascending
-          : currentSort === FundBalanceEventSort.FundNameDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(FundBalanceEventSort.FundName);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(FundBalanceEventSort.FundNameDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        FundBalanceEventSort.FundName,
+        FundBalanceEventSort.FundNameDescending,
+      ),
       minWidth: 140,
     },
     {
@@ -123,21 +116,10 @@ const FundTrendsBalanceEventListFrame = function ({
         balanceEvent.isPosted
           ? formatShortDate(new Date(`${balanceEvent.date}T00:00:00`))
           : "Pending",
-      sortType:
-        currentSort === FundBalanceEventSort.Date
-          ? ColumnSortType.Ascending
-          : currentSort === FundBalanceEventSort.DateDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(FundBalanceEventSort.Date);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(FundBalanceEventSort.DateDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        FundBalanceEventSort.Date,
+        FundBalanceEventSort.DateDescending,
+      ),
       minWidth: 130,
     },
     {
@@ -157,42 +139,20 @@ const FundTrendsBalanceEventListFrame = function ({
           {formatBalanceEventType(balanceEvent.type)}
         </Box>
       ),
-      sortType:
-        currentSort === FundBalanceEventSort.Type
-          ? ColumnSortType.Ascending
-          : currentSort === FundBalanceEventSort.TypeDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(FundBalanceEventSort.Type);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(FundBalanceEventSort.TypeDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        FundBalanceEventSort.Type,
+        FundBalanceEventSort.TypeDescending,
+      ),
       minWidth: 90,
     },
     {
       name: "amount",
       headerContent: "Amount",
       getBodyContent: (balanceEvent) => formatCurrency(balanceEvent.amount),
-      sortType:
-        currentSort === FundBalanceEventSort.Amount
-          ? ColumnSortType.Ascending
-          : currentSort === FundBalanceEventSort.AmountDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(FundBalanceEventSort.Amount);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(FundBalanceEventSort.AmountDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        FundBalanceEventSort.Amount,
+        FundBalanceEventSort.AmountDescending,
+      ),
       alignment: "right",
       minWidth: 120,
     },
@@ -223,81 +183,64 @@ const FundTrendsBalanceEventListFrame = function ({
       name: "accountingPeriodName",
       headerContent: "Accounting Period",
       getBodyContent: (balanceEvent) => balanceEvent.accountingPeriod.name,
-      sortType:
-        currentSort === FundBalanceEventSort.AccountingPeriodName
-          ? ColumnSortType.Ascending
-          : currentSort === FundBalanceEventSort.AccountingPeriodNameDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(FundBalanceEventSort.AccountingPeriodName);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(FundBalanceEventSort.AccountingPeriodNameDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        FundBalanceEventSort.AccountingPeriodName,
+        FundBalanceEventSort.AccountingPeriodNameDescending,
+      ),
       minWidth: 160,
     });
   }
 
   return (
-    <Paper
-      sx={{
-        border: "1px solid",
-        borderColor: "divider",
-        p: { xs: 2, md: 2.5 },
+    <ListFrame<FundWorkspaceBalanceEvent>
+      title="Balance Events"
+      columns={columns}
+      getId={(balanceEvent) =>
+        `${balanceEvent.fund.id}-${balanceEvent.accountingPeriod.id}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
+      }
+      data={data ?? null}
+      totalCount={totalCount ?? null}
+      searchParamName="balanceEventSearch"
+      pageParamName={pageParamName}
+      hasActiveFilters={hasActiveFilters}
+      onRowClick={(balanceEvent) => {
+        openTransactionWorkspace(balanceEvent);
       }}
-    >
-      <Stack spacing={2.5}>
-        <Typography variant="h5">Balance Events</Typography>
-        <ListFrame<FundWorkspaceBalanceEvent>
-          columns={columns}
-          getId={(balanceEvent) =>
-            `${balanceEvent.fund.id}-${balanceEvent.accountingPeriod.id}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
-          }
-          data={data ?? null}
-          totalCount={totalCount ?? null}
-          searchParamName="balanceEventSearch"
-          pageParamName={pageParamName}
-          hasActiveFilters={hasActiveFilters}
-          onRowClick={(balanceEvent) => {
-            openTransactionWorkspace(balanceEvent);
-          }}
-          initialEmptyState={{
-            title: "No balance events found",
-            description:
-              "Try a different date range or accounting period to inspect account activity.",
-            action: (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  router.replace(pathname);
-                }}
-              >
-                Reset trends
-              </Button>
-            ),
-          }}
-          filteredEmptyState={{
-            title: "No balance events match this trends filter",
-            description:
-              "Try a different account filter or range to widen the activity feed.",
-            action: (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  router.replace(pathname);
-                }}
-              >
-                Reset filters
-              </Button>
-            ),
-          }}
-        />
-      </Stack>
-    </Paper>
+      initialEmptyState={{
+        title: "No balance events found",
+        description:
+          "Try a different date range or accounting period to inspect account activity.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              updateParams((params) => {
+                [...params.keys()].forEach((key) => params.delete(key));
+              });
+            }}
+          >
+            Reset trends
+          </Button>
+        ),
+      }}
+      filteredEmptyState={{
+        title: "No balance events match this trends filter",
+        description:
+          "Try a different account filter or range to widen the activity feed.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              updateParams((params) => {
+                [...params.keys()].forEach((key) => params.delete(key));
+              });
+            }}
+          >
+            Reset filters
+          </Button>
+        ),
+      }}
+    />
   );
 };
 

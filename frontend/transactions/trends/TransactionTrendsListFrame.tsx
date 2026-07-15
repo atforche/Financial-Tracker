@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, IconButton, Paper, Stack, Typography } from "@mui/material";
+import { Button, IconButton } from "@mui/material";
 import {
   type Transaction,
   TransactionSort,
@@ -14,15 +14,16 @@ import {
   getTransactionDestinationLabel,
   getTransactionSourceLabel,
 } from "@/transactions/current/helpers";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 interface TransactionTrendsListFrameProps {
   readonly data: Transaction[] | null;
@@ -37,7 +38,6 @@ const TransactionTrendsListFrame = function ({
   totalCount,
 }: TransactionTrendsListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
   const router = useRouter();
 
   const sortParamName = "sort";
@@ -52,15 +52,16 @@ const TransactionTrendsListFrame = function ({
   const startDateParamName = "startDate";
   const endDateParamName = "endDate";
 
+  const updateParams = useSearchParamUpdater([pageParamName]);
+
   const setSort = function (sort: TransactionSortValue | null): void {
-    const params = new URLSearchParams(searchParams.toString());
-    if (sort === null) {
-      params.delete(sortParamName);
-    } else {
-      params.set(sortParamName, sort);
-    }
-    params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    updateParams((params) => {
+      if (sort === null) {
+        params.delete(sortParamName);
+      } else {
+        params.set(sortParamName, sort);
+      }
+    });
   };
 
   const currentSort = tryParseEnum(
@@ -89,131 +90,58 @@ const TransactionTrendsListFrame = function ({
     searchParams.has(startDateParamName) ||
     searchParams.has(endDateParamName);
 
+  const getSortProps = createColumnSortProps(currentSort, setSort);
+
   const columns: ColumnDefinition<Transaction>[] = [
     {
       name: "date",
       headerContent: "Date",
       getBodyContent: (transaction) => transaction.date,
-      sortType:
-        currentSort === TransactionSort.Date
-          ? ColumnSortType.Ascending
-          : currentSort === TransactionSort.DateDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSort.Date);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSort.DateDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(TransactionSort.Date, TransactionSort.DateDescending),
       minWidth: 125,
     },
     {
       name: "accountingPeriod",
       headerContent: "Accounting Period",
       getBodyContent: (transaction) => transaction.accountingPeriodName,
-      sortType:
-        currentSort === TransactionSort.AccountingPeriod
-          ? ColumnSortType.Ascending
-          : currentSort === TransactionSort.AccountingPeriodDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSort.AccountingPeriod);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSort.AccountingPeriodDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        TransactionSort.AccountingPeriod,
+        TransactionSort.AccountingPeriodDescending,
+      ),
       minWidth: 165,
     },
     {
       name: "description",
       headerContent: "Description",
       getBodyContent: (transaction) => transaction.description,
-      sortType:
-        currentSort === TransactionSort.Description
-          ? ColumnSortType.Ascending
-          : currentSort === TransactionSort.DescriptionDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSort.Description);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSort.DescriptionDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        TransactionSort.Description,
+        TransactionSort.DescriptionDescending,
+      ),
       minWidth: 150,
     },
     {
       name: "source",
       headerContent: "Source",
       getBodyContent: getTransactionSourceLabel,
-      sortType:
-        currentSort === TransactionSort.Source
-          ? ColumnSortType.Ascending
-          : currentSort === TransactionSort.SourceDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSort.Source);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSort.SourceDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(TransactionSort.Source, TransactionSort.SourceDescending),
       minWidth: 170,
     },
     {
       name: "destination",
       headerContent: "Destination",
       getBodyContent: getTransactionDestinationLabel,
-      sortType:
-        currentSort === TransactionSort.Destination
-          ? ColumnSortType.Ascending
-          : currentSort === TransactionSort.DestinationDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSort.Destination);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSort.DestinationDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        TransactionSort.Destination,
+        TransactionSort.DestinationDescending,
+      ),
       minWidth: 170,
     },
     {
       name: "amount",
       headerContent: "Amount",
       getBodyContent: (transaction) => formatCurrency(transaction.amount),
-      sortType:
-        currentSort === TransactionSort.Amount
-          ? ColumnSortType.Ascending
-          : currentSort === TransactionSort.AmountDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSort.Amount);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSort.AmountDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(TransactionSort.Amount, TransactionSort.AmountDescending),
       alignment: "right",
       minWidth: 150,
     },
@@ -240,46 +168,31 @@ const TransactionTrendsListFrame = function ({
   ];
 
   return (
-    <Paper
-      sx={{
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 3,
-        overflow: "hidden",
+    <ListFrame<Transaction>
+      title="Matching Transactions"
+      columns={columns}
+      getId={(transaction) => transaction.id}
+      data={data}
+      totalCount={totalCount}
+      pageParamName={pageParamName}
+      searchParamName={searchParamName}
+      onRowClick={openTransactionWorkspace}
+      hasActiveFilters={hasActiveFilters}
+      initialEmptyState={{
+        title: "No matching transactions",
+        description:
+          "Try widening the date range or clearing some filters to see more results.",
+        action: null,
       }}
-    >
-      <Stack spacing={0.5} sx={{ px: 2.5, pt: 2.5 }}>
-        <Typography variant="h6">Matching Transactions</Typography>
-        <Typography variant="body2" color="text.secondary">
-          {hasActiveFilters
-            ? "Transactions matching the selected trend filters."
-            : "Transactions across the selected trend range."}
-        </Typography>
-      </Stack>
-      <ListFrame<Transaction>
-        columns={columns}
-        getId={(transaction) => transaction.id}
-        data={data}
-        totalCount={totalCount}
-        pageParamName={pageParamName}
-        searchParamName={searchParamName}
-        onRowClick={openTransactionWorkspace}
-        hasActiveFilters={hasActiveFilters}
-        initialEmptyState={{
-          title: "No matching transactions",
-          description:
-            "Try widening the date range or clearing some filters to see more results.",
-          action: null,
-        }}
-        filteredEmptyState={{
-          title: "No matching transactions",
-          description:
-            "Try widening the date range or clearing some filters to see more results.",
-          action: hasActiveFilters ? (
-            <Button
-              variant="outlined"
-              onClick={() => {
-                const params = new URLSearchParams(searchParams.toString());
+      filteredEmptyState={{
+        title: "No matching transactions",
+        description:
+          "Try widening the date range or clearing some filters to see more results.",
+        action: hasActiveFilters ? (
+          <Button
+            variant="outlined"
+            onClick={() => {
+              updateParams((params) => {
                 params.delete(transactionTypeParamName);
                 params.delete(accountNameParamName);
                 params.delete(fundNameParamName);
@@ -287,18 +200,14 @@ const TransactionTrendsListFrame = function ({
                 params.delete(endAccountingPeriodIdParamName);
                 params.delete(startDateParamName);
                 params.delete(endDateParamName);
-                params.delete(pageParamName);
-                router.replace(`${pathname}?${params.toString()}`, {
-                  scroll: false,
-                });
-              }}
-            >
-              Clear Filters
-            </Button>
-          ) : null,
-        }}
-      />
-    </Paper>
+              });
+            }}
+          >
+            Clear Filters
+          </Button>
+        ) : null,
+      }}
+    />
   );
 };
 

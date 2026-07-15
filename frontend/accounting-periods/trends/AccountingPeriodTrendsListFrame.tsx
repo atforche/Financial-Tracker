@@ -17,7 +17,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriodTrendsSearchParams } from "@/accounting-periods/trends/AccountingPeriodTrends";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import ColumnSortType from "@/framework/listframe/ColumnSortType";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
@@ -25,6 +25,7 @@ import formatCurrency from "@/framework/formatCurrency";
 import nameof from "@/framework/data/nameof";
 import routes from "@/accounting-periods/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
  * Props for the AccountingPeriodTrendsListFrame component.
@@ -51,30 +52,29 @@ const AccountingPeriodTrendsListFrame = function ({
     nameof<AccountingPeriodTrendsSearchParams>("endAccountingPeriodId");
   const sortParamName = nameof<AccountingPeriodTrendsSearchParams>("sort");
   const pageParamName = nameof<AccountingPeriodTrendsSearchParams>("page");
+  const updateParams = useSearchParamUpdater([pageParamName]);
 
   const setSort = function (
     sort: AccountingPeriodWithBalanceSortValue | null,
   ): void {
-    const params = new URLSearchParams(searchParams.toString());
-    if (sort === null) {
-      params.delete(sortParamName);
-    } else {
-      params.set(sortParamName, sort);
-    }
-    params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    updateParams((params) => {
+      if (sort === null) {
+        params.delete(sortParamName);
+      } else {
+        params.set(sortParamName, sort);
+      }
+    });
   };
 
   const setAccountingPeriodFilter = function (
     accountingPeriod: AccountingPeriodWithBalance,
   ): void {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete(startAccountingPeriodParamName);
-    params.append(startAccountingPeriodParamName, accountingPeriod.id);
-    params.delete(endAccountingPeriodParamName);
-    params.append(endAccountingPeriodParamName, accountingPeriod.id);
-    params.delete(pageParamName);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    updateParams((params) => {
+      params.delete(startAccountingPeriodParamName);
+      params.append(startAccountingPeriodParamName, accountingPeriod.id);
+      params.delete(endAccountingPeriodParamName);
+      params.append(endAccountingPeriodParamName, accountingPeriod.id);
+    });
   };
 
   const currentSort = tryParseEnum(
@@ -94,26 +94,17 @@ const AccountingPeriodTrendsListFrame = function ({
     );
   };
 
+  const getSortProps = createColumnSortProps(currentSort, setSort);
+
   const columns: ColumnDefinition<AccountingPeriodWithBalance>[] = [
     {
       name: "period",
       headerContent: "Period",
       getBodyContent: (accountingPeriod) => accountingPeriod.name,
-      sortType:
-        currentSort === AccountingPeriodWithBalanceSort.Date
-          ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodWithBalanceSort.DateDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodWithBalanceSort.Date);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodWithBalanceSort.DateDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        AccountingPeriodWithBalanceSort.Date,
+        AccountingPeriodWithBalanceSort.DateDescending,
+      ),
     },
     {
       name: "isOpen",
@@ -121,43 +112,20 @@ const AccountingPeriodTrendsListFrame = function ({
       getBodyContent: (accountingPeriod) => (
         <Checkbox checked={accountingPeriod.isOpen} />
       ),
-      sortType:
-        currentSort === AccountingPeriodWithBalanceSort.IsOpen
-          ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodWithBalanceSort.IsOpenDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodWithBalanceSort.IsOpen);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodWithBalanceSort.IsOpenDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        AccountingPeriodWithBalanceSort.IsOpen,
+        AccountingPeriodWithBalanceSort.IsOpenDescending,
+      ),
     },
     {
       name: "openingBalance",
       headerContent: "Opening Balance",
       getBodyContent: (accountingPeriod) =>
         formatCurrency(accountingPeriod.openingBalance),
-      sortType:
-        currentSort === AccountingPeriodWithBalanceSort.OpeningBalance
-          ? ColumnSortType.Ascending
-          : currentSort ===
-              AccountingPeriodWithBalanceSort.OpeningBalanceDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodWithBalanceSort.OpeningBalance);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodWithBalanceSort.OpeningBalanceDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        AccountingPeriodWithBalanceSort.OpeningBalance,
+        AccountingPeriodWithBalanceSort.OpeningBalanceDescending,
+      ),
       alignment: "right",
     },
     {
@@ -165,22 +133,10 @@ const AccountingPeriodTrendsListFrame = function ({
       headerContent: "Closing Balance",
       getBodyContent: (accountingPeriod) =>
         formatCurrency(accountingPeriod.closingBalance),
-      sortType:
-        currentSort === AccountingPeriodWithBalanceSort.ClosingBalance
-          ? ColumnSortType.Ascending
-          : currentSort ===
-              AccountingPeriodWithBalanceSort.ClosingBalanceDescending
-            ? ColumnSortType.Descending
-            : null,
-      onSort: (sortType): void => {
-        if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodWithBalanceSort.ClosingBalance);
-        } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodWithBalanceSort.ClosingBalanceDescending);
-        } else {
-          setSort(null);
-        }
-      },
+      ...getSortProps(
+        AccountingPeriodWithBalanceSort.ClosingBalance,
+        AccountingPeriodWithBalanceSort.ClosingBalanceDescending,
+      ),
       alignment: "right",
     },
     {
@@ -219,58 +175,50 @@ const AccountingPeriodTrendsListFrame = function ({
   ];
 
   return (
-    <Paper
-      sx={{
-        border: "1px solid",
-        borderColor: "divider",
-        p: { xs: 2, md: 2.5 },
+    <ListFrame<AccountingPeriodWithBalance>
+      title="Accounting Periods"
+      columns={columns}
+      getId={(accountingPeriod) => accountingPeriod.id}
+      data={data ?? null}
+      totalCount={totalCount ?? null}
+      searchParamName="search"
+      pageParamName={pageParamName}
+      onRowClick={(accountingPeriod: AccountingPeriodWithBalance): void => {
+        setAccountingPeriodFilter(accountingPeriod);
       }}
-    >
-      <Stack spacing={2.5}>
-        <Typography variant="h5">Accounting periods</Typography>
-        <ListFrame<AccountingPeriodWithBalance>
-          columns={columns}
-          getId={(accountingPeriod) => accountingPeriod.id}
-          data={data ?? null}
-          totalCount={totalCount ?? null}
-          searchParamName="search"
-          pageParamName={pageParamName}
-          onRowClick={(accountingPeriod: AccountingPeriodWithBalance): void => {
-            setAccountingPeriodFilter(accountingPeriod);
-          }}
-          initialEmptyState={{
-            title: "No accounting periods have been added",
-            description:
-              "Create an accounting period to start organizing balances by month.",
-            action: (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  router.push(routes.workspace({ action: "create" }));
-                }}
-              >
-                Create accounting period
-              </Button>
-            ),
-          }}
-          filteredEmptyState={{
-            title: "No accounting periods match this search",
-            description:
-              "Try a different month or year, or clear the current search to see all accounting periods.",
-            action: (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  router.replace(pathname);
-                }}
-              >
-                Clear search
-              </Button>
-            ),
-          }}
-        />
-      </Stack>
-    </Paper>
+      initialEmptyState={{
+        title: "No accounting periods have been added",
+        description:
+          "Create an accounting period to start organizing balances by month.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              router.push(routes.workspace({ action: "create" }));
+            }}
+          >
+            Create accounting period
+          </Button>
+        ),
+      }}
+      filteredEmptyState={{
+        title: "No accounting periods match this search",
+        description:
+          "Try a different month or year, or clear the current search to see all accounting periods.",
+        action: (
+          <Button
+            variant="contained"
+            onClick={() => {
+              updateParams((params) => {
+                [...params.keys()].forEach((key) => params.delete(key));
+              });
+            }}
+          >
+            Clear search
+          </Button>
+        ),
+      }}
+    />
   );
 };
 

@@ -1,13 +1,13 @@
 "use client";
 
 import { Box, Button, ButtonBase, Stack, Typography } from "@mui/material";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Frame from "@/framework/view/Frame";
 import type { FundWithBalance } from "@/funds/types";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
-import { buildUrl } from "@/framework/routes/helpers";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import formatCurrency from "@/framework/formatCurrency";
 import routes from "@/funds/routes";
 
@@ -28,17 +28,15 @@ const FundWorkspaceCards = function ({
   data,
   isInOnboardingMode,
 }: FundWorkspaceCardsProps): JSX.Element {
-  const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasSearch = (searchParams.get(searchParamName) ?? "").trim() !== "";
   const funds = data ?? [];
+  const updateParams = useSearchParamUpdater([]);
 
   const clearSearch = function (): void {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete(searchParamName);
-    router.replace(buildUrl(pathname, params), {
-      scroll: false,
+    updateParams((params) => {
+      params.delete(searchParamName);
     });
   };
 

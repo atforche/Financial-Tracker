@@ -5,7 +5,6 @@ import { BalanceEventTypeModel } from "@/framework/data/api";
 import { Box, Button } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import Link from "next/link";
@@ -113,7 +112,7 @@ const AccountBalanceEventsFrame = function ({
 
   return (
     <Box sx={{ maxWidth: 1200, width: "100%" }}>
-      <Frame
+      <ListFrame<AccountWorkspaceBalanceEvent>
         title="Recent Balance Events"
         color="info"
         headerContent={
@@ -125,41 +124,39 @@ const AccountBalanceEventsFrame = function ({
             Add Transaction
           </Button>
         }
-      >
-        <ListFrame<AccountWorkspaceBalanceEvent>
-          columns={columns}
-          getId={(balanceEvent) =>
-            `${balanceEvent.transactionId}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
-          }
-          data={data}
-          totalCount={totalCount}
-          searchParamName="balanceEventSearch"
-          pageParamName="balanceEventPage"
-          onRowClick={(balanceEvent) => {
-            router.push(
-              routes.workspaceDetail(balanceEvent.transactionId, {
-                returnUrl,
-              }),
-              { scroll: false },
-            );
-          }}
-          hasActiveFilters={false}
-          initialEmptyState={{
-            title: "No balance events yet",
-            description:
-              "Create or post a transaction for this account to start building its balance history.",
-            action: (
-              <Button
-                component={Link}
-                href={addTransactionHref}
-                variant="contained"
-              >
-                Add Transaction
-              </Button>
-            ),
-          }}
-        />
-      </Frame>
+
+        columns={columns}
+        getId={(balanceEvent) =>
+          `${balanceEvent.transactionId}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
+        }
+        data={data}
+        totalCount={totalCount}
+        searchParamName="balanceEventSearch"
+        pageParamName="balanceEventPage"
+        onRowClick={(balanceEvent) => {
+          router.push(
+            routes.workspaceDetail(balanceEvent.transactionId, {
+              returnUrl,
+            }),
+            { scroll: false },
+          );
+        }}
+        hasActiveFilters={false}
+        initialEmptyState={{
+          title: "No balance events yet",
+          description:
+            "Create or post a transaction for this account to start building its balance history.",
+          action: (
+            <Button
+              component={Link}
+              href={addTransactionHref}
+              variant="contained"
+            >
+              Add Transaction
+            </Button>
+          ),
+        }}
+      />
     </Box>
   );
 };

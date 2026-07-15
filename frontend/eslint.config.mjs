@@ -185,6 +185,10 @@ const eslintConfig = defineConfig([
           format: ["StrictPascalCase"],
         },
         {
+          selector: ["typeParameter"],
+          format: ["PascalCase"],
+        },
+        {
           selector: ["enumMember"],
           format: ["StrictPascalCase"],
         },
