@@ -1,6 +1,6 @@
 import {
-  type Account,
   type AccountIdentifier,
+  type AccountWithBalance,
   isDebtAccountType,
 } from "@/accounts/types";
 import type {
@@ -45,7 +45,7 @@ const setTransactionAccountDraftBalanceChange = function (
  * Creates a transaction account draft from an account and balance delta.
  */
 const createTransactionAccountDraftFromAccount = function (
-  account: Account,
+  account: AccountWithBalance,
   balanceChange = 0,
 ): TransactionAccountDraft {
   const previousPostedBalance = account.currentBalance.postedBalance;
@@ -69,12 +69,12 @@ const getTransactionAccountDraftFromTransactionAccount = function (
     return null;
   }
   return {
-    accountId: account.accountId,
-    accountName: account.accountName,
-    accountType: account.accountType,
-    postedDate: account.postedDate,
-    previousAccountBalance: account.previousAccountBalance.postedBalance,
-    newAccountBalance: account.newAccountBalance.postedBalance,
+    accountId: account.account.id,
+    accountName: account.account.name,
+    accountType: account.account.type,
+    postedDate: account.date ?? null,
+    previousAccountBalance: account.previousBalance.postedBalance,
+    newAccountBalance: account.newBalance.postedBalance,
   };
 };
 
@@ -82,7 +82,7 @@ const getTransactionAccountDraftFromTransactionAccount = function (
  * Resolves the next selected transaction account draft from an account picker value.
  */
 const getSelectedTransactionAccountDraft = function (
-  accounts: Account[],
+  accounts: AccountWithBalance[],
   nextValue: AccountIdentifier | null,
   currentAccount: TransactionAccountDraft | null,
   balanceChange?: number | null,

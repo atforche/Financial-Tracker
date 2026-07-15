@@ -1,6 +1,6 @@
 import { Box, Stack } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
-import { AccountingPeriodSortOrder } from "@/accounting-periods/types";
+import type { AccountingPeriodWithBalanceSortValue } from "@/accounting-periods/types";
 import AccountingPeriodWorkspaceActions from "@/accounting-periods/workspace/AccountingPeriodWorkspaceActions";
 import AccountingPeriodWorkspaceFilter from "@/accounting-periods/workspace/AccountingPeriodWorkspaceFilter";
 import AccountingPeriodWorkspaceListFrame from "@/accounting-periods/workspace/AccountingPeriodWorkspaceListFrame";
@@ -18,7 +18,7 @@ type AccountingPeriodWorkspaceAction = "create" | "close" | "reopen" | "delete";
 interface AccountingPeriodWorkspaceSearchParams {
   years?: number | number[];
   months?: number | number[];
-  sort?: AccountingPeriodSortOrder;
+  sort?: AccountingPeriodWithBalanceSortValue;
   page?: number | string | null;
   selectedAccountingPeriodId?: string;
   action?: AccountingPeriodWorkspaceAction;
@@ -45,23 +45,23 @@ const AccountingPeriodWorkspace = async function ({
   const firstAccountingPeriodPromise = apiClient.GET("/accounting-periods", {
     params: {
       query: {
-        Sort: AccountingPeriodSortOrder.Date,
+        Sort: "Date",
         Limit: 1,
       },
     },
   });
-  const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
+  const accountingPeriodsPromise = apiClient.GET("/accounting-periods/with-balances", {
     params: {
       query: {
         ...(Array.isArray(years)
-          ? { Years: years }
+          ? { "Filter.Years": years }
           : typeof years !== "undefined"
-            ? { Years: [years] }
+            ? { "Filter.Years": [years] }
             : {}),
         ...(Array.isArray(months)
-          ? { Months: months }
+          ? { "Filter.Months": months }
           : typeof months !== "undefined"
-            ? { Months: [months] }
+            ? { "Filter.Months": [months] }
             : {}),
         Sort: sort ?? null,
         Limit: rowsPerPage,

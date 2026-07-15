@@ -8,7 +8,10 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { type FundTrends, FundTrendsMode } from "@/funds/types";
+import type {
+  FundBalanceSummaryByDate,
+  FundBalanceSummaryByPeriod,
+} from "@/funds/types";
 import { type JSX, type ReactNode, useState } from "react";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import SummaryCard from "@/framework/view/SummaryCard";
@@ -16,7 +19,9 @@ import formatCurrency from "@/framework/formatCurrency";
 import formatShortDate from "@/framework/formatShortDate";
 
 interface FundTrendsSummaryCardsProps {
-  readonly trends: FundTrends;
+  readonly mode: "AccountingPeriod" | "Date";
+  readonly accountingPeriods: FundBalanceSummaryByPeriod[];
+  readonly dates: FundBalanceSummaryByDate[];
 }
 
 /**
@@ -33,15 +38,17 @@ interface TrendsSnapshot {
   readonly unassignedEndingBalance: number;
 }
 
-const getTrendsSnapshot = function (trends: FundTrends): TrendsSnapshot {
+const getTrendsSnapshot = function ({
+  mode,
+  accountingPeriods,
+  dates,
+}: FundTrendsSummaryCardsProps): TrendsSnapshot {
   if (
-    trends.mode === FundTrendsMode.AccountingPeriod &&
-    typeof trends.accountingPeriods !== "undefined" &&
-    trends.accountingPeriods !== null &&
-    trends.accountingPeriods.length > 0
+    mode === "AccountingPeriod" &&
+    accountingPeriods.length > 0
   ) {
-    const firstPeriod = trends.accountingPeriods.at(0);
-    const lastPeriod = trends.accountingPeriods.at(-1);
+    const firstPeriod = accountingPeriods.at(0);
+    const lastPeriod = accountingPeriods.at(-1);
     if (
       typeof firstPeriod === "undefined" ||
       typeof lastPeriod === "undefined"
@@ -58,18 +65,17 @@ const getTrendsSnapshot = function (trends: FundTrends): TrendsSnapshot {
       };
     }
     return {
-      startLabel: firstPeriod.accountingPeriodName,
-      endLabel: lastPeriod.accountingPeriodName,
-      totalStartingBalance: firstPeriod.totalOpeningBalance,
-      totalEndingBalance: lastPeriod.totalClosingBalance,
-      assignedStartingBalance: firstPeriod.assignedOpeningBalance,
-      assignedEndingBalance: lastPeriod.assignedClosingBalance,
-      unassignedStartingBalance: firstPeriod.unassignedOpeningBalance,
-      unassignedEndingBalance: lastPeriod.unassignedClosingBalance,
+      startLabel: firstPeriod.accountingPeriod.name,
+      endLabel: lastPeriod.accountingPeriod.name,
+      totalStartingBalance: firstPeriod.openingBalance.totalBalance,
+      totalEndingBalance: lastPeriod.closingBalance.totalBalance,
+      assignedStartingBalance: firstPeriod.openingBalance.totalAssignedBalance,
+      assignedEndingBalance: lastPeriod.closingBalance.totalAssignedBalance,
+      unassignedStartingBalance: firstPeriod.openingBalance.totalUnassignedBalance,
+      unassignedEndingBalance: lastPeriod.closingBalance.totalUnassignedBalance,
     };
   }
 
-  const dates = trends.dates ?? [];
   const firstDate = dates.at(0);
   const lastDate = dates.at(-1);
 
@@ -82,10 +88,10 @@ const getTrendsSnapshot = function (trends: FundTrends): TrendsSnapshot {
       : "End",
     totalStartingBalance: firstDate?.totalBalance ?? 0,
     totalEndingBalance: lastDate?.totalBalance ?? 0,
-    assignedStartingBalance: firstDate?.assignedBalance ?? 0,
-    assignedEndingBalance: lastDate?.assignedBalance ?? 0,
-    unassignedStartingBalance: firstDate?.unassignedBalance ?? 0,
-    unassignedEndingBalance: lastDate?.unassignedBalance ?? 0,
+    assignedStartingBalance: firstDate?.totalAssignedBalance ?? 0,
+    assignedEndingBalance: lastDate?.totalAssignedBalance ?? 0,
+    unassignedStartingBalance: firstDate?.totalUnassignedBalance ?? 0,
+    unassignedEndingBalance: lastDate?.totalUnassignedBalance ?? 0,
   };
 };
 
@@ -144,9 +150,11 @@ const BalanceBreakdown = function ({
  * Displays the top-level fund balance summary cards with synchronized details.
  */
 const FundTrendsSummaryCards = function ({
-  trends,
+  mode,
+  accountingPeriods,
+  dates,
 }: FundTrendsSummaryCardsProps): JSX.Element {
-  const snapshot = getTrendsSnapshot(trends);
+  const snapshot = getTrendsSnapshot({ mode, accountingPeriods, dates });
 
   const [expanded, setExpanded] = useState(false);
   const netChange = snapshot.totalEndingBalance - snapshot.totalStartingBalance;

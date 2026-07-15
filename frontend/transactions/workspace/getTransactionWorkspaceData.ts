@@ -1,8 +1,8 @@
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
-import type { Account } from "@/accounts/types";
+import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import type { Fund } from "@/funds/types";
+import type { FundWithBalance } from "@/funds/types";
 import type { Transaction } from "@/transactions/transaction";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import getApiClient from "@/framework/data/getApiClient";
@@ -11,8 +11,8 @@ import { rowsPerPage } from "@/framework/listframe/Constants";
 interface TransactionWorkspaceReferenceData {
   readonly openAccountingPeriods: AccountingPeriod[];
   readonly allAccountingPeriods: AccountingPeriod[];
-  readonly accounts: Account[];
-  readonly funds: Fund[];
+  readonly accounts: AccountWithBalance[];
+  readonly funds: FundWithBalance[];
   readonly assignmentGoals: AssignmentGoal[];
   readonly spendingGoals: SpendingGoal[];
 }
@@ -45,9 +45,6 @@ const getTransactionWorkspaceReferenceData =
   async function (): Promise<TransactionWorkspaceReferenceData> {
     const apiClient = getApiClient();
 
-    const openAccountingPeriodsPromise = apiClient.GET(
-      "/accounting-periods/open",
-    );
     const allAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
       params: {
         query: {
@@ -55,24 +52,19 @@ const getTransactionWorkspaceReferenceData =
         },
       },
     });
-    const accountsPromise = apiClient.GET("/accounts");
-    const fundsPromise = apiClient.GET("/funds");
+    const accountsPromise = apiClient.GET("/accounts/with-balances");
+    const fundsPromise = apiClient.GET("/funds/with-balances");
 
     const [
-      { data: openAccountingPeriods },
       { data: allAccountingPeriods },
       { data: accounts },
       { data: funds },
     ] = await Promise.all([
-      openAccountingPeriodsPromise,
       allAccountingPeriodsPromise,
       accountsPromise,
       fundsPromise,
     ]);
 
-    if (typeof openAccountingPeriods === "undefined") {
-      throw new Error("Failed to fetch open accounting periods");
-    }
     if (typeof allAccountingPeriods === "undefined") {
       throw new Error("Failed to fetch accounting periods");
     }
@@ -83,24 +75,27 @@ const getTransactionWorkspaceReferenceData =
       throw new Error("Failed to fetch funds");
     }
 
+    const openAccountingPeriods = allAccountingPeriods.items.filter(
+      (period) => period.isOpen,
+    );
     let assignmentGoals: AssignmentGoal[] = [];
     let spendingGoals: SpendingGoal[] = [];
 
     if (openAccountingPeriods.length > 0) {
       const [assignmentGoalResponse, spendingGoalResponse] = await Promise.all([
-        apiClient.GET("/goals/assignment/many", {
+        apiClient.GET("/goals/assignment", {
           params: {
             query: {
-              AccountingPeriodIds: openAccountingPeriods.map(
+              "Filter.AccountingPeriodIds": openAccountingPeriods.map(
                 (period) => period.id,
               ),
             },
           },
         }),
-        apiClient.GET("/goals/spending/many", {
+        apiClient.GET("/goals/spending", {
           params: {
             query: {
-              AccountingPeriodIds: openAccountingPeriods.map(
+              "Filter.AccountingPeriodIds": openAccountingPeriods.map(
                 (period) => period.id,
               ),
             },
@@ -165,12 +160,14 @@ const getTransactionWorkspaceListData = async function (
     params: {
       query: {
         ...(normalizedAccountingPeriodIds !== null
-          ? { AccountingPeriodIds: normalizedAccountingPeriodIds }
+          ? { "Filter.AccountingPeriodIds": normalizedAccountingPeriodIds }
           : {}),
         ...(normalizedAccountIds !== null
-          ? { AccountIds: normalizedAccountIds }
+          ? { "Filter.AccountIds": normalizedAccountIds }
           : {}),
-        ...(normalizedFundIds !== null ? { FundIds: normalizedFundIds } : {}),
+        ...(normalizedFundIds !== null
+          ? { "Filter.FundIds": normalizedFundIds }
+          : {}),
         Sort: sort ?? null,
         Limit: rowsPerPage,
         Offset: getPageOffset(currentPage),

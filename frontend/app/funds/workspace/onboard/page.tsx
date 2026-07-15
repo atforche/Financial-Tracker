@@ -35,7 +35,7 @@ const FundWorkspaceOnboardPage = async function ({
         },
       },
     }),
-    apiClient.GET("/funds"),
+    apiClient.GET("/funds/with-balances"),
   ]);
 
   if (typeof accountingPeriods === "undefined") {

@@ -15,7 +15,7 @@ import {
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { CreateTransactionRequest } from "@/transactions/transaction";
 import type { Dayjs } from "dayjs";
-import type { Fund } from "@/funds/types";
+import type { FundWithBalance } from "@/funds/types";
 import FundTransactionForm from "@/transactions/workspace/fund/FundTransactionForm";
 import { useCreateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
@@ -24,7 +24,7 @@ import { useCreateTransactionEditor } from "@/transactions/workspace/useTransact
  */
 interface CreateFundTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
-  readonly funds: Fund[];
+  readonly funds: FundWithBalance[];
   readonly redirectUrl: string;
 }
 

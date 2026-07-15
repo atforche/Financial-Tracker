@@ -1,9 +1,10 @@
 import { Box, Stack, Typography } from "@mui/material";
 import {
+  getGoalProgressAmounts,
   getGoalProgressBackgroundColor,
   getGoalProgressPercent,
 } from "@/goals/workspace/helpers";
-import type { CurrentGoalProgress } from "@/goals/types";
+import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import type { JSX } from "react";
 import formatCurrency from "@/framework/formatCurrency";
 
@@ -12,7 +13,7 @@ import formatCurrency from "@/framework/formatCurrency";
  */
 interface GoalProgressProps {
   readonly label: string;
-  readonly progress: CurrentGoalProgress | null;
+  readonly progress: AssignmentGoal | SpendingGoal | null;
 }
 
 /**
@@ -23,6 +24,7 @@ const GoalProgress = function ({
   progress,
 }: GoalProgressProps): JSX.Element {
   const progressPercent = getGoalProgressPercent(progress);
+  const amounts = progress === null ? null : getGoalProgressAmounts(progress);
   return (
     <Stack spacing={0.75}>
       <Stack direction="row" justifyContent="space-between" gap={2}>
@@ -32,7 +34,7 @@ const GoalProgress = function ({
         <Typography variant="body2" color="text.secondary">
           {progress === null
             ? "No goal"
-            : `${formatCurrency(progress.remainingAmount)} remaining`}
+            : `${formatCurrency(amounts?.remaining ?? 0)} remaining`}
         </Typography>
       </Stack>
       <Box
@@ -56,7 +58,7 @@ const GoalProgress = function ({
       <Typography variant="caption" color="text.secondary">
         {progress === null
           ? "Set up a goal"
-          : `${formatCurrency(progress.currentAmount)} of ${formatCurrency(progress.targetAmount)}`}
+          : `${formatCurrency(amounts?.current ?? 0)} of ${formatCurrency(amounts?.target ?? 0)}`}
       </Typography>
     </Stack>
   );

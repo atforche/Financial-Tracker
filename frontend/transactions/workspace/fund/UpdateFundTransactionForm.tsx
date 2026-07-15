@@ -10,7 +10,7 @@ import {
 import { type JSX, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import type { Fund } from "@/funds/types";
+import type { FundWithBalance } from "@/funds/types";
 import type { FundTransaction } from "@/transactions/fundTransaction";
 import FundTransactionForm from "@/transactions/workspace/fund/FundTransactionForm";
 import type { UpdateTransactionRequest } from "@/transactions/transaction";
@@ -22,7 +22,7 @@ import { useUpdateTransactionEditor } from "@/transactions/workspace/useTransact
 interface UpdateFundTransactionFormProps {
   readonly transaction: FundTransaction;
   readonly transactionAccountingPeriod: AccountingPeriod;
-  readonly funds: Fund[];
+  readonly funds: FundWithBalance[];
   readonly redirectUrl: string;
 }
 

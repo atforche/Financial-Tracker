@@ -1,5 +1,5 @@
 import { Chip, Stack } from "@mui/material";
-import type { Fund, FundIdentifier } from "@/funds/types";
+import type { FundIdentifier, FundWithBalance } from "@/funds/types";
 import {
   type FundAssignmentDraft,
   getExplicitFundAssignments,
@@ -20,7 +20,7 @@ import { getUnassignedFund } from "@/funds/helpers";
  * Props for the IncomeFundAssignmentPlanner component.
  */
 interface IncomeFundAssignmentPlannerProps {
-  readonly funds: Fund[];
+  readonly funds: FundWithBalance[];
   readonly assignmentGoals: AssignmentGoal[];
   readonly totalAmountToAssign: number | null;
   readonly fundAssignments: FundAssignmentDraft[];
@@ -134,7 +134,7 @@ const IncomeFundAssignmentPlanner = function ({
         }
         const fund = funds.find((f) => f.id === newFund.id);
         const previousFundBalance = fund?.currentBalance.postedBalance ?? 0;
-        const goal = assignmentGoals.find((g) => g.fundId === newFund.id);
+        const goal = assignmentGoals.find((g) => g.fund.id === newFund.id);
         const previousGoalBalance =
           goal?.remainingAmountToAssignIncludingPending ?? 0;
         return {
@@ -176,7 +176,7 @@ const IncomeFundAssignmentPlanner = function ({
           return assignment;
         }
         const goal = assignmentGoals.find(
-          (g) => g.fundId === assignment.fundId,
+          (g) => g.fund.id === assignment.fundId,
         );
         const previousGoalBalance =
           goal?.remainingAmountToAssignIncludingPending ?? 0;

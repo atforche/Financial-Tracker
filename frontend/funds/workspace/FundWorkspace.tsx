@@ -30,8 +30,8 @@ const FundWorkspace = async function ({
   const anyAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: { query: { Limit: 1 } },
   });
-  const fundsPromise = apiClient.GET("/funds", {
-    params: { query: { Search: search ?? "" } },
+  const fundsPromise = apiClient.GET("/funds/with-balances", {
+    params: { query: { "Filter.NameSearch": search ?? "" } },
   });
   const [{ data: accountingPeriod }, { data: funds }] = await Promise.all([
     anyAccountingPeriodsPromise,

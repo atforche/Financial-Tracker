@@ -1,31 +1,31 @@
 "use client";
 
 import { Box, Stack, Typography } from "@mui/material";
-import type { CurrentTransactions } from "@/transactions/transaction";
+import type { TransactionSummaryByType } from "@/transactions/transaction";
 import type { JSX } from "react";
 import SummaryCard from "@/framework/view/SummaryCard";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface CurrentTransactionsByTypeCardProps {
-  readonly current: CurrentTransactions;
+  readonly transactionTypes: TransactionSummaryByType[];
 }
 
 /**
  * Component that displays current transaction count and amount broken down by type.
  */
 const CurrentTransactionsByTypeCard = function ({
-  current,
+  transactionTypes,
 }: CurrentTransactionsByTypeCardProps): JSX.Element {
   const maxTransactionCount = Math.max(
-    ...current.transactionTypes.map((summary) => summary.totalCount),
+    ...transactionTypes.map((summary) => summary.totalCount),
     1,
   );
   const maxTransactionAmount = Math.max(
-    ...current.transactionTypes.map((summary) => summary.totalAmount),
+    ...transactionTypes.map((summary) => summary.totalAmount),
     1,
   );
 
-  if (current.transactionTypes.length === 0) {
+  if (transactionTypes.length === 0) {
     return (
       <SummaryCard title="Transactions by type">
         <Typography color="text.secondary">
@@ -38,7 +38,7 @@ const CurrentTransactionsByTypeCard = function ({
   return (
     <SummaryCard title="Transactions by type">
       <Stack spacing={2.5}>
-        {current.transactionTypes.map((summary) => {
+        {transactionTypes.map((summary) => {
           const transactionCountRatio =
             summary.totalCount / maxTransactionCount;
           const transactionAmountRatio =

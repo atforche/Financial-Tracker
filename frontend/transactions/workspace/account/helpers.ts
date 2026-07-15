@@ -316,11 +316,11 @@ const getSourceFromTransaction = function (
     ),
     location: transaction.source.location ?? "",
     amount: transaction.amount,
-    postedDate: transaction.source.account?.postedDate ?? null,
+    postedDate: transaction.source.account?.date ?? null,
     previousAccountBalance:
-      transaction.source.account?.previousAccountBalance.postedBalance ?? null,
+      transaction.source.account?.previousBalance.postedBalance ?? null,
     newAccountBalance:
-      transaction.source.account?.newAccountBalance.postedBalance ?? null,
+      transaction.source.account?.newBalance.postedBalance ?? null,
   };
 };
 
@@ -337,11 +337,11 @@ const getDestinationsFromTransaction = function (
       ),
       location: destination.location ?? "",
       amount: destination.amount,
-      postedDate: destination.account?.postedDate ?? null,
+      postedDate: destination.account?.date ?? null,
       previousAccountBalance:
-        destination.account?.previousAccountBalance.postedBalance ?? null,
+        destination.account?.previousBalance.postedBalance ?? null,
       newAccountBalance:
-        destination.account?.newAccountBalance.postedBalance ?? null,
+        destination.account?.newBalance.postedBalance ?? null,
     }),
   );
 };

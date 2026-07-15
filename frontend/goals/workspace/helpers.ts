@@ -1,30 +1,26 @@
-import type { CurrentGoalProgress, CurrentGoals } from "@/goals/types";
+import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
+
+type GoalProgress = AssignmentGoal | SpendingGoal;
 
 /**
- * Creates an empty current goals object.
+ * Gets the amounts used to display progress for either kind of Goal.
  */
-const createEmptyGoals = function (): CurrentGoals {
+const getGoalProgressAmounts = function (progress: GoalProgress): {
+  current: number;
+  remaining: number;
+  target: number;
+} {
+  if ("goalAmount" in progress) {
+    return {
+      current: progress.totalAmountAssigned,
+      remaining: progress.remainingAmountToAssign,
+      target: progress.totalAmountToAssign,
+    };
+  }
   return {
-    accountingPeriodId: null,
-    accountingPeriodName: null,
-    availableFundNames: [],
-    summary: {
-      totalAmountToAssign: 0,
-      totalAmountAssigned: 0,
-      percentageOfAssignmentGoalsMet: {
-        totalCount: 0,
-        metCount: 0,
-        percentageMet: 0,
-      },
-      totalAmountToSpend: 0,
-      totalAmountSpent: 0,
-      percentageOfSpendingGoalsMet: {
-        totalCount: 0,
-        metCount: 0,
-        percentageMet: 0,
-      },
-    },
-    goals: [],
+    current: progress.totalAmountSpent,
+    remaining: progress.remainingAmountToSpend,
+    target: progress.totalAmountToSpend,
   };
 };
 
@@ -32,22 +28,23 @@ const createEmptyGoals = function (): CurrentGoals {
  * Gets the goal progress percent for the provided goal progress.
  */
 const getGoalProgressPercent = function (
-  progress: CurrentGoalProgress | null,
+  progress: GoalProgress | null,
 ): number {
   if (progress === null) {
     return 0;
   }
-  if (progress.targetAmount === 0) {
+  const amounts = getGoalProgressAmounts(progress);
+  if (amounts.target === 0) {
     return 100;
   }
-  return Math.min((progress.currentAmount / progress.targetAmount) * 100, 100);
+  return Math.min((amounts.current / amounts.target) * 100, 100);
 };
 
 /**
  * Gets the goal progress background color for the provided goal progress and progress percent.
  */
 const getGoalProgressBackgroundColor = function (
-  progress: CurrentGoalProgress | null,
+  progress: GoalProgress | null,
   progressPercent: number,
 ): string {
   if (progress?.isGoalMet === true) {
@@ -60,7 +57,7 @@ const getGoalProgressBackgroundColor = function (
 };
 
 export {
-  createEmptyGoals,
+  getGoalProgressAmounts,
   getGoalProgressPercent,
   getGoalProgressBackgroundColor,
 };

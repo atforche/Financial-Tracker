@@ -8,21 +8,21 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import type { Account } from "@/accounts/types";
+import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateAccountTransactionForm from "@/transactions/workspace/account/CreateAccountTransactionForm";
 import CreateFundTransactionForm from "@/transactions/workspace/fund/CreateFundTransactionForm";
 import CreateIncomeTransactionForm from "@/transactions/workspace/income/CreateIncomeTransactionForm";
 import CreateSpendingTransactionForm from "@/transactions/workspace/spending/CreateSpendingTransactionForm";
-import type { Fund } from "@/funds/types";
+import type { FundWithBalance } from "@/funds/types";
 
 /**
  * Props for the CreateTransactionForm component.
  */
 interface CreateTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
-  readonly accounts: Account[];
-  readonly funds: Fund[];
+  readonly accounts: AccountWithBalance[];
+  readonly funds: FundWithBalance[];
   readonly assignmentGoals: AssignmentGoal[];
   readonly spendingGoals: SpendingGoal[];
   readonly redirectUrl: string;

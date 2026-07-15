@@ -9,9 +9,9 @@ import {
   getSourceFromTransaction,
 } from "@/transactions/workspace/spending/helpers";
 import dayjs, { type Dayjs } from "dayjs";
-import type { Account } from "@/accounts/types";
+import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import type { Fund } from "@/funds/types";
+import type { FundWithBalance } from "@/funds/types";
 import type { SpendingGoal } from "@/goals/types";
 import type { SpendingTransaction } from "@/transactions/spendingTransaction";
 import SpendingTransactionForm from "@/transactions/workspace/spending/SpendingTransactionForm";
@@ -24,8 +24,8 @@ import { useUpdateTransactionEditor } from "@/transactions/workspace/useTransact
 interface UpdateSpendingTransactionFormProps {
   readonly transaction: SpendingTransaction;
   readonly transactionAccountingPeriod: AccountingPeriod;
-  readonly accounts: Account[];
-  readonly funds: Fund[];
+  readonly accounts: AccountWithBalance[];
+  readonly funds: FundWithBalance[];
   readonly spendingGoals: SpendingGoal[];
   readonly redirectUrl: string;
 }

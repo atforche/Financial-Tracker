@@ -19,10 +19,10 @@ import {
   appendDestinationWithAutofilledAmount,
   syncDestinationAmountsToSource,
 } from "@/transactions/workspace/helpers";
-import type { Account } from "@/accounts/types";
+import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
-import type { Fund } from "@/funds/types";
+import type { FundWithBalance } from "@/funds/types";
 import type { SpendingGoal } from "@/goals/types";
 import SpendingTransactionDestinationFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFrame";
 import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
@@ -44,8 +44,8 @@ interface TransactionFormState {
  */
 interface SpendingTransactionFormProps<RequestPayload> {
   readonly formRef: RefObject<HTMLDivElement | null>;
-  readonly accounts: Account[];
-  readonly funds: Fund[];
+  readonly accounts: AccountWithBalance[];
+  readonly funds: FundWithBalance[];
   readonly spendingGoals: SpendingGoal[];
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
@@ -101,7 +101,7 @@ const SpendingTransactionForm = function <RequestPayload>({
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
   const currentSpendingGoals = spendingGoals.filter(
-    (goal) => goal.accountingPeriodId === accountingPeriod?.id,
+    (goal) => goal.accountingPeriod?.id === accountingPeriod?.id,
   );
 
   const updateDestination = function (

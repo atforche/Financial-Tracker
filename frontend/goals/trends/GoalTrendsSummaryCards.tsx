@@ -9,20 +9,21 @@ import {
   Typography,
 } from "@mui/material";
 import {
-  type GoalTrends,
-  type GoalTrendsAssignmentGoalTypeSummary,
-  type GoalTrendsSpendingGoalTypeSummary,
   formatAssignmentGoalType,
   formatSpendingGoalType,
 } from "@/goals/types";
+import type {
+  AssignmentGoalTypeSummary,
+  GoalRangeSummary,
+  GoalTrendsView,
+ SpendingGoalTypeSummary } from "@/goals/trends/goalTrendsTypes";
 import { type JSX, type ReactNode, useState } from "react";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-import type { GoalTrendsView } from "@/goals/trends/goalTrendsTypes";
 import SummaryCard from "@/framework/view/SummaryCard";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface GoalTrendsSummaryCardsProps {
-  readonly trends: GoalTrends;
+  readonly trends: GoalRangeSummary;
   readonly view: GoalTrendsView;
 }
 
@@ -162,8 +163,8 @@ const formatPercentage = function (value: number): string {
 };
 
 const getAssignmentRows = function (
-  typeSummaries: readonly GoalTrendsAssignmentGoalTypeSummary[],
-  getValue: (summary: GoalTrendsAssignmentGoalTypeSummary) => ReactNode,
+  typeSummaries: readonly AssignmentGoalTypeSummary[],
+  getValue: (summary: AssignmentGoalTypeSummary) => ReactNode,
 ): GoalTypeBreakdownDetailRow[] {
   return typeSummaries.map((summary) => ({
     key: summary.assignmentGoalType,
@@ -173,8 +174,8 @@ const getAssignmentRows = function (
 };
 
 const getSpendingRows = function (
-  typeSummaries: readonly GoalTrendsSpendingGoalTypeSummary[],
-  getValue: (summary: GoalTrendsSpendingGoalTypeSummary) => ReactNode,
+  typeSummaries: readonly SpendingGoalTypeSummary[],
+  getValue: (summary: SpendingGoalTypeSummary) => ReactNode,
 ): GoalTypeBreakdownDetailRow[] {
   return typeSummaries.map((summary) => ({
     key: summary.spendingGoalType,
@@ -205,7 +206,7 @@ const GoalTrendsSummaryCards = function ({
             detailLabel: "Goal type breakdown",
             detailValue: formatCurrency(trends.totalAmountToAssign),
             detailRows: getAssignmentRows(
-              trends.assignmentGoalTypes ?? [],
+              trends.assignmentGoalTypes,
               (summary) => formatCurrency(summary.totalAmountToAssign),
             ),
           },
@@ -215,7 +216,7 @@ const GoalTrendsSummaryCards = function ({
             detailLabel: "Goal type breakdown",
             detailValue: formatCurrency(trends.totalAmountAssigned),
             detailRows: getAssignmentRows(
-              trends.assignmentGoalTypes ?? [],
+              trends.assignmentGoalTypes,
               (summary) => formatCurrency(summary.totalAmountAssigned),
             ),
           },
@@ -225,7 +226,7 @@ const GoalTrendsSummaryCards = function ({
             detailLabel: "Goal type breakdown",
             detailValue: `${trends.percentageOfAssignmentGoalsMet.metCount} / ${trends.percentageOfAssignmentGoalsMet.totalCount} (${formatPercentage(trends.percentageOfAssignmentGoalsMet.percentageMet)})`,
             detailRows: getAssignmentRows(
-              trends.assignmentGoalTypes ?? [],
+              trends.assignmentGoalTypes,
               (summary) =>
                 `${summary.percentageOfGoalsMet.metCount} / ${summary.percentageOfGoalsMet.totalCount} (${formatPercentage(summary.percentageOfGoalsMet.percentageMet)})`,
             ),
@@ -238,7 +239,7 @@ const GoalTrendsSummaryCards = function ({
             detailLabel: "Goal type breakdown",
             detailValue: formatCurrency(trends.totalAmountToSpend),
             detailRows: getSpendingRows(
-              trends.spendingGoalTypes ?? [],
+              trends.spendingGoalTypes,
               (summary) => formatCurrency(summary.totalAmountToSpend),
             ),
           },
@@ -248,7 +249,7 @@ const GoalTrendsSummaryCards = function ({
             detailLabel: "Goal type breakdown",
             detailValue: formatCurrency(trends.totalAmountSpent),
             detailRows: getSpendingRows(
-              trends.spendingGoalTypes ?? [],
+              trends.spendingGoalTypes,
               (summary) => formatCurrency(summary.totalAmountSpent),
             ),
           },
@@ -258,7 +259,7 @@ const GoalTrendsSummaryCards = function ({
             detailLabel: "Goal type breakdown",
             detailValue: `${trends.percentageOfSpendingGoalsMet.metCount} / ${trends.percentageOfSpendingGoalsMet.totalCount} (${formatPercentage(trends.percentageOfSpendingGoalsMet.percentageMet)})`,
             detailRows: getSpendingRows(
-              trends.spendingGoalTypes ?? [],
+              trends.spendingGoalTypes,
               (summary) =>
                 `${summary.percentageOfGoalsMet.metCount} / ${summary.percentageOfGoalsMet.totalCount} (${formatPercentage(summary.percentageOfGoalsMet.percentageMet)})`,
             ),

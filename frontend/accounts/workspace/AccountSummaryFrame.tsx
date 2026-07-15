@@ -1,7 +1,7 @@
 "use client";
 
 import type { JSX, ReactNode } from "react";
-import type { Account } from "@/accounts/types";
+import type { AccountWithBalance } from "@/accounts/types";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
 import { Box } from "@mui/material";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
@@ -12,7 +12,7 @@ import StringEntryField from "@/framework/forms/StringEntryField";
  * Props for the AccountSummaryFrame component.
  */
 interface AccountSummaryFrameProps {
-  readonly account: Account;
+  readonly account: AccountWithBalance;
   readonly headerContent?: ReactNode;
 }
 

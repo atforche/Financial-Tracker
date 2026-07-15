@@ -1,9 +1,9 @@
 import {
-  AccountTrendsBalanceEventType,
   AccountType,
   type AccountWorkspaceBalanceEvent,
   type CreateAccountRequest,
 } from "@/accounts/types";
+import { BalanceEventTypeModel } from "@/framework/data/api";
 import {
   type AccountingPeriod,
   getDefaultDate,
@@ -125,7 +125,7 @@ const formatAccountBalanceEventType = function (
   balanceEvent: AccountWorkspaceBalanceEvent,
 ): string {
   const baseLabel =
-    balanceEvent.type === AccountTrendsBalanceEventType.Debit
+    balanceEvent.type === BalanceEventTypeModel.Debit
       ? "Debit"
       : "Credit";
 

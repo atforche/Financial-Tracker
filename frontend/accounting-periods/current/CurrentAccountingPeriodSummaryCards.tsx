@@ -1,13 +1,13 @@
 "use client";
 
 import { Box, Stack } from "@mui/material";
-import type { CurrentAccountingPeriod } from "@/accounting-periods/types";
+import type { AccountingPeriodWithTransactions } from "@/accounting-periods/types";
 import type { JSX } from "react";
 import SummaryCard from "@/framework/view/SummaryCard";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface AccountingPeriodCurrentSummaryCardsProps {
-  readonly current: CurrentAccountingPeriod;
+  readonly current: AccountingPeriodWithTransactions | null;
 }
 
 /**
@@ -16,16 +16,15 @@ interface AccountingPeriodCurrentSummaryCardsProps {
 const CurrentAccountingPeriodSummaryCards = function ({
   current,
 }: AccountingPeriodCurrentSummaryCardsProps): JSX.Element {
-  const accountingPeriod = current.accountingPeriod ?? null;
-  const openingBalance = accountingPeriod?.openingBalance ?? 0;
-  const closingBalance = accountingPeriod?.closingBalance ?? 0;
+  const openingBalance = current?.openingBalance ?? 0;
+  const closingBalance = current?.closingBalance ?? 0;
   const netChange = closingBalance - openingBalance;
   const percentChange =
     openingBalance === 0 ? 0 : (netChange / Math.abs(openingBalance)) * 100;
   const isPositive = netChange >= 0;
   const valueColor = isPositive ? "success.main" : "error.main";
   const titleSuffix =
-    accountingPeriod === null ? "" : ` (${accountingPeriod.name})`;
+    current === null ? "" : ` (${current.name})`;
 
   return (
     <Box

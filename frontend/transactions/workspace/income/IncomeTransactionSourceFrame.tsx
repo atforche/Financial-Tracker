@@ -1,4 +1,7 @@
-import type { Account, AccountIdentifier } from "@/accounts/types";
+import type {
+  AccountIdentifier,
+  AccountWithBalance,
+} from "@/accounts/types";
 import {
   type IncomeDeductionDraft,
   type IncomeLineDraft,
@@ -20,7 +23,7 @@ import TransactionSourceOrDestinationFrame from "@/transactions/workspace/Transa
  * Props for the IncomeTransactionSourceFrame component.
  */
 interface IncomeTransactionSourceFrameProps {
-  readonly accounts: Account[];
+  readonly accounts: AccountWithBalance[];
   readonly transaction?: Transaction | null;
   readonly account: TransactionAccountDraft | null;
   readonly setAccount:

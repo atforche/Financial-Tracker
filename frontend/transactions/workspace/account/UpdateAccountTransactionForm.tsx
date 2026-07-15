@@ -9,7 +9,7 @@ import {
 } from "@/transactions/workspace/account/helpers";
 import { type JSX, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
-import type { Account } from "@/accounts/types";
+import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountTransaction } from "@/transactions/accountTransaction";
 import AccountTransactionForm from "@/transactions/workspace/account/AccountTransactionForm";
 import type { AccountingPeriod } from "@/accounting-periods/types";
@@ -22,7 +22,7 @@ import { useUpdateTransactionEditor } from "@/transactions/workspace/useTransact
 interface UpdateAccountTransactionFormProps {
   readonly transaction: AccountTransaction;
   readonly transactionAccountingPeriod: AccountingPeriod;
-  readonly accounts: Account[];
+  readonly accounts: AccountWithBalance[];
   readonly redirectUrl: string;
 }
 

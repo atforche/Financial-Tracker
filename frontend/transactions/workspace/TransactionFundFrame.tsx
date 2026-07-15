@@ -1,4 +1,4 @@
-import type { Fund, FundIdentifier } from "@/funds/types";
+import type { FundIdentifier, FundWithBalance } from "@/funds/types";
 import {
   getSelectedTransactionFundDraft,
   setTransactionFundDraftBalanceChange,
@@ -13,7 +13,7 @@ import type { TransactionFundDraft } from "@/transactions/transaction";
  * Props for the TransactionFundFrame component.
  */
 interface TransactionFundFrameProps {
-  readonly funds?: Fund[];
+  readonly funds?: FundWithBalance[];
   readonly fund: TransactionFundDraft | null;
   readonly setFund?: ((fund: TransactionFundDraft | null) => void) | null;
   readonly fundFilter?: ((fund: FundIdentifier) => boolean) | null;
@@ -21,7 +21,7 @@ interface TransactionFundFrameProps {
   readonly balanceChange?: number | null;
 }
 
-const emptyFunds: Fund[] = [];
+const emptyFunds: FundWithBalance[] = [];
 
 /**
  * Displays a transaction fund in a workspace view.

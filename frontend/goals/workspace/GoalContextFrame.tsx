@@ -50,12 +50,12 @@ const GoalContextFrame = function ({
         >
           <StringEntryField
             label="Accounting Period"
-            value={assignmentGoal.accountingPeriodName ?? "Onboarded"}
+            value={assignmentGoal.accountingPeriod?.name ?? "Onboarded"}
             setValue={null}
           />
           <StringEntryField
             label="Fund"
-            value={assignmentGoal.fundName}
+            value={assignmentGoal.fund.name}
             setValue={null}
           />
         </Box>

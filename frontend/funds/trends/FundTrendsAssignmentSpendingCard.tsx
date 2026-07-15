@@ -1,28 +1,25 @@
 "use client";
 
 import { Box, Stack, Typography } from "@mui/material";
-import type { FundTrends } from "@/funds/types";
 import type { JSX } from "react";
 import SummaryCard from "@/framework/view/SummaryCard";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface FundTrendsAssignmentSpendingCardProps {
-  readonly trends: FundTrends;
+  readonly totalAssigned: number;
+  readonly totalSpent: number;
 }
 
 /**
  * Component that displays total assigned and total spent for Funds.
  */
 const FundTrendsAssignmentSpendingCard = function ({
-  trends,
+  totalAssigned,
+  totalSpent,
 }: FundTrendsAssignmentSpendingCardProps): JSX.Element {
-  const maxAmount = Math.max(
-    trends.totalAmountAssigned,
-    trends.totalAmountSpent,
-    1,
-  );
-  const assignedRatio = trends.totalAmountAssigned / maxAmount;
-  const spentRatio = trends.totalAmountSpent / maxAmount;
+  const maxAmount = Math.max(totalAssigned, totalSpent, 1);
+  const assignedRatio = totalAssigned / maxAmount;
+  const spentRatio = totalSpent / maxAmount;
 
   return (
     <SummaryCard title="Assignment vs. spending">
@@ -34,7 +31,7 @@ const FundTrendsAssignmentSpendingCard = function ({
         >
           <Typography color="text.secondary">Total assigned</Typography>
           <Typography fontWeight={600} color="success.main">
-            {formatCurrency(trends.totalAmountAssigned)}
+            {formatCurrency(totalAssigned)}
           </Typography>
         </Stack>
         <Box
@@ -62,7 +59,7 @@ const FundTrendsAssignmentSpendingCard = function ({
         >
           <Typography color="text.secondary">Total spent</Typography>
           <Typography fontWeight={600} color="error.main">
-            {formatCurrency(trends.totalAmountSpent)}
+            {formatCurrency(totalSpent)}
           </Typography>
         </Stack>
         <Box

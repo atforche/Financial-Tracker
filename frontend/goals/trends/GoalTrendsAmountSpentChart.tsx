@@ -1,6 +1,6 @@
 "use client";
 
-import type { GoalTrendsAccountingPeriodSummaryModel } from "@/goals/types";
+import type { GoalAccountingPeriodSummary } from "@/goals/trends/goalTrendsTypes";
 import GoalTrendsMetricChart from "@/goals/trends/GoalTrendsMetricChart";
 import type { JSX } from "react";
 import formatCompactCurrency from "@/framework/formatCompactCurrency";
@@ -8,7 +8,7 @@ import formatCurrency from "@/framework/formatCurrency";
 
 interface GoalTrendsAmountSpentChartProps {
   readonly accountingPeriods:
-    readonly GoalTrendsAccountingPeriodSummaryModel[] | null;
+    readonly GoalAccountingPeriodSummary[] | null;
 }
 
 /**

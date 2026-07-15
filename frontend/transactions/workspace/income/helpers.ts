@@ -11,6 +11,7 @@ import type {
   CreateTransactionRequest,
   TransactionAccountDraft,
   TransactionFund,
+  TransactionGoal,
   UpdateTransactionRequest,
 } from "@/transactions/transaction";
 import type {
@@ -410,27 +411,32 @@ const getSourceFromTransaction = function (
  */
 const getFundAssignmentFromTransactionFund = (
   assignment: TransactionFund,
+  goal: TransactionGoal | null = null,
 ): FundAssignmentDraft => ({
-  fundId: assignment.fundId,
-  fundName: assignment.fundName,
+  fundId: assignment.fund.id,
+  fundName: assignment.fund.name,
   amount: assignment.amount,
-  previousFundBalance: assignment.previousFundBalance.postedBalance,
-  newFundBalance: assignment.newFundBalance.postedBalance,
+  previousFundBalance: assignment.previousBalance.postedBalance,
+  newFundBalance: assignment.newBalance.postedBalance,
   previousGoalBalance: {
     remainingAmountToAssignIncludingPending:
-      assignment.previousFundBalance.amountAssigned +
-      assignment.previousFundBalance.pendingAmountAssigned,
+      (goal?.previousBalance.amountAssigned ?? 0) +
+      (goal?.previousBalance.pendingAmountAssigned ?? 0),
     remainingAmountToSpendIncludingPending:
-      assignment.previousFundBalance.amountSpent +
-      assignment.previousFundBalance.pendingAmountSpent,
+      (goal?.previousBalance.amountAssigned ?? 0) +
+      (goal?.previousBalance.pendingAmountAssigned ?? 0) -
+      (goal?.previousBalance.amountSpent ?? 0) -
+      (goal?.previousBalance.pendingAmountSpent ?? 0),
   },
   newGoalBalance: {
     remainingAmountToAssignIncludingPending:
-      assignment.newFundBalance.amountAssigned +
-      assignment.newFundBalance.pendingAmountAssigned,
+      (goal?.newBalance.amountAssigned ?? 0) +
+      (goal?.newBalance.pendingAmountAssigned ?? 0),
     remainingAmountToSpendIncludingPending:
-      assignment.newFundBalance.amountSpent +
-      assignment.newFundBalance.pendingAmountSpent,
+      (goal?.newBalance.amountAssigned ?? 0) +
+      (goal?.newBalance.pendingAmountAssigned ?? 0) -
+      (goal?.newBalance.amountSpent ?? 0) -
+      (goal?.newBalance.pendingAmountSpent ?? 0),
   },
 });
 
@@ -446,11 +452,21 @@ const getDestinationsFromTransaction = function (
         destination.account,
       ),
       amount: destination.amount,
-      fundAssignments: destination.fundAssignments.map(
-        getFundAssignmentFromTransactionFund,
+      fundAssignments: destination.fundAssignments.map((assignment) =>
+        getFundAssignmentFromTransactionFund(
+          assignment,
+          destination.goals.find(
+            (goal) => goal.fund.id === assignment.fund.id,
+          ) ?? null,
+        ),
       ),
-      baselineFundAssignments: destination.fundAssignments.map(
-        getFundAssignmentFromTransactionFund,
+      baselineFundAssignments: destination.fundAssignments.map((assignment) =>
+        getFundAssignmentFromTransactionFund(
+          assignment,
+          destination.goals.find(
+            (goal) => goal.fund.id === assignment.fund.id,
+          ) ?? null,
+        ),
       ),
     }),
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import type { Fund, FundWorkspaceBalanceEvent } from "@/funds/types";
+import type { FundWithBalance, FundWorkspaceBalanceEvent } from "@/funds/types";
 import DeleteFundForm from "@/funds/workspace/DeleteFundForm";
 import FundBalanceEventsFrame from "@/funds/workspace/FundBalanceEventsFrame";
 import FundSummaryFrame from "@/funds/workspace/FundSummaryFrame";
@@ -12,7 +12,7 @@ import UpdateFundForm from "@/funds/workspace/UpdateFundForm";
  * Props for the ViewFundForm component.
  */
 interface ViewFundFormProps {
-  readonly fund: Fund;
+  readonly fund: FundWithBalance;
   readonly redirectUrl: string;
   readonly recentBalanceEvents: FundWorkspaceBalanceEvent[];
   readonly recentBalanceEventCount: number;

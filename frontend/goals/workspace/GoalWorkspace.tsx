@@ -2,7 +2,6 @@ import GoalWorkspaceCards from "@/goals/workspace/GoalWorkspaceCards";
 import GoalWorkspaceFilter from "@/goals/workspace/GoalWorkspaceFilter";
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
-import { createEmptyGoals } from "@/goals/workspace/helpers";
 import getApiClient from "@/framework/data/getApiClient";
 import { toRepeatedSearchParam } from "@/framework/routes/helpers";
 
@@ -43,19 +42,32 @@ const GoalWorkspace = async function ({
   const selectedAccountingPeriodId =
     accountingPeriodId ?? accountingPeriods.items[0]?.id;
   const selectedFundIds = toRepeatedSearchParam(fundIds);
-  const current =
-    (
-      await apiClient.GET("/goals/current", {
+  const [assignmentGoalResponse, spendingGoalResponse] = await Promise.all([
+    apiClient.GET("/goals/assignment", {
         params: {
           query: {
             ...(typeof selectedAccountingPeriodId === "string"
-              ? { AccountingPeriodId: selectedAccountingPeriodId }
+              ? { "Filter.AccountingPeriodIds": [selectedAccountingPeriodId] }
               : {}),
-            ...(selectedFundIds.length > 0 ? { FundIds: selectedFundIds } : {}),
+            ...(selectedFundIds.length > 0
+              ? { "Filter.FundIds": selectedFundIds }
+              : {}),
           },
         },
-      })
-    ).data ?? createEmptyGoals();
+      }),
+    apiClient.GET("/goals/spending", {
+      params: {
+        query: {
+          ...(typeof selectedAccountingPeriodId === "string"
+            ? { "Filter.AccountingPeriodIds": [selectedAccountingPeriodId] }
+            : {}),
+          ...(selectedFundIds.length > 0
+            ? { "Filter.FundIds": selectedFundIds }
+            : {}),
+        },
+      },
+    }),
+  ]);
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
@@ -63,7 +75,15 @@ const GoalWorkspace = async function ({
         accountingPeriods={accountingPeriods.items}
         selectedAccountingPeriodId={selectedAccountingPeriodId ?? null}
       />
-      <GoalWorkspaceCards current={current} />
+      <GoalWorkspaceCards
+        accountingPeriod={
+          accountingPeriods.items.find(
+            (period) => period.id === selectedAccountingPeriodId,
+          ) ?? null
+        }
+        assignmentGoals={assignmentGoalResponse.data?.items ?? []}
+        spendingGoals={spendingGoalResponse.data?.items ?? []}
+      />
     </Stack>
   );
 };

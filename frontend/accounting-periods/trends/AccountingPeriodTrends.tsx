@@ -1,6 +1,6 @@
-import {
-  AccountingPeriodSortOrder,
-  type AccountingPeriodTrends as AccountingPeriodTrendsModel,
+import type {
+  AccountingPeriodWithBalanceSortValue,
+  AccountingPeriodsInRange,
 } from "@/accounting-periods/types";
 import { Box, Stack } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
@@ -12,7 +12,10 @@ import AccountingPeriodTrendsListFrame from "@/accounting-periods/trends/Account
 import AccountingPeriodTrendsSummaryCards from "@/accounting-periods/trends/AccountingPeriodTrendsSummaryCards";
 import AccountingPeriodTrendsTransactionListFrame from "@/accounting-periods/trends/AccountingPeriodTrendsTransactionListFrame";
 import type { JSX } from "react";
-import type { TransactionSortOrder } from "@/transactions/transaction";
+import type {
+  Transaction,
+  TransactionSortValue,
+} from "@/transactions/transaction";
 import getApiClient from "@/framework/data/getApiClient";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
@@ -20,9 +23,9 @@ import { rowsPerPage } from "@/framework/listframe/Constants";
  * Search parameters for the AccountingPeriodTrends component.
  */
 interface AccountingPeriodTrendsSearchParams {
-  sort?: AccountingPeriodSortOrder;
+  sort?: AccountingPeriodWithBalanceSortValue;
   page?: number | string | null;
-  transactionSort?: TransactionSortOrder;
+  transactionSort?: TransactionSortValue;
   transactionPage?: number | string | null;
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;
@@ -35,13 +38,9 @@ interface AccountingPeriodTrendsProps {
   readonly searchParams: Promise<AccountingPeriodTrendsSearchParams>;
 }
 
-const createEmptyTrends = function (): AccountingPeriodTrendsModel {
+const createEmptyTrends = function (): AccountingPeriodsInRange {
   return {
     accountingPeriods: {
-      items: [],
-      totalCount: 0,
-    },
-    transactions: {
       items: [],
       totalCount: 0,
     },
@@ -73,8 +72,7 @@ const AccountingPeriodTrends = async function ({
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
       query: {
-        Search: "",
-        Sort: AccountingPeriodSortOrder.DateDescending,
+        Sort: "DateDescending",
         Limit: 500,
         Offset: 0,
       },
@@ -89,35 +87,43 @@ const AccountingPeriodTrends = async function ({
   }
 
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
-  const trends: AccountingPeriodTrendsModel =
-    latestAccountingPeriod === null
-      ? createEmptyTrends()
-      : ((
-          await apiClient.GET("/accounting-periods/trends", {
-            params: {
-              query: {
-                ...(typeof sort === "string" ? { Sort: sort } : {}),
-                ...(typeof transactionSort === "string"
-                  ? { TransactionSort: transactionSort }
-                  : {}),
-                Limit: rowsPerPage,
-                TransactionLimit: rowsPerPage,
-                Offset: getPageOffset(currentPage),
-                TransactionOffset: getPageOffset(currentTransactionPage),
-                ...{
-                  StartAccountingPeriodId:
-                    typeof startAccountingPeriodId === "string"
-                      ? startAccountingPeriodId
-                      : latestAccountingPeriod.id,
-                  EndAccountingPeriodId:
-                    typeof endAccountingPeriodId === "string"
-                      ? endAccountingPeriodId
-                      : latestAccountingPeriod.id,
-                },
-              },
-            },
-          })
-        ).data ?? createEmptyTrends());
+  let trends = createEmptyTrends();
+  let transactions: { items: Transaction[]; totalCount: number } = {
+    items: [],
+    totalCount: 0,
+  };
+  if (latestAccountingPeriod !== null) {
+    const range = {
+      "Range.Start": startAccountingPeriodId ?? latestAccountingPeriod.id,
+      "Range.End": endAccountingPeriodId ?? latestAccountingPeriod.id,
+    };
+    const [trendsResponse, transactionResponse] = await Promise.all([
+      apiClient.GET("/accounting-periods/range", {
+        params: {
+          query: {
+            ...range,
+            ...(typeof sort === "string" ? { Sort: sort } : {}),
+            Limit: rowsPerPage,
+            Offset: getPageOffset(currentPage),
+          },
+        },
+      }),
+      apiClient.GET("/transactions/accounting-period-range", {
+        params: {
+          query: {
+            ...range,
+            ...(typeof transactionSort === "string"
+              ? { Sort: transactionSort }
+              : {}),
+            Limit: rowsPerPage,
+            Offset: getPageOffset(currentTransactionPage),
+          },
+        },
+      }),
+    ]);
+    trends = trendsResponse.data ?? createEmptyTrends();
+    transactions = transactionResponse.data?.transactions ?? transactions;
+  }
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
@@ -128,8 +134,13 @@ const AccountingPeriodTrends = async function ({
           disabled={latestAccountingPeriod === null}
         />
       </Stack>
-      <AccountingPeriodTrendsSummaryCards trends={trends} />
-      <AccountingPeriodTrendsIncomeSpendingCard trends={trends} />
+      <AccountingPeriodTrendsSummaryCards
+        accountingPeriods={trends.accountingPeriods.items}
+      />
+      <AccountingPeriodTrendsIncomeSpendingCard
+        totalIncome={trends.totalIncome}
+        totalSpending={trends.totalSpending}
+      />
       <Box
         sx={{
           display: "grid",
@@ -159,7 +170,10 @@ const AccountingPeriodTrends = async function ({
           data={trends.accountingPeriods.items}
           totalCount={trends.accountingPeriods.totalCount}
         />
-        <AccountingPeriodTrendsTransactionListFrame trends={trends} />
+        <AccountingPeriodTrendsTransactionListFrame
+          transactions={transactions.items}
+          totalCount={transactions.totalCount}
+        />
       </Box>
     </Stack>
   );

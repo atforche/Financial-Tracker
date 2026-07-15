@@ -1,13 +1,13 @@
 "use client";
 
 import { Box, Stack, Typography } from "@mui/material";
-import type { CurrentAccountingPeriod } from "@/accounting-periods/types";
+import type { AccountingPeriodWithTransactions } from "@/accounting-periods/types";
 import type { JSX } from "react";
 import SummaryCard from "@/framework/view/SummaryCard";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface AccountingPeriodCurrentIncomeSpendingCardProps {
-  readonly current: CurrentAccountingPeriod;
+  readonly current: AccountingPeriodWithTransactions | null;
 }
 
 interface AmountBarProps {
@@ -77,12 +77,13 @@ const IncomeBreakdownRow = function ({
 const CurrentAccountingPeriodIncomeSpendingCard = function ({
   current,
 }: AccountingPeriodCurrentIncomeSpendingCardProps): JSX.Element {
-  const totalIncome = current.totalIncome.total;
-  const trackedIncome = current.totalIncome.tracked;
-  const untrackedIncome = current.totalIncome.untracked;
-  const maxAmount = Math.max(totalIncome, current.totalSpending, 1);
+  const totalIncome = current?.totalIncome.total ?? 0;
+  const trackedIncome = current?.totalIncome.tracked ?? 0;
+  const untrackedIncome = current?.totalIncome.untracked ?? 0;
+  const totalSpending = current?.totalSpending ?? 0;
+  const maxAmount = Math.max(totalIncome, totalSpending, 1);
   const incomeRatio = totalIncome / maxAmount;
-  const spendingRatio = current.totalSpending / maxAmount;
+  const spendingRatio = totalSpending / maxAmount;
   const trackedIncomeRatio =
     totalIncome === 0 ? 0 : trackedIncome / totalIncome;
   const untrackedIncomeRatio =
@@ -123,7 +124,7 @@ const CurrentAccountingPeriodIncomeSpendingCard = function ({
         >
           <Typography color="text.secondary">Total spending</Typography>
           <Typography fontWeight={600} color="error.main">
-            {formatCurrency(current.totalSpending)}
+            {formatCurrency(totalSpending)}
           </Typography>
         </Stack>
         <AmountBar ratio={spendingRatio} color="error.main" />

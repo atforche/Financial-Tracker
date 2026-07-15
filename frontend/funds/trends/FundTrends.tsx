@@ -1,14 +1,15 @@
 import { Box, Stack } from "@mui/material";
 import type {
-  FundTrendsBalanceEventSortOrder,
-  FundTrendsSortOrder,
+  FundBalanceEventSortValue,
+  FundWithBalanceRangeSortValue,
+  FundsInAccountingPeriodRange,
+  FundsInDateRange,
 } from "@/funds/types";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import {
   normalizeRequestedFundNames,
   shouldPersistFundNames,
 } from "@/funds/trends/fundNameFilter";
-import { AccountingPeriodSortOrder } from "@/accounting-periods/types";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import FundTrendsAssignmentSpendingCard from "@/funds/trends/FundTrendsAssignmentSpendingCard";
 import FundTrendsBalanceEventListFrame from "@/funds/trends/FundTrendsBalanceEventListFrame";
@@ -33,9 +34,9 @@ type FundsTrendsFilterMode = "accounting-period" | "date";
  * Search parameters for the fund trends.
  */
 interface FundTrendsSearchParams {
-  sort?: FundTrendsSortOrder;
+  sort?: FundWithBalanceRangeSortValue;
   page?: number | string | null;
-  balanceEventSort?: FundTrendsBalanceEventSortOrder;
+  balanceEventSort?: FundBalanceEventSortValue;
   balanceEventPage?: number | string | null;
   mode?: FundsTrendsFilterMode;
   fundName?: string | readonly string[];
@@ -78,8 +79,7 @@ const FundTrends = async function ({
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
       query: {
-        Search: "",
-        Sort: AccountingPeriodSortOrder.DateDescending,
+        Sort: "DateDescending",
         Limit: 500,
         Offset: 0,
       },
@@ -135,52 +135,68 @@ const FundTrends = async function ({
     );
   }
 
-  const fundTrendsPromise = apiClient.GET("/funds/trends", {
-    params: {
-      query: {
-        ...(typeof sort === "string" ? { Sort: sort } : {}),
-        ...(typeof balanceEventSort === "string"
-          ? { BalanceEventSort: balanceEventSort }
-          : {}),
-        Limit: rowsPerPage,
-        BalanceEventLimit: rowsPerPage,
-        ...(shouldPersistFundNames(currentFundNames)
-          ? { FundName: [...currentFundNames] }
-          : {}),
-        Offset: getPageOffset(currentPage),
-        BalanceEventOffset: getPageOffset(currentBalanceEventPage),
-        ...(currentMode === "date"
-          ? {
-              StartDate:
-                typeof startDate === "string"
-                  ? startDate
-                  : defaultStartDate.format("YYYY-MM-DD"),
-              EndDate:
-                typeof endDate === "string"
-                  ? endDate
-                  : defaultEndDate.format("YYYY-MM-DD"),
-            }
-          : {}),
-        ...(currentMode === "accounting-period" &&
-        latestAccountingPeriod !== null
-          ? {
-              StartAccountingPeriodId:
-                typeof startAccountingPeriodId === "string"
-                  ? startAccountingPeriodId
-                  : latestAccountingPeriod.id,
-              EndAccountingPeriodId:
-                typeof endAccountingPeriodId === "string"
-                  ? endAccountingPeriodId
-                  : latestAccountingPeriod.id,
-            }
-          : {}),
-      },
-    },
-  });
-  const { data: trends } = await fundTrendsPromise;
-  if (typeof trends === "undefined") {
+  // Values are assigned by the active range mode below.
+  // eslint-disable-next-line @typescript-eslint/init-declarations
+  let trends: FundsInDateRange | FundsInAccountingPeriodRange | undefined;
+  // eslint-disable-next-line @typescript-eslint/init-declarations
+  let balanceEvents;
+  const fundQuery = {
+    ...(typeof sort === "string" ? { Sort: sort } : {}),
+    ...(shouldPersistFundNames(currentFundNames)
+      ? { "Filter.Names": [...currentFundNames] }
+      : {}),
+    Limit: rowsPerPage,
+    Offset: getPageOffset(currentPage),
+  };
+  const balanceEventQuery = {
+    ...(typeof balanceEventSort === "string" ? { Sort: balanceEventSort } : {}),
+    ...(shouldPersistFundNames(currentFundNames) ? { "Filter.Names": [...currentFundNames] } : {}),
+    Limit: rowsPerPage,
+    Offset: getPageOffset(currentBalanceEventPage),
+  };
+  if (currentMode === "date") {
+    const range = {
+      "Range.Start": startDate ?? defaultStartDate.format("YYYY-MM-DD"),
+      "Range.End": endDate ?? defaultEndDate.format("YYYY-MM-DD"),
+    };
+    const [fundResponse, balanceEventResponse] = await Promise.all([
+      apiClient.GET("/funds/date-range", {
+        params: { query: { ...fundQuery, ...range } },
+      }),
+      apiClient.GET("/balance-events/funds/date-range", { params: { query: { ...balanceEventQuery, ...range } } }),
+    ]);
+    trends = fundResponse.data;
+    balanceEvents = balanceEventResponse.data;
+  } else {
+    const range = {
+      "Range.Start": startAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
+      "Range.End": endAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
+    };
+    const [fundResponse, balanceEventResponse] = await Promise.all([
+      apiClient.GET("/funds/accounting-period-range", {
+        params: { query: { ...fundQuery, ...range } },
+      }),
+      apiClient.GET("/balance-events/funds/accounting-period-range", {
+        params: { query: { ...balanceEventQuery, ...range } },
+      }),
+    ]);
+    trends = fundResponse.data;
+    balanceEvents = balanceEventResponse.data;
+  }
+  if (typeof trends === "undefined" || typeof balanceEvents === "undefined") {
     throw new Error("Failed to load fund trends data");
   }
+  const modeValue = currentMode === "date" ? "Date" : "AccountingPeriod";
+  const periodSummaries = "accountingPeriods" in trends ? trends.accountingPeriods : [];
+  const dateSummaries = "dates" in trends ? trends.dates : [];
+  const chartPeriods = periodSummaries.map((summary) => ({
+    accountingPeriodId: summary.accountingPeriod.id,
+    accountingPeriodName: summary.accountingPeriod.name,
+    year: summary.accountingPeriod.year,
+    month: summary.accountingPeriod.month,
+    totalOpeningBalance: summary.openingBalance.totalBalance,
+    totalClosingBalance: summary.closingBalance.totalBalance,
+  }));
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
@@ -193,8 +209,15 @@ const FundTrends = async function ({
           defaultEndDate={defaultEndDate.format("YYYY-MM-DD")}
         />
       </Stack>
-      <FundTrendsSummaryCards trends={trends} />
-      <FundTrendsAssignmentSpendingCard trends={trends} />
+      <FundTrendsSummaryCards
+        mode={modeValue}
+        accountingPeriods={periodSummaries}
+        dates={dateSummaries}
+      />
+      <FundTrendsAssignmentSpendingCard
+        totalAssigned={trends.totalIncome.tracked}
+        totalSpent={trends.totalSpending}
+      />
       <Box
         sx={{
           display: "grid",
@@ -206,14 +229,14 @@ const FundTrends = async function ({
         }}
       >
         <BalanceTrendChart
-          mode={trends.mode}
-          accountingPeriods={trends.accountingPeriods ?? null}
-          dates={trends.dates ?? null}
+          mode={modeValue}
+          accountingPeriods={chartPeriods}
+          dates={dateSummaries}
         />
         <FundTrendsChangeChart
-          mode={trends.mode}
-          accountingPeriods={trends.accountingPeriods ?? null}
-          dates={trends.dates ?? null}
+          mode={modeValue}
+          accountingPeriods={periodSummaries}
+          dates={dateSummaries}
         />
       </Box>
       <Box
@@ -230,9 +253,9 @@ const FundTrends = async function ({
           totalCount={trends.funds.totalCount}
         />
         <FundTrendsBalanceEventListFrame
-          data={[...trends.balanceEvents.items]}
-          mode={trends.mode}
-          totalCount={trends.balanceEvents.totalCount}
+          data={[...balanceEvents.items]}
+          mode={modeValue}
+          totalCount={balanceEvents.totalCount}
         />
       </Box>
     </Stack>

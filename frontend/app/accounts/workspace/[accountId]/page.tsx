@@ -1,6 +1,5 @@
 import { Button, Stack, Typography } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
-import type { AccountWorkspaceBalanceEvent } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import type { JSX } from "react";
@@ -11,6 +10,7 @@ import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 import transactionRoutes from "@/transactions/routes";
+import { getTransactionAccountBalanceEvents } from "@/transactions/postingHelpers";
 
 interface AccountWorkspaceDetailPageProps {
   readonly params: Promise<{
@@ -31,13 +31,13 @@ const AccountWorkspaceDetailPage = async function ({
   const { search, accountType, balanceEventPage } = resolvedSearchParams;
   const apiClient = getApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
-  const { data: account } = await apiClient.GET("/accounts/{accountId}", {
-    params: {
-      path: {
-        accountId,
-      },
-    },
-  });
+  const [{ data: accounts }, { data: transactions }] = await Promise.all([
+    apiClient.GET("/accounts/with-balances"),
+    apiClient.GET("/transactions", {
+      params: { query: { "Filter.AccountIds": [accountId] } },
+    }),
+  ]);
+  const account = accounts?.items.find((item) => item.id === accountId);
 
   const workspaceSearchParams: AccountWorkspaceSearchParams = {
     ...(typeof search !== "undefined" ? { search } : {}),
@@ -53,19 +53,14 @@ const AccountWorkspaceDetailPage = async function ({
     redirect(workspaceUrl);
   }
 
-  const { data: balanceEvents } = await apiClient.GET(
-    "/accounts/{accountId}/balance-events",
-    {
-      params: {
-        path: {
-          accountId: account.id,
-        },
-        query: {
-          Limit: rowsPerPage,
-          Offset: getPageOffset(currentBalanceEventPage),
-        },
-      },
-    },
+  const allBalanceEvents =
+    transactions?.items
+      .flatMap(getTransactionAccountBalanceEvents)
+      .filter((event) => event.account.id === account.id) ?? [];
+  const balanceEventOffset = getPageOffset(currentBalanceEventPage);
+  const balanceEvents = allBalanceEvents.slice(
+    balanceEventOffset,
+    balanceEventOffset + rowsPerPage,
   );
 
   const currentUrl = routes.workspaceDetail(account.id, detailSearchParams);
@@ -91,9 +86,9 @@ const AccountWorkspaceDetailPage = async function ({
         account={account}
         redirectUrl={currentUrl}
         recentBalanceEvents={
-          balanceEvents?.items ?? ([] as AccountWorkspaceBalanceEvent[])
+          balanceEvents
         }
-        recentBalanceEventCount={balanceEvents?.totalCount ?? 0}
+        recentBalanceEventCount={allBalanceEvents.length}
         addTransactionHref={addTransactionHref}
       />
     </Stack>

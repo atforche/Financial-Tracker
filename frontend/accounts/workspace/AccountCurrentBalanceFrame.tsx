@@ -1,6 +1,6 @@
 "use client";
 
-import type { Account } from "@/accounts/types";
+import type { AccountWithBalance } from "@/accounts/types";
 import { Box } from "@mui/material";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import Frame from "@/framework/view/Frame";
@@ -10,7 +10,7 @@ import type { JSX } from "react";
  * Props for the AccountCurrentBalanceFrame component.
  */
 interface AccountCurrentBalanceFrameProps {
-  readonly account: Account;
+  readonly account: AccountWithBalance;
 }
 
 /**

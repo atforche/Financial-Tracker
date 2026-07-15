@@ -3,30 +3,30 @@
 import { Box, Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
 import SummaryCard from "@/framework/view/SummaryCard";
-import type { TransactionTrends } from "@/transactions/transaction";
+import type { TransactionSummaryByType } from "@/transactions/transaction";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface TransactionTrendsByTypeCardProps {
-  readonly trends: TransactionTrends;
+  readonly transactionTypes: TransactionSummaryByType[];
 }
 
 /**
  * Component that displays transaction count and amount broken down by type.
  */
 const TransactionTrendsByTypeCard = function ({
-  trends,
+  transactionTypes,
 }: TransactionTrendsByTypeCardProps): JSX.Element {
   const maxTransactionCount = Math.max(
-    ...trends.transactionTypes.map((summary) => summary.totalCount),
+    ...transactionTypes.map((summary) => summary.totalCount),
     1,
   );
   const maxTransactionAmount = Math.max(
-    ...trends.transactionTypes.map((summary) => summary.totalAmount),
+    ...transactionTypes.map((summary) => summary.totalAmount),
     1,
   );
 
   const renderTypeSummary = function (
-    summary: TransactionTrends["transactionTypes"][number],
+    summary: TransactionSummaryByType,
   ): JSX.Element {
     const transactionCountRatio = summary.totalCount / maxTransactionCount;
     const transactionAmountRatio = summary.totalAmount / maxTransactionAmount;
@@ -113,7 +113,7 @@ const TransactionTrendsByTypeCard = function ({
     );
   };
 
-  if (trends.transactionTypes.length === 0) {
+  if (transactionTypes.length === 0) {
     return (
       <SummaryCard title="Transactions by type">
         <Typography color="text.secondary">
@@ -126,7 +126,7 @@ const TransactionTrendsByTypeCard = function ({
   return (
     <SummaryCard title="Transactions by type">
       <Stack spacing={2.5}>
-        {trends.transactionTypes.map(renderTypeSummary)}
+        {transactionTypes.map(renderTypeSummary)}
       </Stack>
     </SummaryCard>
   );

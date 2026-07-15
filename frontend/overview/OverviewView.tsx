@@ -7,23 +7,20 @@ import type { JSX } from "react";
 import type { OverviewData } from "@/overview/types";
 import TransactionOverview from "@/overview/TransactionOverview";
 import getApiClient from "@/framework/data/getApiClient";
+import { AccountTypeModel } from "@/framework/data/api";
 
 /**
  * Loads all data required by the overview page.
  */
 const getOverviewData = async function (): Promise<OverviewData> {
   const apiClient = getApiClient();
-  const accountSummaryPromise = apiClient.GET("/accounts/summary");
-  const fundSummaryPromise = apiClient.GET("/funds/summary");
-  const openAccountingPeriodsPromise = apiClient.GET(
-    "/accounting-periods/open",
-  );
+  const accountSummaryPromise = apiClient.GET("/accounts/with-balances");
+  const fundSummaryPromise = apiClient.GET("/funds/with-balances");
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
       query: {
-        Search: "",
         Sort: null,
-        Limit: 1,
+        Limit: 500,
         Offset: 0,
       },
     },
@@ -31,7 +28,6 @@ const getOverviewData = async function (): Promise<OverviewData> {
   const accountsPromise = apiClient.GET("/accounts", {
     params: {
       query: {
-        Search: "",
         Sort: null,
         Limit: 1,
         Offset: 0,
@@ -41,7 +37,6 @@ const getOverviewData = async function (): Promise<OverviewData> {
   const fundsPromise = apiClient.GET("/funds", {
     params: {
       query: {
-        Search: "",
         Sort: null,
         Limit: 1,
         Offset: 0,
@@ -52,14 +47,12 @@ const getOverviewData = async function (): Promise<OverviewData> {
   const [
     { data: accountSummary },
     { data: fundSummary },
-    { data: openAccountingPeriods },
     { data: accountingPeriods },
     { data: accounts },
     { data: funds },
   ] = await Promise.all([
     accountSummaryPromise,
     fundSummaryPromise,
-    openAccountingPeriodsPromise,
     accountingPeriodsPromise,
     accountsPromise,
     fundsPromise,
@@ -68,7 +61,6 @@ const getOverviewData = async function (): Promise<OverviewData> {
   if (
     typeof accountSummary === "undefined" ||
     typeof fundSummary === "undefined" ||
-    typeof openAccountingPeriods === "undefined" ||
     typeof accountingPeriods === "undefined" ||
     typeof accounts === "undefined" ||
     typeof funds === "undefined"
@@ -76,9 +68,59 @@ const getOverviewData = async function (): Promise<OverviewData> {
     throw new Error("Failed to fetch overview data");
   }
 
+  const accountBalances = accountSummary.items;
+  const trackedAccounts = accountBalances.filter(
+    (account) =>
+      account.type === AccountTypeModel.Standard ||
+      account.type === AccountTypeModel.CreditCard,
+  );
+  const balanceByAccountType = Array.from(
+    Map.groupBy(accountBalances, (account) => account.type),
+    ([accountType, groupedAccounts]) => ({
+      accountType,
+      totalBalance: groupedAccounts.reduce(
+        (total, account) => total + account.currentBalance.postedBalance,
+        0,
+      ),
+    }),
+  );
+  const openAccountingPeriods = accountingPeriods.items.filter(
+    (period) => period.isOpen,
+  );
+  const assignedFunds = fundSummary.items.filter(
+    (fund) => fund.name !== "Unassigned",
+  );
   return {
-    accountSummary,
-    fundSummary,
+    accountSummary: {
+      totalBalance: accountBalances.reduce(
+        (total, account) => total + account.currentBalance.postedBalance,
+        0,
+      ),
+      totalTrackedBalance: trackedAccounts.reduce(
+        (total, account) => total + account.currentBalance.postedBalance,
+        0,
+      ),
+      totalUntrackedBalance: accountBalances
+        .filter((account) => !trackedAccounts.includes(account))
+        .reduce(
+          (total, account) => total + account.currentBalance.postedBalance,
+          0,
+        ),
+      balanceByAccountType,
+    },
+    fundSummary: {
+      totalBalance: fundSummary.items.reduce(
+        (total, fund) => total + fund.currentBalance.postedBalance,
+        0,
+      ),
+      totalAssignedBalance: assignedFunds.reduce(
+        (total, fund) => total + fund.currentBalance.postedBalance,
+        0,
+      ),
+      totalUnassignedBalance:
+        fundSummary.items.find((fund) => fund.name === "Unassigned")
+          ?.currentBalance.postedBalance ?? 0,
+    },
     currentAccountingPeriod: openAccountingPeriods[0] ?? null,
     openAccountingPeriods,
     totalAccountingPeriods: accountingPeriods.totalCount,

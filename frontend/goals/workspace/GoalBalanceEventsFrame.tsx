@@ -62,13 +62,13 @@ const GoalBalanceEventsFrame = function ({
           component="span"
           sx={{
             color:
-              balanceEvent.type === GoalWorkspaceBalanceEventType.Spending
+              balanceEvent.type === GoalWorkspaceBalanceEventType.Debit
                 ? "warning.dark"
                 : "info.dark",
             fontWeight: 600,
           }}
         >
-          {balanceEvent.type === GoalWorkspaceBalanceEventType.Assignment
+          {balanceEvent.type === GoalWorkspaceBalanceEventType.Credit
             ? "Assignment"
             : "Spending"}
         </Box>

@@ -16,7 +16,7 @@ import {
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
-import type { Fund } from "@/funds/types";
+import type { FundWithBalance } from "@/funds/types";
 import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
 import FundTransactionSourceFrame from "@/transactions/workspace/fund/FundTransactionSourceFrame";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
@@ -36,7 +36,7 @@ interface TransactionFormState {
  */
 interface FundTransactionFormProps<RequestPayload> {
   readonly formRef: RefObject<HTMLDivElement | null>;
-  readonly funds: Fund[];
+  readonly funds: FundWithBalance[];
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
   readonly setAccountingPeriod?: Dispatch<

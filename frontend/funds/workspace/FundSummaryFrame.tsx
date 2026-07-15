@@ -4,14 +4,14 @@ import type { JSX, ReactNode } from "react";
 import { Box } from "@mui/material";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import Frame from "@/framework/view/Frame";
-import type { Fund } from "@/funds/types";
+import type { FundWithBalance } from "@/funds/types";
 import StringEntryField from "@/framework/forms/StringEntryField";
 
 /**
  * Props for the FundSummaryFrame component.
  */
 interface FundSummaryFrameProps {
-  readonly fund: Fund;
+  readonly fund: FundWithBalance;
   readonly headerContent?: ReactNode;
 }
 
@@ -24,8 +24,8 @@ const FundSummaryFrame = function ({
 }: FundSummaryFrameProps): JSX.Element {
   const balanceIncludingPending =
     fund.currentBalance.postedBalance +
-    fund.currentBalance.pendingAmountAssigned -
-    fund.currentBalance.pendingAmountSpent;
+    fund.currentBalance.pendingCreditAmount -
+    fund.currentBalance.pendingDebitAmount;
 
   return (
     <Box sx={{ maxWidth: 1200, width: "100%" }}>

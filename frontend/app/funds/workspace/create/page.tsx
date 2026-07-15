@@ -28,27 +28,20 @@ const FundWorkspaceCreatePage = async function ({
   const workspaceUrl = routes.workspace(workspaceSearchParams);
   const apiClient = getApiClient();
 
-  const [{ data: accountingPeriods }, { data: openAccountingPeriods }] =
-    await Promise.all([
-      apiClient.GET("/accounting-periods", {
-        params: {
-          query: {
-            Limit: 1,
-          },
-        },
-      }),
-      apiClient.GET("/accounting-periods/open"),
-    ]);
+  const { data: accountingPeriods } = await apiClient.GET(
+    "/accounting-periods",
+    { params: { query: { Limit: 500 } } },
+  );
 
   if (typeof accountingPeriods === "undefined") {
     throw new Error("Failed to fetch accounting periods");
   }
-  if (typeof openAccountingPeriods === "undefined") {
-    throw new Error("Failed to fetch open accounting periods");
-  }
   if (accountingPeriods.items.length === 0) {
     redirect(workspaceUrl);
   }
+  const openAccountingPeriods = accountingPeriods.items.filter(
+    (period) => period.isOpen,
+  );
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>

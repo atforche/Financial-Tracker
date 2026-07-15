@@ -1,4 +1,7 @@
-import type { Account, AccountIdentifier } from "@/accounts/types";
+import type {
+  AccountIdentifier,
+  AccountWithBalance,
+} from "@/accounts/types";
 import { Box, Stack, Typography } from "@mui/material";
 import type {
   Transaction,
@@ -12,7 +15,7 @@ import TransactionAccountFrame from "@/transactions/workspace/TransactionAccount
  * Props for the TransactionAccountOrLocationFrame component.
  */
 interface TransactionAccountOrLocationFrameProps {
-  readonly accounts: Account[];
+  readonly accounts: AccountWithBalance[];
   readonly transaction?: Transaction | null;
   readonly account: TransactionAccountDraft | null;
   readonly setAccount:

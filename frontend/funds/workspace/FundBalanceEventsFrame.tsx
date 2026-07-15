@@ -1,10 +1,8 @@
 "use client";
 
 import { Box, Button } from "@mui/material";
-import {
-  FundTrendsBalanceEventType,
-  type FundWorkspaceBalanceEvent,
-} from "@/funds/types";
+import type { FundWorkspaceBalanceEvent } from "@/funds/types";
+import { BalanceEventTypeModel } from "@/framework/data/api";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import Frame from "@/framework/view/Frame";
@@ -58,13 +56,13 @@ const FundBalanceEventsFrame = function ({
           component="span"
           sx={{
             color:
-              balanceEvent.type === FundTrendsBalanceEventType.Debit
+              balanceEvent.type === BalanceEventTypeModel.Debit
                 ? "warning.dark"
                 : "info.dark",
             fontWeight: 600,
           }}
         >
-          {balanceEvent.type === FundTrendsBalanceEventType.Debit
+          {balanceEvent.type === BalanceEventTypeModel.Debit
             ? "Debit"
             : "Credit"}
         </Box>
@@ -82,14 +80,15 @@ const FundBalanceEventsFrame = function ({
       name: "before",
       headerContent: "Balance Before",
       getBodyContent: (balanceEvent) =>
-        formatCurrency(balanceEvent.previousBalance),
+        formatCurrency(balanceEvent.previousBalance.postedBalance),
       alignment: "right",
       minWidth: 150,
     },
     {
       name: "after",
       headerContent: "Balance After",
-      getBodyContent: (balanceEvent) => formatCurrency(balanceEvent.newBalance),
+      getBodyContent: (balanceEvent) =>
+        formatCurrency(balanceEvent.newBalance.postedBalance),
       alignment: "right",
       minWidth: 150,
     },

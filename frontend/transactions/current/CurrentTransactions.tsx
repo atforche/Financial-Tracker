@@ -1,7 +1,8 @@
 import { Button, Stack } from "@mui/material";
 import type {
-  CurrentTransactions as CurrentTransactionsModel,
-  TransactionSortOrder,
+  Transaction,
+  TransactionSortValue,
+  TransactionSummaryByType,
   TransactionType,
 } from "@/transactions/transaction";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
@@ -25,6 +26,11 @@ import getApiClient from "@/framework/data/getApiClient";
 import routes from "@/transactions/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParam } from "@/framework/routes/helpers";
+import {
+  getPostableTransactionAccounts,
+  getTransactionAccountIds,
+  getTransactionFundIds,
+} from "@/transactions/postingHelpers";
 
 /**
  * Search parameters for the CurrentTransactions component.
@@ -33,9 +39,9 @@ interface CurrentTransactionsSearchParams {
   transactionType?: TransactionType | readonly TransactionType[];
   accountName?: string | readonly string[];
   fundName?: string | readonly string[];
-  unpostedTransactionSort?: TransactionSortOrder;
+  unpostedTransactionSort?: TransactionSortValue;
   unpostedTransactionPage?: number | string | null;
-  postedTransactionSort?: TransactionSortOrder;
+  postedTransactionSort?: TransactionSortValue;
   postedTransactionPage?: number | string | null;
 }
 
@@ -46,23 +52,20 @@ interface CurrentTransactionsProps {
   readonly searchParams: Promise<CurrentTransactionsSearchParams>;
 }
 
-const createEmptyCurrent = function (): CurrentTransactionsModel {
-  return {
-    accountingPeriodId: null,
-    accountingPeriodName: null,
-    availableAccountNames: [],
-    availableFundNames: [],
-    transactionTypes: [],
-    unpostedTransactions: {
-      items: [],
-      totalCount: 0,
-    },
-    postedTransactions: {
-      items: [],
-      totalCount: 0,
-    },
-  };
-};
+interface CurrentTransactionCollection {
+  readonly items: Transaction[];
+  readonly totalCount: number;
+}
+
+interface CurrentTransactionData {
+  readonly accountingPeriodId: string | null;
+  readonly accountingPeriodName: string | null;
+  readonly availableAccountNames: string[];
+  readonly availableFundNames: string[];
+  readonly transactionTypes: TransactionSummaryByType[];
+  readonly unpostedTransactions: CurrentTransactionCollection;
+  readonly postedTransactions: CurrentTransactionCollection;
+}
 
 /**
  * Component that displays the current Transactions snapshot.
@@ -91,38 +94,112 @@ const CurrentTransactions = async function ({
   );
 
   const apiClient = getApiClient();
-  const current: CurrentTransactionsModel =
-    (
-      await apiClient.GET("/transactions/current", {
+  const [{ data: periods }, { data: accounts }, { data: funds }] =
+    await Promise.all([
+      apiClient.GET("/accounting-periods", {
+        params: { query: { Sort: "DateDescending", Limit: 500 } },
+      }),
+      apiClient.GET("/accounts"),
+      apiClient.GET("/funds"),
+    ]);
+  const accountingPeriod = periods?.items.find((period) => period.isOpen);
+  const availableAccountNames = accounts?.items.map((account) => account.name) ?? [];
+  const availableFundNames = funds?.items.map((fund) => fund.name) ?? [];
+  let current: CurrentTransactionData = {
+    accountingPeriodId: accountingPeriod?.id ?? null,
+    accountingPeriodName: accountingPeriod?.name ?? null,
+    availableAccountNames,
+    availableFundNames,
+    transactionTypes: [],
+    unpostedTransactions: { items: [], totalCount: 0 },
+    postedTransactions: { items: [], totalCount: 0 },
+  };
+
+  if (typeof accountingPeriod !== "undefined") {
+    const [{ data: unpostedData }, { data: postedData }] = await Promise.all([
+      apiClient.GET("/transactions/accounting-period-range", {
         params: {
           query: {
-            ...(shouldPersistTransactionTypes(currentTransactionTypes)
-              ? { TransactionType: [...currentTransactionTypes] }
-              : {}),
-            ...(shouldPersistAccountNames(currentAccountNames)
-              ? { AccountName: [...currentAccountNames] }
-              : {}),
-            ...(shouldPersistFundNames(currentFundNames)
-              ? { FundName: [...currentFundNames] }
-              : {}),
+            "Range.Start": accountingPeriod.id,
+            "Range.End": accountingPeriod.id,
+            "Filter.AccountingPeriodIds": [accountingPeriod.id],
             ...(typeof unpostedTransactionSort === "string"
-              ? { UnpostedTransactionSort: unpostedTransactionSort }
+              ? { Sort: unpostedTransactionSort }
               : {}),
-            UnpostedTransactionLimit: rowsPerPage,
-            UnpostedTransactionOffset: getPageOffset(
-              normalizePageValue(unpostedTransactionPage),
-            ),
-            ...(typeof postedTransactionSort === "string"
-              ? { PostedTransactionSort: postedTransactionSort }
-              : {}),
-            PostedTransactionLimit: rowsPerPage,
-            PostedTransactionOffset: getPageOffset(
-              normalizePageValue(postedTransactionPage),
-            ),
           },
         },
-      })
-    ).data ?? createEmptyCurrent();
+      }),
+      apiClient.GET("/transactions/accounting-period-range", {
+        params: {
+          query: {
+            "Range.Start": accountingPeriod.id,
+            "Range.End": accountingPeriod.id,
+            "Filter.AccountingPeriodIds": [accountingPeriod.id],
+            ...(typeof postedTransactionSort === "string"
+              ? { Sort: postedTransactionSort }
+              : {}),
+          },
+        },
+      }),
+    ]);
+    if (
+      typeof unpostedData !== "undefined" &&
+      typeof postedData !== "undefined"
+    ) {
+      const accountIds = new Set(
+        accounts?.items
+          .filter((account) => currentAccountNames.includes(account.name))
+          .map((account) => account.id) ?? [],
+      );
+      const fundIds = new Set(
+        funds?.items
+          .filter((fund) => currentFundNames.includes(fund.name))
+          .map((fund) => fund.id) ?? [],
+      );
+      const filterTransactions = function (
+        transactions: Transaction[],
+      ): Transaction[] {
+        return transactions.filter((transaction) => {
+        if (
+          shouldPersistTransactionTypes(currentTransactionTypes) &&
+          !currentTransactionTypes.includes(transaction.transactionType)
+        ) {
+          return false;
+        }
+        if (
+          shouldPersistAccountNames(currentAccountNames) &&
+          !getTransactionAccountIds(transaction).some((id) => accountIds.has(id))
+        ) {
+          return false;
+        }
+        return !shouldPersistFundNames(currentFundNames) ||
+          getTransactionFundIds(transaction).some((id) => fundIds.has(id));
+        });
+      };
+      const unposted = filterTransactions(unpostedData.transactions.items).filter(
+        (transaction) => getPostableTransactionAccounts(transaction).length > 0,
+      );
+      const posted = filterTransactions(postedData.transactions.items).filter(
+        (transaction) => getPostableTransactionAccounts(transaction).length === 0,
+      );
+      const unpostedOffset = getPageOffset(
+        normalizePageValue(unpostedTransactionPage),
+      );
+      const postedOffset = getPageOffset(normalizePageValue(postedTransactionPage));
+      current = {
+        ...current,
+        transactionTypes: unpostedData.transactionTypes,
+        unpostedTransactions: {
+          items: unposted.slice(unpostedOffset, unpostedOffset + rowsPerPage),
+          totalCount: unposted.length,
+        },
+        postedTransactions: {
+          items: posted.slice(postedOffset, postedOffset + rowsPerPage),
+          totalCount: posted.length,
+        },
+      };
+    }
+  }
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
@@ -132,7 +209,9 @@ const CurrentTransactions = async function ({
           availableFundNames={current.availableFundNames}
         />
       </Stack>
-      <CurrentTransactionsByTypeCard current={current} />
+      <CurrentTransactionsByTypeCard
+        transactionTypes={current.transactionTypes}
+      />
       <CurrentTransactionListFrame
         title="Needs Posting"
         description={

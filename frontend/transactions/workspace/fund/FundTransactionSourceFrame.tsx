@@ -1,4 +1,4 @@
-import type { Fund, FundIdentifier } from "@/funds/types";
+import type { FundIdentifier, FundWithBalance } from "@/funds/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
 import type { JSX } from "react";
@@ -10,7 +10,7 @@ import TransactionSourceOrDestinationFrame from "@/transactions/workspace/Transa
  * Props for the FundTransactionSourceFrame component.
  */
 interface FundTransactionSourceFrameProps {
-  readonly funds: Fund[];
+  readonly funds: FundWithBalance[];
   readonly fund: TransactionFundDraft | null;
   readonly setFund: ((fund: TransactionFundDraft | null) => void) | null;
   readonly filter?: ((fund: FundIdentifier) => boolean) | null;

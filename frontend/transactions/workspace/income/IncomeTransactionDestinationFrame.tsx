@@ -1,4 +1,7 @@
-import type { Account, AccountIdentifier } from "@/accounts/types";
+import type {
+  AccountIdentifier,
+  AccountWithBalance,
+} from "@/accounts/types";
 import type {
   Transaction,
   TransactionAccountDraft,
@@ -6,7 +9,7 @@ import type {
 import type { AssignmentGoal } from "@/goals/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
-import type { Fund } from "@/funds/types";
+import type { FundWithBalance } from "@/funds/types";
 import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 import IncomeFundAssignmentPlanner from "@/funds/assignmentPlanner/IncomeFundAssignmentPlanner";
 import type { JSX } from "react";
@@ -20,8 +23,8 @@ const emptyFundAmounts: FundAssignmentDraft[] = [];
  */
 interface IncomeTransactionDestinationFrameProps {
   readonly index: number;
-  readonly accounts: Account[];
-  readonly funds: Fund[];
+  readonly accounts: AccountWithBalance[];
+  readonly funds: FundWithBalance[];
   readonly assignmentGoals: AssignmentGoal[];
   readonly transaction?: Transaction | null;
   readonly account: TransactionAccountDraft | null;

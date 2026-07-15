@@ -1,6 +1,9 @@
 "use client";
 
-import type { Account, AccountIdentifier } from "@/accounts/types";
+import type {
+  AccountIdentifier,
+  AccountWithBalance,
+} from "@/accounts/types";
 import { Button, Stack, Typography } from "@mui/material";
 import {
   type JSX,
@@ -30,7 +33,7 @@ import postTransaction from "@/transactions/workspace/postTransaction";
  * Props for the TransactionAccountFrame component.
  */
 interface TransactionAccountFrameProps {
-  readonly accounts?: Account[];
+  readonly accounts?: AccountWithBalance[];
   readonly transaction?: Transaction | null;
   readonly account: TransactionAccountDraft | null;
   readonly setAccount?:
@@ -40,7 +43,7 @@ interface TransactionAccountFrameProps {
   readonly balanceChange?: number | null;
 }
 
-const emptyAccounts: Account[] = [];
+const emptyAccounts: AccountWithBalance[] = [];
 
 /**
  * Displays a transaction account and, when applicable, its posting controls.

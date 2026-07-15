@@ -20,11 +20,11 @@ import {
   appendDestinationWithAutofilledAmount,
   syncDestinationAmountsToSource,
 } from "@/transactions/workspace/helpers";
-import type { Account } from "@/accounts/types";
+import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { AssignmentGoal } from "@/goals/types";
 import type { Dayjs } from "dayjs";
-import type { Fund } from "@/funds/types";
+import type { FundWithBalance } from "@/funds/types";
 import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFrame";
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
 import type { TransactionAccountDraft } from "@/transactions/transaction";
@@ -45,8 +45,8 @@ interface TransactionFormState {
  */
 interface IncomeTransactionFormProps<RequestPayload> {
   readonly formRef: RefObject<HTMLDivElement | null>;
-  readonly accounts: Account[];
-  readonly funds: Fund[];
+  readonly accounts: AccountWithBalance[];
+  readonly funds: FundWithBalance[];
   readonly assignmentGoals: AssignmentGoal[];
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
@@ -100,7 +100,7 @@ const IncomeTransactionForm = function <RequestPayload>({
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
   const currentAssignmentGoals = assignmentGoals.filter(
-    (goal) => goal.accountingPeriodId === accountingPeriod?.id,
+    (goal) => goal.accountingPeriod?.id === accountingPeriod?.id,
   );
   const sourceNetAmount = getNetIncomeAmount(source);
   const destinationTotal = destinations.reduce(

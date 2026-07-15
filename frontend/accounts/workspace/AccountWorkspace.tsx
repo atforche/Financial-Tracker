@@ -49,32 +49,32 @@ const AccountWorkspace = async function ({
       },
     },
   });
-  const openAccountingPeriodsPromise = apiClient.GET(
-    "/accounting-periods/open",
-  );
-  const accountsPromise = apiClient.GET("/accounts", {
+  const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
+    params: { query: { Limit: 500 } },
+  });
+  const accountsPromise = apiClient.GET("/accounts/with-balances", {
     params: {
       query: {
-        Search: search ?? "",
+        "Filter.NameSearch": search ?? "",
       },
     },
   });
 
   const [
     { data: accountingPeriod },
-    { data: openAccountingPeriods },
+    { data: accountingPeriods },
     { data: accounts },
   ] = await Promise.all([
     anyAccountingPeriodsPromise,
-    openAccountingPeriodsPromise,
+    accountingPeriodsPromise,
     accountsPromise,
   ]);
 
   if (typeof accountingPeriod === "undefined") {
     throw new Error("Failed to fetch accounting periods");
   }
-  if (typeof openAccountingPeriods === "undefined") {
-    throw new Error("Failed to fetch open accounting periods");
+  if (typeof accountingPeriods === "undefined") {
+    throw new Error("Failed to fetch accounting periods");
   }
   if (typeof accounts === "undefined") {
     throw new Error("Failed to fetch accounts");
@@ -86,6 +86,9 @@ const AccountWorkspace = async function ({
       )
     : accounts.items;
   const isInOnboardingMode = accountingPeriod.items.length === 0;
+  const openAccountingPeriods = accountingPeriods.items.filter(
+    (period) => period.isOpen,
+  );
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>

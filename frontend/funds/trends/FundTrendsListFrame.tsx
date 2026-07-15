@@ -8,7 +8,11 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { type FundTrendsFund, FundTrendsSortOrder } from "@/funds/types";
+import {
+  type FundWithBalanceRange,
+  FundWithBalanceRangeSort,
+  type FundWithBalanceRangeSortValue,
+} from "@/funds/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -24,7 +28,7 @@ import tryParseEnum from "@/framework/data/tryParseEnum";
  * Props for the FundTrendsListFrame component.
  */
 interface FundTrendsListFrameProps {
-  readonly data: FundTrendsFund[] | null;
+  readonly data: FundWithBalanceRange[] | null;
   readonly totalCount: number | null;
   readonly isInOnboardingMode: boolean;
 }
@@ -50,7 +54,7 @@ const FundTrendsListFrame = function ({
   const startDateParamName = "startDate";
   const endDateParamName = "endDate";
 
-  const setSort = function (sort: FundTrendsSortOrder | null): void {
+  const setSort = function (sort: FundWithBalanceRangeSortValue | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
       params.delete(sortParamName);
@@ -69,12 +73,12 @@ const FundTrendsListFrame = function ({
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const openFundWorkspace = function (fund: FundTrendsFund): void {
+  const openFundWorkspace = function (fund: FundWithBalanceRange): void {
     router.push(routes.workspaceDetail(fund.id, {}));
   };
 
   const currentSort = tryParseEnum(
-    FundTrendsSortOrder,
+    FundWithBalanceRangeSort,
     searchParams.get(sortParamName) ?? "",
   );
   const hasActiveFilters =
@@ -85,22 +89,22 @@ const FundTrendsListFrame = function ({
     searchParams.has(startDateParamName) ||
     searchParams.has(endDateParamName);
 
-  const columns: ColumnDefinition<FundTrendsFund>[] = [
+  const columns: ColumnDefinition<FundWithBalanceRange>[] = [
     {
       name: "name",
       headerContent: "Name",
       getBodyContent: (fund) => fund.name,
       sortType:
-        currentSort === FundTrendsSortOrder.Name
+        currentSort === FundWithBalanceRangeSort.Name
           ? ColumnSortType.Ascending
-          : currentSort === FundTrendsSortOrder.NameDescending
+          : currentSort === FundWithBalanceRangeSort.NameDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(FundTrendsSortOrder.Name);
+          setSort(FundWithBalanceRangeSort.Name);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(FundTrendsSortOrder.NameDescending);
+          setSort(FundWithBalanceRangeSort.NameDescending);
         } else {
           setSort(null);
         }
@@ -111,16 +115,16 @@ const FundTrendsListFrame = function ({
       headerContent: "Starting Balance",
       getBodyContent: (fund) => formatCurrency(fund.startingBalance),
       sortType:
-        currentSort === FundTrendsSortOrder.OpeningBalance
+        currentSort === FundWithBalanceRangeSort.StartingBalance
           ? ColumnSortType.Ascending
-          : currentSort === FundTrendsSortOrder.OpeningBalanceDescending
+          : currentSort === FundWithBalanceRangeSort.StartingBalanceDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(FundTrendsSortOrder.OpeningBalance);
+          setSort(FundWithBalanceRangeSort.StartingBalance);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(FundTrendsSortOrder.OpeningBalanceDescending);
+          setSort(FundWithBalanceRangeSort.StartingBalanceDescending);
         } else {
           setSort(null);
         }
@@ -133,16 +137,16 @@ const FundTrendsListFrame = function ({
       headerContent: "Ending Balance",
       getBodyContent: (fund) => formatCurrency(fund.endingBalance),
       sortType:
-        currentSort === FundTrendsSortOrder.ClosingBalance
+        currentSort === FundWithBalanceRangeSort.EndingBalance
           ? ColumnSortType.Ascending
-          : currentSort === FundTrendsSortOrder.ClosingBalanceDescending
+          : currentSort === FundWithBalanceRangeSort.EndingBalanceDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(FundTrendsSortOrder.ClosingBalance);
+          setSort(FundWithBalanceRangeSort.EndingBalance);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(FundTrendsSortOrder.ClosingBalanceDescending);
+          setSort(FundWithBalanceRangeSort.EndingBalanceDescending);
         } else {
           setSort(null);
         }
@@ -169,16 +173,16 @@ const FundTrendsListFrame = function ({
         );
       },
       sortType:
-        currentSort === FundTrendsSortOrder.NetChange
+        currentSort === FundWithBalanceRangeSort.NetChange
           ? ColumnSortType.Ascending
-          : currentSort === FundTrendsSortOrder.NetChangeDescending
+          : currentSort === FundWithBalanceRangeSort.NetChangeDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(FundTrendsSortOrder.NetChange);
+          setSort(FundWithBalanceRangeSort.NetChange);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(FundTrendsSortOrder.NetChangeDescending);
+          setSort(FundWithBalanceRangeSort.NetChangeDescending);
         } else {
           setSort(null);
         }
@@ -231,14 +235,14 @@ const FundTrendsListFrame = function ({
     >
       <Stack spacing={2.5}>
         <Typography variant="h5">Funds</Typography>
-        <ListFrame<FundTrendsFund>
+        <ListFrame<FundWithBalanceRange>
           columns={columns}
           getId={(fund) => fund.id}
           data={data ?? null}
           totalCount={totalCount ?? null}
           searchParamName="search"
           pageParamName={pageParamName}
-          onRowClick={(fund: FundTrendsFund): void => {
+          onRowClick={(fund: FundWithBalanceRange): void => {
             setFundNameFilter(fund.name);
           }}
           hasActiveFilters={hasActiveFilters}

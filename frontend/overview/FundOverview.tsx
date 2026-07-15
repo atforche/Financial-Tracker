@@ -33,7 +33,7 @@ const FundOverview = function ({ data }: FundOverviewProps): JSX.Element {
         <Stack spacing={1} sx={{ pt: 0.5 }}>
           <Stack direction="row" justifyContent="space-between">
             <Typography variant="h4">
-              {formatCurrency(data.fundSummary.totalTrackedBalance)}
+              {formatCurrency(data.fundSummary.totalBalance)}
             </Typography>
             <IconButton
               size="small"

@@ -1,4 +1,4 @@
-import type { Fund, FundIdentifier } from "@/funds/types";
+import type { FundIdentifier, FundWithBalance } from "@/funds/types";
 import type {
   TransactionFund,
   TransactionFundDraft,
@@ -33,7 +33,7 @@ const setTransactionFundDraftBalanceChange = function (
  * Creates a transaction fund draft from a fund and balance delta.
  */
 const createTransactionFundDraftFromFund = function (
-  fund: Fund,
+  fund: FundWithBalance,
   balanceChange = 0,
 ): TransactionFundDraft {
   const previousPostedBalance = fund.currentBalance.postedBalance;
@@ -55,10 +55,10 @@ const getTransactionFundDraftFromTransactionFund = function (
     return null;
   }
   return {
-    fundId: fund.fundId,
-    fundName: fund.fundName,
-    previousFundBalance: fund.previousFundBalance.postedBalance,
-    newFundBalance: fund.newFundBalance.postedBalance,
+    fundId: fund.fund.id,
+    fundName: fund.fund.name,
+    previousFundBalance: fund.previousBalance.postedBalance,
+    newFundBalance: fund.newBalance.postedBalance,
   };
 };
 
@@ -66,7 +66,7 @@ const getTransactionFundDraftFromTransactionFund = function (
  * Resolves the next selected transaction fund draft from a fund picker value.
  */
 const getSelectedTransactionFundDraft = function (
-  funds: Fund[],
+  funds: FundWithBalance[],
   nextValue: FundIdentifier | null,
   currentFund: TransactionFundDraft | null,
   balanceChange?: number | null,

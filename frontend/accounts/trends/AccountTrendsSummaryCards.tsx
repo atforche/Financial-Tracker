@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  type AccountTrends,
-  AccountTrendsMode,
+  type AccountBalanceSummaryByDate,
+  type AccountBalanceSummaryByPeriod,
   type AccountType,
   type AccountTypeBalance,
   formatAccountType,
@@ -23,7 +23,9 @@ import formatCurrency from "@/framework/formatCurrency";
 import formatShortDate from "@/framework/formatShortDate";
 
 interface AccountTrendsSummaryCardsProps {
-  readonly trends: AccountTrends;
+  readonly mode: "AccountingPeriod" | "Date";
+  readonly accountingPeriods: AccountBalanceSummaryByPeriod[];
+  readonly dates: AccountBalanceSummaryByDate[];
 }
 
 /**
@@ -63,15 +65,17 @@ interface BalanceBreakdownSectionProps {
   readonly onToggle: () => void;
 }
 
-const getTrendsSnapshot = function (trends: AccountTrends): TrendsSnapshot {
+const getTrendsSnapshot = function ({
+  mode,
+  accountingPeriods,
+  dates,
+}: AccountTrendsSummaryCardsProps): TrendsSnapshot {
   if (
-    trends.mode === AccountTrendsMode.AccountingPeriod &&
-    typeof trends.accountingPeriods !== "undefined" &&
-    trends.accountingPeriods !== null &&
-    trends.accountingPeriods.length > 0
+    mode === "AccountingPeriod" &&
+    accountingPeriods.length > 0
   ) {
-    const firstPeriod = trends.accountingPeriods.at(0);
-    const lastPeriod = trends.accountingPeriods.at(-1);
+    const firstPeriod = accountingPeriods.at(0);
+    const lastPeriod = accountingPeriods.at(-1);
     if (
       typeof firstPeriod === "undefined" ||
       typeof lastPeriod === "undefined"
@@ -90,20 +94,19 @@ const getTrendsSnapshot = function (trends: AccountTrends): TrendsSnapshot {
       };
     }
     return {
-      startLabel: firstPeriod.accountingPeriodName,
-      endLabel: lastPeriod.accountingPeriodName,
-      totalStartingBalance: firstPeriod.totalOpeningBalance,
-      totalEndingBalance: lastPeriod.totalClosingBalance,
-      trackedStartingBalance: firstPeriod.trackedOpeningBalance,
-      trackedEndingBalance: lastPeriod.trackedClosingBalance,
-      untrackedStartingBalance: firstPeriod.untrackedOpeningBalance,
-      untrackedEndingBalance: lastPeriod.untrackedClosingBalance,
-      startingBalancesByType: firstPeriod.openingBalanceByAccountType,
-      endingBalancesByType: lastPeriod.closingBalanceByAccountType,
+      startLabel: firstPeriod.accountingPeriod.name,
+      endLabel: lastPeriod.accountingPeriod.name,
+      totalStartingBalance: firstPeriod.openingBalance.totalBalance,
+      totalEndingBalance: lastPeriod.closingBalance.totalBalance,
+      trackedStartingBalance: firstPeriod.openingBalance.totalTrackedBalance,
+      trackedEndingBalance: lastPeriod.closingBalance.totalTrackedBalance,
+      untrackedStartingBalance: firstPeriod.openingBalance.totalUntrackedBalance,
+      untrackedEndingBalance: lastPeriod.closingBalance.totalUntrackedBalance,
+      startingBalancesByType: firstPeriod.openingBalance.balanceByAccountType,
+      endingBalancesByType: lastPeriod.closingBalance.balanceByAccountType,
     };
   }
 
-  const dates = trends.dates ?? [];
   const firstDate = dates.at(0);
   const lastDate = dates.at(-1);
 
@@ -116,10 +119,10 @@ const getTrendsSnapshot = function (trends: AccountTrends): TrendsSnapshot {
       : "End",
     totalStartingBalance: firstDate?.totalBalance ?? 0,
     totalEndingBalance: lastDate?.totalBalance ?? 0,
-    trackedStartingBalance: firstDate?.trackedBalance ?? 0,
-    trackedEndingBalance: lastDate?.trackedBalance ?? 0,
-    untrackedStartingBalance: firstDate?.untrackedBalance ?? 0,
-    untrackedEndingBalance: lastDate?.untrackedBalance ?? 0,
+    trackedStartingBalance: firstDate?.totalTrackedBalance ?? 0,
+    trackedEndingBalance: lastDate?.totalTrackedBalance ?? 0,
+    untrackedStartingBalance: firstDate?.totalUntrackedBalance ?? 0,
+    untrackedEndingBalance: lastDate?.totalUntrackedBalance ?? 0,
     startingBalancesByType: firstDate?.balanceByAccountType ?? [],
     endingBalancesByType: lastDate?.balanceByAccountType ?? [],
   };
@@ -287,9 +290,11 @@ const toBalanceBreakdownDetailRows = function (
  * Displays the top-level account balance summary cards with synchronized details.
  */
 const AccountTrendsSummaryCards = function ({
-  trends,
+  mode,
+  accountingPeriods,
+  dates,
 }: AccountTrendsSummaryCardsProps): JSX.Element {
-  const snapshot = getTrendsSnapshot(trends);
+  const snapshot = getTrendsSnapshot({ mode, accountingPeriods, dates });
 
   const [expanded, setExpanded] = useState(false);
   const [trackedTypesExpanded, setTrackedTypesExpanded] = useState(false);

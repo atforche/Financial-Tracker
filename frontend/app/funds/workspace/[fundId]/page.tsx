@@ -1,7 +1,6 @@
 import { Button, Stack, Typography } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import ArrowBack from "@mui/icons-material/ArrowBack";
-import type { FundWorkspaceBalanceEvent } from "@/funds/types";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { JSX } from "react";
 import Link from "next/link";
@@ -11,6 +10,7 @@ import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 import transactionRoutes from "@/transactions/routes";
+import { getTransactionFundBalanceEvents } from "@/transactions/postingHelpers";
 
 /**
  * Props for the FundWorkspaceDetailPage component.
@@ -32,9 +32,13 @@ const FundWorkspaceDetailPage = async function ({
   const { search, balanceEventPage } = resolvedSearchParams;
   const apiClient = getApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
-  const { data: fund } = await apiClient.GET("/funds/{fundId}", {
-    params: { path: { fundId } },
-  });
+  const [{ data: funds }, { data: transactions }] = await Promise.all([
+    apiClient.GET("/funds/with-balances"),
+    apiClient.GET("/transactions", {
+      params: { query: { "Filter.FundIds": [fundId] } },
+    }),
+  ]);
+  const fund = funds?.items.find((item) => item.id === fundId);
 
   const workspaceSearchParams: FundWorkspaceSearchParams = {
     ...(typeof search !== "undefined" ? { search } : {}),
@@ -49,17 +53,14 @@ const FundWorkspaceDetailPage = async function ({
     redirect(workspaceUrl);
   }
 
-  const { data: balanceEvents } = await apiClient.GET(
-    "/funds/{fundId}/balance-events",
-    {
-      params: {
-        path: { fundId: fund.id },
-        query: {
-          Limit: rowsPerPage,
-          Offset: getPageOffset(currentBalanceEventPage),
-        },
-      },
-    },
+  const allBalanceEvents =
+    transactions?.items
+      .flatMap(getTransactionFundBalanceEvents)
+      .filter((event) => event.fund.id === fund.id) ?? [];
+  const balanceEventOffset = getPageOffset(currentBalanceEventPage);
+  const balanceEvents = allBalanceEvents.slice(
+    balanceEventOffset,
+    balanceEventOffset + rowsPerPage,
   );
 
   const currentUrl = routes.workspaceDetail(fund.id, detailSearchParams);
@@ -85,9 +86,9 @@ const FundWorkspaceDetailPage = async function ({
         fund={fund}
         redirectUrl={currentUrl}
         recentBalanceEvents={
-          balanceEvents?.items ?? ([] as FundWorkspaceBalanceEvent[])
+          balanceEvents
         }
-        recentBalanceEventCount={balanceEvents?.totalCount ?? 0}
+        recentBalanceEventCount={allBalanceEvents.length}
         addTransactionHref={addTransactionHref}
       />
     </Stack>

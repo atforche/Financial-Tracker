@@ -156,7 +156,7 @@ const getIncomeGoalRemainingAmount = function (
   baselineFundAssignments: readonly FundAssignmentDraft[],
 ): number | null {
   const goal = assignmentGoals.find(
-    (assignmentGoal) => assignmentGoal.fundId === fundId,
+    (assignmentGoal) => assignmentGoal.fund.id === fundId,
   );
   return getGoalRemainingAmount(
     goal?.remainingAmountToAssignIncludingPending,
@@ -174,7 +174,7 @@ const getSpendingGoalRemainingAmount = function (
   baselineFundAssignments: readonly FundAssignmentDraft[],
 ): number | null {
   const goal = spendingGoals.find(
-    (spendingGoal) => spendingGoal.fundId === fundId,
+    (spendingGoal) => spendingGoal.fund.id === fundId,
   );
   return getGoalRemainingAmount(
     goal?.remainingAmountToSpendIncludingPending,

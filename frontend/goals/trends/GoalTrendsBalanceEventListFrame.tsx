@@ -2,7 +2,7 @@
 
 import { Button, IconButton, Paper, Stack, Typography } from "@mui/material";
 import {
-  type GoalTrendsBalanceEvent,
+  type GoalBalanceEvent,
   type GoalTrendsView,
   defaultGoalTrendsView,
 } from "@/goals/trends/goalTrendsTypes";
@@ -10,7 +10,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
-import { GoalTrendsBalanceEventSortOrder } from "@/goals/types";
+import { GoalBalanceEventSort } from "@/goals/types";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
@@ -23,7 +23,7 @@ import tryParseEnum from "@/framework/data/tryParseEnum";
  */
 interface GoalTrendsBalanceEventListFrameProps {
   readonly view: GoalTrendsView;
-  readonly data: GoalTrendsBalanceEvent[] | null;
+  readonly data: GoalBalanceEvent[] | null;
   readonly totalCount: number | null;
 }
 
@@ -58,7 +58,7 @@ const GoalTrendsBalanceEventListFrame = function ({
   const endAccountingPeriodIdParamName = "endAccountingPeriodId";
 
   const setSort = function (
-    sort: GoalTrendsBalanceEventSortOrder | null,
+    sort: string | null,
   ): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
@@ -71,17 +71,17 @@ const GoalTrendsBalanceEventListFrame = function ({
   };
 
   const currentSort = tryParseEnum(
-    GoalTrendsBalanceEventSortOrder,
+    GoalBalanceEventSort,
     searchParams.get(sortParamName) ?? "",
   );
 
   const openTransactionWorkspace = function (
-    balanceEvent: GoalTrendsBalanceEvent,
+    balanceEvent: GoalBalanceEvent,
   ): void {
     router.push(
       routes.workspace({
-        accountingPeriodIds: [balanceEvent.accountingPeriodId],
-        fundIds: [balanceEvent.fundId],
+        accountingPeriodIds: [balanceEvent.accountingPeriod.id],
+        fundIds: [balanceEvent.fund.id],
         selectedTransactionId: balanceEvent.transactionId,
       }),
     );
@@ -93,22 +93,22 @@ const GoalTrendsBalanceEventListFrame = function ({
     searchParams.has(startAccountingPeriodIdParamName) ||
     searchParams.has(endAccountingPeriodIdParamName);
 
-  const columns: ColumnDefinition<GoalTrendsBalanceEvent>[] = [
+  const columns: ColumnDefinition<GoalBalanceEvent>[] = [
     {
       name: "fundName",
       headerContent: "Fund",
-      getBodyContent: (balanceEvent) => balanceEvent.fundName,
+      getBodyContent: (balanceEvent) => balanceEvent.fund.name,
       sortType:
-        currentSort === GoalTrendsBalanceEventSortOrder.FundName
+        currentSort === GoalBalanceEventSort.Fund
           ? ColumnSortType.Ascending
-          : currentSort === GoalTrendsBalanceEventSortOrder.FundNameDescending
+          : currentSort === GoalBalanceEventSort.FundDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(GoalTrendsBalanceEventSortOrder.FundName);
+          setSort(GoalBalanceEventSort.Fund);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(GoalTrendsBalanceEventSortOrder.FundNameDescending);
+          setSort(GoalBalanceEventSort.FundDescending);
         } else {
           setSort(null);
         }
@@ -118,20 +118,20 @@ const GoalTrendsBalanceEventListFrame = function ({
     {
       name: "accountingPeriodName",
       headerContent: "Accounting Period",
-      getBodyContent: (balanceEvent) => balanceEvent.accountingPeriodName,
+      getBodyContent: (balanceEvent) => balanceEvent.accountingPeriod.name,
       sortType:
-        currentSort === GoalTrendsBalanceEventSortOrder.AccountingPeriodName
+        currentSort === GoalBalanceEventSort.AccountingPeriod
           ? ColumnSortType.Ascending
           : currentSort ===
-              GoalTrendsBalanceEventSortOrder.AccountingPeriodNameDescending
+              GoalBalanceEventSort.AccountingPeriodDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(GoalTrendsBalanceEventSortOrder.AccountingPeriodName);
+          setSort(GoalBalanceEventSort.AccountingPeriod);
         } else if (sortType === ColumnSortType.Descending) {
           setSort(
-            GoalTrendsBalanceEventSortOrder.AccountingPeriodNameDescending,
+            GoalBalanceEventSort.AccountingPeriodDescending,
           );
         } else {
           setSort(null);
@@ -147,16 +147,16 @@ const GoalTrendsBalanceEventListFrame = function ({
           ? formatShortDate(new Date(`${balanceEvent.date}T00:00:00`))
           : "Pending",
       sortType:
-        currentSort === GoalTrendsBalanceEventSortOrder.Date
+        currentSort === GoalBalanceEventSort.Date
           ? ColumnSortType.Ascending
-          : currentSort === GoalTrendsBalanceEventSortOrder.DateDescending
+          : currentSort === GoalBalanceEventSort.DateDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(GoalTrendsBalanceEventSortOrder.Date);
+          setSort(GoalBalanceEventSort.Date);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(GoalTrendsBalanceEventSortOrder.DateDescending);
+          setSort(GoalBalanceEventSort.DateDescending);
         } else {
           setSort(null);
         }
@@ -168,16 +168,16 @@ const GoalTrendsBalanceEventListFrame = function ({
       headerContent: "Amount",
       getBodyContent: (balanceEvent) => formatCurrency(balanceEvent.amount),
       sortType:
-        currentSort === GoalTrendsBalanceEventSortOrder.Amount
+        currentSort === GoalBalanceEventSort.Amount
           ? ColumnSortType.Ascending
-          : currentSort === GoalTrendsBalanceEventSortOrder.AmountDescending
+          : currentSort === GoalBalanceEventSort.AmountDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(GoalTrendsBalanceEventSortOrder.Amount);
+          setSort(GoalBalanceEventSort.Amount);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(GoalTrendsBalanceEventSortOrder.AmountDescending);
+          setSort(GoalBalanceEventSort.AmountDescending);
         } else {
           setSort(null);
         }
@@ -219,7 +219,7 @@ const GoalTrendsBalanceEventListFrame = function ({
         <Typography variant="h5">
           {view === "assignment" ? "Assignment Events" : "Spending Events"}
         </Typography>
-        <ListFrame<GoalTrendsBalanceEvent>
+        <ListFrame<GoalBalanceEvent>
           columns={columns}
           getId={(balanceEvent) => balanceEvent.transactionId}
           data={data ?? null}

@@ -1,9 +1,6 @@
 import {
-  FundSortOrderModel,
-  FundTrendsBalanceEventSortOrderModel,
-  FundTrendsBalanceEventTypeModel,
-  FundTrendsModeModel,
-  FundTrendsSortOrderModel,
+  FundBalanceEventSortModel,
+  FundWithBalanceRangeSortModel,
   type components,
 } from "@/framework/data/api";
 
@@ -13,51 +10,47 @@ import {
 type Fund = components["schemas"]["FundModel"];
 
 /**
+ * Type representing a Fund along with its current balance.
+ */
+type FundWithBalance = components["schemas"]["FundWithBalanceModel"];
+
+/**
+ * Type representing a Fund with a balance range.
+ */
+type FundWithBalanceRange = components["schemas"]["FundWithBalanceRangeModel"];
+
+/**
  * Type representing Fund summary balances.
  */
-type FundSummary = components["schemas"]["FundSummaryModel"];
+type FundBalanceSummary = components["schemas"]["FundBalanceSummaryModel"];
+
+/**
+ * Type representing a Fund summary balance for a specific date.
+ */
+type FundBalanceSummaryByDate =
+  components["schemas"]["FundBalanceSummaryByDateModel"];
+
+/**
+ * Type representing a Fund summary balance for a specific accounting period.
+ */
+type FundBalanceSummaryByPeriod =
+  components["schemas"]["FundBalanceSummaryByPeriodModel"];
 
 /**
  * Type representing a balance event on the Fund workspace page.
  */
-type FundWorkspaceBalanceEvent =
-  components["schemas"]["FundWorkspaceBalanceEventModel"];
+type FundBalanceEvent = components["schemas"]["FundBalanceEventModel"];
 
 /**
- * Type representing the Funds trends response.
+ * Type representing a collection of Funds within a specified date range.
  */
-type FundTrends = components["schemas"]["FundTrendsModel"];
+type FundsInDateRange = components["schemas"]["FundsInDateRangeModel"];
 
 /**
- * Type representing a row in the Funds trends fund table.
+ * Type representing a collection of Funds within a specified accounting period range.
  */
-type FundTrendsFund = components["schemas"]["FundTrendsFundModel"];
-
-/**
- * Type representing a row in the Funds trends balance event table.
- */
-type FundTrendsBalanceEvent =
-  components["schemas"]["FundTrendsBalanceEventModel"];
-
-/**
- * Type representing a period summary in the Funds trends response.
- */
-type FundTrendsPeriodSummary =
-  components["schemas"]["FundTrendsPeriodSummaryModel"];
-
-/**
- * Type representing a date summary in the Funds trends response.
- */
-type FundTrendsDateSummary =
-  components["schemas"]["FundTrendsDateSummaryModel"];
-
-/**
- * Interface representing a Fund identifier with its ID and name.
- */
-interface FundIdentifier {
-  readonly id: string;
-  readonly name: string;
-}
+type FundsInAccountingPeriodRange =
+  components["schemas"]["FundsInAccountingPeriodRangeModel"];
 
 /**
  * Type representing a request to create a Fund.
@@ -81,21 +74,18 @@ type FundAmount = components["schemas"]["FundAmountModel"];
 
 export {
   type Fund,
-  type FundSummary,
-  type FundWorkspaceBalanceEvent,
-  type FundTrends,
-  type FundTrendsFund,
-  type FundTrendsBalanceEvent,
-  type FundTrendsDateSummary,
-  type FundTrendsPeriodSummary,
-  type FundIdentifier,
+  type FundWithBalance,
+  type FundWithBalanceRange,
+  FundWithBalanceRangeSortModel as FundWithBalanceRangeSort,
+  type FundBalanceSummary,
+  type FundBalanceSummaryByDate,
+  type FundBalanceSummaryByPeriod,
+  type FundBalanceEvent,
+  FundBalanceEventSortModel as FundBalanceEventSort,
+  type FundsInDateRange,
+  type FundsInAccountingPeriodRange,
   type CreateFundRequest,
   type OnboardFundRequest,
   type UpdateFundRequest,
   type FundAmount,
-  FundTrendsBalanceEventSortOrderModel as FundTrendsBalanceEventSortOrder,
-  FundTrendsBalanceEventTypeModel as FundTrendsBalanceEventType,
-  FundTrendsModeModel as FundTrendsMode,
-  FundTrendsSortOrderModel as FundTrendsSortOrder,
-  FundSortOrderModel as FundSortOrder,
 };

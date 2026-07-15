@@ -13,8 +13,8 @@ import {
 } from "recharts";
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import type {
-  FundTrendsDateSummary,
-  FundTrendsPeriodSummary,
+  FundBalanceSummaryByDate,
+  FundBalanceSummaryByPeriod,
 } from "@/funds/types";
 import type { JSX } from "react";
 import dayjs from "dayjs";
@@ -26,8 +26,8 @@ type FundTrendsChangeChartMode = "AccountingPeriod" | "Date";
 
 interface FundTrendsChangeChartProps {
   readonly mode: FundTrendsChangeChartMode;
-  readonly accountingPeriods: readonly FundTrendsPeriodSummary[] | null;
-  readonly dates: readonly FundTrendsDateSummary[] | null;
+  readonly accountingPeriods: readonly FundBalanceSummaryByPeriod[] | null;
+  readonly dates: readonly FundBalanceSummaryByDate[] | null;
 }
 
 interface ChartPoint {
@@ -125,19 +125,19 @@ const getBarColor = function (value: number): string {
 
 const buildChartPoints = function (
   mode: FundTrendsChangeChartMode,
-  accountingPeriods: readonly FundTrendsPeriodSummary[],
-  dates: readonly FundTrendsDateSummary[],
+  accountingPeriods: readonly FundBalanceSummaryByPeriod[],
+  dates: readonly FundBalanceSummaryByDate[],
 ): ChartPoint[] {
   if (mode === "AccountingPeriod") {
     return accountingPeriods.map((accountingPeriod) => {
       const change =
-        accountingPeriod.totalClosingBalance -
-        accountingPeriod.totalOpeningBalance;
+        accountingPeriod.closingBalance.totalBalance -
+        accountingPeriod.openingBalance.totalBalance;
 
       return {
-        key: accountingPeriod.accountingPeriodId,
-        tickLabel: accountingPeriod.accountingPeriodName,
-        tooltipLabel: accountingPeriod.accountingPeriodName,
+        key: accountingPeriod.accountingPeriod.id,
+        tickLabel: accountingPeriod.accountingPeriod.name,
+        tooltipLabel: accountingPeriod.accountingPeriod.name,
         change,
         fill: getBarColor(change),
       };

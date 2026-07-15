@@ -1,5 +1,6 @@
 using Data.AccountingPeriods;
 using Data.Accounts;
+using Data.BalanceEvents;
 using Data.Funds;
 using Data.Goals;
 using Data.Transactions;
@@ -26,6 +27,7 @@ public static class ServiceManager
         _ = serviceCollection.AddDbContext<DatabaseContext>();
         _ = serviceCollection.AddScoped<UnitOfWork>();
         _ = serviceCollection.AddScoped<FinancialRangeQueryService>();
+        _ = serviceCollection.AddScoped<BalanceEventQueryService>();
 
         _ = serviceCollection.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
         _ = serviceCollection.AddScoped<AccountingPeriodRepository>();

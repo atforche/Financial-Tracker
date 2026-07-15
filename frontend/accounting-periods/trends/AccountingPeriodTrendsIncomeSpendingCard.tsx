@@ -1,13 +1,14 @@
 "use client";
 
 import { Box, Stack, Typography } from "@mui/material";
-import type { AccountingPeriodTrends } from "@/accounting-periods/types";
+import type { components } from "@/framework/data/api";
 import type { JSX } from "react";
 import SummaryCard from "@/framework/view/SummaryCard";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface AccountingPeriodTrendsIncomeSpendingCardProps {
-  readonly trends: AccountingPeriodTrends;
+  readonly totalIncome: components["schemas"]["IncomeAmountModel"];
+  readonly totalSpending: number;
 }
 
 interface AmountBarProps {
@@ -75,18 +76,19 @@ const IncomeBreakdownRow = function ({
  * Component that displays total income and spending for the Accounting Periods trends.
  */
 const AccountingPeriodTrendsIncomeSpendingCard = function ({
-  trends,
+  totalIncome,
+  totalSpending,
 }: AccountingPeriodTrendsIncomeSpendingCardProps): JSX.Element {
-  const totalIncome = trends.totalIncome.total;
-  const trackedIncome = trends.totalIncome.tracked;
-  const untrackedIncome = trends.totalIncome.untracked;
-  const maxAmount = Math.max(totalIncome, trends.totalSpending, 1);
-  const incomeRatio = totalIncome / maxAmount;
-  const spendingRatio = trends.totalSpending / maxAmount;
+  const totalIncomeAmount = totalIncome.total;
+  const trackedIncome = totalIncome.tracked;
+  const untrackedIncome = totalIncome.untracked;
+  const maxAmount = Math.max(totalIncomeAmount, totalSpending, 1);
+  const incomeRatio = totalIncomeAmount / maxAmount;
+  const spendingRatio = totalSpending / maxAmount;
   const trackedIncomeRatio =
-    totalIncome === 0 ? 0 : trackedIncome / totalIncome;
+    totalIncomeAmount === 0 ? 0 : trackedIncome / totalIncomeAmount;
   const untrackedIncomeRatio =
-    totalIncome === 0 ? 0 : untrackedIncome / totalIncome;
+    totalIncomeAmount === 0 ? 0 : untrackedIncome / totalIncomeAmount;
 
   return (
     <SummaryCard title="Income vs. spending">
@@ -98,7 +100,7 @@ const AccountingPeriodTrendsIncomeSpendingCard = function ({
         >
           <Typography color="text.secondary">Total income</Typography>
           <Typography fontWeight={600} color="success.main">
-            {formatCurrency(totalIncome)}
+            {formatCurrency(totalIncomeAmount)}
           </Typography>
         </Stack>
         <AmountBar ratio={incomeRatio} color="success.main" />
@@ -123,7 +125,7 @@ const AccountingPeriodTrendsIncomeSpendingCard = function ({
         >
           <Typography color="text.secondary">Total spending</Typography>
           <Typography fontWeight={600} color="error.main">
-            {formatCurrency(trends.totalSpending)}
+            {formatCurrency(totalSpending)}
           </Typography>
         </Stack>
         <AmountBar ratio={spendingRatio} color="error.main" />

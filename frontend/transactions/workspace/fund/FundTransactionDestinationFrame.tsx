@@ -1,4 +1,4 @@
-import type { Fund, FundIdentifier } from "@/funds/types";
+import type { FundIdentifier, FundWithBalance } from "@/funds/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
 import type { JSX } from "react";
@@ -11,7 +11,7 @@ import TransactionSourceOrDestinationFrame from "@/transactions/workspace/Transa
  */
 interface FundTransactionDestinationFrameProps {
   readonly index: number;
-  readonly funds: Fund[];
+  readonly funds: FundWithBalance[];
   readonly fund: TransactionFundDraft | null;
   readonly setFund: ((fund: TransactionFundDraft | null) => void) | null;
   readonly amount: number | null;

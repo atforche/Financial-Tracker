@@ -2,9 +2,9 @@
 
 import {
   type AssignmentGoal,
-  AssignmentGoalSortOrder,
+  AssignmentGoalSort,
   type SpendingGoal,
-  SpendingGoalSortOrder,
+  SpendingGoalSort,
   formatSpendingGoalType,
 } from "@/goals/types";
 import { Button, IconButton, Paper, Stack, Typography } from "@mui/material";
@@ -104,7 +104,7 @@ const GoalTrendsListFrame = function ({
 
   if (view === "assignment") {
     const currentSort = tryParseEnum(
-      AssignmentGoalSortOrder,
+      AssignmentGoalSort,
       searchParams.get(sortParamName) ?? "",
     );
 
@@ -112,18 +112,18 @@ const GoalTrendsListFrame = function ({
       {
         name: "accountingPeriod",
         headerContent: "Accounting Period",
-        getBodyContent: (goal) => goal.accountingPeriodName,
+        getBodyContent: (goal) => goal.accountingPeriod?.name ?? "Ongoing",
         sortType:
-          currentSort === AssignmentGoalSortOrder.AccountingPeriod
+          currentSort === AssignmentGoalSort.AccountingPeriod
             ? ColumnSortType.Ascending
-            : currentSort === AssignmentGoalSortOrder.AccountingPeriodDescending
+            : currentSort === AssignmentGoalSort.AccountingPeriodDescending
               ? ColumnSortType.Descending
               : null,
         onSort: (sortType): void => {
           if (sortType === ColumnSortType.Ascending) {
-            setSort(AssignmentGoalSortOrder.AccountingPeriod);
+            setSort(AssignmentGoalSort.AccountingPeriod);
           } else if (sortType === ColumnSortType.Descending) {
-            setSort(AssignmentGoalSortOrder.AccountingPeriodDescending);
+            setSort(AssignmentGoalSort.AccountingPeriodDescending);
           } else {
             setSort(null);
           }
@@ -133,18 +133,18 @@ const GoalTrendsListFrame = function ({
       {
         name: "fund",
         headerContent: "Fund",
-        getBodyContent: (goal) => goal.fundName,
+        getBodyContent: (goal) => goal.fund.name,
         sortType:
-          currentSort === AssignmentGoalSortOrder.Fund
+          currentSort === AssignmentGoalSort.Fund
             ? ColumnSortType.Ascending
-            : currentSort === AssignmentGoalSortOrder.FundDescending
+            : currentSort === AssignmentGoalSort.FundDescending
               ? ColumnSortType.Descending
               : null,
         onSort: (sortType): void => {
           if (sortType === ColumnSortType.Ascending) {
-            setSort(AssignmentGoalSortOrder.Fund);
+            setSort(AssignmentGoalSort.Fund);
           } else if (sortType === ColumnSortType.Descending) {
-            setSort(AssignmentGoalSortOrder.FundDescending);
+            setSort(AssignmentGoalSort.FundDescending);
           } else {
             setSort(null);
           }
@@ -156,17 +156,17 @@ const GoalTrendsListFrame = function ({
         headerContent: "Total Amount To Assign",
         getBodyContent: (goal) => formatCurrency(goal.totalAmountToAssign),
         sortType:
-          currentSort === AssignmentGoalSortOrder.TotalAmountToAssign
+          currentSort === AssignmentGoalSort.TotalAmountToAssign
             ? ColumnSortType.Ascending
             : currentSort ===
-                AssignmentGoalSortOrder.TotalAmountToAssignDescending
+                AssignmentGoalSort.TotalAmountToAssignDescending
               ? ColumnSortType.Descending
               : null,
         onSort: (sortType): void => {
           if (sortType === ColumnSortType.Ascending) {
-            setSort(AssignmentGoalSortOrder.TotalAmountToAssign);
+            setSort(AssignmentGoalSort.TotalAmountToAssign);
           } else if (sortType === ColumnSortType.Descending) {
-            setSort(AssignmentGoalSortOrder.TotalAmountToAssignDescending);
+            setSort(AssignmentGoalSort.TotalAmountToAssignDescending);
           } else {
             setSort(null);
           }
@@ -179,17 +179,17 @@ const GoalTrendsListFrame = function ({
         headerContent: "Total Amount Assigned",
         getBodyContent: (goal) => formatCurrency(goal.totalAmountAssigned),
         sortType:
-          currentSort === AssignmentGoalSortOrder.TotalAmountAssigned
+          currentSort === AssignmentGoalSort.TotalAmountAssigned
             ? ColumnSortType.Ascending
             : currentSort ===
-                AssignmentGoalSortOrder.TotalAmountAssignedDescending
+                AssignmentGoalSort.TotalAmountAssignedDescending
               ? ColumnSortType.Descending
               : null,
         onSort: (sortType): void => {
           if (sortType === ColumnSortType.Ascending) {
-            setSort(AssignmentGoalSortOrder.TotalAmountAssigned);
+            setSort(AssignmentGoalSort.TotalAmountAssigned);
           } else if (sortType === ColumnSortType.Descending) {
-            setSort(AssignmentGoalSortOrder.TotalAmountAssignedDescending);
+            setSort(AssignmentGoalSort.TotalAmountAssignedDescending);
           } else {
             setSort(null);
           }
@@ -202,16 +202,16 @@ const GoalTrendsListFrame = function ({
         headerContent: "Is Goal Met?",
         getBodyContent: (goal) => (goal.isGoalMet ? "Yes" : "No"),
         sortType:
-          currentSort === AssignmentGoalSortOrder.IsMet
+          currentSort === AssignmentGoalSort.IsMet
             ? ColumnSortType.Ascending
-            : currentSort === AssignmentGoalSortOrder.IsMetDescending
+            : currentSort === AssignmentGoalSort.IsMetDescending
               ? ColumnSortType.Descending
               : null,
         onSort: (sortType): void => {
           if (sortType === ColumnSortType.Ascending) {
-            setSort(AssignmentGoalSortOrder.IsMet);
+            setSort(AssignmentGoalSort.IsMet);
           } else if (sortType === ColumnSortType.Descending) {
-            setSort(AssignmentGoalSortOrder.IsMetDescending);
+            setSort(AssignmentGoalSort.IsMetDescending);
           } else {
             setSort(null);
           }
@@ -229,9 +229,9 @@ const GoalTrendsListFrame = function ({
               color="inherit"
               onClick={(event) => {
                 event.stopPropagation();
-                setFundNameFilter(goal.fundName);
+                setFundNameFilter(goal.fund.name);
               }}
-              aria-label={`Filter ${goal.fundName}`}
+              aria-label={`Filter ${goal.fund.name}`}
             >
               <FilterListOutlined fontSize="small" color="action" />
             </IconButton>
@@ -242,7 +242,7 @@ const GoalTrendsListFrame = function ({
                 event.stopPropagation();
                 openGoalWorkspace();
               }}
-              aria-label={`Open ${goal.fundName}`}
+              aria-label={`Open ${goal.fund.name}`}
             >
               <ArrowForwardOutlined fontSize="small" color="action" />
             </IconButton>
@@ -273,7 +273,7 @@ const GoalTrendsListFrame = function ({
             searchParamName="search"
             pageParamName={pageParamName}
             onRowClick={(goal: AssignmentGoal): void => {
-              setFundNameFilter(goal.fundName);
+              setFundNameFilter(goal.fund.name);
             }}
             hasActiveFilters={hasActiveFilters}
             initialEmptyState={{
@@ -314,7 +314,7 @@ const GoalTrendsListFrame = function ({
   }
 
   const currentSort = tryParseEnum(
-    SpendingGoalSortOrder,
+    SpendingGoalSort,
     searchParams.get(sortParamName) ?? "",
   );
 
@@ -322,18 +322,18 @@ const GoalTrendsListFrame = function ({
     {
       name: "accountingPeriod",
       headerContent: "Accounting Period",
-      getBodyContent: (goal) => goal.accountingPeriodName,
+      getBodyContent: (goal) => goal.accountingPeriod?.name ?? "Ongoing",
       sortType:
-        currentSort === SpendingGoalSortOrder.AccountingPeriod
+        currentSort === SpendingGoalSort.AccountingPeriod
           ? ColumnSortType.Ascending
-          : currentSort === SpendingGoalSortOrder.AccountingPeriodDescending
+          : currentSort === SpendingGoalSort.AccountingPeriodDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(SpendingGoalSortOrder.AccountingPeriod);
+          setSort(SpendingGoalSort.AccountingPeriod);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(SpendingGoalSortOrder.AccountingPeriodDescending);
+          setSort(SpendingGoalSort.AccountingPeriodDescending);
         } else {
           setSort(null);
         }
@@ -343,18 +343,18 @@ const GoalTrendsListFrame = function ({
     {
       name: "fund",
       headerContent: "Fund",
-      getBodyContent: (goal) => goal.fundName,
+      getBodyContent: (goal) => goal.fund.name,
       sortType:
-        currentSort === SpendingGoalSortOrder.Fund
+        currentSort === SpendingGoalSort.Fund
           ? ColumnSortType.Ascending
-          : currentSort === SpendingGoalSortOrder.FundDescending
+          : currentSort === SpendingGoalSort.FundDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(SpendingGoalSortOrder.Fund);
+          setSort(SpendingGoalSort.Fund);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(SpendingGoalSortOrder.FundDescending);
+          setSort(SpendingGoalSort.FundDescending);
         } else {
           setSort(null);
         }
@@ -366,16 +366,16 @@ const GoalTrendsListFrame = function ({
       headerContent: "Goal Type",
       getBodyContent: (goal) => formatSpendingGoalType(goal.type),
       sortType:
-        currentSort === SpendingGoalSortOrder.Type
+        currentSort === SpendingGoalSort.Type
           ? ColumnSortType.Ascending
-          : currentSort === SpendingGoalSortOrder.TypeDescending
+          : currentSort === SpendingGoalSort.TypeDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(SpendingGoalSortOrder.Type);
+          setSort(SpendingGoalSort.Type);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(SpendingGoalSortOrder.TypeDescending);
+          setSort(SpendingGoalSort.TypeDescending);
         } else {
           setSort(null);
         }
@@ -387,16 +387,16 @@ const GoalTrendsListFrame = function ({
       headerContent: "Amount To Spend",
       getBodyContent: (goal) => formatCurrency(goal.totalAmountToSpend),
       sortType:
-        currentSort === SpendingGoalSortOrder.TotalAmountToSpend
+        currentSort === SpendingGoalSort.TotalAmountToSpend
           ? ColumnSortType.Ascending
-          : currentSort === SpendingGoalSortOrder.TotalAmountToSpendDescending
+          : currentSort === SpendingGoalSort.TotalAmountToSpendDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(SpendingGoalSortOrder.TotalAmountToSpend);
+          setSort(SpendingGoalSort.TotalAmountToSpend);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(SpendingGoalSortOrder.TotalAmountToSpendDescending);
+          setSort(SpendingGoalSort.TotalAmountToSpendDescending);
         } else {
           setSort(null);
         }
@@ -409,16 +409,16 @@ const GoalTrendsListFrame = function ({
       headerContent: "Amount Spent",
       getBodyContent: (goal) => formatCurrency(goal.totalAmountSpent),
       sortType:
-        currentSort === SpendingGoalSortOrder.TotalAmountSpent
+        currentSort === SpendingGoalSort.TotalAmountSpent
           ? ColumnSortType.Ascending
-          : currentSort === SpendingGoalSortOrder.TotalAmountSpentDescending
+          : currentSort === SpendingGoalSort.TotalAmountSpentDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(SpendingGoalSortOrder.TotalAmountSpent);
+          setSort(SpendingGoalSort.TotalAmountSpent);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(SpendingGoalSortOrder.TotalAmountSpentDescending);
+          setSort(SpendingGoalSort.TotalAmountSpentDescending);
         } else {
           setSort(null);
         }
@@ -431,16 +431,16 @@ const GoalTrendsListFrame = function ({
       headerContent: "Is Goal Met?",
       getBodyContent: (goal) => (goal.isGoalMet ? "Yes" : "No"),
       sortType:
-        currentSort === SpendingGoalSortOrder.IsMet
+        currentSort === SpendingGoalSort.IsMet
           ? ColumnSortType.Ascending
-          : currentSort === SpendingGoalSortOrder.IsMetDescending
+          : currentSort === SpendingGoalSort.IsMetDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(SpendingGoalSortOrder.IsMet);
+          setSort(SpendingGoalSort.IsMet);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(SpendingGoalSortOrder.IsMetDescending);
+          setSort(SpendingGoalSort.IsMetDescending);
         } else {
           setSort(null);
         }
@@ -458,9 +458,9 @@ const GoalTrendsListFrame = function ({
             color="inherit"
             onClick={(event) => {
               event.stopPropagation();
-              setFundNameFilter(goal.fundName);
+              setFundNameFilter(goal.fund.name);
             }}
-            aria-label={`Filter ${goal.fundName}`}
+            aria-label={`Filter ${goal.fund.name}`}
           >
             <FilterListOutlined fontSize="small" color="action" />
           </IconButton>
@@ -471,7 +471,7 @@ const GoalTrendsListFrame = function ({
               event.stopPropagation();
               openGoalWorkspace();
             }}
-            aria-label={`Open ${goal.fundName}`}
+            aria-label={`Open ${goal.fund.name}`}
           >
             <ArrowForwardOutlined fontSize="small" color="action" />
           </IconButton>
@@ -502,7 +502,7 @@ const GoalTrendsListFrame = function ({
           searchParamName="search"
           pageParamName={pageParamName}
           onRowClick={(goal: SpendingGoal): void => {
-            setFundNameFilter(goal.fundName);
+            setFundNameFilter(goal.fund.name);
           }}
           hasActiveFilters={hasActiveFilters}
           initialEmptyState={{

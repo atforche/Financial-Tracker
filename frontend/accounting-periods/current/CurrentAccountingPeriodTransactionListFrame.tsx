@@ -3,7 +3,8 @@
 import { Button, IconButton, Paper, Stack, Typography } from "@mui/material";
 import {
   type Transaction,
-  TransactionSortOrder,
+  TransactionSort,
+  type TransactionSortValue,
 } from "@/transactions/transaction";
 import {
   getTransactionAccountIds,
@@ -17,7 +18,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
-import type { CurrentAccountingPeriod } from "@/accounting-periods/types";
+import type { AccountingPeriodWithTransactions } from "@/accounting-periods/types";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import formatCurrency from "@/framework/formatCurrency";
@@ -25,7 +26,7 @@ import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 interface CurrentAccountingPeriodTransactionListFrameProps {
-  readonly current: CurrentAccountingPeriod;
+  readonly current: AccountingPeriodWithTransactions | null;
 }
 
 /**
@@ -34,7 +35,7 @@ interface CurrentAccountingPeriodTransactionListFrameProps {
 const CurrentAccountingPeriodTransactionListFrame = function ({
   current,
 }: CurrentAccountingPeriodTransactionListFrameProps): JSX.Element {
-  const accountingPeriod = current.accountingPeriod ?? null;
+  const accountingPeriod = current;
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -43,7 +44,7 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
   const pageParamName = "transactionPage";
   const searchParamName = "transactionSearch";
 
-  const setSort = function (sort: TransactionSortOrder | null): void {
+  const setSort = function (sort: TransactionSortValue | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
       params.delete(sortParamName);
@@ -55,7 +56,7 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
   };
 
   const currentSort = tryParseEnum(
-    TransactionSortOrder,
+    TransactionSort,
     searchParams.get(sortParamName) ?? "",
   );
 
@@ -76,16 +77,16 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
       headerContent: "Date",
       getBodyContent: (transaction) => transaction.date,
       sortType:
-        currentSort === TransactionSortOrder.Date
+        currentSort === TransactionSort.Date
           ? ColumnSortType.Ascending
-          : currentSort === TransactionSortOrder.DateDescending
+          : currentSort === TransactionSort.DateDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSortOrder.Date);
+          setSort(TransactionSort.Date);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSortOrder.DateDescending);
+          setSort(TransactionSort.DateDescending);
         } else {
           setSort(null);
         }
@@ -97,16 +98,16 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
       headerContent: "Description",
       getBodyContent: (transaction) => transaction.description,
       sortType:
-        currentSort === TransactionSortOrder.Description
+        currentSort === TransactionSort.Description
           ? ColumnSortType.Ascending
-          : currentSort === TransactionSortOrder.DescriptionDescending
+          : currentSort === TransactionSort.DescriptionDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSortOrder.Description);
+          setSort(TransactionSort.Description);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSortOrder.DescriptionDescending);
+          setSort(TransactionSort.DescriptionDescending);
         } else {
           setSort(null);
         }
@@ -118,16 +119,16 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
       headerContent: "Source",
       getBodyContent: getTransactionSourceLabel,
       sortType:
-        currentSort === TransactionSortOrder.Source
+        currentSort === TransactionSort.Source
           ? ColumnSortType.Ascending
-          : currentSort === TransactionSortOrder.SourceDescending
+          : currentSort === TransactionSort.SourceDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSortOrder.Source);
+          setSort(TransactionSort.Source);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSortOrder.SourceDescending);
+          setSort(TransactionSort.SourceDescending);
         } else {
           setSort(null);
         }
@@ -139,16 +140,16 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
       headerContent: "Destination",
       getBodyContent: getTransactionDestinationLabel,
       sortType:
-        currentSort === TransactionSortOrder.Destination
+        currentSort === TransactionSort.Destination
           ? ColumnSortType.Ascending
-          : currentSort === TransactionSortOrder.DestinationDescending
+          : currentSort === TransactionSort.DestinationDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSortOrder.Destination);
+          setSort(TransactionSort.Destination);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSortOrder.DestinationDescending);
+          setSort(TransactionSort.DestinationDescending);
         } else {
           setSort(null);
         }
@@ -160,16 +161,16 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
       headerContent: "Amount",
       getBodyContent: (transaction) => formatCurrency(transaction.amount),
       sortType:
-        currentSort === TransactionSortOrder.Amount
+        currentSort === TransactionSort.Amount
           ? ColumnSortType.Ascending
-          : currentSort === TransactionSortOrder.AmountDescending
+          : currentSort === TransactionSort.AmountDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(TransactionSortOrder.Amount);
+          setSort(TransactionSort.Amount);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(TransactionSortOrder.AmountDescending);
+          setSort(TransactionSort.AmountDescending);
         } else {
           setSort(null);
         }
@@ -223,8 +224,8 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
       <ListFrame<Transaction>
         columns={columns}
         getId={(transaction) => transaction.id}
-        data={current.transactions.items}
-        totalCount={current.transactions.totalCount}
+        data={current?.transactions.items ?? []}
+        totalCount={current?.transactions.totalCount ?? 0}
         pageParamName={pageParamName}
         searchParamName={searchParamName}
         onRowClick={openTransactionWorkspace}

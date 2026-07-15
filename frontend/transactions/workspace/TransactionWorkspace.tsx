@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
-import type { TransactionSortOrder } from "@/transactions/transaction";
+import type { TransactionSortValue } from "@/transactions/transaction";
 import TransactionWorkspaceFilter from "@/transactions/workspace/TransactionWorkspaceFilter";
 import TransactionWorkspaceListFrame from "@/transactions/workspace/TransactionWorkspaceListFrame";
 import { getTransactionWorkspaceListData } from "@/transactions/workspace/getTransactionWorkspaceData";
@@ -12,7 +12,7 @@ interface TransactionWorkspaceSearchParams {
   accountingPeriodIds?: string | string[];
   accountIds?: string | string[];
   fundIds?: string | string[];
-  sort?: TransactionSortOrder | null;
+  sort?: TransactionSortValue | null;
   page?: number | string | null;
   selectedTransactionId?: string;
   returnUrl?: string;

@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  type AccountTrendsBalanceEvent,
-  AccountTrendsBalanceEventSortOrder,
-  AccountTrendsBalanceEventType,
-  AccountTrendsMode,
+  AccountBalanceEventSort,
+  type AccountBalanceEventSortValue,
+  type AccountWorkspaceBalanceEvent,
 } from "@/accounts/types";
+import { BalanceEventTypeModel } from "@/framework/data/api";
 import {
   Box,
   Button,
@@ -26,18 +26,18 @@ import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 const formatBalanceEventType = function (
-  type: AccountTrendsBalanceEventType,
+  type: BalanceEventTypeModel,
 ): string {
-  return type === AccountTrendsBalanceEventType.Debit ? "Debit" : "Credit";
+  return type === BalanceEventTypeModel.Debit ? "Debit" : "Credit";
 };
 
 /**
  * Props for the AccountTrendsBalanceEventListFrame component.
  */
 interface AccountTrendsBalanceEventListFrameProps {
-  readonly data: AccountTrendsBalanceEvent[] | null;
+  readonly data: AccountWorkspaceBalanceEvent[] | null;
   readonly totalCount: number | null;
-  readonly mode: AccountTrendsMode;
+  readonly mode: "AccountingPeriod" | "Date";
 }
 
 /**
@@ -63,7 +63,7 @@ const AccountTrendsBalanceEventListFrame = function ({
   const endDateParamName = "endDate";
 
   const setSort = function (
-    sort: AccountTrendsBalanceEventSortOrder | null,
+    sort: AccountBalanceEventSortValue | null,
   ): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
@@ -76,17 +76,17 @@ const AccountTrendsBalanceEventListFrame = function ({
   };
 
   const currentSort = tryParseEnum(
-    AccountTrendsBalanceEventSortOrder,
+    AccountBalanceEventSort,
     searchParams.get(sortParamName) ?? "",
   );
 
   const openTransactionWorkspace = function (
-    balanceEvent: AccountTrendsBalanceEvent,
+    balanceEvent: AccountWorkspaceBalanceEvent,
   ): void {
     router.push(
       routes.workspace({
-        accountingPeriodIds: [balanceEvent.accountingPeriodId],
-        accountIds: [balanceEvent.accountId],
+        accountingPeriodIds: [balanceEvent.accountingPeriod.id],
+        accountIds: [balanceEvent.account.id],
         selectedTransactionId: balanceEvent.transactionId,
       }),
     );
@@ -100,23 +100,23 @@ const AccountTrendsBalanceEventListFrame = function ({
     searchParams.has(startDateParamName) ||
     searchParams.has(endDateParamName);
 
-  const columns: ColumnDefinition<AccountTrendsBalanceEvent>[] = [
+  const columns: ColumnDefinition<AccountWorkspaceBalanceEvent>[] = [
     {
       name: "accountName",
       headerContent: "Account",
-      getBodyContent: (balanceEvent) => balanceEvent.accountName,
+      getBodyContent: (balanceEvent) => balanceEvent.account.name,
       sortType:
-        currentSort === AccountTrendsBalanceEventSortOrder.AccountName
+        currentSort === AccountBalanceEventSort.AccountName
           ? ColumnSortType.Ascending
           : currentSort ===
-              AccountTrendsBalanceEventSortOrder.AccountNameDescending
+              AccountBalanceEventSort.AccountNameDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountTrendsBalanceEventSortOrder.AccountName);
+          setSort(AccountBalanceEventSort.AccountName);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountTrendsBalanceEventSortOrder.AccountNameDescending);
+          setSort(AccountBalanceEventSort.AccountNameDescending);
         } else {
           setSort(null);
         }
@@ -131,16 +131,16 @@ const AccountTrendsBalanceEventListFrame = function ({
           ? formatShortDate(new Date(`${balanceEvent.date}T00:00:00`))
           : "Pending",
       sortType:
-        currentSort === AccountTrendsBalanceEventSortOrder.Date
+        currentSort === AccountBalanceEventSort.Date
           ? ColumnSortType.Ascending
-          : currentSort === AccountTrendsBalanceEventSortOrder.DateDescending
+          : currentSort === AccountBalanceEventSort.DateDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountTrendsBalanceEventSortOrder.Date);
+          setSort(AccountBalanceEventSort.Date);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountTrendsBalanceEventSortOrder.DateDescending);
+          setSort(AccountBalanceEventSort.DateDescending);
         } else {
           setSort(null);
         }
@@ -155,7 +155,7 @@ const AccountTrendsBalanceEventListFrame = function ({
           component="span"
           sx={{
             color:
-              balanceEvent.type === AccountTrendsBalanceEventType.Debit
+              balanceEvent.type === BalanceEventTypeModel.Debit
                 ? "warning.dark"
                 : "info.dark",
             fontWeight: 600,
@@ -165,16 +165,16 @@ const AccountTrendsBalanceEventListFrame = function ({
         </Box>
       ),
       sortType:
-        currentSort === AccountTrendsBalanceEventSortOrder.Type
+        currentSort === AccountBalanceEventSort.Type
           ? ColumnSortType.Ascending
-          : currentSort === AccountTrendsBalanceEventSortOrder.TypeDescending
+          : currentSort === AccountBalanceEventSort.TypeDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountTrendsBalanceEventSortOrder.Type);
+          setSort(AccountBalanceEventSort.Type);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountTrendsBalanceEventSortOrder.TypeDescending);
+          setSort(AccountBalanceEventSort.TypeDescending);
         } else {
           setSort(null);
         }
@@ -186,16 +186,16 @@ const AccountTrendsBalanceEventListFrame = function ({
       headerContent: "Amount",
       getBodyContent: (balanceEvent) => formatCurrency(balanceEvent.amount),
       sortType:
-        currentSort === AccountTrendsBalanceEventSortOrder.Amount
+        currentSort === AccountBalanceEventSort.Amount
           ? ColumnSortType.Ascending
-          : currentSort === AccountTrendsBalanceEventSortOrder.AmountDescending
+          : currentSort === AccountBalanceEventSort.AmountDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountTrendsBalanceEventSortOrder.Amount);
+          setSort(AccountBalanceEventSort.Amount);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountTrendsBalanceEventSortOrder.AmountDescending);
+          setSort(AccountBalanceEventSort.AmountDescending);
         } else {
           setSort(null);
         }
@@ -225,24 +225,24 @@ const AccountTrendsBalanceEventListFrame = function ({
     },
   ];
 
-  if (mode === AccountTrendsMode.AccountingPeriod) {
+  if (mode === "AccountingPeriod") {
     columns.splice(1, 0, {
       name: "accountingPeriodName",
       headerContent: "Accounting Period",
-      getBodyContent: (balanceEvent) => balanceEvent.accountingPeriodName,
+      getBodyContent: (balanceEvent) => balanceEvent.accountingPeriod.name,
       sortType:
-        currentSort === AccountTrendsBalanceEventSortOrder.AccountingPeriodName
+        currentSort === AccountBalanceEventSort.AccountingPeriodName
           ? ColumnSortType.Ascending
           : currentSort ===
-              AccountTrendsBalanceEventSortOrder.AccountingPeriodNameDescending
+              AccountBalanceEventSort.AccountingPeriodNameDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountTrendsBalanceEventSortOrder.AccountingPeriodName);
+          setSort(AccountBalanceEventSort.AccountingPeriodName);
         } else if (sortType === ColumnSortType.Descending) {
           setSort(
-            AccountTrendsBalanceEventSortOrder.AccountingPeriodNameDescending,
+            AccountBalanceEventSort.AccountingPeriodNameDescending,
           );
         } else {
           setSort(null);
@@ -262,10 +262,10 @@ const AccountTrendsBalanceEventListFrame = function ({
     >
       <Stack spacing={2.5}>
         <Typography variant="h5">Balance Events</Typography>
-        <ListFrame<AccountTrendsBalanceEvent>
+        <ListFrame<AccountWorkspaceBalanceEvent>
           columns={columns}
           getId={(balanceEvent) =>
-            `${balanceEvent.accountId}-${balanceEvent.accountingPeriodId}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
+            `${balanceEvent.account.id}-${balanceEvent.accountingPeriod.id}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
           }
           data={data ?? null}
           totalCount={totalCount ?? null}

@@ -3,7 +3,7 @@
 import { Box, Button, ButtonBase, Stack, Typography } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Frame from "@/framework/view/Frame";
-import type { Fund } from "@/funds/types";
+import type { FundWithBalance } from "@/funds/types";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
@@ -15,7 +15,7 @@ import routes from "@/funds/routes";
  * Props for the FundWorkspaceCards component.
  */
 interface FundWorkspaceCardsProps {
-  readonly data: Fund[] | null;
+  readonly data: FundWithBalance[] | null;
   readonly isInOnboardingMode: boolean;
 }
 

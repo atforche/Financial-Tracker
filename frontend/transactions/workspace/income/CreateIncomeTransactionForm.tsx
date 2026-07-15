@@ -12,12 +12,12 @@ import {
   getDefaultAccountingPeriod,
   getDefaultDate,
 } from "@/transactions/workspace/helpers";
-import type { Account } from "@/accounts/types";
+import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { AssignmentGoal } from "@/goals/types";
 import type { CreateTransactionRequest } from "@/transactions/transaction";
 import type { Dayjs } from "dayjs";
-import type { Fund } from "@/funds/types";
+import type { FundWithBalance } from "@/funds/types";
 import IncomeTransactionForm from "@/transactions/workspace/income/IncomeTransactionForm";
 import { useCreateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
@@ -26,8 +26,8 @@ import { useCreateTransactionEditor } from "@/transactions/workspace/useTransact
  */
 interface CreateIncomeTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
-  readonly accounts: Account[];
-  readonly funds: Fund[];
+  readonly accounts: AccountWithBalance[];
+  readonly funds: FundWithBalance[];
   readonly assignmentGoals: AssignmentGoal[];
   readonly redirectUrl: string;
 }

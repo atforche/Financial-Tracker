@@ -1,8 +1,9 @@
 "use client";
 
 import {
-  type AccountingPeriod,
-  AccountingPeriodSortOrder,
+  type AccountingPeriodWithBalance,
+  AccountingPeriodWithBalanceSort,
+  type AccountingPeriodWithBalanceSortValue,
 } from "@/accounting-periods/types";
 import {
   Button,
@@ -29,7 +30,7 @@ import tryParseEnum from "@/framework/data/tryParseEnum";
  * Props for the AccountingPeriodTrendsListFrame component.
  */
 interface AccountingPeriodTrendsListFrameProps {
-  readonly data: AccountingPeriod[] | null;
+  readonly data: AccountingPeriodWithBalance[] | null;
   readonly totalCount: number | null;
 }
 
@@ -51,7 +52,9 @@ const AccountingPeriodTrendsListFrame = function ({
   const sortParamName = nameof<AccountingPeriodTrendsSearchParams>("sort");
   const pageParamName = nameof<AccountingPeriodTrendsSearchParams>("page");
 
-  const setSort = function (sort: AccountingPeriodSortOrder | null): void {
+  const setSort = function (
+    sort: AccountingPeriodWithBalanceSortValue | null,
+  ): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
       params.delete(sortParamName);
@@ -63,7 +66,7 @@ const AccountingPeriodTrendsListFrame = function ({
   };
 
   const setAccountingPeriodFilter = function (
-    accountingPeriod: AccountingPeriod,
+    accountingPeriod: AccountingPeriodWithBalance,
   ): void {
     const params = new URLSearchParams(searchParams.toString());
     params.delete(startAccountingPeriodParamName);
@@ -75,12 +78,12 @@ const AccountingPeriodTrendsListFrame = function ({
   };
 
   const currentSort = tryParseEnum(
-    AccountingPeriodSortOrder,
+    AccountingPeriodWithBalanceSort,
     searchParams.get(sortParamName) ?? "",
   );
 
   const openAccountingPeriodWorkspace = function (
-    accountingPeriod: AccountingPeriod,
+    accountingPeriod: AccountingPeriodWithBalance,
   ): void {
     router.push(
       routes.workspace({
@@ -91,22 +94,22 @@ const AccountingPeriodTrendsListFrame = function ({
     );
   };
 
-  const columns: ColumnDefinition<AccountingPeriod>[] = [
+  const columns: ColumnDefinition<AccountingPeriodWithBalance>[] = [
     {
       name: "period",
       headerContent: "Period",
       getBodyContent: (accountingPeriod) => accountingPeriod.name,
       sortType:
-        currentSort === AccountingPeriodSortOrder.Date
+        currentSort === AccountingPeriodWithBalanceSort.Date
           ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodSortOrder.DateDescending
+          : currentSort === AccountingPeriodWithBalanceSort.DateDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodSortOrder.Date);
+          setSort(AccountingPeriodWithBalanceSort.Date);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodSortOrder.DateDescending);
+          setSort(AccountingPeriodWithBalanceSort.DateDescending);
         } else {
           setSort(null);
         }
@@ -119,16 +122,16 @@ const AccountingPeriodTrendsListFrame = function ({
         <Checkbox checked={accountingPeriod.isOpen} />
       ),
       sortType:
-        currentSort === AccountingPeriodSortOrder.IsOpen
+        currentSort === AccountingPeriodWithBalanceSort.IsOpen
           ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodSortOrder.IsOpenDescending
+          : currentSort === AccountingPeriodWithBalanceSort.IsOpenDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodSortOrder.IsOpen);
+          setSort(AccountingPeriodWithBalanceSort.IsOpen);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodSortOrder.IsOpenDescending);
+          setSort(AccountingPeriodWithBalanceSort.IsOpenDescending);
         } else {
           setSort(null);
         }
@@ -140,16 +143,16 @@ const AccountingPeriodTrendsListFrame = function ({
       getBodyContent: (accountingPeriod) =>
         formatCurrency(accountingPeriod.openingBalance),
       sortType:
-        currentSort === AccountingPeriodSortOrder.OpeningBalance
+        currentSort === AccountingPeriodWithBalanceSort.OpeningBalance
           ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodSortOrder.OpeningBalanceDescending
+          : currentSort === AccountingPeriodWithBalanceSort.OpeningBalanceDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodSortOrder.OpeningBalance);
+          setSort(AccountingPeriodWithBalanceSort.OpeningBalance);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodSortOrder.OpeningBalanceDescending);
+          setSort(AccountingPeriodWithBalanceSort.OpeningBalanceDescending);
         } else {
           setSort(null);
         }
@@ -162,16 +165,16 @@ const AccountingPeriodTrendsListFrame = function ({
       getBodyContent: (accountingPeriod) =>
         formatCurrency(accountingPeriod.closingBalance),
       sortType:
-        currentSort === AccountingPeriodSortOrder.ClosingBalance
+        currentSort === AccountingPeriodWithBalanceSort.ClosingBalance
           ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodSortOrder.ClosingBalanceDescending
+          : currentSort === AccountingPeriodWithBalanceSort.ClosingBalanceDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodSortOrder.ClosingBalance);
+          setSort(AccountingPeriodWithBalanceSort.ClosingBalance);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodSortOrder.ClosingBalanceDescending);
+          setSort(AccountingPeriodWithBalanceSort.ClosingBalanceDescending);
         } else {
           setSort(null);
         }
@@ -223,14 +226,14 @@ const AccountingPeriodTrendsListFrame = function ({
     >
       <Stack spacing={2.5}>
         <Typography variant="h5">Accounting periods</Typography>
-        <ListFrame<AccountingPeriod>
+        <ListFrame<AccountingPeriodWithBalance>
           columns={columns}
           getId={(accountingPeriod) => accountingPeriod.id}
           data={data ?? null}
           totalCount={totalCount ?? null}
           searchParamName="search"
           pageParamName={pageParamName}
-          onRowClick={(accountingPeriod: AccountingPeriod): void => {
+          onRowClick={(accountingPeriod: AccountingPeriodWithBalance): void => {
             setAccountingPeriodFilter(accountingPeriod);
           }}
           initialEmptyState={{

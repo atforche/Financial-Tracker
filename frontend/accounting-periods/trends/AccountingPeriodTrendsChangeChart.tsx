@@ -12,13 +12,13 @@ import {
   YAxis,
 } from "recharts";
 import { Box, Paper, Stack, Typography } from "@mui/material";
-import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import type { JSX } from "react";
 import formatCompactCurrency from "@/framework/formatCompactCurrency";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface AccountingPeriodTrendsChangeChartProps {
-  readonly accountingPeriods: readonly AccountingPeriod[] | null;
+  readonly accountingPeriods: readonly AccountingPeriodWithBalance[] | null;
 }
 
 interface ChartPoint {
@@ -115,7 +115,7 @@ const getBarColor = function (value: number): string {
 };
 
 const buildChartPoints = function (
-  accountingPeriods: readonly AccountingPeriod[],
+  accountingPeriods: readonly AccountingPeriodWithBalance[],
 ): ChartPoint[] {
   return accountingPeriods.map((accountingPeriod) => {
     const change =

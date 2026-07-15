@@ -13,8 +13,8 @@ import {
 } from "recharts";
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import type {
-  TransactionTrendsDateSummary,
-  TransactionTrendsPeriodSummary,
+  TransactionAccountingPeriodSummary,
+  TransactionDateSummary,
 } from "@/transactions/transaction";
 import type { JSX } from "react";
 import dayjs from "dayjs";
@@ -26,8 +26,8 @@ type TransactionTrendsAmountChartMode = "AccountingPeriod" | "Date";
 
 interface TransactionTrendsAmountChartProps {
   readonly mode: TransactionTrendsAmountChartMode;
-  readonly accountingPeriods: readonly TransactionTrendsPeriodSummary[] | null;
-  readonly dates: readonly TransactionTrendsDateSummary[] | null;
+  readonly accountingPeriods: readonly TransactionAccountingPeriodSummary[] | null;
+  readonly dates: readonly TransactionDateSummary[] | null;
 }
 
 interface ChartPoint {
@@ -125,8 +125,8 @@ const getBarColor = function (value: number): string {
 
 const buildChartPoints = function (
   mode: TransactionTrendsAmountChartMode,
-  accountingPeriods: readonly TransactionTrendsPeriodSummary[],
-  dates: readonly TransactionTrendsDateSummary[],
+  accountingPeriods: readonly TransactionAccountingPeriodSummary[],
+  dates: readonly TransactionDateSummary[],
 ): ChartPoint[] {
   if (mode === "AccountingPeriod") {
     return accountingPeriods.map((accountingPeriod) => ({

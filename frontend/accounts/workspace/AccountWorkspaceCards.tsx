@@ -6,7 +6,7 @@ import {
   shouldPersistAccountTypes,
 } from "@/accounts/trends/accountTypeFilter";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { Account } from "@/accounts/types";
+import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
 import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
@@ -20,7 +20,7 @@ import routes from "@/accounts/routes";
  * Props for the AccountWorkspaceCards component.
  */
 interface AccountWorkspaceCardsProps {
-  readonly data: Account[] | null;
+  readonly data: AccountWithBalance[] | null;
   readonly isInOnboardingMode: boolean;
 }
 

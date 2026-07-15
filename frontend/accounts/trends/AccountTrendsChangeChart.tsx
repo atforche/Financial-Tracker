@@ -1,8 +1,8 @@
 "use client";
 
 import type {
-  AccountTrendsDateSummary,
-  AccountTrendsPeriodSummary,
+  AccountBalanceSummaryByDate,
+  AccountBalanceSummaryByPeriod,
 } from "@/accounts/types";
 import {
   Bar,
@@ -26,8 +26,8 @@ type AccountTrendsChangeChartMode = "AccountingPeriod" | "Date";
 
 interface AccountTrendsChangeChartProps {
   readonly mode: AccountTrendsChangeChartMode;
-  readonly accountingPeriods: readonly AccountTrendsPeriodSummary[] | null;
-  readonly dates: readonly AccountTrendsDateSummary[] | null;
+  readonly accountingPeriods: readonly AccountBalanceSummaryByPeriod[] | null;
+  readonly dates: readonly AccountBalanceSummaryByDate[] | null;
 }
 
 interface ChartPoint {
@@ -125,19 +125,19 @@ const getBarColor = function (value: number): string {
 
 const buildChartPoints = function (
   mode: AccountTrendsChangeChartMode,
-  accountingPeriods: readonly AccountTrendsPeriodSummary[],
-  dates: readonly AccountTrendsDateSummary[],
+  accountingPeriods: readonly AccountBalanceSummaryByPeriod[],
+  dates: readonly AccountBalanceSummaryByDate[],
 ): ChartPoint[] {
   if (mode === "AccountingPeriod") {
     return accountingPeriods.map((accountingPeriod) => {
       const change =
-        accountingPeriod.totalClosingBalance -
-        accountingPeriod.totalOpeningBalance;
+        accountingPeriod.closingBalance.totalBalance -
+        accountingPeriod.openingBalance.totalBalance;
 
       return {
-        key: accountingPeriod.accountingPeriodId,
-        tickLabel: accountingPeriod.accountingPeriodName,
-        tooltipLabel: accountingPeriod.accountingPeriodName,
+        key: accountingPeriod.accountingPeriod.id,
+        tickLabel: accountingPeriod.accountingPeriod.name,
+        tooltipLabel: accountingPeriod.accountingPeriod.name,
         change,
         fill: getBarColor(change),
       };

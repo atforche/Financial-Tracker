@@ -1,13 +1,13 @@
 "use client";
 
 import { Box, Stack } from "@mui/material";
-import type { AccountingPeriodTrends } from "@/accounting-periods/types";
+import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import type { JSX } from "react";
 import SummaryCard from "@/framework/view/SummaryCard";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface AccountingPeriodTrendsSummaryCardsProps {
-  readonly trends: AccountingPeriodTrends;
+  readonly accountingPeriods: AccountingPeriodWithBalance[];
 }
 
 /**
@@ -21,9 +21,9 @@ interface TrendsSnapshot {
 }
 
 const getTrendsSnapshot = function (
-  trends: AccountingPeriodTrends,
+  accountingPeriods: AccountingPeriodWithBalance[],
 ): TrendsSnapshot {
-  const periods = trends.accountingPeriods.items;
+  const periods = accountingPeriods;
   const firstPeriod = periods.at(0);
   const lastPeriod = periods.at(-1);
 
@@ -47,9 +47,9 @@ const getTrendsSnapshot = function (
  * Displays the top-level accounting period balance summary cards.
  */
 const AccountingPeriodTrendsSummaryCards = function ({
-  trends,
+  accountingPeriods,
 }: AccountingPeriodTrendsSummaryCardsProps): JSX.Element {
-  const snapshot = getTrendsSnapshot(trends);
+  const snapshot = getTrendsSnapshot(accountingPeriods);
   const netChange = snapshot.totalEndingBalance - snapshot.totalStartingBalance;
   const percentChange =
     snapshot.totalStartingBalance === 0

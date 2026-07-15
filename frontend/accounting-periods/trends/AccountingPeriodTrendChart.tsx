@@ -12,14 +12,14 @@ import {
   YAxis,
 } from "recharts";
 import { Box, Paper, Stack, Typography } from "@mui/material";
-import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import type { JSX } from "react";
 import dayjs from "dayjs";
 import formatCompactCurrency from "@/framework/formatCompactCurrency";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface AccountingPeriodTrendChartProps {
-  readonly accountingPeriods: readonly AccountingPeriod[] | null;
+  readonly accountingPeriods: readonly AccountingPeriodWithBalance[] | null;
 }
 
 interface ChartPoint {
@@ -89,7 +89,7 @@ const getTooltipChartPoint = function (
 };
 
 const buildAccountingPeriodChartPoints = function (
-  accountingPeriods: readonly AccountingPeriod[],
+  accountingPeriods: readonly AccountingPeriodWithBalance[],
 ): ChartPoint[] {
   const openingPoints = accountingPeriods.map((accountingPeriod) => ({
     key: `${accountingPeriod.id}-opening`,

@@ -1,13 +1,12 @@
 "use client";
 
-import type { GoalTrendsAccountingPeriodSummaryModel } from "@/goals/types";
+import type { GoalAccountingPeriodSummary , GoalTrendsView } from "@/goals/trends/goalTrendsTypes";
 import GoalTrendsMetricChart from "@/goals/trends/GoalTrendsMetricChart";
-import type { GoalTrendsView } from "@/goals/trends/goalTrendsTypes";
 import type { JSX } from "react";
 
 interface GoalTrendsGoalsMetChartProps {
   readonly accountingPeriods:
-    readonly GoalTrendsAccountingPeriodSummaryModel[] | null;
+    readonly GoalAccountingPeriodSummary[] | null;
   readonly view: GoalTrendsView;
 }
 

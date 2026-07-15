@@ -12,7 +12,7 @@ import {
   getDefaultAccountingPeriod,
   getDefaultDate,
 } from "@/transactions/workspace/helpers";
-import type { Account } from "@/accounts/types";
+import type { AccountWithBalance } from "@/accounts/types";
 import AccountTransactionForm from "@/transactions/workspace/account/AccountTransactionForm";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { CreateTransactionRequest } from "@/transactions/transaction";
@@ -24,7 +24,7 @@ import { useCreateTransactionEditor } from "@/transactions/workspace/useTransact
  */
 interface CreateAccountTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
-  readonly accounts: Account[];
+  readonly accounts: AccountWithBalance[];
   readonly redirectUrl: string;
 }
 

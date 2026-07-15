@@ -1,8 +1,7 @@
 import {
-  AccountingPeriodSortOrderModel,
+  AccountingPeriodWithBalanceSortModel,
   type components,
 } from "@/framework/data/api";
-import dayjs, { type Dayjs } from "dayjs";
 
 /**
  * Type representing an Accounting Period.
@@ -10,24 +9,22 @@ import dayjs, { type Dayjs } from "dayjs";
 type AccountingPeriod = components["schemas"]["AccountingPeriodModel"];
 
 /**
- * Type representing the current Accounting Period response.
+ * Type representing an Accounting Period along with its balance.
  */
-type CurrentAccountingPeriod =
-  components["schemas"]["CurrentAccountingPeriodModel"];
+type AccountingPeriodWithBalance =
+  components["schemas"]["AccountingPeriodWithBalanceModel"];
 
 /**
- * Type representing the Accounting Periods trends response.
+ * Type representing an Accounting Period with its associated Transactions.
  */
-type AccountingPeriodTrends =
-  components["schemas"]["AccountingPeriodTrendsModel"];
+type AccountingPeriodWithTransactions =
+  components["schemas"]["AccountingPeriodWithTransactionsModel"];
 
 /**
- * Interface representing an identifier for an Accounting Period.
+ * Type representing a range of Accounting Periods.
  */
-interface AccountingPeriodIdentifier {
-  id: string;
-  name: string;
-}
+type AccountingPeriodsInRange =
+  components["schemas"]["AccountingPeriodsInRangeModel"];
 
 /**
  * Type representing a request to create an Accounting Period.
@@ -35,42 +32,11 @@ interface AccountingPeriodIdentifier {
 type CreateAccountingPeriodRequest =
   components["schemas"]["CreateAccountingPeriodModel"];
 
-/**
- * Gets the minimum date associated with the provided accounting period.
- */
-const getMinimumDate = function (accountingPeriod: AccountingPeriod): Dayjs {
-  return dayjs(accountingPeriod.name, "MMMM YYYY").subtract(1, "month");
-};
-
-/**
- * Gets the maximum date associated with the provided accounting period.
- */
-const getMaximumDate = function (accountingPeriod: AccountingPeriod): Dayjs {
-  return dayjs(accountingPeriod.name, "MMMM YYYY")
-    .add(2, "month")
-    .subtract(1, "day");
-};
-
-/**
- * Gets the default date associated with the provided accounting period.
- */
-const getDefaultDate = function (
-  accountingPeriod: AccountingPeriod | null,
-): Dayjs | null {
-  if (accountingPeriod === null) {
-    return null;
-  }
-  return dayjs(accountingPeriod.name, "MMMM YYYY");
-};
-
 export {
   type AccountingPeriod,
-  type CurrentAccountingPeriod,
-  type AccountingPeriodTrends,
+  type AccountingPeriodWithBalance,
+  type AccountingPeriodWithTransactions,
+  type AccountingPeriodsInRange,
+  AccountingPeriodWithBalanceSortModel as AccountingPeriodWithBalanceSort,
   type CreateAccountingPeriodRequest,
-  type AccountingPeriodIdentifier,
-  getMinimumDate,
-  getMaximumDate,
-  getDefaultDate,
-  AccountingPeriodSortOrderModel as AccountingPeriodSortOrder,
 };

@@ -1,5 +1,4 @@
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
-import type { GoalWorkspaceBalanceEvent } from "@/goals/types";
 import GoalWorkspacePageHeader from "@/goals/workspace/GoalWorkspacePageHeader";
 import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
 import type { JSX } from "react";
@@ -45,27 +44,41 @@ const GoalWorkspaceDetailPage = async function ({
 
   const [{ data: assignmentGoal }, { data: spendingGoal }] = await Promise.all([
     apiClient.GET("/goals/assignment", {
-      params: { query: { FundId: fundId, AccountingPeriodId: periodId } },
+      params: {
+        query: {
+          "Filter.FundIds": [fundId],
+          "Filter.AccountingPeriodIds": [periodId],
+          Limit: 1,
+        },
+      },
     }),
     apiClient.GET("/goals/spending", {
-      params: { query: { FundId: fundId, AccountingPeriodId: periodId } },
+      params: {
+        query: {
+          "Filter.FundIds": [fundId],
+          "Filter.AccountingPeriodIds": [periodId],
+          Limit: 1,
+        },
+      },
     }),
   ]);
   if (
-    typeof assignmentGoal === "undefined" ||
-    typeof spendingGoal === "undefined"
+    typeof assignmentGoal?.items[0] === "undefined" ||
+    typeof spendingGoal?.items[0] === "undefined"
   ) {
     redirect(workspaceUrl);
   }
 
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
   const { data: balanceEvents } = await apiClient.GET(
-    "/goals/{fundId}/balance-events",
+    "/balance-events/goals/accounting-period-range",
     {
       params: {
-        path: { fundId },
         query: {
-          AccountingPeriodId: periodId,
+          "Range.Start": periodId,
+          "Range.End": periodId,
+          "Filter.FundIds": [fundId],
+          "Filter.AccountingPeriodIds": [periodId],
           Limit: rowsPerPage,
           Offset: getPageOffset(currentBalanceEventPage),
         },
@@ -89,11 +102,11 @@ const GoalWorkspaceDetailPage = async function ({
     <Stack spacing={3} sx={{ width: "100%" }}>
       <GoalWorkspacePageHeader backHref={workspaceUrl} title="Goal Details" />
       <ViewGoalForm
-        assignmentGoal={assignmentGoal}
-        spendingGoal={spendingGoal}
+        assignmentGoal={assignmentGoal.items[0]}
+        spendingGoal={spendingGoal.items[0]}
         redirectUrl={currentUrl}
         recentBalanceEvents={
-          balanceEvents?.items ?? ([] as GoalWorkspaceBalanceEvent[])
+          balanceEvents?.items ?? []
         }
         recentBalanceEventCount={balanceEvents?.totalCount ?? 0}
         addTransactionHref={addTransactionHref}

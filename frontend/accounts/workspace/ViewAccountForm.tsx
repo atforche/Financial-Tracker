@@ -1,6 +1,9 @@
 "use client";
 
-import type { Account, AccountWorkspaceBalanceEvent } from "@/accounts/types";
+import type {
+  AccountWithBalance,
+  AccountWorkspaceBalanceEvent,
+} from "@/accounts/types";
 import AccountBalanceEventsFrame from "@/accounts/workspace/AccountBalanceEventsFrame";
 import AccountSummaryFrame from "@/accounts/workspace/AccountSummaryFrame";
 import DeleteAccountForm from "@/accounts/workspace/DeleteAccountForm";
@@ -12,7 +15,7 @@ import UpdateAccountForm from "@/accounts/workspace/UpdateAccountForm";
  * Props for the ViewAccountForm component.
  */
 interface ViewAccountFormProps {
-  readonly account: Account;
+  readonly account: AccountWithBalance;
   readonly redirectUrl: string;
   readonly recentBalanceEvents: AccountWorkspaceBalanceEvent[];
   readonly recentBalanceEventCount: number;

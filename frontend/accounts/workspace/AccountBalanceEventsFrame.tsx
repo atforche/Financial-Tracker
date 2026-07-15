@@ -1,9 +1,7 @@
 "use client";
 
-import {
-  AccountTrendsBalanceEventType,
-  type AccountWorkspaceBalanceEvent,
-} from "@/accounts/types";
+import type { AccountWorkspaceBalanceEvent } from "@/accounts/types";
+import { BalanceEventTypeModel } from "@/framework/data/api";
 import { Box, Button } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -57,7 +55,7 @@ const AccountBalanceEventsFrame = function ({
           component="span"
           sx={{
             color:
-              balanceEvent.type === AccountTrendsBalanceEventType.Debit
+              balanceEvent.type === BalanceEventTypeModel.Debit
                 ? "warning.dark"
                 : "info.dark",
             fontWeight: 600,
@@ -79,14 +77,15 @@ const AccountBalanceEventsFrame = function ({
       name: "before",
       headerContent: "Balance Before",
       getBodyContent: (balanceEvent) =>
-        formatCurrency(balanceEvent.previousBalance),
+        formatCurrency(balanceEvent.previousBalance.postedBalance),
       alignment: "right",
       minWidth: 150,
     },
     {
       name: "after",
       headerContent: "Balance After",
-      getBodyContent: (balanceEvent) => formatCurrency(balanceEvent.newBalance),
+      getBodyContent: (balanceEvent) =>
+        formatCurrency(balanceEvent.newBalance.postedBalance),
       alignment: "right",
       minWidth: 150,
     },

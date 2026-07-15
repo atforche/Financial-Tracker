@@ -1,7 +1,8 @@
 "use client";
 
 import { Box, ButtonBase, Stack, Typography } from "@mui/material";
-import type { CurrentGoals } from "@/goals/types";
+import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
+import type { AccountingPeriod } from "@/accounting-periods/types";
 import Frame from "@/framework/view/Frame";
 import GoalProgress from "@/goals/workspace/GoalProgress";
 import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
@@ -14,20 +15,29 @@ import { useSearchParams } from "next/navigation";
  * Props for the GoalWorkspaceCards component.
  */
 interface GoalWorkspaceCardsProps {
-  readonly current: CurrentGoals;
+  readonly accountingPeriod: AccountingPeriod | null;
+  readonly assignmentGoals: AssignmentGoal[];
+  readonly spendingGoals: SpendingGoal[];
 }
 
 /**
  * Displays paired goal progress as navigable workspace cards.
  */
 const GoalWorkspaceCards = function ({
-  current,
+  accountingPeriod,
+  assignmentGoals,
+  spendingGoals,
 }: GoalWorkspaceCardsProps): JSX.Element {
   const searchParams = useSearchParams();
   const search = (searchParams.get("search") ?? "").trim().toLowerCase();
-  const funds = current.goals.filter((goal) =>
-    goal.fundName.toLowerCase().includes(search),
-  );
+  const funds = Array.from(
+    new Map(
+      [...assignmentGoals, ...spendingGoals].map((goal) => [
+        goal.fund.id,
+        goal.fund,
+      ]),
+    ).values(),
+  ).filter((fund) => fund.name.toLowerCase().includes(search));
 
   if (funds.length === 0) {
     return (
@@ -51,11 +61,15 @@ const GoalWorkspaceCards = function ({
         },
       }}
     >
-      {funds.map((goal) => {
+      {funds.map((fund) => {
+        const assignmentGoal =
+          assignmentGoals.find((goal) => goal.fund.id === fund.id) ?? null;
+        const spendingGoal =
+          spendingGoals.find((goal) => goal.fund.id === fund.id) ?? null;
         const detailSearchParams: GoalWorkspaceSearchParams = {
-          ...(current.accountingPeriodId === null
+          ...(accountingPeriod === null
             ? {}
-            : { accountingPeriodId: current.accountingPeriodId }),
+            : { accountingPeriodId: accountingPeriod.id }),
           ...(search === "" ? {} : { search }),
         };
         const fundIds = searchParams.getAll("fundIds");
@@ -64,16 +78,16 @@ const GoalWorkspaceCards = function ({
         }
 
         let goalsMet = 0;
-        if (goal.assignmentGoal?.isGoalMet === true) {
+        if (assignmentGoal?.isGoalMet === true) {
           goalsMet += 1;
         }
-        if (goal.spendingGoal?.isGoalMet === true) {
+        if (spendingGoal?.isGoalMet === true) {
           goalsMet += 1;
         }
         return (
           <ButtonBase
-            key={goal.fundId}
-            href={routes.workspaceDetail(goal.fundId, detailSearchParams)}
+            key={fund.id}
+            href={routes.workspaceDetail(fund.id, detailSearchParams)}
             sx={{
               display: "flex",
               width: "100%",
@@ -84,7 +98,7 @@ const GoalWorkspaceCards = function ({
             }}
           >
             <Frame
-              title={goal.fundName}
+              title={fund.name}
               color={
                 goalsMet === 2
                   ? "success"
@@ -100,15 +114,15 @@ const GoalWorkspaceCards = function ({
             >
               <Stack spacing={2.25}>
                 <Typography variant="body2" color="text.secondary">
-                  {current.accountingPeriodName ?? "No accounting period"}
+                  {accountingPeriod?.name ?? "No accounting period"}
                 </Typography>
                 <GoalProgress
                   label="Remaining to assign"
-                  progress={goal.assignmentGoal}
+                  progress={assignmentGoal}
                 />
                 <GoalProgress
                   label="Remaining to spend"
-                  progress={goal.spendingGoal}
+                  progress={spendingGoal}
                 />
               </Stack>
             </Frame>

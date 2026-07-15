@@ -1,4 +1,7 @@
-import type { Account, AccountIdentifier } from "@/accounts/types";
+import type {
+  AccountIdentifier,
+  AccountWithBalance,
+} from "@/accounts/types";
 import type {
   Transaction,
   TransactionAccountDraft,
@@ -14,7 +17,7 @@ import TransactionSourceOrDestinationFrame from "@/transactions/workspace/Transa
  */
 interface AccountTransactionDestinationFrameProps {
   readonly index: number;
-  readonly accounts: Account[];
+  readonly accounts: AccountWithBalance[];
   readonly transaction?: Transaction | null;
   readonly account: TransactionAccountDraft | null;
   readonly setAccount:

@@ -1,8 +1,9 @@
 "use client";
 
 import {
-  type AccountTrendsAccount,
-  AccountTrendsSortOrder,
+  type AccountWithBalanceRange,
+  AccountWithBalanceRangeSort,
+  type AccountWithBalanceRangeSortValue,
   formatAccountType,
   isPositiveChangeInBalance,
 } from "@/accounts/types";
@@ -29,7 +30,7 @@ import tryParseEnum from "@/framework/data/tryParseEnum";
  * Props for the AccountTrendsListFrame component.
  */
 interface AccountTrendsListFrameProps {
-  readonly data: AccountTrendsAccount[] | null;
+  readonly data: AccountWithBalanceRange[] | null;
   readonly totalCount: number | null;
   readonly isInOnboardingMode: boolean;
 }
@@ -56,7 +57,9 @@ const AccountTrendsListFrame = function ({
   const startDateParamName = "startDate";
   const endDateParamName = "endDate";
 
-  const setSort = function (sort: AccountTrendsSortOrder | null): void {
+  const setSort = function (
+    sort: AccountWithBalanceRangeSortValue | null,
+  ): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
       params.delete(sortParamName);
@@ -75,12 +78,14 @@ const AccountTrendsListFrame = function ({
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const openAccountWorkspace = function (account: AccountTrendsAccount): void {
+  const openAccountWorkspace = function (
+    account: AccountWithBalanceRange,
+  ): void {
     router.push(routes.workspaceDetail(account.id, {}));
   };
 
   const currentSort = tryParseEnum(
-    AccountTrendsSortOrder,
+    AccountWithBalanceRangeSort,
     searchParams.get(sortParamName) ?? "",
   );
   const hasActiveFilters =
@@ -92,22 +97,22 @@ const AccountTrendsListFrame = function ({
     searchParams.has(startDateParamName) ||
     searchParams.has(endDateParamName);
 
-  const columns: ColumnDefinition<AccountTrendsAccount>[] = [
+  const columns: ColumnDefinition<AccountWithBalanceRange>[] = [
     {
       name: "name",
       headerContent: "Name",
       getBodyContent: (account) => account.name,
       sortType:
-        currentSort === AccountTrendsSortOrder.Name
+        currentSort === AccountWithBalanceRangeSort.Name
           ? ColumnSortType.Ascending
-          : currentSort === AccountTrendsSortOrder.NameDescending
+          : currentSort === AccountWithBalanceRangeSort.NameDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountTrendsSortOrder.Name);
+          setSort(AccountWithBalanceRangeSort.Name);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountTrendsSortOrder.NameDescending);
+          setSort(AccountWithBalanceRangeSort.NameDescending);
         } else {
           setSort(null);
         }
@@ -118,16 +123,16 @@ const AccountTrendsListFrame = function ({
       headerContent: "Type",
       getBodyContent: (account) => formatAccountType(account.type),
       sortType:
-        currentSort === AccountTrendsSortOrder.Type
+        currentSort === AccountWithBalanceRangeSort.Type
           ? ColumnSortType.Ascending
-          : currentSort === AccountTrendsSortOrder.TypeDescending
+          : currentSort === AccountWithBalanceRangeSort.TypeDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountTrendsSortOrder.Type);
+          setSort(AccountWithBalanceRangeSort.Type);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountTrendsSortOrder.TypeDescending);
+          setSort(AccountWithBalanceRangeSort.TypeDescending);
         } else {
           setSort(null);
         }
@@ -138,16 +143,16 @@ const AccountTrendsListFrame = function ({
       headerContent: "Starting Balance",
       getBodyContent: (account) => formatCurrency(account.startingBalance),
       sortType:
-        currentSort === AccountTrendsSortOrder.OpeningBalance
+        currentSort === AccountWithBalanceRangeSort.StartingBalance
           ? ColumnSortType.Ascending
-          : currentSort === AccountTrendsSortOrder.OpeningBalanceDescending
+          : currentSort === AccountWithBalanceRangeSort.StartingBalanceDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountTrendsSortOrder.OpeningBalance);
+          setSort(AccountWithBalanceRangeSort.StartingBalance);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountTrendsSortOrder.OpeningBalanceDescending);
+          setSort(AccountWithBalanceRangeSort.StartingBalanceDescending);
         } else {
           setSort(null);
         }
@@ -160,16 +165,16 @@ const AccountTrendsListFrame = function ({
       headerContent: "Ending Balance",
       getBodyContent: (account) => formatCurrency(account.endingBalance),
       sortType:
-        currentSort === AccountTrendsSortOrder.ClosingBalance
+        currentSort === AccountWithBalanceRangeSort.EndingBalance
           ? ColumnSortType.Ascending
-          : currentSort === AccountTrendsSortOrder.ClosingBalanceDescending
+          : currentSort === AccountWithBalanceRangeSort.EndingBalanceDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountTrendsSortOrder.ClosingBalance);
+          setSort(AccountWithBalanceRangeSort.EndingBalance);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountTrendsSortOrder.ClosingBalanceDescending);
+          setSort(AccountWithBalanceRangeSort.EndingBalanceDescending);
         } else {
           setSort(null);
         }
@@ -199,16 +204,16 @@ const AccountTrendsListFrame = function ({
         );
       },
       sortType:
-        currentSort === AccountTrendsSortOrder.NetChange
+        currentSort === AccountWithBalanceRangeSort.NetChange
           ? ColumnSortType.Ascending
-          : currentSort === AccountTrendsSortOrder.NetChangeDescending
+          : currentSort === AccountWithBalanceRangeSort.NetChangeDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountTrendsSortOrder.NetChange);
+          setSort(AccountWithBalanceRangeSort.NetChange);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountTrendsSortOrder.NetChangeDescending);
+          setSort(AccountWithBalanceRangeSort.NetChangeDescending);
         } else {
           setSort(null);
         }
@@ -261,14 +266,14 @@ const AccountTrendsListFrame = function ({
     >
       <Stack spacing={2.5}>
         <Typography variant="h5">Accounts</Typography>
-        <ListFrame<AccountTrendsAccount>
+        <ListFrame<AccountWithBalanceRange>
           columns={columns}
           getId={(account) => account.id}
           data={data ?? null}
           totalCount={totalCount ?? null}
           searchParamName="search"
           pageParamName={pageParamName}
-          onRowClick={(account: AccountTrendsAccount): void => {
+          onRowClick={(account: AccountWithBalanceRange): void => {
             setAccountNameFilter(account.name);
           }}
           hasActiveFilters={hasActiveFilters}

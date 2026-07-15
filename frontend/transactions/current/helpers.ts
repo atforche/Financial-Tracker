@@ -21,13 +21,13 @@ const summarizeValues = function (values: string[]): string {
 const getTransactionSourceLabel = function (transaction: Transaction): string {
   const spendingTransaction = asSpendingTransaction(transaction);
   if (spendingTransaction !== null) {
-    return spendingTransaction.source.account.accountName;
+    return spendingTransaction.source.account.account.name;
   }
 
   const incomeTransaction = asIncomeTransaction(transaction);
   if (incomeTransaction !== null) {
     return (
-      incomeTransaction.source.account?.accountName ??
+      incomeTransaction.source.account?.account.name ??
       incomeTransaction.source.location ??
       ""
     );
@@ -36,7 +36,7 @@ const getTransactionSourceLabel = function (transaction: Transaction): string {
   const accountTransaction = asAccountTransaction(transaction);
   if (accountTransaction !== null) {
     return (
-      accountTransaction.source.account?.accountName ??
+      accountTransaction.source.account?.account.name ??
       accountTransaction.source.location ??
       ""
     );
@@ -44,7 +44,7 @@ const getTransactionSourceLabel = function (transaction: Transaction): string {
 
   const fundTransaction = asFundTransaction(transaction);
   if (fundTransaction !== null) {
-    return fundTransaction.source.fund.fundName;
+    return fundTransaction.source.fund.fund.name;
   }
 
   return "";
@@ -61,7 +61,7 @@ const getTransactionDestinationLabel = function (
     return summarizeValues(
       spendingTransaction.destinations.map(
         (destination) =>
-          destination.account?.accountName ?? destination.location ?? "",
+          destination.account?.account.name ?? destination.location ?? "",
       ),
     );
   }
@@ -70,7 +70,7 @@ const getTransactionDestinationLabel = function (
   if (incomeTransaction !== null) {
     return summarizeValues(
       incomeTransaction.destinations.map(
-        (destination) => destination.account.accountName,
+        (destination) => destination.account.account.name,
       ),
     );
   }
@@ -80,7 +80,7 @@ const getTransactionDestinationLabel = function (
     return summarizeValues(
       accountTransaction.destinations.map(
         (destination) =>
-          destination.account?.accountName ?? destination.location ?? "",
+          destination.account?.account.name ?? destination.location ?? "",
       ),
     );
   }
@@ -89,7 +89,7 @@ const getTransactionDestinationLabel = function (
   if (fundTransaction !== null) {
     return summarizeValues(
       fundTransaction.destinations.map(
-        (destination) => destination.fund.fundName,
+        (destination) => destination.fund.fund.name,
       ),
     );
   }

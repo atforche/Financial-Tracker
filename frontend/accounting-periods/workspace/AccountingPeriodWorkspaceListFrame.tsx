@@ -1,8 +1,9 @@
 "use client";
 
 import {
-  type AccountingPeriod,
-  AccountingPeriodSortOrder,
+  type AccountingPeriodWithBalance,
+  AccountingPeriodWithBalanceSort,
+  type AccountingPeriodWithBalanceSortValue,
 } from "@/accounting-periods/types";
 import { Button, Checkbox, Paper, Stack, Typography } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -17,7 +18,7 @@ import tryParseEnum from "@/framework/data/tryParseEnum";
  * Props for the AccountingPeriodWorkspaceListFrame component.
  */
 interface AccountingPeriodWorkspaceListFrameProps {
-  readonly data: AccountingPeriod[] | null;
+  readonly data: AccountingPeriodWithBalance[] | null;
   readonly totalCount: number | null;
   readonly selectedAccountingPeriodId: string | null;
 }
@@ -49,7 +50,9 @@ const AccountingPeriodWorkspaceListFrame = function ({
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const setSort = function (sort: AccountingPeriodSortOrder | null): void {
+  const setSort = function (
+    sort: AccountingPeriodWithBalanceSortValue | null,
+  ): void {
     replaceSearchParams((params) => {
       if (sort === null) {
         params.delete(sortParamName);
@@ -74,11 +77,11 @@ const AccountingPeriodWorkspaceListFrame = function ({
   };
 
   const currentSort = tryParseEnum(
-    AccountingPeriodSortOrder,
+    AccountingPeriodWithBalanceSort,
     searchParams.get(sortParamName) ?? "",
   );
 
-  const columns: ColumnDefinition<AccountingPeriod>[] = [
+  const columns: ColumnDefinition<AccountingPeriodWithBalance>[] = [
     {
       name: "selected",
       headerContent: "",
@@ -105,16 +108,16 @@ const AccountingPeriodWorkspaceListFrame = function ({
       headerContent: "Period",
       getBodyContent: (accountingPeriod) => accountingPeriod.name,
       sortType:
-        currentSort === AccountingPeriodSortOrder.Date
+        currentSort === AccountingPeriodWithBalanceSort.Date
           ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodSortOrder.DateDescending
+          : currentSort === AccountingPeriodWithBalanceSort.DateDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodSortOrder.Date);
+          setSort(AccountingPeriodWithBalanceSort.Date);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodSortOrder.DateDescending);
+          setSort(AccountingPeriodWithBalanceSort.DateDescending);
         } else {
           setSort(null);
         }
@@ -127,16 +130,16 @@ const AccountingPeriodWorkspaceListFrame = function ({
         <Checkbox checked={accountingPeriod.isOpen} />
       ),
       sortType:
-        currentSort === AccountingPeriodSortOrder.IsOpen
+        currentSort === AccountingPeriodWithBalanceSort.IsOpen
           ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodSortOrder.IsOpenDescending
+          : currentSort === AccountingPeriodWithBalanceSort.IsOpenDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodSortOrder.IsOpen);
+          setSort(AccountingPeriodWithBalanceSort.IsOpen);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodSortOrder.IsOpenDescending);
+          setSort(AccountingPeriodWithBalanceSort.IsOpenDescending);
         } else {
           setSort(null);
         }
@@ -149,16 +152,16 @@ const AccountingPeriodWorkspaceListFrame = function ({
       getBodyContent: (accountingPeriod) =>
         formatCurrency(accountingPeriod.openingBalance),
       sortType:
-        currentSort === AccountingPeriodSortOrder.OpeningBalance
+        currentSort === AccountingPeriodWithBalanceSort.OpeningBalance
           ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodSortOrder.OpeningBalanceDescending
+          : currentSort === AccountingPeriodWithBalanceSort.OpeningBalanceDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodSortOrder.OpeningBalance);
+          setSort(AccountingPeriodWithBalanceSort.OpeningBalance);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodSortOrder.OpeningBalanceDescending);
+          setSort(AccountingPeriodWithBalanceSort.OpeningBalanceDescending);
         } else {
           setSort(null);
         }
@@ -171,16 +174,16 @@ const AccountingPeriodWorkspaceListFrame = function ({
       getBodyContent: (accountingPeriod) =>
         formatCurrency(accountingPeriod.closingBalance),
       sortType:
-        currentSort === AccountingPeriodSortOrder.ClosingBalance
+        currentSort === AccountingPeriodWithBalanceSort.ClosingBalance
           ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodSortOrder.ClosingBalanceDescending
+          : currentSort === AccountingPeriodWithBalanceSort.ClosingBalanceDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
-          setSort(AccountingPeriodSortOrder.ClosingBalance);
+          setSort(AccountingPeriodWithBalanceSort.ClosingBalance);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(AccountingPeriodSortOrder.ClosingBalanceDescending);
+          setSort(AccountingPeriodWithBalanceSort.ClosingBalanceDescending);
         } else {
           setSort(null);
         }
@@ -202,7 +205,7 @@ const AccountingPeriodWorkspaceListFrame = function ({
         <Typography variant="h6" color="text.secondary">
           Accounting Periods
         </Typography>
-        <ListFrame<AccountingPeriod>
+        <ListFrame<AccountingPeriodWithBalance>
           columns={columns}
           getId={(accountingPeriod) => accountingPeriod.id}
           data={data ?? null}

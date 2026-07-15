@@ -10,7 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import { Box, Paper, Stack, Typography } from "@mui/material";
-import type { GoalTrendsAccountingPeriodSummaryModel } from "@/goals/types";
+import type { GoalAccountingPeriodSummary } from "@/goals/trends/goalTrendsTypes";
 import type { JSX } from "react";
 import formatCurrency from "@/framework/formatCurrency";
 
@@ -19,9 +19,9 @@ interface GoalTrendsMetricChartProps {
   readonly subtitle: string;
   readonly label: string;
   readonly accountingPeriods:
-    readonly GoalTrendsAccountingPeriodSummaryModel[] | null;
+    readonly GoalAccountingPeriodSummary[] | null;
   readonly getValue: (
-    accountingPeriod: GoalTrendsAccountingPeriodSummaryModel,
+    accountingPeriod: GoalAccountingPeriodSummary,
   ) => number;
   readonly formatter: (value: number) => string;
   readonly tickFormatter?: (value: number) => string;
