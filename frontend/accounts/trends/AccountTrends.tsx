@@ -23,6 +23,7 @@ import AccountTrendsSummaryCards from "@/accounts/trends/AccountTrendsSummaryCar
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
+import { buildBalanceTrendChartPoints } from "@/framework/charts/helpers";
 import dayjs from "dayjs";
 import getApiClient from "@/framework/data/getApiClient";
 import { redirect } from "next/navigation";
@@ -222,6 +223,11 @@ const AccountTrends = async function ({
     totalOpeningBalance: summary.openingBalance.totalBalance,
     totalClosingBalance: summary.closingBalance.totalBalance,
   }));
+  const balanceTrendChartPoints = buildBalanceTrendChartPoints({
+    mode: modeValue,
+    accountingPeriods: chartPeriods,
+    dates: dateSummaries,
+  });
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
@@ -254,9 +260,8 @@ const AccountTrends = async function ({
         }}
       >
         <BalanceTrendChart
-          mode={modeValue}
-          accountingPeriods={chartPeriods}
-          dates={dateSummaries}
+          chartPoints={balanceTrendChartPoints}
+          xAxisLabel={modeValue === "Date" ? "Date" : "Accounting Period"}
         />
         <AccountTrendsChangeChart
           mode={modeValue}

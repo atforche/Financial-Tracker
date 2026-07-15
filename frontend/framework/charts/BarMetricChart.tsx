@@ -1,72 +1,55 @@
 "use client";
 
 import {
-  Area,
-  AreaChart,
+  Bar,
+  BarChart,
   CartesianGrid,
-  Line,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 import {
-  type BalanceTrendChartPoint,
-  getTooltipChartPoint,
-} from "@/framework/charts/helpers";
+  type BarMetricChartPoint,
+  getBarMetricTooltipChartPoint,
+} from "@/framework/charts/barMetricHelpers";
 import { Box, Paper, Stack, Typography } from "@mui/material";
-import { type JSX, useId } from "react";
-import formatCompactCurrency from "@/framework/formatCompactCurrency";
-import formatCurrency from "@/framework/formatCurrency";
+import type { JSX } from "react";
 
-/**
- * Props for the BalanceTrendChart component.
- */
-interface BalanceTrendChartProps {
-  readonly chartPoints: readonly BalanceTrendChartPoint[];
+interface BarMetricChartProps {
+  readonly title: string;
+  readonly emptyMessage: string;
+  readonly chartPoints: readonly BarMetricChartPoint[];
   readonly xAxisLabel: string;
-  readonly color?: "primary" | "secondary";
+  readonly yAxisLabel: string;
+  readonly tickFormatter: (value: number) => string;
+  readonly valueFormatter: (value: number) => string;
+  readonly getTooltipDescription?: (point: BarMetricChartPoint) => string;
+  readonly showZeroLine?: boolean;
 }
 
-const chartColors = {
-  primary: {
-    fillEnd: "rgba(25, 118, 210, 0.02)",
-    fillStart: "rgba(25, 118, 210, 0.28)",
-    line: "#1976d2",
-    cursor: "rgba(25, 118, 210, 0.24)",
-  },
-  secondary: {
-    fillEnd: "rgba(0, 150, 136, 0.02)",
-    fillStart: "rgba(0, 150, 136, 0.28)",
-    line: "#009688",
-    cursor: "rgba(0, 150, 136, 0.24)",
-  },
-} as const;
-
 /**
- * Renders a balance trend from normalized chart points.
+ * Renders a single normalized metric as a bar chart.
  */
-const BalanceTrendChart = function ({
+const BarMetricChart = function ({
+  title,
+  emptyMessage,
   chartPoints,
   xAxisLabel,
-  color = "primary",
-}: BalanceTrendChartProps): JSX.Element {
-  const gradientId = `balance-trend-fill-${useId().replaceAll(":", "")}`;
-  const colors = chartColors[color];
-
+  yAxisLabel,
+  tickFormatter,
+  valueFormatter,
+  getTooltipDescription,
+  showZeroLine = false,
+}: BarMetricChartProps): JSX.Element {
   if (chartPoints.length === 0) {
     return (
-      <Paper
-        sx={{
-          border: "1px solid",
-          borderColor: "divider",
-          p: 3,
-        }}
-      >
+      <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
         <Stack spacing={1}>
-          <Typography variant="h5">Balance trend</Typography>
+          <Typography variant="h5">{title}</Typography>
           <Typography variant="body2" color="text.secondary">
-            No balance history is available for the selected trends range.
+            {emptyMessage}
           </Typography>
         </Stack>
       </Paper>
@@ -74,38 +57,27 @@ const BalanceTrendChart = function ({
   }
 
   return (
-    <Paper
-      sx={{
-        border: "1px solid",
-        borderColor: "divider",
-        p: 3,
-      }}
-    >
+    <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
       <Stack spacing={2.5}>
-        <Typography variant="h5">Balance Trend</Typography>
+        <Typography variant="h5">{title}</Typography>
         <Box sx={{ height: 320, width: "100%" }}>
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
+            <BarChart
               data={chartPoints}
               margin={{ top: 12, right: 12, bottom: 24, left: 12 }}
             >
-              <defs>
-                <linearGradient
-                  id={gradientId}
-                  x1="0"
-                  x2="0"
-                  y1="0"
-                  y2="1"
-                >
-                  <stop offset="0%" stopColor={colors.fillStart} />
-                  <stop offset="100%" stopColor={colors.fillEnd} />
-                </linearGradient>
-              </defs>
               <CartesianGrid
                 strokeDasharray="4 4"
                 vertical={false}
                 opacity={0.24}
               />
+              {showZeroLine ? (
+                <ReferenceLine
+                  stroke="rgba(15, 23, 42, 0.2)"
+                  strokeDasharray="4 4"
+                  y={0}
+                />
+              ) : null}
               <XAxis
                 axisLine={false}
                 dataKey="tickLabel"
@@ -128,7 +100,7 @@ const BalanceTrendChart = function ({
               <YAxis
                 axisLine={false}
                 label={{
-                  value: "Total Balance",
+                  value: yAxisLabel,
                   angle: -90,
                   position: "center",
                   dx: -45,
@@ -140,17 +112,18 @@ const BalanceTrendChart = function ({
                   fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
                   dx: -12,
                 }}
-                tickFormatter={(value: number) => formatCompactCurrency(value)}
+                tickFormatter={tickFormatter}
                 tickLine={false}
-                width={80}
+                width={96}
               />
               <Tooltip
                 content={(tooltipProps): JSX.Element | null => {
-                  const point = getTooltipChartPoint(tooltipProps);
+                  const point = getBarMetricTooltipChartPoint(tooltipProps);
                   if (!tooltipProps.active || point === null) {
                     return null;
                   }
 
+                  const description = getTooltipDescription?.(point);
                   return (
                     <Paper
                       elevation={3}
@@ -166,34 +139,21 @@ const BalanceTrendChart = function ({
                           {point.tooltipLabel}
                         </Typography>
                         <Typography variant="body1">
-                          {formatCurrency(point.balance)}
+                          {valueFormatter(point.value)}
                         </Typography>
+                        {typeof description === "undefined" ? null : (
+                          <Typography variant="body2" color="text.secondary">
+                            {description}
+                          </Typography>
+                        )}
                       </Stack>
                     </Paper>
                   );
                 }}
-                cursor={{ stroke: colors.cursor, strokeWidth: 1 }}
+                cursor={{ fill: "rgba(25, 118, 210, 0.08)" }}
               />
-              <Area
-                dataKey="balance"
-                fill={`url(#${gradientId})`}
-                stroke="none"
-                type="monotone"
-              />
-              <Line
-                activeDot={{
-                  fill: colors.line,
-                  r: 6,
-                  stroke: "#ffffff",
-                  strokeWidth: 2,
-                }}
-                dataKey="balance"
-                dot={false}
-                stroke={colors.line}
-                strokeWidth={3}
-                type="monotone"
-              />
-            </AreaChart>
+              <Bar dataKey="value" />
+            </BarChart>
           </ResponsiveContainer>
         </Box>
       </Stack>
@@ -201,4 +161,4 @@ const BalanceTrendChart = function ({
   );
 };
 
-export default BalanceTrendChart;
+export default BarMetricChart;

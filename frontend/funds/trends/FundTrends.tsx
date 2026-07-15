@@ -18,6 +18,7 @@ import FundTrendsFilter from "@/funds/trends/FundTrendsFilter";
 import FundTrendsListFrame from "@/funds/trends/FundTrendsListFrame";
 import FundTrendsSummaryCards from "@/funds/trends/FundTrendsSummaryCards";
 import type { JSX } from "react";
+import { buildBalanceTrendChartPoints } from "@/framework/charts/helpers";
 import dayjs from "dayjs";
 import getApiClient from "@/framework/data/getApiClient";
 import { redirect } from "next/navigation";
@@ -203,6 +204,11 @@ const FundTrends = async function ({
     totalOpeningBalance: summary.openingBalance.totalBalance,
     totalClosingBalance: summary.closingBalance.totalBalance,
   }));
+  const balanceTrendChartPoints = buildBalanceTrendChartPoints({
+    mode: modeValue,
+    accountingPeriods: chartPeriods,
+    dates: dateSummaries,
+  });
 
   return (
     <Stack spacing={3} sx={{ width: "100%" }}>
@@ -235,9 +241,8 @@ const FundTrends = async function ({
         }}
       >
         <BalanceTrendChart
-          mode={modeValue}
-          accountingPeriods={chartPeriods}
-          dates={dateSummaries}
+          chartPoints={balanceTrendChartPoints}
+          xAxisLabel={modeValue === "Date" ? "Date" : "Accounting Period"}
         />
         <FundTrendsChangeChart
           mode={modeValue}

@@ -179,7 +179,12 @@ const buildBalanceTrendChartPoints = function ({
   return buildAccountingPeriodChartPoints(accountingPeriods ?? []);
 };
 
-export { buildBalanceTrendChartPoints, getTooltipChartPoint };
+export {
+  buildAccountingPeriodChartPoints,
+  buildBalanceTrendChartPoints,
+  buildDateChartPoints,
+  getTooltipChartPoint,
+};
 export type {
   BalanceTrendChartMode,
   BalanceTrendChartPoint,
