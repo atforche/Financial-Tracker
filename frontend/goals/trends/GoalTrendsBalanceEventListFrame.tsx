@@ -57,9 +57,7 @@ const GoalTrendsBalanceEventListFrame = function ({
   const startAccountingPeriodIdParamName = "startAccountingPeriodId";
   const endAccountingPeriodIdParamName = "endAccountingPeriodId";
 
-  const setSort = function (
-    sort: string | null,
-  ): void {
+  const setSort = function (sort: string | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
       params.delete(sortParamName);
@@ -122,17 +120,14 @@ const GoalTrendsBalanceEventListFrame = function ({
       sortType:
         currentSort === GoalBalanceEventSort.AccountingPeriod
           ? ColumnSortType.Ascending
-          : currentSort ===
-              GoalBalanceEventSort.AccountingPeriodDescending
+          : currentSort === GoalBalanceEventSort.AccountingPeriodDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(GoalBalanceEventSort.AccountingPeriod);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(
-            GoalBalanceEventSort.AccountingPeriodDescending,
-          );
+          setSort(GoalBalanceEventSort.AccountingPeriodDescending);
         } else {
           setSort(null);
         }

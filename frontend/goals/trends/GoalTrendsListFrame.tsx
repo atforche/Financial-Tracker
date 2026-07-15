@@ -158,8 +158,7 @@ const GoalTrendsListFrame = function ({
         sortType:
           currentSort === AssignmentGoalSort.TotalAmountToAssign
             ? ColumnSortType.Ascending
-            : currentSort ===
-                AssignmentGoalSort.TotalAmountToAssignDescending
+            : currentSort === AssignmentGoalSort.TotalAmountToAssignDescending
               ? ColumnSortType.Descending
               : null,
         onSort: (sortType): void => {
@@ -181,8 +180,7 @@ const GoalTrendsListFrame = function ({
         sortType:
           currentSort === AssignmentGoalSort.TotalAmountAssigned
             ? ColumnSortType.Ascending
-            : currentSort ===
-                AssignmentGoalSort.TotalAmountAssignedDescending
+            : currentSort === AssignmentGoalSort.TotalAmountAssignedDescending
               ? ColumnSortType.Descending
               : null,
         onSort: (sortType): void => {

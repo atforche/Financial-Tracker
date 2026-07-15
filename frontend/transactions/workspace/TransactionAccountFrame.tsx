@@ -1,9 +1,6 @@
 "use client";
 
-import type {
-  AccountIdentifier,
-  AccountWithBalance,
-} from "@/accounts/types";
+import type { AccountIdentifier, AccountWithBalance } from "@/accounts/types";
 import { Button, Stack, Typography } from "@mui/material";
 import {
   type JSX,

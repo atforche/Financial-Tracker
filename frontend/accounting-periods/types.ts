@@ -1,4 +1,5 @@
 import {
+  AccountingPeriodSortModel,
   AccountingPeriodWithBalanceSortModel,
   type components,
 } from "@/framework/data/api";
@@ -34,9 +35,10 @@ type CreateAccountingPeriodRequest =
 
 export {
   type AccountingPeriod,
+  AccountingPeriodSortModel as AccountingPeriodSort,
   type AccountingPeriodWithBalance,
+  AccountingPeriodWithBalanceSortModel as AccountingPeriodWithBalanceSort,
   type AccountingPeriodWithTransactions,
   type AccountingPeriodsInRange,
-  AccountingPeriodWithBalanceSortModel as AccountingPeriodWithBalanceSort,
   type CreateAccountingPeriodRequest,
 };

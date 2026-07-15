@@ -29,8 +29,4 @@ const getDefaultDate = function (
   return dayjs(accountingPeriod.name, "MMMM YYYY");
 };
 
-export {
-  getMinimumDate,
-  getMaximumDate,
-  getDefaultDate,
-}
+export { getMinimumDate, getMaximumDate, getDefaultDate };

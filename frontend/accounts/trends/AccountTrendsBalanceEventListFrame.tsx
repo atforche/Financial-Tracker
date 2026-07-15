@@ -25,9 +25,7 @@ import formatShortDate from "@/framework/formatShortDate";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
-const formatBalanceEventType = function (
-  type: BalanceEventTypeModel,
-): string {
+const formatBalanceEventType = function (type: BalanceEventTypeModel): string {
   return type === BalanceEventTypeModel.Debit ? "Debit" : "Credit";
 };
 
@@ -62,9 +60,7 @@ const AccountTrendsBalanceEventListFrame = function ({
   const startDateParamName = "startDate";
   const endDateParamName = "endDate";
 
-  const setSort = function (
-    sort: AccountBalanceEventSortValue | null,
-  ): void {
+  const setSort = function (sort: AccountBalanceEventSortValue | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
       params.delete(sortParamName);
@@ -108,8 +104,7 @@ const AccountTrendsBalanceEventListFrame = function ({
       sortType:
         currentSort === AccountBalanceEventSort.AccountName
           ? ColumnSortType.Ascending
-          : currentSort ===
-              AccountBalanceEventSort.AccountNameDescending
+          : currentSort === AccountBalanceEventSort.AccountNameDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
@@ -241,9 +236,7 @@ const AccountTrendsBalanceEventListFrame = function ({
         if (sortType === ColumnSortType.Ascending) {
           setSort(AccountBalanceEventSort.AccountingPeriodName);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(
-            AccountBalanceEventSort.AccountingPeriodNameDescending,
-          );
+          setSort(AccountBalanceEventSort.AccountingPeriodNameDescending);
         } else {
           setSort(null);
         }

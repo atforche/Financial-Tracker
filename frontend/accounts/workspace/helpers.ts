@@ -125,9 +125,7 @@ const formatAccountBalanceEventType = function (
   balanceEvent: AccountWorkspaceBalanceEvent,
 ): string {
   const baseLabel =
-    balanceEvent.type === BalanceEventTypeModel.Debit
-      ? "Debit"
-      : "Credit";
+    balanceEvent.type === BalanceEventTypeModel.Debit ? "Debit" : "Credit";
 
   return balanceEvent.isPosted
     ? baseLabel

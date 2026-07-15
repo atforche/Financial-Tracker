@@ -23,8 +23,7 @@ const CurrentAccountingPeriodSummaryCards = function ({
     openingBalance === 0 ? 0 : (netChange / Math.abs(openingBalance)) * 100;
   const isPositive = netChange >= 0;
   const valueColor = isPositive ? "success.main" : "error.main";
-  const titleSuffix =
-    current === null ? "" : ` (${current.name})`;
+  const titleSuffix = current === null ? "" : ` (${current.name})`;
 
   return (
     <Box

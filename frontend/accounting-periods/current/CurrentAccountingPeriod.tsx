@@ -1,19 +1,20 @@
+import { AccountingPeriodSort, type AccountingPeriodWithTransactions } from "@/accounting-periods/types";
 import { Stack, Typography } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import AccountingPeriodCurrentIncomeSpendingCard from "@/accounting-periods/current/CurrentAccountingPeriodIncomeSpendingCard";
 import AccountingPeriodCurrentSummaryCards from "@/accounting-periods/current/CurrentAccountingPeriodSummaryCards";
 import AccountingPeriodCurrentTransactionListFrame from "@/accounting-periods/current/CurrentAccountingPeriodTransactionListFrame";
-import type { AccountingPeriodWithTransactions } from "@/accounting-periods/types";
 import type { JSX } from "react";
-import type { TransactionSortValue } from "@/transactions/transaction";
+import type { TransactionSort } from "@/transactions/types";
 import getApiClient from "@/framework/data/getApiClient";
+import isNotNullOrUndefined from "@/framework/isNotNullOrUndefined";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
 /**
  * Search parameters for the CurrentAccountingPeriod component.
  */
 interface CurrentAccountingPeriodSearchParams {
-  transactionSort?: TransactionSortValue;
+  transactionSort?: TransactionSort;
   transactionPage?: number | string | null;
 }
 
@@ -35,14 +36,12 @@ const CurrentAccountingPeriod = async function ({
 
   const apiClient = getApiClient();
   const { data: accountingPeriods } = await apiClient.GET(
-    "/accounting-periods/with-balances",
-    { params: { query: { Sort: "DateDescending", Limit: 500 } } },
+    "/accounting-periods",
+    { params: { query: { Sort: AccountingPeriodSort.DateDescending, Limit: 1 } } },
   );
-  const currentAccountingPeriod = accountingPeriods?.items.find(
-    (period) => period.isOpen,
-  );
+  const currentAccountingPeriod = accountingPeriods?.items[0] ?? null;
   let current: AccountingPeriodWithTransactions | null = null;
-  if (typeof currentAccountingPeriod !== "undefined") {
+  if (isNotNullOrUndefined(currentAccountingPeriod)) {
     current =
       (
         await apiClient.GET(
@@ -51,7 +50,7 @@ const CurrentAccountingPeriod = async function ({
             params: {
               path: { accountingPeriodId: currentAccountingPeriod.id },
               query: {
-                ...(typeof transactionSort === "string"
+                ...(isNotNullOrUndefined(transactionSort)
                   ? { Sort: transactionSort }
                   : {}),
                 Limit: rowsPerPage,

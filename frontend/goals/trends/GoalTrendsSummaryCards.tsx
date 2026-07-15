@@ -16,7 +16,8 @@ import type {
   AssignmentGoalTypeSummary,
   GoalRangeSummary,
   GoalTrendsView,
- SpendingGoalTypeSummary } from "@/goals/trends/goalTrendsTypes";
+  SpendingGoalTypeSummary,
+} from "@/goals/trends/goalTrendsTypes";
 import { type JSX, type ReactNode, useState } from "react";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import SummaryCard from "@/framework/view/SummaryCard";
@@ -238,9 +239,8 @@ const GoalTrendsSummaryCards = function ({
             value: formatCurrency(trends.totalAmountToSpend),
             detailLabel: "Goal type breakdown",
             detailValue: formatCurrency(trends.totalAmountToSpend),
-            detailRows: getSpendingRows(
-              trends.spendingGoalTypes,
-              (summary) => formatCurrency(summary.totalAmountToSpend),
+            detailRows: getSpendingRows(trends.spendingGoalTypes, (summary) =>
+              formatCurrency(summary.totalAmountToSpend),
             ),
           },
           {
@@ -248,9 +248,8 @@ const GoalTrendsSummaryCards = function ({
             value: formatCurrency(trends.totalAmountSpent),
             detailLabel: "Goal type breakdown",
             detailValue: formatCurrency(trends.totalAmountSpent),
-            detailRows: getSpendingRows(
-              trends.spendingGoalTypes,
-              (summary) => formatCurrency(summary.totalAmountSpent),
+            detailRows: getSpendingRows(trends.spendingGoalTypes, (summary) =>
+              formatCurrency(summary.totalAmountSpent),
             ),
           },
           {

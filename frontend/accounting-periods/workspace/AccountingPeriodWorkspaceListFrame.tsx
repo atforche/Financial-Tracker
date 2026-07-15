@@ -154,7 +154,8 @@ const AccountingPeriodWorkspaceListFrame = function ({
       sortType:
         currentSort === AccountingPeriodWithBalanceSort.OpeningBalance
           ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodWithBalanceSort.OpeningBalanceDescending
+          : currentSort ===
+              AccountingPeriodWithBalanceSort.OpeningBalanceDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
@@ -176,7 +177,8 @@ const AccountingPeriodWorkspaceListFrame = function ({
       sortType:
         currentSort === AccountingPeriodWithBalanceSort.ClosingBalance
           ? ColumnSortType.Ascending
-          : currentSort === AccountingPeriodWithBalanceSort.ClosingBalanceDescending
+          : currentSort ===
+              AccountingPeriodWithBalanceSort.ClosingBalanceDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {

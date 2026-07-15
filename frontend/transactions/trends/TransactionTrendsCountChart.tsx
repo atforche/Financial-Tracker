@@ -23,7 +23,8 @@ type TransactionTrendsCountChartMode = "AccountingPeriod" | "Date";
 
 interface TransactionTrendsCountChartProps {
   readonly mode: TransactionTrendsCountChartMode;
-  readonly accountingPeriods: readonly TransactionAccountingPeriodSummary[] | null;
+  readonly accountingPeriods:
+    readonly TransactionAccountingPeriodSummary[] | null;
   readonly dates: readonly TransactionDateSummary[] | null;
 }
 

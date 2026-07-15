@@ -340,8 +340,7 @@ const getDestinationsFromTransaction = function (
       postedDate: destination.account?.date ?? null,
       previousAccountBalance:
         destination.account?.previousBalance.postedBalance ?? null,
-      newAccountBalance:
-        destination.account?.newBalance.postedBalance ?? null,
+      newAccountBalance: destination.account?.newBalance.postedBalance ?? null,
     }),
   );
 };

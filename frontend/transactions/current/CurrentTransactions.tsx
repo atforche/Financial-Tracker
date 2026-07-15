@@ -103,7 +103,8 @@ const CurrentTransactions = async function ({
       apiClient.GET("/funds"),
     ]);
   const accountingPeriod = periods?.items.find((period) => period.isOpen);
-  const availableAccountNames = accounts?.items.map((account) => account.name) ?? [];
+  const availableAccountNames =
+    accounts?.items.map((account) => account.name) ?? [];
   const availableFundNames = funds?.items.map((fund) => fund.name) ?? [];
   let current: CurrentTransactionData = {
     accountingPeriodId: accountingPeriod?.id ?? null,
@@ -160,32 +161,41 @@ const CurrentTransactions = async function ({
         transactions: Transaction[],
       ): Transaction[] {
         return transactions.filter((transaction) => {
-        if (
-          shouldPersistTransactionTypes(currentTransactionTypes) &&
-          !currentTransactionTypes.includes(transaction.transactionType)
-        ) {
-          return false;
-        }
-        if (
-          shouldPersistAccountNames(currentAccountNames) &&
-          !getTransactionAccountIds(transaction).some((id) => accountIds.has(id))
-        ) {
-          return false;
-        }
-        return !shouldPersistFundNames(currentFundNames) ||
-          getTransactionFundIds(transaction).some((id) => fundIds.has(id));
+          if (
+            shouldPersistTransactionTypes(currentTransactionTypes) &&
+            !currentTransactionTypes.includes(transaction.transactionType)
+          ) {
+            return false;
+          }
+          if (
+            shouldPersistAccountNames(currentAccountNames) &&
+            !getTransactionAccountIds(transaction).some((id) =>
+              accountIds.has(id),
+            )
+          ) {
+            return false;
+          }
+          return (
+            !shouldPersistFundNames(currentFundNames) ||
+            getTransactionFundIds(transaction).some((id) => fundIds.has(id))
+          );
         });
       };
-      const unposted = filterTransactions(unpostedData.transactions.items).filter(
+      const unposted = filterTransactions(
+        unpostedData.transactions.items,
+      ).filter(
         (transaction) => getPostableTransactionAccounts(transaction).length > 0,
       );
       const posted = filterTransactions(postedData.transactions.items).filter(
-        (transaction) => getPostableTransactionAccounts(transaction).length === 0,
+        (transaction) =>
+          getPostableTransactionAccounts(transaction).length === 0,
       );
       const unpostedOffset = getPageOffset(
         normalizePageValue(unpostedTransactionPage),
       );
-      const postedOffset = getPageOffset(normalizePageValue(postedTransactionPage));
+      const postedOffset = getPageOffset(
+        normalizePageValue(postedTransactionPage),
+      );
       current = {
         ...current,
         transactionTypes: unpostedData.transactionTypes,

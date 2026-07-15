@@ -44,17 +44,17 @@ const GoalWorkspace = async function ({
   const selectedFundIds = toRepeatedSearchParam(fundIds);
   const [assignmentGoalResponse, spendingGoalResponse] = await Promise.all([
     apiClient.GET("/goals/assignment", {
-        params: {
-          query: {
-            ...(typeof selectedAccountingPeriodId === "string"
-              ? { "Filter.AccountingPeriodIds": [selectedAccountingPeriodId] }
-              : {}),
-            ...(selectedFundIds.length > 0
-              ? { "Filter.FundIds": selectedFundIds }
-              : {}),
-          },
+      params: {
+        query: {
+          ...(typeof selectedAccountingPeriodId === "string"
+            ? { "Filter.AccountingPeriodIds": [selectedAccountingPeriodId] }
+            : {}),
+          ...(selectedFundIds.length > 0
+            ? { "Filter.FundIds": selectedFundIds }
+            : {}),
         },
-      }),
+      },
+    }),
     apiClient.GET("/goals/spending", {
       params: {
         query: {

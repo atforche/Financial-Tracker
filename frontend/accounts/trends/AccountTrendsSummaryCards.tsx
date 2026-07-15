@@ -70,10 +70,7 @@ const getTrendsSnapshot = function ({
   accountingPeriods,
   dates,
 }: AccountTrendsSummaryCardsProps): TrendsSnapshot {
-  if (
-    mode === "AccountingPeriod" &&
-    accountingPeriods.length > 0
-  ) {
+  if (mode === "AccountingPeriod" && accountingPeriods.length > 0) {
     const firstPeriod = accountingPeriods.at(0);
     const lastPeriod = accountingPeriods.at(-1);
     if (
@@ -100,7 +97,8 @@ const getTrendsSnapshot = function ({
       totalEndingBalance: lastPeriod.closingBalance.totalBalance,
       trackedStartingBalance: firstPeriod.openingBalance.totalTrackedBalance,
       trackedEndingBalance: lastPeriod.closingBalance.totalTrackedBalance,
-      untrackedStartingBalance: firstPeriod.openingBalance.totalUntrackedBalance,
+      untrackedStartingBalance:
+        firstPeriod.openingBalance.totalUntrackedBalance,
       untrackedEndingBalance: lastPeriod.closingBalance.totalUntrackedBalance,
       startingBalancesByType: firstPeriod.openingBalance.balanceByAccountType,
       endingBalancesByType: lastPeriod.closingBalance.balanceByAccountType,

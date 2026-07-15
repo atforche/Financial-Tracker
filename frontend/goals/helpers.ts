@@ -35,9 +35,7 @@ const describeAssignmentGoalType = function (
 /**
  * Formats a spending goal type for display.
  */
-const formatSpendingGoalType = function (
-  goalType: SpendingGoalType,
-): string {
+const formatSpendingGoalType = function (goalType: SpendingGoalType): string {
   switch (goalType) {
     case SpendingGoalType.Standard:
       return "Standard";
@@ -51,9 +49,7 @@ const formatSpendingGoalType = function (
 /**
  * Describes how a spending goal type behaves.
  */
-const describeSpendingGoalType = function (
-  goalType: SpendingGoalType,
-): string {
+const describeSpendingGoalType = function (goalType: SpendingGoalType): string {
   switch (goalType) {
     case SpendingGoalType.Standard:
       return "Treats the fund like a normal spending category. Spending stays on track as long as you do not spend more than the money available in the fund.";
@@ -69,4 +65,4 @@ export {
   describeAssignmentGoalType,
   formatSpendingGoalType,
   describeSpendingGoalType,
-}
+};

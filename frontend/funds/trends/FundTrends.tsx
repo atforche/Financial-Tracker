@@ -150,7 +150,9 @@ const FundTrends = async function ({
   };
   const balanceEventQuery = {
     ...(typeof balanceEventSort === "string" ? { Sort: balanceEventSort } : {}),
-    ...(shouldPersistFundNames(currentFundNames) ? { "Filter.Names": [...currentFundNames] } : {}),
+    ...(shouldPersistFundNames(currentFundNames)
+      ? { "Filter.Names": [...currentFundNames] }
+      : {}),
     Limit: rowsPerPage,
     Offset: getPageOffset(currentBalanceEventPage),
   };
@@ -163,13 +165,16 @@ const FundTrends = async function ({
       apiClient.GET("/funds/date-range", {
         params: { query: { ...fundQuery, ...range } },
       }),
-      apiClient.GET("/balance-events/funds/date-range", { params: { query: { ...balanceEventQuery, ...range } } }),
+      apiClient.GET("/balance-events/funds/date-range", {
+        params: { query: { ...balanceEventQuery, ...range } },
+      }),
     ]);
     trends = fundResponse.data;
     balanceEvents = balanceEventResponse.data;
   } else {
     const range = {
-      "Range.Start": startAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
+      "Range.Start":
+        startAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
       "Range.End": endAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
     };
     const [fundResponse, balanceEventResponse] = await Promise.all([
@@ -187,7 +192,8 @@ const FundTrends = async function ({
     throw new Error("Failed to load fund trends data");
   }
   const modeValue = currentMode === "date" ? "Date" : "AccountingPeriod";
-  const periodSummaries = "accountingPeriods" in trends ? trends.accountingPeriods : [];
+  const periodSummaries =
+    "accountingPeriods" in trends ? trends.accountingPeriods : [];
   const dateSummaries = "dates" in trends ? trends.dates : [];
   const chartPeriods = periodSummaries.map((summary) => ({
     accountingPeriodId: summary.accountingPeriod.id,

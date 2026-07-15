@@ -1,7 +1,4 @@
-import type {
-  AccountIdentifier,
-  AccountWithBalance,
-} from "@/accounts/types";
+import type { AccountIdentifier, AccountWithBalance } from "@/accounts/types";
 import { Box, Stack, Typography } from "@mui/material";
 import type {
   Transaction,

@@ -26,7 +26,8 @@ type TransactionTrendsAmountChartMode = "AccountingPeriod" | "Date";
 
 interface TransactionTrendsAmountChartProps {
   readonly mode: TransactionTrendsAmountChartMode;
-  readonly accountingPeriods: readonly TransactionAccountingPeriodSummary[] | null;
+  readonly accountingPeriods:
+    readonly TransactionAccountingPeriodSummary[] | null;
   readonly dates: readonly TransactionDateSummary[] | null;
 }
 

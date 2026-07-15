@@ -166,8 +166,12 @@ const AccountTrends = async function ({
   };
   const balanceEventQuery = {
     ...(typeof balanceEventSort === "string" ? { Sort: balanceEventSort } : {}),
-    ...(shouldPersistAccountTypes(currentAccountTypes) ? { "Filter.Types": [...currentAccountTypes] } : {}),
-    ...(shouldPersistAccountNames(currentAccountNames) ? { "Filter.Names": [...currentAccountNames] } : {}),
+    ...(shouldPersistAccountTypes(currentAccountTypes)
+      ? { "Filter.Types": [...currentAccountTypes] }
+      : {}),
+    ...(shouldPersistAccountNames(currentAccountNames)
+      ? { "Filter.Names": [...currentAccountNames] }
+      : {}),
     Limit: rowsPerPage,
     Offset: getPageOffset(currentBalanceEventPage),
   };
@@ -188,7 +192,8 @@ const AccountTrends = async function ({
     balanceEvents = balanceEventResponse.data;
   } else {
     const range = {
-      "Range.Start": startAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
+      "Range.Start":
+        startAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
       "Range.End": endAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
     };
     const [accountResponse, balanceEventResponse] = await Promise.all([
@@ -206,7 +211,8 @@ const AccountTrends = async function ({
     throw new Error("Failed to load account trends data");
   }
   const modeValue = currentMode === "date" ? "Date" : "AccountingPeriod";
-  const periodSummaries = "accountingPeriods" in trends ? trends.accountingPeriods : [];
+  const periodSummaries =
+    "accountingPeriods" in trends ? trends.accountingPeriods : [];
   const dateSummaries = "dates" in trends ? trends.dates : [];
   const chartPeriods = periodSummaries.map((summary) => ({
     accountingPeriodId: summary.accountingPeriod.id,

@@ -7,8 +7,7 @@ import formatCompactCurrency from "@/framework/formatCompactCurrency";
 import formatCurrency from "@/framework/formatCurrency";
 
 interface GoalTrendsAmountAssignedChartProps {
-  readonly accountingPeriods:
-    readonly GoalAccountingPeriodSummary[] | null;
+  readonly accountingPeriods: readonly GoalAccountingPeriodSummary[] | null;
 }
 
 /**

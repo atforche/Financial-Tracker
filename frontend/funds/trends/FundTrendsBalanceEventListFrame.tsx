@@ -25,9 +25,7 @@ import formatShortDate from "@/framework/formatShortDate";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
-const formatBalanceEventType = function (
-  type: BalanceEventTypeModel,
-): string {
+const formatBalanceEventType = function (type: BalanceEventTypeModel): string {
   return type === BalanceEventTypeModel.Debit ? "Debit" : "Credit";
 };
 
@@ -61,9 +59,7 @@ const FundTrendsBalanceEventListFrame = function ({
   const startDateParamName = "startDate";
   const endDateParamName = "endDate";
 
-  const setSort = function (
-    sort: FundBalanceEventSortValue | null,
-  ): void {
+  const setSort = function (sort: FundBalanceEventSortValue | null): void {
     const params = new URLSearchParams(searchParams.toString());
     if (sort === null) {
       params.delete(sortParamName);
@@ -230,17 +226,14 @@ const FundTrendsBalanceEventListFrame = function ({
       sortType:
         currentSort === FundBalanceEventSort.AccountingPeriodName
           ? ColumnSortType.Ascending
-          : currentSort ===
-              FundBalanceEventSort.AccountingPeriodNameDescending
+          : currentSort === FundBalanceEventSort.AccountingPeriodNameDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {
         if (sortType === ColumnSortType.Ascending) {
           setSort(FundBalanceEventSort.AccountingPeriodName);
         } else if (sortType === ColumnSortType.Descending) {
-          setSort(
-            FundBalanceEventSort.AccountingPeriodNameDescending,
-          );
+          setSort(FundBalanceEventSort.AccountingPeriodNameDescending);
         } else {
           setSort(null);
         }

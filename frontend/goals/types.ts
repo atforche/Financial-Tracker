@@ -32,8 +32,7 @@ type UpdateSpendingGoalRequest =
 /**
  * Type representing a balance event for a goal.
  */
-type GoalBalanceEvent =
-  components["schemas"]["GoalBalanceEventModel"];
+type GoalBalanceEvent = components["schemas"]["GoalBalanceEventModel"];
 
 export {
   type AssignmentGoal,

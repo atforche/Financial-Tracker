@@ -43,10 +43,7 @@ const getTrendsSnapshot = function ({
   accountingPeriods,
   dates,
 }: FundTrendsSummaryCardsProps): TrendsSnapshot {
-  if (
-    mode === "AccountingPeriod" &&
-    accountingPeriods.length > 0
-  ) {
+  if (mode === "AccountingPeriod" && accountingPeriods.length > 0) {
     const firstPeriod = accountingPeriods.at(0);
     const lastPeriod = accountingPeriods.at(-1);
     if (
@@ -71,7 +68,8 @@ const getTrendsSnapshot = function ({
       totalEndingBalance: lastPeriod.closingBalance.totalBalance,
       assignedStartingBalance: firstPeriod.openingBalance.totalAssignedBalance,
       assignedEndingBalance: lastPeriod.closingBalance.totalAssignedBalance,
-      unassignedStartingBalance: firstPeriod.openingBalance.totalUnassignedBalance,
+      unassignedStartingBalance:
+        firstPeriod.openingBalance.totalUnassignedBalance,
       unassignedEndingBalance: lastPeriod.closingBalance.totalUnassignedBalance,
     };
   }

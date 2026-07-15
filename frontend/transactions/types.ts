@@ -69,17 +69,20 @@ type TransactionSummary = components["schemas"]["TransactionSummaryModel"];
 /**
  * Type representing a summary of transactions grouped by type.
  */
-type TransactionSummaryByType = components["schemas"]["TransactionSummaryByTypeModel"];
+type TransactionSummaryByType =
+  components["schemas"]["TransactionSummaryByTypeModel"];
 
 /**
  * Type representing a summary of transactions grouped by date.
  */
-type TransactionSummaryByDate = components["schemas"]["TransactionSummaryByDateModel"];
+type TransactionSummaryByDate =
+  components["schemas"]["TransactionSummaryByDateModel"];
 
 /**
  * Type representing a summary of transactions grouped by accounting period.
  */
-type TransactionSummaryByAccountingPeriod = components["schemas"]["TransactionSummaryByAccountingPeriodModel"];
+type TransactionSummaryByAccountingPeriod =
+  components["schemas"]["TransactionSummaryByAccountingPeriodModel"];
 
 /**
  * Type representing a request to create a transaction.
@@ -120,4 +123,4 @@ export {
   type CreateTransactionRequest,
   type UpdateTransactionRequest,
   type PostTransactionRequest,
-}
+};

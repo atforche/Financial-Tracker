@@ -105,9 +105,7 @@ const GoalWorkspaceDetailPage = async function ({
         assignmentGoal={assignmentGoal.items[0]}
         spendingGoal={spendingGoal.items[0]}
         redirectUrl={currentUrl}
-        recentBalanceEvents={
-          balanceEvents?.items ?? []
-        }
+        recentBalanceEvents={balanceEvents?.items ?? []}
         recentBalanceEventCount={balanceEvents?.totalCount ?? 0}
         addTransactionHref={addTransactionHref}
         accountingPeriodId={periodId}

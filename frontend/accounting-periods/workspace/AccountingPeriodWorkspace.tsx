@@ -50,25 +50,28 @@ const AccountingPeriodWorkspace = async function ({
       },
     },
   });
-  const accountingPeriodsPromise = apiClient.GET("/accounting-periods/with-balances", {
-    params: {
-      query: {
-        ...(Array.isArray(years)
-          ? { "Filter.Years": years }
-          : typeof years !== "undefined"
-            ? { "Filter.Years": [years] }
-            : {}),
-        ...(Array.isArray(months)
-          ? { "Filter.Months": months }
-          : typeof months !== "undefined"
-            ? { "Filter.Months": [months] }
-            : {}),
-        Sort: sort ?? null,
-        Limit: rowsPerPage,
-        Offset: getPageOffset(currentPage),
+  const accountingPeriodsPromise = apiClient.GET(
+    "/accounting-periods/with-balances",
+    {
+      params: {
+        query: {
+          ...(Array.isArray(years)
+            ? { "Filter.Years": years }
+            : typeof years !== "undefined"
+              ? { "Filter.Years": [years] }
+              : {}),
+          ...(Array.isArray(months)
+            ? { "Filter.Months": months }
+            : typeof months !== "undefined"
+              ? { "Filter.Months": [months] }
+              : {}),
+          Sort: sort ?? null,
+          Limit: rowsPerPage,
+          Offset: getPageOffset(currentPage),
+        },
       },
     },
-  });
+  );
 
   const [
     { data: firstAccountingPeriodResponse },

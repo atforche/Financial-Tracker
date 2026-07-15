@@ -145,7 +145,8 @@ const AccountTrendsListFrame = function ({
       sortType:
         currentSort === AccountWithBalanceRangeSort.StartingBalance
           ? ColumnSortType.Ascending
-          : currentSort === AccountWithBalanceRangeSort.StartingBalanceDescending
+          : currentSort ===
+              AccountWithBalanceRangeSort.StartingBalanceDescending
             ? ColumnSortType.Descending
             : null,
       onSort: (sortType): void => {

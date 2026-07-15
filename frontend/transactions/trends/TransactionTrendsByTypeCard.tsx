@@ -125,9 +125,7 @@ const TransactionTrendsByTypeCard = function ({
 
   return (
     <SummaryCard title="Transactions by type">
-      <Stack spacing={2.5}>
-        {transactionTypes.map(renderTypeSummary)}
-      </Stack>
+      <Stack spacing={2.5}>{transactionTypes.map(renderTypeSummary)}</Stack>
     </SummaryCard>
   );
 };

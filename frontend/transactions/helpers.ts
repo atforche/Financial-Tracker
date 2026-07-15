@@ -1,9 +1,9 @@
-import { 
-  type AccountTransaction, 
-  type FundTransaction, 
-  type IncomeTransaction, 
+import {
+  type AccountTransaction,
+  type FundTransaction,
+  type IncomeTransaction,
   type SpendingTransaction,
-  type Transaction, 
+  type Transaction,
   TransactionType,
 } from "@/transactions/types";
 
@@ -88,4 +88,4 @@ export {
   isFundTransaction,
   isIncomeTransaction,
   isSpendingTransaction,
-}
+};

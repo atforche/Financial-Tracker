@@ -113,8 +113,7 @@ const summarizeGoalsByAccountingPeriod = function (
       accountingPeriodName: accountingPeriod.name,
       totalAmountToAssign: summary.totalAmountToAssign,
       totalAmountAssigned: summary.totalAmountAssigned,
-      percentageOfAssignmentGoalsMet:
-        summary.percentageOfAssignmentGoalsMet,
+      percentageOfAssignmentGoalsMet: summary.percentageOfAssignmentGoalsMet,
       totalAmountToSpend: summary.totalAmountToSpend,
       totalAmountSpent: summary.totalAmountSpent,
       percentageOfSpendingGoalsMet: summary.percentageOfSpendingGoalsMet,

@@ -24,7 +24,8 @@ type AccountWithBalanceRange =
 /**
  * Type representing an Account balance summary.
  */
-type AccountBalanceSummary = components["schemas"]["AccountBalanceSummaryModel"];
+type AccountBalanceSummary =
+  components["schemas"]["AccountBalanceSummaryModel"];
 
 /**
  * Type representing an Account balance summary by date.

@@ -173,9 +173,7 @@ const SpendingFundAssignmentPlanner = function ({
         if (assignmentIndex !== index) {
           return assignment;
         }
-        const goal = spendingGoals.find(
-          (g) => g.fund.id === assignment.fundId,
-        );
+        const goal = spendingGoals.find((g) => g.fund.id === assignment.fundId);
         const previousGoalBalance =
           goal?.remainingAmountToSpendIncludingPending ?? 0;
         return {

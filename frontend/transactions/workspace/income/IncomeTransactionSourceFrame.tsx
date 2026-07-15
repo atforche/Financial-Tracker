@@ -1,7 +1,4 @@
-import type {
-  AccountIdentifier,
-  AccountWithBalance,
-} from "@/accounts/types";
+import type { AccountIdentifier, AccountWithBalance } from "@/accounts/types";
 import {
   type IncomeDeductionDraft,
   type IncomeLineDraft,

@@ -23,8 +23,7 @@ const isTrackedAccountType = function (accountType: AccountType): boolean {
  */
 const isDebtAccountType = function (accountType: AccountType): boolean {
   return (
-    accountType === AccountType.Debt ||
-    accountType === AccountType.CreditCard
+    accountType === AccountType.Debt || accountType === AccountType.CreditCard
   );
 };
 
@@ -68,4 +67,4 @@ export {
   isDebtAccountType,
   isPositiveChangeInBalance,
   formatAccountType,
-}
+};

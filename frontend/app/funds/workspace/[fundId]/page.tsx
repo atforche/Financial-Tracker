@@ -85,9 +85,7 @@ const FundWorkspaceDetailPage = async function ({
       <ViewFundForm
         fund={fund}
         redirectUrl={currentUrl}
-        recentBalanceEvents={
-          balanceEvents
-        }
+        recentBalanceEvents={balanceEvents}
         recentBalanceEventCount={allBalanceEvents.length}
         addTransactionHref={addTransactionHref}
       />
