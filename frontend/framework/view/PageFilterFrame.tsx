@@ -29,7 +29,9 @@ const PageFilterFrame = function ({
       sx={{
         position: sticky ? "sticky" : "relative",
         top: sticky ? 10 : undefined,
-        zIndex: sticky ? (theme) : number | undefined => theme.zIndex.appBar - 1 : undefined,
+        zIndex: sticky
+          ? (theme): number | undefined => theme.zIndex.appBar - 1
+          : undefined,
         border: "1px solid",
         borderColor: "divider",
         borderRadius: 3,
