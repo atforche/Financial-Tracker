@@ -25,8 +25,8 @@ import {
   shouldPersistTransactionTypes,
   transactionTypeValues,
 } from "@/transactions/trends/transactionTypeFilter";
-import AccountTrendsAccountingPeriodFilter from "@/accounts/trends/AccountTrendsAccountingPeriodFilter";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import AccountingPeriodFilter from "@/accounting-periods/AccountingPeriodFilter";
 import type { TransactionType } from "@/transactions/transaction";
 import { setTrendRangeMode } from "@/framework/routes/trendRange";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -301,14 +301,14 @@ const TransactionTrendsFilter = function ({
           </ToggleButtonGroup>
           {currentMode === "accounting-period" ? (
             <>
-              <AccountTrendsAccountingPeriodFilter
+              <AccountingPeriodFilter
                 accountingPeriods={accountingPeriods}
                 label="Start period"
                 value={currentStartAccountingPeriodId}
                 onChange={handleStartAccountingPeriodChange}
                 disabled={disabled}
               />
-              <AccountTrendsAccountingPeriodFilter
+              <AccountingPeriodFilter
                 accountingPeriods={accountingPeriods}
                 label="End period"
                 value={currentEndAccountingPeriodId}

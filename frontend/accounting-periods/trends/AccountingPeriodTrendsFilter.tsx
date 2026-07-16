@@ -2,7 +2,7 @@
 
 import { Button, Paper, Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import AccountingPeriodTrendsAccountingPeriodFilter from "@/accounting-periods/trends/AccountingPeriodTrendsAccountingPeriodFilter";
+import AccountingPeriodFilter from "@/accounting-periods/AccountingPeriodFilter";
 import type { JSX } from "react";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
@@ -127,14 +127,14 @@ const AccountingPeriodTrendsFilter = function ({
           flexWrap="wrap"
           alignItems={{ xs: "stretch", md: "center" }}
         >
-          <AccountingPeriodTrendsAccountingPeriodFilter
+          <AccountingPeriodFilter
             accountingPeriods={accountingPeriods}
             label="Start period"
             value={currentStartAccountingPeriodId}
             onChange={handleStartAccountingPeriodChange}
             disabled={disabled}
           />
-          <AccountingPeriodTrendsAccountingPeriodFilter
+          <AccountingPeriodFilter
             accountingPeriods={accountingPeriods}
             label="End period"
             value={currentEndAccountingPeriodId}

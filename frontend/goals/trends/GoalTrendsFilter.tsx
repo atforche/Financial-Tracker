@@ -24,8 +24,8 @@ import {
   normalizeGoalTypes,
   shouldPersistGoalTypes,
 } from "@/goals/trends/goalTypeFilter";
-import AccountTrendsAccountingPeriodFilter from "@/accounts/trends/AccountTrendsAccountingPeriodFilter";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import AccountingPeriodFilter from "@/accounting-periods/AccountingPeriodFilter";
 import GoalTrendsGoalTypeFilter from "@/goals/trends/GoalTrendsGoalTypeFilter";
 import type { JSX } from "react";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -232,14 +232,14 @@ const GoalTrendsFilter = function ({
           flexWrap="wrap"
           alignItems={{ xs: "stretch", md: "center" }}
         >
-          <AccountTrendsAccountingPeriodFilter
+          <AccountingPeriodFilter
             accountingPeriods={accountingPeriods}
             label="Start period"
             value={currentStartAccountingPeriodId}
             onChange={handleStartAccountingPeriodChange}
             disabled={disabled}
           />
-          <AccountTrendsAccountingPeriodFilter
+          <AccountingPeriodFilter
             accountingPeriods={accountingPeriods}
             label="End period"
             value={currentEndAccountingPeriodId}

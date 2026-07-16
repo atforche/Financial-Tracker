@@ -14,7 +14,7 @@ import {
   shouldPersistFundNames,
 } from "@/funds/trends/fundNameFilter";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import FundTrendsAccountingPeriodFilter from "@/funds/trends/FundTrendsAccountingPeriodFilter";
+import AccountingPeriodFilter from "@/accounting-periods/AccountingPeriodFilter";
 import FundTrendsFundNameFilter from "@/funds/trends/FundTrendsFundNameFilter";
 import type { JSX } from "react";
 import { setTrendRangeMode } from "@/framework/routes/trendRange";
@@ -248,14 +248,14 @@ const FundTrendsFilter = function ({
           </ToggleButtonGroup>
           {currentMode === "accounting-period" ? (
             <>
-              <FundTrendsAccountingPeriodFilter
+              <AccountingPeriodFilter
                 accountingPeriods={accountingPeriods}
                 label="Start period"
                 value={currentStartAccountingPeriodId}
                 onChange={handleStartAccountingPeriodChange}
                 disabled={disabled}
               />
-              <FundTrendsAccountingPeriodFilter
+              <AccountingPeriodFilter
                 accountingPeriods={accountingPeriods}
                 label="End period"
                 value={currentEndAccountingPeriodId}

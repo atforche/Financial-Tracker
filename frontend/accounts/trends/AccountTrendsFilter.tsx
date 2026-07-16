@@ -19,9 +19,9 @@ import {
 } from "@/accounts/trends/accountTypeFilter";
 import AccountTrendsAccountNameFilter from "@/accounts/trends/AccountTrendsAccountNameFilter";
 import AccountTrendsAccountTypeFilter from "@/accounts/trends/AccountTrendsAccountTypeFilter";
-import AccountTrendsAccountingPeriodFilter from "@/accounts/trends/AccountTrendsAccountingPeriodFilter";
 import type { AccountType } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import AccountingPeriodFilter from "@/accounting-periods/AccountingPeriodFilter";
 import type { JSX } from "react";
 import { setTrendRangeMode } from "@/framework/routes/trendRange";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -275,14 +275,14 @@ const AccountTrendsFilter = function ({
           </ToggleButtonGroup>
           {currentMode === "accounting-period" ? (
             <>
-              <AccountTrendsAccountingPeriodFilter
+              <AccountingPeriodFilter
                 accountingPeriods={accountingPeriods}
                 label="Start period"
                 value={currentStartAccountingPeriodId}
                 onChange={handleStartAccountingPeriodChange}
                 disabled={disabled}
               />
-              <AccountTrendsAccountingPeriodFilter
+              <AccountingPeriodFilter
                 accountingPeriods={accountingPeriods}
                 label="End period"
                 value={currentEndAccountingPeriodId}

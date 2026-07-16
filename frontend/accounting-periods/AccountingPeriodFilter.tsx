@@ -4,7 +4,10 @@ import { Autocomplete, TextField } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
 
-interface AccountingPeriodTrendsAccountingPeriodFilterProps {
+/**
+ * Props for the AccountingPeriodFilter component.
+ */
+interface AccountingPeriodFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly label: string;
   readonly value: string;
@@ -17,15 +20,15 @@ const fieldSx = {
 };
 
 /**
- * Renders a single accounting period selector used in the accounting period trends.
+ * Renders a single accounting period selector.
  */
-const AccountingPeriodTrendsAccountingPeriodFilter = function ({
+const AccountingPeriodFilter = function ({
   accountingPeriods,
   label,
   value,
   onChange,
   disabled = false,
-}: AccountingPeriodTrendsAccountingPeriodFilterProps): JSX.Element {
+}: AccountingPeriodFilterProps): JSX.Element {
   const isDisabled = disabled || accountingPeriods.length === 0;
   const sortedPeriods = [...accountingPeriods].sort((a, b) => {
     if (b.year !== a.year) {
@@ -72,4 +75,4 @@ const AccountingPeriodTrendsAccountingPeriodFilter = function ({
   );
 };
 
-export default AccountingPeriodTrendsAccountingPeriodFilter;
+export default AccountingPeriodFilter;
