@@ -11,10 +11,10 @@ import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountW
 import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
-import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import { getAccountCardColor } from "@/accounts/workspace/helpers";
 import routes from "@/accounts/routes";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
  * Props for the AccountWorkspaceCards component.

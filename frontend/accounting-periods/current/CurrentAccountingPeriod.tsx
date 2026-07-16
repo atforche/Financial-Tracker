@@ -41,34 +41,34 @@ const CurrentAccountingPeriod = async function ({
   const currentTransactionPage = normalizePageValue(transactionPage);
 
   const apiClient = getApiClient();
-  const accountingPeriodsResponse = await apiClient.GET(
-    "/accounting-periods",
-    {
-      params: {
-        query: { Sort: AccountingPeriodSort.DateDescending, Limit: 1 },
-      },
+  const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
+    params: {
+      query: { Sort: AccountingPeriodSort.DateDescending, Limit: 1 },
     },
+  });
+  const accountingPeriods = getApiData(
+    accountingPeriodsResponse,
+    "Failed to fetch accounting periods",
   );
-  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to fetch accounting periods");
   const currentAccountingPeriod = accountingPeriods.items[0] ?? null;
   let current: AccountingPeriodWithTransactions | null = null;
   if (isNotNullOrUndefined(currentAccountingPeriod)) {
     current = getApiData(
       await apiClient.GET(
-          "/accounting-periods/{accountingPeriodId}/transactions",
-          {
-            params: {
-              path: { accountingPeriodId: currentAccountingPeriod.id },
-              query: {
-                ...(isNotNullOrUndefined(transactionSort)
-                  ? { Sort: transactionSort }
-                  : {}),
-                Limit: rowsPerPage,
-                Offset: getPageOffset(currentTransactionPage),
-              },
+        "/accounting-periods/{accountingPeriodId}/transactions",
+        {
+          params: {
+            path: { accountingPeriodId: currentAccountingPeriod.id },
+            query: {
+              ...(isNotNullOrUndefined(transactionSort)
+                ? { Sort: transactionSort }
+                : {}),
+              Limit: rowsPerPage,
+              Offset: getPageOffset(currentTransactionPage),
             },
           },
-        ),
+        },
+      ),
       "Failed to fetch the current accounting period",
     );
   }

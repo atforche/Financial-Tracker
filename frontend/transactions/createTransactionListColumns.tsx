@@ -7,7 +7,7 @@ import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import { IconButton } from "@mui/material";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Options for creating transaction list columns.

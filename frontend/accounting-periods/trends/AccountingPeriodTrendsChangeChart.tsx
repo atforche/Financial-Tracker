@@ -1,37 +1,24 @@
 "use client";
 
 import {
-  type BarMetricChartPoint,
+  formatCompactCurrency,
   formatSignedCurrency,
-  getSignedBarColor,
-} from "@/framework/charts/barMetricHelpers";
+} from "@/framework/currencyHelpers";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import BarMetricChart from "@/framework/charts/BarMetricChart";
 import type { JSX } from "react";
-import formatCompactCurrency from "@/framework/formatCompactCurrency";
+import { buildChangeChartPoints } from "@/accounting-periods/trends/helpers";
 
+/**
+ * Props for the AccountingPeriodTrendsChangeChart component.
+ */
 interface AccountingPeriodTrendsChangeChartProps {
   readonly accountingPeriods: readonly AccountingPeriodWithBalance[] | null;
 }
 
-const buildChartPoints = function (
-  accountingPeriods: readonly AccountingPeriodWithBalance[],
-): BarMetricChartPoint[] {
-  return accountingPeriods.map((accountingPeriod) => {
-    const value =
-      accountingPeriod.closingBalance - accountingPeriod.openingBalance;
-
-    return {
-      key: accountingPeriod.id,
-      tickLabel: accountingPeriod.name,
-      tooltipLabel: accountingPeriod.name,
-      value,
-      fill: getSignedBarColor(value),
-    };
-  });
-};
-
-/** Renders balance changes for the Accounting Periods trends. */
+/**
+ * Renders balance changes for the Accounting Periods trends.
+ */
 const AccountingPeriodTrendsChangeChart = function ({
   accountingPeriods,
 }: AccountingPeriodTrendsChangeChartProps): JSX.Element {
@@ -39,7 +26,7 @@ const AccountingPeriodTrendsChangeChart = function ({
     <BarMetricChart
       title="Balance Change"
       emptyMessage="No balance changes are available for the selected trends range."
-      chartPoints={buildChartPoints(accountingPeriods ?? [])}
+      chartPoints={buildChangeChartPoints(accountingPeriods ?? [])}
       xAxisLabel="Accounting Period"
       yAxisLabel="Balance Change"
       tickFormatter={(value) => formatCompactCurrency(value, true)}

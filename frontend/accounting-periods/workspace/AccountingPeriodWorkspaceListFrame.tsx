@@ -3,17 +3,16 @@
 import {
   type AccountingPeriodWithBalance,
   AccountingPeriodWithBalanceSort,
-  type AccountingPeriodWithBalanceSortValue,
 } from "@/accounting-periods/types";
-import { Button, Checkbox, Paper, Stack, Typography } from "@mui/material";
-import { useSearchParams } from "next/navigation";
+import { Button, Checkbox } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
-import formatCurrency from "@/framework/formatCurrency";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useSearchParams } from "next/navigation";
 
 /**
  * Props for the AccountingPeriodWorkspaceListFrame component.
@@ -44,7 +43,7 @@ const AccountingPeriodWorkspaceListFrame = function ({
   const updateParams = useSearchParamUpdater([]);
 
   const setSort = function (
-    sort: AccountingPeriodWithBalanceSortValue | null,
+    sort: AccountingPeriodWithBalanceSort | null,
   ): void {
     updateParams((params) => {
       if (sort === null) {

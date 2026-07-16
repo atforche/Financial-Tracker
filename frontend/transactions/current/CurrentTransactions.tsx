@@ -98,13 +98,16 @@ const CurrentTransactions = async function ({
 
   const apiClient = getApiClient();
   const [periodsResponse, accountsResponse, fundsResponse] = await Promise.all([
-      apiClient.GET("/accounting-periods", {
-        params: { query: { Sort: "DateDescending", Limit: 500 } },
-      }),
-      apiClient.GET("/accounts"),
-      apiClient.GET("/funds"),
+    apiClient.GET("/accounting-periods", {
+      params: { query: { Sort: "DateDescending", Limit: 500 } },
+    }),
+    apiClient.GET("/accounts"),
+    apiClient.GET("/funds"),
   ]);
-  const periods = getApiData(periodsResponse, "Failed to fetch accounting periods");
+  const periods = getApiData(
+    periodsResponse,
+    "Failed to fetch accounting periods",
+  );
   const accounts = getApiData(accountsResponse, "Failed to fetch accounts");
   const funds = getApiData(fundsResponse, "Failed to fetch funds");
   const accountingPeriod = periods.items.find((period) => period.isOpen);

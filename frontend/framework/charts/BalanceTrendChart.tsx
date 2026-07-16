@@ -16,8 +16,10 @@ import {
 } from "@/framework/charts/helpers";
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import { type JSX, useId } from "react";
-import formatCompactCurrency from "@/framework/formatCompactCurrency";
-import formatCurrency from "@/framework/formatCurrency";
+import {
+  formatCompactCurrency,
+  formatCurrency,
+} from "@/framework/currencyHelpers";
 
 /**
  * Props for the BalanceTrendChart component.
@@ -90,13 +92,7 @@ const BalanceTrendChart = function ({
               margin={{ top: 12, right: 12, bottom: 24, left: 12 }}
             >
               <defs>
-                <linearGradient
-                  id={gradientId}
-                  x1="0"
-                  x2="0"
-                  y1="0"
-                  y2="1"
-                >
+                <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
                   <stop offset="0%" stopColor={colors.fillStart} />
                   <stop offset="100%" stopColor={colors.fillEnd} />
                 </linearGradient>

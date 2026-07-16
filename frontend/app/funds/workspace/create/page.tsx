@@ -29,12 +29,14 @@ const FundWorkspaceCreatePage = async function ({
   const workspaceUrl = routes.workspace(workspaceSearchParams);
   const apiClient = getApiClient();
 
-  const accountingPeriodsResponse = await apiClient.GET(
-    "/accounting-periods",
-    { params: { query: { Limit: 500 } } },
-  );
+  const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
+    params: { query: { Limit: 500 } },
+  });
 
-  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to fetch accounting periods");
+  const accountingPeriods = getApiData(
+    accountingPeriodsResponse,
+    "Failed to fetch accounting periods",
+  );
   if (accountingPeriods.items.length === 0) {
     redirect(workspaceUrl);
   }

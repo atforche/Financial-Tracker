@@ -1,11 +1,7 @@
 "use client";
 
 import { Button, IconButton } from "@mui/material";
-import {
-  type Transaction,
-  TransactionSort,
-  type TransactionSortValue,
-} from "@/transactions/transaction";
+import { type Transaction, TransactionSort } from "@/transactions/types";
 import {
   getTransactionAccountIds,
   getTransactionFundIds,
@@ -17,10 +13,10 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
-import formatCurrency from "@/framework/formatCurrency";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -49,7 +45,7 @@ const AccountingPeriodTrendsTransactionListFrame = function ({
 
   const updateParams = useSearchParamUpdater([pageParamName]);
 
-  const setSort = function (sort: TransactionSortValue | null): void {
+  const setSort = function (sort: TransactionSort | null): void {
     updateParams((params) => {
       if (sort === null) {
         params.delete(sortParamName);

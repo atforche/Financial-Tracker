@@ -9,7 +9,6 @@ import {
   Typography,
 } from "@mui/material";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
-import type { Fund, FundIdentifier } from "@/funds/types";
 import {
   type FundAssignmentDraft,
   getAssignedFundAmount,
@@ -18,9 +17,10 @@ import {
   getRemainingFundAmount,
 } from "@/funds/assignmentPlanner/helpers";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
+import type { Fund } from "@/funds/types";
 import FundEntryField from "@/funds/FundEntryField";
 import type { JSX } from "react";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for the FundAssignmentPlanner component.
@@ -31,16 +31,14 @@ interface FundAssignmentPlannerProps {
   readonly fundAssignments: FundAssignmentDraft[];
   readonly addFundAssignment: () => void;
   readonly deleteFundAssignment: (index: number) => void;
-  readonly updateFund: (index: number, newFund: FundIdentifier | null) => void;
+  readonly updateFund: (index: number, newFund: Fund | null) => void;
   readonly updateAmount: (index: number, newAmount: number | null) => void;
   readonly remainingAmountLabel: string;
   readonly getRemainingAmountColor: (
     remainingAmount: number | null,
   ) => ChipProps["color"];
-  readonly getFundOptionSecondaryLabel?:
-    ((fund: FundIdentifier) => string | null) | null;
-  readonly sortFunds?:
-    ((left: FundIdentifier, right: FundIdentifier) => number) | null;
+  readonly getFundOptionSecondaryLabel?: ((fund: Fund) => string | null) | null;
+  readonly sortFunds?: ((left: Fund, right: Fund) => number) | null;
   readonly renderAssignmentDetails?:
     ((assignment: FundAssignmentDraft) => JSX.Element | null) | null;
   readonly color?: FrameColor;
@@ -108,6 +106,7 @@ const FundAssignmentPlanner = function ({
                     value={{
                       id: assignment.fundId,
                       name: assignment.fundName,
+                      description: "",
                     }}
                     setValue={
                       readOnly

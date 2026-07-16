@@ -11,7 +11,7 @@ import {
 import { type JSX, useState } from "react";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import type { OverviewData } from "@/overview/types";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 
 interface FundOverviewProps {
   readonly data: OverviewData;

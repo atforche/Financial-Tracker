@@ -23,7 +23,7 @@ import Frame from "@/framework/view/Frame";
 import SpendingGoalSetupSection from "@/funds/workspace/SpendingGoalSetupSection";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import onboardFund from "@/funds/workspace/onboardFund";
 import { useRouter } from "next/navigation";
 

@@ -1,6 +1,6 @@
 import { Chip, Stack } from "@mui/material";
 import type { JSX } from "react";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for the TransactionBalanceDetails component.

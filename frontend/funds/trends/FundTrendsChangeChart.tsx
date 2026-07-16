@@ -1,11 +1,20 @@
 "use client";
 
-import { type BarMetricChartPoint, formatSignedCurrency, getSignedBarColor } from "@/framework/charts/barMetricHelpers";
-import type { FundBalanceSummaryByDate, FundBalanceSummaryByPeriod } from "@/funds/types";
+import {
+  type BarMetricChartPoint,
+  getSignedBarColor,
+} from "@/framework/charts/barMetricHelpers";
+import type {
+  FundBalanceSummaryByDate,
+  FundBalanceSummaryByPeriod,
+} from "@/funds/types";
+import {
+  formatCompactCurrency,
+  formatSignedCurrency,
+} from "@/framework/currencyHelpers";
 import BarMetricChart from "@/framework/charts/BarMetricChart";
 import type { JSX } from "react";
 import dayjs from "dayjs";
-import formatCompactCurrency from "@/framework/formatCompactCurrency";
 import formatLongDate from "@/framework/formatLongDate";
 
 type FundTrendsChangeChartMode = "AccountingPeriod" | "Date";
@@ -23,7 +32,9 @@ const buildChartPoints = function (
 ): BarMetricChartPoint[] {
   if (mode === "AccountingPeriod") {
     return accountingPeriods.map((summary) => {
-      const value = summary.closingBalance.totalBalance - summary.openingBalance.totalBalance;
+      const value =
+        summary.closingBalance.totalBalance -
+        summary.openingBalance.totalBalance;
       return {
         key: summary.accountingPeriod.id,
         tickLabel: summary.accountingPeriod.name,
@@ -36,13 +47,17 @@ const buildChartPoints = function (
 
   if (dates.length === 1) {
     const [summary] = dates;
-    return typeof summary === "undefined" ? [] : [{
-      key: summary.date,
-      tickLabel: dayjs(summary.date).format("MMM D"),
-      tooltipLabel: formatLongDate(new Date(`${summary.date}T00:00:00`)),
-      value: 0,
-      fill: getSignedBarColor(0),
-    }];
+    return typeof summary === "undefined"
+      ? []
+      : [
+          {
+            key: summary.date,
+            tickLabel: dayjs(summary.date).format("MMM D"),
+            tooltipLabel: formatLongDate(new Date(`${summary.date}T00:00:00`)),
+            value: 0,
+            fill: getSignedBarColor(0),
+          },
+        ];
   }
 
   return dates.slice(1).map((summary, index) => {
@@ -58,7 +73,11 @@ const buildChartPoints = function (
 };
 
 /** Renders balance changes for the fund trends. */
-const FundTrendsChangeChart = function ({ mode, accountingPeriods, dates }: FundTrendsChangeChartProps): JSX.Element {
+const FundTrendsChangeChart = function ({
+  mode,
+  accountingPeriods,
+  dates,
+}: FundTrendsChangeChartProps): JSX.Element {
   return (
     <BarMetricChart
       title="Balance Change"
@@ -68,11 +87,13 @@ const FundTrendsChangeChart = function ({ mode, accountingPeriods, dates }: Fund
       yAxisLabel="Balance Change"
       tickFormatter={(value) => formatCompactCurrency(value, true)}
       valueFormatter={formatSignedCurrency}
-      getTooltipDescription={({ value }) => value > 0
-        ? "Increase from previous day"
-        : value < 0
-          ? "Decrease from previous day"
-          : "No change from previous day"}
+      getTooltipDescription={({ value }) =>
+        value > 0
+          ? "Increase from previous day"
+          : value < 0
+            ? "Decrease from previous day"
+            : "No change from previous day"
+      }
       showZeroLine
     />
   );

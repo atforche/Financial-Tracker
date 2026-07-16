@@ -4,10 +4,12 @@ import type {
   GoalAccountingPeriodSummary,
   GoalTrendsView,
 } from "@/goals/trends/goalTrendsTypes";
+import {
+  formatCompactCurrency,
+  formatCurrency,
+} from "@/framework/currencyHelpers";
 import GoalTrendsMetricChart from "@/goals/trends/GoalTrendsMetricChart";
 import type { JSX } from "react";
-import formatCompactCurrency from "@/framework/formatCompactCurrency";
-import formatCurrency from "@/framework/formatCurrency";
 
 interface GoalTrendsGoalAmountChartProps {
   readonly accountingPeriods: readonly GoalAccountingPeriodSummary[] | null;

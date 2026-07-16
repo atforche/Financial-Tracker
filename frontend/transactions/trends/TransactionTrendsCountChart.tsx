@@ -20,7 +20,8 @@ interface TransactionDateSummary {
 
 interface TransactionTrendsCountChartProps {
   readonly mode: TransactionTrendsCountChartMode;
-  readonly accountingPeriods: readonly TransactionAccountingPeriodSummary[] | null;
+  readonly accountingPeriods:
+    readonly TransactionAccountingPeriodSummary[] | null;
   readonly dates: readonly TransactionDateSummary[] | null;
 }
 
@@ -55,7 +56,11 @@ const buildChartPoints = function (
 };
 
 /** Renders transaction counts for the Transactions trends. */
-const TransactionTrendsCountChart = function ({ mode, accountingPeriods, dates }: TransactionTrendsCountChartProps): JSX.Element {
+const TransactionTrendsCountChart = function ({
+  mode,
+  accountingPeriods,
+  dates,
+}: TransactionTrendsCountChartProps): JSX.Element {
   return (
     <BarMetricChart
       title="Transaction Count"
@@ -65,9 +70,11 @@ const TransactionTrendsCountChart = function ({ mode, accountingPeriods, dates }
       yAxisLabel="Transaction Count"
       tickFormatter={(value) => countFormatter.format(value)}
       valueFormatter={(value) => `${countFormatter.format(value)} transactions`}
-      getTooltipDescription={({ value }) => value === 1
-        ? "1 transaction in this period"
-        : "Transactions in this period"}
+      getTooltipDescription={({ value }) =>
+        value === 1
+          ? "1 transaction in this period"
+          : "Transactions in this period"
+      }
       showZeroLine
     />
   );

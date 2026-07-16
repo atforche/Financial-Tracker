@@ -39,7 +39,10 @@ const FundWorkspaceOnboardPage = async function ({
     apiClient.GET("/funds/with-balances"),
   ]);
 
-  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to fetch accounting periods");
+  const accountingPeriods = getApiData(
+    accountingPeriodsResponse,
+    "Failed to fetch accounting periods",
+  );
   const funds = getApiData(fundsResponse, "Failed to fetch funds");
   if (accountingPeriods.items.length > 0) {
     redirect(workspaceUrl);

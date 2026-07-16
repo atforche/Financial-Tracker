@@ -1,25 +1,23 @@
 "use client";
 
 import { Box, Button } from "@mui/material";
-import {
-  type GoalWorkspaceBalanceEvent,
-  GoalWorkspaceBalanceEventType,
-} from "@/goals/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { BalanceEventType } from "@/framework/data/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
+import type { GoalBalanceEvent } from "@/goals/types";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import Link from "next/link";
 import ListFrame from "@/framework/listframe/ListFrame";
 import dayjs from "dayjs";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import routes from "@/transactions/routes";
 
 /**
  * Props for the GoalBalanceEventsFrame component.
  */
 interface GoalBalanceEventsFrameProps {
-  readonly data: GoalWorkspaceBalanceEvent[] | null;
+  readonly data: GoalBalanceEvent[] | null;
   readonly totalCount: number | null;
   readonly addTransactionHref: string;
   readonly accountingPeriodId: string;
@@ -43,7 +41,7 @@ const GoalBalanceEventsFrame = function ({
   const returnUrl =
     currentQuery === "" ? pathname : `${pathname}?${currentQuery}`;
 
-  const columns: ColumnDefinition<GoalWorkspaceBalanceEvent>[] = [
+  const columns: ColumnDefinition<GoalBalanceEvent>[] = [
     {
       name: "date",
       headerContent: "Event Date",
@@ -61,13 +59,13 @@ const GoalBalanceEventsFrame = function ({
           component="span"
           sx={{
             color:
-              balanceEvent.type === GoalWorkspaceBalanceEventType.Debit
+              balanceEvent.type === BalanceEventType.Debit
                 ? "warning.dark"
                 : "info.dark",
             fontWeight: 600,
           }}
         >
-          {balanceEvent.type === GoalWorkspaceBalanceEventType.Credit
+          {balanceEvent.type === BalanceEventType.Credit
             ? "Assignment"
             : "Spending"}
         </Box>
@@ -105,7 +103,7 @@ const GoalBalanceEventsFrame = function ({
 
   return (
     <Box sx={{ maxWidth: 1200, width: "100%" }}>
-      <ListFrame<GoalWorkspaceBalanceEvent>
+      <ListFrame<GoalBalanceEvent>
         title="Recent Balance Events"
         color="info"
         headerContent={
@@ -117,7 +115,6 @@ const GoalBalanceEventsFrame = function ({
             Add Transaction
           </Button>
         }
-
         columns={columns}
         getId={(balanceEvent) =>
           `${balanceEvent.transactionId}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`

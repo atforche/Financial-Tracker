@@ -6,13 +6,15 @@ import type {
 } from "@/accounts/types";
 import {
   type BarMetricChartPoint,
-  formatSignedCurrency,
   getSignedBarColor,
 } from "@/framework/charts/barMetricHelpers";
+import {
+  formatCompactCurrency,
+  formatSignedCurrency,
+} from "@/framework/currencyHelpers";
 import BarMetricChart from "@/framework/charts/BarMetricChart";
 import type { JSX } from "react";
 import dayjs from "dayjs";
-import formatCompactCurrency from "@/framework/formatCompactCurrency";
 import formatLongDate from "@/framework/formatLongDate";
 
 type AccountTrendsChangeChartMode = "AccountingPeriod" | "Date";
@@ -47,13 +49,15 @@ const buildChartPoints = function (
     const [summary] = dates;
     return typeof summary === "undefined"
       ? []
-      : [{
-          key: summary.date,
-          tickLabel: dayjs(summary.date).format("MMM D"),
-          tooltipLabel: formatLongDate(new Date(`${summary.date}T00:00:00`)),
-          value: 0,
-          fill: getSignedBarColor(0),
-        }];
+      : [
+          {
+            key: summary.date,
+            tickLabel: dayjs(summary.date).format("MMM D"),
+            tooltipLabel: formatLongDate(new Date(`${summary.date}T00:00:00`)),
+            value: 0,
+            fill: getSignedBarColor(0),
+          },
+        ];
   }
 
   return dates.slice(1).map((summary, index) => {
@@ -78,11 +82,7 @@ const AccountTrendsChangeChart = function ({
     <BarMetricChart
       title="Balance Change"
       emptyMessage="No balance changes are available for the selected trends range."
-      chartPoints={buildChartPoints(
-        mode,
-        accountingPeriods ?? [],
-        dates ?? [],
-      )}
+      chartPoints={buildChartPoints(mode, accountingPeriods ?? [], dates ?? [])}
       xAxisLabel={mode === "Date" ? "Date" : "Accounting Period"}
       yAxisLabel="Balance Change"
       tickFormatter={(value) => formatCompactCurrency(value, true)}

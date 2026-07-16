@@ -89,7 +89,10 @@ const FundTrends = async function ({
       },
     },
   });
-  const accountingPeriods = getApiData(await accountingPeriodsPromise, "Failed to fetch accounting periods");
+  const accountingPeriods = getApiData(
+    await accountingPeriodsPromise,
+    "Failed to fetch accounting periods",
+  );
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
   const isInOnboardingMode = typeof latestAccountingPeriod === "undefined";
   const currentMode: FundsTrendsFilterMode =
@@ -174,7 +177,10 @@ const FundTrends = async function ({
       }),
     ]);
     trends = getApiData(fundResponse, "Failed to load fund trends");
-    balanceEvents = getApiData(balanceEventResponse, "Failed to load fund balance events");
+    balanceEvents = getApiData(
+      balanceEventResponse,
+      "Failed to load fund balance events",
+    );
   } else {
     const range = {
       "Range.Start":
@@ -190,7 +196,10 @@ const FundTrends = async function ({
       }),
     ]);
     trends = getApiData(fundResponse, "Failed to load fund trends");
-    balanceEvents = getApiData(balanceEventResponse, "Failed to load fund balance events");
+    balanceEvents = getApiData(
+      balanceEventResponse,
+      "Failed to load fund balance events",
+    );
   }
   const modeValue = currentMode === "date" ? "Date" : "AccountingPeriod";
   const periodSummaries =

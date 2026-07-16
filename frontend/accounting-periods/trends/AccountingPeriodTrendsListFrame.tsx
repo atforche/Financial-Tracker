@@ -3,25 +3,17 @@
 import {
   type AccountingPeriodWithBalance,
   AccountingPeriodWithBalanceSort,
-  type AccountingPeriodWithBalanceSortValue,
 } from "@/accounting-periods/types";
-import {
-  Button,
-  Checkbox,
-  IconButton,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Button, Checkbox, IconButton, Stack } from "@mui/material";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriodTrendsSearchParams } from "@/accounting-periods/trends/AccountingPeriodTrends";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
-import formatCurrency from "@/framework/formatCurrency";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import nameof from "@/framework/data/nameof";
 import routes from "@/accounting-periods/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
@@ -43,7 +35,6 @@ const AccountingPeriodTrendsListFrame = function ({
   totalCount,
 }: AccountingPeriodTrendsListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
   const router = useRouter();
 
   const startAccountingPeriodParamName =
@@ -55,7 +46,7 @@ const AccountingPeriodTrendsListFrame = function ({
   const updateParams = useSearchParamUpdater([pageParamName]);
 
   const setSort = function (
-    sort: AccountingPeriodWithBalanceSortValue | null,
+    sort: AccountingPeriodWithBalanceSort | null,
   ): void {
     updateParams((params) => {
       if (sort === null) {
@@ -210,7 +201,9 @@ const AccountingPeriodTrendsListFrame = function ({
             variant="contained"
             onClick={() => {
               updateParams((params) => {
-                [...params.keys()].forEach((key) => params.delete(key));
+                [...params.keys()].forEach((key) => {
+                  params.delete(key);
+                });
               });
             }}
           >

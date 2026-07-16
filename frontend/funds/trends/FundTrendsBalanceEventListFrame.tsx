@@ -1,40 +1,29 @@
 "use client";
 
-import {
-  Box,
-  Button,
-  IconButton,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
-import {
-  FundBalanceEventSort,
-  type FundBalanceEventSortValue,
-  type FundWorkspaceBalanceEvent,
-} from "@/funds/types";
-import { BalanceEventTypeModel } from "@/framework/data/api";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Box, Button, IconButton } from "@mui/material";
+import { type FundBalanceEvent, FundBalanceEventSort } from "@/funds/types";
+import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
+import { BalanceEventType } from "@/framework/data/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
-import formatCurrency from "@/framework/formatCurrency";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import formatShortDate from "@/framework/formatShortDate";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
-const formatBalanceEventType = function (type: BalanceEventTypeModel): string {
-  return type === BalanceEventTypeModel.Debit ? "Debit" : "Credit";
+const formatBalanceEventType = function (type: BalanceEventType): string {
+  return type === BalanceEventType.Debit ? "Debit" : "Credit";
 };
 
 /**
  * Props for the FundTrendsBalanceEventListFrame component.
  */
 interface FundTrendsBalanceEventListFrameProps {
-  readonly data: FundWorkspaceBalanceEvent[] | null;
+  readonly data: FundBalanceEvent[] | null;
   readonly totalCount: number | null;
   readonly mode: "AccountingPeriod" | "Date";
 }
@@ -48,7 +37,6 @@ const FundTrendsBalanceEventListFrame = function ({
   totalCount,
 }: FundTrendsBalanceEventListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
   const router = useRouter();
 
   const sortParamName = "balanceEventSort";
@@ -62,7 +50,7 @@ const FundTrendsBalanceEventListFrame = function ({
 
   const updateParams = useSearchParamUpdater([pageParamName]);
 
-  const setSort = function (sort: FundBalanceEventSortValue | null): void {
+  const setSort = function (sort: FundBalanceEventSort | null): void {
     updateParams((params) => {
       if (sort === null) {
         params.delete(sortParamName);
@@ -78,7 +66,7 @@ const FundTrendsBalanceEventListFrame = function ({
   );
 
   const openTransactionWorkspace = function (
-    balanceEvent: FundWorkspaceBalanceEvent,
+    balanceEvent: FundBalanceEvent,
   ): void {
     router.push(
       routes.workspace({
@@ -98,7 +86,7 @@ const FundTrendsBalanceEventListFrame = function ({
 
   const getSortProps = createColumnSortProps(currentSort, setSort);
 
-  const columns: ColumnDefinition<FundWorkspaceBalanceEvent>[] = [
+  const columns: ColumnDefinition<FundBalanceEvent>[] = [
     {
       name: "fundName",
       headerContent: "Fund",
@@ -130,7 +118,7 @@ const FundTrendsBalanceEventListFrame = function ({
           component="span"
           sx={{
             color:
-              balanceEvent.type === BalanceEventTypeModel.Debit
+              balanceEvent.type === BalanceEventType.Debit
                 ? "warning.dark"
                 : "info.dark",
             fontWeight: 600,
@@ -192,7 +180,7 @@ const FundTrendsBalanceEventListFrame = function ({
   }
 
   return (
-    <ListFrame<FundWorkspaceBalanceEvent>
+    <ListFrame<FundBalanceEvent>
       title="Balance Events"
       columns={columns}
       getId={(balanceEvent) =>
@@ -215,7 +203,9 @@ const FundTrendsBalanceEventListFrame = function ({
             variant="contained"
             onClick={() => {
               updateParams((params) => {
-                [...params.keys()].forEach((key) => params.delete(key));
+                [...params.keys()].forEach((key) => {
+                  params.delete(key);
+                });
               });
             }}
           >
@@ -232,7 +222,9 @@ const FundTrendsBalanceEventListFrame = function ({
             variant="contained"
             onClick={() => {
               updateParams((params) => {
-                [...params.keys()].forEach((key) => params.delete(key));
+                [...params.keys()].forEach((key) => {
+                  params.delete(key);
+                });
               });
             }}
           >

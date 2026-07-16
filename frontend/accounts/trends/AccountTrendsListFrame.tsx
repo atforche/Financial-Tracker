@@ -3,26 +3,20 @@
 import {
   type AccountWithBalanceRange,
   AccountWithBalanceRangeSort,
-  type AccountWithBalanceRangeSortValue,
+} from "@/accounts/types";
+import { Box, Button, IconButton, Stack } from "@mui/material";
+import {
   formatAccountType,
   isPositiveChangeInBalance,
-} from "@/accounts/types";
-import {
-  Box,
-  Button,
-  IconButton,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+} from "@/accounts/helpers";
+import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
-import formatCurrency from "@/framework/formatCurrency";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import routes from "@/accounts/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -45,7 +39,6 @@ const AccountTrendsListFrame = function ({
   isInOnboardingMode,
 }: AccountTrendsListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
   const router = useRouter();
 
   const sortParamName = "sort";
@@ -59,9 +52,7 @@ const AccountTrendsListFrame = function ({
   const endDateParamName = "endDate";
   const updateParams = useSearchParamUpdater([pageParamName]);
 
-  const setSort = function (
-    sort: AccountWithBalanceRangeSortValue | null,
-  ): void {
+  const setSort = function (sort: AccountWithBalanceRangeSort | null): void {
     updateParams((params) => {
       if (sort === null) {
         params.delete(sortParamName);
@@ -245,7 +236,9 @@ const AccountTrendsListFrame = function ({
             variant="contained"
             onClick={() => {
               updateParams((params) => {
-                [...params.keys()].forEach((key) => params.delete(key));
+                [...params.keys()].forEach((key) => {
+                  params.delete(key);
+                });
               });
             }}
           >

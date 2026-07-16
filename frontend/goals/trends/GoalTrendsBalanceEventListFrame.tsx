@@ -1,19 +1,19 @@
 "use client";
 
-import { Button, IconButton, Paper, Stack, Typography } from "@mui/material";
+import { Button, IconButton } from "@mui/material";
 import {
   type GoalBalanceEvent,
   type GoalTrendsView,
   defaultGoalTrendsView,
 } from "@/goals/trends/goalTrendsTypes";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { GoalBalanceEventSort } from "@/goals/types";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
-import formatCurrency from "@/framework/formatCurrency";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import formatShortDate from "@/framework/formatShortDate";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
@@ -37,7 +37,6 @@ const GoalTrendsBalanceEventListFrame = function ({
   totalCount,
 }: GoalTrendsBalanceEventListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
   const router = useRouter();
 
   const sortParamName = "balanceEventSort";
@@ -90,8 +89,8 @@ const GoalTrendsBalanceEventListFrame = function ({
       headerContent: "Fund",
       getBodyContent: (balanceEvent) => balanceEvent.fund.name,
       ...getSortProps(
-        GoalBalanceEventSort.Fund,
-        GoalBalanceEventSort.FundDescending,
+        GoalBalanceEventSort.FundName,
+        GoalBalanceEventSort.FundNameDescending,
       ),
       minWidth: 160,
     },
@@ -100,8 +99,8 @@ const GoalTrendsBalanceEventListFrame = function ({
       headerContent: "Accounting Period",
       getBodyContent: (balanceEvent) => balanceEvent.accountingPeriod.name,
       ...getSortProps(
-        GoalBalanceEventSort.AccountingPeriod,
-        GoalBalanceEventSort.AccountingPeriodDescending,
+        GoalBalanceEventSort.AccountingPeriodName,
+        GoalBalanceEventSort.AccountingPeriodNameDescending,
       ),
       minWidth: 180,
     },
@@ -176,7 +175,9 @@ const GoalTrendsBalanceEventListFrame = function ({
             variant="contained"
             onClick={() => {
               updateParams((params) => {
-                [...params.keys()].forEach((key) => params.delete(key));
+                [...params.keys()].forEach((key) => {
+                  params.delete(key);
+                });
                 if (view !== defaultGoalTrendsView) {
                   params.set("view", view);
                 }
@@ -199,7 +200,9 @@ const GoalTrendsBalanceEventListFrame = function ({
             variant="contained"
             onClick={() => {
               updateParams((params) => {
-                [...params.keys()].forEach((key) => params.delete(key));
+                [...params.keys()].forEach((key) => {
+                  params.delete(key);
+                });
                 if (view !== defaultGoalTrendsView) {
                   params.set("view", view);
                 }

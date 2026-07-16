@@ -10,13 +10,13 @@ import { summarizeGoalRange } from "@/goals/trends/goalTrendsSummary";
  */
 const GoalOverview = async function (): Promise<JSX.Element> {
   const apiClient = getApiClient();
-  const accountingPeriodsResponse = await apiClient.GET(
-    "/accounting-periods",
-    {
-      params: { query: { Sort: "DateDescending", Limit: 1, Offset: 0 } },
-    },
+  const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
+    params: { query: { Sort: "DateDescending", Limit: 1, Offset: 0 } },
+  });
+  const accountingPeriods = getApiData(
+    accountingPeriodsResponse,
+    "Failed to load accounting periods",
   );
-  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to load accounting periods");
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
   if (latestAccountingPeriod === null) {
     return (
@@ -53,8 +53,14 @@ const GoalOverview = async function (): Promise<JSX.Element> {
       },
     }),
   ]);
-  const assignmentGoals = getApiData(assignmentResponse, "Failed to load assignment goals");
-  const spendingGoals = getApiData(spendingResponse, "Failed to load spending goals");
+  const assignmentGoals = getApiData(
+    assignmentResponse,
+    "Failed to load assignment goals",
+  );
+  const spendingGoals = getApiData(
+    spendingResponse,
+    "Failed to load spending goals",
+  );
   const summary = summarizeGoalRange(
     assignmentGoals.items,
     spendingGoals.items,

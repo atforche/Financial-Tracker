@@ -1,10 +1,16 @@
 "use client";
 
-import { type BarMetricChartPoint, formatSignedCurrency, getSignedBarColor } from "@/framework/charts/barMetricHelpers";
+import {
+  type BarMetricChartPoint,
+  getSignedBarColor,
+} from "@/framework/charts/barMetricHelpers";
+import {
+  formatCompactCurrency,
+  formatSignedCurrency,
+} from "@/framework/currencyHelpers";
 import BarMetricChart from "@/framework/charts/BarMetricChart";
 import type { JSX } from "react";
 import dayjs from "dayjs";
-import formatCompactCurrency from "@/framework/formatCompactCurrency";
 import formatLongDate from "@/framework/formatLongDate";
 
 type TransactionTrendsAmountChartMode = "AccountingPeriod" | "Date";
@@ -22,7 +28,8 @@ interface TransactionDateSummary {
 
 interface TransactionTrendsAmountChartProps {
   readonly mode: TransactionTrendsAmountChartMode;
-  readonly accountingPeriods: readonly TransactionAccountingPeriodSummary[] | null;
+  readonly accountingPeriods:
+    readonly TransactionAccountingPeriodSummary[] | null;
   readonly dates: readonly TransactionDateSummary[] | null;
 }
 
@@ -31,19 +38,20 @@ const buildChartPoints = function (
   accountingPeriods: readonly TransactionAccountingPeriodSummary[],
   dates: readonly TransactionDateSummary[],
 ): BarMetricChartPoint[] {
-  const summaries = mode === "AccountingPeriod"
-    ? accountingPeriods.map((summary) => ({
-        key: summary.accountingPeriodId,
-        tickLabel: summary.accountingPeriodName,
-        tooltipLabel: summary.accountingPeriodName,
-        value: summary.totalAmount,
-      }))
-    : dates.map((summary) => ({
-        key: summary.date,
-        tickLabel: dayjs(summary.date).format("MMM D"),
-        tooltipLabel: formatLongDate(new Date(`${summary.date}T00:00:00`)),
-        value: summary.totalAmount,
-      }));
+  const summaries =
+    mode === "AccountingPeriod"
+      ? accountingPeriods.map((summary) => ({
+          key: summary.accountingPeriodId,
+          tickLabel: summary.accountingPeriodName,
+          tooltipLabel: summary.accountingPeriodName,
+          value: summary.totalAmount,
+        }))
+      : dates.map((summary) => ({
+          key: summary.date,
+          tickLabel: dayjs(summary.date).format("MMM D"),
+          tooltipLabel: formatLongDate(new Date(`${summary.date}T00:00:00`)),
+          value: summary.totalAmount,
+        }));
 
   return summaries.map((point) => ({
     ...point,
@@ -52,7 +60,11 @@ const buildChartPoints = function (
 };
 
 /** Renders transaction amounts for the Transactions trends. */
-const TransactionTrendsAmountChart = function ({ mode, accountingPeriods, dates }: TransactionTrendsAmountChartProps): JSX.Element {
+const TransactionTrendsAmountChart = function ({
+  mode,
+  accountingPeriods,
+  dates,
+}: TransactionTrendsAmountChartProps): JSX.Element {
   return (
     <BarMetricChart
       title="Transaction Amount"
@@ -62,11 +74,13 @@ const TransactionTrendsAmountChart = function ({ mode, accountingPeriods, dates 
       yAxisLabel="Transaction Amount"
       tickFormatter={(value) => formatCompactCurrency(value, true)}
       valueFormatter={formatSignedCurrency}
-      getTooltipDescription={({ value }) => value > 0
-        ? "Net inflow in this period"
-        : value < 0
-          ? "Net outflow in this period"
-          : "No net amount in this period"}
+      getTooltipDescription={({ value }) =>
+        value > 0
+          ? "Net inflow in this period"
+          : value < 0
+            ? "Net outflow in this period"
+            : "No net amount in this period"
+      }
       showZeroLine
     />
   );

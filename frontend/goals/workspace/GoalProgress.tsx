@@ -1,12 +1,12 @@
+import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { Box, Stack, Typography } from "@mui/material";
 import {
   getGoalProgressAmounts,
   getGoalProgressBackgroundColor,
   getGoalProgressPercent,
 } from "@/goals/workspace/helpers";
-import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import type { JSX } from "react";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for the GoalProgress component.

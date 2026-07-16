@@ -10,13 +10,13 @@ import getApiData from "@/framework/data/apiResponse";
  */
 const AccountingPeriodOverview = async function (): Promise<JSX.Element> {
   const apiClient = getApiClient();
-  const accountingPeriodsResponse = await apiClient.GET(
-    "/accounting-periods",
-    {
-      params: { query: { Sort: "DateDescending", Limit: 1, Offset: 0 } },
-    },
+  const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
+    params: { query: { Sort: "DateDescending", Limit: 1, Offset: 0 } },
+  });
+  const accountingPeriods = getApiData(
+    accountingPeriodsResponse,
+    "Failed to load accounting periods",
   );
-  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to load accounting periods");
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
   const rangeResponse =
     latestAccountingPeriod === null
@@ -31,7 +31,10 @@ const AccountingPeriodOverview = async function (): Promise<JSX.Element> {
             },
           },
         });
-  const range = rangeResponse === null ? null : getApiData(rangeResponse, "Failed to load accounting period overview");
+  const range =
+    rangeResponse === null
+      ? null
+      : getApiData(rangeResponse, "Failed to load accounting period overview");
   const periods = range?.accountingPeriods.items ?? [];
   return (
     <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>

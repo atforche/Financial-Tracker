@@ -1,15 +1,14 @@
+import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
+import { Box, Stack } from "@mui/material";
 import {
-  type AssignmentGoal,
-  type SpendingGoal,
   formatAssignmentGoalType,
   formatSpendingGoalType,
-} from "@/goals/types";
-import { Box, Stack } from "@mui/material";
+} from "@/goals/helpers";
 import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import UpdateGoalForm from "@/goals/workspace/UpdateGoalForm";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for the GoalContextFrame component.

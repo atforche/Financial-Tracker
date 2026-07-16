@@ -39,7 +39,10 @@ const AccountWorkspaceDetailPage = async function ({
     }),
   ]);
   const accounts = getApiData(accountsResponse, "Failed to fetch accounts");
-  const transactions = getApiData(transactionsResponse, "Failed to fetch account transactions");
+  const transactions = getApiData(
+    transactionsResponse,
+    "Failed to fetch account transactions",
+  );
   const account = accounts.items.find((item) => item.id === accountId);
 
   const workspaceSearchParams: AccountWorkspaceSearchParams = {

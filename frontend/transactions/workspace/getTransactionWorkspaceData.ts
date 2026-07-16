@@ -56,13 +56,17 @@ const getTransactionWorkspaceReferenceData =
     const accountsPromise = apiClient.GET("/accounts/with-balances");
     const fundsPromise = apiClient.GET("/funds/with-balances");
 
-    const [allAccountingPeriodsResponse, accountsResponse, fundsResponse] = await Promise.all([
-      allAccountingPeriodsPromise,
-      accountsPromise,
-      fundsPromise,
-    ]);
+    const [allAccountingPeriodsResponse, accountsResponse, fundsResponse] =
+      await Promise.all([
+        allAccountingPeriodsPromise,
+        accountsPromise,
+        fundsPromise,
+      ]);
 
-    const allAccountingPeriods = getApiData(allAccountingPeriodsResponse, "Failed to fetch accounting periods");
+    const allAccountingPeriods = getApiData(
+      allAccountingPeriodsResponse,
+      "Failed to fetch accounting periods",
+    );
     const accounts = getApiData(accountsResponse, "Failed to fetch accounts");
     const funds = getApiData(fundsResponse, "Failed to fetch funds");
 
@@ -94,8 +98,14 @@ const getTransactionWorkspaceReferenceData =
         }),
       ]);
 
-      assignmentGoals = getApiData(assignmentGoalResponse, "Failed to fetch assignment goals").items;
-      spendingGoals = getApiData(spendingGoalResponse, "Failed to fetch spending goals").items;
+      assignmentGoals = getApiData(
+        assignmentGoalResponse,
+        "Failed to fetch assignment goals",
+      ).items;
+      spendingGoals = getApiData(
+        spendingGoalResponse,
+        "Failed to fetch spending goals",
+      ).items;
     }
 
     return {
@@ -168,7 +178,10 @@ const getTransactionWorkspaceListData = async function (
     transactionsPromise,
   ]);
 
-  const transactions = getApiData(transactionsResponse, "Failed to fetch transactions");
+  const transactions = getApiData(
+    transactionsResponse,
+    "Failed to fetch transactions",
+  );
 
   return {
     ...referenceData,

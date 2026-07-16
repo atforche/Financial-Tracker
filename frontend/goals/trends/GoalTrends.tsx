@@ -1,7 +1,10 @@
 import {
+  AccountingPeriodSort,
+  AccountingPeriodWithBalanceSort,
+} from "@/accounting-periods/types";
+import {
   AssignmentGoalSort,
   GoalBalanceEventSort,
-  type GoalBalanceEventSortValue,
   SpendingGoalSort,
 } from "@/goals/types";
 import {
@@ -14,7 +17,7 @@ import {
   summarizeGoalRange,
   summarizeGoalsByAccountingPeriod,
 } from "@/goals/trends/goalTrendsSummary";
-import { BalanceEventTypeModel } from "@/framework/data/api";
+import { BalanceEventType } from "@/framework/data/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import GoalTrendsAmountAssignedChart from "@/goals/trends/GoalTrendsAmountAssignedChart";
 import GoalTrendsAmountSpentChart from "@/goals/trends/GoalTrendsAmountSpentChart";
@@ -39,7 +42,7 @@ import tryParseEnum from "@/framework/data/tryParseEnum";
 interface GoalTrendsSearchParams {
   sort?: string;
   page?: number | string | null;
-  balanceEventSort?: GoalBalanceEventSortValue;
+  balanceEventSort?: GoalBalanceEventSort;
   balanceEventPage?: number | string | null;
   goalType?: string | string[];
   fundName?: string | string[];
@@ -63,13 +66,19 @@ const GoalTrends = async function ({
     ? params.view
     : defaultGoalTrendsView;
   const apiClient = getApiClient();
-  const accountingPeriodsResponse = await apiClient.GET(
-    "/accounting-periods",
-    {
-      params: { query: { Sort: "DateDescending", Limit: 500, Offset: 0 } },
+  const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
+    params: {
+      query: {
+        Sort: AccountingPeriodSort.DateDescending,
+        Limit: 500,
+        Offset: 0,
+      },
     },
+  });
+  const accountingPeriods = getApiData(
+    accountingPeriodsResponse,
+    "Failed to load accounting periods",
   );
-  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to load accounting periods");
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
   if (
     (typeof params.startAccountingPeriodId === "undefined" ||
@@ -111,7 +120,12 @@ const GoalTrends = async function ({
   ] = await Promise.all([
     apiClient.GET("/accounting-periods/range", {
       params: {
-        query: { ...range, Sort: "Date" as const, Limit: 500, Offset: 0 },
+        query: {
+          ...range,
+          Sort: AccountingPeriodWithBalanceSort.Date,
+          Limit: 500,
+          Offset: 0,
+        },
       },
     }),
     apiClient.GET("/goals/assignment", {
@@ -149,10 +163,22 @@ const GoalTrends = async function ({
       },
     }),
   ]);
-  const periodData = getApiData(periodResponse, "Failed to load accounting period trends");
-  const assignmentData = getApiData(assignmentResponse, "Failed to load assignment goals");
-  const spendingData = getApiData(spendingResponse, "Failed to load spending goals");
-  const balanceEventData = getApiData(balanceEventResponse, "Failed to load goal balance events");
+  const periodData = getApiData(
+    periodResponse,
+    "Failed to load accounting period trends",
+  );
+  const assignmentData = getApiData(
+    assignmentResponse,
+    "Failed to load assignment goals",
+  );
+  const spendingData = getApiData(
+    spendingResponse,
+    "Failed to load spending goals",
+  );
+  const balanceEventData = getApiData(
+    balanceEventResponse,
+    "Failed to load goal balance events",
+  );
 
   const periodIds = new Set(
     periodData.accountingPeriods.items.map((period) => period.id),
@@ -189,8 +215,8 @@ const GoalTrends = async function ({
   );
   const eventType =
     currentView === "assignment"
-      ? BalanceEventTypeModel.Credit
-      : BalanceEventTypeModel.Debit;
+      ? BalanceEventType.Credit
+      : BalanceEventType.Debit;
   const events = balanceEventData.items.filter(
     (event) =>
       event.type === eventType &&

@@ -1,9 +1,9 @@
 "use client";
 
-import type { AccountWorkspaceBalanceEvent } from "@/accounts/types";
-import { BalanceEventTypeModel } from "@/framework/data/api";
 import { Box, Button } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { AccountBalanceEvent } from "@/accounts/types";
+import { BalanceEventType } from "@/framework/data/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
@@ -11,14 +11,14 @@ import Link from "next/link";
 import ListFrame from "@/framework/listframe/ListFrame";
 import dayjs from "dayjs";
 import { formatAccountBalanceEventType } from "@/accounts/workspace/helpers";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import routes from "@/transactions/routes";
 
 /**
  * Props for the AccountBalanceEventsFrame component.
  */
 interface AccountBalanceEventsFrameProps {
-  readonly data: AccountWorkspaceBalanceEvent[] | null;
+  readonly data: AccountBalanceEvent[] | null;
   readonly totalCount: number | null;
   readonly addTransactionHref: string;
 }
@@ -38,7 +38,7 @@ const AccountBalanceEventsFrame = function ({
   const returnUrl =
     currentQuery === "" ? pathname : `${pathname}?${currentQuery}`;
 
-  const columns: ColumnDefinition<AccountWorkspaceBalanceEvent>[] = [
+  const columns: ColumnDefinition<AccountBalanceEvent>[] = [
     {
       name: "date",
       headerContent: "Event Date",
@@ -54,7 +54,7 @@ const AccountBalanceEventsFrame = function ({
           component="span"
           sx={{
             color:
-              balanceEvent.type === BalanceEventTypeModel.Debit
+              balanceEvent.type === BalanceEventType.Debit
                 ? "warning.dark"
                 : "info.dark",
             fontWeight: 600,
@@ -112,7 +112,7 @@ const AccountBalanceEventsFrame = function ({
 
   return (
     <Box sx={{ maxWidth: 1200, width: "100%" }}>
-      <ListFrame<AccountWorkspaceBalanceEvent>
+      <ListFrame<AccountBalanceEvent>
         title="Recent Balance Events"
         color="info"
         headerContent={
@@ -124,7 +124,6 @@ const AccountBalanceEventsFrame = function ({
             Add Transaction
           </Button>
         }
-
         columns={columns}
         getId={(balanceEvent) =>
           `${balanceEvent.transactionId}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`

@@ -39,7 +39,10 @@ const FundWorkspace = async function ({
     fundsPromise,
   ]);
 
-  const accountingPeriod = getApiData(accountingPeriodResponse, "Failed to fetch accounting periods");
+  const accountingPeriod = getApiData(
+    accountingPeriodResponse,
+    "Failed to fetch accounting periods",
+  );
   const funds = getApiData(fundsResponse, "Failed to fetch funds");
 
   const visibleFunds = funds.items.filter((fund) => fund.name !== "Unassigned");

@@ -40,7 +40,10 @@ const FundWorkspaceDetailPage = async function ({
     }),
   ]);
   const funds = getApiData(fundsResponse, "Failed to fetch funds");
-  const transactions = getApiData(transactionsResponse, "Failed to fetch fund transactions");
+  const transactions = getApiData(
+    transactionsResponse,
+    "Failed to fetch fund transactions",
+  );
   const fund = funds.items.find((item) => item.id === fundId);
 
   const workspaceSearchParams: FundWorkspaceSearchParams = {

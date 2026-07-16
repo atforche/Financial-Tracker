@@ -5,21 +5,21 @@ import {
   AssignmentGoalSort,
   type SpendingGoal,
   SpendingGoalSort,
-  formatSpendingGoalType,
 } from "@/goals/types";
-import { Button, IconButton, Paper, Stack, Typography } from "@mui/material";
+import { Button, IconButton, Stack } from "@mui/material";
 import {
   type GoalTrendsView,
   defaultGoalTrendsView,
 } from "@/goals/trends/goalTrendsTypes";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
-import formatCurrency from "@/framework/formatCurrency";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import { formatCurrency } from "@/framework/currencyHelpers";
+import { formatSpendingGoalType } from "@/goals/helpers";
 import routes from "@/goals/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -44,7 +44,6 @@ const GoalTrendsListFrame = function ({
   isInOnboardingMode,
 }: GoalTrendsListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
   const router = useRouter();
 
   const sortParamName = "sort";
@@ -227,7 +226,9 @@ const GoalTrendsListFrame = function ({
               variant="contained"
               onClick={() => {
                 updateParams((params) => {
-                  [...params.keys()].forEach((key) => params.delete(key));
+                  [...params.keys()].forEach((key) => {
+                    params.delete(key);
+                  });
                   if (view !== defaultGoalTrendsView) {
                     params.set("view", view);
                   }
@@ -378,7 +379,9 @@ const GoalTrendsListFrame = function ({
             variant="contained"
             onClick={() => {
               updateParams((params) => {
-                [...params.keys()].forEach((key) => params.delete(key));
+                [...params.keys()].forEach((key) => {
+                  params.delete(key);
+                });
                 if (view !== defaultGoalTrendsView) {
                   params.set("view", view);
                 }

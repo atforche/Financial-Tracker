@@ -1,26 +1,22 @@
 "use client";
 
 import { Box, Button } from "@mui/material";
-import {
-  type Transaction,
-  TransactionSort,
-  type TransactionSortValue,
-} from "@/transactions/transaction";
+import { type Transaction, TransactionSort } from "@/transactions/types";
 import {
   getTransactionDestinationLabel,
   getTransactionSourceLabel,
 } from "@/transactions/current/helpers";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import ListFrame from "@/framework/listframe/ListFrame";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
-import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
-import formatCurrency from "@/framework/formatCurrency";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
  * Props for the TransactionWorkspaceListFrame component.
@@ -49,7 +45,7 @@ const TransactionWorkspaceListFrame = function ({
 
   const updateParams = useSearchParamUpdater([]);
 
-  const setSort = function (sort: TransactionSortValue | null): void {
+  const setSort = function (sort: TransactionSort | null): void {
     updateParams((params) => {
       if (sort === null) {
         params.delete(sortParamName);

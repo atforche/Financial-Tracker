@@ -53,9 +53,15 @@ const getOverviewData = async function (): Promise<OverviewData> {
     fundsPromise,
   ]);
 
-  const accountSummary = getApiData(responses[0], "Failed to fetch account summary");
+  const accountSummary = getApiData(
+    responses[0],
+    "Failed to fetch account summary",
+  );
   const fundSummary = getApiData(responses[1], "Failed to fetch fund summary");
-  const accountingPeriods = getApiData(responses[2], "Failed to fetch accounting periods");
+  const accountingPeriods = getApiData(
+    responses[2],
+    "Failed to fetch accounting periods",
+  );
   const accounts = getApiData(responses[3], "Failed to fetch accounts");
   const funds = getApiData(responses[4], "Failed to fetch funds");
 

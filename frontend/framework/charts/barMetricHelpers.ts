@@ -1,5 +1,4 @@
 import type { TooltipContentProps } from "recharts";
-import formatCurrency from "@/framework/formatCurrency";
 
 interface BarMetricChartPoint {
   readonly key: string;
@@ -28,8 +27,7 @@ const isBarMetricChartPoint = function (
     typeof value["tickLabel"] === "string" &&
     typeof value["tooltipLabel"] === "string" &&
     typeof value["value"] === "number" &&
-    (typeof value["fill"] === "undefined" ||
-      typeof value["fill"] === "string")
+    (typeof value["fill"] === "undefined" || typeof value["fill"] === "string")
   );
 };
 
@@ -46,15 +44,6 @@ const getBarMetricTooltipChartPoint = function (
   return null;
 };
 
-/** Formats a currency value with an explicit sign when it is non-zero. */
-const formatSignedCurrency = function (value: number): string {
-  if (value === 0) {
-    return formatCurrency(value);
-  }
-
-  return `${value > 0 ? "+" : "-"}${formatCurrency(Math.abs(value))}`;
-};
-
 /** Gets the semantic bar color for a signed value. */
 const getSignedBarColor = function (value: number): string {
   if (value > 0) {
@@ -66,9 +55,5 @@ const getSignedBarColor = function (value: number): string {
   return neutralBarColor;
 };
 
-export {
-  formatSignedCurrency,
-  getBarMetricTooltipChartPoint,
-  getSignedBarColor,
-};
+export { getBarMetricTooltipChartPoint, getSignedBarColor };
 export type { BarMetricChartPoint };

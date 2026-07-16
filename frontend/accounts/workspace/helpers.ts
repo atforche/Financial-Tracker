@@ -1,15 +1,15 @@
 import {
+  type AccountBalanceEvent,
   AccountType,
-  type AccountWorkspaceBalanceEvent,
   type CreateAccountRequest,
 } from "@/accounts/types";
-import { BalanceEventTypeModel } from "@/framework/data/api";
 import {
-  type AccountingPeriod,
   getDefaultDate,
   getMaximumDate,
   getMinimumDate,
-} from "@/accounting-periods/types";
+} from "@/accounting-periods/helpers";
+import type { AccountingPeriod } from "@/accounting-periods/types";
+import { BalanceEventType } from "@/framework/data/types";
 import type { Dayjs } from "dayjs";
 import type { FrameColor } from "@/framework/view/Frame";
 
@@ -122,10 +122,10 @@ const getAccountCardColor = function (
  * Formats the type of an account balance event.
  */
 const formatAccountBalanceEventType = function (
-  balanceEvent: AccountWorkspaceBalanceEvent,
+  balanceEvent: AccountBalanceEvent,
 ): string {
   const baseLabel =
-    balanceEvent.type === BalanceEventTypeModel.Debit ? "Debit" : "Credit";
+    balanceEvent.type === BalanceEventType.Debit ? "Debit" : "Credit";
 
   return balanceEvent.isPosted
     ? baseLabel

@@ -1,5 +1,5 @@
 import { Chip, Stack } from "@mui/material";
-import type { FundIdentifier, FundWithBalance } from "@/funds/types";
+import type { Fund, FundWithBalance } from "@/funds/types";
 import {
   type FundAssignmentDraft,
   getExplicitFundAssignments,
@@ -13,7 +13,7 @@ import type { AssignmentGoal } from "@/goals/types";
 import type { FrameColor } from "@/framework/view/Frame";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
 import type { JSX } from "react";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import { getUnassignedFund } from "@/funds/helpers";
 
 /**
@@ -46,10 +46,7 @@ const IncomeFundAssignmentPlanner = function ({
 }: IncomeFundAssignmentPlannerProps): JSX.Element {
   const unassignedFund = getUnassignedFund(funds);
 
-  const sortFunds = function (
-    left: FundIdentifier,
-    right: FundIdentifier,
-  ): number {
+  const sortFunds = function (left: Fund, right: Fund): number {
     return sortFundsByRemainingAmount(left, right, (fundId: string) =>
       getIncomeGoalRemainingAmount(
         fundId,
@@ -105,10 +102,7 @@ const IncomeFundAssignmentPlanner = function ({
     );
   };
 
-  const updateFund = function (
-    index: number,
-    newFund: FundIdentifier | null,
-  ): void {
+  const updateFund = function (index: number, newFund: Fund | null): void {
     const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
     const nextFundAssignments = explicitFundAssignments.map(
       (assignment, assignmentIndex) => {

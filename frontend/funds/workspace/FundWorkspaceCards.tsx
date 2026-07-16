@@ -7,9 +7,9 @@ import type { FundWithBalance } from "@/funds/types";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
-import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import routes from "@/funds/routes";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
  * Props for the FundWorkspaceCards component.

@@ -1,26 +1,18 @@
 "use client";
 
-import {
-  Box,
-  Button,
-  IconButton,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Button, IconButton, Stack } from "@mui/material";
 import {
   type FundWithBalanceRange,
   FundWithBalanceRangeSort,
-  type FundWithBalanceRangeSortValue,
 } from "@/funds/types";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
-import formatCurrency from "@/framework/formatCurrency";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import routes from "@/funds/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -43,7 +35,6 @@ const FundTrendsListFrame = function ({
   isInOnboardingMode,
 }: FundTrendsListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
   const router = useRouter();
 
   const sortParamName = "sort";
@@ -56,7 +47,7 @@ const FundTrendsListFrame = function ({
   const endDateParamName = "endDate";
   const updateParams = useSearchParamUpdater([pageParamName]);
 
-  const setSort = function (sort: FundWithBalanceRangeSortValue | null): void {
+  const setSort = function (sort: FundWithBalanceRangeSort | null): void {
     updateParams((params) => {
       if (sort === null) {
         params.delete(sortParamName);
@@ -225,7 +216,9 @@ const FundTrendsListFrame = function ({
             variant="contained"
             onClick={() => {
               updateParams((params) => {
-                [...params.keys()].forEach((key) => params.delete(key));
+                [...params.keys()].forEach((key) => {
+                  params.delete(key);
+                });
               });
             }}
           >

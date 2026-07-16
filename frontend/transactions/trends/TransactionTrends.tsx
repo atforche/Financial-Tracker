@@ -93,7 +93,10 @@ const TransactionTrends = async function ({
       },
     },
   });
-  const accountingPeriods = getApiData(await accountingPeriodsPromise, "Failed to fetch accounting periods");
+  const accountingPeriods = getApiData(
+    await accountingPeriodsPromise,
+    "Failed to fetch accounting periods",
+  );
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
   const isInOnboardingMode = latestAccountingPeriod === null;
   const currentMode: TransactionsTrendsFilterMode =
@@ -225,7 +228,10 @@ const TransactionTrends = async function ({
     summaryRequest,
   ]);
   const listData = getApiData(listResponse, "Failed to load transactions");
-  const summaryData = getApiData(summaryResponse, "Failed to load transaction summary");
+  const summaryData = getApiData(
+    summaryResponse,
+    "Failed to load transaction summary",
+  );
   const allTransactions = summaryData.transactions.items;
   const filteredTransactions = allTransactions.filter(
     (transaction) =>
@@ -282,9 +288,7 @@ const TransactionTrends = async function ({
           defaultEndDate={defaultEndDate.format("YYYY-MM-DD")}
         />
       </ConstrainedContent>
-      <TransactionsByTypeCard
-        transactionTypes={summaryData.transactionTypes}
-      />
+      <TransactionsByTypeCard transactionTypes={summaryData.transactionTypes} />
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
         <TransactionTrendsCountChart
           mode={currentMode === "date" ? "Date" : "AccountingPeriod"}

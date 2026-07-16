@@ -1,10 +1,10 @@
 import type {
   AssignmentGoal,
-  AssignmentGoalSortValue,
+  AssignmentGoalSort,
   AssignmentGoalType,
-  GoalWorkspaceBalanceEvent,
+  GoalBalanceEvent,
   SpendingGoal,
-  SpendingGoalSortValue,
+  SpendingGoalSort,
   SpendingGoalType,
 } from "@/goals/types";
 
@@ -12,7 +12,7 @@ type GoalTrendsView = "assignment" | "spending";
 
 type GoalTrendsGoal = AssignmentGoal | SpendingGoal;
 
-type GoalTrendsSortOrder = AssignmentGoalSortValue | SpendingGoalSortValue;
+type GoalTrendsSortOrder = AssignmentGoalSort | SpendingGoalSort;
 
 type GoalTrendsGoalType = AssignmentGoalType | SpendingGoalType;
 
@@ -74,7 +74,7 @@ export type {
   GoalAccountingPeriodSummary,
   GoalRangeSummary,
   GoalsMetSummary,
-  GoalWorkspaceBalanceEvent as GoalBalanceEvent,
+  GoalBalanceEvent,
   GoalTrendsGoal,
   GoalTrendsGoalType,
   GoalTrendsSortOrder,

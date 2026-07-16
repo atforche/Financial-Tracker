@@ -3,7 +3,7 @@
 import BarMetricChart from "@/framework/charts/BarMetricChart";
 import type { GoalAccountingPeriodSummary } from "@/goals/trends/goalTrendsTypes";
 import type { JSX } from "react";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 
 interface GoalTrendsMetricChartProps {
   readonly title: string;

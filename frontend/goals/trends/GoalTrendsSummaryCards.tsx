@@ -1,5 +1,11 @@
 "use client";
 
+import type {
+  AssignmentGoalTypeSummary,
+  GoalRangeSummary,
+  GoalTrendsView,
+  SpendingGoalTypeSummary,
+} from "@/goals/trends/goalTrendsTypes";
 import {
   Box,
   Collapse,
@@ -8,20 +14,14 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { type JSX, type ReactNode, useState } from "react";
 import {
   formatAssignmentGoalType,
   formatSpendingGoalType,
-} from "@/goals/types";
-import type {
-  AssignmentGoalTypeSummary,
-  GoalRangeSummary,
-  GoalTrendsView,
-  SpendingGoalTypeSummary,
-} from "@/goals/trends/goalTrendsTypes";
-import { type JSX, type ReactNode, useState } from "react";
+} from "@/goals/helpers";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import SummaryCard from "@/framework/view/SummaryCard";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 
 interface GoalTrendsSummaryCardsProps {
   readonly trends: GoalRangeSummary;

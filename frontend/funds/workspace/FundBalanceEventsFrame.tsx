@@ -1,23 +1,23 @@
 "use client";
 
 import { Box, Button } from "@mui/material";
-import type { FundWorkspaceBalanceEvent } from "@/funds/types";
-import { BalanceEventTypeModel } from "@/framework/data/api";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { BalanceEventType } from "@/framework/data/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
+import type { FundBalanceEvent } from "@/funds/types";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import Link from "next/link";
 import ListFrame from "@/framework/listframe/ListFrame";
 import dayjs from "dayjs";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import routes from "@/transactions/routes";
 
 /**
  * Props for the FundBalanceEventsFrame component.
  */
 interface FundBalanceEventsFrameProps {
-  readonly data: FundWorkspaceBalanceEvent[] | null;
+  readonly data: FundBalanceEvent[] | null;
   readonly totalCount: number | null;
   readonly addTransactionHref: string;
 }
@@ -37,7 +37,7 @@ const FundBalanceEventsFrame = function ({
   const returnUrl =
     currentQuery === "" ? pathname : `${pathname}?${currentQuery}`;
 
-  const columns: ColumnDefinition<FundWorkspaceBalanceEvent>[] = [
+  const columns: ColumnDefinition<FundBalanceEvent>[] = [
     {
       name: "date",
       headerContent: "Event Date",
@@ -55,15 +55,13 @@ const FundBalanceEventsFrame = function ({
           component="span"
           sx={{
             color:
-              balanceEvent.type === BalanceEventTypeModel.Debit
+              balanceEvent.type === BalanceEventType.Debit
                 ? "warning.dark"
                 : "info.dark",
             fontWeight: 600,
           }}
         >
-          {balanceEvent.type === BalanceEventTypeModel.Debit
-            ? "Debit"
-            : "Credit"}
+          {balanceEvent.type === BalanceEventType.Debit ? "Debit" : "Credit"}
         </Box>
       ),
       minWidth: 130,
@@ -115,7 +113,7 @@ const FundBalanceEventsFrame = function ({
 
   return (
     <Box sx={{ maxWidth: 1200, width: "100%" }}>
-      <ListFrame<FundWorkspaceBalanceEvent>
+      <ListFrame<FundBalanceEvent>
         title="Recent Balance Events"
         color="info"
         headerContent={
@@ -127,7 +125,6 @@ const FundBalanceEventsFrame = function ({
             Add Transaction
           </Button>
         }
-
         columns={columns}
         getId={(balanceEvent) =>
           `${balanceEvent.transactionId}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`

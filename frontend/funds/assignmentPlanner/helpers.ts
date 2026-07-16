@@ -1,6 +1,6 @@
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
-import type { Fund, FundIdentifier } from "@/funds/types";
-import formatCurrency from "@/framework/formatCurrency";
+import type { Fund } from "@/funds/types";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
 import { isUnassignedFund } from "@/funds/helpers";
 
@@ -136,9 +136,7 @@ const getGoalRemainingAmount = function (
   baselineFundAssignments: readonly FundAssignmentDraft[],
   fundId: string,
 ): number | null {
-  if (
-    isNullOrUndefined(goalRemainingAmount)
-  ) {
+  if (isNullOrUndefined(goalRemainingAmount)) {
     return null;
   }
   const baselineAssignedAmount =
@@ -215,8 +213,8 @@ const getFundOptionSecondaryLabel = function (
  * Sorts funds by their remaining amount.
  */
 const sortFundsByRemainingAmount = function (
-  left: FundIdentifier,
-  right: FundIdentifier,
+  left: Fund,
+  right: Fund,
   getRemainingAmount: (fundId: string) => number | null,
 ): number {
   const leftRemainingAmount = getRemainingAmount(left.id);

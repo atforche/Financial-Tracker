@@ -1,12 +1,10 @@
 "use client";
 
-import {
-  type AccountBalanceSummaryByDate,
-  type AccountBalanceSummaryByPeriod,
-  type AccountType,
-  type AccountTypeBalance,
-  formatAccountType,
-  isTrackedAccountType,
+import type {
+  AccountBalanceSummaryByDate,
+  AccountBalanceSummaryByPeriod,
+  AccountType,
+  AccountTypeBalance,
 } from "@/accounts/types";
 import {
   Box,
@@ -17,9 +15,10 @@ import {
   Typography,
 } from "@mui/material";
 import { type JSX, type ReactNode, useState } from "react";
+import { formatAccountType, isTrackedAccountType } from "@/accounts/helpers";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import SummaryCard from "@/framework/view/SummaryCard";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import formatShortDate from "@/framework/formatShortDate";
 
 interface AccountTrendsSummaryCardsProps {

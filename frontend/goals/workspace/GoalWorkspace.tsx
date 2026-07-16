@@ -31,12 +31,14 @@ const GoalWorkspace = async function ({
 }: GoalWorkspaceProps): Promise<JSX.Element> {
   const { accountingPeriodId, fundIds } = await searchParams;
   const apiClient = getApiClient();
-  const accountingPeriodsResponse = await apiClient.GET(
-    "/accounting-periods",
-    { params: { query: { Limit: 500 } } },
-  );
+  const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
+    params: { query: { Limit: 500 } },
+  });
 
-  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to fetch goal workspace filters");
+  const accountingPeriods = getApiData(
+    accountingPeriodsResponse,
+    "Failed to fetch goal workspace filters",
+  );
 
   const selectedAccountingPeriodId =
     accountingPeriodId ?? accountingPeriods.items[0]?.id;
@@ -67,8 +69,14 @@ const GoalWorkspace = async function ({
       },
     }),
   ]);
-  const assignmentGoals = getApiData(assignmentGoalResponse, "Failed to fetch assignment goals");
-  const spendingGoals = getApiData(spendingGoalResponse, "Failed to fetch spending goals");
+  const assignmentGoals = getApiData(
+    assignmentGoalResponse,
+    "Failed to fetch assignment goals",
+  );
+  const spendingGoals = getApiData(
+    spendingGoalResponse,
+    "Failed to fetch spending goals",
+  );
 
   return (
     <PageLayout>

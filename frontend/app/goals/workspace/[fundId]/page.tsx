@@ -33,7 +33,10 @@ const GoalWorkspaceDetailPage = async function ({
   const periodsResponse = await apiClient.GET("/accounting-periods", {
     params: { query: { Limit: 1 } },
   });
-  const periods = getApiData(periodsResponse, "Failed to fetch accounting periods");
+  const periods = getApiData(
+    periodsResponse,
+    "Failed to fetch accounting periods",
+  );
   const periodId = accountingPeriodId ?? periods.items[0]?.id;
   const workspaceUrl = routes.workspace({
     ...(typeof periodId === "string" ? { accountingPeriodId: periodId } : {}),
@@ -64,8 +67,14 @@ const GoalWorkspaceDetailPage = async function ({
       },
     }),
   ]);
-  const assignmentGoal = getApiData(assignmentGoalResponse, "Failed to fetch the assignment goal");
-  const spendingGoal = getApiData(spendingGoalResponse, "Failed to fetch the spending goal");
+  const assignmentGoal = getApiData(
+    assignmentGoalResponse,
+    "Failed to fetch the assignment goal",
+  );
+  const spendingGoal = getApiData(
+    spendingGoalResponse,
+    "Failed to fetch the spending goal",
+  );
   if (
     typeof assignmentGoal.items[0] === "undefined" ||
     typeof spendingGoal.items[0] === "undefined"
@@ -89,7 +98,10 @@ const GoalWorkspaceDetailPage = async function ({
       },
     },
   );
-  const balanceEvents = getApiData(balanceEventsResponse, "Failed to fetch goal balance events");
+  const balanceEvents = getApiData(
+    balanceEventsResponse,
+    "Failed to fetch goal balance events",
+  );
 
   const currentUrl = routes.workspaceDetail(fundId, {
     accountingPeriodId: periodId,

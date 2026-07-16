@@ -5,7 +5,7 @@ import type { JSX } from "react";
 import LabeledAmountBar from "@/framework/view/LabeledAmountBar";
 import SummaryCard from "@/framework/view/SummaryCard";
 import type { TransactionSummaryByType } from "@/transactions/types";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for TransactionsByTypeCard component.

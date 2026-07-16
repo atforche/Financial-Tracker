@@ -1,10 +1,17 @@
-import type { AccountingPeriodWithBalance, AccountingPeriodsInRange } from "@/accounting-periods/types";
+import type {
+  AccountingPeriodWithBalance,
+  AccountingPeriodsInRange,
+} from "@/accounting-periods/types";
+import {
+  type BarMetricChartPoint,
+  getSignedBarColor,
+} from "@/framework/charts/barMetricHelpers";
 import type { BalanceTrendChartPoint } from "@/framework/charts/helpers";
 
 /**
  * Builds the chart points for the balance trend chart based on the provided accounting periods.
  */
-const buildChartPoints = function (
+const buildTrendChartPoints = function (
   accountingPeriods: readonly AccountingPeriodWithBalance[],
 ): BalanceTrendChartPoint[] {
   const openingPoints = accountingPeriods.map((accountingPeriod) => ({
@@ -31,6 +38,26 @@ const buildChartPoints = function (
 };
 
 /**
+ * Builds the chart points for the balance change chart based on the provided accounting periods.
+ */
+const buildChangeChartPoints = function (
+  accountingPeriods: readonly AccountingPeriodWithBalance[],
+): BarMetricChartPoint[] {
+  return accountingPeriods.map((accountingPeriod) => {
+    const value =
+      accountingPeriod.closingBalance - accountingPeriod.openingBalance;
+
+    return {
+      key: accountingPeriod.id,
+      tickLabel: accountingPeriod.name,
+      tooltipLabel: accountingPeriod.name,
+      value,
+      fill: getSignedBarColor(value),
+    };
+  });
+};
+
+/**
  * Creates an empty AccountingPeriodsInRange object with default values.
  */
 const createEmptyTrends = function (): AccountingPeriodsInRange {
@@ -48,4 +75,4 @@ const createEmptyTrends = function (): AccountingPeriodsInRange {
   };
 };
 
-export { buildChartPoints, createEmptyTrends };
+export { buildTrendChartPoints, buildChangeChartPoints, createEmptyTrends };

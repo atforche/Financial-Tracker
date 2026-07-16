@@ -61,14 +61,24 @@ const AccountWorkspace = async function ({
     },
   });
 
-  const [accountingPeriodResponse, accountingPeriodsResponse, accountsResponse] = await Promise.all([
+  const [
+    accountingPeriodResponse,
+    accountingPeriodsResponse,
+    accountsResponse,
+  ] = await Promise.all([
     anyAccountingPeriodsPromise,
     accountingPeriodsPromise,
     accountsPromise,
   ]);
 
-  const accountingPeriod = getApiData(accountingPeriodResponse, "Failed to fetch accounting periods");
-  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to fetch accounting periods");
+  const accountingPeriod = getApiData(
+    accountingPeriodResponse,
+    "Failed to fetch accounting periods",
+  );
+  const accountingPeriods = getApiData(
+    accountingPeriodsResponse,
+    "Failed to fetch accounting periods",
+  );
   const accounts = getApiData(accountsResponse, "Failed to fetch accounts");
 
   const filteredAccounts = shouldPersistAccountTypes(currentAccountTypes)

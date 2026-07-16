@@ -2,10 +2,7 @@ import {
   AccountingPeriodSort,
   type AccountingPeriodWithBalanceSort,
 } from "@/accounting-periods/types";
-import type {
-  Transaction,
-  TransactionSort,
-} from "@/transactions/types";
+import type { Transaction, TransactionSort } from "@/transactions/types";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import AccountingPeriodTrendChart from "@/accounting-periods/trends/AccountingPeriodTrendChart";
 import AccountingPeriodTrendsChangeChart from "@/accounting-periods/trends/AccountingPeriodTrendsChangeChart";
@@ -101,7 +98,9 @@ const AccountingPeriodTrends = async function ({
         params: {
           query: {
             ...range,
-            ...(isNotNullOrUndefined(transactionSort) ? { Sort: transactionSort } : {}),
+            ...(isNotNullOrUndefined(transactionSort)
+              ? { Sort: transactionSort }
+              : {}),
             Limit: rowsPerPage,
             Offset: getPageOffset(currentTransactionPage),
           },

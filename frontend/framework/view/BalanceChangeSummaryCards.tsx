@@ -3,7 +3,7 @@
 import { Box, Stack } from "@mui/material";
 import type { JSX } from "react";
 import SummaryCard from "@/framework/view/SummaryCard";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for the BalanceChangeSummaryCards component.

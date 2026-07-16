@@ -1,7 +1,7 @@
 import { Box, Stack, Typography, alpha } from "@mui/material";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
 import type { JSX } from "react";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for the TransactionSourceDestinationSummary component.

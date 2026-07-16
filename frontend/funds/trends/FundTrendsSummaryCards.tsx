@@ -15,7 +15,7 @@ import type {
 import { type JSX, type ReactNode, useState } from "react";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import SummaryCard from "@/framework/view/SummaryCard";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import formatShortDate from "@/framework/formatShortDate";
 
 interface FundTrendsSummaryCardsProps {

@@ -4,7 +4,7 @@ import type { JSX } from "react";
 import LabeledAmountBar from "@/framework/view/LabeledAmountBar";
 import { Stack } from "@mui/material";
 import SummaryCard from "@/framework/view/SummaryCard";
-import formatCurrency from "@/framework/formatCurrency";
+import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for the FundTrendsAssignmentSpendingCard component.

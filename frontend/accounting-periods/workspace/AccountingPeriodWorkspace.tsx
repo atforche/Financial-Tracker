@@ -76,13 +76,17 @@ const AccountingPeriodWorkspace = async function ({
     },
   );
 
-  const [firstAccountingPeriodResponse, accountingPeriodsResponse] = await Promise.all([
-    firstAccountingPeriodPromise,
-    accountingPeriodsPromise,
-  ]);
+  const [firstAccountingPeriodResponse, accountingPeriodsResponse] =
+    await Promise.all([firstAccountingPeriodPromise, accountingPeriodsPromise]);
 
-  const firstAccountingPeriod = getApiData(firstAccountingPeriodResponse, "Failed to fetch the first accounting period");
-  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to fetch accounting periods");
+  const firstAccountingPeriod = getApiData(
+    firstAccountingPeriodResponse,
+    "Failed to fetch the first accounting period",
+  );
+  const accountingPeriods = getApiData(
+    accountingPeriodsResponse,
+    "Failed to fetch accounting periods",
+  );
 
   const selectedAccountingPeriod =
     accountingPeriods.items.find(
