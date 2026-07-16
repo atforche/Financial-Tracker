@@ -16,6 +16,7 @@ import type { Dayjs } from "dayjs";
 import type { FundIdentifier } from "@/funds/types";
 import type { FundTransaction } from "@/transactions/fundTransaction";
 import { getTransactionFundDraftFromTransactionFund } from "@/transactions/workspace/transactionFundDraft";
+import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
  * Interface representing a potentially unfinished fund transaction source.
@@ -92,7 +93,7 @@ const validateRequest = function (
   );
   const destinationFundIds = destinations
     .map((destination) => destination.fund?.fundId ?? null)
-    .filter((fundId): fundId is string => fundId !== null);
+    .filter(isNotNullOrUndefined);
   const hasUniqueDestinationFunds =
     new Set(destinationFundIds).size === destinationFundIds.length;
   const areDestinationsComplete = destinations.every((destination) =>

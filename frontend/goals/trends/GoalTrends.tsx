@@ -4,13 +4,18 @@ import {
   type GoalBalanceEventSortValue,
   SpendingGoalSort,
 } from "@/goals/types";
-import { Box, Stack } from "@mui/material";
 import {
   type GoalTrendsView,
   defaultGoalTrendsView,
   isGoalTrendsView,
 } from "@/goals/trends/goalTrendsTypes";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  summarizeGoalRange,
+  summarizeGoalsByAccountingPeriod,
+} from "@/goals/trends/goalTrendsSummary";
+import { BalanceEventTypeModel } from "@/framework/data/api";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import GoalTrendsAmountAssignedChart from "@/goals/trends/GoalTrendsAmountAssignedChart";
 import GoalTrendsAmountSpentChart from "@/goals/trends/GoalTrendsAmountSpentChart";
 import GoalTrendsBalanceEventListFrame from "@/goals/trends/GoalTrendsBalanceEventListFrame";
@@ -20,16 +25,14 @@ import GoalTrendsGoalsMetChart from "@/goals/trends/GoalTrendsGoalsMetChart";
 import GoalTrendsListFrame from "@/goals/trends/GoalTrendsListFrame";
 import GoalTrendsSummaryCards from "@/goals/trends/GoalTrendsSummaryCards";
 import type { JSX } from "react";
-import { BalanceEventTypeModel } from "@/framework/data/api";
+import PageLayout from "@/framework/view/PageLayout";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
 import { normalizeGoalTypes } from "@/goals/trends/goalTypeFilter";
 import { redirect } from "next/navigation";
 import routes from "@/goals/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
-import {
-  summarizeGoalRange,
-  summarizeGoalsByAccountingPeriod,
-} from "@/goals/trends/goalTrendsSummary";
 import { toRepeatedSearchParam } from "@/framework/routes/helpers";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
@@ -60,15 +63,13 @@ const GoalTrends = async function ({
     ? params.view
     : defaultGoalTrendsView;
   const apiClient = getApiClient();
-  const { data: accountingPeriods } = await apiClient.GET(
+  const accountingPeriodsResponse = await apiClient.GET(
     "/accounting-periods",
     {
       params: { query: { Sort: "DateDescending", Limit: 500, Offset: 0 } },
     },
   );
-  if (typeof accountingPeriods === "undefined") {
-    throw new Error("Failed to load accounting periods");
-  }
+  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to load accounting periods");
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
   if (
     (typeof params.startAccountingPeriodId === "undefined" ||
@@ -148,17 +149,13 @@ const GoalTrends = async function ({
       },
     }),
   ]);
-  if (
-    typeof periodResponse.data === "undefined" ||
-    typeof assignmentResponse.data === "undefined" ||
-    typeof spendingResponse.data === "undefined" ||
-    typeof balanceEventResponse.data === "undefined"
-  ) {
-    throw new Error("Failed to load goal trends data");
-  }
+  const periodData = getApiData(periodResponse, "Failed to load accounting period trends");
+  const assignmentData = getApiData(assignmentResponse, "Failed to load assignment goals");
+  const spendingData = getApiData(spendingResponse, "Failed to load spending goals");
+  const balanceEventData = getApiData(balanceEventResponse, "Failed to load goal balance events");
 
   const periodIds = new Set(
-    periodResponse.data.accountingPeriods.items.map((period) => period.id),
+    periodData.accountingPeriods.items.map((period) => period.id),
   );
   const fundNames = toRepeatedSearchParam(params.fundName);
   const requestedTypes = toRepeatedSearchParam(params.goalType);
@@ -170,14 +167,14 @@ const GoalTrends = async function ({
     currentView === "spending"
       ? normalizeGoalTypes(requestedTypes, currentView)
       : [];
-  const assignmentGoals = assignmentResponse.data.items.filter(
+  const assignmentGoals = assignmentData.items.filter(
     (goal) =>
       (goal.accountingPeriod === null ||
         periodIds.has(goal.accountingPeriod.id)) &&
       (fundNames.length === 0 || fundNames.includes(goal.fund.name)) &&
       (assignmentTypes.length === 0 || assignmentTypes.includes(goal.type)),
   );
-  const spendingGoals = spendingResponse.data.items.filter(
+  const spendingGoals = spendingData.items.filter(
     (goal) =>
       (goal.accountingPeriod === null ||
         periodIds.has(goal.accountingPeriod.id)) &&
@@ -186,7 +183,7 @@ const GoalTrends = async function ({
   );
   const summary = summarizeGoalRange(assignmentGoals, spendingGoals);
   const periodSummaries = summarizeGoalsByAccountingPeriod(
-    periodResponse.data.accountingPeriods.items,
+    periodData.accountingPeriods.items,
     assignmentGoals,
     spendingGoals,
   );
@@ -194,7 +191,7 @@ const GoalTrends = async function ({
     currentView === "assignment"
       ? BalanceEventTypeModel.Credit
       : BalanceEventTypeModel.Debit;
-  const events = balanceEventResponse.data.items.filter(
+  const events = balanceEventData.items.filter(
     (event) =>
       event.type === eventType &&
       (fundNames.length === 0 || fundNames.includes(event.fund.name)),
@@ -207,15 +204,15 @@ const GoalTrends = async function ({
     currentView === "assignment" ? assignmentGoals : spendingGoals;
   const availableFundNames = Array.from(
     new Set(
-      [...assignmentResponse.data.items, ...spendingResponse.data.items].map(
+      [...assignmentData.items, ...spendingData.items].map(
         (goal) => goal.fund.name,
       ),
     ),
   ).sort();
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
-      <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
+    <PageLayout>
+      <ConstrainedContent>
         <GoalTrendsFilter
           accountingPeriods={accountingPeriods.items}
           availableFundNames={availableFundNames}
@@ -224,15 +221,9 @@ const GoalTrends = async function ({
           defaultEndDate=""
           view={currentView}
         />
-      </Stack>
+      </ConstrainedContent>
       <GoalTrendsSummaryCards trends={summary} view={currentView} />
-      <Box
-        sx={{
-          display: "grid",
-          gap: 3,
-          gridTemplateColumns: { xs: "1fr", lg: "repeat(3, minmax(0, 1fr))" },
-        }}
-      >
+      <ResponsiveGrid columns={{ xs: 1, lg: 3 }}>
         <GoalTrendsGoalAmountChart
           accountingPeriods={periodSummaries}
           view={currentView}
@@ -246,15 +237,8 @@ const GoalTrends = async function ({
           accountingPeriods={periodSummaries}
           view={currentView}
         />
-      </Box>
-      <Box
-        sx={{
-          display: "grid",
-          gap: 3,
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(min(100%, 800px), 1fr))",
-        }}
-      >
+      </ResponsiveGrid>
+      <ResponsiveGrid minimumColumnWidth={800}>
         <GoalTrendsListFrame
           view={currentView}
           data={currentGoals.slice(pageOffset, pageOffset + rowsPerPage)}
@@ -266,8 +250,8 @@ const GoalTrends = async function ({
           data={events.slice(eventOffset, eventOffset + rowsPerPage)}
           totalCount={events.length}
         />
-      </Box>
-    </Stack>
+      </ResponsiveGrid>
+    </PageLayout>
   );
 };
 

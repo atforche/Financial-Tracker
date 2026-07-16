@@ -7,6 +7,7 @@ import type {
   TransactionAccount,
   TransactionAccountDraft,
 } from "@/transactions/transaction";
+import { isNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
  * Gets the balance change captured in the provided transaction account draft.
@@ -65,7 +66,7 @@ const createTransactionAccountDraftFromAccount = function (
 const getTransactionAccountDraftFromTransactionAccount = function (
   account: TransactionAccount | null | undefined,
 ): TransactionAccountDraft | null {
-  if (typeof account === "undefined" || account === null) {
+  if (isNullOrUndefined(account)) {
     return null;
   }
   return {

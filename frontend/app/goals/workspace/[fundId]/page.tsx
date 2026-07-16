@@ -5,6 +5,7 @@ import type { JSX } from "react";
 import { Stack } from "@mui/material";
 import ViewGoalForm from "@/goals/workspace/ViewGoalForm";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
 import { redirect } from "next/navigation";
 import routes from "@/goals/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
@@ -29,10 +30,11 @@ const GoalWorkspaceDetailPage = async function ({
     await searchParams;
   const selectedFundIds = toRepeatedSearchParam(fundIds);
   const apiClient = getApiClient();
-  const { data: periods } = await apiClient.GET("/accounting-periods", {
+  const periodsResponse = await apiClient.GET("/accounting-periods", {
     params: { query: { Limit: 1 } },
   });
-  const periodId = accountingPeriodId ?? periods?.items[0]?.id;
+  const periods = getApiData(periodsResponse, "Failed to fetch accounting periods");
+  const periodId = accountingPeriodId ?? periods.items[0]?.id;
   const workspaceUrl = routes.workspace({
     ...(typeof periodId === "string" ? { accountingPeriodId: periodId } : {}),
     ...(selectedFundIds.length > 0 ? { fundIds: selectedFundIds } : {}),
@@ -42,7 +44,7 @@ const GoalWorkspaceDetailPage = async function ({
     redirect(workspaceUrl);
   }
 
-  const [{ data: assignmentGoal }, { data: spendingGoal }] = await Promise.all([
+  const [assignmentGoalResponse, spendingGoalResponse] = await Promise.all([
     apiClient.GET("/goals/assignment", {
       params: {
         query: {
@@ -62,15 +64,17 @@ const GoalWorkspaceDetailPage = async function ({
       },
     }),
   ]);
+  const assignmentGoal = getApiData(assignmentGoalResponse, "Failed to fetch the assignment goal");
+  const spendingGoal = getApiData(spendingGoalResponse, "Failed to fetch the spending goal");
   if (
-    typeof assignmentGoal?.items[0] === "undefined" ||
-    typeof spendingGoal?.items[0] === "undefined"
+    typeof assignmentGoal.items[0] === "undefined" ||
+    typeof spendingGoal.items[0] === "undefined"
   ) {
     redirect(workspaceUrl);
   }
 
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
-  const { data: balanceEvents } = await apiClient.GET(
+  const balanceEventsResponse = await apiClient.GET(
     "/balance-events/goals/accounting-period-range",
     {
       params: {
@@ -85,6 +89,7 @@ const GoalWorkspaceDetailPage = async function ({
       },
     },
   );
+  const balanceEvents = getApiData(balanceEventsResponse, "Failed to fetch goal balance events");
 
   const currentUrl = routes.workspaceDetail(fundId, {
     accountingPeriodId: periodId,
@@ -105,8 +110,8 @@ const GoalWorkspaceDetailPage = async function ({
         assignmentGoal={assignmentGoal.items[0]}
         spendingGoal={spendingGoal.items[0]}
         redirectUrl={currentUrl}
-        recentBalanceEvents={balanceEvents?.items ?? []}
-        recentBalanceEventCount={balanceEvents?.totalCount ?? 0}
+        recentBalanceEvents={balanceEvents.items}
+        recentBalanceEventCount={balanceEvents.totalCount}
         addTransactionHref={addTransactionHref}
         accountingPeriodId={periodId}
         fundId={fundId}

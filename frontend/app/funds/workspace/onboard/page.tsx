@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import OnboardFundForm from "@/funds/workspace/OnboardFundForm";
 import { Stack } from "@mui/material";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 
@@ -27,7 +28,7 @@ const FundWorkspaceOnboardPage = async function ({
   };
   const workspaceUrl = routes.workspace(workspaceSearchParams);
   const apiClient = getApiClient();
-  const [{ data: accountingPeriods }, { data: funds }] = await Promise.all([
+  const [accountingPeriodsResponse, fundsResponse] = await Promise.all([
     apiClient.GET("/accounting-periods", {
       params: {
         query: {
@@ -38,12 +39,8 @@ const FundWorkspaceOnboardPage = async function ({
     apiClient.GET("/funds/with-balances"),
   ]);
 
-  if (typeof accountingPeriods === "undefined") {
-    throw new Error("Failed to fetch accounting periods");
-  }
-  if (typeof funds === "undefined") {
-    throw new Error("Failed to fetch funds");
-  }
+  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to fetch accounting periods");
+  const funds = getApiData(fundsResponse, "Failed to fetch funds");
   if (accountingPeriods.items.length > 0) {
     redirect(workspaceUrl);
   }

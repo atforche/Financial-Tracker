@@ -1,3 +1,5 @@
+import { isNullOrUndefined } from "@/framework/nullHelpers";
+
 /**
  * Converts an arbitrary object to a URLSearchParams instance.
  * Handles nested objects and arrays by serializing them as JSON strings.
@@ -9,7 +11,7 @@ const objectToSearchParams = function (
   const params = new URLSearchParams();
 
   for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === "undefined" || value === null) {
+    if (isNullOrUndefined(value)) {
       continue;
     }
 

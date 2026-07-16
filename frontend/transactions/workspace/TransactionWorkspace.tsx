@@ -1,9 +1,10 @@
 import type { JSX } from "react";
-import { Stack } from "@mui/material";
 import type { TransactionSortValue } from "@/transactions/transaction";
 import TransactionWorkspaceFilter from "@/transactions/workspace/TransactionWorkspaceFilter";
 import TransactionWorkspaceListFrame from "@/transactions/workspace/TransactionWorkspaceListFrame";
 import { getTransactionWorkspaceListData } from "@/transactions/workspace/getTransactionWorkspaceData";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
+import PageLayout from "@/framework/view/PageLayout";
 
 /**
  * Search parameters supported by the Transactions workspace.
@@ -36,17 +37,19 @@ const TransactionWorkspace = async function ({
     await getTransactionWorkspaceListData(resolvedSearchParams);
 
   return (
-    <Stack spacing={3} sx={{ width: "100%", maxWidth: 1440 }}>
-      <TransactionWorkspaceFilter
-        accountingPeriods={openAccountingPeriods}
-        accounts={accounts}
-        funds={funds}
-      />
-      <TransactionWorkspaceListFrame
-        data={transactions.items}
-        totalCount={transactions.totalCount}
-      />
-    </Stack>
+    <ConstrainedContent>
+      <PageLayout>
+        <TransactionWorkspaceFilter
+          accountingPeriods={openAccountingPeriods}
+          accounts={accounts}
+          funds={funds}
+        />
+        <TransactionWorkspaceListFrame
+          data={transactions.items}
+          totalCount={transactions.totalCount}
+        />
+      </PageLayout>
+    </ConstrainedContent>
   );
 };
 

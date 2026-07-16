@@ -1,5 +1,6 @@
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import AccountOverview from "@/overview/AccountOverview";
+import { AccountTypeModel } from "@/framework/data/api";
 import AccountingPeriodOverview from "@/overview/AccountingPeriodOverview";
 import FundOverview from "@/overview/FundOverview";
 import GoalOverview from "@/overview/GoalOverview";
@@ -7,7 +8,7 @@ import type { JSX } from "react";
 import type { OverviewData } from "@/overview/types";
 import TransactionOverview from "@/overview/TransactionOverview";
 import getApiClient from "@/framework/data/getApiClient";
-import { AccountTypeModel } from "@/framework/data/api";
+import getApiData from "@/framework/data/apiResponse";
 
 /**
  * Loads all data required by the overview page.
@@ -44,13 +45,7 @@ const getOverviewData = async function (): Promise<OverviewData> {
     },
   });
 
-  const [
-    { data: accountSummary },
-    { data: fundSummary },
-    { data: accountingPeriods },
-    { data: accounts },
-    { data: funds },
-  ] = await Promise.all([
+  const responses = await Promise.all([
     accountSummaryPromise,
     fundSummaryPromise,
     accountingPeriodsPromise,
@@ -58,15 +53,11 @@ const getOverviewData = async function (): Promise<OverviewData> {
     fundsPromise,
   ]);
 
-  if (
-    typeof accountSummary === "undefined" ||
-    typeof fundSummary === "undefined" ||
-    typeof accountingPeriods === "undefined" ||
-    typeof accounts === "undefined" ||
-    typeof funds === "undefined"
-  ) {
-    throw new Error("Failed to fetch overview data");
-  }
+  const accountSummary = getApiData(responses[0], "Failed to fetch account summary");
+  const fundSummary = getApiData(responses[1], "Failed to fetch fund summary");
+  const accountingPeriods = getApiData(responses[2], "Failed to fetch accounting periods");
+  const accounts = getApiData(responses[3], "Failed to fetch accounts");
+  const funds = getApiData(responses[4], "Failed to fetch funds");
 
   const accountBalances = accountSummary.items;
   const trackedAccounts = accountBalances.filter(

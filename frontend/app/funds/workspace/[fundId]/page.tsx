@@ -6,11 +6,12 @@ import type { JSX } from "react";
 import Link from "next/link";
 import ViewFundForm from "@/funds/workspace/ViewFundForm";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
+import { getTransactionFundBalanceEvents } from "@/transactions/postingHelpers";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 import transactionRoutes from "@/transactions/routes";
-import { getTransactionFundBalanceEvents } from "@/transactions/postingHelpers";
 
 /**
  * Props for the FundWorkspaceDetailPage component.
@@ -32,13 +33,15 @@ const FundWorkspaceDetailPage = async function ({
   const { search, balanceEventPage } = resolvedSearchParams;
   const apiClient = getApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
-  const [{ data: funds }, { data: transactions }] = await Promise.all([
+  const [fundsResponse, transactionsResponse] = await Promise.all([
     apiClient.GET("/funds/with-balances"),
     apiClient.GET("/transactions", {
       params: { query: { "Filter.FundIds": [fundId] } },
     }),
   ]);
-  const fund = funds?.items.find((item) => item.id === fundId);
+  const funds = getApiData(fundsResponse, "Failed to fetch funds");
+  const transactions = getApiData(transactionsResponse, "Failed to fetch fund transactions");
+  const fund = funds.items.find((item) => item.id === fundId);
 
   const workspaceSearchParams: FundWorkspaceSearchParams = {
     ...(typeof search !== "undefined" ? { search } : {}),
@@ -53,10 +56,9 @@ const FundWorkspaceDetailPage = async function ({
     redirect(workspaceUrl);
   }
 
-  const allBalanceEvents =
-    transactions?.items
-      .flatMap(getTransactionFundBalanceEvents)
-      .filter((event) => event.fund.id === fund.id) ?? [];
+  const allBalanceEvents = transactions.items
+    .flatMap(getTransactionFundBalanceEvents)
+    .filter((event) => event.fund.id === fund.id);
   const balanceEventOffset = getPageOffset(currentBalanceEventPage);
   const balanceEvents = allBalanceEvents.slice(
     balanceEventOffset,

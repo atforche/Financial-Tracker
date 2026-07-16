@@ -6,11 +6,14 @@ import { Stack, Typography } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import AccountingPeriodCurrentSummaryCards from "@/accounting-periods/current/CurrentAccountingPeriodSummaryCards";
 import AccountingPeriodCurrentTransactionListFrame from "@/accounting-periods/current/CurrentAccountingPeriodTransactionListFrame";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
+import PageLayout from "@/framework/view/PageLayout";
 import type { TransactionSort } from "@/transactions/types";
 import getApiClient from "@/framework/data/getApiClient";
-import isNotNullOrUndefined from "@/framework/isNotNullOrUndefined";
+import getApiData from "@/framework/data/apiResponse";
+import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
 /**
@@ -38,7 +41,7 @@ const CurrentAccountingPeriod = async function ({
   const currentTransactionPage = normalizePageValue(transactionPage);
 
   const apiClient = getApiClient();
-  const { data: accountingPeriods } = await apiClient.GET(
+  const accountingPeriodsResponse = await apiClient.GET(
     "/accounting-periods",
     {
       params: {
@@ -46,12 +49,12 @@ const CurrentAccountingPeriod = async function ({
       },
     },
   );
-  const currentAccountingPeriod = accountingPeriods?.items[0] ?? null;
+  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to fetch accounting periods");
+  const currentAccountingPeriod = accountingPeriods.items[0] ?? null;
   let current: AccountingPeriodWithTransactions | null = null;
   if (isNotNullOrUndefined(currentAccountingPeriod)) {
-    current =
-      (
-        await apiClient.GET(
+    current = getApiData(
+      await apiClient.GET(
           "/accounting-periods/{accountingPeriodId}/transactions",
           {
             params: {
@@ -65,30 +68,33 @@ const CurrentAccountingPeriod = async function ({
               },
             },
           },
-        )
-      ).data ?? null;
+        ),
+      "Failed to fetch the current accounting period",
+    );
   }
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
-      <Stack spacing={1} sx={{ maxWidth: 1440, width: "100%" }}>
-        <Typography variant="overline" color="text.secondary">
-          Accounting Periods
-        </Typography>
-        <Typography variant="h5">Current Accounting Period</Typography>
-        <Typography color="text.secondary">
-          {current === null
-            ? "No accounting periods are available yet."
-            : `Snapshot for ${current.name}.`}
-        </Typography>
-      </Stack>
+    <PageLayout>
+      <ConstrainedContent>
+        <Stack spacing={1}>
+          <Typography variant="overline" color="text.secondary">
+            Accounting Periods
+          </Typography>
+          <Typography variant="h5">Current Accounting Period</Typography>
+          <Typography color="text.secondary">
+            {current === null
+              ? "No accounting periods are available yet."
+              : `Snapshot for ${current.name}.`}
+          </Typography>
+        </Stack>
+      </ConstrainedContent>
       <AccountingPeriodCurrentSummaryCards current={current} />
       <IncomeSpendingCard
         totalIncome={current?.totalIncome}
         totalSpending={current?.totalSpending}
       />
       <AccountingPeriodCurrentTransactionListFrame accountingPeriod={current} />
-    </Stack>
+    </PageLayout>
   );
 };
 

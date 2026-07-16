@@ -4,6 +4,10 @@ import type {
   TransactionFund,
   TransactionGoal,
 } from "@/transactions/transaction";
+import {
+  isNotNullOrUndefined,
+  isNullOrUndefined,
+} from "@/framework/nullHelpers";
 import { asAccountTransaction } from "@/transactions/accountTransaction";
 import { asFundTransaction } from "@/transactions/fundTransaction";
 import { asIncomeTransaction } from "@/transactions/incomeTransaction";
@@ -24,7 +28,7 @@ const getTransactionAccountIds = function (transaction: Transaction): string[] {
   const addAccount = function (
     account: TransactionAccount | null | undefined,
   ): void {
-    if (account !== null && typeof account !== "undefined") {
+    if (isNotNullOrUndefined(account)) {
       accountIds.add(account.account.id);
     }
   };
@@ -68,7 +72,7 @@ const getTransactionAccountBalanceEvents = function (
   const addAccount = function (
     account: TransactionAccount | null | undefined,
   ): void {
-    if (account !== null && typeof account !== "undefined") {
+    if (isNotNullOrUndefined(account)) {
       events.push(account);
     }
   };
@@ -108,7 +112,7 @@ const getTransactionFundIds = function (transaction: Transaction): string[] {
   const fundIds = new Set<string>();
 
   const addFund = function (fund: TransactionFund | null | undefined): void {
-    if (fund !== null && typeof fund !== "undefined") {
+    if (isNotNullOrUndefined(fund)) {
       fundIds.add(fund.fund.id);
     }
   };
@@ -206,7 +210,7 @@ const getTransactionGoalBalanceEvents = function (
     return [
       fundTransaction.source.goal,
       ...fundTransaction.destinations.map((destination) => destination.goal),
-    ].filter((goal): goal is TransactionGoal => goal !== null);
+    ].filter(isNotNullOrUndefined);
   }
   return [];
 };
@@ -219,7 +223,7 @@ const collectTransactionPostingAccounts = function (
   const addAccount = function (
     account: TransactionAccount | null | undefined,
   ): void {
-    if (account === null || typeof account === "undefined") {
+    if (isNullOrUndefined(account)) {
       return;
     }
     accounts.set(account.account.id, {

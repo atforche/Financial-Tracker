@@ -6,6 +6,7 @@ import type { FundWithBalance } from "@/funds/types";
 import type { Transaction } from "@/transactions/transaction";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
 interface TransactionWorkspaceReferenceData {
@@ -55,25 +56,15 @@ const getTransactionWorkspaceReferenceData =
     const accountsPromise = apiClient.GET("/accounts/with-balances");
     const fundsPromise = apiClient.GET("/funds/with-balances");
 
-    const [
-      { data: allAccountingPeriods },
-      { data: accounts },
-      { data: funds },
-    ] = await Promise.all([
+    const [allAccountingPeriodsResponse, accountsResponse, fundsResponse] = await Promise.all([
       allAccountingPeriodsPromise,
       accountsPromise,
       fundsPromise,
     ]);
 
-    if (typeof allAccountingPeriods === "undefined") {
-      throw new Error("Failed to fetch accounting periods");
-    }
-    if (typeof accounts === "undefined") {
-      throw new Error("Failed to fetch accounts");
-    }
-    if (typeof funds === "undefined") {
-      throw new Error("Failed to fetch funds");
-    }
+    const allAccountingPeriods = getApiData(allAccountingPeriodsResponse, "Failed to fetch accounting periods");
+    const accounts = getApiData(accountsResponse, "Failed to fetch accounts");
+    const funds = getApiData(fundsResponse, "Failed to fetch funds");
 
     const openAccountingPeriods = allAccountingPeriods.items.filter(
       (period) => period.isOpen,
@@ -103,15 +94,8 @@ const getTransactionWorkspaceReferenceData =
         }),
       ]);
 
-      if (typeof assignmentGoalResponse.data === "undefined") {
-        throw new Error("Failed to fetch assignment goals");
-      }
-      if (typeof spendingGoalResponse.data === "undefined") {
-        throw new Error("Failed to fetch spending goals");
-      }
-
-      assignmentGoals = assignmentGoalResponse.data.items;
-      spendingGoals = spendingGoalResponse.data.items;
+      assignmentGoals = getApiData(assignmentGoalResponse, "Failed to fetch assignment goals").items;
+      spendingGoals = getApiData(spendingGoalResponse, "Failed to fetch spending goals").items;
     }
 
     return {
@@ -131,7 +115,7 @@ const getTransactionById = async function (
   transactionId: string,
 ): Promise<Transaction | null> {
   const apiClient = getApiClient();
-  const { data } = await apiClient.GET("/transactions/{transactionId}", {
+  const response = await apiClient.GET("/transactions/{transactionId}", {
     params: {
       path: {
         transactionId,
@@ -139,7 +123,11 @@ const getTransactionById = async function (
     },
   });
 
-  return data ?? null;
+  if (response.response.status === 404) {
+    return null;
+  }
+
+  return getApiData(response, "Failed to fetch the transaction");
 };
 
 /**
@@ -175,14 +163,12 @@ const getTransactionWorkspaceListData = async function (
     },
   });
 
-  const [referenceData, { data: transactions }] = await Promise.all([
+  const [referenceData, transactionsResponse] = await Promise.all([
     getTransactionWorkspaceReferenceData(),
     transactionsPromise,
   ]);
 
-  if (typeof transactions === "undefined") {
-    throw new Error("Failed to fetch transactions");
-  }
+  const transactions = getApiData(transactionsResponse, "Failed to fetch transactions");
 
   return {
     ...referenceData,

@@ -4,6 +4,7 @@ import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace"
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 
@@ -28,14 +29,12 @@ const FundWorkspaceCreatePage = async function ({
   const workspaceUrl = routes.workspace(workspaceSearchParams);
   const apiClient = getApiClient();
 
-  const { data: accountingPeriods } = await apiClient.GET(
+  const accountingPeriodsResponse = await apiClient.GET(
     "/accounting-periods",
     { params: { query: { Limit: 500 } } },
   );
 
-  if (typeof accountingPeriods === "undefined") {
-    throw new Error("Failed to fetch accounting periods");
-  }
+  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to fetch accounting periods");
   if (accountingPeriods.items.length === 0) {
     redirect(workspaceUrl);
   }

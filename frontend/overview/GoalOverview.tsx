@@ -2,6 +2,7 @@ import { Paper, Stack, Typography } from "@mui/material";
 import GoalTrendsSummaryCards from "@/goals/trends/GoalTrendsSummaryCards";
 import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
 import { summarizeGoalRange } from "@/goals/trends/goalTrendsSummary";
 
 /**
@@ -9,13 +10,14 @@ import { summarizeGoalRange } from "@/goals/trends/goalTrendsSummary";
  */
 const GoalOverview = async function (): Promise<JSX.Element> {
   const apiClient = getApiClient();
-  const { data: accountingPeriods } = await apiClient.GET(
+  const accountingPeriodsResponse = await apiClient.GET(
     "/accounting-periods",
     {
       params: { query: { Sort: "DateDescending", Limit: 1, Offset: 0 } },
     },
   );
-  const latestAccountingPeriod = accountingPeriods?.items[0] ?? null;
+  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to load accounting periods");
+  const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
   if (latestAccountingPeriod === null) {
     return (
       <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
@@ -51,15 +53,11 @@ const GoalOverview = async function (): Promise<JSX.Element> {
       },
     }),
   ]);
-  if (
-    typeof assignmentResponse.data === "undefined" ||
-    typeof spendingResponse.data === "undefined"
-  ) {
-    throw new Error("Failed to load goal overview data");
-  }
+  const assignmentGoals = getApiData(assignmentResponse, "Failed to load assignment goals");
+  const spendingGoals = getApiData(spendingResponse, "Failed to load spending goals");
   const summary = summarizeGoalRange(
-    assignmentResponse.data.items,
-    spendingResponse.data.items,
+    assignmentGoals.items,
+    spendingGoals.items,
   );
   return (
     <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>

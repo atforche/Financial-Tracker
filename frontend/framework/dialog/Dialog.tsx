@@ -15,6 +15,7 @@ import {
   appendSx,
   buildPaperSx,
 } from "@/framework/dialog/helpers";
+import { isNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
  * Props for the dialog component.
@@ -87,7 +88,7 @@ const Dialog = function ({
         {title}
       </DialogTitle>
       <DialogContent sx={contentStyles}>{children}</DialogContent>
-      {actions === null || typeof actions === "undefined" ? null : (
+      {isNullOrUndefined(actions) ? null : (
         <DialogActions sx={actionStyles}>{actions}</DialogActions>
       )}
     </MuiDialog>

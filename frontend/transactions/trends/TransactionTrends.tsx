@@ -1,4 +1,3 @@
-import { Box, Stack } from "@mui/material";
 import type {
   Transaction,
   TransactionSortValue,
@@ -17,7 +16,10 @@ import {
   normalizeTransactionTypes,
   shouldPersistTransactionTypes,
 } from "@/transactions/trends/transactionTypeFilter";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
+import PageLayout from "@/framework/view/PageLayout";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import TransactionTrendsAmountChart from "@/transactions/trends/TransactionTrendsAmountChart";
 import TransactionTrendsCountChart from "@/transactions/trends/TransactionTrendsCountChart";
 import TransactionTrendsFilter from "@/transactions/trends/TransactionTrendsFilter";
@@ -25,6 +27,7 @@ import TransactionTrendsListFrame from "@/transactions/trends/TransactionTrendsL
 import TransactionsByTypeCard from "@/transactions/TransactionsByTypeCard";
 import dayjs from "dayjs";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
 import { redirect } from "next/navigation";
 import routes from "@/transactions/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
@@ -90,8 +93,8 @@ const TransactionTrends = async function ({
       },
     },
   });
-  const { data: accountingPeriods } = await accountingPeriodsPromise;
-  const latestAccountingPeriod = accountingPeriods?.items[0] ?? null;
+  const accountingPeriods = getApiData(await accountingPeriodsPromise, "Failed to fetch accounting periods");
+  const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
   const isInOnboardingMode = latestAccountingPeriod === null;
   const currentMode: TransactionsTrendsFilterMode =
     typeof mode === "undefined" || isInOnboardingMode ? "date" : mode;
@@ -150,14 +153,16 @@ const TransactionTrends = async function ({
     );
   }
 
-  const [{ data: accounts }, { data: funds }] = await Promise.all([
+  const [accountsResponse, fundsResponse] = await Promise.all([
     apiClient.GET("/accounts"),
     apiClient.GET("/funds"),
   ]);
-  const accountIds = accounts?.items
+  const accounts = getApiData(accountsResponse, "Failed to fetch accounts");
+  const funds = getApiData(fundsResponse, "Failed to fetch funds");
+  const accountIds = accounts.items
     .filter((account) => currentAccountNames.includes(account.name))
     .map((account) => account.id);
-  const fundIds = funds?.items
+  const fundIds = funds.items
     .filter((fund) => currentFundNames.includes(fund.name))
     .map((fund) => fund.id);
   const range =
@@ -180,10 +185,10 @@ const TransactionTrends = async function ({
     "Range.Start": range.start,
     "Range.End": range.end,
     ...(shouldPersistAccountNames(currentAccountNames)
-      ? { "Filter.AccountIds": accountIds ?? [] }
+      ? { "Filter.AccountIds": accountIds }
       : {}),
     ...(shouldPersistFundNames(currentFundNames)
-      ? { "Filter.FundIds": fundIds ?? [] }
+      ? { "Filter.FundIds": fundIds }
       : {}),
     ...(typeof sort === "string" ? { Sort: sort } : {}),
   };
@@ -215,11 +220,13 @@ const TransactionTrends = async function ({
     endpoint === "/transactions/date-range"
       ? apiClient.GET(endpoint, { params: { query } })
       : apiClient.GET(endpoint, { params: { query } });
-  const [{ data: listData }, { data: summaryData }] = await Promise.all([
+  const [listResponse, summaryResponse] = await Promise.all([
     listRequest,
     summaryRequest,
   ]);
-  const allTransactions = summaryData?.transactions.items ?? [];
+  const listData = getApiData(listResponse, "Failed to load transactions");
+  const summaryData = getApiData(summaryResponse, "Failed to load transaction summary");
+  const allTransactions = summaryData.transactions.items;
   const filteredTransactions = allTransactions.filter(
     (transaction) =>
       !shouldPersistTransactionTypes(currentTransactionTypes) ||
@@ -233,7 +240,7 @@ const TransactionTrends = async function ({
         ),
         totalCount: filteredTransactions.length,
       }
-    : (listData?.transactions ?? { items: [], totalCount: 0 });
+    : listData.transactions;
   const groupTransactions = function (
     getKey: (transaction: Transaction) => string,
   ): Map<string, Transaction[]> {
@@ -264,30 +271,21 @@ const TransactionTrends = async function ({
   );
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
-      <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
+    <PageLayout>
+      <ConstrainedContent>
         <TransactionTrendsFilter
-          accountingPeriods={accountingPeriods?.items ?? []}
-          availableAccountNames={summaryData?.availableAccountNames ?? []}
-          availableFundNames={summaryData?.availableFundNames ?? []}
+          accountingPeriods={accountingPeriods.items}
+          availableAccountNames={summaryData.availableAccountNames}
+          availableFundNames={summaryData.availableFundNames}
           defaultAccountingPeriodId={latestAccountingPeriod?.id ?? null}
           defaultStartDate={defaultStartDate.format("YYYY-MM-DD")}
           defaultEndDate={defaultEndDate.format("YYYY-MM-DD")}
         />
-      </Stack>
+      </ConstrainedContent>
       <TransactionsByTypeCard
-        transactionTypes={summaryData?.transactionTypes ?? []}
+        transactionTypes={summaryData.transactionTypes}
       />
-      <Box
-        sx={{
-          display: "grid",
-          gap: 3,
-          gridTemplateColumns: {
-            xs: "1fr",
-            lg: "minmax(0, 1fr) minmax(0, 1fr)",
-          },
-        }}
-      >
+      <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
         <TransactionTrendsCountChart
           mode={currentMode === "date" ? "Date" : "AccountingPeriod"}
           accountingPeriods={accountingPeriodSummaries}
@@ -298,12 +296,12 @@ const TransactionTrends = async function ({
           accountingPeriods={accountingPeriodSummaries}
           dates={dateSummaries}
         />
-      </Box>
+      </ResponsiveGrid>
       <TransactionTrendsListFrame
         data={[...transactions.items]}
         totalCount={transactions.totalCount}
       />
-    </Stack>
+    </PageLayout>
   );
 };
 

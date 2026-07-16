@@ -1,6 +1,7 @@
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import type { Fund, FundIdentifier } from "@/funds/types";
 import formatCurrency from "@/framework/formatCurrency";
+import { isNullOrUndefined } from "@/framework/nullHelpers";
 import { isUnassignedFund } from "@/funds/helpers";
 
 /**
@@ -136,8 +137,7 @@ const getGoalRemainingAmount = function (
   fundId: string,
 ): number | null {
   if (
-    goalRemainingAmount === null ||
-    typeof goalRemainingAmount === "undefined"
+    isNullOrUndefined(goalRemainingAmount)
   ) {
     return null;
   }

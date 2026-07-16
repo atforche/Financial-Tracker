@@ -5,7 +5,6 @@ import type {
   AccountsInAccountingPeriodRange,
   AccountsInDateRange,
 } from "@/accounts/types";
-import { Box, Stack } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import {
   normalizeAccountTypes,
@@ -21,11 +20,15 @@ import AccountTrendsFilter from "@/accounts/trends/AccountTrendsFilter";
 import AccountTrendsListFrame from "@/accounts/trends/AccountTrendsListFrame";
 import AccountTrendsSummaryCards from "@/accounts/trends/AccountTrendsSummaryCards";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
+import PageLayout from "@/framework/view/PageLayout";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import { buildBalanceTrendChartPoints } from "@/framework/charts/helpers";
 import dayjs from "dayjs";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
@@ -93,8 +96,8 @@ const AccountTrends = async function ({
       },
     },
   });
-  const { data: accountingPeriods } = await accountingPeriodsPromise;
-  const latestAccountingPeriod = accountingPeriods?.items[0] ?? null;
+  const accountingPeriods = getApiData(await accountingPeriodsPromise, "Failed to fetch accounting periods");
+  const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
   const isInOnboardingMode = typeof latestAccountingPeriod === "undefined";
   const currentMode: AccountsTrendsFilterMode =
     typeof mode === "undefined" || isInOnboardingMode ? "date" : mode;
@@ -189,8 +192,8 @@ const AccountTrends = async function ({
         params: { query: { ...balanceEventQuery, ...range } },
       }),
     ]);
-    trends = accountResponse.data;
-    balanceEvents = balanceEventResponse.data;
+    trends = getApiData(accountResponse, "Failed to load account trends");
+    balanceEvents = getApiData(balanceEventResponse, "Failed to load account balance events");
   } else {
     const range = {
       "Range.Start":
@@ -205,11 +208,8 @@ const AccountTrends = async function ({
         params: { query: { ...balanceEventQuery, ...range } },
       }),
     ]);
-    trends = accountResponse.data;
-    balanceEvents = balanceEventResponse.data;
-  }
-  if (typeof trends === "undefined" || typeof balanceEvents === "undefined") {
-    throw new Error("Failed to load account trends data");
+    trends = getApiData(accountResponse, "Failed to load account trends");
+    balanceEvents = getApiData(balanceEventResponse, "Failed to load account balance events");
   }
   const modeValue = currentMode === "date" ? "Date" : "AccountingPeriod";
   const periodSummaries =
@@ -230,16 +230,16 @@ const AccountTrends = async function ({
   });
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
-      <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
+    <PageLayout>
+      <ConstrainedContent>
         <AccountTrendsFilter
-          accountingPeriods={accountingPeriods?.items ?? []}
+          accountingPeriods={accountingPeriods.items}
           availableAccountNames={trends.availableAccountNames}
           defaultAccountingPeriodId={latestAccountingPeriod?.id ?? null}
           defaultStartDate={defaultStartDate.format("YYYY-MM-DD")}
           defaultEndDate={defaultEndDate.format("YYYY-MM-DD")}
         />
-      </Stack>
+      </ConstrainedContent>
       <AccountTrendsSummaryCards
         mode={modeValue}
         accountingPeriods={periodSummaries}
@@ -249,16 +249,7 @@ const AccountTrends = async function ({
         totalIncome={trends.totalIncome}
         totalSpending={trends.totalSpending}
       />
-      <Box
-        sx={{
-          display: "grid",
-          gap: 3,
-          gridTemplateColumns: {
-            xs: "1fr",
-            lg: "minmax(0, 1fr) minmax(0, 1fr)",
-          },
-        }}
-      >
+      <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
         <BalanceTrendChart
           chartPoints={balanceTrendChartPoints}
           xAxisLabel={modeValue === "Date" ? "Date" : "Accounting Period"}
@@ -268,15 +259,8 @@ const AccountTrends = async function ({
           accountingPeriods={periodSummaries}
           dates={dateSummaries}
         />
-      </Box>
-      <Box
-        sx={{
-          display: "grid",
-          gap: 3,
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(min(100%, 800px), 1fr))",
-        }}
-      >
+      </ResponsiveGrid>
+      <ResponsiveGrid minimumColumnWidth={800}>
         <AccountTrendsListFrame
           data={[...trends.accounts.items]}
           isInOnboardingMode={isInOnboardingMode}
@@ -287,8 +271,8 @@ const AccountTrends = async function ({
           mode={modeValue}
           totalCount={balanceEvents.totalCount}
         />
-      </Box>
-    </Stack>
+      </ResponsiveGrid>
+    </PageLayout>
   );
 };
 

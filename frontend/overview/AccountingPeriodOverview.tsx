@@ -3,19 +3,21 @@ import AccountingPeriodTrendsSummaryCards from "@/accounting-periods/trends/Acco
 import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
 
 /**
  * Overview component for accounting periods.
  */
 const AccountingPeriodOverview = async function (): Promise<JSX.Element> {
   const apiClient = getApiClient();
-  const { data: accountingPeriods } = await apiClient.GET(
+  const accountingPeriodsResponse = await apiClient.GET(
     "/accounting-periods",
     {
       params: { query: { Sort: "DateDescending", Limit: 1, Offset: 0 } },
     },
   );
-  const latestAccountingPeriod = accountingPeriods?.items[0] ?? null;
+  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to load accounting periods");
+  const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
   const rangeResponse =
     latestAccountingPeriod === null
       ? null
@@ -29,7 +31,7 @@ const AccountingPeriodOverview = async function (): Promise<JSX.Element> {
             },
           },
         });
-  const range = rangeResponse?.data;
+  const range = rangeResponse === null ? null : getApiData(rangeResponse, "Failed to load accounting period overview");
   const periods = range?.accountingPeriods.items ?? [];
   return (
     <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>

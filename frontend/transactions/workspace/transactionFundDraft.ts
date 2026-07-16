@@ -3,6 +3,7 @@ import type {
   TransactionFund,
   TransactionFundDraft,
 } from "@/transactions/transaction";
+import { isNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
  * Gets the balance change captured in the provided transaction fund draft.
@@ -51,7 +52,7 @@ const createTransactionFundDraftFromFund = function (
 const getTransactionFundDraftFromTransactionFund = function (
   fund: TransactionFund | null | undefined,
 ): TransactionFundDraft | null {
-  if (typeof fund === "undefined" || fund === null) {
+  if (isNullOrUndefined(fund)) {
     return null;
   }
   return {

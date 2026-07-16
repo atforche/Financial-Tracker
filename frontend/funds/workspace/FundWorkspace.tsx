@@ -1,8 +1,9 @@
 import FundWorkspaceCards from "@/funds/workspace/FundWorkspaceCards";
 import FundWorkspaceFilter from "@/funds/workspace/FundWorkspaceFilter";
 import type { JSX } from "react";
-import { Stack } from "@mui/material";
+import PageLayout from "@/framework/view/PageLayout";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
 
 /**
  * Search parameters supported by the Funds workspace.
@@ -33,29 +34,25 @@ const FundWorkspace = async function ({
   const fundsPromise = apiClient.GET("/funds/with-balances", {
     params: { query: { "Filter.NameSearch": search ?? "" } },
   });
-  const [{ data: accountingPeriod }, { data: funds }] = await Promise.all([
+  const [accountingPeriodResponse, fundsResponse] = await Promise.all([
     anyAccountingPeriodsPromise,
     fundsPromise,
   ]);
 
-  if (typeof accountingPeriod === "undefined") {
-    throw new Error("Failed to fetch accounting periods");
-  }
-  if (typeof funds === "undefined") {
-    throw new Error("Failed to fetch funds");
-  }
+  const accountingPeriod = getApiData(accountingPeriodResponse, "Failed to fetch accounting periods");
+  const funds = getApiData(fundsResponse, "Failed to fetch funds");
 
   const visibleFunds = funds.items.filter((fund) => fund.name !== "Unassigned");
   const isInOnboardingMode = accountingPeriod.items.length === 0;
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
+    <PageLayout>
       <FundWorkspaceFilter isInOnboardingMode={isInOnboardingMode} />
       <FundWorkspaceCards
         data={visibleFunds}
         isInOnboardingMode={isInOnboardingMode}
       />
-    </Stack>
+    </PageLayout>
   );
 };
 

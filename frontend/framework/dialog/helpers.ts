@@ -5,6 +5,7 @@ import {
   alpha,
 } from "@mui/material";
 import type { SystemStyleObject } from "@mui/system";
+import { isNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
  * Represents a resolved style object or function for the dialog component.
@@ -30,7 +31,7 @@ const appendSx = function (
   items: ResolvedSx[],
   sx: SxProps<Theme> | null,
 ): void {
-  if (sx === null || typeof sx === "undefined") {
+  if (isNullOrUndefined(sx)) {
     return;
   }
   if (isResolvedSxArray(sx)) {

@@ -3,6 +3,7 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
 import TransactionsByTypeCard from "@/transactions/TransactionsByTypeCard";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
 
 /**
  * Props for the TransactionOverview component.
@@ -33,7 +34,7 @@ const TransactionOverview = async function ({
     );
   }
   const apiClient = getApiClient();
-  const { data } = await apiClient.GET(
+  const response = await apiClient.GET(
     "/transactions/accounting-period-range",
     {
       params: {
@@ -46,9 +47,7 @@ const TransactionOverview = async function ({
       },
     },
   );
-  if (typeof data === "undefined") {
-    throw new Error("Failed to load transaction overview data");
-  }
+  const data = getApiData(response, "Failed to load transaction overview data");
   return (
     <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
       <Stack spacing={2}>

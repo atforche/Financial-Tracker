@@ -6,11 +6,12 @@ import type { JSX } from "react";
 import Link from "next/link";
 import ViewAccountForm from "@/accounts/workspace/ViewAccountForm";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
+import { getTransactionAccountBalanceEvents } from "@/transactions/postingHelpers";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 import transactionRoutes from "@/transactions/routes";
-import { getTransactionAccountBalanceEvents } from "@/transactions/postingHelpers";
 
 interface AccountWorkspaceDetailPageProps {
   readonly params: Promise<{
@@ -31,13 +32,15 @@ const AccountWorkspaceDetailPage = async function ({
   const { search, accountType, balanceEventPage } = resolvedSearchParams;
   const apiClient = getApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
-  const [{ data: accounts }, { data: transactions }] = await Promise.all([
+  const [accountsResponse, transactionsResponse] = await Promise.all([
     apiClient.GET("/accounts/with-balances"),
     apiClient.GET("/transactions", {
       params: { query: { "Filter.AccountIds": [accountId] } },
     }),
   ]);
-  const account = accounts?.items.find((item) => item.id === accountId);
+  const accounts = getApiData(accountsResponse, "Failed to fetch accounts");
+  const transactions = getApiData(transactionsResponse, "Failed to fetch account transactions");
+  const account = accounts.items.find((item) => item.id === accountId);
 
   const workspaceSearchParams: AccountWorkspaceSearchParams = {
     ...(typeof search !== "undefined" ? { search } : {}),
@@ -53,10 +56,9 @@ const AccountWorkspaceDetailPage = async function ({
     redirect(workspaceUrl);
   }
 
-  const allBalanceEvents =
-    transactions?.items
-      .flatMap(getTransactionAccountBalanceEvents)
-      .filter((event) => event.account.id === account.id) ?? [];
+  const allBalanceEvents = transactions.items
+    .flatMap(getTransactionAccountBalanceEvents)
+    .filter((event) => event.account.id === account.id);
   const balanceEventOffset = getPageOffset(currentBalanceEventPage);
   const balanceEvents = allBalanceEvents.slice(
     balanceEventOffset,

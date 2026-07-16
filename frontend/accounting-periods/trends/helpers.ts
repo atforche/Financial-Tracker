@@ -1,4 +1,4 @@
-import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
+import type { AccountingPeriodWithBalance, AccountingPeriodsInRange } from "@/accounting-periods/types";
 import type { BalanceTrendChartPoint } from "@/framework/charts/helpers";
 
 /**
@@ -30,4 +30,22 @@ const buildChartPoints = function (
   ];
 };
 
-export { buildChartPoints };
+/**
+ * Creates an empty AccountingPeriodsInRange object with default values.
+ */
+const createEmptyTrends = function (): AccountingPeriodsInRange {
+  return {
+    accountingPeriods: {
+      items: [],
+      totalCount: 0,
+    },
+    totalIncome: {
+      total: 0,
+      tracked: 0,
+      untracked: 0,
+    },
+    totalSpending: 0,
+  };
+};
+
+export { buildChartPoints, createEmptyTrends };

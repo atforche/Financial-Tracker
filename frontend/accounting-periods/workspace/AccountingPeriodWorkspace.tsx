@@ -1,11 +1,14 @@
-import { Box, Stack } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import type { AccountingPeriodWithBalanceSortValue } from "@/accounting-periods/types";
 import AccountingPeriodWorkspaceActions from "@/accounting-periods/workspace/AccountingPeriodWorkspaceActions";
 import AccountingPeriodWorkspaceFilter from "@/accounting-periods/workspace/AccountingPeriodWorkspaceFilter";
 import AccountingPeriodWorkspaceListFrame from "@/accounting-periods/workspace/AccountingPeriodWorkspaceListFrame";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
+import PageLayout from "@/framework/view/PageLayout";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
@@ -73,22 +76,13 @@ const AccountingPeriodWorkspace = async function ({
     },
   );
 
-  const [
-    { data: firstAccountingPeriodResponse },
-    { data: accountingPeriodsResponse },
-  ] = await Promise.all([
+  const [firstAccountingPeriodResponse, accountingPeriodsResponse] = await Promise.all([
     firstAccountingPeriodPromise,
     accountingPeriodsPromise,
   ]);
 
-  const firstAccountingPeriod = firstAccountingPeriodResponse ?? {
-    items: [],
-    totalCount: 0,
-  };
-  const accountingPeriods = accountingPeriodsResponse ?? {
-    items: [],
-    totalCount: 0,
-  };
+  const firstAccountingPeriod = getApiData(firstAccountingPeriodResponse, "Failed to fetch the first accounting period");
+  const accountingPeriods = getApiData(accountingPeriodsResponse, "Failed to fetch accounting periods");
 
   const selectedAccountingPeriod =
     accountingPeriods.items.find(
@@ -120,20 +114,13 @@ const AccountingPeriodWorkspace = async function ({
   }
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
-      <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
+    <PageLayout>
+      <ConstrainedContent>
         <AccountingPeriodWorkspaceFilter
           firstAccountingPeriod={firstAccountingPeriod.items[0] ?? null}
         />
-      </Stack>
-      <Box
-        sx={{
-          display: "grid",
-          gap: 3,
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(min(100%, 600px), 1fr))",
-        }}
-      >
+      </ConstrainedContent>
+      <ResponsiveGrid minimumColumnWidth={600}>
         <AccountingPeriodWorkspaceListFrame
           data={accountingPeriods.items}
           totalCount={accountingPeriods.totalCount}
@@ -144,8 +131,8 @@ const AccountingPeriodWorkspace = async function ({
           selectedAccountingPeriod={selectedAccountingPeriod}
           requestedAction={action ?? null}
         />
-      </Box>
-    </Stack>
+      </ResponsiveGrid>
+    </PageLayout>
   );
 };
 

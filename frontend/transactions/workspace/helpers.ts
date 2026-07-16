@@ -1,5 +1,6 @@
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
  * Gets the default accounting period from a list of accounting periods.
@@ -71,8 +72,7 @@ const validateSummary = function (
   destinationCount: number,
 ): boolean {
   return (
-    sourceAmount !== null &&
-    typeof sourceAmount !== "undefined" &&
+    isNotNullOrUndefined(sourceAmount) &&
     destinationCount > 0 &&
     sourceAmount === destinationAmount
   );

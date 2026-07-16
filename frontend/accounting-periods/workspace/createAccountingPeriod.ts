@@ -4,6 +4,7 @@ import type { CreateAccountingPeriodRequest } from "@/accounting-periods/types";
 import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
+import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import nameof from "@/framework/data/nameof";
 import { revalidatePath } from "next/cache";
 
@@ -60,7 +61,7 @@ const createAccountingPeriod = async function (
       return {
         errorTitle: error.title ?? null,
         unmappedErrors: formatErrors(
-          unmappedErrors.filter((e): e is string => e !== null),
+          unmappedErrors.filter(isNotNullOrUndefined),
         ),
         yearErrors: yearErrorMessage,
         monthErrors: monthErrorMessage,

@@ -1,4 +1,3 @@
-import { Button, Stack } from "@mui/material";
 import type {
   Transaction,
   TransactionSortValue,
@@ -6,6 +5,11 @@ import type {
   TransactionType,
 } from "@/transactions/transaction";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  getPostableTransactionAccounts,
+  getTransactionAccountIds,
+  getTransactionFundIds,
+} from "@/transactions/postingHelpers";
 import {
   normalizeRequestedAccountNames,
   shouldPersistAccountNames,
@@ -18,19 +22,18 @@ import {
   normalizeTransactionTypes,
   shouldPersistTransactionTypes,
 } from "@/transactions/trends/transactionTypeFilter";
+import { Button } from "@mui/material";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import CurrentTransactionListFrame from "@/transactions/current/CurrentTransactionListFrame";
 import CurrentTransactionsFilter from "@/transactions/current/CurrentTransactionsFilter";
 import type { JSX } from "react";
+import PageLayout from "@/framework/view/PageLayout";
+import TransactionsByTypeCard from "@/transactions/TransactionsByTypeCard";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
 import routes from "@/transactions/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParam } from "@/framework/routes/helpers";
-import {
-  getPostableTransactionAccounts,
-  getTransactionAccountIds,
-  getTransactionFundIds,
-} from "@/transactions/postingHelpers";
-import TransactionsByTypeCard from "@/transactions/TransactionsByTypeCard";
 
 /**
  * Search parameters for the CurrentTransactions component.
@@ -94,18 +97,19 @@ const CurrentTransactions = async function ({
   );
 
   const apiClient = getApiClient();
-  const [{ data: periods }, { data: accounts }, { data: funds }] =
-    await Promise.all([
+  const [periodsResponse, accountsResponse, fundsResponse] = await Promise.all([
       apiClient.GET("/accounting-periods", {
         params: { query: { Sort: "DateDescending", Limit: 500 } },
       }),
       apiClient.GET("/accounts"),
       apiClient.GET("/funds"),
-    ]);
-  const accountingPeriod = periods?.items.find((period) => period.isOpen);
-  const availableAccountNames =
-    accounts?.items.map((account) => account.name) ?? [];
-  const availableFundNames = funds?.items.map((fund) => fund.name) ?? [];
+  ]);
+  const periods = getApiData(periodsResponse, "Failed to fetch accounting periods");
+  const accounts = getApiData(accountsResponse, "Failed to fetch accounts");
+  const funds = getApiData(fundsResponse, "Failed to fetch funds");
+  const accountingPeriod = periods.items.find((period) => period.isOpen);
+  const availableAccountNames = accounts.items.map((account) => account.name);
+  const availableFundNames = funds.items.map((fund) => fund.name);
   let current: CurrentTransactionData = {
     accountingPeriodId: accountingPeriod?.id ?? null,
     accountingPeriodName: accountingPeriod?.name ?? null,
@@ -117,7 +121,7 @@ const CurrentTransactions = async function ({
   };
 
   if (typeof accountingPeriod !== "undefined") {
-    const [{ data: unpostedData }, { data: postedData }] = await Promise.all([
+    const [unpostedResponse, postedResponse] = await Promise.all([
       apiClient.GET("/transactions/accounting-period-range", {
         params: {
           query: {
@@ -143,82 +147,82 @@ const CurrentTransactions = async function ({
         },
       }),
     ]);
-    if (
-      typeof unpostedData !== "undefined" &&
-      typeof postedData !== "undefined"
-    ) {
-      const accountIds = new Set(
-        accounts?.items
-          .filter((account) => currentAccountNames.includes(account.name))
-          .map((account) => account.id) ?? [],
-      );
-      const fundIds = new Set(
-        funds?.items
-          .filter((fund) => currentFundNames.includes(fund.name))
-          .map((fund) => fund.id) ?? [],
-      );
-      const filterTransactions = function (
-        transactions: Transaction[],
-      ): Transaction[] {
-        return transactions.filter((transaction) => {
-          if (
-            shouldPersistTransactionTypes(currentTransactionTypes) &&
-            !currentTransactionTypes.includes(transaction.transactionType)
-          ) {
-            return false;
-          }
-          if (
-            shouldPersistAccountNames(currentAccountNames) &&
-            !getTransactionAccountIds(transaction).some((id) =>
-              accountIds.has(id),
-            )
-          ) {
-            return false;
-          }
-          return (
-            !shouldPersistFundNames(currentFundNames) ||
-            getTransactionFundIds(transaction).some((id) => fundIds.has(id))
-          );
-        });
-      };
-      const unposted = filterTransactions(
-        unpostedData.transactions.items,
-      ).filter(
-        (transaction) => getPostableTransactionAccounts(transaction).length > 0,
-      );
-      const posted = filterTransactions(postedData.transactions.items).filter(
-        (transaction) =>
-          getPostableTransactionAccounts(transaction).length === 0,
-      );
-      const unpostedOffset = getPageOffset(
-        normalizePageValue(unpostedTransactionPage),
-      );
-      const postedOffset = getPageOffset(
-        normalizePageValue(postedTransactionPage),
-      );
-      current = {
-        ...current,
-        transactionTypes: unpostedData.transactionTypes,
-        unpostedTransactions: {
-          items: unposted.slice(unpostedOffset, unpostedOffset + rowsPerPage),
-          totalCount: unposted.length,
-        },
-        postedTransactions: {
-          items: posted.slice(postedOffset, postedOffset + rowsPerPage),
-          totalCount: posted.length,
-        },
-      };
-    }
+    const unpostedData = getApiData(
+      unpostedResponse,
+      "Failed to fetch unposted transactions",
+    );
+    const postedData = getApiData(
+      postedResponse,
+      "Failed to fetch posted transactions",
+    );
+    const accountIds = new Set(
+      accounts.items
+        .filter((account) => currentAccountNames.includes(account.name))
+        .map((account) => account.id),
+    );
+    const fundIds = new Set(
+      funds.items
+        .filter((fund) => currentFundNames.includes(fund.name))
+        .map((fund) => fund.id),
+    );
+    const filterTransactions = function (
+      transactions: Transaction[],
+    ): Transaction[] {
+      return transactions.filter((transaction) => {
+        if (
+          shouldPersistTransactionTypes(currentTransactionTypes) &&
+          !currentTransactionTypes.includes(transaction.transactionType)
+        ) {
+          return false;
+        }
+        if (
+          shouldPersistAccountNames(currentAccountNames) &&
+          !getTransactionAccountIds(transaction).some((id) =>
+            accountIds.has(id),
+          )
+        ) {
+          return false;
+        }
+        return (
+          !shouldPersistFundNames(currentFundNames) ||
+          getTransactionFundIds(transaction).some((id) => fundIds.has(id))
+        );
+      });
+    };
+    const unposted = filterTransactions(unpostedData.transactions.items).filter(
+      (transaction) => getPostableTransactionAccounts(transaction).length > 0,
+    );
+    const posted = filterTransactions(postedData.transactions.items).filter(
+      (transaction) => getPostableTransactionAccounts(transaction).length === 0,
+    );
+    const unpostedOffset = getPageOffset(
+      normalizePageValue(unpostedTransactionPage),
+    );
+    const postedOffset = getPageOffset(
+      normalizePageValue(postedTransactionPage),
+    );
+    current = {
+      ...current,
+      transactionTypes: unpostedData.transactionTypes,
+      unpostedTransactions: {
+        items: unposted.slice(unpostedOffset, unpostedOffset + rowsPerPage),
+        totalCount: unposted.length,
+      },
+      postedTransactions: {
+        items: posted.slice(postedOffset, postedOffset + rowsPerPage),
+        totalCount: posted.length,
+      },
+    };
   }
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
-      <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
+    <PageLayout>
+      <ConstrainedContent>
         <CurrentTransactionsFilter
           availableAccountNames={current.availableAccountNames}
           availableFundNames={current.availableFundNames}
         />
-      </Stack>
+      </ConstrainedContent>
       <TransactionsByTypeCard transactionTypes={current.transactionTypes} />
       <CurrentTransactionListFrame
         title="Needs Posting"
@@ -263,7 +267,7 @@ const CurrentTransactions = async function ({
             : `No fully posted transactions are included in ${current.accountingPeriodName} yet.`
         }
       />
-    </Stack>
+    </PageLayout>
   );
 };
 

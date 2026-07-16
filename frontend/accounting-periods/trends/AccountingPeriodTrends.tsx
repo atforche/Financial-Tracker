@@ -1,8 +1,11 @@
-import type {
-  AccountingPeriodWithBalanceSortValue,
-  AccountingPeriodsInRange,
+import {
+  AccountingPeriodSort,
+  type AccountingPeriodWithBalanceSort,
 } from "@/accounting-periods/types";
-import { Box, Stack } from "@mui/material";
+import type {
+  Transaction,
+  TransactionSort,
+} from "@/transactions/types";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import AccountingPeriodTrendChart from "@/accounting-periods/trends/AccountingPeriodTrendChart";
 import AccountingPeriodTrendsChangeChart from "@/accounting-periods/trends/AccountingPeriodTrendsChangeChart";
@@ -10,22 +13,24 @@ import AccountingPeriodTrendsFilter from "@/accounting-periods/trends/Accounting
 import AccountingPeriodTrendsListFrame from "@/accounting-periods/trends/AccountingPeriodTrendsListFrame";
 import AccountingPeriodTrendsSummaryCards from "@/accounting-periods/trends/AccountingPeriodTrendsSummaryCards";
 import AccountingPeriodTrendsTransactionListFrame from "@/accounting-periods/trends/AccountingPeriodTrendsTransactionListFrame";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
-import type {
-  Transaction,
-  TransactionSortValue,
-} from "@/transactions/transaction";
+import PageLayout from "@/framework/view/PageLayout";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import { createEmptyTrends } from "@/accounting-periods/trends/helpers";
 import getApiClient from "@/framework/data/getApiClient";
+import getApiData from "@/framework/data/apiResponse";
+import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
 /**
  * Search parameters for the AccountingPeriodTrends component.
  */
 interface AccountingPeriodTrendsSearchParams {
-  sort?: AccountingPeriodWithBalanceSortValue;
+  sort?: AccountingPeriodWithBalanceSort;
   page?: number | string | null;
-  transactionSort?: TransactionSortValue;
+  transactionSort?: TransactionSort;
   transactionPage?: number | string | null;
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;
@@ -37,21 +42,6 @@ interface AccountingPeriodTrendsSearchParams {
 interface AccountingPeriodTrendsProps {
   readonly searchParams: Promise<AccountingPeriodTrendsSearchParams>;
 }
-
-const createEmptyTrends = function (): AccountingPeriodsInRange {
-  return {
-    accountingPeriods: {
-      items: [],
-      totalCount: 0,
-    },
-    totalIncome: {
-      total: 0,
-      tracked: 0,
-      untracked: 0,
-    },
-    totalSpending: 0,
-  };
-};
 
 /**
  * Component that displays the Accounting Period trends.
@@ -69,22 +59,21 @@ const AccountingPeriodTrends = async function ({
   } = await searchParams;
 
   const apiClient = getApiClient();
-  const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
+  const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
     params: {
       query: {
-        Sort: "DateDescending",
+        Sort: AccountingPeriodSort.DateDescending,
         Limit: 500,
         Offset: 0,
       },
     },
   });
-  const { data: accountingPeriods } = await accountingPeriodsPromise;
+  const accountingPeriods = getApiData(
+    accountingPeriodsResponse,
+    "Failed to fetch accounting periods",
+  );
   const currentPage = normalizePageValue(page);
   const currentTransactionPage = normalizePageValue(transactionPage);
-
-  if (typeof accountingPeriods === "undefined") {
-    throw new Error("Failed to fetch accounting periods");
-  }
 
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
   let trends = createEmptyTrends();
@@ -102,7 +91,7 @@ const AccountingPeriodTrends = async function ({
         params: {
           query: {
             ...range,
-            ...(typeof sort === "string" ? { Sort: sort } : {}),
+            ...(isNotNullOrUndefined(sort) ? { Sort: sort } : {}),
             Limit: rowsPerPage,
             Offset: getPageOffset(currentPage),
           },
@@ -112,28 +101,33 @@ const AccountingPeriodTrends = async function ({
         params: {
           query: {
             ...range,
-            ...(typeof transactionSort === "string"
-              ? { Sort: transactionSort }
-              : {}),
+            ...(isNotNullOrUndefined(transactionSort) ? { Sort: transactionSort } : {}),
             Limit: rowsPerPage,
             Offset: getPageOffset(currentTransactionPage),
           },
         },
       }),
     ]);
-    trends = trendsResponse.data ?? createEmptyTrends();
-    transactions = transactionResponse.data?.transactions ?? transactions;
+    trends = getApiData(
+      trendsResponse,
+      "Failed to fetch accounting period trends",
+    );
+    const { transactions: responseTransactions } = getApiData(
+      transactionResponse,
+      "Failed to fetch transactions for the accounting period range",
+    );
+    transactions = responseTransactions;
   }
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
-      <Stack spacing={3} sx={{ maxWidth: 1440, width: "100%" }}>
+    <PageLayout>
+      <ConstrainedContent>
         <AccountingPeriodTrendsFilter
           accountingPeriods={accountingPeriods.items}
           defaultAccountingPeriodId={latestAccountingPeriod?.id ?? null}
           disabled={latestAccountingPeriod === null}
         />
-      </Stack>
+      </ConstrainedContent>
       <AccountingPeriodTrendsSummaryCards
         accountingPeriods={trends.accountingPeriods.items}
       />
@@ -141,31 +135,15 @@ const AccountingPeriodTrends = async function ({
         totalIncome={trends.totalIncome}
         totalSpending={trends.totalSpending}
       />
-      <Box
-        sx={{
-          display: "grid",
-          gap: 3,
-          gridTemplateColumns: {
-            xs: "1fr",
-            lg: "minmax(0, 1fr) minmax(0, 1fr)",
-          },
-        }}
-      >
+      <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
         <AccountingPeriodTrendChart
           accountingPeriods={trends.accountingPeriods.items}
         />
         <AccountingPeriodTrendsChangeChart
           accountingPeriods={trends.accountingPeriods.items}
         />
-      </Box>
-      <Box
-        sx={{
-          display: "grid",
-          gap: 3,
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(min(100%, 800px), 1fr))",
-        }}
-      >
+      </ResponsiveGrid>
+      <ResponsiveGrid minimumColumnWidth={800}>
         <AccountingPeriodTrendsListFrame
           data={trends.accountingPeriods.items}
           totalCount={trends.accountingPeriods.totalCount}
@@ -174,8 +152,8 @@ const AccountingPeriodTrends = async function ({
           transactions={transactions.items}
           totalCount={transactions.totalCount}
         />
-      </Box>
-    </Stack>
+      </ResponsiveGrid>
+    </PageLayout>
   );
 };
 
