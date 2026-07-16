@@ -5,12 +5,14 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { BalanceEventType } from "@/framework/data/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { FundBalanceEvent } from "@/funds/types";
+import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import Link from "next/link";
 import ListFrame from "@/framework/listframe/ListFrame";
 import dayjs from "dayjs";
 import { formatCurrency } from "@/framework/currencyHelpers";
+import nameof from "@/framework/data/nameof";
 import routes from "@/transactions/routes";
 
 /**
@@ -131,8 +133,10 @@ const FundBalanceEventsFrame = function ({
         }
         data={data}
         totalCount={totalCount}
-        searchParamName="balanceEventSearch"
-        pageParamName="balanceEventPage"
+        searchParamName={nameof<FundWorkspaceSearchParams>(
+          "balanceEventSearch",
+        )}
+        pageParamName={nameof<FundWorkspaceSearchParams>("balanceEventPage")}
         onRowClick={(balanceEvent) => {
           router.push(
             routes.workspaceDetail(balanceEvent.transactionId, { returnUrl }),

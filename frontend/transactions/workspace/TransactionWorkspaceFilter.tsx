@@ -6,6 +6,8 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
+import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
+import nameof from "@/framework/data/nameof";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -59,10 +61,13 @@ const TransactionWorkspaceFilter = function ({
 }: TransactionWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const pageParamName = "page";
-  const accountingPeriodParamName = "accountingPeriodIds";
-  const accountParamName = "accountIds";
-  const fundParamName = "fundIds";
+  const pageParamName = nameof<TransactionWorkspaceSearchParams>("page");
+  const accountingPeriodParamName = nameof<TransactionWorkspaceSearchParams>(
+    "accountingPeriodIds",
+  );
+  const accountParamName =
+    nameof<TransactionWorkspaceSearchParams>("accountIds");
+  const fundParamName = nameof<TransactionWorkspaceSearchParams>("fundIds");
 
   const currentAccountingPeriods = normalizeSelectedItems(
     normalizeRequestedIds(searchParams.getAll(accountingPeriodParamName)),

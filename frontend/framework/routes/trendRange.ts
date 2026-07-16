@@ -1,6 +1,5 @@
-/**
- * Trend range modes supported by date and accounting-period filters.
- */
+import nameof from "@/framework/data/nameof";
+
 type TrendRangeMode = "accounting-period" | "date";
 
 /**
@@ -10,6 +9,14 @@ interface TrendRangeDefaults {
   readonly defaultAccountingPeriodId: string | null;
   readonly defaultStartDate: string;
   readonly defaultEndDate: string;
+}
+
+interface TrendRangeSearchParams {
+  mode?: TrendRangeMode;
+  startAccountingPeriodId?: string;
+  endAccountingPeriodId?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 /**
@@ -24,26 +31,35 @@ const setTrendRangeMode = function (
     defaultEndDate,
   }: TrendRangeDefaults,
 ): void {
-  params.set("mode", nextMode);
+  params.set(nameof<TrendRangeSearchParams>("mode"), nextMode);
 
   if (nextMode === "date") {
-    params.delete("startAccountingPeriodId");
-    params.delete("endAccountingPeriodId");
-    params.set("startDate", params.get("startDate") ?? defaultStartDate);
-    params.set("endDate", params.get("endDate") ?? defaultEndDate);
+    params.delete(nameof<TrendRangeSearchParams>("startAccountingPeriodId"));
+    params.delete(nameof<TrendRangeSearchParams>("endAccountingPeriodId"));
+    params.set(
+      nameof<TrendRangeSearchParams>("startDate"),
+      params.get(nameof<TrendRangeSearchParams>("startDate")) ??
+        defaultStartDate,
+    );
+    params.set(
+      nameof<TrendRangeSearchParams>("endDate"),
+      params.get(nameof<TrendRangeSearchParams>("endDate")) ?? defaultEndDate,
+    );
     return;
   }
 
-  params.delete("startDate");
-  params.delete("endDate");
+  params.delete(nameof<TrendRangeSearchParams>("startDate"));
+  params.delete(nameof<TrendRangeSearchParams>("endDate"));
   if (defaultAccountingPeriodId !== null) {
     params.set(
-      "startAccountingPeriodId",
-      params.get("startAccountingPeriodId") ?? defaultAccountingPeriodId,
+      nameof<TrendRangeSearchParams>("startAccountingPeriodId"),
+      params.get(nameof<TrendRangeSearchParams>("startAccountingPeriodId")) ??
+        defaultAccountingPeriodId,
     );
     params.set(
-      "endAccountingPeriodId",
-      params.get("endAccountingPeriodId") ?? defaultAccountingPeriodId,
+      nameof<TrendRangeSearchParams>("endAccountingPeriodId"),
+      params.get(nameof<TrendRangeSearchParams>("endAccountingPeriodId")) ??
+        defaultAccountingPeriodId,
     );
   }
 };

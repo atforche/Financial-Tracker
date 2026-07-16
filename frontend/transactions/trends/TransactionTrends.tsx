@@ -1,8 +1,8 @@
 import type {
   Transaction,
-  TransactionSortValue,
+  TransactionSort,
   TransactionType,
-} from "@/transactions/transaction";
+} from "@/transactions/types";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import {
   normalizeRequestedAccountNames,
@@ -16,6 +16,7 @@ import {
   normalizeTransactionTypes,
   shouldPersistTransactionTypes,
 } from "@/transactions/trends/transactionTypeFilter";
+import { AccountingPeriodSort } from "@/accounting-periods/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
@@ -42,7 +43,7 @@ type TransactionsTrendsFilterMode = "accounting-period" | "date";
  * Search parameters for the transaction trends.
  */
 interface TransactionTrendsSearchParams {
-  sort?: TransactionSortValue;
+  sort?: TransactionSort;
   page?: number | string | null;
   mode?: TransactionsTrendsFilterMode;
   transactionType?: TransactionType | readonly TransactionType[];
@@ -87,7 +88,7 @@ const TransactionTrends = async function ({
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
       query: {
-        Sort: "DateDescending",
+        Sort: AccountingPeriodSort.DateDescending,
         Limit: 500,
         Offset: 0,
       },

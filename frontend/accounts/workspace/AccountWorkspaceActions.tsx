@@ -1,12 +1,16 @@
 "use client";
 
+import type {
+  AccountWorkspaceAction,
+  AccountWorkspaceSearchParams,
+} from "@/accounts/workspace/AccountWorkspace";
 import { usePathname, useSearchParams } from "next/navigation";
-import type { AccountWorkspaceAction } from "@/accounts/workspace/AccountWorkspace";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateAccountForm from "@/accounts/workspace/CreateAccountForm";
 import type { JSX } from "react";
 import OnboardAccountForm from "@/accounts/workspace/OnboardAccountForm";
 import { buildUrl } from "@/framework/routes/helpers";
+import nameof from "@/framework/data/nameof";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
@@ -30,18 +34,19 @@ const AccountWorkspaceActions = function ({
   const pathname = usePathname();
   const updateParams = useSearchParamUpdater([]);
 
+  const actionParamName = nameof<AccountWorkspaceSearchParams>("action");
   const setAction = function (action: AccountWorkspaceAction | null): void {
     updateParams((params) => {
       if (action === null) {
-        params.delete("action");
+        params.delete(actionParamName);
       } else {
-        params.set("action", action);
+        params.set(actionParamName, action);
       }
     });
   };
 
   const dialogParams = new URLSearchParams(searchParams.toString());
-  dialogParams.delete("action");
+  dialogParams.delete(actionParamName);
   const dialogRedirectUrl = buildUrl(pathname, dialogParams);
   const isCreateDialogOpen =
     !isInOnboardingMode && requestedAction === "create";

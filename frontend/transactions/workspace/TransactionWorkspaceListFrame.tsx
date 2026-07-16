@@ -14,6 +14,7 @@ import ListFrame from "@/framework/listframe/ListFrame";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
+import nameof from "@/framework/data/nameof";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -37,11 +38,14 @@ const TransactionWorkspaceListFrame = function ({
   const pathname = usePathname();
   const router = useRouter();
 
-  const accountingPeriodIdsParamName = "accountingPeriodIds";
-  const accountIdsParamName = "accountIds";
-  const fundIdsParamName = "fundIds";
-  const sortParamName = "sort";
-  const pageParamName = "page";
+  const accountingPeriodIdsParamName = nameof<TransactionWorkspaceSearchParams>(
+    "accountingPeriodIds",
+  );
+  const accountIdsParamName =
+    nameof<TransactionWorkspaceSearchParams>("accountIds");
+  const fundIdsParamName = nameof<TransactionWorkspaceSearchParams>("fundIds");
+  const sortParamName = nameof<TransactionWorkspaceSearchParams>("sort");
+  const pageParamName = nameof<TransactionWorkspaceSearchParams>("page");
 
   const updateParams = useSearchParamUpdater([]);
 

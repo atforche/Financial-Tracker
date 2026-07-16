@@ -3,6 +3,7 @@
 import { InputAdornment, TextField } from "@mui/material";
 import type { JSX } from "react";
 import { Search } from "@mui/icons-material";
+import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import { useDebouncedCallback } from "use-debounce";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
@@ -12,7 +13,7 @@ import { useSearchParams } from "next/navigation";
  */
 interface SearchBarProps {
   readonly searchParamName: string;
-  readonly pageParamName: string;
+  readonly pageParamName?: string;
 }
 
 /**
@@ -23,7 +24,9 @@ const SearchBar = function ({
   pageParamName,
 }: SearchBarProps): JSX.Element {
   const searchParams = useSearchParams();
-  const updateParams = useSearchParamUpdater([pageParamName]);
+  const updateParams = useSearchParamUpdater(
+    isNotNullOrUndefined(pageParamName) ? [pageParamName] : [],
+  );
 
   const handleChange = useDebouncedCallback(
     (event: React.ChangeEvent<HTMLInputElement>): void => {

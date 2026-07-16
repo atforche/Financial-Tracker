@@ -1,9 +1,9 @@
 import type {
   Transaction,
-  TransactionSortValue,
+  TransactionSort,
   TransactionSummaryByType,
   TransactionType,
-} from "@/transactions/transaction";
+} from "@/transactions/types";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import {
   getPostableTransactionAccounts,
@@ -22,6 +22,7 @@ import {
   normalizeTransactionTypes,
   shouldPersistTransactionTypes,
 } from "@/transactions/trends/transactionTypeFilter";
+import { AccountingPeriodSort } from "@/accounting-periods/types";
 import { Button } from "@mui/material";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import CurrentTransactionListFrame from "@/transactions/current/CurrentTransactionListFrame";
@@ -31,6 +32,7 @@ import PageLayout from "@/framework/view/PageLayout";
 import TransactionsByTypeCard from "@/transactions/TransactionsByTypeCard";
 import getApiClient from "@/framework/data/getApiClient";
 import getApiData from "@/framework/data/apiResponse";
+import nameof from "@/framework/data/nameof";
 import routes from "@/transactions/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParam } from "@/framework/routes/helpers";
@@ -42,10 +44,12 @@ interface CurrentTransactionsSearchParams {
   transactionType?: TransactionType | readonly TransactionType[];
   accountName?: string | readonly string[];
   fundName?: string | readonly string[];
-  unpostedTransactionSort?: TransactionSortValue;
+  unpostedTransactionSort?: TransactionSort;
   unpostedTransactionPage?: number | string | null;
-  postedTransactionSort?: TransactionSortValue;
+  unpostedTransactionSearch?: string;
+  postedTransactionSort?: TransactionSort;
   postedTransactionPage?: number | string | null;
+  postedTransactionSearch?: string;
 }
 
 /**
@@ -99,7 +103,9 @@ const CurrentTransactions = async function ({
   const apiClient = getApiClient();
   const [periodsResponse, accountsResponse, fundsResponse] = await Promise.all([
     apiClient.GET("/accounting-periods", {
-      params: { query: { Sort: "DateDescending", Limit: 500 } },
+      params: {
+        query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
+      },
     }),
     apiClient.GET("/accounts"),
     apiClient.GET("/funds"),
@@ -231,9 +237,15 @@ const CurrentTransactions = async function ({
         title="Needs Posting"
         data={current.unpostedTransactions.items}
         totalCount={current.unpostedTransactions.totalCount}
-        sortParamName="unpostedTransactionSort"
-        pageParamName="unpostedTransactionPage"
-        searchParamName="unpostedTransactionSearch"
+        sortParamName={nameof<CurrentTransactionsSearchParams>(
+          "unpostedTransactionSort",
+        )}
+        pageParamName={nameof<CurrentTransactionsSearchParams>(
+          "unpostedTransactionPage",
+        )}
+        searchParamName={nameof<CurrentTransactionsSearchParams>(
+          "unpostedTransactionSearch",
+        )}
         emptyTitle={
           current.accountingPeriodName === null
             ? "No current accounting period available"
@@ -256,9 +268,15 @@ const CurrentTransactions = async function ({
         title="Posted Transactions"
         data={current.postedTransactions.items}
         totalCount={current.postedTransactions.totalCount}
-        sortParamName="postedTransactionSort"
-        pageParamName="postedTransactionPage"
-        searchParamName="postedTransactionSearch"
+        sortParamName={nameof<CurrentTransactionsSearchParams>(
+          "postedTransactionSort",
+        )}
+        pageParamName={nameof<CurrentTransactionsSearchParams>(
+          "postedTransactionPage",
+        )}
+        searchParamName={nameof<CurrentTransactionsSearchParams>(
+          "postedTransactionSearch",
+        )}
         emptyTitle={
           current.accountingPeriodName === null
             ? "No current accounting period available"

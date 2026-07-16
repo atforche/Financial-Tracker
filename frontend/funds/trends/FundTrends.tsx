@@ -1,6 +1,6 @@
 import type {
-  FundBalanceEventSortValue,
-  FundWithBalanceRangeSortValue,
+  FundBalanceEventSort,
+  FundWithBalanceRangeSort,
   FundsInAccountingPeriodRange,
   FundsInDateRange,
 } from "@/funds/types";
@@ -9,6 +9,7 @@ import {
   normalizeRequestedFundNames,
   shouldPersistFundNames,
 } from "@/funds/trends/fundNameFilter";
+import { AccountingPeriodSort } from "@/accounting-periods/types";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import FundTrendsAssignmentSpendingCard from "@/funds/trends/FundTrendsAssignmentSpendingCard";
@@ -38,9 +39,9 @@ type FundsTrendsFilterMode = "accounting-period" | "date";
  * Search parameters for the fund trends.
  */
 interface FundTrendsSearchParams {
-  sort?: FundWithBalanceRangeSortValue;
+  sort?: FundWithBalanceRangeSort;
   page?: number | string | null;
-  balanceEventSort?: FundBalanceEventSortValue;
+  balanceEventSort?: FundBalanceEventSort;
   balanceEventPage?: number | string | null;
   mode?: FundsTrendsFilterMode;
   fundName?: string | readonly string[];
@@ -83,7 +84,7 @@ const FundTrends = async function ({
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
       query: {
-        Sort: "DateDescending",
+        Sort: AccountingPeriodSort.DateDescending,
         Limit: 500,
         Offset: 0,
       },

@@ -1,15 +1,19 @@
 "use client";
 
+import type {
+  AccountingPeriodWorkspaceAction,
+  AccountingPeriodWorkspaceSearchParams,
+} from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import { Paper, Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { usePathname } from "next/navigation";
-import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import CloseAccountingPeriodForm from "@/accounting-periods/workspace/CloseAccountingPeriodForm";
 import CreateAccountingPeriodForm from "@/accounting-periods/workspace/CreateAccountingPeriodForm";
 import DeleteAccountingPeriodForm from "@/accounting-periods/workspace/DeleteAccountingPeriodForm";
 import type { JSX } from "react";
 import ReopenAccountingPeriodForm from "@/accounting-periods/workspace/ReopenAccountingPeriodForm";
+import nameof from "@/framework/data/nameof";
+import { usePathname } from "next/navigation";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
  * Props for the AccountingPeriodWorkspaceActions component.
@@ -31,6 +35,8 @@ const AccountingPeriodWorkspaceActions = function ({
   const pathname = usePathname();
   const updateParams = useSearchParamUpdater([]);
 
+  const actionParamName =
+    nameof<AccountingPeriodWorkspaceSearchParams>("action");
   const allActions: readonly AccountingPeriodWorkspaceAction[] = [
     "create",
     "close",
@@ -53,9 +59,9 @@ const AccountingPeriodWorkspaceActions = function ({
   ): void {
     updateParams((params) => {
       if (action === null) {
-        params.delete("action");
+        params.delete(actionParamName);
       } else {
-        params.set("action", action);
+        params.set(actionParamName, action);
       }
     });
   };

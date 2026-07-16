@@ -2,8 +2,10 @@
 
 import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
+import nameof from "@/framework/data/nameof";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -22,9 +24,10 @@ const AccountingPeriodWorkspaceFilter = function ({
 }: AccountingPeriodWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const pageParamName = "page";
-  const yearsParamName = "years";
-  const monthsParamName = "months";
+  const pageParamName = nameof<AccountingPeriodWorkspaceSearchParams>("page");
+  const yearsParamName = nameof<AccountingPeriodWorkspaceSearchParams>("years");
+  const monthsParamName =
+    nameof<AccountingPeriodWorkspaceSearchParams>("months");
 
   const currentYear = new Date().getFullYear();
   const firstAccountingPeriodYear = firstAccountingPeriod?.year ?? currentYear;

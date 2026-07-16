@@ -25,7 +25,9 @@ import {
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
+import type { TransactionTrendsSearchParams } from "@/transactions/trends/TransactionTrends";
 import type { TransactionType } from "@/transactions/types";
+import nameof from "@/framework/data/nameof";
 import { setTrendRangeMode } from "@/framework/routes/trendRange";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
@@ -62,15 +64,20 @@ const TransactionTrendsFilter = function ({
 }: TransactionTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const pageParamName = "page";
-  const modeParamName = "mode";
-  const transactionTypeParamName = "transactionType";
-  const accountNameParamName = "accountName";
-  const fundNameParamName = "fundName";
-  const startAccountingPeriodIdParamName = "startAccountingPeriodId";
-  const endAccountingPeriodIdParamName = "endAccountingPeriodId";
-  const startDateParamName = "startDate";
-  const endDateParamName = "endDate";
+  const pageParamName = nameof<TransactionTrendsSearchParams>("page");
+  const modeParamName = nameof<TransactionTrendsSearchParams>("mode");
+  const transactionTypeParamName =
+    nameof<TransactionTrendsSearchParams>("transactionType");
+  const accountNameParamName =
+    nameof<TransactionTrendsSearchParams>("accountName");
+  const fundNameParamName = nameof<TransactionTrendsSearchParams>("fundName");
+  const startAccountingPeriodIdParamName =
+    nameof<TransactionTrendsSearchParams>("startAccountingPeriodId");
+  const endAccountingPeriodIdParamName = nameof<TransactionTrendsSearchParams>(
+    "endAccountingPeriodId",
+  );
+  const startDateParamName = nameof<TransactionTrendsSearchParams>("startDate");
+  const endDateParamName = nameof<TransactionTrendsSearchParams>("endDate");
 
   const currentMode: TransactionTrendsFilterMode =
     searchParams.get(modeParamName) === "accounting-period"

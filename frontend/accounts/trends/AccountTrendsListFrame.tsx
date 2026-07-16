@@ -10,6 +10,7 @@ import {
   isPositiveChangeInBalance,
 } from "@/accounts/helpers";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { AccountTrendsSearchParams } from "@/accounts/trends/AccountTrends";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
@@ -17,6 +18,7 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
+import nameof from "@/framework/data/nameof";
 import routes from "@/accounts/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -41,15 +43,19 @@ const AccountTrendsListFrame = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sortParamName = "sort";
-  const pageParamName = "page";
-  const accountTypeParamName = "accountType";
-  const accountNameParamName = "accountName";
-  const modeParamName = "mode";
-  const startAccountingPeriodIdParamName = "startAccountingPeriodId";
-  const endAccountingPeriodIdParamName = "endAccountingPeriodId";
-  const startDateParamName = "startDate";
-  const endDateParamName = "endDate";
+  const sortParamName = nameof<AccountTrendsSearchParams>("sort");
+  const pageParamName = nameof<AccountTrendsSearchParams>("page");
+  const accountTypeParamName = nameof<AccountTrendsSearchParams>("accountType");
+  const accountNameParamName = nameof<AccountTrendsSearchParams>("accountName");
+  const modeParamName = nameof<AccountTrendsSearchParams>("mode");
+  const startAccountingPeriodIdParamName = nameof<AccountTrendsSearchParams>(
+    "startAccountingPeriodId",
+  );
+  const endAccountingPeriodIdParamName = nameof<AccountTrendsSearchParams>(
+    "endAccountingPeriodId",
+  );
+  const startDateParamName = nameof<AccountTrendsSearchParams>("startDate");
+  const endDateParamName = nameof<AccountTrendsSearchParams>("endDate");
   const updateParams = useSearchParamUpdater([pageParamName]);
 
   const setSort = function (sort: AccountWithBalanceRangeSort | null): void {
@@ -201,7 +207,6 @@ const AccountTrendsListFrame = function ({
       getId={(account) => account.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      searchParamName="search"
       pageParamName={pageParamName}
       onRowClick={(account: AccountWithBalanceRange): void => {
         setAccountNameFilter(account.name);

@@ -15,8 +15,10 @@ import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import type { TransactionTrendsSearchParams } from "@/transactions/trends/TransactionTrends";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
+import nameof from "@/framework/data/nameof";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -36,17 +38,21 @@ const TransactionTrendsListFrame = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sortParamName = "sort";
-  const pageParamName = "page";
-  const searchParamName = "transactionSearch";
-  const modeParamName = "mode";
-  const transactionTypeParamName = "transactionType";
-  const accountNameParamName = "accountName";
-  const fundNameParamName = "fundName";
-  const startAccountingPeriodIdParamName = "startAccountingPeriodId";
-  const endAccountingPeriodIdParamName = "endAccountingPeriodId";
-  const startDateParamName = "startDate";
-  const endDateParamName = "endDate";
+  const sortParamName = nameof<TransactionTrendsSearchParams>("sort");
+  const pageParamName = nameof<TransactionTrendsSearchParams>("page");
+  const modeParamName = nameof<TransactionTrendsSearchParams>("mode");
+  const transactionTypeParamName =
+    nameof<TransactionTrendsSearchParams>("transactionType");
+  const accountNameParamName =
+    nameof<TransactionTrendsSearchParams>("accountName");
+  const fundNameParamName = nameof<TransactionTrendsSearchParams>("fundName");
+  const startAccountingPeriodIdParamName =
+    nameof<TransactionTrendsSearchParams>("startAccountingPeriodId");
+  const endAccountingPeriodIdParamName = nameof<TransactionTrendsSearchParams>(
+    "endAccountingPeriodId",
+  );
+  const startDateParamName = nameof<TransactionTrendsSearchParams>("startDate");
+  const endDateParamName = nameof<TransactionTrendsSearchParams>("endDate");
 
   const updateParams = useSearchParamUpdater([pageParamName]);
 
@@ -171,7 +177,6 @@ const TransactionTrendsListFrame = function ({
       data={data}
       totalCount={totalCount}
       pageParamName={pageParamName}
-      searchParamName={searchParamName}
       onRowClick={openTransactionWorkspace}
       hasActiveFilters={hasActiveFilters}
       initialEmptyState={{

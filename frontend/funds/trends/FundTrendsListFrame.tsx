@@ -9,10 +9,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
+import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
+import nameof from "@/framework/data/nameof";
 import routes from "@/funds/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -37,14 +39,18 @@ const FundTrendsListFrame = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sortParamName = "sort";
-  const pageParamName = "page";
-  const fundNameParamName = "fundName";
-  const modeParamName = "mode";
-  const startAccountingPeriodIdParamName = "startAccountingPeriodId";
-  const endAccountingPeriodIdParamName = "endAccountingPeriodId";
-  const startDateParamName = "startDate";
-  const endDateParamName = "endDate";
+  const sortParamName = nameof<FundTrendsSearchParams>("sort");
+  const pageParamName = nameof<FundTrendsSearchParams>("page");
+  const fundNameParamName = nameof<FundTrendsSearchParams>("fundName");
+  const modeParamName = nameof<FundTrendsSearchParams>("mode");
+  const startAccountingPeriodIdParamName = nameof<FundTrendsSearchParams>(
+    "startAccountingPeriodId",
+  );
+  const endAccountingPeriodIdParamName = nameof<FundTrendsSearchParams>(
+    "endAccountingPeriodId",
+  );
+  const startDateParamName = nameof<FundTrendsSearchParams>("startDate");
+  const endDateParamName = nameof<FundTrendsSearchParams>("endDate");
   const updateParams = useSearchParamUpdater([pageParamName]);
 
   const setSort = function (sort: FundWithBalanceRangeSort | null): void {
@@ -181,7 +187,6 @@ const FundTrendsListFrame = function ({
       getId={(fund) => fund.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      searchParamName="search"
       pageParamName={pageParamName}
       onRowClick={(fund: FundWithBalanceRange): void => {
         setFundNameFilter(fund.name);

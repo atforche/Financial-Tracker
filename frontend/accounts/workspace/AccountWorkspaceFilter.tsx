@@ -7,8 +7,10 @@ import {
 } from "@/accounts/trends/accountTypeFilter";
 import AccountTrendsAccountTypeFilter from "@/accounts/trends/AccountTrendsAccountTypeFilter";
 import type { AccountType } from "@/accounts/types";
+import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
+import nameof from "@/framework/data/nameof";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -27,22 +29,21 @@ const AccountWorkspaceFilter = function ({
 }: AccountWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const searchParamName = "search";
-  const accountTypeParamName = "accountType";
-  const pageParamName = "page";
+  const searchParamName = nameof<AccountWorkspaceSearchParams>("search");
+  const accountTypeParamName =
+    nameof<AccountWorkspaceSearchParams>("accountType");
 
   const currentAccountTypes = normalizeAccountTypes(
     searchParams.getAll(accountTypeParamName),
   );
 
-  const updateParams = useSearchParamUpdater([pageParamName]);
+  const updateParams = useSearchParamUpdater([]);
 
   const handleAccountTypeChange = function (
     nextAccountTypes: readonly AccountType[],
   ): void {
     updateParams((params) => {
       params.delete(accountTypeParamName);
-      params.delete(pageParamName);
       if (shouldPersistAccountTypes(nextAccountTypes)) {
         nextAccountTypes.forEach((accountType) => {
           params.append(accountTypeParamName, accountType);
@@ -55,7 +56,6 @@ const AccountWorkspaceFilter = function ({
     updateParams((params) => {
       params.delete(searchParamName);
       params.delete(accountTypeParamName);
-      params.delete(pageParamName);
     });
   };
 
@@ -63,7 +63,7 @@ const AccountWorkspaceFilter = function ({
     (searchParams.get(searchParamName) ?? "").trim() !== "" ||
     shouldPersistAccountTypes(currentAccountTypes);
 
-  const actionParamName = "action";
+  const actionParamName = nameof<AccountWorkspaceSearchParams>("action");
   const addActionLabel = isInOnboardingMode
     ? "Onboard account"
     : "Create account";
@@ -100,10 +100,7 @@ const AccountWorkspaceFilter = function ({
             value={currentAccountTypes}
             onChange={handleAccountTypeChange}
           />
-          <SearchBar
-            searchParamName={searchParamName}
-            pageParamName={pageParamName}
-          />
+          <SearchBar searchParamName={searchParamName} />
           <Button
             variant="outlined"
             onClick={clearView}

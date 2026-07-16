@@ -13,6 +13,7 @@ import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { getAccountCardColor } from "@/accounts/workspace/helpers";
+import nameof from "@/framework/data/nameof";
 import routes from "@/accounts/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
@@ -24,10 +25,6 @@ interface AccountWorkspaceCardsProps {
   readonly isInOnboardingMode: boolean;
 }
 
-const actionParamName = "action";
-const searchParamName = "search";
-const accountTypeParamName = "accountType";
-
 /**
  * Displays the account workspace as a collection of clickable cards.
  */
@@ -38,6 +35,11 @@ const AccountWorkspaceCards = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
   const updateParams = useSearchParamUpdater([]);
+
+  const actionParamName = nameof<AccountWorkspaceSearchParams>("action");
+  const searchParamName = nameof<AccountWorkspaceSearchParams>("search");
+  const accountTypeParamName =
+    nameof<AccountWorkspaceSearchParams>("accountType");
 
   const clearFilters = function (): void {
     updateParams((params) => {

@@ -3,8 +3,10 @@
 import { Button, Paper, Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
+import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
+import nameof from "@/framework/data/nameof";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -28,8 +30,11 @@ const GoalWorkspaceFilter = function ({
     accountingPeriods.find(
       (period) => period.id === selectedAccountingPeriodId,
     ) ?? null;
-  const searchParamName = "search";
-  const balanceEventPageParamName = "balanceEventPage";
+  const searchParamName = nameof<GoalWorkspaceSearchParams>("search");
+  const balanceEventPageParamName =
+    nameof<GoalWorkspaceSearchParams>("balanceEventPage");
+  const accountingPeriodParamName =
+    nameof<GoalWorkspaceSearchParams>("accountingPeriodId");
 
   const updateParams = useSearchParamUpdater([balanceEventPageParamName]);
 
@@ -57,9 +62,9 @@ const GoalWorkspaceFilter = function ({
               setValue={(period) => {
                 replace((params) => {
                   if (period === null) {
-                    params.delete("accountingPeriodId");
+                    params.delete(accountingPeriodParamName);
                   } else {
-                    params.set("accountingPeriodId", period.id);
+                    params.set(accountingPeriodParamName, period.id);
                   }
                 });
               }}
@@ -73,13 +78,13 @@ const GoalWorkspaceFilter = function ({
             variant="outlined"
             onClick={() => {
               replace((params) => {
-                params.delete("accountingPeriodId");
+                params.delete(accountingPeriodParamName);
                 params.delete(searchParamName);
                 params.delete(balanceEventPageParamName);
               });
             }}
             disabled={
-              !searchParams.has("accountingPeriodId") &&
+              !searchParams.has(accountingPeriodParamName) &&
               (searchParams.get(searchParamName) ?? "").trim() === ""
             }
           >

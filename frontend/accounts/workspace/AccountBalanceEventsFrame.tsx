@@ -3,6 +3,7 @@
 import { Box, Button } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountBalanceEvent } from "@/accounts/types";
+import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
 import { BalanceEventType } from "@/framework/data/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
@@ -12,6 +13,7 @@ import ListFrame from "@/framework/listframe/ListFrame";
 import dayjs from "dayjs";
 import { formatAccountBalanceEventType } from "@/accounts/workspace/helpers";
 import { formatCurrency } from "@/framework/currencyHelpers";
+import nameof from "@/framework/data/nameof";
 import routes from "@/transactions/routes";
 
 /**
@@ -130,8 +132,7 @@ const AccountBalanceEventsFrame = function ({
         }
         data={data}
         totalCount={totalCount}
-        searchParamName="balanceEventSearch"
-        pageParamName="balanceEventPage"
+        pageParamName={nameof<AccountWorkspaceSearchParams>("balanceEventPage")}
         onRowClick={(balanceEvent) => {
           router.push(
             routes.workspaceDetail(balanceEvent.transactionId, {

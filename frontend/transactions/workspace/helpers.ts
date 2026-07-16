@@ -1,6 +1,8 @@
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
+import nameof from "@/framework/data/nameof";
 
 /**
  * Gets the default accounting period from a list of accounting periods.
@@ -33,7 +35,10 @@ const redirectWithSelectedTransaction = function (
 ): string {
   const [pathname, search = ""] = redirectUrl.split("?");
   const params = new URLSearchParams(search);
-  params.set("selectedTransactionId", transactionId);
+  params.set(
+    nameof<TransactionWorkspaceSearchParams>("selectedTransactionId"),
+    transactionId,
+  );
   const query = params.toString();
   return query === ""
     ? `${pathname}/${transactionId}`

@@ -39,6 +39,9 @@ import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParam } from "@/framework/routes/helpers";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
+/**
+ * Search parameters for the GoalTrends component.
+ */
 interface GoalTrendsSearchParams {
   sort?: string;
   page?: number | string | null;
@@ -51,6 +54,9 @@ interface GoalTrendsSearchParams {
   view?: GoalTrendsView;
 }
 
+/**
+ * Props for the GoalTrends component.
+ */
 interface GoalTrendsProps {
   readonly searchParams: Promise<GoalTrendsSearchParams>;
 }

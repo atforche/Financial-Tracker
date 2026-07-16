@@ -172,7 +172,6 @@ const AccountingPeriodTrendsListFrame = function ({
       getId={(accountingPeriod) => accountingPeriod.id}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      searchParamName="search"
       pageParamName={pageParamName}
       onRowClick={(accountingPeriod: AccountingPeriodWithBalance): void => {
         setAccountingPeriodFilter(accountingPeriod);

@@ -6,6 +6,7 @@ import {
 } from "@/accounts/types";
 import { Box, Button, IconButton } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { AccountTrendsSearchParams } from "@/accounts/trends/AccountTrends";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import { BalanceEventType } from "@/framework/data/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -14,6 +15,7 @@ import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import formatShortDate from "@/framework/formatShortDate";
+import nameof from "@/framework/data/nameof";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -42,15 +44,19 @@ const AccountTrendsBalanceEventListFrame = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sortParamName = "balanceEventSort";
-  const pageParamName = "balanceEventPage";
-  const accountTypeParamName = "accountType";
-  const accountNameParamName = "accountName";
-  const modeParamName = "mode";
-  const startAccountingPeriodIdParamName = "startAccountingPeriodId";
-  const endAccountingPeriodIdParamName = "endAccountingPeriodId";
-  const startDateParamName = "startDate";
-  const endDateParamName = "endDate";
+  const sortParamName = nameof<AccountTrendsSearchParams>("balanceEventSort");
+  const pageParamName = nameof<AccountTrendsSearchParams>("balanceEventPage");
+  const accountTypeParamName = nameof<AccountTrendsSearchParams>("accountType");
+  const accountNameParamName = nameof<AccountTrendsSearchParams>("accountName");
+  const modeParamName = nameof<AccountTrendsSearchParams>("mode");
+  const startAccountingPeriodIdParamName = nameof<AccountTrendsSearchParams>(
+    "startAccountingPeriodId",
+  );
+  const endAccountingPeriodIdParamName = nameof<AccountTrendsSearchParams>(
+    "endAccountingPeriodId",
+  );
+  const startDateParamName = nameof<AccountTrendsSearchParams>("startDate");
+  const endDateParamName = nameof<AccountTrendsSearchParams>("endDate");
 
   const updateParams = useSearchParamUpdater([pageParamName]);
 
@@ -193,7 +199,6 @@ const AccountTrendsBalanceEventListFrame = function ({
       }
       data={data ?? null}
       totalCount={totalCount ?? null}
-      searchParamName="balanceEventSearch"
       pageParamName={pageParamName}
       hasActiveFilters={hasActiveFilters}
       onRowClick={(balanceEvent) => {

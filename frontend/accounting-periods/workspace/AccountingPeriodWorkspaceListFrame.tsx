@@ -5,11 +5,13 @@ import {
   AccountingPeriodWithBalanceSort,
 } from "@/accounting-periods/types";
 import { Button, Checkbox } from "@mui/material";
+import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
+import nameof from "@/framework/data/nameof";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
@@ -33,13 +35,15 @@ const AccountingPeriodWorkspaceListFrame = function ({
 }: AccountingPeriodWorkspaceListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const sortParamName = "sort";
-  const pageParamName = "page";
-  const selectedAccountingPeriodIdParamName = "selectedAccountingPeriodId";
-  const actionParamName = "action";
-  const yearParamName = "years";
-  const monthParamName = "months";
-
+  const sortParamName = nameof<AccountingPeriodWorkspaceSearchParams>("sort");
+  const pageParamName = nameof<AccountingPeriodWorkspaceSearchParams>("page");
+  const selectedAccountingPeriodIdParamName =
+    nameof<AccountingPeriodWorkspaceSearchParams>("selectedAccountingPeriodId");
+  const actionParamName =
+    nameof<AccountingPeriodWorkspaceSearchParams>("action");
+  const yearParamName = nameof<AccountingPeriodWorkspaceSearchParams>("years");
+  const monthParamName =
+    nameof<AccountingPeriodWorkspaceSearchParams>("months");
   const updateParams = useSearchParamUpdater([]);
 
   const setSort = function (

@@ -5,12 +5,14 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { BalanceEventType } from "@/framework/data/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { GoalBalanceEvent } from "@/goals/types";
+import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import Link from "next/link";
 import ListFrame from "@/framework/listframe/ListFrame";
 import dayjs from "dayjs";
 import { formatCurrency } from "@/framework/currencyHelpers";
+import nameof from "@/framework/data/nameof";
 import routes from "@/transactions/routes";
 
 /**
@@ -121,8 +123,7 @@ const GoalBalanceEventsFrame = function ({
         }
         data={data}
         totalCount={totalCount}
-        searchParamName="balanceEventSearch"
-        pageParamName="balanceEventPage"
+        pageParamName={nameof<GoalWorkspaceSearchParams>("balanceEventPage")}
         onRowClick={(balanceEvent) => {
           router.push(
             routes.workspaceDetail(balanceEvent.transactionId, {

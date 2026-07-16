@@ -15,10 +15,12 @@ import {
   transactionTypeValues,
 } from "@/transactions/trends/transactionTypeFilter";
 import AccountTrendsAccountNameFilter from "@/accounts/trends/AccountTrendsAccountNameFilter";
+import type { CurrentTransactionsSearchParams } from "@/transactions/current/CurrentTransactions";
 import FundTrendsFundNameFilter from "@/funds/trends/FundTrendsFundNameFilter";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import type { TransactionType } from "@/transactions/types";
+import nameof from "@/framework/data/nameof";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -41,11 +43,15 @@ const CurrentTransactionsFilter = function ({
 }: CurrentTransactionsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const unpostedTransactionPageParamName = "unpostedTransactionPage";
-  const postedTransactionPageParamName = "postedTransactionPage";
-  const transactionTypeParamName = "transactionType";
-  const accountNameParamName = "accountName";
-  const fundNameParamName = "fundName";
+  const unpostedTransactionPageParamName =
+    nameof<CurrentTransactionsSearchParams>("unpostedTransactionPage");
+  const postedTransactionPageParamName =
+    nameof<CurrentTransactionsSearchParams>("postedTransactionPage");
+  const transactionTypeParamName =
+    nameof<CurrentTransactionsSearchParams>("transactionType");
+  const accountNameParamName =
+    nameof<CurrentTransactionsSearchParams>("accountName");
+  const fundNameParamName = nameof<CurrentTransactionsSearchParams>("fundName");
 
   const currentTransactionTypes = normalizeTransactionTypes(
     searchParams.getAll(transactionTypeParamName),

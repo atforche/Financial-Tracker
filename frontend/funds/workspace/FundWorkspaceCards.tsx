@@ -8,6 +8,7 @@ import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace"
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import { formatCurrency } from "@/framework/currencyHelpers";
+import nameof from "@/framework/data/nameof";
 import routes from "@/funds/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
@@ -19,8 +20,6 @@ interface FundWorkspaceCardsProps {
   readonly isInOnboardingMode: boolean;
 }
 
-const searchParamName = "search";
-
 /**
  * Displays the fund workspace as a collection of clickable cards.
  */
@@ -30,6 +29,8 @@ const FundWorkspaceCards = function ({
 }: FundWorkspaceCardsProps): JSX.Element {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const searchParamName = nameof<FundWorkspaceSearchParams>("search");
   const hasSearch = (searchParams.get(searchParamName) ?? "").trim() !== "";
   const funds = data ?? [];
   const updateParams = useSearchParamUpdater([]);

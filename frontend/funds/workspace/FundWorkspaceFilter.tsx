@@ -1,8 +1,10 @@
 "use client";
 
 import { Button, Paper, Stack, Typography } from "@mui/material";
+import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
+import nameof from "@/framework/data/nameof";
 import routes from "@/funds/routes";
 
 /**
@@ -45,7 +47,9 @@ const FundWorkspaceFilter = function ({
           flexWrap={{ xs: "wrap", md: "nowrap" }}
           alignItems={{ xs: "stretch", md: "center" }}
         >
-          <SearchBar searchParamName="search" pageParamName="page" />
+          <SearchBar
+            searchParamName={nameof<FundWorkspaceSearchParams>("search")}
+          />
           <Button variant="contained" href={addFundHref} sx={{ flexShrink: 0 }}>
             {isInOnboardingMode ? "Onboard fund" : "Create fund"}
           </Button>

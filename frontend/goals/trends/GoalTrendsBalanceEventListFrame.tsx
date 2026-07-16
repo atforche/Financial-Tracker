@@ -10,11 +10,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import { GoalBalanceEventSort } from "@/goals/types";
+import type { GoalTrendsSearchParams } from "@/goals/trends/GoalTrends";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import formatShortDate from "@/framework/formatShortDate";
+import nameof from "@/framework/data/nameof";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -39,12 +41,16 @@ const GoalTrendsBalanceEventListFrame = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sortParamName = "balanceEventSort";
-  const pageParamName = "balanceEventPage";
-  const goalTypeParamName = "goalType";
-  const fundNameParamName = "fundName";
-  const startAccountingPeriodIdParamName = "startAccountingPeriodId";
-  const endAccountingPeriodIdParamName = "endAccountingPeriodId";
+  const sortParamName = nameof<GoalTrendsSearchParams>("balanceEventSort");
+  const pageParamName = nameof<GoalTrendsSearchParams>("balanceEventPage");
+  const goalTypeParamName = nameof<GoalTrendsSearchParams>("goalType");
+  const fundNameParamName = nameof<GoalTrendsSearchParams>("fundName");
+  const startAccountingPeriodIdParamName = nameof<GoalTrendsSearchParams>(
+    "startAccountingPeriodId",
+  );
+  const endAccountingPeriodIdParamName = nameof<GoalTrendsSearchParams>(
+    "endAccountingPeriodId",
+  );
 
   const updateParams = useSearchParamUpdater([pageParamName]);
 
@@ -157,7 +163,6 @@ const GoalTrendsBalanceEventListFrame = function ({
       getId={(balanceEvent) => balanceEvent.transactionId}
       data={data ?? null}
       totalCount={totalCount ?? null}
-      searchParamName="balanceEventSearch"
       pageParamName={pageParamName}
       onRowClick={openTransactionWorkspace}
       hasActiveFilters={hasActiveFilters}
@@ -179,7 +184,7 @@ const GoalTrendsBalanceEventListFrame = function ({
                   params.delete(key);
                 });
                 if (view !== defaultGoalTrendsView) {
-                  params.set("view", view);
+                  params.set(nameof<GoalTrendsSearchParams>("view"), view);
                 }
               });
             }}
@@ -204,7 +209,7 @@ const GoalTrendsBalanceEventListFrame = function ({
                   params.delete(key);
                 });
                 if (view !== defaultGoalTrendsView) {
-                  params.set("view", view);
+                  params.set(nameof<GoalTrendsSearchParams>("view"), view);
                 }
               });
             }}

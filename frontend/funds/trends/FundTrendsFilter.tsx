@@ -13,8 +13,10 @@ import {
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import FundTrendsFundNameFilter from "@/funds/trends/FundTrendsFundNameFilter";
+import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
+import nameof from "@/framework/data/nameof";
 import { setTrendRangeMode } from "@/framework/routes/trendRange";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
@@ -49,13 +51,17 @@ const FundTrendsFilter = function ({
 }: FundTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const pageParamName = "page";
-  const modeParamName = "mode";
-  const fundNameParamName = "fundName";
-  const startAccountingPeriodIdParamName = "startAccountingPeriodId";
-  const endAccountingPeriodIdParamName = "endAccountingPeriodId";
-  const startDateParamName = "startDate";
-  const endDateParamName = "endDate";
+  const pageParamName = nameof<FundTrendsSearchParams>("page");
+  const modeParamName = nameof<FundTrendsSearchParams>("mode");
+  const fundNameParamName = nameof<FundTrendsSearchParams>("fundName");
+  const startAccountingPeriodIdParamName = nameof<FundTrendsSearchParams>(
+    "startAccountingPeriodId",
+  );
+  const endAccountingPeriodIdParamName = nameof<FundTrendsSearchParams>(
+    "endAccountingPeriodId",
+  );
+  const startDateParamName = nameof<FundTrendsSearchParams>("startDate");
+  const endDateParamName = nameof<FundTrendsSearchParams>("endDate");
 
   const currentMode: FundsTrendsFilterMode =
     searchParams.get(modeParamName) === "accounting-period"

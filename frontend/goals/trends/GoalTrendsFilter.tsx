@@ -24,8 +24,10 @@ import {
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import GoalTrendsGoalTypeFilter from "@/goals/trends/GoalTrendsGoalTypeFilter";
+import type { GoalTrendsSearchParams } from "@/goals/trends/GoalTrends";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
+import nameof from "@/framework/data/nameof";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -54,15 +56,21 @@ const GoalTrendsFilter = function ({
 }: GoalTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const pageParamName = "page";
-  const balanceEventPageParamName = "balanceEventPage";
-  const sortParamName = "sort";
-  const balanceEventSortParamName = "balanceEventSort";
-  const viewParamName = "view";
-  const goalTypeParamName = "goalType";
-  const fundNameParamName = "fundName";
-  const startAccountingPeriodIdParamName = "startAccountingPeriodId";
-  const endAccountingPeriodIdParamName = "endAccountingPeriodId";
+  const pageParamName = nameof<GoalTrendsSearchParams>("page");
+  const balanceEventPageParamName =
+    nameof<GoalTrendsSearchParams>("balanceEventPage");
+  const sortParamName = nameof<GoalTrendsSearchParams>("sort");
+  const balanceEventSortParamName =
+    nameof<GoalTrendsSearchParams>("balanceEventSort");
+  const viewParamName = nameof<GoalTrendsSearchParams>("view");
+  const goalTypeParamName = nameof<GoalTrendsSearchParams>("goalType");
+  const fundNameParamName = nameof<GoalTrendsSearchParams>("fundName");
+  const startAccountingPeriodIdParamName = nameof<GoalTrendsSearchParams>(
+    "startAccountingPeriodId",
+  );
+  const endAccountingPeriodIdParamName = nameof<GoalTrendsSearchParams>(
+    "endAccountingPeriodId",
+  );
 
   const currentGoalTypes = normalizeGoalTypes(
     searchParams.getAll(goalTypeParamName),

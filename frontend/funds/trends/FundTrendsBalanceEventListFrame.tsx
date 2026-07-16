@@ -6,11 +6,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import { BalanceEventType } from "@/framework/data/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
+import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import formatShortDate from "@/framework/formatShortDate";
+import nameof from "@/framework/data/nameof";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -39,14 +41,18 @@ const FundTrendsBalanceEventListFrame = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sortParamName = "balanceEventSort";
-  const pageParamName = "balanceEventPage";
-  const fundNameParamName = "fundName";
-  const modeParamName = "mode";
-  const startAccountingPeriodIdParamName = "startAccountingPeriodId";
-  const endAccountingPeriodIdParamName = "endAccountingPeriodId";
-  const startDateParamName = "startDate";
-  const endDateParamName = "endDate";
+  const sortParamName = nameof<FundTrendsSearchParams>("balanceEventSort");
+  const pageParamName = nameof<FundTrendsSearchParams>("balanceEventPage");
+  const fundNameParamName = nameof<FundTrendsSearchParams>("fundName");
+  const modeParamName = nameof<FundTrendsSearchParams>("mode");
+  const startAccountingPeriodIdParamName = nameof<FundTrendsSearchParams>(
+    "startAccountingPeriodId",
+  );
+  const endAccountingPeriodIdParamName = nameof<FundTrendsSearchParams>(
+    "endAccountingPeriodId",
+  );
+  const startDateParamName = nameof<FundTrendsSearchParams>("startDate");
+  const endDateParamName = nameof<FundTrendsSearchParams>("endDate");
 
   const updateParams = useSearchParamUpdater([pageParamName]);
 
@@ -188,7 +194,6 @@ const FundTrendsBalanceEventListFrame = function ({
       }
       data={data ?? null}
       totalCount={totalCount ?? null}
-      searchParamName="balanceEventSearch"
       pageParamName={pageParamName}
       hasActiveFilters={hasActiveFilters}
       onRowClick={(balanceEvent) => {

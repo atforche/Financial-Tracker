@@ -1,13 +1,14 @@
 "use client";
 
-import { Box, ButtonBase, Stack, Typography } from "@mui/material";
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
+import { Box, ButtonBase, Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import Frame from "@/framework/view/Frame";
 import GoalProgress from "@/goals/workspace/GoalProgress";
 import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
+import nameof from "@/framework/data/nameof";
 import routes from "@/goals/routes";
 import { useSearchParams } from "next/navigation";
 
@@ -29,7 +30,11 @@ const GoalWorkspaceCards = function ({
   spendingGoals,
 }: GoalWorkspaceCardsProps): JSX.Element {
   const searchParams = useSearchParams();
-  const search = (searchParams.get("search") ?? "").trim().toLowerCase();
+  const search = (
+    searchParams.get(nameof<GoalWorkspaceSearchParams>("search")) ?? ""
+  )
+    .trim()
+    .toLowerCase();
   const funds = Array.from(
     new Map(
       [...assignmentGoals, ...spendingGoals].map((goal) => [
@@ -72,7 +77,9 @@ const GoalWorkspaceCards = function ({
             : { accountingPeriodId: accountingPeriod.id }),
           ...(search === "" ? {} : { search }),
         };
-        const fundIds = searchParams.getAll("fundIds");
+        const fundIds = searchParams.getAll(
+          nameof<GoalWorkspaceSearchParams>("fundIds"),
+        );
         if (fundIds.length > 0) {
           detailSearchParams.fundIds = fundIds;
         }
