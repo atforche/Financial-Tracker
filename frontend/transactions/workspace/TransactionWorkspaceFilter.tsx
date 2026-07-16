@@ -1,18 +1,11 @@
 "use client";
 
-import {
-  Autocomplete,
-  Button,
-  Checkbox,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
+import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -136,170 +129,142 @@ const TransactionWorkspaceFilter = function ({
   };
 
   return (
-    <Paper
-      sx={{
-        position: "sticky",
-        top: 10,
-        zIndex: (theme) => theme.zIndex.appBar - 1,
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 3,
-        bgcolor: "background.paper",
-        p: { xs: 2, md: 2.5 },
-      }}
-    >
-      <Stack spacing={2}>
-        <Stack spacing={0.5}>
-          <Typography variant="h5">Transactions Workspace</Typography>
-        </Stack>
-        <Stack
-          direction="row"
-          spacing={1.5}
-          useFlexGap
-          flexWrap="wrap"
-          alignItems={{ xs: "stretch", md: "center" }}
-        >
-          <Autocomplete
-            multiple
-            disableCloseOnSelect
-            size="small"
-            options={[...accountingPeriods]}
-            value={[...currentAccountingPeriods]}
-            disabled={accountingPeriods.length === 0}
-            limitTags={1}
-            sx={sharedAutocompleteSx}
-            noOptionsText={
-              accountingPeriods.length === 0
-                ? "No accounting periods available"
-                : "No accounting periods found"
-            }
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-            slotProps={{
-              paper: {
-                sx: {
-                  "& .MuiAutocomplete-listbox": {
-                    maxHeight: 320,
-                  },
-                },
+    <PageFilterFrame title="Transactions Workspace">
+      <Autocomplete
+        multiple
+        disableCloseOnSelect
+        size="small"
+        options={[...accountingPeriods]}
+        value={[...currentAccountingPeriods]}
+        disabled={accountingPeriods.length === 0}
+        limitTags={1}
+        sx={sharedAutocompleteSx}
+        noOptionsText={
+          accountingPeriods.length === 0
+            ? "No accounting periods available"
+            : "No accounting periods found"
+        }
+        isOptionEqualToValue={(option, value) => option.id === value.id}
+        slotProps={{
+          paper: {
+            sx: {
+              "& .MuiAutocomplete-listbox": {
+                maxHeight: 320,
               },
-            }}
-            onChange={(_, nextAccountingPeriods) => {
-              handleAccountingPeriodChange(nextAccountingPeriods);
-            }}
-            getOptionLabel={(accountingPeriod) => accountingPeriod.name}
-            renderOption={(props, option, { selected }) => (
-              <li {...props}>
-                <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-                {option.name}
-              </li>
-            )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Accounting periods"
-                {...(currentAccountingPeriods.length === 0
-                  ? { placeholder: "All accounting periods" }
-                  : {})}
-              />
-            )}
+            },
+          },
+        }}
+        onChange={(_, nextAccountingPeriods) => {
+          handleAccountingPeriodChange(nextAccountingPeriods);
+        }}
+        getOptionLabel={(accountingPeriod) => accountingPeriod.name}
+        renderOption={(props, option, { selected }) => (
+          <li {...props}>
+            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
+            {option.name}
+          </li>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Accounting periods"
+            {...(currentAccountingPeriods.length === 0
+              ? { placeholder: "All accounting periods" }
+              : {})}
           />
-          <Autocomplete
-            multiple
-            disableCloseOnSelect
-            size="small"
-            options={[...accounts]}
-            value={[...currentAccounts]}
-            disabled={accounts.length === 0}
-            limitTags={1}
-            sx={sharedAutocompleteSx}
-            noOptionsText={
-              accounts.length === 0
-                ? "No accounts available"
-                : "No accounts found"
-            }
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-            slotProps={{
-              paper: {
-                sx: {
-                  "& .MuiAutocomplete-listbox": {
-                    maxHeight: 320,
-                  },
-                },
+        )}
+      />
+      <Autocomplete
+        multiple
+        disableCloseOnSelect
+        size="small"
+        options={[...accounts]}
+        value={[...currentAccounts]}
+        disabled={accounts.length === 0}
+        limitTags={1}
+        sx={sharedAutocompleteSx}
+        noOptionsText={
+          accounts.length === 0 ? "No accounts available" : "No accounts found"
+        }
+        isOptionEqualToValue={(option, value) => option.id === value.id}
+        slotProps={{
+          paper: {
+            sx: {
+              "& .MuiAutocomplete-listbox": {
+                maxHeight: 320,
               },
-            }}
-            onChange={(_, nextAccounts) => {
-              handleAccountChange(nextAccounts);
-            }}
-            getOptionLabel={(account) => account.name}
-            renderOption={(props, option, { selected }) => (
-              <li {...props}>
-                <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-                {option.name}
-              </li>
-            )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Accounts"
-                {...(currentAccounts.length === 0
-                  ? { placeholder: "All accounts" }
-                  : {})}
-              />
-            )}
+            },
+          },
+        }}
+        onChange={(_, nextAccounts) => {
+          handleAccountChange(nextAccounts);
+        }}
+        getOptionLabel={(account) => account.name}
+        renderOption={(props, option, { selected }) => (
+          <li {...props}>
+            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
+            {option.name}
+          </li>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Accounts"
+            {...(currentAccounts.length === 0
+              ? { placeholder: "All accounts" }
+              : {})}
           />
-          <Autocomplete
-            multiple
-            disableCloseOnSelect
-            size="small"
-            options={[...funds]}
-            value={[...currentFunds]}
-            disabled={funds.length === 0}
-            limitTags={1}
-            sx={sharedAutocompleteSx}
-            noOptionsText={
-              funds.length === 0 ? "No funds available" : "No funds found"
-            }
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-            slotProps={{
-              paper: {
-                sx: {
-                  "& .MuiAutocomplete-listbox": {
-                    maxHeight: 320,
-                  },
-                },
+        )}
+      />
+      <Autocomplete
+        multiple
+        disableCloseOnSelect
+        size="small"
+        options={[...funds]}
+        value={[...currentFunds]}
+        disabled={funds.length === 0}
+        limitTags={1}
+        sx={sharedAutocompleteSx}
+        noOptionsText={
+          funds.length === 0 ? "No funds available" : "No funds found"
+        }
+        isOptionEqualToValue={(option, value) => option.id === value.id}
+        slotProps={{
+          paper: {
+            sx: {
+              "& .MuiAutocomplete-listbox": {
+                maxHeight: 320,
               },
-            }}
-            onChange={(_, nextFunds) => {
-              handleFundChange(nextFunds);
-            }}
-            getOptionLabel={(fund) => fund.name}
-            renderOption={(props, option, { selected }) => (
-              <li {...props}>
-                <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-                {option.name}
-              </li>
-            )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Funds"
-                {...(currentFunds.length === 0
-                  ? { placeholder: "All funds" }
-                  : {})}
-              />
-            )}
+            },
+          },
+        }}
+        onChange={(_, nextFunds) => {
+          handleFundChange(nextFunds);
+        }}
+        getOptionLabel={(fund) => fund.name}
+        renderOption={(props, option, { selected }) => (
+          <li {...props}>
+            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
+            {option.name}
+          </li>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Funds"
+            {...(currentFunds.length === 0 ? { placeholder: "All funds" } : {})}
           />
-          <Button
-            variant="outlined"
-            onClick={clearView}
-            disabled={!hasActiveView}
-            sx={{ flexShrink: 0 }}
-          >
-            Reset filters
-          </Button>
-        </Stack>
-      </Stack>
-    </Paper>
+        )}
+      />
+      <Button
+        variant="outlined"
+        onClick={clearView}
+        disabled={!hasActiveView}
+        sx={{ flexShrink: 0 }}
+      >
+        Reset filters
+      </Button>
+    </PageFilterFrame>
   );
 };
 

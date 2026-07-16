@@ -1,9 +1,12 @@
 "use client";
 
-import { Button, Paper, Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import AccountingPeriodFilter from "@/accounting-periods/AccountingPeriodFilter";
+import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
+import type { AccountingPeriodTrendsSearchParams } from "@/accounting-periods/trends/AccountingPeriodTrends";
+import { Button } from "@mui/material";
 import type { JSX } from "react";
+import PageFilterFrame from "@/framework/view/PageFilterFrame";
+import nameof from "@/framework/data/nameof";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -26,10 +29,11 @@ const AccountingPeriodTrendsFilter = function ({
 }: AccountingPeriodTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const pageParamName = "page";
-  const modeParamName = "mode";
-  const startAccountingPeriodIdParamName = "startAccountingPeriodId";
-  const endAccountingPeriodIdParamName = "endAccountingPeriodId";
+  const pageParamName = nameof<AccountingPeriodTrendsSearchParams>("page");
+  const startAccountingPeriodIdParamName =
+    nameof<AccountingPeriodTrendsSearchParams>("startAccountingPeriodId");
+  const endAccountingPeriodIdParamName =
+    nameof<AccountingPeriodTrendsSearchParams>("endAccountingPeriodId");
 
   const currentStartAccountingPeriodId =
     searchParams.get(startAccountingPeriodIdParamName) ??
@@ -40,59 +44,24 @@ const AccountingPeriodTrendsFilter = function ({
     defaultAccountingPeriodId ??
     "";
 
-  const accountingPeriodIndexes = new Map(
-    accountingPeriods.map((period, index) => [period.id, index]),
-  );
-
   const updateParams = useSearchParamUpdater([pageParamName]);
 
   const hasActiveView =
     currentStartAccountingPeriodId !== (defaultAccountingPeriodId ?? "") ||
     currentEndAccountingPeriodId !== (defaultAccountingPeriodId ?? "");
 
-  const handleStartAccountingPeriodChange = function (
-    nextStartAccountingPeriodId: string,
-  ): void {
-    const nextStartIndex =
-      accountingPeriodIndexes.get(nextStartAccountingPeriodId) ?? 0;
-    const currentEndIndex =
-      accountingPeriodIndexes.get(currentEndAccountingPeriodId) ??
-      nextStartIndex;
-    const nextEndAccountingPeriodId =
-      nextStartIndex > currentEndIndex
-        ? nextStartAccountingPeriodId
-        : currentEndAccountingPeriodId;
-
+  const handleAccountingPeriodRangeChange = function (range: {
+    readonly start: string;
+    readonly end: string;
+  }): void {
     updateParams((params) => {
-      params.set(modeParamName, "accounting-period");
-      params.set(startAccountingPeriodIdParamName, nextStartAccountingPeriodId);
-      params.set(endAccountingPeriodIdParamName, nextEndAccountingPeriodId);
-    });
-  };
-
-  const handleEndAccountingPeriodChange = function (
-    nextEndAccountingPeriodId: string,
-  ): void {
-    const nextEndIndex =
-      accountingPeriodIndexes.get(nextEndAccountingPeriodId) ?? 0;
-    const currentStartIndex =
-      accountingPeriodIndexes.get(currentStartAccountingPeriodId) ??
-      nextEndIndex;
-    const nextStartAccountingPeriodId =
-      nextEndIndex < currentStartIndex
-        ? nextEndAccountingPeriodId
-        : currentStartAccountingPeriodId;
-
-    updateParams((params) => {
-      params.set(modeParamName, "accounting-period");
-      params.set(startAccountingPeriodIdParamName, nextStartAccountingPeriodId);
-      params.set(endAccountingPeriodIdParamName, nextEndAccountingPeriodId);
+      params.set(startAccountingPeriodIdParamName, range.start);
+      params.set(endAccountingPeriodIdParamName, range.end);
     });
   };
 
   const clearView = function (): void {
     updateParams((params) => {
-      params.set(modeParamName, "accounting-period");
       if (defaultAccountingPeriodId !== null) {
         params.set(startAccountingPeriodIdParamName, defaultAccountingPeriodId);
         params.set(endAccountingPeriodIdParamName, defaultAccountingPeriodId);
@@ -104,54 +73,26 @@ const AccountingPeriodTrendsFilter = function ({
   };
 
   return (
-    <Paper
-      sx={{
-        position: "sticky",
-        top: 10,
-        zIndex: (theme) => theme.zIndex.appBar - 1,
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 3,
-        bgcolor: "background.paper",
-        p: { xs: 2, md: 2.5 },
-      }}
-    >
-      <Stack spacing={2}>
-        <Stack spacing={0.5}>
-          <Typography variant="h5">Accounting Period Trends</Typography>
-        </Stack>
-        <Stack
-          direction="row"
-          spacing={1.5}
-          useFlexGap
-          flexWrap="wrap"
-          alignItems={{ xs: "stretch", md: "center" }}
+    <PageFilterFrame
+      title="Accounting Period Trends"
+      actions={
+        <Button
+          variant="outlined"
+          onClick={clearView}
+          disabled={!hasActiveView}
         >
-          <AccountingPeriodFilter
-            accountingPeriods={accountingPeriods}
-            label="Start period"
-            value={currentStartAccountingPeriodId}
-            onChange={handleStartAccountingPeriodChange}
-            disabled={disabled}
-          />
-          <AccountingPeriodFilter
-            accountingPeriods={accountingPeriods}
-            label="End period"
-            value={currentEndAccountingPeriodId}
-            onChange={handleEndAccountingPeriodChange}
-            disabled={disabled}
-          />
-          <Button
-            variant="outlined"
-            onClick={clearView}
-            disabled={!hasActiveView}
-            sx={{ flexShrink: 0 }}
-          >
-            Reset filters
-          </Button>
-        </Stack>
-      </Stack>
-    </Paper>
+          Reset filters
+        </Button>
+      }
+    >
+      <AccountingPeriodRangeFilter
+        accountingPeriods={accountingPeriods}
+        startValue={currentStartAccountingPeriodId}
+        endValue={currentEndAccountingPeriodId}
+        onChange={handleAccountingPeriodRangeChange}
+        disabled={disabled}
+      />
+    </PageFilterFrame>
   );
 };
 

@@ -2,12 +2,9 @@
 
 import {
   Button,
-  Paper,
-  Stack,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
-  Typography,
 } from "@mui/material";
 import {
   normalizeAccountNames,
@@ -21,8 +18,9 @@ import AccountTrendsAccountNameFilter from "@/accounts/trends/AccountTrendsAccou
 import AccountTrendsAccountTypeFilter from "@/accounts/trends/AccountTrendsAccountTypeFilter";
 import type { AccountType } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import AccountingPeriodFilter from "@/accounting-periods/AccountingPeriodFilter";
+import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import type { JSX } from "react";
+import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import { setTrendRangeMode } from "@/framework/routes/trendRange";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
@@ -89,10 +87,6 @@ const AccountTrendsFilter = function ({
     searchParams.get(startDateParamName) ?? defaultStartDate;
   const currentEndDate = searchParams.get(endDateParamName) ?? defaultEndDate;
 
-  const accountingPeriodIndexes = new Map(
-    accountingPeriods.map((period, index) => [period.id, index]),
-  );
-
   const updateParams = useSearchParamUpdater([pageParamName]);
 
   const hasActiveView =
@@ -148,41 +142,13 @@ const AccountTrendsFilter = function ({
     });
   };
 
-  const handleStartAccountingPeriodChange = function (
-    nextStartAccountingPeriodId: string,
-  ): void {
-    const nextStartIndex =
-      accountingPeriodIndexes.get(nextStartAccountingPeriodId) ?? 0;
-    const currentEndIndex =
-      accountingPeriodIndexes.get(currentEndAccountingPeriodId) ??
-      nextStartIndex;
-    const nextEndAccountingPeriodId =
-      nextStartIndex > currentEndIndex
-        ? nextStartAccountingPeriodId
-        : currentEndAccountingPeriodId;
-
+  const handleAccountingPeriodRangeChange = function (range: {
+    readonly start: string;
+    readonly end: string;
+  }): void {
     updateParams((params) => {
-      params.set(startAccountingPeriodIdParamName, nextStartAccountingPeriodId);
-      params.set(endAccountingPeriodIdParamName, nextEndAccountingPeriodId);
-    });
-  };
-
-  const handleEndAccountingPeriodChange = function (
-    nextEndAccountingPeriodId: string,
-  ): void {
-    const nextEndIndex =
-      accountingPeriodIndexes.get(nextEndAccountingPeriodId) ?? 0;
-    const currentStartIndex =
-      accountingPeriodIndexes.get(currentStartAccountingPeriodId) ??
-      nextEndIndex;
-    const nextStartAccountingPeriodId =
-      nextEndIndex < currentStartIndex
-        ? nextEndAccountingPeriodId
-        : currentStartAccountingPeriodId;
-
-    updateParams((params) => {
-      params.set(startAccountingPeriodIdParamName, nextStartAccountingPeriodId);
-      params.set(endAccountingPeriodIdParamName, nextEndAccountingPeriodId);
+      params.set(startAccountingPeriodIdParamName, range.start);
+      params.set(endAccountingPeriodIdParamName, range.end);
     });
   };
 
@@ -234,116 +200,83 @@ const AccountTrendsFilter = function ({
   };
 
   return (
-    <Paper
-      sx={{
-        position: "sticky",
-        top: 10,
-        zIndex: (theme) => theme.zIndex.appBar - 1,
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 3,
-        bgcolor: "background.paper",
-        p: { xs: 2, md: 2.5 },
-      }}
-    >
-      <Stack spacing={2}>
-        <Stack spacing={0.5}>
-          <Typography variant="h5">Account Trends</Typography>
-        </Stack>
-        <Stack
-          direction="row"
-          spacing={1.5}
-          useFlexGap
-          flexWrap="wrap"
-          alignItems={{ xs: "stretch", md: "center" }}
+    <PageFilterFrame title="Account Trends">
+      <ToggleButtonGroup
+        exclusive
+        value={currentMode}
+        size="small"
+        disabled={disabled}
+        onChange={handleModeChange}
+        sx={{ flexShrink: 0 }}
+      >
+        <ToggleButton value="date">Dates</ToggleButton>
+        <ToggleButton
+          value="accounting-period"
+          disabled={defaultAccountingPeriodId === null}
         >
-          <ToggleButtonGroup
-            exclusive
-            value={currentMode}
+          Accounting periods
+        </ToggleButton>
+      </ToggleButtonGroup>
+      {currentMode === "accounting-period" ? (
+        <AccountingPeriodRangeFilter
+          accountingPeriods={accountingPeriods}
+          startValue={currentStartAccountingPeriodId}
+          endValue={currentEndAccountingPeriodId}
+          onChange={handleAccountingPeriodRangeChange}
+          disabled={disabled}
+        />
+      ) : (
+        <>
+          <TextField
             size="small"
+            label="Start date"
+            type="date"
+            value={currentStartDate}
+            onChange={handleStartDateChange}
             disabled={disabled}
-            onChange={handleModeChange}
-            sx={{ flexShrink: 0 }}
-          >
-            <ToggleButton value="date">Dates</ToggleButton>
-            <ToggleButton
-              value="accounting-period"
-              disabled={defaultAccountingPeriodId === null}
-            >
-              Accounting periods
-            </ToggleButton>
-          </ToggleButtonGroup>
-          {currentMode === "accounting-period" ? (
-            <>
-              <AccountingPeriodFilter
-                accountingPeriods={accountingPeriods}
-                label="Start period"
-                value={currentStartAccountingPeriodId}
-                onChange={handleStartAccountingPeriodChange}
-                disabled={disabled}
-              />
-              <AccountingPeriodFilter
-                accountingPeriods={accountingPeriods}
-                label="End period"
-                value={currentEndAccountingPeriodId}
-                onChange={handleEndAccountingPeriodChange}
-                disabled={disabled}
-              />
-            </>
-          ) : (
-            <>
-              <TextField
-                size="small"
-                label="Start date"
-                type="date"
-                value={currentStartDate}
-                onChange={handleStartDateChange}
-                disabled={disabled}
-                sx={sharedFieldSx}
-                slotProps={{
-                  inputLabel: {
-                    shrink: true,
-                  },
-                }}
-              />
-              <TextField
-                size="small"
-                label="End date"
-                type="date"
-                value={currentEndDate}
-                onChange={handleEndDateChange}
-                disabled={disabled}
-                sx={sharedFieldSx}
-                slotProps={{
-                  inputLabel: {
-                    shrink: true,
-                  },
-                }}
-              />
-            </>
-          )}
-          <AccountTrendsAccountTypeFilter
-            value={currentAccountTypes}
-            onChange={handleAccountTypeChange}
-            disabled={disabled}
+            sx={sharedFieldSx}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
+            }}
           />
-          <AccountTrendsAccountNameFilter
-            availableAccountNames={availableAccountNames}
-            value={currentAccountNames}
-            onChange={handleAccountNameChange}
+          <TextField
+            size="small"
+            label="End date"
+            type="date"
+            value={currentEndDate}
+            onChange={handleEndDateChange}
             disabled={disabled}
+            sx={sharedFieldSx}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
+            }}
           />
-          <Button
-            variant="outlined"
-            onClick={clearView}
-            disabled={!hasActiveView}
-            sx={{ flexShrink: 0 }}
-          >
-            Reset filters
-          </Button>
-        </Stack>
-      </Stack>
-    </Paper>
+        </>
+      )}
+      <AccountTrendsAccountTypeFilter
+        value={currentAccountTypes}
+        onChange={handleAccountTypeChange}
+        disabled={disabled}
+      />
+      <AccountTrendsAccountNameFilter
+        availableAccountNames={availableAccountNames}
+        value={currentAccountNames}
+        onChange={handleAccountNameChange}
+        disabled={disabled}
+      />
+      <Button
+        variant="outlined"
+        onClick={clearView}
+        disabled={!hasActiveView}
+        sx={{ flexShrink: 0 }}
+      >
+        Reset filters
+      </Button>
+    </PageFilterFrame>
   );
 };
 

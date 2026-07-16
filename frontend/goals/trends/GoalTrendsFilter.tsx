@@ -4,12 +4,9 @@ import {
   Autocomplete,
   Button,
   Checkbox,
-  Paper,
-  Stack,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
-  Typography,
 } from "@mui/material";
 import {
   type GoalTrendsGoalType,
@@ -25,9 +22,10 @@ import {
   shouldPersistGoalTypes,
 } from "@/goals/trends/goalTypeFilter";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import AccountingPeriodFilter from "@/accounting-periods/AccountingPeriodFilter";
+import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import GoalTrendsGoalTypeFilter from "@/goals/trends/GoalTrendsGoalTypeFilter";
 import type { JSX } from "react";
+import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -83,10 +81,6 @@ const GoalTrendsFilter = function ({
     defaultAccountingPeriodId ??
     "";
 
-  const accountingPeriodIndexes = new Map(
-    accountingPeriods.map((period, index) => [period.id, index]),
-  );
-
   const updateParams = useSearchParamUpdater([
     pageParamName,
     balanceEventPageParamName,
@@ -141,41 +135,13 @@ const GoalTrendsFilter = function ({
     });
   };
 
-  const handleStartAccountingPeriodChange = function (
-    nextStartAccountingPeriodId: string,
-  ): void {
-    const nextStartIndex =
-      accountingPeriodIndexes.get(nextStartAccountingPeriodId) ?? 0;
-    const currentEndIndex =
-      accountingPeriodIndexes.get(currentEndAccountingPeriodId) ??
-      nextStartIndex;
-    const nextEndAccountingPeriodId =
-      nextStartIndex > currentEndIndex
-        ? nextStartAccountingPeriodId
-        : currentEndAccountingPeriodId;
-
+  const handleAccountingPeriodRangeChange = function (range: {
+    readonly start: string;
+    readonly end: string;
+  }): void {
     updateParams((params) => {
-      params.set(startAccountingPeriodIdParamName, nextStartAccountingPeriodId);
-      params.set(endAccountingPeriodIdParamName, nextEndAccountingPeriodId);
-    });
-  };
-
-  const handleEndAccountingPeriodChange = function (
-    nextEndAccountingPeriodId: string,
-  ): void {
-    const nextEndIndex =
-      accountingPeriodIndexes.get(nextEndAccountingPeriodId) ?? 0;
-    const currentStartIndex =
-      accountingPeriodIndexes.get(currentStartAccountingPeriodId) ??
-      nextEndIndex;
-    const nextStartAccountingPeriodId =
-      nextEndIndex < currentStartIndex
-        ? nextEndAccountingPeriodId
-        : currentStartAccountingPeriodId;
-
-    updateParams((params) => {
-      params.set(startAccountingPeriodIdParamName, nextStartAccountingPeriodId);
-      params.set(endAccountingPeriodIdParamName, nextEndAccountingPeriodId);
+      params.set(startAccountingPeriodIdParamName, range.start);
+      params.set(endAccountingPeriodIdParamName, range.end);
     });
   };
 
@@ -191,120 +157,86 @@ const GoalTrendsFilter = function ({
   };
 
   return (
-    <Paper
-      sx={{
-        position: "sticky",
-        top: 10,
-        zIndex: (theme) => theme.zIndex.appBar - 1,
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 3,
-        bgcolor: "background.paper",
-        p: { xs: 2, md: 2.5 },
-      }}
+    <PageFilterFrame
+      title="Goal Trends"
+      headerContent={
+        <ToggleButtonGroup
+          exclusive
+          size="small"
+          value={view}
+          onChange={(_, nextValue: GoalTrendsView | null) => {
+            handleViewChange(nextValue);
+          }}
+        >
+          <ToggleButton value="assignment">Assignment</ToggleButton>
+          <ToggleButton value="spending">Spending</ToggleButton>
+        </ToggleButtonGroup>
+      }
     >
-      <Stack spacing={2}>
-        <Stack
-          direction={{ xs: "column", lg: "row" }}
-          spacing={1.5}
-          justifyContent="space-between"
-          alignItems={{ xs: "flex-start", lg: "center" }}
-        >
-          <Stack spacing={0.5}>
-            <Typography variant="h5">Goal Trends</Typography>
-          </Stack>
-          <ToggleButtonGroup
-            exclusive
-            size="small"
-            value={view}
-            onChange={(_, nextValue: GoalTrendsView | null) => {
-              handleViewChange(nextValue);
-            }}
-          >
-            <ToggleButton value="assignment">Assignment</ToggleButton>
-            <ToggleButton value="spending">Spending</ToggleButton>
-          </ToggleButtonGroup>
-        </Stack>
-        <Stack
-          direction="row"
-          spacing={1.5}
-          useFlexGap
-          flexWrap="wrap"
-          alignItems={{ xs: "stretch", md: "center" }}
-        >
-          <AccountingPeriodFilter
-            accountingPeriods={accountingPeriods}
-            label="Start period"
-            value={currentStartAccountingPeriodId}
-            onChange={handleStartAccountingPeriodChange}
-            disabled={disabled}
-          />
-          <AccountingPeriodFilter
-            accountingPeriods={accountingPeriods}
-            label="End period"
-            value={currentEndAccountingPeriodId}
-            onChange={handleEndAccountingPeriodChange}
-            disabled={disabled}
-          />
-          <GoalTrendsGoalTypeFilter
-            view={view}
-            value={currentGoalTypes}
-            onChange={handleGoalTypeChange}
-            disabled={disabled}
-          />
-          <Autocomplete
-            multiple
-            disableCloseOnSelect
-            size="small"
-            options={[...availableFundNames]}
-            value={[...currentFundNames]}
-            disabled={disabled || availableFundNames.length === 0}
-            limitTags={1}
-            sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
-            noOptionsText={
-              availableFundNames.length === 0
-                ? "No fund names available"
-                : "No fund names found"
-            }
-            slotProps={{
-              paper: {
-                sx: {
-                  "& .MuiAutocomplete-listbox": {
-                    maxHeight: 320,
-                  },
-                },
+      <AccountingPeriodRangeFilter
+        accountingPeriods={accountingPeriods}
+        startValue={currentStartAccountingPeriodId}
+        endValue={currentEndAccountingPeriodId}
+        onChange={handleAccountingPeriodRangeChange}
+        disabled={disabled}
+      />
+      <GoalTrendsGoalTypeFilter
+        view={view}
+        value={currentGoalTypes}
+        onChange={handleGoalTypeChange}
+        disabled={disabled}
+      />
+      <Autocomplete
+        multiple
+        disableCloseOnSelect
+        size="small"
+        options={[...availableFundNames]}
+        value={[...currentFundNames]}
+        disabled={disabled || availableFundNames.length === 0}
+        limitTags={1}
+        sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
+        noOptionsText={
+          availableFundNames.length === 0
+            ? "No fund names available"
+            : "No fund names found"
+        }
+        slotProps={{
+          paper: {
+            sx: {
+              "& .MuiAutocomplete-listbox": {
+                maxHeight: 320,
               },
-            }}
-            onChange={(_, nextFundNames) => {
-              handleFundNameChange(nextFundNames);
-            }}
-            renderOption={(props, option, { selected }) => (
-              <li {...props}>
-                <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-                {option}
-              </li>
-            )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Fund names"
-                {...(currentFundNames.length === 0
-                  ? { placeholder: "All fund names" }
-                  : {})}
-              />
-            )}
+            },
+          },
+        }}
+        onChange={(_, nextFundNames) => {
+          handleFundNameChange(nextFundNames);
+        }}
+        renderOption={(props, option, { selected }) => (
+          <li {...props}>
+            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
+            {option}
+          </li>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Fund names"
+            {...(currentFundNames.length === 0
+              ? { placeholder: "All fund names" }
+              : {})}
           />
-          <Button
-            variant="outlined"
-            onClick={clearView}
-            disabled={!hasActiveView}
-            sx={{ flexShrink: 0 }}
-          >
-            Reset filters
-          </Button>
-        </Stack>
-      </Stack>
-    </Paper>
+        )}
+      />
+      <Button
+        variant="outlined"
+        onClick={clearView}
+        disabled={!hasActiveView}
+        sx={{ flexShrink: 0 }}
+      >
+        Reset filters
+      </Button>
+    </PageFilterFrame>
   );
 };
 

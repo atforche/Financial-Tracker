@@ -1,16 +1,9 @@
 "use client";
 
-import {
-  Autocomplete,
-  Button,
-  Checkbox,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
+import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -125,132 +118,100 @@ const AccountingPeriodWorkspaceFilter = function ({
   };
 
   return (
-    <Paper
-      sx={{
-        position: "sticky",
-        top: 10,
-        zIndex: (theme) => theme.zIndex.appBar - 1,
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 3,
-        bgcolor: "background.paper",
-        p: { xs: 2, md: 2.5 },
-      }}
-    >
-      <Stack spacing={2}>
-        <Stack spacing={0.5}>
-          <Typography variant="h5">Accounting Periods Workspace</Typography>
-        </Stack>
-        <Stack
-          direction="row"
-          spacing={1.5}
-          useFlexGap
-          flexWrap="wrap"
-          alignItems={{ xs: "stretch", md: "center" }}
-        >
-          <Autocomplete
-            multiple
-            disableCloseOnSelect
-            size="small"
-            options={[...availableYears]}
-            value={[...currentYears]}
-            disabled={
-              firstAccountingPeriod === null || availableYears.length === 0
-            }
-            limitTags={1}
-            sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
-            noOptionsText={
-              availableYears.length === 0
-                ? "No years available"
-                : "No years found"
-            }
-            slotProps={{
-              paper: {
-                sx: {
-                  "& .MuiAutocomplete-listbox": {
-                    maxHeight: 320,
-                  },
-                },
+    <PageFilterFrame title="Accounting Periods Workspace">
+      <Autocomplete
+        multiple
+        disableCloseOnSelect
+        size="small"
+        options={[...availableYears]}
+        value={[...currentYears]}
+        disabled={firstAccountingPeriod === null || availableYears.length === 0}
+        limitTags={1}
+        sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
+        noOptionsText={
+          availableYears.length === 0 ? "No years available" : "No years found"
+        }
+        slotProps={{
+          paper: {
+            sx: {
+              "& .MuiAutocomplete-listbox": {
+                maxHeight: 320,
               },
-            }}
-            onChange={(_, nextYears) => {
-              handleYearChange(nextYears);
-            }}
-            getOptionLabel={(year) => year.toString()}
-            renderOption={(props, option, { selected }) => (
-              <li {...props}>
-                <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-                {option}
-              </li>
-            )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Years"
-                {...(currentYears.length === 0
-                  ? { placeholder: "All years" }
-                  : {})}
-              />
-            )}
+            },
+          },
+        }}
+        onChange={(_, nextYears) => {
+          handleYearChange(nextYears);
+        }}
+        getOptionLabel={(year) => year.toString()}
+        renderOption={(props, option, { selected }) => (
+          <li {...props}>
+            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
+            {option}
+          </li>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Years"
+            {...(currentYears.length === 0 ? { placeholder: "All years" } : {})}
           />
-          <Autocomplete
-            multiple
-            disableCloseOnSelect
-            size="small"
-            options={[...availableMonths]}
-            value={[...currentMonths]}
-            disabled={
-              firstAccountingPeriod === null || availableMonths.length === 0
-            }
-            limitTags={1}
-            sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
-            noOptionsText={
-              availableMonths.length === 0
-                ? "No months available"
-                : "No months found"
-            }
-            slotProps={{
-              paper: {
-                sx: {
-                  "& .MuiAutocomplete-listbox": {
-                    maxHeight: 320,
-                  },
-                },
+        )}
+      />
+      <Autocomplete
+        multiple
+        disableCloseOnSelect
+        size="small"
+        options={[...availableMonths]}
+        value={[...currentMonths]}
+        disabled={
+          firstAccountingPeriod === null || availableMonths.length === 0
+        }
+        limitTags={1}
+        sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
+        noOptionsText={
+          availableMonths.length === 0
+            ? "No months available"
+            : "No months found"
+        }
+        slotProps={{
+          paper: {
+            sx: {
+              "& .MuiAutocomplete-listbox": {
+                maxHeight: 320,
               },
-            }}
-            onChange={(_, nextMonths) => {
-              handleMonthChange(nextMonths);
-            }}
-            getOptionLabel={(month) =>
-              monthNames[month - 1] ?? month.toString()
-            }
-            renderOption={(props, option, { selected }) => (
-              <li {...props}>
-                <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-                {monthNames[option - 1] ?? option.toString()}
-              </li>
-            )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Months"
-                {...(currentMonths.length === 0
-                  ? { placeholder: "All months" }
-                  : {})}
-              />
-            )}
+            },
+          },
+        }}
+        onChange={(_, nextMonths) => {
+          handleMonthChange(nextMonths);
+        }}
+        getOptionLabel={(month) => monthNames[month - 1] ?? month.toString()}
+        renderOption={(props, option, { selected }) => (
+          <li {...props}>
+            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
+            {monthNames[option - 1] ?? option.toString()}
+          </li>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Months"
+            {...(currentMonths.length === 0
+              ? { placeholder: "All months" }
+              : {})}
           />
-          <Button
-            variant="outlined"
-            onClick={clearView}
-            disabled={!hasActiveView}
-            sx={{ flexShrink: 0 }}
-          >
-            Reset filters
-          </Button>
-        </Stack>
-      </Stack>
-    </Paper>
+        )}
+      />
+      <Button
+        variant="outlined"
+        onClick={clearView}
+        disabled={!hasActiveView}
+        sx={{ flexShrink: 0 }}
+      >
+        Reset filters
+      </Button>
+    </PageFilterFrame>
   );
 };
 

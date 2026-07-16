@@ -3,7 +3,7 @@
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import type { JSX } from "react";
-import { buildChartPoints } from "@/accounting-periods/trends/helpers";
+import { buildTrendChartPoints } from "@/accounting-periods/trends/helpers";
 
 /**
  * Props for the AccountingPeriodTrendChart component.
@@ -20,7 +20,7 @@ const AccountingPeriodTrendChart = function ({
 }: AccountingPeriodTrendChartProps): JSX.Element {
   return (
     <BalanceTrendChart
-      chartPoints={buildChartPoints(accountingPeriods ?? [])}
+      chartPoints={buildTrendChartPoints(accountingPeriods ?? [])}
       color="secondary"
       xAxisLabel="Accounting Period"
     />

@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Autocomplete,
-  Button,
-  Checkbox,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
 import {
   normalizeAccountNames,
   shouldPersistAccountNames,
@@ -25,7 +17,8 @@ import {
 import AccountTrendsAccountNameFilter from "@/accounts/trends/AccountTrendsAccountNameFilter";
 import FundTrendsFundNameFilter from "@/funds/trends/FundTrendsFundNameFilter";
 import type { JSX } from "react";
-import type { TransactionType } from "@/transactions/transaction";
+import PageFilterFrame from "@/framework/view/PageFilterFrame";
+import type { TransactionType } from "@/transactions/types";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -124,94 +117,69 @@ const CurrentTransactionsFilter = function ({
     shouldPersistFundNames(currentFundNames);
 
   return (
-    <Paper
-      sx={{
-        position: "sticky",
-        top: 10,
-        zIndex: (theme) => theme.zIndex.appBar - 1,
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 3,
-        bgcolor: "background.paper",
-        p: { xs: 2, md: 2.5 },
-      }}
+    <PageFilterFrame
+      title="Current Transactions"
+      description="Filter the live transaction snapshot by transaction type, account name, and fund name."
     >
-      <Stack spacing={2}>
-        <Stack spacing={0.5}>
-          <Typography variant="h5">Current Transactions</Typography>
-          <Typography color="text.secondary">
-            Filter the live transaction snapshot by transaction type, account
-            name, and fund name.
-          </Typography>
-        </Stack>
-        <Stack
-          direction="row"
-          spacing={1.5}
-          useFlexGap
-          flexWrap="wrap"
-          alignItems={{ xs: "stretch", md: "center" }}
-        >
-          <Autocomplete
-            multiple
-            disableCloseOnSelect
-            size="small"
-            options={[...transactionTypeValues]}
-            value={[...currentTransactionTypes]}
-            disabled={disabled}
-            limitTags={1}
-            sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
-            noOptionsText="No transaction types found"
-            slotProps={{
-              paper: {
-                sx: {
-                  "& .MuiAutocomplete-listbox": {
-                    maxHeight: 320,
-                  },
-                },
+      <Autocomplete
+        multiple
+        disableCloseOnSelect
+        size="small"
+        options={[...transactionTypeValues]}
+        value={[...currentTransactionTypes]}
+        disabled={disabled}
+        limitTags={1}
+        sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
+        noOptionsText="No transaction types found"
+        slotProps={{
+          paper: {
+            sx: {
+              "& .MuiAutocomplete-listbox": {
+                maxHeight: 320,
               },
-            }}
-            onChange={(_, nextTransactionTypes) => {
-              handleTransactionTypeChange(nextTransactionTypes);
-            }}
-            renderOption={(props, option, { selected }) => (
-              <li {...props}>
-                <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-                {option}
-              </li>
-            )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Transaction types"
-                {...(currentTransactionTypes.length === 0
-                  ? { placeholder: "All transaction types" }
-                  : {})}
-              />
-            )}
+            },
+          },
+        }}
+        onChange={(_, nextTransactionTypes) => {
+          handleTransactionTypeChange(nextTransactionTypes);
+        }}
+        renderOption={(props, option, { selected }) => (
+          <li {...props}>
+            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
+            {option}
+          </li>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Transaction types"
+            {...(currentTransactionTypes.length === 0
+              ? { placeholder: "All transaction types" }
+              : {})}
           />
-          <AccountTrendsAccountNameFilter
-            availableAccountNames={availableAccountNames}
-            value={currentAccountNames}
-            onChange={handleAccountNameChange}
-            disabled={disabled}
-          />
-          <FundTrendsFundNameFilter
-            availableFundNames={availableFundNames}
-            value={currentFundNames}
-            onChange={handleFundNameChange}
-            disabled={disabled}
-          />
-          <Button
-            variant="outlined"
-            onClick={clearView}
-            disabled={!hasActiveView}
-            sx={{ flexShrink: 0 }}
-          >
-            Reset filters
-          </Button>
-        </Stack>
-      </Stack>
-    </Paper>
+        )}
+      />
+      <AccountTrendsAccountNameFilter
+        availableAccountNames={availableAccountNames}
+        value={currentAccountNames}
+        onChange={handleAccountNameChange}
+        disabled={disabled}
+      />
+      <FundTrendsFundNameFilter
+        availableFundNames={availableFundNames}
+        value={currentFundNames}
+        onChange={handleFundNameChange}
+        disabled={disabled}
+      />
+      <Button
+        variant="outlined"
+        onClick={clearView}
+        disabled={!hasActiveView}
+        sx={{ flexShrink: 0 }}
+      >
+        Reset filters
+      </Button>
+    </PageFilterFrame>
   );
 };
 
