@@ -13,6 +13,10 @@ import {
   useRef,
   useState,
 } from "react";
+import {
+  accountingPeriodMonths,
+  formatAccountingPeriodMonth,
+} from "@/accounting-periods/helpers";
 import type { CreateAccountingPeriodRequest } from "@/accounting-periods/types";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import IntegerEntryField from "@/framework/forms/IntegerEntryField";
@@ -38,13 +42,10 @@ const CreateAccountingPeriodForm = function ({
   const [month, setMonth] = useState<number | null>(null);
   const formRef = useRef<HTMLDivElement | null>(null);
   const [state, action, pending] = useActionState(createAccountingPeriod, {});
-  const monthOptions: ComboBoxOption<number>[] = Array.from(
-    { length: 12 },
-    (_, index) => ({
-      label: new Date(2024, index, 1).toLocaleString("en", {
-        month: "long",
-      }),
-      value: index + 1,
+  const monthOptions: ComboBoxOption<number>[] = accountingPeriodMonths.map(
+    (accountingPeriodMonth) => ({
+      label: formatAccountingPeriodMonth(accountingPeriodMonth),
+      value: accountingPeriodMonth,
     }),
   );
   const selectedMonthOption =

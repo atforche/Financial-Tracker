@@ -1,6 +1,10 @@
 "use client";
 
 import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
+import {
+  normalizeStringSearchParams,
+  selectAvailableSearchParamValues,
+} from "@/framework/routes/helpers";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Fund } from "@/funds/types";
@@ -20,37 +24,6 @@ interface TransactionWorkspaceFilterProps {
   readonly funds: readonly Fund[];
 }
 
-const normalizeRequestedIds = function (
-  values: readonly string[],
-): readonly string[] {
-  const seenValues = new Set<string>();
-  const normalizedValues: string[] = [];
-
-  values.forEach((value) => {
-    const nextValue = value.trim();
-    if (nextValue === "" || seenValues.has(nextValue)) {
-      return;
-    }
-
-    seenValues.add(nextValue);
-    normalizedValues.push(nextValue);
-  });
-
-  return normalizedValues;
-};
-
-const normalizeSelectedItems = function <T extends { id: string }>(
-  values: readonly string[],
-  availableValues: readonly T[],
-): readonly T[] {
-  const selectedValues = new Set(values);
-  if (selectedValues.size === 0 || availableValues.length === 0) {
-    return [];
-  }
-
-  return availableValues.filter((value) => selectedValues.has(value.id));
-};
-
 /**
  * Renders the filter card for the Transaction workspace with accounting period, account, and fund filters.
  */
@@ -69,17 +42,23 @@ const TransactionWorkspaceFilter = function ({
     nameof<TransactionWorkspaceSearchParams>("accountIds");
   const fundParamName = nameof<TransactionWorkspaceSearchParams>("fundIds");
 
-  const currentAccountingPeriods = normalizeSelectedItems(
-    normalizeRequestedIds(searchParams.getAll(accountingPeriodParamName)),
+  const currentAccountingPeriods = selectAvailableSearchParamValues(
+    normalizeStringSearchParams(searchParams.getAll(accountingPeriodParamName)),
     accountingPeriods,
+    (value) => value,
+    (value) => value.id,
   );
-  const currentAccounts = normalizeSelectedItems(
-    normalizeRequestedIds(searchParams.getAll(accountParamName)),
+  const currentAccounts = selectAvailableSearchParamValues(
+    normalizeStringSearchParams(searchParams.getAll(accountParamName)),
     accounts,
+    (value) => value,
+    (value) => value.id,
   );
-  const currentFunds = normalizeSelectedItems(
-    normalizeRequestedIds(searchParams.getAll(fundParamName)),
+  const currentFunds = selectAvailableSearchParamValues(
+    normalizeStringSearchParams(searchParams.getAll(fundParamName)),
     funds,
+    (value) => value,
+    (value) => value.id,
   );
 
   const updateParams = useSearchParamUpdater([pageParamName]);

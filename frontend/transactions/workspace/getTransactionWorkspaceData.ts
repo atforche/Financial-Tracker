@@ -1,5 +1,9 @@
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  normalizeStringSearchParams,
+  toRepeatedSearchParams,
+} from "@/framework/routes/helpers";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { FundWithBalance } from "@/funds/types";
@@ -8,7 +12,6 @@ import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/
 import getApiClient from "@/framework/data/getApiClient";
 import getApiData from "@/framework/data/apiResponse";
 import { rowsPerPage } from "@/framework/listframe/Constants";
-import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 
 interface TransactionWorkspaceReferenceData {
   readonly openAccountingPeriods: AccountingPeriod[];
@@ -140,10 +143,15 @@ const getTransactionWorkspaceListData = async function (
   const { accountingPeriodIds, accountIds, fundIds, sort, page } = searchParams;
   const apiClient = getApiClient();
   const currentPage = normalizePageValue(page);
-  const normalizedAccountingPeriodIds =
-    toRepeatedSearchParams(accountingPeriodIds);
-  const normalizedAccountIds = toRepeatedSearchParams(accountIds);
-  const normalizedFundIds = toRepeatedSearchParams(fundIds);
+  const normalizedAccountingPeriodIds = normalizeStringSearchParams(
+    toRepeatedSearchParams(accountingPeriodIds),
+  );
+  const normalizedAccountIds = normalizeStringSearchParams(
+    toRepeatedSearchParams(accountIds),
+  );
+  const normalizedFundIds = normalizeStringSearchParams(
+    toRepeatedSearchParams(fundIds),
+  );
 
   const transactionsPromise = apiClient.GET("/transactions", {
     params: {

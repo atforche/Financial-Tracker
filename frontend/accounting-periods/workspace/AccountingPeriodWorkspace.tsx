@@ -4,6 +4,7 @@ import {
 } from "@/accounting-periods/types";
 import {
   compactSearchParams,
+  normalizeIntegerSearchParams,
   toRepeatedSearchParams,
 } from "@/framework/routes/helpers";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
@@ -50,8 +51,17 @@ const AccountingPeriodWorkspace = async function ({
   const { years, months, sort, page, selectedAccountingPeriodId, action } =
     await searchParams;
   const currentPage = normalizePageValue(page);
-  const normalizedYears = toRepeatedSearchParams(years);
-  const normalizedMonths = toRepeatedSearchParams(months);
+  const currentYear = new Date().getFullYear();
+  const normalizedYears = normalizeIntegerSearchParams(
+    toRepeatedSearchParams(years),
+    1,
+    currentYear,
+  );
+  const normalizedMonths = normalizeIntegerSearchParams(
+    toRepeatedSearchParams(months),
+    1,
+    12,
+  );
 
   const firstAccountingPeriodPromise = apiClient.GET("/accounting-periods", {
     params: {

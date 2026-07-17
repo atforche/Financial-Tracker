@@ -1,21 +1,17 @@
+import {
+  normalizeStringSearchParams,
+  selectAvailableSearchParamValues,
+} from "@/framework/routes/helpers";
+
 /**
  * Normalizes raw account-name values from the URL into a trimmed, unique list.
  */
 const normalizeRequestedAccountNames = function (
   values: readonly string[],
 ): readonly string[] {
-  const seenAccountNames = new Set<string>();
-  const normalizedAccountNames: string[] = [];
-  values.forEach((value) => {
-    const trimmedValue = value.trim();
-    const normalizedValue = trimmedValue.toLocaleLowerCase();
-    if (trimmedValue === "" || seenAccountNames.has(normalizedValue)) {
-      return;
-    }
-    seenAccountNames.add(normalizedValue);
-    normalizedAccountNames.push(trimmedValue);
-  });
-  return normalizedAccountNames;
+  return normalizeStringSearchParams(values, (value) =>
+    value.toLocaleLowerCase(),
+  );
 };
 
 /**
@@ -25,16 +21,11 @@ const normalizeAccountNames = function (
   values: readonly string[],
   availableAccountNames: readonly string[],
 ): readonly string[] {
-  const selectedAccountNames = new Set(
-    normalizeRequestedAccountNames(values).map((accountName) =>
-      accountName.toLocaleLowerCase(),
-    ),
-  );
-  if (selectedAccountNames.size === 0 || availableAccountNames.length === 0) {
-    return [];
-  }
-  return availableAccountNames.filter((accountName) =>
-    selectedAccountNames.has(accountName.toLocaleLowerCase()),
+  return selectAvailableSearchParamValues(
+    normalizeRequestedAccountNames(values),
+    availableAccountNames,
+    (accountName) => accountName.toLocaleLowerCase(),
+    (accountName) => accountName.toLocaleLowerCase(),
   );
 };
 

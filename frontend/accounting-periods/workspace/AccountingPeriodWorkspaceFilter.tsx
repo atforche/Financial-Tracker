@@ -1,6 +1,14 @@
 "use client";
 
 import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
+import {
+  accountingPeriodMonths,
+  formatAccountingPeriodMonth,
+} from "@/accounting-periods/helpers";
+import {
+  normalizeIntegerSearchParams,
+  selectAvailableSearchParamValues,
+} from "@/framework/routes/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import type { JSX } from "react";
@@ -35,60 +43,22 @@ const AccountingPeriodWorkspaceFilter = function ({
     { length: currentYear - firstAccountingPeriodYear + 1 },
     (_, index) => firstAccountingPeriodYear + index,
   );
-  const availableMonths = Array.from({ length: 12 }, (_, index) => index + 1);
-  const monthNames = Array.from({ length: 12 }, (_, index) =>
-    new Date(2024, index, 1).toLocaleString("en", { month: "long" }),
-  );
 
-  const normalizeRequestedNumberValues = function (
-    values: readonly string[],
-    minimumValue: number,
-    maximumValue: number,
-  ): readonly number[] {
-    const seenValues = new Set<number>();
-    const normalizedValues: number[] = [];
-
-    values.forEach((value) => {
-      const parsedValue = Number.parseInt(value.trim(), 10);
-      if (
-        !Number.isFinite(parsedValue) ||
-        parsedValue < minimumValue ||
-        parsedValue > maximumValue ||
-        seenValues.has(parsedValue)
-      ) {
-        return;
-      }
-
-      seenValues.add(parsedValue);
-      normalizedValues.push(parsedValue);
-    });
-
-    return normalizedValues;
-  };
-
-  const normalizeSelectedNumberValues = function (
-    values: readonly number[],
-    availableValues: readonly number[],
-  ): readonly number[] {
-    const selectedValues = new Set(values);
-    if (selectedValues.size === 0 || availableValues.length === 0) {
-      return [];
-    }
-
-    return availableValues.filter((value) => selectedValues.has(value));
-  };
-
-  const currentYears = normalizeSelectedNumberValues(
-    normalizeRequestedNumberValues(
+  const currentYears = selectAvailableSearchParamValues(
+    normalizeIntegerSearchParams(
       searchParams.getAll(yearsParamName),
       firstAccountingPeriodYear,
       currentYear,
     ),
     availableYears,
+    (value) => value,
+    (value) => value,
   );
-  const currentMonths = normalizeSelectedNumberValues(
-    normalizeRequestedNumberValues(searchParams.getAll(monthsParamName), 1, 12),
-    availableMonths,
+  const currentMonths = selectAvailableSearchParamValues(
+    normalizeIntegerSearchParams(searchParams.getAll(monthsParamName), 1, 12),
+    accountingPeriodMonths,
+    (value) => value,
+    (value) => value,
   );
 
   const updateParams = useSearchParamUpdater([pageParamName]);
@@ -165,15 +135,15 @@ const AccountingPeriodWorkspaceFilter = function ({
         multiple
         disableCloseOnSelect
         size="small"
-        options={[...availableMonths]}
+        options={accountingPeriodMonths}
         value={[...currentMonths]}
         disabled={
-          firstAccountingPeriod === null || availableMonths.length === 0
+          firstAccountingPeriod === null || accountingPeriodMonths.length === 0
         }
         limitTags={1}
         sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
         noOptionsText={
-          availableMonths.length === 0
+          accountingPeriodMonths.length === 0
             ? "No months available"
             : "No months found"
         }
@@ -189,11 +159,11 @@ const AccountingPeriodWorkspaceFilter = function ({
         onChange={(_, nextMonths) => {
           handleMonthChange(nextMonths);
         }}
-        getOptionLabel={(month) => monthNames[month - 1] ?? month.toString()}
+        getOptionLabel={formatAccountingPeriodMonth}
         renderOption={(props, option, { selected }) => (
           <li {...props}>
             <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-            {monthNames[option - 1] ?? option.toString()}
+            {formatAccountingPeriodMonth(option)}
           </li>
         )}
         renderInput={(params) => (

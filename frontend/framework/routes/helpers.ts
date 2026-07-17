@@ -1,4 +1,5 @@
 type RepeatedSearchParamValue = string | number;
+type SearchParamComparisonValue = string | number;
 type CompactSearchParams<T extends Record<string, unknown>> = {
   [
     K in keyof T as undefined extends T[K]
@@ -37,6 +38,88 @@ const toRepeatedSearchParams = function <T extends RepeatedSearchParamValue>(
   }
 
   return typeof value === "undefined" ? [] : [value];
+};
+
+/**
+ * Normalizes repeated string search parameters into a trimmed, unique list.
+ */
+const normalizeStringSearchParams = function (
+  values: readonly string[],
+  getComparisonValue: (value: string) => SearchParamComparisonValue = (value) =>
+    value,
+): string[] {
+  const seenValues = new Set<SearchParamComparisonValue>();
+  const normalizedValues: string[] = [];
+
+  values.forEach((value) => {
+    const normalizedValue = value.trim();
+    const comparisonValue = getComparisonValue(normalizedValue);
+    if (normalizedValue === "" || seenValues.has(comparisonValue)) {
+      return;
+    }
+
+    seenValues.add(comparisonValue);
+    normalizedValues.push(normalizedValue);
+  });
+
+  return normalizedValues;
+};
+
+/**
+ * Normalizes repeated integer search parameters into a bounded, unique list.
+ */
+const normalizeIntegerSearchParams = function (
+  values: readonly RepeatedSearchParamValue[],
+  minimumValue: number,
+  maximumValue: number,
+): number[] {
+  const seenValues = new Set<number>();
+  const normalizedValues: number[] = [];
+
+  values.forEach((value) => {
+    const normalizedValue = String(value).trim();
+    if (!/^-?\d+$/u.test(normalizedValue)) {
+      return;
+    }
+
+    const parsedValue = Number(normalizedValue);
+    if (
+      !Number.isSafeInteger(parsedValue) ||
+      parsedValue < minimumValue ||
+      parsedValue > maximumValue ||
+      seenValues.has(parsedValue)
+    ) {
+      return;
+    }
+
+    seenValues.add(parsedValue);
+    normalizedValues.push(parsedValue);
+  });
+
+  return normalizedValues;
+};
+
+/**
+ * Selects available values whose keys occur in the requested values.
+ */
+const selectAvailableSearchParamValues = function <
+  TRequested,
+  TAvailable,
+  TKey extends SearchParamComparisonValue,
+>(
+  requestedValues: readonly TRequested[],
+  availableValues: readonly TAvailable[],
+  getRequestedKey: (value: TRequested) => TKey,
+  getAvailableKey: (value: TAvailable) => TKey,
+): TAvailable[] {
+  const selectedKeys = new Set(requestedValues.map(getRequestedKey));
+  if (selectedKeys.size === 0 || availableValues.length === 0) {
+    return [];
+  }
+
+  return availableValues.filter((value) =>
+    selectedKeys.has(getAvailableKey(value)),
+  );
 };
 
 /**
@@ -80,5 +163,8 @@ export {
   appendRepeatedSearchParam,
   buildUrl,
   compactSearchParams,
+  normalizeIntegerSearchParams,
+  normalizeStringSearchParams,
+  selectAvailableSearchParamValues,
   toRepeatedSearchParams,
 };
