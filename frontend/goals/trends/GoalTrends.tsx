@@ -36,7 +36,7 @@ import { normalizeGoalTypes } from "@/goals/trends/goalTypeFilter";
 import { redirect } from "next/navigation";
 import routes from "@/goals/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
-import { toRepeatedSearchParam } from "@/framework/routes/helpers";
+import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 
 /**
@@ -189,8 +189,8 @@ const GoalTrends = async function ({
   const periodIds = new Set(
     periodData.accountingPeriods.items.map((period) => period.id),
   );
-  const fundNames = toRepeatedSearchParam(params.fundName);
-  const requestedTypes = toRepeatedSearchParam(params.goalType);
+  const fundNames = toRepeatedSearchParams(params.fundName);
+  const requestedTypes = toRepeatedSearchParams(params.goalType);
   const assignmentTypes =
     currentView === "assignment"
       ? normalizeGoalTypes(requestedTypes, currentView)

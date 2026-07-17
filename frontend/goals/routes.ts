@@ -1,6 +1,7 @@
 import type { GoalTrendsSearchParams } from "@/goals/trends/GoalTrends";
 import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
 import type { Route } from "next";
+import { appendRepeatedSearchParam } from "@/framework/routes/helpers";
 import { objectToSearchParams } from "@/framework/routes";
 
 const pathWithSearchParams = function (
@@ -9,29 +10,6 @@ const pathWithSearchParams = function (
 ): Route {
   const query = searchParams.toString();
   return query === "" ? pathname : `${pathname}?${query}`;
-};
-
-const isRepeatedSearchParamArray = function (
-  value: string | readonly string[] | undefined,
-): value is readonly string[] {
-  return Array.isArray(value);
-};
-
-const appendRepeatedSearchParam = function (
-  params: URLSearchParams,
-  key: string,
-  value: string | readonly string[] | undefined,
-): void {
-  if (isRepeatedSearchParamArray(value)) {
-    value.forEach((item) => {
-      params.append(key, item);
-    });
-    return;
-  }
-
-  if (typeof value === "string") {
-    params.append(key, value);
-  }
 };
 
 const goalWorkspaceSearchParamsToSearchParams = function (

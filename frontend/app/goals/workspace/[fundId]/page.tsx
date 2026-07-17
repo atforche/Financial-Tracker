@@ -9,7 +9,7 @@ import getApiData from "@/framework/data/apiResponse";
 import { redirect } from "next/navigation";
 import routes from "@/goals/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
-import { toRepeatedSearchParam } from "@/framework/routes/helpers";
+import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import transactionRoutes from "@/transactions/routes";
 
 /**
@@ -28,7 +28,7 @@ const GoalWorkspaceDetailPage = async function ({
   const { fundId } = await params;
   const { accountingPeriodId, fundIds, search, balanceEventPage } =
     await searchParams;
-  const selectedFundIds = toRepeatedSearchParam(fundIds);
+  const selectedFundIds = toRepeatedSearchParams(fundIds);
   const apiClient = getApiClient();
   const periodsResponse = await apiClient.GET("/accounting-periods", {
     params: { query: { Limit: 1 } },

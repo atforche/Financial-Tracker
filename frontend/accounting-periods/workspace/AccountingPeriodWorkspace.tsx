@@ -1,5 +1,13 @@
+import {
+  AccountingPeriodSort,
+  type AccountingPeriodWithBalanceSort,
+} from "@/accounting-periods/types";
+import {
+  compactSearchParams,
+  toRepeatedSearchParams,
+} from "@/framework/routes/helpers";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
-import type { AccountingPeriodWithBalanceSortValue } from "@/accounting-periods/types";
+import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/workspace/helpers";
 import AccountingPeriodWorkspaceActions from "@/accounting-periods/workspace/AccountingPeriodWorkspaceActions";
 import AccountingPeriodWorkspaceFilter from "@/accounting-periods/workspace/AccountingPeriodWorkspaceFilter";
 import AccountingPeriodWorkspaceListFrame from "@/accounting-periods/workspace/AccountingPeriodWorkspaceListFrame";
@@ -13,15 +21,13 @@ import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
-type AccountingPeriodWorkspaceAction = "create" | "close" | "reopen" | "delete";
-
 /**
  * Search parameters supported by the Accounting Period workspace.
  */
 interface AccountingPeriodWorkspaceSearchParams {
   years?: number | number[];
   months?: number | number[];
-  sort?: AccountingPeriodWithBalanceSortValue;
+  sort?: AccountingPeriodWithBalanceSort;
   page?: number | string | null;
   selectedAccountingPeriodId?: string;
   action?: AccountingPeriodWorkspaceAction;
@@ -44,11 +50,13 @@ const AccountingPeriodWorkspace = async function ({
   const { years, months, sort, page, selectedAccountingPeriodId, action } =
     await searchParams;
   const currentPage = normalizePageValue(page);
+  const normalizedYears = toRepeatedSearchParams(years);
+  const normalizedMonths = toRepeatedSearchParams(months);
 
   const firstAccountingPeriodPromise = apiClient.GET("/accounting-periods", {
     params: {
       query: {
-        Sort: "Date",
+        Sort: AccountingPeriodSort.Date,
         Limit: 1,
       },
     },
@@ -57,21 +65,13 @@ const AccountingPeriodWorkspace = async function ({
     "/accounting-periods/with-balances",
     {
       params: {
-        query: {
-          ...(Array.isArray(years)
-            ? { "Filter.Years": years }
-            : typeof years !== "undefined"
-              ? { "Filter.Years": [years] }
-              : {}),
-          ...(Array.isArray(months)
-            ? { "Filter.Months": months }
-            : typeof months !== "undefined"
-              ? { "Filter.Months": [months] }
-              : {}),
+        query: compactSearchParams({
+          "Filter.Years": normalizedYears,
+          "Filter.Months": normalizedMonths,
           Sort: sort ?? null,
           Limit: rowsPerPage,
           Offset: getPageOffset(currentPage),
-        },
+        }),
       },
     },
   );
@@ -99,21 +99,15 @@ const AccountingPeriodWorkspace = async function ({
     selectedAccountingPeriod === null
   ) {
     redirect(
-      routes.workspace({
-        years: Array.isArray(years)
-          ? years
-          : typeof years !== "undefined"
-            ? [years]
-            : [],
-        months: Array.isArray(months)
-          ? months
-          : typeof months !== "undefined"
-            ? [months]
-            : [],
-        ...(typeof sort !== "undefined" ? { sort } : {}),
-        ...(typeof page !== "undefined" ? { page: currentPage } : {}),
-        ...(typeof action !== "undefined" ? { action } : {}),
-      }),
+      routes.workspace(
+        compactSearchParams({
+          years: normalizedYears,
+          months: normalizedMonths,
+          sort,
+          page: currentPage,
+          action,
+        }),
+      ),
     );
   }
 

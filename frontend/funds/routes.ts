@@ -1,29 +1,8 @@
 import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { Route } from "next";
+import { appendRepeatedSearchParam } from "@/framework/routes/helpers";
 import { objectToSearchParams } from "@/framework/routes";
-
-const isRepeatedSearchParamArray = function (
-  value: string | readonly string[] | undefined,
-): value is readonly string[] {
-  return Array.isArray(value);
-};
-
-const appendRepeatedSearchParam = function (
-  params: URLSearchParams,
-  key: string,
-  value: string | readonly string[] | undefined,
-): void {
-  if (isRepeatedSearchParamArray(value)) {
-    value.forEach((item) => {
-      params.append(key, item);
-    });
-    return;
-  }
-  if (typeof value === "string") {
-    params.append(key, value);
-  }
-};
 
 const fundTrendsSearchParamsToSearchParams = function (
   searchParams: FundTrendsSearchParams,

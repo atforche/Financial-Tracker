@@ -10,7 +10,7 @@ import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import getApiClient from "@/framework/data/getApiClient";
 import getApiData from "@/framework/data/apiResponse";
-import { toRepeatedSearchParam } from "@/framework/routes/helpers";
+import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 
 type AccountWorkspaceAction = "create" | "onboard";
 
@@ -40,7 +40,7 @@ const AccountWorkspace = async function ({
   const { search, accountType, action } = await searchParams;
   const apiClient = getApiClient();
   const currentAccountTypes = normalizeAccountTypes(
-    toRepeatedSearchParam(accountType),
+    toRepeatedSearchParams(accountType),
   );
 
   const anyAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {

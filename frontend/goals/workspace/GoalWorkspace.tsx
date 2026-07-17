@@ -4,7 +4,7 @@ import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import getApiClient from "@/framework/data/getApiClient";
 import getApiData from "@/framework/data/apiResponse";
-import { toRepeatedSearchParam } from "@/framework/routes/helpers";
+import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 
 /**
  * Search parameters for the GoalWorkspace component.
@@ -42,7 +42,7 @@ const GoalWorkspace = async function ({
 
   const selectedAccountingPeriodId =
     accountingPeriodId ?? accountingPeriods.items[0]?.id;
-  const selectedFundIds = toRepeatedSearchParam(fundIds);
+  const selectedFundIds = toRepeatedSearchParams(fundIds);
   const [assignmentGoalResponse, spendingGoalResponse] = await Promise.all([
     apiClient.GET("/goals/assignment", {
       params: {

@@ -8,6 +8,7 @@ import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/
 import getApiClient from "@/framework/data/getApiClient";
 import getApiData from "@/framework/data/apiResponse";
 import { rowsPerPage } from "@/framework/listframe/Constants";
+import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 
 interface TransactionWorkspaceReferenceData {
   readonly openAccountingPeriods: AccountingPeriod[];
@@ -20,24 +21,14 @@ interface TransactionWorkspaceReferenceData {
 
 interface TransactionWorkspaceListData extends TransactionWorkspaceReferenceData {
   readonly currentPage: number;
-  readonly normalizedAccountingPeriodIds: string[] | null;
-  readonly normalizedAccountIds: string[] | null;
-  readonly normalizedFundIds: string[] | null;
+  readonly normalizedAccountingPeriodIds: string[];
+  readonly normalizedAccountIds: string[];
+  readonly normalizedFundIds: string[];
   readonly transactions: {
     readonly items: Transaction[];
     readonly totalCount: number;
   };
 }
-
-const toRepeatedSearchParam = function (
-  value: string | string[] | undefined,
-): string[] | null {
-  if (Array.isArray(value)) {
-    return value;
-  }
-
-  return typeof value === "string" ? [value] : null;
-};
 
 /**
  * Fetches reference data required for the transaction workspace, including accounting periods, accounts, funds, and goals.
@@ -150,20 +141,20 @@ const getTransactionWorkspaceListData = async function (
   const apiClient = getApiClient();
   const currentPage = normalizePageValue(page);
   const normalizedAccountingPeriodIds =
-    toRepeatedSearchParam(accountingPeriodIds);
-  const normalizedAccountIds = toRepeatedSearchParam(accountIds);
-  const normalizedFundIds = toRepeatedSearchParam(fundIds);
+    toRepeatedSearchParams(accountingPeriodIds);
+  const normalizedAccountIds = toRepeatedSearchParams(accountIds);
+  const normalizedFundIds = toRepeatedSearchParams(fundIds);
 
   const transactionsPromise = apiClient.GET("/transactions", {
     params: {
       query: {
-        ...(normalizedAccountingPeriodIds !== null
+        ...(normalizedAccountingPeriodIds.length > 0
           ? { "Filter.AccountingPeriodIds": normalizedAccountingPeriodIds }
           : {}),
-        ...(normalizedAccountIds !== null
+        ...(normalizedAccountIds.length > 0
           ? { "Filter.AccountIds": normalizedAccountIds }
           : {}),
-        ...(normalizedFundIds !== null
+        ...(normalizedFundIds.length > 0
           ? { "Filter.FundIds": normalizedFundIds }
           : {}),
         Sort: sort ?? null,
