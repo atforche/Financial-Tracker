@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Autocomplete,
-  Button,
-  Checkbox,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-} from "@mui/material";
+import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
 import {
   type GoalTrendsGoalType,
   type GoalTrendsView,
@@ -27,6 +20,7 @@ import GoalTrendsGoalTypeFilter from "@/goals/trends/GoalTrendsGoalTypeFilter";
 import type { GoalTrendsSearchParams } from "@/goals/trends/GoalTrends";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
+import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
 import nameof from "@/framework/data/nameof";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
@@ -100,8 +94,8 @@ const GoalTrendsFilter = function ({
     currentStartAccountingPeriodId !== (defaultAccountingPeriodId ?? "") ||
     currentEndAccountingPeriodId !== (defaultAccountingPeriodId ?? "");
 
-  const handleViewChange = function (nextView: GoalTrendsView | null): void {
-    if (nextView === null || nextView === view) {
+  const handleViewChange = function (nextView: GoalTrendsView): void {
+    if (nextView === view) {
       return;
     }
 
@@ -168,17 +162,14 @@ const GoalTrendsFilter = function ({
     <PageFilterFrame
       title="Goal Trends"
       headerContent={
-        <ToggleButtonGroup
-          exclusive
-          size="small"
+        <ToggleButtonSelector
           value={view}
-          onChange={(_, nextValue: GoalTrendsView | null) => {
-            handleViewChange(nextValue);
-          }}
-        >
-          <ToggleButton value="assignment">Assignment</ToggleButton>
-          <ToggleButton value="spending">Spending</ToggleButton>
-        </ToggleButtonGroup>
+          onChange={handleViewChange}
+          options={[
+            { value: "assignment", label: "Assignment" },
+            { value: "spending", label: "Spending" },
+          ]}
+        />
       }
     >
       <AccountingPeriodRangeFilter

@@ -134,8 +134,5 @@ const AccountingPeriodWorkspace = async function ({
   );
 };
 
-export type {
-  AccountingPeriodWorkspaceAction,
-  AccountingPeriodWorkspaceSearchParams,
-};
+export type { AccountingPeriodWorkspaceSearchParams };
 export default AccountingPeriodWorkspace;

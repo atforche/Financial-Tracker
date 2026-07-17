@@ -1,16 +1,18 @@
 "use client";
 
-import type {
-  AccountingPeriodWorkspaceAction,
-  AccountingPeriodWorkspaceSearchParams,
-} from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
-import { Paper, Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import {
+  type AccountingPeriodWorkspaceAction,
+  accountingPeriodWorkspaceActions,
+} from "@/accounting-periods/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import CloseAccountingPeriodForm from "@/accounting-periods/workspace/CloseAccountingPeriodForm";
 import CreateAccountingPeriodForm from "@/accounting-periods/workspace/CreateAccountingPeriodForm";
 import DeleteAccountingPeriodForm from "@/accounting-periods/workspace/DeleteAccountingPeriodForm";
+import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
 import ReopenAccountingPeriodForm from "@/accounting-periods/workspace/ReopenAccountingPeriodForm";
+import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
 import nameof from "@/framework/data/nameof";
 import { usePathname } from "next/navigation";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -37,12 +39,6 @@ const AccountingPeriodWorkspaceActions = function ({
 
   const actionParamName =
     nameof<AccountingPeriodWorkspaceSearchParams>("action");
-  const allActions: readonly AccountingPeriodWorkspaceAction[] = [
-    "create",
-    "close",
-    "reopen",
-    "delete",
-  ];
   const availableActions: readonly AccountingPeriodWorkspaceAction[] =
     selectedAccountingPeriod === null
       ? ["create"]
@@ -52,80 +48,61 @@ const AccountingPeriodWorkspaceActions = function ({
   const activeAction =
     requestedAction !== null && availableActions.includes(requestedAction)
       ? requestedAction
-      : availableActions[0];
+      : (availableActions[0] ?? "create");
 
-  const setAction = function (
-    action: AccountingPeriodWorkspaceAction | null,
-  ): void {
+  const setAction = function (action: AccountingPeriodWorkspaceAction): void {
     updateParams((params) => {
-      if (action === null) {
-        params.delete(actionParamName);
-      } else {
-        params.set(actionParamName, action);
-      }
+      params.set(actionParamName, action);
     });
   };
 
   return (
-    <Paper
-      sx={{
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 3,
-        p: { xs: 2.5, md: 3 },
-      }}
-    >
-      <Stack spacing={3}>
-        <ToggleButtonGroup
+    <Frame
+      title="Actions"
+      headerContent={
+        <ToggleButtonSelector
           value={activeAction}
-          exclusive
-          onChange={(_, nextValue: AccountingPeriodWorkspaceAction | null) => {
-            setAction(nextValue);
-          }}
-          sx={{ flexWrap: "wrap" }}
-        >
-          {allActions.map((action) => (
-            <ToggleButton
-              key={action}
-              value={action}
-              disabled={!availableActions.includes(action)}
-            >
-              {action === "create"
+          onChange={setAction}
+          options={accountingPeriodWorkspaceActions.map((action) => ({
+            value: action,
+            label:
+              action === "create"
                 ? "Create"
                 : action === "close"
                   ? "Close"
                   : action === "reopen"
                     ? "Reopen"
-                    : "Delete"}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-        {activeAction === "create" ? (
-          <CreateAccountingPeriodForm
-            isInOnboardingMode={isInOnboardingMode}
-            redirectUrl={pathname}
-          />
-        ) : null}
-        {activeAction === "close" && selectedAccountingPeriod !== null ? (
-          <CloseAccountingPeriodForm
-            accountingPeriod={selectedAccountingPeriod}
-            redirectUrl={pathname}
-          />
-        ) : null}
-        {activeAction === "reopen" && selectedAccountingPeriod !== null ? (
-          <ReopenAccountingPeriodForm
-            accountingPeriod={selectedAccountingPeriod}
-            redirectUrl={pathname}
-          />
-        ) : null}
-        {activeAction === "delete" && selectedAccountingPeriod !== null ? (
-          <DeleteAccountingPeriodForm
-            accountingPeriod={selectedAccountingPeriod}
-            redirectUrl={pathname}
-          />
-        ) : null}
-      </Stack>
-    </Paper>
+                    : "Delete",
+            disabled: !availableActions.includes(action),
+          }))}
+        />
+      }
+    >
+      {activeAction === "create" ? (
+        <CreateAccountingPeriodForm
+          isInOnboardingMode={isInOnboardingMode}
+          redirectUrl={pathname}
+        />
+      ) : null}
+      {activeAction === "close" && selectedAccountingPeriod !== null ? (
+        <CloseAccountingPeriodForm
+          accountingPeriod={selectedAccountingPeriod}
+          redirectUrl={pathname}
+        />
+      ) : null}
+      {activeAction === "reopen" && selectedAccountingPeriod !== null ? (
+        <ReopenAccountingPeriodForm
+          accountingPeriod={selectedAccountingPeriod}
+          redirectUrl={pathname}
+        />
+      ) : null}
+      {activeAction === "delete" && selectedAccountingPeriod !== null ? (
+        <DeleteAccountingPeriodForm
+          accountingPeriod={selectedAccountingPeriod}
+          redirectUrl={pathname}
+        />
+      ) : null}
+    </Frame>
   );
 };
 

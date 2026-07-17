@@ -2,12 +2,7 @@
 
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { type JSX, useState } from "react";
-import {
-  Stack,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateAccountTransactionForm from "@/transactions/workspace/account/CreateAccountTransactionForm";
@@ -15,6 +10,7 @@ import CreateFundTransactionForm from "@/transactions/workspace/fund/CreateFundT
 import CreateIncomeTransactionForm from "@/transactions/workspace/income/CreateIncomeTransactionForm";
 import CreateSpendingTransactionForm from "@/transactions/workspace/spending/CreateSpendingTransactionForm";
 import type { FundWithBalance } from "@/funds/types";
+import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
 
 /**
  * Props for the CreateTransactionForm component.
@@ -56,21 +52,16 @@ const CreateTransactionForm = function ({
         </Stack>
       ) : null}
       <Stack spacing={1}>
-        <ToggleButtonGroup
+        <ToggleButtonSelector
           value={transactionType}
-          exclusive
-          onChange={(_, nextValue: TransactionFormKind | null) => {
-            if (nextValue !== null) {
-              setTransactionType(nextValue);
-            }
-          }}
-          sx={{ flexWrap: "wrap" }}
-        >
-          <ToggleButton value="spending">Spending</ToggleButton>
-          <ToggleButton value="income">Income</ToggleButton>
-          <ToggleButton value="account">Account</ToggleButton>
-          <ToggleButton value="fund">Fund</ToggleButton>
-        </ToggleButtonGroup>
+          onChange={setTransactionType}
+          options={[
+            { value: "spending", label: "Spending" },
+            { value: "income", label: "Income" },
+            { value: "account", label: "Account" },
+            { value: "fund", label: "Fund" },
+          ]}
+        />
       </Stack>
 
       {transactionType === "income" ? (

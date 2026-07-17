@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Button,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-} from "@mui/material";
+import { Button, TextField } from "@mui/material";
 import {
   normalizeAccountNames,
   shouldPersistAccountNames,
@@ -22,6 +17,7 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
+import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
 import nameof from "@/framework/data/nameof";
 import { setTrendRangeMode } from "@/framework/routes/trendRange";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -131,14 +127,7 @@ const AccountTrendsFilter = function ({
     });
   };
 
-  const handleModeChange = function (
-    _: React.MouseEvent<HTMLElement>,
-    nextMode: AccountsTrendsFilterMode | null,
-  ): void {
-    if (nextMode === null) {
-      return;
-    }
-
+  const handleModeChange = function (nextMode: AccountsTrendsFilterMode): void {
     updateParams((params) => {
       setTrendRangeMode(params, nextMode, {
         defaultAccountingPeriodId,
@@ -207,22 +196,19 @@ const AccountTrendsFilter = function ({
 
   return (
     <PageFilterFrame title="Account Trends">
-      <ToggleButtonGroup
-        exclusive
+      <ToggleButtonSelector
         value={currentMode}
-        size="small"
         disabled={disabled}
         onChange={handleModeChange}
-        sx={{ flexShrink: 0 }}
-      >
-        <ToggleButton value="date">Dates</ToggleButton>
-        <ToggleButton
-          value="accounting-period"
-          disabled={defaultAccountingPeriodId === null}
-        >
-          Accounting periods
-        </ToggleButton>
-      </ToggleButtonGroup>
+        options={[
+          { value: "date", label: "Dates" },
+          {
+            value: "accounting-period",
+            label: "Accounting periods",
+            disabled: defaultAccountingPeriodId === null,
+          },
+        ]}
+      />
       {currentMode === "accounting-period" ? (
         <AccountingPeriodRangeFilter
           accountingPeriods={accountingPeriods}
