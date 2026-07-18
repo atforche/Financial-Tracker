@@ -1,15 +1,10 @@
-import {
-  type AccountBalanceEvent,
-  AccountType,
-  type CreateAccountRequest,
-} from "@/accounts/types";
+import { AccountType, type CreateAccountRequest } from "@/accounts/types";
 import {
   getDefaultDate,
   getMaximumDate,
   getMinimumDate,
 } from "@/accounting-periods/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import { BalanceEventType } from "@/framework/data/types";
 import type { Dayjs } from "dayjs";
 import type { FrameColor } from "@/framework/view/Frame";
 
@@ -118,20 +113,6 @@ const getAccountCardColor = function (
   }
 };
 
-/**
- * Formats the type of an account balance event.
- */
-const formatAccountBalanceEventType = function (
-  balanceEvent: AccountBalanceEvent,
-): string {
-  const baseLabel =
-    balanceEvent.type === BalanceEventType.Debit ? "Debit" : "Credit";
-
-  return balanceEvent.isPosted
-    ? baseLabel
-    : `Pending ${baseLabel.toLowerCase()}`;
-};
-
 export {
   getNormalizedDateOpened,
   validateCreateRequest,
@@ -139,5 +120,4 @@ export {
   validateOnboardRequest,
   buildOnboardRequest,
   getAccountCardColor,
-  formatAccountBalanceEventType,
 };

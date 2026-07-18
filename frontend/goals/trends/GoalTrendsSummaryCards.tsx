@@ -6,21 +6,17 @@ import type {
   GoalTrendsView,
   SpendingGoalTypeSummary,
 } from "@/goals/trends/goalTrendsTypes";
-import {
-  Box,
-  Collapse,
-  Divider,
-  IconButton,
-  Stack,
-  Typography,
-} from "@mui/material";
+import BreakdownSection, {
+  type BreakdownDetailRow,
+} from "@/framework/view/BreakdownSection";
+import { Divider, Stack } from "@mui/material";
 import { type JSX, type ReactNode, useState } from "react";
 import {
   formatAssignmentGoalType,
   formatSpendingGoalType,
 } from "@/goals/helpers";
-import ExpandMore from "@mui/icons-material/ExpandMore";
-import SummaryCard from "@/framework/view/SummaryCard";
+import ExpandableSummaryCard from "@/framework/view/ExpandableSummaryCard";
+import SummaryCardGrid from "@/framework/view/SummaryCardGrid";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
 interface GoalTrendsSummaryCardsProps {
@@ -28,136 +24,13 @@ interface GoalTrendsSummaryCardsProps {
   readonly view: GoalTrendsView;
 }
 
-interface GoalTypeBreakdownDetailRow {
-  readonly key: string;
-  readonly label: string;
-  readonly value: ReactNode;
-}
-
-interface GoalTypeBreakdownSectionProps {
-  readonly label: string;
-  readonly value: ReactNode;
-  readonly detailRows: readonly GoalTypeBreakdownDetailRow[];
-  readonly expanded: boolean;
-  readonly onToggle: () => void;
-}
-
 interface SummaryCardDefinition {
   readonly title: string;
   readonly value: ReactNode;
   readonly detailLabel: string;
   readonly detailValue: ReactNode;
-  readonly detailRows: readonly GoalTypeBreakdownDetailRow[];
+  readonly detailRows: readonly BreakdownDetailRow[];
 }
-
-const expandToggleSlotSize = 26;
-
-const GoalTypeBreakdownSection = function ({
-  label,
-  value,
-  detailRows,
-  expanded,
-  onToggle,
-}: GoalTypeBreakdownSectionProps): JSX.Element {
-  return (
-    <Stack spacing={0.75}>
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        gap={1.5}
-      >
-        <Typography variant="body2">{label}</Typography>
-        <Stack direction="row" alignItems="center" gap={0.5}>
-          <Typography
-            variant="body2"
-            fontWeight={600}
-            sx={{ textAlign: "right" }}
-          >
-            {value}
-          </Typography>
-          <Box
-            sx={{
-              width: expandToggleSlotSize,
-              height: expandToggleSlotSize,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {detailRows.length > 0 && (
-              <IconButton
-                size="small"
-                onClick={onToggle}
-                sx={{
-                  p: 0.25,
-                  transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                  transition: "transform 0.3s ease-in-out",
-                }}
-              >
-                <ExpandMore fontSize="small" />
-              </IconButton>
-            )}
-          </Box>
-        </Stack>
-      </Stack>
-      {detailRows.length > 0 && (
-        <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <Stack spacing={0.75} sx={{ pl: 1.5 }}>
-            {detailRows.map((detailRow) => (
-              <Stack
-                key={detailRow.key}
-                direction="row"
-                justifyContent="space-between"
-                alignItems="baseline"
-                gap={1.5}
-              >
-                <Typography variant="caption" color="text.secondary">
-                  {detailRow.label}
-                </Typography>
-                <Stack direction="row" alignItems="center" gap={0.5}>
-                  <Typography
-                    variant="caption"
-                    fontWeight={600}
-                    sx={{ textAlign: "right" }}
-                  >
-                    {detailRow.value}
-                  </Typography>
-                  <Box
-                    sx={{
-                      width: expandToggleSlotSize,
-                      height: expandToggleSlotSize,
-                      flexShrink: 0,
-                    }}
-                  />
-                </Stack>
-              </Stack>
-            ))}
-          </Stack>
-        </Collapse>
-      )}
-    </Stack>
-  );
-};
-
-interface GoalTypeBreakdownProps {
-  readonly expanded: boolean;
-  readonly children: ReactNode;
-}
-
-const GoalTypeBreakdown = function ({
-  expanded,
-  children,
-}: GoalTypeBreakdownProps): JSX.Element {
-  return (
-    <Collapse in={expanded} timeout="auto" unmountOnExit>
-      <Stack spacing={1.25} sx={{ pt: 1.25 }}>
-        <Divider />
-        {children}
-      </Stack>
-    </Collapse>
-  );
-};
 
 const formatPercentage = function (value: number): string {
   return `${value.toFixed(2)}%`;
@@ -166,7 +39,7 @@ const formatPercentage = function (value: number): string {
 const getAssignmentRows = function (
   typeSummaries: readonly AssignmentGoalTypeSummary[],
   getValue: (summary: AssignmentGoalTypeSummary) => ReactNode,
-): GoalTypeBreakdownDetailRow[] {
+): BreakdownDetailRow[] {
   return typeSummaries.map((summary) => ({
     key: summary.assignmentGoalType,
     label: formatAssignmentGoalType(summary.assignmentGoalType),
@@ -177,7 +50,7 @@ const getAssignmentRows = function (
 const getSpendingRows = function (
   typeSummaries: readonly SpendingGoalTypeSummary[],
   getValue: (summary: SpendingGoalTypeSummary) => ReactNode,
-): GoalTypeBreakdownDetailRow[] {
+): BreakdownDetailRow[] {
   return typeSummaries.map((summary) => ({
     key: summary.spendingGoalType,
     label: formatSpendingGoalType(summary.spendingGoalType),
@@ -266,57 +139,27 @@ const GoalTrendsSummaryCards = function ({
         ];
 
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gap: 2,
-        gridTemplateColumns: {
-          xs: "1fr",
-          md: "repeat(2, minmax(0, 1fr))",
-          xl: "repeat(3, minmax(0, 1fr))",
-        },
-      }}
-    >
+    <SummaryCardGrid>
       {cardDefinitions.map((card) => (
-        <SummaryCard
+        <ExpandableSummaryCard
           key={card.title}
           title={card.title}
-          value={
-            <Stack
-              direction="row"
-              alignItems="center"
-              gap={0.5}
-              justifyContent="space-between"
-            >
-              <Box>{card.value}</Box>
-              <IconButton
-                size="small"
-                onClick={handleToggleExpanded}
-                sx={{
-                  p: 0.25,
-                  transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                  transition: "transform 0.3s ease-in-out",
-                }}
-              >
-                <ExpandMore fontSize="small" />
-              </IconButton>
-            </Stack>
-          }
+          value={card.value}
+          expanded={expanded}
+          onToggle={handleToggleExpanded}
         >
-          <GoalTypeBreakdown expanded={expanded}>
-            <Stack spacing={1.25} divider={<Divider flexItem />}>
-              <GoalTypeBreakdownSection
-                label={card.detailLabel}
-                value={card.detailValue}
-                detailRows={card.detailRows}
-                expanded={expanded}
-                onToggle={handleToggleExpanded}
-              />
-            </Stack>
-          </GoalTypeBreakdown>
-        </SummaryCard>
+          <Stack spacing={1.25} divider={<Divider flexItem />}>
+            <BreakdownSection
+              label={card.detailLabel}
+              value={card.detailValue}
+              detailRows={card.detailRows}
+              expanded={expanded}
+              onToggle={handleToggleExpanded}
+            />
+          </Stack>
+        </ExpandableSummaryCard>
       ))}
-    </Box>
+    </SummaryCardGrid>
   );
 };
 

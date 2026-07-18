@@ -4,33 +4,34 @@ import {
   type AccountBalanceEvent,
   AccountBalanceEventSort,
 } from "@/accounts/types";
+import {
+  type AccountTrendsDataMode,
+  accountTrendsParamNames,
+  clearAccountTrendsFilters,
+  hasActiveAccountTrendsFilters,
+} from "@/accounts/trends/helpers";
 import { Box, Button, IconButton } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { AccountTrendsSearchParams } from "@/accounts/trends/AccountTrends";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import { BalanceEventType } from "@/framework/data/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import { formatBalanceEventType } from "@/framework/data/helpers";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import formatShortDate from "@/framework/formatShortDate";
-import nameof from "@/framework/data/nameof";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
-
-const formatBalanceEventType = function (type: BalanceEventType): string {
-  return type === BalanceEventType.Debit ? "Debit" : "Credit";
-};
 
 /**
  * Props for the AccountTrendsBalanceEventListFrame component.
  */
 interface AccountTrendsBalanceEventListFrameProps {
-  readonly data: AccountBalanceEvent[] | null;
-  readonly totalCount: number | null;
-  readonly mode: "AccountingPeriod" | "Date";
+  readonly data: readonly AccountBalanceEvent[];
+  readonly totalCount: number;
+  readonly mode: AccountTrendsDataMode;
 }
 
 /**
@@ -44,19 +45,8 @@ const AccountTrendsBalanceEventListFrame = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sortParamName = nameof<AccountTrendsSearchParams>("balanceEventSort");
-  const pageParamName = nameof<AccountTrendsSearchParams>("balanceEventPage");
-  const accountTypeParamName = nameof<AccountTrendsSearchParams>("accountType");
-  const accountNameParamName = nameof<AccountTrendsSearchParams>("accountName");
-  const modeParamName = nameof<AccountTrendsSearchParams>("mode");
-  const startAccountingPeriodIdParamName = nameof<AccountTrendsSearchParams>(
-    "startAccountingPeriodId",
-  );
-  const endAccountingPeriodIdParamName = nameof<AccountTrendsSearchParams>(
-    "endAccountingPeriodId",
-  );
-  const startDateParamName = nameof<AccountTrendsSearchParams>("startDate");
-  const endDateParamName = nameof<AccountTrendsSearchParams>("endDate");
+  const { balanceEventSort: sortParamName, balanceEventPage: pageParamName } =
+    accountTrendsParamNames;
 
   const updateParams = useSearchParamUpdater([pageParamName]);
 
@@ -86,16 +76,26 @@ const AccountTrendsBalanceEventListFrame = function ({
       }),
     );
   };
-  const hasActiveFilters =
-    searchParams.getAll(accountTypeParamName).length > 0 ||
-    searchParams.getAll(accountNameParamName).length > 0 ||
-    searchParams.get(modeParamName) === "date" ||
-    searchParams.has(startAccountingPeriodIdParamName) ||
-    searchParams.has(endAccountingPeriodIdParamName) ||
-    searchParams.has(startDateParamName) ||
-    searchParams.has(endDateParamName);
+  const hasActiveFilters = hasActiveAccountTrendsFilters(searchParams);
 
   const getSortProps = createColumnSortProps(currentSort, setSort);
+
+  const accountingPeriodColumns: ColumnDefinition<AccountBalanceEvent>[] =
+    mode === "AccountingPeriod"
+      ? [
+          {
+            name: "accountingPeriodName",
+            headerContent: "Accounting Period",
+            getBodyContent: (balanceEvent) =>
+              balanceEvent.accountingPeriod.name,
+            ...getSortProps(
+              AccountBalanceEventSort.AccountingPeriodName,
+              AccountBalanceEventSort.AccountingPeriodNameDescending,
+            ),
+            minWidth: 160,
+          },
+        ]
+      : [];
 
   const columns: ColumnDefinition<AccountBalanceEvent>[] = [
     {
@@ -108,6 +108,7 @@ const AccountTrendsBalanceEventListFrame = function ({
       ),
       minWidth: 140,
     },
+    ...accountingPeriodColumns,
     {
       name: "date",
       headerContent: "Event Date",
@@ -135,7 +136,7 @@ const AccountTrendsBalanceEventListFrame = function ({
             fontWeight: 600,
           }}
         >
-          {formatBalanceEventType(balanceEvent.type)}
+          {formatBalanceEventType(balanceEvent.type, balanceEvent.isPosted)}
         </Box>
       ),
       ...getSortProps(
@@ -177,28 +178,15 @@ const AccountTrendsBalanceEventListFrame = function ({
     },
   ];
 
-  if (mode === "AccountingPeriod") {
-    columns.splice(1, 0, {
-      name: "accountingPeriodName",
-      headerContent: "Accounting Period",
-      getBodyContent: (balanceEvent) => balanceEvent.accountingPeriod.name,
-      ...getSortProps(
-        AccountBalanceEventSort.AccountingPeriodName,
-        AccountBalanceEventSort.AccountingPeriodNameDescending,
-      ),
-      minWidth: 160,
-    });
-  }
-
   return (
     <ListFrame<AccountBalanceEvent>
       title="Balance Events"
       columns={columns}
       getId={(balanceEvent) =>
-        `${balanceEvent.account.id}-${balanceEvent.accountingPeriod.id}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
+        `${balanceEvent.transactionId}-${balanceEvent.account.id}-${balanceEvent.date ?? "pending"}-${balanceEvent.type}-${balanceEvent.amount}`
       }
-      data={data ?? null}
-      totalCount={totalCount ?? null}
+      data={[...data]}
+      totalCount={totalCount}
       pageParamName={pageParamName}
       hasActiveFilters={hasActiveFilters}
       onRowClick={(balanceEvent) => {
@@ -208,20 +196,7 @@ const AccountTrendsBalanceEventListFrame = function ({
         title: "No balance events found",
         description:
           "Try a different date range or accounting period to inspect account activity.",
-        action: (
-          <Button
-            variant="contained"
-            onClick={() => {
-              updateParams((params) => {
-                [...params.keys()].forEach((key) => {
-                  params.delete(key);
-                });
-              });
-            }}
-          >
-            Reset trends
-          </Button>
-        ),
+        action: null,
       }}
       filteredEmptyState={{
         title: "No balance events match this trends filter",
@@ -232,9 +207,7 @@ const AccountTrendsBalanceEventListFrame = function ({
             variant="contained"
             onClick={() => {
               updateParams((params) => {
-                [...params.keys()].forEach((key) => {
-                  params.delete(key);
-                });
+                clearAccountTrendsFilters(params);
               });
             }}
           >

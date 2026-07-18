@@ -1,8 +1,10 @@
 "use client";
 
-import { Box, Stack } from "@mui/material";
+import ChangeValue from "@/framework/view/ChangeValue";
 import type { JSX } from "react";
+import { Stack } from "@mui/material";
 import SummaryCard from "@/framework/view/SummaryCard";
+import SummaryCardGrid from "@/framework/view/SummaryCardGrid";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
@@ -24,23 +26,8 @@ const BalanceChangeSummaryCards = function ({
   startingBalance,
   endingBalance,
 }: BalanceChangeSummaryCardsProps): JSX.Element {
-  const netChange = endingBalance - startingBalance;
-  const percentChange =
-    startingBalance === 0 ? 0 : (netChange / Math.abs(startingBalance)) * 100;
-  const isPositive = netChange >= 0;
-  const valueColor = isPositive ? "success.main" : "error.main";
-
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gap: 2,
-        gridTemplateColumns: {
-          xs: "1fr",
-          md: "repeat(3, minmax(0, 1fr))",
-        },
-      }}
-    >
+    <SummaryCardGrid>
       <SummaryCard
         title={startingTitle}
         value={<Stack>{formatCurrency(startingBalance)}</Stack>}
@@ -53,14 +40,14 @@ const BalanceChangeSummaryCards = function ({
         title="Net change"
         value={
           <Stack>
-            <Box component="span" sx={{ color: valueColor }}>
-              {formatCurrency(netChange)} ({isPositive ? "+" : ""}
-              {percentChange.toFixed(2)}%)
-            </Box>
+            <ChangeValue
+              startingValue={startingBalance}
+              endingValue={endingBalance}
+            />
           </Stack>
         }
       />
-    </Box>
+    </SummaryCardGrid>
   );
 };
 

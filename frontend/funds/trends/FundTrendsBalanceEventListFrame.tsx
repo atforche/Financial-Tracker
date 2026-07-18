@@ -10,16 +10,13 @@ import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import { formatBalanceEventType } from "@/framework/data/helpers";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import formatShortDate from "@/framework/formatShortDate";
 import nameof from "@/framework/data/nameof";
 import routes from "@/transactions/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
-
-const formatBalanceEventType = function (type: BalanceEventType): string {
-  return type === BalanceEventType.Debit ? "Debit" : "Credit";
-};
 
 /**
  * Props for the FundTrendsBalanceEventListFrame component.
@@ -130,7 +127,7 @@ const FundTrendsBalanceEventListFrame = function ({
             fontWeight: 600,
           }}
         >
-          {formatBalanceEventType(balanceEvent.type)}
+          {formatBalanceEventType(balanceEvent.type, balanceEvent.isPosted)}
         </Box>
       ),
       ...getSortProps(

@@ -6,6 +6,10 @@ import type {
 } from "@/accounting-periods/types";
 import { Button, TextField } from "@mui/material";
 import {
+  type TrendRangeMode,
+  setTrendRangeMode,
+} from "@/framework/routes/trendRange";
+import {
   normalizeAccountNames,
   shouldPersistAccountNames,
 } from "@/accounts/accountNameFilterHelpers";
@@ -14,22 +18,15 @@ import {
   shouldPersistAccountTypes,
 } from "@/accounts/accountTypeFilterHelpers";
 import AccountNameFilter from "@/accounts/AccountNameFilter";
-import type { AccountTrendsSearchParams } from "@/accounts/trends/AccountTrends";
 import type { AccountType } from "@/accounts/types";
 import AccountTypeFilter from "@/accounts/AccountTypeFilter";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
-import nameof from "@/framework/data/nameof";
-import { setTrendRangeMode } from "@/framework/routes/trendRange";
+import { accountTrendsParamNames } from "@/accounts/trends/helpers";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
-
-/**
- * Trends filter mode values used in the Accounts view URL.
- */
-type AccountsTrendsFilterMode = "accounting-period" | "date";
 
 /**
  * Props for the AccountTrendsFilter component.
@@ -56,20 +53,19 @@ const AccountTrendsFilter = function ({
 }: AccountTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const pageParamName = nameof<AccountTrendsSearchParams>("page");
-  const modeParamName = nameof<AccountTrendsSearchParams>("mode");
-  const accountTypeParamName = nameof<AccountTrendsSearchParams>("accountType");
-  const accountNameParamName = nameof<AccountTrendsSearchParams>("accountName");
-  const startAccountingPeriodIdParamName = nameof<AccountTrendsSearchParams>(
-    "startAccountingPeriodId",
-  );
-  const endAccountingPeriodIdParamName = nameof<AccountTrendsSearchParams>(
-    "endAccountingPeriodId",
-  );
-  const startDateParamName = nameof<AccountTrendsSearchParams>("startDate");
-  const endDateParamName = nameof<AccountTrendsSearchParams>("endDate");
+  const {
+    page: pageParamName,
+    balanceEventPage: balanceEventPageParamName,
+    mode: modeParamName,
+    accountType: accountTypeParamName,
+    accountName: accountNameParamName,
+    startAccountingPeriodId: startAccountingPeriodIdParamName,
+    endAccountingPeriodId: endAccountingPeriodIdParamName,
+    startDate: startDateParamName,
+    endDate: endDateParamName,
+  } = accountTrendsParamNames;
 
-  const currentMode: AccountsTrendsFilterMode =
+  const currentMode: TrendRangeMode =
     searchParams.get(modeParamName) === "accounting-period"
       ? "accounting-period"
       : "date";
@@ -92,7 +88,10 @@ const AccountTrendsFilter = function ({
     searchParams.get(startDateParamName) ?? defaultStartDate;
   const currentEndDate = searchParams.get(endDateParamName) ?? defaultEndDate;
 
-  const updateParams = useSearchParamUpdater([pageParamName]);
+  const updateParams = useSearchParamUpdater([
+    pageParamName,
+    balanceEventPageParamName,
+  ]);
 
   const hasActiveView =
     currentMode !== "date" ||
@@ -130,7 +129,7 @@ const AccountTrendsFilter = function ({
     });
   };
 
-  const handleModeChange = function (nextMode: AccountsTrendsFilterMode): void {
+  const handleModeChange = function (nextMode: TrendRangeMode): void {
     updateParams((params) => {
       setTrendRangeMode(params, nextMode, {
         defaultAccountingPeriodId,
@@ -180,15 +179,10 @@ const AccountTrendsFilter = function ({
       params.delete(accountTypeParamName);
       params.delete(accountNameParamName);
       params.set(modeParamName, "date");
-      params.delete(startDateParamName);
-      params.delete(endDateParamName);
-      if (defaultAccountingPeriodId !== null) {
-        params.set(startAccountingPeriodIdParamName, defaultAccountingPeriodId);
-        params.set(endAccountingPeriodIdParamName, defaultAccountingPeriodId);
-      } else {
-        params.delete(startAccountingPeriodIdParamName);
-        params.delete(endAccountingPeriodIdParamName);
-      }
+      params.set(startDateParamName, defaultStartDate);
+      params.set(endDateParamName, defaultEndDate);
+      params.delete(startAccountingPeriodIdParamName);
+      params.delete(endAccountingPeriodIdParamName);
     });
   };
 

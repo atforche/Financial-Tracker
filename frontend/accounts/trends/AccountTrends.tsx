@@ -1,10 +1,12 @@
 import type {
-  AccountBalanceEventSort,
-  AccountType,
-  AccountWithBalanceRangeSort,
+  AccountBalanceEvent,
   AccountsInAccountingPeriodRange,
   AccountsInDateRange,
 } from "@/accounts/types";
+import type {
+  AccountTrendsDataMode,
+  AccountTrendsSearchParams,
+} from "@/accounts/trends/helpers";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import {
   normalizeAccountTypes,
@@ -26,6 +28,7 @@ import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import type { TrendRangeMode } from "@/framework/routes/trendRange";
 import { buildBalanceTrendChartPoints } from "@/framework/charts/helpers";
 import dayjs from "dayjs";
 import getApiClient from "@/framework/data/getApiClient";
@@ -34,28 +37,6 @@ import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
-
-/**
- * URL mode values used to filter the Accounts trends.
- */
-type AccountsTrendsFilterMode = "accounting-period" | "date";
-
-/**
- * Search parameters for the account trends.
- */
-interface AccountTrendsSearchParams {
-  sort?: AccountWithBalanceRangeSort;
-  page?: number | string | null;
-  balanceEventSort?: AccountBalanceEventSort;
-  balanceEventPage?: number | string | null;
-  mode?: AccountsTrendsFilterMode;
-  accountType?: AccountType | readonly AccountType[];
-  accountName?: string | readonly string[];
-  startAccountingPeriodId?: string;
-  endAccountingPeriodId?: string;
-  startDate?: string;
-  endDate?: string;
-}
 
 /**
  * Props for the AccountTrends component.
@@ -102,8 +83,8 @@ const AccountTrends = async function ({
     "Failed to fetch accounting periods",
   );
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
-  const isInOnboardingMode = typeof latestAccountingPeriod === "undefined";
-  const currentMode: AccountsTrendsFilterMode =
+  const isInOnboardingMode = latestAccountingPeriod === null;
+  const currentMode: TrendRangeMode =
     typeof mode === "undefined" || isInOnboardingMode ? "date" : mode;
   const currentAccountTypes = normalizeAccountTypes(
     toRepeatedSearchParams(accountType),
@@ -148,7 +129,7 @@ const AccountTrends = async function ({
   ) {
     redirect(
       routes.trends({
-        mode: "date",
+        mode: "accounting-period",
         ...persistedFilters,
         startAccountingPeriodId: latestAccountingPeriod.id,
         endAccountingPeriodId: latestAccountingPeriod.id,
@@ -156,52 +137,54 @@ const AccountTrends = async function ({
     );
   }
 
-  // Values are assigned by the active range mode below.
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  let trends: AccountsInDateRange | AccountsInAccountingPeriodRange | undefined;
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  let balanceEvents;
-  const accountQuery = {
-    ...(typeof sort === "string" ? { Sort: sort } : {}),
+  const filterQuery = {
     ...(shouldPersistAccountTypes(currentAccountTypes)
       ? { "Filter.Types": [...currentAccountTypes] }
       : {}),
     ...(shouldPersistAccountNames(currentAccountNames)
       ? { "Filter.Names": [...currentAccountNames] }
       : {}),
+  };
+  const accountQuery = {
+    ...(typeof sort === "string" ? { Sort: sort } : {}),
+    ...filterQuery,
     Limit: rowsPerPage,
     Offset: getPageOffset(currentPage),
   };
   const balanceEventQuery = {
     ...(typeof balanceEventSort === "string" ? { Sort: balanceEventSort } : {}),
-    ...(shouldPersistAccountTypes(currentAccountTypes)
-      ? { "Filter.Types": [...currentAccountTypes] }
-      : {}),
-    ...(shouldPersistAccountNames(currentAccountNames)
-      ? { "Filter.Names": [...currentAccountNames] }
-      : {}),
+    ...filterQuery,
     Limit: rowsPerPage,
     Offset: getPageOffset(currentBalanceEventPage),
   };
-  if (currentMode === "date") {
-    const range = {
-      "Range.Start": startDate ?? defaultStartDate.format("YYYY-MM-DD"),
-      "Range.End": endDate ?? defaultEndDate.format("YYYY-MM-DD"),
+  const { trends, balanceEvents } = await (async function (): Promise<{
+    trends: AccountsInDateRange | AccountsInAccountingPeriodRange;
+    balanceEvents: {
+      items: AccountBalanceEvent[];
+      totalCount: number;
     };
-    const [accountResponse, balanceEventResponse] = await Promise.all([
-      apiClient.GET("/accounts/date-range", {
-        params: { query: { ...accountQuery, ...range } },
-      }),
-      apiClient.GET("/balance-events/accounts/date-range", {
-        params: { query: { ...balanceEventQuery, ...range } },
-      }),
-    ]);
-    trends = getApiData(accountResponse, "Failed to load account trends");
-    balanceEvents = getApiData(
-      balanceEventResponse,
-      "Failed to load account balance events",
-    );
-  } else {
+  }> {
+    if (currentMode === "date") {
+      const range = {
+        "Range.Start": startDate ?? defaultStartDate.format("YYYY-MM-DD"),
+        "Range.End": endDate ?? defaultEndDate.format("YYYY-MM-DD"),
+      };
+      const [accountResponse, balanceEventResponse] = await Promise.all([
+        apiClient.GET("/accounts/date-range", {
+          params: { query: { ...accountQuery, ...range } },
+        }),
+        apiClient.GET("/balance-events/accounts/date-range", {
+          params: { query: { ...balanceEventQuery, ...range } },
+        }),
+      ]);
+      return {
+        trends: getApiData(accountResponse, "Failed to load account trends"),
+        balanceEvents: getApiData(
+          balanceEventResponse,
+          "Failed to load account balance events",
+        ),
+      };
+    }
     const range = {
       "Range.Start":
         startAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
@@ -215,13 +198,16 @@ const AccountTrends = async function ({
         params: { query: { ...balanceEventQuery, ...range } },
       }),
     ]);
-    trends = getApiData(accountResponse, "Failed to load account trends");
-    balanceEvents = getApiData(
-      balanceEventResponse,
-      "Failed to load account balance events",
-    );
-  }
-  const modeValue = currentMode === "date" ? "Date" : "AccountingPeriod";
+    return {
+      trends: getApiData(accountResponse, "Failed to load account trends"),
+      balanceEvents: getApiData(
+        balanceEventResponse,
+        "Failed to load account balance events",
+      ),
+    };
+  })();
+  const modeValue: AccountTrendsDataMode =
+    currentMode === "date" ? "Date" : "AccountingPeriod";
   const periodSummaries =
     "accountingPeriods" in trends ? trends.accountingPeriods : [];
   const dateSummaries = "dates" in trends ? trends.dates : [];
@@ -272,12 +258,12 @@ const AccountTrends = async function ({
       </ResponsiveGrid>
       <ResponsiveGrid minimumColumnWidth={800}>
         <AccountTrendsListFrame
-          data={[...trends.accounts.items]}
+          data={trends.accounts.items}
           isInOnboardingMode={isInOnboardingMode}
           totalCount={trends.accounts.totalCount}
         />
         <AccountTrendsBalanceEventListFrame
-          data={[...balanceEvents.items]}
+          data={balanceEvents.items}
           mode={modeValue}
           totalCount={balanceEvents.totalCount}
         />

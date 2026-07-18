@@ -6,11 +6,15 @@ import {
 } from "@/accounts/types";
 import { Box, Button, IconButton, Stack } from "@mui/material";
 import {
+  accountTrendsParamNames,
+  clearAccountTrendsFilters,
+  hasActiveAccountTrendsFilters,
+} from "@/accounts/trends/helpers";
+import {
   formatAccountType,
   isPositiveChangeInBalance,
 } from "@/accounts/helpers";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { AccountTrendsSearchParams } from "@/accounts/trends/AccountTrends";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
@@ -18,7 +22,6 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
-import nameof from "@/framework/data/nameof";
 import routes from "@/accounts/routes";
 import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -27,8 +30,8 @@ import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
  * Props for the AccountTrendsListFrame component.
  */
 interface AccountTrendsListFrameProps {
-  readonly data: AccountWithBalanceRange[] | null;
-  readonly totalCount: number | null;
+  readonly data: readonly AccountWithBalanceRange[];
+  readonly totalCount: number;
   readonly isInOnboardingMode: boolean;
 }
 
@@ -43,20 +46,13 @@ const AccountTrendsListFrame = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sortParamName = nameof<AccountTrendsSearchParams>("sort");
-  const pageParamName = nameof<AccountTrendsSearchParams>("page");
-  const accountTypeParamName = nameof<AccountTrendsSearchParams>("accountType");
-  const accountNameParamName = nameof<AccountTrendsSearchParams>("accountName");
-  const modeParamName = nameof<AccountTrendsSearchParams>("mode");
-  const startAccountingPeriodIdParamName = nameof<AccountTrendsSearchParams>(
-    "startAccountingPeriodId",
-  );
-  const endAccountingPeriodIdParamName = nameof<AccountTrendsSearchParams>(
-    "endAccountingPeriodId",
-  );
-  const startDateParamName = nameof<AccountTrendsSearchParams>("startDate");
-  const endDateParamName = nameof<AccountTrendsSearchParams>("endDate");
+  const { sort: sortParamName, page: pageParamName } = accountTrendsParamNames;
+  const accountNameParamName = accountTrendsParamNames.accountName;
   const updateParams = useSearchParamUpdater([pageParamName]);
+  const updateFilters = useSearchParamUpdater([
+    pageParamName,
+    accountTrendsParamNames.balanceEventPage,
+  ]);
 
   const setSort = function (sort: AccountWithBalanceRangeSort | null): void {
     updateParams((params) => {
@@ -69,7 +65,7 @@ const AccountTrendsListFrame = function ({
   };
 
   const setAccountNameFilter = function (accountName: string): void {
-    updateParams((params) => {
+    updateFilters((params) => {
       params.delete(accountNameParamName);
       params.append(accountNameParamName, accountName);
     });
@@ -85,14 +81,7 @@ const AccountTrendsListFrame = function ({
     AccountWithBalanceRangeSort,
     searchParams.get(sortParamName) ?? "",
   );
-  const hasActiveFilters =
-    searchParams.getAll(accountTypeParamName).length > 0 ||
-    searchParams.getAll(accountNameParamName).length > 0 ||
-    searchParams.get(modeParamName) === "date" ||
-    searchParams.has(startAccountingPeriodIdParamName) ||
-    searchParams.has(endAccountingPeriodIdParamName) ||
-    searchParams.has(startDateParamName) ||
-    searchParams.has(endDateParamName);
+  const hasActiveFilters = hasActiveAccountTrendsFilters(searchParams);
 
   const getSortProps = createColumnSortProps(currentSort, setSort);
 
@@ -205,8 +194,8 @@ const AccountTrendsListFrame = function ({
       title="Accounts"
       columns={columns}
       getId={(account) => account.id}
-      data={data ?? null}
-      totalCount={totalCount ?? null}
+      data={[...data]}
+      totalCount={totalCount}
       pageParamName={pageParamName}
       onRowClick={(account: AccountWithBalanceRange): void => {
         setAccountNameFilter(account.name);
@@ -241,9 +230,7 @@ const AccountTrendsListFrame = function ({
             variant="contained"
             onClick={() => {
               updateParams((params) => {
-                [...params.keys()].forEach((key) => {
-                  params.delete(key);
-                });
+                clearAccountTrendsFilters(params);
               });
             }}
           >

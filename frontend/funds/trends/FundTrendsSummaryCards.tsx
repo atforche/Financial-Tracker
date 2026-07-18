@@ -1,335 +1,128 @@
 "use client";
 
-import {
-  Box,
-  Collapse,
-  Divider,
-  IconButton,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Divider, Stack } from "@mui/material";
 import type {
   FundBalanceSummaryByDate,
   FundBalanceSummaryByPeriod,
 } from "@/funds/types";
+import {
+  type FundTrendsDataMode,
+  getFundTrendsSnapshot,
+} from "@/funds/trends/helpers";
 import { type JSX, type ReactNode, useState } from "react";
-import ExpandMore from "@mui/icons-material/ExpandMore";
-import SummaryCard from "@/framework/view/SummaryCard";
+import BreakdownSection from "@/framework/view/BreakdownSection";
+import ChangeValue from "@/framework/view/ChangeValue";
+import ExpandableSummaryCard from "@/framework/view/ExpandableSummaryCard";
+import SummaryCardGrid from "@/framework/view/SummaryCardGrid";
 import { formatCurrency } from "@/framework/currencyHelpers";
-import formatShortDate from "@/framework/formatShortDate";
 
 interface FundTrendsSummaryCardsProps {
-  readonly mode: "AccountingPeriod" | "Date";
-  readonly accountingPeriods: FundBalanceSummaryByPeriod[];
-  readonly dates: FundBalanceSummaryByDate[];
+  readonly mode: FundTrendsDataMode;
+  readonly accountingPeriods: readonly FundBalanceSummaryByPeriod[];
+  readonly dates: readonly FundBalanceSummaryByDate[];
 }
 
-/**
- * Summary metrics derived from the selected trends range.
- */
-interface TrendsSnapshot {
-  readonly startLabel: string;
-  readonly endLabel: string;
-  readonly totalStartingBalance: number;
-  readonly totalEndingBalance: number;
-  readonly assignedStartingBalance: number;
-  readonly assignedEndingBalance: number;
-  readonly unassignedStartingBalance: number;
-  readonly unassignedEndingBalance: number;
-}
-
-const getTrendsSnapshot = function ({
-  mode,
-  accountingPeriods,
-  dates,
-}: FundTrendsSummaryCardsProps): TrendsSnapshot {
-  if (mode === "AccountingPeriod" && accountingPeriods.length > 0) {
-    const firstPeriod = accountingPeriods.at(0);
-    const lastPeriod = accountingPeriods.at(-1);
-    if (
-      typeof firstPeriod === "undefined" ||
-      typeof lastPeriod === "undefined"
-    ) {
-      return {
-        startLabel: "Start",
-        endLabel: "End",
-        totalStartingBalance: 0,
-        totalEndingBalance: 0,
-        assignedStartingBalance: 0,
-        assignedEndingBalance: 0,
-        unassignedStartingBalance: 0,
-        unassignedEndingBalance: 0,
-      };
-    }
-    return {
-      startLabel: firstPeriod.accountingPeriod.name,
-      endLabel: lastPeriod.accountingPeriod.name,
-      totalStartingBalance: firstPeriod.openingBalance.totalBalance,
-      totalEndingBalance: lastPeriod.closingBalance.totalBalance,
-      assignedStartingBalance: firstPeriod.openingBalance.totalAssignedBalance,
-      assignedEndingBalance: lastPeriod.closingBalance.totalAssignedBalance,
-      unassignedStartingBalance:
-        firstPeriod.openingBalance.totalUnassignedBalance,
-      unassignedEndingBalance: lastPeriod.closingBalance.totalUnassignedBalance,
-    };
-  }
-
-  const firstDate = dates.at(0);
-  const lastDate = dates.at(-1);
-
-  return {
-    startLabel: firstDate
-      ? formatShortDate(new Date(`${firstDate.date}T00:00:00`))
-      : "Start",
-    endLabel: lastDate
-      ? formatShortDate(new Date(`${lastDate.date}T00:00:00`))
-      : "End",
-    totalStartingBalance: firstDate?.totalBalance ?? 0,
-    totalEndingBalance: lastDate?.totalBalance ?? 0,
-    assignedStartingBalance: firstDate?.totalAssignedBalance ?? 0,
-    assignedEndingBalance: lastDate?.totalAssignedBalance ?? 0,
-    unassignedStartingBalance: firstDate?.totalUnassignedBalance ?? 0,
-    unassignedEndingBalance: lastDate?.totalUnassignedBalance ?? 0,
-  };
-};
-
-interface BalanceBreakdownSectionProps {
+interface BreakdownDefinition {
   readonly label: string;
   readonly value: ReactNode;
 }
 
-const BalanceBreakdownSection = function ({
-  label,
-  value,
-}: BalanceBreakdownSectionProps): JSX.Element {
-  return (
-    <Stack spacing={0.75}>
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        gap={1.5}
-      >
-        <Typography variant="body2">{label}</Typography>
-        <Stack direction="row" alignItems="center" gap={0.5}>
-          <Typography
-            variant="body2"
-            fontWeight={600}
-            sx={{ textAlign: "right" }}
-          >
-            {value}
-          </Typography>
-        </Stack>
-      </Stack>
-    </Stack>
-  );
-};
-
-interface BalanceBreakdownProps {
-  readonly expanded: boolean;
-  readonly children: ReactNode;
+interface CardDefinition {
+  readonly title: string;
+  readonly value: ReactNode;
+  readonly breakdowns: readonly BreakdownDefinition[];
 }
 
-const BalanceBreakdown = function ({
-  expanded,
-  children,
-}: BalanceBreakdownProps): JSX.Element {
-  return (
-    <Collapse in={expanded} timeout="auto" unmountOnExit>
-      <Stack spacing={1.25} sx={{ pt: 1.25 }}>
-        <Divider />
-        {children}
-      </Stack>
-    </Collapse>
-  );
-};
-
-/**
- * Displays the top-level fund balance summary cards with synchronized details.
- */
+/** Displays fund balances for the selected trends range. */
 const FundTrendsSummaryCards = function ({
   mode,
   accountingPeriods,
   dates,
 }: FundTrendsSummaryCardsProps): JSX.Element {
-  const snapshot = getTrendsSnapshot({ mode, accountingPeriods, dates });
-
+  const snapshot = getFundTrendsSnapshot(mode, accountingPeriods, dates);
   const [expanded, setExpanded] = useState(false);
-  const netChange = snapshot.totalEndingBalance - snapshot.totalStartingBalance;
-  const percentChange =
-    snapshot.totalStartingBalance === 0
-      ? 0
-      : (netChange / Math.abs(snapshot.totalStartingBalance)) * 100;
-  const isPositive = netChange >= 0;
-  const valueColor = isPositive ? "success.main" : "error.main";
-  const assignedNetChange =
-    snapshot.assignedEndingBalance - snapshot.assignedStartingBalance;
-  const unassignedNetChange =
-    snapshot.unassignedEndingBalance - snapshot.unassignedStartingBalance;
-  const assignedPercentChange =
-    snapshot.assignedStartingBalance === 0
-      ? 0
-      : (assignedNetChange / Math.abs(snapshot.assignedStartingBalance)) * 100;
-  const unassignedPercentChange =
-    snapshot.unassignedStartingBalance === 0
-      ? 0
-      : (unassignedNetChange / Math.abs(snapshot.unassignedStartingBalance)) *
-        100;
-  const handleToggleExpanded = function (): void {
-    setExpanded((currentValue) => !currentValue);
+  const toggleExpanded = function (): void {
+    setExpanded((value) => !value);
   };
 
-  return (
-    <Box
-      sx={{
-        display: "grid",
-        gap: 2,
-        gridTemplateColumns: {
-          xs: "1fr",
-          md: "repeat(2, minmax(0, 1fr))",
-          xl: "repeat(3, minmax(0, 1fr))",
+  const cards: readonly CardDefinition[] = [
+    {
+      title: `Starting balance (${snapshot.startLabel})`,
+      value: formatCurrency(snapshot.totalStartingBalance),
+      breakdowns: [
+        {
+          label: "Assigned",
+          value: formatCurrency(snapshot.assignedStartingBalance),
         },
-      }}
-    >
-      <SummaryCard
-        title={`Starting balance (${snapshot.startLabel})`}
-        value={
-          <Stack
-            direction="row"
-            alignItems="center"
-            gap={0.5}
-            justifyContent="space-between"
-          >
-            <Box>{formatCurrency(snapshot.totalStartingBalance)}</Box>
-            <IconButton
-              size="small"
-              onClick={handleToggleExpanded}
-              sx={{
-                p: 0.25,
-                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.3s ease-in-out",
-              }}
-            >
-              <ExpandMore fontSize="small" />
-            </IconButton>
-          </Stack>
-        }
-      >
-        <BalanceBreakdown expanded={expanded}>
+        {
+          label: "Unassigned",
+          value: formatCurrency(snapshot.unassignedStartingBalance),
+        },
+      ],
+    },
+    {
+      title: `Ending balance (${snapshot.endLabel})`,
+      value: formatCurrency(snapshot.totalEndingBalance),
+      breakdowns: [
+        {
+          label: "Assigned",
+          value: formatCurrency(snapshot.assignedEndingBalance),
+        },
+        {
+          label: "Unassigned",
+          value: formatCurrency(snapshot.unassignedEndingBalance),
+        },
+      ],
+    },
+    {
+      title: "Net change",
+      value: (
+        <ChangeValue
+          startingValue={snapshot.totalStartingBalance}
+          endingValue={snapshot.totalEndingBalance}
+        />
+      ),
+      breakdowns: [
+        {
+          label: "Assigned",
+          value: (
+            <ChangeValue
+              startingValue={snapshot.assignedStartingBalance}
+              endingValue={snapshot.assignedEndingBalance}
+            />
+          ),
+        },
+        {
+          label: "Unassigned",
+          value: (
+            <ChangeValue
+              startingValue={snapshot.unassignedStartingBalance}
+              endingValue={snapshot.unassignedEndingBalance}
+            />
+          ),
+        },
+      ],
+    },
+  ];
+
+  return (
+    <SummaryCardGrid>
+      {cards.map((card) => (
+        <ExpandableSummaryCard
+          key={card.title}
+          title={card.title}
+          value={card.value}
+          expanded={expanded}
+          onToggle={toggleExpanded}
+        >
           <Stack spacing={1.25} divider={<Divider flexItem />}>
-            <BalanceBreakdownSection
-              label="Assigned"
-              value={formatCurrency(snapshot.assignedStartingBalance)}
-            />
-            <BalanceBreakdownSection
-              label="Unassigned"
-              value={formatCurrency(snapshot.unassignedStartingBalance)}
-            />
+            {card.breakdowns.map((breakdown) => (
+              <BreakdownSection key={breakdown.label} {...breakdown} />
+            ))}
           </Stack>
-        </BalanceBreakdown>
-      </SummaryCard>
-      <SummaryCard
-        title={`Ending balance (${snapshot.endLabel})`}
-        value={
-          <Stack
-            direction="row"
-            alignItems="center"
-            gap={0.5}
-            justifyContent="space-between"
-          >
-            <Box>{formatCurrency(snapshot.totalEndingBalance)}</Box>
-            <IconButton
-              size="small"
-              onClick={handleToggleExpanded}
-              sx={{
-                p: 0.25,
-                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.3s ease-in-out",
-              }}
-            >
-              <ExpandMore fontSize="small" />
-            </IconButton>
-          </Stack>
-        }
-      >
-        <BalanceBreakdown expanded={expanded}>
-          <Stack spacing={1.25} divider={<Divider flexItem />}>
-            <BalanceBreakdownSection
-              label="Assigned"
-              value={formatCurrency(snapshot.assignedEndingBalance)}
-            />
-            <BalanceBreakdownSection
-              label="Unassigned"
-              value={formatCurrency(snapshot.unassignedEndingBalance)}
-            />
-          </Stack>
-        </BalanceBreakdown>
-      </SummaryCard>
-      <SummaryCard
-        title="Net change"
-        value={
-          <Stack
-            direction="row"
-            alignItems="center"
-            gap={0.5}
-            justifyContent="space-between"
-          >
-            <Box component="span" sx={{ color: valueColor }}>
-              {formatCurrency(netChange)} ({isPositive ? "+" : ""}
-              {percentChange.toFixed(2)}%)
-            </Box>
-            <IconButton
-              size="small"
-              onClick={handleToggleExpanded}
-              sx={{
-                p: 0.25,
-                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.3s ease-in-out",
-              }}
-            >
-              <ExpandMore fontSize="small" />
-            </IconButton>
-          </Stack>
-        }
-      >
-        <BalanceBreakdown expanded={expanded}>
-          <Stack spacing={1.25} divider={<Divider flexItem />}>
-            <BalanceBreakdownSection
-              label="Tracked"
-              value={
-                <Box
-                  component="span"
-                  sx={{
-                    color:
-                      assignedNetChange >= 0 ? "success.main" : "error.main",
-                  }}
-                >
-                  {formatCurrency(assignedNetChange)} (
-                  {assignedNetChange >= 0 ? "+" : ""}
-                  {assignedPercentChange.toFixed(2)}%)
-                </Box>
-              }
-            />
-            <BalanceBreakdownSection
-              label="Unassigned"
-              value={
-                <Box
-                  component="span"
-                  sx={{
-                    color:
-                      unassignedNetChange >= 0 ? "success.main" : "error.main",
-                  }}
-                >
-                  {formatCurrency(unassignedNetChange)} (
-                  {unassignedNetChange >= 0 ? "+" : ""}
-                  {unassignedPercentChange.toFixed(2)}%)
-                </Box>
-              }
-            />
-          </Stack>
-        </BalanceBreakdown>
-      </SummaryCard>
-    </Box>
+        </ExpandableSummaryCard>
+      ))}
+    </SummaryCardGrid>
   );
 };
 

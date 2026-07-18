@@ -11,6 +11,7 @@ import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import Link from "next/link";
 import ListFrame from "@/framework/listframe/ListFrame";
 import dayjs from "dayjs";
+import { formatBalanceEventType } from "@/framework/data/helpers";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import nameof from "@/framework/data/nameof";
 import routes from "@/transactions/routes";
@@ -63,7 +64,7 @@ const FundBalanceEventsFrame = function ({
             fontWeight: 600,
           }}
         >
-          {balanceEvent.type === BalanceEventType.Debit ? "Debit" : "Credit"}
+          {formatBalanceEventType(balanceEvent.type, balanceEvent.isPosted)}
         </Box>
       ),
       minWidth: 130,
