@@ -23,7 +23,7 @@ import routes from "@/accounting-periods/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 
 /**
- * Search parameters supported by the Accounting Period workspace.
+ * Search parameters supported by the accounting period workspace.
  */
 interface AccountingPeriodWorkspaceSearchParams {
   years?: number | number[];
@@ -52,26 +52,36 @@ const AccountingPeriodWorkspace = async function ({
     await searchParams;
   const currentPage = normalizePageValue(page);
   const currentYear = new Date().getFullYear();
-  const normalizedYears = normalizeIntegerSearchParams(
-    toRepeatedSearchParams(years),
-    1,
-    currentYear,
-  );
   const normalizedMonths = normalizeIntegerSearchParams(
     toRepeatedSearchParams(months),
     1,
     12,
   );
 
-  const firstAccountingPeriodPromise = apiClient.GET("/accounting-periods", {
-    params: {
-      query: {
-        Sort: AccountingPeriodSort.Date,
-        Limit: 1,
+  const firstAccountingPeriodResponse = await apiClient.GET(
+    "/accounting-periods",
+    {
+      params: {
+        query: {
+          Sort: AccountingPeriodSort.Date,
+          Limit: 1,
+        },
       },
     },
-  });
-  const accountingPeriodsPromise = apiClient.GET(
+  );
+  const firstAccountingPeriod = getApiData(
+    firstAccountingPeriodResponse,
+    "Failed to fetch the first accounting period",
+  );
+  const firstAccountingPeriodYear =
+    firstAccountingPeriod.items[0]?.year ?? currentYear;
+  const normalizedYears = normalizeIntegerSearchParams(
+    toRepeatedSearchParams(years),
+    firstAccountingPeriodYear,
+    currentYear,
+  );
+
+  const accountingPeriodsResponse = await apiClient.GET(
     "/accounting-periods/with-balances",
     {
       params: {
@@ -86,13 +96,6 @@ const AccountingPeriodWorkspace = async function ({
     },
   );
 
-  const [firstAccountingPeriodResponse, accountingPeriodsResponse] =
-    await Promise.all([firstAccountingPeriodPromise, accountingPeriodsPromise]);
-
-  const firstAccountingPeriod = getApiData(
-    firstAccountingPeriodResponse,
-    "Failed to fetch the first accounting period",
-  );
   const accountingPeriods = getApiData(
     accountingPeriodsResponse,
     "Failed to fetch accounting periods",

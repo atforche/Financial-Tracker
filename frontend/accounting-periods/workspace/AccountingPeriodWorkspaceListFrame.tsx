@@ -59,16 +59,16 @@ const AccountingPeriodWorkspaceListFrame = function ({
     });
   };
 
-  const toggleSelection = function (accountId: string): void {
+  const toggleSelection = function (accountingPeriodId: string): void {
     updateParams((params) => {
-      const currentlySelectedAccountId = params.get(
+      const currentlySelectedAccountingPeriodId = params.get(
         selectedAccountingPeriodIdParamName,
       );
-      if (currentlySelectedAccountId === accountId) {
+      if (currentlySelectedAccountingPeriodId === accountingPeriodId) {
         params.delete(selectedAccountingPeriodIdParamName);
         return;
       }
-      params.set(selectedAccountingPeriodIdParamName, accountId);
+      params.set(selectedAccountingPeriodIdParamName, accountingPeriodId);
     });
   };
 
@@ -114,7 +114,19 @@ const AccountingPeriodWorkspaceListFrame = function ({
       name: "isOpen",
       headerContent: "Is Open",
       getBodyContent: (accountingPeriod) => (
-        <Checkbox checked={accountingPeriod.isOpen} />
+        <Checkbox
+          checked={accountingPeriod.isOpen}
+          onClick={(event) => {
+            event.stopPropagation();
+          }}
+          slotProps={{
+            input: {
+              "aria-label": `${accountingPeriod.name} is ${accountingPeriod.isOpen ? "open" : "closed"}`,
+              readOnly: true,
+              tabIndex: -1,
+            },
+          }}
+        />
       ),
       ...getSortProps(
         AccountingPeriodWithBalanceSort.IsOpen,
@@ -179,12 +191,7 @@ const AccountingPeriodWorkspaceListFrame = function ({
                 params.delete(monthParamName);
                 params.delete(pageParamName);
                 params.delete(selectedAccountingPeriodIdParamName);
-                if (
-                  params.get(actionParamName) === "update" ||
-                  params.get(actionParamName) === "delete"
-                ) {
-                  params.delete(actionParamName);
-                }
+                params.delete(actionParamName);
               });
             }}
           >

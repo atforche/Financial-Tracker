@@ -1,34 +1,21 @@
 "use server";
 
-import formatErrors from "@/framework/forms/formatErrors";
+import {
+  type AccountingPeriodActionPayload,
+  type AccountingPeriodActionState,
+  getAccountingPeriodActionError,
+} from "@/accounting-periods/workspace/accountingPeriodAction";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import { revalidatePath } from "next/cache";
 
 /**
- * Interface representing the state of deleting an accounting period.
- */
-interface ActionState {
-  readonly success?: boolean;
-  readonly errorTitle?: string | null;
-  readonly unmappedErrors?: string | null;
-}
-
-/**
- * Payload for the delete accounting period server action.
- */
-interface ActionPayload {
-  readonly accountingPeriodId: string;
-  readonly redirectUrl: string;
-}
-
-/**
  * Server action that deletes an existing accounting period.
  */
 const deleteAccountingPeriod = async function (
-  _: ActionState,
-  { accountingPeriodId, redirectUrl }: ActionPayload,
-): Promise<ActionState> {
+  _: AccountingPeriodActionState,
+  { accountingPeriodId, redirectUrl }: AccountingPeriodActionPayload,
+): Promise<AccountingPeriodActionState> {
   const client = getApiClient();
   const { error } = await client.DELETE(
     "/accounting-periods/{accountingPeriodId}",
@@ -42,14 +29,7 @@ const deleteAccountingPeriod = async function (
   );
   if (error) {
     if (isApiError(error)) {
-      const unmappedErrors: (string | null)[] = [];
-      for (const key of Object.keys(error.errors ?? {})) {
-        unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
-      }
-      return {
-        errorTitle: error.title ?? null,
-        unmappedErrors: unmappedErrors.join(", ") || null,
-      };
+      return getAccountingPeriodActionError(error);
     }
     throw new Error("An unexpected error occurred", { cause: error });
   }

@@ -1,5 +1,6 @@
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { ComboBoxOption } from "@/framework/forms/ComboBoxEntryField";
 
 const accountingPeriodMonths = Array.from(
   { length: 12 },
@@ -17,6 +18,12 @@ const monthNameFormatter = new Intl.DateTimeFormat("en-US", {
 const formatAccountingPeriodMonth = function (month: number): string {
   return monthNameFormatter.format(new Date(Date.UTC(2024, month - 1, 1)));
 };
+
+const accountingPeriodMonthOptions: ComboBoxOption<number>[] =
+  accountingPeriodMonths.map((accountingPeriodMonth) => ({
+    label: formatAccountingPeriodMonth(accountingPeriodMonth),
+    value: accountingPeriodMonth,
+  }));
 
 /**
  * Gets the minimum date associated with the provided accounting period.
@@ -48,6 +55,7 @@ const getDefaultDate = function (
 
 export {
   accountingPeriodMonths,
+  accountingPeriodMonthOptions,
   formatAccountingPeriodMonth,
   getMinimumDate,
   getMaximumDate,

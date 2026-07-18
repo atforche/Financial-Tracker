@@ -1,9 +1,8 @@
 "use client";
 
-import { type JSX, startTransition, useActionState } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import { Button } from "@mui/material";
-import ConfirmActionDialog from "@/framework/dialog/ConfirmActionDialog";
+import AccountingPeriodConfirmationForm from "@/accounting-periods/workspace/AccountingPeriodConfirmationForm";
+import type { JSX } from "react";
 import reopenAccountingPeriod from "@/accounting-periods/workspace/reopenAccountingPeriod";
 
 /**
@@ -21,31 +20,13 @@ const ReopenAccountingPeriodForm = function ({
   accountingPeriod,
   redirectUrl,
 }: ReopenAccountingPeriodFormProps): JSX.Element {
-  const [state, action, pending] = useActionState(reopenAccountingPeriod, {});
-
   return (
-    <ConfirmActionDialog
-      trigger={(openDialog) => (
-        <Button variant="contained" onClick={openDialog}>
-          Reopen
-        </Button>
-      )}
-      title="Reopen Accounting Period"
-      confirmationCopy={
-        <>
-          Are you sure you want to reopen the accounting period &quot;
-          {accountingPeriod.name}&quot;?
-        </>
-      }
-      confirmLabel="Reopen"
-      pending={pending}
-      errorTitle={state.errorTitle}
-      unmappedErrors={state.unmappedErrors}
-      onConfirm={() => {
-        startTransition(() => {
-          action({ accountingPeriodId: accountingPeriod.id, redirectUrl });
-        });
-      }}
+    <AccountingPeriodConfirmationForm
+      accountingPeriod={accountingPeriod}
+      redirectUrl={redirectUrl}
+      action={reopenAccountingPeriod}
+      actionLabel="Reopen"
+      actionVerb="reopen"
     />
   );
 };

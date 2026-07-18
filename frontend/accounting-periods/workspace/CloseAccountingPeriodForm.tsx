@@ -1,9 +1,8 @@
 "use client";
 
-import { type JSX, startTransition, useActionState } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import { Button } from "@mui/material";
-import ConfirmActionDialog from "@/framework/dialog/ConfirmActionDialog";
+import AccountingPeriodConfirmationForm from "@/accounting-periods/workspace/AccountingPeriodConfirmationForm";
+import type { JSX } from "react";
 import closeAccountingPeriod from "@/accounting-periods/workspace/closeAccountingPeriod";
 
 /**
@@ -21,30 +20,13 @@ const CloseAccountingPeriodForm = function ({
   accountingPeriod,
   redirectUrl,
 }: CloseAccountingPeriodFormProps): JSX.Element {
-  const [state, action, pending] = useActionState(closeAccountingPeriod, {});
   return (
-    <ConfirmActionDialog
-      trigger={(openDialog) => (
-        <Button variant="contained" onClick={openDialog}>
-          Close
-        </Button>
-      )}
-      title="Close Accounting Period"
-      confirmationCopy={
-        <>
-          Are you sure you want to close the accounting period &quot;
-          {accountingPeriod.name}&quot;?
-        </>
-      }
-      confirmLabel="Close"
-      pending={pending}
-      errorTitle={state.errorTitle}
-      unmappedErrors={state.unmappedErrors}
-      onConfirm={() => {
-        startTransition(() => {
-          action({ accountingPeriodId: accountingPeriod.id, redirectUrl });
-        });
-      }}
+    <AccountingPeriodConfirmationForm
+      accountingPeriod={accountingPeriod}
+      redirectUrl={redirectUrl}
+      action={closeAccountingPeriod}
+      actionLabel="Close"
+      actionVerb="close"
     />
   );
 };

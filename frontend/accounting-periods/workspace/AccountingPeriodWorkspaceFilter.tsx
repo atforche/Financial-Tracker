@@ -25,7 +25,7 @@ interface AccountingPeriodWorkspaceFilterProps {
 }
 
 /**
- * Renders the filter card for the Accounting Period workspace with year and month filters.
+ * Renders the filter card for the accounting period workspace with year and month filters.
  */
 const AccountingPeriodWorkspaceFilter = function ({
   firstAccountingPeriod,
@@ -36,6 +36,8 @@ const AccountingPeriodWorkspaceFilter = function ({
   const yearsParamName = nameof<AccountingPeriodWorkspaceSearchParams>("years");
   const monthsParamName =
     nameof<AccountingPeriodWorkspaceSearchParams>("months");
+  const selectedAccountingPeriodIdParamName =
+    nameof<AccountingPeriodWorkspaceSearchParams>("selectedAccountingPeriodId");
 
   const currentYear = new Date().getFullYear();
   const firstAccountingPeriodYear = firstAccountingPeriod?.year ?? currentYear;
@@ -61,7 +63,10 @@ const AccountingPeriodWorkspaceFilter = function ({
     (value) => value,
   );
 
-  const updateParams = useSearchParamUpdater([pageParamName]);
+  const updateParams = useSearchParamUpdater([
+    pageParamName,
+    selectedAccountingPeriodIdParamName,
+  ]);
 
   const hasActiveView = currentYears.length > 0 || currentMonths.length > 0;
 

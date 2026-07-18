@@ -2,10 +2,6 @@
 
 import { Alert, Button, DialogActions, Stack } from "@mui/material";
 import {
-  ComboBoxEntryField,
-  type ComboBoxOption,
-} from "@/framework/forms/ComboBoxEntryField";
-import {
   type JSX,
   startTransition,
   useActionState,
@@ -13,13 +9,11 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  accountingPeriodMonths,
-  formatAccountingPeriodMonth,
-} from "@/accounting-periods/helpers";
+import { ComboBoxEntryField } from "@/framework/forms/ComboBoxEntryField";
 import type { CreateAccountingPeriodRequest } from "@/accounting-periods/types";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import IntegerEntryField from "@/framework/forms/IntegerEntryField";
+import { accountingPeriodMonthOptions } from "@/accounting-periods/helpers";
 import createAccountingPeriod from "@/accounting-periods/workspace/createAccountingPeriod";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 
@@ -32,7 +26,7 @@ interface CreateAccountingPeriodFormProps {
 }
 
 /**
- * Components that displays the form for creating an accounting period.
+ * Displays the form for creating an accounting period.
  */
 const CreateAccountingPeriodForm = function ({
   isInOnboardingMode,
@@ -42,14 +36,9 @@ const CreateAccountingPeriodForm = function ({
   const [month, setMonth] = useState<number | null>(null);
   const formRef = useRef<HTMLDivElement | null>(null);
   const [state, action, pending] = useActionState(createAccountingPeriod, {});
-  const monthOptions: ComboBoxOption<number>[] = accountingPeriodMonths.map(
-    (accountingPeriodMonth) => ({
-      label: formatAccountingPeriodMonth(accountingPeriodMonth),
-      value: accountingPeriodMonth,
-    }),
-  );
   const selectedMonthOption =
-    monthOptions.find((option) => option.value === month) ?? null;
+    accountingPeriodMonthOptions.find((option) => option.value === month) ??
+    null;
 
   const reset = function (): void {
     setYear(null);
@@ -85,7 +74,7 @@ const CreateAccountingPeriodForm = function ({
       />
       <ComboBoxEntryField<number>
         label="Month"
-        options={monthOptions}
+        options={accountingPeriodMonthOptions}
         value={selectedMonthOption}
         setValue={(value) => {
           setMonth(value?.value ?? null);

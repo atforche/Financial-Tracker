@@ -2,7 +2,9 @@
 
 import {
   type AccountingPeriodWorkspaceAction,
+  accountingPeriodWorkspaceActionLabels,
   accountingPeriodWorkspaceActions,
+  getAvailableAccountingPeriodWorkspaceActions,
 } from "@/accounting-periods/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
@@ -39,12 +41,9 @@ const AccountingPeriodWorkspaceActions = function ({
 
   const actionParamName =
     nameof<AccountingPeriodWorkspaceSearchParams>("action");
-  const availableActions: readonly AccountingPeriodWorkspaceAction[] =
-    selectedAccountingPeriod === null
-      ? ["create"]
-      : selectedAccountingPeriod.isOpen
-        ? ["close", "delete", "create"]
-        : ["reopen", "delete", "create"];
+  const availableActions = getAvailableAccountingPeriodWorkspaceActions(
+    selectedAccountingPeriod,
+  );
   const activeAction =
     requestedAction !== null && availableActions.includes(requestedAction)
       ? requestedAction
@@ -65,14 +64,7 @@ const AccountingPeriodWorkspaceActions = function ({
           onChange={setAction}
           options={accountingPeriodWorkspaceActions.map((action) => ({
             value: action,
-            label:
-              action === "create"
-                ? "Create"
-                : action === "close"
-                  ? "Close"
-                  : action === "reopen"
-                    ? "Reopen"
-                    : "Delete",
+            label: accountingPeriodWorkspaceActionLabels[action],
             disabled: !availableActions.includes(action),
           }))}
         />
