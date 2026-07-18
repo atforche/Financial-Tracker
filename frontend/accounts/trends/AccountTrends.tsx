@@ -1,7 +1,7 @@
 import type {
-  AccountBalanceEventSortValue,
+  AccountBalanceEventSort,
   AccountType,
-  AccountWithBalanceRangeSortValue,
+  AccountWithBalanceRangeSort,
   AccountsInAccountingPeriodRange,
   AccountsInDateRange,
 } from "@/accounts/types";
@@ -9,16 +9,17 @@ import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
-} from "@/accounts/trends/accountTypeFilter";
+} from "@/accounts/accountTypeFilterHelpers";
 import {
   normalizeRequestedAccountNames,
   shouldPersistAccountNames,
-} from "@/accounts/trends/accountNameFilter";
+} from "@/accounts/accountNameFilterHelpers";
 import AccountTrendsBalanceEventListFrame from "@/accounts/trends/AccountTrendsBalanceEventListFrame";
 import AccountTrendsChangeChart from "@/accounts/trends/AccountTrendsChangeChart";
 import AccountTrendsFilter from "@/accounts/trends/AccountTrendsFilter";
 import AccountTrendsListFrame from "@/accounts/trends/AccountTrendsListFrame";
 import AccountTrendsSummaryCards from "@/accounts/trends/AccountTrendsSummaryCards";
+import { AccountingPeriodSort } from "@/accounting-periods/types";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
@@ -43,9 +44,9 @@ type AccountsTrendsFilterMode = "accounting-period" | "date";
  * Search parameters for the account trends.
  */
 interface AccountTrendsSearchParams {
-  sort?: AccountWithBalanceRangeSortValue;
+  sort?: AccountWithBalanceRangeSort;
   page?: number | string | null;
-  balanceEventSort?: AccountBalanceEventSortValue;
+  balanceEventSort?: AccountBalanceEventSort;
   balanceEventPage?: number | string | null;
   mode?: AccountsTrendsFilterMode;
   accountType?: AccountType | readonly AccountType[];
@@ -90,7 +91,7 @@ const AccountTrends = async function ({
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
       query: {
-        Sort: "DateDescending",
+        Sort: AccountingPeriodSort.DateDescending,
         Limit: 500,
         Offset: 0,
       },

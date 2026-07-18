@@ -9,7 +9,7 @@ import type { ChangeEvent, JSX } from "react";
 import {
   normalizeAccountNames,
   shouldPersistAccountNames,
-} from "@/accounts/trends/accountNameFilter";
+} from "@/accounts/accountNameFilterHelpers";
 import {
   normalizeFundNames,
   shouldPersistFundNames,
@@ -19,6 +19,7 @@ import {
   shouldPersistTransactionTypes,
   transactionTypeValues,
 } from "@/transactions/trends/transactionTypeFilter";
+import AccountNameFilter from "@/accounts/AccountNameFilter";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
@@ -316,47 +317,11 @@ const TransactionTrendsFilter = function ({
           />
         )}
       />
-      <Autocomplete
-        multiple
-        disableCloseOnSelect
-        size="small"
-        options={[...availableAccountNames]}
-        value={[...currentAccountNames]}
-        disabled={disabled || availableAccountNames.length === 0}
-        limitTags={1}
-        sx={sharedAutocompleteSx}
-        noOptionsText={
-          availableAccountNames.length === 0
-            ? "No account names available"
-            : "No account names found"
-        }
-        slotProps={{
-          paper: {
-            sx: {
-              "& .MuiAutocomplete-listbox": {
-                maxHeight: 320,
-              },
-            },
-          },
-        }}
-        onChange={(_, nextAccountNames) => {
-          handleAccountNameChange(nextAccountNames);
-        }}
-        renderOption={(props, option, { selected }) => (
-          <li {...props}>
-            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-            {option}
-          </li>
-        )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Account names"
-            {...(currentAccountNames.length === 0
-              ? { placeholder: "All account names" }
-              : {})}
-          />
-        )}
+      <AccountNameFilter
+        availableAccountNames={availableAccountNames}
+        value={currentAccountNames}
+        onChange={handleAccountNameChange}
+        disabled={disabled}
       />
       <Autocomplete
         multiple

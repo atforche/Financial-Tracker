@@ -13,7 +13,7 @@ import {
 import {
   normalizeRequestedAccountNames,
   shouldPersistAccountNames,
-} from "@/accounts/trends/accountNameFilter";
+} from "@/accounts/accountNameFilterHelpers";
 import {
   normalizeRequestedFundNames,
   shouldPersistFundNames,

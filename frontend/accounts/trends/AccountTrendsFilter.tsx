@@ -8,15 +8,15 @@ import { Button, TextField } from "@mui/material";
 import {
   normalizeAccountNames,
   shouldPersistAccountNames,
-} from "@/accounts/trends/accountNameFilter";
+} from "@/accounts/accountNameFilterHelpers";
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
-} from "@/accounts/trends/accountTypeFilter";
-import AccountTrendsAccountNameFilter from "@/accounts/trends/AccountTrendsAccountNameFilter";
-import AccountTrendsAccountTypeFilter from "@/accounts/trends/AccountTrendsAccountTypeFilter";
+} from "@/accounts/accountTypeFilterHelpers";
+import AccountNameFilter from "@/accounts/AccountNameFilter";
 import type { AccountTrendsSearchParams } from "@/accounts/trends/AccountTrends";
 import type { AccountType } from "@/accounts/types";
+import AccountTypeFilter from "@/accounts/AccountTypeFilter";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
@@ -251,12 +251,12 @@ const AccountTrendsFilter = function ({
           />
         </>
       )}
-      <AccountTrendsAccountTypeFilter
+      <AccountTypeFilter
         value={currentAccountTypes}
         onChange={handleAccountTypeChange}
         disabled={disabled}
       />
-      <AccountTrendsAccountNameFilter
+      <AccountNameFilter
         availableAccountNames={availableAccountNames}
         value={currentAccountNames}
         onChange={handleAccountNameChange}

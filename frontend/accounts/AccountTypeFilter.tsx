@@ -1,14 +1,5 @@
 "use client";
 
-import { type AccountType, formatAccountType } from "@/accounts/types";
-import {
-  type AccountTypeFilterGroup,
-  accountTypeFilterGroups,
-  formatSelectedAccountTypes,
-  getAccountTypeGroupSelectionState,
-  normalizeAccountTypes,
-  toggleAccountTypeGroup,
-} from "@/accounts/trends/accountTypeFilter";
 import {
   Checkbox,
   FormControl,
@@ -19,41 +10,38 @@ import {
   Select,
   type SelectChangeEvent,
 } from "@mui/material";
-import type { JSX } from "react";
+import { type JSX, useId } from "react";
+import {
+  accountTypeFilterGroups,
+  formatSelectedAccountTypes,
+  getAccountTypeFilterGroupFromValue,
+  getAccountTypeGroupSelectionState,
+  groupValuePrefix,
+  isAccountTypeFilterGroupValue,
+  normalizeAccountTypes,
+  toggleAccountTypeGroup,
+} from "@/accounts/accountTypeFilterHelpers";
+import type { AccountType } from "@/accounts/types";
+import { formatAccountType } from "@/accounts/helpers";
 
-interface AccountTrendsAccountTypeFilterProps {
+/**
+ * Props for the AccountTypeFilter component.
+ */
+interface AccountTypeFilterProps {
   readonly value: readonly AccountType[];
   readonly onChange: (accountTypes: readonly AccountType[]) => void;
   readonly disabled?: boolean;
 }
 
-const groupValuePrefix = "__group__";
-
-const isAccountTypeFilterGroupValue = function (
-  value: string,
-): value is `${typeof groupValuePrefix}${AccountTypeFilterGroup}` {
-  return value.startsWith(groupValuePrefix);
-};
-
-const getAccountTypeFilterGroupFromValue = function (
-  value: `${typeof groupValuePrefix}${AccountTypeFilterGroup}`,
-): AccountTypeFilterGroup {
-  const groupValue = value.slice(groupValuePrefix.length);
-  if (groupValue === "tracked" || groupValue === "untracked") {
-    return groupValue;
-  }
-
-  throw new Error(`Unrecognized account type filter group value: ${value}`);
-};
-
 /**
  * Renders the account type multi-select with tracked and untracked group toggles.
  */
-const AccountTrendsAccountTypeFilter = function ({
+const AccountTypeFilter = function ({
   value,
   onChange,
   disabled = false,
-}: AccountTrendsAccountTypeFilterProps): JSX.Element {
+}: AccountTypeFilterProps): JSX.Element {
+  const labelId = useId();
   const handleChange = function (event: SelectChangeEvent<string[]>): void {
     const nextValue = event.target.value;
     const nextValues =
@@ -75,12 +63,10 @@ const AccountTrendsAccountTypeFilter = function ({
 
   return (
     <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 220 } }}>
-      <InputLabel id="account-overview-account-type-filter-label">
-        Account types
-      </InputLabel>
+      <InputLabel id={labelId}>Account types</InputLabel>
       <Select
         multiple
-        labelId="account-overview-account-type-filter-label"
+        labelId={labelId}
         value={[...value]}
         onChange={handleChange}
         input={<OutlinedInput label="Account types" />}
@@ -125,4 +111,4 @@ const AccountTrendsAccountTypeFilter = function ({
   );
 };
 
-export default AccountTrendsAccountTypeFilter;
+export default AccountTypeFilter;

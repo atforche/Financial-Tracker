@@ -4,7 +4,7 @@ import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
 import {
   normalizeAccountNames,
   shouldPersistAccountNames,
-} from "@/accounts/trends/accountNameFilter";
+} from "@/accounts/accountNameFilterHelpers";
 import {
   normalizeFundNames,
   shouldPersistFundNames,
@@ -14,7 +14,7 @@ import {
   shouldPersistTransactionTypes,
   transactionTypeValues,
 } from "@/transactions/trends/transactionTypeFilter";
-import AccountTrendsAccountNameFilter from "@/accounts/trends/AccountTrendsAccountNameFilter";
+import AccountNameFilter from "@/accounts/AccountNameFilter";
 import type { CurrentTransactionsSearchParams } from "@/transactions/current/CurrentTransactions";
 import FundTrendsFundNameFilter from "@/funds/trends/FundTrendsFundNameFilter";
 import type { JSX } from "react";
@@ -165,7 +165,7 @@ const CurrentTransactionsFilter = function ({
           />
         )}
       />
-      <AccountTrendsAccountNameFilter
+      <AccountNameFilter
         availableAccountNames={availableAccountNames}
         value={currentAccountNames}
         onChange={handleAccountNameChange}

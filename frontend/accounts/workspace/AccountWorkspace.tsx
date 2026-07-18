@@ -1,7 +1,7 @@
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
-} from "@/accounts/trends/accountTypeFilter";
+} from "@/accounts/accountTypeFilterHelpers";
 import type { AccountType } from "@/accounts/types";
 import AccountWorkspaceActions from "@/accounts/workspace/AccountWorkspaceActions";
 import AccountWorkspaceCards from "@/accounts/workspace/AccountWorkspaceCards";

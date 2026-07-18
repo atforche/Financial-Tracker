@@ -4,9 +4,9 @@ import { Button, Paper, Stack, Typography } from "@mui/material";
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
-} from "@/accounts/trends/accountTypeFilter";
-import AccountTrendsAccountTypeFilter from "@/accounts/trends/AccountTrendsAccountTypeFilter";
+} from "@/accounts/accountTypeFilterHelpers";
 import type { AccountType } from "@/accounts/types";
+import AccountTypeFilter from "@/accounts/AccountTypeFilter";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
@@ -96,7 +96,7 @@ const AccountWorkspaceFilter = function ({
           flexWrap={{ xs: "wrap", md: "nowrap" }}
           alignItems={{ xs: "stretch", md: "center" }}
         >
-          <AccountTrendsAccountTypeFilter
+          <AccountTypeFilter
             value={currentAccountTypes}
             onChange={handleAccountTypeChange}
           />

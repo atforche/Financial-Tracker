@@ -4,7 +4,7 @@ import { Box, Button, ButtonBase, Stack, Typography } from "@mui/material";
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
-} from "@/accounts/trends/accountTypeFilter";
+} from "@/accounts/accountTypeFilterHelpers";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";

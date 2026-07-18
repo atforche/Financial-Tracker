@@ -1,32 +1,53 @@
-import {
-  AccountType,
-  formatAccountType,
-  isTrackedAccountType,
-} from "@/accounts/types";
+import { formatAccountType, isTrackedAccountType } from "@/accounts/helpers";
+import { AccountType } from "@/accounts/types";
 
+/**
+ * Collection of account types.
+ */
 const accountTypeValues = Object.values(AccountType);
 
+/**
+ * Set of account type values for quick membership checks.
+ */
 const accountTypeSet = new Set<string>(accountTypeValues);
 
+/**
+ * Account type filter group identifiers.
+ */
 type AccountTypeFilterGroup = "tracked" | "untracked";
 
+/**
+ * Defines the structure of an account type filter group option.
+ */
 interface AccountTypeFilterGroupOption {
   readonly value: AccountTypeFilterGroup;
   readonly label: string;
   readonly accountTypes: readonly AccountType[];
 }
 
+/**
+ * Defines the selection state of an account type group.
+ */
 interface AccountTypeGroupSelectionState {
   readonly allSelected: boolean;
   readonly someSelected: boolean;
 }
 
+/**
+ * Collection of tracked account types.
+ */
 const trackedAccountTypeValues = accountTypeValues.filter(isTrackedAccountType);
 
+/**
+ * Collection of untracked account types.
+ */
 const untrackedAccountTypeValues = accountTypeValues.filter(
   (accountType) => !isTrackedAccountType(accountType),
 );
 
+/**
+ * Defines the available account type filter groups with their corresponding account types.
+ */
 const accountTypeFilterGroups: readonly AccountTypeFilterGroupOption[] = [
   {
     value: "tracked",
@@ -40,6 +61,9 @@ const accountTypeFilterGroups: readonly AccountTypeFilterGroupOption[] = [
   },
 ];
 
+/**
+ * Determines if the provided value is an account type.
+ */
 const isAccountType = function (value: string): value is AccountType {
   return accountTypeSet.has(value);
 };
@@ -68,6 +92,9 @@ const shouldPersistAccountTypes = function (
   return values.length > 0 && values.length < accountTypeValues.length;
 };
 
+/**
+ * Gets the account type filter group option.
+ */
 const getAccountTypeFilterGroup = function (
   group: AccountTypeFilterGroup,
 ): AccountTypeFilterGroupOption {
@@ -161,12 +188,43 @@ const formatSelectedAccountTypes = function (
   return labels.join(", ");
 };
 
+/**
+ * Group value prefix used to identify account type filter group toggles in the select input.
+ */
+const groupValuePrefix = "__group__";
+
+/**
+ * Determines if the provided value is an account type filter group value.
+ */
+const isAccountTypeFilterGroupValue = function (
+  value: string,
+): value is `${typeof groupValuePrefix}${AccountTypeFilterGroup}` {
+  return value.startsWith(groupValuePrefix);
+};
+
+/**
+ * Gets the account type filter group from the provided value.
+ */
+const getAccountTypeFilterGroupFromValue = function (
+  value: `${typeof groupValuePrefix}${AccountTypeFilterGroup}`,
+): AccountTypeFilterGroup {
+  const groupValue = value.slice(groupValuePrefix.length);
+  if (groupValue === "tracked" || groupValue === "untracked") {
+    return groupValue;
+  }
+
+  throw new Error(`Unrecognized account type filter group value: ${value}`);
+};
+
 export {
   type AccountTypeFilterGroup,
   accountTypeFilterGroups,
   accountTypeValues,
   formatSelectedAccountTypes,
+  getAccountTypeFilterGroupFromValue,
   getAccountTypeGroupSelectionState,
+  groupValuePrefix,
+  isAccountTypeFilterGroupValue,
   normalizeAccountTypes,
   shouldPersistAccountTypes,
   toggleAccountTypeGroup,
