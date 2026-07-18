@@ -7,7 +7,7 @@ import type { JSX } from "react";
  */
 interface AccountingPeriodEntryFieldProps {
   readonly label: string;
-  readonly options: AccountingPeriod[];
+  readonly options: readonly AccountingPeriod[];
   readonly value: AccountingPeriod | null;
   readonly setValue?: ((newValue: AccountingPeriod | null) => void) | null;
   readonly errorMessage?: string | null;

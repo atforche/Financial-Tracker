@@ -1,5 +1,9 @@
 "use client";
 
+import type {
+  AccountingPeriod,
+  AccountingPeriodRange,
+} from "@/accounting-periods/types";
 import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
 import type { ChangeEvent, JSX } from "react";
 import {
@@ -15,7 +19,6 @@ import {
   shouldPersistTransactionTypes,
   transactionTypeValues,
 } from "@/transactions/trends/transactionTypeFilter";
-import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
@@ -163,10 +166,9 @@ const TransactionTrendsFilter = function ({
     });
   };
 
-  const handleAccountingPeriodRangeChange = function (range: {
-    readonly start: string;
-    readonly end: string;
-  }): void {
+  const handleAccountingPeriodRangeChange = function (
+    range: AccountingPeriodRange,
+  ): void {
     updateParams((params) => {
       params.set(startAccountingPeriodIdParamName, range.start);
       params.set(endAccountingPeriodIdParamName, range.end);

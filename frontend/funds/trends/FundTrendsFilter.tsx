@@ -1,11 +1,14 @@
 "use client";
 
+import type {
+  AccountingPeriod,
+  AccountingPeriodRange,
+} from "@/accounting-periods/types";
 import { Button, TextField } from "@mui/material";
 import {
   normalizeFundNames,
   shouldPersistFundNames,
 } from "@/funds/trends/fundNameFilter";
-import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import FundTrendsFundNameFilter from "@/funds/trends/FundTrendsFundNameFilter";
 import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
@@ -112,10 +115,9 @@ const FundTrendsFilter = function ({
     });
   };
 
-  const handleAccountingPeriodRangeChange = function (range: {
-    readonly start: string;
-    readonly end: string;
-  }): void {
+  const handleAccountingPeriodRangeChange = function (
+    range: AccountingPeriodRange,
+  ): void {
     updateParams((params) => {
       params.set(startAccountingPeriodIdParamName, range.start);
       params.set(endAccountingPeriodIdParamName, range.end);

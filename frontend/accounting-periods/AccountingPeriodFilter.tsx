@@ -1,8 +1,9 @@
 "use client";
 
 import { Autocomplete, TextField } from "@mui/material";
+import { type JSX, useMemo } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import type { JSX } from "react";
+import { compareAccountingPeriods } from "@/accounting-periods/helpers";
 
 /**
  * Props for the AccountingPeriodFilter component.
@@ -30,12 +31,10 @@ const AccountingPeriodFilter = function ({
   disabled = false,
 }: AccountingPeriodFilterProps): JSX.Element {
   const isDisabled = disabled || accountingPeriods.length === 0;
-  const sortedPeriods = [...accountingPeriods].sort((a, b) => {
-    if (b.year !== a.year) {
-      return b.year - a.year;
-    }
-    return b.month - a.month;
-  });
+  const sortedPeriods = useMemo(
+    () => [...accountingPeriods].sort((a, b) => compareAccountingPeriods(b, a)),
+    [accountingPeriods],
+  );
   const selectedPeriod =
     sortedPeriods.find((accountingPeriod) => accountingPeriod.id === value) ??
     null;

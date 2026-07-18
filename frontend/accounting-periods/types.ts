@@ -10,6 +10,14 @@ import {
 type AccountingPeriod = components["schemas"]["AccountingPeriodModel"];
 
 /**
+ * Type representing a range of accounting periods.
+ */
+interface AccountingPeriodRange {
+  readonly start: string;
+  readonly end: string;
+}
+
+/**
  * Type representing an Accounting Period along with its balance.
  */
 type AccountingPeriodWithBalance =
@@ -35,6 +43,7 @@ type CreateAccountingPeriodRequest =
 
 export {
   type AccountingPeriod,
+  type AccountingPeriodRange,
   AccountingPeriodSortModel as AccountingPeriodSort,
   type AccountingPeriodWithBalance,
   AccountingPeriodWithBalanceSortModel as AccountingPeriodWithBalanceSort,

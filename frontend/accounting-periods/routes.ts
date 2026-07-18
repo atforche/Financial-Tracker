@@ -1,10 +1,16 @@
+import {
+  appendRepeatedSearchParam,
+  buildUrl,
+} from "@/framework/routes/helpers";
 import type { AccountingPeriodTrendsSearchParams } from "@/accounting-periods/trends/AccountingPeriodTrends";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import type { CurrentAccountingPeriodSearchParams } from "@/accounting-periods/current/CurrentAccountingPeriod";
 import type { Route } from "next";
-import { appendRepeatedSearchParam } from "@/framework/routes/helpers";
 import { objectToSearchParams } from "@/framework/routes";
 
+/**
+ * Converts an AccountingPeriodWorkspaceSearchParams object to generic URL search params.
+ */
 const accountingPeriodWorkspaceSearchParamsToSearchParams = function (
   searchParams: AccountingPeriodWorkspaceSearchParams,
 ): URLSearchParams {
@@ -17,30 +23,16 @@ const accountingPeriodWorkspaceSearchParamsToSearchParams = function (
   return params;
 };
 
-const pathWithSearchParams = function (
-  pathname: string,
-  searchParams: URLSearchParams,
-): Route {
-  const query = searchParams.toString();
-  return query === "" ? pathname : `${pathname}?${query}`;
-};
-
 /**
  * App routes related to accounting periods.
  */
 const routes = {
   current: (searchParams: CurrentAccountingPeriodSearchParams): Route =>
-    pathWithSearchParams(
-      "/accounting-periods/current",
-      objectToSearchParams(searchParams),
-    ),
+    buildUrl("/accounting-periods/current", objectToSearchParams(searchParams)),
   trends: (searchParams: AccountingPeriodTrendsSearchParams): Route =>
-    pathWithSearchParams(
-      "/accounting-periods/trends",
-      objectToSearchParams(searchParams),
-    ),
+    buildUrl("/accounting-periods/trends", objectToSearchParams(searchParams)),
   workspace: (searchParams: AccountingPeriodWorkspaceSearchParams): Route =>
-    pathWithSearchParams(
+    buildUrl(
       "/accounting-periods/workspace",
       accountingPeriodWorkspaceSearchParamsToSearchParams(searchParams),
     ),
