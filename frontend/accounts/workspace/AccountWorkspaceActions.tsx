@@ -1,16 +1,13 @@
 "use client";
 
-import type {
-  AccountWorkspaceAction,
-  AccountWorkspaceSearchParams,
-} from "@/accounts/workspace/AccountWorkspace";
 import { usePathname, useSearchParams } from "next/navigation";
+import type { AccountWorkspaceAction } from "@/accounts/workspace/AccountWorkspace";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateAccountForm from "@/accounts/workspace/CreateAccountForm";
 import type { JSX } from "react";
 import OnboardAccountForm from "@/accounts/workspace/OnboardAccountForm";
+import { accountWorkspaceParamNames } from "@/accounts/workspace/searchParams";
 import { buildUrl } from "@/framework/routes/helpers";
-import nameof from "@/framework/data/nameof";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
@@ -34,7 +31,7 @@ const AccountWorkspaceActions = function ({
   const pathname = usePathname();
   const updateParams = useSearchParamUpdater([]);
 
-  const actionParamName = nameof<AccountWorkspaceSearchParams>("action");
+  const actionParamName = accountWorkspaceParamNames.action;
   const setAction = function (action: AccountWorkspaceAction | null): void {
     updateParams((params) => {
       if (action === null) {

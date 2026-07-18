@@ -1,7 +1,7 @@
 "use server";
 
 import type { UpdateAccountRequest } from "@/accounts/types";
-import formatErrors from "@/framework/forms/formatErrors";
+import formatAccountActionError from "@/accounts/workspace/formatAccountActionError";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import nameof from "@/framework/data/nameof";
@@ -44,22 +44,13 @@ const updateAccount = async function (
   });
   if (error) {
     if (isApiError(error)) {
-      let nameErrorMessage = null;
-      const unmappedErrors: (string | null)[] = [];
-      for (const key of Object.keys(error.errors ?? {})) {
-        if (
-          key.toUpperCase() ===
-          nameof<UpdateAccountRequest>("name").toUpperCase()
-        ) {
-          nameErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else {
-          unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
-        }
-      }
+      const formattedError = formatAccountActionError(error, {
+        [nameof<UpdateAccountRequest>("name")]: "nameErrors",
+      });
       return {
-        errorTitle: error.title ?? null,
-        nameErrors: nameErrorMessage,
-        unmappedErrors: unmappedErrors.join(", ") || null,
+        errorTitle: formattedError.errorTitle,
+        nameErrors: formattedError.fieldErrors["nameErrors"] ?? null,
+        unmappedErrors: formattedError.unmappedErrors,
       };
     }
     throw new Error("An unexpected error occurred", { cause: error });

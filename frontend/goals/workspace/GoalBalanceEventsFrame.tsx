@@ -4,6 +4,7 @@ import { Box, Button } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { BalanceEventType } from "@/framework/data/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { GoalBalanceEvent } from "@/goals/types";
 import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
 import type { JSX } from "react";
@@ -104,7 +105,7 @@ const GoalBalanceEventsFrame = function ({
   ];
 
   return (
-    <Box sx={{ maxWidth: 1200, width: "100%" }}>
+    <ConstrainedContent maxWidth={1200}>
       <ListFrame<GoalBalanceEvent>
         title="Recent Balance Events"
         color="info"
@@ -150,7 +151,7 @@ const GoalBalanceEventsFrame = function ({
           ),
         }}
       />
-    </Box>
+    </ConstrainedContent>
   );
 };
 

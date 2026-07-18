@@ -1,8 +1,9 @@
 "use client";
 
-import { Button, Paper, Stack, Typography } from "@mui/material";
+import { Button } from "@mui/material";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { JSX } from "react";
+import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import SearchBar from "@/framework/listframe/SearchBar";
 import nameof from "@/framework/data/nameof";
 import routes from "@/funds/routes";
@@ -25,37 +26,18 @@ const FundWorkspaceFilter = function ({
     : routes.workspaceCreate({});
 
   return (
-    <Paper
-      sx={{
-        top: 10,
-        zIndex: (theme) => theme.zIndex.appBar - 1,
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 3,
-        bgcolor: "background.paper",
-        p: { xs: 2, md: 2.5 },
-      }}
+    <PageFilterFrame
+      title="Fund Workspace"
+      actions={
+        <Button variant="contained" href={addFundHref}>
+          {isInOnboardingMode ? "Onboard Fund" : "Create Fund"}
+        </Button>
+      }
     >
-      <Stack spacing={2}>
-        <Stack spacing={0.5}>
-          <Typography variant="h5">Fund Workspace</Typography>
-        </Stack>
-        <Stack
-          direction="row"
-          spacing={1.5}
-          useFlexGap
-          flexWrap={{ xs: "wrap", md: "nowrap" }}
-          alignItems={{ xs: "stretch", md: "center" }}
-        >
-          <SearchBar
-            searchParamName={nameof<FundWorkspaceSearchParams>("search")}
-          />
-          <Button variant="contained" href={addFundHref} sx={{ flexShrink: 0 }}>
-            {isInOnboardingMode ? "Onboard fund" : "Create fund"}
-          </Button>
-        </Stack>
-      </Stack>
-    </Paper>
+      <SearchBar
+        searchParamName={nameof<FundWorkspaceSearchParams>("search")}
+      />
+    </PageFilterFrame>
   );
 };
 

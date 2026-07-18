@@ -2,7 +2,7 @@ import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
 import GoalWorkspacePageHeader from "@/goals/workspace/GoalWorkspacePageHeader";
 import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
 import type { JSX } from "react";
-import { Stack } from "@mui/material";
+import PageLayout from "@/framework/view/PageLayout";
 import ViewGoalForm from "@/goals/workspace/ViewGoalForm";
 import getApiClient from "@/framework/data/getApiClient";
 import getApiData from "@/framework/data/apiResponse";
@@ -116,7 +116,7 @@ const GoalWorkspaceDetailPage = async function ({
   });
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
+    <PageLayout>
       <GoalWorkspacePageHeader backHref={workspaceUrl} title="Goal Details" />
       <ViewGoalForm
         assignmentGoal={assignmentGoal.items[0]}
@@ -128,7 +128,7 @@ const GoalWorkspaceDetailPage = async function ({
         accountingPeriodId={periodId}
         fundId={fundId}
       />
-    </Stack>
+    </PageLayout>
   );
 };
 

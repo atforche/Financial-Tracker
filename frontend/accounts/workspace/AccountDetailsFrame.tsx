@@ -4,7 +4,8 @@ import type { Dispatch, JSX, ReactNode, SetStateAction } from "react";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
 import type { AccountType } from "@/accounts/types";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
-import { Box } from "@mui/material";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import StringEntryField from "@/framework/forms/StringEntryField";
 
 /**
@@ -35,16 +36,9 @@ const AccountDetailsFrame = function ({
   headerContent = null,
 }: AccountDetailsFrameProps): JSX.Element {
   return (
-    <Box sx={{ maxWidth: 1200, width: "100%" }}>
+    <ConstrainedContent maxWidth={1200}>
       <Frame title="Details" color={color} headerContent={headerContent}>
-        <Box
-          sx={{
-            display: "grid",
-            gap: 2,
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
-          }}
-        >
+        <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
           <StringEntryField
             label="Name"
             value={name}
@@ -57,9 +51,9 @@ const AccountDetailsFrame = function ({
             setValue={setAccountType}
             errorMessage={accountTypeErrorMessage}
           />
-        </Box>
+        </ResponsiveGrid>
       </Frame>
-    </Box>
+    </ConstrainedContent>
   );
 };
 

@@ -19,6 +19,7 @@ import {
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
 import AssignmentGoalSetupSection from "@/funds/workspace/AssignmentGoalSetupSection";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Frame from "@/framework/view/Frame";
 import SpendingGoalSetupSection from "@/funds/workspace/SpendingGoalSetupSection";
@@ -92,81 +93,86 @@ const CreateFundForm = function ({
   );
 
   return (
-    <Stack ref={formRef} spacing={3} sx={{ width: "100%", maxWidth: "780px" }}>
-      <Frame title="Fund Setup" color={fundSetupIsComplete ? "info" : "error"}>
-        <Stack spacing={2.5}>
-          <StringEntryField
-            label="Name"
-            value={name}
-            setValue={setName}
-            errorMessage={state.nameErrors ?? null}
-          />
-          <StringEntryField
-            label="Description"
-            value={description}
-            setValue={setDescription}
-            errorMessage={state.descriptionErrors ?? null}
-          />
-          <AccountingPeriodEntryField
-            label="Accounting Period"
-            options={accountingPeriods}
-            value={accountingPeriod}
-            setValue={setAccountingPeriod}
-            errorMessage={state.accountingPeriodErrors ?? null}
-          />
-        </Stack>
-      </Frame>
-
-      <AssignmentGoalSetupSection
-        color={assignmentGoalSetupIsComplete ? "info" : "error"}
-        value={assignmentGoalType}
-        setValue={setAssignmentGoalType}
-        amount={assignmentGoalAmount}
-        setAmount={setAssignmentGoalAmount}
-        typeErrorMessage={state.assignmentGoalTypeErrors ?? null}
-        amountErrorMessage={state.assignmentGoalAmountErrors ?? null}
-      />
-
-      <SpendingGoalSetupSection
-        color={spendingGoalSetupIsComplete ? "info" : "error"}
-        value={spendingGoalType}
-        setValue={setSpendingGoalType}
-        typeErrorMessage={state.spendingGoalTypeErrors ?? null}
-      />
-
-      <ErrorAlert
-        errorMessage={state.errorTitle ?? null}
-        unmappedErrors={state.unmappedErrors ?? null}
-      />
-
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={1.5}
-        justifyContent="flex-end"
-      >
-        <Button variant="outlined" onClick={reset}>
-          Reset
-        </Button>
-        <Button
-          variant="contained"
-          loading={pending}
-          disabled={request === null}
-          onClick={() => {
-            if (request === null) {
-              return;
-            }
-            startTransition(() => {
-              action({
-                redirectUrl,
-                request,
-              });
-            });
-          }}
+    <ConstrainedContent maxWidth={780}>
+      <Stack ref={formRef} spacing={3}>
+        <Frame
+          title="Fund Setup"
+          color={fundSetupIsComplete ? "info" : "error"}
         >
-          Create Fund
-        </Button>
+          <Stack spacing={2.5}>
+            <StringEntryField
+              label="Name"
+              value={name}
+              setValue={setName}
+              errorMessage={state.nameErrors ?? null}
+            />
+            <StringEntryField
+              label="Description"
+              value={description}
+              setValue={setDescription}
+              errorMessage={state.descriptionErrors ?? null}
+            />
+            <AccountingPeriodEntryField
+              label="Accounting Period"
+              options={accountingPeriods}
+              value={accountingPeriod}
+              setValue={setAccountingPeriod}
+              errorMessage={state.accountingPeriodErrors ?? null}
+            />
+          </Stack>
+        </Frame>
+
+        <AssignmentGoalSetupSection
+          color={assignmentGoalSetupIsComplete ? "info" : "error"}
+          value={assignmentGoalType}
+          setValue={setAssignmentGoalType}
+          amount={assignmentGoalAmount}
+          setAmount={setAssignmentGoalAmount}
+          typeErrorMessage={state.assignmentGoalTypeErrors ?? null}
+          amountErrorMessage={state.assignmentGoalAmountErrors ?? null}
+        />
+
+        <SpendingGoalSetupSection
+          color={spendingGoalSetupIsComplete ? "info" : "error"}
+          value={spendingGoalType}
+          setValue={setSpendingGoalType}
+          typeErrorMessage={state.spendingGoalTypeErrors ?? null}
+        />
+
+        <ErrorAlert
+          errorMessage={state.errorTitle ?? null}
+          unmappedErrors={state.unmappedErrors ?? null}
+        />
+
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={1.5}
+          justifyContent="flex-end"
+        >
+          <Button variant="outlined" onClick={reset}>
+            Reset
+          </Button>
+          <Button
+            variant="contained"
+            loading={pending}
+            disabled={request === null}
+            onClick={() => {
+              if (request === null) {
+                return;
+              }
+              startTransition(() => {
+                action({
+                  redirectUrl,
+                  request,
+                });
+              });
+            }}
+          >
+            Create Fund
+          </Button>
+        </Stack>
       </Stack>
-    </Stack>
+    </ConstrainedContent>
   );
 };
 

@@ -1,4 +1,8 @@
-import { AccountType, type CreateAccountRequest } from "@/accounts/types";
+import {
+  AccountType,
+  type CreateAccountRequest,
+  type OnboardAccountRequest,
+} from "@/accounts/types";
 import {
   getDefaultDate,
   getMaximumDate,
@@ -33,49 +37,26 @@ const getNormalizedDateOpened = function (
 /**
  * Validates a request to create an account.
  */
-const validateCreateRequest = function (
-  name: string,
-  accountType: AccountType | null,
-  accountingPeriod: AccountingPeriod | null,
-  dateOpened: Dayjs | null,
-): boolean {
-  return (
-    name !== "" &&
-    accountType !== null &&
-    accountingPeriod !== null &&
-    dateOpened !== null
-  );
-};
-
-/**
- * Builds a request to create an account.
- */
 const buildCreateRequest = function (
   name: string,
   accountType: AccountType | null,
   accountingPeriod: AccountingPeriod | null,
   dateOpened: Dayjs | null,
 ): CreateAccountRequest | null {
-  if (!validateCreateRequest(name, accountType, accountingPeriod, dateOpened)) {
+  if (
+    name === "" ||
+    accountType === null ||
+    accountingPeriod === null ||
+    dateOpened === null
+  ) {
     return null;
   }
   return {
     name,
-    type: accountType ?? AccountType.Standard,
-    openingAccountingPeriodId: accountingPeriod?.id ?? "",
-    dateOpened: dateOpened?.format("YYYY-MM-DD") ?? "",
+    type: accountType,
+    openingAccountingPeriodId: accountingPeriod.id,
+    dateOpened: dateOpened.format("YYYY-MM-DD"),
   };
-};
-
-/**
- * Validates a request to onboard an account.
- */
-const validateOnboardRequest = function (
-  name: string,
-  accountType: AccountType | null,
-  onboardedBalance: number | null,
-): boolean {
-  return name !== "" && accountType !== null && onboardedBalance !== null;
 };
 
 /**
@@ -85,14 +66,14 @@ const buildOnboardRequest = function (
   name: string,
   accountType: AccountType | null,
   onboardedBalance: number | null,
-): { name: string; type: AccountType; onboardedBalance: number } | null {
-  if (!validateOnboardRequest(name, accountType, onboardedBalance)) {
+): OnboardAccountRequest | null {
+  if (name === "" || accountType === null || onboardedBalance === null) {
     return null;
   }
   return {
     name,
-    type: accountType ?? AccountType.Standard,
-    onboardedBalance: onboardedBalance ?? 0,
+    type: accountType,
+    onboardedBalance,
   };
 };
 
@@ -115,9 +96,7 @@ const getAccountCardColor = function (
 
 export {
   getNormalizedDateOpened,
-  validateCreateRequest,
   buildCreateRequest,
-  validateOnboardRequest,
   buildOnboardRequest,
   getAccountCardColor,
 };

@@ -1,7 +1,7 @@
 "use server";
 
 import type { CreateAccountRequest } from "@/accounts/types";
-import formatErrors from "@/framework/forms/formatErrors";
+import formatAccountActionError from "@/accounts/workspace/formatAccountActionError";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import nameof from "@/framework/data/nameof";
@@ -41,47 +41,22 @@ const createAccount = async function (
   });
   if (error) {
     if (isApiError(error)) {
-      let nameErrorMessage = null;
-      let typeErrorMessage = null;
-      let accountingPeriodErrorMessage = null;
-      let dateOpenedErrorMessage = null;
-      const unmappedErrors: (string | null)[] = [];
-      for (const key of Object.keys(error.errors ?? {})) {
-        if (
-          key.toUpperCase() ===
-          nameof<CreateAccountRequest>("name").toUpperCase()
-        ) {
-          nameErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateAccountRequest>("type").toUpperCase()
-        ) {
-          typeErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateAccountRequest>(
-            "openingAccountingPeriodId",
-          ).toUpperCase()
-        ) {
-          accountingPeriodErrorMessage = formatErrors(
-            error.errors?.[key] ?? null,
-          );
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateAccountRequest>("dateOpened").toUpperCase()
-        ) {
-          dateOpenedErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else {
-          unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
-        }
-      }
+      const formattedError = formatAccountActionError(error, {
+        [nameof<CreateAccountRequest>("name")]: "nameErrors",
+        [nameof<CreateAccountRequest>("type")]: "typeErrors",
+        [nameof<CreateAccountRequest>("openingAccountingPeriodId")]:
+          "accountingPeriodErrors",
+        [nameof<CreateAccountRequest>("dateOpened")]: "dateOpenedErrors",
+      });
       return {
-        errorTitle: error.title ?? null,
-        nameErrors: nameErrorMessage,
-        typeErrors: typeErrorMessage,
-        accountingPeriodErrors: accountingPeriodErrorMessage,
-        dateOpenedErrors: dateOpenedErrorMessage,
-        unmappedErrors: unmappedErrors.join(", ") || null,
+        errorTitle: formattedError.errorTitle,
+        nameErrors: formattedError.fieldErrors["nameErrors"] ?? null,
+        typeErrors: formattedError.fieldErrors["typeErrors"] ?? null,
+        accountingPeriodErrors:
+          formattedError.fieldErrors["accountingPeriodErrors"] ?? null,
+        dateOpenedErrors:
+          formattedError.fieldErrors["dateOpenedErrors"] ?? null,
+        unmappedErrors: formattedError.unmappedErrors,
       };
     }
     throw new Error("An unexpected error occurred", { cause: error });

@@ -1,11 +1,12 @@
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
-import { Box, Stack } from "@mui/material";
 import {
   formatAssignmentGoalType,
   formatSpendingGoalType,
 } from "@/goals/helpers";
 import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import { Stack } from "@mui/material";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import UpdateGoalForm from "@/goals/workspace/UpdateGoalForm";
 import { formatCurrency } from "@/framework/currencyHelpers";
@@ -39,14 +40,7 @@ const GoalContextFrame = function ({
       }
     >
       <Stack spacing={2.5}>
-        <Box
-          sx={{
-            display: "grid",
-            gap: 2,
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
-          }}
-        >
+        <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
           <StringEntryField
             label="Accounting Period"
             value={assignmentGoal.accountingPeriod?.name ?? "Onboarded"}
@@ -57,15 +51,8 @@ const GoalContextFrame = function ({
             value={assignmentGoal.fund.name}
             setValue={null}
           />
-        </Box>
-        <Box
-          sx={{
-            display: "grid",
-            gap: 2,
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
-          }}
-        >
+        </ResponsiveGrid>
+        <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
           <StringEntryField
             label="Assignment Goal Type"
             value={formatAssignmentGoalType(assignmentGoal.type)}
@@ -91,7 +78,7 @@ const GoalContextFrame = function ({
             value={formatCurrency(spendingGoal.remainingAmountToSpend)}
             setValue={null}
           />
-        </Box>
+        </ResponsiveGrid>
       </Stack>
     </Frame>
   );

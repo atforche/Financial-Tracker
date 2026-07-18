@@ -1,7 +1,7 @@
 "use client";
 
 import type { AccountType, OnboardAccountRequest } from "@/accounts/types";
-import { Box, Button, Stack } from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -10,12 +10,10 @@ import {
   useRef,
   useState,
 } from "react";
-import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
-import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
+import AccountDetailsFrame from "@/accounts/workspace/AccountDetailsFrame";
+import AccountStartingBalanceFrame from "@/accounts/workspace/AccountStartingBalanceFrame";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import Frame from "@/framework/view/Frame";
-import StringEntryField from "@/framework/forms/StringEntryField";
 import { buildOnboardRequest } from "@/accounts/workspace/helpers";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import onboardAccount from "@/accounts/workspace/onboardAccount";
@@ -73,8 +71,7 @@ const OnboardAccountForm = function ({
       open={open}
       onClose={
         pending
-          ? // eslint-disable-next-line no-undefined
-            undefined
+          ? undefined
           : (): void => {
               onClose();
               reset();
@@ -113,40 +110,27 @@ const OnboardAccountForm = function ({
               });
             }}
           >
-            Onboard account
+            Onboard Account
           </Button>
         </>
       }
     >
       <Stack ref={formRef} spacing={3}>
-        <Frame title="Account Setup" color={setupIsValid ? "info" : "error"}>
-          <Box
-            sx={{
-              display: "grid",
-              gap: 2,
-              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px)))",
-            }}
-          >
-            <StringEntryField
-              label="Name"
-              value={name}
-              setValue={setName}
-              errorMessage={state.nameErrors ?? null}
-            />
-            <AccountTypeEntryField
-              label="Type"
-              value={accountType}
-              setValue={setAccountType}
-              errorMessage={state.typeErrors ?? null}
-            />
-            <CurrencyEntryField
-              label="Starting Balance"
-              value={onboardedBalance}
-              setValue={setOnboardedBalance}
-              errorMessage={state.onboardedBalanceErrors ?? null}
-            />
-          </Box>
-        </Frame>
+        <AccountDetailsFrame
+          color={name !== "" && accountType !== null ? "warning" : "error"}
+          name={name}
+          setName={setName}
+          nameErrorMessage={state.nameErrors ?? null}
+          accountType={accountType}
+          setAccountType={setAccountType}
+          accountTypeErrorMessage={state.typeErrors ?? null}
+        />
+        <AccountStartingBalanceFrame
+          color={setupIsValid ? "warning" : "error"}
+          value={onboardedBalance}
+          setValue={setOnboardedBalance}
+          errorMessage={state.onboardedBalanceErrors ?? null}
+        />
         <ErrorAlert
           errorMessage={state.errorTitle ?? null}
           unmappedErrors={state.unmappedErrors ?? null}

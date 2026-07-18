@@ -1,13 +1,12 @@
 "use client";
 
-import type {
-  AccountWithBalance,
-  AccountWorkspaceBalanceEvent,
-} from "@/accounts/types";
+import type { AccountBalanceEvent, AccountWithBalance } from "@/accounts/types";
 import AccountBalanceEventsFrame from "@/accounts/workspace/AccountBalanceEventsFrame";
 import AccountSummaryFrame from "@/accounts/workspace/AccountSummaryFrame";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import DeleteAccountForm from "@/accounts/workspace/DeleteAccountForm";
 import type { JSX } from "react";
+import PageLayout from "@/framework/view/PageLayout";
 import { Stack } from "@mui/material";
 import UpdateAccountForm from "@/accounts/workspace/UpdateAccountForm";
 
@@ -17,7 +16,7 @@ import UpdateAccountForm from "@/accounts/workspace/UpdateAccountForm";
 interface ViewAccountFormProps {
   readonly account: AccountWithBalance;
   readonly redirectUrl: string;
-  readonly recentBalanceEvents: AccountWorkspaceBalanceEvent[];
+  readonly recentBalanceEvents: AccountBalanceEvent[];
   readonly recentBalanceEventCount: number;
   readonly addTransactionHref: string;
 }
@@ -33,22 +32,24 @@ const ViewAccountForm = function ({
   addTransactionHref,
 }: ViewAccountFormProps): JSX.Element {
   return (
-    <Stack spacing={3} sx={{ width: "100%", maxWidth: 1200 }}>
-      <AccountSummaryFrame
-        account={account}
-        headerContent={
-          <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-            <UpdateAccountForm account={account} redirectUrl={redirectUrl} />
-            <DeleteAccountForm account={account} redirectUrl={redirectUrl} />
-          </Stack>
-        }
-      />
-      <AccountBalanceEventsFrame
-        data={recentBalanceEvents}
-        totalCount={recentBalanceEventCount}
-        addTransactionHref={addTransactionHref}
-      />
-    </Stack>
+    <ConstrainedContent maxWidth={1200}>
+      <PageLayout>
+        <AccountSummaryFrame
+          account={account}
+          headerContent={
+            <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
+              <UpdateAccountForm account={account} redirectUrl={redirectUrl} />
+              <DeleteAccountForm account={account} redirectUrl={redirectUrl} />
+            </Stack>
+          }
+        />
+        <AccountBalanceEventsFrame
+          data={recentBalanceEvents}
+          totalCount={recentBalanceEventCount}
+          addTransactionHref={addTransactionHref}
+        />
+      </PageLayout>
+    </ConstrainedContent>
   );
 };
 

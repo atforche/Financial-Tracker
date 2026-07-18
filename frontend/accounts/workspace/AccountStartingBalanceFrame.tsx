@@ -2,7 +2,7 @@
 
 import type { Dispatch, JSX, SetStateAction } from "react";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
-import { Box } from "@mui/material";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 
 /**
@@ -25,7 +25,7 @@ const AccountStartingBalanceFrame = function ({
   color = "info",
 }: AccountStartingBalanceFrameProps): JSX.Element {
   return (
-    <Box sx={{ maxWidth: 1200, width: "100%" }}>
+    <ConstrainedContent maxWidth={1200}>
       <Frame title="Starting Balance" color={color}>
         <CurrencyEntryField
           label="Starting Balance"
@@ -34,7 +34,7 @@ const AccountStartingBalanceFrame = function ({
           errorMessage={errorMessage}
         />
       </Frame>
-    </Box>
+    </ConstrainedContent>
   );
 };
 

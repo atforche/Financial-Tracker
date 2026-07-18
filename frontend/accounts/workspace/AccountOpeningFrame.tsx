@@ -1,16 +1,14 @@
 "use client";
 
-import {
-  type AccountingPeriod,
-  getMaximumDate,
-  getMinimumDate,
-} from "@/accounting-periods/types";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
+import { getMaximumDate, getMinimumDate } from "@/accounting-periods/helpers";
+import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
-import { Box } from "@mui/material";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import type { Dayjs } from "dayjs";
 import type { JSX } from "react";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 
 /**
  * Props for the AccountOpeningFrame component.
@@ -41,16 +39,9 @@ const AccountOpeningFrame = function ({
   color = "info",
 }: AccountOpeningFrameProps): JSX.Element {
   return (
-    <Box sx={{ maxWidth: 1200, width: "100%" }}>
+    <ConstrainedContent maxWidth={1200}>
       <Frame title="Opening Details" color={color}>
-        <Box
-          sx={{
-            display: "grid",
-            gap: 2,
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
-          }}
-        >
+        <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
           <AccountingPeriodEntryField
             label="Opening Accounting Period"
             options={accountingPeriods}
@@ -75,9 +66,9 @@ const AccountOpeningFrame = function ({
             }
             disabled={accountingPeriod === null}
           />
-        </Box>
+        </ResponsiveGrid>
       </Frame>
-    </Box>
+    </ConstrainedContent>
   );
 };
 

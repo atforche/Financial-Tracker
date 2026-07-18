@@ -1,4 +1,4 @@
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import { Paper, Stack, Typography } from "@mui/material";
 import AccountOverview from "@/overview/AccountOverview";
 import { AccountTypeModel } from "@/framework/data/api";
 import AccountingPeriodOverview from "@/overview/AccountingPeriodOverview";
@@ -6,6 +6,8 @@ import FundOverview from "@/overview/FundOverview";
 import GoalOverview from "@/overview/GoalOverview";
 import type { JSX } from "react";
 import type { OverviewData } from "@/overview/types";
+import PageLayout from "@/framework/view/PageLayout";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import TransactionOverview from "@/overview/TransactionOverview";
 import getApiClient from "@/framework/data/getApiClient";
 import getApiData from "@/framework/data/apiResponse";
@@ -133,7 +135,7 @@ const OverviewView = async function (): Promise<JSX.Element> {
   const data = await getOverviewData();
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
+    <PageLayout>
       <Paper
         sx={{
           border: "1px solid",
@@ -150,34 +152,19 @@ const OverviewView = async function (): Promise<JSX.Element> {
         </Stack>
       </Paper>
 
-      <Box
-        sx={{
-          display: "grid",
-          gap: 3,
-          gridTemplateColumns: {
-            xs: "1fr",
-            lg: "repeat(1, minmax(0, 1fr))",
-          },
-        }}
-      >
+      <ResponsiveGrid columns={{ xs: 1 }}>
         <AccountingPeriodOverview />
-        <Box
-          sx={{
-            display: "grid",
-            gap: 3,
-            gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
-          }}
-        >
+        <ResponsiveGrid columns={{ xs: 1, md: 2 }}>
           <AccountOverview data={data} />
           <FundOverview data={data} />
-        </Box>
+        </ResponsiveGrid>
         <GoalOverview />
-      </Box>
+      </ResponsiveGrid>
 
       <TransactionOverview
         currentAccountingPeriod={data.currentAccountingPeriod}
       />
-    </Stack>
+    </PageLayout>
   );
 };
 

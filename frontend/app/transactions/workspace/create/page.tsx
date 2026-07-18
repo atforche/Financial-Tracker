@@ -1,6 +1,6 @@
 import CreateTransactionForm from "@/transactions/workspace/CreateTransactionForm";
 import type { JSX } from "react";
-import { Stack } from "@mui/material";
+import PageLayout from "@/framework/view/PageLayout";
 import TransactionWorkspacePageHeader from "@/transactions/workspace/TransactionWorkspacePageHeader";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import { getTransactionWorkspaceReferenceData } from "@/transactions/workspace/getTransactionWorkspaceData";
@@ -40,7 +40,7 @@ const TransactionWorkspaceCreatePage = async function ({
   const workspaceUrl = routes.workspace(workspaceSearchParams);
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
+    <PageLayout>
       <TransactionWorkspacePageHeader
         backHref={returnUrl ?? workspaceUrl}
         title="Create Transaction"
@@ -54,7 +54,7 @@ const TransactionWorkspaceCreatePage = async function ({
         redirectUrl={workspaceUrl}
         showHeading={false}
       />
-    </Stack>
+    </PageLayout>
   );
 };
 

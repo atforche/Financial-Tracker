@@ -6,6 +6,7 @@ import type { AccountBalanceEvent } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
 import { BalanceEventType } from "@/framework/data/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import Link from "next/link";
@@ -20,8 +21,8 @@ import routes from "@/transactions/routes";
  * Props for the AccountBalanceEventsFrame component.
  */
 interface AccountBalanceEventsFrameProps {
-  readonly data: AccountBalanceEvent[] | null;
-  readonly totalCount: number | null;
+  readonly data: AccountBalanceEvent[];
+  readonly totalCount: number;
   readonly addTransactionHref: string;
 }
 
@@ -113,7 +114,7 @@ const AccountBalanceEventsFrame = function ({
   ];
 
   return (
-    <Box sx={{ maxWidth: 1200, width: "100%" }}>
+    <ConstrainedContent maxWidth={1200}>
       <ListFrame<AccountBalanceEvent>
         title="Recent Balance Events"
         color="info"
@@ -157,7 +158,7 @@ const AccountBalanceEventsFrame = function ({
           ),
         }}
       />
-    </Box>
+    </ConstrainedContent>
   );
 };
 

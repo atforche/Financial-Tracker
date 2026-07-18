@@ -1,10 +1,12 @@
 "use client";
 
 import type { FundWithBalance, FundWorkspaceBalanceEvent } from "@/funds/types";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import DeleteFundForm from "@/funds/workspace/DeleteFundForm";
 import FundBalanceEventsFrame from "@/funds/workspace/FundBalanceEventsFrame";
 import FundSummaryFrame from "@/funds/workspace/FundSummaryFrame";
 import type { JSX } from "react";
+import PageLayout from "@/framework/view/PageLayout";
 import { Stack } from "@mui/material";
 import UpdateFundForm from "@/funds/workspace/UpdateFundForm";
 
@@ -30,22 +32,24 @@ const ViewFundForm = function ({
   addTransactionHref,
 }: ViewFundFormProps): JSX.Element {
   return (
-    <Stack spacing={3} sx={{ width: "100%", maxWidth: 1200 }}>
-      <FundSummaryFrame
-        fund={fund}
-        headerContent={
-          <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-            <UpdateFundForm fund={fund} redirectUrl={redirectUrl} />
-            <DeleteFundForm fund={fund} redirectUrl={redirectUrl} />
-          </Stack>
-        }
-      />
-      <FundBalanceEventsFrame
-        data={recentBalanceEvents}
-        totalCount={recentBalanceEventCount}
-        addTransactionHref={addTransactionHref}
-      />
-    </Stack>
+    <ConstrainedContent maxWidth={1200}>
+      <PageLayout>
+        <FundSummaryFrame
+          fund={fund}
+          headerContent={
+            <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
+              <UpdateFundForm fund={fund} redirectUrl={redirectUrl} />
+              <DeleteFundForm fund={fund} redirectUrl={redirectUrl} />
+            </Stack>
+          }
+        />
+        <FundBalanceEventsFrame
+          data={recentBalanceEvents}
+          totalCount={recentBalanceEventCount}
+          addTransactionHref={addTransactionHref}
+        />
+      </PageLayout>
+    </ConstrainedContent>
   );
 };
 

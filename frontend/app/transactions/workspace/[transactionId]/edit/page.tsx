@@ -3,7 +3,7 @@ import {
   getTransactionWorkspaceReferenceData,
 } from "@/transactions/workspace/getTransactionWorkspaceData";
 import type { JSX } from "react";
-import { Stack } from "@mui/material";
+import PageLayout from "@/framework/view/PageLayout";
 import TransactionWorkspacePageHeader from "@/transactions/workspace/TransactionWorkspacePageHeader";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import UpdateTransactionForm from "@/transactions/workspace/UpdateTransactionForm";
@@ -71,7 +71,7 @@ const TransactionWorkspaceEditPage = async function ({
   }
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
+    <PageLayout>
       <TransactionWorkspacePageHeader
         backHref={returnUrl ?? workspaceUrl}
         title="Edit Transaction"
@@ -88,7 +88,7 @@ const TransactionWorkspaceEditPage = async function ({
           workspaceSearchParams,
         )}
       />
-    </Stack>
+    </PageLayout>
   );
 };
 

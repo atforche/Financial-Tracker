@@ -10,6 +10,7 @@ import CreateFundTransactionForm from "@/transactions/workspace/fund/CreateFundT
 import CreateIncomeTransactionForm from "@/transactions/workspace/income/CreateIncomeTransactionForm";
 import CreateSpendingTransactionForm from "@/transactions/workspace/spending/CreateSpendingTransactionForm";
 import type { FundWithBalance } from "@/funds/types";
+import PageLayout from "@/framework/view/PageLayout";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
 
 /**
@@ -42,7 +43,7 @@ const CreateTransactionForm = function ({
     useState<TransactionFormKind>("spending");
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
+    <PageLayout>
       {showHeading ? (
         <Stack spacing={0.5}>
           <Typography variant="h5">Create Transaction</Typography>
@@ -96,7 +97,7 @@ const CreateTransactionForm = function ({
           redirectUrl={redirectUrl}
         />
       ) : null}
-    </Stack>
+    </PageLayout>
   );
 };
 

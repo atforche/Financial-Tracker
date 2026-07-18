@@ -20,6 +20,7 @@ import {
 import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Frame from "@/framework/view/Frame";
+import PageLayout from "@/framework/view/PageLayout";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import postTransaction from "@/transactions/workspace/postTransaction";
 import { useRouter } from "next/navigation";
@@ -91,7 +92,7 @@ const PostTransactionForm = function ({
   };
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
+    <PageLayout>
       <Frame title="Account Posting">
         <Stack spacing={2}>
           {accountPostings.length === 0 ? (
@@ -188,7 +189,7 @@ const PostTransactionForm = function ({
         errorMessage={state.errorTitle ?? null}
         unmappedErrors={state.unmappedErrors ?? null}
       />
-    </Stack>
+    </PageLayout>
   );
 };
 

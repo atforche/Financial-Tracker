@@ -1,6 +1,6 @@
 "use server";
 
-import formatErrors from "@/framework/forms/formatErrors";
+import formatAccountActionError from "@/accounts/workspace/formatAccountActionError";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import { revalidatePath } from "next/cache";
@@ -39,13 +39,10 @@ const deleteAccount = async function (
   });
   if (error) {
     if (isApiError(error)) {
-      const unmappedErrors: (string | null)[] = [];
-      for (const key of Object.keys(error.errors ?? {})) {
-        unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
-      }
+      const formattedError = formatAccountActionError(error, {});
       return {
-        errorTitle: error.title ?? null,
-        unmappedErrors: unmappedErrors.join(", ") || null,
+        errorTitle: formattedError.errorTitle,
+        unmappedErrors: formattedError.unmappedErrors,
       };
     }
     throw new Error("An unexpected error occurred", { cause: error });

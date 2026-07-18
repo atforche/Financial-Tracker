@@ -1,12 +1,12 @@
 "use client";
 
-import { Box, Button, ButtonBase, Stack, Typography } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
-import Frame from "@/framework/view/Frame";
 import type { FundWithBalance } from "@/funds/types";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { JSX } from "react";
-import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import WorkspaceCard from "@/framework/view/WorkspaceCard";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import nameof from "@/framework/data/nameof";
 import routes from "@/funds/routes";
@@ -70,58 +70,30 @@ const FundWorkspaceCards = function ({
   }
 
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gap: 2,
-        justifyContent: "start",
-        justifyItems: "stretch",
-        alignItems: "start",
-        gridTemplateColumns: {
-          xs: "minmax(0, 1fr)",
-          sm: "repeat(auto-fit, minmax(280px, max-content))",
-        },
-      }}
-    >
+    <ResponsiveGrid minimumColumnWidth={280} spacing={2}>
       {funds.map((fund) => (
-        <ButtonBase
+        <WorkspaceCard
           key={fund.id}
+          title={fund.name}
+          color={fund.currentBalance.postedBalance >= 0 ? "info" : "error"}
           onClick={() => {
             openFund(fund.id);
           }}
-          sx={{
-            display: "flex",
-            width: "100%",
-            minWidth: 0,
-            borderRadius: 5,
-            textAlign: "left",
-            "& .MuiPaper-root": { width: "100%" },
-          }}
         >
-          <Frame
-            title={fund.name}
-            color={fund.currentBalance.postedBalance >= 0 ? "info" : "error"}
-            headerContent={
-              <KeyboardArrowRight
-                sx={{ color: "text.secondary", fontSize: 22 }}
-              />
-            }
-          >
-            <Stack spacing={0.5}>
-              <Typography
-                variant="overline"
-                sx={{ color: "text.secondary", fontWeight: 700 }}
-              >
-                Current balance
-              </Typography>
-              <Typography variant="h5">
-                {formatCurrency(fund.currentBalance.postedBalance)}
-              </Typography>
-            </Stack>
-          </Frame>
-        </ButtonBase>
+          <Stack spacing={0.5}>
+            <Typography
+              variant="overline"
+              sx={{ color: "text.secondary", fontWeight: 700 }}
+            >
+              Current balance
+            </Typography>
+            <Typography variant="h5">
+              {formatCurrency(fund.currentBalance.postedBalance)}
+            </Typography>
+          </Stack>
+        </WorkspaceCard>
       ))}
-    </Box>
+    </ResponsiveGrid>
   );
 };
 

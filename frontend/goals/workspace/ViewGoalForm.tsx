@@ -5,10 +5,11 @@ import type {
   GoalWorkspaceBalanceEvent,
   SpendingGoal,
 } from "@/goals/types";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import GoalBalanceEventsFrame from "@/goals/workspace/GoalBalanceEventsFrame";
 import GoalContextFrame from "@/goals/workspace/GoalContextFrame";
 import type { JSX } from "react";
-import { Stack } from "@mui/material";
+import PageLayout from "@/framework/view/PageLayout";
 
 /**
  * Props for the ViewGoalForm component.
@@ -36,20 +37,22 @@ const ViewGoalForm = function ({
   fundId,
 }: ViewGoalFormProps): JSX.Element {
   return (
-    <Stack spacing={3} sx={{ width: "100%", maxWidth: 1200 }}>
-      <GoalContextFrame
-        assignmentGoal={assignmentGoal}
-        spendingGoal={spendingGoal}
-        redirectUrl={redirectUrl}
-      />
-      <GoalBalanceEventsFrame
-        data={recentBalanceEvents}
-        totalCount={recentBalanceEventCount}
-        addTransactionHref={addTransactionHref}
-        accountingPeriodId={accountingPeriodId}
-        fundId={fundId}
-      />
-    </Stack>
+    <ConstrainedContent maxWidth={1200}>
+      <PageLayout>
+        <GoalContextFrame
+          assignmentGoal={assignmentGoal}
+          spendingGoal={spendingGoal}
+          redirectUrl={redirectUrl}
+        />
+        <GoalBalanceEventsFrame
+          data={recentBalanceEvents}
+          totalCount={recentBalanceEventCount}
+          addTransactionHref={addTransactionHref}
+          accountingPeriodId={accountingPeriodId}
+          fundId={fundId}
+        />
+      </PageLayout>
+    </ConstrainedContent>
   );
 };
 

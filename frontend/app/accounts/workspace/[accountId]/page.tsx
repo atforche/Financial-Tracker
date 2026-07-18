@@ -4,6 +4,7 @@ import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountW
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import type { JSX } from "react";
 import Link from "next/link";
+import PageLayout from "@/framework/view/PageLayout";
 import ViewAccountForm from "@/accounts/workspace/ViewAccountForm";
 import getApiClient from "@/framework/data/getApiClient";
 import getApiData from "@/framework/data/apiResponse";
@@ -75,7 +76,7 @@ const AccountWorkspaceDetailPage = async function ({
   });
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
+    <PageLayout>
       <Stack spacing={2.5}>
         <Link
           href={workspaceUrl}
@@ -94,7 +95,7 @@ const AccountWorkspaceDetailPage = async function ({
         recentBalanceEventCount={allBalanceEvents.length}
         addTransactionHref={addTransactionHref}
       />
-    </Stack>
+    </PageLayout>
   );
 };
 

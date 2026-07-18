@@ -1,10 +1,11 @@
 "use client";
 
 import type { JSX, ReactNode } from "react";
-import { Box } from "@mui/material";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import Frame from "@/framework/view/Frame";
 import type { FundWithBalance } from "@/funds/types";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import StringEntryField from "@/framework/forms/StringEntryField";
 
 /**
@@ -28,16 +29,9 @@ const FundSummaryFrame = function ({
     fund.currentBalance.pendingDebitAmount;
 
   return (
-    <Box sx={{ maxWidth: 1200, width: "100%" }}>
+    <ConstrainedContent maxWidth={1200}>
       <Frame title="Fund Summary" color="info" headerContent={headerContent}>
-        <Box
-          sx={{
-            display: "grid",
-            gap: 2,
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
-          }}
-        >
+        <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
           <StringEntryField
             label="Name"
             value={fund.name}
@@ -62,9 +56,9 @@ const FundSummaryFrame = function ({
             setValue={null}
             errorMessage={null}
           />
-        </Box>
+        </ResponsiveGrid>
       </Frame>
-    </Box>
+    </ConstrainedContent>
   );
 };
 

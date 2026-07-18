@@ -1,6 +1,8 @@
 import { Box, Stack, Typography, alpha } from "@mui/material";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
@@ -42,17 +44,10 @@ const TransactionSourceDestinationSummary = function ({
   ] as const;
 
   return (
-    <Box sx={{ maxWidth: 1200, width: "100%" }}>
+    <ConstrainedContent maxWidth={1200}>
       <Frame title="Summary" color={summaryColor}>
         <Stack spacing={2}>
-          <Box
-            sx={{
-              display: "grid",
-              gap: 1.5,
-              gridTemplateColumns:
-                "repeat(auto-fit, minmax(min(100%, 180px), 1fr))",
-            }}
-          >
+          <ResponsiveGrid minimumColumnWidth={180} spacing={1.5}>
             {summaryCards.map((card) => (
               <Box
                 key={card.label}
@@ -71,10 +66,10 @@ const TransactionSourceDestinationSummary = function ({
                 </Typography>
               </Box>
             ))}
-          </Box>
+          </ResponsiveGrid>
         </Stack>
       </Frame>
-    </Box>
+    </ConstrainedContent>
   );
 };
 

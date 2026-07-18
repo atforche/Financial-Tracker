@@ -14,6 +14,7 @@ import {
   validateSummary,
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { Dayjs } from "dayjs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import TransactionDetailsFrame from "@/transactions/workspace/TransactionDetailsFrame";
@@ -100,69 +101,71 @@ const TransactionForm = function <RequestPayload>({
 
   return (
     <Stack ref={formRef} spacing={3}>
-      <Stack spacing={3} sx={{ width: "100%", maxWidth: 1800 }}>
-        <TransactionDetailsFrame
-          accountingPeriods={accountingPeriods}
-          accountingPeriod={accountingPeriod}
-          setAccountingPeriod={readOnly ? null : setAccountingPeriod}
-          date={date ?? defaultDate}
-          setDate={readOnly ? null : setDate}
-          descriptionValue={description}
-          setDescriptionValue={readOnly ? null : setDescription}
-          headerContent={headerContent}
-          color={detailsAreValid ? "info" : "error"}
-        />
-        <TransactionSourceDestinationLayout
-          sourceFrame={sourceContent ?? emptyFrame}
-          destinationFrames={[
-            <Stack key="destination-content" spacing={2}>
-              {destinationContent}
-            </Stack>,
-          ]}
-        />
-        {typeof destinationAmount === "number" ? (
-          <TransactionSourceDestinationSummary
-            sourceAmount={sourceAmount ?? 0}
-            destinationAmount={destinationAmount}
-            isValid={summaryIsValid}
+      <ConstrainedContent maxWidth={1800}>
+        <Stack spacing={3}>
+          <TransactionDetailsFrame
+            accountingPeriods={accountingPeriods}
+            accountingPeriod={accountingPeriod}
+            setAccountingPeriod={readOnly ? null : setAccountingPeriod}
+            date={date ?? defaultDate}
+            setDate={readOnly ? null : setDate}
+            descriptionValue={description}
+            setDescriptionValue={readOnly ? null : setDescription}
+            headerContent={headerContent}
+            color={detailsAreValid ? "info" : "error"}
           />
-        ) : null}
-        {!readOnly ? (
-          <>
-            <ErrorAlert
-              errorMessage={state.errorTitle ?? null}
-              unmappedErrors={state.unmappedErrors ?? null}
+          <TransactionSourceDestinationLayout
+            sourceFrame={sourceContent ?? emptyFrame}
+            destinationFrames={[
+              <Stack key="destination-content" spacing={2}>
+                {destinationContent}
+              </Stack>,
+            ]}
+          />
+          {typeof destinationAmount === "number" ? (
+            <TransactionSourceDestinationSummary
+              sourceAmount={sourceAmount ?? 0}
+              destinationAmount={destinationAmount}
+              isValid={summaryIsValid}
             />
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={1.5}
-              justifyContent="flex-end"
-            >
-              <Button
-                variant="outlined"
-                onClick={onReset ?? ((): null => null)}
+          ) : null}
+          {!readOnly ? (
+            <>
+              <ErrorAlert
+                errorMessage={state.errorTitle ?? null}
+                unmappedErrors={state.unmappedErrors ?? null}
+              />
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1.5}
+                justifyContent="flex-end"
               >
-                Reset
-              </Button>
-              <Button
-                variant="contained"
-                loading={pending}
-                disabled={request === null || onSubmit === null}
-                onClick={(): void => {
-                  if (request === null || onSubmit === null) {
-                    return;
-                  }
-                  startTransition(() => {
-                    onSubmit(request);
-                  });
-                }}
-              >
-                {submitLabel}
-              </Button>
-            </Stack>
-          </>
-        ) : null}
-      </Stack>
+                <Button
+                  variant="outlined"
+                  onClick={onReset ?? ((): null => null)}
+                >
+                  Reset
+                </Button>
+                <Button
+                  variant="contained"
+                  loading={pending}
+                  disabled={request === null || onSubmit === null}
+                  onClick={(): void => {
+                    if (request === null || onSubmit === null) {
+                      return;
+                    }
+                    startTransition(() => {
+                      onSubmit(request);
+                    });
+                  }}
+                >
+                  {submitLabel}
+                </Button>
+              </Stack>
+            </>
+          ) : null}
+        </Stack>
+      </ConstrainedContent>
     </Stack>
   );
 };

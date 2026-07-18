@@ -1,6 +1,10 @@
 "use client";
 
-import { Box, Button, ButtonBase, Stack, Typography } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
+import {
+  accountWorkspaceParamNames,
+  clearAccountWorkspaceFilters,
+} from "@/accounts/workspace/searchParams";
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
@@ -8,12 +12,11 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
-import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
-import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import WorkspaceCard from "@/framework/view/WorkspaceCard";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { getAccountCardColor } from "@/accounts/workspace/helpers";
-import nameof from "@/framework/data/nameof";
 import routes from "@/accounts/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
@@ -21,7 +24,7 @@ import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
  * Props for the AccountWorkspaceCards component.
  */
 interface AccountWorkspaceCardsProps {
-  readonly data: AccountWithBalance[] | null;
+  readonly data: AccountWithBalance[];
   readonly isInOnboardingMode: boolean;
 }
 
@@ -36,15 +39,15 @@ const AccountWorkspaceCards = function ({
   const router = useRouter();
   const updateParams = useSearchParamUpdater([]);
 
-  const actionParamName = nameof<AccountWorkspaceSearchParams>("action");
-  const searchParamName = nameof<AccountWorkspaceSearchParams>("search");
-  const accountTypeParamName =
-    nameof<AccountWorkspaceSearchParams>("accountType");
+  const {
+    action: actionParamName,
+    accountType: accountTypeParamName,
+    search: searchParamName,
+  } = accountWorkspaceParamNames;
 
   const clearFilters = function (): void {
     updateParams((params) => {
-      params.delete(searchParamName);
-      params.delete(accountTypeParamName);
+      clearAccountWorkspaceFilters(params);
       params.delete(actionParamName);
     });
   };
@@ -71,7 +74,7 @@ const AccountWorkspaceCards = function ({
   const hasAccountTypeFilter =
     searchParams.getAll(accountTypeParamName).length > 0;
   const hasActiveFilters = hasSearch || hasAccountTypeFilter;
-  const accounts = data ?? [];
+  const accounts = data;
 
   return accounts.length === 0 ? (
     <Stack spacing={2} alignItems="flex-start">
@@ -84,65 +87,35 @@ const AccountWorkspaceCards = function ({
       </Typography>
       {hasActiveFilters ? (
         <Button variant="contained" onClick={clearFilters}>
-          Clear filters
+          Clear Filters
         </Button>
       ) : null}
     </Stack>
   ) : (
-    <Box
-      sx={{
-        display: "grid",
-        gap: 2,
-        justifyContent: "start",
-        justifyItems: "stretch",
-        alignItems: "start",
-        gridTemplateColumns: {
-          xs: "minmax(0, 1fr)",
-          sm: "repeat(auto-fit, minmax(280px, max-content))",
-        },
-      }}
-    >
+    <ResponsiveGrid minimumColumnWidth={280} spacing={2}>
       {accounts.map((account) => (
-        <ButtonBase
+        <WorkspaceCard
           key={account.id}
+          title={account.name}
+          color={getAccountCardColor(account.type)}
           onClick={() => {
             openAccount(account.id);
           }}
-          sx={{
-            display: "flex",
-            width: "100%",
-            minWidth: 0,
-            borderRadius: 5,
-            textAlign: "left",
-            "& .MuiPaper-root": {
-              width: "100%",
-            },
-          }}
         >
-          <Frame
-            title={account.name}
-            color={getAccountCardColor(account.type)}
-            headerContent={
-              <KeyboardArrowRight
-                sx={{ color: "text.secondary", fontSize: 22 }}
-              />
-            }
-          >
-            <Stack spacing={0.5}>
-              <Typography
-                variant="overline"
-                sx={{ color: "text.secondary", fontWeight: 700 }}
-              >
-                Current balance
-              </Typography>
-              <Typography variant="h5">
-                {formatCurrency(account.currentBalance.postedBalance)}
-              </Typography>
-            </Stack>
-          </Frame>
-        </ButtonBase>
+          <Stack spacing={0.5}>
+            <Typography
+              variant="overline"
+              sx={{ color: "text.secondary", fontWeight: 700 }}
+            >
+              Current balance
+            </Typography>
+            <Typography variant="h5">
+              {formatCurrency(account.currentBalance.postedBalance)}
+            </Typography>
+          </Stack>
+        </WorkspaceCard>
       ))}
-    </Box>
+    </ResponsiveGrid>
   );
 };
 

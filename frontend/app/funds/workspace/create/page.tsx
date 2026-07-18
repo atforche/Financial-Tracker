@@ -2,7 +2,7 @@ import CreateFundForm from "@/funds/workspace/CreateFundForm";
 import FundWorkspacePageHeader from "@/funds/workspace/FundWorkspacePageHeader";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { JSX } from "react";
-import { Stack } from "@mui/material";
+import PageLayout from "@/framework/view/PageLayout";
 import getApiClient from "@/framework/data/getApiClient";
 import getApiData from "@/framework/data/apiResponse";
 import { redirect } from "next/navigation";
@@ -45,13 +45,13 @@ const FundWorkspaceCreatePage = async function ({
   );
 
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
+    <PageLayout>
       <FundWorkspacePageHeader backHref={workspaceUrl} title="Create Fund" />
       <CreateFundForm
         accountingPeriods={openAccountingPeriods}
         redirectUrl={workspaceUrl}
       />
-    </Stack>
+    </PageLayout>
   );
 };
 

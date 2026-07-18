@@ -1,16 +1,19 @@
 "use client";
 
-import { Button, Paper, Stack, Typography } from "@mui/material";
+import { Button, Stack } from "@mui/material";
+import {
+  accountWorkspaceParamNames,
+  clearAccountWorkspaceFilters,
+} from "@/accounts/workspace/searchParams";
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
 } from "@/accounts/accountTypeFilterHelpers";
 import type { AccountType } from "@/accounts/types";
 import AccountTypeFilter from "@/accounts/AccountTypeFilter";
-import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
 import type { JSX } from "react";
+import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import SearchBar from "@/framework/listframe/SearchBar";
-import nameof from "@/framework/data/nameof";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -29,9 +32,11 @@ const AccountWorkspaceFilter = function ({
 }: AccountWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const searchParamName = nameof<AccountWorkspaceSearchParams>("search");
-  const accountTypeParamName =
-    nameof<AccountWorkspaceSearchParams>("accountType");
+  const {
+    action: actionParamName,
+    accountType: accountTypeParamName,
+    search: searchParamName,
+  } = accountWorkspaceParamNames;
 
   const currentAccountTypes = normalizeAccountTypes(
     searchParams.getAll(accountTypeParamName),
@@ -54,8 +59,7 @@ const AccountWorkspaceFilter = function ({
 
   const clearView = function (): void {
     updateParams((params) => {
-      params.delete(searchParamName);
-      params.delete(accountTypeParamName);
+      clearAccountWorkspaceFilters(params);
     });
   };
 
@@ -63,10 +67,9 @@ const AccountWorkspaceFilter = function ({
     (searchParams.get(searchParamName) ?? "").trim() !== "" ||
     shouldPersistAccountTypes(currentAccountTypes);
 
-  const actionParamName = nameof<AccountWorkspaceSearchParams>("action");
   const addActionLabel = isInOnboardingMode
-    ? "Onboard account"
-    : "Create account";
+    ? "Onboard Account"
+    : "Create Account";
 
   const setAction = function (action: "create" | "onboard"): void {
     updateParams((params) => {
@@ -75,39 +78,16 @@ const AccountWorkspaceFilter = function ({
   };
 
   return (
-    <Paper
-      sx={{
-        top: 10,
-        zIndex: (theme) => theme.zIndex.appBar - 1,
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 3,
-        bgcolor: "background.paper",
-        p: { xs: 2, md: 2.5 },
-        maxWidth: 1440,
-      }}
-    >
-      <Stack spacing={2}>
-        <Typography variant="h5">Accounts Workspace</Typography>
-        <Stack
-          direction="row"
-          spacing={1.5}
-          useFlexGap
-          flexWrap={{ xs: "wrap", md: "nowrap" }}
-          alignItems={{ xs: "stretch", md: "center" }}
-        >
-          <AccountTypeFilter
-            value={currentAccountTypes}
-            onChange={handleAccountTypeChange}
-          />
-          <SearchBar searchParamName={searchParamName} />
+    <PageFilterFrame
+      title="Accounts Workspace"
+      actions={
+        <Stack direction="row" spacing={1.5} useFlexGap flexWrap="wrap">
           <Button
             variant="outlined"
             onClick={clearView}
             disabled={!hasActiveView}
-            sx={{ flexShrink: 0 }}
           >
-            Reset filters
+            Reset Filters
           </Button>
           <Button
             variant="contained"
@@ -118,8 +98,14 @@ const AccountWorkspaceFilter = function ({
             {addActionLabel}
           </Button>
         </Stack>
-      </Stack>
-    </Paper>
+      }
+    >
+      <AccountTypeFilter
+        value={currentAccountTypes}
+        onChange={handleAccountTypeChange}
+      />
+      <SearchBar searchParamName={searchParamName} />
+    </PageFilterFrame>
   );
 };
 

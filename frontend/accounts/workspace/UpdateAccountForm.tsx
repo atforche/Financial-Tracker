@@ -34,13 +34,8 @@ const UpdateAccountForm = function ({
 }: UpdateAccountFormProps): JSX.Element {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [accountId, setAccountId] = useState<string>(account.id);
   const [name, setName] = useState<string>(account.name);
   const formRef = useRef<HTMLDivElement | null>(null);
-  if (accountId !== account.id) {
-    setAccountId(account.id);
-    setName(account.name);
-  }
 
   const [state, action, pending] = useActionState(updateAccount, {});
 
@@ -55,6 +50,10 @@ const UpdateAccountForm = function ({
       router.replace(redirectUrl, { scroll: false });
     }
   }, [redirectUrl, router, state.success]);
+
+  useEffect(() => {
+    setName(account.name);
+  }, [account.id, account.name]);
 
   let request: UpdateAccountRequest | null = null;
   if (name !== "") {
@@ -77,8 +76,7 @@ const UpdateAccountForm = function ({
         open={open}
         onClose={
           pending
-            ? // eslint-disable-next-line no-undefined
-              undefined
+            ? undefined
             : (): void => {
                 setOpen(false);
                 reset();

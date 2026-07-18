@@ -1,7 +1,7 @@
 "use server";
 
 import type { OnboardAccountRequest } from "@/accounts/types";
-import formatErrors from "@/framework/forms/formatErrors";
+import formatAccountActionError from "@/accounts/workspace/formatAccountActionError";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import nameof from "@/framework/data/nameof";
@@ -40,40 +40,19 @@ const onboardAccount = async function (
   });
   if (error) {
     if (isApiError(error)) {
-      let nameErrorMessage = null;
-      let typeErrorMessage = null;
-      let onboardedBalanceErrorMessage = null;
-      const unmappedErrors: (string | null)[] = [];
-
-      for (const key of Object.keys(error.errors ?? {})) {
-        if (
-          key.toUpperCase() ===
-          nameof<OnboardAccountRequest>("name").toUpperCase()
-        ) {
-          nameErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<OnboardAccountRequest>("type").toUpperCase()
-        ) {
-          typeErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<OnboardAccountRequest>("onboardedBalance").toUpperCase()
-        ) {
-          onboardedBalanceErrorMessage = formatErrors(
-            error.errors?.[key] ?? null,
-          );
-        } else {
-          unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
-        }
-      }
+      const formattedError = formatAccountActionError(error, {
+        [nameof<OnboardAccountRequest>("name")]: "nameErrors",
+        [nameof<OnboardAccountRequest>("type")]: "typeErrors",
+        [nameof<OnboardAccountRequest>("onboardedBalance")]:
+          "onboardedBalanceErrors",
+      });
       return {
-        success: false,
-        errorTitle: error.title ?? null,
-        nameErrors: nameErrorMessage,
-        typeErrors: typeErrorMessage,
-        onboardedBalanceErrors: onboardedBalanceErrorMessage,
-        unmappedErrors: unmappedErrors.join(", ") || null,
+        errorTitle: formattedError.errorTitle,
+        nameErrors: formattedError.fieldErrors["nameErrors"] ?? null,
+        typeErrors: formattedError.fieldErrors["typeErrors"] ?? null,
+        onboardedBalanceErrors:
+          formattedError.fieldErrors["onboardedBalanceErrors"] ?? null,
+        unmappedErrors: formattedError.unmappedErrors,
       };
     }
     throw new Error("An unexpected error occurred", { cause: error });

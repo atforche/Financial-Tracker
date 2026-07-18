@@ -17,6 +17,7 @@ import {
   validateSpendingGoalSetup,
 } from "@/funds/workspace/helpers";
 import AssignmentGoalSetupSection from "@/funds/workspace/AssignmentGoalSetupSection";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Frame from "@/framework/view/Frame";
@@ -95,97 +96,99 @@ const OnboardFundForm = function ({
   );
 
   return (
-    <Stack ref={formRef} spacing={3} sx={{ width: "100%", maxWidth: "780px" }}>
-      <Frame
-        title="Fund Setup"
-        color={fundSetupIsComplete ? "warning" : "error"}
-      >
-        <Stack spacing={2.5}>
-          <StringEntryField
-            label="Name"
-            value={name}
-            setValue={setName}
-            errorMessage={state.nameErrors ?? null}
-          />
-          <StringEntryField
-            label="Description"
-            value={description}
-            setValue={setDescription}
-            errorMessage={state.descriptionErrors ?? null}
-          />
-          <CurrencyEntryField
-            label="Starting Balance"
-            value={onboardedBalance}
-            setValue={setOnboardedBalance}
-            errorMessage={state.onboardedBalanceErrors ?? null}
-          />
-          {remainingUnassignedAmount !== null ? (
-            <Typography
-              variant="body2"
-              sx={{
-                color:
-                  remainingUnassignedAmount < 0
-                    ? "error.main"
-                    : "text.secondary",
-              }}
-            >
-              Remaining Unassigned Balance:{" "}
-              {formatCurrency(remainingUnassignedAmount)}
-            </Typography>
-          ) : null}
-        </Stack>
-      </Frame>
-
-      <AssignmentGoalSetupSection
-        color={assignmentGoalSetupIsComplete ? "warning" : "error"}
-        value={assignmentGoalType}
-        setValue={setAssignmentGoalType}
-        amount={assignmentGoalAmount}
-        setAmount={setAssignmentGoalAmount}
-        typeErrorMessage={state.assignmentGoalTypeErrors ?? null}
-        amountErrorMessage={state.assignmentGoalAmountErrors ?? null}
-      />
-
-      <SpendingGoalSetupSection
-        color={spendingGoalSetupIsComplete ? "warning" : "error"}
-        value={spendingGoalType}
-        setValue={setSpendingGoalType}
-        typeErrorMessage={state.spendingGoalTypeErrors ?? null}
-      />
-
-      <ErrorAlert
-        errorMessage={state.errorTitle ?? null}
-        unmappedErrors={state.unmappedErrors ?? null}
-      />
-
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={1.5}
-        justifyContent="flex-end"
-      >
-        <Button variant="outlined" onClick={reset}>
-          Reset
-        </Button>
-        <Button
-          variant="contained"
-          loading={pending}
-          disabled={request === null}
-          onClick={() => {
-            if (request === null) {
-              return;
-            }
-            startTransition(() => {
-              action({
-                redirectUrl,
-                request,
-              });
-            });
-          }}
+    <ConstrainedContent maxWidth={780}>
+      <Stack ref={formRef} spacing={3}>
+        <Frame
+          title="Fund Setup"
+          color={fundSetupIsComplete ? "warning" : "error"}
         >
-          Onboard Fund
-        </Button>
+          <Stack spacing={2.5}>
+            <StringEntryField
+              label="Name"
+              value={name}
+              setValue={setName}
+              errorMessage={state.nameErrors ?? null}
+            />
+            <StringEntryField
+              label="Description"
+              value={description}
+              setValue={setDescription}
+              errorMessage={state.descriptionErrors ?? null}
+            />
+            <CurrencyEntryField
+              label="Starting Balance"
+              value={onboardedBalance}
+              setValue={setOnboardedBalance}
+              errorMessage={state.onboardedBalanceErrors ?? null}
+            />
+            {remainingUnassignedAmount !== null ? (
+              <Typography
+                variant="body2"
+                sx={{
+                  color:
+                    remainingUnassignedAmount < 0
+                      ? "error.main"
+                      : "text.secondary",
+                }}
+              >
+                Remaining Unassigned Balance:{" "}
+                {formatCurrency(remainingUnassignedAmount)}
+              </Typography>
+            ) : null}
+          </Stack>
+        </Frame>
+
+        <AssignmentGoalSetupSection
+          color={assignmentGoalSetupIsComplete ? "warning" : "error"}
+          value={assignmentGoalType}
+          setValue={setAssignmentGoalType}
+          amount={assignmentGoalAmount}
+          setAmount={setAssignmentGoalAmount}
+          typeErrorMessage={state.assignmentGoalTypeErrors ?? null}
+          amountErrorMessage={state.assignmentGoalAmountErrors ?? null}
+        />
+
+        <SpendingGoalSetupSection
+          color={spendingGoalSetupIsComplete ? "warning" : "error"}
+          value={spendingGoalType}
+          setValue={setSpendingGoalType}
+          typeErrorMessage={state.spendingGoalTypeErrors ?? null}
+        />
+
+        <ErrorAlert
+          errorMessage={state.errorTitle ?? null}
+          unmappedErrors={state.unmappedErrors ?? null}
+        />
+
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={1.5}
+          justifyContent="flex-end"
+        >
+          <Button variant="outlined" onClick={reset}>
+            Reset
+          </Button>
+          <Button
+            variant="contained"
+            loading={pending}
+            disabled={request === null}
+            onClick={() => {
+              if (request === null) {
+                return;
+              }
+              startTransition(() => {
+                action({
+                  redirectUrl,
+                  request,
+                });
+              });
+            }}
+          >
+            Onboard Fund
+          </Button>
+        </Stack>
       </Stack>
-    </Stack>
+    </ConstrainedContent>
   );
 };
 

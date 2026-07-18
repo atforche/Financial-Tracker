@@ -4,6 +4,7 @@ import { Box, Button } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { BalanceEventType } from "@/framework/data/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { FundBalanceEvent } from "@/funds/types";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { JSX } from "react";
@@ -115,7 +116,7 @@ const FundBalanceEventsFrame = function ({
   ];
 
   return (
-    <Box sx={{ maxWidth: 1200, width: "100%" }}>
+    <ConstrainedContent maxWidth={1200}>
       <ListFrame<FundBalanceEvent>
         title="Recent Balance Events"
         color="info"
@@ -160,7 +161,7 @@ const FundBalanceEventsFrame = function ({
           ),
         }}
       />
-    </Box>
+    </ConstrainedContent>
   );
 };
 

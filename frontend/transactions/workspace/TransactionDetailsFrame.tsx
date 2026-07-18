@@ -1,14 +1,12 @@
-import {
-  type AccountingPeriod,
-  getMaximumDate,
-  getMinimumDate,
-} from "@/accounting-periods/types";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
 import type { JSX, ReactNode } from "react";
+import { getMaximumDate, getMinimumDate } from "@/accounting-periods/helpers";
+import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
-import { Box } from "@mui/material";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import type { Dayjs } from "dayjs";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import StringEntryField from "@/framework/forms/StringEntryField";
 
 /**
@@ -42,16 +40,9 @@ const TransactionDetailsFrame = function ({
   color = "info",
 }: TransactionDetailsFrameProps): JSX.Element {
   return (
-    <Box sx={{ maxWidth: 1200, width: "100%" }}>
+    <ConstrainedContent maxWidth={1200}>
       <Frame title="Details" color={color} headerContent={headerContent}>
-        <Box
-          sx={{
-            display: "grid",
-            gap: 2,
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
-          }}
-        >
+        <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
           <AccountingPeriodEntryField
             label="Accounting Period"
             options={accountingPeriods}
@@ -65,14 +56,14 @@ const TransactionDetailsFrame = function ({
             minDate={accountingPeriod ? getMinimumDate(accountingPeriod) : null}
             maxDate={accountingPeriod ? getMaximumDate(accountingPeriod) : null}
           />
-        </Box>
+        </ResponsiveGrid>
         <StringEntryField
           label="Description"
           value={descriptionValue}
           setValue={setDescriptionValue}
         />
       </Frame>
-    </Box>
+    </ConstrainedContent>
   );
 };
 
