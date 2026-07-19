@@ -11,6 +11,9 @@ import {
 import GoalTrendsMetricChart from "@/goals/trends/GoalTrendsMetricChart";
 import type { JSX } from "react";
 
+/**
+ * Props for the GoalTrendsGoalAmountChart component.
+ */
 interface GoalTrendsGoalAmountChartProps {
   readonly accountingPeriods: readonly GoalAccountingPeriodSummary[] | null;
   readonly view: GoalTrendsView;

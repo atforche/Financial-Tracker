@@ -22,8 +22,7 @@ import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import SpendingGoalSetupSection from "@/funds/workspace/SpendingGoalSetupSection";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
-import updateAssignmentGoal from "@/goals/workspace/updateAssignmentGoal";
-import updateSpendingGoal from "@/goals/workspace/updateSpendingGoal";
+import updateGoalPair from "@/goals/workspace/updateGoalPair";
 
 /**
  * Props for the UpdateGoalForm component.
@@ -34,7 +33,9 @@ interface UpdateGoalFormProps {
   readonly redirectUrl: string;
 }
 
-/** Opens a dialog for updating both paired goal configurations together. */
+/**
+ * Opens a dialog for updating both paired goal configurations together.
+ */
 const UpdateGoalForm = function ({
   assignmentGoal,
   spendingGoal,
@@ -49,14 +50,7 @@ const UpdateGoalForm = function ({
   const [spendingGoalType, setSpendingGoalType] =
     useState<SpendingGoalType | null>(spendingGoal.type);
   const formRef = useRef<HTMLDivElement | null>(null);
-  const [assignmentState, updateAssignment, assignmentPending] = useActionState(
-    updateAssignmentGoal,
-    {},
-  );
-  const [spendingState, updateSpending, spendingPending] = useActionState(
-    updateSpendingGoal,
-    {},
-  );
+  const [state, updateGoals, pending] = useActionState(updateGoalPair, {});
 
   const reset = function (): void {
     setAssignmentGoalType(assignmentGoal.type);
@@ -66,12 +60,12 @@ const UpdateGoalForm = function ({
   };
 
   useEffect(() => {
-    if (assignmentState.success === true && spendingState.success === true) {
+    if (state.success === true) {
       setOpen(false);
       reset();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assignmentState.success, spendingState.success]);
+  }, [state.success]);
 
   const assignmentRequest: UpdateAssignmentGoalRequest | null =
     assignmentGoalType !== null && assignmentGoalAmount !== null
@@ -79,7 +73,6 @@ const UpdateGoalForm = function ({
       : null;
   const spendingRequest: UpdateSpendingGoalRequest | null =
     spendingGoalType !== null ? { spendingGoalType } : null;
-  const pending = assignmentPending || spendingPending;
 
   return (
     <>
@@ -127,14 +120,11 @@ const UpdateGoalForm = function ({
                   return;
                 }
                 startTransition(() => {
-                  updateAssignment({
-                    goal: assignmentGoal,
-                    request: assignmentRequest,
-                    redirectUrl,
-                  });
-                  updateSpending({
-                    goal: spendingGoal,
-                    request: spendingRequest,
+                  updateGoals({
+                    assignmentGoal,
+                    assignmentRequest,
+                    spendingGoal,
+                    spendingRequest,
                     redirectUrl,
                   });
                 });
@@ -151,23 +141,17 @@ const UpdateGoalForm = function ({
             setValue={setAssignmentGoalType}
             amount={assignmentGoalAmount}
             setAmount={setAssignmentGoalAmount}
-            typeErrorMessage={assignmentState.typeErrors ?? null}
-            amountErrorMessage={assignmentState.goalAmountErrors ?? null}
+            typeErrorMessage={state.assignmentTypeErrors ?? null}
+            amountErrorMessage={state.assignmentGoalAmountErrors ?? null}
           />
           <SpendingGoalSetupSection
             value={spendingGoalType}
             setValue={setSpendingGoalType}
-            typeErrorMessage={spendingState.typeErrors ?? null}
+            typeErrorMessage={state.spendingTypeErrors ?? null}
           />
           <ErrorAlert
-            errorMessage={
-              assignmentState.errorTitle ?? spendingState.errorTitle ?? null
-            }
-            unmappedErrors={
-              assignmentState.unmappedErrors ??
-              spendingState.unmappedErrors ??
-              null
-            }
+            errorMessage={state.errorTitle ?? null}
+            unmappedErrors={state.unmappedErrors ?? null}
           />
         </Stack>
       </Dialog>

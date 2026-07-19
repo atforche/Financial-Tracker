@@ -23,7 +23,9 @@ interface GoalWorkspaceDetailPageProps {
   readonly searchParams: Promise<GoalWorkspaceSearchParams>;
 }
 
-/** Displays details and recent balance events for a Fund's paired Goals. */
+/**
+ * Displays details and recent balance events for a Fund's paired Goals.
+ */
 const GoalWorkspaceDetailPage = async function ({
   params,
   searchParams,

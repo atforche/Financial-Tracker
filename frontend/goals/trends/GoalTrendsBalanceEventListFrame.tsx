@@ -1,21 +1,23 @@
 "use client";
 
-import {
-  type GoalBalanceEvent,
-  type GoalTrendsView,
-  defaultGoalTrendsView,
+import type {
+  GoalBalanceEvent,
+  GoalTrendsView,
 } from "@/goals/trends/goalTrendsTypes";
+import {
+  goalTrendsParamNames,
+  hasGoalTrendsFilters,
+  resetGoalTrendsParams,
+} from "@/goals/trends/goalTrendsSearchParams";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import { GoalBalanceEventSort } from "@/goals/types";
-import type { GoalTrendsSearchParams } from "@/goals/trends/GoalTrends";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import createTrendsBalanceEventColumns from "@/balance-events/createTrendsBalanceEventColumns";
 import parseEnumValue from "@/framework/data/parseEnumValue";
-import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
@@ -39,18 +41,8 @@ const GoalTrendsBalanceEventListFrame = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sortParamName =
-    propertyName<GoalTrendsSearchParams>("balanceEventSort");
-  const pageParamName =
-    propertyName<GoalTrendsSearchParams>("balanceEventPage");
-  const goalTypeParamName = propertyName<GoalTrendsSearchParams>("goalType");
-  const fundNameParamName = propertyName<GoalTrendsSearchParams>("fundName");
-  const startAccountingPeriodIdParamName = propertyName<GoalTrendsSearchParams>(
-    "startAccountingPeriodId",
-  );
-  const endAccountingPeriodIdParamName = propertyName<GoalTrendsSearchParams>(
-    "endAccountingPeriodId",
-  );
+  const sortParamName = goalTrendsParamNames.balanceEventSort;
+  const pageParamName = goalTrendsParamNames.balanceEventPage;
 
   const updateParams = useSearchParamUpdater([pageParamName]);
 
@@ -81,11 +73,13 @@ const GoalTrendsBalanceEventListFrame = function ({
     );
   };
 
-  const hasActiveFilters =
-    searchParams.getAll(goalTypeParamName).length > 0 ||
-    searchParams.getAll(fundNameParamName).length > 0 ||
-    searchParams.has(startAccountingPeriodIdParamName) ||
-    searchParams.has(endAccountingPeriodIdParamName);
+  const hasActiveFilters = hasGoalTrendsFilters(searchParams);
+
+  const resetFilters = function (): void {
+    updateParams((params) => {
+      resetGoalTrendsParams(params, view);
+    });
+  };
 
   const getSortProps = createColumnSortProps(currentSort, setSort);
 
@@ -150,17 +144,7 @@ const GoalTrendsBalanceEventListFrame = function ({
           <Button
             variant="contained"
             onClick={() => {
-              updateParams((params) => {
-                [...params.keys()].forEach((key) => {
-                  params.delete(key);
-                });
-                if (view !== defaultGoalTrendsView) {
-                  params.set(
-                    propertyName<GoalTrendsSearchParams>("view"),
-                    view,
-                  );
-                }
-              });
+              resetFilters();
             }}
           >
             Reset filters
@@ -178,17 +162,7 @@ const GoalTrendsBalanceEventListFrame = function ({
           <Button
             variant="contained"
             onClick={() => {
-              updateParams((params) => {
-                [...params.keys()].forEach((key) => {
-                  params.delete(key);
-                });
-                if (view !== defaultGoalTrendsView) {
-                  params.set(
-                    propertyName<GoalTrendsSearchParams>("view"),
-                    view,
-                  );
-                }
-              });
+              resetFilters();
             }}
           >
             Reset filters

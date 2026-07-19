@@ -6,6 +6,9 @@ import type { JSX } from "react";
 import { createAccountingPeriodMetricPoint } from "@/framework/charts/chartPointHelpers";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
+/**
+ * Props for the GoalTrendsMetricChart component.
+ */
 interface GoalTrendsMetricChartProps {
   readonly title: string;
   readonly subtitle: string;
@@ -16,7 +19,9 @@ interface GoalTrendsMetricChartProps {
   readonly tickFormatter?: (value: number) => string;
 }
 
-/** Displays a single metric across accounting periods on the goal trends. */
+/**
+ * Displays a single metric across accounting periods on the goal trends.
+ */
 const GoalTrendsMetricChart = function ({
   title,
   subtitle,

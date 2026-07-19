@@ -19,11 +19,17 @@ import ExpandableSummaryCard from "@/framework/view/ExpandableSummaryCard";
 import SummaryCardGrid from "@/framework/view/SummaryCardGrid";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
+/**
+ * Props for the GoalTrendsSummaryCards component.
+ */
 interface GoalTrendsSummaryCardsProps {
   readonly trends: GoalRangeSummary;
   readonly view: GoalTrendsView;
 }
 
+/**
+ * Defines the structure of a summary card, including its title, value, and detailed breakdown rows.
+ */
 interface SummaryCardDefinition {
   readonly title: string;
   readonly value: ReactNode;
@@ -32,10 +38,16 @@ interface SummaryCardDefinition {
   readonly detailRows: readonly BreakdownDetailRow[];
 }
 
+/**
+ * Formats the provided number as a percentage.
+ */
 const formatPercentage = function (value: number): string {
   return `${value.toFixed(2)}%`;
 };
 
+/**
+ * Generates breakdown rows for assignment goal types based on the provided summaries and value extraction function.
+ */
 const getAssignmentRows = function (
   typeSummaries: readonly AssignmentGoalTypeSummary[],
   getValue: (summary: AssignmentGoalTypeSummary) => ReactNode,
@@ -47,6 +59,9 @@ const getAssignmentRows = function (
   }));
 };
 
+/**
+ * Generates breakdown rows for spending goal types based on the provided summaries and value extraction function.
+ */
 const getSpendingRows = function (
   typeSummaries: readonly SpendingGoalTypeSummary[],
   getValue: (summary: SpendingGoalTypeSummary) => ReactNode,

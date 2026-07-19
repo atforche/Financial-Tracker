@@ -7,6 +7,9 @@ import type { GoalTrendsSearchParams } from "@/goals/trends/GoalTrends";
 import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
 import type { Route } from "next";
 
+/**
+ * Converts the provided Goal Workspace Search Params into URL search params.
+ */
 const goalWorkspaceSearchParamsToSearchParams = function (
   searchParams: GoalWorkspaceSearchParams,
 ): URLSearchParams {
@@ -19,7 +22,7 @@ const goalWorkspaceSearchParamsToSearchParams = function (
 };
 
 /**
- * App routes related to goals.
+ * Converts the provided Goal Trends Search Params into URL search params.
  */
 const goalTrendsSearchParamsToSearchParams = function (
   searchParams: GoalTrendsSearchParams,
@@ -33,6 +36,9 @@ const goalTrendsSearchParamsToSearchParams = function (
   return params;
 };
 
+/**
+ * Defines the routes for the Goals section of the application.
+ */
 const routes = {
   trends: (searchParams: GoalTrendsSearchParams): Route =>
     buildUrl(

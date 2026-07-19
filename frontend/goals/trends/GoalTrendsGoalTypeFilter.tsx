@@ -16,6 +16,9 @@ import {
 import type { JSX } from "react";
 import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 
+/**
+ * Props for the GoalTrendsGoalTypeFilter component.
+ */
 interface GoalTrendsGoalTypeFilterProps {
   readonly view: GoalTrendsView;
   readonly value: readonly GoalTrendsGoalType[];

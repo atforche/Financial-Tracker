@@ -8,9 +8,9 @@ import {
 } from "@/goals/types";
 import { Button, Stack } from "@mui/material";
 import {
-  type GoalTrendsView,
-  defaultGoalTrendsView,
-} from "@/goals/trends/goalTrendsTypes";
+  hasGoalTrendsFilters,
+  resetGoalTrendsParams,
+} from "@/goals/trends/goalTrendsSearchParams";
 import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -30,35 +30,33 @@ import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 /**
  * Props for the GoalTrendsListFrame component.
  */
-interface GoalTrendsListFrameProps {
-  readonly view: GoalTrendsView;
-  readonly data: AssignmentGoal[] | SpendingGoal[] | null;
+interface GoalTrendsListFrameSharedProps {
   readonly totalCount: number | null;
   readonly isInOnboardingMode: boolean;
 }
 
 /**
+ * Props for the GoalTrendsListFrame component.
+ */
+type GoalTrendsListFrameProps = GoalTrendsListFrameSharedProps &
+  (
+    | { readonly view: "assignment"; readonly data: AssignmentGoal[] | null }
+    | { readonly view: "spending"; readonly data: SpendingGoal[] | null }
+  );
+
+/**
  * Presents the paged goal table for the Goals trends.
  */
-const GoalTrendsListFrame = function ({
-  view,
-  data,
-  totalCount,
-  isInOnboardingMode,
-}: GoalTrendsListFrameProps): JSX.Element {
+const GoalTrendsListFrame = function (
+  props: GoalTrendsListFrameProps,
+): JSX.Element {
+  const { view, totalCount, isInOnboardingMode } = props;
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const sortParamName = propertyName<GoalTrendsSearchParams>("sort");
   const pageParamName = propertyName<GoalTrendsSearchParams>("page");
-  const goalTypeParamName = propertyName<GoalTrendsSearchParams>("goalType");
   const fundNameParamName = propertyName<GoalTrendsSearchParams>("fundName");
-  const startAccountingPeriodIdParamName = propertyName<GoalTrendsSearchParams>(
-    "startAccountingPeriodId",
-  );
-  const endAccountingPeriodIdParamName = propertyName<GoalTrendsSearchParams>(
-    "endAccountingPeriodId",
-  );
   const updateParams = useSearchParamUpdater([pageParamName]);
 
   const setSort = function (sort: string | null): void {
@@ -82,11 +80,12 @@ const GoalTrendsListFrame = function ({
     router.push(routes.workspace({}));
   };
 
-  const hasActiveFilters =
-    searchParams.getAll(goalTypeParamName).length > 0 ||
-    searchParams.getAll(fundNameParamName).length > 0 ||
-    searchParams.has(startAccountingPeriodIdParamName) ||
-    searchParams.has(endAccountingPeriodIdParamName);
+  const hasActiveFilters = hasGoalTrendsFilters(searchParams);
+  const resetFilters = function (): void {
+    updateParams((params) => {
+      resetGoalTrendsParams(params, view);
+    });
+  };
 
   const emptyActionLabel =
     view === "assignment"
@@ -199,8 +198,7 @@ const GoalTrendsListFrame = function ({
         title="Assignment Goals"
         columns={columns}
         getId={(goal) => goal.id}
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-        data={data as AssignmentGoal[] | null}
+        data={props.data}
         totalCount={totalCount ?? null}
         pageParamName={pageParamName}
         onRowClick={(goal: AssignmentGoal): void => {
@@ -231,17 +229,7 @@ const GoalTrendsListFrame = function ({
             <Button
               variant="contained"
               onClick={() => {
-                updateParams((params) => {
-                  [...params.keys()].forEach((key) => {
-                    params.delete(key);
-                  });
-                  if (view !== defaultGoalTrendsView) {
-                    params.set(
-                      propertyName<GoalTrendsSearchParams>("view"),
-                      view,
-                    );
-                  }
-                });
+                resetFilters();
               }}
             >
               Reset filters
@@ -354,8 +342,7 @@ const GoalTrendsListFrame = function ({
       title="Spending Goals"
       columns={columns}
       getId={(goal) => goal.id}
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-      data={data as SpendingGoal[] | null}
+      data={props.data}
       totalCount={totalCount ?? null}
       pageParamName={pageParamName}
       onRowClick={(goal: SpendingGoal): void => {
@@ -386,17 +373,7 @@ const GoalTrendsListFrame = function ({
           <Button
             variant="contained"
             onClick={() => {
-              updateParams((params) => {
-                [...params.keys()].forEach((key) => {
-                  params.delete(key);
-                });
-                if (view !== defaultGoalTrendsView) {
-                  params.set(
-                    propertyName<GoalTrendsSearchParams>("view"),
-                    view,
-                  );
-                }
-              });
+              resetFilters();
             }}
           >
             Reset filters

@@ -5,7 +5,14 @@ import type {
 } from "@/goals/trends/goalTrendsTypes";
 import enumValues from "@/framework/data/enumValues";
 
+/**
+ * Gets the goal type values for a given view.
+ */
 const assignmentGoalTypeValues = enumValues(AssignmentGoalType);
+
+/**
+ * Gets the goal type values for a given view.
+ */
 const spendingGoalTypeValues = enumValues(SpendingGoalType);
 
 /**

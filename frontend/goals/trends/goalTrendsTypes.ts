@@ -1,29 +1,40 @@
 import type {
-  AssignmentGoal,
-  AssignmentGoalSort,
   AssignmentGoalType,
   GoalBalanceEvent,
-  SpendingGoal,
-  SpendingGoalSort,
   SpendingGoalType,
 } from "@/goals/types";
 
+/**
+ * Types used in the goal trends feature.
+ */
 type GoalTrendsView = "assignment" | "spending";
 
-type GoalTrendsGoal = AssignmentGoal | SpendingGoal;
+/**
+ * Represents a goal in the goal trends feature, which can be either an assignment goal or a spending goal.
+ */
 
-type GoalTrendsSortOrder = AssignmentGoalSort | SpendingGoalSort;
-
+/**
+ * Represents the type of a goal in the goal trends feature, which can be either an assignment goal type or a spending goal type.
+ */
 type GoalTrendsGoalType = AssignmentGoalType | SpendingGoalType;
 
+/**
+ * The default view for the goal trends feature, which is "assignment".
+ */
 const defaultGoalTrendsView: GoalTrendsView = "assignment";
 
+/**
+ * Represents a summary of goals met.
+ */
 interface GoalsMetSummary {
   readonly metCount: number;
   readonly totalCount: number;
   readonly percentageMet: number;
 }
 
+/**
+ * Represents a summary of an assignment goal type.
+ */
 interface AssignmentGoalTypeSummary {
   readonly assignmentGoalType: AssignmentGoalType;
   readonly totalAmountToAssign: number;
@@ -31,6 +42,9 @@ interface AssignmentGoalTypeSummary {
   readonly percentageOfGoalsMet: GoalsMetSummary;
 }
 
+/**
+ * Represents a summary of a spending goal type.
+ */
 interface SpendingGoalTypeSummary {
   readonly spendingGoalType: SpendingGoalType;
   readonly totalAmountToSpend: number;
@@ -38,6 +52,9 @@ interface SpendingGoalTypeSummary {
   readonly percentageOfGoalsMet: GoalsMetSummary;
 }
 
+/**
+ * Represents a summary of an accounting period for goals.
+ */
 interface GoalAccountingPeriodSummary {
   readonly accountingPeriodId: string;
   readonly accountingPeriodName: string;
@@ -49,6 +66,9 @@ interface GoalAccountingPeriodSummary {
   readonly percentageOfSpendingGoalsMet: GoalsMetSummary;
 }
 
+/**
+ * Represents a summary of goals over a range of accounting periods.
+ */
 interface GoalRangeSummary {
   readonly totalAmountToAssign: number;
   readonly totalAmountAssigned: number;
@@ -75,9 +95,7 @@ export type {
   GoalRangeSummary,
   GoalsMetSummary,
   GoalBalanceEvent,
-  GoalTrendsGoal,
   GoalTrendsGoalType,
-  GoalTrendsSortOrder,
   GoalTrendsView,
   SpendingGoalTypeSummary,
 };

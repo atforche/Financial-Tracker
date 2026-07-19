@@ -8,6 +8,9 @@ import type { GoalAccountingPeriodSummary } from "@/goals/trends/goalTrendsTypes
 import GoalTrendsMetricChart from "@/goals/trends/GoalTrendsMetricChart";
 import type { JSX } from "react";
 
+/**
+ * Props for the GoalTrendsAmountAssignedChart component.
+ */
 interface GoalTrendsAmountAssignedChartProps {
   readonly accountingPeriods: readonly GoalAccountingPeriodSummary[] | null;
 }

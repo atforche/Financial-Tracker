@@ -3,7 +3,9 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import type { JSX } from "react";
 import Link from "next/link";
 
-/** Props for the GoalWorkspacePageHeader component. */
+/**
+ * Props for the GoalWorkspacePageHeader component.
+ */
 interface GoalWorkspacePageHeaderProps {
   readonly backHref: string;
   readonly title: string;

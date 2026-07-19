@@ -35,6 +35,7 @@ import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import createApiClient from "@/framework/data/createApiClient";
+import loadAllPages from "@/goals/trends/loadAllPages";
 import { normalizeGoalTypes } from "@/goals/trends/goalTypeFilter";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import { redirect } from "next/navigation";
@@ -75,20 +76,21 @@ const GoalTrends = async function ({
     ? params.view
     : defaultGoalTrendsView;
   const apiClient = createApiClient();
-  const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
-    params: {
-      query: {
-        Sort: AccountingPeriodSort.DateDescending,
-        Limit: 500,
-        Offset: 0,
-      },
-    },
-  });
-  const accountingPeriods = unwrapApiResponse(
-    accountingPeriodsResponse,
-    "Failed to load accounting periods",
+  const accountingPeriodItems = await loadAllPages(async (limit, offset) =>
+    unwrapApiResponse(
+      await apiClient.GET("/accounting-periods", {
+        params: {
+          query: {
+            Sort: AccountingPeriodSort.DateDescending,
+            Limit: limit,
+            Offset: offset,
+          },
+        },
+      }),
+      "Failed to load accounting periods",
+    ),
   );
-  const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
+  const latestAccountingPeriod = accountingPeriodItems[0] ?? null;
   if (
     (typeof params.startAccountingPeriodId === "undefined" ||
       typeof params.endAccountingPeriodId === "undefined") &&
@@ -121,77 +123,72 @@ const GoalTrends = async function ({
     typeof params.balanceEventSort === "string"
       ? parseEnumValue(GoalBalanceEventSort, params.balanceEventSort)
       : null;
-  const [
-    periodResponse,
-    assignmentResponse,
-    spendingResponse,
-    balanceEventResponse,
-  ] = await Promise.all([
-    apiClient.GET("/accounting-periods/range", {
-      params: {
-        query: {
-          ...range,
-          Sort: AccountingPeriodWithBalanceSort.Date,
-          Limit: 500,
-          Offset: 0,
-        },
-      },
-    }),
-    apiClient.GET("/goals/assignment", {
-      params: {
-        query: {
-          "Filter.AccountingPeriodIds": accountingPeriods.items.map(
-            (period) => period.id,
-          ),
-          ...(assignmentSort === null ? {} : { Sort: assignmentSort }),
-          Limit: 500,
-          Offset: 0,
-        },
-      },
-    }),
-    apiClient.GET("/goals/spending", {
-      params: {
-        query: {
-          "Filter.AccountingPeriodIds": accountingPeriods.items.map(
-            (period) => period.id,
-          ),
-          ...(spendingSort === null ? {} : { Sort: spendingSort }),
-          Limit: 500,
-          Offset: 0,
-        },
-      },
-    }),
-    apiClient.GET("/balance-events/goals/accounting-period-range", {
-      params: {
-        query: {
-          ...range,
-          ...(balanceEventSort === null ? {} : { Sort: balanceEventSort }),
-          Limit: 500,
-          Offset: 0,
-        },
-      },
-    }),
-  ]);
-  const periodData = unwrapApiResponse(
-    periodResponse,
-    "Failed to load accounting period trends",
-  );
-  const assignmentData = unwrapApiResponse(
-    assignmentResponse,
-    "Failed to load assignment goals",
-  );
-  const spendingData = unwrapApiResponse(
-    spendingResponse,
-    "Failed to load spending goals",
-  );
-  const balanceEventData = unwrapApiResponse(
-    balanceEventResponse,
-    "Failed to load goal balance events",
-  );
+  const [periodItems, assignmentItems, spendingItems, balanceEventItems] =
+    await Promise.all([
+      loadAllPages(async (limit, offset) => {
+        const data = unwrapApiResponse(
+          await apiClient.GET("/accounting-periods/range", {
+            params: {
+              query: {
+                ...range,
+                Sort: AccountingPeriodWithBalanceSort.Date,
+                Limit: limit,
+                Offset: offset,
+              },
+            },
+          }),
+          "Failed to load accounting period trends",
+        );
+        return data.accountingPeriods;
+      }),
+      loadAllPages(async (limit, offset) =>
+        unwrapApiResponse(
+          await apiClient.GET("/goals/assignment", {
+            params: {
+              query: {
+                ...(assignmentSort === null ? {} : { Sort: assignmentSort }),
+                Limit: limit,
+                Offset: offset,
+              },
+            },
+          }),
+          "Failed to load assignment goals",
+        ),
+      ),
+      loadAllPages(async (limit, offset) =>
+        unwrapApiResponse(
+          await apiClient.GET("/goals/spending", {
+            params: {
+              query: {
+                ...(spendingSort === null ? {} : { Sort: spendingSort }),
+                Limit: limit,
+                Offset: offset,
+              },
+            },
+          }),
+          "Failed to load spending goals",
+        ),
+      ),
+      loadAllPages(async (limit, offset) =>
+        unwrapApiResponse(
+          await apiClient.GET("/balance-events/goals/accounting-period-range", {
+            params: {
+              query: {
+                ...range,
+                ...(balanceEventSort === null
+                  ? {}
+                  : { Sort: balanceEventSort }),
+                Limit: limit,
+                Offset: offset,
+              },
+            },
+          }),
+          "Failed to load goal balance events",
+        ),
+      ),
+    ]);
 
-  const periodIds = new Set(
-    periodData.accountingPeriods.items.map((period) => period.id),
-  );
+  const periodIds = new Set(periodItems.map((period) => period.id));
   const fundNames = toRepeatedSearchParams(params.fundName);
   const requestedTypes = toRepeatedSearchParams(params.goalType);
   const assignmentTypes =
@@ -202,14 +199,14 @@ const GoalTrends = async function ({
     currentView === "spending"
       ? normalizeGoalTypes(requestedTypes, currentView)
       : [];
-  const assignmentGoals = assignmentData.items.filter(
+  const assignmentGoals = assignmentItems.filter(
     (goal) =>
       (goal.accountingPeriod === null ||
         periodIds.has(goal.accountingPeriod.id)) &&
       (fundNames.length === 0 || fundNames.includes(goal.fund.name)) &&
       (assignmentTypes.length === 0 || assignmentTypes.includes(goal.type)),
   );
-  const spendingGoals = spendingData.items.filter(
+  const spendingGoals = spendingItems.filter(
     (goal) =>
       (goal.accountingPeriod === null ||
         periodIds.has(goal.accountingPeriod.id)) &&
@@ -218,7 +215,7 @@ const GoalTrends = async function ({
   );
   const summary = summarizeGoalRange(assignmentGoals, spendingGoals);
   const periodSummaries = summarizeGoalsByAccountingPeriod(
-    periodData.accountingPeriods.items,
+    periodItems,
     assignmentGoals,
     spendingGoals,
   );
@@ -226,7 +223,7 @@ const GoalTrends = async function ({
     currentView === "assignment"
       ? BalanceEventType.Credit
       : BalanceEventType.Debit;
-  const events = balanceEventData.items.filter(
+  const events = balanceEventItems.filter(
     (event) =>
       event.type === eventType &&
       (fundNames.length === 0 || fundNames.includes(event.fund.name)),
@@ -235,13 +232,9 @@ const GoalTrends = async function ({
   const eventOffset = getPageOffset(
     normalizePageValue(params.balanceEventPage),
   );
-  const currentGoals =
-    currentView === "assignment" ? assignmentGoals : spendingGoals;
   const availableFundNames = Array.from(
     new Set(
-      [...assignmentData.items, ...spendingData.items].map(
-        (goal) => goal.fund.name,
-      ),
+      [...assignmentItems, ...spendingItems].map((goal) => goal.fund.name),
     ),
   ).sort();
 
@@ -249,7 +242,7 @@ const GoalTrends = async function ({
     <PageLayout>
       <ConstrainedContent>
         <GoalTrendsFilter
-          accountingPeriods={accountingPeriods.items}
+          accountingPeriods={accountingPeriodItems}
           availableFundNames={availableFundNames}
           defaultAccountingPeriodId={latestAccountingPeriod?.id ?? null}
           view={currentView}
@@ -272,12 +265,21 @@ const GoalTrends = async function ({
         />
       </ResponsiveGrid>
       <ResponsiveGrid minimumColumnWidth={800}>
-        <GoalTrendsListFrame
-          view={currentView}
-          data={currentGoals.slice(pageOffset, pageOffset + rowsPerPage)}
-          totalCount={currentGoals.length}
-          isInOnboardingMode={false}
-        />
+        {currentView === "assignment" ? (
+          <GoalTrendsListFrame
+            view="assignment"
+            data={assignmentGoals.slice(pageOffset, pageOffset + rowsPerPage)}
+            totalCount={assignmentGoals.length}
+            isInOnboardingMode={false}
+          />
+        ) : (
+          <GoalTrendsListFrame
+            view="spending"
+            data={spendingGoals.slice(pageOffset, pageOffset + rowsPerPage)}
+            totalCount={spendingGoals.length}
+            isInOnboardingMode={false}
+          />
+        )}
         <GoalTrendsBalanceEventListFrame
           view={currentView}
           data={events.slice(eventOffset, eventOffset + rowsPerPage)}

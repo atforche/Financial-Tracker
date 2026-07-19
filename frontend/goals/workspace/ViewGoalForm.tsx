@@ -25,7 +25,9 @@ interface ViewGoalFormProps {
   readonly fundId: string;
 }
 
-/** Displays paired goal details, recent events, and a dialog-backed edit action. */
+/**
+ * Displays paired goal details, recent events, and a dialog-backed edit action.
+ */
 const ViewGoalForm = function ({
   assignmentGoal,
   spendingGoal,

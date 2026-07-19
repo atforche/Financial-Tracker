@@ -7,6 +7,9 @@ import type {
   SpendingGoalTypeSummary,
 } from "@/goals/trends/goalTrendsTypes";
 
+/**
+ * Gets the summary of goals met.
+ */
 const getGoalsMetSummary = function (
   goals: readonly { readonly isGoalMet: boolean }[],
 ): GoalsMetSummary {
@@ -18,6 +21,9 @@ const getGoalsMetSummary = function (
   };
 };
 
+/**
+ * Summarizes the assignment goal types.
+ */
 const summarizeAssignmentGoalTypes = function (
   goals: readonly AssignmentGoal[],
 ): AssignmentGoalTypeSummary[] {
@@ -38,6 +44,9 @@ const summarizeAssignmentGoalTypes = function (
   });
 };
 
+/**
+ * Summarizes the spending goal types.
+ */
 const summarizeSpendingGoalTypes = function (
   goals: readonly SpendingGoal[],
 ): SpendingGoalTypeSummary[] {
@@ -97,13 +106,28 @@ const summarizeGoalsByAccountingPeriod = function (
   assignmentGoals: readonly AssignmentGoal[],
   spendingGoals: readonly SpendingGoal[],
 ): GoalAccountingPeriodSummary[] {
+  const assignmentGoalsByPeriod = new Map<string, AssignmentGoal[]>();
+  const spendingGoalsByPeriod = new Map<string, SpendingGoal[]>();
+  assignmentGoals.forEach((goal) => {
+    if (goal.accountingPeriod !== null) {
+      const goals = assignmentGoalsByPeriod.get(goal.accountingPeriod.id) ?? [];
+      goals.push(goal);
+      assignmentGoalsByPeriod.set(goal.accountingPeriod.id, goals);
+    }
+  });
+  spendingGoals.forEach((goal) => {
+    if (goal.accountingPeriod !== null) {
+      const goals = spendingGoalsByPeriod.get(goal.accountingPeriod.id) ?? [];
+      goals.push(goal);
+      spendingGoalsByPeriod.set(goal.accountingPeriod.id, goals);
+    }
+  });
+
   return accountingPeriods.map((accountingPeriod) => {
-    const periodAssignmentGoals = assignmentGoals.filter(
-      (goal) => goal.accountingPeriod?.id === accountingPeriod.id,
-    );
-    const periodSpendingGoals = spendingGoals.filter(
-      (goal) => goal.accountingPeriod?.id === accountingPeriod.id,
-    );
+    const periodAssignmentGoals =
+      assignmentGoalsByPeriod.get(accountingPeriod.id) ?? [];
+    const periodSpendingGoals =
+      spendingGoalsByPeriod.get(accountingPeriod.id) ?? [];
     const summary = summarizeGoalRange(
       periodAssignmentGoals,
       periodSpendingGoals,
