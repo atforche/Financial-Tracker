@@ -24,6 +24,8 @@ import AccountEntryField from "@/accounts/AccountEntryField";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
+import { buildUrl } from "@/framework/routes/helpers";
+import { formatLongDate } from "@/framework/dateHelpers";
 import postTransaction from "@/transactions/workspace/postTransaction";
 
 /**
@@ -61,9 +63,7 @@ const AccountBalanceEventFrame = function ({
   const [date, setDate] = useState<Dayjs | null>(dayjs(transaction?.date));
   const [state, action, pending] = useActionState(postTransaction, {});
 
-  const currentSearch = searchParams.toString();
-  const redirectUrl =
-    currentSearch === "" ? pathname : `${pathname}?${currentSearch}`;
+  const redirectUrl = buildUrl(pathname, new URLSearchParams(searchParams));
 
   useEffect(() => {
     if (state.success === true) {
@@ -95,7 +95,7 @@ const AccountBalanceEventFrame = function ({
   if (postedDate !== null) {
     helperContent = (
       <Typography variant="caption" color="text.secondary" sx={{ px: 1.75 }}>
-        Posted on {dayjs(postedDate).format("MMMM D, YYYY")}
+        Posted on {formatLongDate(new Date(postedDate))}
       </Typography>
     );
   } else if (setAccount === null) {

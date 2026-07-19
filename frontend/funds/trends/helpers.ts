@@ -2,7 +2,7 @@ import type {
   FundBalanceSummaryByDate,
   FundBalanceSummaryByPeriod,
 } from "@/funds/types";
-import formatShortDate from "@/framework/formatShortDate";
+import { formatShortDate } from "@/framework/dateHelpers";
 
 type FundTrendsDataMode = "AccountingPeriod" | "Date";
 

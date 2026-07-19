@@ -1,8 +1,11 @@
+import {
+  appendRepeatedSearchParam,
+  buildUrl,
+  objectToSearchParams,
+} from "@/framework/routes/helpers";
 import type { Route } from "next";
 import type { TransactionTrendsSearchParams } from "@/transactions/trends/TransactionTrends";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
-import { appendRepeatedSearchParam } from "@/framework/routes/helpers";
-import { objectToSearchParams } from "@/framework/routes";
 
 const transactionTrendsSearchParamsToSearchParams = function (
   searchParams: TransactionTrendsSearchParams,
@@ -34,8 +37,7 @@ const pathWithSearchParams = function (
   pathname: string,
   searchParams: URLSearchParams,
 ): Route {
-  const query = searchParams.toString();
-  return query === "" ? pathname : `${pathname}?${query}`;
+  return buildUrl(pathname, searchParams);
 };
 
 /**

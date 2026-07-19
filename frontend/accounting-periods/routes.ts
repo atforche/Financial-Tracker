@@ -1,12 +1,12 @@
 import {
   appendRepeatedSearchParam,
   buildUrl,
+  objectToSearchParams,
 } from "@/framework/routes/helpers";
 import type { AccountingPeriodTrendsSearchParams } from "@/accounting-periods/trends/AccountingPeriodTrends";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import type { CurrentAccountingPeriodSearchParams } from "@/accounting-periods/current/CurrentAccountingPeriod";
 import type { Route } from "next";
-import { objectToSearchParams } from "@/framework/routes";
 
 /**
  * Converts an AccountingPeriodWorkspaceSearchParams object to generic URL search params.

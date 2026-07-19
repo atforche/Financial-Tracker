@@ -4,6 +4,7 @@ import BarMetricChart from "@/framework/charts/BarMetricChart";
 import type { BarMetricChartPoint } from "@/framework/charts/barMetricHelpers";
 import type { JSX } from "react";
 import dayjs from "dayjs";
+import { formatLongDate } from "@/framework/dateHelpers";
 
 type TransactionTrendsCountChartMode = "AccountingPeriod" | "Date";
 
@@ -49,7 +50,7 @@ const buildChartPoints = function (
   return dates.map((summary) => ({
     key: summary.date,
     tickLabel: dayjs(summary.date).format("MMM D"),
-    tooltipLabel: dayjs(summary.date).format("MMMM D, YYYY"),
+    tooltipLabel: formatLongDate(new Date(`${summary.date}T00:00:00`)),
     value: summary.totalCount,
     fill: chartColor,
   }));

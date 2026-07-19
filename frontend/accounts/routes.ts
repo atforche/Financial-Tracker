@@ -1,12 +1,12 @@
 import {
   appendRepeatedSearchParam,
   buildUrl,
+  objectToSearchParams,
 } from "@/framework/routes/helpers";
 import type { AccountTrendsSearchParams } from "@/accounts/trends/AccountTrends";
 import type { AccountType } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
 import type { Route } from "next";
-import { objectToSearchParams } from "@/framework/routes";
 
 /**
  * Determines if the provided value is an account type array.

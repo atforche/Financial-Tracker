@@ -12,6 +12,7 @@ import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import ListFrame from "@/framework/listframe/ListFrame";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
+import { buildUrl } from "@/framework/routes/helpers";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import nameof from "@/framework/data/nameof";
@@ -80,11 +81,10 @@ const TransactionWorkspaceListFrame = function ({
     TransactionSort,
     searchParams.get(sortParamName) ?? "",
   );
-  const createQuery = searchParams.toString();
-  const createUrl =
-    createQuery === ""
-      ? `${pathname}/create`
-      : `${pathname}/create?${createQuery}`;
+  const createUrl = buildUrl(
+    `${pathname}/create`,
+    new URLSearchParams(searchParams),
+  );
 
   const getSortProps = createColumnSortProps(currentSort, setSort);
 

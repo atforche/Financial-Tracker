@@ -1,8 +1,11 @@
+import {
+  appendRepeatedSearchParam,
+  buildUrl,
+  objectToSearchParams,
+} from "@/framework/routes/helpers";
 import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { Route } from "next";
-import { appendRepeatedSearchParam } from "@/framework/routes/helpers";
-import { objectToSearchParams } from "@/framework/routes";
 
 const fundTrendsSearchParamsToSearchParams = function (
   searchParams: FundTrendsSearchParams,
@@ -17,8 +20,7 @@ const pathWithSearchParams = function (
   pathname: string,
   searchParams: URLSearchParams,
 ): Route {
-  const query = searchParams.toString();
-  return query === "" ? pathname : `${pathname}?${query}`;
+  return buildUrl(pathname, searchParams);
 };
 
 /**

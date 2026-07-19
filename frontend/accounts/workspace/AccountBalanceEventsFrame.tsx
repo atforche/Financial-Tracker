@@ -10,9 +10,10 @@ import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import Link from "next/link";
 import ListFrame from "@/framework/listframe/ListFrame";
-import dayjs from "dayjs";
+import { buildUrl } from "@/framework/routes/helpers";
 import { formatBalanceEventType } from "@/framework/data/helpers";
 import { formatCurrency } from "@/framework/currencyHelpers";
+import { formatLongDate } from "@/framework/dateHelpers";
 import nameof from "@/framework/data/nameof";
 import routes from "@/transactions/routes";
 
@@ -36,16 +37,14 @@ const AccountBalanceEventsFrame = function ({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const currentQuery = searchParams.toString();
-  const returnUrl =
-    currentQuery === "" ? pathname : `${pathname}?${currentQuery}`;
+  const returnUrl = buildUrl(pathname, new URLSearchParams(searchParams));
 
   const columns: ColumnDefinition<AccountBalanceEvent>[] = [
     {
       name: "date",
       headerContent: "Event Date",
       getBodyContent: (balanceEvent) =>
-        dayjs(balanceEvent.date).format("MMMM D, YYYY"),
+        formatLongDate(new Date(`${balanceEvent.date}T00:00:00`)),
       minWidth: 135,
     },
     {

@@ -10,10 +10,9 @@ import {
   type BarMetricChartPoint,
   getSignedBarColor,
 } from "@/framework/charts/barMetricHelpers";
+import { formatLongDate, formatShortDate } from "@/framework/dateHelpers";
 import type { TrendRangeMode } from "@/framework/routes/trendRange";
 import dayjs from "dayjs";
-import formatLongDate from "@/framework/formatLongDate";
-import formatShortDate from "@/framework/formatShortDate";
 
 /**
  * Search parameters supported by the account trends page.

@@ -1,6 +1,6 @@
 import type { TooltipContentProps } from "recharts";
 import dayjs from "dayjs";
-import formatLongDate from "@/framework/formatLongDate";
+import { formatLongDate } from "@/framework/dateHelpers";
 
 /**
  * Indicates whether the chart is grouped by accounting period or date.

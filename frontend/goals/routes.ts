@@ -1,15 +1,17 @@
+import {
+  appendRepeatedSearchParam,
+  buildUrl,
+  objectToSearchParams,
+} from "@/framework/routes/helpers";
 import type { GoalTrendsSearchParams } from "@/goals/trends/GoalTrends";
 import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
 import type { Route } from "next";
-import { appendRepeatedSearchParam } from "@/framework/routes/helpers";
-import { objectToSearchParams } from "@/framework/routes";
 
 const pathWithSearchParams = function (
   pathname: string,
   searchParams: URLSearchParams,
 ): Route {
-  const query = searchParams.toString();
-  return query === "" ? pathname : `${pathname}?${query}`;
+  return buildUrl(pathname, searchParams);
 };
 
 const goalWorkspaceSearchParamsToSearchParams = function (

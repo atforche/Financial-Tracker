@@ -11,7 +11,7 @@ import {
 import BarMetricChart from "@/framework/charts/BarMetricChart";
 import type { JSX } from "react";
 import dayjs from "dayjs";
-import formatLongDate from "@/framework/formatLongDate";
+import { formatLongDate } from "@/framework/dateHelpers";
 
 type TransactionTrendsAmountChartMode = "AccountingPeriod" | "Date";
 

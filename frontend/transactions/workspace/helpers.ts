@@ -1,6 +1,7 @@
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
+import { buildUrl } from "@/framework/routes/helpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import nameof from "@/framework/data/nameof";
 
@@ -39,10 +40,7 @@ const redirectWithSelectedTransaction = function (
     nameof<TransactionWorkspaceSearchParams>("selectedTransactionId"),
     transactionId,
   );
-  const query = params.toString();
-  return query === ""
-    ? `${pathname}/${transactionId}`
-    : `${pathname}/${transactionId}?${query}`;
+  return buildUrl(`${pathname}/${transactionId}`, params);
 };
 
 /**
