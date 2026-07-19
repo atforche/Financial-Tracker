@@ -1,12 +1,13 @@
-import type { AccountIdentifier, AccountWithBalance } from "@/accounts/types";
 import type {
-  Transaction,
-  TransactionAccountDraft,
-} from "@/transactions/transaction";
+  Account,
+  AccountBalanceEventDraft,
+  AccountWithBalance,
+} from "@/accounts/types";
+import AccountBalanceEventFrame from "@/transactions/workspace/AccountBalanceEventFrame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
 import type { JSX } from "react";
-import TransactionAccountFrame from "@/transactions/workspace/TransactionAccountFrame";
+import type { Transaction } from "@/transactions/types";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
@@ -15,12 +16,12 @@ import TransactionSourceOrDestinationFrame from "@/transactions/workspace/Transa
 interface SpendingTransactionSourceFrameProps {
   readonly accounts: AccountWithBalance[];
   readonly transaction?: Transaction | null;
-  readonly account: TransactionAccountDraft | null;
+  readonly account: AccountBalanceEventDraft | null;
   readonly setAccount:
-    ((account: TransactionAccountDraft | null) => void) | null;
+    ((account: AccountBalanceEventDraft | null) => void) | null;
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
-  readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
+  readonly accountFilter?: ((account: Account) => boolean) | null;
   readonly color?: FrameColor;
   readonly readOnly?: boolean;
 }
@@ -41,7 +42,7 @@ const SpendingTransactionSourceFrame = function ({
 }: SpendingTransactionSourceFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame title="Source" color={color}>
-      <TransactionAccountFrame
+      <AccountBalanceEventFrame
         accounts={accounts}
         transaction={transaction}
         account={account}

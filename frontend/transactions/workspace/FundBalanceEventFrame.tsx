@@ -1,22 +1,25 @@
-import type { FundIdentifier, FundWithBalance } from "@/funds/types";
+import type {
+  Fund,
+  FundBalanceEventDraft,
+  FundWithBalance,
+} from "@/funds/types";
 import {
   getSelectedTransactionFundDraft,
   setTransactionFundDraftBalanceChange,
-} from "@/transactions/workspace/transactionFundDraft";
+} from "@/transactions/workspace/fundBalanceEventDraft";
 import FundEntryField from "@/funds/FundEntryField";
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
 import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
-import type { TransactionFundDraft } from "@/transactions/transaction";
 
 /**
- * Props for the TransactionFundFrame component.
+ * Props for the FundBalanceEventFrame component.
  */
-interface TransactionFundFrameProps {
+interface FundBalanceEventFrameProps {
   readonly funds?: FundWithBalance[];
-  readonly fund: TransactionFundDraft | null;
-  readonly setFund?: ((fund: TransactionFundDraft | null) => void) | null;
-  readonly fundFilter?: ((fund: FundIdentifier) => boolean) | null;
+  readonly fund: FundBalanceEventDraft | null;
+  readonly setFund?: ((fund: FundBalanceEventDraft | null) => void) | null;
+  readonly fundFilter?: ((fund: Fund) => boolean) | null;
   readonly label?: string;
   readonly balanceChange?: number | null;
 }
@@ -26,14 +29,14 @@ const emptyFunds: FundWithBalance[] = [];
 /**
  * Displays a transaction fund in a workspace view.
  */
-const TransactionFundFrame = function ({
+const FundBalanceEventFrame = function ({
   funds = emptyFunds,
   fund,
   setFund = null,
   fundFilter = null,
   label = "Fund",
   balanceChange = null,
-}: TransactionFundFrameProps): JSX.Element {
+}: FundBalanceEventFrameProps): JSX.Element {
   const displayedFund = setTransactionFundDraftBalanceChange(
     fund,
     balanceChange,
@@ -44,18 +47,11 @@ const TransactionFundFrame = function ({
       <FundEntryField
         label={label}
         options={funds}
-        value={
-          displayedFund === null
-            ? null
-            : {
-                id: displayedFund.fundId ?? "",
-                name: displayedFund.fundName ?? "",
-              }
-        }
+        value={funds.find(({ id }) => id === displayedFund?.fundId) ?? null}
         setValue={
           setFund === null
             ? null
-            : (nextValue: FundIdentifier | null): void => {
+            : (nextValue: Fund | null): void => {
                 setFund(
                   getSelectedTransactionFundDraft(
                     funds,
@@ -76,4 +72,4 @@ const TransactionFundFrame = function ({
   );
 };
 
-export default TransactionFundFrame;
+export default FundBalanceEventFrame;

@@ -249,8 +249,6 @@ const GoalTrends = async function ({
           accountingPeriods={accountingPeriods.items}
           availableFundNames={availableFundNames}
           defaultAccountingPeriodId={latestAccountingPeriod?.id ?? null}
-          defaultStartDate=""
-          defaultEndDate=""
           view={currentView}
         />
       </ConstrainedContent>

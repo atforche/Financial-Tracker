@@ -1,18 +1,21 @@
-import type {
-  Transaction,
-  TransactionAccount,
-  TransactionFund,
-  TransactionGoal,
-} from "@/transactions/transaction";
+import {
+  type Transaction,
+  asAccountTransaction,
+  asFundTransaction,
+  asIncomeTransaction,
+  asSpendingTransaction,
+} from "@/transactions/types";
 import {
   isNotNullOrUndefined,
   isNullOrUndefined,
 } from "@/framework/nullHelpers";
-import { asAccountTransaction } from "@/transactions/accountTransaction";
-import { asFundTransaction } from "@/transactions/fundTransaction";
-import { asIncomeTransaction } from "@/transactions/incomeTransaction";
-import { asSpendingTransaction } from "@/transactions/spendingTransaction";
+import type { AccountBalanceEvent } from "@/accounts/types";
+import type { FundBalanceEvent } from "@/funds/types";
+import type { GoalBalanceEvent } from "@/goals/types";
 
+/**
+ * Type representing an account involved in a transaction posting.
+ */
 interface TransactionPostingAccount {
   readonly accountId: string;
   readonly accountName: string;
@@ -26,7 +29,7 @@ const getTransactionAccountIds = function (transaction: Transaction): string[] {
   const accountIds = new Set<string>();
 
   const addAccount = function (
-    account: TransactionAccount | null | undefined,
+    account: AccountBalanceEvent | null | undefined,
   ): void {
     if (isNotNullOrUndefined(account)) {
       accountIds.add(account.account.id);
@@ -67,10 +70,10 @@ const getTransactionAccountIds = function (transaction: Transaction): string[] {
  */
 const getTransactionAccountBalanceEvents = function (
   transaction: Transaction,
-): TransactionAccount[] {
-  const events: TransactionAccount[] = [];
+): AccountBalanceEvent[] {
+  const events: AccountBalanceEvent[] = [];
   const addAccount = function (
-    account: TransactionAccount | null | undefined,
+    account: AccountBalanceEvent | null | undefined,
   ): void {
     if (isNotNullOrUndefined(account)) {
       events.push(account);
@@ -111,7 +114,7 @@ const getTransactionAccountBalanceEvents = function (
 const getTransactionFundIds = function (transaction: Transaction): string[] {
   const fundIds = new Set<string>();
 
-  const addFund = function (fund: TransactionFund | null | undefined): void {
+  const addFund = function (fund: FundBalanceEvent | null | undefined): void {
     if (isNotNullOrUndefined(fund)) {
       fundIds.add(fund.fund.id);
     }
@@ -153,9 +156,9 @@ const getTransactionFundIds = function (transaction: Transaction): string[] {
  */
 const getTransactionFundBalanceEvents = function (
   transaction: Transaction,
-): TransactionFund[] {
-  const events: TransactionFund[] = [];
-  const addFund = function (fund: TransactionFund): void {
+): FundBalanceEvent[] {
+  const events: FundBalanceEvent[] = [];
+  const addFund = function (fund: FundBalanceEvent): void {
     events.push(fund);
   };
 
@@ -190,7 +193,7 @@ const getTransactionFundBalanceEvents = function (
  */
 const getTransactionGoalBalanceEvents = function (
   transaction: Transaction,
-): TransactionGoal[] {
+): GoalBalanceEvent[] {
   const spendingTransaction = asSpendingTransaction(transaction);
   if (spendingTransaction !== null) {
     return spendingTransaction.destinations.flatMap(
@@ -221,7 +224,7 @@ const collectTransactionPostingAccounts = function (
   const accounts = new Map<string, TransactionPostingAccount>();
 
   const addAccount = function (
-    account: TransactionAccount | null | undefined,
+    account: AccountBalanceEvent | null | undefined,
   ): void {
     if (isNullOrUndefined(account)) {
       return;

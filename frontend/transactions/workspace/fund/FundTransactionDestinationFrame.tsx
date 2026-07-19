@@ -1,9 +1,12 @@
-import type { FundIdentifier, FundWithBalance } from "@/funds/types";
+import type {
+  Fund,
+  FundBalanceEventDraft,
+  FundWithBalance,
+} from "@/funds/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
+import FundBalanceEventFrame from "@/transactions/workspace/FundBalanceEventFrame";
 import type { JSX } from "react";
-import type { TransactionFundDraft } from "@/transactions/transaction";
-import TransactionFundFrame from "@/transactions/workspace/TransactionFundFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 /**
@@ -12,11 +15,11 @@ import TransactionSourceOrDestinationFrame from "@/transactions/workspace/Transa
 interface FundTransactionDestinationFrameProps {
   readonly index: number;
   readonly funds: FundWithBalance[];
-  readonly fund: TransactionFundDraft | null;
-  readonly setFund: ((fund: TransactionFundDraft | null) => void) | null;
+  readonly fund: FundBalanceEventDraft | null;
+  readonly setFund: ((fund: FundBalanceEventDraft | null) => void) | null;
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
-  readonly filter?: ((fund: FundIdentifier) => boolean) | null;
+  readonly filter?: ((fund: Fund) => boolean) | null;
   readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
   readonly color?: FrameColor;
@@ -46,7 +49,7 @@ const FundTransactionDestinationFrame = function ({
       onRemove={readOnly ? null : onRemove}
       color={color}
     >
-      <TransactionFundFrame
+      <FundBalanceEventFrame
         funds={funds}
         fund={fund}
         setFund={readOnly ? null : setFund}

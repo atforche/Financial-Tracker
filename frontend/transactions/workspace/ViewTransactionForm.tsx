@@ -2,7 +2,14 @@
 
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { Button, Stack } from "@mui/material";
-import { type Transaction, TransactionType } from "@/transactions/transaction";
+import {
+  type Transaction,
+  TransactionType,
+  asAccountTransaction,
+  asFundTransaction,
+  asIncomeTransaction,
+  asSpendingTransaction,
+} from "@/transactions/types";
 import {
   getDestinationsFromTransaction as getAccountDestinationsFromTransaction,
   getSourceFromTransaction as getAccountSourceFromTransaction,
@@ -24,9 +31,9 @@ import AccountTransactionDestinationFrame from "@/transactions/workspace/account
 import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFrame";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import DeleteTransactionForm from "@/transactions/workspace/DeleteTransactionForm";
-import type { FundWithBalance } from "@/funds/types";
 import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
 import FundTransactionSourceFrame from "@/transactions/workspace/fund/FundTransactionSourceFrame";
+import type { FundWithBalance } from "@/funds/types";
 import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFrame";
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
 import type { JSX } from "react";
@@ -35,10 +42,6 @@ import SpendingTransactionDestinationFrame from "@/transactions/workspace/spendi
 import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
 import UnpostTransactionForm from "@/transactions/workspace/UnpostTransactionForm";
-import { asAccountTransaction } from "@/transactions/accountTransaction";
-import { asFundTransaction } from "@/transactions/fundTransaction";
-import { asIncomeTransaction } from "@/transactions/incomeTransaction";
-import { asSpendingTransaction } from "@/transactions/spendingTransaction";
 import dayjs from "dayjs";
 import { getPostedTransactionAccounts } from "@/transactions/postingHelpers";
 

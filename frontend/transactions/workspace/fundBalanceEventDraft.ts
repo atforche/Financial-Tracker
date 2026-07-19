@@ -1,15 +1,16 @@
-import type { FundIdentifier, FundWithBalance } from "@/funds/types";
 import type {
-  TransactionFund,
-  TransactionFundDraft,
-} from "@/transactions/transaction";
+  Fund,
+  FundBalanceEvent,
+  FundBalanceEventDraft,
+  FundWithBalance,
+} from "@/funds/types";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
  * Gets the balance change captured in the provided transaction fund draft.
  */
 const getTransactionFundDraftBalanceChange = function (
-  fund: TransactionFundDraft | null,
+  fund: FundBalanceEventDraft | null,
 ): number {
   return (fund?.newFundBalance ?? 0) - (fund?.previousFundBalance ?? 0);
 };
@@ -18,9 +19,9 @@ const getTransactionFundDraftBalanceChange = function (
  * Applies a balance change to an existing transaction fund draft.
  */
 const setTransactionFundDraftBalanceChange = function (
-  fund: TransactionFundDraft | null,
+  fund: FundBalanceEventDraft | null,
   balanceChange: number | null | undefined,
-): TransactionFundDraft | null {
+): FundBalanceEventDraft | null {
   if (fund === null) {
     return null;
   }
@@ -36,7 +37,7 @@ const setTransactionFundDraftBalanceChange = function (
 const createTransactionFundDraftFromFund = function (
   fund: FundWithBalance,
   balanceChange = 0,
-): TransactionFundDraft {
+): FundBalanceEventDraft {
   const previousPostedBalance = fund.currentBalance.postedBalance;
   return {
     fundId: fund.id,
@@ -50,8 +51,8 @@ const createTransactionFundDraftFromFund = function (
  * Hydrates a transaction fund draft from a persisted transaction fund.
  */
 const getTransactionFundDraftFromTransactionFund = function (
-  fund: TransactionFund | null | undefined,
-): TransactionFundDraft | null {
+  fund: FundBalanceEvent | null | undefined,
+): FundBalanceEventDraft | null {
   if (isNullOrUndefined(fund)) {
     return null;
   }
@@ -68,10 +69,10 @@ const getTransactionFundDraftFromTransactionFund = function (
  */
 const getSelectedTransactionFundDraft = function (
   funds: FundWithBalance[],
-  nextValue: FundIdentifier | null,
-  currentFund: TransactionFundDraft | null,
+  nextValue: Fund | null,
+  currentFund: FundBalanceEventDraft | null,
   balanceChange?: number | null,
-): TransactionFundDraft | null {
+): FundBalanceEventDraft | null {
   if (nextValue === null) {
     return null;
   }

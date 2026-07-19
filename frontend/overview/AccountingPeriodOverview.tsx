@@ -1,4 +1,5 @@
 import { Paper, Stack, Typography } from "@mui/material";
+import { AccountingPeriodSortModel } from "@/framework/data/api";
 import AccountingPeriodTrendsSummaryCards from "@/accounting-periods/trends/AccountingPeriodTrendsSummaryCards";
 import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
@@ -11,7 +12,13 @@ import getApiData from "@/framework/data/apiResponse";
 const AccountingPeriodOverview = async function (): Promise<JSX.Element> {
   const apiClient = getApiClient();
   const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
-    params: { query: { Sort: "DateDescending", Limit: 1, Offset: 0 } },
+    params: {
+      query: {
+        Sort: AccountingPeriodSortModel.DateDescending,
+        Limit: 1,
+        Offset: 0,
+      },
+    },
   });
   const accountingPeriods = getApiData(
     accountingPeriodsResponse,

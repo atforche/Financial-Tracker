@@ -7,7 +7,7 @@ import {
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { FundWithBalance } from "@/funds/types";
-import type { Transaction } from "@/transactions/transaction";
+import type { Transaction } from "@/transactions/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import getApiClient from "@/framework/data/getApiClient";
 import getApiData from "@/framework/data/apiResponse";

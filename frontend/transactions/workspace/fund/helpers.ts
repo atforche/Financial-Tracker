@@ -4,25 +4,24 @@ import {
 } from "@/framework/data/api";
 import type {
   CreateTransactionRequest,
-  TransactionFundDraft,
+  FundTransaction,
   UpdateTransactionRequest,
-} from "@/transactions/transaction";
+} from "@/transactions/types";
+import type { Fund, FundBalanceEventDraft } from "@/funds/types";
 import {
   validateDetails,
   validateSummary,
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
-import type { FundIdentifier } from "@/funds/types";
-import type { FundTransaction } from "@/transactions/fundTransaction";
-import { getTransactionFundDraftFromTransactionFund } from "@/transactions/workspace/transactionFundDraft";
+import { getTransactionFundDraftFromTransactionFund } from "@/transactions/workspace/fundBalanceEventDraft";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
  * Interface representing a potentially unfinished fund transaction source.
  */
 interface FundSourceDraft {
-  readonly fund: TransactionFundDraft | null;
+  readonly fund: FundBalanceEventDraft | null;
   readonly amount: number | null;
 }
 
@@ -30,7 +29,7 @@ interface FundSourceDraft {
  * Interface representing a potentially unfinished fund transaction destination.
  */
 interface FundDestinationDraft {
-  readonly fund: TransactionFundDraft | null;
+  readonly fund: FundBalanceEventDraft | null;
   readonly amount: number | null;
 }
 
@@ -66,7 +65,7 @@ const validateSource = function (source: FundSourceDraft): boolean {
  */
 const validateDestination = function (
   destination: FundDestinationDraft,
-  sourceFund: TransactionFundDraft | null,
+  sourceFund: FundBalanceEventDraft | null,
 ): boolean {
   return (
     destination.fund !== null &&
@@ -191,8 +190,8 @@ const buildUpdateRequest = function (
  */
 const buildSourceFundFilter = function (
   destinations: FundDestinationDraft[],
-): (fund: FundIdentifier) => boolean {
-  return function (fund: FundIdentifier): boolean {
+): (fund: Fund) => boolean {
+  return function (fund: Fund): boolean {
     return !destinations.some(
       (destination) => destination.fund?.fundId === fund.id,
     );
@@ -205,9 +204,9 @@ const buildSourceFundFilter = function (
 const buildDestinationFundFilter = function (
   destinations: FundDestinationDraft[],
   index: number,
-  sourceFund: TransactionFundDraft | null,
-): (fund: FundIdentifier) => boolean {
-  return function (fund: FundIdentifier): boolean {
+  sourceFund: FundBalanceEventDraft | null,
+): (fund: Fund) => boolean {
+  return function (fund: Fund): boolean {
     const fundUsedElsewhere = destinations.some(
       (currentDestination, currentIndex) =>
         currentIndex !== index && currentDestination.fund?.fundId === fund.id,

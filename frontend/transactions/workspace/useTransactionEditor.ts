@@ -3,7 +3,7 @@
 import type {
   CreateTransactionRequest,
   UpdateTransactionRequest,
-} from "@/transactions/transaction";
+} from "@/transactions/types";
 import { useActionState, useEffect, useRef } from "react";
 import createTransaction from "@/transactions/workspace/createTransaction";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";

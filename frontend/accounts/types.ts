@@ -45,6 +45,18 @@ type AccountBalanceSummaryByPeriod =
 type AccountBalanceEvent = components["schemas"]["AccountBalanceEventModel"];
 
 /**
+ * Interface representing a draft of an account balance event.
+ */
+interface AccountBalanceEventDraft {
+  readonly accountId: string | null;
+  readonly accountName: string | null;
+  readonly accountType: AccountTypeModel | null;
+  readonly postedDate: string | null;
+  readonly previousAccountBalance: number | null;
+  readonly newAccountBalance: number | null;
+}
+
+/**
  * Type representing a collection of accounts in a date range.
  */
 type AccountsInDateRange = components["schemas"]["AccountsInDateRangeModel"];
@@ -84,6 +96,7 @@ export {
   type AccountBalanceSummaryByDate,
   type AccountBalanceSummaryByPeriod,
   type AccountBalanceEvent,
+  type AccountBalanceEventDraft,
   AccountBalanceEventSortModel as AccountBalanceEventSort,
   type AccountsInDateRange,
   type AccountsInAccountingPeriodRange,

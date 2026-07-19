@@ -64,25 +64,70 @@ type SpendingTransactionDestination =
 /**
  * Type representing a summary of transactions.
  */
-type TransactionSummary = components["schemas"]["TransactionSummaryModel"];
-
-/**
- * Type representing a summary of transactions grouped by type.
- */
 type TransactionSummaryByType =
   components["schemas"]["TransactionSummaryByTypeModel"];
 
 /**
- * Type representing a summary of transactions grouped by date.
+ * Determines whether a transaction is an account transaction.
  */
-type TransactionSummaryByDate =
-  components["schemas"]["TransactionSummaryByDateModel"];
+const isAccountTransaction = (
+  transaction: Transaction,
+): transaction is AccountTransaction =>
+  transaction.transactionType === TransactionTypeModel.Account;
 
 /**
- * Type representing a summary of transactions grouped by accounting period.
+ * Determines whether a transaction is a fund transaction.
  */
-type TransactionSummaryByAccountingPeriod =
-  components["schemas"]["TransactionSummaryByAccountingPeriodModel"];
+const isFundTransaction = (
+  transaction: Transaction,
+): transaction is FundTransaction =>
+  transaction.transactionType === TransactionTypeModel.Fund;
+
+/**
+ * Determines whether a transaction is an income transaction.
+ */
+const isIncomeTransaction = (
+  transaction: Transaction,
+): transaction is IncomeTransaction =>
+  transaction.transactionType === TransactionTypeModel.Income;
+
+/**
+ * Determines whether a transaction is a spending transaction.
+ */
+const isSpendingTransaction = (
+  transaction: Transaction,
+): transaction is SpendingTransaction =>
+  transaction.transactionType === TransactionTypeModel.Spending;
+
+/**
+ * Narrows an account transaction, returning null for other types.
+ */
+const asAccountTransaction = (
+  transaction: Transaction,
+): AccountTransaction | null =>
+  isAccountTransaction(transaction) ? transaction : null;
+
+/**
+ * Narrows a fund transaction, returning null for other types.
+ */
+const asFundTransaction = (transaction: Transaction): FundTransaction | null =>
+  isFundTransaction(transaction) ? transaction : null;
+
+/**
+ * Narrows an income transaction, returning null for other types.
+ */
+const asIncomeTransaction = (
+  transaction: Transaction,
+): IncomeTransaction | null =>
+  isIncomeTransaction(transaction) ? transaction : null;
+
+/**
+ * Narrows a spending transaction, returning null for other types.
+ */
+const asSpendingTransaction = (
+  transaction: Transaction,
+): SpendingTransaction | null =>
+  isSpendingTransaction(transaction) ? transaction : null;
 
 /**
  * Type representing a request to create a transaction.
@@ -116,11 +161,16 @@ export {
   type IncomeTransactionDestination,
   type SpendingTransaction,
   type SpendingTransactionDestination,
-  type TransactionSummary,
   type TransactionSummaryByType,
-  type TransactionSummaryByDate,
-  type TransactionSummaryByAccountingPeriod,
   type CreateTransactionRequest,
   type UpdateTransactionRequest,
   type PostTransactionRequest,
+  isAccountTransaction,
+  isFundTransaction,
+  isIncomeTransaction,
+  isSpendingTransaction,
+  asAccountTransaction,
+  asFundTransaction,
+  asIncomeTransaction,
+  asSpendingTransaction,
 };

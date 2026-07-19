@@ -47,12 +47,7 @@ const ConfirmActionDialog = function ({
       })}
       <Dialog
         open={open}
-        onClose={
-          pending
-            ? // eslint-disable-next-line no-undefined
-              undefined
-            : closeDialog
-        }
+        onClose={pending ? undefined : closeDialog}
         fullWidth
         maxWidth="sm"
         title={title}

@@ -8,14 +8,16 @@ import {
   getDestinationsFromTransaction,
   getSourceFromTransaction,
 } from "@/transactions/workspace/spending/helpers";
+import type {
+  SpendingTransaction,
+  UpdateTransactionRequest,
+} from "@/transactions/types";
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { FundWithBalance } from "@/funds/types";
 import type { SpendingGoal } from "@/goals/types";
-import type { SpendingTransaction } from "@/transactions/spendingTransaction";
 import SpendingTransactionForm from "@/transactions/workspace/spending/SpendingTransactionForm";
-import type { UpdateTransactionRequest } from "@/transactions/transaction";
 import { useUpdateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
 /**

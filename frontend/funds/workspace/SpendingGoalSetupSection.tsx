@@ -1,12 +1,12 @@
 import { Box, Stack, Typography } from "@mui/material";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
 import {
-  SpendingGoalType,
   describeSpendingGoalType,
   formatSpendingGoalType,
-} from "@/goals/types";
+} from "@/goals/helpers";
 import FundGoalTypeEntryField from "@/funds/FundGoalTypeEntryField";
 import type { JSX } from "react";
+import { SpendingGoalType } from "@/goals/types";
 
 /**
  * Props for the SpendingGoalSetupSection component.

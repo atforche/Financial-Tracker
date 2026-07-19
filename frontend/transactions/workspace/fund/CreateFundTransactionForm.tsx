@@ -13,10 +13,10 @@ import {
   getDefaultDate,
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import type { CreateTransactionRequest } from "@/transactions/transaction";
+import type { CreateTransactionRequest } from "@/transactions/types";
 import type { Dayjs } from "dayjs";
-import type { FundWithBalance } from "@/funds/types";
 import FundTransactionForm from "@/transactions/workspace/fund/FundTransactionForm";
+import type { FundWithBalance } from "@/funds/types";
 import { useCreateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
 /**

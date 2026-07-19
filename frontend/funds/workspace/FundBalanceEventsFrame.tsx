@@ -135,9 +135,6 @@ const FundBalanceEventsFrame = function ({
         }
         data={data}
         totalCount={totalCount}
-        searchParamName={nameof<FundWorkspaceSearchParams>(
-          "balanceEventSearch",
-        )}
         pageParamName={nameof<FundWorkspaceSearchParams>("balanceEventPage")}
         onRowClick={(balanceEvent) => {
           router.push(

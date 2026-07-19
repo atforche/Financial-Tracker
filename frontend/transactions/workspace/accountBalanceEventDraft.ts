@@ -1,19 +1,17 @@
-import {
-  type AccountIdentifier,
-  type AccountWithBalance,
-  isDebtAccountType,
-} from "@/accounts/types";
 import type {
-  TransactionAccount,
-  TransactionAccountDraft,
-} from "@/transactions/transaction";
+  Account,
+  AccountBalanceEvent,
+  AccountBalanceEventDraft,
+  AccountWithBalance,
+} from "@/accounts/types";
+import { isDebtAccountType } from "@/accounts/helpers";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
  * Gets the balance change captured in the provided transaction account draft.
  */
 const getTransactionAccountDraftBalanceChange = function (
-  account: TransactionAccountDraft | null,
+  account: AccountBalanceEventDraft | null,
 ): number {
   return (
     (account?.newAccountBalance ?? 0) - (account?.previousAccountBalance ?? 0)
@@ -24,9 +22,9 @@ const getTransactionAccountDraftBalanceChange = function (
  * Applies a balance change to an existing transaction account draft.
  */
 const setTransactionAccountDraftBalanceChange = function (
-  account: TransactionAccountDraft | null,
+  account: AccountBalanceEventDraft | null,
   balanceChange: number | null | undefined,
-): TransactionAccountDraft | null {
+): AccountBalanceEventDraft | null {
   // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
   if (account === null || account.accountType === null) {
     return null;
@@ -48,7 +46,7 @@ const setTransactionAccountDraftBalanceChange = function (
 const createTransactionAccountDraftFromAccount = function (
   account: AccountWithBalance,
   balanceChange = 0,
-): TransactionAccountDraft {
+): AccountBalanceEventDraft {
   const previousPostedBalance = account.currentBalance.postedBalance;
   return {
     accountId: account.id,
@@ -64,8 +62,8 @@ const createTransactionAccountDraftFromAccount = function (
  * Hydrates a transaction account draft from a persisted transaction account.
  */
 const getTransactionAccountDraftFromTransactionAccount = function (
-  account: TransactionAccount | null | undefined,
-): TransactionAccountDraft | null {
+  account: AccountBalanceEvent | null | undefined,
+): AccountBalanceEventDraft | null {
   if (isNullOrUndefined(account)) {
     return null;
   }
@@ -84,10 +82,10 @@ const getTransactionAccountDraftFromTransactionAccount = function (
  */
 const getSelectedTransactionAccountDraft = function (
   accounts: AccountWithBalance[],
-  nextValue: AccountIdentifier | null,
-  currentAccount: TransactionAccountDraft | null,
+  nextValue: Account | null,
+  currentAccount: AccountBalanceEventDraft | null,
   balanceChange?: number | null,
-): TransactionAccountDraft | null {
+): AccountBalanceEventDraft | null {
   if (nextValue === null) {
     return null;
   }

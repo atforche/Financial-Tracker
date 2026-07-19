@@ -1,19 +1,21 @@
 "use client";
 
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
+import {
+  type Transaction,
+  isAccountTransaction,
+  isFundTransaction,
+  isIncomeTransaction,
+  isSpendingTransaction,
+} from "@/transactions/types";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { FundWithBalance } from "@/funds/types";
 import type { JSX } from "react";
-import type { Transaction } from "@/transactions/transaction";
 import UpdateAccountTransactionForm from "@/transactions/workspace/account/UpdateAccountTransactionForm";
 import UpdateFundTransactionForm from "@/transactions/workspace/fund/UpdateFundTransactionForm";
 import UpdateIncomeTransactionForm from "@/transactions/workspace/income/UpdateIncomeTransactionForm";
 import UpdateSpendingTransactionForm from "@/transactions/workspace/spending/UpdateSpendingTransactionForm";
-import { isAccountTransaction } from "@/transactions/accountTransaction";
-import { isFundTransaction } from "@/transactions/fundTransaction";
-import { isIncomeTransaction } from "@/transactions/incomeTransaction";
-import { isSpendingTransaction } from "@/transactions/spendingTransaction";
 
 /**
  * Props for the UpdateTransactionForm component.

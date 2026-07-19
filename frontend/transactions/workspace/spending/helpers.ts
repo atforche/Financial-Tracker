@@ -1,23 +1,14 @@
-import {
-  type Account,
-  type AccountIdentifier,
-  isTrackedAccountType,
-} from "@/accounts/types";
+import type { Account, AccountBalanceEventDraft } from "@/accounts/types";
 import {
   CreateTransactionModelCreateSpendingTransactionModelType,
   UpdateTransactionModelUpdateSpendingTransactionModelType,
 } from "@/framework/data/api";
 import type {
   CreateTransactionRequest,
-  TransactionAccountDraft,
-  TransactionFund,
-  TransactionGoal,
-  UpdateTransactionRequest,
-} from "@/transactions/transaction";
-import type {
   SpendingTransaction,
   SpendingTransactionDestination,
-} from "@/transactions/spendingTransaction";
+  UpdateTransactionRequest,
+} from "@/transactions/types";
 import {
   hasIncompleteFundAssignments,
   isUnassignedFund,
@@ -29,13 +20,16 @@ import {
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
-import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/transactionAccountDraft";
+import type { FundBalanceEvent } from "@/funds/types";
+import type { GoalBalanceEvent } from "@/goals/types";
+import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/accountBalanceEventDraft";
+import { isTrackedAccountType } from "@/accounts/helpers";
 
 /**
  * Interface representing a potentially unfinished spending transaction source.
  */
 interface SpendingSourceDraft {
-  readonly account: TransactionAccountDraft | null;
+  readonly account: AccountBalanceEventDraft | null;
   readonly amount: number | null;
 }
 
@@ -43,7 +37,7 @@ interface SpendingSourceDraft {
  * Interface representing a potentially unfinished spending transaction destination.
  */
 interface SpendingDestinationDraft {
-  readonly account: TransactionAccountDraft | null;
+  readonly account: AccountBalanceEventDraft | null;
   readonly location: string | null;
   readonly amount: number | null;
   readonly fundAssignments: FundAssignmentDraft[];
@@ -109,7 +103,7 @@ const validateFundAssignments = function (
  */
 const validateDestination = function (
   destination: SpendingDestinationDraft,
-  sourceAccount: TransactionAccountDraft | null,
+  sourceAccount: AccountBalanceEventDraft | null,
 ): boolean {
   const normalizedLocation = destination.location?.trim() ?? "";
   const hasAccount = destination.account !== null;
@@ -267,7 +261,7 @@ const buildSourceAccountFilter = function (
   accounts: Account[],
   destinations: SpendingDestinationDraft[],
 ) {
-  return function (account: AccountIdentifier): boolean {
+  return function (account: Account): boolean {
     const selectedAccount =
       accounts.find((candidate) => candidate.id === account.id) ?? null;
     return (
@@ -287,9 +281,9 @@ const buildDestinationAccountFilter = function (
   accounts: Account[],
   destinations: SpendingDestinationDraft[],
   index: number,
-  sourceAccount: TransactionAccountDraft | null,
+  sourceAccount: AccountBalanceEventDraft | null,
 ) {
-  return function (account: AccountIdentifier): boolean {
+  return function (account: Account): boolean {
     const selectedAccount =
       accounts.find((candidate) => candidate.id === account.id) ?? null;
     const accountUsedElsewhere = destinations.some(
@@ -325,8 +319,8 @@ const getSourceFromTransaction = function (
  * Gets a fund assignment draft from the provided transaction fund.
  */
 const getFundAssignmentFromTransactionFund = (
-  assignment: TransactionFund,
-  goal: TransactionGoal | null = null,
+  assignment: FundBalanceEvent,
+  goal: GoalBalanceEvent | null = null,
 ): FundAssignmentDraft => ({
   fundId: assignment.fund.id,
   fundName: assignment.fund.name,

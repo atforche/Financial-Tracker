@@ -1,6 +1,10 @@
 "use client";
 
-import type { AccountIdentifier, AccountWithBalance } from "@/accounts/types";
+import type {
+  Account,
+  AccountBalanceEventDraft,
+  AccountWithBalance,
+} from "@/accounts/types";
 import { Button, Stack, Typography } from "@mui/material";
 import {
   type JSX,
@@ -9,16 +13,12 @@ import {
   useEffect,
   useState,
 } from "react";
-import type {
-  PostTransactionRequest,
-  Transaction,
-  TransactionAccountDraft,
-} from "@/transactions/transaction";
+import type { PostTransactionRequest, Transaction } from "@/transactions/types";
 import dayjs, { type Dayjs } from "dayjs";
 import {
   getSelectedTransactionAccountDraft,
   setTransactionAccountDraftBalanceChange,
-} from "@/transactions/workspace/transactionAccountDraft";
+} from "@/transactions/workspace/accountBalanceEventDraft";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AccountEntryField from "@/accounts/AccountEntryField";
 import DateEntryField from "@/framework/forms/DateEntryField";
@@ -27,15 +27,15 @@ import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalan
 import postTransaction from "@/transactions/workspace/postTransaction";
 
 /**
- * Props for the TransactionAccountFrame component.
+ * Props for the AccountBalanceEventFrame component.
  */
-interface TransactionAccountFrameProps {
+interface AccountBalanceEventFrameProps {
   readonly accounts?: AccountWithBalance[];
   readonly transaction?: Transaction | null;
-  readonly account: TransactionAccountDraft | null;
+  readonly account: AccountBalanceEventDraft | null;
   readonly setAccount?:
-    ((account: TransactionAccountDraft | null) => void) | null;
-  readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
+    ((account: AccountBalanceEventDraft | null) => void) | null;
+  readonly accountFilter?: ((account: Account) => boolean) | null;
   readonly label?: string;
   readonly balanceChange?: number | null;
 }
@@ -45,7 +45,7 @@ const emptyAccounts: AccountWithBalance[] = [];
 /**
  * Displays a transaction account and, when applicable, its posting controls.
  */
-const TransactionAccountFrame = function ({
+const AccountBalanceEventFrame = function ({
   accounts = emptyAccounts,
   transaction = null,
   account,
@@ -53,7 +53,7 @@ const TransactionAccountFrame = function ({
   accountFilter = null,
   label = "Account",
   balanceChange = null,
-}: TransactionAccountFrameProps): JSX.Element {
+}: AccountBalanceEventFrameProps): JSX.Element {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -151,14 +151,13 @@ const TransactionAccountFrame = function ({
       <AccountEntryField
         label={label}
         options={accounts}
-        value={{
-          id: displayedAccount?.accountId ?? "",
-          name: displayedAccount?.accountName ?? "",
-        }}
+        value={
+          accounts.find(({ id }) => id === displayedAccount?.accountId) ?? null
+        }
         setValue={
           setAccount === null
             ? null
-            : (nextValue: AccountIdentifier | null): void => {
+            : (nextValue: Account | null): void => {
                 setAccount(
                   getSelectedTransactionAccountDraft(
                     accounts,
@@ -181,4 +180,4 @@ const TransactionAccountFrame = function ({
   );
 };
 
-export default TransactionAccountFrame;
+export default AccountBalanceEventFrame;

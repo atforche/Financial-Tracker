@@ -1,4 +1,8 @@
-import type { AccountIdentifier, AccountWithBalance } from "@/accounts/types";
+import type {
+  Account,
+  AccountBalanceEventDraft,
+  AccountWithBalance,
+} from "@/accounts/types";
 import {
   type IncomeDeductionDraft,
   type IncomeLineDraft,
@@ -6,13 +10,10 @@ import {
   createEmptyLine,
   getNetIncomeAmount,
 } from "@/transactions/workspace/income/helpers";
-import type {
-  Transaction,
-  TransactionAccountDraft,
-} from "@/transactions/transaction";
 import type { FrameColor } from "@/framework/view/Frame";
 import IncomeTransactionItemSection from "@/transactions/workspace/income/IncomeTransactionSourceItemFrame";
 import type { JSX } from "react";
+import type { Transaction } from "@/transactions/types";
 import TransactionAccountOrLocationFrame from "@/transactions/workspace/TransactionAccountOrLocationFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
@@ -22,9 +23,9 @@ import TransactionSourceOrDestinationFrame from "@/transactions/workspace/Transa
 interface IncomeTransactionSourceFrameProps {
   readonly accounts: AccountWithBalance[];
   readonly transaction?: Transaction | null;
-  readonly account: TransactionAccountDraft | null;
+  readonly account: AccountBalanceEventDraft | null;
   readonly setAccount:
-    ((account: TransactionAccountDraft | null) => void) | null;
+    ((account: AccountBalanceEventDraft | null) => void) | null;
   readonly location: string | null;
   readonly setLocation: ((location: string) => void) | null;
   readonly incomeLines: IncomeLineDraft[];
@@ -32,7 +33,7 @@ interface IncomeTransactionSourceFrameProps {
   readonly incomeDeductions: IncomeDeductionDraft[];
   readonly setIncomeDeductions:
     ((incomeDeductions: IncomeDeductionDraft[]) => void) | null;
-  readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
+  readonly accountFilter?: ((account: Account) => boolean) | null;
   readonly color?: FrameColor;
   readonly readOnly?: boolean;
 }

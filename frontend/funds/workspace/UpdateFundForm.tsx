@@ -76,8 +76,7 @@ const UpdateFundForm = function ({
         open={open}
         onClose={
           pending
-            ? // eslint-disable-next-line no-undefined
-              undefined
+            ? undefined
             : (): void => {
                 setOpen(false);
                 reset();

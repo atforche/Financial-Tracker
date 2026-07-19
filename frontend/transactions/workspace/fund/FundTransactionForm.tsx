@@ -16,9 +16,9 @@ import {
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
-import type { FundWithBalance } from "@/funds/types";
 import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
 import FundTransactionSourceFrame from "@/transactions/workspace/fund/FundTransactionSourceFrame";
+import type { FundWithBalance } from "@/funds/types";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
 
 /**

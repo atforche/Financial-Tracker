@@ -1,8 +1,10 @@
-import type { Transaction } from "@/transactions/transaction";
-import { asAccountTransaction } from "@/transactions/accountTransaction";
-import { asFundTransaction } from "@/transactions/fundTransaction";
-import { asIncomeTransaction } from "@/transactions/incomeTransaction";
-import { asSpendingTransaction } from "@/transactions/spendingTransaction";
+import {
+  type Transaction,
+  asAccountTransaction,
+  asFundTransaction,
+  asIncomeTransaction,
+  asSpendingTransaction,
+} from "@/transactions/types";
 
 const summarizeValues = function (values: string[]): string {
   const meaningfulValues = values.filter((value) => value.trim() !== "");

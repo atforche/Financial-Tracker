@@ -1,12 +1,14 @@
-import type { AccountIdentifier, AccountWithBalance } from "@/accounts/types";
-import { Box, Stack, Typography } from "@mui/material";
 import type {
-  Transaction,
-  TransactionAccountDraft,
-} from "@/transactions/transaction";
+  Account,
+  AccountBalanceEventDraft,
+  AccountWithBalance,
+} from "@/accounts/types";
+import { Box, Stack, Typography } from "@mui/material";
+
+import AccountBalanceEventFrame from "@/transactions/workspace/AccountBalanceEventFrame";
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import TransactionAccountFrame from "@/transactions/workspace/TransactionAccountFrame";
+import type { Transaction } from "@/transactions/types";
 
 /**
  * Props for the TransactionAccountOrLocationFrame component.
@@ -14,14 +16,14 @@ import TransactionAccountFrame from "@/transactions/workspace/TransactionAccount
 interface TransactionAccountOrLocationFrameProps {
   readonly accounts: AccountWithBalance[];
   readonly transaction?: Transaction | null;
-  readonly account: TransactionAccountDraft | null;
+  readonly account: AccountBalanceEventDraft | null;
   readonly setAccount:
-    ((account: TransactionAccountDraft | null) => void) | null;
+    ((account: AccountBalanceEventDraft | null) => void) | null;
   readonly accountCaption?: string;
   readonly locationCaption: string;
   readonly location: string | null;
   readonly setLocation: ((location: string) => void) | null;
-  readonly accountFilter?: ((account: AccountIdentifier) => boolean) | null;
+  readonly accountFilter?: ((account: Account) => boolean) | null;
   readonly balanceChange?: number | null;
   readonly readOnly?: boolean;
 }
@@ -47,7 +49,7 @@ const TransactionAccountOrLocationFrame = function ({
 
   if (readOnly && hasAccount && !hasLocation) {
     return (
-      <TransactionAccountFrame
+      <AccountBalanceEventFrame
         accounts={accounts}
         transaction={transaction}
         account={account}
@@ -76,7 +78,7 @@ const TransactionAccountOrLocationFrame = function ({
       alignItems={{ xs: "stretch", md: "flex-start" }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <TransactionAccountFrame
+        <AccountBalanceEventFrame
           accounts={accounts}
           transaction={transaction}
           account={account}

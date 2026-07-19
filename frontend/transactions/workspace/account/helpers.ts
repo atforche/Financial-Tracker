@@ -1,34 +1,28 @@
-import {
-  type Account,
-  type AccountIdentifier,
-  isTrackedAccountType,
-} from "@/accounts/types";
+import type { Account, AccountBalanceEventDraft } from "@/accounts/types";
 import type {
   AccountTransaction,
   AccountTransactionDestination,
-} from "@/transactions/accountTransaction";
+  CreateTransactionRequest,
+  UpdateTransactionRequest,
+} from "@/transactions/types";
 import {
   CreateTransactionModelCreateAccountTransactionModelType,
   UpdateTransactionModelUpdateAccountTransactionModelType,
 } from "@/framework/data/api";
-import type {
-  CreateTransactionRequest,
-  TransactionAccountDraft,
-  UpdateTransactionRequest,
-} from "@/transactions/transaction";
 import {
   validateDetails,
   validateSummary,
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
-import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/transactionAccountDraft";
+import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/accountBalanceEventDraft";
+import { isTrackedAccountType } from "@/accounts/helpers";
 
 /**
  * Interface representing a potentially unfinished account transaction source.
  */
 interface AccountSourceDraft {
-  readonly account: TransactionAccountDraft | null;
+  readonly account: AccountBalanceEventDraft | null;
   readonly location: string;
   readonly amount: number | null;
   readonly postedDate: string | null;
@@ -40,7 +34,7 @@ interface AccountSourceDraft {
  * Interface representing a potentially unfinished account transaction destination.
  */
 interface AccountDestinationDraft {
-  readonly account: TransactionAccountDraft | null;
+  readonly account: AccountBalanceEventDraft | null;
   readonly location: string;
   readonly amount: number | null;
   readonly postedDate: string | null;
@@ -93,7 +87,7 @@ const validateSource = function (source: AccountSourceDraft): boolean {
  */
 const validateDestination = function (
   destination: AccountDestinationDraft,
-  sourceAccount: TransactionAccountDraft | null,
+  sourceAccount: AccountBalanceEventDraft | null,
 ): boolean {
   const normalizedLocation = destination.location.trim();
   const hasAccount = destination.account !== null;
@@ -257,7 +251,7 @@ const buildSourceAccountFilter = function (
   accounts: Account[],
   destinations: AccountDestinationDraft[],
 ) {
-  return function (account: AccountIdentifier): boolean {
+  return function (account: Account): boolean {
     const selectedAccount =
       accounts.find((candidate) => candidate.id === account.id) ?? null;
     return (
@@ -276,9 +270,9 @@ const buildDestinationAccountFilter = function (
   accounts: Account[],
   destinations: AccountDestinationDraft[],
   index: number,
-  sourceAccount: TransactionAccountDraft | null,
+  sourceAccount: AccountBalanceEventDraft | null,
 ) {
-  return function (account: AccountIdentifier): boolean {
+  return function (account: Account): boolean {
     const selectedAccount =
       accounts.find((candidate) => candidate.id === account.id) ?? null;
     const accountUsedElsewhere = destinations.some(

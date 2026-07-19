@@ -1,4 +1,5 @@
 import { Paper, Stack, Typography } from "@mui/material";
+import { AccountingPeriodSortModel } from "@/framework/data/api";
 import GoalTrendsSummaryCards from "@/goals/trends/GoalTrendsSummaryCards";
 import type { JSX } from "react";
 import getApiClient from "@/framework/data/getApiClient";
@@ -11,7 +12,13 @@ import { summarizeGoalRange } from "@/goals/trends/goalTrendsSummary";
 const GoalOverview = async function (): Promise<JSX.Element> {
   const apiClient = getApiClient();
   const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
-    params: { query: { Sort: "DateDescending", Limit: 1, Offset: 0 } },
+    params: {
+      query: {
+        Sort: AccountingPeriodSortModel.DateDescending,
+        Limit: 1,
+        Offset: 0,
+      },
+    },
   });
   const accountingPeriods = getApiData(
     accountingPeriodsResponse,

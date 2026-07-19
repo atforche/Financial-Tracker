@@ -8,10 +8,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import type {
-  PostTransactionRequest,
-  Transaction,
-} from "@/transactions/transaction";
+import type { PostTransactionRequest, Transaction } from "@/transactions/types";
 import dayjs, { type Dayjs } from "dayjs";
 import {
   getPostableTransactionAccounts,

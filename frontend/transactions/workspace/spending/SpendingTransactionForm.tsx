@@ -1,5 +1,9 @@
 "use client";
 
+import type {
+  AccountBalanceEventDraft,
+  AccountWithBalance,
+} from "@/accounts/types";
 import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
 import {
   type FundAssignmentDraft,
@@ -19,14 +23,12 @@ import {
   appendDestinationWithAutofilledAmount,
   syncDestinationAmountsToSource,
 } from "@/transactions/workspace/helpers";
-import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import type { FundWithBalance } from "@/funds/types";
 import type { SpendingGoal } from "@/goals/types";
 import SpendingTransactionDestinationFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFrame";
 import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
-import type { TransactionAccountDraft } from "@/transactions/transaction";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
 
 /**
@@ -160,7 +162,7 @@ const SpendingTransactionForm = function <RequestPayload>({
 
   const setDestinationAccount = function (
     index: number,
-    account: TransactionAccountDraft | null,
+    account: AccountBalanceEventDraft | null,
   ): void {
     updateDestination(index, (currentDestination) => ({
       ...currentDestination,

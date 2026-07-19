@@ -1,6 +1,6 @@
 "use server";
 
-import type { UpdateTransactionRequest } from "@/transactions/transaction";
+import type { UpdateTransactionRequest } from "@/transactions/types";
 import formatErrors from "@/framework/forms/formatErrors";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";

@@ -10,7 +10,7 @@ import {
 } from "react";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import type { Transaction } from "@/transactions/transaction";
+import type { Transaction } from "@/transactions/types";
 import unpostTransaction from "@/transactions/workspace/unpostTransaction";
 import { useRouter } from "next/navigation";
 
@@ -53,8 +53,7 @@ const UnpostTransactionForm = function ({
         open={open}
         onClose={
           pending
-            ? // eslint-disable-next-line no-undefined
-              undefined
+            ? undefined
             : (): void => {
                 setOpen(false);
               }

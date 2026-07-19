@@ -1,6 +1,6 @@
 "use client";
 
-import type { AssignmentGoalType, SpendingGoalType } from "@/goals/types";
+import { AssignmentGoalType, SpendingGoalType } from "@/goals/types";
 import type {
   GoalTrendsGoalType,
   GoalTrendsView,
@@ -37,9 +37,16 @@ const GoalTrendsGoalTypeFilter = function ({
   const isAssignment = view === "assignment";
   const label = isAssignment ? "Assignment goal types" : "Spending goal types";
   const formatGoalType = function (goalType: GoalTrendsGoalType): string {
-    return isAssignment
-      ? formatAssignmentGoalType(goalType as AssignmentGoalType)
-      : formatSpendingGoalType(goalType as SpendingGoalType);
+    switch (goalType) {
+      case AssignmentGoalType.MonthlyTarget:
+      case AssignmentGoalType.RecurringContribution:
+        return formatAssignmentGoalType(goalType);
+      case SpendingGoalType.Standard:
+      case SpendingGoalType.Debt:
+        return formatSpendingGoalType(goalType);
+      default:
+        return String(goalType);
+    }
   };
 
   return (

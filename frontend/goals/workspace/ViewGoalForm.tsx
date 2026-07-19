@@ -2,7 +2,7 @@
 
 import type {
   AssignmentGoal,
-  GoalWorkspaceBalanceEvent,
+  GoalBalanceEvent,
   SpendingGoal,
 } from "@/goals/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
@@ -18,7 +18,7 @@ interface ViewGoalFormProps {
   readonly assignmentGoal: AssignmentGoal;
   readonly spendingGoal: SpendingGoal;
   readonly redirectUrl: string;
-  readonly recentBalanceEvents: GoalWorkspaceBalanceEvent[];
+  readonly recentBalanceEvents: GoalBalanceEvent[];
   readonly recentBalanceEventCount: number;
   readonly addTransactionHref: string;
   readonly accountingPeriodId: string;

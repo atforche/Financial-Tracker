@@ -44,6 +44,9 @@ interface NavigationLink {
   childLinks?: NavigationChildLink[];
 }
 
+/**
+ * Interface representing a child navigation link in the application.
+ */
 interface NavigationChildLink {
   name: string;
   href: Route;

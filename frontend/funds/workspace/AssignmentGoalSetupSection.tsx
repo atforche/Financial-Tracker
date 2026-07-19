@@ -1,10 +1,10 @@
-import {
-  AssignmentGoalType,
-  describeAssignmentGoalType,
-  formatAssignmentGoalType,
-} from "@/goals/types";
 import { Box, Stack, Typography } from "@mui/material";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
+import {
+  describeAssignmentGoalType,
+  formatAssignmentGoalType,
+} from "@/goals/helpers";
+import { AssignmentGoalType } from "@/goals/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import FundGoalTypeEntryField from "@/funds/FundGoalTypeEntryField";
 import type { JSX } from "react";

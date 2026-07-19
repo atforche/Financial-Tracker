@@ -1,6 +1,6 @@
 "use client";
 
-import type { FundWithBalance, FundWorkspaceBalanceEvent } from "@/funds/types";
+import type { FundBalanceEvent, FundWithBalance } from "@/funds/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import DeleteFundForm from "@/funds/workspace/DeleteFundForm";
 import FundBalanceEventsFrame from "@/funds/workspace/FundBalanceEventsFrame";
@@ -16,7 +16,7 @@ import UpdateFundForm from "@/funds/workspace/UpdateFundForm";
 interface ViewFundFormProps {
   readonly fund: FundWithBalance;
   readonly redirectUrl: string;
-  readonly recentBalanceEvents: FundWorkspaceBalanceEvent[];
+  readonly recentBalanceEvents: FundBalanceEvent[];
   readonly recentBalanceEventCount: number;
   readonly addTransactionHref: string;
 }

@@ -1,9 +1,6 @@
 import { AddCircleOutline, DeleteOutline } from "@mui/icons-material";
 import { Box, Button, IconButton, Stack, Typography } from "@mui/material";
-import type {
-  IncomeDeduction,
-  IncomeLine,
-} from "@/transactions/incomeTransaction";
+import type { IncomeDeduction, IncomeLine } from "@/transactions/types";
 import type {
   IncomeDeductionDraft,
   IncomeLineDraft,

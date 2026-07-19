@@ -1,23 +1,14 @@
-import {
-  type Account,
-  type AccountIdentifier,
-  isTrackedAccountType,
-} from "@/accounts/types";
+import type { Account, AccountBalanceEventDraft } from "@/accounts/types";
 import {
   CreateTransactionModelCreateIncomeTransactionModelType,
   UpdateTransactionModelUpdateIncomeTransactionModelType,
 } from "@/framework/data/api";
 import type {
   CreateTransactionRequest,
-  TransactionAccountDraft,
-  TransactionFund,
-  TransactionGoal,
-  UpdateTransactionRequest,
-} from "@/transactions/transaction";
-import type {
   IncomeTransaction,
   IncomeTransactionDestination,
-} from "@/transactions/incomeTransaction";
+  UpdateTransactionRequest,
+} from "@/transactions/types";
 import {
   validateDetails,
   validateSummary,
@@ -25,8 +16,11 @@ import {
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
-import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/transactionAccountDraft";
+import type { FundBalanceEvent } from "@/funds/types";
+import type { GoalBalanceEvent } from "@/goals/types";
+import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/accountBalanceEventDraft";
 import { hasIncompleteFundAssignments } from "@/funds/helpers";
+import { isTrackedAccountType } from "@/accounts/helpers";
 
 /**
  * Interface representing a potentially unfinished income line item.
@@ -48,7 +42,7 @@ interface IncomeDeductionDraft {
  * Interface representing a potentially unfinished income transaction source.
  */
 interface IncomeSourceDraft {
-  readonly account: TransactionAccountDraft | null;
+  readonly account: AccountBalanceEventDraft | null;
   readonly location: string | null;
   readonly incomeLines: IncomeLineDraft[];
   readonly incomeDeductions: IncomeDeductionDraft[];
@@ -58,7 +52,7 @@ interface IncomeSourceDraft {
  * Interface representing a potentially unfinished income transaction destination.
  */
 interface IncomeDestinationDraft {
-  readonly account: TransactionAccountDraft | null;
+  readonly account: AccountBalanceEventDraft | null;
   readonly amount: number | null;
   readonly fundAssignments: FundAssignmentDraft[];
   readonly baselineFundAssignments: FundAssignmentDraft[];
@@ -344,7 +338,7 @@ const buildSourceAccountFilter = function (
   accounts: Account[],
   destinations: IncomeDestinationDraft[],
 ) {
-  return function (account: AccountIdentifier): boolean {
+  return function (account: Account): boolean {
     const selectedAccount =
       accounts.find((candidate) => candidate.id === account.id) ?? null;
     return (
@@ -364,9 +358,9 @@ const buildDestinationAccountFilter = function (
   accounts: Account[],
   destinations: IncomeDestinationDraft[],
   index: number,
-  sourceAccount: TransactionAccountDraft | null,
+  sourceAccount: AccountBalanceEventDraft | null,
 ) {
-  return function (account: AccountIdentifier): boolean {
+  return function (account: Account): boolean {
     const selectedAccount =
       accounts.find((candidate) => candidate.id === account.id) ?? null;
     const accountUsedElsewhere = destinations.some(
@@ -410,8 +404,8 @@ const getSourceFromTransaction = function (
  * Gets a fund assignment draft from the provided transaction fund.
  */
 const getFundAssignmentFromTransactionFund = (
-  assignment: TransactionFund,
-  goal: TransactionGoal | null = null,
+  assignment: FundBalanceEvent,
+  goal: GoalBalanceEvent | null = null,
 ): FundAssignmentDraft => ({
   fundId: assignment.fund.id,
   fundName: assignment.fund.name,

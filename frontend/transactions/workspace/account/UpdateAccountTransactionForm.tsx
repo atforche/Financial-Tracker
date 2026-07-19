@@ -7,13 +7,15 @@ import {
   getDestinationsFromTransaction,
   getSourceFromTransaction,
 } from "@/transactions/workspace/account/helpers";
+import type {
+  AccountTransaction,
+  UpdateTransactionRequest,
+} from "@/transactions/types";
 import { type JSX, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
-import type { AccountWithBalance } from "@/accounts/types";
-import type { AccountTransaction } from "@/transactions/accountTransaction";
 import AccountTransactionForm from "@/transactions/workspace/account/AccountTransactionForm";
+import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import type { UpdateTransactionRequest } from "@/transactions/transaction";
 import { useUpdateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
 /**

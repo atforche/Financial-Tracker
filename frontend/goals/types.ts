@@ -34,6 +34,11 @@ type UpdateSpendingGoalRequest =
  */
 type GoalBalanceEvent = components["schemas"]["GoalBalanceEventModel"];
 
+/**
+ * Type representing a potentially unfinished goal balance event.
+ */
+type GoalBalanceEventDraft = Partial<GoalBalanceEvent>;
+
 export {
   type AssignmentGoal,
   AssignmentGoalSortModel as AssignmentGoalSort,
@@ -44,5 +49,6 @@ export {
   type UpdateAssignmentGoalRequest,
   type UpdateSpendingGoalRequest,
   type GoalBalanceEvent,
+  type GoalBalanceEventDraft,
   GoalBalanceEventSortModel as GoalBalanceEventSort,
 };

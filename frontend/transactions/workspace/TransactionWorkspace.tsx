@@ -1,10 +1,10 @@
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
-import type { TransactionSortValue } from "@/transactions/transaction";
+import PageLayout from "@/framework/view/PageLayout";
+import type { TransactionSort } from "@/transactions/types";
 import TransactionWorkspaceFilter from "@/transactions/workspace/TransactionWorkspaceFilter";
 import TransactionWorkspaceListFrame from "@/transactions/workspace/TransactionWorkspaceListFrame";
 import { getTransactionWorkspaceListData } from "@/transactions/workspace/getTransactionWorkspaceData";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import PageLayout from "@/framework/view/PageLayout";
 
 /**
  * Search parameters supported by the Transactions workspace.
@@ -13,7 +13,7 @@ interface TransactionWorkspaceSearchParams {
   accountingPeriodIds?: string | string[];
   accountIds?: string | string[];
   fundIds?: string | string[];
-  sort?: TransactionSortValue | null;
+  sort?: TransactionSort | null;
   page?: number | string | null;
   selectedTransactionId?: string;
   returnUrl?: string;

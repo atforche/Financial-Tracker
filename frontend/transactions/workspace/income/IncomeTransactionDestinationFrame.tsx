@@ -1,16 +1,17 @@
-import type { AccountIdentifier, AccountWithBalance } from "@/accounts/types";
 import type {
-  Transaction,
-  TransactionAccountDraft,
-} from "@/transactions/transaction";
+  Account,
+  AccountBalanceEventDraft,
+  AccountWithBalance,
+} from "@/accounts/types";
+import AccountBalanceEventFrame from "@/transactions/workspace/AccountBalanceEventFrame";
 import type { AssignmentGoal } from "@/goals/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
-import type { FundWithBalance } from "@/funds/types";
 import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
+import type { FundWithBalance } from "@/funds/types";
 import IncomeFundAssignmentPlanner from "@/funds/assignmentPlanner/IncomeFundAssignmentPlanner";
 import type { JSX } from "react";
-import TransactionAccountFrame from "@/transactions/workspace/TransactionAccountFrame";
+import type { Transaction } from "@/transactions/types";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 
 const emptyFundAmounts: FundAssignmentDraft[] = [];
@@ -24,16 +25,16 @@ interface IncomeTransactionDestinationFrameProps {
   readonly funds: FundWithBalance[];
   readonly assignmentGoals: AssignmentGoal[];
   readonly transaction?: Transaction | null;
-  readonly account: TransactionAccountDraft | null;
+  readonly account: AccountBalanceEventDraft | null;
   readonly setAccount:
-    ((account: TransactionAccountDraft | null) => void) | null;
+    ((account: AccountBalanceEventDraft | null) => void) | null;
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly fundAssignments: FundAssignmentDraft[];
   readonly setFundAssignments:
     ((fundAssignments: FundAssignmentDraft[]) => void) | null;
   readonly baselineFundAssignments?: FundAssignmentDraft[];
-  readonly filter?: ((account: AccountIdentifier) => boolean) | null;
+  readonly filter?: ((account: Account) => boolean) | null;
   readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
   readonly color?: FrameColor;
@@ -71,7 +72,7 @@ const IncomeTransactionDestinationFrame = function ({
       onRemove={readOnly ? null : onRemove}
       color={color}
     >
-      <TransactionAccountFrame
+      <AccountBalanceEventFrame
         accounts={accounts}
         transaction={transaction}
         account={account}

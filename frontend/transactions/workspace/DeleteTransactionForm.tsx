@@ -3,7 +3,7 @@
 import { type JSX, startTransition, useActionState, useEffect } from "react";
 import { Button } from "@mui/material";
 import ConfirmActionDialog from "@/framework/dialog/ConfirmActionDialog";
-import type { Transaction } from "@/transactions/transaction";
+import type { Transaction } from "@/transactions/types";
 import deleteTransaction from "@/transactions/workspace/deleteTransaction";
 import { useRouter } from "next/navigation";
 
