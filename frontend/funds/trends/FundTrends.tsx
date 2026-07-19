@@ -1,9 +1,12 @@
 import type {
-  FundBalanceEventSort,
-  FundWithBalanceRangeSort,
+  FundBalanceEvent,
   FundsInAccountingPeriodRange,
   FundsInDateRange,
 } from "@/funds/types";
+import type {
+  FundTrendsDataMode,
+  FundTrendsSearchParams,
+} from "@/funds/trends/helpers";
 import {
   getPageOffset,
   normalizePageValue,
@@ -32,27 +35,6 @@ import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
-
-/**
- * URL mode values used to filter the Funds trends.
- */
-type FundsTrendsFilterMode = "accounting-period" | "date";
-
-/**
- * Search parameters for the fund trends.
- */
-interface FundTrendsSearchParams {
-  sort?: FundWithBalanceRangeSort;
-  page?: number | string | null;
-  balanceEventSort?: FundBalanceEventSort;
-  balanceEventPage?: number | string | null;
-  mode?: FundsTrendsFilterMode;
-  fundName?: string | readonly string[];
-  startAccountingPeriodId?: string;
-  endAccountingPeriodId?: string;
-  startDate?: string;
-  endDate?: string;
-}
 
 /**
  * Props for the FundTrends component.
@@ -98,8 +80,8 @@ const FundTrends = async function ({
     "Failed to fetch accounting periods",
   );
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
-  const isInOnboardingMode = typeof latestAccountingPeriod === "undefined";
-  const currentMode: FundsTrendsFilterMode =
+  const isInOnboardingMode = latestAccountingPeriod === null;
+  const currentMode =
     typeof mode === "undefined" || isInOnboardingMode ? "date" : mode;
   const currentFundNames = normalizeRequestedFundNames(
     toRepeatedSearchParams(fundName),
@@ -138,7 +120,7 @@ const FundTrends = async function ({
   ) {
     redirect(
       routes.trends({
-        mode: "date",
+        mode: "accounting-period",
         ...persistedFilters,
         startAccountingPeriodId: latestAccountingPeriod.id,
         endAccountingPeriodId: latestAccountingPeriod.id,
@@ -146,46 +128,48 @@ const FundTrends = async function ({
     );
   }
 
-  // Values are assigned by the active range mode below.
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  let trends: FundsInDateRange | FundsInAccountingPeriodRange | undefined;
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  let balanceEvents;
-  const fundQuery = {
-    ...(typeof sort === "string" ? { Sort: sort } : {}),
+  const filterQuery = {
     ...(shouldPersistFundNames(currentFundNames)
       ? { "Filter.Names": [...currentFundNames] }
       : {}),
+  };
+  const fundQuery = {
+    ...(typeof sort === "string" ? { Sort: sort } : {}),
+    ...filterQuery,
     Limit: rowsPerPage,
     Offset: getPageOffset(currentPage),
   };
   const balanceEventQuery = {
     ...(typeof balanceEventSort === "string" ? { Sort: balanceEventSort } : {}),
-    ...(shouldPersistFundNames(currentFundNames)
-      ? { "Filter.Names": [...currentFundNames] }
-      : {}),
+    ...filterQuery,
     Limit: rowsPerPage,
     Offset: getPageOffset(currentBalanceEventPage),
   };
-  if (currentMode === "date") {
-    const range = {
-      "Range.Start": startDate ?? defaultStartDate.format("YYYY-MM-DD"),
-      "Range.End": endDate ?? defaultEndDate.format("YYYY-MM-DD"),
-    };
-    const [fundResponse, balanceEventResponse] = await Promise.all([
-      apiClient.GET("/funds/date-range", {
-        params: { query: { ...fundQuery, ...range } },
-      }),
-      apiClient.GET("/balance-events/funds/date-range", {
-        params: { query: { ...balanceEventQuery, ...range } },
-      }),
-    ]);
-    trends = unwrapApiResponse(fundResponse, "Failed to load fund trends");
-    balanceEvents = unwrapApiResponse(
-      balanceEventResponse,
-      "Failed to load fund balance events",
-    );
-  } else {
+  const { trends, balanceEvents } = await (async function (): Promise<{
+    trends: FundsInDateRange | FundsInAccountingPeriodRange;
+    balanceEvents: { items: FundBalanceEvent[]; totalCount: number };
+  }> {
+    if (currentMode === "date") {
+      const range = {
+        "Range.Start": startDate ?? defaultStartDate.format("YYYY-MM-DD"),
+        "Range.End": endDate ?? defaultEndDate.format("YYYY-MM-DD"),
+      };
+      const [fundResponse, balanceEventResponse] = await Promise.all([
+        apiClient.GET("/funds/date-range", {
+          params: { query: { ...fundQuery, ...range } },
+        }),
+        apiClient.GET("/balance-events/funds/date-range", {
+          params: { query: { ...balanceEventQuery, ...range } },
+        }),
+      ]);
+      return {
+        trends: unwrapApiResponse(fundResponse, "Failed to load fund trends"),
+        balanceEvents: unwrapApiResponse(
+          balanceEventResponse,
+          "Failed to load fund balance events",
+        ),
+      };
+    }
     const range = {
       "Range.Start":
         startAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
@@ -199,13 +183,16 @@ const FundTrends = async function ({
         params: { query: { ...balanceEventQuery, ...range } },
       }),
     ]);
-    trends = unwrapApiResponse(fundResponse, "Failed to load fund trends");
-    balanceEvents = unwrapApiResponse(
-      balanceEventResponse,
-      "Failed to load fund balance events",
-    );
-  }
-  const modeValue = currentMode === "date" ? "Date" : "AccountingPeriod";
+    return {
+      trends: unwrapApiResponse(fundResponse, "Failed to load fund trends"),
+      balanceEvents: unwrapApiResponse(
+        balanceEventResponse,
+        "Failed to load fund balance events",
+      ),
+    };
+  })();
+  const modeValue: FundTrendsDataMode =
+    currentMode === "date" ? "Date" : "AccountingPeriod";
   const periodSummaries =
     "accountingPeriods" in trends ? trends.accountingPeriods : [];
   const dateSummaries = "dates" in trends ? trends.dates : [];
@@ -270,5 +257,4 @@ const FundTrends = async function ({
   );
 };
 
-export type { FundTrendsSearchParams };
 export default FundTrends;

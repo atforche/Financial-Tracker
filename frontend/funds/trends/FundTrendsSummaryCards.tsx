@@ -1,5 +1,6 @@
 "use client";
 
+import { type ComponentProps, type JSX, useState } from "react";
 import { Divider, Stack } from "@mui/material";
 import type {
   FundBalanceSummaryByDate,
@@ -9,29 +10,38 @@ import {
   type FundTrendsDataMode,
   getFundTrendsSnapshot,
 } from "@/funds/trends/helpers";
-import { type JSX, type ReactNode, useState } from "react";
 import BreakdownSection from "@/framework/view/BreakdownSection";
 import ChangeValue from "@/framework/view/ChangeValue";
 import ExpandableSummaryCard from "@/framework/view/ExpandableSummaryCard";
 import SummaryCardGrid from "@/framework/view/SummaryCardGrid";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
+/**
+ * Props for the FundTrendsSummaryCards component.
+ */
 interface FundTrendsSummaryCardsProps {
   readonly mode: FundTrendsDataMode;
   readonly accountingPeriods: readonly FundBalanceSummaryByPeriod[];
   readonly dates: readonly FundBalanceSummaryByDate[];
 }
 
-interface BreakdownDefinition {
-  readonly label: string;
-  readonly value: ReactNode;
-}
+/**
+ * Defines the breakdown of a summary card, including its label and value.
+ */
+type BreakdownDefinition = Pick<
+  ComponentProps<typeof BreakdownSection>,
+  "label" | "value"
+>;
 
-interface CardDefinition {
-  readonly title: string;
-  readonly value: ReactNode;
+/**
+ * Defines the structure of a summary card, including its title, value, and breakdowns.
+ */
+type CardDefinition = Pick<
+  ComponentProps<typeof ExpandableSummaryCard>,
+  "title" | "value"
+> & {
   readonly breakdowns: readonly BreakdownDefinition[];
-}
+};
 
 /** Displays fund balances for the selected trends range. */
 const FundTrendsSummaryCards = function ({

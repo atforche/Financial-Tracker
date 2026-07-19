@@ -10,18 +10,14 @@ import {
   clearAccountTrendsFilters,
   hasActiveAccountTrendsFilters,
 } from "@/accounts/trends/helpers";
-import { Box, Button } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
-import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
-import { BalanceEventType } from "@/balance-events/types";
+import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
-import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import createTrendsBalanceEventColumns from "@/balance-events/createTrendsBalanceEventColumns";
 import { formatBalanceEventType } from "@/balance-events/helpers";
-import { formatCurrency } from "@/framework/currencyHelpers";
-import { formatShortDate } from "@/framework/dateHelpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import routes from "@/transactions/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -81,24 +77,7 @@ const AccountTrendsBalanceEventListFrame = function ({
 
   const getSortProps = createColumnSortProps(currentSort, setSort);
 
-  const accountingPeriodColumns: ColumnDefinition<AccountBalanceEvent>[] =
-    mode === "AccountingPeriod"
-      ? [
-          {
-            name: "accountingPeriodName",
-            headerContent: "Accounting Period",
-            getBodyContent: (balanceEvent) =>
-              balanceEvent.accountingPeriod.name,
-            ...getSortProps(
-              AccountBalanceEventSort.AccountingPeriodName,
-              AccountBalanceEventSort.AccountingPeriodNameDescending,
-            ),
-            minWidth: 160,
-          },
-        ]
-      : [];
-
-  const columns: ColumnDefinition<AccountBalanceEvent>[] = [
+  const leadingColumns: ColumnDefinition<AccountBalanceEvent>[] = [
     {
       name: "accountName",
       headerContent: "Account",
@@ -109,75 +88,40 @@ const AccountTrendsBalanceEventListFrame = function ({
       ),
       minWidth: 140,
     },
-    ...accountingPeriodColumns,
-    {
-      name: "date",
-      headerContent: "Event Date",
-      getBodyContent: (balanceEvent) =>
-        balanceEvent.isPosted
-          ? formatShortDate(new Date(`${balanceEvent.date}T00:00:00`))
-          : "Pending",
-      ...getSortProps(
-        AccountBalanceEventSort.Date,
-        AccountBalanceEventSort.DateDescending,
-      ),
-      minWidth: 130,
-    },
-    {
-      name: "type",
-      headerContent: "Type",
-      getBodyContent: (balanceEvent): JSX.Element => (
-        <Box
-          component="span"
-          sx={{
-            color:
-              balanceEvent.type === BalanceEventType.Debit
-                ? "warning.dark"
-                : "info.dark",
-            fontWeight: 600,
-          }}
-        >
-          {formatBalanceEventType(balanceEvent.type, balanceEvent.isPosted)}
-        </Box>
-      ),
-      ...getSortProps(
-        AccountBalanceEventSort.Type,
-        AccountBalanceEventSort.TypeDescending,
-      ),
-      minWidth: 90,
-    },
-    {
-      name: "amount",
-      headerContent: "Amount",
-      getBodyContent: (balanceEvent) => formatCurrency(balanceEvent.amount),
-      ...getSortProps(
-        AccountBalanceEventSort.Amount,
-        AccountBalanceEventSort.AmountDescending,
-      ),
-      alignment: "right",
-      minWidth: 120,
-    },
-    {
-      name: "actions",
-      headerContent: "",
-      getBodyContent: (balanceEvent) => (
-        <ListFrameActionButton
-          size="small"
-          color="primary"
-          onClick={(event) => {
-            event.stopPropagation();
-            openTransactionWorkspace(balanceEvent);
-          }}
-          ariaLabel={`Open transaction ${balanceEvent.transactionId}`}
-        >
-          <ArrowForwardOutlined fontSize="small" color="action" />
-        </ListFrameActionButton>
-      ),
-      alignment: "right",
-      minWidth: 52,
-      maxWidth: 52,
-    },
   ];
+
+  if (mode === "AccountingPeriod") {
+    leadingColumns.push({
+      name: "accountingPeriodName",
+      headerContent: "Accounting Period",
+      getBodyContent: (balanceEvent) => balanceEvent.accountingPeriod.name,
+      ...getSortProps(
+        AccountBalanceEventSort.AccountingPeriodName,
+        AccountBalanceEventSort.AccountingPeriodNameDescending,
+      ),
+      minWidth: 160,
+    });
+  }
+
+  const columns = createTrendsBalanceEventColumns({
+    leadingColumns,
+    getSortProps,
+    dateSort: {
+      ascending: AccountBalanceEventSort.Date,
+      descending: AccountBalanceEventSort.DateDescending,
+    },
+    typeSort: {
+      ascending: AccountBalanceEventSort.Type,
+      descending: AccountBalanceEventSort.TypeDescending,
+    },
+    amountSort: {
+      ascending: AccountBalanceEventSort.Amount,
+      descending: AccountBalanceEventSort.AmountDescending,
+    },
+    getTypeLabel: (event: AccountBalanceEvent) =>
+      formatBalanceEventType(event.type, event.isPosted),
+    onOpen: openTransactionWorkspace,
+  });
 
   return (
     <ListFrame<AccountBalanceEvent>

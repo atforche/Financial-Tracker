@@ -3,7 +3,7 @@ import {
   buildUrl,
   objectToSearchParams,
 } from "@/framework/routes/helpers";
-import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
+import type { FundTrendsSearchParams } from "@/funds/trends/helpers";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { Route } from "next";
 

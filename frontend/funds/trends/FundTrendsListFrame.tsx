@@ -5,18 +5,21 @@ import {
   type FundWithBalanceRange,
   FundWithBalanceRangeSort,
 } from "@/funds/types";
+import {
+  clearFundTrendsFilters,
+  fundTrendsParamNames,
+  hasActiveFundTrendsFilters,
+} from "@/funds/trends/helpers";
 import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
-import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
-import propertyName from "@/framework/data/propertyName";
 import routes from "@/funds/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
@@ -40,18 +43,9 @@ const FundTrendsListFrame = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sortParamName = propertyName<FundTrendsSearchParams>("sort");
-  const pageParamName = propertyName<FundTrendsSearchParams>("page");
-  const fundNameParamName = propertyName<FundTrendsSearchParams>("fundName");
-  const modeParamName = propertyName<FundTrendsSearchParams>("mode");
-  const startAccountingPeriodIdParamName = propertyName<FundTrendsSearchParams>(
-    "startAccountingPeriodId",
-  );
-  const endAccountingPeriodIdParamName = propertyName<FundTrendsSearchParams>(
-    "endAccountingPeriodId",
-  );
-  const startDateParamName = propertyName<FundTrendsSearchParams>("startDate");
-  const endDateParamName = propertyName<FundTrendsSearchParams>("endDate");
+  const sortParamName = fundTrendsParamNames.sort;
+  const pageParamName = fundTrendsParamNames.page;
+  const fundNameParamName = fundTrendsParamNames.fundName;
   const updateParams = useSearchParamUpdater([pageParamName]);
 
   const setSort = function (sort: FundWithBalanceRangeSort | null): void {
@@ -79,13 +73,7 @@ const FundTrendsListFrame = function ({
     FundWithBalanceRangeSort,
     searchParams.get(sortParamName) ?? "",
   );
-  const hasActiveFilters =
-    searchParams.getAll(fundNameParamName).length > 0 ||
-    searchParams.get(modeParamName) === "date" ||
-    searchParams.has(startAccountingPeriodIdParamName) ||
-    searchParams.has(endAccountingPeriodIdParamName) ||
-    searchParams.has(startDateParamName) ||
-    searchParams.has(endDateParamName);
+  const hasActiveFilters = hasActiveFundTrendsFilters(searchParams);
 
   const getSortProps = createColumnSortProps(currentSort, setSort);
 
@@ -214,17 +202,15 @@ const FundTrendsListFrame = function ({
         ),
       }}
       filteredEmptyState={{
-        title: "No accounts match this trends filter",
+        title: "No funds match this trends filter",
         description:
-          "Try a different account type, account name, or date range to widen the trends scope.",
+          "Try a different fund name or date range to widen the trends scope.",
         action: (
           <Button
             variant="contained"
             onClick={() => {
               updateParams((params) => {
-                [...params.keys()].forEach((key) => {
-                  params.delete(key);
-                });
+                clearFundTrendsFilters(params);
               });
             }}
           >

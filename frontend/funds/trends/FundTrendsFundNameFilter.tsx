@@ -4,6 +4,9 @@ import type { JSX } from "react";
 import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 import { normalizeFundNames } from "@/funds/trends/fundNameFilter";
 
+/**
+ * Props for the FundTrendsFundNameFilter component.
+ */
 interface FundTrendsFundNameFilterProps {
   readonly availableFundNames: readonly string[];
   readonly value: readonly string[];

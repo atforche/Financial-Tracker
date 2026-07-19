@@ -1,21 +1,20 @@
 "use client";
 
-import { Box, Button } from "@mui/material";
 import { type FundBalanceEvent, FundBalanceEventSort } from "@/funds/types";
+import {
+  clearFundTrendsFilters,
+  fundTrendsParamNames,
+  hasActiveFundTrendsFilters,
+} from "@/funds/trends/helpers";
 import { useRouter, useSearchParams } from "next/navigation";
-import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
-import { BalanceEventType } from "@/balance-events/types";
+import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
-import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import createTrendsBalanceEventColumns from "@/balance-events/createTrendsBalanceEventColumns";
 import { formatBalanceEventType } from "@/balance-events/helpers";
-import { formatCurrency } from "@/framework/currencyHelpers";
-import { formatShortDate } from "@/framework/dateHelpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
-import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
@@ -39,20 +38,8 @@ const FundTrendsBalanceEventListFrame = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sortParamName =
-    propertyName<FundTrendsSearchParams>("balanceEventSort");
-  const pageParamName =
-    propertyName<FundTrendsSearchParams>("balanceEventPage");
-  const fundNameParamName = propertyName<FundTrendsSearchParams>("fundName");
-  const modeParamName = propertyName<FundTrendsSearchParams>("mode");
-  const startAccountingPeriodIdParamName = propertyName<FundTrendsSearchParams>(
-    "startAccountingPeriodId",
-  );
-  const endAccountingPeriodIdParamName = propertyName<FundTrendsSearchParams>(
-    "endAccountingPeriodId",
-  );
-  const startDateParamName = propertyName<FundTrendsSearchParams>("startDate");
-  const endDateParamName = propertyName<FundTrendsSearchParams>("endDate");
+  const sortParamName = fundTrendsParamNames.balanceEventSort;
+  const pageParamName = fundTrendsParamNames.balanceEventPage;
 
   const updateParams = useSearchParamUpdater([pageParamName]);
 
@@ -82,17 +69,11 @@ const FundTrendsBalanceEventListFrame = function ({
       }),
     );
   };
-  const hasActiveFilters =
-    searchParams.getAll(fundNameParamName).length > 0 ||
-    searchParams.get(modeParamName) === "date" ||
-    searchParams.has(startAccountingPeriodIdParamName) ||
-    searchParams.has(endAccountingPeriodIdParamName) ||
-    searchParams.has(startDateParamName) ||
-    searchParams.has(endDateParamName);
+  const hasActiveFilters = hasActiveFundTrendsFilters(searchParams);
 
   const getSortProps = createColumnSortProps(currentSort, setSort);
 
-  const columns: ColumnDefinition<FundBalanceEvent>[] = [
+  const leadingColumns: ColumnDefinition<FundBalanceEvent>[] = [
     {
       name: "fundName",
       headerContent: "Fund",
@@ -103,77 +84,10 @@ const FundTrendsBalanceEventListFrame = function ({
       ),
       minWidth: 140,
     },
-    {
-      name: "date",
-      headerContent: "Event Date",
-      getBodyContent: (balanceEvent) =>
-        balanceEvent.isPosted
-          ? formatShortDate(new Date(`${balanceEvent.date}T00:00:00`))
-          : "Pending",
-      ...getSortProps(
-        FundBalanceEventSort.Date,
-        FundBalanceEventSort.DateDescending,
-      ),
-      minWidth: 130,
-    },
-    {
-      name: "type",
-      headerContent: "Type",
-      getBodyContent: (balanceEvent): JSX.Element => (
-        <Box
-          component="span"
-          sx={{
-            color:
-              balanceEvent.type === BalanceEventType.Debit
-                ? "warning.dark"
-                : "info.dark",
-            fontWeight: 600,
-          }}
-        >
-          {formatBalanceEventType(balanceEvent.type, balanceEvent.isPosted)}
-        </Box>
-      ),
-      ...getSortProps(
-        FundBalanceEventSort.Type,
-        FundBalanceEventSort.TypeDescending,
-      ),
-      minWidth: 90,
-    },
-    {
-      name: "amount",
-      headerContent: "Amount",
-      getBodyContent: (balanceEvent) => formatCurrency(balanceEvent.amount),
-      ...getSortProps(
-        FundBalanceEventSort.Amount,
-        FundBalanceEventSort.AmountDescending,
-      ),
-      alignment: "right",
-      minWidth: 120,
-    },
-    {
-      name: "actions",
-      headerContent: "",
-      getBodyContent: (balanceEvent) => (
-        <ListFrameActionButton
-          size="small"
-          color="primary"
-          onClick={(event) => {
-            event.stopPropagation();
-            openTransactionWorkspace(balanceEvent);
-          }}
-          ariaLabel={`Open transaction ${balanceEvent.transactionId}`}
-        >
-          <ArrowForwardOutlined fontSize="small" color="action" />
-        </ListFrameActionButton>
-      ),
-      alignment: "right",
-      minWidth: 52,
-      maxWidth: 52,
-    },
   ];
 
   if (mode === "AccountingPeriod") {
-    columns.splice(1, 0, {
+    leadingColumns.splice(1, 0, {
       name: "accountingPeriodName",
       headerContent: "Accounting Period",
       getBodyContent: (balanceEvent) => balanceEvent.accountingPeriod.name,
@@ -185,12 +99,32 @@ const FundTrendsBalanceEventListFrame = function ({
     });
   }
 
+  const columns = createTrendsBalanceEventColumns({
+    leadingColumns,
+    getSortProps,
+    dateSort: {
+      ascending: FundBalanceEventSort.Date,
+      descending: FundBalanceEventSort.DateDescending,
+    },
+    typeSort: {
+      ascending: FundBalanceEventSort.Type,
+      descending: FundBalanceEventSort.TypeDescending,
+    },
+    amountSort: {
+      ascending: FundBalanceEventSort.Amount,
+      descending: FundBalanceEventSort.AmountDescending,
+    },
+    getTypeLabel: (event: FundBalanceEvent) =>
+      formatBalanceEventType(event.type, event.isPosted),
+    onOpen: openTransactionWorkspace,
+  });
+
   return (
     <ListFrame<FundBalanceEvent>
       title="Balance Events"
       columns={columns}
       getId={(balanceEvent) =>
-        `${balanceEvent.fund.id}-${balanceEvent.accountingPeriod.id}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
+        `${balanceEvent.transactionId}-${balanceEvent.fund.id}-${balanceEvent.accountingPeriod.id}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
       }
       data={data ?? null}
       totalCount={totalCount ?? null}
@@ -221,15 +155,13 @@ const FundTrendsBalanceEventListFrame = function ({
       filteredEmptyState={{
         title: "No balance events match this trends filter",
         description:
-          "Try a different account filter or range to widen the activity feed.",
+          "Try a different fund filter or range to widen the activity feed.",
         action: (
           <Button
             variant="contained"
             onClick={() => {
               updateParams((params) => {
-                [...params.keys()].forEach((key) => {
-                  params.delete(key);
-                });
+                clearFundTrendsFilters(params);
               });
             }}
           >

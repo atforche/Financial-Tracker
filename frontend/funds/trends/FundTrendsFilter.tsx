@@ -5,6 +5,10 @@ import type {
   AccountingPeriodRange,
 } from "@/accounting-periods/types";
 import {
+  type TrendRangeMode,
+  setTrendRangeMode,
+} from "@/framework/routes/trendRange";
+import {
   normalizeFundNames,
   shouldPersistFundNames,
 } from "@/funds/trends/fundNameFilter";
@@ -12,19 +16,12 @@ import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRa
 import { Button } from "@mui/material";
 import DateRangeFilter from "@/framework/forms/DateRangeFilter";
 import FundTrendsFundNameFilter from "@/funds/trends/FundTrendsFundNameFilter";
-import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
-import propertyName from "@/framework/data/propertyName";
-import { setTrendRangeMode } from "@/framework/routes/trendRange";
+import { fundTrendsParamNames } from "@/funds/trends/helpers";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
-
-/**
- * Trends filter mode values used in the Funds view URL.
- */
-type FundsTrendsFilterMode = "accounting-period" | "date";
 
 /**
  * Props for the FundTrendsFilter component.
@@ -51,19 +48,18 @@ const FundTrendsFilter = function ({
 }: FundTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const pageParamName = propertyName<FundTrendsSearchParams>("page");
-  const modeParamName = propertyName<FundTrendsSearchParams>("mode");
-  const fundNameParamName = propertyName<FundTrendsSearchParams>("fundName");
-  const startAccountingPeriodIdParamName = propertyName<FundTrendsSearchParams>(
-    "startAccountingPeriodId",
-  );
-  const endAccountingPeriodIdParamName = propertyName<FundTrendsSearchParams>(
-    "endAccountingPeriodId",
-  );
-  const startDateParamName = propertyName<FundTrendsSearchParams>("startDate");
-  const endDateParamName = propertyName<FundTrendsSearchParams>("endDate");
+  const pageParamName = fundTrendsParamNames.page;
+  const balanceEventPageParamName = fundTrendsParamNames.balanceEventPage;
+  const modeParamName = fundTrendsParamNames.mode;
+  const fundNameParamName = fundTrendsParamNames.fundName;
+  const startAccountingPeriodIdParamName =
+    fundTrendsParamNames.startAccountingPeriodId;
+  const endAccountingPeriodIdParamName =
+    fundTrendsParamNames.endAccountingPeriodId;
+  const startDateParamName = fundTrendsParamNames.startDate;
+  const endDateParamName = fundTrendsParamNames.endDate;
 
-  const currentMode: FundsTrendsFilterMode =
+  const currentMode: TrendRangeMode =
     searchParams.get(modeParamName) === "accounting-period"
       ? "accounting-period"
       : "date";
@@ -83,7 +79,10 @@ const FundTrendsFilter = function ({
     searchParams.get(startDateParamName) ?? defaultStartDate;
   const currentEndDate = searchParams.get(endDateParamName) ?? defaultEndDate;
 
-  const updateParams = useSearchParamUpdater([pageParamName]);
+  const updateParams = useSearchParamUpdater([
+    pageParamName,
+    balanceEventPageParamName,
+  ]);
 
   const hasActiveView =
     currentMode !== "date" ||
@@ -106,7 +105,7 @@ const FundTrendsFilter = function ({
     });
   };
 
-  const handleModeChange = function (nextMode: FundsTrendsFilterMode): void {
+  const handleModeChange = function (nextMode: TrendRangeMode): void {
     updateParams((params) => {
       setTrendRangeMode(params, nextMode, {
         defaultAccountingPeriodId,
@@ -135,16 +134,13 @@ const FundTrendsFilter = function ({
   const clearView = function (): void {
     updateParams((params) => {
       params.delete(fundNameParamName);
-      params.set(modeParamName, "date");
-      params.delete(startDateParamName);
-      params.delete(endDateParamName);
-      if (defaultAccountingPeriodId !== null) {
-        params.set(startAccountingPeriodIdParamName, defaultAccountingPeriodId);
-        params.set(endAccountingPeriodIdParamName, defaultAccountingPeriodId);
-      } else {
-        params.delete(startAccountingPeriodIdParamName);
-        params.delete(endAccountingPeriodIdParamName);
-      }
+      setTrendRangeMode(params, "date", {
+        defaultAccountingPeriodId,
+        defaultStartDate,
+        defaultEndDate,
+      });
+      params.set(startDateParamName, defaultStartDate);
+      params.set(endDateParamName, defaultEndDate);
     });
   };
 

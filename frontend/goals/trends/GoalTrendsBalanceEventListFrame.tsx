@@ -6,17 +6,14 @@ import {
   defaultGoalTrendsView,
 } from "@/goals/trends/goalTrendsTypes";
 import { useRouter, useSearchParams } from "next/navigation";
-import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import { GoalBalanceEventSort } from "@/goals/types";
 import type { GoalTrendsSearchParams } from "@/goals/trends/GoalTrends";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
-import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
-import { formatCurrency } from "@/framework/currencyHelpers";
-import { formatShortDate } from "@/framework/dateHelpers";
+import createTrendsBalanceEventColumns from "@/balance-events/createTrendsBalanceEventColumns";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
@@ -92,7 +89,7 @@ const GoalTrendsBalanceEventListFrame = function ({
 
   const getSortProps = createColumnSortProps(currentSort, setSort);
 
-  const columns: ColumnDefinition<GoalBalanceEvent>[] = [
+  const leadingColumns: ColumnDefinition<GoalBalanceEvent>[] = [
     {
       name: "fundName",
       headerContent: "Fund",
@@ -113,51 +110,22 @@ const GoalTrendsBalanceEventListFrame = function ({
       ),
       minWidth: 180,
     },
-    {
-      name: "date",
-      headerContent: "Event Date",
-      getBodyContent: (balanceEvent) =>
-        balanceEvent.isPosted
-          ? formatShortDate(new Date(`${balanceEvent.date}T00:00:00`))
-          : "Pending",
-      ...getSortProps(
-        GoalBalanceEventSort.Date,
-        GoalBalanceEventSort.DateDescending,
-      ),
-      minWidth: 130,
-    },
-    {
-      name: "amount",
-      headerContent: "Amount",
-      getBodyContent: (balanceEvent) => formatCurrency(balanceEvent.amount),
-      ...getSortProps(
-        GoalBalanceEventSort.Amount,
-        GoalBalanceEventSort.AmountDescending,
-      ),
-      alignment: "right",
-      minWidth: 130,
-    },
-    {
-      name: "actions",
-      headerContent: "",
-      getBodyContent: (balanceEvent) => (
-        <ListFrameActionButton
-          size="small"
-          color="primary"
-          onClick={(event) => {
-            event.stopPropagation();
-            openTransactionWorkspace(balanceEvent);
-          }}
-          ariaLabel={`Open transaction ${balanceEvent.transactionId}`}
-        >
-          <ArrowForwardOutlined fontSize="small" color="action" />
-        </ListFrameActionButton>
-      ),
-      alignment: "right",
-      minWidth: 52,
-      maxWidth: 52,
-    },
   ];
+
+  const columns = createTrendsBalanceEventColumns({
+    leadingColumns,
+    getSortProps,
+    dateSort: {
+      ascending: GoalBalanceEventSort.Date,
+      descending: GoalBalanceEventSort.DateDescending,
+    },
+    amountSort: {
+      ascending: GoalBalanceEventSort.Amount,
+      descending: GoalBalanceEventSort.AmountDescending,
+    },
+    onOpen: openTransactionWorkspace,
+    amountMinWidth: 130,
+  });
 
   return (
     <ListFrame<GoalBalanceEvent>

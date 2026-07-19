@@ -9,18 +9,22 @@ import {
   formatSignedCurrency,
 } from "@/framework/currencyHelpers";
 import BarMetricChart from "@/framework/charts/BarMetricChart";
+import type { FundTrendsDataMode } from "@/funds/trends/helpers";
 import type { JSX } from "react";
 import { buildBalanceChangeChartPoints } from "@/framework/charts/balanceChangeHelpers";
 
-type FundTrendsChangeChartMode = "AccountingPeriod" | "Date";
-
+/**
+ * Props for the FundTrendsChangeChart component.
+ */
 interface FundTrendsChangeChartProps {
-  readonly mode: FundTrendsChangeChartMode;
-  readonly accountingPeriods: readonly FundBalanceSummaryByPeriod[] | null;
-  readonly dates: readonly FundBalanceSummaryByDate[] | null;
+  readonly mode: FundTrendsDataMode;
+  readonly accountingPeriods: readonly FundBalanceSummaryByPeriod[];
+  readonly dates: readonly FundBalanceSummaryByDate[];
 }
 
-/** Renders balance changes for the fund trends. */
+/**
+ * Renders balance changes for the fund trends.
+ */
 const FundTrendsChangeChart = function ({
   mode,
   accountingPeriods,
@@ -32,12 +36,12 @@ const FundTrendsChangeChart = function ({
       emptyMessage="No balance changes are available for the selected trends range."
       chartPoints={buildBalanceChangeChartPoints({
         mode,
-        accountingPeriods: (accountingPeriods ?? []).map((summary) => ({
+        accountingPeriods: accountingPeriods.map((summary) => ({
           name: summary.accountingPeriod.name,
           openingBalance: summary.openingBalance.totalBalance,
           closingBalance: summary.closingBalance.totalBalance,
         })),
-        dates: (dates ?? []).map((summary) => ({
+        dates: dates.map((summary) => ({
           date: summary.date,
           balance: summary.totalBalance,
         })),
