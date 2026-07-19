@@ -46,7 +46,7 @@ const DeleteAccountForm = function ({
         </>
       }
       confirmLabel="Delete"
-      confirmColor="error"
+      confirmButtonProps={{ color: "error" }}
       pending={pending}
       errorTitle={state.errorTitle}
       unmappedErrors={state.unmappedErrors}

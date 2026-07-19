@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Button, DialogActions, Stack } from "@mui/material";
+import { Alert, Button, Stack } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -81,7 +81,7 @@ const CreateAccountingPeriodForm = function ({
         }}
         errorMessage={state.monthErrors ?? null}
       />
-      <DialogActions>
+      <Stack direction="row" spacing={1} justifyContent="flex-end">
         <Button variant="outlined" onClick={reset}>
           Reset
         </Button>
@@ -99,7 +99,7 @@ const CreateAccountingPeriodForm = function ({
         >
           Create
         </Button>
-      </DialogActions>
+      </Stack>
       <ErrorAlert
         errorMessage={state.errorTitle ?? null}
         unmappedErrors={state.unmappedErrors ?? null}

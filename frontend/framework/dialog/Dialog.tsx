@@ -10,18 +10,13 @@ import {
   type Theme,
 } from "@mui/material";
 import { type JSX, type ReactNode, useId } from "react";
-import {
-  type ResolvedSx,
-  appendSx,
-  buildPaperSx,
-} from "@/framework/dialog/helpers";
-import { isNullOrUndefined } from "@/framework/nullHelpers";
+import { buildPaperSx, toSxArray } from "@/framework/dialog/helpers";
 
 /**
  * Props for the dialog component.
  */
-interface DialogProps extends Omit<MuiDialogProps, "children"> {
-  readonly title?: string;
+interface DialogProps extends Omit<MuiDialogProps, "children" | "title"> {
+  readonly title: ReactNode;
   readonly children: ReactNode;
   readonly actions?: ReactNode;
   readonly contentSx?: SxProps<Theme>;
@@ -41,9 +36,8 @@ const Dialog = function ({
   ...dialogProps
 }: DialogProps): JSX.Element {
   const titleId = useId();
-  const paperSlotProps =
-    typeof slotProps?.paper === "function" ? null : (slotProps?.paper ?? null);
-  const contentStyles: ResolvedSx[] = [
+  const paperSlotProps = slotProps?.paper;
+  const contentStyles: SxProps<Theme> = [
     {
       px: { xs: 2.5, md: 3 },
       pb: { xs: 2.5, md: 3 },
@@ -51,27 +45,38 @@ const Dialog = function ({
         pt: { xs: 2.5, md: 3 },
       },
     },
+    ...toSxArray(contentSx),
   ];
-  const actionStyles: ResolvedSx[] = [
+  const actionStyles: SxProps<Theme> = [
     {
       px: { xs: 2.5, md: 3 },
       pb: { xs: 2.5, md: 3 },
       pt: 0,
     },
+    ...toSxArray(actionsSx),
   ];
-
-  appendSx(contentStyles, contentSx ?? null);
-  appendSx(actionStyles, actionsSx ?? null);
+  const resolvedPaperSlotProps =
+    typeof paperSlotProps === "function"
+      ? (
+          ownerState: Parameters<typeof paperSlotProps>[0],
+        ): ReturnType<typeof paperSlotProps> => {
+          const resolvedProps = paperSlotProps(ownerState);
+          return {
+            ...resolvedProps,
+            sx: buildPaperSx(resolvedProps.sx),
+          };
+        }
+      : {
+          ...paperSlotProps,
+          sx: buildPaperSx(paperSlotProps?.sx),
+        };
 
   return (
     <MuiDialog
       aria-labelledby={titleId}
       slotProps={{
         ...slotProps,
-        paper: {
-          ...paperSlotProps,
-          sx: buildPaperSx(paperSlotProps?.sx ?? null),
-        },
+        paper: resolvedPaperSlotProps,
       }}
       {...dialogProps}
     >
@@ -88,7 +93,7 @@ const Dialog = function ({
         {title}
       </DialogTitle>
       <DialogContent sx={contentStyles}>{children}</DialogContent>
-      {isNullOrUndefined(actions) ? null : (
+      {actions === null || typeof actions === "undefined" ? null : (
         <DialogActions sx={actionStyles}>{actions}</DialogActions>
       )}
     </MuiDialog>

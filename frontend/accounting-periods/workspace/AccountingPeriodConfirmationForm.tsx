@@ -46,7 +46,7 @@ const AccountingPeriodConfirmationForm = function ({
         </>
       }
       confirmLabel={actionLabel}
-      confirmColor={color}
+      confirmButtonProps={{ color }}
       pending={pending}
       errorTitle={state.errorTitle}
       unmappedErrors={state.unmappedErrors}

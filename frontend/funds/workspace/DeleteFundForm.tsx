@@ -43,7 +43,7 @@ const DeleteFundForm = function ({
         <>Are you sure you want to delete the fund &quot;{fund.name}&quot;?</>
       }
       confirmLabel="Delete"
-      confirmColor="error"
+      confirmButtonProps={{ color: "error" }}
       pending={pending}
       errorTitle={state.errorTitle}
       unmappedErrors={state.unmappedErrors}

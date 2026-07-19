@@ -9,7 +9,7 @@ import ErrorAlert from "@/framework/alerts/ErrorAlert";
  * Props for the ConfirmActionDialog component.
  */
 interface ConfirmActionDialogProps {
-  readonly trigger: (openDialog: () => void) => JSX.Element;
+  readonly trigger: (openDialog: () => void) => ReactNode;
   readonly title: string;
   readonly confirmationCopy: ReactNode;
   readonly confirmLabel: string;
@@ -17,7 +17,8 @@ interface ConfirmActionDialogProps {
   readonly pending: boolean;
   readonly errorTitle?: string | null | undefined;
   readonly unmappedErrors?: string | null | undefined;
-  readonly confirmColor?: ButtonProps["color"];
+  readonly confirmButtonProps?: Omit<ButtonProps, "children" | "onClick">;
+  readonly cancelButtonProps?: Omit<ButtonProps, "children" | "onClick">;
 }
 
 /**
@@ -32,12 +33,15 @@ const ConfirmActionDialog = function ({
   pending,
   errorTitle = null,
   unmappedErrors = null,
-  confirmColor = "primary",
+  confirmButtonProps,
+  cancelButtonProps,
 }: ConfirmActionDialogProps): JSX.Element {
   const [open, setOpen] = useState(false);
+  const [confirmationAttempted, setConfirmationAttempted] = useState(false);
 
   const closeDialog = function (): void {
     setOpen(false);
+    setConfirmationAttempted(false);
   };
 
   return (
@@ -53,14 +57,21 @@ const ConfirmActionDialog = function ({
         title={title}
         actions={
           <>
-            <Button disabled={pending} onClick={closeDialog}>
+            <Button
+              {...cancelButtonProps}
+              disabled={pending}
+              onClick={closeDialog}
+            >
               Cancel
             </Button>
             <Button
-              color={confirmColor}
+              {...confirmButtonProps}
               variant="contained"
               loading={pending}
-              onClick={onConfirm}
+              onClick={() => {
+                setConfirmationAttempted(true);
+                onConfirm();
+              }}
             >
               {confirmLabel}
             </Button>
@@ -68,10 +79,10 @@ const ConfirmActionDialog = function ({
         }
       >
         <Stack spacing={2}>
-          <Typography>{confirmationCopy}</Typography>
+          <Typography component="div">{confirmationCopy}</Typography>
           <ErrorAlert
-            errorMessage={errorTitle}
-            unmappedErrors={unmappedErrors}
+            errorMessage={confirmationAttempted ? errorTitle : null}
+            unmappedErrors={confirmationAttempted ? unmappedErrors : null}
           />
         </Stack>
       </Dialog>
